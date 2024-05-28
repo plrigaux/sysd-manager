@@ -1,5 +1,5 @@
+use gtk;
 use gtk::prelude::*;
-use gtk::{self, SelectionModel};
 use systemd::analyze::Analyze;
 use systemd::dbus;
 use systemd::dbus::UnitState;
@@ -10,18 +10,17 @@ use crate::grid_cell::{Entry, GridCell};
 use crate::systemd::dbus::SystemdUnit;
 
 use self::pango::{AttrInt, AttrList};
-use gtk::glib::types::Type;
 use gtk::glib::{self, BoxedAnyObject, Propagation};
 
 use gtk::pango::{self, Weight};
 //use self::gio;
 use gtk::{Application, ApplicationWindow, Orientation};
 
+use std::cell::Ref;
 use std::fs;
 use std::io::Read;
 use std::path::Path;
 use std::process::Command;
-use std::cell::Ref;
 
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
@@ -30,21 +29,20 @@ const ICON_YES: &str = "object-select-symbolic";
 const ICON_NO: &str = "window-close-symbolic";
 
 /// Updates the status icon for the selected unit
-fn update_icon(icon: &gtk::Image, state: bool) {
+/* fn update_icon(icon: &gtk::Image, state: bool) {
     if state {
         icon.set_from_icon_name(Some(ICON_YES));
     } else {
         icon.set_from_icon_name(Some(ICON_NO));
     }
 }
-
+ */
 /// Create a `gtk::ListboxRow` and add it to the `gtk::ListBox`, and then add the `gtk::Image` to a vector so that we can later modify
 /// it when the state changes.
-fn create_row(path: &Path, state: UnitState, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
-    let filename = path.file_stem().unwrap().to_str().unwrap();
+fn create_row(systemd_unit: &SystemdUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
     let unit_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    let unit_label = gtk::Label::new(Some(filename));
-    let image = if state == UnitState::Enabled {
+    let unit_label = gtk::Label::new(Some(&systemd_unit.name));
+    let image = if systemd_unit.state == UnitState::Enabled {
         gtk::Image::from_icon_name(ICON_YES)
     } else {
         gtk::Image::from_icon_name(ICON_NO)
@@ -62,48 +60,10 @@ fn create_row(path: &Path, state: UnitState, state_icons: &mut Vec<gtk::Image>) 
 
 /// Read the unit file and return it's contents so that we can display it in the `gtk::TextView`.
 fn get_unit_info(su: &SystemdUnit) -> String {
-
     let mut file = fs::File::open(&su.path).unwrap();
     let mut output = String::new();
     let _ = file.read_to_string(&mut output);
     output
-}
-
-/// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
-fn setup_systemd_analyze(builder: &gtk::Builder) {
-    let analyze_tree: gtk::TreeView = builder.object("analyze_tree").unwrap();
-    let analyze_store = gtk::ListStore::new(&[Type::U32, Type::STRING]);
-
-    // A simple macro for adding a column to the preview tree.
-    macro_rules! add_column {
-        ($preview_tree:ident, $title:expr, $id:expr) => {{
-            let column = gtk::TreeViewColumn::new();
-            let renderer = gtk::CellRendererText::new();
-            column.set_title($title);
-            column.set_resizable(true);
-            column.pack_start(&renderer, true);
-            column.add_attribute(&renderer, "text", $id);
-            analyze_tree.append_column(&column);
-        }};
-    }
-
-    add_column!(analyze_store, "Time (ms)", 0);
-    add_column!(analyze_store, "Unit", 1);
-
-    let units = Analyze::blame();
-
-    for value in units.clone() {
-        //println!("value time : {:?} serrvice {:?}", value.time, value.service);
-        //analyze_store.insert_with_values(None, &[(value.time, &value.service)]);
-        analyze_store.insert_with_values(None, &[(0, &value.time)]);
-        analyze_store.insert_with_values(None, &[(1, &value.service)]);
-    }
-
-    analyze_tree.set_model(Some(&analyze_store));
-
-    let total_time_label: gtk::Label = builder.object("time_to_boot").unwrap();
-    let time = (units.iter().last().unwrap().time as f32) / 1000f32;
-    total_time_label.set_label(format!("{} seconds", time).as_str());
 }
 
 struct TableRow {
@@ -112,6 +72,8 @@ struct TableRow {
 }
 
 //https://github.com/gtk-rs/gtk4-rs/blob/master/examples/column_view_datagrid/main.rs
+
+/// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
 fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView {
     let store = gtk::gio::ListStore::new::<BoxedAnyObject>();
 
@@ -126,13 +88,13 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
     }
 
     let single_selection = gtk::SingleSelection::new(Some(store));
-/*     let analyze_tree = gtk::ColumnView::new(Some(single_selection));
+    /*     let analyze_tree = gtk::ColumnView::new(Some(single_selection));
     analyze_tree.set_focusable(true); */
-         let analyze_tree = gtk::ColumnView::builder()
+    let analyze_tree = gtk::ColumnView::builder()
         .focusable(true)
         .model(&single_selection)
         .hexpand(true)
-        .build(); 
+        .build();
 
     let col1factory = gtk::SignalListItemFactory::new();
     let col2factory = gtk::SignalListItemFactory::new();
@@ -304,12 +266,8 @@ fn fill_service_list(
     // NOTE: Services
     let services = dbus::collect_togglable_services(&unit_files);
     let mut services_icons = Vec::new();
-    for service in services.clone() {
-        let unit_row = create_row(
-            Path::new(service.name.as_str()),
-            service.state,
-            &mut services_icons,
-        );
+    for systemd_unit in services.clone() {
+        let unit_row = create_row(&systemd_unit, &mut services_icons);
         services_list.append(&unit_row);
     }
 
@@ -345,12 +303,8 @@ fn fill_sokects_list(
 ) -> Vec<SystemdUnit> {
     let sockets = dbus::collect_togglable_sockets(&unit_files);
     let mut sockets_icons = Vec::new();
-    for socket in sockets.clone() {
-        let unit_row = create_row(
-            Path::new(socket.name.as_str()),
-            socket.state,
-            &mut sockets_icons,
-        );
+    for systemd_unit in sockets.clone() {
+        let unit_row = create_row(&systemd_unit, &mut sockets_icons);
         sockets_list.append(&unit_row);
     }
 
@@ -385,12 +339,8 @@ fn fill_timers_list(
 ) -> Vec<SystemdUnit> {
     let timers = dbus::collect_togglable_timers(&unit_files);
     let mut timers_icons = Vec::new();
-    for timer in timers.clone() {
-        let unit_row = create_row(
-            Path::new(timer.name.as_str()),
-            timer.state,
-            &mut timers_icons,
-        );
+    for systemd_unit in timers.clone() {
+        let unit_row = create_row(&systemd_unit, &mut timers_icons);
 
         timers_list.append(&unit_row);
     }
@@ -418,8 +368,8 @@ fn fill_timers_list(
 
 fn build_ui(application: &Application) {
     // List of all unit files on the system
-    let mut unit_files : Vec<SystemdUnit> = dbus::list_unit_files();
-    unit_files.sort_by(|a,b| a.name.cmp(&b.name));
+    let mut unit_files: Vec<SystemdUnit> = dbus::list_unit_files();
+    unit_files.sort_by_key(|unit| unit.name.to_lowercase());
 
     let services_list = gtk::ListBox::new();
 
@@ -564,9 +514,7 @@ fn build_ui(application: &Application) {
     info_stack.add_titled(&unit_journal_box, Some("Unit Journal"), "Unit Journal");
     info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
 
-    let stack_switcher = gtk::StackSwitcher::builder()
-    .stack(&info_stack)
-    .build();
+    let stack_switcher = gtk::StackSwitcher::builder().stack(&info_stack).build();
 
     let right_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -679,6 +627,7 @@ fn build_ui(application: &Application) {
         &unit_journal_view,
         &right_bar_label,
     );
+
     let sockets = fill_sokects_list(
         &sockets_list,
         &unit_files,
@@ -687,6 +636,7 @@ fn build_ui(application: &Application) {
         &unit_journal_view,
         &right_bar_label,
     );
+
     let timers = fill_timers_list(
         &timers_list,
         &unit_files,
@@ -792,6 +742,116 @@ fn build_ui(application: &Application) {
                     update_journal(&unit_journal, timer.name.as_str());
                 }
                 _ => unreachable!(),
+            }
+        });
+    }
+
+    {
+        // NOTE: Implement the start button
+        let services = services.clone();
+        let services_list = services_list.clone();
+        let sockets = sockets.clone();
+        let sockets_list = sockets_list.clone();
+        let timers = timers.clone();
+        let timers_list = timers_list.clone();
+        /*         let services_icons = services_icons.clone();
+        let sockets_icons = sockets_icons.clone();
+        let timers_icons = timers_icons.clone(); */
+        let unit_stack = unit_stack.clone();
+        start_button.connect_clicked(move |_| {
+            match unit_stack.visible_child_name().unwrap().as_str() {
+                "Services" => {
+                    let index = services_list.selected_row().unwrap().index();
+                    let service = &services[index as usize];
+                    if let None = dbus::start_unit(
+                        Path::new(service.name.as_str())
+                            .file_name()
+                            .unwrap()
+                            .to_str()
+                            .unwrap(),
+                    ) {
+                        //update_icon(&services_icons[index as usize], true);
+                    }
+                }
+                "Sockets" => {
+                    let index = sockets_list.selected_row().unwrap().index();
+                    let socket = &sockets[index as usize];
+                    if let None = dbus::start_unit(
+                        Path::new(socket.name.as_str())
+                            .file_name()
+                            .unwrap()
+                            .to_str()
+                            .unwrap(),
+                    ) {
+                        //update_icon(&sockets_icons[index as usize], true);
+                    }
+                }
+                "Timers" => {
+                    let index = timers_list.selected_row().unwrap().index();
+                    let timer = &timers[index as usize];
+                    if let None = dbus::start_unit(
+                        Path::new(timer.name.as_str())
+                            .file_name()
+                            .unwrap()
+                            .to_str()
+                            .unwrap(),
+                    ) {
+                        //update_icon(&timers_icons[index as usize], true);
+                    }
+                }
+                _ => (),
+            }
+        });
+    }
+
+    {
+        // NOTE: Implement the stop button
+        let services = services.clone();
+        let services_list = services_list.clone();
+        let sockets = sockets.clone();
+        let sockets_list = sockets_list.clone();
+        let timers = timers.clone();
+        let timers_list = timers_list.clone();
+        /*         let services_icons = services_icons.clone();
+        let sockets_icons = sockets_icons.clone();
+        let timers_icons = timers_icons.clone(); */
+        let unit_stack = unit_stack.clone();
+        stop_button.connect_clicked(move |_| {
+            match unit_stack.visible_child_name().unwrap().as_str() {
+                "Services" => {
+                    let index = services_list.selected_row().unwrap().index();
+                    let service = &services[index as usize];
+                    if let None = dbus::stop_unit(&service.full_name()) {
+                        //update_icon(&services_icons[index as usize], false);
+                    }
+                }
+                "Sockets" => {
+                    let index = sockets_list.selected_row().unwrap().index();
+                    let socket = &sockets[index as usize];
+                    if let None = dbus::stop_unit(
+                        Path::new(socket.name.as_str())
+                            .file_name()
+                            .unwrap()
+                            .to_str()
+                            .unwrap(),
+                    ) {
+                        //update_icon(&sockets_icons[index as usize], false);
+                    }
+                }
+                "Timers" => {
+                    let index = timers_list.selected_row().unwrap().index();
+                    let timer = &timers[index as usize];
+                    if let None = dbus::stop_unit(
+                        Path::new(timer.name.as_str())
+                            .file_name()
+                            .unwrap()
+                            .to_str()
+                            .unwrap(),
+                    ) {
+                        //update_icon(&timers_icons[index as usize], false);
+                    }
+                }
+                _ => (),
             }
         });
     }
@@ -1173,7 +1233,7 @@ fn build_ui(application: &Application) {
            });
        }
 
-       
+
     */
     window.present();
 

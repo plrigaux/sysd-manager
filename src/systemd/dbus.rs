@@ -30,6 +30,14 @@ pub struct SystemdUnit {
     pub path: String,
 }
 
+impl SystemdUnit {
+    pub fn full_name(&self) -> &str {
+        match self.path.rsplit_once("/") {
+            Some((_, end)) => end,
+            None => &self.name,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UnitType {
@@ -150,7 +158,7 @@ fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
                 prefix: prefix.to_owned(),
                 state,
                 utype,
-                path : service.to_owned()
+                path: service.to_owned(),
             });
         }
     }
@@ -380,5 +388,8 @@ mod tests {
         println!("{:#?}", asdf)
     }
 
-    
+    #[test]
+    fn stop_service_test() {
+        stop_unit("jacket.service");
+    }
 }
