@@ -43,6 +43,7 @@ pub enum UnitType {
     Socket,
     Target,
     Timer,
+    Swap,
     Unknown(String),
 }
 impl UnitType {
@@ -59,6 +60,7 @@ impl UnitType {
             "socket" => UnitType::Socket,
             "target" => UnitType::Target,
             "timer" => UnitType::Timer,
+            "swap" => UnitType::Swap,
             _ => {
                 println!("Unknown Type: {}", system_type);
                 UnitType::Unknown(system_type.to_string())
