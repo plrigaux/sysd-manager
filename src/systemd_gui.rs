@@ -126,12 +126,13 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
     }
 
     let single_selection = gtk::SingleSelection::new(Some(store));
-    let analyze_tree = gtk::ColumnView::new(Some(single_selection));
-    analyze_tree.set_focusable(true);
-    /*     let analyze_tree = gtk::ColumnView::builder()
+/*     let analyze_tree = gtk::ColumnView::new(Some(single_selection));
+    analyze_tree.set_focusable(true); */
+         let analyze_tree = gtk::ColumnView::builder()
         .focusable(true)
         .model(&single_selection)
-        .build(); */
+        .hexpand(true)
+        .build(); 
 
     let col1factory = gtk::SignalListItemFactory::new();
     let col2factory = gtk::SignalListItemFactory::new();
@@ -170,10 +171,12 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
         child.set_entry(&ent);
     });
 
-    let col1 = gtk::ColumnViewColumn::new(Some("Time (ms)"), Some(col1factory));
-    let col2 = gtk::ColumnViewColumn::new(Some("Unit"), Some(col2factory));
-    analyze_tree.append_column(&col1);
-    analyze_tree.append_column(&col2);
+    let col1_time = gtk::ColumnViewColumn::new(Some("Init time (ms)"), Some(col1factory));
+    let col2_unit = gtk::ColumnViewColumn::new(Some("Running units"), Some(col2factory));
+    col2_unit.set_expand(true);
+
+    analyze_tree.append_column(&col1_time);
+    analyze_tree.append_column(&col2_unit);
 
     let time = (units.iter().last().unwrap().time as f32) / 1000f32;
     total_time_label.set_label(format!("{} seconds", time).as_str());
