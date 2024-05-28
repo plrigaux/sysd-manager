@@ -1,5 +1,5 @@
 extern crate dbus;
-use std::path::Path;
+
 use systemd::dbus::dbus::arg::messageitem::MessageItem;
 use systemd::dbus::dbus::Error;
 use systemd::dbus::dbus::Message;
@@ -153,7 +153,6 @@ fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
         }
     }
 
-    systemd_units.sort_by(|a,b| a.name.cmp(&b.name));
     systemd_units
 }
 

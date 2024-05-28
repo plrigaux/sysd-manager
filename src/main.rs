@@ -6,6 +6,7 @@ mod systemd {
     pub mod analyze; // Support for systemd-analyze
     pub mod dbus;    // The dbus backend for systemd
 }
+mod grid_cell;
 
 fn main() {
     systemd_gui::launch();

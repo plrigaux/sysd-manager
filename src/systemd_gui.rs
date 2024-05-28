@@ -1,4 +1,3 @@
-use gtk::glib::property::PropertyGet;
 use gtk::prelude::*;
 use gtk::{self, SelectionModel};
 use systemd::analyze::Analyze;
@@ -7,6 +6,7 @@ use systemd::dbus::UnitState;
 
 //use gdk::Key;
 
+use crate::grid_cell::{Entry, GridCell};
 use crate::systemd::dbus::SystemdUnit;
 
 use self::pango::{AttrInt, AttrList};
@@ -16,10 +16,12 @@ use gtk::glib::{self, BoxedAnyObject, Propagation};
 use gtk::pango::{self, Weight};
 //use self::gio;
 use gtk::{Application, ApplicationWindow, Orientation};
+
 use std::fs;
 use std::io::Read;
 use std::path::Path;
 use std::process::Command;
+use std::cell::Ref;
 
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
@@ -116,7 +118,7 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
     let units = Analyze::blame();
 
     for value in units.clone() {
-        println!("Analyse Tree Blame {:?}", value);
+        //println!("Analyse Tree Blame {:?}", value);
         store.append(&BoxedAnyObject::new(TableRow {
             col1: value.time,
             col2: value.service,
@@ -124,13 +126,49 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
     }
 
     let single_selection = gtk::SingleSelection::new(Some(store));
-    let analyze_tree = gtk::ColumnView::builder()
+    let analyze_tree = gtk::ColumnView::new(Some(single_selection));
+    analyze_tree.set_focusable(true);
+    /*     let analyze_tree = gtk::ColumnView::builder()
         .focusable(true)
         .model(&single_selection)
-        .build();
+        .build(); */
 
     let col1factory = gtk::SignalListItemFactory::new();
     let col2factory = gtk::SignalListItemFactory::new();
+
+    col1factory.connect_setup(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let row = GridCell::default();
+        item.set_child(Some(&row));
+    });
+
+    col1factory.connect_bind(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let child = item.child().and_downcast::<GridCell>().unwrap();
+        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+        let r: Ref<TableRow> = entry.borrow();
+        let ent = Entry {
+            name: r.col1.to_string(),
+        };
+        child.set_entry(&ent);
+    });
+
+    col2factory.connect_setup(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let row = GridCell::default();
+        item.set_child(Some(&row));
+    });
+
+    col2factory.connect_bind(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let child = item.child().and_downcast::<GridCell>().unwrap();
+        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+        let r: Ref<TableRow> = entry.borrow();
+        let ent = Entry {
+            name: r.col2.to_string(),
+        };
+        child.set_entry(&ent);
+    });
 
     let col1 = gtk::ColumnViewColumn::new(Some("Time (ms)"), Some(col1factory));
     let col2 = gtk::ColumnViewColumn::new(Some("Unit"), Some(col2factory));
@@ -377,7 +415,8 @@ fn fill_timers_list(
 
 fn build_ui(application: &Application) {
     // List of all unit files on the system
-    let unit_files = dbus::list_unit_files();
+    let mut unit_files : Vec<SystemdUnit> = dbus::list_unit_files();
+    unit_files.sort_by(|a,b| a.name.cmp(&b.name));
 
     let services_list = gtk::ListBox::new();
 
