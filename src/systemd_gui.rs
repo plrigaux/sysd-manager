@@ -258,26 +258,25 @@ fn build_popover_menu(menu_button: &gtk::MenuButton, unit_stack: &gtk::Stack) ->
     unit_menu_popover
 }
 
-fn fill_service_list(
-    services_list: &gtk::ListBox,
+fn fill_sysd_unit_list(
+    units_list: &gtk::ListBox,
     services_list_ref: &Rc<Vec<SystemdUnit>>,
     unit_info: &gtk::TextView,
     ablement_switch: &gtk::Switch,
     unit_journal: &gtk::TextView,
     right_header: &gtk::Label,
-  
 ) {
     // NOTE: Services
 
     let mut services_icons = Vec::new();
     for systemd_unit in services_list_ref.iter() {
         let unit_row = create_row(&systemd_unit, &mut services_icons);
-        services_list.append(&unit_row);
+        units_list.append(&unit_row);
     }
 
     {
         let services_list_ref = services_list_ref.clone();
-        let services_list = services_list.clone();
+        let services_list = units_list.clone();
         let unit_info = unit_info.clone();
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal.clone();
@@ -309,79 +308,6 @@ fn fill_service_list(
             println!("STOP connect_row_selected");
         });
     }
-}
-
-fn fill_sokects_list(
-    sockets_list: &gtk::ListBox,
-    unit_files: &Vec<SystemdUnit>,
-    unit_info: &gtk::TextView,
-    ablement_switch: &gtk::Switch,
-    unit_journal: &gtk::TextView,
-    right_header: &gtk::Label,
-) -> Vec<SystemdUnit> {
-    let sockets = dbus::collect_togglable_sockets(&unit_files);
-    let mut sockets_icons = Vec::new();
-    for systemd_unit in sockets.clone() {
-        let unit_row = create_row(&systemd_unit, &mut sockets_icons);
-        sockets_list.append(&unit_row);
-    }
-
-    {
-        let sockets = sockets.clone();
-        let sockets_list = sockets_list.clone();
-        let unit_info = unit_info.clone();
-        let ablement_switch = ablement_switch.clone();
-        let unit_journal = unit_journal.clone();
-        let header = right_header.clone();
-        sockets_list.connect_row_selected(move |_, row| {
-            let index = row.clone().unwrap().index();
-            let socket = &sockets[index as usize];
-            let description = get_unit_info(socket);
-            unit_info.buffer().set_text(description.as_str());
-            ablement_switch.set_active(dbus::get_unit_file_state(socket.name.as_str()));
-            ablement_switch.set_state(true);
-            update_journal(&unit_journal, socket.name.as_str());
-            header.set_label(get_filename(socket.name.as_str()));
-        });
-    }
-    sockets
-}
-
-fn fill_timers_list(
-    timers_list: &gtk::ListBox,
-    unit_files: &Vec<SystemdUnit>,
-    unit_info: &gtk::TextView,
-    ablement_switch: &gtk::Switch,
-    unit_journal: &gtk::TextView,
-    right_header: &gtk::Label,
-) -> Vec<SystemdUnit> {
-    let timers = dbus::collect_togglable_timers(&unit_files);
-    let mut timers_icons = Vec::new();
-    for systemd_unit in timers.clone() {
-        let unit_row = create_row(&systemd_unit, &mut timers_icons);
-
-        timers_list.append(&unit_row);
-    }
-
-    {
-        let timers = timers.clone();
-        let timers_list = timers_list.clone();
-        let unit_info = unit_info.clone();
-        let ablement_switch = ablement_switch.clone();
-        let unit_journal = unit_journal.clone();
-        let header = right_header.clone();
-        timers_list.connect_row_selected(move |_, row| {
-            let index = row.clone().unwrap().index();
-            let timer = &timers[index as usize];
-            let description = get_unit_info(timer);
-            unit_info.buffer().set_text(description.as_str());
-            ablement_switch.set_active(dbus::get_unit_file_state(timer.name.as_str()));
-            ablement_switch.set_state(true);
-            update_journal(&unit_journal, timer.name.as_str());
-            header.set_label(get_filename(timer.name.as_str()));
-        });
-    }
-    timers
 }
 
 fn build_ui(application: &Application) {
@@ -639,19 +565,18 @@ fn build_ui(application: &Application) {
 
     let services_ = dbus::collect_togglable_services(&unit_files);
     let services_ref = Rc::new(services_);
-    fill_service_list(
+    fill_sysd_unit_list(
         &services_list,
         &services_ref,
         &unit_info,
         &ablement_switch,
         &unit_journal_view,
         &right_bar_label,
-      
     );
 
     let sockets_ = dbus::collect_togglable_sockets(&unit_files);
     let sockets_ref = Rc::new(sockets_);
-    fill_service_list(
+    fill_sysd_unit_list(
         &sockets_list,
         &sockets_ref,
         &unit_info,
@@ -662,7 +587,7 @@ fn build_ui(application: &Application) {
 
     let timer_ = dbus::collect_togglable_timers(&unit_files);
     let timers_ref = Rc::new(timer_);
-    fill_service_list(
+    fill_sysd_unit_list(
         &timers_list,
         &timers_ref,
         &unit_info,
@@ -784,30 +709,26 @@ fn build_ui(application: &Application) {
         let timers_icons = timers_icons.clone(); */
         let unit_stack = unit_stack.clone();
         start_button.connect_clicked(move |_| {
-            match unit_stack.visible_child_name().unwrap().as_str() {
+            let unit_option = match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
-                    let service = &services_ref[index as usize];
-                    if let None = dbus::start_unit(&service.full_name()) {
-                        //update_icon(&services_icons[index as usize], true);
-                    }
+                    let service = services_ref.get(index as usize).unwrap();
+                    Some((index, service, services_list.clone()))
                 }
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
                     let socket = &sockets_ref[index as usize];
-                    if let None = dbus::start_unit(&socket.full_name()) {
-                        //update_icon(&sockets_icons[index as usize], true);
-                    }
+                    Some((index, socket, sockets_list.clone()))
                 }
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
                     let timer = &timers_ref[index as usize];
-                    if let None = dbus::start_unit(&timer.full_name()) {
-                        //update_icon(&timers_icons[index as usize], true);
-                    }
+                    Some((index, timer, timers_list.clone()))
                 }
-                _ => (),
-            }
+                _ => None,
+            };
+
+            change_status_icon(unit_option, ICON_YES,dbus::start_unit);
         });
     }
 
@@ -828,26 +749,22 @@ fn build_ui(application: &Application) {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
                     let service = services_ref.get(index as usize).unwrap();
-                    Some((index, service))
+                    Some((index, service, services_list.clone()))
                 }
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
                     let socket = &sockets_ref[index as usize];
-                    Some((index, socket))
+                    Some((index, socket, sockets_list.clone()))
                 }
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
                     let timer = &timers[index as usize];
-                    Some((index, timer))
+                    Some((index, timer, timers_list.clone()))
                 }
                 _ => None,
             };
 
-            if let Some((_, sysd_unit)) = unit_option {
-                if let None = dbus::stop_unit(&sysd_unit.full_name()) {
-                    //update_icon(&services_icons[index as usize], false);
-                }
-            }
+            change_status_icon(unit_option, ICON_NO, dbus::stop_unit);
         });
     }
 
@@ -873,7 +790,9 @@ fn build_ui(application: &Application) {
                         .unwrap();
                     &service.name
                 }
-                "Sockets" => &sockets_ref[sockets_list.selected_row().unwrap().index() as usize].name,
+                "Sockets" => {
+                    &sockets_ref[sockets_list.selected_row().unwrap().index() as usize].name
+                }
                 "Timers" => &timers_ref[timers_list.selected_row().unwrap().index() as usize].name,
                 _ => unreachable!(),
             };
@@ -905,4 +824,21 @@ fn build_ui(application: &Application) {
     });
 
     gtk::main(); */
+}
+
+fn change_status_icon(unit_option: Option<(i32, &SystemdUnit, gtk::ListBox)>, icon_name : &str, callback : fn(&str) -> Option<String>) {
+    if let Some((_, sysd_unit, selected_list_box)) = unit_option {
+        let full_name = &sysd_unit.full_name();
+        if let None = callback(full_name) {
+            let list_row = selected_list_box.selected_row().unwrap();
+            let widget: gtk::Widget = list_row.child().unwrap();
+            match widget.downcast::<gtk::CenterBox>() {
+                Ok(center_box) => {
+                    let icon = gtk::Image::from_icon_name(icon_name);
+                    center_box.set_end_widget(Some(&icon));
+                }
+                Err(_w) => println!("This row is not a CenterBox"),
+            }
+        }
+    }
 }

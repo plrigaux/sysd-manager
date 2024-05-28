@@ -18,7 +18,7 @@ fn dbus_message(function: &str) -> Message {
 fn dbus_connect(message: Message) -> Result<Message, Error> {
     let connection = dbus::ffidisp::Connection::get_private(dbus::ffidisp::BusType::System)?;
 
-    connection.send_with_reply_and_block(message, 4000)
+    connection.send_with_reply_and_block(message, 30000)
 }
 
 #[derive(Clone, Debug)]
@@ -121,6 +121,7 @@ impl UnitState {
 
 /// Takes the dbus message as input and maps the information to a `Vec<SystemdUnit>`.
 fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
+    println!("parse_message");
     let MessageItem::Array(array) = message_item else {
         eprintln!("Malformed message");
         return vec![];
@@ -152,6 +153,10 @@ fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
 
             let state = UnitState::new(&status);
             let utype = UnitType::new(system_type);
+
+            if name.eq("jackett") {
+                println!("{systemd_unit} {status} {system_type}")
+            }
             systemd_units.push(SystemdUnit {
                 name: name.to_owned(),
                 state,
