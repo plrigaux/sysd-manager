@@ -24,7 +24,6 @@ fn dbus_connect(message: Message) -> Result<Message, Error> {
 #[derive(Clone, Debug)]
 pub struct SystemdUnit {
     pub name: String,
-    pub prefix: String,
     pub state: UnitState,
     pub utype: UnitType,
     pub path: String,
@@ -135,7 +134,7 @@ fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
         };
 
         if struct_value.len() >= 2 {
-            let Some(MessageItem::Str(service)) = struct_value.get(0) else {
+            let Some(MessageItem::Str(systemd_unit)) = struct_value.get(0) else {
                 continue;
             };
 
@@ -143,7 +142,7 @@ fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
                 continue;
             };
 
-            let Some((prefix, name_type)) = service.rsplit_once('/') else {
+            let Some((_prefix, name_type)) = systemd_unit.rsplit_once('/') else {
                 continue;
             };
 
@@ -155,10 +154,9 @@ fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
             let utype = UnitType::new(system_type);
             systemd_units.push(SystemdUnit {
                 name: name.to_owned(),
-                prefix: prefix.to_owned(),
                 state,
                 utype,
-                path: service.to_owned(),
+                path: systemd_unit.to_owned(),
             });
         }
     }
@@ -203,13 +201,13 @@ pub fn get_unit_file_state(path: &str) -> bool {
 
 /// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing services which can be enabled and
 /// disabled.
-pub fn collect_togglable_services(units: &[SystemdUnit]) -> Vec<SystemdUnit> {
+pub fn collect_togglable_services(units: &Vec<SystemdUnit>) -> Vec<SystemdUnit> {
     units
         .iter()
         .filter(|x| {
             x.utype == UnitType::Service
                 && (x.state == UnitState::Enabled || x.state == UnitState::Disabled)
-                && !x.name.contains("/etc/")
+               // && !x.path.contains("/etc/")
         })
         .cloned()
         .collect()

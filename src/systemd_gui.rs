@@ -1,4 +1,6 @@
 use gtk;
+
+use gtk::gdk::Cursor;
 use gtk::prelude::*;
 use systemd::analyze::Analyze;
 use systemd::dbus;
@@ -19,9 +21,10 @@ use gtk::{Application, ApplicationWindow, Orientation};
 use std::cell::Ref;
 use std::fs;
 use std::io::Read;
+use std::io::Write;
 use std::path::Path;
 use std::process::Command;
-
+use std::rc::Rc;
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
 
@@ -40,7 +43,7 @@ const ICON_NO: &str = "window-close-symbolic";
 /// Create a `gtk::ListboxRow` and add it to the `gtk::ListBox`, and then add the `gtk::Image` to a vector so that we can later modify
 /// it when the state changes.
 fn create_row(systemd_unit: &SystemdUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
-    let unit_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    let unit_box = gtk::CenterBox::new();
     let unit_label = gtk::Label::new(Some(&systemd_unit.name));
     let image = if systemd_unit.state == UnitState::Enabled {
         gtk::Image::from_icon_name(ICON_YES)
@@ -48,8 +51,8 @@ fn create_row(systemd_unit: &SystemdUnit, state_icons: &mut Vec<gtk::Image>) -> 
         gtk::Image::from_icon_name(ICON_NO)
     };
 
-    unit_box.append(&unit_label);
-    unit_box.append(&image);
+    unit_box.set_start_widget(Some(&unit_label));
+    unit_box.set_end_widget(Some(&image));
 
     let unit_row = gtk::ListBoxRow::builder().child(&unit_box).build();
 
@@ -257,40 +260,55 @@ fn build_popover_menu(menu_button: &gtk::MenuButton, unit_stack: &gtk::Stack) ->
 
 fn fill_service_list(
     services_list: &gtk::ListBox,
-    unit_files: &Vec<SystemdUnit>,
+    services_list_ref: &Rc<Vec<SystemdUnit>>,
     unit_info: &gtk::TextView,
     ablement_switch: &gtk::Switch,
     unit_journal: &gtk::TextView,
     right_header: &gtk::Label,
-) -> Vec<SystemdUnit> {
+  
+) {
     // NOTE: Services
-    let services = dbus::collect_togglable_services(&unit_files);
+
     let mut services_icons = Vec::new();
-    for systemd_unit in services.clone() {
+    for systemd_unit in services_list_ref.iter() {
         let unit_row = create_row(&systemd_unit, &mut services_icons);
         services_list.append(&unit_row);
     }
 
     {
-        let services = services.clone();
+        let services_list_ref = services_list_ref.clone();
         let services_list = services_list.clone();
         let unit_info = unit_info.clone();
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal.clone();
         let header = right_header.clone();
-        services_list.connect_row_selected(move |_, row| {
-            let index = row.clone().unwrap().index();
-            let service = &services[index as usize];
-            let description = get_unit_info(service);
-            unit_info.buffer().set_text(description.as_str());
-            ablement_switch.set_active(dbus::get_unit_file_state(service.name.as_str()));
-            ablement_switch.set_state(ablement_switch.is_active());
-            update_journal(&unit_journal, service.name.as_str());
-            header.set_label(get_filename(service.name.as_str()));
+        //let window = window.clone();
+        let wait = Cursor::from_name("wait", None);
+        services_list.connect_row_selected(move |service_list_box, row| {
+            println!("Start connect_row_selected");
+            service_list_box.set_cursor(wait.as_ref());
+
+            match row {
+                Some(list_row) => {
+                    let index = list_row.index();
+                    let sysd_unit = services_list_ref.get(index as usize).unwrap();
+                    let description = get_unit_info(&sysd_unit);
+                    unit_info.buffer().set_text(&description);
+                    ablement_switch.set_active(dbus::get_unit_file_state(sysd_unit.name.as_str()));
+                    ablement_switch.set_state(ablement_switch.is_active());
+
+                    update_journal(&unit_journal, sysd_unit.name.as_str());
+                    header.set_label(get_filename(sysd_unit.name.as_str()));
+                }
+                None => {
+                    println!("no row - tbc")
+                }
+            }
+
+            service_list_box.set_cursor_from_name(None);
+            println!("STOP connect_row_selected");
         });
     }
-
-    services
 }
 
 fn fill_sokects_list(
@@ -435,7 +453,7 @@ fn build_ui(application: &Application) {
         .child(&unit_info)
         .build();
 
-    let save_button = gtk::Button::builder()
+    let save_unit_file_button = gtk::Button::builder()
         .label("gtk-save")
         .focusable(true)
         .receives_default(true)
@@ -446,7 +464,7 @@ fn build_ui(application: &Application) {
         .build();
 
     unit_file_box.append(&unit_file_stack_scrolled_window);
-    unit_file_box.append(&save_button);
+    unit_file_box.append(&save_unit_file_button);
 
     let unit_journal_view = gtk::TextView::builder()
         .focusable(true)
@@ -619,27 +637,34 @@ fn build_ui(application: &Application) {
         .titlebar(&title_bar)
         .build();
 
-    let services = fill_service_list(
+    let services_ = dbus::collect_togglable_services(&unit_files);
+    let services_ref = Rc::new(services_);
+    fill_service_list(
         &services_list,
-        &unit_files,
+        &services_ref,
         &unit_info,
         &ablement_switch,
         &unit_journal_view,
         &right_bar_label,
+      
     );
 
-    let sockets = fill_sokects_list(
+    let sockets_ = dbus::collect_togglable_sockets(&unit_files);
+    let sockets_ref = Rc::new(sockets_);
+    fill_service_list(
         &sockets_list,
-        &unit_files,
+        &sockets_ref,
         &unit_info,
         &ablement_switch,
         &unit_journal_view,
         &right_bar_label,
     );
 
-    let timers = fill_timers_list(
+    let timer_ = dbus::collect_togglable_timers(&unit_files);
+    let timers_ref = Rc::new(timer_);
+    fill_service_list(
         &timers_list,
-        &unit_files,
+        &timers_ref,
         &unit_info,
         &ablement_switch,
         &unit_journal_view,
@@ -648,18 +673,18 @@ fn build_ui(application: &Application) {
 
     {
         // NOTE: Implement the {dis, en}able button
-        let services = services.clone();
+        let services_ref = services_ref.clone();
         let services_list = services_list.clone();
-        let sockets = sockets.clone();
+        let sockets_ref = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
-        let timers = timers.clone();
+        let timer_ref = timers_ref.clone();
         let timers_list = timers_list.clone();
         let unit_stack = unit_stack.clone();
         ablement_switch.connect_state_set(move |switch, enabled| {
             match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
-                    let service = &services[index as usize];
+                    let service = &services_ref.get(index as usize).unwrap();
                     let service_path = Path::new(service.name.as_str())
                         .file_name()
                         .unwrap()
@@ -679,7 +704,7 @@ fn build_ui(application: &Application) {
                 }
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
-                    let socket = &sockets[index as usize];
+                    let socket = &sockets_ref[index as usize];
                     let socket_path = get_filename(socket.name.as_str());
                     if enabled && !dbus::get_unit_file_state(socket.name.as_str()) {
                         dbus::enable_unit_files(socket_path);
@@ -692,7 +717,7 @@ fn build_ui(application: &Application) {
                 }
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
-                    let timer = &timers[index as usize];
+                    let timer = &timer_ref[index as usize];
                     let timer_path = Path::new(timer.name.as_str())
                         .file_name()
                         .unwrap()
@@ -715,11 +740,11 @@ fn build_ui(application: &Application) {
 
     {
         // NOTE: Journal Refresh Button
-        let services = services.clone();
+        let services_ref = services_ref.clone();
         let services_list = services_list.clone();
-        let sockets = sockets.clone();
+        let sockets = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
-        let timers = timers.clone();
+        let timers = timers_ref.clone();
         let timers_list = timers_list.clone();
         let unit_stack = unit_stack.clone();
         let refresh_button = refresh_log_button.clone();
@@ -728,7 +753,7 @@ fn build_ui(application: &Application) {
             match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
-                    let service = &services[index as usize];
+                    let service = &services_ref.get(index as usize).unwrap();
                     update_journal(&unit_journal, service.name.as_str());
                 }
                 "Sockets" => {
@@ -748,11 +773,11 @@ fn build_ui(application: &Application) {
 
     {
         // NOTE: Implement the start button
-        let services = services.clone();
+        let services_ref = services_ref.clone();
         let services_list = services_list.clone();
-        let sockets = sockets.clone();
+        let sockets_ref = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
-        let timers = timers.clone();
+        let timers_ref = timers_ref.clone();
         let timers_list = timers_list.clone();
         /*         let services_icons = services_icons.clone();
         let sockets_icons = sockets_icons.clone();
@@ -762,40 +787,22 @@ fn build_ui(application: &Application) {
             match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
-                    let service = &services[index as usize];
-                    if let None = dbus::start_unit(
-                        Path::new(service.name.as_str())
-                            .file_name()
-                            .unwrap()
-                            .to_str()
-                            .unwrap(),
-                    ) {
+                    let service = &services_ref[index as usize];
+                    if let None = dbus::start_unit(&service.full_name()) {
                         //update_icon(&services_icons[index as usize], true);
                     }
                 }
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
-                    let socket = &sockets[index as usize];
-                    if let None = dbus::start_unit(
-                        Path::new(socket.name.as_str())
-                            .file_name()
-                            .unwrap()
-                            .to_str()
-                            .unwrap(),
-                    ) {
+                    let socket = &sockets_ref[index as usize];
+                    if let None = dbus::start_unit(&socket.full_name()) {
                         //update_icon(&sockets_icons[index as usize], true);
                     }
                 }
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
-                    let timer = &timers[index as usize];
-                    if let None = dbus::start_unit(
-                        Path::new(timer.name.as_str())
-                            .file_name()
-                            .unwrap()
-                            .to_str()
-                            .unwrap(),
-                    ) {
+                    let timer = &timers_ref[index as usize];
+                    if let None = dbus::start_unit(&timer.full_name()) {
                         //update_icon(&timers_icons[index as usize], true);
                     }
                 }
@@ -806,435 +813,81 @@ fn build_ui(application: &Application) {
 
     {
         // NOTE: Implement the stop button
-        let services = services.clone();
+        let services_ref = services_ref.clone();
         let services_list = services_list.clone();
-        let sockets = sockets.clone();
+        let sockets_ref = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
-        let timers = timers.clone();
+        let timers = timers_ref.clone();
         let timers_list = timers_list.clone();
         /*         let services_icons = services_icons.clone();
         let sockets_icons = sockets_icons.clone();
         let timers_icons = timers_icons.clone(); */
         let unit_stack = unit_stack.clone();
         stop_button.connect_clicked(move |_| {
-            match unit_stack.visible_child_name().unwrap().as_str() {
+            let unit_option = match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
-                    let service = &services[index as usize];
-                    if let None = dbus::stop_unit(&service.full_name()) {
-                        //update_icon(&services_icons[index as usize], false);
-                    }
+                    let service = services_ref.get(index as usize).unwrap();
+                    Some((index, service))
                 }
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
-                    let socket = &sockets[index as usize];
-                    if let None = dbus::stop_unit(
-                        Path::new(socket.name.as_str())
-                            .file_name()
-                            .unwrap()
-                            .to_str()
-                            .unwrap(),
-                    ) {
-                        //update_icon(&sockets_icons[index as usize], false);
-                    }
+                    let socket = &sockets_ref[index as usize];
+                    Some((index, socket))
                 }
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
                     let timer = &timers[index as usize];
-                    if let None = dbus::stop_unit(
-                        Path::new(timer.name.as_str())
-                            .file_name()
-                            .unwrap()
-                            .to_str()
-                            .unwrap(),
-                    ) {
-                        //update_icon(&timers_icons[index as usize], false);
-                    }
+                    Some((index, timer))
                 }
-                _ => (),
+                _ => None,
+            };
+
+            if let Some((_, sysd_unit)) = unit_option {
+                if let None = dbus::stop_unit(&sysd_unit.full_name()) {
+                    //update_icon(&services_icons[index as usize], false);
+                }
             }
         });
     }
 
-    //window.set_titlebar(None::<&gtk::Box>);
-    /*
-    gtk::init().unwrap_or_else(|_| panic!("tv-renamer: failed to initialize GTK."));
+    {
+        // NOTE: Save Button
+        let unit_info = unit_info.clone();
+        let services_ref = services_ref.clone();
+        let services_list = services_list.clone();
+        let sockets_ref = sockets_ref.clone();
+        let sockets_list = sockets_list.clone();
+        let timers_ref = timers_ref.clone();
+        let timers_list = timers_list.clone();
+        let unit_stack = unit_stack.clone();
+        save_unit_file_button.connect_clicked(move |_| {
+            let buffer = unit_info.buffer();
+            let start = buffer.start_iter();
+            let end = buffer.end_iter();
+            let text = buffer.text(&start, &end, true);
+            let path = match unit_stack.visible_child_name().unwrap().as_str() {
+                "Services" => {
+                    let service = services_ref
+                        .get(services_list.selected_row().unwrap().index() as usize)
+                        .unwrap();
+                    &service.name
+                }
+                "Sockets" => &sockets_ref[sockets_list.selected_row().unwrap().index() as usize].name,
+                "Timers" => &timers_ref[timers_list.selected_row().unwrap().index() as usize].name,
+                _ => unreachable!(),
+            };
+            match fs::OpenOptions::new().write(true).open(&path) {
+                Ok(mut file) => {
+                    if let Err(message) = file.write(text.as_bytes()) {
+                        println!("Unable to write to file: {:?}", message);
+                    }
+                }
+                Err(message) => println!("Unable to open file: {:?}", message),
+            }
+        });
+    }
 
-    let builder = gtk::Builder::from_string(include_str!("interface4.glade"));
-    let window: gtk::Window = builder.object("main_window").unwrap();
-    let unit_stack: gtk::Stack = builder.object("unit_stack").unwrap();
-    let services_list: gtk::ListBox = builder.object("services_list").unwrap();
-    let sockets_list: gtk::ListBox = builder.object("sockets_list").unwrap();
-    let timers_list: gtk::ListBox = builder.object("timers_list").unwrap();
-    let unit_info: gtk::TextView = builder.object("unit_info").unwrap();
-    let ablement_switch: gtk::Switch = builder.object("ablement_switch").unwrap();
-    let start_button: gtk::Button = builder.object("start_button").unwrap();
-    let stop_button: gtk::Button = builder.object("stop_button").unwrap();
-    let save_unit_file: gtk::Button = builder.object("save_button").unwrap();
-    let unit_menu_label: gtk::Label = builder.object("unit_menu_label").unwrap();
-    let unit_popover: gtk::PopoverMenu = builder.object("unit_menu_popover").unwrap();
-    let services_button: gtk::Button = builder.object("services_button").unwrap();
-    let sockets_button: gtk::Button = builder.object("sockets_button").unwrap();
-    let timers_button: gtk::Button = builder.object("timers_button").unwrap();
-    let unit_journal: gtk::TextView = builder.object("unit_journal_view").unwrap();
-    let refresh_log_button: gtk::Button = builder.object("refresh_log_button").unwrap();
-    let right_header: gtk::Label = builder.object("header_service_label").unwrap(); */
-    /*
-       {
-           // NOTE: Services Menu Button
-           let label = unit_menu_label.clone();
-           let stack = unit_stack.clone();
-           let popover = unit_popover.clone();
-           services_button.connect_clicked(move |_| {
-               stack.set_visible_child_name("Services");
-               label.set_text("Services");
-               popover.set_visible(false);
-           });
-       }
-
-       {
-           // NOTE: Sockets Menu Button
-           let label = unit_menu_label.clone();
-           let stack = unit_stack.clone();
-           let popover = unit_popover.clone();
-           sockets_button.connect_clicked(move |_| {
-               stack.set_visible_child_name("Sockets");
-               label.set_text("Sockets");
-               popover.set_visible(false);
-           });
-       }
-
-       {
-           // NOTE: Timers Menu Button
-           let label = unit_menu_label.clone();
-           let stack = unit_stack.clone();
-           let popover = unit_popover.clone();
-           timers_button.connect_clicked(move |_| {
-               stack.set_visible_child_name("Timers");
-               label.set_text("Timers");
-               popover.set_visible(false);
-           });
-       }
-
-       // Setup the Analyze stack
-       setup_systemd_analyze(&builder);
-
-       // List of all unit files on the system
-       let unit_files = dbus::list_unit_files();
-
-       // NOTE: Services
-       let services = dbus::collect_togglable_services(&unit_files);
-       let mut services_icons = Vec::new();
-       for service in services.clone() {
-           let mut unit_row = gtk::ListBoxRow::new();
-           create_row(
-               &mut unit_row,
-               Path::new(service.name.as_str()),
-               service.state,
-               &mut services_icons,
-           );
-           services_list.insert(&unit_row, -1);
-       }
-
-       {
-           let services = services.clone();
-           let services_list = services_list.clone();
-           let unit_info = unit_info.clone();
-           let ablement_switch = ablement_switch.clone();
-           let unit_journal = unit_journal.clone();
-           let header = right_header.clone();
-           services_list.connect_row_selected(move |_, row| {
-               let index = row.clone().unwrap().index();
-               let service = &services[index as usize];
-               let description = get_unit_info(service.name.as_str());
-               unit_info.buffer().set_text(description.as_str());
-               ablement_switch.set_active(dbus::get_unit_file_state(service.name.as_str()));
-               ablement_switch.set_state(ablement_switch.is_active());
-               update_journal(&unit_journal, service.name.as_str());
-               header.set_label(get_filename(service.name.as_str()));
-           });
-       }
-
-       // NOTE: Sockets
-       let sockets = dbus::collect_togglable_sockets(&unit_files);
-       let mut sockets_icons = Vec::new();
-       for socket in sockets.clone() {
-           let mut unit_row = gtk::ListBoxRow::new();
-           create_row(
-               &mut unit_row,
-               Path::new(socket.name.as_str()),
-               socket.state,
-               &mut sockets_icons,
-           );
-           sockets_list.insert(&unit_row, -1);
-       }
-
-       {
-           let sockets = sockets.clone();
-           let sockets_list = sockets_list.clone();
-           let unit_info = unit_info.clone();
-           let ablement_switch = ablement_switch.clone();
-           let unit_journal = unit_journal.clone();
-           let header = right_header.clone();
-           sockets_list.connect_row_selected(move |_, row| {
-               let index = row.clone().unwrap().index();
-               let socket = &sockets[index as usize];
-               let description = get_unit_info(socket.name.as_str());
-               unit_info.buffer().set_text(description.as_str());
-               ablement_switch.set_active(dbus::get_unit_file_state(socket.name.as_str()));
-               ablement_switch.set_state(true);
-               update_journal(&unit_journal, socket.name.as_str());
-               header.set_label(get_filename(socket.name.as_str()));
-           });
-       }
-
-       // NOTE: Timers
-       let timers = dbus::collect_togglable_timers(&unit_files);
-       let mut timers_icons = Vec::new();
-       for timer in timers.clone() {
-           let mut unit_row = gtk::ListBoxRow::new();
-           create_row(
-               &mut unit_row,
-               Path::new(timer.name.as_str()),
-               timer.state,
-               &mut timers_icons,
-           );
-           timers_list.insert(&unit_row, -1);
-       }
-
-       {
-           let timers = timers.clone();
-           let timers_list = timers_list.clone();
-           let unit_info = unit_info.clone();
-           let ablement_switch = ablement_switch.clone();
-           let unit_journal = unit_journal.clone();
-           let header = right_header.clone();
-           timers_list.connect_row_selected(move |_, row| {
-               let index = row.clone().unwrap().index();
-               let timer = &timers[index as usize];
-               let description = get_unit_info(timer.name.as_str());
-               unit_info.buffer().set_text(description.as_str());
-               ablement_switch.set_active(dbus::get_unit_file_state(timer.name.as_str()));
-               ablement_switch.set_state(true);
-               update_journal(&unit_journal, timer.name.as_str());
-               header.set_label(get_filename(timer.name.as_str()));
-           });
-       }
-
-       {
-           // NOTE: Implement the {dis, en}able button
-           let services = services.clone();
-           let services_list = services_list.clone();
-           let sockets = sockets.clone();
-           let sockets_list = sockets_list.clone();
-           let timers = timers.clone();
-           let timers_list = timers_list.clone();
-           let unit_stack = unit_stack.clone();
-           /* ablement_switch.connect_state_set(move |switch, enabled| {
-               match unit_stack.visible_child_name().unwrap().as_str() {
-                   "Services" => {
-                       let index = services_list.selected_row().unwrap().index();
-                       let service = &services[index as usize];
-                       let service_path = Path::new(service.name.as_str())
-                           .file_name()
-                           .unwrap()
-                           .to_str()
-                           .unwrap();
-                       if enabled && !dbus::get_unit_file_state(service.name.as_str()) {
-                           dbus::enable_unit_files(service_path);
-                           switch.set_state(true);
-
-                       } else if !enabled && dbus::get_unit_file_state(service.name.as_str()) {
-                           dbus::disable_unit_files(service_path);
-                           switch.set_state(false);
-                       }
-                   }
-                   "Sockets" => {
-                       let index = sockets_list.selected_row().unwrap().index();
-                       let socket = &sockets[index as usize];
-                       let socket_path = get_filename(socket.name.as_str());
-                       if enabled && !dbus::get_unit_file_state(socket.name.as_str()) {
-                           dbus::enable_unit_files(socket_path);
-                           switch.set_state(true);
-                       } else if !enabled && dbus::get_unit_file_state(socket.name.as_str()) {
-                           dbus::disable_unit_files(socket_path);
-                           switch.set_state(false);
-                       }
-                   }
-                   "Timers" => {
-                       let index = timers_list.selected_row().unwrap().index();
-                       let timer = &timers[index as usize];
-                       let timer_path = Path::new(timer.name.as_str())
-                           .file_name()
-                           .unwrap()
-                           .to_str()
-                           .unwrap();
-                       if enabled && !dbus::get_unit_file_state(timer.name.as_str()) {
-                           dbus::enable_unit_files(timer_path);
-                           switch.set_state(true);
-                       } else if !enabled && dbus::get_unit_file_state(timer.name.as_str()) {
-                           dbus::disable_unit_files(timer_path);
-                           switch.set_state(false);
-                       }
-                   }
-                   _ => unreachable!(),
-               }
-               //gtk::Inhibit(true)
-           }); */
-       }
-
-       {
-           // NOTE: Implement the start button
-           let services = services.clone();
-           let services_list = services_list.clone();
-           let sockets = sockets.clone();
-           let sockets_list = sockets_list.clone();
-           let timers = timers.clone();
-           let timers_list = timers_list.clone();
-           let services_icons = services_icons.clone();
-           let sockets_icons = sockets_icons.clone();
-           let timers_icons = timers_icons.clone();
-           let unit_stack = unit_stack.clone();
-           start_button.connect_clicked(move |_| {
-               match unit_stack.visible_child_name().unwrap().as_str() {
-                   "Services" => {
-                       let index = services_list.selected_row().unwrap().index();
-                       let service = &services[index as usize];
-                       if let None = dbus::start_unit(
-                           Path::new(service.name.as_str())
-                               .file_name()
-                               .unwrap()
-                               .to_str()
-                               .unwrap(),
-                       ) {
-                           update_icon(&services_icons[index as usize], true);
-                       }
-                   }
-                   "Sockets" => {
-                       let index = sockets_list.selected_row().unwrap().index();
-                       let socket = &sockets[index as usize];
-                       if let None = dbus::start_unit(
-                           Path::new(socket.name.as_str())
-                               .file_name()
-                               .unwrap()
-                               .to_str()
-                               .unwrap(),
-                       ) {
-                           update_icon(&sockets_icons[index as usize], true);
-                       }
-                   }
-                   "Timers" => {
-                       let index = timers_list.selected_row().unwrap().index();
-                       let timer = &timers[index as usize];
-                       if let None = dbus::start_unit(
-                           Path::new(timer.name.as_str())
-                               .file_name()
-                               .unwrap()
-                               .to_str()
-                               .unwrap(),
-                       ) {
-                           update_icon(&timers_icons[index as usize], true);
-                       }
-                   }
-                   _ => (),
-               }
-           });
-       }
-
-       {
-           // NOTE: Implement the stop button
-           let services = services.clone();
-           let services_list = services_list.clone();
-           let sockets = sockets.clone();
-           let sockets_list = sockets_list.clone();
-           let timers = timers.clone();
-           let timers_list = timers_list.clone();
-           let services_icons = services_icons.clone();
-           let sockets_icons = sockets_icons.clone();
-           let timers_icons = timers_icons.clone();
-           let unit_stack = unit_stack.clone();
-           stop_button.connect_clicked(move |_| {
-               match unit_stack.visible_child_name().unwrap().as_str() {
-                   "Services" => {
-                       let index = services_list.selected_row().unwrap().index();
-                       let service = &services[index as usize];
-                       if let None = dbus::stop_unit(
-                           Path::new(service.name.as_str())
-                               .file_name()
-                               .unwrap()
-                               .to_str()
-                               .unwrap(),
-                       ) {
-                           update_icon(&services_icons[index as usize], false);
-                       }
-                   }
-                   "Sockets" => {
-                       let index = sockets_list.selected_row().unwrap().index();
-                       let socket = &sockets[index as usize];
-                       if let None = dbus::stop_unit(
-                           Path::new(socket.name.as_str())
-                               .file_name()
-                               .unwrap()
-                               .to_str()
-                               .unwrap(),
-                       ) {
-                           update_icon(&sockets_icons[index as usize], false);
-                       }
-                   }
-                   "Timers" => {
-                       let index = timers_list.selected_row().unwrap().index();
-                       let timer = &timers[index as usize];
-                       if let None = dbus::stop_unit(
-                           Path::new(timer.name.as_str())
-                               .file_name()
-                               .unwrap()
-                               .to_str()
-                               .unwrap(),
-                       ) {
-                           update_icon(&timers_icons[index as usize], false);
-                       }
-                   }
-                   _ => (),
-               }
-           });
-       }
-
-       {
-           // NOTE: Save Button
-           let unit_info = unit_info.clone();
-           let services = services.clone();
-           let services_list = services_list.clone();
-           let sockets = sockets.clone();
-           let sockets_list = sockets_list.clone();
-           let timers = timers.clone();
-           let timers_list = timers_list.clone();
-           let unit_stack = unit_stack.clone();
-           save_unit_file.connect_clicked(move |_| {
-               let buffer = unit_info.buffer();
-               let start = buffer.start_iter();
-               let end = buffer.end_iter();
-               let text = buffer.text(&start, &end, true);
-               let path = match unit_stack.visible_child_name().unwrap().as_str() {
-                   "Services" => {
-                       &services[services_list.selected_row().unwrap().index() as usize].name
-                   }
-                   "Sockets" => &sockets[sockets_list.selected_row().unwrap().index() as usize].name,
-                   "Timers" => &timers[timers_list.selected_row().unwrap().index() as usize].name,
-                   _ => unreachable!(),
-               };
-               match fs::OpenOptions::new().write(true).open(&path) {
-                   Ok(mut file) => {
-                       if let Err(message) = file.write(text.as_bytes()) {
-                           println!("Unable to write to file: {:?}", message);
-                       }
-                   }
-                   Err(message) => println!("Unable to open file: {:?}", message),
-               }
-           });
-       }
-
-
-    */
     window.present();
 
     /*     // Quit the program when the program has been exited
