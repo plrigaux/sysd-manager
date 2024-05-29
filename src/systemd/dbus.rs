@@ -24,7 +24,7 @@ fn dbus_connect(message: Message) -> Result<Message, Error> {
 #[derive(Clone, Debug)]
 pub struct SystemdUnit {
     pub name: String,
-    pub state: UnitState,
+    pub state: EnablementStatus,
     pub utype: UnitType,
     pub path: String,
 }
@@ -77,7 +77,7 @@ impl UnitType {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum UnitState {
+pub enum EnablementStatus {
     Bad,
     Disabled,
     Enabled,
@@ -90,30 +90,31 @@ pub enum UnitState {
     Trancient,
     Unknown,
 }
-impl UnitState {
+impl EnablementStatus {
     /// Takes the string containing the state information from the dbus message and converts it
     /// into a UnitType by matching the first character.
-    pub fn new(system_type: &str) -> UnitState {
-        let c = if system_type.is_empty() {
-            'Z'
-        } else {
-            system_type.chars().next().unwrap()
-        };
+    pub fn new(enablement_status: &str) -> EnablementStatus {
+        if enablement_status.is_empty() {
+            eprintln!("Empty Status: {}", enablement_status);
+            return EnablementStatus::Unknown;
+        }
+
+        let c = enablement_status.chars().next().unwrap();
 
         match c {
-            'a' => UnitState::Alias,
-            's' => UnitState::Static,
-            'd' => UnitState::Disabled,
-            'e' => UnitState::Enabled,
-            'i' => UnitState::Indirect,
-            'l' => UnitState::Linked,
-            'm' => UnitState::Masked,
-            'b' => UnitState::Bad,
-            'g' => UnitState::Generated,
-            't' => UnitState::Trancient,
+            'a' => EnablementStatus::Alias,
+            's' => EnablementStatus::Static,
+            'd' => EnablementStatus::Disabled,
+            'e' => EnablementStatus::Enabled,
+            'i' => EnablementStatus::Indirect,
+            'l' => EnablementStatus::Linked,
+            'm' => EnablementStatus::Masked,
+            'b' => EnablementStatus::Bad,
+            'g' => EnablementStatus::Generated,
+            't' => EnablementStatus::Trancient,
             _ => {
-                println!("Unknown State: {}", system_type);
-                UnitState::Unknown
+                println!("Unknown State: {}", enablement_status);
+                EnablementStatus::Unknown
             }
         }
     }
@@ -151,7 +152,7 @@ fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
                 continue;
             };
 
-            let state = UnitState::new(&status);
+            let state = EnablementStatus::new(&status);
             let utype = UnitType::new(system_type);
 
             if name.eq("jackett") {
@@ -194,14 +195,30 @@ fn list_unit_files_message() -> Vec<MessageItem> {
     }
 }
 
+pub fn get_unit_file_state(sytemd_unit: &SystemdUnit) -> EnablementStatus {
+    return get_unit_file_state_path(sytemd_unit.full_name())
+}
+
 /// Returns the current enablement status of the unit
-pub fn get_unit_file_state(path: &str) -> bool {
-    for unit in list_unit_files() {
-        if unit.name.as_str() == path {
-            return unit.state == UnitState::Enabled;
+fn get_unit_file_state_path(unit_file: &str) -> EnablementStatus {
+    let mut message = dbus_message("GetUnitFileState");
+    let message_items = &[MessageItem::Str(unit_file.to_owned())];
+    message.append_items(message_items);
+
+    match dbus_connect(message) {
+        Ok(m) => {
+            if let Some(enablement_status) = m.get1::<String>() {
+                EnablementStatus::new(&enablement_status)
+            } else {
+                eprintln!("Something wrong");
+                EnablementStatus::Unknown
+            }
+        }
+        Err(e) => {
+            eprintln!("Error! {}", e);
+            EnablementStatus::Unknown
         }
     }
-    false
 }
 
 /// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing services which can be enabled and
@@ -211,8 +228,8 @@ pub fn collect_togglable_services(units: &Vec<SystemdUnit>) -> Vec<SystemdUnit> 
         .iter()
         .filter(|x| {
             x.utype == UnitType::Service
-                && (x.state == UnitState::Enabled || x.state == UnitState::Disabled)
-               // && !x.path.contains("/etc/")
+                && (x.state == EnablementStatus::Enabled || x.state == EnablementStatus::Disabled)
+            // && !x.path.contains("/etc/")
         })
         .cloned()
         .collect()
@@ -225,7 +242,7 @@ pub fn collect_togglable_sockets(units: &[SystemdUnit]) -> Vec<SystemdUnit> {
         .iter()
         .filter(|x| {
             x.utype == UnitType::Socket
-                && (x.state == UnitState::Enabled || x.state == UnitState::Disabled)
+                && (x.state == EnablementStatus::Enabled || x.state == EnablementStatus::Disabled)
         })
         .cloned()
         .collect()
@@ -238,7 +255,7 @@ pub fn collect_togglable_timers(units: &[SystemdUnit]) -> Vec<SystemdUnit> {
         .iter()
         .filter(|x| {
             x.utype == UnitType::Timer
-                && (x.state == UnitState::Enabled || x.state == UnitState::Disabled)
+                && (x.state == EnablementStatus::Enabled || x.state == EnablementStatus::Disabled)
         })
         .cloned()
         .collect()
@@ -394,5 +411,32 @@ mod tests {
     #[test]
     fn stop_service_test() {
         stop_unit("jacket.service");
+    }
+
+    #[test]
+    fn dbus_test() {
+        // let file: &str = "/etc/systemd/system/jackett.service";
+        let file1: &str = "jackett.service";
+        let mut message = dbus_message("GetUnitFileState");
+
+        let message_items = &[MessageItem::Str(file1.to_owned())];
+        message.append_items(message_items);
+
+        match dbus_connect(message) {
+            Ok(m) => println!("{:?}", m.get1::<String>()),
+            Err(e) => {
+                eprintln!("Error! {}", e);
+            }
+        }
+    }
+
+    #[test]
+    fn test_get_unit_file_state() {
+        // let file: &str = "/etc/systemd/system/jackett.service";
+        let file1: &str = "jackett.service";
+
+        let status = get_unit_file_state_path(file1);
+        println!("Status: {:?}", status);
+        
     }
 }

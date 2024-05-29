@@ -3,13 +3,13 @@ use gtk;
 use gtk::gdk::Cursor;
 use gtk::prelude::*;
 use systemd::analyze::Analyze;
-use systemd::dbus;
-use systemd::dbus::UnitState;
+
+
 
 //use gdk::Key;
 
 use crate::grid_cell::{Entry, GridCell};
-use crate::systemd::dbus::SystemdUnit;
+use crate::systemd::dbus::{self, EnablementStatus, SystemdUnit};
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};
@@ -45,7 +45,7 @@ const ICON_NO: &str = "window-close-symbolic";
 fn create_row(systemd_unit: &SystemdUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
     let unit_box = gtk::CenterBox::new();
     let unit_label = gtk::Label::new(Some(&systemd_unit.name));
-    let image = if systemd_unit.state == UnitState::Enabled {
+    let image = if systemd_unit.state == EnablementStatus::Enabled {
         gtk::Image::from_icon_name(ICON_YES)
     } else {
         gtk::Image::from_icon_name(ICON_NO)
@@ -293,7 +293,9 @@ fn fill_sysd_unit_list(
                     let sysd_unit = services_list_ref.get(index as usize).unwrap();
                     let description = get_unit_info(&sysd_unit);
                     unit_info.buffer().set_text(&description);
-                    ablement_switch.set_active(dbus::get_unit_file_state(sysd_unit.name.as_str()));
+                    ablement_switch.set_active(
+                        dbus::get_unit_file_state(sysd_unit) == EnablementStatus::Enabled
+                    );
                     ablement_switch.set_state(ablement_switch.is_active());
 
                     update_journal(&unit_journal, sysd_unit.name.as_str());
@@ -615,11 +617,11 @@ fn build_ui(application: &Application) {
                         .unwrap()
                         .to_str()
                         .unwrap();
-                    if enabled && !dbus::get_unit_file_state(service.name.as_str()) {
+                    if enabled && dbus::get_unit_file_state(service) != EnablementStatus::Enabled {
                         dbus::enable_unit_files(service_path);
                         switch.set_state(true);
                         Propagation::Proceed
-                    } else if !enabled && dbus::get_unit_file_state(service.name.as_str()) {
+                    } else if !enabled && dbus::get_unit_file_state(service) == EnablementStatus::Enabled {
                         dbus::disable_unit_files(service_path);
                         switch.set_state(false);
                         Propagation::Proceed
@@ -631,10 +633,10 @@ fn build_ui(application: &Application) {
                     let index = sockets_list.selected_row().unwrap().index();
                     let socket = &sockets_ref[index as usize];
                     let socket_path = get_filename(socket.name.as_str());
-                    if enabled && !dbus::get_unit_file_state(socket.name.as_str()) {
+                    if enabled && dbus::get_unit_file_state(socket) != EnablementStatus::Enabled {
                         dbus::enable_unit_files(socket_path);
                         switch.set_state(true);
-                    } else if !enabled && dbus::get_unit_file_state(socket.name.as_str()) {
+                    } else if !enabled && dbus::get_unit_file_state(socket) == EnablementStatus::Enabled {
                         dbus::disable_unit_files(socket_path);
                         switch.set_state(false);
                     }
@@ -648,10 +650,10 @@ fn build_ui(application: &Application) {
                         .unwrap()
                         .to_str()
                         .unwrap();
-                    if enabled && !dbus::get_unit_file_state(timer.name.as_str()) {
+                    if enabled && dbus::get_unit_file_state(timer) != EnablementStatus::Enabled {
                         dbus::enable_unit_files(timer_path);
                         switch.set_state(true);
-                    } else if !enabled && dbus::get_unit_file_state(timer.name.as_str()) {
+                    } else if !enabled && dbus::get_unit_file_state(timer) == EnablementStatus::Enabled {
                         dbus::disable_unit_files(timer_path);
                         switch.set_state(false);
                     }
@@ -728,7 +730,7 @@ fn build_ui(application: &Application) {
                 _ => None,
             };
 
-            change_status_icon(unit_option, ICON_YES,dbus::start_unit);
+            change_status_icon(unit_option, ICON_YES, dbus::start_unit);
         });
     }
 
@@ -826,7 +828,11 @@ fn build_ui(application: &Application) {
     gtk::main(); */
 }
 
-fn change_status_icon(unit_option: Option<(i32, &SystemdUnit, gtk::ListBox)>, icon_name : &str, callback : fn(&str) -> Option<String>) {
+fn change_status_icon(
+    unit_option: Option<(i32, &SystemdUnit, gtk::ListBox)>,
+    icon_name: &str,
+    callback: fn(&str) -> Option<String>,
+) {
     if let Some((_, sysd_unit, selected_list_box)) = unit_option {
         let full_name = &sysd_unit.full_name();
         if let None = callback(full_name) {
