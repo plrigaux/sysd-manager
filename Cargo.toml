@@ -11,3 +11,8 @@ keywords = [ "gtk", "linux", "systemd" ]
 [dependencies]
 dbus = "0.9.7"
 gtk = { version = "0.8.2", package = "gtk4", features = ["v4_12"] }
+log = "0.4"
+libc = "0.2"
+
+[dev-dependencies]
+simple_logger = ">=4"

@@ -174,11 +174,6 @@ fn get_unit_journal(unit_path: &str) -> String {
         .fold(String::with_capacity(log.len()), |acc, x| acc + "\n" + x)
 }
 
-// TODO: Fix clippy error and start using this everywhere
-fn get_filename<'a>(path: &'a str) -> &str {
-    Path::new(path).file_name().unwrap().to_str().unwrap()
-}
-
 pub fn launch() -> glib::ExitCode {
     // Create a new application
     let app = Application::builder().application_id(APP_ID).build();
@@ -299,7 +294,7 @@ fn fill_sysd_unit_list(
                     ablement_switch.set_state(ablement_switch.is_active());
 
                     update_journal(&unit_journal, sysd_unit.name.as_str());
-                    header.set_label(get_filename(sysd_unit.name.as_str()));
+                    header.set_label(&sysd_unit.name);
                 }
                 None => {
                     println!("no row - tbc")
@@ -612,17 +607,13 @@ fn build_ui(application: &Application) {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
                     let service = &services_ref.get(index as usize).unwrap();
-                    let service_path = Path::new(service.name.as_str())
-                        .file_name()
-                        .unwrap()
-                        .to_str()
-                        .unwrap();
+         
                     if enabled && dbus::get_unit_file_state(service) != EnablementStatus::Enabled {
-                        dbus::enable_unit_files(service_path);
+                        dbus::enable_unit_files(service);
                         switch.set_state(true);
                         Propagation::Proceed
                     } else if !enabled && dbus::get_unit_file_state(service) == EnablementStatus::Enabled {
-                        dbus::disable_unit_files(service_path);
+                        dbus::disable_unit_files(service);
                         switch.set_state(false);
                         Propagation::Proceed
                     } else {
@@ -632,12 +623,11 @@ fn build_ui(application: &Application) {
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
                     let socket = &sockets_ref[index as usize];
-                    let socket_path = get_filename(socket.name.as_str());
                     if enabled && dbus::get_unit_file_state(socket) != EnablementStatus::Enabled {
-                        dbus::enable_unit_files(socket_path);
+                        dbus::enable_unit_files(socket);
                         switch.set_state(true);
                     } else if !enabled && dbus::get_unit_file_state(socket) == EnablementStatus::Enabled {
-                        dbus::disable_unit_files(socket_path);
+                        dbus::disable_unit_files(socket);
                         switch.set_state(false);
                     }
                     Propagation::Proceed
@@ -645,16 +635,11 @@ fn build_ui(application: &Application) {
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
                     let timer = &timer_ref[index as usize];
-                    let timer_path = Path::new(timer.name.as_str())
-                        .file_name()
-                        .unwrap()
-                        .to_str()
-                        .unwrap();
                     if enabled && dbus::get_unit_file_state(timer) != EnablementStatus::Enabled {
-                        dbus::enable_unit_files(timer_path);
+                        dbus::enable_unit_files(timer);
                         switch.set_state(true);
                     } else if !enabled && dbus::get_unit_file_state(timer) == EnablementStatus::Enabled {
-                        dbus::disable_unit_files(timer_path);
+                        dbus::disable_unit_files(timer);
                         switch.set_state(false);
                     }
                     Propagation::Proceed

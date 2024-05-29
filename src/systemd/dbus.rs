@@ -1,5 +1,7 @@
 extern crate dbus;
 
+use std::process::Command;
+
 use systemd::dbus::dbus::arg::messageitem::MessageItem;
 use systemd::dbus::dbus::Error;
 use systemd::dbus::dbus::Message;
@@ -18,6 +20,9 @@ fn dbus_message(function: &str) -> Message {
 fn dbus_connect(message: Message) -> Result<Message, Error> {
     let connection = dbus::ffidisp::Connection::get_private(dbus::ffidisp::BusType::System)?;
 
+    //let connection = dbus::blocking::Connection::new_session()?;
+
+    let duration = std::time::Duration::new(30, 0);
     connection.send_with_reply_and_block(message, 30000)
 }
 
@@ -196,7 +201,7 @@ fn list_unit_files_message() -> Vec<MessageItem> {
 }
 
 pub fn get_unit_file_state(sytemd_unit: &SystemdUnit) -> EnablementStatus {
-    return get_unit_file_state_path(sytemd_unit.full_name())
+    return get_unit_file_state_path(sytemd_unit.full_name());
 }
 
 /// Returns the current enablement status of the unit
@@ -261,9 +266,31 @@ pub fn collect_togglable_timers(units: &[SystemdUnit]) -> Vec<SystemdUnit> {
         .collect()
 }
 
+pub fn enable_unit_files(sytemd_unit: &SystemdUnit) -> Option<String> {
+    enable_unit_files_path(sytemd_unit.full_name())
+}
 /// Takes the unit pathname of a service and enables it via dbus.
 /// If dbus replies with `[Bool(true), Array([], "(sss)")]`, the service is already enabled.
-pub fn enable_unit_files(unit: &str) -> Option<String> {
+fn enable_unit_files_path(unit: &str) -> Option<String> {
+    let command_output = Command::new("systemctl").arg("enable").arg(unit).output();
+    match command_output {
+        Ok(output) => {
+            println!("Status {}", output.status);
+            println!("stdout: {}", String::from_utf8(output.stdout).unwrap());
+            eprintln!("stderr: {}", String::from_utf8(output.stderr).unwrap());
+            None
+        },
+        Err(error) => {
+            eprintln!("{}", error);
+            Some("ERROR".to_owned())
+        }
+    }
+/*     println!("0Try to enable: {}", unit);
+    match pkexec::pkexec() {
+        Ok(_) => {}
+        Err(e) => return Some("Need priv".to_owned()),
+    }
+
     let mut message = dbus_message("EnableUnitFiles");
     message.append_items(&[[unit][..].into(), false.into(), true.into()]);
     match dbus_connect(message) {
@@ -280,14 +307,48 @@ pub fn enable_unit_files(unit: &str) -> Option<String> {
             println!("{}", error);
             Some(error)
         }
-    }
+    } */
+}
+
+pub fn disable_unit_files(sytemd_unit: &SystemdUnit) -> Option<String> {
+    disable_unit_files_path(sytemd_unit.full_name())
 }
 
 /// Takes the unit pathname as input and disables it via dbus.
 /// If dbus replies with `[Array([], "(sss)")]`, the service is already disabled.
-pub fn disable_unit_files(unit: &str) -> Option<String> {
+fn disable_unit_files_path(unit: &str) -> Option<String> {
+    let command_output = Command::new("systemctl").arg("disable").arg(unit).output();
+    match command_output {
+        Ok(output) => {
+            println!("Status {}", output.status);
+            println!("stdout: {}", String::from_utf8(output.stdout).unwrap());
+            eprintln!("stderr: {}", String::from_utf8(output.stderr).unwrap());
+            None
+        },
+        Err(error) => {
+            eprintln!("{}", error);
+            Some("ERROR".to_owned())
+        }
+    }
+
+    /*     println!("0Try to disable: {}", unit);
+    match pkexec::escalate_if_needed() {
+        Ok(_user) => {println!("Run as {:?}", _user)},
+        Err(_e) => return Some("Need private".to_owned())
+    }
+
     let mut message = dbus_message("DisableUnitFiles");
+
+    //let sig = Signature::new("asdf").unwrap();
+    //let mia = MessageItemArray::new(&vec![MessageItem::Str(unit.to_owned())], sig);
+    //Ok(MessageItem::Array(MessageItemArray::new(v, s)?))
+
+    //let message_items = &[mia, MessageItem::Bool(true)];
+    //message.append_items(message_items);
+    println!("Try to disable: {}", unit);
     message.append_items(&[[unit][..].into(), false.into()]);
+
+    println!("Message: {:?}", message);
     match dbus_connect(message) {
         Ok(reply) => {
             if format!("{:?}", reply.get_items()) == "[Array([], \"(sss)\")]" {
@@ -302,7 +363,7 @@ pub fn disable_unit_files(unit: &str) -> Option<String> {
             println!("{}", error);
             Some(error)
         }
-    }
+    } */
 }
 
 /// Takes a unit name as input and attempts to start it
@@ -341,6 +402,8 @@ pub fn stop_unit(unit: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+   
+
     use super::*;
 
     #[test]
@@ -437,6 +500,81 @@ mod tests {
 
         let status = get_unit_file_state_path(file1);
         println!("Status: {:?}", status);
-        
     }
+
+    /// to make it work
+    /// put in your projet  .cargo/config.toml file
+    /// [target.x86_64-unknown-linux-gnu]
+    /// runner = 'sudo -E'
+    ///
+    #[test]
+    fn test_disable_unit_files_path() {
+        //let file1: &str = "/etc/systemd/system/jackett.service";
+        let file1: &str = "jackett.service";
+
+        let status = disable_unit_files_path(file1);
+        println!("Status: {:?}", status);
+    }
+/* 
+    #[test]
+    fn test_disable_unit_files_path_w_priv() {
+        //let file1: &str = "/etc/systemd/system/jackett.service";
+        let file1: &str = "jackett.service";
+        let res = pkexec::pkexec();
+        println!("Result: {:?}", res);
+        let status = disable_unit_files_path(file1);
+        println!("Status: {:?}", status);
+    } */
+    /*
+      #[test]
+      fn test_privilege() {
+
+          match karen::escalate_if_needed() {
+              Ok(w) => {
+                  println!("Hello, Root-World!");
+                  println!("{:?}", w);
+              }
+              Err(e) => println!("Error {:?}", e),
+          };
+      }
+
+      #[test]
+      fn test_privilege2() {
+          match karen::pkexec() {
+              Ok(a) =>  println!("Run as: {:?}", a),
+              Err(e) => println!("Error {:?}", e),
+          }
+
+          println!("OK OK");
+          match karen::pkexec() {
+              Ok(a) =>  println!("Run as: {:?}", a),
+              Err(e) => println!("Error {:?}", e),
+          }
+      }
+
+      #[test]
+      fn test_privilege3() {
+          let run_as = karen::check() ;
+          println!("Run as: {:?}", run_as)
+    /*        {
+              Ok(a) =>  println!("Run as: {:?}", a),
+              Err(e) => println!("Error {:?}", e),
+          } */
+
+
+      }
+
+      #[test]
+      fn test_privilege4() {
+          match karen::pkexec() {
+              Ok(a) =>  println!("Run as: {:?}", a),
+              Err(e) => println!("Error {:?}", e),
+          }
+
+          println!("OK OK");
+          match karen::pkexec() {
+              Ok(a) =>  println!("Run as: {:?}", a),
+              Err(e) => println!("Error {:?}", e),
+          }
+      } */
 }
