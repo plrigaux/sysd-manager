@@ -1,10 +1,12 @@
-extern crate dbus;
+extern crate dbus as msgbus;
 
-use std::process::Command;
+use self::msgbus::arg::messageitem::MessageItem;
+use self::msgbus::Error;
+use self::msgbus::Message;
 
-use systemd::dbus::dbus::arg::messageitem::MessageItem;
-use systemd::dbus::dbus::Error;
-use systemd::dbus::dbus::Message;
+use super::EnablementStatus;
+
+use super::SystemdUnit;
 
 /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
 fn dbus_message(function: &str) -> Message {
@@ -20,28 +22,11 @@ fn dbus_message(function: &str) -> Message {
 fn dbus_connect(message: Message) -> Result<Message, Error> {
     let connection = dbus::ffidisp::Connection::get_private(dbus::ffidisp::BusType::System)?;
 
-    //let connection = dbus::blocking::Connection::new_session()?;
-
-    let duration = std::time::Duration::new(30, 0);
     connection.send_with_reply_and_block(message, 30000)
 }
 
-#[derive(Clone, Debug)]
-pub struct SystemdUnit {
-    pub name: String,
-    pub state: EnablementStatus,
-    pub utype: UnitType,
-    pub path: String,
-}
 
-impl SystemdUnit {
-    pub fn full_name(&self) -> &str {
-        match self.path.rsplit_once("/") {
-            Some((_, end)) => end,
-            None => &self.name,
-        }
-    }
-}
+
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UnitType {
@@ -76,50 +61,6 @@ impl UnitType {
             _ => {
                 println!("Unknown Type: {}", system_type);
                 UnitType::Unknown(system_type.to_string())
-            }
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum EnablementStatus {
-    Bad,
-    Disabled,
-    Enabled,
-    Indirect,
-    Linked,
-    Masked,
-    Static,
-    Alias,
-    Generated,
-    Trancient,
-    Unknown,
-}
-impl EnablementStatus {
-    /// Takes the string containing the state information from the dbus message and converts it
-    /// into a UnitType by matching the first character.
-    pub fn new(enablement_status: &str) -> EnablementStatus {
-        if enablement_status.is_empty() {
-            eprintln!("Empty Status: {}", enablement_status);
-            return EnablementStatus::Unknown;
-        }
-
-        let c = enablement_status.chars().next().unwrap();
-
-        match c {
-            'a' => EnablementStatus::Alias,
-            's' => EnablementStatus::Static,
-            'd' => EnablementStatus::Disabled,
-            'e' => EnablementStatus::Enabled,
-            'i' => EnablementStatus::Indirect,
-            'l' => EnablementStatus::Linked,
-            'm' => EnablementStatus::Masked,
-            'b' => EnablementStatus::Bad,
-            'g' => EnablementStatus::Generated,
-            't' => EnablementStatus::Trancient,
-            _ => {
-                println!("Unknown State: {}", enablement_status);
-                EnablementStatus::Unknown
             }
         }
     }
@@ -200,12 +141,10 @@ fn list_unit_files_message() -> Vec<MessageItem> {
     }
 }
 
-pub fn get_unit_file_state(sytemd_unit: &SystemdUnit) -> EnablementStatus {
-    return get_unit_file_state_path(sytemd_unit.full_name());
-}
+
 
 /// Returns the current enablement status of the unit
-fn get_unit_file_state_path(unit_file: &str) -> EnablementStatus {
+pub fn get_unit_file_state_path(unit_file: &str) -> EnablementStatus {
     let mut message = dbus_message("GetUnitFileState");
     let message_items = &[MessageItem::Str(unit_file.to_owned())];
     message.append_items(message_items);
@@ -226,70 +165,10 @@ fn get_unit_file_state_path(unit_file: &str) -> EnablementStatus {
     }
 }
 
-/// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing services which can be enabled and
-/// disabled.
-pub fn collect_togglable_services(units: &Vec<SystemdUnit>) -> Vec<SystemdUnit> {
-    units
-        .iter()
-        .filter(|x| {
-            x.utype == UnitType::Service
-                && (x.state == EnablementStatus::Enabled || x.state == EnablementStatus::Disabled)
-            // && !x.path.contains("/etc/")
-        })
-        .cloned()
-        .collect()
-}
 
-/// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing sockets which can be enabled and
-/// disabled.
-pub fn collect_togglable_sockets(units: &[SystemdUnit]) -> Vec<SystemdUnit> {
-    units
-        .iter()
-        .filter(|x| {
-            x.utype == UnitType::Socket
-                && (x.state == EnablementStatus::Enabled || x.state == EnablementStatus::Disabled)
-        })
-        .cloned()
-        .collect()
-}
-
-/// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing timers which can be enabled and
-/// disabled.
-pub fn collect_togglable_timers(units: &[SystemdUnit]) -> Vec<SystemdUnit> {
-    units
-        .iter()
-        .filter(|x| {
-            x.utype == UnitType::Timer
-                && (x.state == EnablementStatus::Enabled || x.state == EnablementStatus::Disabled)
-        })
-        .cloned()
-        .collect()
-}
-
-pub fn enable_unit_files(sytemd_unit: &SystemdUnit) -> Option<String> {
-    enable_unit_files_path(sytemd_unit.full_name())
-}
 /// Takes the unit pathname of a service and enables it via dbus.
 /// If dbus replies with `[Bool(true), Array([], "(sss)")]`, the service is already enabled.
-fn enable_unit_files_path(unit: &str) -> Option<String> {
-    let command_output = Command::new("systemctl").arg("enable").arg(unit).output();
-    match command_output {
-        Ok(output) => {
-            println!("Status {}", output.status);
-            println!("stdout: {}", String::from_utf8(output.stdout).unwrap());
-            eprintln!("stderr: {}", String::from_utf8(output.stderr).unwrap());
-            None
-        },
-        Err(error) => {
-            eprintln!("{}", error);
-            Some("ERROR".to_owned())
-        }
-    }
-/*     println!("0Try to enable: {}", unit);
-    match pkexec::pkexec() {
-        Ok(_) => {}
-        Err(e) => return Some("Need priv".to_owned()),
-    }
+/* fn enable_unit_files_path(unit: &str) -> Option<String> {
 
     let mut message = dbus_message("EnableUnitFiles");
     message.append_items(&[[unit][..].into(), false.into(), true.into()]);
@@ -307,44 +186,15 @@ fn enable_unit_files_path(unit: &str) -> Option<String> {
             println!("{}", error);
             Some(error)
         }
-    } */
-}
-
-pub fn disable_unit_files(sytemd_unit: &SystemdUnit) -> Option<String> {
-    disable_unit_files_path(sytemd_unit.full_name())
-}
+    } 
+} */
 
 /// Takes the unit pathname as input and disables it via dbus.
 /// If dbus replies with `[Array([], "(sss)")]`, the service is already disabled.
-fn disable_unit_files_path(unit: &str) -> Option<String> {
-    let command_output = Command::new("systemctl").arg("disable").arg(unit).output();
-    match command_output {
-        Ok(output) => {
-            println!("Status {}", output.status);
-            println!("stdout: {}", String::from_utf8(output.stdout).unwrap());
-            eprintln!("stderr: {}", String::from_utf8(output.stderr).unwrap());
-            None
-        },
-        Err(error) => {
-            eprintln!("{}", error);
-            Some("ERROR".to_owned())
-        }
-    }
-
-    /*     println!("0Try to disable: {}", unit);
-    match pkexec::escalate_if_needed() {
-        Ok(_user) => {println!("Run as {:?}", _user)},
-        Err(_e) => return Some("Need private".to_owned())
-    }
+/* fn disable_unit_files_path(unit: &str) -> Option<String> {
 
     let mut message = dbus_message("DisableUnitFiles");
 
-    //let sig = Signature::new("asdf").unwrap();
-    //let mia = MessageItemArray::new(&vec![MessageItem::Str(unit.to_owned())], sig);
-    //Ok(MessageItem::Array(MessageItemArray::new(v, s)?))
-
-    //let message_items = &[mia, MessageItem::Bool(true)];
-    //message.append_items(message_items);
     println!("Try to disable: {}", unit);
     message.append_items(&[[unit][..].into(), false.into()]);
 
@@ -363,8 +213,8 @@ fn disable_unit_files_path(unit: &str) -> Option<String> {
             println!("{}", error);
             Some(error)
         }
-    } */
-}
+    } 
+} */
 
 /// Takes a unit name as input and attempts to start it
 pub fn start_unit(unit: &str) -> Option<String> {
@@ -502,22 +352,6 @@ mod tests {
         println!("Status: {:?}", status);
     }
 
-    /// to make it work
-    /// put in your projet  .cargo/config.toml file
-    /// [target.x86_64-unknown-linux-gnu]
-    /// runner = 'sudo -E'
-    ///
-    #[test]
-    fn test_disable_unit_files_path() {
-        //let file1: &str = "/etc/systemd/system/jackett.service";
-        let file1: &str = "jackett.service";
-
-        let status = disable_unit_files_path(file1);
-        println!("Status: {:?}", status);
-
-        let status = disable_unit_files_path(file1);
-        println!("Status: {:?}", status);
-    }
 /* 
     #[test]
     fn test_disable_unit_files_path_w_priv() {

@@ -4,18 +4,14 @@ use gtk::gdk::Cursor;
 use gtk::prelude::*;
 use systemd::analyze::Analyze;
 
-
-
-//use gdk::Key;
-
 use crate::grid_cell::{Entry, GridCell};
-use crate::systemd::dbus::{self, EnablementStatus, SystemdUnit};
+use systemd::{self, EnablementStatus, SystemdUnit};
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};
 
 use gtk::pango::{self, Weight};
-//use self::gio;
+
 use gtk::{Application, ApplicationWindow, Orientation};
 
 use std::cell::Ref;
@@ -25,6 +21,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use std::rc::Rc;
+
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
 
@@ -289,7 +286,7 @@ fn fill_sysd_unit_list(
                     let description = get_unit_info(&sysd_unit);
                     unit_info.buffer().set_text(&description);
                     ablement_switch.set_active(
-                        dbus::get_unit_file_state(sysd_unit) == EnablementStatus::Enabled
+                        systemd::get_unit_file_state(sysd_unit) == EnablementStatus::Enabled,
                     );
                     ablement_switch.set_state(ablement_switch.is_active());
 
@@ -309,7 +306,7 @@ fn fill_sysd_unit_list(
 
 fn build_ui(application: &Application) {
     // List of all unit files on the system
-    let mut unit_files: Vec<SystemdUnit> = dbus::list_unit_files();
+    let mut unit_files: Vec<SystemdUnit> = systemd::list_unit_files();
     unit_files.sort_by_key(|unit| unit.name.to_lowercase());
 
     let services_list = gtk::ListBox::new();
@@ -560,7 +557,7 @@ fn build_ui(application: &Application) {
         .titlebar(&title_bar)
         .build();
 
-    let services_ = dbus::collect_togglable_services(&unit_files);
+    let services_ = systemd::collect_togglable_services(&unit_files);
     let services_ref = Rc::new(services_);
     fill_sysd_unit_list(
         &services_list,
@@ -571,7 +568,7 @@ fn build_ui(application: &Application) {
         &right_bar_label,
     );
 
-    let sockets_ = dbus::collect_togglable_sockets(&unit_files);
+    let sockets_ = systemd::collect_togglable_sockets(&unit_files);
     let sockets_ref = Rc::new(sockets_);
     fill_sysd_unit_list(
         &sockets_list,
@@ -582,7 +579,7 @@ fn build_ui(application: &Application) {
         &right_bar_label,
     );
 
-    let timer_ = dbus::collect_togglable_timers(&unit_files);
+    let timer_ = systemd::collect_togglable_timers(&unit_files);
     let timers_ref = Rc::new(timer_);
     fill_sysd_unit_list(
         &timers_list,
@@ -607,14 +604,19 @@ fn build_ui(application: &Application) {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
                     let service = &services_ref.get(index as usize).unwrap();
-         
-                    if enabled && dbus::get_unit_file_state(service) != EnablementStatus::Enabled {
-                        dbus::enable_unit_files(service);
-                        switch.set_state(true);
+
+                    if enabled && systemd::get_unit_file_state(service) != EnablementStatus::Enabled
+                    {
+                        if let Ok(_) = systemd::enable_unit_files(service) {
+                            switch.set_state(true);
+                        }
                         Propagation::Proceed
-                    } else if !enabled && dbus::get_unit_file_state(service) == EnablementStatus::Enabled {
-                        dbus::disable_unit_files(service);
-                        switch.set_state(false);
+                    } else if !enabled
+                        && systemd::get_unit_file_state(service) == EnablementStatus::Enabled
+                    {
+                        if let Ok(_) = systemd::disable_unit_files(service) {
+                            switch.set_state(false);
+                        }
                         Propagation::Proceed
                     } else {
                         Propagation::Stop
@@ -623,24 +625,33 @@ fn build_ui(application: &Application) {
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
                     let socket = &sockets_ref[index as usize];
-                    if enabled && dbus::get_unit_file_state(socket) != EnablementStatus::Enabled {
-                        dbus::enable_unit_files(socket);
-                        switch.set_state(true);
-                    } else if !enabled && dbus::get_unit_file_state(socket) == EnablementStatus::Enabled {
-                        dbus::disable_unit_files(socket);
-                        switch.set_state(false);
+                    if enabled && systemd::get_unit_file_state(socket) != EnablementStatus::Enabled
+                    {
+                        if let Ok(_) = systemd::enable_unit_files(socket) {
+                            switch.set_state(true);
+                        }
+                    } else if !enabled
+                        && systemd::get_unit_file_state(socket) == EnablementStatus::Enabled
+                    {
+                        if let Ok(_) = systemd::disable_unit_files(socket) {
+                            switch.set_state(false);
+                        }
                     }
                     Propagation::Proceed
                 }
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
                     let timer = &timer_ref[index as usize];
-                    if enabled && dbus::get_unit_file_state(timer) != EnablementStatus::Enabled {
-                        dbus::enable_unit_files(timer);
-                        switch.set_state(true);
-                    } else if !enabled && dbus::get_unit_file_state(timer) == EnablementStatus::Enabled {
-                        dbus::disable_unit_files(timer);
-                        switch.set_state(false);
+                    if enabled && systemd::get_unit_file_state(timer) != EnablementStatus::Enabled {
+                        if let Ok(_) = systemd::enable_unit_files(timer) {
+                            switch.set_state(true);
+                        }
+                    } else if !enabled
+                        && systemd::get_unit_file_state(timer) == EnablementStatus::Enabled
+                    {
+                        if let Ok(_) = systemd::disable_unit_files(timer) {
+                            switch.set_state(false);
+                        }
                     }
                     Propagation::Proceed
                 }
@@ -715,7 +726,7 @@ fn build_ui(application: &Application) {
                 _ => None,
             };
 
-            change_status_icon(unit_option, ICON_YES, dbus::start_unit);
+            change_status_icon(unit_option, ICON_YES, systemd::start_unit);
         });
     }
 
@@ -751,7 +762,7 @@ fn build_ui(application: &Application) {
                 _ => None,
             };
 
-            change_status_icon(unit_option, ICON_NO, dbus::stop_unit);
+            change_status_icon(unit_option, ICON_NO, systemd::stop_unit);
         });
     }
 
@@ -816,11 +827,10 @@ fn build_ui(application: &Application) {
 fn change_status_icon(
     unit_option: Option<(i32, &SystemdUnit, gtk::ListBox)>,
     icon_name: &str,
-    callback: fn(&str) -> Option<String>,
+    callback: fn(&SystemdUnit) -> Option<String>,
 ) {
     if let Some((_, sysd_unit, selected_list_box)) = unit_option {
-        let full_name = &sysd_unit.full_name();
-        if let None = callback(full_name) {
+        if let None = callback(sysd_unit) {
             let list_row = selected_list_box.selected_row().unwrap();
             let widget: gtk::Widget = list_row.child().unwrap();
             match widget.downcast::<gtk::CenterBox>() {
