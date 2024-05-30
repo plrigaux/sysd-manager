@@ -514,6 +514,9 @@ mod tests {
 
         let status = disable_unit_files_path(file1);
         println!("Status: {:?}", status);
+
+        let status = disable_unit_files_path(file1);
+        println!("Status: {:?}", status);
     }
 /* 
     #[test]
