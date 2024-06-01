@@ -5,7 +5,8 @@ use gtk::prelude::*;
 use systemd::analyze::Analyze;
 
 use crate::grid_cell::{Entry, GridCell};
-use systemd::{self, EnablementStatus, SystemdUnit};
+
+use systemd::{self, EnablementStatus, LoadedUnit, SystemdErrors};
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};
@@ -16,7 +17,7 @@ use gtk::{Application, ApplicationWindow, Orientation};
 
 use std::cell::Ref;
 use std::fs;
-use std::io::Read;
+
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
@@ -39,10 +40,10 @@ const ICON_NO: &str = "window-close-symbolic";
  */
 /// Create a `gtk::ListboxRow` and add it to the `gtk::ListBox`, and then add the `gtk::Image` to a vector so that we can later modify
 /// it when the state changes.
-fn create_row(systemd_unit: &SystemdUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
+fn create_row(systemd_unit: &LoadedUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
     let unit_box = gtk::CenterBox::new();
-    let unit_label = gtk::Label::new(Some(&systemd_unit.name));
-    let image = if systemd_unit.state == EnablementStatus::Enabled {
+    let unit_label = gtk::Label::new(Some(&systemd_unit.display_name()));
+    let image = if systemd_unit.is_enable() {
         gtk::Image::from_icon_name(ICON_YES)
     } else {
         gtk::Image::from_icon_name(ICON_NO)
@@ -56,14 +57,6 @@ fn create_row(systemd_unit: &SystemdUnit, state_icons: &mut Vec<gtk::Image>) -> 
     state_icons.push(image);
 
     unit_row
-}
-
-/// Read the unit file and return it's contents so that we can display it in the `gtk::TextView`.
-fn get_unit_info(su: &SystemdUnit) -> String {
-    let mut file = fs::File::open(&su.path).unwrap();
-    let mut output = String::new();
-    let _ = file.read_to_string(&mut output);
-    output
 }
 
 struct TableRow {
@@ -252,7 +245,7 @@ fn build_popover_menu(menu_button: &gtk::MenuButton, unit_stack: &gtk::Stack) ->
 
 fn fill_sysd_unit_list(
     units_list: &gtk::ListBox,
-    services_list_ref: &Rc<Vec<SystemdUnit>>,
+    services_list_ref: &Rc<Vec<LoadedUnit>>,
     unit_info: &gtk::TextView,
     ablement_switch: &gtk::Switch,
     unit_journal: &gtk::TextView,
@@ -283,15 +276,18 @@ fn fill_sysd_unit_list(
                 Some(list_row) => {
                     let index = list_row.index();
                     let sysd_unit = services_list_ref.get(index as usize).unwrap();
-                    let description = get_unit_info(&sysd_unit);
+                    let description = systemd::get_unit_info(&sysd_unit);
                     unit_info.buffer().set_text(&description);
                     ablement_switch.set_active(
-                        systemd::get_unit_file_state(sysd_unit) == EnablementStatus::Enabled,
+                        // systemd::get_unit_file_state(sysd_unit)
+                        systemd::get_unit_file_state(sysd_unit)
+                            .unwrap_or(EnablementStatus::Unknown)
+                            == EnablementStatus::Enabled,
                     );
                     ablement_switch.set_state(ablement_switch.is_active());
 
-                    update_journal(&unit_journal, sysd_unit.name.as_str());
-                    header.set_label(&sysd_unit.name);
+                    update_journal(&unit_journal, sysd_unit.display_name());
+                    header.set_label(&sysd_unit.display_name());
                 }
                 None => {
                     println!("no row - tbc")
@@ -306,8 +302,13 @@ fn fill_sysd_unit_list(
 
 fn build_ui(application: &Application) {
     // List of all unit files on the system
-    let mut unit_files: Vec<SystemdUnit> = systemd::list_unit_files();
-    unit_files.sort_by_key(|unit| unit.name.to_lowercase());
+    let unit_files: Vec<LoadedUnit> = match systemd::list_units_description_and_state() {
+        Ok(map) => map.into_values().collect(),
+        Err(e) => {
+            println!("{:?}", e);
+            vec![]
+        }
+    };
 
     let services_list = gtk::ListBox::new();
 
@@ -596,68 +597,50 @@ fn build_ui(application: &Application) {
         let services_list = services_list.clone();
         let sockets_ref = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
-        let timer_ref = timers_ref.clone();
+        let timers_ref = timers_ref.clone();
         let timers_list = timers_list.clone();
         let unit_stack = unit_stack.clone();
-        ablement_switch.connect_state_set(move |switch, enabled| {
-            match unit_stack.visible_child_name().unwrap().as_str() {
-                "Services" => {
-                    let index = services_list.selected_row().unwrap().index();
-                    let service = &services_ref.get(index as usize).unwrap();
 
-                    if enabled && systemd::get_unit_file_state(service) != EnablementStatus::Enabled
-                    {
-                        if let Ok(_) = systemd::enable_unit_files(service) {
-                            switch.set_state(true);
-                        }
-                        Propagation::Proceed
-                    } else if !enabled
-                        && systemd::get_unit_file_state(service) == EnablementStatus::Enabled
-                    {
-                        if let Ok(_) = systemd::disable_unit_files(service) {
-                            switch.set_state(false);
-                        }
-                        Propagation::Proceed
-                    } else {
-                        Propagation::Stop
-                    }
+        fn handle_switch(
+            unit_list: &gtk::ListBox,
+            unit_ref: Rc<Vec<LoadedUnit>>,
+            enabled: bool,
+            switch: &gtk::Switch,
+        ) {
+            let index = unit_list.selected_row().unwrap().index();
+            let unit = &unit_ref[index as usize];
+
+            let status = systemd::get_unit_file_state(unit).unwrap_or(EnablementStatus::Unknown);
+            let is_unit_enable = status == EnablementStatus::Enabled;
+
+            if enabled && !is_unit_enable {
+                if let Ok(_) = systemd::enable_unit_files(unit) {
+                    switch.set_state(true);
+                }
+            } else if !enabled && is_unit_enable {
+                if let Ok(_) = systemd::disable_unit_files(unit) {
+                    switch.set_state(false);
+                }
+            }
+        }
+
+        ablement_switch.connect_state_set(move |switch, enabled| {
+            let (unit_listbox,unit_ref) = match unit_stack.visible_child_name().unwrap().as_str() {
+                "Services" => {
+                    (&services_list, services_ref.clone())
                 }
                 "Sockets" => {
-                    let index = sockets_list.selected_row().unwrap().index();
-                    let socket = &sockets_ref[index as usize];
-                    if enabled && systemd::get_unit_file_state(socket) != EnablementStatus::Enabled
-                    {
-                        if let Ok(_) = systemd::enable_unit_files(socket) {
-                            switch.set_state(true);
-                        }
-                    } else if !enabled
-                        && systemd::get_unit_file_state(socket) == EnablementStatus::Enabled
-                    {
-                        if let Ok(_) = systemd::disable_unit_files(socket) {
-                            switch.set_state(false);
-                        }
-                    }
-                    Propagation::Proceed
+                    (&sockets_list, sockets_ref.clone())
+   
                 }
                 "Timers" => {
-                    let index = timers_list.selected_row().unwrap().index();
-                    let timer = &timer_ref[index as usize];
-                    if enabled && systemd::get_unit_file_state(timer) != EnablementStatus::Enabled {
-                        if let Ok(_) = systemd::enable_unit_files(timer) {
-                            switch.set_state(true);
-                        }
-                    } else if !enabled
-                        && systemd::get_unit_file_state(timer) == EnablementStatus::Enabled
-                    {
-                        if let Ok(_) = systemd::disable_unit_files(timer) {
-                            switch.set_state(false);
-                        }
-                    }
-                    Propagation::Proceed
+                    (&timers_list, timers_ref.clone())
                 }
                 _ => unreachable!(),
-            }
-            //gtk::Inhibit(true)
+            };
+
+            handle_switch(unit_listbox, unit_ref, enabled, switch);
+            Propagation::Proceed
         });
     }
 
@@ -677,17 +660,17 @@ fn build_ui(application: &Application) {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
                     let service = &services_ref.get(index as usize).unwrap();
-                    update_journal(&unit_journal, service.name.as_str());
+                    update_journal(&unit_journal, service.display_name());
                 }
                 "Sockets" => {
                     let index = sockets_list.selected_row().unwrap().index();
                     let socket = &sockets[index as usize];
-                    update_journal(&unit_journal, socket.name.as_str());
+                    update_journal(&unit_journal, socket.display_name());
                 }
                 "Timers" => {
                     let index = timers_list.selected_row().unwrap().index();
                     let timer = &timers[index as usize];
-                    update_journal(&unit_journal, timer.name.as_str());
+                    update_journal(&unit_journal, timer.display_name());
                 }
                 _ => unreachable!(),
             }
@@ -786,12 +769,12 @@ fn build_ui(application: &Application) {
                     let service = services_ref
                         .get(services_list.selected_row().unwrap().index() as usize)
                         .unwrap();
-                    &service.name
+                    service.display_name()
                 }
                 "Sockets" => {
-                    &sockets_ref[sockets_list.selected_row().unwrap().index() as usize].name
+                    sockets_ref[sockets_list.selected_row().unwrap().index() as usize].display_name()
                 }
-                "Timers" => &timers_ref[timers_list.selected_row().unwrap().index() as usize].name,
+                "Timers" => timers_ref[timers_list.selected_row().unwrap().index() as usize].display_name(),
                 _ => unreachable!(),
             };
             match fs::OpenOptions::new().write(true).open(&path) {
@@ -825,12 +808,12 @@ fn build_ui(application: &Application) {
 }
 
 fn change_status_icon(
-    unit_option: Option<(i32, &SystemdUnit, gtk::ListBox)>,
+    unit_option: Option<(i32, &LoadedUnit, gtk::ListBox)>,
     icon_name: &str,
-    callback: fn(&SystemdUnit) -> Option<String>,
+    callback: fn(&LoadedUnit) -> Result<(), SystemdErrors>,
 ) {
     if let Some((_, sysd_unit, selected_list_box)) = unit_option {
-        if let None = callback(sysd_unit) {
+        if let Ok(_) = callback(sysd_unit) {
             let list_row = selected_list_box.selected_row().unwrap();
             let widget: gtk::Widget = list_row.child().unwrap();
             match widget.downcast::<gtk::CenterBox>() {

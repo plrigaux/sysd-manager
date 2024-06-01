@@ -1,32 +1,58 @@
-extern crate dbus as msgbus;
+pub extern crate dbus as msgbus;
+
+use std::collections::BTreeMap;
+
+use log::debug;
 
 use self::msgbus::arg::messageitem::MessageItem;
-use self::msgbus::Error;
 use self::msgbus::Message;
 
 use super::EnablementStatus;
 
+use super::LoadedUnit;
+use super::SystemdErrors;
 use super::SystemdUnit;
 
 /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
-fn dbus_message(function: &str) -> Message {
+fn dbus_message(function: &str) -> Result<Message, SystemdErrors> {
     let dest = "org.freedesktop.systemd1";
-    let node = "/org/freedesktop/systemd1";
+    let path = "/org/freedesktop/systemd1";
     let interface = "org.freedesktop.systemd1.Manager";
-    let message = dbus::Message::new_method_call(dest, node, interface, function)
-        .unwrap_or_else(|e| panic!("{}", e));
-    message
+    match msgbus::Message::new_method_call(dest, path, interface, function) {
+        Ok(message) => Ok(message),
+        Err(error) => Err(SystemdErrors::DBusErrorStr(error)),
+    }
 }
 
 /// Takes a `dbus::Message` as input and makes a connection to dbus, returning the reply.
-fn dbus_connect(message: Message) -> Result<Message, Error> {
+fn dbus_connect(message: Message) -> Result<Message, SystemdErrors> {
     let connection = dbus::ffidisp::Connection::get_private(dbus::ffidisp::BusType::System)?;
 
-    connection.send_with_reply_and_block(message, 30000)
+    let message = connection.send_with_reply_and_block(message, 30000)?;
+
+    Ok(message)
 }
 
+/* /// Takes a `dbus::Message` as input and makes a connection to dbus, returning the reply.
+fn dbus_property() -> Result<(), Error> {
+    let connection = dbus::blocking::Connection::new_system()?;
+
+    let duration = Duration::from_secs(5);
+    let p = connection.with_proxy("org.freedesktop.systemd1", "/org/freedesktop/systemd1", duration);
 
 
+    // The Metadata property is a Dict<String, Variant>.
+
+    // Option 1: we can get the dict straight into a hashmap, like this:
+    use systemd::dbus::msgbus::blocking::stdintf::org_freedesktop_dbus::Properties;
+
+    let metadata = p.get("org.mpris.MediaPlayer2.Player", "Metadata")?;
+
+    println!("Option 1:");
+
+    Ok(())
+
+} */
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UnitType {
@@ -67,59 +93,64 @@ impl UnitType {
 }
 
 /// Takes the dbus message as input and maps the information to a `Vec<SystemdUnit>`.
-fn parse_message(message_item: &MessageItem) -> Vec<SystemdUnit> {
-    println!("parse_message");
+fn parse_message(message_item: &MessageItem) -> Result<Vec<SystemdUnit>, SystemdErrors> {
+    debug!("parse_message");
+
     let MessageItem::Array(array) = message_item else {
-        eprintln!("Malformed message");
-        return vec![];
+        return Err(SystemdErrors::MalformedWrongArgType(
+            message_item.arg_type(),
+        ));
     };
 
     let mut systemd_units: Vec<SystemdUnit> = Vec::with_capacity(array.len());
 
     for service_struct in array.into_iter() {
         let MessageItem::Struct(struct_value) = service_struct else {
-            continue;
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
         };
 
         if struct_value.len() >= 2 {
             let Some(MessageItem::Str(systemd_unit)) = struct_value.get(0) else {
-                continue;
+                return Err(SystemdErrors::Malformed);
             };
 
             let Some(MessageItem::Str(status)) = struct_value.get(1) else {
-                continue;
+                return Err(SystemdErrors::Malformed);
             };
 
             let Some((_prefix, name_type)) = systemd_unit.rsplit_once('/') else {
-                continue;
+                return Err(SystemdErrors::Malformed);
             };
 
             let Some((name, system_type)) = name_type.rsplit_once('.') else {
-                continue;
+                return Err(SystemdErrors::Malformed);
             };
 
             let state = EnablementStatus::new(&status);
             let utype = UnitType::new(system_type);
 
-            if name.eq("jackett") {
-                println!("{systemd_unit} {status} {system_type}")
-            }
+            let path = systemd_unit.to_owned();
+
             systemd_units.push(SystemdUnit {
                 name: name.to_owned(),
                 state,
                 utype,
-                path: systemd_unit.to_owned(),
+                path: path,
+                enable_status: status.clone(),
             });
         }
     }
 
-    systemd_units
+    Ok(systemd_units)
 }
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
-pub fn list_unit_files() -> Vec<SystemdUnit> {
-    let message_vec = list_unit_files_message();
-    //println!("MESSAGE {:?}", message);
+pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
+    let message_vec = list_unit_files_message()?;
+   
+    debug!("MESSAGE {:?}", message_vec);
 
     let message_item = if message_vec.len() >= 1 {
         message_vec.get(0).expect("Missing argument")
@@ -127,44 +158,159 @@ pub fn list_unit_files() -> Vec<SystemdUnit> {
         panic!("Always suppose have one item")
     };
 
-    parse_message(message_item)
+    let units = parse_message(message_item)?;
+
+    Ok(units)
 }
 
-fn list_unit_files_message() -> Vec<MessageItem> {
-    let message = dbus_message("ListUnitFiles");
-    match dbus_connect(message) {
-        Ok(m) => m.get_items(),
-        Err(e) => {
-            eprintln!("Error! {}", e);
-            Vec::new()
-        }
+fn list_unit_files_message() -> Result<Vec<MessageItem>, SystemdErrors> {
+    let message = dbus_message("ListUnitFiles")?;
+    let m = dbus_connect(message)?;
+    debug!("MESSAGE {:?}", m);
+    Ok(m.get_items())
+}
+
+fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdErrors> {
+    let message = dbus_message("ListUnits")?;
+    println!("MESSAGE {:?}", message);
+    let m = dbus_connect(message)?;
+
+    // println!("{:#?}",m.get_items())
+    let mi = m.get_items();
+    println!("{:#?}", mi.len());
+    let message_item = &mi[0];
+
+    let sig: dbus::Signature<'_> = message_item.signature();
+    //"a(ssssssouso)\0",
+    println!("{:#?}", sig);
+
+    let MessageItem::Array(array) = message_item else {
+        return Err(SystemdErrors::MalformedWrongArgType(
+            message_item.arg_type(),
+        ));
+    };
+    println!("Array_size {:#?}", array.len());
+
+    let mut map: BTreeMap<String, LoadedUnit> = BTreeMap::new();
+
+    for service_struct in array.iter() {
+        let MessageItem::Struct(struct_value) = service_struct else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+
+        //The primary unit name as string
+        let MessageItem::Str(ref primary) = struct_value[0] else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+
+        //The human readable description string
+        let MessageItem::Str(ref description) = struct_value[1] else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+
+        //The load state (i.e. whether the unit file has been loaded successfully)
+        let MessageItem::Str(ref load_state) = struct_value[2] else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+
+        //The active state (i.e. whether the unit is currently started or not)
+        let MessageItem::Str(ref active_state) = struct_value[3] else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+        //The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
+        let MessageItem::Str(ref sub_state) = struct_value[4] else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+        //A unit that is being followed in its state by this unit, if there is any, otherwise the empty string.
+        let MessageItem::Str(ref followed_unit) = struct_value[5] else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+
+        //The unit object path
+        let MessageItem::ObjectPath(ref object_path) = struct_value[6] else {
+            return Err(SystemdErrors::MalformedWrongArgType(
+                service_struct.arg_type(),
+            ));
+        };
+        /*                 //If there is a job queued for the job unit the numeric job id, 0 otherwise
+        let MessageItem::UInt32(job_id) = struct_value[7] else {
+            println!("7 {:?}", struct_value[7]);
+            continue;
+        };
+        //The job type as string
+        let MessageItem::Str(ref job_type) = struct_value[8] else {
+            continue;
+        };
+        //The job object path
+        let MessageItem::ObjectPath(ref job_object_path) = struct_value[9] else {
+            continue;
+        }; */
+
+        let unit_info: LoadedUnit = LoadedUnit {
+            primary: primary.clone(),
+            description: description.clone(),
+            load_state: load_state.clone(),
+            active_state: active_state.clone(),
+            sub_state: sub_state.clone(),
+            followed_unit: followed_unit.clone(),
+            object_path: object_path.to_string(),
+            enable_status: None,
+            file_path: None, /*                   job_id: job_id,
+                             job_type: job_type.clone(),
+                             job_object_path: job_object_path.to_string(), */
+        };
+
+        map.insert(primary.to_ascii_lowercase(), unit_info);
     }
+    Ok(map)
 }
-
-
 
 /// Returns the current enablement status of the unit
-pub fn get_unit_file_state_path(unit_file: &str) -> EnablementStatus {
-    let mut message = dbus_message("GetUnitFileState");
+pub fn get_unit_file_state_path(unit_file: &str) -> Result<EnablementStatus, SystemdErrors> {
+    let mut message = dbus_message("GetUnitFileState")?;
     let message_items = &[MessageItem::Str(unit_file.to_owned())];
     message.append_items(message_items);
 
-    match dbus_connect(message) {
-        Ok(m) => {
-            if let Some(enablement_status) = m.get1::<String>() {
-                EnablementStatus::new(&enablement_status)
-            } else {
-                eprintln!("Something wrong");
-                EnablementStatus::Unknown
-            }
-        }
-        Err(e) => {
-            eprintln!("Error! {}", e);
-            EnablementStatus::Unknown
-        }
+    let m = dbus_connect(message)?;
+
+    if let Some(enablement_status) = m.get1::<String>() {
+        Ok(EnablementStatus::new(&enablement_status))
+    } else {
+        Err(SystemdErrors::Malformed)
     }
 }
 
+pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>, SystemdErrors> {
+    let mut units_map = list_units_description()?;
+
+    let mut units = list_unit_files()?;
+
+    for unit_file in units.drain(..) {
+        match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
+            Some(lu) => {
+                lu.file_path = Some(unit_file.path);
+                lu.enable_status = Some(unit_file.enable_status)
+            }
+            None => println!("unit \"{}\" not found!", unit_file.full_name()),
+        }
+    }
+
+    Ok(units_map)
+}
 
 /// Takes the unit pathname of a service and enables it via dbus.
 /// If dbus replies with `[Bool(true), Array([], "(sss)")]`, the service is already enabled.
@@ -186,7 +332,7 @@ pub fn get_unit_file_state_path(unit_file: &str) -> EnablementStatus {
             println!("{}", error);
             Some(error)
         }
-    } 
+    }
 } */
 
 /// Takes the unit pathname as input and disables it via dbus.
@@ -213,52 +359,47 @@ pub fn get_unit_file_state_path(unit_file: &str) -> EnablementStatus {
             println!("{}", error);
             Some(error)
         }
-    } 
+    }
 } */
 
 /// Takes a unit name as input and attempts to start it
-pub fn start_unit(unit: &str) -> Option<String> {
-    let mut message = dbus_message("StartUnit");
+pub fn start_unit(unit: &str) -> Result<(), SystemdErrors> {
+    let mut message = dbus_message("StartUnit")?;
     message.append_items(&[unit.into(), "fail".into()]);
-    match dbus_connect(message) {
-        Ok(_) => {
-            println!("{} successfully started", unit);
-            None
-        }
-        Err(error) => {
-            let output = format!("{} failed to start:\n{:?}", unit, error);
-            println!("{}", output);
-            Some(output)
-        }
-    }
+
+    let message = dbus_connect(message)?;
+
+    println!("StartUnit answer: {:?}", message); //TODO return the msg
+
+    Ok(())
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub fn stop_unit(unit: &str) -> Option<String> {
-    let mut message = dbus_message("StopUnit");
+pub fn stop_unit(unit: &str) -> Result<(), SystemdErrors> {
+    let mut message = dbus_message("StopUnit")?;
     message.append_items(&[unit.into(), "fail".into()]);
-    match dbus_connect(message) {
-        Ok(_) => {
-            println!("{} successfully stopped", unit);
-            None
-        }
-        Err(error) => {
-            let output = format!("{} failed to stop:\n{:?}", unit, error);
-            println!("{}", output);
-            Some(output)
-        }
-    }
+    let message = dbus_connect(message)?;
+
+    println!("StartUnit answer: {:?}", message); //TODO return the msg
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-   
+
+
+    use crate::systemd::collect_togglable_services;
+
+    use super::msgbus::arg::messageitem::Props;
 
     use super::*;
 
+    pub const TEST_SERVICE: &str = "jackett.service";
+
     #[test]
-    fn list_unit_files_message_test() {
-        let message_vec = list_unit_files_message();
+    fn list_unit_files_message_test() -> Result<(), SystemdErrors> {
+        let message_vec = list_unit_files_message()?;
         //println!("{:?}", message);
 
         let message_item = if message_vec.len() >= 1 {
@@ -267,7 +408,8 @@ mod tests {
             panic!("Aways suppose have one item")
         };
 
-        handle_message_item(message_item)
+        handle_message_item(message_item);
+        Ok(())
     }
 
     fn handle_message_item(message_item: &MessageItem) {
@@ -306,8 +448,8 @@ mod tests {
     }
 
     #[test]
-    fn list_unit_files_message_test2() {
-        let message_vec = list_unit_files_message();
+    fn list_unit_files_message_test2() -> Result<(), SystemdErrors> {
+        let message_vec = list_unit_files_message()?;
         //println!("{:?}", message);
 
         let message_item = if message_vec.len() >= 1 {
@@ -316,102 +458,180 @@ mod tests {
             panic!("Aways suppose have one item")
         };
 
-        let asdf = parse_message(message_item);
+        let vector = parse_message(message_item)?;
 
-        println!("{:#?}", asdf)
+        println!("{:#?}", vector);
+        Ok(())
     }
 
     #[test]
-    fn stop_service_test() {
-        stop_unit("jacket.service");
+    fn stop_service_test() -> Result<(), SystemdErrors> {
+        stop_unit(TEST_SERVICE)?;
+        Ok(())
     }
 
     #[test]
-    fn dbus_test() {
+    fn dbus_test() -> Result<(), SystemdErrors> {
         // let file: &str = "/etc/systemd/system/jackett.service";
-        let file1: &str = "jackett.service";
-        let mut message = dbus_message("GetUnitFileState");
+        let file1: &str = TEST_SERVICE;
+        let mut message = dbus_message("GetUnitFileState")?;
 
         let message_items = &[MessageItem::Str(file1.to_owned())];
         message.append_items(message_items);
 
         match dbus_connect(message) {
-            Ok(m) => println!("{:?}", m.get1::<String>()),
-            Err(e) => {
-                eprintln!("Error! {}", e);
+            Ok(m) => {
+                println!("{:?}", m.get1::<String>());
+                Ok(())
             }
+            Err(e) => Err(e),
         }
     }
 
     #[test]
     fn test_get_unit_file_state() {
         // let file: &str = "/etc/systemd/system/jackett.service";
-        let file1: &str = "jackett.service";
+        let file1: &str = TEST_SERVICE;
 
         let status = get_unit_file_state_path(file1);
         println!("Status: {:?}", status);
     }
 
-/* 
     #[test]
-    fn test_disable_unit_files_path_w_priv() {
-        //let file1: &str = "/etc/systemd/system/jackett.service";
-        let file1: &str = "jackett.service";
-        let res = pkexec::pkexec();
-        println!("Result: {:?}", res);
-        let status = disable_unit_files_path(file1);
-        println!("Status: {:?}", status);
-    } */
-    /*
-      #[test]
-      fn test_privilege() {
+    fn test_list_unit_files() -> Result<(), SystemdErrors> {
+        let units = list_unit_files()?;
 
-          match karen::escalate_if_needed() {
-              Ok(w) => {
-                  println!("Hello, Root-World!");
-                  println!("{:?}", w);
-              }
-              Err(e) => println!("Error {:?}", e),
-          };
-      }
+        let serv = units
+            .iter()
+            .filter(|ud| ud.full_name() == TEST_SERVICE)
+            .nth(0);
 
-      #[test]
-      fn test_privilege2() {
-          match karen::pkexec() {
-              Ok(a) =>  println!("Run as: {:?}", a),
-              Err(e) => println!("Error {:?}", e),
-          }
+        println!("{:#?}", serv);
+        Ok(())
+    }
 
-          println!("OK OK");
-          match karen::pkexec() {
-              Ok(a) =>  println!("Run as: {:?}", a),
-              Err(e) => println!("Error {:?}", e),
-          }
-      }
+    #[test]
+    fn test_list_units()-> Result<(), SystemdErrors> {
+        let units = list_units_description()?;
 
-      #[test]
-      fn test_privilege3() {
-          let run_as = karen::check() ;
-          println!("Run as: {:?}", run_as)
-    /*        {
-              Ok(a) =>  println!("Run as: {:?}", a),
-              Err(e) => println!("Error {:?}", e),
-          } */
+        let serv = units.get(TEST_SERVICE);
+        println!("{:#?}", serv);
+        Ok(())
+    }
 
+    #[test]
+    fn test_list_units_merge() -> Result<(), SystemdErrors> {
+        let mut units_map = list_units_description().unwrap();
 
-      }
+        let mut units = list_unit_files()?;
 
-      #[test]
-      fn test_privilege4() {
-          match karen::pkexec() {
-              Ok(a) =>  println!("Run as: {:?}", a),
-              Err(e) => println!("Error {:?}", e),
-          }
+        for unit_file in units.drain(..) {
+            match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
+                Some(lu) => {
+                    lu.file_path = Some(unit_file.path);
+                    lu.enable_status = Some(unit_file.enable_status)
+                }
+                None => println!("unit \"{}\" not found!", unit_file.full_name()),
+            }
+        }
 
-          println!("OK OK");
-          match karen::pkexec() {
-              Ok(a) =>  println!("Run as: {:?}", a),
-              Err(e) => println!("Error {:?}", e),
-          }
-      } */
+        println!("{:#?}", units_map.get(TEST_SERVICE));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_list_units_description_and_state() -> Result<(), SystemdErrors> {
+        let units_map = list_units_description_and_state()?;
+
+        let ts = units_map.get(TEST_SERVICE);
+        println!("Test Service {:#?}", ts);
+        let units = units_map.into_values().collect::<Vec<LoadedUnit>>();
+
+        
+        let services = collect_togglable_services(&units);
+
+        println!("service.len {}", services.len());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_prop() {
+        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+        let p = Props::new(
+            &c,
+            "org.freedesktop.PolicyKit1",
+            "/org/freedesktop/PolicyKit1/Authority",
+            "org.freedesktop.PolicyKit1.Authority",
+            10000,
+        );
+        println!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
+    }
+
+    #[test]
+    fn test_prop2() {
+        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+
+        let dest = "org.freedesktop.systemd1";
+        let path = "/org/freedesktop/systemd1";
+        let interface = "org.freedesktop.systemd1.Manager";
+        let prop = Props::new(&c, dest, path, interface, 10000);
+        println!("Version: {:?}", prop.get("Version").unwrap());
+        println!("Architecture: {:?}", prop.get("Architecture").unwrap());
+
+        //println!("ActiveState: {:?}", p.get("ActiveState").unwrap());
+    }
+
+    #[test]
+    fn test_prop3() -> Result<(), Box<dyn std::error::Error>> {
+        let dest = "org.freedesktop.systemd1";
+        let path = "/org/freedesktop/systemd1";
+        let interface = "org.freedesktop.systemd1.Manager";
+        let connection = msgbus::blocking::Connection::new_session()?;
+        let proxy = connection.with_proxy(dest, path, std::time::Duration::from_millis(5000));
+
+        use super::msgbus::blocking::stdintf::org_freedesktop_dbus::Properties;
+
+        let metadata: super::msgbus::arg::Variant<String> = proxy.get(interface, "Version")?;
+
+        println!("Meta: {:?}", metadata);
+        Ok(())
+    }
+
+    #[test]
+    pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
+        let unit_file: &str = TEST_SERVICE;
+        let mut message = dbus_message("GetUnit")?;
+        let message_items = &[MessageItem::Str(unit_file.to_owned())];
+        message.append_items(message_items);
+
+        let load_unit_ret = dbus_connect(message)?;
+        println!("{:?}", load_unit_ret);
+        Ok(())
+    }
+
+    #[test]
+    pub fn test_get_unit_parameters() {
+      
+        let dest = "org.freedesktop.systemd1";
+        let path = "/org/freedesktop/systemd1/unit/jackett_2eservice";
+        let interface = "org.freedesktop.systemd1.Unit";
+        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+        let p = Props::new(&c, dest, path, interface, 10000);
+
+        println!("ALL PARAM: {:#?}", p.get_all());
+    }
+
+    #[test]
+    pub fn test_load_unit_() -> Result<(), SystemdErrors> {
+        let unit_file: &str = TEST_SERVICE;
+        let mut message = dbus_message("LoadUnit")?;
+        let message_items = &[MessageItem::Str(unit_file.to_owned())];
+        message.append_items(message_items);
+
+        let load_unit_ret = dbus_connect(message)?;
+        println!("{:?}", load_unit_ret);
+        Ok(())
+    }
 }
