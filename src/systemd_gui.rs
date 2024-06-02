@@ -269,7 +269,7 @@ fn fill_sysd_unit_list(
         //let window = window.clone();
         let wait = Cursor::from_name("wait", None);
         services_list.connect_row_selected(move |service_list_box, row| {
-            println!("Start connect_row_selected");
+            //println!("Start connect_row_selected");
             service_list_box.set_cursor(wait.as_ref());
 
             match row {
@@ -295,7 +295,7 @@ fn fill_sysd_unit_list(
             }
 
             service_list_box.set_cursor_from_name(None);
-            println!("STOP connect_row_selected");
+            //println!("STOP connect_row_selected");
         });
     }
 }
@@ -499,7 +499,7 @@ fn build_ui(application: &Application) {
     /*         let gtk_box_test = gtk::Box::new(Orientation::Horizontal, 0);
     gtk_box_test.append(&right_bar_label);
     gtk_box_test.set_width_request(100); */
-    title_bar.pack_end(&right_bar_label);
+    title_bar.pack_start(&right_bar_label);
 
     let action_buttons = gtk::Box::new(Orientation::Horizontal, 0);
 
