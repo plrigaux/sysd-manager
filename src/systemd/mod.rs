@@ -115,15 +115,51 @@ pub struct LoadedUnit {
     object_path: String,
     file_path: Option<String>,
     enable_status: Option<String>,
-    /*     job_id: u32,
-    job_type: String,
-    job_object_path: String, */
+    separator: usize, /*     job_id: u32,
+                    job_type: String,
+                    job_object_path: String, */
 }
 
 const STATUS_ENABLED: &str = "enabled";
 const STATUS_DISABLED: &str = "disabled";
 
 impl LoadedUnit {
+    pub fn new(
+        primary: &String,
+        description: &String,
+        load_state: &String,
+        active_state: &String,
+        sub_state: &String,
+        followed_unit: &String,
+        object_path: String,
+    ) -> Self {
+
+
+        let mut split_char_index = primary.len();
+        for (i, c) in primary.chars().enumerate() {
+            if c == '.' {
+                split_char_index = i + 1;
+                break;
+            }
+        }
+
+        let unit_info = LoadedUnit {
+            primary: primary.clone(),
+            description: description.clone(),
+            load_state: load_state.clone(),
+            active_state: active_state.clone(),
+            sub_state: sub_state.clone(),
+            followed_unit: followed_unit.clone(),
+            object_path: object_path.to_string(),
+            enable_status: None,
+            file_path: None,
+            separator: split_char_index, /*                   job_id: job_id,
+                          job_type: job_type.clone(),
+                          job_object_path: job_object_path.to_string(), */
+        };
+        unit_info
+    }
+
     pub fn is_enable(&self) -> bool {
         match &self.enable_status {
             Some(enable_status) => STATUS_ENABLED == enable_status,
@@ -139,25 +175,11 @@ impl LoadedUnit {
     }
 
     pub fn display_name(&self) -> &str {
-        let mut split_char_index = self.primary.len();
-        for (i, c) in self.primary.chars().enumerate() {
-            if c == '.' {
-                split_char_index = i;
-                break;
-            }
-        }
-        &self.primary[..split_char_index]
+        &self.primary[..self.separator]
     }
 
     pub fn unit_type(&self) -> &str {
-        let mut split_char_index = self.primary.len();
-        for (i, c) in self.primary.chars().enumerate() {
-            if c == '.' {
-                split_char_index = i + 1;
-                break;
-            }
-        }
-        &self.primary[split_char_index..]
+        &self.primary[(self.separator+1)..]
     }
 
     fn is_enable_or_disable(&self) -> bool {

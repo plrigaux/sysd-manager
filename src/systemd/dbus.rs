@@ -260,19 +260,16 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
             continue;
         }; */
 
-        let unit_info: LoadedUnit = LoadedUnit {
-            primary: primary.clone(),
-            description: description.clone(),
-            load_state: load_state.clone(),
-            active_state: active_state.clone(),
-            sub_state: sub_state.clone(),
-            followed_unit: followed_unit.clone(),
-            object_path: object_path.to_string(),
-            enable_status: None,
-            file_path: None, /*                   job_id: job_id,
-                             job_type: job_type.clone(),
-                             job_object_path: job_object_path.to_string(), */
-        };
+        let unit_info = LoadedUnit::new(
+             primary,
+             description,
+             load_state,
+             active_state,
+             sub_state,
+             followed_unit,
+             object_path.to_string()
+           
+        );
 
         map.insert(primary.to_ascii_lowercase(), unit_info);
     }
