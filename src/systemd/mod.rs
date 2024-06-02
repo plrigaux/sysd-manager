@@ -3,6 +3,8 @@ mod dbus;
 mod systemctl;
 
 use std::collections::BTreeMap;
+use std::path::Path;
+use std::process::Command;
 use std::string::FromUtf8Error;
 
 use systemd::dbus::msgbus::arg::ArgType;
@@ -233,6 +235,25 @@ pub fn get_unit_info(unit: &LoadedUnit) -> String {
     }
     output
 }
+
+/// Obtains the journal log for the given unit.
+pub fn get_unit_journal(unit_path: &str) -> String {
+    let log = String::from_utf8(
+        Command::new("journalctl")
+            .arg("-b")
+            .arg("-u")
+            .arg(Path::new(unit_path).file_stem().unwrap().to_str().unwrap())
+            .output()
+            .unwrap()
+            .stdout,
+    )
+    .unwrap();
+    log.lines()
+        .rev()
+        .map(|x| x.trim())
+        .fold(String::with_capacity(log.len()), |acc, x| acc + "\n" + x)
+}
+
 
 #[cfg(test)]
 mod tests {

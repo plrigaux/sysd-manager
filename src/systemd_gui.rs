@@ -5,6 +5,7 @@ use gtk::prelude::*;
 use systemd::analyze::Analyze;
 
 use crate::grid_cell::{Entry, GridCell};
+use crate::systemd::get_unit_journal;
 
 use systemd::{self, EnablementStatus, LoadedUnit, SystemdErrors};
 
@@ -146,23 +147,6 @@ fn update_journal(journal: &gtk::TextView, unit_path: &str) {
         .set_text(get_unit_journal(unit_path).as_str());
 }
 
-/// Obtains the journal log for the given unit.
-fn get_unit_journal(unit_path: &str) -> String {
-    let log = String::from_utf8(
-        Command::new("journalctl")
-            .arg("-b")
-            .arg("-u")
-            .arg(Path::new(unit_path).file_stem().unwrap().to_str().unwrap())
-            .output()
-            .unwrap()
-            .stdout,
-    )
-    .unwrap();
-    log.lines()
-        .rev()
-        .map(|x| x.trim())
-        .fold(String::with_capacity(log.len()), |acc, x| acc + "\n" + x)
-}
 
 pub fn launch() -> glib::ExitCode {
     // Create a new application
