@@ -7,10 +7,10 @@ use std::path::Path;
 use std::process::Command;
 use std::string::FromUtf8Error;
 
-use systemd::dbus::msgbus::arg::ArgType;
-use systemd::dbus::UnitType;
 use std::fs::File;
 use std::io::Read;
+use systemd::dbus::msgbus::arg::ArgType;
+use systemd::dbus::UnitType;
 
 #[derive(Debug)]
 pub enum SystemdErrors {
@@ -120,21 +120,28 @@ pub struct LoadedUnit {
     job_object_path: String, */
 }
 
-const STATUS_ENABLED :&str = "enabled";
-const STATUS_DISABLED :&str = "disabled";
+const STATUS_ENABLED: &str = "enabled";
+const STATUS_DISABLED: &str = "disabled";
 
 impl LoadedUnit {
     pub fn is_enable(&self) -> bool {
         match &self.enable_status {
-            Some(enable_status) => STATUS_ENABLED== enable_status,
+            Some(enable_status) => STATUS_ENABLED == enable_status,
             None => false,
+        }
+    }
+
+    pub fn enable_status(&self) -> &str {
+        match &self.enable_status {
+            Some(enable_status) => &enable_status,
+            None => "",
         }
     }
 
     pub fn display_name(&self) -> &str {
         let mut split_char_index = self.primary.len();
         for (i, c) in self.primary.chars().enumerate() {
-            if c ==  '.' {
+            if c == '.' {
                 split_char_index = i;
                 break;
             }
@@ -145,8 +152,8 @@ impl LoadedUnit {
     pub fn unit_type(&self) -> &str {
         let mut split_char_index = self.primary.len();
         for (i, c) in self.primary.chars().enumerate() {
-            if c ==  '.' {
-                split_char_index = i+1;
+            if c == '.' {
+                split_char_index = i + 1;
                 break;
             }
         }
@@ -154,8 +161,10 @@ impl LoadedUnit {
     }
 
     fn is_enable_or_disable(&self) -> bool {
-        match &self.enable_status {                              
-            Some(enable_status) => STATUS_ENABLED == enable_status || STATUS_DISABLED == enable_status,
+        match &self.enable_status {
+            Some(enable_status) => {
+                STATUS_ENABLED == enable_status || STATUS_DISABLED == enable_status
+            }
             None => false,
         }
     }
@@ -192,10 +201,7 @@ pub fn disable_unit_files(sytemd_unit: &LoadedUnit) -> Result<std::string::Strin
 pub fn collect_togglable_services(units: &Vec<LoadedUnit>) -> Vec<LoadedUnit> {
     units
         .iter()
-        .filter(|x| {
-            x.unit_type() == "service"
-                 && x.is_enable_or_disable() 
-        })
+        .filter(|x| x.unit_type() == "service" && x.is_enable_or_disable())
         .cloned()
         .collect()
 }
@@ -205,10 +211,7 @@ pub fn collect_togglable_services(units: &Vec<LoadedUnit>) -> Vec<LoadedUnit> {
 pub fn collect_togglable_sockets(units: &[LoadedUnit]) -> Vec<LoadedUnit> {
     units
         .iter()
-        .filter(|x| {
-            x.unit_type() == "socket"
-            && x.is_enable_or_disable()
-        })
+        .filter(|x| x.unit_type() == "socket" && x.is_enable_or_disable())
         .cloned()
         .collect()
 }
@@ -218,10 +221,7 @@ pub fn collect_togglable_sockets(units: &[LoadedUnit]) -> Vec<LoadedUnit> {
 pub fn collect_togglable_timers(units: &[LoadedUnit]) -> Vec<LoadedUnit> {
     units
         .iter()
-        .filter(|x| {
-            x.unit_type() == "timer"
-            && x.is_enable_or_disable()
-        })
+        .filter(|x| x.unit_type() == "timer" && x.is_enable_or_disable())
         .cloned()
         .collect()
 }
@@ -254,7 +254,6 @@ pub fn get_unit_journal(unit_path: &str) -> String {
         .fold(String::with_capacity(log.len()), |acc, x| acc + "\n" + x)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::LoadedUnit;
@@ -266,8 +265,6 @@ mod tests {
 
     #[test]
     fn test_spliter() {
-     
-
         let mut a = LoadedUnit::default();
 
         a.primary = "my_good.service".to_owned();

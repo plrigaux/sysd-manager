@@ -20,8 +20,6 @@ use std::cell::Ref;
 use std::fs;
 
 use std::io::Write;
-use std::path::Path;
-use std::process::Command;
 use std::rc::Rc;
 
 // ANCHOR: main
@@ -60,11 +58,6 @@ fn create_row(systemd_unit: &LoadedUnit, state_icons: &mut Vec<gtk::Image>) -> g
     unit_row
 }
 
-struct TableRow {
-    col1: u32,
-    col2: String,
-}
-
 //https://github.com/gtk-rs/gtk4-rs/blob/master/examples/column_view_datagrid/main.rs
 
 /// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
@@ -75,10 +68,7 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
 
     for value in units.clone() {
         //println!("Analyse Tree Blame {:?}", value);
-        store.append(&BoxedAnyObject::new(TableRow {
-            col1: value.time,
-            col2: value.service,
-        }));
+        store.append(&BoxedAnyObject::new(value));
     }
 
     let single_selection = gtk::SingleSelection::new(Some(store));
@@ -103,9 +93,9 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<GridCell>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<TableRow> = entry.borrow();
+        let r: Ref<Analyze> = entry.borrow();
         let ent = Entry {
-            name: r.col1.to_string(),
+            name: r.time.to_string(),
         };
         child.set_entry(&ent);
     });
@@ -120,9 +110,9 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<GridCell>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<TableRow> = entry.borrow();
+        let r: Ref<Analyze> = entry.borrow();
         let ent = Entry {
-            name: r.col2.to_string(),
+            name: r.service.to_string(),
         };
         child.set_entry(&ent);
     });
@@ -146,7 +136,6 @@ fn update_journal(journal: &gtk::TextView, unit_path: &str) {
         .buffer()
         .set_text(get_unit_journal(unit_path).as_str());
 }
-
 
 pub fn launch() -> glib::ExitCode {
     // Create a new application
@@ -294,6 +283,115 @@ fn build_ui(application: &Application) {
         }
     };
 
+    let store = gtk::gio::ListStore::new::<BoxedAnyObject>();
+
+    for value in unit_files.clone() {
+        //println!("Analyse Tree Blame {:?}", value);
+        store.append(&BoxedAnyObject::new(value));
+    }
+
+    let selection_model = gtk::SingleSelection::new(Some(store));
+    let column_view = gtk::ColumnView::new(Some(selection_model));
+    column_view.set_focusable(true);
+
+    // removed the activated (double clicked) item.
+    column_view.connect_activate(move |col_view, index| {
+/*         let selmodel = col_view.model().ok_or(()).expect("Expected Some(model)");
+        let singleselmodel = selmodel
+            .downcast::<SingleSelection>()
+            .expect("Must be a SingleSlection");
+        let listmodel = singleselmodel
+            .model()
+            .ok_or(())
+            .expect("Expected Some(listmodel");
+        let stringlist = listmodel
+            .downcast::<gtk::StringList>()
+            .expect("Must be a StringList");
+        stringlist.remove(index); */
+    });
+
+    let col1factory = gtk::SignalListItemFactory::new();
+    let col2factory = gtk::SignalListItemFactory::new();
+    let col3factory = gtk::SignalListItemFactory::new();
+
+    col1factory.connect_setup(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let row = gtk::Label::builder().xalign(0.0).build();
+        item.set_child(Some(&row));
+    });
+
+    col1factory.connect_bind(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+        let r: Ref<LoadedUnit> = entry.borrow();
+        child.set_label(r.display_name());
+    });
+
+    col2factory.connect_setup(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let row = gtk::Label::builder().xalign(0.0).build();
+        item.set_child(Some(&row));
+    });
+
+    col2factory.connect_bind(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+        let r: Ref<LoadedUnit> = entry.borrow();
+        child.set_label(r.enable_status());
+    });
+
+
+
+    col3factory.connect_setup(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let row = gtk::Label::builder().xalign(0.0).build();
+        item.set_child(Some(&row));
+    });
+    col3factory.connect_bind(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+        let r: Ref<LoadedUnit> = entry.borrow();
+        child.set_label(r.unit_type());
+    });
+
+    let col1_unit = gtk::ColumnViewColumn::new(Some("Unit"), Some(col1factory));
+    col1_unit.set_resizable(true);
+    col1_unit.set_fixed_width(140);
+
+    let col3_unit = gtk::ColumnViewColumn::new(Some("Type"), Some(col3factory));
+    col3_unit.set_resizable(true);
+    col3_unit.set_fixed_width(75);
+
+    let col2_enable_status = gtk::ColumnViewColumn::new(Some("Enable status"), Some(col2factory));
+    col2_enable_status.set_expand(true);
+
+    column_view.append_column(&col1_unit);
+    column_view.append_column(&col3_unit);
+    column_view.append_column(&col2_enable_status);
+
+
+
+
+
+
+    {
+ 
+ 
+        column_view.connect_activate(|_, val : u32| { println!("active {}", val)});
+    }
+
+    let unit_col_view_scrolled_window = gtk::ScrolledWindow::builder()
+        .vexpand(true)
+        .focusable(true)
+        .child(&column_view)
+        .build();
+
+    /*     let time = (units.iter().last().unwrap().time as f32) / 1000f32;
+    total_time_label.set_label(format!("{} seconds", time).as_str()); */
+
     let services_list = gtk::ListBox::new();
 
     let services_viewport = gtk::Viewport::builder().child(&services_list).build();
@@ -339,9 +437,10 @@ fn build_ui(application: &Application) {
     let left_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(0)
+        .width_request(350)
         .build();
 
-    left_pane.append(&unit_stack);
+    left_pane.append(&unit_col_view_scrolled_window);
     //-------------------------------------------
 
     let unit_info = gtk::TextView::builder()
@@ -609,17 +708,10 @@ fn build_ui(application: &Application) {
         }
 
         ablement_switch.connect_state_set(move |switch, enabled| {
-            let (unit_listbox,unit_ref) = match unit_stack.visible_child_name().unwrap().as_str() {
-                "Services" => {
-                    (&services_list, services_ref.clone())
-                }
-                "Sockets" => {
-                    (&sockets_list, sockets_ref.clone())
-   
-                }
-                "Timers" => {
-                    (&timers_list, timers_ref.clone())
-                }
+            let (unit_listbox, unit_ref) = match unit_stack.visible_child_name().unwrap().as_str() {
+                "Services" => (&services_list, services_ref.clone()),
+                "Sockets" => (&sockets_list, sockets_ref.clone()),
+                "Timers" => (&timers_list, timers_ref.clone()),
                 _ => unreachable!(),
             };
 
@@ -755,10 +847,11 @@ fn build_ui(application: &Application) {
                         .unwrap();
                     service.display_name()
                 }
-                "Sockets" => {
-                    sockets_ref[sockets_list.selected_row().unwrap().index() as usize].display_name()
+                "Sockets" => sockets_ref[sockets_list.selected_row().unwrap().index() as usize]
+                    .display_name(),
+                "Timers" => {
+                    timers_ref[timers_list.selected_row().unwrap().index() as usize].display_name()
                 }
-                "Timers" => timers_ref[timers_list.selected_row().unwrap().index() as usize].display_name(),
                 _ => unreachable!(),
             };
             match fs::OpenOptions::new().write(true).open(&path) {
