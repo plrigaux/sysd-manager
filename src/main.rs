@@ -6,7 +6,8 @@ extern crate log;
 mod systemd_gui;     // Contains all of the heavy GUI-related work
 mod systemd;
 mod grid_cell;
+use gtk::glib;
 
-fn main() {
-    systemd_gui::launch();
+fn main() -> glib::ExitCode {
+    systemd_gui::launch()
 }

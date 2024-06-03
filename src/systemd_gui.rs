@@ -1,4 +1,4 @@
-use gtk;
+use gtk::{self, SingleSelection};
 
 use gtk::gdk::Cursor;
 use gtk::prelude::*;
@@ -39,7 +39,7 @@ const ICON_NO: &str = "window-close-symbolic";
  */
 /// Create a `gtk::ListboxRow` and add it to the `gtk::ListBox`, and then add the `gtk::Image` to a vector so that we can later modify
 /// it when the state changes.
-fn create_row(systemd_unit: &LoadedUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
+/* fn create_row(systemd_unit: &LoadedUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
     let unit_box = gtk::CenterBox::new();
     let unit_label = gtk::Label::new(Some(&systemd_unit.display_name()));
     let image = if systemd_unit.is_enable() {
@@ -56,8 +56,7 @@ fn create_row(systemd_unit: &LoadedUnit, state_icons: &mut Vec<gtk::Image>) -> g
     state_icons.push(image);
 
     unit_row
-}
-
+} */
 //https://github.com/gtk-rs/gtk4-rs/blob/master/examples/column_view_datagrid/main.rs
 
 /// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
@@ -150,7 +149,10 @@ const SERVICES_TITLE: &str = "Services";
 const SOCKETS_TITLE: &str = "Sockets";
 const TIMERS_TITLE: &str = "Timers";
 
-fn build_popover_menu(menu_button: &gtk::MenuButton, unit_stack: &gtk::Stack) -> gtk::PopoverMenu {
+fn build_popover_menu(
+    _menu_button: &gtk::MenuButton,
+    /*   _unit_stack: &gtk::Stack, */
+) -> gtk::PopoverMenu {
     let services_button = gtk::Button::builder()
         .label(SERVICES_TITLE)
         .focusable(true)
@@ -181,41 +183,41 @@ fn build_popover_menu(menu_button: &gtk::MenuButton, unit_stack: &gtk::Stack) ->
 
     // let popover = RefCell::new(unit_menu_popover);
     {
-        let popover = unit_menu_popover.clone();
+        /*         let popover = unit_menu_popover.clone();
         let mb = menu_button.clone();
-        let stack = unit_stack.clone();
+        let stack = unit_stack.clone(); */
         services_button.connect_clicked(move |_| {
-            stack.set_visible_child_name(SERVICES_TITLE);
+            /*             stack.set_visible_child_name(SERVICES_TITLE);
             mb.set_label(SERVICES_TITLE);
-            popover.set_visible(false);
+            popover.set_visible(false); */
         });
     }
 
     {
-        let popover = unit_menu_popover.clone();
+        /*         let popover = unit_menu_popover.clone();
         let mb = menu_button.clone();
-        let stack = unit_stack.clone();
+        let stack = unit_stack.clone(); */
         sockets_button.connect_clicked(move |_| {
-            stack.set_visible_child_name(SOCKETS_TITLE);
+            /*             stack.set_visible_child_name(SOCKETS_TITLE);
             mb.set_label(SOCKETS_TITLE);
-            popover.set_visible(false);
+            popover.set_visible(false); */
         });
     }
 
     {
-        let popover = unit_menu_popover.clone();
+        /*         let popover = unit_menu_popover.clone();
         let mb = menu_button.clone();
-        let stack = unit_stack.clone();
+        let stack = unit_stack.clone(); */
         timers_button.connect_clicked(move |_| {
-            stack.set_visible_child_name(TIMERS_TITLE);
+            /*             stack.set_visible_child_name(TIMERS_TITLE);
             mb.set_label(TIMERS_TITLE);
-            popover.set_visible(false);
+            popover.set_visible(false); */
         });
     }
 
     unit_menu_popover
 }
-
+/*
 fn fill_sysd_unit_list(
     units_list: &gtk::ListBox,
     services_list_ref: &Rc<Vec<LoadedUnit>>,
@@ -271,7 +273,7 @@ fn fill_sysd_unit_list(
             //println!("STOP connect_row_selected");
         });
     }
-}
+} */
 
 fn build_ui(application: &Application) {
     // List of all unit files on the system
@@ -292,14 +294,13 @@ fn build_ui(application: &Application) {
 
     let columnview_selection_model = gtk::SingleSelection::new(Some(store));
 
-/*     let column_view = gtk::ColumnView::new(Some(selection_model));
+    /*     let column_view = gtk::ColumnView::new(Some(selection_model));
     column_view.set_focusable(true); */
 
     let column_view = gtk::ColumnView::builder()
-    .model(&columnview_selection_model)
-    .focusable(true)
-    .build()    ;
-    
+        .model(&columnview_selection_model)
+        .focusable(true)
+        .build();
 
     let col1factory = gtk::SignalListItemFactory::new();
     let col2factory = gtk::SignalListItemFactory::new();
@@ -370,7 +371,7 @@ fn build_ui(application: &Application) {
     /*     let time = (units.iter().last().unwrap().time as f32) / 1000f32;
     total_time_label.set_label(format!("{} seconds", time).as_str()); */
 
-    let services_list = gtk::ListBox::new();
+    /* let services_list = gtk::ListBox::new();
 
     let services_viewport = gtk::Viewport::builder().child(&services_list).build();
 
@@ -406,11 +407,11 @@ fn build_ui(application: &Application) {
     let unit_stack = gtk::Stack::builder()
         .vexpand(true)
         .transition_type(gtk::StackTransitionType::Crossfade)
-        .build();
+        .build(); */
 
-    unit_stack.add_titled(&services_window, Some(SERVICES_TITLE), SERVICES_TITLE);
+    /*     unit_stack.add_titled(&services_window, Some(SERVICES_TITLE), SERVICES_TITLE);
     unit_stack.add_titled(&sockets_window, Some(SOCKETS_TITLE), SOCKETS_TITLE);
-    unit_stack.add_titled(&timers_window, Some(TIMERS_TITLE), TIMERS_TITLE);
+    unit_stack.add_titled(&timers_window, Some(TIMERS_TITLE), TIMERS_TITLE); */
 
     let left_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -539,7 +540,9 @@ fn build_ui(application: &Application) {
         .label(SERVICES_TITLE)
         .build();
 
-    menu_button.set_popover(Some(&build_popover_menu(&menu_button, &unit_stack)));
+    menu_button.set_popover(Some(&build_popover_menu(
+        &menu_button, /* , &unit_stack*/
+    )));
 
     let title_bar = gtk::HeaderBar::builder().build();
 
@@ -619,7 +622,7 @@ fn build_ui(application: &Application) {
         .titlebar(&title_bar)
         .build();
 
-    let services_ = systemd::collect_togglable_services(&unit_files);
+    /*     let services_ = systemd::collect_togglable_services(&unit_files);
     let services_ref = Rc::new(services_);
     fill_sysd_unit_list(
         &services_list,
@@ -650,42 +653,57 @@ fn build_ui(application: &Application) {
         &ablement_switch,
         &unit_journal_view,
         &right_bar_label,
-    );
+    ); */
 
     {
-        // NOTE: Implement the {dis, en}able button
-        let services_ref = services_ref.clone();
-        let services_list = services_list.clone();
-        let sockets_ref = sockets_ref.clone();
-        let sockets_list = sockets_list.clone();
-        let timers_ref = timers_ref.clone();
-        let timers_list = timers_list.clone();
-        let unit_stack = unit_stack.clone();
-
         fn handle_switch(
-            unit_list: &gtk::ListBox,
-            unit_ref: Rc<Vec<LoadedUnit>>,
+            unit_list: &gtk::ColumnView,
+            // unit_ref: Rc<Vec<LoadedUnit>>,
             enabled: bool,
             switch: &gtk::Switch,
         ) {
-            let index = unit_list.selected_row().unwrap().index();
-            let unit = &unit_ref[index as usize];
+            if let Some(model) = unit_list.model() {
+                let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
+                    panic!("Can't downcast to SingleSelection")
+                };
 
-            let status = systemd::get_unit_file_state(unit).unwrap_or(EnablementStatus::Unknown);
-            let is_unit_enable = status == EnablementStatus::Enabled;
+                let Some(object) = single_selection_model.selected_item() else {
+                    eprintln!("No selection objet");
+                    return;
+                };
 
-            if enabled && !is_unit_enable {
-                if let Ok(_) = systemd::enable_unit_files(unit) {
-                    switch.set_state(true);
-                }
-            } else if !enabled && is_unit_enable {
-                if let Ok(_) = systemd::disable_unit_files(unit) {
-                    switch.set_state(false);
+                let box_any = match object.downcast::<BoxedAnyObject>() {
+                    Ok(any_objet) => any_objet,
+                    Err(val) => {
+                        eprintln!("Selection Error: {:?}", val);
+                        return;
+                    }
+                };
+
+                let unit: Ref<LoadedUnit> = box_any.borrow();
+
+                let status =
+                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
+                let is_unit_enable = status == EnablementStatus::Enabled;
+
+                if enabled && !is_unit_enable {
+                    if let Ok(_) = systemd::enable_unit_files(&unit) {
+                        switch.set_state(true);
+                    }
+                } else if !enabled && is_unit_enable {
+                    if let Ok(_) = systemd::disable_unit_files(&unit) {
+                        switch.set_state(false);
+                    }
                 }
             }
         }
-
+        let column_view = column_view.clone();
         ablement_switch.connect_state_set(move |switch, enabled| {
+            handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
+            Propagation::Proceed
+        });
+
+        /*         ablement_switch.connect_state_set(move |switch, enabled| {
             let (unit_listbox, unit_ref) = match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => (&services_list, services_ref.clone()),
                 "Sockets" => (&sockets_list, sockets_ref.clone()),
@@ -693,24 +711,25 @@ fn build_ui(application: &Application) {
                 _ => unreachable!(),
             };
 
-            //handle_switch(unit_listbox, unit_ref, enabled, switch);
+            handle_switch(unit_listbox, unit_ref, enabled, switch);
             Propagation::Proceed
-        });
+        }); */
     }
 
     {
         // NOTE: Journal Refresh Button
-        let services_ref = services_ref.clone();
+        /*         let services_ref = services_ref.clone();
         let services_list = services_list.clone();
         let sockets = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
         let timers = timers_ref.clone();
         let timers_list = timers_list.clone();
-        let unit_stack = unit_stack.clone();
+        let unit_stack = unit_stack.clone();*/
         let refresh_button = refresh_log_button.clone();
-        let unit_journal = unit_journal_view.clone();
+        //let unit_journal = unit_journal_view.clone();
         refresh_button.connect_clicked(move |_| {
-            match unit_stack.visible_child_name().unwrap().as_str() {
+            todo!()
+            /*  match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
                     let service = &services_ref.get(index as usize).unwrap();
@@ -727,60 +746,66 @@ fn build_ui(application: &Application) {
                     update_journal(&unit_journal, timer.display_name());
                 }
                 _ => unreachable!(),
-            }
+            } */
         });
     }
 
     {
         // NOTE: Implement the start button
-        let services_ref = services_ref.clone();
+        /*         let services_ref = services_ref.clone();
         let services_list = services_list.clone();
         let sockets_ref = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
         let timers_ref = timers_ref.clone();
-        let timers_list = timers_list.clone();
+        let timers_list = timers_list.clone(); */
         /*         let services_icons = services_icons.clone();
         let sockets_icons = sockets_icons.clone();
         let timers_icons = timers_icons.clone(); */
-        let unit_stack = unit_stack.clone();
+        // let unit_stack = unit_stack.clone();
+        let column_view = column_view.clone();
         start_button.connect_clicked(move |_| {
-            let unit_option = match unit_stack.visible_child_name().unwrap().as_str() {
-                "Services" => {
-                    let index = services_list.selected_row().unwrap().index();
-                    let service = services_ref.get(index as usize).unwrap();
-                    Some((index, service, services_list.clone()))
-                }
-                "Sockets" => {
-                    let index = sockets_list.selected_row().unwrap().index();
-                    let socket = &sockets_ref[index as usize];
-                    Some((index, socket, sockets_list.clone()))
-                }
-                "Timers" => {
-                    let index = timers_list.selected_row().unwrap().index();
-                    let timer = &timers_ref[index as usize];
-                    Some((index, timer, timers_list.clone()))
-                }
-                _ => None,
+            let Some(model) = column_view.model() else {
+                panic!("Can't find model")
             };
 
-            change_status_icon(unit_option, ICON_YES, systemd::start_unit);
+            let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
+                panic!("Can't downcast to SingleSelection")
+            };
+
+            let Some(object) = single_selection_model.selected_item() else {
+                eprintln!("No selection objet");
+                return;
+            };
+
+            let box_any = match object.downcast::<BoxedAnyObject>() {
+                Ok(any_objet) => any_objet,
+                Err(val) => {
+                    eprintln!("Selection Error: {:?}", val);
+                    return;
+                }
+            };
+
+            let _unit: Ref<LoadedUnit> = box_any.borrow();
+            todo!()
+            //change_status_icon(column_view, ICON_YES, systemd::start_unit);
         });
     }
 
     {
         // NOTE: Implement the stop button
-        let services_ref = services_ref.clone();
+        /*    let services_ref = services_ref.clone();
         let services_list = services_list.clone();
         let sockets_ref = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
         let timers = timers_ref.clone();
-        let timers_list = timers_list.clone();
+        let timers_list = timers_list.clone(); */
         /*         let services_icons = services_icons.clone();
         let sockets_icons = sockets_icons.clone();
         let timers_icons = timers_icons.clone(); */
-        let unit_stack = unit_stack.clone();
+        //  let unit_stack = unit_stack.clone();
         stop_button.connect_clicked(move |_| {
-            let unit_option = match unit_stack.visible_child_name().unwrap().as_str() {
+            todo!()
+            /*             let unit_option = match unit_stack.visible_child_name().unwrap().as_str() {
                 "Services" => {
                     let index = services_list.selected_row().unwrap().index();
                     let service = services_ref.get(index as usize).unwrap();
@@ -797,24 +822,25 @@ fn build_ui(application: &Application) {
                     Some((index, timer, timers_list.clone()))
                 }
                 _ => None,
-            };
+            }; */
 
-            change_status_icon(unit_option, ICON_NO, systemd::stop_unit);
+            //change_status_icon(unit_option, ICON_NO, systemd::stop_unit);
         });
     }
 
     {
         // NOTE: Save Button
-        let unit_info = unit_info.clone();
+        /*         let unit_info = unit_info.clone();
         let services_ref = services_ref.clone();
         let services_list = services_list.clone();
         let sockets_ref = sockets_ref.clone();
         let sockets_list = sockets_list.clone();
         let timers_ref = timers_ref.clone();
         let timers_list = timers_list.clone();
-        let unit_stack = unit_stack.clone();
+        let unit_stack = unit_stack.clone(); */
         save_unit_file_button.connect_clicked(move |_| {
-            let buffer = unit_info.buffer();
+            todo!()
+            /*             let buffer = unit_info.buffer();
             let start = buffer.start_iter();
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
@@ -839,45 +865,43 @@ fn build_ui(application: &Application) {
                     }
                 }
                 Err(message) => println!("Unable to open file: {:?}", message),
-            }
+            }*/
         });
     }
     {
-
         let unit_info = unit_info.clone();
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal_view.clone();
         let header = right_bar_label.clone();
-        
-        columnview_selection_model.connect_selected_item_notify( move |single_selection| {
-            let index = single_selection.selected_item();
 
-            println!("Item {:#?}", index);
+        columnview_selection_model.connect_selected_item_notify(move |single_selection| {
+            let Some(object) = single_selection.selected_item() else {
+                eprint!("No object seletected");
+                return;
+            };
 
-            if let Some(object) = index {
-                let box_any = match object.downcast::<BoxedAnyObject>() {
-                    Ok(any) => any,
-                    Err(val) => {
-                        eprintln!("Selection Error: {:?}", val);
-                        return;
-                    }
-                };
+            let box_any = match object.downcast::<BoxedAnyObject>() {
+                Ok(any_objet) => any_objet,
+                Err(val) => {
+                    eprintln!("Selection Error: {:?}", val);
+                    return;
+                }
+            };
 
-                let unit: Ref<LoadedUnit> = box_any.borrow();
+            let unit: Ref<LoadedUnit> = box_any.borrow();
 
-                let description = systemd::get_unit_info(&unit);
-                unit_info.buffer().set_text(&description);
-                ablement_switch.set_active(
-                    // systemd::get_unit_file_state(sysd_unit)
-                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown)
-                        == EnablementStatus::Enabled,
-                );
-                ablement_switch.set_state(ablement_switch.is_active());
+            let description = systemd::get_unit_info(&unit);
+            unit_info.buffer().set_text(&description);
+            ablement_switch.set_active(
+                // systemd::get_unit_file_state(sysd_unit)
+                systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown)
+                    == EnablementStatus::Enabled,
+            );
+            ablement_switch.set_state(ablement_switch.is_active());
 
-                update_journal(&unit_journal, unit.display_name());
-                header.set_label(unit.display_name());
-                println!("Unit {:#?}", unit);
-            }
+            update_journal(&unit_journal, unit.display_name());
+            header.set_label(unit.display_name());
+            println!("Unit {:#?}", unit);
         });
     }
     window.present();
