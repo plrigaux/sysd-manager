@@ -138,8 +138,7 @@ impl LoadedUnit {
         let mut split_char_index = primary.len();
         for (i, c) in primary.chars().enumerate() {
             if c == '.' {
-                split_char_index = i + 1;
-                break;
+                split_char_index = i;               
             }
         }
 

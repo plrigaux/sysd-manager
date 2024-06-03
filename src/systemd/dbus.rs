@@ -149,7 +149,7 @@ fn parse_message(message_item: &MessageItem) -> Result<Vec<SystemdUnit>, Systemd
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
     let message_vec = list_unit_files_message()?;
-   
+
     debug!("MESSAGE {:?}", message_vec);
 
     let message_item = if message_vec.len() >= 1 {
@@ -261,14 +261,13 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
         }; */
 
         let unit_info = LoadedUnit::new(
-             primary,
-             description,
-             load_state,
-             active_state,
-             sub_state,
-             followed_unit,
-             object_path.to_string()
-           
+            primary,
+            description,
+            load_state,
+            active_state,
+            sub_state,
+            followed_unit,
+            object_path.to_string(),
         );
 
         map.insert(primary.to_ascii_lowercase(), unit_info);
@@ -385,6 +384,7 @@ pub fn stop_unit(unit: &str) -> Result<(), SystemdErrors> {
 #[cfg(test)]
 mod tests {
 
+    use std::collections::HashSet;
 
     use crate::systemd::collect_togglable_services;
 
@@ -508,7 +508,7 @@ mod tests {
     }
 
     #[test]
-    fn test_list_units()-> Result<(), SystemdErrors> {
+    fn test_list_units() -> Result<(), SystemdErrors> {
         let units = list_units_description()?;
 
         let serv = units.get(TEST_SERVICE);
@@ -518,10 +518,11 @@ mod tests {
 
     #[test]
     fn test_list_units_merge() -> Result<(), SystemdErrors> {
-        let mut units_map = list_units_description().unwrap();
+        let mut units_map = list_units_description()?;
 
         let mut units = list_unit_files()?;
 
+        let mut set: HashSet<String> = HashSet::new();
         for unit_file in units.drain(..) {
             match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
                 Some(lu) => {
@@ -534,6 +535,12 @@ mod tests {
 
         println!("{:#?}", units_map.get(TEST_SERVICE));
 
+        for unit in units_map.values() {
+            set.insert(unit.unit_type().to_owned());
+        }
+
+        println!("Unit types {:#?}", set);
+
         Ok(())
     }
 
@@ -545,7 +552,6 @@ mod tests {
         println!("Test Service {:#?}", ts);
         let units = units_map.into_values().collect::<Vec<LoadedUnit>>();
 
-        
         let services = collect_togglable_services(&units);
 
         println!("service.len {}", services.len());
@@ -610,7 +616,6 @@ mod tests {
 
     #[test]
     pub fn test_get_unit_parameters() {
-      
         let dest = "org.freedesktop.systemd1";
         let path = "/org/freedesktop/systemd1/unit/jackett_2eservice";
         let interface = "org.freedesktop.systemd1.Unit";

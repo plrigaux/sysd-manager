@@ -290,25 +290,16 @@ fn build_ui(application: &Application) {
         store.append(&BoxedAnyObject::new(value));
     }
 
-    let selection_model = gtk::SingleSelection::new(Some(store));
-    let column_view = gtk::ColumnView::new(Some(selection_model));
-    column_view.set_focusable(true);
+    let columnview_selection_model = gtk::SingleSelection::new(Some(store));
 
-    // removed the activated (double clicked) item.
-    column_view.connect_activate(move |col_view, index| {
-/*         let selmodel = col_view.model().ok_or(()).expect("Expected Some(model)");
-        let singleselmodel = selmodel
-            .downcast::<SingleSelection>()
-            .expect("Must be a SingleSlection");
-        let listmodel = singleselmodel
-            .model()
-            .ok_or(())
-            .expect("Expected Some(listmodel");
-        let stringlist = listmodel
-            .downcast::<gtk::StringList>()
-            .expect("Must be a StringList");
-        stringlist.remove(index); */
-    });
+/*     let column_view = gtk::ColumnView::new(Some(selection_model));
+    column_view.set_focusable(true); */
+
+    let column_view = gtk::ColumnView::builder()
+    .model(&columnview_selection_model)
+    .focusable(true)
+    .build()    ;
+    
 
     let col1factory = gtk::SignalListItemFactory::new();
     let col2factory = gtk::SignalListItemFactory::new();
@@ -342,8 +333,6 @@ fn build_ui(application: &Application) {
         child.set_label(r.enable_status());
     });
 
-
-
     col3factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let row = gtk::Label::builder().xalign(0.0).build();
@@ -371,17 +360,6 @@ fn build_ui(application: &Application) {
     column_view.append_column(&col1_unit);
     column_view.append_column(&col3_unit);
     column_view.append_column(&col2_enable_status);
-
-
-
-
-
-
-    {
- 
- 
-        column_view.connect_activate(|_, val : u32| { println!("active {}", val)});
-    }
 
     let unit_col_view_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
@@ -715,7 +693,7 @@ fn build_ui(application: &Application) {
                 _ => unreachable!(),
             };
 
-            handle_switch(unit_listbox, unit_ref, enabled, switch);
+            //handle_switch(unit_listbox, unit_ref, enabled, switch);
             Propagation::Proceed
         });
     }
@@ -864,7 +842,44 @@ fn build_ui(application: &Application) {
             }
         });
     }
+    {
 
+        let unit_info = unit_info.clone();
+        let ablement_switch = ablement_switch.clone();
+        let unit_journal = unit_journal_view.clone();
+        let header = right_bar_label.clone();
+        
+        columnview_selection_model.connect_selected_item_notify( move |single_selection| {
+            let index = single_selection.selected_item();
+
+            println!("Item {:#?}", index);
+
+            if let Some(object) = index {
+                let box_any = match object.downcast::<BoxedAnyObject>() {
+                    Ok(any) => any,
+                    Err(val) => {
+                        eprintln!("Selection Error: {:?}", val);
+                        return;
+                    }
+                };
+
+                let unit: Ref<LoadedUnit> = box_any.borrow();
+
+                let description = systemd::get_unit_info(&unit);
+                unit_info.buffer().set_text(&description);
+                ablement_switch.set_active(
+                    // systemd::get_unit_file_state(sysd_unit)
+                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown)
+                        == EnablementStatus::Enabled,
+                );
+                ablement_switch.set_state(ablement_switch.is_active());
+
+                update_journal(&unit_journal, unit.display_name());
+                header.set_label(unit.display_name());
+                println!("Unit {:#?}", unit);
+            }
+        });
+    }
     window.present();
 
     /*     // Quit the program when the program has been exited
