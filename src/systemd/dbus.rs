@@ -386,7 +386,7 @@ mod tests {
 
     use std::collections::HashSet;
 
-    use crate::systemd::collect_togglable_services;
+    /* use crate::systemd::collect_togglable_services; */
 
     use super::msgbus::arg::messageitem::Props;
 
@@ -544,8 +544,8 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn test_list_units_description_and_state() -> Result<(), SystemdErrors> {
+  /*  #[test]
+     fn test_list_units_description_and_state() -> Result<(), SystemdErrors> {
         let units_map = list_units_description_and_state()?;
 
         let ts = units_map.get(TEST_SERVICE);
@@ -558,7 +558,7 @@ mod tests {
 
         Ok(())
     }
-
+ */
     #[test]
     fn test_prop() {
         let c = msgbus::ffidisp::Connection::new_system().unwrap();

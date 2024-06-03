@@ -3,12 +3,12 @@ mod dbus;
 mod systemctl;
 
 use std::collections::BTreeMap;
-use std::path::Path;
 use std::process::Command;
 use std::string::FromUtf8Error;
 
-use std::fs::File;
-use std::io::Read;
+use std::fs::{self, File};
+use std::io::{Read, Write};
+use gtk::glib::GString;
 use systemd::dbus::msgbus::arg::ArgType;
 use systemd::dbus::UnitType;
 
@@ -116,12 +116,12 @@ pub struct LoadedUnit {
     file_path: Option<String>,
     enable_status: Option<String>,
     separator: usize, /*     job_id: u32,
-                    job_type: String,
-                    job_object_path: String, */
+                      job_type: String,
+                      job_object_path: String, */
 }
 
-const STATUS_ENABLED: &str = "enabled";
-const STATUS_DISABLED: &str = "disabled";
+/* const STATUS_ENABLED: &str = "enabled";
+const STATUS_DISABLED: &str = "disabled"; */
 
 impl LoadedUnit {
     pub fn new(
@@ -133,12 +133,10 @@ impl LoadedUnit {
         followed_unit: &String,
         object_path: String,
     ) -> Self {
-
-
         let mut split_char_index = primary.len();
         for (i, c) in primary.chars().enumerate() {
             if c == '.' {
-                split_char_index = i;               
+                split_char_index = i;
             }
         }
 
@@ -153,18 +151,21 @@ impl LoadedUnit {
             enable_status: None,
             file_path: None,
             separator: split_char_index, /*                   job_id: job_id,
-                          job_type: job_type.clone(),
-                          job_object_path: job_object_path.to_string(), */
+                                         job_type: job_type.clone(),
+                                         job_object_path: job_object_path.to_string(), */
         };
         unit_info
     }
+    pub fn primary(&self) -> &str {
+        &self.primary
+    }
 
-    pub fn is_enable(&self) -> bool {
+/*     pub fn is_enable(&self) -> bool {
         match &self.enable_status {
             Some(enable_status) => STATUS_ENABLED == enable_status,
             None => false,
         }
-    }
+    } */
 
     pub fn enable_status(&self) -> &str {
         match &self.enable_status {
@@ -178,17 +179,17 @@ impl LoadedUnit {
     }
 
     pub fn unit_type(&self) -> &str {
-        &self.primary[(self.separator+1)..]
+        &self.primary[(self.separator + 1)..]
     }
 
-    fn is_enable_or_disable(&self) -> bool {
+/*     fn is_enable_or_disable(&self) -> bool {
         match &self.enable_status {
             Some(enable_status) => {
                 STATUS_ENABLED == enable_status || STATUS_DISABLED == enable_status
             }
             None => false,
         }
-    }
+    } */
 }
 
 pub fn get_unit_file_state(sytemd_unit: &LoadedUnit) -> Result<EnablementStatus, SystemdErrors> {
@@ -217,36 +218,6 @@ pub fn disable_unit_files(sytemd_unit: &LoadedUnit) -> Result<std::string::Strin
     systemctl::disable_unit_files_path(&sytemd_unit.primary)
 }
 
-/// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing services which can be enabled and
-/// disabled.
-pub fn collect_togglable_services(units: &Vec<LoadedUnit>) -> Vec<LoadedUnit> {
-    units
-        .iter()
-        .filter(|x| x.unit_type() == "service" && x.is_enable_or_disable())
-        .cloned()
-        .collect()
-}
-
-/// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing sockets which can be enabled and
-/// disabled.
-pub fn collect_togglable_sockets(units: &[LoadedUnit]) -> Vec<LoadedUnit> {
-    units
-        .iter()
-        .filter(|x| x.unit_type() == "socket" && x.is_enable_or_disable())
-        .cloned()
-        .collect()
-}
-
-/// Takes a `Vec<SystemdUnit>` as input and returns a new vector only containing timers which can be enabled and
-/// disabled.
-pub fn collect_togglable_timers(units: &[LoadedUnit]) -> Vec<LoadedUnit> {
-    units
-        .iter()
-        .filter(|x| x.unit_type() == "timer" && x.is_enable_or_disable())
-        .cloned()
-        .collect()
-}
-
 /// Read the unit file and return it's contents so that we can display it
 pub fn get_unit_info(unit: &LoadedUnit) -> String {
     let mut output = String::new();
@@ -258,12 +229,14 @@ pub fn get_unit_info(unit: &LoadedUnit) -> String {
 }
 
 /// Obtains the journal log for the given unit.
-pub fn get_unit_journal(unit_path: &str) -> String {
+pub fn get_unit_journal(unit: &LoadedUnit) -> String {
+    let unit_path = unit.primary();
+
     let log = String::from_utf8(
         Command::new("journalctl")
             .arg("-b")
             .arg("-u")
-            .arg(Path::new(unit_path).file_stem().unwrap().to_str().unwrap())
+            .arg(unit_path)
             .output()
             .unwrap()
             .stdout,
@@ -273,6 +246,23 @@ pub fn get_unit_journal(unit_path: &str) -> String {
         .rev()
         .map(|x| x.trim())
         .fold(String::with_capacity(log.len()), |acc, x| acc + "\n" + x)
+}
+pub fn save_text_to_file(unit: &LoadedUnit, text: &GString) {
+    let Some(file_path) = &unit.file_path else {
+        eprintln!("No file path for {}", unit.primary);
+        return;
+    };
+
+    match fs::OpenOptions::new().write(true).open(file_path) {
+        Ok(mut file) => {
+
+            match file.write(text.as_bytes()) {
+                Ok(l) => eprintln!("{l} bytes writen to {}", file_path),
+                Err(err) => eprintln!("Unable to write to file: {:?}", err),
+            }
+        }
+        Err(err) => eprintln!("Unable to open file: {:?}", err),
+    }
 }
 
 #[cfg(test)]
