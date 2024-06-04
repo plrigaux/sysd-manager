@@ -49,12 +49,14 @@ pub fn on_startup(app: &gtk::Application) {
 
 fn create_about() -> gtk::AboutDialog  {
 
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+
     let about = gtk::AboutDialog::builder()
     .authors(["Pierre-Luc Rigaux"])
     .name("About")
     .program_name("SysD manager")
     .modal(true)
-    .version("0.0.1")
+    .version(VERSION)
     .comments("This is comments")
     .build();
 

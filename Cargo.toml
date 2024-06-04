@@ -1,12 +1,12 @@
 [package]
 name = "systemd-manager"
-version = "0.4.2"
+version = "0.0.1"
 license = "GPL-3.0"
 repository = "https://github.com/mmstick/systemd-manager"
 readme = "README.md"
-authors = ["Michael Murphy <mmstickman@gmail.com>"]
-documentation = "A GTK3 GUI for managing systemd services on Linux"
-keywords = [ "gtk", "linux", "systemd" ]
+authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
+documentation = "A GTK4 GUI for managing systemd unit"
+keywords = [ "gtk4", "linux", "systemd" ]
 
 [dependencies]
 dbus = "0.9.7"
