@@ -169,79 +169,6 @@ pub fn launch() -> glib::ExitCode {
     app.run()
 }
 
-const SERVICES_TITLE: &str = "Services";
-const SOCKETS_TITLE: &str = "Sockets";
-const TIMERS_TITLE: &str = "Timers";
-
-fn build_popover_menu(
-    _menu_button: &gtk::MenuButton,
-    /*   _unit_stack: &gtk::Stack, */
-) -> gtk::PopoverMenu {
-    let services_button = gtk::Button::builder()
-        .label(SERVICES_TITLE)
-        .focusable(true)
-        .receives_default(true)
-        .build();
-
-    let sockets_button = gtk::Button::builder()
-        .label(SOCKETS_TITLE)
-        .focusable(true)
-        .receives_default(true)
-        .build();
-
-    let timers_button = gtk::Button::builder()
-        .label(TIMERS_TITLE)
-        .focusable(true)
-        .receives_default(true)
-        .build();
-
-    let unit_menu_popover = gtk::PopoverMenu::builder()
-        .child(&{
-            let g_box = gtk::Box::new(Orientation::Vertical, 0);
-            g_box.append(&services_button);
-            g_box.append(&sockets_button);
-            g_box.append(&timers_button);
-            g_box
-        })
-        .build();
-
-    // let popover = RefCell::new(unit_menu_popover);
-    {
-        /*         let popover = unit_menu_popover.clone();
-        let mb = menu_button.clone();
-        let stack = unit_stack.clone(); */
-        services_button.connect_clicked(move |_| {
-            /*             stack.set_visible_child_name(SERVICES_TITLE);
-            mb.set_label(SERVICES_TITLE);
-            popover.set_visible(false); */
-        });
-    }
-
-    {
-        /*         let popover = unit_menu_popover.clone();
-        let mb = menu_button.clone();
-        let stack = unit_stack.clone(); */
-        sockets_button.connect_clicked(move |_| {
-            /*             stack.set_visible_child_name(SOCKETS_TITLE);
-            mb.set_label(SOCKETS_TITLE);
-            popover.set_visible(false); */
-        });
-    }
-
-    {
-        /*         let popover = unit_menu_popover.clone();
-        let mb = menu_button.clone();
-        let stack = unit_stack.clone(); */
-        timers_button.connect_clicked(move |_| {
-            /*             stack.set_visible_child_name(TIMERS_TITLE);
-            mb.set_label(TIMERS_TITLE);
-            popover.set_visible(false); */
-        });
-    }
-
-    unit_menu_popover
-}
-
 fn build_ui(application: &Application) {
     // List of all unit files on the system
     let unit_files: Vec<LoadedUnit> = match systemd::list_units_description_and_state() {
@@ -455,17 +382,6 @@ fn build_ui(application: &Application) {
     main_box.append(&right_pane);
 
     // ----------------------------------------------
-/* 
-    let menu_button = gtk::MenuButton::builder()
-        .focusable(true)
-        .receives_default(true)
-        .label(SERVICES_TITLE)
-        .build();
-
-    menu_button.set_popover(Some(&build_popover_menu(
-        &menu_button, /* , &unit_stack*/
-    )));
- */
     let title_bar = gtk::HeaderBar::builder().build();
 
     let menu_button = menu::build_menu();
