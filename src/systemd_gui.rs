@@ -4,6 +4,7 @@ use gtk::prelude::*;
 use systemd::analyze::Analyze;
 
 use crate::grid_cell::{Entry, GridCell};
+use crate::menu;
 use crate::systemd::get_unit_journal;
 
 use systemd::{self, EnablementStatus, LoadedUnit};
@@ -454,7 +455,7 @@ fn build_ui(application: &Application) {
     main_box.append(&right_pane);
 
     // ----------------------------------------------
-
+/* 
     let menu_button = gtk::MenuButton::builder()
         .focusable(true)
         .receives_default(true)
@@ -464,10 +465,13 @@ fn build_ui(application: &Application) {
     menu_button.set_popover(Some(&build_popover_menu(
         &menu_button, /* , &unit_stack*/
     )));
-
+ */
     let title_bar = gtk::HeaderBar::builder().build();
 
-    title_bar.pack_start(&menu_button);
+    let menu_button = menu::build_menu();
+
+    title_bar.pack_end(&menu_button);
+ 
 
     /*    let right_bar = gtk::HeaderBar::builder().hexpand(true)
     .build(); */
