@@ -1,6 +1,8 @@
 use gtk::{self, SingleSelection};
 
 use gtk::prelude::*;
+use log::debug;
+use log::error;
 
 use crate::menu;
 use crate::systemd::get_unit_journal;
@@ -64,21 +66,20 @@ macro_rules! get_selected_unit {
         };
 
         let Some(object) = single_selection_model.selected_item() else {
-            eprintln!("No selection objet");
+            error!("No selection objet");
             return;
         };
 
         let box_any = match object.downcast::<BoxedAnyObject>() {
             Ok(any_objet) => any_objet,
             Err(val) => {
-                eprintln!("Selection Error: {:?}", val);
+                error!("Selection Error: {:?}", val);
                 return;
             }
         };
         box_any
     }};
 }
-
 
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
 fn update_journal(journal: &gtk::TextView, unit: &LoadedUnit) {
@@ -100,15 +101,15 @@ fn build_ui(application: &Application) {
     let unit_files: Vec<LoadedUnit> = match systemd::list_units_description_and_state() {
         Ok(map) => map.into_values().collect(),
         Err(e) => {
-            println!("{:?}", e);
+            debug!("{:?}", e);
             vec![]
         }
     };
 
     let store = gtk::gio::ListStore::new::<BoxedAnyObject>();
 
-        for value in unit_files.clone() {
-        //println!("Analyse Tree Blame {:?}", value);
+    for value in unit_files.clone() {
+        //debug!("Analyse Tree Blame {:?}", value);
         store.append(&BoxedAnyObject::new(value));
     }
 
@@ -262,24 +263,24 @@ fn build_ui(application: &Application) {
             .build()
     });
 
-/*     let attribute_list = AttrList::new();
-    attribute_list.insert(AttrInt::new_weight(Weight::Medium));
-    let total_time_label = gtk::Label::builder()
-        .label("seconds ...")
-        .attributes(&attribute_list)
-        .build(); 
+    /*     let attribute_list = AttrList::new();
+     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
+     let total_time_label = gtk::Label::builder()
+         .label("seconds ...")
+         .attributes(&attribute_list)
+         .build();
 
-    // Setup the Analyze stack
-   // let analyze_tree = setup_systemd_analyze_tree(&total_time_label);
- 
-    let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
-        .vexpand(true)
-        .focusable(true)
-        .child(&analyze_tree)
-        .build(); 
-    
-        unit_analyse_box.append(&total_time_label);
-    unit_analyse_box.append(&unit_analyse_scrolled_window); */
+     // Setup the Analyze stack
+    // let analyze_tree = setup_systemd_analyze_tree(&total_time_label);
+
+     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
+         .vexpand(true)
+         .focusable(true)
+         .child(&analyze_tree)
+         .build();
+
+         unit_analyse_box.append(&total_time_label);
+     unit_analyse_box.append(&unit_analyse_scrolled_window); */
 
     let info_stack = gtk::Stack::builder()
         .vexpand(true)
@@ -313,7 +314,6 @@ fn build_ui(application: &Application) {
     let menu_button = menu::build_menu();
 
     title_bar.pack_end(&menu_button);
- 
 
     /*    let right_bar = gtk::HeaderBar::builder().hexpand(true)
     .build(); */
@@ -365,6 +365,14 @@ fn build_ui(application: &Application) {
         .build();
     action_buttons.append(&stop_button);
 
+    let restart_button = gtk::Button::builder()
+        .hexpand(true)
+        .label("Start")
+        .focusable(true)
+        .receives_default(true)
+        .build();
+    action_buttons.append(&restart_button);
+
     title_bar.pack_end(&action_buttons);
 
     // Create a window
@@ -376,39 +384,6 @@ fn build_ui(application: &Application) {
         .child(&main_box)
         .titlebar(&title_bar)
         .build();
-
-    /*     let services_ = systemd::collect_togglable_services(&unit_files);
-    let services_ref = Rc::new(services_);
-    fill_sysd_unit_list(
-        &services_list,
-        &services_ref,
-        &unit_info,
-        &ablement_switch,
-        &unit_journal_view,
-        &right_bar_label,
-    );
-
-    let sockets_ = systemd::collect_togglable_sockets(&unit_files);
-    let sockets_ref = Rc::new(sockets_);
-    fill_sysd_unit_list(
-        &sockets_list,
-        &sockets_ref,
-        &unit_info,
-        &ablement_switch,
-        &unit_journal_view,
-        &right_bar_label,
-    );
-
-    let timer_ = systemd::collect_togglable_timers(&unit_files);
-    let timers_ref = Rc::new(timer_);
-    fill_sysd_unit_list(
-        &timers_list,
-        &timers_ref,
-        &unit_info,
-        &ablement_switch,
-        &unit_journal_view,
-        &right_bar_label,
-    ); */
 
     {
         fn handle_switch(
@@ -423,14 +398,14 @@ fn build_ui(application: &Application) {
                 };
 
                 let Some(object) = single_selection_model.selected_item() else {
-                    eprintln!("No selection objet");
+                    error!("No selection objet");
                     return;
                 };
 
                 let box_any = match object.downcast::<BoxedAnyObject>() {
                     Ok(any_objet) => any_objet,
                     Err(val) => {
-                        eprintln!("Selection Error: {:?}", val);
+                        error!("Selection Error: {:?}", val);
                         return;
                     }
                 };
@@ -492,9 +467,9 @@ fn build_ui(application: &Application) {
 
             match systemd::start_unit(&unit) {
                 Ok(()) => {
-                    eprintln!("Unit {} started!", unit.primary())
+                    error!("Unit {} started!", unit.primary())
                 }
-                Err(e) => eprintln!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
+                Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
             }
         });
     }
@@ -507,9 +482,24 @@ fn build_ui(application: &Application) {
 
             match systemd::stop_unit(&unit) {
                 Ok(()) => {
-                    eprintln!("Unit {} stopped!", unit.primary())
+                    error!("Unit {} stopped!", unit.primary())
                 }
-                Err(e) => eprintln!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+            }
+        });
+    }
+
+    {
+        let column_view = column_view.clone();
+        restart_button.connect_clicked(move |_| {
+            let box_any = get_selected_unit!(column_view);
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            match systemd::restart_unit(&unit) {
+                Ok(()) => {
+                    error!("Unit {} restarted!", unit.primary())
+                }
+                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
             }
         });
     }
@@ -544,7 +534,7 @@ fn build_ui(application: &Application) {
             let box_any = match object.downcast::<BoxedAnyObject>() {
                 Ok(any_objet) => any_objet,
                 Err(val) => {
-                    eprintln!("Selection Error: {:?}", val);
+                    error!("Selection Error: {:?}", val);
                     return;
                 }
             };
@@ -562,12 +552,10 @@ fn build_ui(application: &Application) {
 
             update_journal(&unit_journal, &unit);
             header.set_label(unit.display_name());
-            println!("Unit {:#?}", unit);
+            debug!("Unit {:#?}", unit);
         });
     }
     window.present();
-
-
 
     /*     // Quit the program when the program has been exited
     window.connect_delete_event(|_, _| {

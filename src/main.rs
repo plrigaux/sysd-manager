@@ -2,6 +2,7 @@
 extern crate gtk;
 //#[macro_use]
 extern crate log;
+extern crate env_logger;
 
 mod systemd_gui;     // Contains all of the heavy GUI-related work
 mod systemd;
@@ -10,7 +11,18 @@ use gtk::glib;
 mod menu;
 mod analyze;
 
+use log::{debug, info, trace, warn, error};
+
+extern crate dotenv;
+
+use dotenv::dotenv;
 
 fn main() -> glib::ExitCode {
+    dotenv().ok();
+
+    env_logger::init();
+
+    info!("Program starting up");
+
     systemd_gui::launch()
 }

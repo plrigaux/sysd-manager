@@ -71,7 +71,7 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
     let units = Analyze::blame();
 
     for value in units.clone() {
-        //println!("Analyse Tree Blame {:?}", value);
+        //debug!("Analyse Tree Blame {:?}", value);
         store.append(&BoxedAnyObject::new(value));
     }
 

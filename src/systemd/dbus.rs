@@ -2,7 +2,9 @@ pub extern crate dbus as msgbus;
 
 use std::collections::BTreeMap;
 
+use log::trace;
 use log::debug;
+use log::info;
 
 use self::msgbus::arg::messageitem::MessageItem;
 use self::msgbus::Message;
@@ -48,7 +50,7 @@ fn dbus_property() -> Result<(), Error> {
 
     let metadata = p.get("org.mpris.MediaPlayer2.Player", "Metadata")?;
 
-    println!("Option 1:");
+    debug!("Option 1:");
 
     Ok(())
 
@@ -85,7 +87,7 @@ impl UnitType {
             "timer" => UnitType::Timer,
             "swap" => UnitType::Swap,
             _ => {
-                println!("Unknown Type: {}", system_type);
+                info!("Unknown Type: {}", system_type);
                 UnitType::Unknown(system_type.to_string())
             }
         }
@@ -150,7 +152,7 @@ fn parse_message(message_item: &MessageItem) -> Result<Vec<SystemdUnit>, Systemd
 pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
     let message_vec = list_unit_files_message()?;
 
-    debug!("MESSAGE {:?}", message_vec);
+    trace!("MESSAGE {:?}", message_vec);
 
     let message_item = if message_vec.len() >= 1 {
         message_vec.get(0).expect("Missing argument")
@@ -166,30 +168,30 @@ pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
 fn list_unit_files_message() -> Result<Vec<MessageItem>, SystemdErrors> {
     let message = dbus_message("ListUnitFiles")?;
     let m = dbus_connect(message)?;
-    debug!("MESSAGE {:?}", m);
+    trace!("MESSAGE {:?}", m);
     Ok(m.get_items())
 }
 
 fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdErrors> {
     let message = dbus_message("ListUnits")?;
-    println!("MESSAGE {:?}", message);
+    debug!("MESSAGE {:?}", message);
     let m = dbus_connect(message)?;
 
-    // println!("{:#?}",m.get_items())
+    // debug!("{:#?}",m.get_items())
     let mi = m.get_items();
-    println!("{:#?}", mi.len());
+    debug!("{:#?}", mi.len());
     let message_item = &mi[0];
 
     let sig: dbus::Signature<'_> = message_item.signature();
     //"a(ssssssouso)\0",
-    println!("{:#?}", sig);
+    debug!("{:#?}", sig);
 
     let MessageItem::Array(array) = message_item else {
         return Err(SystemdErrors::MalformedWrongArgType(
             message_item.arg_type(),
         ));
     };
-    println!("Array_size {:#?}", array.len());
+    debug!("Array_size {:#?}", array.len());
 
     let mut map: BTreeMap<String, LoadedUnit> = BTreeMap::new();
 
@@ -248,7 +250,7 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
         };
         /*                 //If there is a job queued for the job unit the numeric job id, 0 otherwise
         let MessageItem::UInt32(job_id) = struct_value[7] else {
-            println!("7 {:?}", struct_value[7]);
+            debug!("7 {:?}", struct_value[7]);
             continue;
         };
         //The job type as string
@@ -301,7 +303,7 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>
                 lu.file_path = Some(unit_file.path);
                 lu.enable_status = Some(unit_file.enable_status)
             }
-            None => println!("unit \"{}\" not found!", unit_file.full_name()),
+            None => debug!("unit \"{}\" not found!", unit_file.full_name()),
         }
     }
 
@@ -317,15 +319,15 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>
     match dbus_connect(message) {
         Ok(reply) => {
             if format!("{:?}", reply.get_items()) == "[Bool(true), Array([], \"(sss)\")]" {
-                println!("{} already enabled", unit);
+                debug!("{} already enabled", unit);
             } else {
-                println!("{} has been enabled", unit);
+                debug!("{} has been enabled", unit);
             }
             None
         }
         Err(reply) => {
             let error = format!("Error enabling {}:\n{:?}", unit, reply);
-            println!("{}", error);
+            debug!("{}", error);
             Some(error)
         }
     }
@@ -337,35 +339,36 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>
 
     let mut message = dbus_message("DisableUnitFiles");
 
-    println!("Try to disable: {}", unit);
+    debug!("Try to disable: {}", unit);
     message.append_items(&[[unit][..].into(), false.into()]);
 
-    println!("Message: {:?}", message);
+    debug!("Message: {:?}", message);
     match dbus_connect(message) {
         Ok(reply) => {
             if format!("{:?}", reply.get_items()) == "[Array([], \"(sss)\")]" {
-                println!("{} is already disabled", unit);
+                debug!("{} is already disabled", unit);
             } else {
-                println!("{} has been disabled", unit);
+                debug!("{} has been disabled", unit);
             }
             None
         }
         Err(reply) => {
             let error = format!("Error disabling {}:\n{:?}", unit, reply);
-            println!("{}", error);
+            debug!("{}", error);
             Some(error)
         }
     }
 } */
 
 /// Takes a unit name as input and attempts to start it
+/// 
 pub fn start_unit(unit: &str) -> Result<(), SystemdErrors> {
     let mut message = dbus_message("StartUnit")?;
     message.append_items(&[unit.into(), "fail".into()]);
 
     let message = dbus_connect(message)?;
 
-    println!("StartUnit answer: {:?}", message); //TODO return the msg
+    debug!("StartUnit answer: {:?}", message); //TODO return the msg
 
     Ok(())
 }
@@ -376,7 +379,19 @@ pub fn stop_unit(unit: &str) -> Result<(), SystemdErrors> {
     message.append_items(&[unit.into(), "fail".into()]);
     let message = dbus_connect(message)?;
 
-    println!("StartUnit answer: {:?}", message); //TODO return the msg
+    debug!("StartUnit answer: {:?}", message); //TODO return the msg
+
+    Ok(())
+}
+
+/// Enqeues a start job, and possibly depending jobs.
+pub fn restart_unit(unit: &str) -> Result<(), SystemdErrors> {
+    let mut message = dbus_message("RestartUnit")?;
+    message.append_items(&[unit.into(), "fail".into()]);
+
+    let message = dbus_connect(message)?;
+
+    debug!("RestartUnit answer: {:?}", message); //TODO return the msg
 
     Ok(())
 }
@@ -397,7 +412,7 @@ mod tests {
     #[test]
     fn list_unit_files_message_test() -> Result<(), SystemdErrors> {
         let message_vec = list_unit_files_message()?;
-        //println!("{:?}", message);
+        //debug!("{:?}", message);
 
         let message_item = if message_vec.len() >= 1 {
             message_vec.get(0).expect("Missing argument")
@@ -412,15 +427,15 @@ mod tests {
     fn handle_message_item(message_item: &MessageItem) {
         match message_item {
             MessageItem::Array(array) => {
-                //let _ = array.into_iter().map(|item| println!("{:?}", item));
+                //let _ = array.into_iter().map(|item| debug!("{:?}", item));
                 for (i, n) in array.into_iter().enumerate() {
-                    println!("{} - {:?}", i, n);
+                    debug!("{} - {:?}", i, n);
                     handle_message_item(n);
                 }
             }
             MessageItem::Struct(struct_) => {
                 for a in struct_.into_iter() {
-                    //println!("{} - {:?}", i , n);
+                    //debug!("{} - {:?}", i , n);
                     handle_message_item(a);
                 }
             }
@@ -429,7 +444,7 @@ mod tests {
             MessageItem::ObjectPath(_) => todo!(),
             MessageItem::Signature(_) => todo!(),
             MessageItem::Str(_str_value) => {
-                //println!("{}", str_value );
+                //debug!", str_value );
             }
             MessageItem::Bool(_) => todo!(),
             MessageItem::Byte(_) => todo!(),
@@ -447,7 +462,7 @@ mod tests {
     #[test]
     fn list_unit_files_message_test2() -> Result<(), SystemdErrors> {
         let message_vec = list_unit_files_message()?;
-        //println!("{:?}", message);
+        //debug!("{:?}", message);
 
         let message_item = if message_vec.len() >= 1 {
             message_vec.get(0).expect("Missing argument")
@@ -457,7 +472,7 @@ mod tests {
 
         let vector = parse_message(message_item)?;
 
-        println!("{:#?}", vector);
+        debug!("{:#?}", vector);
         Ok(())
     }
 
@@ -478,7 +493,7 @@ mod tests {
 
         match dbus_connect(message) {
             Ok(m) => {
-                println!("{:?}", m.get1::<String>());
+                debug!("{:?}", m.get1::<String>());
                 Ok(())
             }
             Err(e) => Err(e),
@@ -491,7 +506,7 @@ mod tests {
         let file1: &str = TEST_SERVICE;
 
         let status = get_unit_file_state_path(file1);
-        println!("Status: {:?}", status);
+        debug!("Status: {:?}", status);
     }
 
     #[test]
@@ -503,7 +518,7 @@ mod tests {
             .filter(|ud| ud.full_name() == TEST_SERVICE)
             .nth(0);
 
-        println!("{:#?}", serv);
+        debug!("{:#?}", serv);
         Ok(())
     }
 
@@ -512,7 +527,7 @@ mod tests {
         let units = list_units_description()?;
 
         let serv = units.get(TEST_SERVICE);
-        println!("{:#?}", serv);
+        debug!("{:#?}", serv);
         Ok(())
     }
 
@@ -529,17 +544,17 @@ mod tests {
                     lu.file_path = Some(unit_file.path);
                     lu.enable_status = Some(unit_file.enable_status)
                 }
-                None => println!("unit \"{}\" not found!", unit_file.full_name()),
+                None => debug!("unit \"{}\" not found!", unit_file.full_name()),
             }
         }
 
-        println!("{:#?}", units_map.get(TEST_SERVICE));
+        debug!("{:#?}", units_map.get(TEST_SERVICE));
 
         for unit in units_map.values() {
             set.insert(unit.unit_type().to_owned());
         }
 
-        println!("Unit types {:#?}", set);
+        debug!("Unit types {:#?}", set);
 
         Ok(())
     }
@@ -549,12 +564,12 @@ mod tests {
         let units_map = list_units_description_and_state()?;
 
         let ts = units_map.get(TEST_SERVICE);
-        println!("Test Service {:#?}", ts);
+        debug!("Test Service {:#?}", ts);
         let units = units_map.into_values().collect::<Vec<LoadedUnit>>();
 
         let services = collect_togglable_services(&units);
 
-        println!("service.len {}", services.len());
+        debug!("service.len {}", services.len());
 
         Ok(())
     }
@@ -569,7 +584,7 @@ mod tests {
             "org.freedesktop.PolicyKit1.Authority",
             10000,
         );
-        println!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
+        debug!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
     }
 
     #[test]
@@ -580,10 +595,10 @@ mod tests {
         let path = "/org/freedesktop/systemd1";
         let interface = "org.freedesktop.systemd1.Manager";
         let prop = Props::new(&c, dest, path, interface, 10000);
-        println!("Version: {:?}", prop.get("Version").unwrap());
-        println!("Architecture: {:?}", prop.get("Architecture").unwrap());
+        debug!("Version: {:?}", prop.get("Version").unwrap());
+        debug!("Architecture: {:?}", prop.get("Architecture").unwrap());
 
-        //println!("ActiveState: {:?}", p.get("ActiveState").unwrap());
+        //debug!("ActiveState: {:?}", p.get("ActiveState").unwrap());
     }
 
     #[test]
@@ -598,7 +613,7 @@ mod tests {
 
         let metadata: super::msgbus::arg::Variant<String> = proxy.get(interface, "Version")?;
 
-        println!("Meta: {:?}", metadata);
+        debug!("Meta: {:?}", metadata);
         Ok(())
     }
 
@@ -610,7 +625,7 @@ mod tests {
         message.append_items(message_items);
 
         let load_unit_ret = dbus_connect(message)?;
-        println!("{:?}", load_unit_ret);
+        debug!("{:?}", load_unit_ret);
         Ok(())
     }
 
@@ -622,7 +637,7 @@ mod tests {
         let c = msgbus::ffidisp::Connection::new_system().unwrap();
         let p = Props::new(&c, dest, path, interface, 10000);
 
-        println!("ALL PARAM: {:#?}", p.get_all());
+        debug!("ALL PARAM: {:#?}", p.get_all());
     }
 
     #[test]
@@ -633,7 +648,7 @@ mod tests {
         message.append_items(message_items);
 
         let load_unit_ret = dbus_connect(message)?;
-        println!("{:?}", load_unit_ret);
+        debug!("{:?}", load_unit_ret);
         Ok(())
     }
 }

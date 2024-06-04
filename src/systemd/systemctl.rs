@@ -1,5 +1,6 @@
 use super::SystemdErrors;
 use std::process::Command;
+use log::error;
 
 // Takes the unit pathname of a service and enables it via dbus.
 /// If dbus replies with `[Bool(true), Array([], "(sss)")]`, the service is already enabled.
@@ -27,7 +28,7 @@ fn dis_en_able_processing(
             }
         }
         Err(error) => {
-            eprintln!("systemctl {} error {}", action, error);
+            error!("systemctl {} error {}", action, error);
             Err(error.into())
         }
     }
@@ -35,6 +36,8 @@ fn dis_en_able_processing(
 
 #[cfg(test)]
 mod tests {
+    use log::debug;
+
     use crate::systemd::systemctl::*;
 
     #[test]
@@ -43,7 +46,7 @@ mod tests {
         let file1: &str = "jackett.service";
 
         let status = enable_unit_files_path(file1);
-        println!("Status: {:?}", status.unwrap());
+        debug!("Status: {:?}", status.unwrap());
     }
 
     #[test]
@@ -52,6 +55,6 @@ mod tests {
         let file1: &str = "jackett.service";
 
         let status = disable_unit_files_path(file1);
-        println!("Status: {:?}", status.unwrap());
+        debug!("Status: {:?}", status.unwrap());
     }
 }

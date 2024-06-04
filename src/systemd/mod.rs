@@ -11,6 +11,7 @@ use std::io::{Read, Write};
 use gtk::glib::GString;
 use systemd::dbus::msgbus::arg::ArgType;
 use systemd::dbus::UnitType;
+use log::{debug, error};
 
 #[derive(Debug)]
 pub enum SystemdErrors {
@@ -78,7 +79,7 @@ impl EnablementStatus {
     /// into a UnitType by matching the first character.
     pub fn new(enablement_status: &str) -> EnablementStatus {
         if enablement_status.is_empty() {
-            eprintln!("Empty Status: {}", enablement_status);
+            error!("Empty Status: {}", enablement_status);
             return EnablementStatus::Unknown;
         }
 
@@ -96,7 +97,7 @@ impl EnablementStatus {
             'g' => EnablementStatus::Generated,
             't' => EnablementStatus::Trancient,
             _ => {
-                println!("Unknown State: {}", enablement_status);
+                debug!("Unknown State: {}", enablement_status);
                 EnablementStatus::Unknown
             }
         }
@@ -210,6 +211,10 @@ pub fn stop_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
     dbus::stop_unit(&unit.primary)
 }
 
+pub fn restart_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
+    dbus::restart_unit(&unit.primary)
+}
+
 pub fn enable_unit_files(sytemd_unit: &LoadedUnit) -> Result<std::string::String, SystemdErrors> {
     systemctl::enable_unit_files_path(&sytemd_unit.primary)
 }
@@ -249,7 +254,7 @@ pub fn get_unit_journal(unit: &LoadedUnit) -> String {
 }
 pub fn save_text_to_file(unit: &LoadedUnit, text: &GString) {
     let Some(file_path) = &unit.file_path else {
-        eprintln!("No file path for {}", unit.primary);
+        error!("No file path for {}", unit.primary);
         return;
     };
 
@@ -257,21 +262,23 @@ pub fn save_text_to_file(unit: &LoadedUnit, text: &GString) {
         Ok(mut file) => {
 
             match file.write(text.as_bytes()) {
-                Ok(l) => eprintln!("{l} bytes writen to {}", file_path),
-                Err(err) => eprintln!("Unable to write to file: {:?}", err),
+                Ok(l) => error!("{l} bytes writen to {}", file_path),
+                Err(err) => error!("Unable to write to file: {:?}", err),
             }
         }
-        Err(err) => eprintln!("Unable to open file: {:?}", err),
+        Err(err) => error!("Unable to open file: {:?}", err),
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use log::debug;
+
     use super::LoadedUnit;
 
     #[test]
     fn test_hello() {
-        println!("hello")
+        debug!("hello")
     }
 
     #[test]
