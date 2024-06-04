@@ -1,9 +1,7 @@
 use gtk::{self, SingleSelection};
 
 use gtk::prelude::*;
-use systemd::analyze::Analyze;
 
-use crate::grid_cell::{Entry, GridCell};
 use crate::menu;
 use crate::systemd::get_unit_journal;
 
@@ -16,7 +14,6 @@ use gtk::pango::{self, Weight};
 
 use gtk::{Application, ApplicationWindow, Orientation};
 
-use gtk::gio;
 use std::cell::Ref;
 
 // ANCHOR: main
@@ -82,77 +79,6 @@ macro_rules! get_selected_unit {
     }};
 }
 
-//https://github.com/gtk-rs/gtk4-rs/blob/master/examples/column_view_datagrid/main.rs
-
-/// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
-fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView {
-    let store = gio::ListStore::new::<BoxedAnyObject>();
-
-    let units = Analyze::blame();
-
-    for value in units.clone() {
-        //println!("Analyse Tree Blame {:?}", value);
-        store.append(&BoxedAnyObject::new(value));
-    }
-
-    let single_selection = gtk::SingleSelection::new(Some(store));
-    /*     let analyze_tree = gtk::ColumnView::new(Some(single_selection));
-    analyze_tree.set_focusable(true); */
-    let analyze_tree = gtk::ColumnView::builder()
-        .focusable(true)
-        .model(&single_selection)
-        .hexpand(true)
-        .build();
-
-    let col1factory = gtk::SignalListItemFactory::new();
-    let col2factory = gtk::SignalListItemFactory::new();
-
-    col1factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = GridCell::default();
-        item.set_child(Some(&row));
-    });
-
-    col1factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<GridCell>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<Analyze> = entry.borrow();
-        let ent = Entry {
-            name: r.time.to_string(),
-        };
-        child.set_entry(&ent);
-    });
-
-    col2factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = GridCell::default();
-        item.set_child(Some(&row));
-    });
-
-    col2factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<GridCell>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<Analyze> = entry.borrow();
-        let ent = Entry {
-            name: r.service.to_string(),
-        };
-        child.set_entry(&ent);
-    });
-
-    let col1_time = gtk::ColumnViewColumn::new(Some("Init time (ms)"), Some(col1factory));
-    let col2_unit = gtk::ColumnViewColumn::new(Some("Running units"), Some(col2factory));
-    col2_unit.set_expand(true);
-
-    analyze_tree.append_column(&col1_time);
-    analyze_tree.append_column(&col2_unit);
-
-    let time = (units.iter().last().unwrap().time as f32) / 1000f32;
-    total_time_label.set_label(format!("{} seconds", time).as_str());
-
-    analyze_tree
-}
 
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
 fn update_journal(journal: &gtk::TextView, unit: &LoadedUnit) {
@@ -336,24 +262,24 @@ fn build_ui(application: &Application) {
             .build()
     });
 
-    let attribute_list = AttrList::new();
+/*     let attribute_list = AttrList::new();
     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
     let total_time_label = gtk::Label::builder()
         .label("seconds ...")
         .attributes(&attribute_list)
-        .build();
+        .build(); 
 
     // Setup the Analyze stack
-    let analyze_tree = setup_systemd_analyze_tree(&total_time_label);
-
+   // let analyze_tree = setup_systemd_analyze_tree(&total_time_label);
+ 
     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
         .focusable(true)
         .child(&analyze_tree)
-        .build();
-
-    unit_analyse_box.append(&total_time_label);
-    unit_analyse_box.append(&unit_analyse_scrolled_window);
+        .build(); 
+    
+        unit_analyse_box.append(&total_time_label);
+    unit_analyse_box.append(&unit_analyse_scrolled_window); */
 
     let info_stack = gtk::Stack::builder()
         .vexpand(true)
@@ -362,7 +288,7 @@ fn build_ui(application: &Application) {
 
     info_stack.add_titled(&unit_file_box, Some("Unit File"), "Unit File");
     info_stack.add_titled(&unit_journal_box, Some("Unit Journal"), "Unit Journal");
-    info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
+    //info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
 
     let stack_switcher = gtk::StackSwitcher::builder().stack(&info_stack).build();
 

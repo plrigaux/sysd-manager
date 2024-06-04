@@ -1,9 +1,12 @@
 use gtk::{gio, prelude::ActionMapExtManual};
 use gtk::prelude::*;
 
+use crate::analyze::build_analyze_window;
+
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
 
+    menu.append(Some("Analyze Blame"), Some("app.analyze_blame"));
     menu.append(Some("About"), Some("app.about"));
     menu.append(Some("_Quit"), Some("app.quit"));
 
@@ -34,7 +37,14 @@ pub fn on_startup(app: &gtk::Application) {
         })
         .build();
 
-    app.add_action_entries([about]);
+        let analyze_blame = gio::ActionEntry::builder("analyze_blame")
+        .activate(|_ , _, _| {
+            let analyze_blame_window = build_analyze_window();
+            analyze_blame_window.present();
+        })
+        .build();
+
+    app.add_action_entries([about, analyze_blame]);
 }
 
 fn create_about() -> gtk::AboutDialog  {

@@ -8,6 +8,7 @@ mod systemd;
 mod grid_cell;
 use gtk::glib;
 mod menu;
+mod analyze;
 
 
 fn main() -> glib::ExitCode {
