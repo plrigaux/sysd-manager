@@ -163,7 +163,7 @@ fn update_journal(journal: &gtk::TextView, unit: &LoadedUnit) {
 pub fn launch() -> glib::ExitCode {
     // Create a new application
     let app = Application::builder().application_id(APP_ID).build();
-
+    app.connect_startup(menu::on_startup);
     app.connect_activate(build_ui);
 
     app.run()

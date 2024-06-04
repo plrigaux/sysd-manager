@@ -1,4 +1,5 @@
-use gtk::gio;
+use gtk::{gio, prelude::ActionMapExtManual};
+use gtk::prelude::*;
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
@@ -23,4 +24,29 @@ pub fn build_menu() -> gtk::MenuButton {
         .build();
 
     menu_button
+}
+
+pub fn on_startup(app: &gtk::Application) {
+    let about = gio::ActionEntry::builder("about")
+        .activate(|_, _, _| {
+            let about = create_about();
+            about.present();
+        })
+        .build();
+
+    app.add_action_entries([about]);
+}
+
+fn create_about() -> gtk::AboutDialog  {
+
+    let about = gtk::AboutDialog::builder()
+    .authors(["Pierre-Luc Rigaux"])
+    .name("About")
+    .program_name("SysD manager")
+    .modal(true)
+    .version("0.0.1")
+    .comments("This is comments")
+    .build();
+
+    about
 }
