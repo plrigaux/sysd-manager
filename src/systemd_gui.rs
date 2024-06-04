@@ -15,8 +15,8 @@ use gtk::pango::{self, Weight};
 
 use gtk::{Application, ApplicationWindow, Orientation};
 
+use gtk::gio;
 use std::cell::Ref;
-
 
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
@@ -85,7 +85,7 @@ macro_rules! get_selected_unit {
 
 /// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
 fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView {
-    let store = gtk::gio::ListStore::new::<BoxedAnyObject>();
+    let store = gio::ListStore::new::<BoxedAnyObject>();
 
     let units = Analyze::blame();
 
@@ -155,11 +155,8 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
 
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
 fn update_journal(journal: &gtk::TextView, unit: &LoadedUnit) {
-
     let journal_output = get_unit_journal(unit);
-    journal
-        .buffer()
-        .set_text(&journal_output);
+    journal.buffer().set_text(&journal_output);
 }
 
 pub fn launch() -> glib::ExitCode {
@@ -256,7 +253,7 @@ fn build_ui(application: &Application) {
 
     let store = gtk::gio::ListStore::new::<BoxedAnyObject>();
 
-    for value in unit_files.clone() {
+        for value in unit_files.clone() {
         //println!("Analyse Tree Blame {:?}", value);
         store.append(&BoxedAnyObject::new(value));
     }
@@ -337,7 +334,6 @@ fn build_ui(application: &Application) {
         .child(&column_view)
         .build();
 
-   
     let left_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(0)
@@ -635,7 +631,7 @@ fn build_ui(application: &Application) {
         let unit_journal = unit_journal_view.clone();
         let column_view = column_view.clone();
         refresh_button.connect_clicked(move |_| {
-            let box_any =  get_selected_unit!(column_view);
+            let box_any = get_selected_unit!(column_view);
             let unit: Ref<LoadedUnit> = box_any.borrow();
             update_journal(&unit_journal, &unit);
         });
@@ -645,7 +641,7 @@ fn build_ui(application: &Application) {
         // NOTE: Implement the start button
         let column_view = column_view.clone();
         start_button.connect_clicked(move |_| {
-            let box_any =  get_selected_unit!(column_view);
+            let box_any = get_selected_unit!(column_view);
             let unit: Ref<LoadedUnit> = box_any.borrow();
 
             match systemd::start_unit(&unit) {
@@ -660,7 +656,7 @@ fn build_ui(application: &Application) {
     {
         let column_view = column_view.clone();
         stop_button.connect_clicked(move |_| {
-            let box_any =  get_selected_unit!(column_view);
+            let box_any = get_selected_unit!(column_view);
             let unit: Ref<LoadedUnit> = box_any.borrow();
 
             match systemd::stop_unit(&unit) {
@@ -677,12 +673,11 @@ fn build_ui(application: &Application) {
         let unit_info = unit_info.clone();
         let column_view = column_view.clone();
         save_unit_file_button.connect_clicked(move |_| {
-
             let buffer = unit_info.buffer();
             let start = buffer.start_iter();
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
-            let box_any =  get_selected_unit!(column_view);
+            let box_any = get_selected_unit!(column_view);
             let unit: Ref<LoadedUnit> = box_any.borrow();
 
             systemd::save_text_to_file(&unit, &text);
@@ -725,6 +720,8 @@ fn build_ui(application: &Application) {
         });
     }
     window.present();
+
+
 
     /*     // Quit the program when the program has been exited
     window.connect_delete_event(|_, _| {
