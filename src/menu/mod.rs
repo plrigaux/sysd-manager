@@ -1,12 +1,12 @@
-use std::cell::Ref;
-
-use gtk::glib::BoxedAnyObject;
 use gtk::{gio, prelude::ActionMapExtManual};
 use gtk::{prelude::*, ListBox};
+use rowitem::Metadata;
 
 use crate::analyze::build_analyze_window;
 use crate::systemd;
 use log::error;
+
+mod rowitem;
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
@@ -89,12 +89,7 @@ fn build_systemd_info() -> gtk::Window {
 
 fn build_systemd_info_data() -> gtk::ScrolledWindow {
 
-    struct RowItem {
-        key: String,
-        value: String,
-    }
-    
-    let store = gio::ListStore::new::<BoxedAnyObject>();
+    let store = gio::ListStore::new::<rowitem::Metadata>();
 
     let Ok(map) = systemd::fetch_system_info() else {
         let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
@@ -105,17 +100,16 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
         return unit_analyse_scrolled_window;
     };
 
-
     for (key, value) in map {
-        store.append(&BoxedAnyObject::new(RowItem { key, value }));
+        store.append(&rowitem::Metadata::new(key, value));
     }
 
     let no_selection = gtk::SingleSelection::new(Some(store));
 
     let list_box = ListBox::builder().build();
 
-    list_box.bind_model(Some(&no_selection),  |object| {
-        let box_any = match object.downcast_ref::<BoxedAnyObject>() {
+    list_box.bind_model(Some(&no_selection), |object| {
+        let meta = match object.downcast_ref::<Metadata>() {
             Some(any_objet) => any_objet,
             None => {
                 error!("No linked object");
@@ -124,21 +118,20 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
             }
         };
 
-        let unit: Ref<RowItem> = box_any.borrow();
-
         let box_ = gtk::Box::new(gtk::Orientation::Horizontal, 15);
 
         const SIZE: usize = 30;
 
         let mut tmp = String::new();
         let mut long_text = false;
-        let key_label = if unit.key.chars().count() > SIZE {
+        let key_label = if meta.col1().chars().count() > SIZE {
             long_text = true;
-            tmp.push_str(&unit.key[..(SIZE - 3)]);
+            tmp.push_str(&meta.col1()[..(SIZE - 3)]);
             tmp.push_str("...");
             &tmp
         } else {
-            &unit.key
+            tmp.push_str(meta.col1().as_str());
+            &tmp
         };
 
         let l1 = gtk::Label::builder()
@@ -150,10 +143,10 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
             .build();
 
         if long_text {
-            l1.set_tooltip_text(Some(&unit.key));
+            l1.set_tooltip_text(Some(&meta.col1()));
         }
 
-        let l2 = gtk::Label::new(Some(&unit.value));
+        let l2 = gtk::Label::new(Some(&meta.col2()));
 
         box_.append(&l1);
         box_.append(&l2);
@@ -170,4 +163,3 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
 
     unit_analyse_scrolled_window
 }
-
