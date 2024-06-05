@@ -5,8 +5,8 @@ use gtk::{gio, prelude::ActionMapExtManual};
 use gtk::{prelude::*, ListBox};
 
 use crate::analyze::build_analyze_window;
-use log::error;
 use crate::systemd;
+use log::error;
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
@@ -127,10 +127,31 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
 
         let box_ = gtk::Box::new(gtk::Orientation::Horizontal, 15);
 
-        let l1 = gtk::Label::new(Some(&unit.key));
-        l1.set_width_chars(30);
-        l1.set_halign(gtk::Align::End);
-        //l1.set_wrap(true);
+        const SIZE: usize = 30;
+
+        let mut tmp = String::new();
+        let mut long_text = false;
+        let key_label = if unit.key.len() > SIZE {
+            long_text = true;
+            tmp.push_str(&unit.key[..(SIZE - 3)]);
+            tmp.push_str("...");
+            &tmp
+        } else {
+            &unit.key
+        };
+
+        let l1 = gtk::Label::builder()
+            .label(key_label)
+            .width_chars(SIZE as i32)
+            .xalign(0.0)
+            .max_width_chars(30)
+            .single_line_mode(true)
+            .build();
+
+        if long_text {
+            l1.set_tooltip_text(Some(&unit.key));
+        }
+
         let l2 = gtk::Label::new(Some(&unit.value));
 
         box_.append(&l1);
@@ -149,39 +170,3 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
     unit_analyse_scrolled_window
 }
 
-
-/* fn main() -> glib::ExitCode {
-    const APP_ID: &str = "org.systemd.manager.test";
-    let application = gtk::Application::builder()
-        .application_id("com.github.gtk-rs.examples.search_bar")
-        .build();
-    application.connect_activate(build_ui);
-
-
-    let win = build_systemd_info();
-    win.set_application(Some(&app));
-    win.present();
-    application.run()
-} */
-
-/* mod tests_window {
-    use gtk::Application;
-
-    use super::*;
-   
-    const APP_ID: &str = "org.systemd.manager.test";
-
-    fn main() {
-
-        let app = Application::builder().application_id(APP_ID).build();
-        app.connect_activate(|a| {
-            let win = build_systemd_info();
-            win.set_application(Some(a));
-            win.present();
-    
-        });
-       
-        app.run();
-    }
-}
- */
