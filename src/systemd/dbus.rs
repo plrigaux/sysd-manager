@@ -7,6 +7,7 @@ use log::info;
 use log::trace;
 
 use self::msgbus::arg::messageitem::MessageItem;
+use self::msgbus::arg::messageitem::Props;
 use self::msgbus::Message;
 
 use super::EnablementStatus;
@@ -396,6 +397,84 @@ pub fn restart_unit(unit: &str) -> Result<(), SystemdErrors> {
     Ok(())
 }
 
+fn display_message_item(m_item: &MessageItem) -> String {
+    let str_value: String = match m_item {
+        MessageItem::Array(a) => {
+            let mut d_str = String::from("[");
+
+            let mut it = a.iter().peekable();
+            while let Some(mi) = it.next() {
+                d_str.push_str(&display_message_item(mi));
+                if it.peek().is_some() {
+                    d_str.push_str(", ");
+                }
+            }
+
+            d_str.push_str("]");
+            d_str
+        }
+        MessageItem::Struct(stc) => {
+            let mut d_str = String::from("{");
+
+            let mut it = stc.iter().peekable();
+            while let Some(mi) = it.next() {
+                d_str.push_str(&display_message_item(mi));
+                if it.peek().is_some() {
+                    d_str.push_str(", ");
+                }
+            }
+
+            d_str.push_str("}");
+            d_str
+        }
+        MessageItem::Variant(v) => display_message_item(v.peel()),
+        MessageItem::Dict(d) => {
+            let mut d_str = String::from("{");
+            for (mik, miv) in d.into_iter() {
+                d_str.push_str(&display_message_item(mik));
+                d_str.push_str(" : ");
+                d_str.push_str(&display_message_item(miv));
+            }
+            d_str.push_str("}");
+            d_str
+        }
+        MessageItem::ObjectPath(p) => p.to_string(),
+        MessageItem::Signature(s) => format!("{:?}", s),
+        MessageItem::Str(s) => s.to_owned(),
+        MessageItem::Bool(b) => b.to_string(),
+        MessageItem::Byte(b) => b.to_string(),
+        MessageItem::Int16(i) => i.to_string(),
+        MessageItem::Int32(i) => i.to_string(),
+        MessageItem::Int64(i) => i.to_string(),
+        MessageItem::UInt16(i) => i.to_string(),
+        MessageItem::UInt32(i) => i.to_string(),
+        MessageItem::UInt64(i) => i.to_string(),
+        MessageItem::Double(i) => i.to_string(),
+        MessageItem::UnixFd(i) => format!("{:?}", i),
+    };
+    str_value
+}
+
+pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
+    let c = msgbus::ffidisp::Connection::new_system().unwrap();
+
+    let dest = "org.freedesktop.systemd1";
+    let path = "/org/freedesktop/systemd1";
+    let interface = "org.freedesktop.systemd1.Manager";
+    let prop = Props::new(&c, dest, path, interface, 10000);
+
+    let all_items = prop.get_all()?;
+    let mut map = BTreeMap::new();
+
+    for (key, b) in all_items.iter() {
+        let str_val = display_message_item(b);
+        // info!("prop : {} \t value: {}", a, str_val);
+
+        map.insert(key.to_owned(), str_val);
+    }
+    Ok(map)
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -583,7 +662,6 @@ mod tests {
        }
     */
 
-
     #[test]
     fn test_prop() {
         init();
@@ -599,7 +677,7 @@ mod tests {
     }
 
     #[test]
-    fn test_prop_all_systemd_manager() {
+    fn test_prop_all_systemd_manager() -> Result<(), SystemdErrors> {
         init();
         let c = msgbus::ffidisp::Connection::new_system().unwrap();
 
@@ -607,9 +685,17 @@ mod tests {
         let path = "/org/freedesktop/systemd1";
         let interface = "org.freedesktop.systemd1.Manager";
         let prop = Props::new(&c, dest, path, interface, 10000);
-        info!("Systemd: {:#?}", prop.get_all());
-    }
 
+        let all_items = prop.get_all()?;
+        info!("Systemd: {:#?}", all_items);
+
+        for (a, b) in all_items.iter() {
+            let str_val = display_message_item(b);
+            info!("prop : {} \t value: {}", a, str_val);
+        }
+
+        Ok(())
+    }
 
     #[test]
     fn test_prop2() {

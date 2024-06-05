@@ -270,6 +270,10 @@ pub fn save_text_to_file(unit: &LoadedUnit, text: &GString) {
     }
 }
 
+pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors>  {
+    dbus::fetch_system_info()
+}
+
 #[cfg(test)]
 mod tests {
     use log::debug;
