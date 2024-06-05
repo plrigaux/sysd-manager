@@ -7,7 +7,8 @@ use log::error;
 use crate::menu;
 use crate::systemd::get_unit_journal;
 
-use systemd::{self, EnablementStatus, LoadedUnit};
+use crate::systemd;
+use systemd::{ EnablementStatus, LoadedUnit};
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};

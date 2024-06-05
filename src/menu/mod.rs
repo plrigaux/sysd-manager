@@ -6,7 +6,7 @@ use gtk::{prelude::*, ListBox};
 
 use crate::analyze::build_analyze_window;
 use log::error;
-use systemd;
+use crate::systemd;
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
@@ -113,7 +113,7 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
 
     list_box.bind_model(Some(&no_selection), move |object| {
         let cloned_object = <gtk::glib::Object as Clone>::clone(&object);
-       
+
         let box_any = match cloned_object.downcast::<BoxedAnyObject>() {
             Ok(any_objet) => any_objet,
             Err(val) => {
@@ -148,76 +148,40 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
 
     unit_analyse_scrolled_window
 }
-/*
-//https://github.com/gtk-rs/gtk4-rs/blob/master/examples/column_view_datagrid/main.rs
 
-/// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
-fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView {
-    let store = gio::ListStore::new::<BoxedAnyObject>();
 
-    let units = Analyze::blame();
-
-    for value in units.clone() {
-        //debug!("Analyse Tree Blame {:?}", value);
-        store.append(&BoxedAnyObject::new(value));
-    }
-
-    let single_selection = gtk::SingleSelection::new(Some(store));
-    /*     let analyze_tree = gtk::ColumnView::new(Some(single_selection));
-    analyze_tree.set_focusable(true); */
-    let analyze_tree = gtk::ColumnView::builder()
-        .focusable(true)
-        .model(&single_selection)
-        .hexpand(true)
+/* fn main() -> glib::ExitCode {
+    const APP_ID: &str = "org.systemd.manager.test";
+    let application = gtk::Application::builder()
+        .application_id("com.github.gtk-rs.examples.search_bar")
         .build();
+    application.connect_activate(build_ui);
 
-    let col1factory = gtk::SignalListItemFactory::new();
-    let col2factory = gtk::SignalListItemFactory::new();
 
-    col1factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = GridCell::default();
-        item.set_child(Some(&row));
-    });
+    let win = build_systemd_info();
+    win.set_application(Some(&app));
+    win.present();
+    application.run()
+} */
 
-    col1factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<GridCell>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<Analyze> = entry.borrow();
-        let ent = Entry {
-            name: r.time.to_string(),
-        };
-        child.set_entry(&ent);
-    });
+/* mod tests_window {
+    use gtk::Application;
 
-    col2factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = GridCell::default();
-        item.set_child(Some(&row));
-    });
+    use super::*;
+   
+    const APP_ID: &str = "org.systemd.manager.test";
 
-    col2factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<GridCell>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<Analyze> = entry.borrow();
-        let ent = Entry {
-            name: r.service.to_string(),
-        };
-        child.set_entry(&ent);
-    });
+    fn main() {
 
-    let col1_time = gtk::ColumnViewColumn::new(Some("Init time (ms)"), Some(col1factory));
-    let col2_unit = gtk::ColumnViewColumn::new(Some("Running units"), Some(col2factory));
-    col2_unit.set_expand(true);
-
-    analyze_tree.append_column(&col1_time);
-    analyze_tree.append_column(&col2_unit);
-
-    let time = (units.iter().last().unwrap().time as f32) / 1000f32;
-    total_time_label.set_label(format!("{} seconds", time).as_str());
-
-    analyze_tree
+        let app = Application::builder().application_id(APP_ID).build();
+        app.connect_activate(|a| {
+            let win = build_systemd_info();
+            win.set_application(Some(a));
+            win.present();
+    
+        });
+       
+        app.run();
+    }
 }
  */

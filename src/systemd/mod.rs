@@ -9,8 +9,8 @@ use std::string::FromUtf8Error;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use gtk::glib::GString;
-use systemd::dbus::msgbus::arg::ArgType;
-use systemd::dbus::UnitType;
+use self::dbus::msgbus::arg::ArgType;
+use self::dbus::UnitType;
 use log::{debug, error};
 
 #[derive(Debug)]

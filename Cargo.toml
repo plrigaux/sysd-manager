@@ -1,6 +1,7 @@
 [package]
-name = "systemd-manager"
+name = "sysd-manager"
 version = "0.0.1"
+edition = '2021'
 license = "GPL-3.0"
 repository = "https://github.com/mmstick/systemd-manager"
 readme = "README.md"
@@ -15,5 +16,4 @@ log = "0.4"
 libc = "0.2"
 env_logger = "0.11.3"
 dotenv = "0.15.0"
-
 
