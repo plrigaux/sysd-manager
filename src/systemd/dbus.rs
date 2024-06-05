@@ -16,9 +16,12 @@ use super::LoadedUnit;
 use super::SystemdErrors;
 use super::SystemdUnit;
 
+const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
+const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
+
 /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
 fn dbus_message(function: &str) -> Result<Message, SystemdErrors> {
-    let dest = "org.freedesktop.systemd1";
+    let dest = DESTINATION_SYSTEMD;
     let path = "/org/freedesktop/systemd1";
     let interface = "org.freedesktop.systemd1.Manager";
     match msgbus::Message::new_method_call(dest, path, interface, function) {
@@ -41,7 +44,7 @@ fn dbus_property() -> Result<(), Error> {
     let connection = dbus::blocking::Connection::new_system()?;
 
     let duration = Duration::from_secs(5);
-    let p = connection.with_proxy("org.freedesktop.systemd1", "/org/freedesktop/systemd1", duration);
+    let p = connection.with_proxy(SYSTEMD_DESTINATION, "/org/freedesktop/systemd1", duration);
 
 
     // The Metadata property is a Dict<String, Variant>.
@@ -458,7 +461,7 @@ fn display_message_item(m_item: &MessageItem) -> String {
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     let c = msgbus::ffidisp::Connection::new_system().unwrap();
 
-    let dest = "org.freedesktop.systemd1";
+    let dest = DESTINATION_SYSTEMD;
     let path = "/org/freedesktop/systemd1";
     let interface = "org.freedesktop.systemd1.Manager";
     let prop = Props::new(&c, dest, path, interface, 10000);
@@ -467,6 +470,23 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     let mut map = BTreeMap::new();
 
     for (key, b) in all_items.iter() {
+        let str_val = display_message_item(b);
+        // info!("prop : {} \t value: {}", a, str_val);
+
+        map.insert(key.to_owned(), str_val);
+    }
+    Ok(map)
+}
+
+pub fn fetch_system_unit_info(path: &str) -> Result<BTreeMap<String, String>, SystemdErrors> {
+    let dest = DESTINATION_SYSTEMD;
+    let interface = INTERFACE_SYSTEMD_UNIT;
+    let c = msgbus::ffidisp::Connection::new_system()?;
+    let prop = Props::new(&c, dest, path, interface, 10000);
+
+    let mut map = BTreeMap::new();
+
+    for (key, b) in  prop.get_all()?.iter() {
         let str_val = display_message_item(b);
         // info!("prop : {} \t value: {}", a, str_val);
 
@@ -681,7 +701,7 @@ mod tests {
         init();
         let c = msgbus::ffidisp::Connection::new_system().unwrap();
 
-        let dest = "org.freedesktop.systemd1";
+        let dest = DESTINATION_SYSTEMD;
         let path = "/org/freedesktop/systemd1";
         let interface = "org.freedesktop.systemd1.Manager";
         let prop = Props::new(&c, dest, path, interface, 10000);
@@ -702,7 +722,7 @@ mod tests {
         init();
         let c = msgbus::ffidisp::Connection::new_system().unwrap();
 
-        let dest = "org.freedesktop.systemd1";
+        let dest = DESTINATION_SYSTEMD;
         let path = "/org/freedesktop/systemd1";
         let interface = "org.freedesktop.systemd1.Manager";
         let prop = Props::new(&c, dest, path, interface, 10000);
@@ -712,7 +732,7 @@ mod tests {
 
     #[test]
     fn test_prop3() -> Result<(), Box<dyn std::error::Error>> {
-        let dest = "org.freedesktop.systemd1";
+        let dest = DESTINATION_SYSTEMD;
         let path = "/org/freedesktop/systemd1";
         let interface = "org.freedesktop.systemd1.Manager";
         let connection = msgbus::blocking::Connection::new_session()?;
@@ -740,13 +760,25 @@ mod tests {
 
     #[test]
     pub fn test_get_unit_parameters() {
-        let dest = "org.freedesktop.systemd1";
+        init();
+        let dest = DESTINATION_SYSTEMD;
         let path = "/org/freedesktop/systemd1/unit/jackett_2eservice";
-        let interface = "org.freedesktop.systemd1.Unit";
+
+        let interface = INTERFACE_SYSTEMD_UNIT;
         let c = msgbus::ffidisp::Connection::new_system().unwrap();
         let p = Props::new(&c, dest, path, interface, 10000);
 
         debug!("ALL PARAM: {:#?}", p.get_all());
+    }
+
+    #[test]
+    pub fn test_fetch_system_unit_info()-> Result<(), SystemdErrors>  {
+        init();
+
+        let btree_map = fetch_system_unit_info("/org/freedesktop/systemd1/unit/jackett_2eservice")?;
+
+        debug!("ALL PARAM: {:#?}", btree_map);
+        Ok(())
     }
 
     #[test]

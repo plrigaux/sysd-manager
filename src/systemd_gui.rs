@@ -288,6 +288,14 @@ fn build_ui(application: &Application) {
         .transition_type(gtk::StackTransitionType::Crossfade)
         .build();
 
+        let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
+        .vexpand(true)
+        .focusable(true)
+      //  .child(&list_box)
+        .build();
+
+
+    info_stack.add_titled(&unit_analyse_scrolled_window, Some("Unit Info"), "Unit Info");
     info_stack.add_titled(&unit_file_box, Some("Unit File"), "Unit File");
     info_stack.add_titled(&unit_journal_box, Some("Unit Journal"), "Unit Journal");
     //info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
