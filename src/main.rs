@@ -11,7 +11,7 @@ use gtk::glib;
 mod menu;
 mod analyze;
 
-use log::{debug, info, trace, warn, error};
+use log::info;
 
 extern crate dotenv;
 

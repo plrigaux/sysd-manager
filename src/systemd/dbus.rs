@@ -2,9 +2,9 @@ pub extern crate dbus as msgbus;
 
 use std::collections::BTreeMap;
 
-use log::trace;
 use log::debug;
 use log::info;
+use log::trace;
 
 use self::msgbus::arg::messageitem::MessageItem;
 use self::msgbus::Message;
@@ -361,7 +361,7 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>
 } */
 
 /// Takes a unit name as input and attempts to start it
-/// 
+///
 pub fn start_unit(unit: &str) -> Result<(), SystemdErrors> {
     let mut message = dbus_message("StartUnit")?;
     message.append_items(&[unit.into(), "fail".into()]);
@@ -408,6 +408,14 @@ mod tests {
     use super::*;
 
     pub const TEST_SERVICE: &str = "jackett.service";
+
+    fn init() {
+        let _ = env_logger::builder()
+            .target(env_logger::Target::Stdout)
+            .filter_level(log::LevelFilter::Trace)
+            .is_test(true)
+            .try_init();
+    }
 
     #[test]
     fn list_unit_files_message_test() -> Result<(), SystemdErrors> {
@@ -559,23 +567,26 @@ mod tests {
         Ok(())
     }
 
-  /*  #[test]
-     fn test_list_units_description_and_state() -> Result<(), SystemdErrors> {
-        let units_map = list_units_description_and_state()?;
+    /*  #[test]
+        fn test_list_units_description_and_state() -> Result<(), SystemdErrors> {
+           let units_map = list_units_description_and_state()?;
 
-        let ts = units_map.get(TEST_SERVICE);
-        debug!("Test Service {:#?}", ts);
-        let units = units_map.into_values().collect::<Vec<LoadedUnit>>();
+           let ts = units_map.get(TEST_SERVICE);
+           debug!("Test Service {:#?}", ts);
+           let units = units_map.into_values().collect::<Vec<LoadedUnit>>();
 
-        let services = collect_togglable_services(&units);
+           let services = collect_togglable_services(&units);
 
-        debug!("service.len {}", services.len());
+           debug!("service.len {}", services.len());
 
-        Ok(())
-    }
- */
+           Ok(())
+       }
+    */
+
+
     #[test]
     fn test_prop() {
+        init();
         let c = msgbus::ffidisp::Connection::new_system().unwrap();
         let p = Props::new(
             &c,
@@ -584,11 +595,25 @@ mod tests {
             "org.freedesktop.PolicyKit1.Authority",
             10000,
         );
-        debug!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
+        info!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
     }
 
     #[test]
+    fn test_prop_all_systemd_manager() {
+        init();
+        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+
+        let dest = "org.freedesktop.systemd1";
+        let path = "/org/freedesktop/systemd1";
+        let interface = "org.freedesktop.systemd1.Manager";
+        let prop = Props::new(&c, dest, path, interface, 10000);
+        info!("Systemd: {:#?}", prop.get_all());
+    }
+
+
+    #[test]
     fn test_prop2() {
+        init();
         let c = msgbus::ffidisp::Connection::new_system().unwrap();
 
         let dest = "org.freedesktop.systemd1";
@@ -597,8 +622,6 @@ mod tests {
         let prop = Props::new(&c, dest, path, interface, 10000);
         debug!("Version: {:?}", prop.get("Version").unwrap());
         debug!("Architecture: {:?}", prop.get("Architecture").unwrap());
-
-        //debug!("ActiveState: {:?}", p.get("ActiveState").unwrap());
     }
 
     #[test]
