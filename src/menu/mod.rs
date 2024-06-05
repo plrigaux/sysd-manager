@@ -88,6 +88,12 @@ fn build_systemd_info() -> gtk::Window {
 }
 
 fn build_systemd_info_data() -> gtk::ScrolledWindow {
+
+    struct RowItem {
+        key: String,
+        value: String,
+    }
+    
     let store = gio::ListStore::new::<BoxedAnyObject>();
 
     let Ok(map) = systemd::fetch_system_info() else {
@@ -99,10 +105,7 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
         return unit_analyse_scrolled_window;
     };
 
-    struct RowItem {
-        key: String,
-        value: String,
-    }
+
     for (key, value) in map {
         store.append(&BoxedAnyObject::new(RowItem { key, value }));
     }
@@ -111,13 +114,11 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
 
     let list_box = ListBox::builder().build();
 
-    list_box.bind_model(Some(&no_selection), move |object| {
-        let cloned_object = <gtk::glib::Object as Clone>::clone(&object);
-
-        let box_any = match cloned_object.downcast::<BoxedAnyObject>() {
-            Ok(any_objet) => any_objet,
-            Err(val) => {
-                error!("Bind  Error: {:?}", val);
+    list_box.bind_model(Some(&no_selection),  |object| {
+        let box_any = match object.downcast_ref::<BoxedAnyObject>() {
+            Some(any_objet) => any_objet,
+            None => {
+                error!("No linked object");
                 let list_box_row = gtk::ListBoxRow::new();
                 return list_box_row.upcast::<gtk::Widget>();
             }
@@ -131,7 +132,7 @@ fn build_systemd_info_data() -> gtk::ScrolledWindow {
 
         let mut tmp = String::new();
         let mut long_text = false;
-        let key_label = if unit.key.len() > SIZE {
+        let key_label = if unit.key.chars().count() > SIZE {
             long_text = true;
             tmp.push_str(&unit.key[..(SIZE - 3)]);
             tmp.push_str("...");
