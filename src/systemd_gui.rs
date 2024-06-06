@@ -197,7 +197,6 @@ fn build_ui(application: &Application) {
         .width_request(350)
         .build();
 
-    left_pane.append(&unit_col_view_scrolled_window);
     //-------------------------------------------
 
     let unit_info = gtk::TextView::builder()
@@ -375,7 +374,44 @@ fn build_ui(application: &Application) {
     main_box.append(&left_pane);
     main_box.append(&right_pane);
 
-    let (title_bar, ablement_switch, right_bar_label) = build_title_bar(column_view.clone());
+    let search_bar = gtk::SearchBar::builder()
+        .valign(gtk::Align::Start)
+        // .key_capture_widget(&window)
+        .build();
+
+    let (title_bar, ablement_switch, right_bar_label, search_button) =
+        build_title_bar(column_view.clone(), &search_bar);
+
+    let entry = gtk::SearchEntry::new();
+    entry.set_hexpand(true);
+    search_bar.set_child(Some(&entry));
+
+    {
+        let search_button = search_button.clone();
+        entry.connect_search_started(move |_| {
+            search_button.set_active(true);
+        });
+    }
+    {
+        let search_button = search_button.clone();
+        entry.connect_stop_search(move |_| {
+            search_button.set_active(false);
+        });
+    }
+    entry.connect_search_changed(move |entry| {
+
+        let text = entry.text();
+        if !text.is_empty() {
+            //label.set_text(&entry.text());
+            println!("Search: {}", text)
+        } else {
+            println!("Search cleared")
+        }
+    });
+
+
+    left_pane.append(&search_bar);
+    left_pane.append(&unit_col_view_scrolled_window);
 
     // Create a window
     let window = ApplicationWindow::builder()
@@ -387,7 +423,6 @@ fn build_ui(application: &Application) {
         .titlebar(&title_bar)
         .build();
 
-   
     {
         // NOTE: Journal Refresh Button
         let refresh_button = refresh_log_button.clone();
@@ -482,7 +517,10 @@ fn build_ui(application: &Application) {
     gtk::main(); */
 }
 
-fn build_title_bar(column_view: ColumnView) -> (gtk::HeaderBar, gtk::Switch, gtk::Label) {
+fn build_title_bar(
+    column_view: ColumnView,
+    search_bar: &gtk::SearchBar,
+) -> (gtk::HeaderBar, gtk::Switch, gtk::Label, gtk::ToggleButton) {
     // ----------------------------------------------
     let title_bar = gtk::HeaderBar::builder().build();
 
@@ -507,6 +545,12 @@ fn build_title_bar(column_view: ColumnView) -> (gtk::HeaderBar, gtk::Switch, gtk
     title_bar.pack_start(&search_button);
 
     title_bar.pack_start(&right_bar_label);
+
+    search_button
+        .bind_property("active", search_bar, "search-mode-enabled")
+        .sync_create()
+        .bidirectional()
+        .build();
 
     let action_buttons = gtk::Box::new(Orientation::Horizontal, 0);
 
@@ -646,6 +690,5 @@ fn build_title_bar(column_view: ColumnView) -> (gtk::HeaderBar, gtk::Switch, gtk
         });
     }
 
-
-    (title_bar, ablement_switch, right_bar_label)
+    (title_bar, ablement_switch, right_bar_label, search_button)
 }
