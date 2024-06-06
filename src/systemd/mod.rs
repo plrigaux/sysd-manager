@@ -274,8 +274,8 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors>  {
     dbus::fetch_system_info()
 }
 
-pub fn fetch_system_unit_info(path :&str)-> Result<BTreeMap<String, String>, SystemdErrors>  {
-    dbus::fetch_system_unit_info(path)
+pub fn fetch_system_unit_info(unit: &LoadedUnit)-> Result<BTreeMap<String, String>, SystemdErrors>  {
+    dbus::fetch_system_unit_info(&unit.object_path)
 }
 
 #[cfg(test)]

@@ -6,7 +6,7 @@ use crate::analyze::build_analyze_window;
 use crate::systemd;
 use log::error;
 
-mod rowitem;
+pub mod rowitem;
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();

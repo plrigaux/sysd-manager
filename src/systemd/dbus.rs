@@ -403,7 +403,7 @@ pub fn restart_unit(unit: &str) -> Result<(), SystemdErrors> {
 fn display_message_item(m_item: &MessageItem) -> String {
     let str_value: String = match m_item {
         MessageItem::Array(a) => {
-            let mut d_str = String::from("[");
+            let mut d_str = String::from("[ ");
 
             let mut it = a.iter().peekable();
             while let Some(mi) = it.next() {
@@ -413,11 +413,11 @@ fn display_message_item(m_item: &MessageItem) -> String {
                 }
             }
 
-            d_str.push_str("]");
+            d_str.push_str(" ]");
             d_str
         }
         MessageItem::Struct(stc) => {
-            let mut d_str = String::from("{");
+            let mut d_str = String::from("{ ");
 
             let mut it = stc.iter().peekable();
             while let Some(mi) = it.next() {
@@ -427,18 +427,18 @@ fn display_message_item(m_item: &MessageItem) -> String {
                 }
             }
 
-            d_str.push_str("}");
+            d_str.push_str(" }");
             d_str
         }
         MessageItem::Variant(v) => display_message_item(v.peel()),
         MessageItem::Dict(d) => {
-            let mut d_str = String::from("{");
+            let mut d_str = String::from("{ ");
             for (mik, miv) in d.into_iter() {
                 d_str.push_str(&display_message_item(mik));
                 d_str.push_str(" : ");
                 d_str.push_str(&display_message_item(miv));
             }
-            d_str.push_str("}");
+            d_str.push_str(" }");
             d_str
         }
         MessageItem::ObjectPath(p) => p.to_string(),

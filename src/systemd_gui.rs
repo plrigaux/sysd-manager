@@ -1,4 +1,4 @@
-use gtk::{self, SingleSelection};
+use gtk::{self, gio, SingleSelection};
 
 use gtk::prelude::*;
 use log::debug;
@@ -8,7 +8,7 @@ use crate::menu;
 use crate::systemd::get_unit_journal;
 
 use crate::systemd;
-use systemd::{ EnablementStatus, LoadedUnit};
+use systemd::{EnablementStatus, LoadedUnit};
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};
@@ -25,6 +25,7 @@ const APP_ID: &str = "org.systemd.manager";
 const _ICON_YES: &str = "object-select-symbolic";
 const _ICON_NO: &str = "window-close-symbolic";
 
+use crate::menu::rowitem;
 /// Updates the status icon for the selected unit
 /* fn update_icon(icon: &gtk::Image, state: bool) {
     if state {
@@ -283,19 +284,74 @@ fn build_ui(application: &Application) {
          unit_analyse_box.append(&total_time_label);
      unit_analyse_box.append(&unit_analyse_scrolled_window); */
 
+    let unit_prop_store = gio::ListStore::new::<rowitem::Metadata>();
+
+    let no_selection = gtk::SingleSelection::new(Some(unit_prop_store.clone()));
+
+    let unit_prop_list_box = gtk::ListBox::builder().build();
+
+    unit_prop_list_box.bind_model(Some(&no_selection), |object| {
+        let meta = match object.downcast_ref::<rowitem::Metadata>() {
+            Some(any_objet) => any_objet,
+            None => {
+                error!("No linked object");
+                let list_box_row = gtk::ListBoxRow::new();
+                return list_box_row.upcast::<gtk::Widget>();
+            }
+        };
+
+        let box_ = gtk::Box::new(gtk::Orientation::Horizontal, 15);
+
+        const SIZE: usize = 30;
+
+        let mut tmp = String::new();
+        let mut long_text = false;
+        let key_label = if meta.col1().chars().count() > SIZE {
+            long_text = true;
+            tmp.push_str(&meta.col1()[..(SIZE - 3)]);
+            tmp.push_str("...");
+            &tmp
+        } else {
+            tmp.push_str(meta.col1().as_str());
+            &tmp
+        };
+
+        let l1 = gtk::Label::builder()
+            .label(key_label)
+            .width_chars(SIZE as i32)
+            .xalign(0.0)
+            .max_width_chars(30)
+            .single_line_mode(true)
+            .build();
+
+        if long_text {
+            l1.set_tooltip_text(Some(&meta.col1()));
+        }
+
+        let l2 = gtk::Label::new(Some(&meta.col2()));
+
+        box_.append(&l1);
+        box_.append(&l2);
+
+        box_.upcast::<gtk::Widget>()
+    });
+
+    let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
+        .vexpand(true)
+        .focusable(true)
+        .child(&unit_prop_list_box)
+        .build();
+
     let info_stack = gtk::Stack::builder()
         .vexpand(true)
         .transition_type(gtk::StackTransitionType::Crossfade)
         .build();
 
-        let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
-        .vexpand(true)
-        .focusable(true)
-      //  .child(&list_box)
-        .build();
-
-
-    info_stack.add_titled(&unit_analyse_scrolled_window, Some("Unit Info"), "Unit Info");
+    info_stack.add_titled(
+        &unit_analyse_scrolled_window,
+        Some("Unit Info"),
+        "Unit Info",
+    );
     info_stack.add_titled(&unit_file_box, Some("Unit File"), "Unit File");
     info_stack.add_titled(&unit_journal_box, Some("Unit Journal"), "Unit Journal");
     //info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
@@ -533,6 +589,7 @@ fn build_ui(application: &Application) {
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal_view.clone();
         let header = right_bar_label.clone();
+        let unit_prop_store = unit_prop_store.clone();
 
         columnview_selection_model.connect_selected_item_notify(move |single_selection| {
             let Some(object) = single_selection.selected_item() else {
@@ -562,6 +619,18 @@ fn build_ui(application: &Application) {
             update_journal(&unit_journal, &unit);
             header.set_label(unit.display_name());
             debug!("Unit {:#?}", unit);
+
+            unit_prop_store.remove_all();
+
+            match systemd::fetch_system_unit_info(&unit) {
+                Ok(map) => {
+                    for (key, value) in map {
+                        unit_prop_store.append(&rowitem::Metadata::new(key, value));
+                    }
+                }
+                Err(e) => error!("Fail to retreive Unit info: {:?}", e),
+            }
+
         });
     }
     window.present();
