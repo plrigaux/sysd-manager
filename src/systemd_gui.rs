@@ -1,4 +1,4 @@
-use gtk::{self, gio, SingleSelection};
+use gtk::{self, gio, ColumnView, SingleSelection};
 
 use gtk::prelude::*;
 use log::debug;
@@ -358,7 +358,7 @@ fn build_ui(application: &Application) {
     );
     //info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
 
-   // let stack_switcher = gtk::StackSwitcher::builder().stack(&info_stack).build();
+    // let stack_switcher = gtk::StackSwitcher::builder().stack(&info_stack).build();
 
     let right_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -366,7 +366,7 @@ fn build_ui(application: &Application) {
         .hexpand(true)
         .build();
 
-   // right_pane.append(&stack_switcher);
+    // right_pane.append(&stack_switcher);
     right_pane.append(&info_stack);
 
     // ---------------------------------------------------
@@ -375,72 +375,7 @@ fn build_ui(application: &Application) {
     main_box.append(&left_pane);
     main_box.append(&right_pane);
 
-    // ----------------------------------------------
-    let title_bar = gtk::HeaderBar::builder().build();
-
-    let menu_button = menu::build_menu();
-
-    title_bar.pack_end(&menu_button);
-
-    /*    let right_bar = gtk::HeaderBar::builder().hexpand(true)
-    .build(); */
-
-    let right_bar_label = gtk::Label::builder()
-        .label("Service Name")
-        .attributes(&{
-            let attribute_list = AttrList::new();
-            attribute_list.insert(AttrInt::new_weight(Weight::Bold));
-            attribute_list
-        })
-        .build();
-
-    /*         let gtk_box_test = gtk::Box::new(Orientation::Horizontal, 0);
-    gtk_box_test.append(&right_bar_label);
-    gtk_box_test.set_width_request(100); */
-    title_bar.pack_start(&right_bar_label);
-
-    let action_buttons = gtk::Box::new(Orientation::Horizontal, 0);
-
-    action_buttons.append(&{
-        gtk::Label::builder()
-            .label("Enabled:")
-            .attributes(&{
-                let attribute_list = AttrList::new();
-                attribute_list.insert(AttrInt::new_weight(Weight::Bold));
-                attribute_list
-            })
-            .build()
-    });
-
-    let ablement_switch = gtk::Switch::builder().focusable(true).build();
-
-    action_buttons.append(&ablement_switch);
-
-    let start_button = gtk::Button::builder()
-        .hexpand(true)
-        .label("Start")
-        .focusable(true)
-        .receives_default(true)
-        .build();
-    action_buttons.append(&start_button);
-
-    let stop_button = gtk::Button::builder()
-        .hexpand(true)
-        .label("Stop")
-        .focusable(true)
-        .receives_default(true)
-        .build();
-    action_buttons.append(&stop_button);
-
-    let restart_button = gtk::Button::builder()
-        .hexpand(true)
-        .label("Start")
-        .focusable(true)
-        .receives_default(true)
-        .build();
-    action_buttons.append(&restart_button);
-
-    title_bar.pack_end(&action_buttons);
+    let (title_bar, ablement_switch, right_bar_label) = build_title_bar(column_view.clone());
 
     // Create a window
     let window = ApplicationWindow::builder()
@@ -452,67 +387,7 @@ fn build_ui(application: &Application) {
         .titlebar(&title_bar)
         .build();
 
-    {
-        fn handle_switch(
-            unit_list: &gtk::ColumnView,
-            // unit_ref: Rc<Vec<LoadedUnit>>,
-            enabled: bool,
-            switch: &gtk::Switch,
-        ) {
-            if let Some(model) = unit_list.model() {
-                let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
-                    panic!("Can't downcast to SingleSelection")
-                };
-
-                let Some(object) = single_selection_model.selected_item() else {
-                    error!("No selection objet");
-                    return;
-                };
-
-                let box_any = match object.downcast::<BoxedAnyObject>() {
-                    Ok(any_objet) => any_objet,
-                    Err(val) => {
-                        error!("Selection Error: {:?}", val);
-                        return;
-                    }
-                };
-
-                let unit: Ref<LoadedUnit> = box_any.borrow();
-
-                let status =
-                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
-                let is_unit_enable = status == EnablementStatus::Enabled;
-
-                if enabled && !is_unit_enable {
-                    if let Ok(_) = systemd::enable_unit_files(&unit) {
-                        switch.set_state(true);
-                    }
-                } else if !enabled && is_unit_enable {
-                    if let Ok(_) = systemd::disable_unit_files(&unit) {
-                        switch.set_state(false);
-                    }
-                }
-            }
-        }
-        let column_view = column_view.clone();
-        ablement_switch.connect_state_set(move |switch, enabled| {
-            handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
-            Propagation::Proceed
-        });
-
-        /*         ablement_switch.connect_state_set(move |switch, enabled| {
-            let (unit_listbox, unit_ref) = match unit_stack.visible_child_name().unwrap().as_str() {
-                "Services" => (&services_list, services_ref.clone()),
-                "Sockets" => (&sockets_list, sockets_ref.clone()),
-                "Timers" => (&timers_list, timers_ref.clone()),
-                _ => unreachable!(),
-            };
-
-            handle_switch(unit_listbox, unit_ref, enabled, switch);
-            Propagation::Proceed
-        }); */
-    }
-
+   
     {
         // NOTE: Journal Refresh Button
         let refresh_button = refresh_log_button.clone();
@@ -522,52 +397,6 @@ fn build_ui(application: &Application) {
             let box_any = get_selected_unit!(column_view);
             let unit: Ref<LoadedUnit> = box_any.borrow();
             update_journal(&unit_journal, &unit);
-        });
-    }
-
-    {
-        // NOTE: Implement the start button
-        let column_view = column_view.clone();
-        start_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
-            match systemd::start_unit(&unit) {
-                Ok(()) => {
-                    error!("Unit {} started!", unit.primary())
-                }
-                Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
-            }
-        });
-    }
-
-    {
-        let column_view = column_view.clone();
-        stop_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
-            match systemd::stop_unit(&unit) {
-                Ok(()) => {
-                    error!("Unit {} stopped!", unit.primary())
-                }
-                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
-            }
-        });
-    }
-
-    {
-        let column_view = column_view.clone();
-        restart_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
-            match systemd::restart_unit(&unit) {
-                Ok(()) => {
-                    error!("Unit {} restarted!", unit.primary())
-                }
-                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
-            }
         });
     }
 
@@ -651,4 +480,172 @@ fn build_ui(application: &Application) {
     });
 
     gtk::main(); */
+}
+
+fn build_title_bar(column_view: ColumnView) -> (gtk::HeaderBar, gtk::Switch, gtk::Label) {
+    // ----------------------------------------------
+    let title_bar = gtk::HeaderBar::builder().build();
+
+    let menu_button = menu::build_menu();
+
+    title_bar.pack_end(&menu_button);
+
+    /*    let right_bar = gtk::HeaderBar::builder().hexpand(true)
+    .build(); */
+
+    let right_bar_label = gtk::Label::builder()
+        .label("Service Name")
+        .attributes(&{
+            let attribute_list = AttrList::new();
+            attribute_list.insert(AttrInt::new_weight(Weight::Bold));
+            attribute_list
+        })
+        .build();
+
+    let search_button = gtk::ToggleButton::new();
+    search_button.set_icon_name("system-search-symbolic");
+    title_bar.pack_start(&search_button);
+
+    title_bar.pack_start(&right_bar_label);
+
+    let action_buttons = gtk::Box::new(Orientation::Horizontal, 0);
+
+    action_buttons.append(&{
+        gtk::Label::builder()
+            .label("Enabled:")
+            .attributes(&{
+                let attribute_list = AttrList::new();
+                attribute_list.insert(AttrInt::new_weight(Weight::Bold));
+                attribute_list
+            })
+            .build()
+    });
+
+    let ablement_switch = gtk::Switch::builder().focusable(true).build();
+
+    action_buttons.append(&ablement_switch);
+
+    let start_button = gtk::Button::builder()
+        .hexpand(true)
+        .label("Start")
+        .focusable(true)
+        .receives_default(true)
+        .build();
+    action_buttons.append(&start_button);
+
+    let stop_button = gtk::Button::builder()
+        .hexpand(true)
+        .label("Stop")
+        .focusable(true)
+        .receives_default(true)
+        .build();
+    action_buttons.append(&stop_button);
+
+    let restart_button = gtk::Button::builder()
+        .hexpand(true)
+        .label("Start")
+        .focusable(true)
+        .receives_default(true)
+        .build();
+    action_buttons.append(&restart_button);
+
+    title_bar.pack_end(&action_buttons);
+
+    {
+        // NOTE: Implement the start button
+        let column_view = column_view.clone();
+        start_button.connect_clicked(move |_| {
+            let box_any = get_selected_unit!(column_view);
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            match systemd::start_unit(&unit) {
+                Ok(()) => {
+                    error!("Unit {} started!", unit.primary())
+                }
+                Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
+            }
+        });
+    }
+
+    {
+        let column_view = column_view.clone();
+        stop_button.connect_clicked(move |_| {
+            let box_any = get_selected_unit!(column_view);
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            match systemd::stop_unit(&unit) {
+                Ok(()) => {
+                    error!("Unit {} stopped!", unit.primary())
+                }
+                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+            }
+        });
+    }
+
+    {
+        let column_view = column_view.clone();
+        restart_button.connect_clicked(move |_| {
+            let box_any = get_selected_unit!(column_view);
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            match systemd::restart_unit(&unit) {
+                Ok(()) => {
+                    error!("Unit {} restarted!", unit.primary())
+                }
+                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+            }
+        });
+    }
+
+    {
+        fn handle_switch(
+            column_view: &gtk::ColumnView,
+            // unit_ref: Rc<Vec<LoadedUnit>>,
+            enabled: bool,
+            switch: &gtk::Switch,
+        ) {
+            if let Some(model) = column_view.model() {
+                let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
+                    panic!("Can't downcast to SingleSelection")
+                };
+
+                let Some(object) = single_selection_model.selected_item() else {
+                    error!("No selection objet");
+                    return;
+                };
+
+                let box_any = match object.downcast::<BoxedAnyObject>() {
+                    Ok(any_objet) => any_objet,
+                    Err(val) => {
+                        error!("Selection Error: {:?}", val);
+                        return;
+                    }
+                };
+
+                let unit: Ref<LoadedUnit> = box_any.borrow();
+
+                let status =
+                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
+                let is_unit_enable = status == EnablementStatus::Enabled;
+
+                if enabled && !is_unit_enable {
+                    if let Ok(_) = systemd::enable_unit_files(&unit) {
+                        switch.set_state(true);
+                    }
+                } else if !enabled && is_unit_enable {
+                    if let Ok(_) = systemd::disable_unit_files(&unit) {
+                        switch.set_state(false);
+                    }
+                }
+            }
+        }
+        let column_view = column_view.clone();
+        ablement_switch.connect_state_set(move |switch, enabled| {
+            handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
+            Propagation::Proceed
+        });
+    }
+
+
+    (title_bar, ablement_switch, right_bar_label)
 }
