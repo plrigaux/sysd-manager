@@ -342,21 +342,23 @@ fn build_ui(application: &Application) {
         .child(&unit_prop_list_box)
         .build();
 
-    let info_stack = gtk::Stack::builder()
+    let info_stack = gtk::Notebook::builder()
         .vexpand(true)
-        .transition_type(gtk::StackTransitionType::Crossfade)
+        //.transition_type(gtk::StackTransitionType::Crossfade)
         .build();
 
-    info_stack.add_titled(
+    info_stack.append_page(
         &unit_analyse_scrolled_window,
-        Some("Unit Info"),
-        "Unit Info",
+        Some(&gtk::Label::new(Some("Unit Info"))),
     );
-    info_stack.add_titled(&unit_file_box, Some("Unit File"), "Unit File");
-    info_stack.add_titled(&unit_journal_box, Some("Unit Journal"), "Unit Journal");
+    info_stack.append_page(&unit_file_box, Some(&gtk::Label::new(Some("Unit File"))));
+    info_stack.append_page(
+        &unit_journal_box,
+        Some(&gtk::Label::new(Some("Unit Journal"))),
+    );
     //info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
 
-    let stack_switcher = gtk::StackSwitcher::builder().stack(&info_stack).build();
+   // let stack_switcher = gtk::StackSwitcher::builder().stack(&info_stack).build();
 
     let right_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -364,7 +366,7 @@ fn build_ui(application: &Application) {
         .hexpand(true)
         .build();
 
-    right_pane.append(&stack_switcher);
+   // right_pane.append(&stack_switcher);
     right_pane.append(&info_stack);
 
     // ---------------------------------------------------
@@ -630,7 +632,6 @@ fn build_ui(application: &Application) {
                 }
                 Err(e) => error!("Fail to retreive Unit info: {:?}", e),
             }
-
         });
     }
     window.present();
