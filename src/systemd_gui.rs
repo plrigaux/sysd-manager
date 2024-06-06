@@ -115,7 +115,21 @@ fn build_ui(application: &Application) {
         store.append(&BoxedAnyObject::new(value));
     }
 
-    let columnview_selection_model = gtk::SingleSelection::new(Some(store));
+
+    let test = gtk::SingleSelection::this_expression("n-items").expression();
+    error!("{:?}", test);
+
+    let string_filter = gtk::StringFilter::builder()
+    .ignore_case(true)
+    .match_mode(gtk::StringFilterMatchMode::Substring)
+    //.search("jack")
+    .build();
+
+let filtermodel =
+    gtk::FilterListModel::new(Some(store), Some(string_filter));
+
+    let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel));
+
 
     /*     let column_view = gtk::ColumnView::new(Some(selection_model));
     column_view.set_focusable(true); */
@@ -399,7 +413,6 @@ fn build_ui(application: &Application) {
         });
     }
     entry.connect_search_changed(move |entry| {
-
         let text = entry.text();
         if !text.is_empty() {
             //label.set_text(&entry.text());
@@ -408,7 +421,6 @@ fn build_ui(application: &Application) {
             println!("Search cleared")
         }
     });
-
 
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
