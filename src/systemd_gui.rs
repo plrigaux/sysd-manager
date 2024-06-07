@@ -82,6 +82,27 @@ macro_rules! get_selected_unit {
     }};
 }
 
+macro_rules! create_column_filter {
+    ($func:ident) => {{
+        let col_sorter = gtk::CustomSorter::new(move |obj1, obj2| {
+            let Some(box_any1) = obj1.downcast_ref::<BoxedAnyObject>() else {
+                panic!("some wrong downcast_ref {:?}", obj1);
+            };
+
+            let unit1: Ref<LoadedUnit> = box_any1.borrow();
+
+            let Some(box_any2) = obj2.downcast_ref::<BoxedAnyObject>() else {
+                panic!("some wrong downcast_ref {:?}", obj2);
+            };
+
+            let unit2: Ref<LoadedUnit> = box_any2.borrow();
+
+            unit1.$func().cmp(unit2.$func()).into()
+        });
+        col_sorter
+    }};
+}
+
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
 fn update_journal(journal: &gtk::TextView, unit: &LoadedUnit) {
     let journal_output = systemd::get_unit_journal(unit);
@@ -113,10 +134,10 @@ fn build_ui(application: &Application) {
         //debug!("Analyse Tree Blame {:?}", value);
         store.append(&BoxedAnyObject::new(value));
     }
-/* 
-    let filtermodel = gtk::FilterListModel::new(Some(store.clone()), None::<gtk::CustomFilter>);
-    let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
- */
+    /*
+       let filtermodel = gtk::FilterListModel::new(Some(store.clone()), None::<gtk::CustomFilter>);
+       let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
+    */
 
     let column_view = gtk::ColumnView::builder()
         //.model(&columnview_selection_model)
@@ -199,50 +220,54 @@ fn build_ui(application: &Application) {
         child.set_label(unit.description());
     });
 
-    let col1_unit = gtk::ColumnViewColumn::new(Some("Unit"), Some(col_unit_name_factory));
-    col1_unit.set_resizable(true);
-    col1_unit.set_fixed_width(140);
-    let col3_unit = gtk::ColumnViewColumn::new(Some("Type"), Some(col_type_factory));
-    col3_unit.set_resizable(true);
-    col3_unit.set_fixed_width(75);
-    let col2_enable_status =
-        gtk::ColumnViewColumn::new(Some("Enable status"), Some(col_enable_factory));
-    col2_enable_status.set_expand(true);
+    let col1_unit_name_sorter = create_column_filter!(primary);
+    let col1_unit = gtk::ColumnViewColumn::builder()
+        .title("Unit")
+        .factory(&col_unit_name_factory)
+        .resizable(true)
+        .sorter(&col1_unit_name_sorter)
+        .fixed_width(140)
+        .build();
 
-    let col_sorter = gtk::CustomSorter::new(move |obj1, obj2| {
-        let Some(box_any1) = obj1.downcast_ref::<BoxedAnyObject>() else {
-            panic!("some wrong downcast_ref {:?}", obj1);
-        };
+    let col2_unit_type_sorter = create_column_filter!(unit_type);
+    let col2_unit_type = gtk::ColumnViewColumn::builder()
+        .title("Type")
+        .factory(&col_type_factory)
+        .sorter(&col2_unit_type_sorter)
+        .resizable(true)
+        .fixed_width(75)
+        .build();
 
-        let unit1: Ref<LoadedUnit> = box_any1.borrow();
+    let col3_enable_sorter = create_column_filter!(enable_status);
+    let col3_enable_status = gtk::ColumnViewColumn::builder()
+        .title("Enable\nstatus")
+        .factory(&col_enable_factory)
+        .sorter(&col3_enable_sorter)
+        .expand(true)
+        .fixed_width(75)
+        .build();
 
-        let Some(box_any2) = obj2.downcast_ref::<BoxedAnyObject>() else {
-            panic!("some wrong downcast_ref {:?}", obj2);
-        };
-
-        let unit2: Ref<LoadedUnit> = box_any2.borrow();
-
-        unit1.active_state().cmp(unit2.active_state()).into()
-    });
+    let col_sorter = create_column_filter!(active_state);
 
     let col4_active_state = gtk::ColumnViewColumn::builder()
-        .title("Active status")
+        .title("Active\nstatus")
         .factory(&col_active_state_factory)
         .sorter(&col_sorter)
+        .fixed_width(75)
         .build();
 
     let col5_unit = gtk::ColumnViewColumn::new(Some("Description"), Some(col_description_factory));
 
     column_view.append_column(&col1_unit);
-    column_view.append_column(&col3_unit);
-    column_view.append_column(&col2_enable_status);
+    column_view.append_column(&col2_unit_type);
+    column_view.append_column(&col3_enable_status);
     column_view.append_column(&col4_active_state);
     column_view.append_column(&col5_unit);
 
-
     let sorter = column_view.sorter();
     let sort_model = gtk::SortListModel::new(Some(store), sorter);
-    let filtermodel = gtk::FilterListModel::new(Some(sort_model.clone()), None::<gtk::CustomFilter>);
+    let filtermodel =
+        gtk::FilterListModel::new(Some(sort_model.clone()), None::<gtk::CustomFilter>);
     let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
     column_view.set_model(Some(&columnview_selection_model));
 
@@ -470,7 +495,7 @@ fn build_ui(application: &Application) {
 
             let unit: Ref<LoadedUnit> = box_any.borrow();
             let text = entry1.text();
-        
+
             if text.is_empty() {
                 return true;
             }
