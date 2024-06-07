@@ -6,12 +6,12 @@ use std::collections::BTreeMap;
 use std::process::Command;
 use std::string::FromUtf8Error;
 
-use std::fs::{self, File};
-use std::io::{Read, Write};
-use gtk::glib::GString;
 use self::dbus::msgbus::arg::ArgType;
 use self::dbus::UnitType;
+use gtk::glib::GString;
 use log::{debug, error};
+use std::fs::{self, File};
+use std::io::{Read, Write};
 
 #[derive(Debug)]
 pub enum SystemdErrors {
@@ -141,7 +141,7 @@ impl LoadedUnit {
             }
         }
 
-        let unit_info = LoadedUnit {
+        Self {
             primary: primary.clone(),
             description: description.clone(),
             load_state: load_state.clone(),
@@ -154,14 +154,13 @@ impl LoadedUnit {
             separator: split_char_index, /*                   job_id: job_id,
                                          job_type: job_type.clone(),
                                          job_object_path: job_object_path.to_string(), */
-        };
-        unit_info
+        }
     }
     pub fn primary(&self) -> &str {
         &self.primary
     }
 
-/*     pub fn is_enable(&self) -> bool {
+    /*     pub fn is_enable(&self) -> bool {
         match &self.enable_status {
             Some(enable_status) => STATUS_ENABLED == enable_status,
             None => false,
@@ -183,7 +182,15 @@ impl LoadedUnit {
         &self.primary[(self.separator + 1)..]
     }
 
-/*     fn is_enable_or_disable(&self) -> bool {
+    pub fn active_state(&self) -> &str {
+        &self.active_state
+    }
+
+    pub fn description(&self) -> &str {
+        &self.description
+    }
+
+    /*     fn is_enable_or_disable(&self) -> bool {
         match &self.enable_status {
             Some(enable_status) => {
                 STATUS_ENABLED == enable_status || STATUS_DISABLED == enable_status
@@ -259,22 +266,21 @@ pub fn save_text_to_file(unit: &LoadedUnit, text: &GString) {
     };
 
     match fs::OpenOptions::new().write(true).open(file_path) {
-        Ok(mut file) => {
-
-            match file.write(text.as_bytes()) {
-                Ok(l) => error!("{l} bytes writen to {}", file_path),
-                Err(err) => error!("Unable to write to file: {:?}", err),
-            }
-        }
+        Ok(mut file) => match file.write(text.as_bytes()) {
+            Ok(l) => error!("{l} bytes writen to {}", file_path),
+            Err(err) => error!("Unable to write to file: {:?}", err),
+        },
         Err(err) => error!("Unable to open file: {:?}", err),
     }
 }
 
-pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors>  {
+pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     dbus::fetch_system_info()
 }
 
-pub fn fetch_system_unit_info(unit: &LoadedUnit)-> Result<BTreeMap<String, String>, SystemdErrors>  {
+pub fn fetch_system_unit_info(
+    unit: &LoadedUnit,
+) -> Result<BTreeMap<String, String>, SystemdErrors> {
     dbus::fetch_system_unit_info(&unit.object_path)
 }
 

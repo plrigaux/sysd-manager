@@ -126,17 +126,19 @@ fn build_ui(application: &Application) {
         .focusable(true)
         .build();
 
-    let col1factory = gtk::SignalListItemFactory::new();
-    let col2factory = gtk::SignalListItemFactory::new();
-    let col3factory = gtk::SignalListItemFactory::new();
+    let col_unit_name_factory = gtk::SignalListItemFactory::new();
+    let col_type_factory = gtk::SignalListItemFactory::new();
+    let col_enable_factory = gtk::SignalListItemFactory::new();
+    let col_active_state_factory = gtk::SignalListItemFactory::new();
+    let col_description_factory = gtk::SignalListItemFactory::new();
 
-    col1factory.connect_setup(move |_factory, item| {
+    col_unit_name_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let row = gtk::Label::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
-    col1factory.connect_bind(move |_factory, item| {
+    col_unit_name_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Label>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
@@ -144,13 +146,27 @@ fn build_ui(application: &Application) {
         child.set_label(r.display_name());
     });
 
-    col2factory.connect_setup(move |_factory, item| {
+    col_type_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let row = gtk::Label::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
-    col2factory.connect_bind(move |_factory, item| {
+    col_type_factory.connect_bind(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+        let unit: Ref<LoadedUnit> = entry.borrow();
+        child.set_label(unit.unit_type());
+    });
+
+    col_enable_factory.connect_setup(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let row = gtk::Label::builder().xalign(0.0).build();
+        item.set_child(Some(&row));
+    });
+
+    col_enable_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Label>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
@@ -158,33 +174,73 @@ fn build_ui(application: &Application) {
         child.set_label(r.enable_status());
     });
 
-    col3factory.connect_setup(move |_factory, item| {
+    col_active_state_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let row = gtk::Label::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
-    col3factory.connect_bind(move |_factory, item| {
+
+    col_active_state_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Label>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<LoadedUnit> = entry.borrow();
-        child.set_label(r.unit_type());
+        let unit: Ref<LoadedUnit> = entry.borrow();
+        child.set_label(unit.active_state());
     });
 
-    let col1_unit = gtk::ColumnViewColumn::new(Some("Unit"), Some(col1factory));
+    col_description_factory.connect_setup(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let row = gtk::Label::builder().xalign(0.0).build();
+        item.set_child(Some(&row));
+    });
+
+    col_description_factory.connect_bind(move |_factory, item| {
+        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+        let unit: Ref<LoadedUnit> = entry.borrow();
+        child.set_label(unit.description());
+    });
+
+    let col1_unit = gtk::ColumnViewColumn::new(Some("Unit"), Some(col_unit_name_factory));
     col1_unit.set_resizable(true);
     col1_unit.set_fixed_width(140);
-
-    let col3_unit = gtk::ColumnViewColumn::new(Some("Type"), Some(col3factory));
+    let col3_unit = gtk::ColumnViewColumn::new(Some("Type"), Some(col_type_factory));
     col3_unit.set_resizable(true);
     col3_unit.set_fixed_width(75);
-
-    let col2_enable_status = gtk::ColumnViewColumn::new(Some("Enable status"), Some(col2factory));
+    let col2_enable_status =
+        gtk::ColumnViewColumn::new(Some("Enable status"), Some(col_enable_factory));
     col2_enable_status.set_expand(true);
+
+    let sorter = gtk::CustomSorter::new(move |obj1, obj2| {
+        let Some(box_any1) = obj1.downcast_ref::<BoxedAnyObject>() else {
+            panic!("some wrong downcast_ref {:?}", obj1);
+        };
+
+        let unit1: Ref<LoadedUnit> = box_any1.borrow();
+
+        let Some(box_any2) = obj2.downcast_ref::<BoxedAnyObject>() else {
+            panic!("some wrong downcast_ref {:?}", obj2);
+        };
+
+        let unit2: Ref<LoadedUnit> = box_any2.borrow();
+
+        unit1.active_state().cmp(unit2.active_state()).into()
+    });
+
+    let col4_active_state = gtk::ColumnViewColumn::builder()
+        .title("Active status")
+        .factory(&col_active_state_factory)
+        .sorter(&sorter)
+        .build();
+
+    let col5_unit = gtk::ColumnViewColumn::new(Some("Description"), Some(col_description_factory));
 
     column_view.append_column(&col1_unit);
     column_view.append_column(&col3_unit);
     column_view.append_column(&col2_enable_status);
+    column_view.append_column(&col4_active_state);
+    column_view.append_column(&col5_unit);
 
     let unit_col_view_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
@@ -409,9 +465,8 @@ fn build_ui(application: &Application) {
             };
 
             let unit: Ref<LoadedUnit> = box_any.borrow();
-
             let text = entry1.text();
-            println!("Filtering on : {}", text);
+        
             if text.is_empty() {
                 return true;
             }
