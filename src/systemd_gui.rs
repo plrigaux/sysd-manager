@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{self, gio, ColumnView, SingleSelection};
+use gtk::{self, gio, SingleSelection};
 use log::debug;
 use log::error;
 
@@ -451,7 +451,151 @@ fn build_ui(application: &Application) {
         .hexpand(true)
         .build();
 
+    let control_box = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .spacing(5)
+        .hexpand(true)
+        .build();
+
+    control_box.append(&{
+        gtk::Label::builder()
+            .label("Enabled:")
+            .attributes(&{
+                let attribute_list = AttrList::new();
+                attribute_list.insert(AttrInt::new_weight(Weight::Bold));
+                attribute_list
+            })
+            .build()
+    });
+
+    let ablement_switch = gtk::Switch::builder()
+    .focusable(true)
+    .build();
+
+    {
+        fn handle_switch(
+            column_view: &gtk::ColumnView,
+            // unit_ref: Rc<Vec<LoadedUnit>>,
+            enabled: bool,
+            switch: &gtk::Switch,
+        ) {
+            if let Some(model) = column_view.model() {
+                let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
+                    panic!("Can't downcast to SingleSelection")
+                };
+
+                let Some(object) = single_selection_model.selected_item() else {
+                    error!("No selection objet");
+                    return;
+                };
+
+                let box_any = match object.downcast::<BoxedAnyObject>() {
+                    Ok(any_objet) => any_objet,
+                    Err(val) => {
+                        error!("Selection Error: {:?}", val);
+                        return;
+                    }
+                };
+
+                let unit: Ref<LoadedUnit> = box_any.borrow();
+
+                let status =
+                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
+                let is_unit_enable = status == EnablementStatus::Enabled;
+
+                if enabled && !is_unit_enable {
+                    if let Ok(_) = systemd::enable_unit_files(&unit) {
+                        switch.set_state(true);
+                    }
+                } else if !enabled && is_unit_enable {
+                    if let Ok(_) = systemd::disable_unit_files(&unit) {
+                        switch.set_state(false);
+                    }
+                }
+            }
+        }
+        let column_view = column_view.clone();
+        ablement_switch.connect_state_set(move |switch, enabled| {
+            handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
+            Propagation::Proceed
+        });
+    }
+
+    control_box.append(&ablement_switch);
+
+    let start_button = gtk::Button::builder()
+        .hexpand(true)
+        .label("Start")
+        .focusable(true)
+        .receives_default(true)
+        .build();
+    control_box.append(&start_button);
+
+    let stop_button = gtk::Button::builder()
+        .hexpand(true)
+        .label("Stop")
+        .focusable(true)
+        .receives_default(true)
+        .build();
+    control_box.append(&stop_button);
+
+    let restart_button = gtk::Button::builder()
+        .hexpand(true)
+        .label("Retart")
+        .focusable(true)
+        .receives_default(true)
+        .build();
+  
+    control_box.append(&restart_button);
+
+    {
+        // NOTE: Implement the start button
+        let column_view = column_view.clone();
+        start_button.connect_clicked(move |_| {
+            let box_any = get_selected_unit!(column_view);
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            match systemd::start_unit(&unit) {
+                Ok(()) => {
+                    error!("Unit {} started!", unit.primary())
+                }
+                Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
+            }
+        });
+    }
+
+    {
+        let column_view = column_view.clone();
+        stop_button.connect_clicked(move |_| {
+            let box_any = get_selected_unit!(column_view);
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            match systemd::stop_unit(&unit) {
+                Ok(()) => {
+                    error!("Unit {} stopped!", unit.primary())
+                }
+                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+            }
+        });
+    }
+
+    {
+        let column_view = column_view.clone();
+        restart_button.connect_clicked(move |_| {
+            let box_any = get_selected_unit!(column_view);
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            match systemd::restart_unit(&unit) {
+                Ok(()) => {
+                    error!("Unit {} restarted!", unit.primary())
+                }
+                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+            }
+        });
+    }
+
     // right_pane.append(&stack_switcher);
+    right_pane.append(&control_box);
     right_pane.append(&info_stack);
 
     // ---------------------------------------------------
@@ -465,8 +609,7 @@ fn build_ui(application: &Application) {
         // .key_capture_widget(&window)
         .build();
 
-    let (title_bar, ablement_switch, right_bar_label, search_button) =
-        build_title_bar(column_view.clone(), &search_bar);
+    let (title_bar, right_bar_label, search_button) = build_title_bar(&search_bar);
 
     let entry = gtk::SearchEntry::new();
     entry.set_hexpand(true);
@@ -635,10 +778,7 @@ fn build_ui(application: &Application) {
     gtk::main(); */
 }
 
-fn build_title_bar(
-    column_view: ColumnView,
-    search_bar: &gtk::SearchBar,
-) -> (gtk::HeaderBar, gtk::Switch, gtk::Label, gtk::ToggleButton) {
+fn build_title_bar(search_bar: &gtk::SearchBar) -> (gtk::HeaderBar, gtk::Label, gtk::ToggleButton) {
     // ----------------------------------------------
     let title_bar = gtk::HeaderBar::builder().build();
 
@@ -670,143 +810,5 @@ fn build_title_bar(
         .bidirectional()
         .build();
 
-    let action_buttons = gtk::Box::new(Orientation::Horizontal, 0);
-
-    action_buttons.append(&{
-        gtk::Label::builder()
-            .label("Enabled:")
-            .attributes(&{
-                let attribute_list = AttrList::new();
-                attribute_list.insert(AttrInt::new_weight(Weight::Bold));
-                attribute_list
-            })
-            .build()
-    });
-
-    let ablement_switch = gtk::Switch::builder().focusable(true).build();
-
-    action_buttons.append(&ablement_switch);
-
-    let start_button = gtk::Button::builder()
-        .hexpand(true)
-        .label("Start")
-        .focusable(true)
-        .receives_default(true)
-        .build();
-    action_buttons.append(&start_button);
-
-    let stop_button = gtk::Button::builder()
-        .hexpand(true)
-        .label("Stop")
-        .focusable(true)
-        .receives_default(true)
-        .build();
-    action_buttons.append(&stop_button);
-
-    let restart_button = gtk::Button::builder()
-        .hexpand(true)
-        .label("Start")
-        .focusable(true)
-        .receives_default(true)
-        .build();
-    action_buttons.append(&restart_button);
-
-    title_bar.pack_end(&action_buttons);
-
-    {
-        // NOTE: Implement the start button
-        let column_view = column_view.clone();
-        start_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
-            match systemd::start_unit(&unit) {
-                Ok(()) => {
-                    error!("Unit {} started!", unit.primary())
-                }
-                Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
-            }
-        });
-    }
-
-    {
-        let column_view = column_view.clone();
-        stop_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
-            match systemd::stop_unit(&unit) {
-                Ok(()) => {
-                    error!("Unit {} stopped!", unit.primary())
-                }
-                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
-            }
-        });
-    }
-
-    {
-        let column_view = column_view.clone();
-        restart_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
-            match systemd::restart_unit(&unit) {
-                Ok(()) => {
-                    error!("Unit {} restarted!", unit.primary())
-                }
-                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
-            }
-        });
-    }
-
-    {
-        fn handle_switch(
-            column_view: &gtk::ColumnView,
-            // unit_ref: Rc<Vec<LoadedUnit>>,
-            enabled: bool,
-            switch: &gtk::Switch,
-        ) {
-            if let Some(model) = column_view.model() {
-                let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
-                    panic!("Can't downcast to SingleSelection")
-                };
-
-                let Some(object) = single_selection_model.selected_item() else {
-                    error!("No selection objet");
-                    return;
-                };
-
-                let box_any = match object.downcast::<BoxedAnyObject>() {
-                    Ok(any_objet) => any_objet,
-                    Err(val) => {
-                        error!("Selection Error: {:?}", val);
-                        return;
-                    }
-                };
-
-                let unit: Ref<LoadedUnit> = box_any.borrow();
-
-                let status =
-                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
-                let is_unit_enable = status == EnablementStatus::Enabled;
-
-                if enabled && !is_unit_enable {
-                    if let Ok(_) = systemd::enable_unit_files(&unit) {
-                        switch.set_state(true);
-                    }
-                } else if !enabled && is_unit_enable {
-                    if let Ok(_) = systemd::disable_unit_files(&unit) {
-                        switch.set_state(false);
-                    }
-                }
-            }
-        }
-        let column_view = column_view.clone();
-        ablement_switch.connect_state_set(move |switch, enabled| {
-            handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
-            Propagation::Proceed
-        });
-    }
-
-    (title_bar, ablement_switch, right_bar_label, search_button)
+    (title_bar, right_bar_label, search_button)
 }
