@@ -1,11 +1,9 @@
-use gtk::{self, gio, ColumnView, SingleSelection};
-
 use gtk::prelude::*;
+use gtk::{self, gio, ColumnView, SingleSelection};
 use log::debug;
 use log::error;
 
 use crate::menu;
-use crate::systemd::get_unit_journal;
 
 use crate::systemd;
 use systemd::{EnablementStatus, LoadedUnit};
@@ -17,7 +15,8 @@ use gtk::pango::{self, Weight};
 
 use gtk::{Application, ApplicationWindow, Orientation};
 
-use std::cell::Ref;
+use std::cell::{Ref, RefMut};
+use std::rc::Rc;
 
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
@@ -85,7 +84,7 @@ macro_rules! get_selected_unit {
 
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
 fn update_journal(journal: &gtk::TextView, unit: &LoadedUnit) {
-    let journal_output = get_unit_journal(unit);
+    let journal_output = systemd::get_unit_journal(unit);
     journal.buffer().set_text(&journal_output);
 }
 
@@ -115,12 +114,6 @@ fn build_ui(application: &Application) {
         store.append(&BoxedAnyObject::new(value));
     }
 
-    /*    let string_filter = gtk::StringFilter::builder()
-       .ignore_case(true)
-       .match_mode(gtk::StringFilterMatchMode::Substring)
-       //.search("jack")
-       .build();
-    */
     let filtermodel = gtk::FilterListModel::new(Some(store), None::<gtk::CustomFilter>);
 
     let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
@@ -428,15 +421,26 @@ fn build_ui(application: &Application) {
 
         filtermodel.set_filter(Some(&custom_filter));
 
+        let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
+
         entry.connect_search_changed(move |entry| {
             let text = entry.text();
-            if !text.is_empty() {
-                //label.set_text(&entry.text());
-                println!("Search: {}", text)
+
+            let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
+
+            let change_type = if text.is_empty() {
+                gtk::FilterChange::LessStrict
+            } else if text.len() > last_filter.len() && text.starts_with(last_filter.as_str()) {
+                gtk::FilterChange::MoreStrict
+            } else if text.len() < last_filter.len() && last_filter.starts_with(text.as_str()) {
+                gtk::FilterChange::LessStrict
             } else {
-                println!("Search cleared")
-            }
-            custom_filter.changed(gtk::FilterChange::Different);
+                gtk::FilterChange::Different
+            };
+
+            debug!("cur {} prev {}", text, last_filter);
+            last_filter.replace_range(.., text.as_str());
+            custom_filter.changed(change_type);
         });
     }
 
