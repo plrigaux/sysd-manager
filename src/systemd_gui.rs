@@ -115,21 +115,15 @@ fn build_ui(application: &Application) {
         store.append(&BoxedAnyObject::new(value));
     }
 
+    /*    let string_filter = gtk::StringFilter::builder()
+       .ignore_case(true)
+       .match_mode(gtk::StringFilterMatchMode::Substring)
+       //.search("jack")
+       .build();
+    */
+    let filtermodel = gtk::FilterListModel::new(Some(store), None::<gtk::CustomFilter>);
 
-    let test = gtk::SingleSelection::this_expression("n-items").expression();
-    error!("{:?}", test);
-
-    let string_filter = gtk::StringFilter::builder()
-    .ignore_case(true)
-    .match_mode(gtk::StringFilterMatchMode::Substring)
-    //.search("jack")
-    .build();
-
-let filtermodel =
-    gtk::FilterListModel::new(Some(store), Some(string_filter));
-
-    let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel));
-
+    let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
 
     /*     let column_view = gtk::ColumnView::new(Some(selection_model));
     column_view.set_focusable(true); */
@@ -412,15 +406,39 @@ let filtermodel =
             search_button.set_active(false);
         });
     }
-    entry.connect_search_changed(move |entry| {
-        let text = entry.text();
-        if !text.is_empty() {
-            //label.set_text(&entry.text());
-            println!("Search: {}", text)
-        } else {
-            println!("Search cleared")
-        }
-    });
+
+    {
+        let entry1 = entry.clone();
+        let custom_filter = gtk::CustomFilter::new(move |object| {
+            let Some(box_any) = object.downcast_ref::<BoxedAnyObject>() else {
+                error!("some wrong downcast_ref {:?}", object);
+                return false;
+            };
+
+            let unit: Ref<LoadedUnit> = box_any.borrow();
+
+            let text = entry1.text();
+            println!("Filtering on : {}", text);
+            if text.is_empty() {
+                return true;
+            }
+
+            unit.display_name().contains(text.as_str())
+        });
+
+        filtermodel.set_filter(Some(&custom_filter));
+
+        entry.connect_search_changed(move |entry| {
+            let text = entry.text();
+            if !text.is_empty() {
+                //label.set_text(&entry.text());
+                println!("Search: {}", text)
+            } else {
+                println!("Search cleared")
+            }
+            custom_filter.changed(gtk::FilterChange::Different);
+        });
+    }
 
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
