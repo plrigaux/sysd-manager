@@ -113,16 +113,13 @@ fn build_ui(application: &Application) {
         //debug!("Analyse Tree Blame {:?}", value);
         store.append(&BoxedAnyObject::new(value));
     }
-
-    let filtermodel = gtk::FilterListModel::new(Some(store), None::<gtk::CustomFilter>);
-
+/* 
+    let filtermodel = gtk::FilterListModel::new(Some(store.clone()), None::<gtk::CustomFilter>);
     let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
-
-    /*     let column_view = gtk::ColumnView::new(Some(selection_model));
-    column_view.set_focusable(true); */
+ */
 
     let column_view = gtk::ColumnView::builder()
-        .model(&columnview_selection_model)
+        //.model(&columnview_selection_model)
         .focusable(true)
         .build();
 
@@ -212,7 +209,7 @@ fn build_ui(application: &Application) {
         gtk::ColumnViewColumn::new(Some("Enable status"), Some(col_enable_factory));
     col2_enable_status.set_expand(true);
 
-    let sorter = gtk::CustomSorter::new(move |obj1, obj2| {
+    let col_sorter = gtk::CustomSorter::new(move |obj1, obj2| {
         let Some(box_any1) = obj1.downcast_ref::<BoxedAnyObject>() else {
             panic!("some wrong downcast_ref {:?}", obj1);
         };
@@ -231,7 +228,7 @@ fn build_ui(application: &Application) {
     let col4_active_state = gtk::ColumnViewColumn::builder()
         .title("Active status")
         .factory(&col_active_state_factory)
-        .sorter(&sorter)
+        .sorter(&col_sorter)
         .build();
 
     let col5_unit = gtk::ColumnViewColumn::new(Some("Description"), Some(col_description_factory));
@@ -241,6 +238,13 @@ fn build_ui(application: &Application) {
     column_view.append_column(&col2_enable_status);
     column_view.append_column(&col4_active_state);
     column_view.append_column(&col5_unit);
+
+
+    let sorter = column_view.sorter();
+    let sort_model = gtk::SortListModel::new(Some(store), sorter);
+    let filtermodel = gtk::FilterListModel::new(Some(sort_model.clone()), None::<gtk::CustomFilter>);
+    let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
+    column_view.set_model(Some(&columnview_selection_model));
 
     let unit_col_view_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
