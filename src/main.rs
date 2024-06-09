@@ -10,6 +10,7 @@ mod grid_cell;
 use gtk::glib;
 mod menu;
 mod analyze;
+mod icon_label_button;
 
 use log::info;
 

@@ -3,7 +3,7 @@ use gtk::{self, gio, SingleSelection};
 use log::debug;
 use log::error;
 
-use crate::menu;
+use crate::{icon_label_button, menu};
 
 use crate::systemd;
 use systemd::{EnablementStatus, LoadedUnit};
@@ -548,6 +548,10 @@ fn build_ui(application: &Application) {
   
     control_box.append(&restart_button);
 
+    let ilb = icon_label_button::IconLabelButton::new();
+    //ilb.set_property("label","test");
+    ilb.set_label_text("tihis is it");
+    control_box.append(&ilb);
     {
         // NOTE: Implement the start button
         let column_view = column_view.clone();
