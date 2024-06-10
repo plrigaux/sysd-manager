@@ -3,7 +3,7 @@ use gtk::{self, gio, SingleSelection};
 use log::debug;
 use log::error;
 
-use crate::{icon_label_button, menu};
+use crate::menu;
 
 use crate::systemd;
 use systemd::{EnablementStatus, LoadedUnit};
@@ -300,7 +300,7 @@ fn build_ui(application: &Application) {
         .build();
 
     let save_unit_file_button = gtk::Button::builder()
-        .label("gtk-save")
+    .child(&build_icon_label("Save", "document-save"))
         .focusable(true)
         .receives_default(true)
         .build();
@@ -525,7 +525,7 @@ fn build_ui(application: &Application) {
 
     let start_button = gtk::Button::builder()
         .hexpand(true)
-        .label("Start")
+        .child(&build_icon_label("Start", "media-playback-start-symbolic"))
         .focusable(true)
         .receives_default(true)
         .build();
@@ -533,7 +533,7 @@ fn build_ui(application: &Application) {
 
     let stop_button = gtk::Button::builder()
         .hexpand(true)
-        .label("Stop")
+        .child(&build_icon_label("Stop", "process-stop"))
         .focusable(true)
         .receives_default(true)
         .build();
@@ -541,17 +541,13 @@ fn build_ui(application: &Application) {
 
     let restart_button = gtk::Button::builder()
         .hexpand(true)
-        .label("Retart")
         .focusable(true)
         .receives_default(true)
+        .child(&build_icon_label("Retart", "view-refresh"))
         .build();
   
     control_box.append(&restart_button);
 
-    let ilb = icon_label_button::IconLabelButton::new();
-    //ilb.set_property("label","test");
-    ilb.set_label_text("tihis is it");
-    control_box.append(&ilb);
     {
         // NOTE: Implement the start button
         let column_view = column_view.clone();
@@ -815,4 +811,17 @@ fn build_title_bar(search_bar: &gtk::SearchBar) -> (gtk::HeaderBar, gtk::Label, 
         .build();
 
     (title_bar, right_bar_label, search_button)
+}
+
+fn build_icon_label(label_name: &str, icon_name :&str) -> gtk::Box {
+
+    let box_container = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+    box_container.set_halign(gtk::Align::Center);
+    let label = gtk::Label::new(Some(label_name));
+    let icon = gtk::Image::from_icon_name(icon_name);
+
+    box_container.append(&icon);
+    box_container.append(&label);
+
+    box_container
 }
