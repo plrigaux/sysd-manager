@@ -3,15 +3,15 @@ mod dbus;
 mod systemctl;
 
 use std::collections::BTreeMap;
-use std::process::Command;
+use std::process::{Command, ExitStatus, Stdio};
 use std::string::FromUtf8Error;
 
 use self::dbus::msgbus::arg::ArgType;
 use self::dbus::UnitType;
 use gtk::glib::GString;
-use log::{debug, error};
+use log::{debug, error, info};
 use std::fs::{self, File};
-use std::io::{Read, Write};
+use std::io::{ErrorKind, Read, Write};
 
 #[derive(Debug)]
 pub enum SystemdErrors {
@@ -190,6 +190,10 @@ impl LoadedUnit {
         &self.description
     }
 
+    pub fn file_path(&self) -> Option<&String> {
+        self.file_path.as_ref()
+    }
+
     /*     fn is_enable_or_disable(&self) -> bool {
         match &self.enable_status {
             Some(enable_status) => {
@@ -265,12 +269,51 @@ pub fn save_text_to_file(unit: &LoadedUnit, text: &GString) {
         return;
     };
 
-    match fs::OpenOptions::new().write(true).open(file_path) {
-        Ok(mut file) => match file.write(text.as_bytes()) {
-            Ok(l) => error!("{l} bytes writen to {}", file_path),
-            Err(err) => error!("Unable to write to file: {:?}", err),
-        },
-        Err(err) => error!("Unable to open file: {:?}", err),
+    let mut file = match fs::OpenOptions::new().write(true).open(file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            if err.kind() == ErrorKind::PermissionDenied {
+                write_with_priviledge(file_path, text);
+            } else {
+                error!("Unable to open file: {:?}", err);
+            }
+
+            return;
+        }
+    };
+
+    match file.write(text.as_bytes()) {
+        Ok(l) => error!("{l} bytes writen to {}", file_path),
+        Err(err) => error!("Unable to write to file: {:?}", err),
+    }
+}
+
+fn write_with_priviledge(file_path: &String, text: &GString) {
+    let mut child = std::process::Command::new("pkexec")
+        .arg("tee")
+        .arg(file_path)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .spawn()
+        .expect("failed to execute pkexec tee");
+
+        
+    let child_stdin = match child.stdin.as_mut() {
+        Some(cs) => cs,
+        None => {
+            error!("Unable to write to file: No stdin");
+            return;
+        }
+    };
+
+    match child_stdin.write_all(text.as_bytes()) {
+        Ok(_) => info!("Write content as root on {}", file_path),
+        Err(e) => error!("Write error: {:?}", e),
+    }
+
+    match child.wait() {
+        Ok(exit) => info!("Subprocess exit code: {:?}", exit),
+        Err(e) => error!("Failed to wait suprocess: {:?}", e),
     }
 }
 

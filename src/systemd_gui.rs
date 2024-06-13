@@ -300,9 +300,15 @@ fn build_ui(application: &Application) {
         .build();
 
     let save_unit_file_button = gtk::Button::builder()
-    .child(&build_icon_label("Save", "document-save"))
+        .child(&build_icon_label("Save", "document-save"))
         .focusable(true)
         .receives_default(true)
+        .build();
+
+    let unit_file_label = gtk::Label::builder()
+        .hexpand(true)
+        .selectable(true)
+        .xalign(0.0)
         .build();
 
     let unit_file_box = gtk::Box::builder()
@@ -310,7 +316,16 @@ fn build_ui(application: &Application) {
         .build();
 
     unit_file_box.append(&unit_file_stack_scrolled_window);
-    unit_file_box.append(&save_unit_file_button);
+
+    let unit_file_bottom_box = gtk::Box::builder()
+        .spacing(5)
+        .orientation(Orientation::Horizontal)
+        .build();
+
+    unit_file_bottom_box.append(&unit_file_label);
+    unit_file_bottom_box.append(&save_unit_file_button);
+
+    unit_file_box.append(&unit_file_bottom_box);
 
     let unit_journal_view = gtk::TextView::builder()
         .focusable(true)
@@ -468,9 +483,7 @@ fn build_ui(application: &Application) {
             .build()
     });
 
-    let ablement_switch = gtk::Switch::builder()
-    .focusable(true)
-    .build();
+    let ablement_switch = gtk::Switch::builder().focusable(true).build();
 
     {
         fn handle_switch(
@@ -545,7 +558,7 @@ fn build_ui(application: &Application) {
         .receives_default(true)
         .child(&build_icon_label("Retart", "view-refresh"))
         .build();
-  
+
     control_box.append(&restart_button);
 
     {
@@ -735,6 +748,14 @@ fn build_ui(application: &Application) {
             let unit: Ref<LoadedUnit> = box_any.borrow();
 
             let description = systemd::get_unit_info(&unit);
+
+            let fp = match unit.file_path() {
+                Some(s) => s,
+                None => "",
+            };
+
+            unit_file_label.set_label(fp);
+
             unit_info.buffer().set_text(&description);
             ablement_switch.set_active(
                 // systemd::get_unit_file_state(sysd_unit)
@@ -813,8 +834,7 @@ fn build_title_bar(search_bar: &gtk::SearchBar) -> (gtk::HeaderBar, gtk::Label, 
     (title_bar, right_bar_label, search_button)
 }
 
-fn build_icon_label(label_name: &str, icon_name :&str) -> gtk::Box {
-
+fn build_icon_label(label_name: &str, icon_name: &str) -> gtk::Box {
     let box_container = gtk::Box::new(gtk::Orientation::Horizontal, 5);
     box_container.set_halign(gtk::Align::Center);
     let label = gtk::Label::new(Some(label_name));
