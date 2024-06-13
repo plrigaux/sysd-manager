@@ -3,15 +3,16 @@ mod sysdbus;
 mod systemctl;
 
 use std::collections::BTreeMap;
+use std::fmt::Display;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 
-use sysdbus::dbus::arg::ArgType;
-use sysdbus::UnitType;
 use gtk::glib::GString;
 use log::{debug, error, info};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
+use sysdbus::dbus::arg::ArgType;
+use sysdbus::UnitType;
 
 #[derive(Debug)]
 pub enum SystemdErrors {
@@ -104,13 +105,53 @@ impl EnablementStatus {
     }
 }
 
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+pub enum ActiveState {
+    Active,
+    #[default]
+    Inactive,
+    Unknown,
+}
+
+impl ActiveState {
+    fn label(&self) -> &str {
+        match self {
+            ActiveState::Active => "active",
+            ActiveState::Inactive => "inactive",
+            ActiveState::Unknown => "unknown",
+        }
+    }
+   
+    fn icon_name(&self) -> &str {
+        match self {
+            ActiveState::Active => "object-select-symbolic",
+            ActiveState::Inactive =>  "window-close-symbolic",
+            ActiveState::Unknown => "action-unavailable-symbolic",
+        }
+    }
+
+    fn from_str(input: &str) -> Self {
+        match input {
+            "active" => ActiveState::Active,
+            "inactive" => ActiveState::Inactive,
+            _ => ActiveState::Unknown,
+        }
+    }
+}
+
+impl Display for ActiveState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.label())
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct LoadedUnit {
     primary: String,
     description: String,
     load_state: String,
-    active_state: String,
+    active_state: ActiveState,
     sub_state: String,
     followed_unit: String,
     object_path: String,
@@ -129,7 +170,7 @@ impl LoadedUnit {
         primary: &String,
         description: &String,
         load_state: &String,
-        active_state: &String,
+        active_state: ActiveState,
         sub_state: &String,
         followed_unit: &String,
         object_path: String,
@@ -145,7 +186,7 @@ impl LoadedUnit {
             primary: primary.clone(),
             description: description.clone(),
             load_state: load_state.clone(),
-            active_state: active_state.clone(),
+            active_state: active_state,
             sub_state: sub_state.clone(),
             followed_unit: followed_unit.clone(),
             object_path: object_path.to_string(),
@@ -183,7 +224,11 @@ impl LoadedUnit {
     }
 
     pub fn active_state(&self) -> &str {
-        &self.active_state
+        &self.active_state.label()
+    }
+
+    pub fn active_state_icon(&self) -> &str {
+        &self.active_state.icon_name()
     }
 
     pub fn description(&self) -> &str {
@@ -297,7 +342,6 @@ fn write_with_priviledge(file_path: &String, text: &GString) {
         .spawn()
         .expect("failed to execute pkexec tee");
 
-        
     let child_stdin = match child.stdin.as_mut() {
         Some(cs) => cs,
         None => {

@@ -21,9 +21,6 @@ use std::rc::Rc;
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
 
-const _ICON_YES: &str = "object-select-symbolic";
-const _ICON_NO: &str = "window-close-symbolic";
-
 use crate::menu::rowitem;
 /// Updates the status icon for the selected unit
 /* fn update_icon(icon: &gtk::Image, state: bool) {
@@ -194,16 +191,16 @@ fn build_ui(application: &Application) {
 
     col_active_state_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = gtk::Label::builder().xalign(0.0).build();
+        let row = gtk::Image::new();
         item.set_child(Some(&row));
     });
 
     col_active_state_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let child = item.child().and_downcast::<gtk::Image>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let unit: Ref<LoadedUnit> = entry.borrow();
-        child.set_label(unit.active_state());
+        child.set_icon_name(Some(unit.active_state_icon()));
     });
 
     col_description_factory.connect_setup(move |_factory, item| {
@@ -456,9 +453,6 @@ fn build_ui(application: &Application) {
         &unit_journal_box,
         Some(&gtk::Label::new(Some("Unit Journal"))),
     );
-    //info_stack.add_titled(&unit_analyse_box, Some("Analyze"), "Analyze");
-
-    // let stack_switcher = gtk::StackSwitcher::builder().stack(&info_stack).build();
 
     let right_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -483,7 +477,7 @@ fn build_ui(application: &Application) {
             .build()
     });
 
-    let ablement_switch = gtk::Switch::builder().focusable(true).build();
+    let ablement_switch = gtk::Switch::builder().focusable(true).vexpand(false).build();
 
     {
         fn handle_switch(
@@ -512,9 +506,10 @@ fn build_ui(application: &Application) {
 
                 let unit: Ref<LoadedUnit> = box_any.borrow();
 
-                let status =
+                let unit_file_state =
                     systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
-                let is_unit_enable = status == EnablementStatus::Enabled;
+
+                let is_unit_enable = unit_file_state == EnablementStatus::Enabled;
 
                 if enabled && !is_unit_enable {
                     if let Ok(_) = systemd::enable_unit_files(&unit) {
@@ -525,6 +520,16 @@ fn build_ui(application: &Application) {
                         switch.set_state(false);
                     }
                 }
+
+                let sensitive = if unit_file_state == EnablementStatus::Enabled
+                    || unit_file_state == EnablementStatus::Disabled
+                {
+                    true
+                } else {
+                    false
+                };
+                println!("sensitive {}", sensitive);
+                switch.set_sensitive(sensitive);
             }
         }
         let column_view = column_view.clone();
@@ -757,12 +762,21 @@ fn build_ui(application: &Application) {
             unit_file_label.set_label(fp);
 
             unit_info.buffer().set_text(&description);
-            ablement_switch.set_active(
-                // systemd::get_unit_file_state(sysd_unit)
-                systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown)
-                    == EnablementStatus::Enabled,
-            );
+
+            let ablement = systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
+
+            ablement_switch.set_active(ablement == EnablementStatus::Enabled);
             ablement_switch.set_state(ablement_switch.is_active());
+
+            let sensitive = if ablement == EnablementStatus::Enabled
+                || ablement == EnablementStatus::Disabled
+            {
+                true
+            } else {
+                false
+            };
+            println!("sensitive {}", sensitive);
+            ablement_switch.set_sensitive(sensitive);
 
             update_journal(&unit_journal, &unit);
             header.set_label(unit.display_name());

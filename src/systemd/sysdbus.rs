@@ -10,6 +10,8 @@ use dbus::arg::messageitem::MessageItem;
 use dbus::arg::messageitem::Props;
 use dbus::Message;
 
+use crate::systemd::ActiveState;
+
 use super::EnablementStatus;
 
 use super::LoadedUnit;
@@ -230,7 +232,7 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
         };
 
         //The active state (i.e. whether the unit is currently started or not)
-        let MessageItem::Str(ref active_state) = struct_value[3] else {
+        let MessageItem::Str(ref active_state_str) = struct_value[3] else {
             return Err(SystemdErrors::MalformedWrongArgType(
                 service_struct.arg_type(),
             ));
@@ -268,6 +270,8 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
             continue;
         }; */
 
+        let active_state = ActiveState::from_str(active_state_str);
+        
         let unit_info = LoadedUnit::new(
             primary,
             description,
