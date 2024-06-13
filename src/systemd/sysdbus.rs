@@ -1,4 +1,4 @@
-pub extern crate dbus as msgbus;
+pub extern crate dbus;
 
 use std::collections::BTreeMap;
 
@@ -6,9 +6,9 @@ use log::debug;
 use log::info;
 use log::trace;
 
-use self::msgbus::arg::messageitem::MessageItem;
-use self::msgbus::arg::messageitem::Props;
-use self::msgbus::Message;
+use dbus::arg::messageitem::MessageItem;
+use dbus::arg::messageitem::Props;
+use dbus::Message;
 
 use super::EnablementStatus;
 
@@ -18,13 +18,15 @@ use super::SystemdUnit;
 
 const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
+const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
+const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
 /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
 fn dbus_message(function: &str) -> Result<Message, SystemdErrors> {
     let dest = DESTINATION_SYSTEMD;
-    let path = "/org/freedesktop/systemd1";
-    let interface = "org.freedesktop.systemd1.Manager";
-    match msgbus::Message::new_method_call(dest, path, interface, function) {
+    let path = PATH_SYSTEMD;
+    let interface = INTERFACE_SYSTEMD_MANAGER;
+    match dbus::Message::new_method_call(dest, path, interface, function) {
         Ok(message) => Ok(message),
         Err(error) => Err(SystemdErrors::DBusErrorStr(error)),
     }
@@ -459,11 +461,11 @@ fn display_message_item(m_item: &MessageItem) -> String {
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let c = msgbus::ffidisp::Connection::new_system().unwrap();
+    let c = dbus::ffidisp::Connection::new_system().unwrap();
 
     let dest = DESTINATION_SYSTEMD;
-    let path = "/org/freedesktop/systemd1";
-    let interface = "org.freedesktop.systemd1.Manager";
+    let path = PATH_SYSTEMD;
+    let interface = INTERFACE_SYSTEMD_MANAGER;
     let prop = Props::new(&c, dest, path, interface, 10000);
 
     let all_items = prop.get_all()?;
@@ -481,12 +483,12 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 pub fn fetch_system_unit_info(path: &str) -> Result<BTreeMap<String, String>, SystemdErrors> {
     let dest = DESTINATION_SYSTEMD;
     let interface = INTERFACE_SYSTEMD_UNIT;
-    let c = msgbus::ffidisp::Connection::new_system()?;
+    let c = dbus::ffidisp::Connection::new_system()?;
     let prop = Props::new(&c, dest, path, interface, 10000);
 
     let mut map = BTreeMap::new();
 
-    for (key, b) in  prop.get_all()?.iter() {
+    for (key, b) in prop.get_all()?.iter() {
         let str_val = display_message_item(b);
         // info!("prop : {} \t value: {}", a, str_val);
 
@@ -502,7 +504,7 @@ mod tests {
 
     /* use crate::systemd::collect_togglable_services; */
 
-    use super::msgbus::arg::messageitem::Props;
+    use super::dbus::arg::messageitem::Props;
 
     use super::*;
 
@@ -685,7 +687,7 @@ mod tests {
     #[test]
     fn test_prop() {
         init();
-        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+        let c = dbus::ffidisp::Connection::new_system().unwrap();
         let p = Props::new(
             &c,
             "org.freedesktop.PolicyKit1",
@@ -699,11 +701,11 @@ mod tests {
     #[test]
     fn test_prop_all_systemd_manager() -> Result<(), SystemdErrors> {
         init();
-        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+        let c = dbus::ffidisp::Connection::new_system().unwrap();
 
         let dest = DESTINATION_SYSTEMD;
-        let path = "/org/freedesktop/systemd1";
-        let interface = "org.freedesktop.systemd1.Manager";
+        let path = PATH_SYSTEMD;
+        let interface = INTERFACE_SYSTEMD_MANAGER;
         let prop = Props::new(&c, dest, path, interface, 10000);
 
         let all_items = prop.get_all()?;
@@ -720,7 +722,7 @@ mod tests {
     #[test]
     fn test_prop2() {
         init();
-        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+        let c = dbus::ffidisp::Connection::new_system().unwrap();
 
         let dest = DESTINATION_SYSTEMD;
         let path = "/org/freedesktop/systemd1";
@@ -735,12 +737,12 @@ mod tests {
         let dest = DESTINATION_SYSTEMD;
         let path = "/org/freedesktop/systemd1";
         let interface = "org.freedesktop.systemd1.Manager";
-        let connection = msgbus::blocking::Connection::new_session()?;
+        let connection = dbus::blocking::Connection::new_session()?;
         let proxy = connection.with_proxy(dest, path, std::time::Duration::from_millis(5000));
 
-        use super::msgbus::blocking::stdintf::org_freedesktop_dbus::Properties;
+        use super::dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 
-        let metadata: super::msgbus::arg::Variant<String> = proxy.get(interface, "Version")?;
+        let metadata: super::dbus::arg::Variant<String> = proxy.get(interface, "Version")?;
 
         debug!("Meta: {:?}", metadata);
         Ok(())
@@ -765,14 +767,14 @@ mod tests {
         let path = "/org/freedesktop/systemd1/unit/jackett_2eservice";
 
         let interface = INTERFACE_SYSTEMD_UNIT;
-        let c = msgbus::ffidisp::Connection::new_system().unwrap();
+        let c = dbus::ffidisp::Connection::new_system().unwrap();
         let p = Props::new(&c, dest, path, interface, 10000);
 
         debug!("ALL PARAM: {:#?}", p.get_all());
     }
 
     #[test]
-    pub fn test_fetch_system_unit_info()-> Result<(), SystemdErrors>  {
+    pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
         init();
 
         let btree_map = fetch_system_unit_info("/org/freedesktop/systemd1/unit/jackett_2eservice")?;

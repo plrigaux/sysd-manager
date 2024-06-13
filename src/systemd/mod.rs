@@ -1,13 +1,13 @@
 pub mod analyze;
-mod dbus;
+mod sysdbus;
 mod systemctl;
 
 use std::collections::BTreeMap;
-use std::process::{Command, ExitStatus, Stdio};
+use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 
-use self::dbus::msgbus::arg::ArgType;
-use self::dbus::UnitType;
+use sysdbus::dbus::arg::ArgType;
+use sysdbus::UnitType;
 use gtk::glib::GString;
 use log::{debug, error, info};
 use std::fs::{self, File};
@@ -19,7 +19,7 @@ pub enum SystemdErrors {
     Utf8Error(FromUtf8Error),
     SystemCtlError(String),
     DBusErrorStr(String),
-    DBusError(dbus::msgbus::Error),
+    DBusError(sysdbus::dbus::Error),
     Malformed,
     MalformedWrongArgType(ArgType),
 }
@@ -36,8 +36,8 @@ impl From<FromUtf8Error> for SystemdErrors {
     }
 }
 
-impl From<dbus::msgbus::Error> for SystemdErrors {
-    fn from(error: dbus::msgbus::Error) -> Self {
+impl From<sysdbus::dbus::Error> for SystemdErrors {
+    fn from(error: sysdbus::dbus::Error) -> Self {
         SystemdErrors::DBusError(error)
     }
 }
@@ -205,25 +205,25 @@ impl LoadedUnit {
 }
 
 pub fn get_unit_file_state(sytemd_unit: &LoadedUnit) -> Result<EnablementStatus, SystemdErrors> {
-    return dbus::get_unit_file_state_path(&sytemd_unit.primary);
+    return sysdbus::get_unit_file_state_path(&sytemd_unit.primary);
 }
 
 pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>, SystemdErrors> {
-    return dbus::list_units_description_and_state();
+    return sysdbus::list_units_description_and_state();
 }
 
 /// Takes a unit name as input and attempts to start it
 pub fn start_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
-    dbus::start_unit(&unit.primary)
+    sysdbus::start_unit(&unit.primary)
 }
 
 /// Takes a unit name as input and attempts to stop it.
 pub fn stop_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
-    dbus::stop_unit(&unit.primary)
+    sysdbus::stop_unit(&unit.primary)
 }
 
 pub fn restart_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
-    dbus::restart_unit(&unit.primary)
+    sysdbus::restart_unit(&unit.primary)
 }
 
 pub fn enable_unit_files(sytemd_unit: &LoadedUnit) -> Result<std::string::String, SystemdErrors> {
@@ -318,13 +318,13 @@ fn write_with_priviledge(file_path: &String, text: &GString) {
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    dbus::fetch_system_info()
+    sysdbus::fetch_system_info()
 }
 
 pub fn fetch_system_unit_info(
     unit: &LoadedUnit,
 ) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    dbus::fetch_system_unit_info(&unit.object_path)
+    sysdbus::fetch_system_unit_info(&unit.object_path)
 }
 
 #[cfg(test)]
