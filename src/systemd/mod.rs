@@ -227,6 +227,10 @@ impl LoadedUnit {
         &self.active_state.label()
     }
 
+    pub fn set_active_state(&mut self, state : ActiveState)  {
+        self.active_state = state;
+    }
+
     pub fn active_state_icon(&self) -> &str {
         &self.active_state.icon_name()
     }

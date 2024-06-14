@@ -1,11 +1,10 @@
 use gtk::prelude::*;
 use gtk::{self, gio, SingleSelection};
-use log::debug;
-use log::error;
+use log::{debug, info, error};
 
 use crate::menu;
 
-use crate::systemd;
+use crate::systemd::{self, ActiveState};
 use systemd::{EnablementStatus, LoadedUnit};
 
 use self::pango::{AttrInt, AttrList};
@@ -191,8 +190,8 @@ fn build_ui(application: &Application) {
 
     col_active_state_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = gtk::Image::new();
-        item.set_child(Some(&row));
+        let image = gtk::Image::new();
+        item.set_child(Some(&image));
     });
 
     col_active_state_factory.connect_bind(move |_factory, item| {
@@ -569,13 +568,15 @@ fn build_ui(application: &Application) {
     {
         // NOTE: Implement the start button
         let column_view = column_view.clone();
-        start_button.connect_clicked(move |_| {
+        start_button.connect_clicked(move |_button| {
             let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
+            let mut unit: RefMut<LoadedUnit> = box_any.borrow_mut();
 
             match systemd::start_unit(&unit) {
                 Ok(()) => {
-                    error!("Unit {} started!", unit.primary())
+                    info!("Unit \"{}\" has been started!", unit.primary());
+
+                    unit.set_active_state(ActiveState::Active)              
                 }
                 Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
             }
@@ -584,13 +585,14 @@ fn build_ui(application: &Application) {
 
     {
         let column_view = column_view.clone();
-        stop_button.connect_clicked(move |_| {
+        stop_button.connect_clicked(move |_button| {
             let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
+            let mut unit: RefMut<LoadedUnit> = box_any.borrow_mut();
 
             match systemd::stop_unit(&unit) {
                 Ok(()) => {
-                    error!("Unit {} stopped!", unit.primary())
+                    info!("Unit \"{}\" stopped!", unit.primary());
+                    unit.set_active_state(ActiveState::Inactive)
                 }
                 Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
             }
@@ -648,6 +650,7 @@ fn build_ui(application: &Application) {
 
     {
         let entry1 = entry.clone();
+        let unit_col_view_scrolled_window = unit_col_view_scrolled_window.clone();
         let custom_filter = gtk::CustomFilter::new(move |object| {
             let Some(box_any) = object.downcast_ref::<BoxedAnyObject>() else {
                 error!("some wrong downcast_ref {:?}", object);
@@ -686,6 +689,7 @@ fn build_ui(application: &Application) {
             debug!("cur {} prev {}", text, last_filter);
             last_filter.replace_range(.., text.as_str());
             custom_filter.changed(change_type);
+            unit_col_view_scrolled_window.queue_resize();//TODO investigate the need
         });
     }
 
