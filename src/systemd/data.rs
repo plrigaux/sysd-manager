@@ -24,7 +24,8 @@ impl UnitInfo {
         imp.description.replace(description.to_owned());
         imp.load_state.replace(load_state.to_owned());
         imp.active_state.replace(active_state as u32);
-        imp.active_state_icon.replace(active_state.icon_name().to_string());
+        imp.active_state_icon
+            .replace(active_state.icon_name().to_string());
         imp.sub_state.replace(sub_state.to_owned());
         imp.followed_unit.replace(followed_unit.to_owned());
         imp.object_path.replace(object_path.to_owned());
@@ -96,13 +97,20 @@ pub mod imp {
             self.primary.replace(primary);
         }
 
-/*         pub fn set_active_state(&self, state: u32) {
-            self.active_state.replace(state);
- /*            let active_state : ActiveState = state.into();
-             self.set_active_state_icon(active_state.icon_name().to_string()); */
-        } */
+/*         pub fn set_enable_status(&self, enable_status: Option<String>) {
 
-  /*        pub fn set_active_state_icon(&self, state_icon: String) {
+
+            //self.enable_status.replace(enable_status);
+            self.enable_status.replace(Some("".to_owned()));
+        }
+ */
+        /*         pub fn set_active_state(&self, state: u32) {
+                   self.active_state.replace(state);
+        /*            let active_state : ActiveState = state.into();
+                    self.set_active_state_icon(active_state.icon_name().to_string()); */
+               } */
+
+        /*        pub fn set_active_state_icon(&self, state_icon: String) {
             //println!("set_active_state_icon {state_icon}");
             self.active_state_icon.replace(state_icon);
         }  */

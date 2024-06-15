@@ -147,6 +147,10 @@ fn build_ui(application: &Application) {
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(entry.enable_status().as_deref());
+
+        entry
+        .bind_property("enable_status", &child, "text")
+        .build();
     });
 
     col_active_state_factory.connect_setup(move |_factory, item| {
@@ -457,7 +461,11 @@ fn build_ui(application: &Application) {
             enabled: bool,
             switch: &gtk::Switch,
         ) {
-            println!("ac {} state{} ss {enabled}", switch.is_active(), switch.state());
+            debug!(
+                "ac {} state{} ss {enabled}",
+                switch.is_active(),
+                switch.state()
+            );
             if let Some(model) = column_view.model() {
                 let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
                     panic!("Can't downcast to SingleSelection")
@@ -476,6 +484,16 @@ fn build_ui(application: &Application) {
                     }
                 };
 
+                let enabled_st: EnablementStatus = unit.enable_status().into();
+
+                if enabled && enabled_st == EnablementStatus::Enabled {
+                    return;
+                }
+
+                if !enabled && enabled_st != EnablementStatus::Enabled {
+                    return;
+                }
+
                 let (enable_result, action) = if enabled {
                     (systemd::enable_unit_files(&unit), "Enable")
                 } else {
@@ -483,36 +501,20 @@ fn build_ui(application: &Application) {
                 };
 
                 match enable_result {
-                    Ok(s) => info!("{action} OK: {s}"),
-                    Err(e) => info!("{action} FAIL: {:?}", e),
+                    Ok(s) => {
+                        let ss = s.to_string();
+                        info!("{action} OK: {}", ss);
+                        unit.set_enable_status(ss)
+                    }
+                    Err(e) => warn!("Action {action} FAIL pfor unit \"{}\": {:?}", unit.primary(),  e),
                 }
 
                 let unit_file_state =
                     systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
-println!("New Status : {:?}",unit_file_state);
+                println!("New Status : {:?}", unit_file_state);
                 switch.set_active(unit_file_state == EnablementStatus::Enabled);
-                /*
-                let is_unit_enable = unit_file_state == EnablementStatus::Enabled;
 
-                if enabled && !is_unit_enable {
-                    if let Ok(_) = systemd::enable_unit_files(&unit) {
-                        switch.set_state(true);
-                    }
-                } else if !enabled && is_unit_enable {
-                    if let Ok(_) = systemd::disable_unit_files(&unit) {
-                        switch.set_state(false);
-                    }
-                } */
-
-                let sensitive = if unit_file_state == EnablementStatus::Enabled
-                    || unit_file_state == EnablementStatus::Disabled
-                {
-                    true
-                } else {
-                    false
-                };
-
-                switch.set_sensitive(sensitive);
+                handle_switch_sensivity(unit_file_state, switch);
             }
         }
         let column_view = column_view.clone();
@@ -745,20 +747,14 @@ println!("New Status : {:?}",unit_file_state);
 
             unit_info.buffer().set_text(&description);
 
-            let ablement = systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
+            let ablement_status =
+                systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
 
-            ablement_switch.set_active(ablement == EnablementStatus::Enabled);
+            unit.set_enable_status(ablement_status.to_string());
+            ablement_switch.set_active(ablement_status == EnablementStatus::Enabled);
             ablement_switch.set_state(ablement_switch.is_active());
 
-            let sensitive = if ablement == EnablementStatus::Enabled
-                || ablement == EnablementStatus::Disabled
-            {
-                true
-            } else {
-                false
-            };
-            //println!("sensitive {}", sensitive);
-            ablement_switch.set_sensitive(sensitive);
+            handle_switch_sensivity(ablement_status, &ablement_switch);
 
             update_journal(&unit_journal, &unit);
             header.set_label(&unit.display_name());
@@ -793,6 +789,18 @@ println!("New Status : {:?}",unit_file_state);
     });
 
     gtk::main(); */
+}
+
+fn handle_switch_sensivity(unit_file_state: EnablementStatus, switch: &gtk::Switch) {
+    let sensitive = if unit_file_state == EnablementStatus::Enabled
+        || unit_file_state == EnablementStatus::Disabled
+    {
+        true
+    } else {
+        false
+    };
+
+    switch.set_sensitive(sensitive);
 }
 
 fn build_title_bar(search_bar: &gtk::SearchBar) -> (gtk::HeaderBar, gtk::Label, gtk::ToggleButton) {

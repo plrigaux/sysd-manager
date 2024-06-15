@@ -109,6 +109,33 @@ impl EnablementStatus {
             }
         }
     }
+
+    pub fn to_string(&self) -> String {
+        let str_label = match self {
+            EnablementStatus::Bad => "bad",
+            EnablementStatus::Disabled => "disabled",
+            EnablementStatus::Enabled => "enabled",
+            EnablementStatus::Indirect => "indirect",
+            EnablementStatus::Linked => "linked",
+            EnablementStatus::Masked => "masked",
+            EnablementStatus::Static => "static",
+            EnablementStatus::Alias => "alias",
+            EnablementStatus::Generated => "generated",
+            EnablementStatus::Trancient => "trancient",
+            _ => "",
+        };
+
+        str_label.to_owned()
+    }
+}
+
+impl From<Option<String>> for EnablementStatus {
+    fn from(value: Option<String>) -> Self {
+        if let Some(str_val) = value {
+            return EnablementStatus::new(&str_val);
+        }
+        return EnablementStatus::Unknown;
+    }
 }
 
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, glib::Enum)]
@@ -295,12 +322,18 @@ pub fn restart_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
     sysdbus::restart_unit(&unit.primary())
 }
 
-pub fn enable_unit_files(sytemd_unit: &UnitInfo) -> Result<std::string::String, SystemdErrors> {
-    systemctl::enable_unit_files_path(&sytemd_unit.primary())
+pub fn enable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
+    match  systemctl::enable_unit_files_path(&sytemd_unit.primary()){
+        Ok(_) => Ok(EnablementStatus::Enabled),
+        Err(e) => Err(e),
+    }
 }
 
-pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<std::string::String, SystemdErrors> {
-    systemctl::disable_unit_files_path(&sytemd_unit.primary())
+pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
+    match  systemctl::disable_unit_files_path(&sytemd_unit.primary()){
+        Ok(_) => Ok(EnablementStatus::Disabled),
+        Err(e) => Err(e),
+    }
 }
 
 /// Read the unit file and return it's contents so that we can display it
@@ -389,9 +422,7 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     sysdbus::fetch_system_info()
 }
 
-pub fn fetch_system_unit_info(
-    unit: &UnitInfo,
-) -> Result<BTreeMap<String, String>, SystemdErrors> {
+pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
     sysdbus::fetch_system_unit_info(&unit.object_path())
 }
 
@@ -399,12 +430,8 @@ pub fn fetch_system_unit_info(
 mod tests {
     use log::debug;
 
-
-
-
     #[test]
     fn test_hello() {
         debug!("hello")
     }
-
 }
