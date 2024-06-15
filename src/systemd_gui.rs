@@ -148,44 +148,44 @@ fn build_ui(application: &Application) {
 
     col_unit_name_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = gtk::Label::builder().xalign(0.0).build();
+        let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_unit_name_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let r: Ref<LoadedUnit> = entry.borrow();
-        child.set_label(r.display_name());
+        child.set_text(Some(r.display_name()));
     });
 
     col_type_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = gtk::Label::builder().xalign(0.0).build();
+        let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_type_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let unit: Ref<LoadedUnit> = entry.borrow();
-        child.set_label(unit.unit_type());
+        child.set_text(Some(unit.unit_type()));
     });
 
     col_enable_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = gtk::Label::builder().xalign(0.0).build();
+        let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_enable_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let r: Ref<LoadedUnit> = entry.borrow();
-        child.set_label(r.enable_status());
+        child.set_text(Some(r.enable_status()));
     });
 
     col_active_state_factory.connect_setup(move |_factory, item| {
@@ -200,20 +200,25 @@ fn build_ui(application: &Application) {
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let unit: Ref<LoadedUnit> = entry.borrow();
         child.set_icon_name(Some(unit.active_state_icon()));
+
+
+        //println!("PROP: {:#?}",entry.list_properties());
+        //entry.bind_property("active_state_icon", &child, "icon-name").build();
+
     });
 
     col_description_factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = gtk::Label::builder().xalign(0.0).build();
+        let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_description_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<gtk::Label>().unwrap();
+        let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let unit: Ref<LoadedUnit> = entry.borrow();
-        child.set_label(unit.description());
+        child.set_text(Some(unit.description()));
     });
 
     let col1_unit_name_sorter = create_column_filter!(primary);

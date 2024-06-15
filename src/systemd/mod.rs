@@ -1,4 +1,5 @@
 pub mod analyze;
+mod data;
 mod sysdbus;
 mod systemctl;
 
@@ -14,7 +15,10 @@ use std::io::{ErrorKind, Read, Write};
 use sysdbus::dbus::arg::ArgType;
 use sysdbus::UnitType;
 
+use gtk::glib;
+
 #[derive(Debug)]
+#[allow(unused)]
 pub enum SystemdErrors {
     IoError(std::io::Error),
     Utf8Error(FromUtf8Error),
@@ -105,12 +109,14 @@ impl EnablementStatus {
     }
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, glib::Enum)]
+#[enum_type(name = "ActiveState")]
+#[enum_dynamic]
 pub enum ActiveState {
-    Active,
+    Unknown = 0,
+    Active = 1,
     #[default]
-    Inactive,
-    Unknown,
+    Inactive = 2,
 }
 
 impl ActiveState {
@@ -121,11 +127,11 @@ impl ActiveState {
             ActiveState::Unknown => "unknown",
         }
     }
-   
+
     fn icon_name(&self) -> &str {
         match self {
             ActiveState::Active => "object-select-symbolic",
-            ActiveState::Inactive =>  "window-close-symbolic",
+            ActiveState::Inactive => "window-close-symbolic",
             ActiveState::Unknown => "action-unavailable-symbolic",
         }
     }
@@ -142,6 +148,17 @@ impl ActiveState {
 impl Display for ActiveState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.label())
+    }
+}
+
+impl From<usize> for ActiveState {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => Self::Unknown,
+            1 => Self::Active,
+            2 => Self::Inactive,
+            _ => Self::Unknown,
+        }
     }
 }
 
@@ -227,7 +244,7 @@ impl LoadedUnit {
         &self.active_state.label()
     }
 
-    pub fn set_active_state(&mut self, state : ActiveState)  {
+    pub fn set_active_state(&mut self, state: ActiveState) {
         self.active_state = state;
     }
 

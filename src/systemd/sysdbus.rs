@@ -10,6 +10,7 @@ use dbus::arg::messageitem::MessageItem;
 use dbus::arg::messageitem::Props;
 use dbus::Message;
 
+use crate::systemd::data::UnitInfo;
 use crate::systemd::ActiveState;
 
 use super::EnablementStatus;
@@ -281,6 +282,15 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
             followed_unit,
             object_path.to_string(),
         );
+
+        let unit = UnitInfo::new( primary,
+            description,
+            load_state,
+            active_state,
+            sub_state,
+            followed_unit,
+            object_path.to_string());
+
 
         map.insert(primary.to_ascii_lowercase(), unit_info);
     }
