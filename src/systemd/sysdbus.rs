@@ -15,7 +15,7 @@ use crate::systemd::ActiveState;
 
 use super::EnablementStatus;
 
-use super::LoadedUnit;
+
 use super::SystemdErrors;
 use super::SystemdUnit;
 
@@ -181,7 +181,7 @@ fn list_unit_files_message() -> Result<Vec<MessageItem>, SystemdErrors> {
     Ok(m.get_items())
 }
 
-fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdErrors> {
+fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
     let message = dbus_message("ListUnits")?;
     debug!("MESSAGE {:?}", message);
     let m = dbus_connect(message)?;
@@ -202,7 +202,7 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
     };
     debug!("Array_size {:#?}", array.len());
 
-    let mut map: BTreeMap<String, LoadedUnit> = BTreeMap::new();
+    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
 
     for service_struct in array.iter() {
         let MessageItem::Struct(struct_value) = service_struct else {
@@ -273,7 +273,7 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
 
         let active_state = ActiveState::from_str(active_state_str);
         
-        let unit_info = LoadedUnit::new(
+/*         let unit_info = LoadedUnit::new(
             primary,
             description,
             load_state,
@@ -281,7 +281,7 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
             sub_state,
             followed_unit,
             object_path.to_string(),
-        );
+        ); */
 
         let unit = UnitInfo::new( primary,
             description,
@@ -292,7 +292,7 @@ fn list_units_description() -> Result<BTreeMap<String, LoadedUnit>, SystemdError
             object_path.to_string());
 
 
-        map.insert(primary.to_ascii_lowercase(), unit_info);
+        map.insert(primary.to_ascii_lowercase(), unit);
     }
     Ok(map)
 }
@@ -312,16 +312,16 @@ pub fn get_unit_file_state_path(unit_file: &str) -> Result<EnablementStatus, Sys
     }
 }
 
-pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>, SystemdErrors> {
+pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
     let mut units_map = list_units_description()?;
 
     let mut units = list_unit_files()?;
 
     for unit_file in units.drain(..) {
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
-            Some(lu) => {
-                lu.file_path = Some(unit_file.path);
-                lu.enable_status = Some(unit_file.enable_status)
+            Some(unit_info) => {
+                unit_info.set_file_path(unit_file.path);
+                unit_info.set_enable_status(unit_file.enable_status);
             }
             None => debug!("unit \"{}\" not found!", unit_file.full_name()),
         }
@@ -663,9 +663,9 @@ mod tests {
         let mut set: HashSet<String> = HashSet::new();
         for unit_file in units.drain(..) {
             match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
-                Some(lu) => {
-                    lu.file_path = Some(unit_file.path);
-                    lu.enable_status = Some(unit_file.enable_status)
+                Some(unit_info) => {
+                    unit_info.set_file_path(unit_file.path);
+                    unit_info.set_enable_status(unit_file.enable_status);
                 }
                 None => debug!("unit \"{}\" not found!", unit_file.full_name()),
             }

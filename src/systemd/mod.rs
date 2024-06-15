@@ -1,5 +1,5 @@
 pub mod analyze;
-mod data;
+pub mod data;
 mod sysdbus;
 mod systemctl;
 
@@ -8,6 +8,7 @@ use std::fmt::Display;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 
+use data::UnitInfo;
 use gtk::glib::GString;
 use log::{debug, error, info};
 use std::fs::{self, File};
@@ -48,6 +49,7 @@ impl From<sysdbus::dbus::Error> for SystemdErrors {
 }
 
 #[derive(Clone, Debug)]
+#[allow(unused)]
 pub struct SystemdUnit {
     pub name: String,
     pub state: EnablementStatus,
@@ -128,7 +130,7 @@ impl ActiveState {
         }
     }
 
-    fn icon_name(&self) -> &str {
+    pub fn icon_name(&self) -> &str {
         match self {
             ActiveState::Active => "object-select-symbolic",
             ActiveState::Inactive => "window-close-symbolic",
@@ -151,8 +153,8 @@ impl Display for ActiveState {
     }
 }
 
-impl From<usize> for ActiveState {
-    fn from(value: usize) -> Self {
+impl From<u32> for ActiveState {
+    fn from(value: u32) -> Self {
         match value {
             0 => Self::Unknown,
             1 => Self::Active,
@@ -161,7 +163,7 @@ impl From<usize> for ActiveState {
         }
     }
 }
-
+/*
 #[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct LoadedUnit {
@@ -269,41 +271,42 @@ impl LoadedUnit {
         }
     } */
 }
+*/
 
-pub fn get_unit_file_state(sytemd_unit: &LoadedUnit) -> Result<EnablementStatus, SystemdErrors> {
-    return sysdbus::get_unit_file_state_path(&sytemd_unit.primary);
+pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
+    return sysdbus::get_unit_file_state_path(&sytemd_unit.primary());
 }
 
-pub fn list_units_description_and_state() -> Result<BTreeMap<String, LoadedUnit>, SystemdErrors> {
+pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
     return sysdbus::list_units_description_and_state();
 }
 
 /// Takes a unit name as input and attempts to start it
-pub fn start_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
-    sysdbus::start_unit(&unit.primary)
+pub fn start_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
+    sysdbus::start_unit(&unit.primary())
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub fn stop_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
-    sysdbus::stop_unit(&unit.primary)
+pub fn stop_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
+    sysdbus::stop_unit(&unit.primary())
 }
 
-pub fn restart_unit(unit: &LoadedUnit) -> Result<(), SystemdErrors> {
-    sysdbus::restart_unit(&unit.primary)
+pub fn restart_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
+    sysdbus::restart_unit(&unit.primary())
 }
 
-pub fn enable_unit_files(sytemd_unit: &LoadedUnit) -> Result<std::string::String, SystemdErrors> {
-    systemctl::enable_unit_files_path(&sytemd_unit.primary)
+pub fn enable_unit_files(sytemd_unit: &UnitInfo) -> Result<std::string::String, SystemdErrors> {
+    systemctl::enable_unit_files_path(&sytemd_unit.primary())
 }
 
-pub fn disable_unit_files(sytemd_unit: &LoadedUnit) -> Result<std::string::String, SystemdErrors> {
-    systemctl::disable_unit_files_path(&sytemd_unit.primary)
+pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<std::string::String, SystemdErrors> {
+    systemctl::disable_unit_files_path(&sytemd_unit.primary())
 }
 
 /// Read the unit file and return it's contents so that we can display it
-pub fn get_unit_info(unit: &LoadedUnit) -> String {
+pub fn get_unit_info(unit: &UnitInfo) -> String {
     let mut output = String::new();
-    if let Some(file_path) = &unit.file_path {
+    if let Some(file_path) = &unit.file_path() {
         let mut file = File::open(file_path).unwrap();
         let _ = file.read_to_string(&mut output);
     }
@@ -311,7 +314,7 @@ pub fn get_unit_info(unit: &LoadedUnit) -> String {
 }
 
 /// Obtains the journal log for the given unit.
-pub fn get_unit_journal(unit: &LoadedUnit) -> String {
+pub fn get_unit_journal(unit: &UnitInfo) -> String {
     let unit_path = unit.primary();
 
     let log = String::from_utf8(
@@ -329,9 +332,9 @@ pub fn get_unit_journal(unit: &LoadedUnit) -> String {
         .map(|x| x.trim())
         .fold(String::with_capacity(log.len()), |acc, x| acc + "\n" + x)
 }
-pub fn save_text_to_file(unit: &LoadedUnit, text: &GString) {
-    let Some(file_path) = &unit.file_path else {
-        error!("No file path for {}", unit.primary);
+pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
+    let Some(file_path) = &unit.file_path() else {
+        error!("No file path for {}", unit.primary());
         return;
     };
 
@@ -387,29 +390,21 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 }
 
 pub fn fetch_system_unit_info(
-    unit: &LoadedUnit,
+    unit: &UnitInfo,
 ) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    sysdbus::fetch_system_unit_info(&unit.object_path)
+    sysdbus::fetch_system_unit_info(&unit.object_path())
 }
 
 #[cfg(test)]
 mod tests {
     use log::debug;
 
-    use super::LoadedUnit;
+
+
 
     #[test]
     fn test_hello() {
         debug!("hello")
     }
 
-    #[test]
-    fn test_spliter() {
-        let mut a = LoadedUnit::default();
-
-        a.primary = "my_good.service".to_owned();
-
-        assert_eq!("my_good", a.display_name());
-        assert_eq!("service", a.unit_type())
-    }
 }

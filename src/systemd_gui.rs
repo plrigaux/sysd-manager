@@ -1,11 +1,11 @@
 use gtk::prelude::*;
 use gtk::{self, gio, SingleSelection};
-use log::{debug, info, error};
+use log::{debug, error, info, warn};
 
 use crate::menu;
 
 use crate::systemd::{self, ActiveState};
-use systemd::{EnablementStatus, LoadedUnit};
+use systemd::{data::UnitInfo, EnablementStatus};
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};
@@ -14,42 +14,13 @@ use gtk::pango::{self, Weight};
 
 use gtk::{Application, ApplicationWindow, Orientation};
 
-use std::cell::{Ref, RefMut};
+use std::cell::RefMut;
 use std::rc::Rc;
 
 // ANCHOR: main
 const APP_ID: &str = "org.systemd.manager";
 
 use crate::menu::rowitem;
-/// Updates the status icon for the selected unit
-/* fn update_icon(icon: &gtk::Image, state: bool) {
-    if state {
-        icon.set_from_icon_name(Some(ICON_YES));
-    } else {
-        icon.set_from_icon_name(Some(ICON_NO));
-    }
-}
- */
-/// Create a `gtk::ListboxRow` and add it to the `gtk::ListBox`, and then add the `gtk::Image` to a vector so that we can later modify
-/// it when the state changes.
-/* fn create_row(systemd_unit: &LoadedUnit, state_icons: &mut Vec<gtk::Image>) -> gtk::ListBoxRow {
-    let unit_box = gtk::CenterBox::new();
-    let unit_label = gtk::Label::new(Some(&systemd_unit.display_name()));
-    let image = if systemd_unit.is_enable() {
-        gtk::Image::from_icon_name(ICON_YES)
-    } else {
-        gtk::Image::from_icon_name(ICON_NO)
-    };
-
-    unit_box.set_start_widget(Some(&unit_label));
-    unit_box.set_end_widget(Some(&image));
-
-    let unit_row = gtk::ListBoxRow::builder().child(&unit_box).build();
-
-    state_icons.push(image);
-
-    unit_row
-} */
 
 #[macro_export]
 macro_rules! get_selected_unit {
@@ -67,40 +38,36 @@ macro_rules! get_selected_unit {
             return;
         };
 
-        let box_any = match object.downcast::<BoxedAnyObject>() {
+        let unit = match object.downcast::<UnitInfo>() {
             Ok(any_objet) => any_objet,
             Err(val) => {
                 error!("Selection Error: {:?}", val);
                 return;
             }
         };
-        box_any
+        unit
     }};
 }
 
 macro_rules! create_column_filter {
     ($func:ident) => {{
         let col_sorter = gtk::CustomSorter::new(move |obj1, obj2| {
-            let Some(box_any1) = obj1.downcast_ref::<BoxedAnyObject>() else {
+            let Some(unit1) = obj1.downcast_ref::<UnitInfo>() else {
                 panic!("some wrong downcast_ref {:?}", obj1);
             };
 
-            let unit1: Ref<LoadedUnit> = box_any1.borrow();
-
-            let Some(box_any2) = obj2.downcast_ref::<BoxedAnyObject>() else {
+            let Some(unit2) = obj2.downcast_ref::<UnitInfo>() else {
                 panic!("some wrong downcast_ref {:?}", obj2);
             };
 
-            let unit2: Ref<LoadedUnit> = box_any2.borrow();
-
-            unit1.$func().cmp(unit2.$func()).into()
+            unit1.$func().cmp(&unit2.$func()).into()
         });
         col_sorter
     }};
 }
 
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
-fn update_journal(journal: &gtk::TextView, unit: &LoadedUnit) {
+fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
     let journal_output = systemd::get_unit_journal(unit);
     journal.buffer().set_text(&journal_output);
 }
@@ -116,7 +83,7 @@ pub fn launch() -> glib::ExitCode {
 
 fn build_ui(application: &Application) {
     // List of all unit files on the system
-    let unit_files: Vec<LoadedUnit> = match systemd::list_units_description_and_state() {
+    let unit_files: Vec<UnitInfo> = match systemd::list_units_description_and_state() {
         Ok(map) => map.into_values().collect(),
         Err(e) => {
             debug!("{:?}", e);
@@ -124,16 +91,12 @@ fn build_ui(application: &Application) {
         }
     };
 
-    let store = gtk::gio::ListStore::new::<BoxedAnyObject>();
+    let store = gtk::gio::ListStore::new::<UnitInfo>();
 
-    for value in unit_files.clone() {
+    for value in unit_files {
         //debug!("Analyse Tree Blame {:?}", value);
-        store.append(&BoxedAnyObject::new(value));
+        store.append(&value);
     }
-    /*
-       let filtermodel = gtk::FilterListModel::new(Some(store.clone()), None::<gtk::CustomFilter>);
-       let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
-    */
 
     let column_view = gtk::ColumnView::builder()
         //.model(&columnview_selection_model)
@@ -155,9 +118,9 @@ fn build_ui(application: &Application) {
     col_unit_name_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<LoadedUnit> = entry.borrow();
-        child.set_text(Some(r.display_name()));
+        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
+        let v = entry.display_name();
+        child.set_text(Some(&v));
     });
 
     col_type_factory.connect_setup(move |_factory, item| {
@@ -169,9 +132,8 @@ fn build_ui(application: &Application) {
     col_type_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let unit: Ref<LoadedUnit> = entry.borrow();
-        child.set_text(Some(unit.unit_type()));
+        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
+        child.set_text(Some(&entry.unit_type()));
     });
 
     col_enable_factory.connect_setup(move |_factory, item| {
@@ -183,9 +145,8 @@ fn build_ui(application: &Application) {
     col_enable_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let r: Ref<LoadedUnit> = entry.borrow();
-        child.set_text(Some(r.enable_status()));
+        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
+        child.set_text(entry.enable_status().as_deref());
     });
 
     col_active_state_factory.connect_setup(move |_factory, item| {
@@ -197,14 +158,11 @@ fn build_ui(application: &Application) {
     col_active_state_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Image>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let unit: Ref<LoadedUnit> = entry.borrow();
-        child.set_icon_name(Some(unit.active_state_icon()));
-
-
-        //println!("PROP: {:#?}",entry.list_properties());
-        //entry.bind_property("active_state_icon", &child, "icon-name").build();
-
+        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
+        child.set_icon_name(Some(&entry.active_state_icon()));
+        entry
+            .bind_property("active_state_icon", &child, "icon-name")
+                   .build();
     });
 
     col_description_factory.connect_setup(move |_factory, item| {
@@ -216,9 +174,8 @@ fn build_ui(application: &Application) {
     col_description_factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-        let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-        let unit: Ref<LoadedUnit> = entry.borrow();
-        child.set_text(Some(unit.description()));
+        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
+        child.set_text(Some(&entry.description()));
     });
 
     let col1_unit_name_sorter = create_column_filter!(primary);
@@ -481,7 +438,10 @@ fn build_ui(application: &Application) {
             .build()
     });
 
-    let ablement_switch = gtk::Switch::builder().focusable(true).vexpand(false).build();
+    let ablement_switch = gtk::Switch::builder()
+        .focusable(true)
+        .vexpand(false)
+        .build();
 
     {
         fn handle_switch(
@@ -500,15 +460,13 @@ fn build_ui(application: &Application) {
                     return;
                 };
 
-                let box_any = match object.downcast::<BoxedAnyObject>() {
+                let unit = match object.downcast::<UnitInfo>() {
                     Ok(any_objet) => any_objet,
                     Err(val) => {
                         error!("Selection Error: {:?}", val);
                         return;
                     }
                 };
-
-                let unit: Ref<LoadedUnit> = box_any.borrow();
 
                 let unit_file_state =
                     systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
@@ -574,14 +532,14 @@ fn build_ui(application: &Application) {
         // NOTE: Implement the start button
         let column_view = column_view.clone();
         start_button.connect_clicked(move |_button| {
-            let box_any = get_selected_unit!(column_view);
-            let mut unit: RefMut<LoadedUnit> = box_any.borrow_mut();
+            let unit = get_selected_unit!(column_view);
 
             match systemd::start_unit(&unit) {
                 Ok(()) => {
                     info!("Unit \"{}\" has been started!", unit.primary());
+                    update_active_state(&unit, ActiveState::Active);
+                    
 
-                    unit.set_active_state(ActiveState::Active)              
                 }
                 Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
             }
@@ -591,14 +549,14 @@ fn build_ui(application: &Application) {
     {
         let column_view = column_view.clone();
         stop_button.connect_clicked(move |_button| {
-            let box_any = get_selected_unit!(column_view);
-            let mut unit: RefMut<LoadedUnit> = box_any.borrow_mut();
+            let unit = get_selected_unit!(column_view);
 
             match systemd::stop_unit(&unit) {
                 Ok(()) => {
                     info!("Unit \"{}\" stopped!", unit.primary());
-                    unit.set_active_state(ActiveState::Inactive)
-                }
+                    update_active_state(&unit, ActiveState::Inactive)
+                },
+                  
                 Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
             }
         });
@@ -607,12 +565,12 @@ fn build_ui(application: &Application) {
     {
         let column_view = column_view.clone();
         restart_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
+            let unit = get_selected_unit!(column_view);
 
             match systemd::restart_unit(&unit) {
                 Ok(()) => {
-                    error!("Unit {} restarted!", unit.primary())
+                    info!("Unit {} restarted!", unit.primary());                    
+                    update_active_state(&unit, ActiveState::Active);
                 }
                 Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
             }
@@ -657,12 +615,11 @@ fn build_ui(application: &Application) {
         let entry1 = entry.clone();
         let unit_col_view_scrolled_window = unit_col_view_scrolled_window.clone();
         let custom_filter = gtk::CustomFilter::new(move |object| {
-            let Some(box_any) = object.downcast_ref::<BoxedAnyObject>() else {
+            let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                 error!("some wrong downcast_ref {:?}", object);
                 return false;
             };
 
-            let unit: Ref<LoadedUnit> = box_any.borrow();
             let text = entry1.text();
 
             if text.is_empty() {
@@ -694,7 +651,7 @@ fn build_ui(application: &Application) {
             debug!("cur {} prev {}", text, last_filter);
             last_filter.replace_range(.., text.as_str());
             custom_filter.changed(change_type);
-            unit_col_view_scrolled_window.queue_resize();//TODO investigate the need
+            unit_col_view_scrolled_window.queue_resize(); //TODO investigate the need
         });
     }
 
@@ -717,8 +674,7 @@ fn build_ui(application: &Application) {
         let unit_journal = unit_journal_view.clone();
         let column_view = column_view.clone();
         refresh_button.connect_clicked(move |_| {
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
+            let unit = get_selected_unit!(column_view);
             update_journal(&unit_journal, &unit);
         });
     }
@@ -732,9 +688,7 @@ fn build_ui(application: &Application) {
             let start = buffer.start_iter();
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
-            let box_any = get_selected_unit!(column_view);
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
+            let unit = get_selected_unit!(column_view);
             systemd::save_text_to_file(&unit, &text);
         });
     }
@@ -747,11 +701,11 @@ fn build_ui(application: &Application) {
 
         columnview_selection_model.connect_selected_item_notify(move |single_selection| {
             let Some(object) = single_selection.selected_item() else {
-                eprint!("No object seletected");
+                warn!("No object seletected");
                 return;
             };
 
-            let box_any = match object.downcast::<BoxedAnyObject>() {
+            let unit = match object.downcast::<UnitInfo>() {
                 Ok(any_objet) => any_objet,
                 Err(val) => {
                     error!("Selection Error: {:?}", val);
@@ -759,16 +713,14 @@ fn build_ui(application: &Application) {
                 }
             };
 
-            let unit: Ref<LoadedUnit> = box_any.borrow();
-
             let description = systemd::get_unit_info(&unit);
 
             let fp = match unit.file_path() {
                 Some(s) => s,
-                None => "",
+                None => "".to_owned(),
             };
 
-            unit_file_label.set_label(fp);
+            unit_file_label.set_label(&fp);
 
             unit_info.buffer().set_text(&description);
 
@@ -788,7 +740,7 @@ fn build_ui(application: &Application) {
             ablement_switch.set_sensitive(sensitive);
 
             update_journal(&unit_journal, &unit);
-            header.set_label(unit.display_name());
+            header.set_label(&unit.display_name());
             debug!("Unit {:#?}", unit);
 
             unit_prop_store.remove_all();
@@ -867,4 +819,9 @@ fn build_icon_label(label_name: &str, icon_name: &str) -> gtk::Box {
     box_container.append(&label);
 
     box_container
+}
+
+fn update_active_state(unit : &UnitInfo, state : ActiveState) {
+    unit.set_active_state(state as u32);
+    unit.set_active_state_icon(state.icon_name().to_owned());
 }
