@@ -148,9 +148,7 @@ fn build_ui(application: &Application) {
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(entry.enable_status().as_deref());
 
-        entry
-        .bind_property("enable_status", &child, "text")
-        .build();
+        entry.bind_property("enable_status", &child, "text").build();
     });
 
     col_active_state_factory.connect_setup(move |_factory, item| {
@@ -455,71 +453,75 @@ fn build_ui(application: &Application) {
         .build();
 
     {
-        fn handle_switch(
-            column_view: &gtk::ColumnView,
-            // unit_ref: Rc<Vec<LoadedUnit>>,
-            enabled: bool,
-            switch: &gtk::Switch,
-        ) {
+        let column_view = column_view.clone();
+        ablement_switch.connect_state_set(move |switch, enabled| {
+            // handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
+
             debug!(
-                "ac {} state{} ss {enabled}",
+                "active {} state {} new {enabled}",
                 switch.is_active(),
                 switch.state()
             );
-            if let Some(model) = column_view.model() {
-                let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
-                    panic!("Can't downcast to SingleSelection")
-                };
 
-                let Some(object) = single_selection_model.selected_item() else {
-                    error!("No selection objet");
-                    return;
-                };
+            let Some(model) = column_view.model() else {
+                warn!("No model");
+                return Propagation::Proceed;
+            };
 
-                let unit = match object.downcast::<UnitInfo>() {
-                    Ok(any_objet) => any_objet,
-                    Err(val) => {
-                        error!("Selection Error: {:?}", val);
-                        return;
-                    }
-                };
+            let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
+                panic!("Can't downcast to SingleSelection")
+            };
 
-                let enabled_st: EnablementStatus = unit.enable_status().into();
+            let Some(object) = single_selection_model.selected_item() else {
+                error!("No selection objet");
+                return Propagation::Proceed;
+            };
 
-                if enabled && enabled_st == EnablementStatus::Enabled {
-                    return;
+            let unit = match object.downcast::<UnitInfo>() {
+                Ok(any_objet) => any_objet,
+                Err(val) => {
+                    error!("Selection Error: {:?}", val);
+                    return Propagation::Proceed;
                 }
+            };
 
-                if !enabled && enabled_st != EnablementStatus::Enabled {
-                    return;
-                }
+            let enabled_status: EnablementStatus = unit.enable_status().into();
 
-                let (enable_result, action) = if enabled {
-                    (systemd::enable_unit_files(&unit), "Enable")
-                } else {
-                    (systemd::disable_unit_files(&unit), "Disable")
-                };
-
-                match enable_result {
-                    Ok(s) => {
-                        let ss = s.to_string();
-                        info!("{action} OK: {}", ss);
-                        unit.set_enable_status(ss)
-                    }
-                    Err(e) => warn!("Action {action} FAIL pfor unit \"{}\": {:?}", unit.primary(),  e),
-                }
-
-                let unit_file_state =
-                    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
-                println!("New Status : {:?}", unit_file_state);
-                switch.set_active(unit_file_state == EnablementStatus::Enabled);
-
-                handle_switch_sensivity(unit_file_state, switch);
+            if enabled && enabled_status == EnablementStatus::Enabled
+                || !enabled && enabled_status != EnablementStatus::Enabled
+            {
+                set_switch_tooltip(enabled, switch);
+                return Propagation::Proceed;
             }
-        }
-        let column_view = column_view.clone();
-        ablement_switch.connect_state_set(move |switch, enabled| {
-            handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
+
+            let (enable_result, action) = if enabled {
+                (systemd::enable_unit_files(&unit), "Enable")
+            } else {
+                (systemd::disable_unit_files(&unit), "Disable")
+            };
+
+            match enable_result {
+                Ok(enablement_status_ret) => {
+                    info!("New statut: {}", enablement_status_ret.to_string());
+                }
+                Err(e) => warn!(
+                    "{action} unit \"{}\": FAILED!, reason : {:?}",
+                    unit.primary(),
+                    e
+                ),
+            }
+
+            let unit_file_state =
+                systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
+            info!("New Status : {:?}", unit_file_state);
+
+            let enabled_new =  unit_file_state == EnablementStatus::Enabled;
+            switch.set_active(enabled_new);
+            set_switch_tooltip(enabled_new, switch);
+            unit.set_enable_status(unit_file_state.to_string());
+
+            handle_switch_sensivity(unit_file_state, switch);
+
             Propagation::Proceed
         });
     }
@@ -791,6 +793,15 @@ fn build_ui(application: &Application) {
     gtk::main(); */
 }
 
+fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch) {
+    let text = if enabled {
+        "Disable unit "
+    } else {
+        "Enable unit"
+    };
+    switch.set_tooltip_text(Some(text));
+}
+
 fn handle_switch_sensivity(unit_file_state: EnablementStatus, switch: &gtk::Switch) {
     let sensitive = if unit_file_state == EnablementStatus::Enabled
         || unit_file_state == EnablementStatus::Disabled
@@ -801,6 +812,7 @@ fn handle_switch_sensivity(unit_file_state: EnablementStatus, switch: &gtk::Swit
     };
 
     switch.set_sensitive(sensitive);
+    switch.set_tooltip_text(None);
 }
 
 fn build_title_bar(search_bar: &gtk::SearchBar) -> (gtk::HeaderBar, gtk::Label, gtk::ToggleButton) {
