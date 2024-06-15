@@ -162,7 +162,7 @@ fn build_ui(application: &Application) {
         child.set_icon_name(Some(&entry.active_state_icon()));
         entry
             .bind_property("active_state_icon", &child, "icon-name")
-                   .build();
+            .build();
     });
 
     col_description_factory.connect_setup(move |_factory, item| {
@@ -201,8 +201,9 @@ fn build_ui(application: &Application) {
         .title("Enable\nstatus")
         .factory(&col_enable_factory)
         .sorter(&col3_enable_sorter)
-        .expand(true)
-        .fixed_width(75)
+        //.expand(true)
+        .resizable(true)
+        .fixed_width(70)
         .build();
 
     let col_sorter = create_column_filter!(active_state);
@@ -212,15 +213,21 @@ fn build_ui(application: &Application) {
         .factory(&col_active_state_factory)
         .sorter(&col_sorter)
         .fixed_width(75)
+        .resizable(true)
         .build();
 
-    let col5_unit = gtk::ColumnViewColumn::new(Some("Description"), Some(col_description_factory));
+    let col5_description = gtk::ColumnViewColumn::builder()
+        .title("Description")
+        .factory(&col_description_factory)
+        .expand(true)
+        .resizable(true)
+        .build();
 
     column_view.append_column(&col1_unit);
     column_view.append_column(&col2_unit_type);
     column_view.append_column(&col3_enable_status);
     column_view.append_column(&col4_active_state);
-    column_view.append_column(&col5_unit);
+    column_view.append_column(&col5_description);
 
     let sorter = column_view.sorter();
     let sort_model = gtk::SortListModel::new(Some(store), sorter);
@@ -450,6 +457,7 @@ fn build_ui(application: &Application) {
             enabled: bool,
             switch: &gtk::Switch,
         ) {
+            println!("ac {} state{} ss {enabled}", switch.is_active(), switch.state());
             if let Some(model) = column_view.model() {
                 let Some(single_selection_model) = model.downcast_ref::<SingleSelection>() else {
                     panic!("Can't downcast to SingleSelection")
@@ -468,9 +476,22 @@ fn build_ui(application: &Application) {
                     }
                 };
 
+                let (enable_result, action) = if enabled {
+                    (systemd::enable_unit_files(&unit), "Enable")
+                } else {
+                    (systemd::disable_unit_files(&unit), "Disable")
+                };
+
+                match enable_result {
+                    Ok(s) => info!("{action} OK: {s}"),
+                    Err(e) => info!("{action} FAIL: {:?}", e),
+                }
+
                 let unit_file_state =
                     systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
-
+println!("New Status : {:?}",unit_file_state);
+                switch.set_active(unit_file_state == EnablementStatus::Enabled);
+                /*
                 let is_unit_enable = unit_file_state == EnablementStatus::Enabled;
 
                 if enabled && !is_unit_enable {
@@ -481,7 +502,7 @@ fn build_ui(application: &Application) {
                     if let Ok(_) = systemd::disable_unit_files(&unit) {
                         switch.set_state(false);
                     }
-                }
+                } */
 
                 let sensitive = if unit_file_state == EnablementStatus::Enabled
                     || unit_file_state == EnablementStatus::Disabled
@@ -490,7 +511,7 @@ fn build_ui(application: &Application) {
                 } else {
                     false
                 };
-                println!("sensitive {}", sensitive);
+
                 switch.set_sensitive(sensitive);
             }
         }
@@ -538,10 +559,8 @@ fn build_ui(application: &Application) {
                 Ok(()) => {
                     info!("Unit \"{}\" has been started!", unit.primary());
                     update_active_state(&unit, ActiveState::Active);
-                    
-
                 }
-                Err(e) => error!("Cant't start the unit {}, because: {:?}", unit.primary(), e),
+                Err(e) => error!("Can't start the unit {}, because: {:?}", unit.primary(), e),
             }
         });
     }
@@ -555,9 +574,9 @@ fn build_ui(application: &Application) {
                 Ok(()) => {
                     info!("Unit \"{}\" stopped!", unit.primary());
                     update_active_state(&unit, ActiveState::Inactive)
-                },
-                  
-                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+                }
+
+                Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
             }
         });
     }
@@ -569,10 +588,10 @@ fn build_ui(application: &Application) {
 
             match systemd::restart_unit(&unit) {
                 Ok(()) => {
-                    info!("Unit {} restarted!", unit.primary());                    
+                    info!("Unit {} restarted!", unit.primary());
                     update_active_state(&unit, ActiveState::Active);
                 }
-                Err(e) => error!("Cant't stop the unit {}, because: {:?}", unit.primary(), e),
+                Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
             }
         });
     }
@@ -583,9 +602,11 @@ fn build_ui(application: &Application) {
 
     // ---------------------------------------------------
 
-    let main_box = gtk::Box::new(Orientation::Horizontal, 5);
-    main_box.append(&left_pane);
-    main_box.append(&right_pane);
+    let main_box = gtk::Paned::new(Orientation::Horizontal);
+    //let main_box = gtk::Box::new(Orientation::Horizontal, 5);
+
+    main_box.set_start_child(Some(&left_pane));
+    main_box.set_end_child(Some(&right_pane));
 
     let search_bar = gtk::SearchBar::builder()
         .valign(gtk::Align::Start)
@@ -663,7 +684,7 @@ fn build_ui(application: &Application) {
         .application(application)
         .title("SystemD Manager")
         .default_height(600)
-        .default_width(1000)
+        .default_width(1200)
         .child(&main_box)
         .titlebar(&title_bar)
         .build();
@@ -736,7 +757,7 @@ fn build_ui(application: &Application) {
             } else {
                 false
             };
-            println!("sensitive {}", sensitive);
+            //println!("sensitive {}", sensitive);
             ablement_switch.set_sensitive(sensitive);
 
             update_journal(&unit_journal, &unit);
@@ -821,7 +842,7 @@ fn build_icon_label(label_name: &str, icon_name: &str) -> gtk::Box {
     box_container
 }
 
-fn update_active_state(unit : &UnitInfo, state : ActiveState) {
+fn update_active_state(unit: &UnitInfo, state: ActiveState) {
     unit.set_active_state(state as u32);
     unit.set_active_state_icon(state.icon_name().to_owned());
 }
