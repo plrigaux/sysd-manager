@@ -8,6 +8,8 @@ readme = "README.md"
 authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
 documentation = "A GTK4 GUI for managing systemd unit"
 keywords = [ "gtk4", "linux", "systemd" ]
+rust-version = "1.79"
+
 
 [dependencies]
 dbus = "0.9.7"
