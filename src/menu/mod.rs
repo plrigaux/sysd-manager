@@ -9,6 +9,8 @@ use log::error;
 pub mod rowitem;
 
 static LOGO_SVG: &[u8] = include_bytes!("../../resources/icons/sysd-manager.logo.svg");
+pub const APP_TITLE : &str = "SysD Manager";
+
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
@@ -64,9 +66,7 @@ pub fn on_startup(app: &gtk::Application) {
 fn create_about() -> gtk::AboutDialog {
     const VERSION: &str = env!("CARGO_PKG_VERSION");
     const CARGO_PKG_AUTHORS : &str = env!("CARGO_PKG_AUTHORS");
-
     const CARGO_PKG_DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
-
 
     let authors: Vec<&str> = CARGO_PKG_AUTHORS.split(',').collect();
 
@@ -76,12 +76,13 @@ fn create_about() -> gtk::AboutDialog {
     let about = gtk::AboutDialog::builder()
         .authors(authors )
         .name("About")
-        .program_name("SysD Manager")
+        .program_name(APP_TITLE)
         .modal(true)
         .version(VERSION)
         .license_type(gtk::License::Gpl30)
         .comments(CARGO_PKG_DESCRIPTION)
         .logo(&logo)
+        .website("https://github.com/plrigaux/sysd-manager")
         .build();
 
     about
