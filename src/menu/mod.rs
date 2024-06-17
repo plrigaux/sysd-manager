@@ -8,7 +8,7 @@ use log::error;
 
 pub mod rowitem;
 
-static LOGO_SVG: &[u8] = include_bytes!("../../resources/icons/sysd-manager.logo.svg");
+static LOGO_SVG: &[u8] = include_bytes!("../../resources/icons/hicolor/scalable/org.tool.sysd-manager.svg");
 pub const APP_TITLE : &str = "SysD Manager";
 
 

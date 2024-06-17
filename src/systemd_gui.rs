@@ -17,7 +17,7 @@ use gtk::{Application, ApplicationWindow, Orientation};
 use std::cell::RefMut;
 use std::rc::Rc;
 
-const APP_ID: &str = "org.tool.sysd.manager";
+const APP_ID: &str = "org.tool.sysd-manager";
 
 use crate::menu::rowitem;
 

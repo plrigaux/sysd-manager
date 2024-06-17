@@ -1,9 +1,10 @@
 [Desktop Entry]
 Name=Sysd Manager
 Icon=preferences-system
-Exec=systemd-manager-pkexec
+Exec=sysd-manager
 Terminal=false
 Type=Application
+Icon=org.tool.sysd-manager
 StartupNotify=true
 Categories=GNOME;GTK;System;
 Keywords=Systemd;Systemctl;Services;
