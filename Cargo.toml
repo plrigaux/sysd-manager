@@ -6,9 +6,10 @@ license = "GPL-3.0"
 repository = "https://github.com/mmstick/systemd-manager"
 readme = "README.md"
 authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
-documentation = "A GTK4 GUI for managing systemd unit"
+documentation = "A GTK4 GUI for managing systemd units"
+description = "A systemd units manager"
 keywords = [ "gtk4", "linux", "systemd" ]
-rust-version = "1.79"
+rust-version = "1.78"
 
 
 [dependencies]

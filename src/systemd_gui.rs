@@ -682,16 +682,19 @@ fn build_ui(application: &Application) {
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
 
+    const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
+    
     // Create a window
     let window = ApplicationWindow::builder()
         .application(application)
-        .title("SystemD Manager")
+        .title(CARGO_PKG_NAME)
         .default_height(600)
         .default_width(1200)
         .child(&main_box)
         .titlebar(&title_bar)
         .build();
 
+        
     {
         // NOTE: Journal Refresh Button
         let refresh_button = refresh_log_button.clone();

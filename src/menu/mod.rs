@@ -1,4 +1,4 @@
-use gtk::{gio, prelude::ActionMapExtManual};
+use gtk::{glib, gio, gdk, prelude::ActionMapExtManual};
 use gtk::{prelude::*, ListBox};
 use rowitem::Metadata;
 
@@ -7,6 +7,8 @@ use crate::systemd;
 use log::error;
 
 pub mod rowitem;
+
+static LOGO_SVG: &[u8] = include_bytes!("../../resources/icons/sysd-manager.logo.svg");
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
@@ -61,14 +63,25 @@ pub fn on_startup(app: &gtk::Application) {
 
 fn create_about() -> gtk::AboutDialog {
     const VERSION: &str = env!("CARGO_PKG_VERSION");
+    const CARGO_PKG_AUTHORS : &str = env!("CARGO_PKG_AUTHORS");
+
+    const CARGO_PKG_DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
+
+
+    let authors: Vec<&str> = CARGO_PKG_AUTHORS.split(',').collect();
+
+    let bytes = glib::Bytes::from_static(LOGO_SVG);
+    let logo = gdk::Texture::from_bytes(&bytes).expect("gtk-rs.svg to load");
 
     let about = gtk::AboutDialog::builder()
-        .authors(["Pierre-Luc Rigaux"])
+        .authors(authors )
         .name("About")
-        .program_name("SysD manager")
+        .program_name("SysD Manager")
         .modal(true)
         .version(VERSION)
-        .comments("This is comments")
+        .license_type(gtk::License::Gpl30)
+        .comments(CARGO_PKG_DESCRIPTION)
+        .logo(&logo)
         .build();
 
     about

@@ -15,5 +15,6 @@ Based on https://github.com/GuillaumeGomez/systemd-manager/
 ## Contributing
 
 ## Project Roadmap
+For now new features are planned to be added, such 
 
 ## License
