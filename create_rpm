@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "Create a RPM"
+
+cargo build --release
+strip -s target/release/sysd-manager
+cargo generate-rpm
+
+var=$(find ./target/generate-rpm -name 'sysd-manager*')
+echo "RPM generated in $var"
