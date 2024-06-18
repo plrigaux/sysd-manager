@@ -62,8 +62,6 @@ fn build_analyze() -> gtk::Box {
     unit_analyse_box
 }
 
-//https://github.com/gtk-rs/gtk4-rs/blob/master/examples/column_view_datagrid/main.rs
-
 /// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
 fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView {
     let store = gio::ListStore::new::<BoxedAnyObject>();

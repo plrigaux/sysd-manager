@@ -8,6 +8,7 @@ readme = "README.md"
 authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
 documentation = "A GTK4 GUI for managing systemd units"
 description = "A systemd units manager"
+summary = "A systemd units manager"
 keywords = [ "gtk4", "linux", "systemd" ]
 rust-version = "1.78"
 build = "build.rs"
@@ -20,6 +21,20 @@ libc = "0.2"
 env_logger = "0.11.3"
 dotenv = "0.15.0"
 
+
 [build-dependencies]
 glib-build-tools = "0.19.0"
+#cargo-generate-rpm = "0.14.1"
 
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/sysd-manager", dest = "/usr/bin/sysd-manager", mode = "755" },
+    { source = "resources/applications/org.tool.sysd-manager.desktop", dest = "/usr/share/applications/org.tool.sysd-manager.desktop", mode = "644" },
+    { source = "resources/icons/hicolor/scalable/org.tool.sysd-manager.svg", dest = "/usr/share/icons/hicolor/scalable/apps/org.tool.sysd-manager.svg", mode = "644" },
+]
+
+[package.metadata.generate-rpm.requires]
+coreutils = ">= 9"
+polkit = ">= 123"
+systemd = ">= 254"
