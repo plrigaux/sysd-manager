@@ -1,9 +1,9 @@
 [package]
 name = "sysd-manager"
-version = "0.0.1"
+version = "0.0.2"
 edition = '2021'
 license = "GPL-3.0+"
-repository = "https://github.com/mmstick/systemd-manager"
+repository = "https://github.com/plrigaux/sysd-manager"
 readme = "README.md"
 authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
 description = "A UI to manage systemd units"
