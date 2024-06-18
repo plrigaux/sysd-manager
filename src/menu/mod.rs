@@ -1,16 +1,16 @@
-use gtk::{glib, gio, gdk, prelude::ActionMapExtManual};
+use gtk::gio::ResourceLookupFlags;
+use gtk::{gdk, gio, prelude::ActionMapExtManual};
 use gtk::{prelude::*, ListBox};
 use rowitem::Metadata;
 
 use crate::analyze::build_analyze_window;
 use crate::systemd;
-use log::error;
+use log::{error, warn};
 
 pub mod rowitem;
 
-static LOGO_SVG: &[u8] = include_bytes!("../../resources/icons/hicolor/scalable/org.tool.sysd-manager.svg");
-pub const APP_TITLE : &str = "SysD Manager";
-
+//static LOGO_SVG: &[u8] = include_bytes!("../../resources/icons/hicolor/scalable/org.tool.sysd-manager.svg");
+pub const APP_TITLE: &str = "SysD Manager";
 
 fn build_popover_menu() -> gtk::PopoverMenu {
     let menu = gio::Menu::new();
@@ -65,25 +65,33 @@ pub fn on_startup(app: &gtk::Application) {
 
 fn create_about() -> gtk::AboutDialog {
     const VERSION: &str = env!("CARGO_PKG_VERSION");
-    const CARGO_PKG_AUTHORS : &str = env!("CARGO_PKG_AUTHORS");
+    const CARGO_PKG_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
     const CARGO_PKG_DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
 
     let authors: Vec<&str> = CARGO_PKG_AUTHORS.split(',').collect();
 
-    let bytes = glib::Bytes::from_static(LOGO_SVG);
-    let logo = gdk::Texture::from_bytes(&bytes).expect("gtk-rs.svg to load");
-
     let about = gtk::AboutDialog::builder()
-        .authors(authors )
+        .authors(authors)
         .name("About")
         .program_name(APP_TITLE)
         .modal(true)
         .version(VERSION)
         .license_type(gtk::License::Gpl30)
         .comments(CARGO_PKG_DESCRIPTION)
-        .logo(&logo)
         .website("https://github.com/plrigaux/sysd-manager")
         .build();
+
+    //TODO create const for the path prefix
+    match gio::functions::resources_lookup_data(
+        "/org/tool/sysd/manager/org.tool.sysd-manager.svg",
+        ResourceLookupFlags::NONE,
+    ) {
+        Ok(bytes) => {
+            let logo = gdk::Texture::from_bytes(&bytes).expect("gtk-rs.svg to load");
+            about.set_logo(Some(&logo));
+        }
+        Err(e) => warn!("Fail to load logo: {}", e),
+    };
 
     about
 }
@@ -102,7 +110,6 @@ fn build_systemd_info() -> gtk::Window {
 }
 
 fn build_systemd_info_data() -> gtk::ScrolledWindow {
-
     let store = gio::ListStore::new::<rowitem::Metadata>();
 
     let Ok(map) = systemd::fetch_system_info() else {
