@@ -12,6 +12,7 @@ keywords = [ "gtk4", "linux", "systemd" ]
 rust-version = "1.78"
 build = "build.rs"
 
+
 [dependencies]
 dbus = "0.9.7"
 gtk = { version = "0.8.2", package = "gtk4", features = ["v4_12"] }

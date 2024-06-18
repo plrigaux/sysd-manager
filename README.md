@@ -49,11 +49,24 @@ For the moment:
 * Compile code
 * Copy the binary in your PATH
 
-### DNF
-*Soon*
+### RPM
+You can generate a rpm with the help of the crate `cargo-generate-rpm`.
+
+#### Setup 
+```bash
+cargo install cargo-generate-rpm
+```
+#### Usage
+Run the following script. 
+
+```bash
+sh ./create_rpm
+```
+
+It will create a rpm file in the target/generate-rpm subdirectory.
 
 ### Flatpack
-*Soon*
+*Later (need to understand meson)*
 
 ### APT
 *Later*
