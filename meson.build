@@ -8,6 +8,7 @@ project(
   license: 'GPL-3.0+',
 )
 
+gnome = import('gnome')
 
 base_id = 'org.tool.sysd-manager'
 
