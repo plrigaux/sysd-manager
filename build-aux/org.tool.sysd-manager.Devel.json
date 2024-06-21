@@ -1,5 +1,5 @@
 {
-    "id": "org.tool.sysd-manager.Devel",
+    "id": "org.tool.sysd-manager",
     "runtime": "org.gnome.Platform",
     "runtime-version": "46",
     "sdk": "org.gnome.Sdk",
