@@ -1,2 +1,5 @@
 Cargo.lock
 /target/
+/.flatpak/
+/vendor
+/build/
