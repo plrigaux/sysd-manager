@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.belmoussaoui.RustFlatpak</id>
+  <metadata_license>CC0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <name>Rust Flatpak</name>
+  <summary>Rust Flatpak-ed app?</summary>
+  <description>
+    <p>This metainfo is part of a Rust Flatpak-ed application</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://gitlab.gnome.org/World/design/contrast/raw/master/data/resources/screenshots/screenshot1.png</image>
+      <caption>Main Window</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://belmoussaoui.com/</url>
+<!--
+Open Age Rating Service
+https://hughsie.github.io/oars/index.html
+-->
+  <content_rating type="oars-1.0" />
+  <releases>
+    <release version="0.0.1" date="2020-02-08">
+      <description>
+        <p>First release of Rust Flatpak App</p>
+      </description>
+    </release>
+  </releases>
+  <kudos>
+    <!--
+    GNOME Software kudos:
+    https://gitlab.gnome.org/GNOME/gnome-software/blob/master/doc/kudos.md
+    -->
+    <kudo>ModernToolkit</kudo>
+    <kudo>HiDpiIcon</kudo>
+  </kudos>
+  <developer_name>Bilal Elmoussaoui</developer_name>
+  <update_contact>bilal.elmoussaoui@gnome.org</update_contact>
+
+  <launchable type="desktop-id">com.belmoussaoui.RustFlatpak.desktop</launchable>
+</component>
