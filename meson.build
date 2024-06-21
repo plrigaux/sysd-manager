@@ -83,7 +83,7 @@ if get_option('profile') == 'development'
 endif
 
 
-subdir('resources')
+subdir('data')
 #subdir('po') //for language
 subdir('src')
 
