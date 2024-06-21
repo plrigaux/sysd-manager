@@ -11,6 +11,8 @@ keywords = [ "gtk4", "linux", "systemd" ]
 rust-version = "1.78"
 build = "build.rs"
 
+[profile.release]
+lto = true
 
 [dependencies]
 dbus = "0.9.7"
