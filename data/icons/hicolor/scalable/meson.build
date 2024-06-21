@@ -1,5 +1,6 @@
 install_data(
-  '@0@.svg'.format(application_id),
+  #'@0@.svg'.format(application_id),
+  'org.tool.sysd-manager.svg',
   install_dir: iconsdir / 'hicolor' / 'scalable' / 'apps'
 )
 

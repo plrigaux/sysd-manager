@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- https://docs.flathub.org/docs/for-app-authors/metainfo-guidelines/ -->
 <component type="desktop-application">
-  <id>com.belmoussaoui.RustFlatpak</id>
+  <id>org.tool.sysd-manager</id>
   <metadata_license>CC0</metadata_license>
   <project_license>GPL-3.0+</project_license>
-  <name>Rust Flatpak</name>
-  <summary>Rust Flatpak-ed app?</summary>
+  <name>SysD Manager</name>
+  <summary>A GUI to manage systemd units</summary>
   <description>
-    <p>This metainfo is part of a Rust Flatpak-ed application</p>
+    <p>A GUI to manage systemd units</p>
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://gitlab.gnome.org/World/design/contrast/raw/master/data/resources/screenshots/screenshot1.png</image>
-      <caption>Main Window</caption>
+      <image>https://github.com/plrigaux/sysd-manager/tree/main/screenshots/unit%20file.png</image>
+      <caption>Unit Files</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/plrigaux/sysd-manager/tree/main/screenshots/Journal.png</image>
+      <caption>Unit Journal</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/plrigaux/sysd-manager/tree/main/screenshots/analyse%20blame.png</image>
+      <caption>Analyze</caption>
     </screenshot>
   </screenshots>
-  <url type="homepage">https://belmoussaoui.com/</url>
-<!--
+  <url type="homepage">https://github.com/plrigaux/sysd-manager</url>
+  <!--
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
-  <content_rating type="oars-1.0" />
+  <content_rating type="oars-1.1" />
   <releases>
-    <release version="0.0.1" date="2020-02-08">
+    <release version="0.0.2" date="2024-06-21">
       <description>
         <p>First release of Rust Flatpak App</p>
       </description>
@@ -31,12 +40,13 @@ https://hughsie.github.io/oars/index.html
     <!--
     GNOME Software kudos:
     https://gitlab.gnome.org/GNOME/gnome-software/blob/master/doc/kudos.md
+    https://gitlab.gnome.org/Cogitri/gnome-software/-/blob/master/doc/kudos.md?ref_type=heads
     -->
     <kudo>ModernToolkit</kudo>
     <kudo>HiDpiIcon</kudo>
   </kudos>
-  <developer_name>Bilal Elmoussaoui</developer_name>
-  <update_contact>bilal.elmoussaoui@gnome.org</update_contact>
+  <developer_name>Pierre-Luc Rigaux</developer_name>
+  <update_contact>plrigaux@gmail.com</update_contact>
 
-  <launchable type="desktop-id">com.belmoussaoui.RustFlatpak.desktop</launchable>
+  <launchable type="desktop-id">org.tool.sysd-manager.desktop</launchable>
 </component>

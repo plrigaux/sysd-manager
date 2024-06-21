@@ -92,3 +92,5 @@ resources = gnome.compile_resources(
   install: true,
   install_dir: pkgdatadir,
 )
+
+message('Gnome Resources package dir :', pkgdatadir)

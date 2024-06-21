@@ -1,5 +1,5 @@
 {
-    "id": "com.belmoussaoui.GtkRustTemplate.Devel",
+    "id": "org.tool.sysd-manager.Devel",
     "runtime": "org.gnome.Platform",
     "runtime-version": "46",
     "sdk": "org.gnome.Sdk",
@@ -7,7 +7,7 @@
         "org.freedesktop.Sdk.Extension.rust-stable",
         "org.freedesktop.Sdk.Extension.llvm16"
     ],
-    "command": "gtk-rust-template",
+    "command": "sysd-manager",
     "finish-args": [
         "--share=ipc",
         "--socket=fallback-x11",
@@ -36,7 +36,7 @@
     },
     "modules": [
         {
-            "name": "gtk-rust-template",
+            "name": "sysd-manager",
             "buildsystem": "meson",
             "run-tests": true,
             "config-opts": [
