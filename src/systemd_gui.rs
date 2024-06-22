@@ -109,13 +109,13 @@ fn build_ui(application: &Application) {
     let col_description_factory = gtk::SignalListItemFactory::new();
 
     col_unit_name_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_unit_name_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         let v = entry.display_name();
@@ -123,26 +123,26 @@ fn build_ui(application: &Application) {
     });
 
     col_type_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_type_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(Some(&entry.unit_type()));
     });
 
     col_enable_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_enable_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(entry.enable_status().as_deref());
@@ -151,13 +151,13 @@ fn build_ui(application: &Application) {
     });
 
     col_active_state_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let image = gtk::Image::new();
         item.set_child(Some(&image));
     });
 
     col_active_state_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Image>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_icon_name(Some(&entry.active_state_icon()));
@@ -167,13 +167,13 @@ fn build_ui(application: &Application) {
     });
 
     col_description_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_description_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(Some(&entry.description()));

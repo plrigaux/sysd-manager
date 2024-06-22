@@ -19,7 +19,7 @@ dependency('gtk4', version: '>= 4.0.0')
 
 
 find_program('glib-compile-resources')
-glib_compile_schemas = find_program('glib-compile-schemas')
+#glib_compile_schemas = find_program('glib-compile-schemas')
 desktop_file_validate = find_program('desktop-file-validate', required: false)
 appstreamcli = find_program('appstreamcli', required: false)
 cargo = find_program('cargo')

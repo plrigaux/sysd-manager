@@ -10,8 +10,17 @@ impl Analyze {
     /// Returns the results of `systemd-analyze blame`
     pub fn blame() -> Vec<Analyze> {
 
-        let command_output = Command::new("systemd-analyze").arg("blame").output().unwrap().stdout;
-        String::from_utf8(command_output).unwrap()
+        let command_output = match Command::new("systemd-analyze").arg("blame").output(){
+            Ok(output) => output.stdout,
+            Err(e) => {
+                log::warn!("Can't call systemd-analyze:  {:?}", e);
+                return vec![];
+            }
+        };
+
+
+
+        String::from_utf8(command_output).expect("from_utf8 failed")
             .lines().rev().map(|x| {
                 let mut iterator = x.trim().split_whitespace();
                 Analyze {

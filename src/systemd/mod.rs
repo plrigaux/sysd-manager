@@ -10,7 +10,7 @@ use std::string::FromUtf8Error;
 
 use data::UnitInfo;
 use gtk::glib::GString;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use sysdbus::dbus::arg::ArgType;
@@ -323,14 +323,14 @@ pub fn restart_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
 }
 
 pub fn enable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    match  systemctl::enable_unit_files_path(&sytemd_unit.primary()){
+    match systemctl::enable_unit_files_path(&sytemd_unit.primary()) {
         Ok(_) => Ok(EnablementStatus::Enabled),
         Err(e) => Err(e),
     }
 }
 
 pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    match  systemctl::disable_unit_files_path(&sytemd_unit.primary()){
+    match systemctl::disable_unit_files_path(&sytemd_unit.primary()) {
         Ok(_) => Ok(EnablementStatus::Disabled),
         Err(e) => Err(e),
     }
@@ -340,7 +340,13 @@ pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, Sy
 pub fn get_unit_info(unit: &UnitInfo) -> String {
     let mut output = String::new();
     if let Some(file_path) = &unit.file_path() {
-        let mut file = File::open(file_path).unwrap();
+        let mut file = match File::open(file_path) {
+            Ok(f) => f,
+            Err(e) => {
+                warn!("Can't open {file_path}, reason: {:?}", e);
+                return output;
+            }
+        };
         let _ = file.read_to_string(&mut output);
     }
     output
@@ -350,21 +356,33 @@ pub fn get_unit_info(unit: &UnitInfo) -> String {
 pub fn get_unit_journal(unit: &UnitInfo) -> String {
     let unit_path = unit.primary();
 
-    let log = String::from_utf8(
-        Command::new("journalctl")
-            .arg("-b")
-            .arg("-u")
-            .arg(unit_path)
-            .output()
-            .unwrap()
-            .stdout,
-    )
-    .unwrap();
-    log.lines()
+    let outout = match Command::new("journalctl")
+        .arg("-b")
+        .arg("-u")
+        .arg(unit_path)
+        .output()
+    {
+        Ok(output) => output.stdout,
+        Err(e) => {
+            warn!("Can't retreive journal:  {:?}", e);
+            return String::new();
+        }
+    };
+
+    let logs = match String::from_utf8(outout) {
+        Ok(logs) => logs,
+        Err(e) => {
+            warn!("Can't retreive journal:  {:?}", e);
+            return String::new();
+        }
+    };
+
+    logs.lines()
         .rev()
         .map(|x| x.trim())
-        .fold(String::with_capacity(log.len()), |acc, x| acc + "\n" + x)
+        .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x)
 }
+
 pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
     let Some(file_path) = &unit.file_path() else {
         error!("No file path for {}", unit.primary());
