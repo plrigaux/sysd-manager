@@ -7,8 +7,8 @@
         ".flatpak/**": true,
         "_build/**": true
     },
-    "rust-analyzer.server.path": "${workspaceFolder}/.flatpak/rust-analyzer.sh",
-    "rust-analyzer.runnables.command": "${workspaceFolder}/.flatpak/cargo.sh",
+/*     "rust-analyzer.server.path": "${workspaceFolder}/.flatpak/rust-analyzer.sh",
+    "rust-analyzer.runnables.command": "${workspaceFolder}/.flatpak/cargo.sh", */
     "rust-analyzer.files.excludeDirs": [
         ".flatpak",
         ".flatpak-builder",
