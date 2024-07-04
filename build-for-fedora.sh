@@ -16,7 +16,7 @@ echo "Hello"
 case "$1" in
 copr-release)
     CMD=copr
-    COPR_REPO=tools
+    COPR_REPO=sysd-manager
     ;;
 
 copr-testing)

@@ -25,7 +25,7 @@ dotenv = "0.15.0"
 
 
 [build-dependencies]
-glib-build-tools = "0.19.0"
+#glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
 
 
