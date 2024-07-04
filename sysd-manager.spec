@@ -15,7 +15,7 @@ License:        GPL-3.0-or-later
 # LICENSE.dependencies contains a full license breakdown
 
 URL:            https://github.com/plrigaux/sysd-manager
-Source:         # FIXME
+Source:         %{crates_source}
 
 BuildRequires:  cargo-rpm-macros >= 26
 

@@ -70,12 +70,12 @@ rm -rf tmp
 mkdir -p tmp/{SPECS,SOURCES,tmpdir}
 
 echo "${bold}info Info:${normal} make source"
-git archive main --format=tar --prefix=sfind-${RPM_VERSION}/ --output=tmp/SOURCES/sfind-${RPM_VERSION}.crate
+git archive main --format=tar --prefix=sysd-manager-${RPM_VERSION}/ --output=tmp/SOURCES/sysd-manager-${RPM_VERSION}.crate
 cd tmp/SOURCES
 echo "${bold}info Info:${normal} make specfile"
 # rust2rpm fails on one host becuase of some unknown issue with TMPDIR
 # using an empty directory works around the failure
-TMPDIR=$PWD/tmp/tmpdir rust2rpm ./sfind-${RPM_VERSION}.crate
+TMPDIR=$PWD/tmp/tmpdir rust2rpm ./sysd-manager-${RPM_VERSION}.crate
 mv *.spec ../SPECS
 cd ../..
 
@@ -89,14 +89,14 @@ ls -l tmp
 mock \
     --buildsrpm \
     --root ${MOCK_SRPM_ROOT} \
-    --spec tmp/SPECS/rust-sfind.spec \
+    --spec tmp/SPECS/rust-sysd-manager.spec \
     --sources tmp/SOURCES
 
 echo "${bold}info Info:${normal} copy SRPM"
 ls -l /var/lib/mock/${MOCK_SRPM_ROOT}/result
-cp -v /var/lib/mock/${MOCK_SRPM_ROOT}/result/rust-sfind-${RPM_VERSION}-*.src.rpm tmp
+cp -v /var/lib/mock/${MOCK_SRPM_ROOT}/result/rust-sysd-manager-${RPM_VERSION}-*.src.rpm tmp
 
-SRPM=tmp/rust-sfind-${RPM_VERSION}-*.src.rpm
+SRPM=tmp/rust-sysd-manager-${RPM_VERSION}-*.src.rpm
 
 case "$CMD" in
 copr)
@@ -111,9 +111,9 @@ mock)
     mock \
         --rebuild \
         --root ${MOCK_RPM_ROOT} \
-            tmp/rust-sfind-${RPM_VERSION}-*.src.rpm
+            tmp/rust-sysd-manager-${RPM_VERSION}-*.src.rpm
     ls -l /var/lib/mock/${MOCK_RPM_ROOT}/result
-    cp -v /var/lib/mock/${MOCK_RPM_ROOT}/result/sfind-${RPM_VERSION}*${ARCH}.rpm tmp
+    cp -v /var/lib/mock/${MOCK_RPM_ROOT}/result/sysd-manager-${RPM_VERSION}*${ARCH}.rpm tmp
     ;;
 
 *)
