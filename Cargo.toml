@@ -10,7 +10,7 @@ description = "A GUI to manage systemd units"
 keywords = [ "gtk4", "linux", "systemd" ]
 rust-version = "1.78"
 build = "build.rs"
-include = ["build.rs", "/src/**/*.rs", "LICENCE", "README.md"]
+include = ["build.rs", "/src/**/*", "LICENCE", "README.md", "/data/*"]
 
 [profile.release]
 lto = true
