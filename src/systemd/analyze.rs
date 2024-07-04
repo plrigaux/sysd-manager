@@ -18,8 +18,6 @@ impl Analyze {
             }
         };
 
-
-
         String::from_utf8(command_output).expect("from_utf8 failed")
             .lines().rev().map(|x| {
                 let mut iterator = x.trim().split_whitespace();
@@ -30,7 +28,6 @@ impl Analyze {
             }).collect::<Vec<Analyze>>()
     }
 }
-
 
 fn parse_time(input: &str) -> u32 {
     if input.ends_with("ms") {

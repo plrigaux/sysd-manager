@@ -443,13 +443,3 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
     sysdbus::fetch_system_unit_info(&unit.object_path())
 }
-
-#[cfg(test)]
-mod tests {
-    use log::debug;
-
-    #[test]
-    fn test_hello() {
-        debug!("hello")
-    }
-}

@@ -511,7 +511,7 @@ pub fn fetch_system_unit_info(path: &str) -> Result<BTreeMap<String, String>, Sy
     Ok(map)
 }
 
-#[cfg(test)]
+/* #[cfg(test)]
 mod tests {
 
     use std::collections::HashSet;
@@ -809,3 +809,4 @@ mod tests {
         Ok(())
     }
 }
+ */

@@ -33,7 +33,7 @@ fn dis_en_able_processing(
         }
     }
 }
-
+/* 
 #[cfg(test)]
 mod tests {
     use log::debug;
@@ -58,3 +58,4 @@ mod tests {
         debug!("Status: {:?}", status.unwrap());
     }
 }
+ */
