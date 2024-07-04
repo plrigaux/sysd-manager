@@ -6,11 +6,15 @@ fn main() {
     );
 }
 
+// BELOW CODE is COPY of glib-build-tools = "0.19.0" 
+// THE REASON OF THE COPY IS BECAUSE FEDORA COPR DOESN'T HAVE glib-build-tools 
 
 // Take a look at the license at the top of the repository in the LICENSE file.
 
 
 use std::{env, path::Path, process::Command};
+
+
 
 // rustdoc-stripper-ignore-next
 /// Call to run `glib-compile-resources` to generate compiled gresources to embed

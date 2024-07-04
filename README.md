@@ -37,20 +37,64 @@ For now new features are planned to be added, such as:
 * Non-blocking calls
 * Syntax highlighting 
 * Always administrator mode
+* Svec the window state
 * Improve UX
     * Better layout
     * Follow Dark and Light syte switch
 
 ## Installation Instructions
 
-For the moment:
-* Download and install rust 
-* Install needed libraries (GTK4, ...)
-* Compile code
-* Copy the binary in your PATH
 
-### RPM
-You can generate a rpm with the help of the crate `cargo-generate-rpm`.
+### From your computer
+For the moment:
+* Download and install rust https://www.rust-lang.org/tools/install
+* Install needed libraries (GTK4, ...)
+  * Install GTK 4 and the build essentials. https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html
+* Compile and run  ```cargo run```
+
+### Intall on RHEL, Fedora, and CentOS based distributions
+You can install the application from COPR
+
+#### Add the repo
+First, you need to have dnf-plugins-core installed
+```
+sudo dnf install dnf-plugins-core
+```
+
+Then you can enable the repo with the following command
+```
+sudo dnf copr enable plrigaux/sysd-manager
+```
+#### Install with dnf
+
+Then you can simply install sysd-manager with the following command
+```
+sudo dnf install sysd-manager
+```
+
+### Generate a RPM localy
+You can generate youe rpm localy with the help of the crate `cargo-generate-rpm`.
+
+#### Install
+```
+cargo install cargo-generate-rpm
+```
+
+#### Usage
+```
+cargo build --release
+strip -s target/release/sysd-manager
+cargo generate-rpm
+```
+
+#### Install with dnf
+
+Then you can install sysd-manager with the following command 
+
+*Don't forget to ajust the the rpm file path*
+```
+sudo dnf localinstall target/generate-rpm/sysd-manager[version-release-arch].rpm
+```
 
 #### Setup 
 ```bash
@@ -66,7 +110,7 @@ sh ./create_rpm
 It will create a rpm file in the target/generate-rpm subdirectory.
 
 ### Flatpack
-*Later (need to understand meson)*
+*For now Flatpack is too restrictive*
 
 ### APT
 *Later*

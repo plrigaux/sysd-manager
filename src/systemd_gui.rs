@@ -646,7 +646,9 @@ fn build_ui(application: &Application) {
 
             let text = entry1.text();
 
+            //debug!("Filter text \"{text}\"");
             if text.is_empty() {
+                //debug!("Filter empty");
                 return true;
             }
 
@@ -660,22 +662,26 @@ fn build_ui(application: &Application) {
         entry.connect_search_changed(move |entry| {
             let text = entry.text();
 
+            debug!("Search text \"{text}\"");
+
             let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
 
             let change_type = if text.is_empty() {
                 gtk::FilterChange::LessStrict
-            } else if text.len() > last_filter.len() && text.starts_with(last_filter.as_str()) {
+            } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
                 gtk::FilterChange::MoreStrict
-            } else if text.len() < last_filter.len() && last_filter.starts_with(text.as_str()) {
+            } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
                 gtk::FilterChange::LessStrict
             } else {
                 gtk::FilterChange::Different
             };
 
-            debug!("cur {} prev {}", text, last_filter);
+            debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
             last_filter.replace_range(.., text.as_str());
             custom_filter.changed(change_type);
-            unit_col_view_scrolled_window.queue_resize(); //TODO investigate the need
+
+            //FIXME when the filter become empty the colunm view display nothing until you click on it
+            unit_col_view_scrolled_window.queue_draw(); //TODO investigate the need
         });
     }
 
