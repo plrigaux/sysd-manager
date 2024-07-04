@@ -9,9 +9,9 @@ Version:        0.0.2
 Release:        %autorelease
 Summary:        GUI to manage systemd units
 
-SourceLicense:  GPL-3.0+
+SourceLicense:  GPLv3+
 # FIXME: paste output of %%cargo_license_summary here
-License:        # FIXME
+License:        GPL-3.0-or-later
 # LICENSE.dependencies contains a full license breakdown
 
 URL:            https://github.com/plrigaux/sysd-manager
