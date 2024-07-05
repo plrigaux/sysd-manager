@@ -109,13 +109,17 @@ fn build_ui(application: &Application) {
     let col_description_factory = gtk::SignalListItemFactory::new();
 
     col_unit_name_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_unit_name_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         let v = entry.display_name();
@@ -123,26 +127,34 @@ fn build_ui(application: &Application) {
     });
 
     col_type_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_type_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(Some(&entry.unit_type()));
     });
 
     col_enable_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_enable_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(entry.enable_status().as_deref());
@@ -151,13 +163,17 @@ fn build_ui(application: &Application) {
     });
 
     col_active_state_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let image = gtk::Image::new();
         item.set_child(Some(&image));
     });
 
     col_active_state_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Image>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_icon_name(Some(&entry.active_state_icon()));
@@ -167,13 +183,17 @@ fn build_ui(application: &Application) {
     });
 
     col_description_factory.connect_setup(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let row = gtk::Inscription::builder().xalign(0.0).build();
         item.set_child(Some(&row));
     });
 
     col_description_factory.connect_bind(move |_factory, item| {
-        let item = item.downcast_ref::<gtk::ListItem>().expect("item.downcast_ref::<gtk::ListItem>()");
+        let item = item
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
         child.set_text(Some(&entry.description()));
@@ -514,7 +534,7 @@ fn build_ui(application: &Application) {
                 systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
             info!("New Status : {:?}", unit_file_state);
 
-            let enabled_new =  unit_file_state == EnablementStatus::Enabled;
+            let enabled_new = unit_file_state == EnablementStatus::Enabled;
             switch.set_active(enabled_new);
             set_switch_tooltip(enabled_new, switch);
             unit.set_enable_status(unit_file_state.to_string());
@@ -618,25 +638,35 @@ fn build_ui(application: &Application) {
 
     let title_bar_elements = title_bar::build_title_bar(&search_bar);
 
-    let entry = gtk::SearchEntry::new();
-    entry.set_hexpand(true);
-    search_bar.set_child(Some(&entry));
+    let search_entry = gtk::SearchEntry::new();
+    search_entry.set_hexpand(true);
+
+    let search_box = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .build();
+
+    let filter_button = gtk::Button::builder().label("label").build();
+
+    search_box.append(&search_entry);
+    search_box.append(&filter_button);
+
+    search_bar.set_child(Some(&search_box));
 
     {
         let search_button = title_bar_elements.search_button.clone();
-        entry.connect_search_started(move |_| {
+        search_entry.connect_search_started(move |_| {
             search_button.set_active(true);
         });
     }
     {
         let search_button = title_bar_elements.search_button.clone();
-        entry.connect_stop_search(move |_| {
+        search_entry.connect_stop_search(move |_| {
             search_button.set_active(false);
         });
     }
 
     {
-        let entry1 = entry.clone();
+        let entry1 = search_entry.clone();
         let unit_col_view_scrolled_window = unit_col_view_scrolled_window.clone();
         let custom_filter = gtk::CustomFilter::new(move |object| {
             let Some(unit) = object.downcast_ref::<UnitInfo>() else {
@@ -659,7 +689,7 @@ fn build_ui(application: &Application) {
 
         let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
 
-        entry.connect_search_changed(move |entry| {
+        search_entry.connect_search_changed(move |entry| {
             let text = entry.text();
 
             debug!("Search text \"{text}\"");
@@ -688,17 +718,15 @@ fn build_ui(application: &Application) {
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
 
-    
     // Create a window
     let window: ApplicationWindow = ApplicationWindow::builder()
         .application(application)
-        .default_height(600)
-        .default_width(1200)
+        .default_height(720)
+        .default_width(1280)
         .child(&main_box)
         .titlebar(&title_bar_elements.title_bar)
         .build();
 
-        
     {
         // NOTE: Journal Refresh Button
         let refresh_button = refresh_log_button.clone();
