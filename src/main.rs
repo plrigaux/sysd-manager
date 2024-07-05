@@ -10,7 +10,6 @@ mod systemd_gui; // Contains all of the heavy GUI-related work
 use gtk::gio;
 use gtk::glib;
 mod analyze;
-mod menu;
 mod title_bar;
 mod info;
 

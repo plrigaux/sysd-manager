@@ -2,7 +2,7 @@ use gtk::prelude::*;
 use gtk::{self, gio, SingleSelection};
 use log::{debug, error, info, warn};
 
-use crate::{menu, title_bar};
+use crate::title_bar;
 
 use crate::systemd::{self, ActiveState};
 use systemd::{data::UnitInfo, EnablementStatus};
@@ -74,7 +74,7 @@ fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
 pub fn launch() -> glib::ExitCode {
     // Create a new application
     let app = Application::builder().application_id(APP_ID).build();
-    app.connect_startup(menu::on_startup);
+    app.connect_startup(title_bar::on_startup);
     app.connect_activate(build_ui);
 
     app.run()

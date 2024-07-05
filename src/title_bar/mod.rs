@@ -1,4 +1,4 @@
-use crate::menu;
+mod menu;
 use gtk::pango::Weight;
 use gtk::pango::{AttrInt, AttrList};
 use gtk::prelude::{ButtonExt, ObjectExt};
@@ -48,8 +48,13 @@ pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
     }
 }
 
+pub fn on_startup(app: &gtk::Application) {
+    menu::on_startup(app);
+}
+
 pub struct TitleBar {
     pub title_bar: gtk::HeaderBar,
     pub right_bar_label: gtk::Label,
     pub search_button: gtk::ToggleButton,
 }
+
