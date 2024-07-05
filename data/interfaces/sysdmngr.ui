@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.4 -->
+<interface>
+  <!-- interface-name sysdmngr.ui -->
+  <requires lib="gtk" version="4.12"/>
+  <object class="GtkApplicationWindow">
+    <property name="child">
+      <object class="GtkPaned">
+        <property name="end-child">
+          <object class="GtkBox"/>
+        </property>
+        <property name="start-child">
+          <object class="GtkBox"/>
+        </property>
+      </object>
+    </property>
+    <property name="default-height">900</property>
+    <property name="default-width">1600</property>
+  </object>
+</interface>

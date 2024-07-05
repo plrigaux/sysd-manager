@@ -1,7 +1,7 @@
 use gtk::{glib, subclass::prelude::*};
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
-#[template(file = "grid_cell.ui")]
+#[template(resource = "/org/tool/sysd/manager/grid_cell.ui")]
 pub struct GridCell {
     #[template_child]
     // gtk::Inscription requires gtk>=4.8. If you target an older version of gtk, you should switch
