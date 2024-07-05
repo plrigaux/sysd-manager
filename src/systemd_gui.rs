@@ -97,7 +97,7 @@ fn build_ui(application: &Application) {
         store.append(&value);
     }
 
-    let column_view = gtk::ColumnView::builder()
+    let units_browser = gtk::ColumnView::builder()
         //.model(&columnview_selection_model)
         .focusable(true)
         .build();
@@ -224,23 +224,23 @@ fn build_ui(application: &Application) {
         .resizable(true)
         .build();
 
-    column_view.append_column(&col1_unit);
-    column_view.append_column(&col2_unit_type);
-    column_view.append_column(&col3_enable_status);
-    column_view.append_column(&col4_active_state);
-    column_view.append_column(&col5_description);
+    units_browser.append_column(&col1_unit);
+    units_browser.append_column(&col2_unit_type);
+    units_browser.append_column(&col3_enable_status);
+    units_browser.append_column(&col4_active_state);
+    units_browser.append_column(&col5_description);
 
-    let sorter = column_view.sorter();
+    let sorter = units_browser.sorter();
     let sort_model = gtk::SortListModel::new(Some(store), sorter);
     let filtermodel =
         gtk::FilterListModel::new(Some(sort_model.clone()), None::<gtk::CustomFilter>);
     let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
-    column_view.set_model(Some(&columnview_selection_model));
+    units_browser.set_model(Some(&columnview_selection_model));
 
     let unit_col_view_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
         .focusable(true)
-        .child(&column_view)
+        .child(&units_browser)
         .build();
 
     let left_pane = gtk::Box::builder()
@@ -452,7 +452,7 @@ fn build_ui(application: &Application) {
         .build();
 
     {
-        let column_view = column_view.clone();
+        let column_view = units_browser.clone();
         ablement_switch.connect_state_set(move |switch, enabled| {
             // handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
 
@@ -554,7 +554,7 @@ fn build_ui(application: &Application) {
 
     {
         // NOTE: Implement the start button
-        let column_view = column_view.clone();
+        let column_view = units_browser.clone();
         start_button.connect_clicked(move |_button| {
             let unit = get_selected_unit!(column_view);
 
@@ -569,7 +569,7 @@ fn build_ui(application: &Application) {
     }
 
     {
-        let column_view = column_view.clone();
+        let column_view = units_browser.clone();
         stop_button.connect_clicked(move |_button| {
             let unit = get_selected_unit!(column_view);
 
@@ -585,7 +585,7 @@ fn build_ui(application: &Application) {
     }
 
     {
-        let column_view = column_view.clone();
+        let column_view = units_browser.clone();
         restart_button.connect_clicked(move |_| {
             let unit = get_selected_unit!(column_view);
 
@@ -704,7 +704,7 @@ fn build_ui(application: &Application) {
         // NOTE: Journal Refresh Button
         let refresh_button = refresh_log_button.clone();
         let unit_journal = unit_journal_view.clone();
-        let column_view = column_view.clone();
+        let column_view = units_browser.clone();
         refresh_button.connect_clicked(move |_| {
             let unit = get_selected_unit!(column_view);
             update_journal(&unit_journal, &unit);
@@ -714,7 +714,7 @@ fn build_ui(application: &Application) {
     {
         // NOTE: Save Button
         let unit_info = unit_info.clone();
-        let column_view = column_view.clone();
+        let column_view = units_browser.clone();
         save_unit_file_button.connect_clicked(move |_| {
             let buffer = unit_info.buffer();
             let start = buffer.start_iter();
