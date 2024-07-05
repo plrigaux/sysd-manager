@@ -1,0 +1,55 @@
+use crate::menu;
+use gtk::pango::Weight;
+use gtk::pango::{AttrInt, AttrList};
+use gtk::prelude::{ButtonExt, ObjectExt};
+
+pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
+    // ----------------------------------------------
+
+    let title = gtk::Label::builder()
+        .label(menu::APP_TITLE)
+        .single_line_mode(true)
+        .ellipsize(gtk::pango::EllipsizeMode::End)
+        .width_chars(5)
+        .css_classes(["title"])
+        .build();
+
+    let title_bar = gtk::HeaderBar::builder().title_widget(&title).build();
+
+    let menu_button = menu::build_menu();
+
+    title_bar.pack_end(&menu_button);
+
+    let right_bar_label = gtk::Label::builder()
+        .label("Service Name")
+        .attributes(&{
+            let attribute_list = AttrList::new();
+            attribute_list.insert(AttrInt::new_weight(Weight::Bold));
+            attribute_list
+        })
+        .build();
+
+    let search_button = gtk::ToggleButton::new();
+    search_button.set_icon_name("system-search-symbolic");
+    title_bar.pack_start(&search_button);
+
+    title_bar.pack_start(&right_bar_label);
+
+    search_button
+        .bind_property("active", search_bar, "search-mode-enabled")
+        .sync_create()
+        .bidirectional()
+        .build();
+
+    TitleBar {
+        title_bar,
+        right_bar_label,
+        search_button,
+    }
+}
+
+pub struct TitleBar {
+    pub title_bar: gtk::HeaderBar,
+    pub right_bar_label: gtk::Label,
+    pub search_button: gtk::ToggleButton,
+}

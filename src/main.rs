@@ -11,6 +11,8 @@ use gtk::gio;
 use gtk::glib;
 mod analyze;
 mod menu;
+mod title_bar;
+mod info;
 
 use log::{info, warn};
 

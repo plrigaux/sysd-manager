@@ -2,7 +2,7 @@ use gtk::prelude::*;
 use gtk::{self, gio, SingleSelection};
 use log::{debug, error, info, warn};
 
-use crate::menu;
+use crate::{menu, title_bar};
 
 use crate::systemd::{self, ActiveState};
 use systemd::{data::UnitInfo, EnablementStatus};
@@ -19,7 +19,7 @@ use std::rc::Rc;
 
 const APP_ID: &str = "org.tool.sysd-manager";
 
-use crate::menu::rowitem;
+use crate::info::rowitem;
 
 #[macro_export]
 macro_rules! get_selected_unit {
@@ -616,20 +616,20 @@ fn build_ui(application: &Application) {
         // .key_capture_widget(&window)
         .build();
 
-    let (title_bar, right_bar_label, search_button) = build_title_bar(&search_bar);
+    let title_bar_elements = title_bar::build_title_bar(&search_bar);
 
     let entry = gtk::SearchEntry::new();
     entry.set_hexpand(true);
     search_bar.set_child(Some(&entry));
 
     {
-        let search_button = search_button.clone();
+        let search_button = title_bar_elements.search_button.clone();
         entry.connect_search_started(move |_| {
             search_button.set_active(true);
         });
     }
     {
-        let search_button = search_button.clone();
+        let search_button = title_bar_elements.search_button.clone();
         entry.connect_stop_search(move |_| {
             search_button.set_active(false);
         });
@@ -692,11 +692,10 @@ fn build_ui(application: &Application) {
     // Create a window
     let window: ApplicationWindow = ApplicationWindow::builder()
         .application(application)
-        .title(menu::APP_TITLE)
         .default_height(600)
         .default_width(1200)
         .child(&main_box)
-        .titlebar(&title_bar)
+        .titlebar(&title_bar_elements.title_bar)
         .build();
 
         
@@ -728,7 +727,7 @@ fn build_ui(application: &Application) {
         let unit_info = unit_info.clone();
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal_view.clone();
-        let header = right_bar_label.clone();
+        let header_label = title_bar_elements.right_bar_label.clone();
         let unit_prop_store = unit_prop_store.clone();
 
         columnview_selection_model.connect_selected_item_notify(move |single_selection| {
@@ -766,7 +765,7 @@ fn build_ui(application: &Application) {
             handle_switch_sensivity(ablement_status, &ablement_switch);
 
             update_journal(&unit_journal, &unit);
-            header.set_label(&unit.display_name());
+            header_label.set_label(&unit.display_name());
             debug!("Unit {:#?}", unit);
 
             unit_prop_store.remove_all();
@@ -820,41 +819,6 @@ fn handle_switch_sensivity(unit_file_state: EnablementStatus, switch: &gtk::Swit
 
     switch.set_sensitive(sensitive);
     switch.set_tooltip_text(None);
-}
-
-fn build_title_bar(search_bar: &gtk::SearchBar) -> (gtk::HeaderBar, gtk::Label, gtk::ToggleButton) {
-    // ----------------------------------------------
-    let title_bar = gtk::HeaderBar::builder().build();
-
-    let menu_button = menu::build_menu();
-
-    title_bar.pack_end(&menu_button);
-
-    /*    let right_bar = gtk::HeaderBar::builder().hexpand(true)
-    .build(); */
-
-    let right_bar_label = gtk::Label::builder()
-        .label("Service Name")
-        .attributes(&{
-            let attribute_list = AttrList::new();
-            attribute_list.insert(AttrInt::new_weight(Weight::Bold));
-            attribute_list
-        })
-        .build();
-
-    let search_button = gtk::ToggleButton::new();
-    search_button.set_icon_name("system-search-symbolic");
-    title_bar.pack_start(&search_button);
-
-    title_bar.pack_start(&right_bar_label);
-
-    search_button
-        .bind_property("active", search_bar, "search-mode-enabled")
-        .sync_create()
-        .bidirectional()
-        .build();
-
-    (title_bar, right_bar_label, search_button)
 }
 
 fn build_icon_label(label_name: &str, icon_name: &str) -> gtk::Box {
