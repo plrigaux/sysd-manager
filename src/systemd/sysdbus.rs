@@ -80,6 +80,7 @@ pub enum UnitType {
     Swap,
     Unknown(String),
 }
+
 impl UnitType {
     /// Takes the pathname of the unit as input to determine what type of unit it is.
     pub fn new(system_type: &str) -> UnitType {
@@ -139,17 +140,16 @@ fn parse_message(message_item: &MessageItem) -> Result<Vec<SystemdUnit>, Systemd
                 return Err(SystemdErrors::Malformed);
             };
 
-            let state = EnablementStatus::new(&status);
+            let status_code = EnablementStatus::new(&status);
             let utype = UnitType::new(system_type);
 
             let path = systemd_unit.to_owned();
 
             systemd_units.push(SystemdUnit {
                 name: name.to_owned(),
-                state,
+                status_code,
                 utype,
                 path: path,
-                enable_status: status.clone(),
             });
         }
     }
@@ -321,7 +321,7 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
             Some(unit_info) => {
                 unit_info.set_file_path(unit_file.path);
-                unit_info.set_enable_status(unit_file.enable_status);
+                unit_info.set_enable_status(unit_file.status_code as u32);
             }
             None => debug!("unit \"{}\" not found!", unit_file.full_name()),
         }

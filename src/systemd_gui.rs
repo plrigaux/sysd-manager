@@ -157,7 +157,10 @@ fn build_ui(application: &Application) {
             .expect("item.downcast_ref::<gtk::ListItem>()");
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
-        child.set_text(entry.enable_status().as_deref());
+
+        let status_code : EnablementStatus = entry.enable_status().into();
+
+        child.set_text(Some(status_code.to_str()));
 
         entry.bind_property("enable_status", &child, "text").build();
     });
@@ -537,7 +540,7 @@ fn build_ui(application: &Application) {
             let enabled_new = unit_file_state == EnablementStatus::Enabled;
             switch.set_active(enabled_new);
             set_switch_tooltip(enabled_new, switch);
-            unit.set_enable_status(unit_file_state.to_string());
+            unit.set_enable_status(unit_file_state as u32);
 
             handle_switch_sensivity(unit_file_state, switch);
 
@@ -786,7 +789,7 @@ fn build_ui(application: &Application) {
             let ablement_status =
                 systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
 
-            unit.set_enable_status(ablement_status.to_string());
+            unit.set_enable_status(ablement_status as u32);
             ablement_switch.set_active(ablement_status == EnablementStatus::Enabled);
             ablement_switch.set_state(ablement_switch.is_active());
 

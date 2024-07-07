@@ -10,7 +10,7 @@ use std::string::FromUtf8Error;
 
 use data::UnitInfo;
 use gtk::glib::GString;
-use log::{debug, error, info, warn};
+use log::{error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use sysdbus::dbus::arg::ArgType;
@@ -52,10 +52,9 @@ impl From<sysdbus::dbus::Error> for SystemdErrors {
 #[allow(unused)]
 pub struct SystemdUnit {
     pub name: String,
-    pub state: EnablementStatus,
+    pub status_code: EnablementStatus,
     pub utype: UnitType,
     pub path: String,
-    enable_status: String,
 }
 
 impl SystemdUnit {
@@ -67,20 +66,22 @@ impl SystemdUnit {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EnablementStatus {
-    Bad,
-    Disabled,
-    Enabled,
-    Indirect,
-    Linked,
-    Masked,
-    Static,
-    Alias,
-    Generated,
-    Trancient,
-    Unknown,
+    Unasigned = 0,
+    Bad = 1,
+    Disabled = 2,
+    Enabled = 3,
+    Indirect = 4,
+    Linked = 5,
+    Masked = 6,
+    Static = 7,
+    Alias = 8,
+    Generated = 9,
+    Trancient = 10,
+    Unknown = 11,
 }
+
 impl EnablementStatus {
     /// Takes the string containing the state information from the dbus message and converts it
     /// into a UnitType by matching the first character.
@@ -104,13 +105,13 @@ impl EnablementStatus {
             'g' => EnablementStatus::Generated,
             't' => EnablementStatus::Trancient,
             _ => {
-                debug!("Unknown State: {}", enablement_status);
+                info!("Unknown State: {}", enablement_status);
                 EnablementStatus::Unknown
             }
         }
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_str(&self) -> &str {
         let str_label = match self {
             EnablementStatus::Bad => "bad",
             EnablementStatus::Disabled => "disabled",
@@ -122,10 +123,15 @@ impl EnablementStatus {
             EnablementStatus::Alias => "alias",
             EnablementStatus::Generated => "generated",
             EnablementStatus::Trancient => "trancient",
+            EnablementStatus::Unknown => "UNKNOWN",
             _ => "",
         };
 
-        str_label.to_owned()
+        str_label
+    }
+
+    pub fn to_string(&self) -> String {
+        self.to_str().to_owned()
     }
 }
 
@@ -134,7 +140,33 @@ impl From<Option<String>> for EnablementStatus {
         if let Some(str_val) = value {
             return EnablementStatus::new(&str_val);
         }
-        return EnablementStatus::Unknown;
+        return EnablementStatus::Unasigned;
+    }
+}
+
+impl From<EnablementStatus> for u32 {
+    fn from(value: EnablementStatus) -> Self {
+        value as u32
+    }
+}
+
+impl From<u32> for EnablementStatus {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => Self::Unasigned,
+            1 => Self::Bad,
+            2 => Self::Disabled,
+            3 => Self::Enabled,
+            4 => Self::Enabled,
+            5 => Self::Linked,
+            6 => Self::Masked,
+            7 => Self::Static,
+            8 => Self::Alias,
+            9 => Self::Generated,
+            10 => Self::Trancient,
+            11 => Self::Unknown,
+            _ => Self::Unknown,
+        }
     }
 }
 
@@ -190,115 +222,6 @@ impl From<u32> for ActiveState {
         }
     }
 }
-/*
-#[allow(dead_code)]
-#[derive(Debug, Clone, Default)]
-pub struct LoadedUnit {
-    primary: String,
-    description: String,
-    load_state: String,
-    active_state: ActiveState,
-    sub_state: String,
-    followed_unit: String,
-    object_path: String,
-    file_path: Option<String>,
-    enable_status: Option<String>,
-    separator: usize, /*     job_id: u32,
-                      job_type: String,
-                      job_object_path: String, */
-}
-
-/* const STATUS_ENABLED: &str = "enabled";
-const STATUS_DISABLED: &str = "disabled"; */
-
-impl LoadedUnit {
-    pub fn new(
-        primary: &String,
-        description: &String,
-        load_state: &String,
-        active_state: ActiveState,
-        sub_state: &String,
-        followed_unit: &String,
-        object_path: String,
-    ) -> Self {
-        let mut split_char_index = primary.len();
-        for (i, c) in primary.chars().enumerate() {
-            if c == '.' {
-                split_char_index = i;
-            }
-        }
-
-        Self {
-            primary: primary.clone(),
-            description: description.clone(),
-            load_state: load_state.clone(),
-            active_state: active_state,
-            sub_state: sub_state.clone(),
-            followed_unit: followed_unit.clone(),
-            object_path: object_path.to_string(),
-            enable_status: None,
-            file_path: None,
-            separator: split_char_index, /*                   job_id: job_id,
-                                         job_type: job_type.clone(),
-                                         job_object_path: job_object_path.to_string(), */
-        }
-    }
-    pub fn primary(&self) -> &str {
-        &self.primary
-    }
-
-    /*     pub fn is_enable(&self) -> bool {
-        match &self.enable_status {
-            Some(enable_status) => STATUS_ENABLED == enable_status,
-            None => false,
-        }
-    } */
-
-    pub fn enable_status(&self) -> &str {
-        match &self.enable_status {
-            Some(enable_status) => &enable_status,
-            None => "",
-        }
-    }
-
-    pub fn display_name(&self) -> &str {
-        &self.primary[..self.separator]
-    }
-
-    pub fn unit_type(&self) -> &str {
-        &self.primary[(self.separator + 1)..]
-    }
-
-    pub fn active_state(&self) -> &str {
-        &self.active_state.label()
-    }
-
-    pub fn set_active_state(&mut self, state: ActiveState) {
-        self.active_state = state;
-    }
-
-    pub fn active_state_icon(&self) -> &str {
-        &self.active_state.icon_name()
-    }
-
-    pub fn description(&self) -> &str {
-        &self.description
-    }
-
-    pub fn file_path(&self) -> Option<&String> {
-        self.file_path.as_ref()
-    }
-
-    /*     fn is_enable_or_disable(&self) -> bool {
-        match &self.enable_status {
-            Some(enable_status) => {
-                STATUS_ENABLED == enable_status || STATUS_DISABLED == enable_status
-            }
-            None => false,
-        }
-    } */
-}
-*/
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
     return sysdbus::get_unit_file_state_path(&sytemd_unit.primary());
@@ -442,4 +365,57 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
     sysdbus::fetch_system_unit_info(&unit.object_path())
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_enablement_status_any_number() {
+        assert_eq!(
+            <u32 as Into<EnablementStatus>>::into(1000),
+            EnablementStatus::Unknown
+        )
+    }
+
+    #[test]
+    fn test_enablement_status_mapping() {
+        assert_num_mapping(EnablementStatus::Unasigned);
+        assert_num_mapping(EnablementStatus::Bad);
+        assert_num_mapping(EnablementStatus::Enabled);
+        assert_num_mapping(EnablementStatus::Disabled);
+        assert_num_mapping(EnablementStatus::Linked);
+        assert_num_mapping(EnablementStatus::Masked);
+        assert_num_mapping(EnablementStatus::Static);
+        assert_num_mapping(EnablementStatus::Alias);
+        assert_num_mapping(EnablementStatus::Generated);
+        assert_num_mapping(EnablementStatus::Trancient);
+        assert_num_mapping(EnablementStatus::Unknown);
+    }
+
+    fn assert_num_mapping(status: EnablementStatus) {
+        let val = status as u32;
+        let convert: EnablementStatus = val.into();
+        assert_eq!(convert, status)
+    }
+
+    #[test]
+    fn test_active_state_any_number() {
+        assert_eq!(<u32 as Into<ActiveState>>::into(1000), ActiveState::Unknown)
+    }
+
+    #[test]
+    fn test_active_state_mapping() {
+        assert_num_mapping_active_state(ActiveState::Unknown);
+        assert_num_mapping_active_state(ActiveState::Active);
+        assert_num_mapping_active_state(ActiveState::Inactive);
+    }
+
+    fn assert_num_mapping_active_state(status: ActiveState) {
+        let val = status as u32;
+        let convert: ActiveState = val.into();
+        assert_eq!(convert, status)
+    }
 }

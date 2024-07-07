@@ -16,9 +16,8 @@ impl UnitInfo {
         followed_unit: &String,
         object_path: String,
     ) -> Self {
-        let this: Self = glib::Object::new();
-        // this.
-        let imp: &imp::UnitInfo = this.imp();
+        let this_object: Self = glib::Object::new();
+        let imp: &imp::UnitInfo = this_object.imp();
 
         imp.set_primary(primary.to_owned());
         imp.description.replace(description.to_owned());
@@ -30,7 +29,7 @@ impl UnitInfo {
         imp.followed_unit.replace(followed_unit.to_owned());
         imp.object_path.replace(object_path.to_owned());
 
-        this
+        this_object
     }
 }
 
@@ -64,8 +63,8 @@ pub mod imp {
         pub(super) object_path: RefCell<String>,
         #[property(get, set)]
         pub(super) file_path: RefCell<Option<String>>,
-        #[property(get, set)]
-        pub(super) enable_status: RefCell<Option<String>>,
+        #[property(get, set, default = 0)]
+        pub(super) enable_status: Cell<u32>,
     }
 
     #[glib::object_subclass]
