@@ -6,18 +6,18 @@ use strum::EnumIter;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
 pub enum EnablementStatus {
-    Alias = 0,
-    Bad = 1,
-    Disabled = 2,
-    Enabled = 3,
-    Generated = 4,
-    Indirect = 5,
-    Linked = 6,
-    Masked = 7,
-    Static = 8,
-    Trancient = 9,
-    Unknown = 10,
-    Unasigned = 11,
+    Unasigned = 0,
+    Alias = 1,
+    Bad = 2,
+    Disabled = 3,
+    Enabled = 4,
+    Generated = 5,
+    Indirect = 6,
+    Linked = 7,
+    Masked = 8,
+    Static = 9,
+    Trancient = 10,
+    Unknown = 11,
 }
 
 impl EnablementStatus {
@@ -91,19 +91,20 @@ impl From<EnablementStatus> for u32 {
 impl From<u32> for EnablementStatus {
     fn from(value: u32) -> Self {
         match value {
-            0 => Self::Alias,
-            1 => Self::Bad,
-            2 => Self::Disabled,
-            3 => Self::Enabled,
-            4 => Self::Generated,
-            5 => Self::Indirect,
-            6 => Self::Linked,
-            7 => Self::Masked,
-            8 => Self::Static,
-            9 => Self::Trancient,
-            10 => Self::Unknown,
-            11 => Self::Unasigned,
+            0 => Self::Unasigned,
+            1 => Self::Alias,                         
+            2 => Self::Bad,
+            3 => Self::Disabled,
+            4 => Self::Enabled,
+            5 => Self::Generated,
+            6 => Self::Indirect,
+            7 => Self::Linked,
+            8 => Self::Masked,
+            9 => Self::Static,
+            10 => Self::Trancient,
+            11 => Self::Unknown,
             _ => Self::Unknown,
+
         }
     }
 }

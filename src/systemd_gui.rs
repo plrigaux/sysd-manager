@@ -661,7 +661,11 @@ fn build_ui(application: &Application) {
         filter_button_unit_type.add_item(unit_type.to_str());
     }
 
-    for status in EnablementStatus::iter().filter(|x| *x != EnablementStatus::Unknown) {
+    for status in EnablementStatus::iter().filter(|x| match *x {
+        EnablementStatus::Unknown => false,
+        EnablementStatus::Unasigned => false,
+        _ => true,
+    }) {
         filter_button_status.add_item(status.to_str());
     }
 
