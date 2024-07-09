@@ -6,8 +6,15 @@ use gtk::{glib, prelude::*, subclass::prelude::*};
 pub struct ExMenuButton {
     #[template_child]
     pub toggle: TemplateChild<gtk::ToggleButton>,
+
     #[template_child]
     pub popover: TemplateChild<gtk::Popover>,
+
+    #[template_child]
+    pub button_label: TemplateChild<gtk::Label>,
+
+    #[template_child]
+    pub pop_content: TemplateChild<gtk::Box>,
 }
 
 #[glib::object_subclass]

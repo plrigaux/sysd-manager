@@ -12,7 +12,7 @@
           <object class="GtkBox">
             <property name="spacing">6</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="button_label">
                 <property name="label">Custom Menu</property>
                 <style>
                   <class name="title"/>
@@ -32,8 +32,13 @@
       <object class="GtkPopover" id="popover">
         <signal name="closed" handler="popover_closed" swapped="true"/>
         <property name="child">
-          <object class="GtkLabel">
-            <property name="label">Hello from a custom child widget!</property>
+          <object class="GtkBox" id="pop_content">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkButton">
+                <property name="label">clear</property>
+              </object>
+            </child>           
           </object>
         </property>
       </object>

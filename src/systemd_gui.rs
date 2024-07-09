@@ -2,11 +2,12 @@ use gtk::prelude::*;
 use gtk::{self, gio, SingleSelection};
 use log::{debug, error, info, warn};
 
+use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::title_bar;
 
-use crate::systemd::{self, ActiveState};
+use crate::systemd;
 use crate::widget::menu_button::ExMenuButton;
-use systemd::{data::UnitInfo, EnablementStatus};
+use systemd::data::UnitInfo;
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};
@@ -18,9 +19,10 @@ use gtk::{Application, ApplicationWindow, Orientation};
 use std::cell::RefMut;
 use std::rc::Rc;
 
-const APP_ID: &str = "org.tool.sysd-manager";
-
 use crate::info::rowitem;
+use strum::IntoEnumIterator;
+
+const APP_ID: &str = "org.tool.sysd-manager";
 
 #[macro_export]
 macro_rules! get_selected_unit {
@@ -159,7 +161,7 @@ fn build_ui(application: &Application) {
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
 
-        let status_code : EnablementStatus = entry.enable_status().into();
+        let status_code: EnablementStatus = entry.enable_status().into();
 
         child.set_text(Some(status_code.to_str()));
 
@@ -649,34 +651,23 @@ fn build_ui(application: &Application) {
         .orientation(Orientation::Horizontal)
         .build();
 
-    let filter_button_state = gtk::Button::builder().label("state").build();
-    let filter_button_status = gtk::Button::builder().label("status").build();
-    let mb = ExMenuButton::default();
+    let filter_button_unit_type = ExMenuButton::new("Type");
+    let filter_button_status = ExMenuButton::new("Status");
 
-    let pop_state =  gtk::Popover::builder()
-    .build();
+    for unit_type in UnitType::iter().filter(|x| match *x {
+        UnitType::Unknown(_) => false,
+        _ => true,
+    }) {
+        filter_button_unit_type.add_item(unit_type.to_str());
+    }
 
-    let pop_status =  gtk::Popover::builder().build();
-
-    pop_state.set_parent(&filter_button_state);
-    pop_status.set_parent(&filter_button_status);
-
-  /*   filter_button_state.set_pop(Some(&pop_state));
-    filter_button_status.set_child(Some(&pop_status)); */
-
+    for status in EnablementStatus::iter().filter(|x| *x != EnablementStatus::Unknown) {
+        filter_button_status.add_item(status.to_str());
+    }
 
     search_box.append(&search_entry);
-    search_box.append(&filter_button_state);
+    search_box.append(&filter_button_unit_type);
     search_box.append(&filter_button_status);
-    search_box.append(&mb);
-
-    filter_button_state.connect_clicked(move |_| {
-        pop_state.set_visible(true);
-    });
-
-    filter_button_status.connect_clicked(move |_| {
-        pop_status.set_visible(true);
-    });
 
     search_bar.set_child(Some(&search_box));
 

@@ -3,7 +3,6 @@ pub extern crate dbus;
 use std::collections::BTreeMap;
 
 use log::debug;
-use log::info;
 use log::trace;
 
 use dbus::arg::messageitem::MessageItem;
@@ -11,9 +10,10 @@ use dbus::arg::messageitem::Props;
 use dbus::Message;
 
 use crate::systemd::data::UnitInfo;
-use crate::systemd::ActiveState;
+use crate::systemd::enums::ActiveState;
+use crate::systemd::enums::UnitType;
 
-use super::EnablementStatus;
+use super::enums::EnablementStatus;
 
 
 use super::SystemdErrors;
@@ -64,45 +64,6 @@ fn dbus_property() -> Result<(), Error> {
     Ok(())
 
 } */
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum UnitType {
-    Automount,
-    Busname,
-    Mount,
-    Path,
-    Scope,
-    Service,
-    Slice,
-    Socket,
-    Target,
-    Timer,
-    Swap,
-    Unknown(String),
-}
-
-impl UnitType {
-    /// Takes the pathname of the unit as input to determine what type of unit it is.
-    pub fn new(system_type: &str) -> UnitType {
-        match system_type {
-            "automount" => UnitType::Automount,
-            "busname" => UnitType::Busname,
-            "mount" => UnitType::Mount,
-            "path" => UnitType::Path,
-            "scope" => UnitType::Scope,
-            "service" => UnitType::Service,
-            "slice" => UnitType::Slice,
-            "socket" => UnitType::Socket,
-            "target" => UnitType::Target,
-            "timer" => UnitType::Timer,
-            "swap" => UnitType::Swap,
-            _ => {
-                info!("Unknown Type: {}", system_type);
-                UnitType::Unknown(system_type.to_string())
-            }
-        }
-    }
-}
 
 /// Takes the dbus message as input and maps the information to a `Vec<SystemdUnit>`.
 fn parse_message(message_item: &MessageItem) -> Result<Vec<SystemdUnit>, SystemdErrors> {

@@ -1,4 +1,4 @@
-use super::ActiveState;
+use super::enums::ActiveState;
 use crate::gtk::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib;
 

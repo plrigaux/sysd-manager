@@ -4,19 +4,18 @@ mod sysdbus;
 mod systemctl;
 
 use std::collections::BTreeMap;
-use std::fmt::Display;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 
 use data::UnitInfo;
+use enums::{EnablementStatus, UnitType};
 use gtk::glib::GString;
 use log::{error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use sysdbus::dbus::arg::ArgType;
-use sysdbus::UnitType;
 
-use gtk::glib;
+pub mod enums;
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -66,162 +65,6 @@ impl SystemdUnit {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum EnablementStatus {
-    Unasigned = 0,
-    Bad = 1,
-    Disabled = 2,
-    Enabled = 3,
-    Indirect = 4,
-    Linked = 5,
-    Masked = 6,
-    Static = 7,
-    Alias = 8,
-    Generated = 9,
-    Trancient = 10,
-    Unknown = 11,
-}
-
-impl EnablementStatus {
-    /// Takes the string containing the state information from the dbus message and converts it
-    /// into a UnitType by matching the first character.
-    pub fn new(enablement_status: &str) -> EnablementStatus {
-        if enablement_status.is_empty() {
-            error!("Empty Status: {}", enablement_status);
-            return EnablementStatus::Unknown;
-        }
-
-        let c = enablement_status.chars().next().unwrap();
-
-        match c {
-            'a' => EnablementStatus::Alias,
-            's' => EnablementStatus::Static,
-            'd' => EnablementStatus::Disabled,
-            'e' => EnablementStatus::Enabled,
-            'i' => EnablementStatus::Indirect,
-            'l' => EnablementStatus::Linked,
-            'm' => EnablementStatus::Masked,
-            'b' => EnablementStatus::Bad,
-            'g' => EnablementStatus::Generated,
-            't' => EnablementStatus::Trancient,
-            _ => {
-                info!("Unknown State: {}", enablement_status);
-                EnablementStatus::Unknown
-            }
-        }
-    }
-
-    pub fn to_str(&self) -> &str {
-        let str_label = match self {
-            EnablementStatus::Bad => "bad",
-            EnablementStatus::Disabled => "disabled",
-            EnablementStatus::Enabled => "enabled",
-            EnablementStatus::Indirect => "indirect",
-            EnablementStatus::Linked => "linked",
-            EnablementStatus::Masked => "masked",
-            EnablementStatus::Static => "static",
-            EnablementStatus::Alias => "alias",
-            EnablementStatus::Generated => "generated",
-            EnablementStatus::Trancient => "trancient",
-            EnablementStatus::Unknown => "UNKNOWN",
-            _ => "",
-        };
-
-        str_label
-    }
-
-    pub fn to_string(&self) -> String {
-        self.to_str().to_owned()
-    }
-}
-
-impl From<Option<String>> for EnablementStatus {
-    fn from(value: Option<String>) -> Self {
-        if let Some(str_val) = value {
-            return EnablementStatus::new(&str_val);
-        }
-        return EnablementStatus::Unasigned;
-    }
-}
-
-impl From<EnablementStatus> for u32 {
-    fn from(value: EnablementStatus) -> Self {
-        value as u32
-    }
-}
-
-impl From<u32> for EnablementStatus {
-    fn from(value: u32) -> Self {
-        match value {
-            0 => Self::Unasigned,
-            1 => Self::Bad,
-            2 => Self::Disabled,
-            3 => Self::Enabled,
-            4 => Self::Enabled,
-            5 => Self::Linked,
-            6 => Self::Masked,
-            7 => Self::Static,
-            8 => Self::Alias,
-            9 => Self::Generated,
-            10 => Self::Trancient,
-            11 => Self::Unknown,
-            _ => Self::Unknown,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, glib::Enum)]
-#[enum_type(name = "ActiveState")]
-#[enum_dynamic]
-pub enum ActiveState {
-    Unknown = 0,
-    Active = 1,
-    #[default]
-    Inactive = 2,
-}
-
-impl ActiveState {
-    fn label(&self) -> &str {
-        match self {
-            ActiveState::Active => "active",
-            ActiveState::Inactive => "inactive",
-            ActiveState::Unknown => "unknown",
-        }
-    }
-
-    pub fn icon_name(&self) -> &str {
-        match self {
-            ActiveState::Active => "object-select-symbolic",
-            ActiveState::Inactive => "window-close-symbolic",
-            ActiveState::Unknown => "action-unavailable-symbolic",
-        }
-    }
-
-    fn from_str(input: &str) -> Self {
-        match input {
-            "active" => ActiveState::Active,
-            "inactive" => ActiveState::Inactive,
-            _ => ActiveState::Unknown,
-        }
-    }
-}
-
-impl Display for ActiveState {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.label())
-    }
-}
-
-impl From<u32> for ActiveState {
-    fn from(value: u32) -> Self {
-        match value {
-            0 => Self::Unknown,
-            1 => Self::Active,
-            2 => Self::Inactive,
-            _ => Self::Unknown,
-        }
-    }
-}
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
     return sysdbus::get_unit_file_state_path(&sytemd_unit.primary());
@@ -365,57 +208,4 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
     sysdbus::fetch_system_unit_info(&unit.object_path())
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_enablement_status_any_number() {
-        assert_eq!(
-            <u32 as Into<EnablementStatus>>::into(1000),
-            EnablementStatus::Unknown
-        )
-    }
-
-    #[test]
-    fn test_enablement_status_mapping() {
-        assert_num_mapping(EnablementStatus::Unasigned);
-        assert_num_mapping(EnablementStatus::Bad);
-        assert_num_mapping(EnablementStatus::Enabled);
-        assert_num_mapping(EnablementStatus::Disabled);
-        assert_num_mapping(EnablementStatus::Linked);
-        assert_num_mapping(EnablementStatus::Masked);
-        assert_num_mapping(EnablementStatus::Static);
-        assert_num_mapping(EnablementStatus::Alias);
-        assert_num_mapping(EnablementStatus::Generated);
-        assert_num_mapping(EnablementStatus::Trancient);
-        assert_num_mapping(EnablementStatus::Unknown);
-    }
-
-    fn assert_num_mapping(status: EnablementStatus) {
-        let val = status as u32;
-        let convert: EnablementStatus = val.into();
-        assert_eq!(convert, status)
-    }
-
-    #[test]
-    fn test_active_state_any_number() {
-        assert_eq!(<u32 as Into<ActiveState>>::into(1000), ActiveState::Unknown)
-    }
-
-    #[test]
-    fn test_active_state_mapping() {
-        assert_num_mapping_active_state(ActiveState::Unknown);
-        assert_num_mapping_active_state(ActiveState::Active);
-        assert_num_mapping_active_state(ActiveState::Inactive);
-    }
-
-    fn assert_num_mapping_active_state(status: ActiveState) {
-        let val = status as u32;
-        let convert: ActiveState = val.into();
-        assert_eq!(convert, status)
-    }
 }
