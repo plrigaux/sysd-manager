@@ -4,14 +4,14 @@ extern crate gtk;
 extern crate env_logger;
 extern crate log;
 
-mod grid_cell;
+
 mod systemd;
 mod systemd_gui; // Contains all of the heavy GUI-related work
 use gtk::gio;
 use gtk::glib;
 mod analyze;
-mod title_bar;
 mod info;
+mod widget;
 
 use log::{info, warn};
 

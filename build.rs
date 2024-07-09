@@ -6,15 +6,12 @@ fn main() {
     );
 }
 
-// BELOW CODE is COPY of glib-build-tools = "0.19.0" 
-// THE REASON OF THE COPY IS BECAUSE FEDORA COPR DOESN'T HAVE glib-build-tools 
+// BELOW CODE is COPY of glib-build-tools = "0.19.0"
+// THE REASON OF THE COPY IS BECAUSE FEDORA COPR DOESN'T HAVE glib-build-tools
 
 // Take a look at the license at the top of the repository in the LICENSE file.
 
-
 use std::{env, path::Path, process::Command};
-
-
 
 // rustdoc-stripper-ignore-next
 /// Call to run `glib-compile-resources` to generate compiled gresources to embed
@@ -44,6 +41,7 @@ pub fn compile_resources<P: AsRef<Path>>(source_dirs: &[P], gresource: &str, tar
         .output()
         .unwrap();
 
+    println!("CMD: {:?}", output);
     assert!(
         output.status.success(),
         "glib-compile-resources failed with exit status {} and stderr:\n{}",

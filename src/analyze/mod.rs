@@ -1,7 +1,7 @@
 use std::cell::Ref;
 
 use crate::{
-    grid_cell::{Entry, GridCell},
+    widget::grid_cell::{Entry, GridCell},
     systemd::analyze::Analyze,
 };
 use gtk::prelude::*;

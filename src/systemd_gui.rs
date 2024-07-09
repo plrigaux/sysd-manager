@@ -2,9 +2,10 @@ use gtk::prelude::*;
 use gtk::{self, gio, SingleSelection};
 use log::{debug, error, info, warn};
 
-use crate::title_bar;
+use crate::widget::title_bar;
 
 use crate::systemd::{self, ActiveState};
+use crate::widget::menu_button::ExMenuButton;
 use systemd::{data::UnitInfo, EnablementStatus};
 
 use self::pango::{AttrInt, AttrList};
@@ -648,10 +649,34 @@ fn build_ui(application: &Application) {
         .orientation(Orientation::Horizontal)
         .build();
 
-    let filter_button = gtk::Button::builder().label("label").build();
+    let filter_button_state = gtk::Button::builder().label("state").build();
+    let filter_button_status = gtk::Button::builder().label("status").build();
+    let mb = ExMenuButton::default();
+
+    let pop_state =  gtk::Popover::builder()
+    .build();
+
+    let pop_status =  gtk::Popover::builder().build();
+
+    pop_state.set_parent(&filter_button_state);
+    pop_status.set_parent(&filter_button_status);
+
+  /*   filter_button_state.set_pop(Some(&pop_state));
+    filter_button_status.set_child(Some(&pop_status)); */
+
 
     search_box.append(&search_entry);
-    search_box.append(&filter_button);
+    search_box.append(&filter_button_state);
+    search_box.append(&filter_button_status);
+    search_box.append(&mb);
+
+    filter_button_state.connect_clicked(move |_| {
+        pop_state.set_visible(true);
+    });
+
+    filter_button_status.connect_clicked(move |_| {
+        pop_status.set_visible(true);
+    });
 
     search_bar.set_child(Some(&search_box));
 
