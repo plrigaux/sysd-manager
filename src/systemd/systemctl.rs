@@ -1,17 +1,20 @@
-use super::SystemdErrors;
-use std::process::Command;
+use super::{commander, SystemdErrors};
 use log::error;
+
+const SYSTEMCTL: &str = "systemctl";
+const ENABLE: &str = "enable";
+const DISABLE: &str = "disable";
 
 // Takes the unit pathname of a service and enables it via dbus.
 /// If dbus replies with `[Bool(true), Array([], "(sss)")]`, the service is already enabled.
 pub fn enable_unit_files_path(unit: &str) -> Result<String, SystemdErrors> {
-    let command_output = Command::new("systemctl").arg("enable").arg(unit).output();
-    dis_en_able_processing(command_output, "enable")
+    let command_output = commander(&[SYSTEMCTL, ENABLE, unit]).output();
+    dis_en_able_processing(command_output, ENABLE)
 }
 
 pub fn disable_unit_files_path(unit: &str) -> Result<String, SystemdErrors> {
-    let command_output = Command::new("systemctl").arg("disable").arg(unit).output();
-    dis_en_able_processing(command_output, "disable")
+    let command_output = commander(&[SYSTEMCTL, DISABLE, unit]).output();
+    dis_en_able_processing(command_output, DISABLE)
 }
 
 fn dis_en_able_processing(
@@ -28,7 +31,7 @@ fn dis_en_able_processing(
             }
         }
         Err(error) => {
-            error!("systemctl {} error {}", action, error);
+            error!("{} {} error {}", SYSTEMCTL, action, error);
             Err(error.into())
         }
     }

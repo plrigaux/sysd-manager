@@ -20,6 +20,7 @@ pub mod enums;
 
 const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
 const FLATPACK: &str = "flatpack";
+const JOURNALCTL: &str = "journalctl";
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -109,15 +110,34 @@ pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, Sy
 pub fn get_unit_info(unit: &UnitInfo) -> String {
     let mut output = String::new();
     if let Some(file_path) = &unit.file_path() {
-        let mut file = match File::open(file_path) {
-            Ok(f) => f,
-            Err(e) => {
-                warn!("Can't open file \"{file_path}\", reason: {:?}", e);
-                return output;
+        if is_flatpak_mode() {
+            match commander(&["cat", file_path]).output() {
+                Ok(cat_output) => {
+                    match String::from_utf8(cat_output.stdout) {
+                        Ok(content) => output.push_str(&content),
+                        Err(e) => {
+                            warn!("Can't retreive journal:  {:?}", e);
+                            return String::new();
+                        }
+                    };
+                }
+                Err(e) => {
+                    warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
+                    return output;
+                }
             }
-        };
-        let _ = file.read_to_string(&mut output);
+        } else {
+            let mut file = match File::open(file_path) {
+                Ok(f) => f,
+                Err(e) => {
+                    warn!("Can't open file \"{file_path}\", reason: {:?}", e);
+                    return output;
+                }
+            };
+            let _ = file.read_to_string(&mut output);
+        }
     }
+
     output
 }
 
@@ -125,13 +145,7 @@ pub fn get_unit_info(unit: &UnitInfo) -> String {
 pub fn get_unit_journal(unit: &UnitInfo) -> String {
     let unit_path = unit.primary();
 
-    let output = if is_flatpak_mode() {
-        Command::new("flatpak-spawn").arg("--host").arg("journalctl").arg("-b").arg("-u").arg(unit_path).output()
-    } else {
-        Command::new("journalctl").arg("-b").arg("-u").arg(unit_path).output()
-    };
-
-    let outout = match output {
+    let outout = match commander(&[JOURNALCTL, "-b", "-u", &unit_path]).output() {
         Ok(output) => output.stdout,
         Err(e) => {
             warn!("Can't retreive journal:  {:?}", e);
@@ -153,11 +167,30 @@ pub fn get_unit_journal(unit: &UnitInfo) -> String {
         .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x)
 }
 
-fn is_flatpak_mode() -> bool {
+pub fn is_flatpak_mode() -> bool {
     match env::var(SYSDMNG_DIST_MODE) {
         Ok(val) => FLATPACK.eq(&val),
         Err(_) => false,
     }
+}
+
+pub fn commander(prog_n_args: &[&str]) -> Command {
+    let output = if is_flatpak_mode() {
+        let mut cmd = Command::new("flatpak-spawn");
+        cmd.arg("--host");
+        for v in prog_n_args {
+            cmd.arg(v);
+        }
+        cmd
+    } else {
+        let mut cmd = Command::new(prog_n_args[0]);
+
+        for i in 1..prog_n_args.len() {
+            cmd.arg(prog_n_args[i]);
+        }
+        cmd
+    };
+    output
 }
 
 pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
