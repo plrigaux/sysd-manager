@@ -32,7 +32,7 @@ impl UnitInfo {
         this_object
     }
 }
- 
+
 pub mod imp {
     use std::cell::{Cell, RefCell};
 
@@ -63,8 +63,8 @@ pub mod imp {
         pub(super) object_path: RefCell<String>,
         #[property(get, set)]
         pub(super) file_path: RefCell<Option<String>>,
-        #[property(get, set, default = 0)]
-        pub(super) enable_status: Cell<u32>,
+        #[property(get, set, default = None)]
+        pub(super) enable_status: RefCell<Option<String>>,
     }
 
     #[glib::object_subclass]
@@ -95,6 +95,5 @@ pub mod imp {
                 .replace((&primary[(split_char_index + 1)..]).to_owned());
             self.primary.replace(primary);
         }
-
     }
 }

@@ -543,7 +543,7 @@ fn build_ui(application: &Application) {
             let enabled_new = unit_file_state == EnablementStatus::Enabled;
             switch.set_active(enabled_new);
             set_switch_tooltip(enabled_new, switch);
-            unit.set_enable_status(unit_file_state as u32);
+            unit.set_enable_status(unit_file_state.to_string());
 
             handle_switch_sensivity(unit_file_state, switch);
 
@@ -663,7 +663,7 @@ fn build_ui(application: &Application) {
 
     for status in EnablementStatus::iter().filter(|x| match *x {
         EnablementStatus::Unknown => false,
-        EnablementStatus::Unasigned => false,
+        //EnablementStatus::Unasigned => false,
         _ => true,
     }) {
         filter_button_status.add_item(status.to_str());
@@ -821,7 +821,7 @@ fn build_ui(application: &Application) {
             let ablement_status =
                 systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
 
-            unit.set_enable_status(ablement_status as u32);
+            unit.set_enable_status(ablement_status.to_string());
             ablement_switch.set_active(ablement_status == EnablementStatus::Enabled);
             ablement_switch.set_state(ablement_switch.is_active());
 

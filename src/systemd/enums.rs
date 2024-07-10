@@ -1,12 +1,12 @@
 use gtk::glib;
-use log::error;
+use log::warn;
 use log::info;
 use std::fmt::Display;
 use strum::EnumIter;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
 pub enum EnablementStatus {
-    Unasigned = 0,
+    Unknown = 0,
     Alias = 1,
     Bad = 2,
     Disabled = 3,
@@ -17,7 +17,6 @@ pub enum EnablementStatus {
     Masked = 8,
     Static = 9,
     Trancient = 10,
-    Unknown = 11,
 }
 
 impl EnablementStatus {
@@ -25,8 +24,8 @@ impl EnablementStatus {
     /// into a UnitType by matching the first character.
     pub fn new(enablement_status: &str) -> EnablementStatus {
         if enablement_status.is_empty() {
-            error!("Empty Status: {}", enablement_status);
-            return EnablementStatus::Unasigned;
+            warn!("Empty Enablement Status: \"{}\"", enablement_status);
+            return EnablementStatus::Unknown;
         }
 
         let c = enablement_status.chars().next().unwrap();
@@ -43,7 +42,7 @@ impl EnablementStatus {
             'g' => EnablementStatus::Generated,
             't' => EnablementStatus::Trancient,
             _ => {
-                info!("Unknown State: {}", enablement_status);
+                warn!("Unknown State: {}", enablement_status);
                 EnablementStatus::Unknown
             }
         }
@@ -61,8 +60,7 @@ impl EnablementStatus {
             EnablementStatus::Static => "static",
             EnablementStatus::Generated => "generated",
             EnablementStatus::Trancient => "trancient",
-            EnablementStatus::Unknown => "UNKNOWN",
-            _ => "",
+            EnablementStatus::Unknown => "",
         };
 
         str_label
@@ -78,7 +76,7 @@ impl From<Option<String>> for EnablementStatus {
         if let Some(str_val) = value {
             return EnablementStatus::new(&str_val);
         }
-        return EnablementStatus::Unasigned;
+        return EnablementStatus::Unknown;
     }
 }
 
@@ -91,7 +89,7 @@ impl From<EnablementStatus> for u32 {
 impl From<u32> for EnablementStatus {
     fn from(value: u32) -> Self {
         match value {
-            0 => Self::Unasigned,
+            0 => Self::Unknown,
             1 => Self::Alias,                         
             2 => Self::Bad,
             3 => Self::Disabled,
@@ -102,7 +100,6 @@ impl From<u32> for EnablementStatus {
             8 => Self::Masked,
             9 => Self::Static,
             10 => Self::Trancient,
-            11 => Self::Unknown,
             _ => Self::Unknown,
 
         }
@@ -166,15 +163,16 @@ impl From<u32> for ActiveState {
 pub enum UnitType {
     Automount,
     Busname,
+    Device,
     Mount,
     Path,
     Scope,
     Service,
     Slice,
     Socket,
-    Target,
-    Timer,
     Swap,
+    Target,
+    Timer,    
     Unknown(String),
 }
 
@@ -184,15 +182,16 @@ impl UnitType {
         match system_type {
             "automount" => UnitType::Automount,
             "busname" => UnitType::Busname,
+            "device" => UnitType::Device,
             "mount" => UnitType::Mount,
             "path" => UnitType::Path,
             "scope" => UnitType::Scope,
             "service" => UnitType::Service,
             "slice" => UnitType::Slice,
             "socket" => UnitType::Socket,
-            "target" => UnitType::Target,
-            "timer" => UnitType::Timer,
             "swap" => UnitType::Swap,
+            "target" => UnitType::Target,
+            "timer" => UnitType::Timer,          
             _ => {
                 info!("Unknown Type: {}", system_type);
                 UnitType::Unknown(system_type.to_string())
@@ -204,6 +203,7 @@ impl UnitType {
         let str_label = match self {
             Self::Automount => "automount",
             Self::Busname => "busname",
+            Self::Device => "device",
             Self::Mount => "mount",
             Self::Path => "path",
             Self::Scope => "scope",
@@ -235,7 +235,7 @@ mod tests {
 
     #[test]
     fn test_enablement_status_mapping() {
-        assert_num_mapping(EnablementStatus::Unasigned);
+        //assert_num_mapping(EnablementStatus::Unasigned);
         assert_num_mapping(EnablementStatus::Bad);
         assert_num_mapping(EnablementStatus::Enabled);
         assert_num_mapping(EnablementStatus::Disabled);

@@ -282,7 +282,7 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
             Some(unit_info) => {
                 unit_info.set_file_path(unit_file.path);
-                unit_info.set_enable_status(unit_file.status_code as u32);
+                unit_info.set_enable_status(unit_file.status_code.to_string());
             }
             None => debug!("unit \"{}\" not found!", unit_file.full_name()),
         }
