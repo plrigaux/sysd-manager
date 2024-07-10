@@ -106,7 +106,7 @@ impl From<u32> for EnablementStatus {
     }
 }
 
-#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, glib::Enum)]
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, glib::Enum, EnumIter)]
 #[enum_type(name = "ActiveState")]
 #[enum_dynamic]
 pub enum ActiveState {
@@ -117,7 +117,7 @@ pub enum ActiveState {
 }
 
 impl ActiveState {
-    fn label(&self) -> &str {
+    pub fn label(&self) -> &str {
         match self {
             ActiveState::Active => "active",
             ActiveState::Inactive => "inactive",

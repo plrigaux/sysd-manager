@@ -652,7 +652,8 @@ fn build_ui(application: &Application) {
         .build();
 
     let mut filter_button_unit_type = ExMenuButton::new("Type");
-    let mut filter_button_status = ExMenuButton::new("Status");
+    let mut filter_button_status = ExMenuButton::new("Enablement");
+    let mut filter_button_active = ExMenuButton::new("Active");
 
     for unit_type in UnitType::iter().filter(|x| match *x {
         UnitType::Unknown(_) => false,
@@ -669,9 +670,18 @@ fn build_ui(application: &Application) {
         filter_button_status.add_item(status.to_str());
     }
 
+    for status in ActiveState::iter().filter(|x| match *x {
+        ActiveState::Unknown => false,
+        //EnablementStatus::Unasigned => false,
+        _ => true,
+    }) {
+        filter_button_active.add_item(status.label());
+    }
+
     search_box.append(&search_entry);
     search_box.append(&filter_button_unit_type);
     search_box.append(&filter_button_status);
+    search_box.append(&filter_button_active);
 
     search_bar.set_child(Some(&search_box));
 
@@ -692,8 +702,11 @@ fn build_ui(application: &Application) {
         let entry1 = search_entry.clone();
         let unit_col_view_scrolled_window = unit_col_view_scrolled_window.clone();
         let custom_filter = {
+            
             let filter_button_unit_type = filter_button_unit_type.clone();
             let filter_button_status = filter_button_status.clone();
+            let filter_button_active = filter_button_active.clone();
+
             let custom_filter = gtk::CustomFilter::new(move |object| {
                 let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                     error!("some wrong downcast_ref {:?}", object);
@@ -704,6 +717,7 @@ fn build_ui(application: &Application) {
 
                 let unit_type = unit.unit_type();
                 let enable_status = unit.enable_status();
+                let active_state: ActiveState = unit.active_state().into();
 
                 filter_button_unit_type.contains_value(&Some(unit_type))
                     && filter_button_status.contains_value(&enable_status)
@@ -712,6 +726,7 @@ fn build_ui(application: &Application) {
                     } else {
                         unit.display_name().contains(text.as_str())
                     }
+                    && filter_button_active.contains_value(&Some(active_state.to_string()))
             });
 
             custom_filter
@@ -719,6 +734,7 @@ fn build_ui(application: &Application) {
 
         filter_button_unit_type.set_filter(custom_filter.clone());
         filter_button_status.set_filter(custom_filter.clone());
+        filter_button_active.set_filter(custom_filter.clone());
 
         filtermodel.set_filter(Some(&custom_filter));
 
