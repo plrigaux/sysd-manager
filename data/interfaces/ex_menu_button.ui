@@ -36,7 +36,9 @@
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkButton">
-                <property name="label">clear</property>
+                <property name="label">Clear</property>
+                <property name="tooltip-text">Clear filter selection</property>
+                <signal name="clicked" handler="clear_filter_selection" swapped="true"/>
               </object>
             </child>           
           </object>

@@ -1,3 +1,5 @@
+use std::{cell::RefCell, collections::HashMap};
+
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -15,6 +17,8 @@ pub struct ExMenuButton {
 
     #[template_child]
     pub pop_content: TemplateChild<gtk::Box>,
+
+    pub(super) check_boxes : RefCell<HashMap<String, gtk::CheckButton>>
 }
 
 #[glib::object_subclass]
@@ -41,9 +45,27 @@ impl ExMenuButton {
             self.popover.popup();
         }
     }
+
     #[template_callback(name = "popover_closed")]
     fn unset_toggle(&self) {
         self.toggle.set_active(false);
+    }
+
+    #[template_callback(name = "clear_filter_selection")]
+    fn clear_filter_selection(&self, _button : &gtk::Button) {
+        let  map = self.check_boxes.borrow();
+
+        for chec_button in map.values().into_iter() {
+            chec_button.set_active(false);
+        }
+    }
+
+    pub fn add_item(&self, label: &str) {
+        let check = gtk::CheckButton::with_label(label);
+        self.pop_content.append(&check);
+
+        let mut map = self.check_boxes.borrow_mut();
+        map.insert(label.to_owned(), check.clone());
     }
 }
 
@@ -53,6 +75,10 @@ impl ObjectImpl for ExMenuButton {
     // of your template.
     fn dispose(&self) {
         self.dispose_template();
+    }
+
+    fn constructed(&self) {
+       
     }
 }
 

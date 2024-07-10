@@ -651,8 +651,8 @@ fn build_ui(application: &Application) {
         .orientation(Orientation::Horizontal)
         .build();
 
-    let filter_button_unit_type = ExMenuButton::new("Type");
-    let filter_button_status = ExMenuButton::new("Status");
+    let mut filter_button_unit_type = ExMenuButton::new("Type");
+    let mut filter_button_status = ExMenuButton::new("Status");
 
     for unit_type in UnitType::iter().filter(|x| match *x {
         UnitType::Unknown(_) => false,

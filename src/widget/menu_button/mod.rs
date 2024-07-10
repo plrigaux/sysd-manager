@@ -1,6 +1,7 @@
 mod imp;
 
-use crate::gtk::{glib, prelude::*, subclass::prelude::*};
+use crate::gtk::{glib, subclass::prelude::*};
+use std::collections::HashMap;
 
 glib::wrapper! {
     pub struct ExMenuButton(ObjectSubclass<imp::ExMenuButton>)
@@ -19,6 +20,9 @@ impl ExMenuButton {
         let obj = Self::default();
         obj.set_button_label(label);
 
+        let imp = obj.imp();
+        imp.check_boxes.replace(HashMap::new());
+
         obj
     }
 
@@ -26,8 +30,9 @@ impl ExMenuButton {
         self.imp().button_label.set_label(label);
     }
 
-    pub fn add_item(&self, label: &str) {
-        let check = gtk::CheckButton::with_label(label);
-        self.imp().pop_content.append(&check);
+    pub fn add_item(&mut self, label: &str) {
+        let binding = self.imp();
+
+        binding.add_item(label);
     }
 }
