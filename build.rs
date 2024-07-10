@@ -41,7 +41,11 @@ pub fn compile_resources<P: AsRef<Path>>(source_dirs: &[P], gresource: &str, tar
         .output()
         .unwrap();
 
-    println!("CMD: {:?}", output);
+    let path = env::current_dir().expect("env::current_dir() FAIL");
+    println!("The current directory is {}", path.display());
+
+    println!("CMD Output: {:#?}", output);
+
     assert!(
         output.status.success(),
         "glib-compile-resources failed with exit status {} and stderr:\n{}",

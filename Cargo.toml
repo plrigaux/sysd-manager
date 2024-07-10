@@ -10,8 +10,8 @@ description = "A GUI to manage systemd units"
 keywords = [ "gtk4", "linux", "systemd" ]
 rust-version = "1.78"
 build = "build.rs"
-include = ["build.rs", "!/src/*", "LICENCE", "README.md", "!/data/*"]
-exclude = ["**/meson.build"]
+include = ["build.rs", "/src", "LICENCE", "README.md", "/data", "!/**/meson.build"]
+
 
 [[bin]]
 name = "sysd-manager"
