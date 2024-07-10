@@ -31,7 +31,7 @@ impl ExMenuButton {
         binding.add_item(label);
     }
 
-    pub fn contains_value(&self, value : &String) -> bool {
+    pub fn contains_value(&self, value : &Option<String>) -> bool {
         let imp = self.imp();
         let set = imp.filter_set.borrow();
         
@@ -39,7 +39,11 @@ impl ExMenuButton {
             return true;
         }
 
-        set.contains(value)
+        match value {
+            Some(v) => set.contains(v),
+            None => set.is_empty(),
+        }
+       
     }
 
     pub fn set_filter(&self, filter : gtk::CustomFilter) {

@@ -693,6 +693,7 @@ fn build_ui(application: &Application) {
         let unit_col_view_scrolled_window = unit_col_view_scrolled_window.clone();
         let custom_filter = {
             let filter_button_unit_type = filter_button_unit_type.clone();
+            let filter_button_status = filter_button_status.clone();
             let custom_filter = gtk::CustomFilter::new(move |object| {
                 let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                     error!("some wrong downcast_ref {:?}", object);
@@ -701,24 +702,23 @@ fn build_ui(application: &Application) {
 
                 let text = entry1.text();
 
-                //debug!("Filter text \"{text}\"");
-                /*             if text.is_empty() {
-                    //debug!("Filter empty");
-                    return true;
-                } */
-
-                //let enable_status = unit.enable_status();
-
                 let unit_type = unit.unit_type();
+                let enable_status = unit.enable_status();
 
-                filter_button_unit_type.contains_value(&unit_type)
-                    && unit.display_name().contains(text.as_str())
+                filter_button_unit_type.contains_value(&Some(unit_type))
+                    && filter_button_status.contains_value(&enable_status)
+                    && if text.is_empty() {
+                        true
+                    } else {
+                        unit.display_name().contains(text.as_str())
+                    }
             });
 
             custom_filter
         };
 
         filter_button_unit_type.set_filter(custom_filter.clone());
+        filter_button_status.set_filter(custom_filter.clone());
 
         filtermodel.set_filter(Some(&custom_filter));
 

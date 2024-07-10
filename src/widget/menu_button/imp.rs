@@ -4,7 +4,7 @@ use std::{
 };
 
 use gtk::{glib, prelude::*, subclass::prelude::*, FilterChange};
-use log::info;
+use log::debug;
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 //#[template(file = "ex_menu_button.ui")]
@@ -75,7 +75,7 @@ impl ExMenuButton {
 
         self.filter_set.replace(new_set);
 
-        info!("Filter Level {:?}", filter_change);
+        debug!("Filter Level {:?}", filter_change);
 
         if let Some(fc) = filter_change {
             self.filter.borrow().changed(fc)
