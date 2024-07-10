@@ -58,7 +58,7 @@ impl ExMenuButton {
     fn unset_toggle(&self) {
         self.toggle.set_active(false);
 
-        let filter_change: Option<FilterChange>;
+        let filter_change;
         let mut new_set: HashSet<String> = HashSet::new();
         {
             let map = self.check_boxes.borrow();
@@ -70,29 +70,7 @@ impl ExMenuButton {
                 }
             }
 
-            if old_set.is_empty() && !new_set.is_empty() {
-                filter_change = Some(FilterChange::MoreStrict);
-            } else if !old_set.is_empty() && new_set.is_empty() {
-                filter_change = Some(FilterChange::LessStrict);
-            } else if old_set.len() == new_set.len() {
-                filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
-                    None
-                } else {
-                    Some(FilterChange::Different)
-                };
-            } else if old_set.len() > new_set.len() {
-                filter_change = if new_set.iter().all(|item| old_set.contains(item)) {
-                    Some(FilterChange::MoreStrict)
-                } else {
-                    Some(FilterChange::Different)
-                };
-            } else {
-                filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
-                    Some(FilterChange::LessStrict)
-                } else {
-                    Some(FilterChange::Different)
-                };
-            }
+            filter_change = Self::determine_filter_change(&new_set, &old_set);
         }
 
         self.filter_set.replace(new_set);
@@ -102,6 +80,37 @@ impl ExMenuButton {
         if let Some(fc) = filter_change {
             self.filter.borrow().changed(fc)
         }
+    }
+
+    fn determine_filter_change(
+        new_set: &HashSet<String>,
+        old_set: &HashSet<String>,
+    ) -> Option<FilterChange> {
+        let filter_change: Option<FilterChange>;
+        if old_set.is_empty() && !new_set.is_empty() {
+            filter_change = Some(FilterChange::MoreStrict);
+        } else if !old_set.is_empty() && new_set.is_empty() {
+            filter_change = Some(FilterChange::LessStrict);
+        } else if old_set.len() == new_set.len() {
+            filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
+                None
+            } else {
+                Some(FilterChange::Different)
+            };
+        } else if old_set.len() > new_set.len() {
+            filter_change = if new_set.iter().all(|item| old_set.contains(item)) {
+                Some(FilterChange::MoreStrict)
+            } else {
+                Some(FilterChange::Different)
+            };
+        } else {
+            filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
+                Some(FilterChange::LessStrict)
+            } else {
+                Some(FilterChange::Different)
+            };
+        }
+        filter_change
     }
 
     #[template_callback(name = "clear_filter_selection")]
@@ -141,3 +150,82 @@ impl WidgetImpl for ExMenuButton {
 }
 
 impl BuildableImpl for ExMenuButton {}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_filter_change() {
+        let old_set: HashSet<String> = create_set(&["1", "2", "3"]);
+        let new_set: HashSet<String> = create_set(&["1", "2", "3"]);
+
+        assess_filter_change(&new_set, &old_set, None);
+
+        let old_set: HashSet<String> = create_set(&[]);
+        let new_set: HashSet<String> = create_set(&[]);
+
+        assess_filter_change(&new_set, &old_set, None);
+
+        let old_set: HashSet<String> = create_set(&[]);
+        let new_set: HashSet<String> = create_set(&["1", "2", "3"]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::MoreStrict));
+
+        let old_set: HashSet<String> = create_set(&["1", "2", "3"]);
+        let new_set: HashSet<String> = create_set(&[]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::LessStrict));
+
+        let old_set: HashSet<String> = create_set(&["1", "2"]);
+        let new_set: HashSet<String> = create_set(&["1", "2", "3"]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::LessStrict));
+
+        let old_set: HashSet<String> = create_set(&["1", "2", "3"]);
+        let new_set: HashSet<String> = create_set(&["1", "2"]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::MoreStrict));
+
+
+        let old_set: HashSet<String> = create_set(&["1", "2", "3"]);
+        let new_set: HashSet<String> = create_set(&["3", "4"]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::Different));
+
+        let old_set: HashSet<String> = create_set(&["1", "2", "3"]);
+        let new_set: HashSet<String> = create_set(&["4", "5"]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::Different));
+     
+        let old_set: HashSet<String> = create_set(&["3", "4"]);
+        let new_set: HashSet<String> = create_set(&["1", "2", "3"]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::Different));
+      
+        let old_set: HashSet<String> = create_set(&["4", "5"]);
+        let new_set: HashSet<String> = create_set(&["1", "2", "3"]);
+
+        assess_filter_change(&new_set, &old_set, Some(FilterChange::Different));
+    }
+
+    fn create_set(list: &[&str]) -> HashSet<String> {
+        let set: HashSet<String> = list.iter().map(ToString::to_string).collect();
+        set
+    }
+
+    fn assess_filter_change(
+        new_set: &HashSet<String>,
+        old_set: &HashSet<String>,
+        expected_filter_change: Option<FilterChange>,
+    ) {
+        let determined_filter_change = ExMenuButton::determine_filter_change(new_set, old_set);
+
+        assert_eq!(
+            expected_filter_change, determined_filter_change,
+            "Old {:?} New {:?} --> Expected {:?} but determined {:?}",
+            old_set, new_set, expected_filter_change, determined_filter_change
+        );
+    }
+}
