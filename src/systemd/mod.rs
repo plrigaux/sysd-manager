@@ -4,6 +4,7 @@ mod sysdbus;
 mod systemctl;
 
 use std::collections::BTreeMap;
+use std::env;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 
@@ -16,6 +17,9 @@ use std::io::{ErrorKind, Read, Write};
 use sysdbus::dbus::arg::ArgType;
 
 pub mod enums;
+
+const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
+const FLATPACK: &str = "flatpack";
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -65,7 +69,6 @@ impl SystemdUnit {
     }
 }
 
-
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
     return sysdbus::get_unit_file_state_path(&sytemd_unit.primary());
 }
@@ -109,7 +112,7 @@ pub fn get_unit_info(unit: &UnitInfo) -> String {
         let mut file = match File::open(file_path) {
             Ok(f) => f,
             Err(e) => {
-                warn!("Can't open {file_path}, reason: {:?}", e);
+                warn!("Can't open file \"{file_path}\", reason: {:?}", e);
                 return output;
             }
         };
@@ -122,12 +125,13 @@ pub fn get_unit_info(unit: &UnitInfo) -> String {
 pub fn get_unit_journal(unit: &UnitInfo) -> String {
     let unit_path = unit.primary();
 
-    let outout = match Command::new("journalctl")
-        .arg("-b")
-        .arg("-u")
-        .arg(unit_path)
-        .output()
-    {
+    let output = if is_flatpak_mode() {
+        Command::new("flatpak-spawn").arg("--host").arg("journalctl").arg("-b").arg("-u").arg(unit_path).output()
+    } else {
+        Command::new("journalctl").arg("-b").arg("-u").arg(unit_path).output()
+    };
+
+    let outout = match output {
         Ok(output) => output.stdout,
         Err(e) => {
             warn!("Can't retreive journal:  {:?}", e);
@@ -147,6 +151,13 @@ pub fn get_unit_journal(unit: &UnitInfo) -> String {
         .rev()
         .map(|x| x.trim())
         .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x)
+}
+
+fn is_flatpak_mode() -> bool {
+    match env::var(SYSDMNG_DIST_MODE) {
+        Ok(val) => FLATPACK.eq(&val),
+        Err(_) => false,
+    }
 }
 
 pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {

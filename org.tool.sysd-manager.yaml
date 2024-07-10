@@ -13,10 +13,12 @@ finish-args:
 - "--socket=wayland"
 - "--device=dri"
 - "--socket=system-bus" #flatpak run --log-session-bus <appid> can be used to find the specific D-Bus permissions needed.
-- "--filesystem=/usr/lib/systemd/system"
+- "--filesystem=host"
+- "--talk-name=org.freedesktop.Flatpak"
 - "--env=RUST_LOG=info"
 - "--env=G_MESSAGES_DEBUG=none"
 - "--env=RUST_BACKTRACE=1"
+- "--env=SYSDMNG_DIST_MODE=flatpack"
 build-options:
   append-path: "/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm16/bin"
   build-args:

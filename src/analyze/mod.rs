@@ -126,7 +126,12 @@ fn setup_systemd_analyze_tree(total_time_label: &gtk::Label) -> gtk::ColumnView 
     analyze_tree.append_column(&col1_time);
     analyze_tree.append_column(&col2_unit);
 
-    let time = (units.iter().last().unwrap().time as f32) / 1000f32;
+    let time_full = match units.iter().last() {
+        Some(analyse) => analyse.time,
+        None => 0,
+    };
+
+    let time = (time_full as f32) / 1000f32;
     total_time_label.set_label(format!("{} seconds", time).as_str());
 
     analyze_tree
