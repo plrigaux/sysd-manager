@@ -13,6 +13,10 @@ build = "build.rs"
 include = ["build.rs", "!/src/*", "LICENCE", "README.md", "!/data/*"]
 exclude = ["**/meson.build"]
 
+[[bin]]
+name = "sysd-manager"
+path = "src/main.rs"
+
 [profile.release]
 lto = true
 
