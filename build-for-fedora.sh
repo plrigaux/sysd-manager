@@ -21,7 +21,7 @@ copr-release)
 
 copr-testing)
     CMD=copr
-    COPR_REPO=tools-testing
+    COPR_REPO=sysd-manager-test
     ;;
 
 mock)
