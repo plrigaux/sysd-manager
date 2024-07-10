@@ -1,7 +1,7 @@
 mod menu;
-use gtk::pango::Weight;
-use gtk::pango::{AttrInt, AttrList};
-use gtk::prelude::{ButtonExt, ObjectExt};
+
+use gtk::pango::{Weight, AttrInt, AttrList};
+use gtk::prelude::*;
 
 pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
     // ----------------------------------------------
@@ -31,6 +31,7 @@ pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
 
     let search_button = gtk::ToggleButton::new();
     search_button.set_icon_name("system-search-symbolic");
+    search_button.set_tooltip_text(Some("Filter results"));
     title_bar.pack_start(&search_button);
 
     title_bar.pack_start(&right_bar_label);

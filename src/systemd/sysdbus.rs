@@ -15,7 +15,6 @@ use crate::systemd::enums::UnitType;
 
 use super::enums::EnablementStatus;
 
-
 use super::SystemdErrors;
 use super::SystemdUnit;
 
@@ -145,16 +144,14 @@ fn list_unit_files_message() -> Result<Vec<MessageItem>, SystemdErrors> {
 fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
     let message = dbus_message("ListUnits")?;
     debug!("MESSAGE {:?}", message);
-    let m = dbus_connect(message)?;
+    let msg2 = dbus_connect(message)?;
 
     // debug!("{:#?}",m.get_items())
-    let mi = m.get_items();
+    let mi = msg2.get_items();
     debug!("{:#?}", mi.len());
     let message_item = &mi[0];
 
-    let sig: dbus::Signature<'_> = message_item.signature();
-    //"a(ssssssouso)\0",
-    debug!("{:#?}", sig);
+    debug!("{:#?}", message_item.signature());
 
     let MessageItem::Array(array) = message_item else {
         return Err(SystemdErrors::MalformedWrongArgType(
@@ -233,8 +230,8 @@ fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors>
         }; */
 
         let active_state = ActiveState::from_str(active_state_str);
-        
-/*         let unit_info = LoadedUnit::new(
+
+        let unit = UnitInfo::new(
             primary,
             description,
             load_state,
@@ -242,16 +239,7 @@ fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors>
             sub_state,
             followed_unit,
             object_path.to_string(),
-        ); */
-
-        let unit = UnitInfo::new( primary,
-            description,
-            load_state,
-            active_state,
-            sub_state,
-            followed_unit,
-            object_path.to_string());
-
+        );
 
         map.insert(primary.to_ascii_lowercase(), unit);
     }
@@ -264,9 +252,9 @@ pub fn get_unit_file_state_path(unit_file: &str) -> Result<EnablementStatus, Sys
     let message_items = &[MessageItem::Str(unit_file.to_owned())];
     message.append_items(message_items);
 
-    let m = dbus_connect(message)?;
+    let message_wraper = dbus_connect(message)?;
 
-    if let Some(enablement_status) = m.get1::<String>() {
+    if let Some(enablement_status) = message_wraper.get1::<String>() {
         Ok(EnablementStatus::new(&enablement_status))
     } else {
         Err(SystemdErrors::Malformed)
@@ -276,70 +264,24 @@ pub fn get_unit_file_state_path(unit_file: &str) -> Result<EnablementStatus, Sys
 pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
     let mut units_map = list_units_description()?;
 
-    let mut units = list_unit_files()?;
+    let mut unit_files = list_unit_files()?;
 
-    for unit_file in units.drain(..) {
+    for unit_file in unit_files.drain(..) {
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
             Some(unit_info) => {
                 unit_info.set_file_path(unit_file.path);
                 unit_info.set_enable_status(unit_file.status_code.to_string());
             }
-            None => debug!("unit \"{}\" not found!", unit_file.full_name()),
+            None => debug!(
+                "Unit \"{}\" status \"{}\" not loaded!",
+                unit_file.full_name(),
+                unit_file.status_code.to_string()
+            ),
         }
     }
 
     Ok(units_map)
 }
-
-/// Takes the unit pathname of a service and enables it via dbus.
-/// If dbus replies with `[Bool(true), Array([], "(sss)")]`, the service is already enabled.
-/* fn enable_unit_files_path(unit: &str) -> Option<String> {
-
-    let mut message = dbus_message("EnableUnitFiles");
-    message.append_items(&[[unit][..].into(), false.into(), true.into()]);
-    match dbus_connect(message) {
-        Ok(reply) => {
-            if format!("{:?}", reply.get_items()) == "[Bool(true), Array([], \"(sss)\")]" {
-                debug!("{} already enabled", unit);
-            } else {
-                debug!("{} has been enabled", unit);
-            }
-            None
-        }
-        Err(reply) => {
-            let error = format!("Error enabling {}:\n{:?}", unit, reply);
-            debug!("{}", error);
-            Some(error)
-        }
-    }
-} */
-
-/// Takes the unit pathname as input and disables it via dbus.
-/// If dbus replies with `[Array([], "(sss)")]`, the service is already disabled.
-/* fn disable_unit_files_path(unit: &str) -> Option<String> {
-
-    let mut message = dbus_message("DisableUnitFiles");
-
-    debug!("Try to disable: {}", unit);
-    message.append_items(&[[unit][..].into(), false.into()]);
-
-    debug!("Message: {:?}", message);
-    match dbus_connect(message) {
-        Ok(reply) => {
-            if format!("{:?}", reply.get_items()) == "[Array([], \"(sss)\")]" {
-                debug!("{} is already disabled", unit);
-            } else {
-                debug!("{} has been disabled", unit);
-            }
-            None
-        }
-        Err(reply) => {
-            let error = format!("Error disabling {}:\n{:?}", unit, reply);
-            debug!("{}", error);
-            Some(error)
-        }
-    }
-} */
 
 /// Takes a unit name as input and attempts to start it
 ///
@@ -770,4 +712,4 @@ mod tests {
         Ok(())
     }
 }
- */
+*/
