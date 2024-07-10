@@ -1,6 +1,10 @@
-use std::{cell::RefCell, collections::HashMap};
+use std::{
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+};
 
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{glib, prelude::*, subclass::prelude::*, FilterChange};
+use log::info;
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 //#[template(file = "ex_menu_button.ui")]
@@ -18,7 +22,11 @@ pub struct ExMenuButton {
     #[template_child]
     pub pop_content: TemplateChild<gtk::Box>,
 
-    pub(super) check_boxes : RefCell<HashMap<String, gtk::CheckButton>>
+    pub(super) check_boxes: RefCell<HashMap<String, gtk::CheckButton>>,
+
+    pub(super) filter_set: RefCell<HashSet<String>>,
+
+    pub(super) filter: RefCell<gtk::CustomFilter>,
 }
 
 #[glib::object_subclass]
@@ -49,14 +57,59 @@ impl ExMenuButton {
     #[template_callback(name = "popover_closed")]
     fn unset_toggle(&self) {
         self.toggle.set_active(false);
+
+        let filter_change: Option<FilterChange>;
+        let mut new_set: HashSet<String> = HashSet::new();
+        {
+            let map = self.check_boxes.borrow();
+            let old_set = self.filter_set.borrow();
+
+            for (key, check_button) in map.iter() {
+                if check_button.is_active() {
+                    new_set.insert(key.to_owned());
+                }
+            }
+
+            if old_set.is_empty() && !new_set.is_empty() {
+                filter_change = Some(FilterChange::MoreStrict);
+            } else if !old_set.is_empty() && new_set.is_empty() {
+                filter_change = Some(FilterChange::LessStrict);
+            } else if old_set.len() == new_set.len() {
+                filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
+                    None
+                } else {
+                    Some(FilterChange::Different)
+                };
+            } else if old_set.len() > new_set.len() {
+                filter_change = if new_set.iter().all(|item| old_set.contains(item)) {
+                    Some(FilterChange::MoreStrict)
+                } else {
+                    Some(FilterChange::Different)
+                };
+            } else {
+                filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
+                    Some(FilterChange::LessStrict)
+                } else {
+                    Some(FilterChange::Different)
+                };
+            }
+        }
+
+        self.filter_set.replace(new_set);
+
+        info!("Filter Level {:?}", filter_change);
+
+        if let Some(fc) = filter_change {
+            self.filter.borrow().changed(fc)
+        }
     }
 
     #[template_callback(name = "clear_filter_selection")]
-    fn clear_filter_selection(&self, _button : &gtk::Button) {
-        let  map = self.check_boxes.borrow();
+    fn clear_filter_selection(&self, _button: &gtk::Button) {
+        let map = self.check_boxes.borrow();
 
-        for chec_button in map.values().into_iter() {
-            chec_button.set_active(false);
+        for check_button in map.values().into_iter() {
+            check_button.set_active(false);
         }
     }
 
@@ -77,9 +130,7 @@ impl ObjectImpl for ExMenuButton {
         self.dispose_template();
     }
 
-    fn constructed(&self) {
-       
-    }
+    fn constructed(&self) {}
 }
 
 impl WidgetImpl for ExMenuButton {

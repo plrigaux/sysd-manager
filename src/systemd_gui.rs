@@ -691,22 +691,34 @@ fn build_ui(application: &Application) {
     {
         let entry1 = search_entry.clone();
         let unit_col_view_scrolled_window = unit_col_view_scrolled_window.clone();
-        let custom_filter = gtk::CustomFilter::new(move |object| {
-            let Some(unit) = object.downcast_ref::<UnitInfo>() else {
-                error!("some wrong downcast_ref {:?}", object);
-                return false;
-            };
+        let custom_filter = {
+            let filter_button_unit_type = filter_button_unit_type.clone();
+            let custom_filter = gtk::CustomFilter::new(move |object| {
+                let Some(unit) = object.downcast_ref::<UnitInfo>() else {
+                    error!("some wrong downcast_ref {:?}", object);
+                    return false;
+                };
 
-            let text = entry1.text();
+                let text = entry1.text();
 
-            //debug!("Filter text \"{text}\"");
-            if text.is_empty() {
-                //debug!("Filter empty");
-                return true;
-            }
+                //debug!("Filter text \"{text}\"");
+                /*             if text.is_empty() {
+                    //debug!("Filter empty");
+                    return true;
+                } */
 
-            unit.display_name().contains(text.as_str())
-        });
+                //let enable_status = unit.enable_status();
+
+                let unit_type = unit.unit_type();
+
+                filter_button_unit_type.contains_value(&unit_type)
+                    && unit.display_name().contains(text.as_str())
+            });
+
+            custom_filter
+        };
+
+        filter_button_unit_type.set_filter(custom_filter.clone());
 
         filtermodel.set_filter(Some(&custom_filter));
 
