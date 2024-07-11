@@ -21,6 +21,7 @@ pub mod enums;
 const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
 const FLATPACK: &str = "flatpack";
 const JOURNALCTL: &str = "journalctl";
+const FLATPAK_SPAWN: &str = "flatpak-spawn";
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -178,7 +179,7 @@ pub fn is_flatpak_mode() -> bool {
 
 pub fn commander(prog_n_args: &[&str]) -> Command {
     let output = if is_flatpak_mode() {
-        let mut cmd = Command::new("flatpak-spawn");
+        let mut cmd = Command::new(FLATPAK_SPAWN);
         cmd.arg("--host");
         for v in prog_n_args {
             cmd.arg(v);
@@ -254,4 +255,22 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
     sysdbus::fetch_system_unit_info(&unit.object_path())
+}
+
+pub fn test_flatpak_spawn(window: &gtk::ApplicationWindow) {
+    if !is_flatpak_mode() {
+        return;
+    }
+
+    match Command::new(FLATPAK_SPAWN).arg("--help").output() {
+        Ok(_) => info!("flatpack-spawn check"),
+        Err(_) => {
+            let alert = gtk::AlertDialog::builder()
+            .message("flatpack-spawn needed!")
+            .detail("The program flatpack-spawn is needed if you use the application from a flatpack. Please install it from yourpackage distro")
+            .build();
+
+            alert.show(Some(window));
+        }
+    }
 }

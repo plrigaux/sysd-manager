@@ -861,21 +861,9 @@ fn build_ui(application: &Application) {
     }
     window.present();
 
-    /*     // Quit the program when the program has been exited
-    window.connect_delete_event(|_, _| {
-        gtk::main_quit();
-        Inhibit(false)
-    });
+    systemd::test_flatpak_spawn(&window);
 
-    // Define custom actions on keypress
-    window.connect_key_press_event(move |_, key| {
-        if let Key::Escape = key.get_keyval() {
-            gtk::main_quit()
-        }
-        gtk::Inhibit(false)
-    });
 
-    gtk::main(); */
 }
 
 fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch) {
