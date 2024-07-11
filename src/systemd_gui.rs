@@ -1,9 +1,10 @@
-use gtk::prelude::*;
-use gtk::{self, gio, SingleSelection};
-use log::{debug, error, info, warn};
+use gtk::pango::{self, Weight};
+use gtk::{gio, prelude::*, SingleSelection};
+use gtk::{Application, ApplicationWindow, Orientation};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::title_bar;
+use log::{debug, error, info, warn};
 
 use crate::systemd;
 use crate::widget::menu_button::ExMenuButton;
@@ -11,10 +12,6 @@ use systemd::data::UnitInfo;
 
 use self::pango::{AttrInt, AttrList};
 use gtk::glib::{self, BoxedAnyObject, Propagation};
-
-use gtk::pango::{self, Weight};
-
-use gtk::{Application, ApplicationWindow, Orientation};
 
 use std::cell::RefMut;
 use std::rc::Rc;
@@ -702,7 +699,6 @@ fn build_ui(application: &Application) {
         let entry1 = search_entry.clone();
         let unit_col_view_scrolled_window = unit_col_view_scrolled_window.clone();
         let custom_filter = {
-            
             let filter_button_unit_type = filter_button_unit_type.clone();
             let filter_button_status = filter_button_status.clone();
             let filter_button_active = filter_button_active.clone();
@@ -777,6 +773,10 @@ fn build_ui(application: &Application) {
         .child(&main_box)
         .titlebar(&title_bar_elements.title_bar)
         .build();
+
+    let settings = window.settings();
+
+    set_color_scheme(&settings);
 
     {
         // NOTE: Journal Refresh Button
@@ -915,4 +915,45 @@ fn build_icon_label(label_name: &str, icon_name: &str) -> gtk::Box {
 fn update_active_state(unit: &UnitInfo, state: ActiveState) {
     unit.set_active_state(state as u32);
     unit.set_active_state_icon(state.icon_name().to_owned());
+}
+
+fn set_color_scheme(settings: &gtk::Settings) {
+    let mut cmd = systemd::commander(&[
+        "gsettings",
+        "get",
+        "org.gnome.desktop.interface",
+        "color-scheme",
+    ]);
+
+    let out = match cmd.output() {
+        Ok(v) => v.stdout,
+        Err(e) => {
+            warn!(
+                "Can't get gsettings org.gnome.desktop.interface color-scheme. Error: {:?}",
+                e
+            );
+            return;
+        }
+    };
+
+    let color_scheme_value = match String::from_utf8(out) {
+        Ok(value) => value.trim().to_owned(),
+        Err(e) => {
+            warn!("Error parsing color-scheme: {:?}", e);
+            return;
+        }
+    };
+
+    info!("color-scheme value: \"{}\"", color_scheme_value);
+
+    if color_scheme_value.contains("prefer-dark") {
+        set_application_prefer_dark_theme(settings, true);
+    } else if color_scheme_value.contains("default") {
+        set_application_prefer_dark_theme(settings, false);
+    }
+}
+
+fn set_application_prefer_dark_theme(settings: &gtk::Settings, prefer_dark_theme: bool) {
+    info!("set_gtk_application_prefer_dark_theme {prefer_dark_theme}");
+    settings.set_gtk_application_prefer_dark_theme(prefer_dark_theme);
 }

@@ -14,7 +14,8 @@
         ".flatpak-builder",
         "_build",
         "build",
-        "builddir"
+        "builddir",
+        "repo"
     ],
     "mesonbuild.configureOnOpen": false,
     "mesonbuild.buildFolder": "_build"

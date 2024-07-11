@@ -1,9 +1,6 @@
-/// from https://github.com/GuillaumeGomez/systemd-manager
 extern crate gtk;
-//#[macro_use]
 extern crate env_logger;
 extern crate log;
-
 
 mod systemd;
 mod systemd_gui; // Contains all of the heavy GUI-related work

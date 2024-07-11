@@ -109,33 +109,35 @@ pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, Sy
 /// Read the unit file and return it's contents so that we can display it
 pub fn get_unit_info(unit: &UnitInfo) -> String {
     let mut output = String::new();
-    if let Some(file_path) = &unit.file_path() {
-        if is_flatpak_mode() {
-            match commander(&["cat", file_path]).output() {
-                Ok(cat_output) => {
-                    match String::from_utf8(cat_output.stdout) {
-                        Ok(content) => output.push_str(&content),
-                        Err(e) => {
-                            warn!("Can't retreive journal:  {:?}", e);
-                            return String::new();
-                        }
-                    };
-                }
-                Err(e) => {
-                    warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
-                    return output;
-                }
+    let Some(file_path) = &unit.file_path() else {
+        return output;
+    };
+
+    if is_flatpak_mode() {
+        match commander(&["cat", file_path]).output() {
+            Ok(cat_output) => {
+                match String::from_utf8(cat_output.stdout) {
+                    Ok(content) => output.push_str(&content),
+                    Err(e) => {
+                        warn!("Can't retreive journal:  {:?}", e);
+                        return output;
+                    }
+                };
             }
-        } else {
-            let mut file = match File::open(file_path) {
-                Ok(f) => f,
-                Err(e) => {
-                    warn!("Can't open file \"{file_path}\", reason: {:?}", e);
-                    return output;
-                }
-            };
-            let _ = file.read_to_string(&mut output);
+            Err(e) => {
+                warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
+                return output;
+            }
         }
+    } else {
+        let mut file = match File::open(file_path) {
+            Ok(f) => f,
+            Err(e) => {
+                warn!("Can't open file \"{file_path}\", reason: {:?}", e);
+                return output;
+            }
+        };
+        let _ = file.read_to_string(&mut output);
     }
 
     output
