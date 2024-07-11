@@ -267,7 +267,7 @@ pub fn test_flatpak_spawn(window: &gtk::ApplicationWindow) {
         Err(_) => {
             let alert = gtk::AlertDialog::builder()
             .message("flatpack-spawn needed!")
-            .detail("The program flatpack-spawn is needed if you use the application from a flatpack. Please install it from yourpackage distro")
+            .detail("The program flatpack-spawn is needed if you use the application from Flatpack. Please install it to enable all features")
             .build();
 
             alert.show(Some(window));
