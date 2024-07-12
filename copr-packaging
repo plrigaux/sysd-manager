@@ -194,7 +194,7 @@ def set_srpm_path():
 
 
 def mock():
-    print(f"${color.BOLD}Info:${color.END} Build localy RPM (mock) for ${
+    print(f"{color.BOLD}{color.CYAN}Info:${color.END} Build localy RPM (mock) for ${
           color.BOLD} {ARCH}{color.END}")
 
     subprocess.run(["mock", "--rebuild",
@@ -202,10 +202,12 @@ def mock():
                     "--spec", SPEC_FILE_PATH,
                     G_SRPM_PATH])
 
-    subprocess.run(["ls", "-l", f"/var/lib/mock/{G_MOCK_RPM_ROOT}/result"])
+    location = f"/var/lib/mock/{G_MOCK_RPM_ROOT}/result"
+    print(f"{color.BOLD}{color.CYAN}Info:${color.END} Build result on '{location}'")
+    subprocess.run(["ls", "-l", location])
 
     subprocess.run(
-        [f"cp -v /var/lib/mock/{G_MOCK_RPM_ROOT}/result/rust-sysd-manager-*{ARCH}.rpm {G_LOCAL_RPM_DIR}"], shell=True)
+        [f"cp -v /var/lib/mock/{G_MOCK_RPM_ROOT}/result/sysd-manager-{G_RPM_VERSION}:*{ARCH}.rpm {G_LOCAL_RPM_DIR}"], shell=True)
 
 
 def copr():

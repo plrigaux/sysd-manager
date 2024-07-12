@@ -13,6 +13,7 @@ URL:            https://crates.io/crates/sysd-manager
 Source:         %{crates_source}
 
 BuildRequires:  cargo-rpm-macros >= 24
+# BuildRequires:  desktop-file-install
 
 %global _description %{expand:
 A GUI to manage systemd units.}
@@ -31,8 +32,10 @@ License:        GPL-3.0-or-later
 %license LICENCE
 %license LICENSE.dependencies
 %doc README.md
-%doc meson_options.txt
+# %doc meson_options.txt
 %{_bindir}/sysd-manager
+/usr/share/icons/hicolor/scalable/apps/org.tool.sysd-manager.svg
+/usr/share/applications/org.tool.sysd-manager.desktop
 
 %prep
 %autosetup -n %{crate}-%{version} -p1
@@ -48,9 +51,11 @@ License:        GPL-3.0-or-later
 
 %install
 %cargo_install
-desktop-file-install --dir=/usr/share/applications/ 
-install -m 644 data/applications/org.tool.sysd-manager.desktop /usr/share/applications/ 
-install -m 644 data/icons/hicolor/scalable/org.tool.sysd-manager.svg /usr/share/icons/hicolor/scalable/apps/
+# desktop-file-install -dir=%{buildroot}%{_datadir}/applications data/applications/org.tool.sysd-manager.desktop
+mkdir -p %{buildroot}%{_datadir}/applications 
+cp -v data/applications/org.tool.sysd-manager.desktop %{buildroot}%{_datadir}/applications 
+mkdir -p %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
+cp -v data/icons/hicolor/scalable/apps/*.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
 
 %if %{with check}
 %check
@@ -59,3 +64,7 @@ install -m 644 data/icons/hicolor/scalable/org.tool.sysd-manager.svg /usr/share/
 
 %changelog
 %autochangelog
+
+#%post
+#install -m 644 data/applications/org.tool.sysd-manager.desktop /usr/share/applications/ 
+#install -m 644 data/icons/hicolor/scalable/org.tool.sysd-manager.svg /usr/share/icons/hicolor/scalable/apps/
