@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+import subprocess
+import tomllib
+import os
+
+class color:
+   PURPLE = '\033[95m'
+   CYAN = '\033[96m'
+   DARKCYAN = '\033[36m'
+   BLUE = '\033[94m'
+   GREEN = '\033[92m'
+   YELLOW = '\033[93m'
+   RED = '\033[91m'
+   BOLD = '\033[1m'
+   UNDERLINE = '\033[4m'
+   END = '\033[0m'
+
+print("Build for Copr")
+
+
+with open("Cargo.toml", "rb") as f:
+    cargo_toml = tomllib.load(f)
+
+RPM_VERSION =  cargo_toml['package']['version']
+os.environ["RPM_VERSION"] = RPM_VERSION
+print("version", RPM_VERSION)
+
+TMP="tmp"
+subprocess.run(["rm", "-rf", TMP])
+subprocess.run(["mkdir", "-p", f"{TMP}/SPECS"])
+subprocess.run(["mkdir", "-p", f"{TMP}/SOURCES"])
+subprocess.run(["mkdir", "-p", f"{TMP}/tmpdir"])
+
+print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
+subprocess.run(["git", "archive", "main", "--format=tar", f"--prefix=sysd-manager-{RPM_VERSION}/", f"--output=tmp/SOURCES/sysd-manager-{RPM_VERSION}.crate"])
+print (f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
+
+subprocess.run( ["rust2rpm", f"./sysd-manager-{RPM_VERSION}.crate",f"{RPM_VERSION}"], cwd=f"{TMP}/SOURCES" )

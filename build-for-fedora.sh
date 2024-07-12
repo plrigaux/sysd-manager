@@ -76,8 +76,13 @@ echo "${bold}info Info:${normal} make specfile"
 # rust2rpm fails on one host becuase of some unknown issue with TMPDIR
 # using an empty directory works around the failure
 TMPDIR=$PWD/tmp/tmpdir rust2rpm ./sysd-manager-${RPM_VERSION}.crate
+
+echo "t dir: ${TMPDIR}" 
+exit
 mv *.spec ../SPECS
 cd ../..
+
+
 
 # use host's arch for srpm
 MOCK_SRPM_ROOT=fedora-${VERSION_ID}-$(arch)
