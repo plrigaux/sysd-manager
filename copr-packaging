@@ -86,26 +86,29 @@ MOCK_SRPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
 # use user's arch for rpm
 MOCK_RPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
 
-print(f"{color.CYAN}{color.BOLD}Info:{color.END} build SRPM")
+SRPM="SRPM_Not_defined"
 
-subprocess.run(["tree", TMP])
+def buildSRPM():
+    print(f"{color.CYAN}{color.BOLD}Info:{color.END} build SRPM")
 
-subprocess.run(["mock", "--buildsrpm",
-                "--root", MOCK_SRPM_ROOT,
-                "--spec", spec_file_path,
-                "--sources", SOURCES_DIR])
+    subprocess.run(["tree", TMP])
 
-print(f"{color.CYAN}{color.BOLD}Info:{color.END} copy SRPM to '{TMP}'")
-subprocess.run(["ls", "-l", f"/var/lib/mock/{MOCK_SRPM_ROOT}/result"])
+    subprocess.run(["mock", "--buildsrpm",
+                    "--root", MOCK_SRPM_ROOT,
+                    "--spec", spec_file_path,
+                    "--sources", SOURCES_DIR])
 
-subprocess.run(
-    [f"cp -v /var/lib/mock/{MOCK_SRPM_ROOT}/result/rust-sysd-manager-*.src.rpm {TMP}"], shell=True)
+    print(f"{color.CYAN}{color.BOLD}Info:{color.END} copy SRPM to '{TMP}'")
+    subprocess.run(["ls", "-l", f"/var/lib/mock/{MOCK_SRPM_ROOT}/result"])
 
-path = f"tmp/rust-sysd-manager-{RPM_VERSION}-*.src.rpm"
-for filename in glob.glob(path):
-    SRPM = filename
+    subprocess.run(
+        [f"cp -v /var/lib/mock/{MOCK_SRPM_ROOT}/result/rust-sysd-manager-*.src.rpm {TMP}"], shell=True)
 
-print( f"{color.CYAN}{color.BOLD}SRPM path:{color.END} {SRPM}")
+    path = f"tmp/rust-sysd-manager-{RPM_VERSION}-*.src.rpm"
+    for filename in glob.glob(path):
+        SRPM = filename
+
+    print( f"{color.CYAN}{color.BOLD}SRPM path:{color.END} {SRPM}")
 
 
 def mock():

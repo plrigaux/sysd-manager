@@ -78,7 +78,6 @@ echo "${bold}info Info:${normal} make specfile"
 TMPDIR=$PWD/tmp/tmpdir rust2rpm ./sysd-manager-${RPM_VERSION}.crate
 
 echo "t dir: ${TMPDIR}" 
-exit
 mv *.spec ../SPECS
 cd ../..
 
