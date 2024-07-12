@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
 
+from pprint import pprint
+import pathlib
+import csv
 import subprocess
 import tomllib
 import os
+import re
+import glob
+
 
 class color:
-   PURPLE = '\033[95m'
-   CYAN = '\033[96m'
-   DARKCYAN = '\033[36m'
-   BLUE = '\033[94m'
-   GREEN = '\033[92m'
-   YELLOW = '\033[93m'
-   RED = '\033[91m'
-   BOLD = '\033[1m'
-   UNDERLINE = '\033[4m'
-   END = '\033[0m'
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
 
 print("Build for Copr")
 
@@ -22,18 +29,97 @@ print("Build for Copr")
 with open("Cargo.toml", "rb") as f:
     cargo_toml = tomllib.load(f)
 
-RPM_VERSION =  cargo_toml['package']['version']
+RPM_VERSION = cargo_toml['package']['version']
+ARCH = "x86_64"
 os.environ["RPM_VERSION"] = RPM_VERSION
 print("version", RPM_VERSION)
 
-TMP="tmp"
+TMP = "tmp"
+SOURCES_DIR = f"{TMP}/SOURCES"
+SPECS_DIR = f"{TMP}/SPECS"
 subprocess.run(["rm", "-rf", TMP])
 subprocess.run(["mkdir", "-p", f"{TMP}/SPECS"])
-subprocess.run(["mkdir", "-p", f"{TMP}/SOURCES"])
-subprocess.run(["mkdir", "-p", f"{TMP}/tmpdir"])
+subprocess.run(["mkdir", "-p", SOURCES_DIR])
+# subprocess.run(["mkdir", "-p", f"{TMP}/tmpdir"])
 
 print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
-subprocess.run(["git", "archive", "main", "--format=tar", f"--prefix=sysd-manager-{RPM_VERSION}/", f"--output=tmp/SOURCES/sysd-manager-{RPM_VERSION}.crate"])
-print (f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
+subprocess.run(["git", "archive", "main", "--format=tar", f"--prefix=sysd-manager-{
+               RPM_VERSION}/", f"--output={SOURCES_DIR}/sysd-manager-{RPM_VERSION}.crate"])
+print(f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
 
-subprocess.run( ["rust2rpm", f"./sysd-manager-{RPM_VERSION}.crate",f"{RPM_VERSION}"], cwd=f"{TMP}/SOURCES" )
+subprocess.run(
+    ["rust2rpm", f"./sysd-manager-{RPM_VERSION}.crate", f"{RPM_VERSION}"], cwd=SOURCES_DIR)
+
+
+def case_insensitive_search_and_replace(file_path, search_word, replace_word):
+    with open(spec_file_path, 'r') as file:
+
+        pattern = re.compile(search_word)
+        file_contents = file.read()
+        updated_contents = pattern.sub(replace_word, file_contents)
+
+    with open(file_path, 'w') as file:
+        file.write(updated_contents)
+
+
+spec_file_path = f"{SOURCES_DIR}/rust-sysd-manager.spec"
+
+print(f"{color.CYAN}{color.BOLD}Info:{color.END} replace FIXME licence")
+
+case_insensitive_search_and_replace(
+    spec_file_path, r"License:\s+#\s*FIXME", "License:        GPL-3.0-or-later")
+
+subprocess.run(["mv", spec_file_path, f"{TMP}/SPECS"])
+
+spec_file_path = f"{SPECS_DIR}/rust-sysd-manager.spec"
+
+
+path = pathlib.Path("/etc/os-release")
+with open(path) as stream:
+    reader = csv.reader(stream, delimiter="=")
+    os_release = dict(reader)
+
+
+VERSION_ID = os_release['VERSION_ID']
+# use host's arch for srpm
+MOCK_SRPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
+# use user's arch for rpm
+MOCK_RPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
+
+print(f"{color.CYAN}{color.BOLD}Info:{color.END} build SRPM")
+
+subprocess.run(["tree", TMP])
+
+subprocess.run(["mock", "--buildsrpm",
+                "--root", MOCK_SRPM_ROOT,
+                "--spec", spec_file_path,
+                "--sources", SOURCES_DIR])
+
+print(f"{color.CYAN}{color.BOLD}Info:{color.END} copy SRPM to '{TMP}'")
+subprocess.run(["ls", "-l", f"/var/lib/mock/{MOCK_SRPM_ROOT}/result"])
+
+subprocess.run(
+    [f"cp -v /var/lib/mock/{MOCK_SRPM_ROOT}/result/rust-sysd-manager-*.src.rpm {TMP}"], shell=True)
+
+path = f"tmp/rust-sysd-manager-{RPM_VERSION}-*.src.rpm"
+for filename in glob.glob(path):
+    SRPM = filename
+
+print( f"{color.CYAN}{color.BOLD}SRPM path:{color.END} {SRPM}")
+
+
+def mock():
+    print (f"${color.BOLD}Info:${color.END} Build localy RPM (mock) for ${color.BOLD} $ARCH${color.END}")
+    
+    subprocess.run(["mock", "--rebuild",
+                "--root", MOCK_SRPM_ROOT,
+                "--spec", spec_file_path,
+                SRPM])
+    
+    subprocess.run(["ls", "-l", f"/var/lib/mock/{MOCK_RPM_ROOT}/result"])
+    
+    subprocess.run(
+    [f"cp -v /var/lib/mock/{MOCK_RPM_ROOT}/result/rust-sysd-manager-*{ARCH}.rpm {TMP}"], shell=True)
+
+
+mock()
