@@ -9,6 +9,7 @@ import os
 import re
 import glob
 import git
+import argparse
 
 
 class color:
@@ -24,53 +25,93 @@ class color:
     END = '\033[0m'
 
 
-print("Build for Copr")
-
-
-with open("Cargo.toml", "rb") as f:
-    cargo_toml = tomllib.load(f)
-
-RPM_VERSION = cargo_toml['package']['version']
-ARCH = "x86_64"
-SRPM = None
-MOCK_SRPM_ROOT = None
-MOCK_RPM_ROOT = None
+G_RPM_VERSION = None
+G_SRPM_PATH = None
+G_MOCK_SRPM_ROOT = None
+G_MOCK_RPM_ROOT = None
 SPEC_FILE_PATH = None
-TMP = "tmp"
-SOURCES_DIR = f"{TMP}/SOURCES"
-SPECS_DIR = f"{TMP}/SPECS"
+G_LOCAL_RPM_DIR = "tmp"
+G_SOURCES_DIR = f"{G_LOCAL_RPM_DIR}/SOURCES"
+G_SPECS_DIR = f"{G_LOCAL_RPM_DIR}/SPECS"
 
-# subprocess.run(["mkdir", "-p", f"{TMP}/tmpdir"])
+
+parser = argparse.ArgumentParser(description="Copr RPM builder",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("-d", "--allow_dirty", action="store_true", dest="allow_dirty",
+                    help="allow not commited file", default=False)
+
+parser.add_argument("-a", "--arch",  dest="architecture",
+                    help="build architecture", default="x86_64")
+
+parser.add_argument("-m", "--mode",  dest="mode",
+                    help="build mode", default="mock", choices=["mock", "spec", "srpm", "copr"])
+
+parser.add_argument("-o", "--only",  dest="only", action="store_true",
+                    help="only use build mode", default=False)
+
+args = parser.parse_args()
+
+ARCH = args.architecture
+print(f"{color.BOLD}Build for {color.CYAN}Copr{
+      color.END} architecture {color.CYAN}{ARCH}{color.END}")
+
 
 def main():
     init()
-    build_spec()
-    buildSRPM()
-    #mock()
+
+    match args.mode:
+        case "spec":
+            build_spec()
+        case "srpm":
+            if not args.only:
+                build_spec()
+            buildSRPM()
+        case "mock":
+            if not args.only:
+                build_spec()
+                buildSRPM()
+            mock()
+        case "copr":
+            if not args.only:
+                build_spec()
+                buildSRPM()
+            copr()
 
 
 def build_spec():
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
+
+    subprocess.run(["git", "archive", "main", 
+                    "--format=tar",
+                    f"--prefix=sysd-manager-{G_RPM_VERSION}/",
+                    f"--output={G_SOURCES_DIR}/sysd-manager-{G_RPM_VERSION}.crate"])
+
+    print(f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
+    """     
     subprocess.run(["git", "archive", "main", "--format=tar", f"--prefix=sysd-manager-{
-                RPM_VERSION}/", f"--output={SOURCES_DIR}/sysd-manager-{RPM_VERSION}.crate"])
+        G_RPM_VERSION}/", f"--output={G_SOURCES_DIR}/sysd-manager-{G_RPM_VERSION}.crate"])
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
 
     subprocess.run(
-        ["rust2rpm", f"./sysd-manager-{RPM_VERSION}.crate", f"{RPM_VERSION}"], cwd=SOURCES_DIR)
-    
-    tmp_spec_file_path = f"{SOURCES_DIR}/rust-sysd-manager.spec"
+        ["rust2rpm", f"./sysd-manager-{G_RPM_VERSION}.crate", f"{G_RPM_VERSION}"], cwd=G_SOURCES_DIR)
+
+    tmp_spec_file_path = f"{G_SOURCES_DIR}/rust-sysd-manager.spec"
 
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} replace FIXME licence")
 
     case_insensitive_search_and_replace(
         tmp_spec_file_path, r"License:\s+#\s*FIXME", "License:        GPL-3.0-or-later")
 
-    subprocess.run(["mv", "-v", tmp_spec_file_path, f"{TMP}/SPECS"])
+    subprocess.run(["mv", "-v", tmp_spec_file_path,
+                   f"{G_LOCAL_RPM_DIR}/SPECS"]) 
+    """
 
     global SPEC_FILE_PATH
-    SPEC_FILE_PATH = f"{SPECS_DIR}/rust-sysd-manager.spec"
-    
-        
+    SPEC_FILE_PATH = f"{G_SPECS_DIR}/rust-sysd-manager.spec"
+
+    subprocess.run(["cp", "-v", "rust-sysd-manager.spec", SPEC_FILE_PATH])
+
+
 def case_insensitive_search_and_replace(file_path, search_word, replace_word):
     with open(file_path, 'r') as file:
 
@@ -82,83 +123,93 @@ def case_insensitive_search_and_replace(file_path, search_word, replace_word):
         file.write(updated_contents)
 
 
-def init():    
+def init():
     repo = git.Repo(".")
     if repo.is_dirty(untracked_files=True):
         print("git repo dirty")
-        exit()
-        
+        if args.allow_dirty:
+            print("Bypass dity")
+        else:
+            exit()
+
+    global VERSION_ID
+    global G_MOCK_SRPM_ROOT
+    global G_MOCK_RPM_ROOT
+    global G_RPM_VERSION
+
+    with open("Cargo.toml", "rb") as f:
+        cargo_toml = tomllib.load(f)
+
+    G_RPM_VERSION = cargo_toml['package']['version']
+
     path = pathlib.Path("/etc/os-release")
     with open(path) as stream:
         reader = csv.reader(stream, delimiter="=")
         os_release = dict(reader)
 
-    global VERSION_ID
-    global MOCK_SRPM_ROOT
-    global MOCK_RPM_ROOT
-    global RPM_VERSION
-    
     VERSION_ID = os_release['VERSION_ID']
     # use host's arch for srpm
-    MOCK_SRPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
+    G_MOCK_SRPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
     # use user's arch for rpm
-    MOCK_RPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
-    
-    subprocess.run(["rm", "-rf", TMP])
-    subprocess.run(["mkdir", "-p", f"{TMP}/SPECS"])
-    subprocess.run(["mkdir", "-p", SOURCES_DIR])
-    
+    G_MOCK_RPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
+
+    subprocess.run(["rm", "-rf", G_LOCAL_RPM_DIR])
+    subprocess.run(["mkdir", "-p", f"{G_LOCAL_RPM_DIR}/SPECS"])
+    subprocess.run(["mkdir", "-p", G_SOURCES_DIR])
+
     with open("Cargo.toml", "rb") as f:
         cargo_toml = tomllib.load(f)
 
-    RPM_VERSION = cargo_toml['package']['version']
-    
-    os.environ["RPM_VERSION"] = RPM_VERSION
-    print("version", RPM_VERSION)
+    os.environ["RPM_VERSION"] = G_RPM_VERSION
+    print("cargo version", G_RPM_VERSION)
 
 
 def buildSRPM():
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} build SRPM")
 
-    subprocess.run(["tree", TMP])
+    subprocess.run(["tree", G_LOCAL_RPM_DIR])
 
     subprocess.run(["mock", "--buildsrpm",
-                    "--root", MOCK_SRPM_ROOT,
+                    "--root", G_MOCK_SRPM_ROOT,
                     "--spec", SPEC_FILE_PATH,
-                    "--sources", SOURCES_DIR])
+                    "--sources", G_SOURCES_DIR])
 
-    print(f"{color.CYAN}{color.BOLD}Info:{color.END} copy SRPM to '{TMP}'")
-    subprocess.run(["ls", "-l", f"/var/lib/mock/{MOCK_SRPM_ROOT}/result"])
+    print(f"{color.CYAN}{color.BOLD}Info:{
+          color.END} copy SRPM to '{G_LOCAL_RPM_DIR}'")
+    subprocess.run(["ls", "-l", f"/var/lib/mock/{G_MOCK_SRPM_ROOT}/result"])
 
     subprocess.run(
-        [f"cp -v /var/lib/mock/{MOCK_SRPM_ROOT}/result/rust-sysd-manager-*.src.rpm {TMP}"], shell=True)
+        [f"cp -v /var/lib/mock/{G_MOCK_SRPM_ROOT}/result/rust-sysd-manager-*.src.rpm {G_LOCAL_RPM_DIR}"], shell=True)
 
     set_srpm_path()
 
 
 def set_srpm_path():
-    path = f"tmp/rust-sysd-manager-{RPM_VERSION}-*.src.rpm"
+    global G_SRPM_PATH
+    path = f"tmp/rust-sysd-manager-{G_RPM_VERSION}-*.src.rpm"
     for filename in glob.glob(path):
-        SRPM = filename
+        G_SRPM_PATH = filename
 
-    print(f"{color.CYAN}{color.BOLD}SRPM path:{color.END} {SRPM}")
+    print(f"{color.CYAN}{color.BOLD}SRPM path:{color.END} {G_SRPM_PATH}")
 
 
 def mock():
     print(f"${color.BOLD}Info:${color.END} Build localy RPM (mock) for ${
-          color.BOLD} $ARCH${color.END}")
+          color.BOLD} {ARCH}{color.END}")
 
     subprocess.run(["mock", "--rebuild",
-                    "--root", MOCK_SRPM_ROOT,
+                    "--root", G_MOCK_SRPM_ROOT,
                     "--spec", SPEC_FILE_PATH,
-                    SRPM])
+                    G_SRPM_PATH])
 
-    subprocess.run(["ls", "-l", f"/var/lib/mock/{MOCK_RPM_ROOT}/result"])
+    subprocess.run(["ls", "-l", f"/var/lib/mock/{G_MOCK_RPM_ROOT}/result"])
 
     subprocess.run(
-        [f"cp -v /var/lib/mock/{MOCK_RPM_ROOT}/result/rust-sysd-manager-*{ARCH}.rpm {TMP}"], shell=True)
+        [f"cp -v /var/lib/mock/{G_MOCK_RPM_ROOT}/result/rust-sysd-manager-*{ARCH}.rpm {G_LOCAL_RPM_DIR}"], shell=True)
 
 
+def copr():
+    pass
 
 
 main()
