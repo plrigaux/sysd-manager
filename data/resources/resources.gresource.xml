@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/tool/sysd/manager/">
-    <file compressed="true" alias="org.tool.sysd-manager.svg">icons/hicolor/scalable/org.tool.sysd-manager.svg</file>
+    <file compressed="true" alias="org.tool.sysd-manager.svg">icons/hicolor/scalable/apps/org.tool.sysd-manager.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="grid_cell.ui">interfaces/grid_cell.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">interfaces/sysdmngr.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">interfaces/title_bar.ui</file>
