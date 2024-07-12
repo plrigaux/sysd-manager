@@ -33,7 +33,7 @@ SPEC_FILE_PATH = None
 G_LOCAL_RPM_DIR = "tmp"
 G_SOURCES_DIR = f"{G_LOCAL_RPM_DIR}/SOURCES"
 G_SPECS_DIR = f"{G_LOCAL_RPM_DIR}/SPECS"
-
+COPR_REPO = "sysd-manager"
 
 parser = argparse.ArgumentParser(description="Copr RPM builder",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -81,7 +81,7 @@ def main():
 def build_spec():
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
 
-    subprocess.run(["git", "archive", "main", 
+    subprocess.run(["git", "archive", "main",
                     "--format=tar",
                     f"--prefix=sysd-manager-{G_RPM_VERSION}/",
                     f"--output={G_SOURCES_DIR}/sysd-manager-{G_RPM_VERSION}.crate"])
@@ -203,15 +203,20 @@ def mock():
                     G_SRPM_PATH])
 
     location = f"/var/lib/mock/{G_MOCK_RPM_ROOT}/result"
-    print(f"{color.BOLD}{color.CYAN}Info:${color.END} Build result on '{location}'")
+    print(f"{color.BOLD}{color.CYAN}Info:{
+          color.END} Build result on '{location}'")
     subprocess.run(["ls", "-l", location])
 
     subprocess.run(
-        [f"cp -v /var/lib/mock/{G_MOCK_RPM_ROOT}/result/sysd-manager-{G_RPM_VERSION}:*{ARCH}.rpm {G_LOCAL_RPM_DIR}"], shell=True)
+        [f"cp -v /var/lib/mock/{G_MOCK_RPM_ROOT}/result/sysd-manager-{G_RPM_VERSION}*{ARCH}.rpm {G_LOCAL_RPM_DIR}"], shell=True)
 
 
 def copr():
-    pass
+    print(f"{color.BOLD}{color.CYAN}Info:{color.END} copr build {color.BOLD}{COPR_REPO}{
+          color.END} of {color.BOLD}{G_SRPM_PATH}{color.END} for {color.BOLD}{ARCH}{color.END}")
+
+    subprocess.run(["copr-cli", "build", "-r",
+                   G_MOCK_RPM_ROOT, COPR_REPO, G_SRPM_PATH])
 
 
 main()
