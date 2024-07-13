@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+
+from pprint import pprint
+import pathlib
+import csv
+import subprocess
+import tomllib
+import os
+import re
+import glob
+import git
+import argparse
+
+
+class color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
+
+G_RPM_VERSION = None
+G_SRPM_PATH = None
+G_MOCK_SRPM_ROOT = None
+G_MOCK_RPM_ROOT = None
+SPEC_FILE_PATH = None
+G_LOCAL_RPM_DIR = "tmp"
+G_SOURCES_DIR = f"{G_LOCAL_RPM_DIR}/SOURCES"
+G_SPECS_DIR = f"{G_LOCAL_RPM_DIR}/SPECS"
+COPR_REPO = "sysd-manager"
+
+parser = argparse.ArgumentParser(description="Copr RPM builder",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("action", choices=["clean", "build"], help="action to perform")
+
+
+args = parser.parse_args()
+
+
+def main():
+    
+
+    match args.action:
+        case "clean":
+            clean()
+
+
+def clean():
+    subprocess.run(["rm", "-fr", "builddir"])
+    subprocess.run(["rm", "-fr", ".flatpak-builder"])
+    subprocess.run(["rm", "-fr", "target"])
+
+
+main()
