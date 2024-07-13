@@ -30,6 +30,11 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.1.2" date="2024-07-17">
+      <description>
+        <p>Allow filtering on unit type</p>
+      </description>
+    </release>
     <release version="0.0.2" date="2024-06-21">
       <description>
         <p>First release of Rust Flatpak App</p>

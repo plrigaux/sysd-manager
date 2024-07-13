@@ -36,6 +36,11 @@ build-options:
 modules:
 - name: sysd-manager
   buildsystem: meson
+  build-commands:
+  - pwd
+#  - install -D --mode=644 data/applications/org.tool.sysd-manager.desktop -t /app/share/applications 
+#  - install -D --mode=644 data/icons/hicolor/scalable/apps/*.svg -t /app/share/icons/hicolor/scalable/apps 
+
   run-tests: true
   config-opts:
   - "-Dprofile=development"

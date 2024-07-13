@@ -1,4 +1,4 @@
-subdir('icons/hicolor/scalable')
+#subdir('icons/hicolor/scalable/apps')
 #subdir('resources')
 
 
@@ -94,3 +94,10 @@ resources = gnome.compile_resources(
 )
 
 message('Gnome Resources package dir :', pkgdatadir)
+
+
+install_data('icons/hicolor/scalable/apps/org.tool.sysd-manager.svg',
+             install_dir : '/app/share/icons')
+
+install_data('applications/org.tool.sysd-manager.desktop',
+             install_dir : '/app/share/applications')
