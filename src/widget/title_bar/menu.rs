@@ -1,7 +1,6 @@
 use gtk::gio::ResourceLookupFlags;
-use gtk::{gdk, gio, prelude::ActionMapExtManual};
 use gtk::prelude::*;
-
+use gtk::{gdk, gio, prelude::ActionMapExtManual};
 
 use crate::analyze::build_analyze_window;
 use crate::info;
@@ -37,23 +36,41 @@ pub fn build_menu() -> gtk::MenuButton {
 
 pub fn on_startup(app: &gtk::Application) {
     let about = gio::ActionEntry::builder("about")
-        .activate(|_, _, _| {
+        .activate(|application: &gtk::Application, _, _| {
             let about = create_about();
+
+            if let Some(first_window) = application.windows().first() {
+                about.set_transient_for(Some(first_window));
+                about.set_modal(true);
+            }
+
             about.present();
         })
         .build();
 
     let analyze_blame = gio::ActionEntry::builder("analyze_blame")
-        .activate(|_, _, _| {
+        .activate(|application: &gtk::Application, _b, _c| {
             let analyze_blame_window = build_analyze_window();
+
+            if let Some(first_window) = application.windows().first() {
+                analyze_blame_window.set_transient_for(Some(first_window));
+                analyze_blame_window.set_modal(true);
+            }
+
             analyze_blame_window.present();
         })
         .build();
 
     let systemd_info = gio::ActionEntry::builder("systemd_info")
-        .activate(|_, _, _| {
-            let analyze_blame_window = info::build_systemd_info();
-            analyze_blame_window.present();
+        .activate(|application: &gtk::Application, _, _| {
+            let systemd_info_window = info::build_systemd_info();
+
+            if let Some(first_window) = application.windows().first() {
+                systemd_info_window.set_transient_for(Some(first_window));
+                systemd_info_window.set_modal(true);
+            }
+
+            systemd_info_window.present();
         })
         .build();
 
