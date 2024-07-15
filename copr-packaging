@@ -90,10 +90,6 @@ def build_spec():
 
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
     """     
-    subprocess.run(["git", "archive", "main", "--format=tar", f"--prefix=sysd-manager-{
-        G_RPM_VERSION}/", f"--output={G_SOURCES_DIR}/sysd-manager-{G_RPM_VERSION}.crate"])
-    print(f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
-
     subprocess.run(
         ["rust2rpm", f"./sysd-manager-{G_RPM_VERSION}.crate", f"{G_RPM_VERSION}"], cwd=G_SOURCES_DIR)
 
@@ -111,17 +107,22 @@ def build_spec():
     global SPEC_FILE_PATH
     SPEC_FILE_PATH = f"{G_SPECS_DIR}/rust-sysd-manager.spec"
 
-    subprocess.run(["cp", "-v", "rust-sysd-manager.spec", SPEC_FILE_PATH])
+    print(f"{color.CYAN}{color.BOLD}Info:{color.END} replace FIXME licence")
+
+    file_path = "rust-sysd-manager.spec"
+    case_insensitive_search_and_replace(
+        file_path, SPEC_FILE_PATH, r"Version:.*", f"Version:        {G_RPM_VERSION}")
 
 
-def case_insensitive_search_and_replace(file_path, search_word, replace_word):
+def case_insensitive_search_and_replace(file_path, file_path_out, search_word, replace_word):
     with open(file_path, 'r') as file:
 
         pattern = re.compile(search_word)
         file_contents = file.read()
         updated_contents = pattern.sub(replace_word, file_contents)
 
-    with open(file_path, 'w') as file:
+    with open(file_path_out, 'w') as file:
+        print(f"{color.CYAN}{color.BOLD}Info:{color.END} write file to {file_path_out}")
         file.write(updated_contents)
 
 

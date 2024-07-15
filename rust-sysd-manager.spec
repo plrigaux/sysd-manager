@@ -4,7 +4,7 @@
 %global crate sysd-manager
 
 Name:           rust-sysd-manager
-Version:        0.1.2
+Version:        0.x.x
 Release:        %autorelease
 Summary:        GUI to manage systemd units
 
