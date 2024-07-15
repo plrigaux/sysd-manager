@@ -99,18 +99,17 @@ application_id = 'io.github.plrigaux.sysd-manager'
 message('Data dir :', datadir)
 message('Application id:', application_id)
 
-icon_scallable_dir = 'icons/hicolor/scalable/apps/'
 install_data(
-  icon_scallable_dir / '@0@.svg'.format(application_id),
-  install_dir: datadir / icon_scallable_dir,
+  'icons/hicolor/scalable/apps/' / 'io.github.plrigaux.sysd-manager.svg',
+  install_dir: datadir / 'icons/hicolor/scalable/apps/',
 )
 
 install_data(
-  'applications' / '@0@.desktop'.format(application_id),
+  'applications' / 'io.github.plrigaux.sysd-manager.desktop',
   install_dir: '/app/share/applications',
 )
 
 install_data(
-  'metainfo' / '@0@.metainfo.xml'.format(application_id),
+  'metainfo' / 'io.github.plrigaux.sysd-manager.metainfo.xml',
   install_dir: datadir / 'metainfo',
 )

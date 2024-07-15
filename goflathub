@@ -30,7 +30,7 @@ MANIFEST = f"{APP_ID}.yaml"
 parser = argparse.ArgumentParser(description="Copr RPM builder",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("action", choices=[
-                    "clean", "build", "run", "lint"], help="action to perform")
+                    "clean", "build", "run", "lint", "compose", "validate"], help="action to perform")
 
 
 args = parser.parse_args()
@@ -47,6 +47,10 @@ def main():
             run()
         case "lint":
             lint()
+        case "compose":
+            compose()
+        case "validate":
+            validate_meta()
 
 
 def clean():
@@ -80,7 +84,18 @@ def lint():
                     "org.flatpak.Builder", "manifest", MANIFEST])
 
     print(f"{color.BOLD}{color.CYAN}Lint repo{color.END}")
-    subprocess.run(["flatpak","run", "--command=flatpak-builder-lint", "org.flatpak.Builder", "repo", "repo"])
+    subprocess.run(["flatpak", "run", "--command=flatpak-builder-lint",
+                   "org.flatpak.Builder", "repo", "repo"])
+
+
+def compose():
+    print(f"{color.BOLD}{color.CYAN}appstreamcli compose{color.END}")
+    subprocess.run(["appstreamcli", "compose", "builddir/files"])
+
+
+def validate_meta():
+    subprocess.run(["flatpak", "run", "--command=flatpak-builder-lint", "org.flatpak.Builder",
+                   "appstream", f"data/metainfo/{APP_ID}.metainfo.xml"])
 
 
 main()
