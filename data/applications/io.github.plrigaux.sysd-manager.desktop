@@ -1,6 +1,5 @@
 [Desktop Entry]
 Name=Sysd Manager
-Icon=preferences-system
 Exec=sysd-manager
 Terminal=false
 Type=Application
