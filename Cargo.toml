@@ -22,7 +22,7 @@ lto = true
 
 [dependencies]
 dbus = "0.9.7"
-gtk = { version = "0.9.0", package = "gtk4", features = ["v4_14"] }
+gtk = { version = "0.8", package = "gtk4", features = ["v4_14"] }
 log = "0.4"
 libc = "0.2"
 env_logger = "0.11.3"
