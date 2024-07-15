@@ -94,7 +94,7 @@ resources = gnome.compile_resources(
 message('Gnome Resources package dir :', pkgdatadir)
 
 datadir = get_option('prefix') / get_option('datadir')
-application_id = 'org.tool.sysd-manager'
+application_id = 'io.github.plrigaux.sysd-manager'
 
 message('Data dir :', datadir)
 message('Application id:', application_id)

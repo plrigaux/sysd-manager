@@ -24,10 +24,13 @@ G_SOURCES_DIR = f"{G_LOCAL_RPM_DIR}/SOURCES"
 G_SPECS_DIR = f"{G_LOCAL_RPM_DIR}/SPECS"
 COPR_REPO = "sysd-manager"
 
+APP_ID = "io.github.plrigaux.sysd-manager"
+MANIFEST = f"{APP_ID}.yaml"
+
 parser = argparse.ArgumentParser(description="Copr RPM builder",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("action", choices=[
-                    "clean", "build", "run"], help="action to perform")
+                    "clean", "build", "run", "lint"], help="action to perform")
 
 
 args = parser.parse_args()
@@ -42,11 +45,13 @@ def main():
             clean()
         case "run":
             run()
+        case "lint":
+            lint()
 
 
 def clean():
     list_dir = ["builddir", ".flatpak-builder", "target"]
-    
+
     for dir in list_dir:
         print(f"{color.BOLD}Deleting{color.END} {dir}")
         subprocess.run(["rm", "-fr", dir])
@@ -60,12 +65,22 @@ def build():
                     "--repo=repo",
                     "--install",
                     "builddir",
-                    "org.tool.sysd-manager.yaml"])
+                    MANIFEST])
 
 
 def run():
     print("Try to run the Flatpack")
-    subprocess.run(["flatpak", "run", "org.tool.sysd-manager"])
+    # subprocess.run(["flatpak", "run", "io.github.plrigaux.sysd-manager"])
+    subprocess.run(["flatpak", "run", APP_ID])
+
+
+def lint():
+    print(f"{color.BOLD}{color.CYAN}Lint manifest{color.END}")
+    subprocess.run(["flatpak", "run", "--command=flatpak-builder-lint",
+                    "org.flatpak.Builder", "manifest", MANIFEST])
+
+    print(f"{color.BOLD}{color.CYAN}Lint repo{color.END}")
+    subprocess.run(["flatpak","run", "--command=flatpak-builder-lint", "org.flatpak.Builder", "repo", "repo"])
 
 
 main()

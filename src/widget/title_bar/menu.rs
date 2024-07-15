@@ -97,7 +97,7 @@ fn create_about() -> gtk::AboutDialog {
 
     //TODO create const for the path prefix
     match gio::functions::resources_lookup_data(
-        "/org/tool/sysd/manager/org.tool.sysd-manager.svg",
+        "/io/github/plrigaux/sysd-manager/io.github.plrigaux.sysd-manager.svg",
         ResourceLookupFlags::NONE,
     ) {
         Ok(bytes) => {

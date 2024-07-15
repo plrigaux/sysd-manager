@@ -10,7 +10,7 @@ project(
 
 gnome = import('gnome')
 
-base_id = 'org.tool.sysd-manager'
+base_id = 'io.github.plrigaux.sysd-manager'
 
 
 dependency('glib-2.0', version: '>= 2.66')

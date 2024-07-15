@@ -1,5 +1,5 @@
 ---
-id: org.tool.sysd-manager
+id: io.github.plrigaux.sysd-manager
 runtime: org.gnome.Platform
 runtime-version: '46'
 sdk: org.gnome.Sdk
@@ -13,7 +13,7 @@ finish-args:
 - "--socket=wayland"
 - "--device=dri"
 - "--socket=system-bus" #flatpak run --log-session-bus <appid> can be used to find the specific D-Bus permissions needed.
-- "--filesystem=host"
+#- "--filesystem=host"
 - "--filesystem=home"
 - "--talk-name=org.freedesktop.Flatpak"
 - "--env=RUST_LOG=info"
@@ -38,8 +38,6 @@ modules:
   buildsystem: meson
   build-commands:
   - pwd
-#  - install -D --mode=644 data/applications/org.tool.sysd-manager.desktop -t /app/share/applications 
-#  - install -D --mode=644 data/icons/hicolor/scalable/apps/*.svg -t /app/share/icons/hicolor/scalable/apps 
 
   run-tests: true
   config-opts:

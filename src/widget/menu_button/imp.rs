@@ -8,7 +8,7 @@ use log::debug;
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 //#[template(file = "ex_menu_button.ui")]
-#[template(resource = "/org/tool/sysd/manager/ex_menu_button.ui")]
+#[template(resource = "/io/github/plrigaux/sysd-manager/ex_menu_button.ui")]
 pub struct ExMenuButton {
     #[template_child]
     pub toggle: TemplateChild<gtk::ToggleButton>,

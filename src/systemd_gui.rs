@@ -19,7 +19,7 @@ use std::rc::Rc;
 use crate::info::rowitem;
 use strum::IntoEnumIterator;
 
-const APP_ID: &str = "org.tool.sysd-manager";
+const APP_ID: &str = "io.github.plrigaux.sysd-manager";
 
 #[macro_export]
 macro_rules! get_selected_unit {

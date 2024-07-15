@@ -38,8 +38,8 @@ strum = { version = "0.26", features = ["derive"] }
 summary = "A systemd units manager"
 assets = [
     { source = "target/release/sysd-manager", dest = "/usr/bin/sysd-manager", mode = "755" },
-    { source = "data/applications/org.tool.sysd-manager.desktop", dest = "/usr/share/applications/org.tool.sysd-manager.desktop", mode = "644" },
-    { source = "data/icons/hicolor/scalable/apps/org.tool.sysd-manager.svg", dest = "/usr/share/icons/hicolor/scalable/apps/org.tool.sysd-manager.svg", mode = "644" },
+    { source = "data/applications/io.github.plrigaux.sysd-manager.desktop", dest = "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop", mode = "644" },
+    { source = "data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", dest = "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", mode = "644" },
 ]
 
 [package.metadata.generate-rpm.requires]

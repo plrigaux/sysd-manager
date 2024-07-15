@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- https://docs.flathub.org/docs/for-app-authors/metainfo-guidelines/ -->
 <component type="desktop-application">
-  <id>org.tool.sysd-manager</id>
+  <id>org.gnome.sysd-manager</id>
   <metadata_license>CC0</metadata_license>
   <project_license>GPL-3.0+</project_license>
   <name>SysD Manager</name>
@@ -53,5 +53,5 @@ https://hughsie.github.io/oars/index.html
   <developer_name>Pierre-Luc Rigaux</developer_name>
   <update_contact>plrigaux@gmail.com</update_contact>
 
-  <launchable type="desktop-id">org.tool.sysd-manager.desktop</launchable>
+  <launchable type="desktop-id">io.github.plrigaux.sysd-manager.desktop</launchable>
 </component>
