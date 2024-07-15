@@ -37,24 +37,46 @@ COPR_REPO = "sysd-manager"
 
 parser = argparse.ArgumentParser(description="Copr RPM builder",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("action", choices=["clean", "build"], help="action to perform")
+parser.add_argument("action", choices=[
+                    "clean", "build", "run"], help="action to perform")
 
 
 args = parser.parse_args()
 
 
 def main():
-    
 
     match args.action:
+        case "build":
+            build()
         case "clean":
             clean()
+        case "run":
+            run()
 
 
 def clean():
-    subprocess.run(["rm", "-fr", "builddir"])
-    subprocess.run(["rm", "-fr", ".flatpak-builder"])
-    subprocess.run(["rm", "-fr", "target"])
+    list_dir = ["builddir", ".flatpak-builder", "target"]
+    
+    for dir in list_dir:
+        print(f"Deleting {dir}")
+        subprocess.run(["rm", "-fr", dir])
+
+
+def build():
+    subprocess.run(["flatpak-builder",
+                    "--force-clean",
+                    "--user",
+                    "--install-deps-from=flathub",
+                    "--repo=repo",
+                    "--install",
+                    "builddir",
+                    "org.tool.sysd-manager.yaml"])
+
+
+def run():
+    print("Try to run the Flatpack")
+    subprocess.run(["flatpak", "run", "org.tool.sysd-manager"])
 
 
 main()

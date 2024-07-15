@@ -205,12 +205,14 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
     let mut file = match fs::OpenOptions::new().write(true).open(file_path) {
         Ok(file) => file,
         Err(err) => {
-            if err.kind() == ErrorKind::PermissionDenied {
-                write_with_priviledge(file_path, text);
-            } else {
-                error!("Unable to open file: {:?}", err);
+            match err.kind() {
+                ErrorKind::PermissionDenied | ErrorKind::NotFound => {
+                    write_with_priviledge(file_path, text);
+                }
+                _ => {
+                    error!("Unable to open file: {:?}", err);
+                }
             }
-
             return;
         }
     };
@@ -222,13 +224,19 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
 }
 
 fn write_with_priviledge(file_path: &String, text: &GString) {
-    let mut child = std::process::Command::new("pkexec")
-        .arg("tee")
-        .arg(file_path)
+    let mut cmd = commander(&["pkexec", "tee", "tee", file_path]);
+    let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
         .spawn()
         .expect("failed to execute pkexec tee");
+    /*     let mut child = std::process::Command::new("pkexec")
+    .arg("tee")
+    .arg(file_path)
+    .stdin(Stdio::piped())
+    .stdout(Stdio::null())
+    .spawn()
+    .expect("failed to execute pkexec tee"); */
 
     let child_stdin = match child.stdin.as_mut() {
         Some(cs) => cs,
