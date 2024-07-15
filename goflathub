@@ -11,18 +11,7 @@ import glob
 import git
 import argparse
 
-
-class color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
+from build_aux.build_common import *
 
 
 G_RPM_VERSION = None
@@ -59,7 +48,7 @@ def clean():
     list_dir = ["builddir", ".flatpak-builder", "target"]
     
     for dir in list_dir:
-        print(f"Deleting {dir}")
+        print(f"{color.BOLD}Deleting{color.END} {dir}")
         subprocess.run(["rm", "-fr", dir])
 
 

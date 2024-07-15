@@ -1,7 +1,6 @@
 #subdir('icons/hicolor/scalable/apps')
 #subdir('resources')
 
-
 # Desktop file
 desktop_conf = configuration_data()
 message('Desktop file desktop_conf: ', desktop_conf.keys())
@@ -82,22 +81,36 @@ message('No gschema to manipulate')
 #  ],
 #)
 
-
 # Resources
 resources = gnome.compile_resources(
   'resources',
   'resources/resources.gresource.xml',
   gresource_bundle: true,
-  source_dir:  meson.current_build_dir(),
+  source_dir: meson.current_build_dir(),
   install: true,
   install_dir: pkgdatadir,
 )
 
 message('Gnome Resources package dir :', pkgdatadir)
 
+datadir = get_option('prefix') / get_option('datadir')
+application_id = 'org.tool.sysd-manager'
 
-install_data('icons/hicolor/scalable/apps/org.tool.sysd-manager.svg',
-             install_dir : '/app/share/icons')
+message('Data dir :', datadir)
+message('Application id:', application_id)
 
-install_data('applications/org.tool.sysd-manager.desktop',
-             install_dir : '/app/share/applications')
+icon_scallable_dir = 'icons/hicolor/scalable/apps/'
+install_data(
+  icon_scallable_dir / '@0@.svg'.format(application_id),
+  install_dir: datadir / icon_scallable_dir,
+)
+
+install_data(
+  'applications' / '@0@.desktop'.format(application_id),
+  install_dir: '/app/share/applications',
+)
+
+install_data(
+  'metainfo' / '@0@.metainfo.xml'.format(application_id),
+  install_dir: datadir / 'metainfo',
+)

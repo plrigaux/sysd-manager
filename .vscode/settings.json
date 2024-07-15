@@ -5,6 +5,8 @@
         "**/node_modules/*/**": true,
         "**/.hg/store/**": true,
         ".flatpak/**": true,
+        ".flatpak-builder/**": true,
+        "builddir/**": true,
         "_build/**": true
     },
 /*     "rust-analyzer.server.path": "${workspaceFolder}/.flatpak/rust-analyzer.sh",

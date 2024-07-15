@@ -72,7 +72,7 @@ else
 endif
 
 meson.add_dist_script(
-  'build-aux/dist-vendor.sh',
+  'build_aux/dist-vendor.sh',
   meson.project_build_root() / 'meson-dist' / meson.project_name() + '-' + version,
   meson.project_source_root()
 )

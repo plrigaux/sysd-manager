@@ -7,3 +7,4 @@ Cargo.lock
 /tmp
 /repo
 /builddir
+/build_aux/__pycache__
