@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager"
-version = "0.1.2"
+version = "0.1.3"
 edition = '2021'
 license = "GPLv3+"
 repository = "https://github.com/plrigaux/sysd-manager"
@@ -8,7 +8,7 @@ readme = "README.md"
 authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
 description = "A GUI to manage systemd units"
 keywords = [ "gtk4", "linux", "systemd" ]
-rust-version = "1.78"
+rust-version = "1.79"
 build = "build.rs"
 include = ["build.rs", "/src", "LICENCE", "README.md", "/data", "!/**/meson.build"]
 
@@ -22,7 +22,7 @@ lto = true
 
 [dependencies]
 dbus = "0.9.7"
-gtk = { version = "0.8.2", package = "gtk4", features = ["v4_12"] }
+gtk = { version = "0.9.0", package = "gtk4", features = ["v4_12"] }
 log = "0.4"
 libc = "0.2"
 env_logger = "0.11.3"

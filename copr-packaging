@@ -37,14 +37,16 @@ COPR_REPO = "sysd-manager"
 
 parser = argparse.ArgumentParser(description="Copr RPM builder",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument("action", 
+                    help="ction to perform", default="mock", choices=["mock", "spec", "srpm", "copr"])
+
 parser.add_argument("-d", "--allow_dirty", action="store_true", dest="allow_dirty",
                     help="allow not commited file", default=False)
 
 parser.add_argument("-a", "--arch",  dest="architecture",
                     help="build architecture", default="x86_64")
 
-parser.add_argument("-m", "--mode",  dest="mode",
-                    help="build mode", default="mock", choices=["mock", "spec", "srpm", "copr"])
 
 parser.add_argument("-o", "--only",  dest="only", action="store_true",
                     help="only use build mode", default=False)
@@ -59,7 +61,7 @@ print(f"{color.BOLD}Build for {color.CYAN}Copr{
 def main():
     init()
 
-    match args.mode:
+    match args.action:
         case "spec":
             build_spec()
         case "srpm":
