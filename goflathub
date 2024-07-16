@@ -26,11 +26,12 @@ COPR_REPO = "sysd-manager"
 
 APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
+FLATHUB_DIR = "../flathub"
 
 parser = argparse.ArgumentParser(description="Copr RPM builder",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("action", choices=[
-                    "clean", "build", "run", "lint", "compose", "validate"], help="action to perform")
+                    "clean", "build", "run", "lint", "compose", "validate", "flathub"], help="action to perform")
 
 
 args = parser.parse_args()
@@ -51,6 +52,9 @@ def main():
             compose()
         case "validate":
             validate()
+        case "flathub":
+            add_required_files()
+            
 
 
 def clean():
@@ -101,5 +105,12 @@ def validate():
     
     lint()
 
+
+def add_required_files():
+    print(f"{color.BOLD}{color.CYAN}Add the required files for the submission{color.END}")
+    # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
+    subprocess.run(["cp", "-v", MANIFEST, FLATHUB_DIR])
+    
+    
 
 main()
