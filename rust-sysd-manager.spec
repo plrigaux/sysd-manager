@@ -8,7 +8,7 @@ Version:        0.x.x
 Release:        %autorelease
 Summary:        GUI to manage systemd units
 
-License:        GPLv3+
+License:        GPL-3.0-or-later
 URL:            https://crates.io/crates/sysd-manager
 Source:         %{crates_source}
 

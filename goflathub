@@ -28,7 +28,7 @@ COPR_REPO = "sysd-manager"
 APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
 FLATHUB_DIR = "../flathub"
-
+CARGO_GEN_SOURES = "cargo-sources.json"
 
 def main():
     parser = argparse.ArgumentParser(description="Copr RPM builder",
@@ -58,7 +58,7 @@ def main():
 
 
 def clean():
-    list_dir = ["builddir", ".flatpak-builder"]
+    list_dir = ["builddir", ".flatpak-builder", CARGO_GEN_SOURES]
 
     for dir in list_dir:
         print(f"{color.BOLD}Deleting{color.END} {dir}")
@@ -66,20 +66,31 @@ def clean():
 
 
 def build():
-    subprocess.run(["flatpak-builder",
+    # flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir <manifest>
+    # flatpak-builder                 --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir <manifest>
+
+    """     subprocess.run(["flatpak",
+                    "run",
+                    "org.flatpak.Builder"
                     "--force-clean",
+                    "--sandbox,"
                     "--user",
+                    "--install",
                     "--install-deps-from=flathub",
+                    "--ccache",
                     "--mirror-screenshots-url=https://dl.flathub.org/media/",
                     "--repo=repo",
-                    "--install",
                     "builddir",
                     MANIFEST])
+    """
+    cargo_gen()
+    subprocess.run(
+        [f"flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir {MANIFEST}"]
+        , shell=True)
 
 
 def run():
-    print("Try to run the Flatpack")
-    # subprocess.run(["flatpak", "run", "io.github.plrigaux.sysd-manager"])
+    print(f"Try to run the Flatpack {color.BOLD}{color.CYAN}{APP_ID}{color.END}")
     subprocess.run(["flatpak", "run", APP_ID])
 
 
@@ -91,7 +102,6 @@ def lint():
     print(f"{color.BOLD}{color.CYAN}Lint repo{color.END}")
     subprocess.run(["flatpak", "run", "--command=flatpak-builder-lint",
                    "org.flatpak.Builder", "repo", "repo"])
-
 
 def compose():
     print(f"{color.BOLD}{color.CYAN}appstreamcli compose{color.END}")
@@ -117,7 +127,7 @@ def cargo_gen():
     print(f"{color.BOLD}{color.CYAN}Generate manifest json{
           color.END} from {color.BOLD}Cargo.lock{color.END}")
 
-    outfile = "cargo-sources.json"
+    outfile = CARGO_GEN_SOURES
     cargo_lock = "Cargo.lock"
     logging.basicConfig(level=logging.DEBUG)
     git_tarballs = False
