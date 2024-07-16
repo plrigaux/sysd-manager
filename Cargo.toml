@@ -2,7 +2,7 @@
 name = "sysd-manager"
 version = "0.1.3"
 edition = '2021'
-license = "GPLv3+"
+license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
 readme = "README.md"
 authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
