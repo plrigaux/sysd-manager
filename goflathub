@@ -10,9 +10,10 @@ import re
 import glob
 import git
 import argparse
-
+import logging
+import json
 from build_aux.build_common import *
-
+import build_aux.flatpak_cargo_generator as cg
 
 G_RPM_VERSION = None
 G_SRPM_PATH = None
@@ -28,16 +29,14 @@ APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
 FLATHUB_DIR = "../flathub"
 
-parser = argparse.ArgumentParser(description="Copr RPM builder",
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("action", choices=[
-                    "clean", "build", "run", "lint", "compose", "validate", "flathub"], help="action to perform")
-
-
-args = parser.parse_args()
-
 
 def main():
+    parser = argparse.ArgumentParser(description="Copr RPM builder",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("action", choices=[
+        "clean", "build", "run", "lint", "compose", "validate", "flathub", "cargogen"], help="action to perform")
+
+    args = parser.parse_args()
 
     match args.action:
         case "build":
@@ -54,7 +53,8 @@ def main():
             validate()
         case "flathub":
             add_required_files()
-            
+        case "cargogen":
+            cargo_gen()
 
 
 def clean():
@@ -102,15 +102,30 @@ def validate():
     print(f"{color.BOLD}{color.CYAN}Validate metainfo.xml{color.END}")
     subprocess.run(["flatpak", "run", "--command=flatpak-builder-lint", "org.flatpak.Builder",
                    "appstream", f"data/metainfo/{APP_ID}.metainfo.xml"])
-    
+
     lint()
 
 
 def add_required_files():
-    print(f"{color.BOLD}{color.CYAN}Add the required files for the submission{color.END}")
+    print(f"{color.BOLD}{
+          color.CYAN}Add the required files for the submission{color.END}")
     # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
     subprocess.run(["cp", "-v", MANIFEST, FLATHUB_DIR])
-    
-    
+
+
+def cargo_gen():
+    print(f"{color.BOLD}{color.CYAN}Generate manifest json{
+          color.END} from {color.BOLD}Cargo.lock{color.END}")
+
+    outfile = "cargo-sources.json"
+    cargo_lock = "Cargo.lock"
+    logging.basicConfig(level=logging.DEBUG)
+    git_tarballs = False
+
+    generated_sources = cg.asyncio.run(cg.generate_sources(cg.load_toml(cargo_lock),
+                                                           git_tarballs=git_tarballs))
+    with open(outfile, 'w') as out:
+        json.dump(generated_sources, out, indent=4, sort_keys=False)
+
 
 main()
