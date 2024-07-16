@@ -5,5 +5,5 @@ Terminal=false
 Type=Application
 Icon=io.github.plrigaux.sysd-manager
 StartupNotify=true
-Categories=GNOME;GTK;System;
-Keywords=Systemd;Systemctl;Services;
+Categories=Utility;System;Settings
+Keywords=Systemd;Systemctl;Services;log;

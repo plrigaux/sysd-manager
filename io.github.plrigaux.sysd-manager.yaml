@@ -3,6 +3,9 @@ id: io.github.plrigaux.sysd-manager
 runtime: org.gnome.Platform
 runtime-version: '46'
 sdk: org.gnome.Sdk
+#runtime: org.freedesktop.Platform
+#runtime-version: '23.08'
+#sdk: org.freedesktop.Sdk
 sdk-extensions:
 - org.freedesktop.Sdk.Extension.rust-stable
 - org.freedesktop.Sdk.Extension.llvm16
@@ -13,9 +16,8 @@ finish-args:
 - "--socket=wayland"
 - "--device=dri"
 - "--socket=system-bus" #flatpak run --log-session-bus <appid> can be used to find the specific D-Bus permissions needed.
-#- "--filesystem=host"
 - "--filesystem=home"
-- "--talk-name=org.freedesktop.Flatpak"
+#- "--talk-name=org.freedesktop.Flatpak"
 - "--env=RUST_LOG=info"
 - "--env=G_MESSAGES_DEBUG=none"
 - "--env=RUST_BACKTRACE=1"

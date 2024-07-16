@@ -8,6 +8,7 @@
   <project_license>GPL-3.0+</project_license>
   <name>SysD Manager</name>
   <summary>A GUI to manage systemd units</summary>
+<!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
   <description>
     <p>This application exists to allow user to manage their systemd units via a GUI. Not only
       are you able to make changes to the enablement and running status of each of the units, but
@@ -15,15 +16,15 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/plrigaux/sysd-manager/tree/main/screenshots/unit%20file.png</image>
+      <image>https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit%20file.png</image>
       <caption>Unit Files</caption>
     </screenshot>
     <screenshot>
-      <image>https://github.com/plrigaux/sysd-manager/blob/main/screenshots/journal.png?raw=true</image>
+      <image>https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal.png</image>
       <caption>Unit Journal</caption>
     </screenshot>
     <screenshot>
-      <image>https://github.com/plrigaux/sysd-manager/tree/main/screenshots/analyse%20blame.png</image>
+      <image>https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/analyse%20blame.png</image>
       <caption>Analyze</caption>
     </screenshot>
   </screenshots>

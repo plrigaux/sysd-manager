@@ -50,7 +50,7 @@ def main():
         case "compose":
             compose()
         case "validate":
-            validate_meta()
+            validate()
 
 
 def clean():
@@ -66,6 +66,7 @@ def build():
                     "--force-clean",
                     "--user",
                     "--install-deps-from=flathub",
+                    "--mirror-screenshots-url=https://dl.flathub.org/media/",
                     "--repo=repo",
                     "--install",
                     "builddir",
@@ -93,9 +94,12 @@ def compose():
     subprocess.run(["appstreamcli", "compose", "builddir/files"])
 
 
-def validate_meta():
+def validate():
+    print(f"{color.BOLD}{color.CYAN}Validate metainfo.xml{color.END}")
     subprocess.run(["flatpak", "run", "--command=flatpak-builder-lint", "org.flatpak.Builder",
                    "appstream", f"data/metainfo/{APP_ID}.metainfo.xml"])
+    
+    lint()
 
 
 main()

@@ -15,8 +15,8 @@ base_id = 'io.github.plrigaux.sysd-manager'
 
 dependency('glib-2.0', version: '>= 2.66')
 dependency('gio-2.0', version: '>= 2.66')
-dependency('gtk4', version: '>= 4.0.0')
-
+#dependency('gtk4', version: '>= 4.0.0')
+dependency('gtk4', version: '>= 4.14.0')
 
 find_program('glib-compile-resources')
 #glib_compile_schemas = find_program('glib-compile-schemas')
@@ -82,6 +82,13 @@ if get_option('profile') == 'development'
   message('Setting up git pre-commit hook..')
   run_command('cp', '-f', 'hooks/pre-commit.hook', '.git/hooks/pre-commit', check: false)
 endif
+
+message('install screenshots') 
+
+install_subdir(
+  'screenshots',
+  install_dir: '/app/share/',
+)
 
 
 subdir('data')

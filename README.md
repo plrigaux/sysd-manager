@@ -1,12 +1,12 @@
 # SysD Manager
 
-This application exists to allow user to manage their **systemd units** via a GUI. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files, check the journal logs. 
+This application exists to easily allow user to manage their **systemd units** via a GUI. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs. 
 
 ## Features
 
 Here are __Sysd Manager__ main features :
 * Enable or disable a unit
-* Actrivate or desactivate a unit
+* Activate or desactivate a unit
 * View and modify unit file
 * List of all running units, ordered by the time they took to initialize __systemd-analyze blame__
 
@@ -21,7 +21,7 @@ Any Linux distribution that has adopted **systemd**.
 
 ![Unit Files](screenshots/unit%20file.png)
 
-![Unit Journal](screenshots/Journal.png)
+![Unit Journal](screenshots/journal.png)
 
 ![Analyze](screenshots/analyse%20blame.png)
 
