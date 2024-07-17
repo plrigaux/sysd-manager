@@ -1,3 +1,5 @@
+import subprocess
+
 class color:
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
@@ -9,3 +11,11 @@ class color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
+
+def cmd_run(cmd : list, shell=False):
+    
+    cmd_str = " ".join(cmd)
+    print(f"{color.DARKCYAN}{cmd_str}{color.END}")
+    
+    ret = subprocess.run(cmd, shell=shell)
+    ret.check_returncode()

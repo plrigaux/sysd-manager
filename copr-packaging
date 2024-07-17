@@ -10,19 +10,7 @@ import re
 import glob
 import git
 import argparse
-
-
-class color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
+from build_aux.build_common import *
 
 
 G_RPM_VERSION = None
@@ -83,26 +71,12 @@ def main():
 def build_spec():
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
 
-    subprocess.run(["git", "archive", "main",
+    cmd_run(["git", "archive", "main",
                     "--format=tar",
                     f"--prefix=sysd-manager-{G_RPM_VERSION}/",
                     f"--output={G_SOURCES_DIR}/sysd-manager-{G_RPM_VERSION}.crate"])
-
+    
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
-    """     
-    subprocess.run(
-        ["rust2rpm", f"./sysd-manager-{G_RPM_VERSION}.crate", f"{G_RPM_VERSION}"], cwd=G_SOURCES_DIR)
-
-    tmp_spec_file_path = f"{G_SOURCES_DIR}/rust-sysd-manager.spec"
-
-    print(f"{color.CYAN}{color.BOLD}Info:{color.END} replace FIXME licence")
-
-    case_insensitive_search_and_replace(
-        tmp_spec_file_path, r"License:\s+#\s*FIXME", "License:        GPL-3.0-or-later")
-
-    subprocess.run(["mv", "-v", tmp_spec_file_path,
-                   f"{G_LOCAL_RPM_DIR}/SPECS"]) 
-    """
 
     global SPEC_FILE_PATH
     SPEC_FILE_PATH = f"{G_SPECS_DIR}/rust-sysd-manager.spec"
@@ -156,9 +130,9 @@ def init():
     # use user's arch for rpm
     G_MOCK_RPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
 
-    subprocess.run(["rm", "-rf", G_LOCAL_RPM_DIR])
-    subprocess.run(["mkdir", "-p", f"{G_LOCAL_RPM_DIR}/SPECS"])
-    subprocess.run(["mkdir", "-p", G_SOURCES_DIR])
+    cmd_run(["rm", "-rf", G_LOCAL_RPM_DIR])
+    cmd_run(["mkdir", "-p", f"{G_LOCAL_RPM_DIR}/SPECS"])
+    cmd_run(["mkdir", "-p", G_SOURCES_DIR])
 
     with open("Cargo.toml", "rb") as f:
         cargo_toml = tomllib.load(f)
@@ -170,18 +144,18 @@ def init():
 def buildSRPM():
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} build SRPM")
 
-    subprocess.run(["tree", G_LOCAL_RPM_DIR])
+    cmd_run(["tree", G_LOCAL_RPM_DIR])
 
-    subprocess.run(["mock", "--buildsrpm",
+    cmd_run(["mock", "--buildsrpm",
                     "--root", G_MOCK_SRPM_ROOT,
                     "--spec", SPEC_FILE_PATH,
                     "--sources", G_SOURCES_DIR])
 
     print(f"{color.CYAN}{color.BOLD}Info:{
           color.END} copy SRPM to '{G_LOCAL_RPM_DIR}'")
-    subprocess.run(["ls", "-l", f"/var/lib/mock/{G_MOCK_SRPM_ROOT}/result"])
+    cmd_run(["ls", "-l", f"/var/lib/mock/{G_MOCK_SRPM_ROOT}/result"])
 
-    subprocess.run(
+    cmd_run(
         [f"cp -v /var/lib/mock/{G_MOCK_SRPM_ROOT}/result/rust-sysd-manager-*.src.rpm {G_LOCAL_RPM_DIR}"], shell=True)
 
     set_srpm_path()
@@ -200,7 +174,7 @@ def mock():
     print(f"{color.BOLD}{color.CYAN}Info:${color.END} Build localy RPM (mock) for ${
           color.BOLD} {ARCH}{color.END}")
 
-    subprocess.run(["mock", "--rebuild",
+    cmd_run(["mock", "--rebuild",
                     "--root", G_MOCK_SRPM_ROOT,
                     "--spec", SPEC_FILE_PATH,
                     G_SRPM_PATH])
@@ -208,9 +182,9 @@ def mock():
     location = f"/var/lib/mock/{G_MOCK_RPM_ROOT}/result"
     print(f"{color.BOLD}{color.CYAN}Info:{
           color.END} Build result on '{location}'")
-    subprocess.run(["ls", "-l", location])
+    cmd_run(["ls", "-l", location])
 
-    subprocess.run(
+    cmd_run(
         [f"cp -v /var/lib/mock/{G_MOCK_RPM_ROOT}/result/sysd-manager-{G_RPM_VERSION}*{ARCH}.rpm {G_LOCAL_RPM_DIR}"], shell=True)
 
 
@@ -218,7 +192,7 @@ def copr():
     print(f"{color.BOLD}{color.CYAN}Info:{color.END} copr build {color.BOLD}{COPR_REPO}{
           color.END} of {color.BOLD}{G_SRPM_PATH}{color.END} for {color.BOLD}{ARCH}{color.END}")
 
-    subprocess.run(["copr-cli", "build", "-r",
+    cmd_run(["copr-cli", "build", "-r",
                    G_MOCK_RPM_ROOT, COPR_REPO, G_SRPM_PATH])
 
 
