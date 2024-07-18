@@ -125,6 +125,7 @@ def init():
         os_release = dict(reader)
 
     VERSION_ID = os_release['VERSION_ID']
+    #VERSION_ID="rawhide"
     # use host's arch for srpm
     G_MOCK_SRPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
     # use user's arch for rpm
