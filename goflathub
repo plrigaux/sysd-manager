@@ -30,16 +30,17 @@ APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
 FLATHUB_DIR = "../flathub"
 
-parser = argparse.ArgumentParser(description="Copr RPM builder",
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("action", choices=[
-                    "clean", "build", "run", "lint", "compose", "validate", "flathub","generate"], help="action to perform")
-
-
-args = parser.parse_args()
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Copr RPM builder",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("action", choices=[
+                    "clean", "build", "run", "lint", "compose", "validate", "flathub", "generate"], help="action to perform")
+
+    parser.add_argument("--logbus", action="store_true", help="log dbus message on run")
+
+    args = parser.parse_args()
 
     match args.action:
         case "build":
@@ -47,7 +48,7 @@ def main():
         case "clean":
             clean()
         case "run":
-            run()
+            run(args.logbus)
         case "lint":
             lint()
         case "compose":
@@ -89,11 +90,14 @@ def build():
     #                 MANIFEST])
     cmd_run([f"flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir {MANIFEST}"], shell=True)
 
-def run():
+def run(logbus=False):
     print("Try to run the Flatpack")
-    # cmd_run(["flatpak", "run", "io.github.plrigaux.sysd-manager"])
-    cmd_run(["flatpak", "run", APP_ID])
 
+    cmd = ["flatpak", "run", APP_ID]
+    if (logbus):
+        cmd.insert(2, "--log-session-bus")
+
+    cmd_run(cmd)
 
 def lint():
     print(f"{color.BOLD}{color.CYAN}Lint manifest{color.END}")

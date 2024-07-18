@@ -75,6 +75,10 @@ sudo dnf install sysd-manager
 ### Generate RPM for copr
 
 1 be in the mock group
+Add your user name to the mock group
+```
+sudo usermod -a -G mock <my user name>
+```
 
 ### Generate a RPM localy
 You can generate youe rpm localy with the help of the crate `cargo-generate-rpm`.
