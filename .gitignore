@@ -8,3 +8,4 @@ Cargo.lock
 /repo
 /builddir
 /build_aux/__pycache__
+cargo-sources.json

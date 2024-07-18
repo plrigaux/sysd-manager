@@ -24,8 +24,8 @@ finish-args:
 - "--env=SYSDMNG_DIST_MODE=flatpack"
 build-options:
   append-path: "/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm16/bin"
-  build-args:
-  - "--share=network"
+  #  build-args:
+  #- "--share=network"
   env:
     CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: clang
@@ -37,13 +37,18 @@ build-options:
   - "--share=network"
 modules:
 - name: sysd-manager
-  buildsystem: meson
+  buildsystem: simple
+  build-options:
+    env:
+      CARGO_HOME: /run/build/sysd-manager/cargo
   build-commands:
-  - pwd
-
-  run-tests: true
-  config-opts:
-  - "-Dprofile=development"
+  - cargo --offline fetch --manifest-path Cargo.toml --verbose
+  - cargo --offline build --release --verbose
+  - install -Dm755 target/release/sysd-manager -t /app/bin/
+  - install -Dm644 data/applications/io.github.plrigaux.sysd-manager.desktop -t /app/share/applications
+  - install -Dm644 data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg -t /app/share/icons/hicolor/scalable/apps
+  - install -Dm644 screenshots/* -t /app/screenshots
   sources:
-  - type: dir
-    path: "./"
+    - type: dir
+      path: .
+    - cargo-sources.json
