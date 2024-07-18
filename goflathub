@@ -73,18 +73,21 @@ def build():
     print(f"{color.BOLD}{color.CYAN}Building for flatpak{color.END}")
 
     generate()
-    cmd_run(["flatpak-builder",
-                    "--force-clean",
-                    "--sandbox",
-                    "--user",
-                    "--install",
-                    "--install-deps-from=flathub",
-                    "--ccache",
-                    "--mirror-screenshots-url=https://dl.flathub.org/media/",
-                    "--repo=repo",
-                    "builddir",
-                    MANIFEST])
-
+    #Info https://docs.flathub.org/docs/for-app-authors/submission/
+    # cmd_run(["flatpak",
+    #                 "run",
+    #                 "org.flatpak.Builder",
+    #                 "--force-clean",
+    #                 "--sandbox",
+    #                 "--user",
+    #                 "--install",
+    #                 "--install-deps-from=flathub",
+    #                 "--ccache",
+    #                 "--mirror-screenshots-url=https://dl.flathub.org/media/",
+    #                 "--repo=repo",
+    #                 "builddir",
+    #                 MANIFEST])
+    cmd_run([f"flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir {MANIFEST}"], shell=True)
 
 def run():
     print("Try to run the Flatpack")

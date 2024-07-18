@@ -50,9 +50,10 @@ For the moment:
 * Download and install rust https://www.rust-lang.org/tools/install
 * Install needed libraries (GTK4, ...)
   * Install GTK 4 and the build essentials. https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html
+  * Install dbus develelopment package
 * Compile and run  ```cargo run```
 
-### Intall on RHEL, Fedora, and CentOS based distributions
+### Install on RHEL, Fedora, and CentOS based distributions
 You can install the application from COPR
 
 #### Add the repo
@@ -71,6 +72,9 @@ Then you can simply install sysd-manager with the following command
 ```
 sudo dnf install sysd-manager
 ```
+### Generate RPM for copr
+
+1 be in the mock group
 
 ### Generate a RPM localy
 You can generate youe rpm localy with the help of the crate `cargo-generate-rpm`.
@@ -112,8 +116,23 @@ It will create a rpm file in the target/generate-rpm subdirectory.
 ### Flatpack
 *For now Flatpack is too restrictive*
 
+#### Install the builder
+
+```
+flatpak install org.flatpak.Builder
+```
+
+#### Possible issue
+
+No remote refs found for ‘flathub’
+
+
+```
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```
+
 ### APT
-*Later*
+*Later waiting for a contributor or when I will reinstall e Debian like distro*
 
 
 
