@@ -1,20 +1,11 @@
 #!/usr/bin/env python3
 
-from pprint import pprint
-import pathlib
-import csv
-import subprocess
-import tomllib
-import os
-import re
-import glob
-import git
 import argparse
 import logging
 import json
 
 from build_aux.build_common import *
-import build_aux.flatpak_cargo_generator as cg 
+import build_aux.flatpak_cargo_generator as cg
 
 G_RPM_VERSION = None
 G_SRPM_PATH = None
@@ -31,15 +22,27 @@ MANIFEST = f"{APP_ID}.yaml"
 FLATHUB_DIR = "../flathub"
 
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Copr RPM builder",
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("action", choices=[
-                    "clean", "build", "run", "lint", "compose", "validate", "flathub", "generate"], help="action to perform")
+    parser = argparse.ArgumentParser(
+        description="Copr RPM builder",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "action",
+        choices=[
+            "clean",
+            "build",
+            "run",
+            "lint",
+            "compose",
+            "validate",
+            "flathub",
+            "generate",
+        ],
+        help="action to perform",
+    )
 
     parser.add_argument("--logbus", action="store_true", help="log dbus message on run")
-
     args = parser.parse_args()
 
     match args.action:
@@ -59,7 +62,6 @@ def main():
             add_required_files()
         case "generate":
             generate()
-            
 
 
 def clean():
@@ -74,7 +76,7 @@ def build():
     print(f"{color.BOLD}{color.CYAN}Building for flatpak{color.END}")
 
     generate()
-    #Info https://docs.flathub.org/docs/for-app-authors/submission/
+    # Info https://docs.flathub.org/docs/for-app-authors/submission/
     # cmd_run(["flatpak",
     #                 "run",
     #                 "org.flatpak.Builder",
@@ -88,25 +90,48 @@ def build():
     #                 "--repo=repo",
     #                 "builddir",
     #                 MANIFEST])
-    cmd_run([f"flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir {MANIFEST}"], shell=True)
+    cmd_run(
+        [
+            f"flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir {MANIFEST}"
+        ],
+        shell=True,
+    )
+
 
 def run(logbus=False):
     print("Try to run the Flatpack")
 
     cmd = ["flatpak", "run", APP_ID]
-    if (logbus):
+    if logbus:
         cmd.insert(2, "--log-session-bus")
 
     cmd_run(cmd)
 
+
 def lint():
     print(f"{color.BOLD}{color.CYAN}Lint manifest{color.END}")
-    cmd_run(["flatpak", "run", "--command=flatpak-builder-lint",
-                    "org.flatpak.Builder", "manifest", MANIFEST])
+    cmd_run(
+        [
+            "flatpak",
+            "run",
+            "--command=flatpak-builder-lint",
+            "org.flatpak.Builder",
+            "manifest",
+            MANIFEST,
+        ]
+    )
 
     print(f"{color.BOLD}{color.CYAN}Lint repo{color.END}")
-    cmd_run(["flatpak", "run", "--command=flatpak-builder-lint",
-                   "org.flatpak.Builder", "repo", "repo"])
+    cmd_run(
+        [
+            "flatpak",
+            "run",
+            "--command=flatpak-builder-lint",
+            "org.flatpak.Builder",
+            "repo",
+            "repo",
+        ]
+    )
 
 
 def compose():
@@ -116,30 +141,41 @@ def compose():
 
 def validate():
     print(f"{color.BOLD}{color.CYAN}Validate metainfo.xml{color.END}")
-    cmd_run(["flatpak", "run", "--command=flatpak-builder-lint", "org.flatpak.Builder",
-                   "appstream", f"data/metainfo/{APP_ID}.metainfo.xml"])
-    
+    cmd_run(
+        [
+            "flatpak",
+            "run",
+            "--command=flatpak-builder-lint",
+            "org.flatpak.Builder",
+            "appstream",
+            f"data/metainfo/{APP_ID}.metainfo.xml",
+        ]
+    )
+
     lint()
 
 
 def add_required_files():
-    print(f"{color.BOLD}{color.CYAN}Add the required files for the submission{color.END}")
+    print(
+        f"{color.BOLD}{color.CYAN}Add the required files for the submission{color.END}"
+    )
     # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
     cmd_run(["cp", "-v", MANIFEST, FLATHUB_DIR])
-    
+
+
 def generate():
     print(f"{color.BOLD}{color.CYAN}Generate cargo sources{color.END}")
     cargo_lock = "Cargo.lock"
-    outfile = 'cargo-sources.json'
+    outfile = "cargo-sources.json"
     loglevel = logging.DEBUG
     logging.basicConfig(level=loglevel)
     git_tarballs = False
 
-    generated_sources = cg.asyncio.run(cg.generate_sources(cg.load_toml(cargo_lock),
-                                    git_tarballs=git_tarballs))
-    with open(outfile, 'w') as out:
+    generated_sources = cg.asyncio.run(
+        cg.generate_sources(cg.load_toml(cargo_lock), git_tarballs=git_tarballs)
+    )
+    with open(outfile, "w") as out:
         json.dump(generated_sources, out, indent=4, sort_keys=False)
-
 
 
 main()

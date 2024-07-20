@@ -1,5 +1,5 @@
-extern crate gtk;
 extern crate env_logger;
+extern crate gtk;
 extern crate log;
 
 mod systemd;

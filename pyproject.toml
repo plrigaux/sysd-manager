@@ -1,0 +1,33 @@
+[project]
+dependencies = [
+  "aiohttp>=3.9.5",
+  "toml=^0.10.2"
+]
+
+[tool.pyright]
+# include = ["src"]
+exclude = ["**/node_modules",
+  "**/__pycache__",
+  "src",
+  "**/target",
+  "repo",
+  "tmp",
+  "builddir", 
+  ".flatpak-builder"
+]
+# ignore = ["src/oldstuff"]
+# defineConstant = { DEBUG = true }
+# stubPath = "src/stubs"
+#
+# reportMissingImports = true
+# reportMissingTypeStubs = false
+#
+# pythonVersion = "3.6"
+# pythonPlatform = "Linux"
+#
+# executionEnvironments = [
+#   { root = "src/web", pythonVersion = "3.5", pythonPlatform = "Windows", extraPaths = [ "src/service_libs" ] },
+#   { root = "src/sdk", pythonVersion = "3.0", extraPaths = [ "src/backend" ] },
+#   { root = "src/tests", extraPaths = ["src/tests/e2e", "src/sdk" ]},
+#   { root = "src" }
+# ]
