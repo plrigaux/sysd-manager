@@ -8,6 +8,7 @@ use gtk::gio;
 use gtk::glib;
 mod analyze;
 mod info;
+mod settings;
 mod widget;
 
 use log::{info, warn};
