@@ -3,6 +3,14 @@ use gtk::gio;
 use log::info;
 use log::warn;
 
+
+/* const MATE: &str = "/org/mate/desktop/interface/gtk-theme";
+const GNOME: &str = "/org/gnome/desktop/interface/gtk-theme";
+const CINNAMON: &str = "/org/cinnamon/desktop/interface/gtk-theme"; */
+
+/*
+TODO check https://github.com/bilelmoussaoui/ashpd for the rust interface on https://github.com/flatpak/xdg-desktop-portal
+*/
 pub fn set_color_scheme(settings: &gtk::Settings) {
     const SCHEMA: &str = "org.gnome.desktop.interface";
     const KEY: &str = "color-scheme";

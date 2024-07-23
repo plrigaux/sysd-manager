@@ -1,3 +1,9 @@
 {
-    "mesonbuild.configureOnOpen": false
+    "mesonbuild.configureOnOpen": false,
+    "files.watcherExclude": {
+        "builddir/**": true
+    },
+    "rust-analyzer.files.excludeDirs": [
+        "builddir"
+    ]
 }

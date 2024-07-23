@@ -77,25 +77,29 @@ def build():
 
     generate()
     # Info https://docs.flathub.org/docs/for-app-authors/submission/
-    # cmd_run(["flatpak",
-    #                 "run",
-    #                 "org.flatpak.Builder",
-    #                 "--force-clean",
-    #                 "--sandbox",
-    #                 "--user",
-    #                 "--install",
-    #                 "--install-deps-from=flathub",
-    #                 "--ccache",
-    #                 "--mirror-screenshots-url=https://dl.flathub.org/media/",
-    #                 "--repo=repo",
-    #                 "builddir",
-    #                 MANIFEST])
     cmd_run(
+        [
+            "flatpak",
+            "run",
+            "org.flatpak.Builder",
+            "--force-clean",
+            "--sandbox",
+            "--user",
+            "--install",
+            "--install-deps-from=flathub",
+            "--ccache",
+            "--mirror-screenshots-url=https://dl.flathub.org/media/",
+            "--repo=repo",
+            "builddir",
+            MANIFEST,
+        ]
+    )
+    """     cmd_run(
         [
             f"flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir {MANIFEST}"
         ],
-        shell=True,
-    )
+        shell=True, 
+    )"""
 
 
 def run(logbus=False):

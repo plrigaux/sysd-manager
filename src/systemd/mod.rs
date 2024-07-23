@@ -16,6 +16,9 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use sysdbus::dbus::arg::ArgType;
 
+
+use crate::widget::window;
+
 pub mod enums;
 
 const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
@@ -265,7 +268,7 @@ pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String
     sysdbus::fetch_system_unit_info(&unit.object_path())
 }
 
-pub fn test_flatpak_spawn(window: &gtk::ApplicationWindow) {
+pub fn test_flatpak_spawn(window: &window::Window) {
     if !is_flatpak_mode() {
         return;
     }

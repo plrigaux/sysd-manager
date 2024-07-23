@@ -1,9 +1,9 @@
 use gtk::pango::{self, Weight};
 use gtk::{gio, prelude::*, SingleSelection};
-use gtk::{Application, ApplicationWindow, Orientation};
+use gtk::{Application, Orientation};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
-use crate::widget::title_bar;
+use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 
 use crate::systemd;
@@ -19,7 +19,7 @@ use std::rc::Rc;
 use crate::info::rowitem;
 use strum::IntoEnumIterator;
 
-const APP_ID: &str = "io.github.plrigaux.sysd-manager";
+pub const APP_ID: &str = "io.github.plrigaux.sysd-manager";
 
 #[macro_export]
 macro_rules! get_selected_unit {
@@ -765,16 +765,22 @@ fn build_ui(application: &Application) {
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
 
-    // Create a window
+    let window2 = widget::window::Window::new(application);
+    window2.set_default_height(720);
+    window2.set_default_width(1280);
+    window2.set_child(Some(&main_box));
+    window2.set_titlebar(Some(&title_bar_elements.title_bar));
+
+    /*     // Create a window
     let window: ApplicationWindow = ApplicationWindow::builder()
         .application(application)
         .default_height(720)
         .default_width(1280)
         .child(&main_box)
         .titlebar(&title_bar_elements.title_bar)
-        .build();
+        .build(); */
 
-    let settings = window.settings();
+    let settings = window2.settings();
 
     super::settings::set_color_scheme(&settings);
 
@@ -859,9 +865,9 @@ fn build_ui(application: &Application) {
             }
         });
     }
-    window.present();
+    window2.present();
 
-    systemd::test_flatpak_spawn(&window);
+    systemd::test_flatpak_spawn(&window2);
 }
 
 fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch) {
