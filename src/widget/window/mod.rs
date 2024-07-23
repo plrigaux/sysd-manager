@@ -1,12 +1,12 @@
 mod imp;
 
-use gio::Settings;
 use glib::Object;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib, Application};
+use log::info;
 
-use crate::systemd_gui;
+use crate::{settings, systemd_gui};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -23,14 +23,14 @@ impl Window {
     }
 
     fn setup_settings(&self) {
-        let settings = Settings::new(systemd_gui::APP_ID);
+        let settings = gio::Settings::new(systemd_gui::APP_ID);
         self.imp()
             .settings
             .set(settings)
             .expect("`settings` should not be set before calling `setup_settings`.");
     }
 
-    fn settings(&self) -> &Settings {
+    fn settings(&self) -> &gio::Settings {
         self.imp()
             .settings
             .get()
@@ -52,10 +52,19 @@ impl Window {
 
     fn load_window_size(&self) {
         // Get the window state from `settings`
-        let width = self.settings().int("window-width");
-        let height = self.settings().int("window-height");
+        let mut width = self.settings().int("window-width");
+        let mut height = self.settings().int("window-height");
         let is_maximized = self.settings().boolean("is-maximized");
 
+        info!("Window settings: width {width}, height {height}, is-maximized {is_maximized}");
+
+        if width < 0 {
+            width = 1280;
+        }
+
+        if height < 0 {
+            height = 720;
+        }
         // Set the size of the window
         self.set_default_size(width, height);
 
@@ -63,5 +72,10 @@ impl Window {
         if is_maximized {
             self.maximize();
         }
+    }
+
+    fn load_dark_mod(&self) {
+        let settings: gtk::Settings = WidgetExt::settings(self);
+        settings::set_color_scheme(&settings);
     }
 }

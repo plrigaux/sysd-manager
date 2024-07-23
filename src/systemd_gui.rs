@@ -765,24 +765,9 @@ fn build_ui(application: &Application) {
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
 
-    let window2 = widget::window::Window::new(application);
-    window2.set_default_height(720);
-    window2.set_default_width(1280);
-    window2.set_child(Some(&main_box));
-    window2.set_titlebar(Some(&title_bar_elements.title_bar));
-
-    /*     // Create a window
-    let window: ApplicationWindow = ApplicationWindow::builder()
-        .application(application)
-        .default_height(720)
-        .default_width(1280)
-        .child(&main_box)
-        .titlebar(&title_bar_elements.title_bar)
-        .build(); */
-
-    let settings = window2.settings();
-
-    super::settings::set_color_scheme(&settings);
+    let window = widget::window::Window::new(application);
+    window.set_child(Some(&main_box));
+    window.set_titlebar(Some(&title_bar_elements.title_bar));
 
     {
         // NOTE: Journal Refresh Button
@@ -865,9 +850,9 @@ fn build_ui(application: &Application) {
             }
         });
     }
-    window2.present();
+    window.present();
 
-    systemd::test_flatpak_spawn(&window2);
+    systemd::test_flatpak_spawn(&window);
 }
 
 fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch) {
