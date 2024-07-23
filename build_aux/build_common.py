@@ -19,3 +19,6 @@ def cmd_run(cmd : list, shell=False):
     
     ret = subprocess.run(cmd, shell=shell)
     ret.check_returncode()
+
+def clean_gschema():
+    cmd_run(["rm", "-f", "~/.local/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml"])

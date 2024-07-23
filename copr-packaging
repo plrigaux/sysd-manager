@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser(description="Copr RPM builder",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument("action", 
-                    help="ction to perform", default="mock", choices=["mock", "spec", "srpm", "copr"])
+                    help="ction to perform", default="mock", choices=["mock", "spec", "srpm", "copr", "clean"])
 
 parser.add_argument("-d", "--allow_dirty", action="store_true", dest="allow_dirty",
                     help="allow not commited file", default=False)
@@ -47,25 +47,29 @@ print(f"{color.BOLD}Build for {color.CYAN}Copr{
 
 
 def main():
-    init()
-
     match args.action:
         case "spec":
+            init()
             build_spec()
         case "srpm":
+            init()
             if not args.only:
                 build_spec()
             buildSRPM()
         case "mock":
+            init()
             if not args.only:
                 build_spec()
                 buildSRPM()
             mock()
         case "copr":
+            init()
             if not args.only:
                 build_spec()
                 buildSRPM()
             copr()
+        case "clean":
+            clean()
 
 
 def build_spec():
@@ -131,7 +135,7 @@ def init():
     # use user's arch for rpm
     G_MOCK_RPM_ROOT = f"fedora-{VERSION_ID}-{ARCH}"
 
-    cmd_run(["rm", "-rf", G_LOCAL_RPM_DIR])
+    clean()
     cmd_run(["mkdir", "-p", f"{G_LOCAL_RPM_DIR}/SPECS"])
     cmd_run(["mkdir", "-p", G_SOURCES_DIR])
 
@@ -141,6 +145,9 @@ def init():
     os.environ["RPM_VERSION"] = G_RPM_VERSION
     print("cargo version", G_RPM_VERSION)
 
+def clean():
+    cmd_run(["rm", "-rf", G_LOCAL_RPM_DIR])
+    clean_gschema()
 
 def buildSRPM():
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} build SRPM")
