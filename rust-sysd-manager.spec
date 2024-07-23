@@ -36,6 +36,7 @@ License:        GPL-3.0-or-later
 %{_bindir}/sysd-manager
 /usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg
 /usr/share/applications/io.github.plrigaux.sysd-manager.desktop
+/usr/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml
 
 %prep
 %autosetup -n %{crate}-%{version} -p1
@@ -51,10 +52,11 @@ License:        GPL-3.0-or-later
 
 %install
 %cargo_install
-mkdir -p %{buildroot}%{_datadir}/applications 
-cp -v data/applications/io.github.plrigaux.sysd-manager.desktop %{buildroot}%{_datadir}/applications 
-mkdir -p %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
-cp -v data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
+install -v -Dm644 data/applications/io.github.plrigaux.sysd-manager.desktop -t %{buildroot}%{_datadir}/applications 
+install -v -Dm644 data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps
+install -v -Dm644 data/schemas/io.github.plrigaux.sysd-manager.gschema.xml -t %{buildroot}%{_datadir}/glib-2.0/schemas
+
+
 
 %if %{with check}
 %check
@@ -67,3 +69,4 @@ cp -v data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg %{bui
 #%post
 #install -m 644 data/applications/org.tool.sysd-manager.desktop /usr/share/applications/ 
 #install -m 644 data/icons/hicolor/scalable/org.tool.sysd-manager.svg /usr/share/icons/hicolor/scalable/apps/
+glib-compile-schemas /usr/share/glib-2.0/schemas/

@@ -22,7 +22,7 @@ impl ObjectImpl for Window {
         let obj = self.obj();
         obj.setup_settings();
         obj.load_window_size();
-        obj.load_dark_mod();
+        obj.load_dark_mode();
     }
 }
 impl WidgetImpl for Window {}

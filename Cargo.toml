@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager"
-version = "0.1.3"
+version = "0.1.4"
 edition = '2021'
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
@@ -40,6 +40,7 @@ assets = [
     { source = "target/release/sysd-manager", dest = "/usr/bin/sysd-manager", mode = "755" },
     { source = "data/applications/io.github.plrigaux.sysd-manager.desktop", dest = "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop", mode = "644" },
     { source = "data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", dest = "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", mode = "644" },
+    { source = "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml", dest = "/usr/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml", mode = "644" },
 ]
 
 [package.metadata.generate-rpm.requires]
