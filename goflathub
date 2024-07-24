@@ -62,6 +62,10 @@ def main():
             add_required_files()
         case "generate":
             generate()
+        case "repair":
+            repair()
+        case _:
+            print("No actions performed")
 
 
 def clean():
@@ -94,12 +98,10 @@ def build():
             MANIFEST,
         ]
     )
-    """     cmd_run(
-        [
-            f"flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir {MANIFEST}"
-        ],
-        shell=True, 
-    )"""
+
+
+def repair():
+    cmd_run(["flatpak", "-v", "--user", "repair"])
 
 
 def run(logbus=False):
