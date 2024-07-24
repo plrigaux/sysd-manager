@@ -83,17 +83,18 @@ def build():
     # Info https://docs.flathub.org/docs/for-app-authors/submission/
     cmd_run(
         [
-            "flatpak",
-            "run",
-            "org.flatpak.Builder",
+            #"flatpak",
+            #"run",
+            #"org.flatpak.Builder",
+            "flatpak-builder",
             "--force-clean",
             "--sandbox",
             "--user",
-            "--install",
             "--install-deps-from=flathub",
             "--ccache",
             "--mirror-screenshots-url=https://dl.flathub.org/media/",
             "--repo=repo",
+            "--install",
             "builddir",
             MANIFEST,
         ]
@@ -183,5 +184,9 @@ def generate():
     with open(outfile, "w") as out:
         json.dump(generated_sources, out, indent=4, sort_keys=False)
 
+def diag():
+    """flatpak remotes -d
+    flatpak update -v --ostree-verbose
+    flatpak list """
 
 main()

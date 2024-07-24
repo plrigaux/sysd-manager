@@ -1,4 +1,5 @@
 import subprocess
+import pprint
 
 class color:
     PURPLE = '\033[95m'
@@ -18,7 +19,13 @@ def cmd_run(cmd : list, shell=False):
     print(f"{color.DARKCYAN}{cmd_str}{color.END}")
     
     ret = subprocess.run(cmd, shell=shell)
-    ret.check_returncode()
+    try: 
+        ret.check_returncode()
+    except subprocess.CalledProcessError as err: 
+        print (f"{color.RED}Called Process Error{color.END}")
+        print (f"{color.YELLOW}{cmd_str}{color.END}")
+        pprint.pp(err)
+
 
 def clean_gschema():
     cmd_run(["rm", "-f", "~/.local/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml"])
