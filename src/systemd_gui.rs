@@ -3,6 +3,7 @@ use gtk::{gio, prelude::*, SingleSelection};
 use gtk::{Application, Orientation};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
+use crate::widget::button_icon::ButtonIcon;
 use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 
@@ -288,12 +289,16 @@ fn build_ui(application: &Application) {
         .child(&unit_info)
         .build();
 
-    let save_unit_file_button = gtk::Button::builder()
-        .child(&build_icon_label("Save", "document-save"))
-        .focusable(true)
-        .receives_default(true)
-        .build();
+    let save_unit_file_button = ButtonIcon::new("Save", "document-save");
+    save_unit_file_button.set_focusable(true);
+    save_unit_file_button.set_receives_default(true);
 
+    /*     let save_unit_file_button = gtk::Button::builder()
+           .child(&build_icon_label("Save", "document-save"))
+           .focusable(true)
+           .receives_default(true)
+           .build();
+    */
     let unit_file_label = gtk::Label::builder()
         .hexpand(true)
         .selectable(true)
@@ -550,29 +555,13 @@ fn build_ui(application: &Application) {
 
     control_box.append(&ablement_switch);
 
-    let start_button = gtk::Button::builder()
-        .hexpand(true)
-        .child(&build_icon_label("Start", "media-playback-start-symbolic"))
-        .focusable(true)
-        .receives_default(true)
-        .build();
+    let start_button = ButtonIcon::new("Start", "media-playback-start-symbolic");
     control_box.append(&start_button);
 
-    let stop_button = gtk::Button::builder()
-        .hexpand(true)
-        .child(&build_icon_label("Stop", "process-stop"))
-        .focusable(true)
-        .receives_default(true)
-        .build();
+    let stop_button = ButtonIcon::new("Stop", "process-stop");
     control_box.append(&stop_button);
 
-    let restart_button = gtk::Button::builder()
-        .hexpand(true)
-        .focusable(true)
-        .receives_default(true)
-        .child(&build_icon_label("Retart", "view-refresh"))
-        .build();
-
+    let restart_button = ButtonIcon::new("Retart", "view-refresh");
     control_box.append(&restart_button);
 
     {
@@ -875,18 +864,6 @@ fn handle_switch_sensivity(unit_file_state: EnablementStatus, switch: &gtk::Swit
 
     switch.set_sensitive(sensitive);
     switch.set_tooltip_text(None);
-}
-
-fn build_icon_label(label_name: &str, icon_name: &str) -> gtk::Box {
-    let box_container = gtk::Box::new(gtk::Orientation::Horizontal, 5);
-    box_container.set_halign(gtk::Align::Center);
-    let label = gtk::Label::new(Some(label_name));
-    let icon = gtk::Image::from_icon_name(icon_name);
-
-    box_container.append(&icon);
-    box_container.append(&label);
-
-    box_container
 }
 
 fn update_active_state(unit: &UnitInfo, state: ActiveState) {
