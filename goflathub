@@ -69,7 +69,7 @@ def main():
 
 
 def clean():
-    list_dir = ["builddir", ".flatpak-builder", "cargo-sources.json"]
+    list_dir = ["builddir", ".flatpak-builder", "cargo-sources.json", "repo"]
 
     for dir in list_dir:
         print(f"{color.BOLD}Deleting{color.END} {dir}")

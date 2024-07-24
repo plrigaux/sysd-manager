@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.4 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <template class="ButtonIcon" parent="GtkBox">
+    <property name="spacing">5</property>
+    <child>
+      <object class="GtkImage" id="button_icon"/>
+    </child>
+    <child>
+      <object class="GtkLabel" id="button_label"/>
+    </child>
+  </template>
+</interface>
