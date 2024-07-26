@@ -75,7 +75,7 @@ impl Window {
     }
 
     fn load_dark_mode(&self) {
-        let settings: gtk::Settings = WidgetExt::settings(self);
-        settings::set_color_scheme(&settings);
+       
+        settings::set_color_scheme(self);
     }
 }

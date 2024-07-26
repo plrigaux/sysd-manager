@@ -112,7 +112,10 @@ def run(logbus=False):
     if logbus:
         cmd.insert(2, "--log-session-bus")
 
-    cmd_run(cmd)
+    try:
+        cmd_run(cmd)
+    except KeyboardInterrupt as ki:
+        print("Program closed by Keyboard Interrupt")
 
 
 def lint():

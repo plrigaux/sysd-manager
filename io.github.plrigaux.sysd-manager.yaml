@@ -26,6 +26,11 @@ finish-args:
 - --talk-name=org.gtk.vfs.*
 - --filesystem=xdg-run/gvfsd
 - --talk-name=org.gnome.desktop.interface
+- --filesystem=xdg-run/dconf
+- --filesystem=~/.config/dconf:ro
+- --talk-name=ca.desrt.dconf
+- --env=DCONF_USER_CONFIG_DIR=.config/dconf
+- --env=GIO_EXTRA_MODULES=/app/lib/gio/modules/
 build-options:
   #append-path: "/usr/lib/sdk/rust-stable/bin"
   append-path: "/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm16/bin"

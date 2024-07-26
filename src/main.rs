@@ -3,7 +3,9 @@ extern crate gtk;
 extern crate log;
 
 mod systemd;
-mod systemd_gui; // Contains all of the heavy GUI-related work
+mod systemd_gui;
+
+// Contains all of the heavy GUI-related work
 use gtk::gio;
 use gtk::glib;
 mod analyze;

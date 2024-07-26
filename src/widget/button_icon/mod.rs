@@ -23,6 +23,6 @@ impl ButtonIcon {
     }
 
     pub fn set_button_icon(&self, icon_name: &str) {
-        self.imp().button_icon.set_from_icon_name(Some(icon_name));
+        self.imp().button_icon.set_icon_name(Some(icon_name));
     }
 }

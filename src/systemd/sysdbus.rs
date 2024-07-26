@@ -414,7 +414,7 @@ pub fn fetch_system_unit_info(path: &str) -> Result<BTreeMap<String, String>, Sy
     Ok(map)
 }
 
-/* #[cfg(test)]
+#[cfg(test)]
 mod tests {
 
     use std::collections::HashSet;
@@ -426,6 +426,7 @@ mod tests {
     use super::*;
 
     pub const TEST_SERVICE: &str = "jackett.service";
+    use log::*;
 
     fn init() {
         let _ = env_logger::builder()
@@ -568,7 +569,7 @@ mod tests {
             match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
                 Some(unit_info) => {
                     unit_info.set_file_path(unit_file.path);
-                    unit_info.set_enable_status(unit_file.enable_status);
+                    unit_info.set_enable_status(unit_file.status_code.to_string());
                 }
                 None => debug!("unit \"{}\" not found!", unit_file.full_name()),
             }
@@ -613,6 +614,46 @@ mod tests {
             10000,
         );
         info!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
+    }
+
+    #[test]
+    fn test_color() {
+        init();
+
+        let name = "org.freedesktop.portal.Desktop";
+        let path = "/org/freedesktop/portal/desktop";
+        let interface = "org.freedesktop.portal.Settings";
+        let c = dbus::ffidisp::Connection::new_system().unwrap();
+
+        let prop = Props::new(&c, name, path, interface, 10000);
+
+        let all_items = prop.get_all().unwrap();
+        info!("Systemd: {:#?}", all_items);
+
+        for (a, b) in all_items.iter() {
+            let str_val = display_message_item(b);
+            info!("prop : {} \t value: {}", a, str_val);
+        }
+
+        /*     let p = Props::new(
+            &c,
+            "org.freedesktop.PolicyKit1",
+            "/org/freedesktop/PolicyKit1/Authority",
+            "org.freedesktop.PolicyKit1.Authority",
+            10000,
+        ); */
+        /*         "Read",
+        &("org.freedesktop.appearance", "color-scheme"),
+
+        let c = dbus::ffidisp::Connection::new_system().unwrap();
+        let p = Props::new(
+            &c,
+            "org.freedesktop.PolicyKit1",
+            "/org/freedesktop/PolicyKit1/Authority",
+            "org.freedesktop.PolicyKit1.Authority",
+            10000,
+        );
+        info!("BackendVersion: {:?}", p.get("BackendVersion").unwrap()) */
     }
 
     #[test]
@@ -712,4 +753,3 @@ mod tests {
         Ok(())
     }
 }
-*/
