@@ -17,6 +17,10 @@ include = ["build.rs", "/src", "LICENCE", "README.md", "/data", "!/**/meson.buil
 name = "sysd-manager"
 path = "src/main.rs"
 
+[[bin]]
+name = "force-build"
+path = "build.rs"
+
 [profile.release]
 lto = true
 
