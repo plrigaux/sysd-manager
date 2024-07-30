@@ -39,8 +39,12 @@ libc = "0.2"
 env_logger = "0.11.3"
 dotenv = "0.15.0"
 strum = { version = "0.26", features = ["derive"] }
+dconf_rs = "0.3.0"
 ashpd = "0.8"
 tokio = { version = "1.39.1", features = ["full"] }
+zbus = "4"
+zvariant = "4.2.0"
+serde = "1.0.204"
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"

@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+from build_aux.build_common import color
+import build_aux.build_common as bc
+import argparse
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Sysd Manager build tools",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-d",
+        "--allow_dirty",
+        action="store_true",
+        dest="allow_dirty",
+        help="allow not commited file",
+        default=False,
+    )
+
+    parser.add_argument(
+        "action",
+        help="create and push a git version",
+        choices=["version"],
+    )
+
+    parser.add_argument('-m', "--message", dest='message', 
+                    help='Add a messge to the git command')
+
+    args = parser.parse_args()
+
+    match args.action:
+        case "version":
+            version(args.allow_dirty, args.message)
+
+
+def version(allow_dirty: bool, message : str):
+    print(f"{color.CYAN}Create as git tag and push it{color.END}")
+
+    if bc.is_repo_dirty() and not allow_dirty:
+        print(f"repo dirty {color.BOLD}Exit{color.END}")
+        exit()
+
+    cargo_toml = bc.toml()
+
+    version = cargo_toml["package"]["version"]
+    tag = f"v{version}"
+
+    print(f"Program version {color.BOLD}{version}{color.END}")
+    print(f"Git tag {color.BOLD}{color.YELLOW}{tag}{color.END}")
+
+    if not message:
+        print(f"Message needed (-m \"a message ...\")")
+        exit()
+
+
+    bc.cmd_run(["git", "tag", f"-m=\"{message}\"", tag])
+    bc.cmd_run(["git", "push", "origin", "tag", tag])
+
+
+main()

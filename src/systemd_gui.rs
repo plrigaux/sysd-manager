@@ -7,7 +7,7 @@ use crate::widget::button_icon::ButtonIcon;
 use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 
-use crate::systemd;
+use crate::{settings, systemd};
 use crate::widget::menu_button::ExMenuButton;
 use systemd::data::UnitInfo;
 

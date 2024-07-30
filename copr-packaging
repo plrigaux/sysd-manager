@@ -105,8 +105,7 @@ def case_insensitive_search_and_replace(file_path, file_path_out, search_word, r
 
 
 def init():
-    repo = git.Repo(".")
-    if repo.is_dirty(untracked_files=True):
+    if is_repo_dirty():
         print("git repo dirty")
         if args.allow_dirty:
             print("Bypass dity")
@@ -118,8 +117,7 @@ def init():
     global G_MOCK_RPM_ROOT
     global G_RPM_VERSION
 
-    with open("Cargo.toml", "rb") as f:
-        cargo_toml = tomllib.load(f)
+    cargo_toml = toml() 
 
     G_RPM_VERSION = cargo_toml['package']['version']
 
@@ -138,9 +136,6 @@ def init():
     clean()
     cmd_run(["mkdir", "-p", f"{G_LOCAL_RPM_DIR}/SPECS"])
     cmd_run(["mkdir", "-p", G_SOURCES_DIR])
-
-    with open("Cargo.toml", "rb") as f:
-        cargo_toml = tomllib.load(f)
 
     os.environ["RPM_VERSION"] = G_RPM_VERSION
     print("cargo version", G_RPM_VERSION)

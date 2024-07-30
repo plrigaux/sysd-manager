@@ -1,6 +1,8 @@
 pub extern crate dbus;
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
+use std::sync::OnceLock;
 
 use log::debug;
 use log::trace;
@@ -8,6 +10,7 @@ use log::trace;
 use dbus::arg::messageitem::MessageItem;
 use dbus::arg::messageitem::Props;
 use dbus::Message;
+use zvariant::OwnedObjectPath;
 
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::ActiveState;
@@ -22,6 +25,9 @@ const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
 const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
+
+use zbus::{connection, interface};
+use zvariant::ObjectPath;
 
 /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
 fn dbus_message(function: &str) -> Result<Message, SystemdErrors> {
@@ -140,9 +146,55 @@ fn list_unit_files_message() -> Result<Vec<MessageItem>, SystemdErrors> {
     trace!("MESSAGE {:?}", m);
     Ok(m.get_items())
 }
+use serde::{Deserialize, Serialize};
+use zvariant::Type;
+#[derive(Deserialize, Serialize, Type, PartialEq, Debug)]
+struct LUnit {
+    s1: String,
+    s2: String,
+    s3: String,
+    s4: String,
+    s5: String,
+    s6: String,
+    o1: OwnedObjectPath,
+    u1: u32,
+    s7: String,
+    o2: OwnedObjectPath,
+}
+
+const METHOD_LIST_UNIT: &str = "ListUnits";
+fn try_zbus() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let connection = zbus::blocking::Connection::session()?;
+
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_LIST_UNIT,
+        &(),
+    )?;
+
+    let body = message.body();
+
+    //"a(ssssssouso)"
+
+    //println!("header: {:#?}", message.header());
+
+    let out: Vec<LUnit> = body.deserialize()?;
+
+    println!("out: {:#?}", out);
+
+    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
+
+    Ok(map)
+}
 
 fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let message = dbus_message("ListUnits")?;
+    match try_zbus() {
+        Ok(_) => println!("Ok"),
+        Err(e) => println!("Error: {:#?}", e),
+    };
+    let message = dbus_message(METHOD_LIST_UNIT)?;
     debug!("MESSAGE {:?}", message);
     let msg2 = dbus_connect(message)?;
 
@@ -570,6 +622,7 @@ mod tests {
                 Some(unit_info) => {
                     unit_info.set_file_path(unit_file.path);
                     unit_info.set_enable_status(unit_file.status_code.to_string());
+                    unit_info.set_enable_status(unit_file.status_code.to_string());
                 }
                 None => debug!("unit \"{}\" not found!", unit_file.full_name()),
             }
@@ -667,11 +720,11 @@ mod tests {
         let prop = Props::new(&c, dest, path, interface, 10000);
 
         let all_items = prop.get_all()?;
-        info!("Systemd: {:#?}", all_items);
+        log::info!("Systemd: {:#?}", all_items);
 
         for (a, b) in all_items.iter() {
             let str_val = display_message_item(b);
-            info!("prop : {} \t value: {}", a, str_val);
+            log::info!("prop : {} \t value: {}", a, str_val);
         }
 
         Ok(())
@@ -688,6 +741,40 @@ mod tests {
         let prop = Props::new(&c, dest, path, interface, 10000);
         debug!("Version: {:?}", prop.get("Version").unwrap());
         debug!("Architecture: {:?}", prop.get("Architecture").unwrap());
+    }
+
+    #[test]
+    fn test_prop33() {
+        init();
+        let c = dbus::ffidisp::Connection::new_system().unwrap();
+
+        let dest = "org.freedesktop.portal.Desktop";
+        let path = "/org/freedesktop/portal/desktop";
+        let interface = "org.freedesktop.portal.Settings.Read";
+        let prop = Props::new(&c, dest, path, interface, 10000);
+
+        match prop.get_all() {
+            Ok(a) => println!("Results {:#?}", a),
+            Err(e) => println!("Error! {:?}", e),
+        }
+        /*   debug!("Version: {:?}", prop.get("Version").unwrap());
+        debug!("Architecture: {:?}", prop.get("Architecture").unwrap()); */
+    }
+
+    #[test]
+    fn test_prop34() -> Result<(), Box<dyn std::error::Error>> {
+        let dest = "org.freedesktop.portal.Desktop";
+        let path = "/org/freedesktop/portal/desktop";
+        let interface = "org.freedesktop.portal.Settings.Read";
+        let connection = dbus::blocking::Connection::new_session()?;
+        let proxy = connection.with_proxy(dest, path, std::time::Duration::from_millis(5000));
+
+        use super::dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
+
+        let metadata: super::dbus::arg::Variant<String> = proxy.get(interface, "Version")?;
+
+        debug!("Meta: {:?}", metadata);
+        Ok(())
     }
 
     #[test]

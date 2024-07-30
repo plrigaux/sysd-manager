@@ -1,5 +1,7 @@
 import subprocess
 import pprint
+import git
+import tomllib
 
 class color:
     PURPLE = '\033[95m'
@@ -29,3 +31,13 @@ def cmd_run(cmd : list, shell=False):
 
 def clean_gschema():
     cmd_run(["rm", "-f", "~/.local/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml"])
+
+def is_repo_dirty() -> bool:
+    repo = git.Repo(".")
+    return repo.is_dirty(untracked_files=True)
+
+def toml() -> dict[str: any]:
+    with open("Cargo.toml", "rb") as f:
+        cargo_toml = tomllib.load(f)
+    
+    return cargo_toml

@@ -6,6 +6,7 @@ import json
 
 from build_aux.build_common import *
 import build_aux.flatpak_cargo_generator as cg
+import build_aux.flatpak_cargo_generator as cg
 
 G_RPM_VERSION = None
 G_SRPM_PATH = None
