@@ -1,3 +1,6 @@
+//! Dbus abstraction 
+//! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
+
 pub extern crate dbus;
 
 use std::collections::BTreeMap;
@@ -6,7 +9,6 @@ use std::collections::HashMap;
 use log::debug;
 
 use dbus::arg::messageitem::MessageItem;
-use dbus::arg::messageitem::Props;
 use dbus::Message;
 use serde::Deserialize;
 use zbus::blocking::fdo;
@@ -289,82 +291,8 @@ fn convert_to_string(value: &zvariant::Value) -> String {
     str_value
 }
 
-fn display_message_item(m_item: &MessageItem) -> String {
-    let str_value: String = match m_item {
-        MessageItem::Array(a) => {
-            let mut d_str = String::from("[ ");
-
-            let mut it = a.iter().peekable();
-            while let Some(mi) = it.next() {
-                d_str.push_str(&display_message_item(mi));
-                if it.peek().is_some() {
-                    d_str.push_str(", ");
-                }
-            }
-
-            d_str.push_str(" ]");
-            d_str
-        }
-        MessageItem::Struct(stc) => {
-            let mut d_str = String::from("{ ");
-
-            let mut it = stc.iter().peekable();
-            while let Some(mi) = it.next() {
-                d_str.push_str(&display_message_item(mi));
-                if it.peek().is_some() {
-                    d_str.push_str(", ");
-                }
-            }
-
-            d_str.push_str(" }");
-            d_str
-        }
-        MessageItem::Variant(v) => display_message_item(v.peel()),
-        MessageItem::Dict(d) => {
-            let mut d_str = String::from("{ ");
-            for (mik, miv) in d.into_iter() {
-                d_str.push_str(&display_message_item(mik));
-                d_str.push_str(" : ");
-                d_str.push_str(&display_message_item(miv));
-            }
-            d_str.push_str(" }");
-            d_str
-        }
-        MessageItem::ObjectPath(p) => p.to_string(),
-        MessageItem::Signature(s) => format!("{:?}", s),
-        MessageItem::Str(s) => s.to_owned(),
-        MessageItem::Bool(b) => b.to_string(),
-        MessageItem::Byte(b) => b.to_string(),
-        MessageItem::Int16(i) => i.to_string(),
-        MessageItem::Int32(i) => i.to_string(),
-        MessageItem::Int64(i) => i.to_string(),
-        MessageItem::UInt16(i) => i.to_string(),
-        MessageItem::UInt32(i) => i.to_string(),
-        MessageItem::UInt64(i) => i.to_string(),
-        MessageItem::Double(i) => i.to_string(),
-        MessageItem::UnixFd(i) => format!("{:?}", i),
-    };
-    str_value
-}
-
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let c = dbus::ffidisp::Connection::new_system().unwrap();
-
-    let dest = DESTINATION_SYSTEMD;
-    let path = PATH_SYSTEMD;
-    let interface = INTERFACE_SYSTEMD_MANAGER;
-    let prop = Props::new(&c, dest, path, interface, 10000);
-
-    let all_items = prop.get_all()?;
-    let mut map = BTreeMap::new();
-
-    for (key, b) in all_items.iter() {
-        let str_val = display_message_item(b);
-        // info!("prop : {} \t value: {}", a, str_val);
-
-        map.insert(key.to_owned(), str_val);
-    }
-    Ok(map)
+    fetch_system_unit_info(PATH_SYSTEMD)
 }
 
 pub fn fetch_system_unit_info(path: &str) -> Result<BTreeMap<String, String>, SystemdErrors> {
@@ -526,47 +454,8 @@ mod tests {
         info!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
     }
 
-    #[test]
-    fn test_color() {
-        init();
-
-        let name = "org.freedesktop.portal.Desktop";
-        let path = "/org/freedesktop/portal/desktop";
-        let interface = "org.freedesktop.portal.Settings";
-        let c = dbus::ffidisp::Connection::new_system().unwrap();
-
-        let prop = Props::new(&c, name, path, interface, 10000);
-
-        let all_items = prop.get_all().unwrap();
-        info!("Systemd: {:#?}", all_items);
-
-        for (a, b) in all_items.iter() {
-            let str_val = display_message_item(b);
-            info!("prop : {} \t value: {}", a, str_val);
-        }
-
-        /*     let p = Props::new(
-            &c,
-            "org.freedesktop.PolicyKit1",
-            "/org/freedesktop/PolicyKit1/Authority",
-            "org.freedesktop.PolicyKit1.Authority",
-            10000,
-        ); */
-        /*         "Read",
-        &("org.freedesktop.appearance", "color-scheme"),
-
-        let c = dbus::ffidisp::Connection::new_system().unwrap();
-        let p = Props::new(
-            &c,
-            "org.freedesktop.PolicyKit1",
-            "/org/freedesktop/PolicyKit1/Authority",
-            "org.freedesktop.PolicyKit1.Authority",
-            10000,
-        );
-        info!("BackendVersion: {:?}", p.get("BackendVersion").unwrap()) */
-    }
-
-    #[test]
+   
+/*     #[test]
     fn test_prop_all_systemd_manager() -> Result<(), SystemdErrors> {
         init();
         let c = dbus::ffidisp::Connection::new_system().unwrap();
@@ -585,7 +474,7 @@ mod tests {
         }
 
         Ok(())
-    }
+    } */
 
     #[test]
     fn test_prop2() {

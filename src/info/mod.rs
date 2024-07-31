@@ -14,7 +14,7 @@ pub fn build_systemd_info() -> gtk::Window {
     let systemd_info = build_systemd_info_data();
 
     let window = gtk::Window::builder()
-        .title("Systemd Info Blame")
+        .title("Systemd Info")
         .default_height(600)
         .default_width(600)
         .child(&systemd_info)
