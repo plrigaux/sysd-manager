@@ -6,6 +6,9 @@ use crate::analyze::build_analyze_window;
 use crate::info;
 use log::warn;
 
+use super::preferences;
+
+
 pub const APP_TITLE: &str = "SysD Manager";
 
 fn build_popover_menu() -> gtk::PopoverMenu {
@@ -14,6 +17,7 @@ fn build_popover_menu() -> gtk::PopoverMenu {
     menu.append(Some("Analyze Blame"), Some("app.analyze_blame"));
     menu.append(Some("About"), Some("app.about"));
     menu.append(Some("Systemd Info"), Some("app.systemd_info"));
+    menu.append(Some("Preferences"), Some("app.preferences"));
 
     let unit_menu_popover = gtk::PopoverMenu::builder().menu_model(&menu).build();
 
@@ -74,7 +78,20 @@ pub fn on_startup(app: &gtk::Application) {
         })
         .build();
 
-    app.add_action_entries([about, analyze_blame, systemd_info]);
+    let preferences = gio::ActionEntry::builder("preferences")
+        .activate(|application: &gtk::Application, _, _| {
+            let preferences_window = preferences::build_preferences();
+
+            if let Some(first_window) = application.windows().first() {
+                preferences_window.set_transient_for(Some(first_window));
+                preferences_window.set_modal(true);
+            }
+
+            preferences_window.present();
+        })
+        .build();
+
+    app.add_action_entries([about, analyze_blame, systemd_info, preferences]);
 }
 
 fn create_about() -> gtk::AboutDialog {
