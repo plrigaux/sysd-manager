@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE schemalist SYSTEM "https://gitlab.gnome.org/GNOME/glib/-/raw/main/gio/gschema.dtd">
-
-
 <schemalist>
-
-    <enum id="DbusLevel">
-        <value nick="session" value="session" />
-        <value nick="system" value="system" />
-    </enum>
     <schema id="io.github.plrigaux.sysd-manager" path="/io/github/plrigaux/sysd-manager/">
         <key name="window-width" type="i">
             <default>-1</default>
@@ -21,8 +14,12 @@
             <default>false</default>
             <summary>Default window maximized behaviour</summary>
         </key>
-        <key name="dbus-level" enum="DbusLevel">
-            <default>session</default>
+        <key name="dbus-level" type="s">
+            <choices>
+                <choice value='Session' />
+                <choice value='System' />
+            </choices>
+            <default>'Session'</default>
             <summary>The dbus level</summary>
         </key>
     </schema>
