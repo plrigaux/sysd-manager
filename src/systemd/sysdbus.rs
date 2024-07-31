@@ -1,6 +1,7 @@
 pub extern crate dbus;
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use log::debug;
 
@@ -8,6 +9,9 @@ use dbus::arg::messageitem::MessageItem;
 use dbus::arg::messageitem::Props;
 use dbus::Message;
 use serde::Deserialize;
+use zbus::blocking::fdo;
+use zbus::blocking::Connection;
+use zvariant::OwnedValue;
 use zvariant::Type;
 
 use crate::systemd::data::UnitInfo;
@@ -20,7 +24,7 @@ use super::SystemdErrors;
 use super::SystemdUnit;
 
 const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
-const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
+//const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
 const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
@@ -49,30 +53,9 @@ fn dbus_connect(message: Message) -> Result<Message, SystemdErrors> {
     Ok(message)
 }
 
-/* /// Takes a `dbus::Message` as input and makes a connection to dbus, returning the reply.
-fn dbus_property() -> Result<(), Error> {
-    let connection = dbus::blocking::Connection::new_system()?;
-
-    let duration = Duration::from_secs(5);
-    let p = connection.with_proxy(SYSTEMD_DESTINATION, "/org/freedesktop/systemd1", duration);
-
-
-    // The Metadata property is a Dict<String, Variant>.
-
-    // Option 1: we can get the dict straight into a hashmap, like this:
-    use systemd::dbus::msgbus::blocking::stdintf::org_freedesktop_dbus::Properties;
-
-    let metadata = p.get("org.mpris.MediaPlayer2.Player", "Metadata")?;
-
-    debug!("Option 1:");
-
-    Ok(())
-
-} */
-
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
-    let connection = zbus::blocking::Connection::system()?;
+    let connection = get_connection()?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -89,8 +72,6 @@ pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
     let mut systemd_units: Vec<SystemdUnit> = Vec::with_capacity(array.len());
 
     for unit_file in array.iter() {
-    
-
         let Some((_prefix, name_type)) = unit_file.primary_unit_name.rsplit_once('/') else {
             return Err(SystemdErrors::Malformed);
         };
@@ -135,8 +116,14 @@ struct LUnit<'a> {
     job_object_path: ObjectPath<'a>,
 }
 
+fn get_connection() -> Result<Connection, SystemdErrors> {
+    //let connection = zbus::blocking::Connection::system()?;
+    let connection = zbus::blocking::Connection::session()?;
+    Ok(connection)
+}
+
 fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let connection = zbus::blocking::Connection::system()?;
+    let connection = get_connection()?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -149,8 +136,6 @@ fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors>
     let body = message.body();
 
     let array: Vec<LUnit> = body.deserialize()?;
-
-    println!("out: {:#?}", array);
 
     let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
 
@@ -246,6 +231,64 @@ pub fn restart_unit(unit: &str) -> Result<(), SystemdErrors> {
     Ok(())
 }
 
+fn convert_to_string(value: &zvariant::Value) -> String {
+    let str_value: String = match value {
+        zvariant::Value::U8(i) => i.to_string(),
+        zvariant::Value::Bool(b) => b.to_string(),
+        zvariant::Value::I16(i) => i.to_string(),
+        zvariant::Value::U16(i) => i.to_string(),
+        zvariant::Value::I32(i) => i.to_string(),
+        zvariant::Value::U32(i) => i.to_string(),
+        zvariant::Value::I64(i) => i.to_string(),
+        zvariant::Value::U64(i) => i.to_string(),
+        zvariant::Value::F64(i) => i.to_string(),
+        zvariant::Value::Str(s) => s.to_string(),
+        zvariant::Value::Signature(s) => s.to_string(),
+        zvariant::Value::ObjectPath(op) => op.to_string(),
+        zvariant::Value::Value(v) => v.to_string(),
+        zvariant::Value::Array(a) => {
+            let mut d_str = String::from("[ ");
+
+            let mut it = a.iter().peekable();
+            while let Some(mi) = it.next() {
+                d_str.push_str(&convert_to_string(mi));
+                if it.peek().is_some() {
+                    d_str.push_str(", ");
+                }
+            }
+
+            d_str.push_str(" ]");
+            d_str
+        }
+        zvariant::Value::Dict(d) => {
+            let mut d_str = String::from("{ ");
+            for (mik, miv) in d.iter() {
+                d_str.push_str(&convert_to_string(&mik));
+                d_str.push_str(" : ");
+                d_str.push_str(&convert_to_string(&miv));
+            }
+            d_str.push_str(" }");
+            d_str
+        }
+        zvariant::Value::Structure(stc) => {
+            let mut d_str = String::from("{ ");
+
+            let mut it = stc.fields().iter().peekable();
+            while let Some(mi) = it.next() {
+                d_str.push_str(&convert_to_string(mi));
+                if it.peek().is_some() {
+                    d_str.push_str(", ");
+                }
+            }
+
+            d_str.push_str(" }");
+            d_str
+        }
+        zvariant::Value::Fd(fd) => fd.to_string(),
+    };
+    str_value
+}
+
 fn display_message_item(m_item: &MessageItem) -> String {
     let str_value: String = match m_item {
         MessageItem::Array(a) => {
@@ -325,19 +368,25 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 }
 
 pub fn fetch_system_unit_info(path: &str) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let dest = DESTINATION_SYSTEMD;
-    let interface = INTERFACE_SYSTEMD_UNIT;
-    let c = dbus::ffidisp::Connection::new_system()?;
-    let prop = Props::new(&c, dest, path, interface, 10000);
+    let connection = get_connection()?;
+
+    let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
+        fdo::PropertiesProxy::builder(&connection)
+            .destination(DESTINATION_SYSTEMD)?
+            .path(path)?
+            .build()?;
+
+    let hm: HashMap<String, OwnedValue> = properties_proxy.get_all(None.into())?;
 
     let mut map = BTreeMap::new();
 
-    for (key, b) in prop.get_all()?.iter() {
-        let str_val = display_message_item(b);
-        // info!("prop : {} \t value: {}", a, str_val);
+    for (key, value) in hm.iter() {
+        debug!("{:?} {:?}", key, value);
 
+        let str_val = convert_to_string(value);
         map.insert(key.to_owned(), str_val);
     }
+
     Ok(map)
 }
 
@@ -613,7 +662,7 @@ mod tests {
         Ok(())
     }
 
-    #[test]
+    /*     #[test]
     pub fn test_get_unit_parameters() {
         init();
         let dest = DESTINATION_SYSTEMD;
@@ -624,7 +673,7 @@ mod tests {
         let p = Props::new(&c, dest, path, interface, 10000);
 
         debug!("ALL PARAM: {:#?}", p.get_all());
-    }
+    } */
 
     #[test]
     pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {

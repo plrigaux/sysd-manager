@@ -36,7 +36,8 @@ pub enum SystemdErrors {
     DBusError(sysdbus::dbus::Error),
     Malformed,
     MalformedWrongArgType(ArgType),
-    ZBusError(zbus::Error)
+    ZBusError(zbus::Error),
+    ZBusFdoError(zbus::fdo::Error)
 }
 
 impl From<std::io::Error> for SystemdErrors {
@@ -63,6 +64,13 @@ impl From<zbus::Error> for SystemdErrors {
         SystemdErrors::ZBusError(error)
     }
 }
+
+impl From<zbus::fdo::Error> for SystemdErrors {
+    fn from(error: zbus::fdo::Error) -> Self {
+        SystemdErrors::ZBusFdoError(error)
+    }
+}
+
 
 #[derive(Clone, Debug)]
 #[allow(unused)]
