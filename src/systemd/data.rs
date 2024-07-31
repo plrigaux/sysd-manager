@@ -8,13 +8,13 @@ glib::wrapper! {
 
 impl UnitInfo {
     pub fn new(
-        primary: &String,
-        description: &String,
-        load_state: &String,
+        primary: &str,
+        description: &str,
+        load_state: &str,
         active_state: ActiveState,
-        sub_state: &String,
-        followed_unit: &String,
-        object_path: String,
+        sub_state: &str,
+        followed_unit:&str,
+        object_path: &str,
     ) -> Self {
         let this_object: Self = glib::Object::new();
         let imp: &imp::UnitInfo = this_object.imp();

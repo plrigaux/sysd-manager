@@ -1,16 +1,14 @@
 pub extern crate dbus;
 
 use std::collections::BTreeMap;
-use std::collections::HashMap;
-use std::sync::OnceLock;
 
 use log::debug;
-use log::trace;
 
 use dbus::arg::messageitem::MessageItem;
 use dbus::arg::messageitem::Props;
 use dbus::Message;
-use zvariant::OwnedObjectPath;
+use serde::Deserialize;
+use zvariant::Type;
 
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::ActiveState;
@@ -26,8 +24,10 @@ const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
 const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
-use zbus::{connection, interface};
 use zvariant::ObjectPath;
+
+const METHOD_LIST_UNIT: &str = "ListUnits";
+const METHOD_LIST_UNIT_FILES: &str = "ListUnitFiles";
 
 /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
 fn dbus_message(function: &str) -> Result<Message, SystemdErrors> {
@@ -70,101 +70,73 @@ fn dbus_property() -> Result<(), Error> {
 
 } */
 
-/// Takes the dbus message as input and maps the information to a `Vec<SystemdUnit>`.
-fn parse_message(message_item: &MessageItem) -> Result<Vec<SystemdUnit>, SystemdErrors> {
-    debug!("parse_message");
+/// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
+pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
+    let connection = zbus::blocking::Connection::system()?;
 
-    let MessageItem::Array(array) = message_item else {
-        return Err(SystemdErrors::MalformedWrongArgType(
-            message_item.arg_type(),
-        ));
-    };
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_LIST_UNIT_FILES,
+        &(),
+    )?;
+
+    let body = message.body();
+
+    let array: Vec<LUnitFiles> = body.deserialize()?;
 
     let mut systemd_units: Vec<SystemdUnit> = Vec::with_capacity(array.len());
 
-    for service_struct in array.into_iter() {
-        let MessageItem::Struct(struct_value) = service_struct else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
+    for unit_file in array.iter() {
+    
+
+        let Some((_prefix, name_type)) = unit_file.primary_unit_name.rsplit_once('/') else {
+            return Err(SystemdErrors::Malformed);
         };
 
-        if struct_value.len() >= 2 {
-            let Some(MessageItem::Str(systemd_unit)) = struct_value.get(0) else {
-                return Err(SystemdErrors::Malformed);
-            };
+        let Some((name, system_type)) = name_type.rsplit_once('.') else {
+            return Err(SystemdErrors::Malformed);
+        };
 
-            let Some(MessageItem::Str(status)) = struct_value.get(1) else {
-                return Err(SystemdErrors::Malformed);
-            };
+        let status_code = EnablementStatus::new(unit_file.enablement_status);
+        let utype = UnitType::new(system_type);
 
-            let Some((_prefix, name_type)) = systemd_unit.rsplit_once('/') else {
-                return Err(SystemdErrors::Malformed);
-            };
-
-            let Some((name, system_type)) = name_type.rsplit_once('.') else {
-                return Err(SystemdErrors::Malformed);
-            };
-
-            let status_code = EnablementStatus::new(&status);
-            let utype = UnitType::new(system_type);
-
-            let path = systemd_unit.to_owned();
-
-            systemd_units.push(SystemdUnit {
-                name: name.to_owned(),
-                status_code,
-                utype,
-                path: path,
-            });
-        }
+        systemd_units.push(SystemdUnit {
+            name: name.to_owned(),
+            status_code,
+            utype,
+            path: unit_file.primary_unit_name.to_owned(),
+        });
     }
 
     Ok(systemd_units)
 }
 
-/// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
-pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
-    let message_vec = list_unit_files_message()?;
-
-    trace!("MESSAGE {:?}", message_vec);
-
-    let message_item = if message_vec.len() >= 1 {
-        message_vec.get(0).expect("Missing argument")
-    } else {
-        panic!("Always suppose have one item")
-    };
-
-    let units = parse_message(message_item)?;
-
-    Ok(units)
+#[derive(Deserialize, Type, PartialEq, Debug)]
+struct LUnitFiles<'a> {
+    primary_unit_name: &'a str,
+    enablement_status: &'a str,
 }
 
-fn list_unit_files_message() -> Result<Vec<MessageItem>, SystemdErrors> {
-    let message = dbus_message("ListUnitFiles")?;
-    let m = dbus_connect(message)?;
-    trace!("MESSAGE {:?}", m);
-    Ok(m.get_items())
-}
-use serde::{Deserialize, Serialize};
-use zvariant::Type;
-#[derive(Deserialize, Serialize, Type, PartialEq, Debug)]
-struct LUnit {
-    s1: String,
-    s2: String,
-    s3: String,
-    s4: String,
-    s5: String,
-    s6: String,
-    o1: OwnedObjectPath,
-    u1: u32,
-    s7: String,
-    o2: OwnedObjectPath,
+#[derive(Deserialize, Type, PartialEq, Debug)]
+struct LUnit<'a> {
+    primary_unit_name: &'a str,
+    description: &'a str,
+    load_state: &'a str,
+    active_state: &'a str,
+    sub_state: &'a str,
+    followed_unit: &'a str,
+    #[serde(borrow)]
+    unit_object_path: ObjectPath<'a>,
+    ///If there is a job queued for the job unit the numeric job id, 0 otherwise
+    numeric_job_id: u32,
+    job_type: &'a str,
+    job_object_path: ObjectPath<'a>,
 }
 
-const METHOD_LIST_UNIT: &str = "ListUnits";
-fn try_zbus() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let connection = zbus::blocking::Connection::session()?;
+fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let connection = zbus::blocking::Connection::system()?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -176,125 +148,28 @@ fn try_zbus() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
 
     let body = message.body();
 
-    //"a(ssssssouso)"
+    let array: Vec<LUnit> = body.deserialize()?;
 
-    //println!("header: {:#?}", message.header());
-
-    let out: Vec<LUnit> = body.deserialize()?;
-
-    println!("out: {:#?}", out);
-
-    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
-
-    Ok(map)
-}
-
-fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    match try_zbus() {
-        Ok(_) => println!("Ok"),
-        Err(e) => println!("Error: {:#?}", e),
-    };
-    let message = dbus_message(METHOD_LIST_UNIT)?;
-    debug!("MESSAGE {:?}", message);
-    let msg2 = dbus_connect(message)?;
-
-    // debug!("{:#?}",m.get_items())
-    let mi = msg2.get_items();
-    debug!("{:#?}", mi.len());
-    let message_item = &mi[0];
-
-    debug!("{:#?}", message_item.signature());
-
-    let MessageItem::Array(array) = message_item else {
-        return Err(SystemdErrors::MalformedWrongArgType(
-            message_item.arg_type(),
-        ));
-    };
-    debug!("Array_size {:#?}", array.len());
+    println!("out: {:#?}", array);
 
     let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
 
     for service_struct in array.iter() {
-        let MessageItem::Struct(struct_value) = service_struct else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-
-        //The primary unit name as string
-        let MessageItem::Str(ref primary) = struct_value[0] else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-
-        //The human readable description string
-        let MessageItem::Str(ref description) = struct_value[1] else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-
-        //The load state (i.e. whether the unit file has been loaded successfully)
-        let MessageItem::Str(ref load_state) = struct_value[2] else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-
-        //The active state (i.e. whether the unit is currently started or not)
-        let MessageItem::Str(ref active_state_str) = struct_value[3] else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-        //The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
-        let MessageItem::Str(ref sub_state) = struct_value[4] else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-        //A unit that is being followed in its state by this unit, if there is any, otherwise the empty string.
-        let MessageItem::Str(ref followed_unit) = struct_value[5] else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-
-        //The unit object path
-        let MessageItem::ObjectPath(ref object_path) = struct_value[6] else {
-            return Err(SystemdErrors::MalformedWrongArgType(
-                service_struct.arg_type(),
-            ));
-        };
-        /*                 //If there is a job queued for the job unit the numeric job id, 0 otherwise
-        let MessageItem::UInt32(job_id) = struct_value[7] else {
-            debug!("7 {:?}", struct_value[7]);
-            continue;
-        };
-        //The job type as string
-        let MessageItem::Str(ref job_type) = struct_value[8] else {
-            continue;
-        };
-        //The job object path
-        let MessageItem::ObjectPath(ref job_object_path) = struct_value[9] else {
-            continue;
-        }; */
-
-        let active_state = ActiveState::from_str(active_state_str);
+        let active_state = ActiveState::from_str(service_struct.active_state);
 
         let unit = UnitInfo::new(
-            primary,
-            description,
-            load_state,
+            service_struct.primary_unit_name,
+            service_struct.description,
+            service_struct.load_state,
             active_state,
-            sub_state,
-            followed_unit,
-            object_path.to_string(),
+            service_struct.sub_state,
+            service_struct.followed_unit,
+            service_struct.unit_object_path.as_str(),
         );
 
-        map.insert(primary.to_ascii_lowercase(), unit);
+        map.insert(service_struct.primary_unit_name.to_ascii_lowercase(), unit);
     }
+
     Ok(map)
 }
 
@@ -324,7 +199,7 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
                 unit_info.set_file_path(unit_file.path);
                 unit_info.set_enable_status(unit_file.status_code.to_string());
             }
-            None => debug!(
+            None => log::debug!(
                 "Unit \"{}\" status \"{}\" not loaded!",
                 unit_file.full_name(),
                 unit_file.status_code.to_string()
@@ -486,73 +361,6 @@ mod tests {
             .filter_level(log::LevelFilter::Trace)
             .is_test(true)
             .try_init();
-    }
-
-    #[test]
-    fn list_unit_files_message_test() -> Result<(), SystemdErrors> {
-        let message_vec = list_unit_files_message()?;
-        //debug!("{:?}", message);
-
-        let message_item = if message_vec.len() >= 1 {
-            message_vec.get(0).expect("Missing argument")
-        } else {
-            panic!("Aways suppose have one item")
-        };
-
-        handle_message_item(message_item);
-        Ok(())
-    }
-
-    fn handle_message_item(message_item: &MessageItem) {
-        match message_item {
-            MessageItem::Array(array) => {
-                //let _ = array.into_iter().map(|item| debug!("{:?}", item));
-                for (i, n) in array.into_iter().enumerate() {
-                    debug!("{} - {:?}", i, n);
-                    handle_message_item(n);
-                }
-            }
-            MessageItem::Struct(struct_) => {
-                for a in struct_.into_iter() {
-                    //debug!("{} - {:?}", i , n);
-                    handle_message_item(a);
-                }
-            }
-            MessageItem::Variant(_) => todo!(),
-            MessageItem::Dict(_) => todo!(),
-            MessageItem::ObjectPath(_) => todo!(),
-            MessageItem::Signature(_) => todo!(),
-            MessageItem::Str(_str_value) => {
-                //debug!", str_value );
-            }
-            MessageItem::Bool(_) => todo!(),
-            MessageItem::Byte(_) => todo!(),
-            MessageItem::Int16(_) => todo!(),
-            MessageItem::Int32(_) => todo!(),
-            MessageItem::Int64(_) => todo!(),
-            MessageItem::UInt16(_) => todo!(),
-            MessageItem::UInt32(_) => todo!(),
-            MessageItem::UInt64(_) => todo!(),
-            MessageItem::Double(_) => todo!(),
-            MessageItem::UnixFd(_) => todo!(),
-        }
-    }
-
-    #[test]
-    fn list_unit_files_message_test2() -> Result<(), SystemdErrors> {
-        let message_vec = list_unit_files_message()?;
-        //debug!("{:?}", message);
-
-        let message_item = if message_vec.len() >= 1 {
-            message_vec.get(0).expect("Missing argument")
-        } else {
-            panic!("Aways suppose have one item")
-        };
-
-        let vector = parse_message(message_item)?;
-
-        debug!("{:#?}", vector);
-        Ok(())
     }
 
     #[test]
