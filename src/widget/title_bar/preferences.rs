@@ -1,17 +1,24 @@
+use std::sync::LazyLock;
+
 use crate::gtk::prelude::*;
-use crate::settings;
+
 use crate::systemd_gui;
+use glib::Object;
 use gtk::gio;
 use gtk::gio::Settings;
 use gtk::glib;
 
 use crate::gtk::subclass::prelude::*;
-use lazy_static::lazy_static;
+
 use log::info;
 use log::warn;
-lazy_static! {
-    static ref EXAMPLE: Preferences = Preferences::new();
-}
+
+pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
+    let settings = get_settings();
+    let pref = Preferences::new_with_setting(&settings);
+
+    pref
+});
 
 const KEY_DBUS_LEVEL: &str = "dbus-level";
 
@@ -23,34 +30,36 @@ pub fn build_preferences() -> gtk::Window {
     gbox.append(&gtk::Label::new(Some("DBus level")));
     gbox.set_vexpand(false);
 
-    let model = gtk::StringList::new(&[DbusLevel::System.as_str(), DbusLevel::Session.as_str()]);
-    let tb_system = gtk::DropDown::new(Some(model), gtk::Expression::NONE);
-    tb_system.set_vexpand(false);
+    let model = gtk::StringList::new(&[DbusLevel::Session.as_str(), DbusLevel::System.as_str()]);
+    //let level_dropdown = gtk::DropDown::new(Some(model), gtk::Expression::NONE);
 
-    tb_system.connect_selected_notify(|toggle_button| {
-        let idx = toggle_button.selected();
-        println!("Values Selecte {:?}", toggle_button.selected());
+    let level_dropdown = gtk::DropDown::builder().model(&model).build();
 
-        let level: DbusLevel = idx.into();
+    level_dropdown.set_vexpand(false);
+    {
+        let settings = settings.clone();
+        level_dropdown.connect_selected_notify(move |toggle_button| {
+            let idx = toggle_button.selected();
+            info!("Values Selected {:?}", idx);
 
-        let settings = get_settings();
-        if let Err(e) = settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
-            warn!("Error: {:?}", e);
-            return;
-        }
-        info!(
-            "Save setting '{KEY_DBUS_LEVEL}' with value '{:?}'",
-            level.as_str()
-        )
-    });
+            let level: DbusLevel = idx.into();
 
-    gbox.append(&tb_system);
-    //gbox.append(&tb_session);
-
-    match setup_settings(settings) {
-        DbusLevel::Session => tb_system.set_selected(1),
-        DbusLevel::System => tb_system.set_selected(0),
+            //let settings = get_settings();
+            if let Err(e) = set_dbus_level(&settings, level) {
+                warn!("Error: {:?}", e);
+                return;
+            }
+            info!(
+                "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
+                level.as_str()
+            )
+        });
     }
+    gbox.append(&level_dropdown);
+
+    let level = get_dbus_level_settings(&settings);
+
+    level_dropdown.set_selected(level as u32);
 
     let window = gtk::Window::builder()
         .title("Preferences")
@@ -62,19 +71,27 @@ pub fn build_preferences() -> gtk::Window {
     window
 }
 
+fn set_dbus_level(settings: &Settings, level: DbusLevel) -> Result<(), glib::BoolError> {
+    let res = settings.set_string(KEY_DBUS_LEVEL, level.as_str());
+    PREFERENCES.set_dbus_level(level as u32);
+
+    res
+}
+
 fn get_settings() -> Settings {
     gio::Settings::new(systemd_gui::APP_ID)
 }
 
-fn setup_settings(settings: Settings) -> DbusLevel {
+fn get_dbus_level_settings(settings: &Settings) -> DbusLevel {
     let level: glib::GString = settings.string(KEY_DBUS_LEVEL);
     DbusLevel::from(level.as_str())
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 enum DbusLevel {
-    Session,
-    System,
+    #[default]
+    Session = 0,
+    System = 1,
 }
 
 impl DbusLevel {
@@ -98,10 +115,9 @@ impl From<&str> for DbusLevel {
 
 impl From<u32> for DbusLevel {
     fn from(level: u32) -> Self {
-        if level == 0 {
-            DbusLevel::System
-        } else {
-            DbusLevel::Session
+        match level {
+            1 => DbusLevel::System,
+            _ => DbusLevel::Session,
         }
     }
 }
@@ -112,12 +128,16 @@ glib::wrapper! {
 
 impl Preferences {
     pub fn new() -> Self {
-        let this_object: Self = glib::Object::new();
+        let settings = get_settings();
+        Self::new_with_setting(&settings)
+    }
+
+    pub fn new_with_setting(settings: &Settings) -> Self {
+        let this_object: Self = Object::builder().build();
         let imp: &imp::PreferencesImp = this_object.imp();
 
-        let settings = get_settings();
-        let val = setup_settings(settings);
-        imp.set_dbus_level(val.as_str().to_string());
+        let level = get_dbus_level_settings(settings);
+        imp.set_dbus_level(level as u32);
 
         this_object
     }
@@ -127,13 +147,16 @@ pub mod imp {
     use std::sync::Mutex;
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
-    use log::warn;
+    use log::{info, warn};
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::Preferences)]
     pub struct PreferencesImp {
         #[property(get, set = Self::set_dbus_level )]
-        pub(super) dbus_level: Mutex<String>,
+        pub(super) dbus_level: Mutex<u32>,
+
+        #[property(get)]
+        pub(super) level: Mutex<u32>,
     }
 
     #[glib::object_subclass]
@@ -147,10 +170,15 @@ pub mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for PreferencesImp {}
+    impl ObjectImpl for PreferencesImp {
+        fn constructed(&self) {
+            self.parent_constructed();
+        }
+    }
 
     impl PreferencesImp {
-        pub fn set_dbus_level( & self, dbus_level: String) {
+        pub fn set_dbus_level(&self, dbus_level: u32) {
+            info!("set_dbus_level: {dbus_level}");
             match self.dbus_level.lock() {
                 Ok(mut a) => *a = dbus_level,
                 Err(e) => warn!("Error {:?}", e),
