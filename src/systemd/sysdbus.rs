@@ -1,4 +1,4 @@
-//! Dbus abstraction 
+//! Dbus abstraction
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
 
 pub extern crate dbus;
@@ -19,6 +19,7 @@ use zvariant::Type;
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::ActiveState;
 use crate::systemd::enums::UnitType;
+use crate::widget::preferences::DbusLevel;
 
 use super::enums::EnablementStatus;
 
@@ -56,8 +57,8 @@ fn dbus_connect(message: Message) -> Result<Message, SystemdErrors> {
 }
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
-pub fn list_unit_files() -> Result<Vec<SystemdUnit>, SystemdErrors> {
-    let connection = get_connection()?;
+pub fn list_unit_files(level: DbusLevel) -> Result<Vec<SystemdUnit>, SystemdErrors> {
+    let connection = get_connection(level)?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -118,14 +119,17 @@ struct LUnit<'a> {
     job_object_path: ObjectPath<'a>,
 }
 
-fn get_connection() -> Result<Connection, SystemdErrors> {
-    //let connection = zbus::blocking::Connection::system()?;
-    let connection = zbus::blocking::Connection::session()?;
+fn get_connection(level: DbusLevel) -> Result<Connection, SystemdErrors> {
+    let connection = match level {
+        DbusLevel::Session => zbus::blocking::Connection::session()?,
+        DbusLevel::System => zbus::blocking::Connection::system()?,
+    };
+
     Ok(connection)
 }
 
-fn list_units_description() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let connection = get_connection()?;
+fn list_units_description(level: DbusLevel) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let connection = get_connection(level)?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -175,10 +179,12 @@ pub fn get_unit_file_state_path(unit_file: &str) -> Result<EnablementStatus, Sys
     }
 }
 
-pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let mut units_map = list_units_description()?;
+pub fn list_units_description_and_state(
+    level: DbusLevel,
+) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let mut units_map = list_units_description(level)?;
 
-    let mut unit_files = list_unit_files()?;
+    let mut unit_files = list_unit_files(level)?;
 
     for unit_file in unit_files.drain(..) {
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
@@ -291,12 +297,15 @@ fn convert_to_string(value: &zvariant::Value) -> String {
     str_value
 }
 
-pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    fetch_system_unit_info(PATH_SYSTEMD)
+pub fn fetch_system_info(level: DbusLevel) -> Result<BTreeMap<String, String>, SystemdErrors> {
+    fetch_system_unit_info(level, PATH_SYSTEMD)
 }
 
-pub fn fetch_system_unit_info(path: &str) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let connection = get_connection()?;
+pub fn fetch_system_unit_info(
+    level: DbusLevel,
+    path: &str,
+) -> Result<BTreeMap<String, String>, SystemdErrors> {
+    let connection = get_connection(level)?;
 
     let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
         fdo::PropertiesProxy::builder(&connection)
@@ -375,7 +384,7 @@ mod tests {
 
     #[test]
     fn test_list_unit_files() -> Result<(), SystemdErrors> {
-        let units = list_unit_files()?;
+        let units = list_unit_files(DbusLevel::System)?;
 
         let serv = units
             .iter()
@@ -388,7 +397,7 @@ mod tests {
 
     #[test]
     fn test_list_units() -> Result<(), SystemdErrors> {
-        let units = list_units_description()?;
+        let units = list_units_description(DbusLevel::System)?;
 
         let serv = units.get(TEST_SERVICE);
         debug!("{:#?}", serv);
@@ -397,9 +406,10 @@ mod tests {
 
     #[test]
     fn test_list_units_merge() -> Result<(), SystemdErrors> {
-        let mut units_map = list_units_description()?;
+        let level = DbusLevel::System;
+        let mut units_map = list_units_description(level)?;
 
-        let mut units = list_unit_files()?;
+        let mut units = list_unit_files(level)?;
 
         let mut set: HashSet<String> = HashSet::new();
         for unit_file in units.drain(..) {
@@ -454,8 +464,7 @@ mod tests {
         info!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
     }
 
-   
-/*     #[test]
+    /*     #[test]
     fn test_prop_all_systemd_manager() -> Result<(), SystemdErrors> {
         init();
         let c = dbus::ffidisp::Connection::new_system().unwrap();
@@ -568,7 +577,10 @@ mod tests {
     pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
         init();
 
-        let btree_map = fetch_system_unit_info("/org/freedesktop/systemd1/unit/jackett_2eservice")?;
+        let btree_map = fetch_system_unit_info(
+            DbusLevel::System,
+            "/org/freedesktop/systemd1/unit/jackett_2eservice",
+        )?;
 
         debug!("ALL PARAM: {:#?}", btree_map);
         Ok(())

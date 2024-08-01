@@ -2,7 +2,7 @@ mod menu;
 
 use gtk::pango::{Weight, AttrInt, AttrList};
 use gtk::prelude::*;
-mod preferences;
+use super::preferences;
 
 pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
     // ----------------------------------------------

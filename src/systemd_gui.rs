@@ -85,10 +85,7 @@ fn build_ui(application: &Application) {
     // List of all unit files on the system
     let unit_files: Vec<UnitInfo> = match systemd::list_units_description_and_state() {
         Ok(map) => map.into_values().collect(),
-        Err(e) => {
-            debug!("{:?}", e);
-            vec![]
-        }
+        Err(_e) => vec![],
     };
 
     let store = gtk::gio::ListStore::new::<UnitInfo>();

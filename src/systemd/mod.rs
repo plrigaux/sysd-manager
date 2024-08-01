@@ -16,7 +16,8 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use sysdbus::dbus::arg::ArgType;
 
-
+use crate::widget::preferences::DbusLevel;
+use crate::widget::preferences::PREFERENCES;
 use crate::widget::window;
 
 pub mod enums;
@@ -37,7 +38,7 @@ pub enum SystemdErrors {
     Malformed,
     MalformedWrongArgType(ArgType),
     ZBusError(zbus::Error),
-    ZBusFdoError(zbus::fdo::Error)
+    ZBusFdoError(zbus::fdo::Error),
 }
 
 impl From<std::io::Error> for SystemdErrors {
@@ -58,7 +59,6 @@ impl From<sysdbus::dbus::Error> for SystemdErrors {
     }
 }
 
-
 impl From<zbus::Error> for SystemdErrors {
     fn from(error: zbus::Error) -> Self {
         SystemdErrors::ZBusError(error)
@@ -70,7 +70,6 @@ impl From<zbus::fdo::Error> for SystemdErrors {
         SystemdErrors::ZBusFdoError(error)
     }
 }
-
 
 #[derive(Clone, Debug)]
 #[allow(unused)]
@@ -95,7 +94,15 @@ pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, S
 }
 
 pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    return sysdbus::list_units_description_and_state();
+    let level: DbusLevel = PREFERENCES.level().into();
+
+    match sysdbus::list_units_description_and_state(level) {
+        Ok(map) => Ok(map),
+        Err(e) => {
+            warn!("{:?}", e);
+            Err(e)
+        }
+    }
 }
 
 /// Takes a unit name as input and attempts to start it
@@ -277,11 +284,13 @@ fn write_with_priviledge(file_path: &String, text: &GString) {
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    sysdbus::fetch_system_info()
+    let level: DbusLevel = PREFERENCES.level().into();
+    sysdbus::fetch_system_info(level)
 }
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    sysdbus::fetch_system_unit_info(&unit.object_path())
+    let level: DbusLevel = PREFERENCES.level().into();
+    sysdbus::fetch_system_unit_info(level, &unit.object_path())
 }
 
 pub fn test_flatpak_spawn(window: &window::Window) {

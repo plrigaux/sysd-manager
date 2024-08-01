@@ -88,7 +88,7 @@ fn get_dbus_level_settings(settings: &Settings) -> DbusLevel {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
-enum DbusLevel {
+pub enum DbusLevel {
     #[default]
     Session = 0,
     System = 1,
