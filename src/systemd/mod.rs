@@ -94,7 +94,7 @@ pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, S
 }
 
 pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
 
     match sysdbus::list_units_description_and_state(level) {
         Ok(map) => Ok(map),
@@ -284,12 +284,12 @@ fn write_with_priviledge(file_path: &String, text: &GString) {
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::fetch_system_info(level)
 }
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::fetch_system_unit_info(level, &unit.object_path())
 }
 

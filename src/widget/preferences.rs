@@ -155,8 +155,6 @@ pub mod imp {
         #[property(get, set = Self::set_dbus_level )]
         pub(super) dbus_level: Mutex<u32>,
 
-        #[property(get)]
-        pub(super) level: Mutex<u32>,
     }
 
     #[glib::object_subclass]
@@ -184,5 +182,41 @@ pub mod imp {
                 Err(e) => warn!("Error {:?}", e),
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_dbus_level_any_number() {
+        assert_eq!(<u32 as Into<DbusLevel>>::into(1000), DbusLevel::Session)
+    }
+
+    #[test]
+    fn test_dbus_level_int_mapping() {
+        //assert_num_mapping(EnablementStatus::Unasigned);
+        assert_num_mapping(DbusLevel::Session);
+        assert_num_mapping(DbusLevel::System);
+    }
+
+    #[test]
+    fn test_dbus_level_string_mapping() {
+        //assert_num_mapping(EnablementStatus::Unasigned);
+        assert_string_mapping(DbusLevel::Session, "Session");
+        assert_string_mapping(DbusLevel::System, "System");
+    }
+
+    fn assert_num_mapping(level: DbusLevel) {
+        let val = level as u32;
+        let convert: DbusLevel = val.into();
+        assert_eq!(convert, level)
+    }
+
+    fn assert_string_mapping(level: DbusLevel, key: &str) {
+        let convert: DbusLevel = key.into();
+        assert_eq!(convert, level)
     }
 }

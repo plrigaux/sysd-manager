@@ -57,9 +57,7 @@ fn dbus_connect(message: Message) -> Result<Message, SystemdErrors> {
 }
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
-pub fn list_unit_files(level: DbusLevel) -> Result<Vec<SystemdUnit>, SystemdErrors> {
-    let connection = get_connection(level)?;
-
+pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
@@ -128,9 +126,9 @@ fn get_connection(level: DbusLevel) -> Result<Connection, SystemdErrors> {
     Ok(connection)
 }
 
-fn list_units_description(level: DbusLevel) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let connection = get_connection(level)?;
-
+fn list_units_description(
+    connection: &Connection,
+) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
@@ -182,9 +180,12 @@ pub fn get_unit_file_state_path(unit_file: &str) -> Result<EnablementStatus, Sys
 pub fn list_units_description_and_state(
     level: DbusLevel,
 ) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let mut units_map = list_units_description(level)?;
 
-    let mut unit_files = list_unit_files(level)?;
+    let connection = get_connection(level)?;
+    
+    let mut units_map = list_units_description(&connection)?;
+
+    let mut unit_files = list_unit_files(&connection)?;
 
     for unit_file in unit_files.drain(..) {
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
@@ -384,7 +385,7 @@ mod tests {
 
     #[test]
     fn test_list_unit_files() -> Result<(), SystemdErrors> {
-        let units = list_unit_files(DbusLevel::System)?;
+        let units = list_unit_files(&get_connection(DbusLevel::System)?)?;
 
         let serv = units
             .iter()
@@ -397,7 +398,7 @@ mod tests {
 
     #[test]
     fn test_list_units() -> Result<(), SystemdErrors> {
-        let units = list_units_description(DbusLevel::System)?;
+        let units = list_units_description(&get_connection(DbusLevel::System)?)?;
 
         let serv = units.get(TEST_SERVICE);
         debug!("{:#?}", serv);
@@ -406,10 +407,9 @@ mod tests {
 
     #[test]
     fn test_list_units_merge() -> Result<(), SystemdErrors> {
-        let level = DbusLevel::System;
-        let mut units_map = list_units_description(level)?;
+        let mut units_map = list_units_description(&get_connection(DbusLevel::System)?)?;
 
-        let mut units = list_unit_files(level)?;
+        let mut units = list_unit_files(&get_connection(DbusLevel::System)?)?;
 
         let mut set: HashSet<String> = HashSet::new();
         for unit_file in units.drain(..) {
