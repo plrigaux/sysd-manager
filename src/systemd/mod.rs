@@ -14,7 +14,6 @@ use gtk::glib::GString;
 use log::{error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
-use sysdbus::dbus::arg::ArgType;
 
 use crate::widget::preferences::DbusLevel;
 use crate::widget::preferences::PREFERENCES;
@@ -34,9 +33,7 @@ pub enum SystemdErrors {
     Utf8Error(FromUtf8Error),
     SystemCtlError(String),
     DBusErrorStr(String),
-    DBusError(sysdbus::dbus::Error),
     Malformed,
-    MalformedWrongArgType(ArgType),
     ZBusError(zbus::Error),
     ZBusFdoError(zbus::fdo::Error),
 }
@@ -50,12 +47,6 @@ impl From<std::io::Error> for SystemdErrors {
 impl From<FromUtf8Error> for SystemdErrors {
     fn from(error: FromUtf8Error) -> Self {
         SystemdErrors::Utf8Error(error)
-    }
-}
-
-impl From<sysdbus::dbus::Error> for SystemdErrors {
-    fn from(error: sysdbus::dbus::Error) -> Self {
-        SystemdErrors::DBusError(error)
     }
 }
 
@@ -90,7 +81,8 @@ impl SystemdUnit {
 }
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    return sysdbus::get_unit_file_state_path(&sytemd_unit.primary());
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    return sysdbus::get_unit_file_state_path(level, &sytemd_unit.primary());
 }
 
 pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
@@ -106,17 +98,20 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
 }
 
 /// Takes a unit name as input and attempts to start it
-pub fn start_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
-    sysdbus::start_unit(&unit.primary())
+pub fn start_unit(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    sysdbus::start_unit(level, &unit.primary())
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub fn stop_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
-    sysdbus::stop_unit(&unit.primary())
+pub fn stop_unit(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    sysdbus::stop_unit(level, &unit.primary())
 }
 
-pub fn restart_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
-    sysdbus::restart_unit(&unit.primary())
+pub fn restart_unit(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    sysdbus::restart_unit(level, &unit.primary())
 }
 
 pub fn enable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {

@@ -1,18 +1,18 @@
 //! Dbus abstraction
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
 
-pub extern crate dbus;
-
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 
 use log::debug;
 
-use dbus::arg::messageitem::MessageItem;
-use dbus::Message;
+/* use dbus::arg::messageitem::MessageItem;
+use dbus::Message; */
+use log::info;
 use serde::Deserialize;
 use zbus::blocking::fdo;
 use zbus::blocking::Connection;
+use zvariant::ObjectPath;
 use zvariant::OwnedValue;
 use zvariant::Type;
 
@@ -31,12 +31,50 @@ const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
 const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
-use zvariant::ObjectPath;
-
 const METHOD_LIST_UNIT: &str = "ListUnits";
+
 const METHOD_LIST_UNIT_FILES: &str = "ListUnitFiles";
 
-/// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
+const METHOD_START_UNIT: &str = "StartUnit";
+const METHOD_STOP_UNIT: &str = "StopUnit";
+const METHOD_RESTART_UNIT: &str = "RestartUnit";
+const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
+
+#[allow(dead_code)]
+enum StartMode {
+    ///If "replace" the call will start the unit and its dependencies,
+    /// possibly replacing already queued jobs that conflict with this.
+    Replace,
+
+    ///If "fail" the call will start the unit and its dependencies, but will fail if this
+    ///would change an already queued job.
+    Fail,
+
+    ///If "isolate" the call will start the unit in
+    ///question and terminate all units that aren't dependencies of it.
+    ///Note that "isolate" mode is invalid for method **StopUnit**.
+    Isolate,
+
+    ///If "ignore-dependencies" it will start a unit but ignore all its dependencies.
+    IgnoreDependencies,
+
+    ///If "ignore-requirements" it will start a unit but only ignore the requirement dependencies.
+    IgnoreRequirements,
+}
+
+impl StartMode {
+    fn as_str(&self) -> &'static str {
+        match self {
+            StartMode::Replace => "replace",
+            StartMode::Fail => "fail",
+            StartMode::Isolate => "isolate",
+            StartMode::IgnoreDependencies => "ignore-dependencies",
+            StartMode::IgnoreRequirements => "ignore-requirements",
+        }
+    }
+}
+
+/* /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
 fn dbus_message(function: &str) -> Result<Message, SystemdErrors> {
     let dest = DESTINATION_SYSTEMD;
     let path = PATH_SYSTEMD;
@@ -54,7 +92,7 @@ fn dbus_connect(message: Message) -> Result<Message, SystemdErrors> {
     let message = connection.send_with_reply_and_block(message, 30000)?;
 
     Ok(message)
-}
+} */
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
@@ -163,26 +201,28 @@ fn list_units_description(
 }
 
 /// Returns the current enablement status of the unit
-pub fn get_unit_file_state_path(unit_file: &str) -> Result<EnablementStatus, SystemdErrors> {
-    let mut message = dbus_message("GetUnitFileState")?;
-    let message_items = &[MessageItem::Str(unit_file.to_owned())];
-    message.append_items(message_items);
+pub fn get_unit_file_state_path(level: DbusLevel, unit_file: &str) -> Result<EnablementStatus, SystemdErrors> {
+    let connection = get_connection(level)?;
 
-    let message_wraper = dbus_connect(message)?;
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_GET_UNIT_FILE_STATE,
+        &(unit_file),
+    )?;
 
-    if let Some(enablement_status) = message_wraper.get1::<String>() {
-        Ok(EnablementStatus::new(&enablement_status))
-    } else {
-        Err(SystemdErrors::Malformed)
-    }
+    let body = message.body();
+    let enablement_status: zvariant::Str = body.deserialize()?;
+
+    Ok(EnablementStatus::new(enablement_status.as_str()))
 }
 
 pub fn list_units_description_and_state(
     level: DbusLevel,
 ) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-
     let connection = get_connection(level)?;
-    
+
     let mut units_map = list_units_description(&connection)?;
 
     let mut unit_files = list_unit_files(&connection)?;
@@ -205,39 +245,43 @@ pub fn list_units_description_and_state(
 }
 
 /// Takes a unit name as input and attempts to start it
-///
-pub fn start_unit(unit: &str) -> Result<(), SystemdErrors> {
-    let mut message = dbus_message("StartUnit")?;
-    message.append_items(&[unit.into(), "fail".into()]);
-
-    let message = dbus_connect(message)?;
-
-    debug!("StartUnit answer: {:?}", message); //TODO return the msg
-
-    Ok(())
+pub fn start_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+    systemd_action(METHOD_START_UNIT, level, unit, StartMode::Fail)
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub fn stop_unit(unit: &str) -> Result<(), SystemdErrors> {
-    let mut message = dbus_message("StopUnit")?;
-    message.append_items(&[unit.into(), "fail".into()]);
-    let message = dbus_connect(message)?;
-
-    debug!("StartUnit answer: {:?}", message); //TODO return the msg
-
-    Ok(())
+pub fn stop_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+    systemd_action(METHOD_STOP_UNIT, level, unit, StartMode::Fail)
 }
 
 /// Enqeues a start job, and possibly depending jobs.
-pub fn restart_unit(unit: &str) -> Result<(), SystemdErrors> {
-    let mut message = dbus_message("RestartUnit")?;
-    message.append_items(&[unit.into(), "fail".into()]);
+pub fn restart_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+    systemd_action(METHOD_RESTART_UNIT, level, unit, StartMode::Fail)
+}
 
-    let message = dbus_connect(message)?;
+fn systemd_action(
+    method: &str,
+    level: DbusLevel,
+    unit: &str,
+    mode: StartMode,
+) -> Result<String, SystemdErrors> {
+    let connection = get_connection(level)?;
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        method,
+        &(unit, mode.as_str()),
+    )?;
 
-    debug!("RestartUnit answer: {:?}", message); //TODO return the msg
+    let body = message.body();
+    let o: zvariant::ObjectPath = body.deserialize()?;
 
-    Ok(())
+    let created_job_object = o.to_string();
+
+    info!("{method} SUCCESS, response {created_job_object}");
+
+    Ok(created_job_object)
 }
 
 fn convert_to_string(value: &zvariant::Value) -> String {
@@ -335,12 +379,9 @@ mod tests {
 
     /* use crate::systemd::collect_togglable_services; */
 
-    use super::dbus::arg::messageitem::Props;
-
     use super::*;
 
     pub const TEST_SERVICE: &str = "jackett.service";
-    use log::*;
 
     fn init() {
         let _ = env_logger::builder()
@@ -352,11 +393,11 @@ mod tests {
 
     #[test]
     fn stop_service_test() -> Result<(), SystemdErrors> {
-        stop_unit(TEST_SERVICE)?;
+        stop_unit(DbusLevel::System, TEST_SERVICE)?;
         Ok(())
     }
 
-    #[test]
+/*     #[test]
     fn dbus_test() -> Result<(), SystemdErrors> {
         // let file: &str = "/etc/systemd/system/jackett.service";
         let file1: &str = TEST_SERVICE;
@@ -372,14 +413,14 @@ mod tests {
             }
             Err(e) => Err(e),
         }
-    }
+    } */
 
     #[test]
     fn test_get_unit_file_state() {
         // let file: &str = "/etc/systemd/system/jackett.service";
         let file1: &str = TEST_SERVICE;
 
-        let status = get_unit_file_state_path(file1);
+        let status = get_unit_file_state_path(DbusLevel::System, file1);
         debug!("Status: {:?}", status);
     }
 
@@ -449,7 +490,7 @@ mod tests {
            Ok(())
        }
     */
-
+/* 
     #[test]
     fn test_prop() {
         init();
@@ -462,7 +503,7 @@ mod tests {
             10000,
         );
         info!("BackendVersion: {:?}", p.get("BackendVersion").unwrap())
-    }
+    } */
 
     /*     #[test]
     fn test_prop_all_systemd_manager() -> Result<(), SystemdErrors> {
@@ -485,7 +526,7 @@ mod tests {
         Ok(())
     } */
 
-    #[test]
+/*     #[test]
     fn test_prop2() {
         init();
         let c = dbus::ffidisp::Connection::new_system().unwrap();
@@ -496,8 +537,8 @@ mod tests {
         let prop = Props::new(&c, dest, path, interface, 10000);
         debug!("Version: {:?}", prop.get("Version").unwrap());
         debug!("Architecture: {:?}", prop.get("Architecture").unwrap());
-    }
-
+    } */
+/* 
     #[test]
     fn test_prop33() {
         init();
@@ -514,9 +555,9 @@ mod tests {
         }
         /*   debug!("Version: {:?}", prop.get("Version").unwrap());
         debug!("Architecture: {:?}", prop.get("Architecture").unwrap()); */
-    }
+    } */
 
-    #[test]
+/*     #[test]
     fn test_prop34() -> Result<(), Box<dyn std::error::Error>> {
         let dest = "org.freedesktop.portal.Desktop";
         let path = "/org/freedesktop/portal/desktop";
@@ -547,8 +588,8 @@ mod tests {
         debug!("Meta: {:?}", metadata);
         Ok(())
     }
-
-    #[test]
+ */
+/*     #[test]
     pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
         let unit_file: &str = TEST_SERVICE;
         let mut message = dbus_message("GetUnit")?;
@@ -558,7 +599,7 @@ mod tests {
         let load_unit_ret = dbus_connect(message)?;
         debug!("{:?}", load_unit_ret);
         Ok(())
-    }
+    } */
 
     /*     #[test]
     pub fn test_get_unit_parameters() {
@@ -586,7 +627,7 @@ mod tests {
         Ok(())
     }
 
-    #[test]
+/*     #[test]
     pub fn test_load_unit_() -> Result<(), SystemdErrors> {
         let unit_file: &str = TEST_SERVICE;
         let mut message = dbus_message("LoadUnit")?;
@@ -596,5 +637,5 @@ mod tests {
         let load_unit_ret = dbus_connect(message)?;
         debug!("{:?}", load_unit_ret);
         Ok(())
-    }
+    } */
 }

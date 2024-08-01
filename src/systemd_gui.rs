@@ -560,7 +560,7 @@ fn build_ui(application: &Application) {
             let unit = get_selected_unit!(column_view);
 
             match systemd::start_unit(&unit) {
-                Ok(()) => {
+                Ok(_job) => {
                     info!("Unit \"{}\" has been started!", unit.primary());
                     update_active_state(&unit, ActiveState::Active);
                 }
@@ -575,7 +575,7 @@ fn build_ui(application: &Application) {
             let unit = get_selected_unit!(column_view);
 
             match systemd::stop_unit(&unit) {
-                Ok(()) => {
+                Ok(_job) => {
                     info!("Unit \"{}\" stopped!", unit.primary());
                     update_active_state(&unit, ActiveState::Inactive)
                 }
@@ -591,7 +591,7 @@ fn build_ui(application: &Application) {
             let unit = get_selected_unit!(column_view);
 
             match systemd::restart_unit(&unit) {
-                Ok(()) => {
+                Ok(_job) => {
                     info!("Unit {} restarted!", unit.primary());
                     update_active_state(&unit, ActiveState::Active);
                 }
