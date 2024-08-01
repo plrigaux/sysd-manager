@@ -1,8 +1,8 @@
 mod menu;
 
-use gtk::pango::{Weight, AttrInt, AttrList};
-use gtk::prelude::*;
 use super::preferences;
+use gtk::pango::{AttrInt, AttrList, Weight};
+use gtk::prelude::*;
 
 pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
     // ----------------------------------------------
@@ -35,6 +35,13 @@ pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
     search_button.set_tooltip_text(Some("Filter results"));
     title_bar.pack_start(&search_button);
 
+    let refresh_button = gtk::Button::builder()
+        .label("Refresh")
+        .tooltip_text("Refresh results")
+        .build();
+
+    title_bar.pack_start(&refresh_button);
+
     title_bar.pack_start(&right_bar_label);
 
     search_button
@@ -47,6 +54,7 @@ pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
         title_bar,
         right_bar_label,
         search_button,
+        refresh_button,
     }
 }
 
@@ -58,5 +66,5 @@ pub struct TitleBar {
     pub title_bar: gtk::HeaderBar,
     pub right_bar_label: gtk::Label,
     pub search_button: gtk::ToggleButton,
+    pub refresh_button: gtk::Button,
 }
-

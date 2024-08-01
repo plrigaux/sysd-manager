@@ -82,18 +82,9 @@ pub fn launch() -> glib::ExitCode {
 }
 
 fn build_ui(application: &Application) {
-    // List of all unit files on the system
-    let unit_files: Vec<UnitInfo> = match systemd::list_units_description_and_state() {
-        Ok(map) => map.into_values().collect(),
-        Err(_e) => vec![],
-    };
-
     let store = gtk::gio::ListStore::new::<UnitInfo>();
 
-    for value in unit_files {
-        //debug!("Analyse Tree Blame {:?}", value);
-        store.append(&value);
-    }
+    fill_store(&store);
 
     let units_browser = gtk::ColumnView::builder()
         //.model(&columnview_selection_model)
@@ -252,7 +243,8 @@ fn build_ui(application: &Application) {
     units_browser.append_column(&col5_description);
 
     let sorter = units_browser.sorter();
-    let sort_model = gtk::SortListModel::new(Some(store), sorter);
+    let store_sort = store.clone();
+    let sort_model = gtk::SortListModel::new(Some(store_sort), sorter);
     let filtermodel =
         gtk::FilterListModel::new(Some(sort_model.clone()), None::<gtk::CustomFilter>);
     let columnview_selection_model = gtk::SingleSelection::new(Some(filtermodel.clone()));
@@ -748,6 +740,16 @@ fn build_ui(application: &Application) {
         });
     }
 
+    {
+        let store = store.clone();
+
+        title_bar_elements
+            .refresh_button
+            .connect_clicked(move |_button| {
+                fill_store(&store);
+            });
+    }
+
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
 
@@ -839,6 +841,20 @@ fn build_ui(application: &Application) {
     window.present();
 
     systemd::test_flatpak_spawn(&window);
+}
+
+fn fill_store(store: &gio::ListStore) {
+    let unit_files: Vec<UnitInfo> = match systemd::list_units_description_and_state() {
+        Ok(map) => map.into_values().collect(),
+        Err(_e) => vec![],
+    };
+
+    store.remove_all();
+
+    for value in unit_files {
+        store.append(&value);
+    }
+    info!("Unit list refreshed! list size {}", store.n_items())
 }
 
 fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch) {
