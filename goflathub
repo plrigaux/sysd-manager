@@ -93,7 +93,7 @@ def build():
             "--user",
             "--install-deps-from=flathub",
             "--ccache",
-            "--mirror-screenshots-url=https://dl.flathub.org/media/",
+            "--mirror-screenshots-url=https://dl.flathub.org/media",
             "--repo=repo",
             "--install",
             "builddir",
@@ -151,7 +151,7 @@ def compose():
 
 
 def validate():
-    print(f"{color.BOLD}{color.CYAN}Validate metainfo.xml{color.END}")
+    print(f"{color.BOLD}{color.CYAN}Validating {APP_ID}.metainfo.xml{color.END}")
     cmd_run(
         [
             "flatpak",

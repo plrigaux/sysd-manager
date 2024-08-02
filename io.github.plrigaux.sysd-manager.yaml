@@ -14,7 +14,6 @@ finish-args:
 - --socket=fallback-x11
 - --socket=wayland
 - --device=dri
-#- --socket=system-bus #flatpak run --log-session-bus <appid> can be used to find the specific D-Bus permissions needed.
 - --filesystem=home
 #- --talk-name=org.freedesktop.Flatpak"
 - --env=RUST_LOG=info
@@ -26,21 +25,10 @@ finish-args:
 - --filesystem=xdg-run/gvfsd
 # Needed to talk to systemd1 with dbus
 - --talk-name=org.freedesktop.systemd1
-- --talk-name=org.freedesktop.systemd1.Unit
-- --talk-name=org.freedesktop.systemd1.Manager
-- --own-name=org.freedesktop.systemd1
-- --own-name=org.freedesktop.systemd1.Unit
-- --own-name=org.freedesktop.systemd1.Manager
-- --talk-name=org.freedesktop.DBus
-- --system-talk-name=org.freedesktop.DBus
+- --system-talk-name=org.freedesktop.systemd1
+
 build-options:
-  #append-path: "/usr/lib/sdk/rust-stable/bin"
-  #append-path: "/usr/lib/sdk/rust-stable/bin"
   append-path: "/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm16/bin"
-  #build-args:
-  #- "--share=network"
-  #build-args:
-  #- "--share=network"
   env:
     CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: clang
