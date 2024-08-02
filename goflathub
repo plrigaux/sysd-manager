@@ -233,6 +233,7 @@ def set_required_files():
         ]
     )
 
+    print(f"{color.CYAN}Generate a .gitignore{color.END}")
     ignored = ["/target/", "/.flatpak/", "/.flatpak-builder", "/repo", "/builddir"]
     with open(f"{FLATHUB_DIR}/.gitignore", "w") as file:
         content = "\n".join(ignored)
