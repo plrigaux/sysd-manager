@@ -8,6 +8,8 @@ from build_aux.build_common import *
 import build_aux.flatpak_cargo_generator as cg
 import build_aux.flatpak_cargo_generator as cg
 
+from os import walk
+
 G_RPM_VERSION = None
 G_SRPM_PATH = None
 G_MOCK_SRPM_ROOT = None
@@ -21,6 +23,8 @@ COPR_REPO = "sysd-manager"
 APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
 FLATHUB_DIR = "../flathub"
+CARGO_LOCK = "Cargo.lock"
+CARGO_SOURCES = "cargo-sources.json"
 
 
 def main():
@@ -39,6 +43,8 @@ def main():
             "validate",
             "flathub",
             "generate",
+            "copy",
+            "cleanf",
         ],
         help="action to perform",
     )
@@ -65,12 +71,16 @@ def main():
             generate()
         case "repair":
             repair()
+        case "copy":
+            set_required_files()
+        case "cleanf":
+            clean_flathub_dir()
         case _:
             print("No actions performed")
 
 
 def clean():
-    list_dir = ["builddir", ".flatpak-builder", "cargo-sources.json", "repo"]
+    list_dir = ["builddir", ".flatpak-builder", CARGO_SOURCES, "repo"]
 
     for dir in list_dir:
         print(f"{color.BOLD}Deleting{color.END} {dir}")
@@ -78,15 +88,16 @@ def clean():
 
 
 def build():
+    set_required_files()
+
     print(f"{color.BOLD}{color.CYAN}Building for flatpak{color.END}")
 
-    generate()
     # Info https://docs.flathub.org/docs/for-app-authors/submission/
     cmd_run(
         [
-            #"flatpak",
-            #"run",
-            #"org.flatpak.Builder",
+            # "flatpak",
+            # "run",
+            # "org.flatpak.Builder",
             "flatpak-builder",
             "--force-clean",
             "--sandbox",
@@ -98,7 +109,8 @@ def build():
             "--install",
             "builddir",
             MANIFEST,
-        ]
+        ],
+        cwd=FLATHUB_DIR,
     )
 
 
@@ -176,21 +188,77 @@ def add_required_files():
 
 def generate():
     print(f"{color.BOLD}{color.CYAN}Generate cargo sources{color.END}")
-    cargo_lock = "Cargo.lock"
-    outfile = "cargo-sources.json"
-    loglevel = logging.DEBUG
+
+    loglevel = logging.INFO
     logging.basicConfig(level=loglevel)
     git_tarballs = False
 
     generated_sources = cg.asyncio.run(
-        cg.generate_sources(cg.load_toml(cargo_lock), git_tarballs=git_tarballs)
+        cg.generate_sources(cg.load_toml(CARGO_LOCK), git_tarballs=git_tarballs)
     )
-    with open(outfile, "w") as out:
+
+    cmd_run(["mkdir", "-p", FLATHUB_DIR])
+
+    with open(f"{FLATHUB_DIR}/{CARGO_SOURCES}", "w") as out:
         json.dump(generated_sources, out, indent=4, sort_keys=False)
+
 
 def diag():
     """flatpak remotes -d
     flatpak update -v --ostree-verbose
-    flatpak list """
+    flatpak list"""
+
+
+def set_required_files():
+    # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
+    print(f"{color.BOLD}Add required files for {color.CYAN}Flathub{color.END}")
+
+    cmd_run(["mkdir", "-p", FLATHUB_DIR])
+
+    generate()
+
+    cmd_run(
+        [
+            "cp",
+            "-r",
+            "Cargo.toml",
+            MANIFEST,
+            # CARGO_SOURCES,
+            CARGO_LOCK,
+            "src",
+            "data",
+            "build.rs",
+            "screenshots",
+            f"{FLATHUB_DIR}",
+        ]
+    )
+
+    ignored = ["/target/", "/.flatpak/", "/.flatpak-builder", "/repo", "/builddir"]
+    with open(f"{FLATHUB_DIR}/.gitignore", "w") as file:
+        content = "\n".join(ignored)
+        file.write(content)
+
+
+def clean_flathub_dir():
+
+    file_list = []
+    for dirpath, dirnames, filenames in walk(FLATHUB_DIR):
+        dirnames = [x for x in dirnames if x != ".git"]
+        file_list.extend(dirnames)
+        file_list.extend(filenames)
+        print(f"Path {dirpath}")
+        break
+
+    files_to_clean = []
+    for file_or_dir in file_list:
+        file_or_dir = f"{FLATHUB_DIR}/{file_or_dir}"
+        files_to_clean.append(file_or_dir)
+
+    print(files_to_clean)
+
+    for dir in files_to_clean:
+        print(f"{color.BOLD}Deleting{color.END} {dir}")
+        cmd_run(["rm", "-fr", dir])
+
 
 main()

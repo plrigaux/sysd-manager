@@ -15,12 +15,16 @@ class color:
     UNDERLINE = '\033[4m'
     END = '\033[0m'
 
-def cmd_run(cmd : list, shell=False):
+def cmd_run(cmd : list, shell=False, cwd=None):
     
+
+    if (cwd): 
+        print(f"{color.GREEN}Change Working Dir to: {cwd}{color.END}")
+
     cmd_str = " ".join(cmd)
     print(f"{color.DARKCYAN}{cmd_str}{color.END}")
-    
-    ret = subprocess.run(cmd, shell=shell)
+   
+    ret = subprocess.run(cmd, shell=shell, cwd=cwd)
     try: 
         ret.check_returncode()
     except subprocess.CalledProcessError as err: 
