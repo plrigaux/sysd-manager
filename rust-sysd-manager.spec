@@ -56,10 +56,10 @@ install -v -Dm644 data/applications/io.github.plrigaux.sysd-manager.desktop -t %
 install -v -Dm644 data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg -t %{buildroot}%{_datadir}/icons/hicolor/scalable/apps                           
 install -v -Dm644 data/schemas/io.github.plrigaux.sysd-manager.gschema.xml -t %{buildroot}%{_datadir}/glib-2.0/schemas
 
-%if %{with check}
-%check
+# %if %{with check}
+# %check
 # %cargo_test
-%endif
+# %endif
 
 %changelog
 %autochangelog
