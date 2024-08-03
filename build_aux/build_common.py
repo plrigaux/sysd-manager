@@ -15,7 +15,7 @@ class color:
     UNDERLINE = '\033[4m'
     END = '\033[0m'
 
-def cmd_run(cmd : list, shell=False, cwd=None):
+def cmd_run(cmd : list, shell=False, cwd=None, on_fail_exit = True):
     
 
     if (cwd): 
@@ -28,9 +28,12 @@ def cmd_run(cmd : list, shell=False, cwd=None):
     try: 
         ret.check_returncode()
     except subprocess.CalledProcessError as err: 
-        print (f"{color.RED}Called Process Error{color.END}")
+        print (f"{color.RED}Called Process Error! code({ret.returncode}){color.END}")
         print (f"{color.YELLOW}{cmd_str}{color.END}")
         pprint.pp(err)
+        if on_fail_exit:
+            print(f"{color.RED}Exit program{color.END}")
+            exit(1)
 
 
 def clean_gschema():

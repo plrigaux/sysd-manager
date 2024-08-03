@@ -51,7 +51,8 @@ License:        GPL-3.0-or-later
 %{cargo_license} > LICENSE.dependencies
 
 %install
-%cargo_install
+#%cargo_install
+install -v -Dm755 target/rpm/sysd-manager -t %{buildroot}%{_bindir}
 install -v -Dm644 data/applications/io.github.plrigaux.sysd-manager.desktop -t %{buildroot}%{_datadir}/applications 
 install -v -Dm644 data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg -t %{buildroot}%{_datadir}/icons/hicolor/scalable/apps                           
 install -v -Dm644 data/schemas/io.github.plrigaux.sysd-manager.gschema.xml -t %{buildroot}%{_datadir}/glib-2.0/schemas
