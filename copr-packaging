@@ -75,10 +75,11 @@ def main():
 def build_spec():
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
 
-    cmd_run(["git", "archive", "main",
+    cmd_run(["git", "archive",
                     "--format=tar",
                     f"--prefix=sysd-manager-{G_RPM_VERSION}/",
-                    f"--output={G_SOURCES_DIR}/sysd-manager-{G_RPM_VERSION}.crate"])
+                    f"--output={G_SOURCES_DIR}/sysd-manager-{G_RPM_VERSION}.crate",
+                    "HEAD"])
     
     print(f"{color.CYAN}{color.BOLD}Info:{color.END} make specfile")
 
