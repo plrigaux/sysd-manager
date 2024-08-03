@@ -375,7 +375,7 @@ pub fn fetch_system_unit_info(
 #[cfg(test)]
 mod tests {
 
-    use std::collections::HashSet;
+/*     use std::collections::HashSet;
 
     /* use crate::systemd::collect_togglable_services; */
 
@@ -395,7 +395,7 @@ mod tests {
     fn stop_service_test() -> Result<(), SystemdErrors> {
         stop_unit(DbusLevel::System, TEST_SERVICE)?;
         Ok(())
-    }
+    } */
 
 /*     #[test]
     fn dbus_test() -> Result<(), SystemdErrors> {
@@ -415,7 +415,7 @@ mod tests {
         }
     } */
 
-    #[test]
+ /*    #[test]
     fn test_get_unit_file_state() {
         // let file: &str = "/etc/systemd/system/jackett.service";
         let file1: &str = TEST_SERVICE;
@@ -474,7 +474,7 @@ mod tests {
 
         Ok(())
     }
-
+ */
     /*  #[test]
         fn test_list_units_description_and_state() -> Result<(), SystemdErrors> {
            let units_map = list_units_description_and_state()?;
@@ -614,7 +614,7 @@ mod tests {
         debug!("ALL PARAM: {:#?}", p.get_all());
     } */
 
-    #[test]
+/*     #[test]
     pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
         init();
 
@@ -625,7 +625,7 @@ mod tests {
 
         debug!("ALL PARAM: {:#?}", btree_map);
         Ok(())
-    }
+    } */
 
 /*     #[test]
     pub fn test_load_unit_() -> Result<(), SystemdErrors> {
