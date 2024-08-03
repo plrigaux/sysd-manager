@@ -32,7 +32,6 @@ License:        GPL-3.0-or-later
 %license LICENCE
 %license LICENSE.dependencies
 %doc README.md
-# %doc meson_options.txt
 %{_bindir}/sysd-manager
 /usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg
 /usr/share/applications/io.github.plrigaux.sysd-manager.desktop
