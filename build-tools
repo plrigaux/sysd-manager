@@ -45,18 +45,18 @@ def version(allow_dirty: bool, message : str):
     cargo_toml = bc.toml()
 
     version = cargo_toml["package"]["version"]
-    tag = f"v{version}"
+    tag_name = f"v{version}"
 
     print(f"Program version {color.BOLD}{version}{color.END}")
-    print(f"Git tag {color.BOLD}{color.YELLOW}{tag}{color.END}")
+    print(f"Git tag {color.BOLD}{color.YELLOW}{tag_name}{color.END}")
 
     if not message:
         print(f"Message needed (-m \"a message ...\")")
         exit()
 
 
-    bc.cmd_run(["git", "tag", f"-m=\"{message}\"", tag])
-    bc.cmd_run(["git", "push", "origin", "tag", tag])
+    bc.cmd_run(["git", "tag", "-m", f"\"{message}\"", tag_name])
+    bc.cmd_run(["git", "push", "origin", "tag", tag_name])
 
 
 main()
