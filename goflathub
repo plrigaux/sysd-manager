@@ -141,7 +141,7 @@ def lint():
             "org.flatpak.Builder",
             "manifest",
             MANIFEST,
-        ]
+        ], cwd=FLATHUB_DIR
     )
 
     print(f"{color.BOLD}{color.CYAN}Lint repo{color.END}")
@@ -153,7 +153,7 @@ def lint():
             "org.flatpak.Builder",
             "repo",
             "repo",
-        ]
+        ], cwd=FLATHUB_DIR
     )
 
 
