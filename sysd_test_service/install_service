@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import inspect
+import pwd
+
+# Get the parent directory
+# currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# parentdir = os.path.dirname(currentdir)
+# sys.path.insert(0, parentdir)
+
+
+from build_aux.build_common import *
+
+print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
+
+SERVICE_USER = pwd.getpwuid(os.getuid())[0]
+SERVICE_NAME = "sysd_test.service"
+SERVICE_DIR = f"{os.path.expanduser('~')}/bin/"
+SERVICE_PATH = f"/etc/systemd/system/{SERVICE_NAME}"
+
+
+print(f"{color.CYAN}{color.BOLD}{SERVICE_USER}{color.END}")
+print(f"{color.CYAN}{color.BOLD}{SERVICE_NAME}{color.END}")
+print(f"{color.CYAN}{color.BOLD}{SERVICE_DIR}{color.END}")
+print(f"{color.CYAN}{color.BOLD}{SERVICE_PATH}{color.END}")
+
+os.path.expanduser("~")
+
+print(f"Checking if the service '{SERVICE_NAME}' is running ...")
+
+
+if (
+    cmd_run(["systemctl", "is-active", "--quiet", SERVICE_NAME], on_fail_exit=False)
+    == 0
+):
+    print(f"Service '{SERVICE_NAME}' is running")
+
+    if cmd_run(["systemctl", "stop", SERVICE_NAME]) == 0:
+        print(f"Service '{SERVICE_NAME}' stopped")
+    else:
+        print(
+            f"{color.BOLD}ERROR${color.END}: The service '{SERVICE_NAME}' can not be stopped"
+        )
+        exit(1)
+
+else:
+    print(f"Service '{SERVICE_NAME}' is not running")
+
+
+    unit_file = f"""[Unit]
+    Description=Jackett Daemon
+    After=network.target
+
+    [Service]
+    SyslogIdentifier=jackett
+    Restart=always
+    RestartSec=5
+    Type=simple
+    User={SERVICE_USER}
+    Group={SERVICE_USER}
+    WorkingDirectory={SERVICE_DIR}
+    Environment="DOTNET_EnableDiagnostics=0"
+    ExecStart=/bin/sh "{SERVICE_DIR}/jackett_launcher.sh"
+    TimeoutStopSec=30
+
+    [Install]
+    WantedBy=multi-user.target"""
