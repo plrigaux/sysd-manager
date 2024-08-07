@@ -3,15 +3,15 @@ use axum::{
 };
 use clap::Parser;
 
-use log::info;
+use log::{info, warn};
 use signal_hook::{
-    consts::{SIGHUP, SIGINT, SIGTERM},
+    consts::{SIGALRM, SIGHUP, SIGINT, SIGQUIT, SIGTERM},
     iterator::Signals,
 };
 
 
-use tokio::signal;
-
+//use tokio::signal;
+use dotenv::dotenv;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -21,19 +21,35 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+    env_logger::init();
+
     let args = Args::parse();
     let port = args.port;
 
-    let mut signals = Signals::new(&[SIGTERM, SIGHUP, SIGINT])?;
+
+        let mut signals = Signals::new(&[SIGTERM, SIGQUIT, SIGHUP, SIGINT, SIGALRM])?;
 
     tokio::spawn({
         async move {
             for sig in signals.forever() {
                 info!("Received signal {:?}", sig);
 
-                if sig == SIGINT {
-                    info!("cancel_token.cancel()");
-                }
+                match sig {
+                    SIGTERM | SIGQUIT |SIGINT => {
+                        info!("Exiting");
+                        std::process::exit(0);
+                    },
+                    SIGALRM => {
+                        warn!("Alarm");
+                    },
+                    SIGHUP => {
+                        info!("signal hang up");
+                    },
+                    _ => {
+                        warn!("Signal not handled");
+                    },
+                };
             }
         }
     });
@@ -49,21 +65,23 @@ async fn main() -> std::io::Result<()> {
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
+        //.with_graceful_shutdown(shutdown_signal())
         .await?;
 
     Ok(())
 }
 
 async fn root() -> &'static str {
+    info!("root --> \"Hello, World!\"");
     "Hello, World!"
 }
 
 async fn manual_hello() -> &'static str {
+    info!("manual_hello --> \"Hey there!\"");
     "Hey there!"
 }
 
-async fn shutdown_signal() {
+/* async fn shutdown_signal() {
 
     loop {
         tokio::select! {
@@ -73,23 +91,24 @@ async fn shutdown_signal() {
                     .recv()
                     .await;
             } => {
-                println!("interrupt"); break;},
+                info!("interrupt"); break;},
             _ = async {
                 signal::unix::signal(signal::unix::SignalKind::interrupt())
                     .expect("failed to install signal handler")
                     .recv()
                     .await;
-            } => {println!("terminate");
+            } => {info!("terminate");
             break;},
             _ =  async {
                 signal::unix::signal(signal::unix::SignalKind::hangup())
                     .expect("failed to install signal handler")
                     .recv()
                     .await;
-            } => {println!("hangup")},
+            } => {info!("hangup")},
         }
     }
 
-    println!("Exiting");
+    info!("Exiting");
     std::process::exit(0);
 }
+ */

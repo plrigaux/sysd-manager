@@ -4,6 +4,7 @@ import sys
 import os
 import inspect
 import pwd
+import shutil
 
 # Get the parent directory
 # currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -17,8 +18,9 @@ print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
 
 SERVICE_USER = pwd.getpwuid(os.getuid())[0]
 SERVICE_NAME = "sysd_test.service"
-SERVICE_DIR = f"{os.path.expanduser('~')}/bin/"
+SERVICE_DIR = f"{os.path.expanduser('~')}/bin"
 SERVICE_PATH = f"/etc/systemd/system/{SERVICE_NAME}"
+EXEC_FILE = "sysd-test-manager"
 
 
 print(f"{color.CYAN}{color.BOLD}{SERVICE_USER}{color.END}")
@@ -49,21 +51,48 @@ else:
     print(f"Service '{SERVICE_NAME}' is not running")
 
 
-    unit_file = f"""[Unit]
-    Description=Jackett Daemon
+print(f"Install binary ...")
+# Source path
+cmd_run(["mkdir", "-p", SERVICE_DIR])
+cmd_run(
+    ["cp", f"sysd_test_service/target/debug/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
+)
+
+print(f"Creating Service unit file in '{SERVICE_PATH}' ...")
+
+unit_file = f"""[Unit]
+    Description=Sysd Manager Test Service
     After=network.target
 
     [Service]
-    SyslogIdentifier=jackett
+    SyslogIdentifier=sysd_test
     Restart=always
     RestartSec=5
     Type=simple
     User={SERVICE_USER}
     Group={SERVICE_USER}
     WorkingDirectory={SERVICE_DIR}
-    Environment="DOTNET_EnableDiagnostics=0"
-    ExecStart=/bin/sh "{SERVICE_DIR}/jackett_launcher.sh"
+    ExecStart= "{SERVICE_DIR}/{EXEC_FILE}"
     TimeoutStopSec=30
+    Environment="RUST_LOG=info"
 
     [Install]
     WantedBy=multi-user.target"""
+
+if os.geteuid() == 0:
+    print("We're root!")
+else:
+    print("We're not root.")
+    cmd_run(["sudo", "echo", unit_file, "|", "tee", SERVICE_PATH])
+
+cmd_run(
+    [
+        "sudo",
+        "systemctl",
+        "daemon-reload",
+    ]
+)
+
+cmd_run(["sudo", "systemctl", "enable", SERVICE_NAME])
+
+cmd_run(["sudo", "systemctl", "start", SERVICE_NAME])
