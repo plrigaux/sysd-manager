@@ -8,18 +8,19 @@ use signal_hook::{
 };
 
 use anstyle;
-use dotenv::dotenv;
 use std::io::Write;
 
 #[derive(Parser, Debug)]
 pub struct Args {
     #[arg(short, long, default_value_t = 8080)]
     pub port: u16,
+    #[arg(short, long, default_value = "127.0.0.1")]
+    pub addr: String,
 }
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
+
     env_logger::builder()
         //.format_target(false)
         //.format_timestamp(None)
@@ -28,7 +29,7 @@ async fn main() -> std::io::Result<()> {
                 .default_level_style(record.level())
                 .effects(anstyle::Effects::BOLD);
             writeln!(buf, "{style}{}{style:#} {}", record.level(), record.args())
-        })
+        }).filter_level(log::LevelFilter::Info)
         .init();
 
     let ret: Result<(), std::io::Error> = setup_server().await;
@@ -44,6 +45,7 @@ async fn main() -> std::io::Result<()> {
 async fn setup_server() -> std::io::Result<()> {
     let args = Args::parse();
     let port = args.port;
+    let ip_addr = args.addr;
 
     let mut signals = Signals::new(&[SIGTERM, SIGQUIT, SIGHUP, SIGINT, SIGALRM])?;
 
@@ -78,9 +80,11 @@ async fn setup_server() -> std::io::Result<()> {
         // `POST /users` goes to `create_user`
         .route("/hey", get(manual_hello));
 
-    let addr = format!("127.0.0.1:{port}");
+    let addr = format!("{ip_addr}:{port}");
     // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind(addr).await?;
+    let listener = tokio::net::TcpListener::bind(addr.clone()).await?;
+    let local_addr = listener.local_addr()?;
+    info!("Tiny Daemon listening on {:?}", local_addr);
     axum::serve(listener, app)
         //.with_graceful_shutdown(shutdown_signal())
         .await?;

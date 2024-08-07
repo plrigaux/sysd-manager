@@ -9,5 +9,5 @@ Cargo.lock
 /builddir
 /build_aux/__pycache__
 cargo-sources.json
-/sysd_test_service/target/
+/tiny_daemon/target/
 
