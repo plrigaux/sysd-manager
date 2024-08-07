@@ -1,6 +1,4 @@
-use axum::{
-    routing::get, Router,
-};
+use axum::{routing::get, Router};
 use clap::Parser;
 
 use log::{info, warn};
@@ -9,9 +7,9 @@ use signal_hook::{
     iterator::Signals,
 };
 
-
-//use tokio::signal;
+use anstyle;
 use dotenv::dotenv;
+use std::io::Write;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -22,13 +20,32 @@ pub struct Args {
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    env_logger::init();
+    env_logger::builder()
+        //.format_target(false)
+        //.format_timestamp(None)
+        .format(|buf, record| {
+            let style = buf
+                .default_level_style(record.level())
+                .effects(anstyle::Effects::BOLD);
+            writeln!(buf, "{style}{}{style:#} {}", record.level(), record.args())
+        })
+        .init();
 
+    let ret: Result<(), std::io::Error> = setup_server().await;
+
+    if let Err(e) = ret {
+        warn!("Error: {:?}", e);
+        return Err(e);
+    }
+
+    Ok(())
+}
+
+async fn setup_server() -> std::io::Result<()> {
     let args = Args::parse();
     let port = args.port;
 
-
-        let mut signals = Signals::new(&[SIGTERM, SIGQUIT, SIGHUP, SIGINT, SIGALRM])?;
+    let mut signals = Signals::new(&[SIGTERM, SIGQUIT, SIGHUP, SIGINT, SIGALRM])?;
 
     tokio::spawn({
         async move {
@@ -36,19 +53,19 @@ async fn main() -> std::io::Result<()> {
                 info!("Received signal {:?}", sig);
 
                 match sig {
-                    SIGTERM | SIGQUIT |SIGINT => {
+                    SIGTERM | SIGQUIT | SIGINT => {
                         info!("Exiting");
                         std::process::exit(0);
-                    },
+                    }
                     SIGALRM => {
                         warn!("Alarm");
-                    },
+                    }
                     SIGHUP => {
                         info!("signal hang up");
-                    },
+                    }
                     _ => {
                         warn!("Signal not handled");
-                    },
+                    }
                 };
             }
         }

@@ -50,10 +50,12 @@ if (
 else:
     print(f"Service '{SERVICE_NAME}' is not running")
 
+print(f"Compile binary ...")
+cmd_run(["cargo", "build"], cwd="sysd_test_service")
 
 print(f"Install binary ...")
 # Source path
-cmd_run(["mkdir", "-p", SERVICE_DIR])
+cmd_run(["mkdir", "-p", SERVICE_DIR], verbose=False)
 cmd_run(
     ["cp", f"sysd_test_service/target/debug/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
 )
@@ -83,7 +85,8 @@ if os.geteuid() == 0:
     print("We're root!")
 else:
     print("We're not root.")
-    cmd_run(["sudo", "echo", unit_file, "|", "tee", SERVICE_PATH])
+    cmd_run(["sudo", "python", "build_aux/write_to_file.py", SERVICE_PATH, unit_file])
+    
 
 cmd_run(
     [
