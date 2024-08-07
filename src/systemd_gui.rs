@@ -326,11 +326,9 @@ fn build_ui(application: &Application) {
         .orientation(Orientation::Vertical)
         .build();
 
-    let refresh_log_button = gtk::Button::builder()
-        .label("Refresh")
-        .focusable(true)
-        .receives_default(true)
-        .build();
+    let refresh_log_button = ButtonIcon::new("Refresh", "view-refresh");
+    refresh_log_button.set_focusable(true);
+    refresh_log_button.set_receives_default(true);
 
     unit_journal_box.append(&unit_journal_scrolled_window);
     unit_journal_box.append(&refresh_log_button);
@@ -405,13 +403,18 @@ fn build_ui(application: &Application) {
             .xalign(0.0)
             .max_width_chars(30)
             .single_line_mode(true)
+            .selectable(true)
             .build();
 
         if long_text {
             l1.set_tooltip_text(Some(&meta.col1()));
         }
 
-        let l2 = gtk::Label::new(Some(&meta.col2()));
+        let l2 = gtk::Label::builder()
+        .label(&meta.col2())
+        .selectable(true)
+        .build();
+       
 
         box_.append(&l1);
         box_.append(&l2);

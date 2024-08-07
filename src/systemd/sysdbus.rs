@@ -74,26 +74,6 @@ impl StartMode {
     }
 }
 
-/* /// Takes a systemd dbus function as input and returns the result as a `dbus::Message`.
-fn dbus_message(function: &str) -> Result<Message, SystemdErrors> {
-    let dest = DESTINATION_SYSTEMD;
-    let path = PATH_SYSTEMD;
-    let interface = INTERFACE_SYSTEMD_MANAGER;
-    match dbus::Message::new_method_call(dest, path, interface, function) {
-        Ok(message) => Ok(message),
-        Err(error) => Err(SystemdErrors::DBusErrorStr(error)),
-    }
-}
-
-/// Takes a `dbus::Message` as input and makes a connection to dbus, returning the reply.
-fn dbus_connect(message: Message) -> Result<Message, SystemdErrors> {
-    let connection = dbus::ffidisp::Connection::get_private(dbus::ffidisp::BusType::System)?;
-
-    let message = connection.send_with_reply_and_block(message, 30000)?;
-
-    Ok(message)
-} */
-
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
     let message = connection.call_method(
