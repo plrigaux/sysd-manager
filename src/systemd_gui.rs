@@ -4,6 +4,7 @@ use gtk::{Application, Orientation};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
+use crate::widget::info_window::InfoWindow;
 use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 
@@ -839,6 +840,13 @@ fn build_ui(application: &Application) {
                 }
                 Err(e) => error!("Fail to retreive Unit info: {:?}", e),
             }
+
+            let info_window = InfoWindow::new();
+
+            info_window.fill_data(&unit);
+
+            info_window.present();
+
         });
     }
     window.present();

@@ -4,7 +4,8 @@
   <ui>
 	(1,None,"sysdmngr.ui","sysdmngr.ui",None,None,None,None,None,None,None),
 	(5,None,"title_bar.ui","title_bar.ui",None,None,None,None,None,None,None),
-	(7,1,"button_icon.ui","button_icon.ui","A button with an icon and a label.",None,None,None,None,None,None)
+	(7,1,"button_icon.ui","button_icon.ui","A button with an icon and a label.",None,None,None,None,None,None),
+	(8,1,None,"unit_info.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.12",None),
@@ -38,7 +39,10 @@
 	(7,1,"GtkButton","ButtonIcon",None,None,None,None,None,None,None),
 	(7,2,"GtkBox",None,1,None,None,None,None,None,None),
 	(7,3,"GtkImage","button_icon",2,None,None,None,None,None,None),
-	(7,4,"GtkLabel","button_label",2,None,None,None,1,None,None)
+	(7,4,"GtkLabel","button_label",2,None,None,None,1,None,None),
+	(8,1,"GtkWindow","InfoWindow",None,None,None,None,-1,None,None),
+	(8,2,"GtkScrolledWindow",None,1,None,None,None,-1,None,None),
+	(8,3,"GtkListBox","unit_properties",2,None,None,None,-1,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -73,7 +77,10 @@
 	(5,13,"GtkLabel","width-chars","5",None,None,None,None,None,None,None,None,None),
 	(7,1,"GtkWidget","focusable","True",None,None,None,None,None,None,None,None,None),
 	(7,1,"GtkWidget","receives-default","True",None,None,None,None,None,None,None,None,None),
-	(7,2,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None)
+	(7,2,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
+	(8,1,"GtkWindow","default-height","600",None,None,None,None,None,None,None,None,None),
+	(8,1,"GtkWindow","default-width","600",None,None,None,None,None,None,None,None,None),
+	(8,1,"GtkWindow","title","Unit Info",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

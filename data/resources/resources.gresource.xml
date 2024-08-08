@@ -7,5 +7,6 @@
     <file compressed="true" preprocess="xml-stripblanks">interfaces/title_bar.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="ex_menu_button.ui">interfaces/ex_menu_button.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="button_icon.ui">interfaces/button_icon.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_info.ui">interfaces/unit_info.ui</file>
   </gresource>
 </gresources>
