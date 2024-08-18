@@ -17,14 +17,17 @@ use gtk::glib::{self, BoxedAnyObject, Propagation};
 
 use std::cell::RefMut;
 use std::rc::Rc;
+use std::sync::{LazyLock, RwLock};
 
 use crate::info::rowitem;
 use strum::IntoEnumIterator;
 
 pub const APP_ID: &str = "io.github.plrigaux.sysd-manager";
 
+pub static SELECTED_UNIT: LazyLock<RwLock<Option<UnitInfo>>> = LazyLock::new(|| RwLock::new(None));
+
 #[macro_export]
-macro_rules! get_selected_unit {
+macro_rules! get_selected_unit_old {
     ( $column_view:expr  ) => {{
         let Some(model) = $column_view.model() else {
             panic!("Can't find model")
@@ -47,6 +50,25 @@ macro_rules! get_selected_unit {
             }
         };
         unit
+    }};
+}
+
+macro_rules! get_selected_unit {
+    () => {{
+        let unit_read = match SELECTED_UNIT.read() {
+            Ok(unit_read) => unit_read,
+            Err(e) => {
+                warn!("Failed to unlock unit {:?}", e);
+                return;
+            }
+        };
+
+        let Some(unit_ref) = &*unit_read else {
+            error!("No selected unit");
+            return;
+        };
+
+        unit_ref.clone()
     }};
 }
 
@@ -412,10 +434,9 @@ fn build_ui(application: &Application) {
         }
 
         let l2 = gtk::Label::builder()
-        .label(&meta.col2())
-        .selectable(true)
-        .build();
-       
+            .label(&meta.col2())
+            .selectable(true)
+            .build();
 
         box_.append(&l1);
         box_.append(&l2);
@@ -558,10 +579,8 @@ fn build_ui(application: &Application) {
     control_box.append(&restart_button);
 
     {
-        // NOTE: Implement the start button
-        let column_view = units_browser.clone();
         start_button.connect_clicked(move |_button| {
-            let unit = get_selected_unit!(column_view);
+            let unit = get_selected_unit!();
 
             match systemd::start_unit(&unit) {
                 Ok(_job) => {
@@ -574,9 +593,8 @@ fn build_ui(application: &Application) {
     }
 
     {
-        let column_view = units_browser.clone();
         stop_button.connect_clicked(move |_button| {
-            let unit = get_selected_unit!(column_view);
+            let unit = get_selected_unit!();
 
             match systemd::stop_unit(&unit) {
                 Ok(_job) => {
@@ -590,9 +608,8 @@ fn build_ui(application: &Application) {
     }
 
     {
-        let column_view = units_browser.clone();
         restart_button.connect_clicked(move |_| {
-            let unit = get_selected_unit!(column_view);
+            let unit = get_selected_unit!();
 
             match systemd::restart_unit(&unit) {
                 Ok(_job) => {
@@ -765,9 +782,9 @@ fn build_ui(application: &Application) {
         // NOTE: Journal Refresh Button
         let refresh_button = refresh_log_button.clone();
         let unit_journal = unit_journal_view.clone();
-        let column_view = units_browser.clone();
+
         refresh_button.connect_clicked(move |_| {
-            let unit = get_selected_unit!(column_view);
+            let unit = get_selected_unit!();
             update_journal(&unit_journal, &unit);
         });
     }
@@ -775,13 +792,13 @@ fn build_ui(application: &Application) {
     {
         // NOTE: Save Button
         let unit_info = unit_info.clone();
-        let column_view = units_browser.clone();
+
         save_unit_file_button.connect_clicked(move |_| {
             let buffer = unit_info.buffer();
             let start = buffer.start_iter();
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
-            let unit = get_selected_unit!(column_view);
+            let unit = get_selected_unit!();
             systemd::save_text_to_file(&unit, &text);
         });
     }
@@ -805,7 +822,10 @@ fn build_ui(application: &Application) {
                     return;
                 }
             };
-
+            {
+                let mut selected_unit = SELECTED_UNIT.write().unwrap();
+                *selected_unit = Some(unit.clone());
+            }
             let description = systemd::get_unit_info(&unit);
 
             let fp = match unit.file_path() {
@@ -847,6 +867,43 @@ fn build_ui(application: &Application) {
 
             info_window.present();
 
+            let ut = get_selected_unit!();
+
+            println!("DESC: {}", ut.description())
+
+            /*
+            let s = SELECTED_UNIT.read().expect("msg");
+             match &*s {
+                 Some(d) => {
+                     println!("{:?}", d);
+                 }
+                 None => todo!(),
+             }
+
+             let Some(f) = &*s else { return };
+
+             println!("PRIM {}", f.primary());
+
+             */
+
+            /*             let b =match s {
+                         Ok(a) => a,
+                         Err(e) => {
+                             error!("{:?}",e);
+                             return;
+                         },
+                     };
+
+            /*          let c = match *b {
+                         Some(a) => a,
+                         None => todo!(),
+                     }; */
+
+                     let g= b.take();
+
+                     if let c = b.unwrap() {
+
+                     } */
         });
     }
     window.present();

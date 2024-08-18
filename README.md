@@ -139,5 +139,21 @@ flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flath
 *Later waiting for a contributor or when I will reinstall e Debian like distro*
 
 
+## Testing
+
+If you want to test **Sysd Manager** without risking to shutdown impotant services, you can do it with **tiny_daemon**. **tiny_daemon** is a service provided with the project as a simple web server that you can safely play with.
+
+To install **tiny_daemon**, in the project directory, just run this python script.
+
+
+```
+python install_tiny 
+``` 
+
+or if install_tiny is executable (i.e. ```chmod +x install_tiny```)
+
+```
+./install_tiny 
+``` 
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
