@@ -53,7 +53,7 @@ macro_rules! get_selected_unit_old {
     }};
 }
 
-macro_rules! get_selected_unit {
+/* macro_rules! get_selected_unit {
     () => {{
         let unit_read = match SELECTED_UNIT.read() {
             Ok(unit_read) => unit_read,
@@ -69,6 +69,25 @@ macro_rules! get_selected_unit {
         };
 
         unit_ref.clone()
+    }};
+} */
+
+macro_rules! selected_unit {
+    ($closure:expr) => {{
+        let unit_read = match SELECTED_UNIT.read() {
+            Ok(unit_read) => unit_read,
+            Err(e) => {
+                warn!("Failed to unlock unit {:?}", e);
+                return;
+            }
+        };
+
+        let Some(unit_ref) = &*unit_read else {
+            error!("No selected unit");
+            return;
+        };
+
+        $closure(&unit_ref)
     }};
 }
 
@@ -580,44 +599,46 @@ fn build_ui(application: &Application) {
 
     {
         start_button.connect_clicked(move |_button| {
-            let unit = get_selected_unit!();
-
-            match systemd::start_unit(&unit) {
+            let lambda = |unit: &UnitInfo| match systemd::start_unit(&unit) {
                 Ok(_job) => {
                     info!("Unit \"{}\" has been started!", unit.primary());
                     update_active_state(&unit, ActiveState::Active);
                 }
                 Err(e) => error!("Can't start the unit {}, because: {:?}", unit.primary(), e),
-            }
+            };
+
+            selected_unit!(lambda);
         });
     }
 
     {
         stop_button.connect_clicked(move |_button| {
-            let unit = get_selected_unit!();
-
-            match systemd::stop_unit(&unit) {
+            let lambda = |unit: &UnitInfo| match systemd::stop_unit(&unit) {
                 Ok(_job) => {
                     info!("Unit \"{}\" stopped!", unit.primary());
                     update_active_state(&unit, ActiveState::Inactive)
                 }
 
                 Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
-            }
+            };
+
+            selected_unit!(lambda);
         });
     }
 
     {
         restart_button.connect_clicked(move |_| {
-            let unit = get_selected_unit!();
-
-            match systemd::restart_unit(&unit) {
-                Ok(_job) => {
-                    info!("Unit {} restarted!", unit.primary());
-                    update_active_state(&unit, ActiveState::Active);
+            fn lambda(unit: &UnitInfo) {
+                match systemd::restart_unit(&unit) {
+                    Ok(_job) => {
+                        info!("Unit {} restarted!", unit.primary());
+                        update_active_state(&unit, ActiveState::Active);
+                    }
+                    Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
                 }
-                Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
             }
+
+            selected_unit!(lambda);
         });
     }
 
@@ -784,8 +805,7 @@ fn build_ui(application: &Application) {
         let unit_journal = unit_journal_view.clone();
 
         refresh_button.connect_clicked(move |_| {
-            let unit = get_selected_unit!();
-            update_journal(&unit_journal, &unit);
+            selected_unit!(|unit : &UnitInfo| update_journal(&unit_journal, &unit));
         });
     }
 
@@ -798,8 +818,8 @@ fn build_ui(application: &Application) {
             let start = buffer.start_iter();
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
-            let unit = get_selected_unit!();
-            systemd::save_text_to_file(&unit, &text);
+
+            selected_unit!(|unit : &UnitInfo| systemd::save_text_to_file(&unit, &text));
         });
     }
     {
@@ -822,10 +842,12 @@ fn build_ui(application: &Application) {
                     return;
                 }
             };
+
             {
                 let mut selected_unit = SELECTED_UNIT.write().unwrap();
                 *selected_unit = Some(unit.clone());
             }
+            
             let description = systemd::get_unit_info(&unit);
 
             let fp = match unit.file_path() {
@@ -867,43 +889,7 @@ fn build_ui(application: &Application) {
 
             info_window.present();
 
-            let ut = get_selected_unit!();
-
-            println!("DESC: {}", ut.description())
-
-            /*
-            let s = SELECTED_UNIT.read().expect("msg");
-             match &*s {
-                 Some(d) => {
-                     println!("{:?}", d);
-                 }
-                 None => todo!(),
-             }
-
-             let Some(f) = &*s else { return };
-
-             println!("PRIM {}", f.primary());
-
-             */
-
-            /*             let b =match s {
-                         Ok(a) => a,
-                         Err(e) => {
-                             error!("{:?}",e);
-                             return;
-                         },
-                     };
-
-            /*          let c = match *b {
-                         Some(a) => a,
-                         None => todo!(),
-                     }; */
-
-                     let g= b.take();
-
-                     if let c = b.unwrap() {
-
-                     } */
+            selected_unit!(|unit: &UnitInfo| println!("DESC: {}", unit.description()));
         });
     }
     window.present();
