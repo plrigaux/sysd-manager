@@ -12,6 +12,7 @@ mod analyze;
 mod info;
 mod settings;
 mod widget;
+mod errors;
 
 use log::{info, warn};
 
