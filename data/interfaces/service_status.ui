@@ -1,7 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.4 -->
 <interface>
+  <!-- interface-name service_status.ui -->
   <requires lib="gtk" version="4.12" />
-  <object class="GtkGrid" id="service_layout">
+  <template class="service_layout" parent="GtkGrid">
     <property name="baseline-row">5</property>
     <property name="column-homogeneous">True</property>
     <property name="column-spacing">5</property>
@@ -153,6 +155,25 @@
         </layout>
       </object>
     </child>
-  </object>
-
+    <child>
+      <object class="GtkButton" id="refresh">
+        <property name="label">Refresh</property>
+        <signal name="clicked" handler="handle_refresh_click" />
+        <layout>
+          <property name="column">0</property>
+          <property name="row">9</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="all_details">
+        <property name="label">All details</property>
+        <signal name="clicked" handler="handle_all_details_click" />
+        <layout>
+          <property name="column">1</property>
+          <property name="row">9</property>
+        </layout>
+      </object>
+    </child>
+  </template>
 </interface>
