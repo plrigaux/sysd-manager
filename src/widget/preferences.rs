@@ -3,7 +3,7 @@ use gtk::{
     glib,
     prelude::*,
 };
-use log::{error, info, warn};
+use log::{info, warn};
 
 use std::sync::{LazyLock, RwLock};
 
