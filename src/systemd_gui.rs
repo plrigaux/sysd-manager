@@ -4,8 +4,7 @@ use gtk::{Application, Orientation};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
-use crate::widget::info_window::InfoWindow;
-use crate::widget::{self, title_bar};
+use crate::widget::{self, service_info, title_bar};
 use log::{debug, error, info, warn};
 
 use crate::systemd;
@@ -52,25 +51,6 @@ macro_rules! get_selected_unit_old {
         unit
     }};
 }
-
-/* macro_rules! get_selected_unit {
-    () => {{
-        let unit_read = match SELECTED_UNIT.read() {
-            Ok(unit_read) => unit_read,
-            Err(e) => {
-                warn!("Failed to unlock unit {:?}", e);
-                return;
-            }
-        };
-
-        let Some(unit_ref) = &*unit_read else {
-            error!("No selected unit");
-            return;
-        };
-
-        unit_ref.clone()
-    }};
-} */
 
 macro_rules! selected_unit {
     ($closure:expr) => {{
@@ -388,25 +368,6 @@ fn build_ui(application: &Application) {
             .build()
     });
 
-    /*     let attribute_list = AttrList::new();
-     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
-     let total_time_label = gtk::Label::builder()
-         .label("seconds ...")
-         .attributes(&attribute_list)
-         .build();
-
-     // Setup the Analyze stack
-    // let analyze_tree = setup_systemd_analyze_tree(&total_time_label);
-
-     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
-         .vexpand(true)
-         .focusable(true)
-         .child(&analyze_tree)
-         .build();
-
-         unit_analyse_box.append(&total_time_label);
-     unit_analyse_box.append(&unit_analyse_scrolled_window); */
-
     let unit_prop_store = gio::ListStore::new::<rowitem::Metadata>();
 
     let no_selection = gtk::SingleSelection::new(Some(unit_prop_store.clone()));
@@ -466,7 +427,7 @@ fn build_ui(application: &Application) {
     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
         .focusable(true)
-        .child(&unit_prop_list_box)
+        //.child(&unit_prop_list_box)
         .build();
 
     let info_stack = gtk::Notebook::builder()
@@ -805,7 +766,7 @@ fn build_ui(application: &Application) {
         let unit_journal = unit_journal_view.clone();
 
         refresh_button.connect_clicked(move |_| {
-            selected_unit!(|unit : &UnitInfo| update_journal(&unit_journal, &unit));
+            selected_unit!(|unit: &UnitInfo| update_journal(&unit_journal, &unit));
         });
     }
 
@@ -819,7 +780,7 @@ fn build_ui(application: &Application) {
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
 
-            selected_unit!(|unit : &UnitInfo| systemd::save_text_to_file(&unit, &text));
+            selected_unit!(|unit: &UnitInfo| systemd::save_text_to_file(&unit, &text));
         });
     }
     {
@@ -847,7 +808,7 @@ fn build_ui(application: &Application) {
                 let mut selected_unit = SELECTED_UNIT.write().unwrap();
                 *selected_unit = Some(unit.clone());
             }
-            
+
             let description = systemd::get_unit_info(&unit);
 
             let fp = match unit.file_path() {
@@ -874,20 +835,21 @@ fn build_ui(application: &Application) {
 
             unit_prop_store.remove_all();
 
-            match systemd::fetch_system_unit_info(&unit) {
+            /*             match systemd::fetch_system_unit_info(&unit) {
                 Ok(map) => {
                     for (key, value) in map {
                         unit_prop_store.append(&rowitem::Metadata::new(key, value));
                     }
                 }
                 Err(e) => error!("Fail to retreive Unit info: {:?}", e),
+            } */
+
+            match service_info::build_service_status(&unit) {
+                Ok(widget) => {
+                    unit_analyse_scrolled_window.set_child(Some(&widget));
+                }
+                Err(e) => warn!("{:?}", e),
             }
-
-            let info_window = InfoWindow::new();
-
-            info_window.fill_data(&unit);
-
-            info_window.present();
 
             selected_unit!(|unit: &UnitInfo| println!("DESC: {}", unit.description()));
         });
