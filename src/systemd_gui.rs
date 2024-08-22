@@ -4,7 +4,8 @@ use gtk::{Application, Orientation};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
-use crate::widget::{self, service_info, title_bar};
+use crate::widget::service_info::ServiceStatus;
+use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 
 use crate::systemd;
@@ -69,6 +70,10 @@ macro_rules! selected_unit {
 
         $closure(&unit_ref)
     }};
+}
+
+pub fn selected_unit(lambda: impl Fn(&UnitInfo)) {
+    selected_unit!(lambda)
 }
 
 macro_rules! create_column_filter {
@@ -424,10 +429,11 @@ fn build_ui(application: &Application) {
         box_.upcast::<gtk::Widget>()
     });
 
+    let service_status = ServiceStatus::new();
     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
         .focusable(true)
-        //.child(&unit_prop_list_box)
+        .child(&service_status)
         .build();
 
     let info_stack = gtk::Notebook::builder()
@@ -835,23 +841,7 @@ fn build_ui(application: &Application) {
 
             unit_prop_store.remove_all();
 
-            /*             match systemd::fetch_system_unit_info(&unit) {
-                Ok(map) => {
-                    for (key, value) in map {
-                        unit_prop_store.append(&rowitem::Metadata::new(key, value));
-                    }
-                }
-                Err(e) => error!("Fail to retreive Unit info: {:?}", e),
-            } */
-
-            match service_info::build_service_status(&unit) {
-                Ok(widget) => {
-                    unit_analyse_scrolled_window.set_child(Some(&widget));
-                }
-                Err(e) => warn!("{:?}", e),
-            }
-
-            selected_unit!(|unit: &UnitInfo| println!("DESC: {}", unit.description()));
+            service_status.fill_data(&unit);
         });
     }
     window.present();

@@ -146,6 +146,7 @@ impl InfoWindow {
             match systemd::fetch_system_unit_info(&unit) {
                 Ok(map) => {
                     for (key, value) in map {
+                        //println!("{key} :-: {value}");
                         store.append(&rowitem::Metadata::new(key, value));
                     }
                 }
