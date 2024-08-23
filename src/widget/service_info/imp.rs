@@ -127,21 +127,25 @@ impl ServiceStatusImp {
         }
 
         if let Some(value) = map.get("MemoryCurrent") {
-            let memory_current = match value as &zvariant::Value {
-                zvariant::Value::U64(v) => v,
-                _ => {
-                    warn!("Wrong zvalue conversion: {:?}", value.dynamic_signature());
-                    &0
-                }
-            };
+            let memory_current = value_u64(value);
 
-            let mem = if *memory_current == 18446744073709551615_u64 {
+            let mem = if memory_current == U64MAX {
                 ""
             } else {
-                &human_bytes(*memory_current)
+                &human_bytes(memory_current)
             };
 
             self.info_memory.set_label(mem);
+        }
+
+        if let Some(value) = map.get("CPUUsageNSec") {
+            let cpu_usage = value_u64(value);
+            let cpu = if cpu_usage == U64MAX {
+                ""
+            } else {
+                &human_time(cpu_usage)
+            };
+            self.info_cpu.set_label(cpu);
         }
     }
 
@@ -152,6 +156,8 @@ impl ObjectImpl for ServiceStatusImp {}
 impl WidgetImpl for ServiceStatusImp {}
 impl GridImpl for ServiceStatusImp {}
 
+/// 2^16-1
+const U64MAX: u64 = 18_446_744_073_709_551_615;
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: f64 = 1024.0;
 
@@ -160,8 +166,15 @@ fn value_str<'a>(value: &'a Value<'a>) -> &'a str {
         return converted.as_str();
     }
     warn!("Wrong zvalue conversion: {:?}", value);
-    //String::new()
     ""
+}
+
+fn value_u64(value: &Value) -> u64 {
+    if let zvariant::Value::U64(converted) = value {
+        return *converted;
+    }
+    warn!("Wrong zvalue conversion: {:?}", value);
+    U64MAX
 }
 
 /// Converts bytes to human-readable values
@@ -184,15 +197,53 @@ fn human_bytes(bytes: u64) -> String {
     result
 }
 
+const T_SUFFIX: [&str; 9] = ["ns", "us", "ms", "s", "Ks", "Ms", "Gs", "Ts", "Ps"];
+const T_UNIT: f64 = 1000.0;
+
+fn human_time(value: u64) -> String {
+    if value <= 0 {
+        return "0".to_string();
+    }
+
+    let base = (value as f64).log10() / T_UNIT.log10();
+    let v = T_UNIT.powf(base - base.floor());
+
+    let mut result: String = if value <= 1_000_000_000 {
+        format!("{:.0}", v)
+    } else {
+        format!("{:.3}", v)
+    }
+    .trim_end_matches(".0")
+    .to_string();
+
+    result.push_str(" ");
+    result.push_str(T_SUFFIX[base.floor() as usize]);
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
 
-    use crate::widget::service_info::imp::human_bytes;
+    use super::*;
     #[test]
     fn test1() {
         println!("{}", human_bytes(0));
         println!("{}", human_bytes(3));
         println!("{}", human_bytes(18446744073709551615));
         println!("{}", human_bytes(1024));
+    }
+
+    #[test]
+    fn test2() {
+        println!("{}", human_time(0));
+        println!("{}", human_time(3));
+        //println!("{}", human_time(U64MAX));
+        println!("{}", human_time(1024));
+        println!("{}", human_time(1_606_848_000));
+        println!("{}", human_time(3_235_000));
+        println!("{}", human_time(32_235_000));
+        println!("{}", human_time(321_235_000));
+        println!("{}", human_time(3_234_235_000));
     }
 }
