@@ -2,10 +2,10 @@
 <!-- Created with Cambalache 0.90.4 -->
 <interface>
   <!-- interface-name service_status.ui -->
-  <requires lib="gtk" version="4.12" />
+  <requires lib="gtk" version="4.12"/>
   <template class="ServiceStatus" parent="GtkGrid">
     <property name="baseline-row">5</property>
-    <property name="column-homogeneous">True</property>
+    <!-- <property name="column-homogeneous">True</property> -->
     <property name="column-spacing">5</property>
     <property name="row-spacing">5</property>
     <child>
@@ -21,6 +21,7 @@
       <object class="GtkLabel">
         <property name="justify">right</property>
         <property name="label">Loaded:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">1</property>
@@ -39,6 +40,7 @@
       <object class="GtkLabel">
         <property name="justify">right</property>
         <property name="label">Drop-In:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">2</property>
@@ -56,6 +58,7 @@
     <child>
       <object class="GtkLabel">
         <property name="label">Active:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">3</property>
@@ -73,6 +76,7 @@
     <child>
       <object class="GtkLabel">
         <property name="label">Main PID:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">4</property>
@@ -90,6 +94,7 @@
     <child>
       <object class="GtkLabel">
         <property name="label">Tasks:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">5</property>
@@ -107,6 +112,7 @@
     <child>
       <object class="GtkLabel">
         <property name="label">Memory:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">6</property>
@@ -124,6 +130,7 @@
     <child>
       <object class="GtkLabel">
         <property name="label">CPU:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">7</property>
@@ -141,6 +148,7 @@
     <child>
       <object class="GtkLabel">
         <property name="label">CGroup:</property>
+        <property name="width-request">15</property>
         <layout>
           <property name="column">0</property>
           <property name="row">8</property>
@@ -158,7 +166,8 @@
     <child>
       <object class="GtkButton">
         <property name="label">Refresh</property>
-        <signal name="clicked" handler="handle_refresh_click" swapped="true"/>
+        <property name="width-request">15</property>
+        <signal name="clicked" handler="handle_refresh_click" swapped="yes"/>
         <layout>
           <property name="column">0</property>
           <property name="row">9</property>
@@ -168,7 +177,8 @@
     <child>
       <object class="GtkButton">
         <property name="label">All details</property>
-        <signal name="clicked" handler="handle_all_details_click" />
+        <property name="width-request">15</property>
+        <signal name="clicked" handler="handle_all_details_click"/>
         <layout>
           <property name="column">0</property>
           <property name="row">10</property>

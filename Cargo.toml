@@ -41,7 +41,7 @@ strum = { version = "0.26", features = ["derive"] }
 ashpd = "0.8"
 tokio = { version = "~1.38", features = ["full"] }
 zbus = "4"
-zvariant = "4.1"
+zvariant = { version = "4.1", features = ["gvariant"] }
 serde = "1.0"
 
 [build-dependencies]
