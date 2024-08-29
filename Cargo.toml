@@ -39,7 +39,7 @@ env_logger = "0.11.3"
 dotenv = "0.15.0"
 strum = { version = "0.26", features = ["derive"] }
 ashpd = "0.8"
-tokio = { version = "~1.38", features = ["full"] }
+tokio = { version = "1.39", features = ["full"] }
 zbus = "4"
 zvariant = { version = "4.1", features = ["gvariant"] }
 serde = "1.0"
