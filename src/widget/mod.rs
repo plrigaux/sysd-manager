@@ -5,5 +5,4 @@ pub mod window;
 pub mod button_icon;
 pub mod preferences;
 pub mod info_window;
-pub mod service_info;
 pub mod unit_info;

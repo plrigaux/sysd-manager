@@ -6,6 +6,8 @@ use zvariant::{DynamicType, OwnedValue, Value};
 
 use crate::systemd::{self, data::UnitInfo};
 
+use super::info_window::InfoWindow;
+
 pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     let info_box = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -25,11 +27,43 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     fill_dropin(&info_box, &map);
     fill_active_state(&info_box, &map);
     fill_load_state(&info_box, &map);
+    fill_docs(&info_box, &map);
     fill_main_pid(&info_box, &map, unit);
     fill_memory(&info_box, &map);
     fill_cpu(&info_box, &map);
+    fill_buttons(&info_box, unit);
 
     info_box
+}
+
+fn fill_buttons(info_box: &gtk::Box, unit: &UnitInfo) {
+    let refresh_button = gtk::Button::builder().label("Refresh").build();
+
+    refresh_button.connect_clicked(|_a| {
+        //systemd_gui::selected_unit(|unit: &UnitInfo| self.fill_data(unit));
+    });
+
+    let show_all_button = gtk::Button::builder().label("Show All").build();
+
+    {
+        let unit2 = unit.clone();
+        show_all_button.connect_clicked(move |_a| {
+            let info_window = InfoWindow::new();
+
+            info_window.fill_data(&unit2);
+
+            info_window.present();
+        });
+    }
+
+    let buttons_box = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .spacing(5)
+        .build();
+
+    buttons_box.append(&refresh_button);
+    buttons_box.append(&show_all_button);
+    info_box.append(&buttons_box);
 }
 
 fn fill_name_description(info_box: &gtk::Box, unit: &UnitInfo) {
@@ -92,7 +126,17 @@ fn fill_dropin(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
         return;
     }
 
-    fill_row(info_box, "Drop in:", &drop_in_paths.join("\n"));
+    let mut drop_in = String::new();
+    for s in drop_in_paths {
+        let (first, last) = s.rsplit_once('/').unwrap();
+        drop_in.push_str(first);
+        drop_in.push('\n');
+        drop_in.push_str("└─");
+        drop_in.push_str(last);
+        drop_in.push('\n');
+    }
+
+    fill_row(info_box, "Drop in:", &drop_in);
 }
 
 fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
@@ -103,6 +147,29 @@ fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 fn fill_load_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "LoadState");
     fill_row(info_box, "Load State:", value_str(value));
+}
+
+fn fill_docs(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Documentation");
+
+    let docs = match value as &zvariant::Value {
+        zvariant::Value::Array(a) => {
+            let mut vec = Vec::with_capacity(a.len());
+
+            let mut it = a.iter();
+            while let Some(mi) = it.next() {
+                vec.push(value_str(mi));
+            }
+
+            vec
+        }
+        _ => {
+            warn!("Wrong zvalue conversion: {:?}", value.dynamic_signature());
+            return;
+        }
+    };
+
+    fill_row(info_box, "Doc:", &docs.join("\n"));
 }
 
 fn fill_memory(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {

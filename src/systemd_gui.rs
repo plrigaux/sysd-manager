@@ -71,10 +71,6 @@ macro_rules! selected_unit {
     }};
 }
 
-pub fn selected_unit(lambda: impl Fn(&UnitInfo)) {
-    selected_unit!(lambda)
-}
-
 macro_rules! create_column_filter {
     ($func:ident) => {{
         let col_sorter = gtk::CustomSorter::new(move |obj1, obj2| {
