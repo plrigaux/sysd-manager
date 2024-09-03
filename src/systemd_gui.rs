@@ -4,8 +4,7 @@ use gtk::{Application, Orientation};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
-use crate::widget::service_info::ServiceStatus;
-use crate::widget::{self, title_bar};
+use crate::widget::{self, title_bar, unit_info};
 use log::{debug, error, info, warn};
 
 use crate::systemd;
@@ -429,11 +428,9 @@ fn build_ui(application: &Application) {
         box_.upcast::<gtk::Widget>()
     });
 
-    let service_status = ServiceStatus::new();
     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
         .focusable(true)
-        .child(&service_status)
         .build();
 
     let info_stack = gtk::Notebook::builder()
@@ -620,6 +617,19 @@ fn build_ui(application: &Application) {
 
     main_box.set_start_child(Some(&left_pane));
     main_box.set_end_child(Some(&right_pane));
+
+    /*     main_box.set_shrink_end_child(false);
+    main_box.set_shrink_start_child(false);
+    main_box.set_resize_start_child(false);
+    main_box.set_resize_end_child(false);
+
+    println!(
+        "rs {} re {} ss {} se {}",
+        main_box.resizes_start_child(),
+        main_box.resizes_end_child(),
+        main_box.shrinks_start_child(),
+        main_box.shrinks_end_child()
+    ); */
 
     let search_bar = gtk::SearchBar::builder()
         .valign(gtk::Align::Start)
@@ -841,7 +851,8 @@ fn build_ui(application: &Application) {
 
             unit_prop_store.remove_all();
 
-            service_status.fill_data(&unit);
+            let info_panel = unit_info::fill_data(&unit);
+            unit_analyse_scrolled_window.set_child(Some(&info_panel));
         });
     }
     window.present();
