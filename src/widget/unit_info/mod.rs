@@ -25,7 +25,9 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     fill_dropin(&info_box, &map);
     fill_active_state(&info_box, &map);
     fill_load_state(&info_box, &map);
+    fill_main_pid(&info_box, &map, unit);
     fill_memory(&info_box, &map);
+    fill_cpu(&info_box, &map);
 
     info_box
 }
@@ -110,8 +112,33 @@ fn fill_memory(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     if memory_current == U64MAX {
         return;
     }
+
     let value_str = &human_bytes(memory_current);
     fill_row(info_box, "Memory:", value_str);
+}
+
+fn fill_main_pid(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>, unit: &UnitInfo) {
+    let value = get_value!(map, "MainPID");
+
+    if let zvariant::Value::U32(main_pid) = value as &Value {
+        if 0 == *main_pid {
+        } else {
+            let v = &format!("{} ({})", main_pid, unit.display_name());
+            fill_row(info_box, "Main PID:", v);
+        }
+    }
+}
+
+fn fill_cpu(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "CPUUsageNSec");
+
+    let value_u64 = value_u64(value);
+    if value_u64 == U64MAX {
+        return;
+    }
+
+    let value_str = &human_time(value_u64);
+    fill_row(info_box, "CPU:", value_str);
 }
 
 fn value_str<'a>(value: &'a Value<'a>) -> &'a str {
@@ -153,4 +180,55 @@ fn human_bytes(bytes: u64) -> String {
     result.push_str(SUFFIX[base.floor() as usize]);
 
     result
+}
+
+const T_SUFFIX: [&str; 9] = ["ns", "us", "ms", "s", "Ks", "Ms", "Gs", "Ts", "Ps"];
+const T_UNIT: f64 = 1000.0;
+
+fn human_time(value: u64) -> String {
+    if value <= 0 {
+        return "0".to_string();
+    }
+
+    let base = (value as f64).log10() / T_UNIT.log10();
+    let v = T_UNIT.powf(base - base.floor());
+
+    let mut result: String = if value <= 1_000_000_000 {
+        format!("{:.0}", v)
+    } else {
+        format!("{:.3}", v)
+    }
+    .trim_end_matches(".0")
+    .to_string();
+
+    result.push_str(" ");
+    result.push_str(T_SUFFIX[base.floor() as usize]);
+
+    result
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    #[test]
+    fn test1() {
+        println!("{}", human_bytes(0));
+        println!("{}", human_bytes(3));
+        println!("{}", human_bytes(18446744073709551615));
+        println!("{}", human_bytes(1024));
+    }
+
+    #[test]
+    fn test2() {
+        println!("{}", human_time(0));
+        println!("{}", human_time(3));
+        //println!("{}", human_time(U64MAX));
+        println!("{}", human_time(1024));
+        println!("{}", human_time(1_606_848_000));
+        println!("{}", human_time(3_235_000));
+        println!("{}", human_time(32_235_000));
+        println!("{}", human_time(321_235_000));
+        println!("{}", human_time(3_234_235_000));
+    }
 }
