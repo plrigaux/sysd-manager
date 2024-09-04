@@ -29,10 +29,13 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     fill_load_state(&info_box, &map);
     fill_docs(&info_box, &map);
     fill_main_pid(&info_box, &map, unit);
+    fill_tasks(&info_box, &map);
     fill_memory(&info_box, &map);
     fill_cpu(&info_box, &map);
-    fill_buttons(&info_box, unit);
+    fill_control_group(&info_box, &map);
 
+    fill_buttons(&info_box, unit);
+    
     info_box
 }
 
@@ -206,6 +209,30 @@ fn fill_cpu(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 
     let value_str = &human_time(value_u64);
     fill_row(info_box, "CPU:", value_str);
+}
+
+fn fill_tasks(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "TasksCurrent");
+
+    let value_nb = value_u64(value);
+
+    let mut tasks_info = value_nb.to_string();
+
+    if let Some(value) = map.get("TasksMax") {
+        tasks_info.push_str(" (limit: ");
+        let value_u64 = value_u64(value);
+        tasks_info.push_str(&value_u64.to_string());
+        tasks_info.push_str(")");
+    }
+
+    fill_row(info_box, "Tasks:", &tasks_info);
+}
+
+fn fill_control_group(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "ControlGroup");
+
+    let c_group = value_str(value);
+    fill_row(info_box, "CGroup:", c_group);
 }
 
 fn value_str<'a>(value: &'a Value<'a>) -> &'a str {
