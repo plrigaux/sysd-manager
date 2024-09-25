@@ -35,7 +35,7 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     fill_control_group(&info_box, &map);
 
     fill_buttons(&info_box, unit);
-    
+
     info_box
 }
 
@@ -91,21 +91,20 @@ fn fill_row(info_box: &gtk::Box, key: &str, value: &str) {
 }
 
 macro_rules! get_value {
-    ($map:expr, $key:expr) => {{
+    ($map:expr, $key:expr) => {
+        get_value!($map, $key, ())
+    };
+
+    ($map:expr, $key:expr, $dft:expr) => {{
         let Some(value) = $map.get($key) else {
             warn!("Key doesn't exists: {:?}", $key);
-            return;
+            return $dft;
         };
         value
     }};
 }
 
 fn fill_dropin(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    /*     let Some(value) = map.get("DropInPaths") else {
-        warn!("Key doesn't exists: {:?}", "asdf");
-        return;
-    }; */
-
     let value = get_value!(map, "DropInPaths");
 
     let drop_in_paths = match value as &zvariant::Value {
@@ -188,15 +187,55 @@ fn fill_memory(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 }
 
 fn fill_main_pid(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>, unit: &UnitInfo) {
-    let value = get_value!(map, "MainPID");
+    let main_pid = get_main_pid(map);
+
+    if 0 == main_pid {
+    } else {
+        let exec_val = if let Some(exec) = get_exec(map) {
+            exec
+        } else {
+            &unit.display_name()
+        };
+
+        let v = &format!("{} ({})", main_pid, exec_val);
+        fill_row(info_box, "Main PID:", v);
+    }
+}
+
+fn get_main_pid(map: &HashMap<String, OwnedValue>) -> u32 {
+    let value = get_value!(map, "MainPID", 0);
 
     if let zvariant::Value::U32(main_pid) = value as &Value {
-        if 0 == *main_pid {
-        } else {
-            let v = &format!("{} ({})", main_pid, unit.display_name());
-            fill_row(info_box, "Main PID:", v);
+        return *main_pid;
+    }
+    0
+}
+
+fn get_exec_full<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
+    let value = get_value!(map, "ExecStart", None);
+
+    if let zvariant::Value::Array(array) = value as &Value {
+        if let Ok(Some(owned_value)) = array.get::<&Value>(0) {
+            if let zvariant::Value::Structure(zstruc) = owned_value {
+                if let Some(val_0) = zstruc.fields().get(0) {
+                    if let zvariant::Value::Str(zstr) = val_0 {
+                        return Some(zstr);
+                    }
+                }
+            }
         }
     }
+
+    None
+}
+
+fn get_exec<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
+    if let Some(exec_full) = get_exec_full(map) {
+        if let Some((_pre, last)) = exec_full.rsplit_once('/') {
+            return Some(last);
+        }
+    }
+    None
 }
 
 fn fill_cpu(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
@@ -216,6 +255,10 @@ fn fill_tasks(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 
     let value_nb = value_u64(value);
 
+    if value_nb == U64MAX {
+        return;
+    }
+
     let mut tasks_info = value_nb.to_string();
 
     if let Some(value) = map.get("TasksMax") {
@@ -232,7 +275,28 @@ fn fill_control_group(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "ControlGroup");
 
     let c_group = value_str(value);
-    fill_row(info_box, "CGroup:", c_group);
+
+    if c_group.is_empty() {
+        return;
+    }
+
+    if let Some(exec_full) = get_exec_full(map) {
+        let main_pid = get_main_pid(map);
+
+        let mut group = String::new();
+
+        group.push_str(c_group);
+        group.push('\n');
+        group.push_str("└─");
+        group.push_str(&main_pid.to_string());
+        group.push(' ');
+        group.push_str(exec_full);
+        group.push('\n');
+
+        fill_row(info_box, "CGroup:", &group);
+    } else {
+        fill_row(info_box, "CGroup:", c_group);
+    }
 }
 
 fn value_str<'a>(value: &'a Value<'a>) -> &'a str {
