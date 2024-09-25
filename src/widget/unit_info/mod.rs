@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use gtk::{prelude::*, Orientation};
-use log::{error, warn};
+use log::{error, info, warn};
 use zvariant::{DynamicType, OwnedValue, Value};
 
 use crate::systemd::{self, data::UnitInfo};
@@ -32,6 +32,8 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     fill_tasks(&info_box, &map);
     fill_memory(&info_box, &map);
     fill_cpu(&info_box, &map);
+    fill_triggers(&info_box, &map);
+    fill_listen(&info_box, &map);
     fill_control_group(&info_box, &map);
 
     fill_buttons(&info_box, unit);
@@ -74,18 +76,23 @@ fn fill_name_description(info_box: &gtk::Box, unit: &UnitInfo) {
     fill_row(info_box, "Description", &unit.description());
 }
 
-fn fill_row(info_box: &gtk::Box, key: &str, value: &str) {
+fn fill_row(info_box: &gtk::Box, key_label: &str, value: &str) {
     let item = gtk::Box::builder()
         .orientation(Orientation::Horizontal)
         .spacing(5)
         .width_request(30)
         .build();
 
-    let key_label = gtk::Label::builder().label(key).width_request(130).build();
+    let key_label = gtk::Label::builder()
+        .label(key_label)
+        .width_request(130)
+        .build();
 
     item.append(&key_label);
 
-    item.append(&gtk::Label::new(Some(value)));
+    let label_value = gtk::Label::builder().label(value).selectable(true).build();
+
+    item.append(&label_value);
 
     info_box.append(&item);
 }
@@ -97,7 +104,7 @@ macro_rules! get_value {
 
     ($map:expr, $key:expr, $dft:expr) => {{
         let Some(value) = $map.get($key) else {
-            warn!("Key doesn't exists: {:?}", $key);
+            info!("Key doesn't exists: {:?}", $key);
             return $dft;
         };
         value
@@ -154,7 +161,17 @@ fn fill_load_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 fn fill_docs(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Documentation");
 
-    let docs = match value as &zvariant::Value {
+    let docs = get_array_str(value);
+
+    if docs.is_empty() {
+        return;
+    }
+
+    fill_row(info_box, "Doc:", &docs.join("\n"));
+}
+
+fn get_array_str<'a>(value: &'a zvariant::Value<'a>) -> Vec<&'a str> {
+    let vec = match value as &zvariant::Value {
         zvariant::Value::Array(a) => {
             let mut vec = Vec::with_capacity(a.len());
 
@@ -167,11 +184,10 @@ fn fill_docs(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
         }
         _ => {
             warn!("Wrong zvalue conversion: {:?}", value.dynamic_signature());
-            return;
+            return Vec::new();
         }
     };
-
-    fill_row(info_box, "Doc:", &docs.join("\n"));
+    vec
 }
 
 fn fill_memory(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
@@ -271,6 +287,26 @@ fn fill_tasks(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     fill_row(info_box, "Tasks:", &tasks_info);
 }
 
+fn fill_triggers(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Triggers");
+
+    let triggers = get_array_str(value);
+
+    if triggers.is_empty() {
+        return;
+    }
+
+    fill_row(info_box, "Triggers:", &triggers.join("\n"));
+}
+
+fn fill_listen(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Listen");
+
+    let listen = value.to_string();
+
+    fill_row(info_box, "Listen:", &listen);
+}
+
 fn fill_control_group(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "ControlGroup");
 
@@ -279,6 +315,8 @@ fn fill_control_group(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     if c_group.is_empty() {
         return;
     }
+
+    const KEY_LABEL: &str = "CGroup:";
 
     if let Some(exec_full) = get_exec_full(map) {
         let main_pid = get_main_pid(map);
@@ -293,9 +331,9 @@ fn fill_control_group(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
         group.push_str(exec_full);
         group.push('\n');
 
-        fill_row(info_box, "CGroup:", &group);
+        fill_row(info_box, KEY_LABEL, &group);
     } else {
-        fill_row(info_box, "CGroup:", c_group);
+        fill_row(info_box, KEY_LABEL, c_group);
     }
 }
 
