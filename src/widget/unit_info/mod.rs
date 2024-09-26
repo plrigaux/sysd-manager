@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use gtk::{prelude::*, Orientation};
 use log::{error, info, warn};
-use zvariant::{DynamicType, OwnedValue, Value};
+use serde::Deserialize;
+use zvariant::{DynamicType, OwnedValue, Type, Value};
 
 use crate::systemd::{self, data::UnitInfo};
 
@@ -114,22 +115,7 @@ macro_rules! get_value {
 fn fill_dropin(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "DropInPaths");
 
-    let drop_in_paths = match value as &zvariant::Value {
-        zvariant::Value::Array(a) => {
-            let mut vec = Vec::with_capacity(a.len());
-
-            let mut it = a.iter();
-            while let Some(mi) = it.next() {
-                vec.push(value_str(mi));
-            }
-
-            vec
-        }
-        _ => {
-            warn!("Wrong zvalue conversion: {:?}", value.dynamic_signature());
-            vec![]
-        }
-    };
+    let drop_in_paths = get_array_str(value);
 
     if drop_in_paths.is_empty() {
         return;
@@ -299,10 +285,36 @@ fn fill_triggers(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     fill_row(info_box, "Triggers:", &triggers.join("\n"));
 }
 
+#[derive(Deserialize, Type, PartialEq, Debug)]
+struct Struct {
+    field1: String,
+    field2: String,
+}
+
 fn fill_listen(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Listen");
 
-    let listen = value.to_string();
+    let zvariant::Value::Array(array) = value as &Value else {
+        return;
+    };
+
+    let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
+        return;
+    };
+
+    let zvariant::Value::Structure(zstruc) = val_listen_stc else {
+        return;
+    };
+
+    let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
+        return;
+    };
+
+    let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
+        return;
+    };
+
+    let listen = format!("{} ({})", val_1, val_0);
 
     fill_row(info_box, "Listen:", &listen);
 }
