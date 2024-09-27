@@ -13,12 +13,31 @@ use super::info_window::InfoWindow;
 mod time_handling;
 
 pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
+    let info_box_main = gtk::Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(5)
+        .build();
+
     let info_box = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(5)
         .build();
 
-    fill_name_description(&info_box, unit);
+    fill_all_info(&info_box, unit);
+
+    info_box_main.append(&info_box);
+    fill_buttons(&info_box_main, &info_box, unit);
+
+    info_box_main
+}
+
+fn fill_all_info(info_box: &gtk::Box, unit: &UnitInfo) {
+
+    while let Some(child) = info_box.last_child() {
+        info_box.remove(&child)
+    }
+
+    fill_name_description(info_box, unit);
 
     let map = match systemd::fetch_system_unit_info_native(&unit) {
         Ok(m) => m,
@@ -28,31 +47,33 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
         }
     };
 
-    fill_dropin(&info_box, &map);
-    fill_active_state(&info_box, &map);
-    fill_load_state(&info_box, &map);
-    fill_docs(&info_box, &map);
-    fill_main_pid(&info_box, &map, unit);
-    fill_tasks(&info_box, &map);
-    fill_memory(&info_box, &map);
-    fill_cpu(&info_box, &map);
-    fill_trigger_timers_calendar(&info_box, &map);
-    fill_trigger_timers_monotonic(&info_box, &map);
-    fill_triggers(&info_box, &map);
-    fill_listen(&info_box, &map);
-    fill_control_group(&info_box, &map);
-
-    fill_buttons(&info_box, unit);
-
-    info_box
+    fill_description(info_box, &map);
+    fill_dropin(info_box, &map);
+    fill_active_state(info_box, &map);
+    fill_load_state(info_box, &map);
+    fill_docs(info_box, &map);
+    fill_main_pid(info_box, &map, unit);
+    fill_tasks(info_box, &map);
+    fill_memory(info_box, &map);
+    fill_cpu(info_box, &map);
+    fill_trigger_timers_calendar(info_box, &map);
+    fill_trigger_timers_monotonic(info_box, &map);
+    fill_triggers(info_box, &map);
+    fill_listen(info_box, &map);
+    fill_control_group(info_box, &map);
 }
 
-fn fill_buttons(info_box: &gtk::Box, unit: &UnitInfo) {
+fn fill_buttons(info_box_main: &gtk::Box, info_box: &gtk::Box, unit: &UnitInfo) {
     let refresh_button = gtk::Button::builder().label("Refresh").build();
 
-    refresh_button.connect_clicked(|_a| {
-        //systemd_gui::selected_unit(|unit: &UnitInfo| self.fill_data(unit));
-    });
+    {
+        let info_box = info_box.clone();
+        let unit = unit.clone();
+        refresh_button.connect_clicked(move |_a| {
+            //systemd_gui::selected_unit(|unit: &UnitInfo| self.fill_data(unit));
+            fill_all_info(&info_box, &unit);
+        });
+    }
 
     let show_all_button = gtk::Button::builder().label("Show All").build();
 
@@ -74,12 +95,12 @@ fn fill_buttons(info_box: &gtk::Box, unit: &UnitInfo) {
 
     buttons_box.append(&refresh_button);
     buttons_box.append(&show_all_button);
-    info_box.append(&buttons_box);
+    info_box_main.append(&buttons_box);
 }
 
 fn fill_name_description(info_box: &gtk::Box, unit: &UnitInfo) {
     fill_row(info_box, "Name:", &unit.primary());
-    fill_row(info_box, "Description:", &unit.description());
+   //fill_row(info_box, "Description:", &unit.description()); 
 }
 
 fn fill_row(info_box: &gtk::Box, key_label: &str, value: &str) {
@@ -154,13 +175,18 @@ fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 }
 
 fn add_since(map: &HashMap<String, OwnedValue>) -> Option<String> {
-    let value = get_value!(map, "ActiveEnterTimestamp", None);
+    let value = get_value!(map, "StateChangeTimestamp", None);
 
     let duration = value_u64(value);
 
     let since = get_since(duration);
 
     Some(since)
+}
+
+fn fill_description(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Description");
+    fill_row(info_box, "Description:", value_str(value));
 }
 
 fn fill_load_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
