@@ -3,11 +3,14 @@ use std::collections::HashMap;
 use gtk::{prelude::*, Orientation};
 use log::{error, info, warn};
 use serde::Deserialize;
+use time_handling::get_since;
 use zvariant::{DynamicType, OwnedValue, Type, Value};
 
 use crate::systemd::{self, data::UnitInfo};
 
 use super::info_window::InfoWindow;
+
+mod time_handling;
 
 pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     let info_box = gtk::Box::builder()
@@ -33,6 +36,8 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     fill_tasks(&info_box, &map);
     fill_memory(&info_box, &map);
     fill_cpu(&info_box, &map);
+    fill_trigger_timers_calendar(&info_box, &map);
+    fill_trigger_timers_monotonic(&info_box, &map);
     fill_triggers(&info_box, &map);
     fill_listen(&info_box, &map);
     fill_control_group(&info_box, &map);
@@ -73,8 +78,8 @@ fn fill_buttons(info_box: &gtk::Box, unit: &UnitInfo) {
 }
 
 fn fill_name_description(info_box: &gtk::Box, unit: &UnitInfo) {
-    fill_row(info_box, "Name", &unit.primary());
-    fill_row(info_box, "Description", &unit.description());
+    fill_row(info_box, "Name:", &unit.primary());
+    fill_row(info_box, "Description:", &unit.description());
 }
 
 fn fill_row(info_box: &gtk::Box, key_label: &str, value: &str) {
@@ -136,7 +141,26 @@ fn fill_dropin(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 
 fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "ActiveState");
-    fill_row(info_box, "Active State:", value_str(value));
+
+    let state_line = match add_since(map) {
+        Some(since) => {
+            let act_state = format!("{} since {}", value_str(value), since);
+            act_state
+        }
+        None => value_str(value).to_string(),
+    };
+
+    fill_row(info_box, "Active State:", &state_line)
+}
+
+fn add_since(map: &HashMap<String, OwnedValue>) -> Option<String> {
+    let value = get_value!(map, "ActiveEnterTimestamp", None);
+
+    let duration = value_u64(value);
+
+    let since = get_since(duration);
+
+    Some(since)
 }
 
 fn fill_load_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
@@ -273,6 +297,62 @@ fn fill_tasks(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     fill_row(info_box, "Tasks:", &tasks_info);
 }
 
+fn fill_trigger_timers_calendar(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "TimersCalendar");
+
+    let zvariant::Value::Array(array) = value as &Value else {
+        return;
+    };
+
+    if array.is_empty() {
+        return;
+    }
+
+    let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
+        return;
+    };
+
+    let zvariant::Value::Structure(zstruc) = val_listen_stc else {
+        return;
+    };
+
+    let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
+        return;
+    };
+
+    let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
+        return;
+    };
+
+    let Some(zvariant::Value::U64(_val_2)) = zstruc.fields().get(2) else {
+        return;
+    };
+
+    let timers = format!("{} {}", val_0, val_1);
+
+    fill_row(info_box, "Trigger:", &timers);
+}
+
+fn fill_trigger_timers_monotonic(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "TimersMonotonic");
+
+    let zvariant::Value::Array(array) = value as &Value else {
+        return;
+    };
+
+    if array.is_empty() {
+        return;
+    }
+
+    let timers = value.to_string();
+
+    if timers.is_empty() {
+        return;
+    }
+
+    fill_row(info_box, "Trigger:", &timers);
+}
+
 fn fill_triggers(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Triggers");
 
@@ -281,6 +361,8 @@ fn fill_triggers(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     if triggers.is_empty() {
         return;
     }
+
+    //TODO add the active state of the triggers
 
     fill_row(info_box, "Triggers:", &triggers.join("\n"));
 }

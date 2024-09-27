@@ -43,6 +43,7 @@ tokio = { version = "1.39", features = ["full"] }
 zbus = "4"
 zvariant = { version = "4.1", features = ["gvariant"] }
 serde = "1.0"
+chrono = "0.4.38"
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"
