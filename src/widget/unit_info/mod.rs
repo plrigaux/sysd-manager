@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use gtk::{prelude::*, Orientation};
 use log::{error, info, warn};
 use serde::Deserialize;
-use time_handling::get_since;
+use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Type, Value};
 
 use crate::systemd::{self, data::UnitInfo};
@@ -32,7 +32,6 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
 }
 
 fn fill_all_info(info_box: &gtk::Box, unit: &UnitInfo) {
-
     while let Some(child) = info_box.last_child() {
         info_box.remove(&child)
     }
@@ -100,7 +99,7 @@ fn fill_buttons(info_box_main: &gtk::Box, info_box: &gtk::Box, unit: &UnitInfo) 
 
 fn fill_name_description(info_box: &gtk::Box, unit: &UnitInfo) {
     fill_row(info_box, "Name:", &unit.primary());
-   //fill_row(info_box, "Description:", &unit.description()); 
+    //fill_row(info_box, "Description:", &unit.description());
 }
 
 fn fill_row(info_box: &gtk::Box, key_label: &str, value: &str) {
@@ -162,24 +161,44 @@ fn fill_dropin(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
 
 fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "ActiveState");
+    let state = value_str(value);
 
-    let state_line = match add_since(map) {
-        Some(since) => {
-            let act_state = format!("{} since {}", value_str(value), since);
-            act_state
-        }
-        None => value_str(value).to_string(),
-    };
-
+    let mut state_line = String::from(state);
+    
+    if let Some(substate) = get_substate(map) {
+        state_line.push_str(" (");
+        state_line.push_str(substate);
+        state_line.push(')');
+    }
+    
+    if let Some(since) = add_since(map, state)  {
+        state_line.push_str(" since ");
+        state_line.push_str(&since.0);
+        state_line.push_str("; ");
+        state_line.push_str(&since.1);
+        state_line.push_str(" ago");
+    }
+ 
     fill_row(info_box, "Active State:", &state_line)
 }
 
-fn add_since(map: &HashMap<String, OwnedValue>) -> Option<String> {
-    let value = get_value!(map, "StateChangeTimestamp", None);
+fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
+    let value = get_value!(map, "SubState", None);
+    Some(value_str(value))
+}
+
+fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, String)> {
+    let key = match state {
+        "active" => "ActiveEnterTimestamp",
+        "inactive" => "InactiveEnterTimestamp",
+        _ => "StateChangeTimestamp",
+    };
+
+    let value = get_value!(map, key, None);
 
     let duration = value_u64(value);
 
-    let since = get_since(duration);
+    let since = get_since_and_passed_time(duration);
 
     Some(since)
 }
