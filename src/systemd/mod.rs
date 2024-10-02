@@ -197,7 +197,7 @@ pub fn get_unit_journal(unit: &UnitInfo) -> String {
 
                 if !output.status.success() {
                     return format!("Journal logs requires access to the org.freedesktop.Flatpak D-Bus interface when the program is a Flatpak.\n
-                    You can use Flatseal, under Session Bus Talks add \"org.freedesktop.Flatpak\" (remove quotes)\n
+                    You can use Flatseal, under Session Bus Talks add \"org.freedesktop.Flatpak\" (remove quotes) and restart the program\n
                     or, in your terminal, run the command: {}", jounal_cmd.join(" "));
                 }
             }
