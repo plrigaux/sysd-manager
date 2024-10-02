@@ -190,7 +190,11 @@ pub fn get_unit_journal(unit: &UnitInfo) -> String {
     let unit_path = unit.primary();
 
     let jounal_cmd = [JOURNALCTL, "-b", "-u", &unit_path];
-    let outout_utf8 = match commander(&jounal_cmd).output() {
+    let mut journal_cmd = commander(&jounal_cmd);
+
+    //journal_cmd.env("SYSTEMD_COLORS", "true");
+
+    let outout_utf8 = match journal_cmd.output() {
         Ok(output) => {
             if *IS_FLATPAK_MODE {
                 info!("Journal status: {}", output.status);
@@ -239,6 +243,7 @@ pub fn commander(prog_n_args: &[&str]) -> Command {
         }
         cmd
     };
+
     output
 }
 
@@ -282,13 +287,6 @@ fn write_with_priviledge(file_path: &String, host_file_path: Cow<'_, str>, text:
         .stdout(Stdio::null())
         .spawn()
         .expect("failed to execute pkexec tee");
-    /*     let mut child = std::process::Command::new("pkexec")
-    .arg("tee")
-    .arg(file_path)
-    .stdin(Stdio::piped())
-    .stdout(Stdio::null())
-    .spawn()
-    .expect("failed to execute pkexec tee"); */
 
     let child_stdin = match child.stdin.as_mut() {
         Some(cs) => cs,
