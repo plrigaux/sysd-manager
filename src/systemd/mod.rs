@@ -3,18 +3,20 @@ pub mod data;
 mod sysdbus;
 mod systemctl;
 
+use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
+use std::sync::LazyLock;
 
 use data::UnitInfo;
 use enums::{EnablementStatus, UnitType};
 use gtk::glib::GString;
 use log::{error, info, warn};
-use zvariant::OwnedValue;
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
+use zvariant::OwnedValue;
 
 use crate::widget::preferences::DbusLevel;
 use crate::widget::preferences::PREFERENCES;
@@ -26,6 +28,11 @@ const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
 const FLATPACK: &str = "flatpack";
 const JOURNALCTL: &str = "journalctl";
 const FLATPAK_SPAWN: &str = "flatpak-spawn";
+
+static IS_FLATPAK_MODE: LazyLock<bool> = LazyLock::new(|| match env::var(SYSDMNG_DIST_MODE) {
+    Ok(val) => FLATPACK.eq(&val),
+    Err(_) => false,
+});
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -130,55 +137,79 @@ pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, Sy
 }
 
 /// Read the unit file and return it's contents so that we can display it
-pub fn get_unit_info(unit: &UnitInfo) -> String {
-    let mut output = String::new();
+pub fn get_unit_file_info(unit: &UnitInfo) -> String {
     let Some(file_path) = &unit.file_path() else {
-        return output;
+        warn!("No file path for {}", unit.primary());
+        return String::new();
     };
 
-    if is_flatpak_mode() {
+    if let Some(content) = file_open_get_content(file_path) {
+        return content;
+    }
+
+    if *IS_FLATPAK_MODE {
+        info!("Flatpack {}", unit.primary());
         match commander(&["cat", file_path]).output() {
             Ok(cat_output) => {
                 match String::from_utf8(cat_output.stdout) {
-                    Ok(content) => output.push_str(&content),
+                    Ok(content) => {
+                        return content;
+                    }
                     Err(e) => {
                         warn!("Can't retreive journal:  {:?}", e);
-                        return output;
                     }
                 };
             }
             Err(e) => {
-                warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
-                return output;
+                warn!("Can't open file \"{file_path}\" in cat, reason: {}", e);
             }
         }
-    } else {
-        let mut file = match File::open(file_path) {
-            Ok(f) => f,
-            Err(e) => {
-                warn!("Can't open file \"{file_path}\", reason: {:?}", e);
-                return output;
-            }
-        };
-        let _ = file.read_to_string(&mut output);
     }
 
-    output
+    String::new()
+}
+
+fn file_open_get_content(file_path: &str) -> Option<String> {
+    let file_path = flatpak_host_file_path(file_path);
+
+    let mut file = match File::open(file_path.as_ref()) {
+        Ok(f) => f,
+        Err(e) => {
+            warn!("Can't open file \"{file_path}\", reason: {}", e);
+            return None;
+        }
+    };
+    let mut output = String::new();
+    let _ = file.read_to_string(&mut output);
+
+    Some(output)
 }
 
 /// Obtains the journal log for the given unit.
 pub fn get_unit_journal(unit: &UnitInfo) -> String {
     let unit_path = unit.primary();
 
-    let outout = match commander(&[JOURNALCTL, "-b", "-u", &unit_path]).output() {
-        Ok(output) => output.stdout,
+    let jounal_cmd = [JOURNALCTL, "-b", "-u", &unit_path];
+    let outout_utf8 = match commander(&jounal_cmd).output() {
+        Ok(output) => {
+            if *IS_FLATPAK_MODE {
+                info!("Journal status: {}", output.status);
+
+                if !output.status.success() {
+                    return format!("Journal logs requires access to the org.freedesktop.Flatpak D-Bus interface when the program is a Flatpak.\n
+                    You can use Flatseal, under Session Bus Talks add \"org.freedesktop.Flatpak\" (remove quotes)\n
+                    or, in your terminal, run the command: {}", jounal_cmd.join(" "));
+                }
+            }
+            output.stdout
+        }
         Err(e) => {
             warn!("Can't retreive journal:  {:?}", e);
             return String::new();
         }
     };
 
-    let logs = match String::from_utf8(outout) {
+    let logs = match String::from_utf8(outout_utf8) {
         Ok(logs) => logs,
         Err(e) => {
             warn!("Can't retreive journal:  {:?}", e);
@@ -192,15 +223,8 @@ pub fn get_unit_journal(unit: &UnitInfo) -> String {
         .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x)
 }
 
-pub fn is_flatpak_mode() -> bool {
-    match env::var(SYSDMNG_DIST_MODE) {
-        Ok(val) => FLATPACK.eq(&val),
-        Err(_) => false,
-    }
-}
-
 pub fn commander(prog_n_args: &[&str]) -> Command {
-    let output = if is_flatpak_mode() {
+    let output = if *IS_FLATPAK_MODE {
         let mut cmd = Command::new(FLATPAK_SPAWN);
         cmd.arg("--host");
         for v in prog_n_args {
@@ -224,12 +248,18 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
         return;
     };
 
-    let mut file = match fs::OpenOptions::new().write(true).open(file_path) {
+    let host_file_path = flatpak_host_file_path(file_path);
+
+    let mut file = match fs::OpenOptions::new()
+        .write(true)
+        .open(host_file_path.as_ref())
+    {
         Ok(file) => file,
         Err(err) => {
             match err.kind() {
                 ErrorKind::PermissionDenied | ErrorKind::NotFound => {
-                    write_with_priviledge(file_path, text);
+                    info!("Some error : {}, try another approach", err);
+                    write_with_priviledge(file_path, host_file_path, text);
                 }
                 _ => {
                     error!("Unable to open file: {:?}", err);
@@ -245,8 +275,8 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
     }
 }
 
-fn write_with_priviledge(file_path: &String, text: &GString) {
-    let mut cmd = commander(&["pkexec", "tee", "tee", file_path]);
+fn write_with_priviledge(file_path: &String, host_file_path: Cow<'_, str>, text: &GString) {
+    let mut cmd = commander(&["pkexec", "tee", "tee", host_file_path.as_ref()]);
     let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
@@ -279,6 +309,15 @@ fn write_with_priviledge(file_path: &String, text: &GString) {
     }
 }
 
+fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
+    let host_file_path = if *IS_FLATPAK_MODE {
+        Cow::from(format!("/run/host{file_path}"))
+    } else {
+        Cow::from(file_path)
+    };
+    host_file_path
+}
+
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::fetch_system_info(level)
@@ -289,13 +328,15 @@ pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String
     sysdbus::fetch_system_unit_info(level, &unit.object_path())
 }
 
-pub fn fetch_system_unit_info_native(unit: &UnitInfo) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+pub fn fetch_system_unit_info_native(
+    unit: &UnitInfo,
+) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::fetch_system_unit_info_native(level, &unit.object_path())
 }
 
 pub fn test_flatpak_spawn(window: &window::Window) {
-    if !is_flatpak_mode() {
+    if !*IS_FLATPAK_MODE {
         return;
     }
 

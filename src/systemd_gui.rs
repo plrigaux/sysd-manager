@@ -286,7 +286,7 @@ fn build_ui(application: &Application) {
 
     //-------------------------------------------
 
-    let unit_info = gtk::TextView::builder()
+    let unit_file_info = gtk::TextView::builder()
         .focusable(true)
         .wrap_mode(gtk::WrapMode::WordChar)
         .left_margin(5)
@@ -297,7 +297,7 @@ fn build_ui(application: &Application) {
     let unit_file_stack_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
         .focusable(true)
-        .child(&unit_info)
+        .child(&unit_file_info)
         .build();
 
     let save_unit_file_button = ButtonIcon::new("Save", "document-save");
@@ -784,10 +784,10 @@ fn build_ui(application: &Application) {
 
     {
         // NOTE: Save Button
-        let unit_info = unit_info.clone();
+        let unit_file_info = unit_file_info.clone();
 
         save_unit_file_button.connect_clicked(move |_| {
-            let buffer = unit_info.buffer();
+            let buffer = unit_file_info.buffer();
             let start = buffer.start_iter();
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
@@ -796,7 +796,7 @@ fn build_ui(application: &Application) {
         });
     }
     {
-        let unit_info = unit_info.clone();
+        let unit_file_info = unit_file_info.clone();
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal_view.clone();
         let header_label = title_bar_elements.right_bar_label.clone();
@@ -821,7 +821,7 @@ fn build_ui(application: &Application) {
                 *selected_unit = Some(unit.clone());
             }
 
-            let description = systemd::get_unit_info(&unit);
+            let description = systemd::get_unit_file_info(&unit);
 
             let fp = match unit.file_path() {
                 Some(s) => s,
@@ -830,7 +830,7 @@ fn build_ui(application: &Application) {
 
             unit_file_label.set_label(&fp);
 
-            unit_info.buffer().set_text(&description);
+            unit_file_info.buffer().set_text(&description);
 
             let ablement_status =
                 systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);

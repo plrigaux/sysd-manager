@@ -33,6 +33,7 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True) -
 
         if on_fail_exit:
             print(f"{color.RED}Called Process Error! code({ret.returncode}){color.END}")
+            cmd_str = " ".join(cmd)
             print(f"{color.YELLOW}{cmd_str}{color.END}")
             pprint.pp(err)
             print(f"{color.RED}Exit program{color.END}")
@@ -58,7 +59,7 @@ def is_repo_dirty() -> bool:
     return repo.is_dirty(untracked_files=True)
 
 
-def toml() -> dict[str:any]:
+def toml() -> dict:
     with open("Cargo.toml", "rb") as f:
         cargo_toml = tomllib.load(f)
 
