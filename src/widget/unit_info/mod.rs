@@ -112,11 +112,17 @@ fn fill_row(info_box: &gtk::Box, key_label: &str, value: &str) {
     let key_label = gtk::Label::builder()
         .label(key_label)
         .width_request(130)
+        .css_classes(["unit_info"])
+        .xalign(1.0)
         .build();
 
     item.append(&key_label);
 
-    let label_value = gtk::Label::builder().label(value).selectable(true).build();
+    let label_value = gtk::Label::builder()
+        .label(value)
+        .selectable(true)
+        .css_classes(["unit_info"])
+        .build();
 
     item.append(&label_value);
 
@@ -164,21 +170,21 @@ fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     let state = value_str(value);
 
     let mut state_line = String::from(state);
-    
+
     if let Some(substate) = get_substate(map) {
         state_line.push_str(" (");
         state_line.push_str(substate);
         state_line.push(')');
     }
-    
-    if let Some(since) = add_since(map, state)  {
+
+    if let Some(since) = add_since(map, state) {
         state_line.push_str(" since ");
         state_line.push_str(&since.0);
         state_line.push_str("; ");
         state_line.push_str(&since.1);
         state_line.push_str(" ago");
     }
- 
+
     fill_row(info_box, "Active State:", &state_line)
 }
 

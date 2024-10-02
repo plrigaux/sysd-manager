@@ -1,6 +1,6 @@
 use gtk::pango::{self, Weight};
 use gtk::{gio, prelude::*, SingleSelection};
-use gtk::{Application, Orientation};
+use gtk::{Application, Orientation, gdk};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
@@ -97,10 +97,26 @@ fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
 pub fn launch() -> glib::ExitCode {
     // Create a new application
     let app = Application::builder().application_id(APP_ID).build();
-    app.connect_startup(title_bar::on_startup);
+    app.connect_startup(|app| {
+        load_css();
+        title_bar::on_startup(app)
+    });
     app.connect_activate(build_ui);
 
     app.run()
+}
+
+fn load_css() {
+    // Load the CSS file and add it to the provider
+    let provider = gtk::CssProvider::new();
+    provider.load_from_resource("/io/github/plrigaux/sysd-manager/style.css");
+
+    // Add the provider to the default screen
+    gtk::style_context_add_provider_for_display(
+        &gdk::Display::default().expect("Could not connect to a display."),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
 }
 
 fn build_ui(application: &Application) {
