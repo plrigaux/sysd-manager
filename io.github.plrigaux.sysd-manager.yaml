@@ -14,7 +14,7 @@ finish-args:
 - --socket=fallback-x11
 - --socket=wayland
 - --device=dri
-- --filesystem=home
+#- --filesystem=home
 - --filesystem=host
 #- --talk-name=org.freedesktop.Flatpak"
 - --env=RUST_LOG=info

@@ -95,18 +95,15 @@ def build():
     # Info https://docs.flathub.org/docs/for-app-authors/submission/
     cmd_run(
         [
-            # "flatpak",
-            # "run",
-            # "org.flatpak.Builder",
             "flatpak-builder",
             "--force-clean",
             "--sandbox",
             "--user",
+            "--install",
             "--install-deps-from=flathub",
             "--ccache",
             "--mirror-screenshots-url=https://dl.flathub.org/media",
             "--repo=repo",
-            "--install",
             "builddir",
             MANIFEST,
         ],
@@ -141,7 +138,8 @@ def lint():
             "org.flatpak.Builder",
             "manifest",
             MANIFEST,
-        ], cwd=FLATHUB_DIR
+        ],
+        cwd=FLATHUB_DIR,
     )
 
     print(f"{color.BOLD}{color.CYAN}Lint repo{color.END}")
@@ -153,7 +151,8 @@ def lint():
             "org.flatpak.Builder",
             "repo",
             "repo",
-        ], cwd=FLATHUB_DIR
+        ],
+        cwd=FLATHUB_DIR,
     )
 
 

@@ -35,6 +35,11 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.1.7" date="2024-10-03">
+      <description>
+        <p>Update the unit information panel</p>
+      </description>
+    </release>
     <release version="0.1.6" date="2024-08-02">
       <description>
         <p>Add a proto preference panel</p>
