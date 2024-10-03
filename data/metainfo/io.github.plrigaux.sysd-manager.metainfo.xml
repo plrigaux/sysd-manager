@@ -8,27 +8,32 @@
   <project_license>GPL-3.0+</project_license>
   <name>SysD Manager</name>
   <summary>A GUI to manage systemd units</summary>
-<!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
+  <!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
   <description>
     <p>This application exists to allow user to manage their systemd units via a GUI. Not only
       are you able to make changes to the enablement and running status of each of the units, but
-      you will also be able to view and modify their unit files, check the journal logs. </p>
+      you will also be able to view and modify their unit files and check the journal logs. </p>
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit%20file.png</image>
+      <image type="source">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_file.png</image>
       <caption>Unit Files</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal.png</image>
+      <image type="source">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal.png</image>
       <caption>Unit Journal</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/analyse%20blame.png</image>
+      <image type="source">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/analyse_blame.png</image>
       <caption>Analyze</caption>
     </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/plrigaux/sysd-manager</url>
+  <url type="bugtracker">https://github.com/plrigaux/sysd-manager/issues</url>
+  <url type="contribute">https://github.com/plrigaux/sysd-manager/pulls</url>
   <!--
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
