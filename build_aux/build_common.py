@@ -1,8 +1,8 @@
 import subprocess
 import pprint
-
+import git
 import tomllib
-
+from typing import Optional
 
 class color:
     PURPLE = "\033[95m"
@@ -53,8 +53,6 @@ def clean_gschema():
 
 
 def is_repo_dirty() -> bool:
-    import git
-
     repo = git.Repo(".")
     return repo.is_dirty(untracked_files=True)
 
@@ -64,3 +62,22 @@ def toml() -> dict:
         cargo_toml = tomllib.load(f)
 
     return cargo_toml
+
+
+def get_version_tag() -> str:
+    cargo_toml = toml()
+
+    version = cargo_toml["package"]["version"]
+    tag_name = f"v{version}"
+
+    return tag_name
+
+
+def get_tag_commit(tag_label :str) -> Optional[str]:
+    repo = git.Repo(".")
+
+    for t in repo.tags:
+        if tag_label == str(t):
+            return str(t.commit)
+        
+    return None

@@ -3,9 +3,13 @@
 import argparse
 import logging
 import json
+import oyaml as yaml
 
-from build_aux.build_common import *
+import build_aux.build_common as bcommon
 import build_aux.flatpak_cargo_generator as cargo_gen
+
+
+color = bcommon.color
 
 from os import walk
 
@@ -47,16 +51,33 @@ def main():
             "cleanf",
             "clone",
             "deploy",
+            "manifest",
+            "tag"
         ],
         help="action to perform",
     )
 
     parser.add_argument("--logbus", action="store_true", help="log dbus message on run")
+    parser.add_argument(
+        "-g",
+        "--from_git",
+        action="store_true",
+        help="make the flatpack manifest source come from git",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--allow_dirty",
+        action="store_true",
+        dest="allow_dirty",
+        help="allow not commited file",
+        default=False,
+    )
     args = parser.parse_args()
 
     match args.action:
         case "build":
-            build()
+            build(args.from_git)
         case "clean":
             clean()
         case "run":
@@ -74,13 +95,17 @@ def main():
         case "repair":
             repair()
         case "copy":
-            set_required_files()
+            set_required_files(args.from_git)
+        case "manifest":
+            set_manifest(args.from_git)
         case "cleanf":
             clean_flathub_dir()
         case "clone":
             clone_the_fork()
         case "deploy":
             deploy()
+        case "tag":
+            tag()
         case _:
             print("No actions performed")
 
@@ -90,12 +115,12 @@ def clean():
 
     for dir in list_dir:
         print(f"{color.BOLD}Deleting{color.END} {dir}")
-        cmd_run(["rm", "-fr", dir])
+        bcommon.cmd_run(["rm", "-fr", dir])
 
 
-def build():
+def build(from_git: bool):
 
-    set_required_files()
+    set_required_files(from_git)
 
     add_flathub_repo()
 
@@ -104,7 +129,7 @@ def build():
     # Info https://docs.flathub.org/docs/for-app-authors/submission/
     # flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir <manifest>
 
-    cmd_run(
+    bcommon.cmd_run(
         [
             "flatpak",
             "run",
@@ -145,7 +170,7 @@ def build():
 def add_flathub_repo():
     print(f"{color.BOLD}{color.CYAN}Add the Flathub repo user-wide{color.END}")
 
-    cmd_run(
+    bcommon.cmd_run(
         [
             "flatpak",
             "remote-add",
@@ -159,7 +184,7 @@ def add_flathub_repo():
 
 
 def repair():
-    cmd_run(["flatpak", "-v", "--user", "repair"])
+    bcommon.cmd_run(["flatpak", "-v", "--user", "repair"])
 
 
 def run(logbus=False):
@@ -170,14 +195,14 @@ def run(logbus=False):
         cmd.insert(2, "--log-session-bus")
 
     try:
-        cmd_run(cmd)
+        bcommon.cmd_run(cmd)
     except KeyboardInterrupt as ki:
         print("Program closed by Keyboard Interrupt")
 
 
 def lint():
     print(f"{color.BOLD}{color.CYAN}Lint manifest{color.END}")
-    cmd_run(
+    bcommon.cmd_run(
         [
             "flatpak",
             "run",
@@ -190,7 +215,7 @@ def lint():
     )
 
     print(f"{color.BOLD}{color.CYAN}Lint repo{color.END}")
-    cmd_run(
+    bcommon.cmd_run(
         [
             "flatpak",
             "run",
@@ -205,12 +230,12 @@ def lint():
 
 def compose():
     print(f"{color.BOLD}{color.CYAN}appstreamcli compose{color.END}")
-    cmd_run(["appstreamcli", "compose", "builddir/files"])
+    bcommon.cmd_run(["appstreamcli", "compose", "builddir/files"])
 
 
 def validate():
     print(f"{color.BOLD}{color.CYAN}Validating {APP_ID}.metainfo.xml{color.END}")
-    cmd_run(
+    bcommon.cmd_run(
         [
             "flatpak",
             "run",
@@ -229,10 +254,10 @@ def add_required_files():
         f"{color.BOLD}{color.CYAN}Add the required files for the submission{color.END}"
     )
     # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
-    cmd_run(["cp", "-v", MANIFEST, FLATHUB_DIR])
+    bcommon.cmd_run(["cp", "-v", MANIFEST, FLATHUB_DIR])
 
 
-def generate(source_dir = FLATHUB_DIR):
+def generate(source_dir=FLATHUB_DIR):
     print(f"{color.BOLD}{color.CYAN}Generate cargo sources{color.END}")
 
     loglevel = logging.INFO
@@ -243,7 +268,7 @@ def generate(source_dir = FLATHUB_DIR):
     generated_toml = cargo_gen.generate_sources(toml, git_tarballs=git_tarballs)
     generated_sources = cargo_gen.asyncio.run(generated_toml)
 
-    cmd_run(["mkdir", "-p", source_dir])
+    bcommon.cmd_run(["mkdir", "-p", source_dir])
 
     with open(f"{source_dir}/{CARGO_SOURCES}", "w") as out:
         json.dump(generated_sources, out, indent=4, sort_keys=False)
@@ -255,21 +280,19 @@ def diag():
     flatpak list"""
 
 
-def set_required_files():
+def set_required_files(from_git: bool):
     # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
     print(f"{color.BOLD}Add required files for {color.CYAN}Flathub{color.END}")
 
-    cmd_run(["mkdir", "-p", FLATPACK_BUILD_DIR])
+    bcommon.cmd_run(["mkdir", "-p", FLATPACK_BUILD_DIR])
 
     generate(FLATPACK_BUILD_DIR)
 
-    cmd_run(
+    bcommon.cmd_run(
         [
             "cp",
             "-r",
             "Cargo.toml",
-            MANIFEST,
-            # CARGO_SOURCES,
             CARGO_LOCK,
             "src",
             "data",
@@ -279,17 +302,55 @@ def set_required_files():
         ]
     )
 
-    #print(f"{color.CYAN}Generate a .gitignore{color.END}")
-    #ignored = ["/target/", "/.flatpak/", "/.flatpak-builder", "/repo", "/builddir"]
-    #with open(f"{FLATHUB_DIR}/.gitignore", "w") as file:
+    set_manifest(from_git)
+
+    # print(f"{color.CYAN}Generate a .gitignore{color.END}")
+    # ignored = ["/target/", "/.flatpak/", "/.flatpak-builder", "/repo", "/builddir"]
+    # with open(f"{FLATHUB_DIR}/.gitignore", "w") as file:
     #    content = "\n".join(ignored)
     #    file.write(content)
+
+
+def set_manifest(from_git: bool, out_dir=FLATPACK_BUILD_DIR):
+
+    out_file = f"{out_dir}/{MANIFEST}"
+    print(f"set manifest to file: {out_file}")
+    manifest_obj = None
+
+    with open(MANIFEST, "r") as manifest:
+        manifest_obj = yaml.safe_load(manifest)
+
+    if from_git:
+        print("set source from git repo")
+        modules_obj_0 = manifest_obj["modules"][0]
+
+        tag_name = bcommon.get_version_tag()
+
+        commit = bcommon.get_tag_commit(tag_name)
+
+        if not commit:
+            print(f"{color.RED}commit not found for tag {tag_name}")
+            exit(0)
+
+
+        modules_obj_0["sources"][0] = {
+            "type": "git",
+            "url": "https://github.com/plrigaux/sysd-manager.git",
+            "tag": tag_name,
+            "commit": commit,
+        }
+
+    else:
+        print("set source from local")
+
+    with open(out_file, "w") as file:
+        yaml.dump(manifest_obj, file)
 
 
 def clone_the_fork():
 
     print(f"{color.CYAN}Clone the Flathub repository fork{color.END}")
-    cmd_run(
+    bcommon.cmd_run(
         [
             "git",
             "clone",
@@ -319,16 +380,17 @@ def clean_flathub_dir():
 
     for dir in files_to_clean:
         print(f"{color.BOLD}Deleting{color.END} {dir}")
-        cmd_run(["rm", "-fr", dir])
+        bcommon.cmd_run(["rm", "-fr", dir])
+
 
 def deploy():
     print(f"{color.BOLD}Set files for deployment on {color.CYAN}Flathub{color.END}")
 
-    #cmd_run(["mkdir", "-p", FLATPACK_BUILD_DIR])
+    # cmd_run(["mkdir", "-p", FLATPACK_BUILD_DIR])
 
     generate(FLATHUB_DIR)
 
-    cmd_run(
+    bcommon.cmd_run(
         [
             "cp",
             "-r",
@@ -337,5 +399,9 @@ def deploy():
         ]
     )
 
-    
+def tag():
+    commit = bcommon.get_tag_commit("v0.1.7")
+    print("commit", commit)
+
+
 main()
