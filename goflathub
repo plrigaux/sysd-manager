@@ -5,8 +5,7 @@ import logging
 import json
 
 from build_aux.build_common import *
-import build_aux.flatpak_cargo_generator as cg
-import build_aux.flatpak_cargo_generator as cg
+import build_aux.flatpak_cargo_generator as cargo_gen
 
 from os import walk
 
@@ -23,6 +22,7 @@ COPR_REPO = "sysd-manager"
 APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
 FLATHUB_DIR = "../flathub"
+FLATPACK_BUILD_DIR = "../flatpak_sysdm"
 CARGO_LOCK = "Cargo.lock"
 CARGO_SOURCES = "cargo-sources.json"
 
@@ -45,6 +45,8 @@ def main():
             "generate",
             "copy",
             "cleanf",
+            "clone",
+            "deploy",
         ],
         help="action to perform",
     )
@@ -75,6 +77,10 @@ def main():
             set_required_files()
         case "cleanf":
             clean_flathub_dir()
+        case "clone":
+            clone_the_fork()
+        case "deploy":
+            deploy()
         case _:
             print("No actions performed")
 
@@ -88,12 +94,37 @@ def clean():
 
 
 def build():
+
     set_required_files()
+
+    add_flathub_repo()
 
     print(f"{color.BOLD}{color.CYAN}Building for flatpak{color.END}")
 
     # Info https://docs.flathub.org/docs/for-app-authors/submission/
+    # flatpak run org.flatpak.Builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir <manifest>
+
     cmd_run(
+        [
+            "flatpak",
+            "run",
+            "org.flatpak.Builder",
+            "--force-clean",
+            "--sandbox",
+            "--user",
+            "--install",
+            "--install-deps-from=flathub",
+            "--ccache",
+            "--mirror-screenshots-url=https://dl.flathub.org/media",
+            "--repo=repo",
+            "builddir",
+            MANIFEST,
+        ],
+        cwd=FLATPACK_BUILD_DIR,
+    )
+
+
+"""     cmd_run(
         [
             "flatpak-builder",
             "--force-clean",
@@ -106,6 +137,22 @@ def build():
             "--repo=repo",
             "builddir",
             MANIFEST,
+        ],
+        cwd=FLATHUB_DIR,
+    ) """
+
+
+def add_flathub_repo():
+    print(f"{color.BOLD}{color.CYAN}Add the Flathub repo user-wide{color.END}")
+
+    cmd_run(
+        [
+            "flatpak",
+            "remote-add",
+            "--if-not-exists",
+            "--user",
+            "flathub",
+            "https://dl.flathub.org/repo/flathub.flatpakrepo",
         ],
         cwd=FLATHUB_DIR,
     )
@@ -185,20 +232,20 @@ def add_required_files():
     cmd_run(["cp", "-v", MANIFEST, FLATHUB_DIR])
 
 
-def generate():
+def generate(source_dir = FLATHUB_DIR):
     print(f"{color.BOLD}{color.CYAN}Generate cargo sources{color.END}")
 
     loglevel = logging.INFO
     logging.basicConfig(level=loglevel)
     git_tarballs = False
 
-    generated_sources = cg.asyncio.run(
-        cg.generate_sources(cg.load_toml(CARGO_LOCK), git_tarballs=git_tarballs)
-    )
+    toml = cargo_gen.load_toml(CARGO_LOCK)
+    generated_toml = cargo_gen.generate_sources(toml, git_tarballs=git_tarballs)
+    generated_sources = cargo_gen.asyncio.run(generated_toml)
 
-    cmd_run(["mkdir", "-p", FLATHUB_DIR])
+    cmd_run(["mkdir", "-p", source_dir])
 
-    with open(f"{FLATHUB_DIR}/{CARGO_SOURCES}", "w") as out:
+    with open(f"{source_dir}/{CARGO_SOURCES}", "w") as out:
         json.dump(generated_sources, out, indent=4, sort_keys=False)
 
 
@@ -212,9 +259,9 @@ def set_required_files():
     # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
     print(f"{color.BOLD}Add required files for {color.CYAN}Flathub{color.END}")
 
-    cmd_run(["mkdir", "-p", FLATHUB_DIR])
+    cmd_run(["mkdir", "-p", FLATPACK_BUILD_DIR])
 
-    generate()
+    generate(FLATPACK_BUILD_DIR)
 
     cmd_run(
         [
@@ -228,15 +275,29 @@ def set_required_files():
             "data",
             "build.rs",
             "screenshots",
-            f"{FLATHUB_DIR}",
+            f"{FLATPACK_BUILD_DIR}",
         ]
     )
 
-    print(f"{color.CYAN}Generate a .gitignore{color.END}")
-    ignored = ["/target/", "/.flatpak/", "/.flatpak-builder", "/repo", "/builddir"]
-    with open(f"{FLATHUB_DIR}/.gitignore", "w") as file:
-        content = "\n".join(ignored)
-        file.write(content)
+    #print(f"{color.CYAN}Generate a .gitignore{color.END}")
+    #ignored = ["/target/", "/.flatpak/", "/.flatpak-builder", "/repo", "/builddir"]
+    #with open(f"{FLATHUB_DIR}/.gitignore", "w") as file:
+    #    content = "\n".join(ignored)
+    #    file.write(content)
+
+
+def clone_the_fork():
+
+    print(f"{color.CYAN}Clone the Flathub repository fork{color.END}")
+    cmd_run(
+        [
+            "git",
+            "clone",
+            "--branch=new-pr",
+            "git@github.com:plrigaux/flathub.git",
+        ],
+        cwd="..",
+    )
 
 
 def clean_flathub_dir():
@@ -260,5 +321,21 @@ def clean_flathub_dir():
         print(f"{color.BOLD}Deleting{color.END} {dir}")
         cmd_run(["rm", "-fr", dir])
 
+def deploy():
+    print(f"{color.BOLD}Set files for deployment on {color.CYAN}Flathub{color.END}")
 
+    #cmd_run(["mkdir", "-p", FLATPACK_BUILD_DIR])
+
+    generate(FLATHUB_DIR)
+
+    cmd_run(
+        [
+            "cp",
+            "-r",
+            MANIFEST,
+            f"{FLATHUB_DIR}",
+        ]
+    )
+
+    
 main()
