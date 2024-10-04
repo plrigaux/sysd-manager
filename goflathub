@@ -43,6 +43,7 @@ def main():
             "build",
             "run",
             "lint",
+            "repair",
             "compose",
             "validate",
             "flathub",
@@ -52,7 +53,7 @@ def main():
             "clone",
             "deploy",
             "manifest",
-            "tag"
+            "tag",
         ],
         help="action to perform",
     )
@@ -97,13 +98,13 @@ def main():
         case "copy":
             set_required_files(args.from_git)
         case "manifest":
-            set_manifest(args.from_git)
+            set_manifest(args.from_git, FLATPACK_BUILD_DIR)
         case "cleanf":
             clean_flathub_dir()
         case "clone":
             clone_the_fork()
         case "deploy":
-            deploy()
+            deploy(args.from_git)
         case "tag":
             tag()
         case _:
@@ -302,7 +303,7 @@ def set_required_files(from_git: bool):
         ]
     )
 
-    set_manifest(from_git)
+    set_manifest(from_git, FLATPACK_BUILD_DIR)
 
     # print(f"{color.CYAN}Generate a .gitignore{color.END}")
     # ignored = ["/target/", "/.flatpak/", "/.flatpak-builder", "/repo", "/builddir"]
@@ -311,7 +312,7 @@ def set_required_files(from_git: bool):
     #    file.write(content)
 
 
-def set_manifest(from_git: bool, out_dir=FLATPACK_BUILD_DIR):
+def set_manifest(from_git: bool, out_dir):
 
     out_file = f"{out_dir}/{MANIFEST}"
     print(f"set manifest to file: {out_file}")
@@ -331,7 +332,6 @@ def set_manifest(from_git: bool, out_dir=FLATPACK_BUILD_DIR):
         if not commit:
             print(f"{color.RED}commit not found for tag {tag_name}")
             exit(0)
-
 
         modules_obj_0["sources"][0] = {
             "type": "git",
@@ -383,21 +383,15 @@ def clean_flathub_dir():
         bcommon.cmd_run(["rm", "-fr", dir])
 
 
-def deploy():
+def deploy(from_git: bool):
     print(f"{color.BOLD}Set files for deployment on {color.CYAN}Flathub{color.END}")
 
     # cmd_run(["mkdir", "-p", FLATPACK_BUILD_DIR])
 
     generate(FLATHUB_DIR)
 
-    bcommon.cmd_run(
-        [
-            "cp",
-            "-r",
-            MANIFEST,
-            f"{FLATHUB_DIR}",
-        ]
-    )
+    set_manifest(from_git, FLATHUB_DIR)
+
 
 def tag():
     commit = bcommon.get_tag_commit("v0.1.7")
