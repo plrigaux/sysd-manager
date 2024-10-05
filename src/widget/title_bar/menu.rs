@@ -1,10 +1,11 @@
-use gtk::gio::ResourceLookupFlags;
+use adw::prelude::AdwDialogExt;
 use gtk::prelude::*;
-use gtk::{gdk, gio, prelude::ActionMapExtManual};
+use gtk::{gio, prelude::ActionMapExtManual};
 
 use crate::analyze::build_analyze_window;
 use crate::info;
-use log::{error, warn};
+use crate::systemd_gui::APP_ID;
+use log::error;
 
 use super::preferences;
 
@@ -41,13 +42,11 @@ pub fn on_startup(app: &adw::Application) {
     let about = gio::ActionEntry::builder("about")
         .activate(|application: &adw::Application, _, _| {
             let about = create_about();
-
-            if let Some(first_window) = application.windows().first() {
-                about.set_transient_for(Some(first_window));
-                about.set_modal(true);
+            if let Some(win) = application.active_window() {
+                about.present(Some(&win));
+            } else {
+                about.present(None::<&gtk::Widget>);
             }
-
-            about.present();
         })
         .build();
 
@@ -99,35 +98,24 @@ pub fn on_startup(app: &adw::Application) {
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
 }
 
-fn create_about() -> gtk::AboutDialog {
+fn create_about() -> adw::AboutDialog {
     const VERSION: &str = env!("CARGO_PKG_VERSION");
     const CARGO_PKG_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
     const CARGO_PKG_DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
 
     let authors: Vec<&str> = CARGO_PKG_AUTHORS.split(',').collect();
 
-    let about = gtk::AboutDialog::builder()
-        .authors(authors)
+    let about = adw::AboutDialog::builder()
+        .developers(authors)
         .name("About")
-        .program_name(APP_TITLE)
-        .modal(true)
+        .application_name(APP_TITLE)
+        .application_icon(APP_ID)
         .version(VERSION)
         .license_type(gtk::License::Gpl30)
         .comments(CARGO_PKG_DESCRIPTION)
         .website("https://github.com/plrigaux/sysd-manager")
+        .issue_url("https://github.com/plrigaux/sysd-manager/issues")
         .build();
-
-    //TODO create const for the path prefix
-    match gio::functions::resources_lookup_data(
-        "/io/github/plrigaux/sysd-manager/io.github.plrigaux.sysd-manager.svg",
-        ResourceLookupFlags::NONE,
-    ) {
-        Ok(bytes) => {
-            let logo = gdk::Texture::from_bytes(&bytes).expect("gtk-rs.svg to load");
-            about.set_logo(Some(&logo));
-        }
-        Err(e) => warn!("Fail to load logo: {}", e),
-    };
 
     about
 }
