@@ -1,6 +1,6 @@
 use gtk::pango::{self, Weight};
 use gtk::{gio, prelude::*, SingleSelection};
-use gtk::{Application, Orientation, gdk};
+use gtk::{Orientation, gdk};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
@@ -96,7 +96,7 @@ fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
 
 pub fn launch() -> glib::ExitCode {
     // Create a new application
-    let app = Application::builder().application_id(APP_ID).build();
+    let app = adw::Application::builder().application_id(APP_ID).build();
     app.connect_startup(|app| {
         load_css();
         title_bar::on_startup(app)
@@ -119,7 +119,7 @@ fn load_css() {
     );
 }
 
-fn build_ui(application: &Application) {
+fn build_ui(application: &adw::Application) {
     let store = gtk::gio::ListStore::new::<UnitInfo>();
 
     fill_store(&store);

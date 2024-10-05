@@ -37,9 +37,9 @@ pub fn build_menu() -> gtk::MenuButton {
     menu_button
 }
 
-pub fn on_startup(app: &gtk::Application) {
+pub fn on_startup(app: &adw::Application) {
     let about = gio::ActionEntry::builder("about")
-        .activate(|application: &gtk::Application, _, _| {
+        .activate(|application: &adw::Application, _, _| {
             let about = create_about();
 
             if let Some(first_window) = application.windows().first() {
@@ -52,7 +52,7 @@ pub fn on_startup(app: &gtk::Application) {
         .build();
 
     let analyze_blame = gio::ActionEntry::builder("analyze_blame")
-        .activate(|application: &gtk::Application, _b, _c| {
+        .activate(|application: &adw::Application, _b, _c| {
             let analyze_blame_window = build_analyze_window();
 
             if let Some(first_window) = application.windows().first() {
@@ -65,7 +65,7 @@ pub fn on_startup(app: &gtk::Application) {
         .build();
 
     let systemd_info = gio::ActionEntry::builder("systemd_info")
-        .activate(|application: &gtk::Application, _, _| {
+        .activate(|application: &adw::Application, _, _| {
             let systemd_info_window = info::build_systemd_info();
 
             if let Some(first_window) = application.windows().first() {
@@ -77,9 +77,9 @@ pub fn on_startup(app: &gtk::Application) {
         })
         .build();
 
-    let preferences = gio::ActionEntry::builder("preferences")
+    let preferences: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder("preferences")
         .activate(
-            |application: &gtk::Application, _, _| match preferences::build_preferences() {
+            |application: &adw::Application, _, _| match preferences::build_preferences() {
                 Ok(preferences_window) => {
                     if let Some(first_window) = application.windows().first() {
                         preferences_window.set_transient_for(Some(first_window));

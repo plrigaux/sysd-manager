@@ -11,7 +11,6 @@ use gtk::glib;
 mod analyze;
 mod errors;
 mod info;
-mod settings;
 mod widget;
 
 use log::{info, warn};

@@ -3,10 +3,10 @@ mod imp;
 use glib::Object;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{gio, glib, Application};
+use gtk::{gio, glib};
 use log::info;
 
-use crate::{settings, systemd_gui};
+use crate::systemd_gui;
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -17,7 +17,7 @@ glib::wrapper! {
 }
 
 impl Window {
-    pub fn new(app: &Application) -> Self {
+    pub fn new(app: &adw::Application) -> Self {
         // Create new window
         Object::builder().property("application", app).build()
     }
@@ -76,6 +76,6 @@ impl Window {
 
     fn load_dark_mode(&self) {
        
-        settings::set_color_scheme(self);
+        //settings::set_color_scheme(self);
     }
 }

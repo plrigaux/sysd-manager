@@ -57,7 +57,7 @@ pub fn build_title_bar(search_bar: &gtk::SearchBar) -> TitleBar {
     }
 }
 
-pub fn on_startup(app: &gtk::Application) {
+pub fn on_startup(app: &adw::Application) {
     menu::on_startup(app);
 }
 
