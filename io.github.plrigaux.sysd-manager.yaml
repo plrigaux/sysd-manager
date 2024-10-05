@@ -4,7 +4,6 @@ runtime-version: '46'
 sdk: org.gnome.Sdk
 sdk-extensions:
 - org.freedesktop.Sdk.Extension.rust-stable
-- org.freedesktop.Sdk.Extension.llvm18
 command: sysd-manager
 finish-args:
 - --share=ipc
