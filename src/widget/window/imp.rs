@@ -1,6 +1,8 @@
 use gio::Settings;
-use gtk::subclass::prelude::*;
-use gtk::{gio, glib, ApplicationWindow};
+
+use adw::subclass::prelude::{ObjectImpl, ObjectSubclass, WidgetImpl, WindowImpl, ApplicationWindowImpl, AdwApplicationWindowImpl};
+use gtk::subclass::prelude::{ObjectImplExt, ObjectSubclassExt};
+use gtk::{gio, glib};
 use std::cell::OnceCell;
 
 // ANCHOR: imp
@@ -12,8 +14,8 @@ pub struct Window {
 #[glib::object_subclass]
 impl ObjectSubclass for Window {
     const NAME: &'static str = "SysdAppWindow";
-    type Type = super::Window;
-    type ParentType = ApplicationWindow;
+    type Type = super::AppWindow;
+    type ParentType = adw::ApplicationWindow;
 }
 impl ObjectImpl for Window {
     fn constructed(&self) {
@@ -22,7 +24,6 @@ impl ObjectImpl for Window {
         let obj = self.obj();
         obj.setup_settings();
         obj.load_window_size();
-        obj.load_dark_mode();
     }
 }
 impl WidgetImpl for Window {}
@@ -38,5 +39,6 @@ impl WindowImpl for Window {
         glib::Propagation::Proceed
     }
 }
+impl AdwApplicationWindowImpl for Window {}
 impl ApplicationWindowImpl for Window {}
 // ANCHOR_END: imp

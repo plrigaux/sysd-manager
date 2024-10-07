@@ -1,6 +1,8 @@
+use adw::prelude::AdwApplicationWindowExt;
+use adw::Toast;
 use gtk::pango::{self, Weight};
+use gtk::{gdk, Orientation};
 use gtk::{gio, prelude::*, SingleSelection};
-use gtk::{Orientation, gdk};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
@@ -573,11 +575,19 @@ fn build_ui(application: &adw::Application) {
     let restart_button = ButtonIcon::new("Retart", "view-refresh");
     control_box.append(&restart_button);
 
+    let toast_overlay = adw::ToastOverlay::new();
     {
+        let toast_overlay = toast_overlay.clone();
         start_button.connect_clicked(move |_button| {
             let lambda = |unit: &UnitInfo| match systemd::start_unit(&unit) {
                 Ok(_job) => {
-                    info!("Unit \"{}\" has been started!", unit.primary());
+                    let info = format!("Unit \"{}\" has been started!", unit.primary());
+
+                    info!("{info}");
+
+                    let toast = Toast::new(&info);
+                    toast_overlay.add_toast(toast);
+
                     update_active_state(&unit, ActiveState::Active);
                 }
                 Err(e) => error!("Can't start the unit {}, because: {:?}", unit.primary(), e),
@@ -588,10 +598,15 @@ fn build_ui(application: &adw::Application) {
     }
 
     {
+        let toast_overlay = toast_overlay.clone();
         stop_button.connect_clicked(move |_button| {
             let lambda = |unit: &UnitInfo| match systemd::stop_unit(&unit) {
                 Ok(_job) => {
-                    info!("Unit \"{}\" stopped!", unit.primary());
+                    let info = format!("Unit \"{}\" has been stopped!", unit.primary());
+                    info!("{info}");
+                    let toast = Toast::new(&info);
+                    toast_overlay.add_toast(toast);
+
                     update_active_state(&unit, ActiveState::Inactive)
                 }
 
@@ -603,16 +618,19 @@ fn build_ui(application: &adw::Application) {
     }
 
     {
-        restart_button.connect_clicked(move |_| {
-            fn lambda(unit: &UnitInfo) {
-                match systemd::restart_unit(&unit) {
-                    Ok(_job) => {
-                        info!("Unit {} restarted!", unit.primary());
-                        update_active_state(&unit, ActiveState::Active);
-                    }
-                    Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
+        let toast_overlay = toast_overlay.clone();
+        restart_button.connect_clicked(move |_button| {
+            let lambda = |unit: &UnitInfo| match systemd::restart_unit(&unit) {
+                Ok(_job) => {
+                    let info = format!("Unit \"{}\" has been restarted!", unit.primary());
+                    info!("{info}");
+                    let toast = Toast::new(&info);
+                    toast_overlay.add_toast(toast);
+
+                    update_active_state(&unit, ActiveState::Active);
                 }
-            }
+                Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
+            };
 
             selected_unit!(lambda);
         });
@@ -784,9 +802,16 @@ fn build_ui(application: &adw::Application) {
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
 
-    let window = widget::window::Window::new(application);
-    window.set_child(Some(&main_box));
-    window.set_titlebar(Some(&title_bar_elements.title_bar));
+    let window = widget::window::AppWindow::new(application);
+
+    let toolbar_view = adw::ToolbarView::builder().content(&main_box).build();
+
+    toast_overlay.set_child(Some(&toolbar_view));
+
+    toolbar_view.add_top_bar(&title_bar_elements.header_bar);
+
+    window.set_content(Some(&toast_overlay));
+    //window.set_content(content);
 
     {
         // NOTE: Journal Refresh Button

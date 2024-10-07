@@ -8,15 +8,19 @@ use log::info;
 
 use crate::systemd_gui;
 
+const WINDOW_WIDTH: &str = "window-width";
+const WINDOW_HEIGHT: &str = "window-height";
+const IS_MAXIMIZED: &str = "is-maximized";
+
 // ANCHOR: mod
 glib::wrapper! {
-    pub struct Window(ObjectSubclass<imp::Window>)
-        @extends gtk::ApplicationWindow, gtk::Window, gtk::Widget,
+    pub struct AppWindow(ObjectSubclass<imp::Window>)
+        @extends adw::ApplicationWindow, gtk::Window, adw::Window, gtk::Widget,
         @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
                     gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
-impl Window {
+impl AppWindow {
     pub fn new(app: &adw::Application) -> Self {
         // Create new window
         Object::builder().property("application", app).build()
@@ -42,19 +46,22 @@ impl Window {
         let size = self.default_size();
 
         // Set the window state in `settings`
-        self.settings().set_int("window-width", size.0)?;
-        self.settings().set_int("window-height", size.1)?;
-        self.settings()
-            .set_boolean("is-maximized", self.is_maximized())?;
+        let settings = self.settings();
+
+        settings.set_int(WINDOW_WIDTH, size.0)?;
+        settings.set_int(WINDOW_HEIGHT, size.1)?;
+        settings.set_boolean(IS_MAXIMIZED, self.is_maximized())?;
 
         Ok(())
     }
 
     fn load_window_size(&self) {
         // Get the window state from `settings`
-        let mut width = self.settings().int("window-width");
-        let mut height = self.settings().int("window-height");
-        let is_maximized = self.settings().boolean("is-maximized");
+        let settings = self.settings();
+
+        let mut width = settings.int(WINDOW_WIDTH);
+        let mut height = settings.int(WINDOW_HEIGHT);
+        let is_maximized = settings.boolean(IS_MAXIMIZED);
 
         info!("Window settings: width {width}, height {height}, is-maximized {is_maximized}");
 
@@ -74,8 +81,4 @@ impl Window {
         }
     }
 
-    fn load_dark_mode(&self) {
-       
-        //settings::set_color_scheme(self);
-    }
 }

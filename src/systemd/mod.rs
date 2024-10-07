@@ -20,7 +20,7 @@ use zvariant::OwnedValue;
 
 use crate::widget::preferences::DbusLevel;
 use crate::widget::preferences::PREFERENCES;
-use crate::widget::window;
+use crate::widget::window::AppWindow;
 
 pub mod enums;
 
@@ -333,7 +333,7 @@ pub fn fetch_system_unit_info_native(
     sysdbus::fetch_system_unit_info_native(level, &unit.object_path())
 }
 
-pub fn test_flatpak_spawn(window: &window::Window) {
+pub fn test_flatpak_spawn(window: &AppWindow) {
     if !*IS_FLATPAK_MODE {
         return;
     }
