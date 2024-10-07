@@ -1,33 +1,52 @@
+use log::info;
+
+use super::SystemdErrors;
+
 #[derive(Clone, Debug)]
 pub struct Analyze {
     pub time: u32,
     pub service: String,
 }
 
-impl Analyze {
-    /// Returns the results of `systemd-analyze blame`
-    pub fn blame() -> Vec<Analyze> {
-        let command_output = match super::commander(&["systemd-analyze", "blame"]).output() {
-            Ok(output) => output.stdout,
-            Err(e) => {
-                log::warn!("Can't call systemd-analyze:  {:?}", e);
-                return vec![];
-            }
-        };
+/// Returns the results of `systemd-analyze blame`
+pub fn blame() -> Result<Vec<Analyze>, SystemdErrors> {
+    let cmd = ["systemd-analyze", "blame"];
+    let command_output = match super::commander(&cmd).output() {
+        Ok(output) => {
+            if *super::IS_FLATPAK_MODE {
+                info!("systemd-analyze status: {}", output.status);
 
-        String::from_utf8(command_output)
-            .expect("from_utf8 failed")
-            .lines()
-            .rev()
-            .map(|x| {
-                let mut iterator = x.trim().split_whitespace();
-                Analyze {
-                    time: parse_time(iterator.next().unwrap()),
-                    service: String::from(iterator.next().unwrap()),
+                if !output.status.success() {
+                    let v = cmd.iter().map(|&s| s.into()).collect();
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(v));
                 }
-            })
-            .collect::<Vec<Analyze>>()
-    }
+            }
+
+            output.stdout
+        }
+        Err(e) => {
+            let warn_message = format!("Can't call systemd-analyze:  {:?}", e);
+            match super::commander_error_handling(&warn_message, e) {
+                Ok(_) => return Ok(vec![]),
+                Err(e) => return Err(e),
+            }
+        }
+    };
+
+    let collection = String::from_utf8(command_output)
+        .expect("from_utf8 failed")
+        .lines()
+        .rev()
+        .map(|x| {
+            let mut iterator = x.trim().split_whitespace();
+            Analyze {
+                time: parse_time(iterator.next().unwrap()),
+                service: String::from(iterator.next().unwrap()),
+            }
+        })
+        .collect::<Vec<Analyze>>();
+
+    Ok(collection)
 }
 
 fn parse_time(input: &str) -> u32 {

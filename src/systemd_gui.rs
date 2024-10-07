@@ -92,8 +92,24 @@ macro_rules! create_column_filter {
 
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
 fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
-    let journal_output = systemd::get_unit_journal(unit);
-    journal.buffer().set_text(&journal_output);
+    match systemd::get_unit_journal(unit) {
+        Ok(journal_output) => journal.buffer().set_text(&journal_output),
+        Err(_e) => {
+            journal.buffer().set_text("");
+
+            let text = match _e {
+   
+                systemd::SystemdErrors::CmdNoFlatpakSpawn => "Please install flatpack-spawn".to_owned(),
+                systemd::SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmd) => format!("Journal logs requires access to the org.freedesktop.Flatpak D-Bus interface when the program is a Flatpak.\n
+                    You can use Flatseal, under Session Bus Talks add \"org.freedesktop.Flatpak\" (remove quotes) and restart the program\n
+                    or, in your terminal, run the command: {}", cmd.join(" ")),
+                _ => "".to_owned()
+            };
+
+            journal.buffer().set_text(&text)
+        },
+    };
+    
 }
 
 pub fn launch() -> glib::ExitCode {
@@ -894,7 +910,6 @@ fn build_ui(application: &adw::Application) {
     }
     window.present();
 
-    systemd::test_flatpak_spawn(&window);
 }
 
 fn fill_store(store: &gio::ListStore) {

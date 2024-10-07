@@ -5,10 +5,10 @@ mod systemctl;
 
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
-use std::env;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 use std::sync::LazyLock;
+use std::{env, io};
 
 use data::UnitInfo;
 use enums::{EnablementStatus, UnitType};
@@ -20,7 +20,6 @@ use zvariant::OwnedValue;
 
 use crate::widget::preferences::DbusLevel;
 use crate::widget::preferences::PREFERENCES;
-use crate::widget::window::AppWindow;
 
 pub mod enums;
 
@@ -44,6 +43,8 @@ pub enum SystemdErrors {
     Malformed,
     ZBusError(zbus::Error),
     ZBusFdoError(zbus::fdo::Error),
+    CmdNoFlatpakSpawn,
+    CmdNoFreedesktopFlatpakPermission(Vec<String>),
 }
 
 impl From<std::io::Error> for SystemdErrors {
@@ -186,7 +187,7 @@ fn file_open_get_content(file_path: &str) -> Option<String> {
 }
 
 /// Obtains the journal log for the given unit.
-pub fn get_unit_journal(unit: &UnitInfo) -> String {
+pub fn get_unit_journal(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     let unit_path = unit.primary();
 
     let jounal_cmd = [JOURNALCTL, "-b", "-u", &unit_path];
@@ -200,16 +201,16 @@ pub fn get_unit_journal(unit: &UnitInfo) -> String {
                 info!("Journal status: {}", output.status);
 
                 if !output.status.success() {
-                    return format!("Journal logs requires access to the org.freedesktop.Flatpak D-Bus interface when the program is a Flatpak.\n
-                    You can use Flatseal, under Session Bus Talks add \"org.freedesktop.Flatpak\" (remove quotes) and restart the program\n
-                    or, in your terminal, run the command: {}", jounal_cmd.join(" "));
+                    let v= jounal_cmd.iter().map(|&s| s.into()).collect();
+                    return  Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(v));
                 }
             }
             output.stdout
         }
         Err(e) => {
-            warn!("Can't retreive journal:  {:?}", e);
-            return String::new();
+            let warn_message = format!("Can't retreive journal:  {:?}", e);
+            commander_error_handling(&warn_message, e)?;
+            return Ok(String::new());
         }
     };
 
@@ -217,14 +218,16 @@ pub fn get_unit_journal(unit: &UnitInfo) -> String {
         Ok(logs) => logs,
         Err(e) => {
             warn!("Can't retreive journal:  {:?}", e);
-            return String::new();
+            return Ok(String::new());
         }
     };
 
-    logs.lines()
+    let tmp = logs.lines()
         .rev()
         .map(|x| x.trim())
-        .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x)
+        .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x);
+
+    Ok(tmp)
 }
 
 pub fn commander(prog_n_args: &[&str]) -> Command {
@@ -245,6 +248,11 @@ pub fn commander(prog_n_args: &[&str]) -> Command {
     };
 
     output
+}
+
+pub fn commander_error_handling(warn_message: &String, _e: io::Error) -> Result<(), SystemdErrors> {
+    warn!("{warn_message}");
+    test_flatpak_spawn()
 }
 
 pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
@@ -333,20 +341,28 @@ pub fn fetch_system_unit_info_native(
     sysdbus::fetch_system_unit_info_native(level, &unit.object_path())
 }
 
-pub fn test_flatpak_spawn(window: &AppWindow) {
+pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
     if !*IS_FLATPAK_MODE {
-        return;
+        return Ok(());
     }
-
+    info!("test_flatpak_spawn");
     match Command::new(FLATPAK_SPAWN).arg("--help").output() {
-        Ok(_) => info!("flatpack-spawn check"),
-        Err(_) => {
-            let alert = gtk::AlertDialog::builder()
-            .message("flatpack-spawn needed!")
-            .detail("The program flatpack-spawn is needed if you use the application from Flatpack. Please install it to enable all features")
-            .build();
+        Ok(_output) => {}
+        Err(_err) => {
+            /*
+             let message = "Program flatpack-spawn needed!";
+             warn!("{message}");
+             let message_detail = "The program flatpack-spawn is needed if you use the application from Flatpack. Please install it to enable all features";
+             warn!("{message_detail}");
 
-            alert.show(Some(window));
+            let alert = gtk::AlertDialog::builder()
+                 .message(message)
+                 .detail(message_detail)
+                 .build();
+
+             alert.show(None::<&gtk::Window>); */
+            return Err(SystemdErrors::CmdNoFlatpakSpawn);
         }
     }
+    Ok(())
 }
