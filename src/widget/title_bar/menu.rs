@@ -53,9 +53,8 @@ pub fn on_startup(app: &adw::Application) {
 
     let analyze_blame = gio::ActionEntry::builder("analyze_blame")
         .activate(|application: &adw::Application, _b, _c| {
-
             let wins = application.windows();
-              match build_analyze_window() {
+            match build_analyze_window() {
                 Ok(analyze_blame_window) => {
                     if let Some(first_window) = wins.first() {
                         analyze_blame_window.set_transient_for(Some(first_window));
@@ -65,36 +64,21 @@ pub fn on_startup(app: &adw::Application) {
                     analyze_blame_window.present();
                 }
                 Err(sd_error) => {
-                   let resp = match sd_error {
-                     
-                        crate::systemd::SystemdErrors::CmdNoFlatpakSpawn => {
-                            Some(("flatpack-spawn needed!", 
-                            "The program flatpack-spawn is needed if you use the application from Flatpack.\nPlease install it to enable all features".to_owned())
-                            )},
-                        crate::systemd::SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmd) => {
-                            Some(("Permission needed!",
-                            format!(
-"Journal logs requires access to the org.freedesktop.Flatpak D-Bus interface when the program is a Flatpak.\n
-You can use Flatseal, under Session Bus Talks add \"org.freedesktop.Flatpak\" (remove quotes) and restart the program\n
-or, in your terminal, run the command: {}", cmd.join(" "))
-                                )
-                            )
-                        },
-                        _ => None
-                    };
+                    let resp = sd_error.gui_description();
 
                     if let Some(resp) = resp {
-                    let alert = adw::AlertDialog::builder()
-                    .heading(resp.0)
-                    .body(resp.1)
-                    .close_response("close")
-                    .build();
+                        let alert = adw::AlertDialog::builder()
+                            .heading("Unavailable")
+                            .body_use_markup(true)
+                            .body(resp)
+                            .close_response("close")
+                            .build();
 
-                    alert.add_response("close", "Close");
-                    let firt_window = wins.first();
-                    alert.present(firt_window);
+                        alert.add_response("close", "Close");
+                        let firt_window = wins.first();
+                        alert.present(firt_window);
                     }
-                },
+                }
             };
         })
         .build();

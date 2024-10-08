@@ -40,6 +40,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.1.8" date="2024-10-08">
+      <description>
+        <ul>
+          <li>Remove the flatpack test at stratup</li>
+          <li>Migrate some widjets to libadwaita</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.7" date="2024-10-03">
       <description>
         <p>Update the unit information panel</p>

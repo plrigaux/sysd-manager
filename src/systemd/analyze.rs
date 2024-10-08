@@ -1,5 +1,3 @@
-use log::info;
-
 use super::SystemdErrors;
 
 #[derive(Clone, Debug)]
@@ -11,27 +9,7 @@ pub struct Analyze {
 /// Returns the results of `systemd-analyze blame`
 pub fn blame() -> Result<Vec<Analyze>, SystemdErrors> {
     let cmd = ["systemd-analyze", "blame"];
-    let command_output = match super::commander(&cmd).output() {
-        Ok(output) => {
-            if *super::IS_FLATPAK_MODE {
-                info!("systemd-analyze status: {}", output.status);
-
-                if !output.status.success() {
-                    let v = cmd.iter().map(|&s| s.into()).collect();
-                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(v));
-                }
-            }
-
-            output.stdout
-        }
-        Err(e) => {
-            let warn_message = format!("Can't call systemd-analyze:  {:?}", e);
-            match super::commander_error_handling(&warn_message, e) {
-                Ok(_) => return Ok(vec![]),
-                Err(e) => return Err(e),
-            }
-        }
-    };
+    let command_output = super::commander_output(&cmd, None)?.stdout;
 
     let collection = String::from_utf8(command_output)
         .expect("from_utf8 failed")

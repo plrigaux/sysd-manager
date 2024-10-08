@@ -5,10 +5,10 @@ mod systemctl;
 
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
+use std::env;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 use std::sync::LazyLock;
-use std::{env, io};
 
 use data::UnitInfo;
 use enums::{EnablementStatus, UnitType};
@@ -45,6 +45,28 @@ pub enum SystemdErrors {
     ZBusFdoError(zbus::fdo::Error),
     CmdNoFlatpakSpawn,
     CmdNoFreedesktopFlatpakPermission(Vec<String>),
+}
+
+impl SystemdErrors {
+    pub fn gui_description(&self) -> Option<String> {
+        let desc = match self {
+            SystemdErrors::CmdNoFlatpakSpawn => {
+                let value = "The program <b>flatpack-spawn</b> is needed if you use the application from Flatpack.\n
+Please install it to enable all features.";
+                Some(value.to_owned())
+            }
+            SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmdl) => {
+                let msg = format!(
+                "Requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.\n
+<b>Option 1:</b> You can use Flatseal. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program\n
+<b>Option 2:</b> In your terminal, run the command: <u>{}</u>", cmdl.join(" "));
+                Some(msg)
+            }
+            _ => None,
+        };
+
+        desc
+    }
 }
 
 impl From<std::io::Error> for SystemdErrors {
@@ -150,7 +172,7 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> String {
 
     if *IS_FLATPAK_MODE {
         info!("Flatpack {}", unit.primary());
-        match commander(&["cat", file_path]).output() {
+        match commander_output(&["cat", file_path], None) {
             Ok(cat_output) => {
                 match String::from_utf8(cat_output.stdout) {
                     Ok(content) => {
@@ -162,7 +184,7 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> String {
                 };
             }
             Err(e) => {
-                warn!("Can't open file \"{file_path}\" in cat, reason: {}", e);
+                warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
             }
         }
     }
@@ -190,29 +212,10 @@ fn file_open_get_content(file_path: &str) -> Option<String> {
 pub fn get_unit_journal(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     let unit_path = unit.primary();
 
-    let jounal_cmd = [JOURNALCTL, "-b", "-u", &unit_path];
-    let mut journal_cmd = commander(&jounal_cmd);
+    let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path];
+    // TODO let environment_variable = [("SYSTEMD_COLORS", "true")];
 
-    //journal_cmd.env("SYSTEMD_COLORS", "true");
-
-    let outout_utf8 = match journal_cmd.output() {
-        Ok(output) => {
-            if *IS_FLATPAK_MODE {
-                info!("Journal status: {}", output.status);
-
-                if !output.status.success() {
-                    let v= jounal_cmd.iter().map(|&s| s.into()).collect();
-                    return  Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(v));
-                }
-            }
-            output.stdout
-        }
-        Err(e) => {
-            let warn_message = format!("Can't retreive journal:  {:?}", e);
-            commander_error_handling(&warn_message, e)?;
-            return Ok(String::new());
-        }
-    };
+    let outout_utf8 = commander_output(&jounal_cmd_line, None)?.stdout;
 
     let logs = match String::from_utf8(outout_utf8) {
         Ok(logs) => logs,
@@ -222,7 +225,8 @@ pub fn get_unit_journal(unit: &UnitInfo) -> Result<String, SystemdErrors> {
         }
     };
 
-    let tmp = logs.lines()
+    let tmp = logs
+        .lines()
         .rev()
         .map(|x| x.trim())
         .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x);
@@ -230,8 +234,45 @@ pub fn get_unit_journal(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     Ok(tmp)
 }
 
-pub fn commander(prog_n_args: &[&str]) -> Command {
-    let output = if *IS_FLATPAK_MODE {
+pub fn commander_output(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Result<std::process::Output, SystemdErrors> {
+    let output_result = commander(prog_n_args, environment_variables).output();
+
+    let new_output_result = match output_result {
+        Ok(output) => {
+            if *IS_FLATPAK_MODE {
+                info!("Journal status: {}", output.status);
+
+                if !output.status.success() {
+                    warn!("Flatpak mode, command line did not succeed, please investigate.");
+                    error!("Command exit status: {}", output.status);
+                    info!(
+                        "{}",
+                        String::from_utf8(output.stdout).expect("from_utf8 failed")
+                    );
+                    error!(
+                        "{}",
+                        String::from_utf8(output.stderr).expect("from_utf8 failed")
+                    );
+                    let v = prog_n_args.iter().map(|s| s.to_string()).collect();
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(v));
+                }
+            }
+            Ok(output)
+        }
+        Err(e) => {
+            match test_flatpak_spawn() {
+                Ok(_) => (),
+                Err(e) => return Err(e),
+            };
+            Err(SystemdErrors::IoError(e))
+        }
+    };
+
+    new_output_result
+}
+
+pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
+    let mut command = if *IS_FLATPAK_MODE {
         let mut cmd = Command::new(FLATPAK_SPAWN);
         cmd.arg("--host");
         for v in prog_n_args {
@@ -247,12 +288,13 @@ pub fn commander(prog_n_args: &[&str]) -> Command {
         cmd
     };
 
-    output
-}
+    if let Some(envs) = environment_variables {
+        for env in envs {
+            command.env(env.0, env.1);
+        }
+    }
 
-pub fn commander_error_handling(warn_message: &String, _e: io::Error) -> Result<(), SystemdErrors> {
-    warn!("{warn_message}");
-    test_flatpak_spawn()
+    command
 }
 
 pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
@@ -289,7 +331,7 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
 }
 
 fn write_with_priviledge(file_path: &String, host_file_path: Cow<'_, str>, text: &GString) {
-    let mut cmd = commander(&["pkexec", "tee", "tee", host_file_path.as_ref()]);
+    let mut cmd = commander(&["pkexec", "tee", "tee", host_file_path.as_ref()], None);
     let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
@@ -345,6 +387,7 @@ pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
     if !*IS_FLATPAK_MODE {
         return Ok(());
     }
+
     info!("test_flatpak_spawn");
     match Command::new(FLATPAK_SPAWN).arg("--help").output() {
         Ok(_output) => {}

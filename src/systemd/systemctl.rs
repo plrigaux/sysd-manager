@@ -1,4 +1,4 @@
-use super::{commander, SystemdErrors};
+use super::{commander_output, SystemdErrors};
 use log::error;
 
 const SYSTEMCTL: &str = "systemctl";
@@ -8,35 +8,35 @@ const DISABLE: &str = "disable";
 // Takes the unit pathname of a service and enables it via dbus.
 /// If dbus replies with `[Bool(true), Array([], "(sss)")]`, the service is already enabled.
 pub fn enable_unit_files_path(unit: &str) -> Result<String, SystemdErrors> {
-    let command_output = commander(&[SYSTEMCTL, ENABLE, unit]).output();
+    let command_output = commander_output(&[SYSTEMCTL, ENABLE, unit], None);
     dis_en_able_processing(command_output, ENABLE)
 }
 
 pub fn disable_unit_files_path(unit: &str) -> Result<String, SystemdErrors> {
-    let command_output = commander(&[SYSTEMCTL, DISABLE, unit]).output();
+    let command_output = commander_output(&[SYSTEMCTL, DISABLE, unit], None);
     dis_en_able_processing(command_output, DISABLE)
 }
 
 fn dis_en_able_processing(
-    command_output: Result<std::process::Output, std::io::Error>,
+    command_output: Result<std::process::Output, SystemdErrors>,
     action: &str,
 ) -> Result<String, SystemdErrors> {
     match command_output {
         Ok(output) => {
-            let stderr = String::from_utf8(output.stderr)?;
+            let error_msg = String::from_utf8(output.stderr)?;
             if output.status.success() {
-                Ok(stderr)
+                Ok(error_msg)
             } else {
-                Err(SystemdErrors::SystemCtlError(stderr))
+                Err(SystemdErrors::SystemCtlError(error_msg))
             }
         }
         Err(error) => {
-            error!("{} {} error {}", SYSTEMCTL, action, error);
-            Err(error.into())
+            error!("{} {} error {:?}", SYSTEMCTL, action, error);
+            Err(error)
         }
     }
 }
-/* 
+/*
 #[cfg(test)]
 mod tests {
     use log::debug;
