@@ -46,11 +46,11 @@ For now new features are planned to be added, such as:
 
 
 ### From your computer
-For the moment:
+
 * Download and install rust https://www.rust-lang.org/tools/install
-* Install needed libraries (GTK4, ...)
-  * Install GTK 4 and the build essentials. https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html
-  * Install dbus develelopment package
+* Install the build essentials
+  * Install GTK 4 and the build essentials. [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html)
+  * Install libadwaita [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
 * Compile and run  ```cargo run```
 
 ### Install on RHEL, Fedora, and CentOS based distributions
@@ -117,14 +117,28 @@ sh ./create_rpm
 
 It will create a rpm file in the target/generate-rpm subdirectory.
 
-### Flatpack
-*For now Flatpack is too restrictive*
+### Flatpak
 
 #### Install the builder
 
 ```
 flatpak install org.flatpak.Builder
 ```
+
+#### Build the flatpak
+```
+./goflatub build
+```
+
+#### Run the flatpak
+
+To run the compiled flatpak execute the following command
+```
+./goflatub run
+```
+
+To access all program's functionnalities, you need the to have program __flatpak-spawn__ install on your system.
+
 
 #### Possible issue
 
