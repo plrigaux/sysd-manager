@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager"
-version = "0.1.8"
+version = "0.1.9"
 edition = '2021'
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
@@ -44,6 +44,10 @@ zvariant = { version = "4", features = ["gvariant"] }
 serde = "1.0"
 chrono = "0.4.38"
 adw = { version = "0.7", package = "libadwaita", features = ["v1_5"] }
+ansi-parser = "0.9"
+cansi = "2.2.1"
+colored = "2.1.0"
+regex = "1.11.0"
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"

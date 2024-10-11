@@ -209,13 +209,18 @@ fn file_open_get_content(file_path: &str) -> Option<String> {
 }
 
 /// Obtains the journal log for the given unit.
-pub fn get_unit_journal(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+pub fn get_unit_journal(unit: &UnitInfo, in_color: bool) -> Result<String, SystemdErrors> {
     let unit_path = unit.primary();
 
     let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path];
-    // TODO let environment_variable = [("SYSTEMD_COLORS", "true")];
+    let env = [("SYSTEMD_COLORS", "true")];
+    let environment_variable: Option<&[(&str, &str)]> = if in_color {
+        Some(&env)
+    } else {
+        None
+    };
 
-    let outout_utf8 = commander_output(&jounal_cmd_line, None)?.stdout;
+    let outout_utf8 = commander_output(&jounal_cmd_line, environment_variable)?.stdout;
 
     let logs = match String::from_utf8(outout_utf8) {
         Ok(logs) => logs,
@@ -234,7 +239,10 @@ pub fn get_unit_journal(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     Ok(tmp)
 }
 
-pub fn commander_output(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Result<std::process::Output, SystemdErrors> {
+pub fn commander_output(
+    prog_n_args: &[&str],
+    environment_variables: Option<&[(&str, &str)]>,
+) -> Result<std::process::Output, SystemdErrors> {
     let output_result = commander(prog_n_args, environment_variables).output();
 
     let new_output_result = match output_result {

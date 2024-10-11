@@ -6,6 +6,7 @@ use gtk::{gio, prelude::*, SingleSelection};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
+use crate::widget::journal::update_journal;
 use crate::widget::{self, title_bar, unit_info};
 use log::{debug, error, info, warn};
 
@@ -90,25 +91,6 @@ macro_rules! create_column_filter {
     }};
 }
 
-/// Updates the associated journal `TextView` with the contents of the unit's journal log.
-fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
-    let text = match systemd::get_unit_journal(unit) {
-        Ok(journal_output) => journal_output,
-        Err(error) => {
-            let text = match error.gui_description() {
-                Some(s) => s.clone(),
-                None => String::from(""),
-            };
-            text
-        }
-    };
-
-    let buf = journal.buffer();
-    buf.set_text("");
-    let mut start_iter = buf.start_iter();
-
-    buf.insert_markup(&mut start_iter, &text);
-}
 
 pub fn launch() -> glib::ExitCode {
     // Create a new application
