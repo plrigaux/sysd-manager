@@ -25,14 +25,14 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
             "20" => {}
             "28" => sgc.set_hidden(false),
             "21" => {}
-            "30" => sgc.set_foreground_color(Color::Black),
-            "31" => sgc.set_foreground_color(Color::Red),
-            "32" => sgc.set_foreground_color(Color::Green),
-            "33" => sgc.set_foreground_color(Color::Yellow),
-            "34" => sgc.set_foreground_color(Color::Blue),
-            "35" => sgc.set_foreground_color(Color::Magenta),
-            "36" => sgc.set_foreground_color(Color::Cyan),
-            "37" => sgc.set_foreground_color(Color::White),
+            "30" => sgc.set_foreground_color(TermColor::Black),
+            "31" => sgc.set_foreground_color(TermColor::Red),
+            "32" => sgc.set_foreground_color(TermColor::Green),
+            "33" => sgc.set_foreground_color(TermColor::Yellow),
+            "34" => sgc.set_foreground_color(TermColor::Blue),
+            "35" => sgc.set_foreground_color(TermColor::Magenta),
+            "36" => sgc.set_foreground_color(TermColor::Cyan),
+            "37" => sgc.set_foreground_color(TermColor::White),
             "38" => {
                 if let Some(sub_code) = it.next() {
                     match sub_code {
@@ -48,32 +48,32 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
             }
             "39" => sgc.set_foreground_color_default(),
 
-            "40" => sgc.set_background_color(Color::Black),
-            "41" => sgc.set_background_color(Color::Red),
-            "42" => sgc.set_background_color(Color::Green),
-            "43" => sgc.set_background_color(Color::Yellow),
-            "44" => sgc.set_background_color(Color::Blue),
-            "45" => sgc.set_background_color(Color::Magenta),
-            "46" => sgc.set_background_color(Color::Cyan),
-            "47" => sgc.set_background_color(Color::White),
+            "40" => sgc.set_background_color(TermColor::Black),
+            "41" => sgc.set_background_color(TermColor::Red),
+            "42" => sgc.set_background_color(TermColor::Green),
+            "43" => sgc.set_background_color(TermColor::Yellow),
+            "44" => sgc.set_background_color(TermColor::Blue),
+            "45" => sgc.set_background_color(TermColor::Magenta),
+            "46" => sgc.set_background_color(TermColor::Cyan),
+            "47" => sgc.set_background_color(TermColor::White),
 
-            "90" => sgc.set_foreground_color(Color::BrightBlack),
-            "91" => sgc.set_foreground_color(Color::BrightRed),
-            "92" => sgc.set_foreground_color(Color::BrightGreen),
-            "93" => sgc.set_foreground_color(Color::BrightYellow),
-            "94" => sgc.set_foreground_color(Color::BrightBlue),
-            "95" => sgc.set_foreground_color(Color::BrightMagenta),
-            "96" => sgc.set_foreground_color(Color::BrightCyan),
-            "97" => sgc.set_foreground_color(Color::BrightWhite),
+            "90" => sgc.set_foreground_color(TermColor::BrightBlack),
+            "91" => sgc.set_foreground_color(TermColor::BrightRed),
+            "92" => sgc.set_foreground_color(TermColor::BrightGreen),
+            "93" => sgc.set_foreground_color(TermColor::BrightYellow),
+            "94" => sgc.set_foreground_color(TermColor::BrightBlue),
+            "95" => sgc.set_foreground_color(TermColor::BrightMagenta),
+            "96" => sgc.set_foreground_color(TermColor::BrightCyan),
+            "97" => sgc.set_foreground_color(TermColor::BrightWhite),
 
-            "100" => sgc.set_background_color(Color::BrightBlack),
-            "101" => sgc.set_background_color(Color::BrightRed),
-            "102" => sgc.set_background_color(Color::BrightGreen),
-            "103" => sgc.set_background_color(Color::BrightYellow),
-            "104" => sgc.set_background_color(Color::BrightBlue),
-            "105" => sgc.set_background_color(Color::BrightMagenta),
-            "106" => sgc.set_background_color(Color::BrightCyan),
-            "107" => sgc.set_background_color(Color::BrightWhite),
+            "100" => sgc.set_background_color(TermColor::BrightBlack),
+            "101" => sgc.set_background_color(TermColor::BrightRed),
+            "102" => sgc.set_background_color(TermColor::BrightGreen),
+            "103" => sgc.set_background_color(TermColor::BrightYellow),
+            "104" => sgc.set_background_color(TermColor::BrightBlue),
+            "105" => sgc.set_background_color(TermColor::BrightMagenta),
+            "106" => sgc.set_background_color(TermColor::BrightCyan),
+            "107" => sgc.set_background_color(TermColor::BrightWhite),
             _ => {}
         };
     }
@@ -82,8 +82,8 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
 
 #[derive(Default)]
 struct SelectGraphicRendition {
-    foreground_color: Option<Color>,
-    background_color: Option<Color>,
+    foreground_color: Option<TermColor>,
+    background_color: Option<TermColor>,
     intensity: Option<Intensity>,
     italic: Option<bool>,
     underline: Option<bool>,
@@ -141,7 +141,7 @@ impl SelectGraphicRendition {
         self.hidden = Some(hidden);
     }
 
-    fn set_foreground_color(&mut self, color: Color) {
+    fn set_foreground_color(&mut self, color: TermColor) {
         self.foreground_color = Some(color);
     }
 
@@ -149,7 +149,7 @@ impl SelectGraphicRendition {
         self.foreground_color = None;
     }
 
-    fn set_background_color(&mut self, color: Color) {
+    fn set_background_color(&mut self, color: TermColor) {
         self.background_color = Some(color);
     }
 }
@@ -172,7 +172,7 @@ pub enum Blink {
 
 /// The 8 standard colors.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Color {
+pub enum TermColor {
     Black,
     Red,
     Green,
@@ -192,12 +192,33 @@ pub enum Color {
     VGA(u8, u8, u8),
 }
 
-impl Color {
+impl TermColor {
     pub fn get_hexa_code(&self) -> String {
         match self {
-            
             Self::VGA(r, g, b) => format!("#{:02x}{:02x}{:02x}", r, g, b),
-            _ => String::new(),
+            _ => self.get_vga().get_hexa_code(),
+        }
+    }
+
+    pub fn get_vga(&self) -> TermColor {
+        match self {
+            TermColor::Black => Self::VGA(0, 0, 0),
+            TermColor::Red => Self::VGA(0x80, 0, 0),
+            TermColor::Green => Self::VGA(0, 0x80, 0),
+            TermColor::Yellow => Self::VGA(0x80, 0x80, 0),
+            TermColor::Blue => Self::VGA(0, 0, 0x80),
+            TermColor::Magenta => Self::VGA(0x80, 0, 0x80),
+            TermColor::Cyan => Self::VGA(0, 0x80, 0x80),
+            TermColor::White => Self::VGA(0xc0, 0xc0, 0xc0),
+            TermColor::BrightBlack => Self::VGA(0x80, 0x80, 0x80),
+            TermColor::BrightRed => Self::VGA(0xff, 0, 0),
+            TermColor::BrightGreen => Self::VGA(0, 0xff, 0),
+            TermColor::BrightYellow => Self::VGA(0xff, 0xff, 0),
+            TermColor::BrightBlue => Self::VGA(0, 0, 0xff),
+            TermColor::BrightMagenta => Self::VGA(0xff, 0, 0xff),
+            TermColor::BrightCyan => Self::VGA(0, 0xff, 0xff),
+            TermColor::BrightWhite => Self::VGA(0xff, 0xff, 0xff),
+            TermColor::VGA(_, _, _) => *self,
         }
     }
 }

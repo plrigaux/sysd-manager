@@ -1,24 +1,24 @@
 #![allow(dead_code)]
-use super::colorise::Color;
+use super::colorise::TermColor;
 
-pub fn get_256color(code: u8) -> Color {
+pub fn get_256color(code: u8) -> TermColor {
     let color = match code {
-        0 => Color::Black,
-        1 => Color::Red,
-        2 => Color::Green,
-        3 => Color::Yellow,
-        4 => Color::Blue,
-        5 => Color::Magenta,
-        6 => Color::Cyan,
-        7 => Color::White,
-        8 => Color::BrightBlack,
-        9 => Color::BrightRed,
-        10 => Color::BrightGreen,
-        11 => Color::BrightYellow,
-        12 => Color::BrightBlue,
-        13 => Color::BrightMagenta,
-        14 => Color::BrightCyan,
-        15 => Color::BrightWhite,
+        0 => TermColor::Black,
+        1 => TermColor::Red,
+        2 => TermColor::Green,
+        3 => TermColor::Yellow,
+        4 => TermColor::Blue,
+        5 => TermColor::Magenta,
+        6 => TermColor::Cyan,
+        7 => TermColor::White,
+        8 => TermColor::BrightBlack,
+        9 => TermColor::BrightRed,
+        10 => TermColor::BrightGreen,
+        11 => TermColor::BrightYellow,
+        12 => TermColor::BrightBlue,
+        13 => TermColor::BrightMagenta,
+        14 => TermColor::BrightCyan,
+        15 => TermColor::BrightWhite,
         16..=231 => color_map216(code),
         232..=255 => grayscale(code),
     };
@@ -26,13 +26,13 @@ pub fn get_256color(code: u8) -> Color {
     color
 }
 
-fn grayscale(code: u8) -> Color {
+fn grayscale(code: u8) -> TermColor {
     let gray_scale: u8 = (code - 232) * 10 + 8;
 
-    Color::VGA(gray_scale, gray_scale, gray_scale)
+    TermColor::VGA(gray_scale, gray_scale, gray_scale)
 }
 
-fn color_map216(code: u8) -> Color {
+fn color_map216(code: u8) -> TermColor {
     let base = code - 16;
 
     let mut r: u8 = (base / 36) * 40;
@@ -51,7 +51,7 @@ fn color_map216(code: u8) -> Color {
         b += 55
     }
 
-    Color::VGA(r, g, b)
+    TermColor::VGA(r, g, b)
 }
 
 #[cfg(test)]
