@@ -1,6 +1,8 @@
 use crate::systemd::{self, data::UnitInfo};
 use gtk::prelude::*;
 mod colorise;
+mod more_colors;
+
 /// Updates the associated journal `TextView` with the contents of the unit's journal log.
 pub fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
     let text = match systemd::get_unit_journal(unit, true) {

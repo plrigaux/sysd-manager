@@ -46,7 +46,7 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
                     return Err(ColorCodeError::Malformed);
                 }
             }
-            "39" => sgc.set_foreground_color(Color::Default),
+            "39" => sgc.set_foreground_color_default(),
 
             "40" => sgc.set_background_color(Color::Black),
             "41" => sgc.set_background_color(Color::Red),
@@ -145,6 +145,10 @@ impl SelectGraphicRendition {
         self.foreground_color = Some(color);
     }
 
+    fn set_foreground_color_default(&mut self) {
+        self.foreground_color = None;
+    }
+
     fn set_background_color(&mut self, color: Color) {
         self.background_color = Some(color);
     }
@@ -185,7 +189,17 @@ pub enum Color {
     BrightMagenta,
     BrightCyan,
     BrightWhite,
-    Default,
+    VGA(u8, u8, u8),
+}
+
+impl Color {
+    pub fn get_hexa_code(&self) -> String {
+        match self {
+            
+            Self::VGA(r, g, b) => format!("#{:02x}{:02x}{:02x}", r, g, b),
+            _ => String::new(),
+        }
+    }
 }
 
 #[cfg(test)]
