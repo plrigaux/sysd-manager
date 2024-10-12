@@ -1,7 +1,66 @@
-#![allow(dead_code)]
+//https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
+
+use std::{
+    fmt::Debug, num::ParseIntError, sync::LazyLock
+};
+
+use log::{info, warn};
+use regex::Regex;
+
+use super::more_colors;
+
+static RE: LazyLock<Regex> = LazyLock::new(|| {
+    //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
+    let re = match Regex::new(r"\x1B(?:[@-Z\\-_]|\[([0-?]*)[ -/]*([@-~]))") {
+        Ok(ok) => ok,
+        Err(e) => {
+            log::error!("Rexgex compile error : {:?}", e);
+            panic!()
+        }
+    };
+
+    re
+});
+
+pub fn convert_to_mackup(text: &str) -> String {
+    for (_, [select_graphic_rendition, control]) in RE.captures_iter(text).map(|c| c.extract()) {
+        if control != "m" {
+            continue;
+        }
+
+        match capture_code(select_graphic_rendition) {
+            Ok(_) => todo!(),
+            Err(e) => {
+                warn!("while parsing {select_graphic_rendition} got error {:?}", e)
+            }
+        };
+    }
+
+    let s = String::from(text);
+    s
+}
+
 
 enum ColorCodeError {
     Malformed,
+    ParseIntError(ParseIntError),
+    UnexpectedCode(String),
+}
+
+impl Debug for ColorCodeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Malformed => write!(f, "Malformed"),
+            Self::ParseIntError(parseint_error) => f.debug_tuple("ParseIntError").field(parseint_error).finish(),
+            Self::UnexpectedCode(unxecpected_code) => f.debug_tuple("UnexpectedCode").field(unxecpected_code).finish(),
+        }
+    }
+}
+
+impl From<ParseIntError> for ColorCodeError {
+    fn from(pe: ParseIntError) -> Self {
+        ColorCodeError::ParseIntError(pe)
+    }
 }
 
 fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
@@ -15,14 +74,15 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
             "2" => sgc.set_intensity(Intensity::Faint),
             "3" => sgc.set_italic(true),
             "4" => sgc.set_underline(true),
-            "5" => sgc.set_blink(Blink::Slow),
-            "6" => sgc.set_blink(Blink::Fast),
+            "5" => info!("blink slow"),
+            "6" => info!("blink fast"),
             "7" => sgc.set_reversed(true),
             "8" => sgc.set_hidden(true),
             "9" => sgc.set_strikeout(true),
             "10" => {}
             "11" => {}
             "20" => {}
+            "22" => sgc.set_intensity(Intensity::Normal),
             "28" => sgc.set_hidden(false),
             "21" => {}
             "30" => sgc.set_foreground_color(TermColor::Black),
@@ -34,17 +94,8 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
             "36" => sgc.set_foreground_color(TermColor::Cyan),
             "37" => sgc.set_foreground_color(TermColor::White),
             "38" => {
-                if let Some(sub_code) = it.next() {
-                    match sub_code {
-                        "5" => {}
-                        "2" => {}
-                        _ => {
-                            return Err(ColorCodeError::Malformed);
-                        }
-                    };
-                } else {
-                    return Err(ColorCodeError::Malformed);
-                }
+                let color = find_color(&mut it)?;
+                sgc.set_foreground_color(color)
             }
             "39" => sgc.set_foreground_color_default(),
 
@@ -56,7 +107,11 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
             "45" => sgc.set_background_color(TermColor::Magenta),
             "46" => sgc.set_background_color(TermColor::Cyan),
             "47" => sgc.set_background_color(TermColor::White),
-
+            "48" => {
+                let color = find_color(&mut it)?;
+                sgc.set_background_color(color)
+            }
+            "49" => sgc.set_background_color_default(),
             "90" => sgc.set_foreground_color(TermColor::BrightBlack),
             "91" => sgc.set_foreground_color(TermColor::BrightRed),
             "92" => sgc.set_foreground_color(TermColor::BrightGreen),
@@ -80,6 +135,41 @@ fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
     Ok(())
 }
 
+fn find_color(it: &mut std::str::Split<'_, char>) -> Result<TermColor, ColorCodeError> {
+    let Some(sub_code) = it.next() else {
+        return Err(ColorCodeError::Malformed);
+    };
+    let color = match sub_code {
+        "5" => {
+            if let Some(color_code) = it.next() {
+                let color_code_u8 = color_code.parse::<u8>()?;
+                more_colors::get_256color(color_code_u8)
+            } else {
+                return Err(ColorCodeError::Malformed);
+            }
+        }
+        "2" => {
+            let Some(r) = it.next() else {
+                return Err(ColorCodeError::Malformed);
+            };
+
+            let Some(g) = it.next() else {
+                return Err(ColorCodeError::Malformed);
+            };
+
+            let Some(b) = it.next() else {
+                return Err(ColorCodeError::Malformed);
+            };
+
+            TermColor::new_vga(r, g, b)?
+        }
+        unexpected_code => {
+            return Err(ColorCodeError::UnexpectedCode(unexpected_code.to_owned()));
+        }
+    };
+    Ok(color)
+}
+
 #[derive(Default)]
 struct SelectGraphicRendition {
     foreground_color: Option<TermColor>,
@@ -87,20 +177,13 @@ struct SelectGraphicRendition {
     intensity: Option<Intensity>,
     italic: Option<bool>,
     underline: Option<bool>,
-    blink: Option<Blink>,
+    //blink: Option<Blink>,
     reversed: Option<bool>,
     hidden: Option<bool>,
     strikeout: Option<bool>,
 }
 
 impl SelectGraphicRendition {
-    fn new() -> Self {
-        SelectGraphicRendition::default()
-    }
-
-    fn set_bold(&mut self) {
-        self.intensity = Some(Intensity::Bold)
-    }
 
     fn reset(&mut self) {
         self.foreground_color = None;
@@ -108,7 +191,6 @@ impl SelectGraphicRendition {
         self.intensity = None;
         self.italic = None;
         self.underline = None;
-        self.blink = None;
         self.reversed = None;
         self.hidden = None;
         self.strikeout = None;
@@ -120,10 +202,6 @@ impl SelectGraphicRendition {
 
     fn set_italic(&mut self, italic: bool) {
         self.italic = Some(italic);
-    }
-
-    fn set_blink(&mut self, blink: Blink) {
-        self.blink = Some(blink)
     }
 
     fn set_underline(&mut self, underline: bool) {
@@ -152,6 +230,10 @@ impl SelectGraphicRendition {
     fn set_background_color(&mut self, color: TermColor) {
         self.background_color = Some(color);
     }
+
+    fn set_background_color_default(&mut self) {
+        self.background_color = None;
+    }
 }
 
 /// The emphasis (bold, faint) states.
@@ -163,11 +245,6 @@ pub enum Intensity {
     Bold,
     /// Faint.
     Faint,
-}
-
-pub enum Blink {
-    Slow,
-    Fast,
 }
 
 /// The 8 standard colors.
@@ -200,7 +277,7 @@ impl TermColor {
         }
     }
 
-    pub fn get_vga(&self) -> TermColor {
+    pub fn get_vga(&self) -> Self {
         match self {
             TermColor::Black => Self::VGA(0, 0, 0),
             TermColor::Red => Self::VGA(0x80, 0, 0),
@@ -221,6 +298,14 @@ impl TermColor {
             TermColor::VGA(_, _, _) => *self,
         }
     }
+
+    fn new_vga(r: &str, g: &str, b: &str) -> Result<Self, ColorCodeError> {
+        let r: u8 = r.parse()?;
+        let g: u8 = g.parse()?;
+        let b: u8 = b.parse()?;
+
+        Ok(TermColor::VGA(r, g, b))
+    }
 }
 
 #[cfg(test)]
@@ -232,22 +317,11 @@ mod tests {
     extern crate colored;
     use super::*;
     use cansi::*;
-    use regex::Regex;
-
-    const CYAN: &str = "\u{1b}[96m";
-    const DARKCYAN: &str = "\u{1b}[36m";
-    const BLUE: &str = "\u{1b}[94m";
-    const GREEN: &str = "\u{1b}[92m";
-    const YELLOW: &str = "\u{1b}[93m";
-    const RED: &str = "\u{1b}[91m";
-    const BOLD: &str = "\u{1b}[1m";
-    const UNDERLINE: &str = "\u{1b}[4m";
-    const END: &str = "\u{1b}[0m";
 
     const TEST_STRS : [&str; 4] = [  "This is \u{1b}[4mvery\u{1b}[0m\u{1b}[1m\u{1b}[96m Important\u{1b}[0m",
     "asdf \u{1b}[38;2;255;140;0;48;2;255;228;225mExample 24 bit color escape sequence\u{1b}[0m",
     "0:13:37 fedora abrt-server[90694]: \u{1b}[0;1;38;5;185m\u{1b}[0;1;39m\u{1b}[0;1;38;5;185m'post-create' on '/var/spool/abrt/ccpp-2024-10-08-10:13:37.85581-16875' exited with 1\u{1b}[0m",
-    "\u{1b}[91mframed\u{1b}[7m test ok[0m"];
+    "nothing \u{1b}[91mframed\u{1b}[7m test ok\u{1b}[0m"];
 
     #[test]
     fn test_enable_unit_files_path() {
@@ -292,9 +366,6 @@ mod tests {
     fn test_color1() {
         for s in TEST_STRS {
             println!("{}", s);
-            let parsed: Vec<Output> = s.ansi_parse().collect();
-
-            println!("{:?}", parsed);
 
             let result = v3::categorise_text(s); // cansi function
 
@@ -304,24 +375,19 @@ mod tests {
 
     #[test]
     fn test_color_regex() {
-        //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
-        let re = match Regex::new(r"\x1B(?:[@-Z\\-_]|\[([0-?]*)[ -/]*([@-~]))") {
-            Ok(ok) => ok,
-            Err(e) => {
-                log::error!("Rexgex compile error : {:?}", e);
-                return;
-            }
-        };
-
         let mut results = vec![];
 
         let mut line: usize = 0;
         for haystack in TEST_STRS {
-            for capt in re.captures_iter(haystack) {
+            for capt in RE.captures_iter(haystack) {
                 results.push((line, capt));
             }
             line += 1;
         }
+
+        /*        for (text, [ select_graphic_rendition,control]) in RE.captures_iter(text).map(|c| c.extract()) {
+
+        } */
 
         for capt in results {
             println!("line {} capture: {:#?}", capt.0, capt.1)
