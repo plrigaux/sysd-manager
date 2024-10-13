@@ -1,8 +1,6 @@
 //https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
 
-use std::{
-    fmt::Debug, num::ParseIntError, sync::LazyLock
-};
+use std::{fmt::Debug, num::ParseIntError, sync::LazyLock};
 
 use log::{info, warn};
 use regex::Regex;
@@ -23,38 +21,67 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 pub fn convert_to_mackup(text: &str) -> String {
-    for (_, [select_graphic_rendition, control]) in RE.captures_iter(text).map(|c| c.extract()) {
-        if control != "m" {
-            continue;
-        }
+    let token_list = get_tokens(text);
 
-        match capture_code(select_graphic_rendition) {
-            Ok(_) => todo!(),
-            Err(e) => {
-                warn!("while parsing {select_graphic_rendition} got error {:?}", e)
-            }
-        };
-    }
-
-    let s = String::from(text);
+    let s = make_markup(text, &token_list);
     s
 }
 
+fn get_tokens(text: &str) -> Vec<Token> {
+    let mut token_list = Vec::<Token>::new();
+    let mut last_end: usize = 0;
 
+    for captures in RE.captures_iter(text) {
+        let main_match = captures.get(0).expect("not supose to happen");
+        let end = main_match.end();
+        let start = main_match.start();
+
+        if start != last_end {
+            token_list.push(Token::Text(last_end, start));
+        }
+        last_end = end;
+
+        let control = captures.get(2).map_or("", |m| m.as_str());
+        if control != "m" {
+            token_list.push(Token::UnHandled(main_match.as_str().to_owned()));
+            continue;
+        }
+
+        if let Some(select_graphic_rendition_match) = captures.get(1) {
+            let select_graphic_rendition = select_graphic_rendition_match.as_str();
+            match capture_code(select_graphic_rendition, &mut token_list) {
+                Ok(_) => {}
+                Err(e) => {
+                    warn!("while parsing {select_graphic_rendition} got error {:?}", e)
+                }
+            };
+        }
+    }
+
+    if text.len() != last_end {
+        token_list.push(Token::Text(last_end, text.len()));
+    }
+    token_list
+}
+
+fn make_markup(text: &str, token_list: &Vec<Token>) -> String {
+    let mut out = String::with_capacity((text.len() as f32 * 1.5) as usize);
+
+    for token in token_list {
+        match token {
+            Token::Text(begin, end) => out.push_str(&text[*begin..*end]),
+            _ => {}
+        }
+    }
+
+    out
+}
+
+#[derive(Debug)]
 enum ColorCodeError {
     Malformed,
     ParseIntError(ParseIntError),
     UnexpectedCode(String),
-}
-
-impl Debug for ColorCodeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Malformed => write!(f, "Malformed"),
-            Self::ParseIntError(parseint_error) => f.debug_tuple("ParseIntError").field(parseint_error).finish(),
-            Self::UnexpectedCode(unxecpected_code) => f.debug_tuple("UnexpectedCode").field(unxecpected_code).finish(),
-        }
-    }
 }
 
 impl From<ParseIntError> for ColorCodeError {
@@ -63,74 +90,72 @@ impl From<ParseIntError> for ColorCodeError {
     }
 }
 
-fn capture_code(code_line: &str) -> Result<(), ColorCodeError> {
+fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeError> {
     let mut it = code_line.split(';');
 
-    let mut sgc = SelectGraphicRendition::default();
     while let Some(code) = it.next() {
-        match code {
-            "0" => sgc.reset(),
-            "1" => sgc.set_intensity(Intensity::Bold),
-            "2" => sgc.set_intensity(Intensity::Faint),
-            "3" => sgc.set_italic(true),
-            "4" => sgc.set_underline(true),
-            "5" => info!("blink slow"),
-            "6" => info!("blink fast"),
-            "7" => sgc.set_reversed(true),
-            "8" => sgc.set_hidden(true),
-            "9" => sgc.set_strikeout(true),
-            "10" => {}
-            "11" => {}
-            "20" => {}
-            "22" => sgc.set_intensity(Intensity::Normal),
-            "28" => sgc.set_hidden(false),
-            "21" => {}
-            "30" => sgc.set_foreground_color(TermColor::Black),
-            "31" => sgc.set_foreground_color(TermColor::Red),
-            "32" => sgc.set_foreground_color(TermColor::Green),
-            "33" => sgc.set_foreground_color(TermColor::Yellow),
-            "34" => sgc.set_foreground_color(TermColor::Blue),
-            "35" => sgc.set_foreground_color(TermColor::Magenta),
-            "36" => sgc.set_foreground_color(TermColor::Cyan),
-            "37" => sgc.set_foreground_color(TermColor::White),
+        let token = match code {
+            "0" => Token::Reset(ResetType::All),
+            "1" => Token::Intensity(Intensity::Bold),
+            "2" => Token::Intensity(Intensity::Faint),
+            "3" => Token::Italic,
+            "4" => Token::Underline,
+            "5" => Token::Blink,
+            "6" => Token::Blink,
+            "7" => Token::Reversed,
+            "8" => Token::Hidden,
+            "9" => Token::Strikeout,
+            "22" => Token::Reset(ResetType::Intensity),
+            "28" => Token::Reset(ResetType::Hidden),
+            "21" => Token::DoubleUnderline,
+            "30" => Token::FgColor(TermColor::Black),
+            "31" => Token::FgColor(TermColor::Red),
+            "32" => Token::FgColor(TermColor::Green),
+            "33" => Token::FgColor(TermColor::Yellow),
+            "34" => Token::FgColor(TermColor::Blue),
+            "35" => Token::FgColor(TermColor::Magenta),
+            "36" => Token::FgColor(TermColor::Cyan),
+            "37" => Token::FgColor(TermColor::White),
             "38" => {
                 let color = find_color(&mut it)?;
-                sgc.set_foreground_color(color)
+                Token::FgColor(color)
             }
-            "39" => sgc.set_foreground_color_default(),
+            "39" => Token::Reset(ResetType::FgColor),
 
-            "40" => sgc.set_background_color(TermColor::Black),
-            "41" => sgc.set_background_color(TermColor::Red),
-            "42" => sgc.set_background_color(TermColor::Green),
-            "43" => sgc.set_background_color(TermColor::Yellow),
-            "44" => sgc.set_background_color(TermColor::Blue),
-            "45" => sgc.set_background_color(TermColor::Magenta),
-            "46" => sgc.set_background_color(TermColor::Cyan),
-            "47" => sgc.set_background_color(TermColor::White),
+            "40" => Token::BgColor(TermColor::Black),
+            "41" => Token::BgColor(TermColor::Red),
+            "42" => Token::BgColor(TermColor::Green),
+            "43" => Token::BgColor(TermColor::Yellow),
+            "44" => Token::BgColor(TermColor::Blue),
+            "45" => Token::BgColor(TermColor::Magenta),
+            "46" => Token::BgColor(TermColor::Cyan),
+            "47" => Token::BgColor(TermColor::White),
             "48" => {
                 let color = find_color(&mut it)?;
-                sgc.set_background_color(color)
+                Token::BgColor(color)
             }
-            "49" => sgc.set_background_color_default(),
-            "90" => sgc.set_foreground_color(TermColor::BrightBlack),
-            "91" => sgc.set_foreground_color(TermColor::BrightRed),
-            "92" => sgc.set_foreground_color(TermColor::BrightGreen),
-            "93" => sgc.set_foreground_color(TermColor::BrightYellow),
-            "94" => sgc.set_foreground_color(TermColor::BrightBlue),
-            "95" => sgc.set_foreground_color(TermColor::BrightMagenta),
-            "96" => sgc.set_foreground_color(TermColor::BrightCyan),
-            "97" => sgc.set_foreground_color(TermColor::BrightWhite),
+            "49" => Token::Reset(ResetType::BgColor),
+            "90" => Token::FgColor(TermColor::BrightBlack),
+            "91" => Token::FgColor(TermColor::BrightRed),
+            "92" => Token::FgColor(TermColor::BrightGreen),
+            "93" => Token::FgColor(TermColor::BrightYellow),
+            "94" => Token::FgColor(TermColor::BrightBlue),
+            "95" => Token::FgColor(TermColor::BrightMagenta),
+            "96" => Token::FgColor(TermColor::BrightCyan),
+            "97" => Token::FgColor(TermColor::BrightWhite),
 
-            "100" => sgc.set_background_color(TermColor::BrightBlack),
-            "101" => sgc.set_background_color(TermColor::BrightRed),
-            "102" => sgc.set_background_color(TermColor::BrightGreen),
-            "103" => sgc.set_background_color(TermColor::BrightYellow),
-            "104" => sgc.set_background_color(TermColor::BrightBlue),
-            "105" => sgc.set_background_color(TermColor::BrightMagenta),
-            "106" => sgc.set_background_color(TermColor::BrightCyan),
-            "107" => sgc.set_background_color(TermColor::BrightWhite),
-            _ => {}
+            "100" => Token::BgColor(TermColor::BrightBlack),
+            "101" => Token::BgColor(TermColor::BrightRed),
+            "102" => Token::BgColor(TermColor::BrightGreen),
+            "103" => Token::BgColor(TermColor::BrightYellow),
+            "104" => Token::BgColor(TermColor::BrightBlue),
+            "105" => Token::BgColor(TermColor::BrightMagenta),
+            "106" => Token::BgColor(TermColor::BrightCyan),
+            "107" => Token::BgColor(TermColor::BrightWhite),
+            unknown_code => Token::UnHandledCode(unknown_code.to_string()),
         };
+
+        vec.push(token)
     }
     Ok(())
 }
@@ -170,6 +195,33 @@ fn find_color(it: &mut std::str::Split<'_, char>) -> Result<TermColor, ColorCode
     Ok(color)
 }
 
+#[derive(Debug)]
+enum Token {
+    FgColor(TermColor),
+    BgColor(TermColor),
+    Intensity(Intensity),
+    Italic,
+    Underline,
+    Blink,
+    Reversed,
+    Hidden,
+    Strikeout,
+    Text(usize, usize),
+    Reset(ResetType),
+    DoubleUnderline,
+    UnHandledCode(String),
+    UnHandled(String),
+}
+
+#[derive(Debug)]
+enum ResetType {
+    All,
+    FgColor,
+    BgColor,
+    Intensity,
+    Hidden,
+}
+
 #[derive(Default)]
 struct SelectGraphicRendition {
     foreground_color: Option<TermColor>,
@@ -184,7 +236,6 @@ struct SelectGraphicRendition {
 }
 
 impl SelectGraphicRendition {
-
     fn reset(&mut self) {
         self.foreground_color = None;
         self.background_color = None;
@@ -239,8 +290,6 @@ impl SelectGraphicRendition {
 /// The emphasis (bold, faint) states.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Intensity {
-    /// Normal intensity (no emphasis).
-    Normal,
     /// Bold.
     Bold,
     /// Faint.
@@ -374,6 +423,38 @@ mod tests {
     }
 
     #[test]
+    fn test_tokens() {
+        for s in TEST_STRS {
+            println!("{}", s);
+
+            let result = get_tokens(s);
+
+            println!("{:?}", result);
+        }
+    }
+
+    #[test]
+    fn test_full() {
+        for s in TEST_STRS {
+            println!("{}", s);
+
+            let result = convert_to_mackup(s);
+
+            println!("{}", result);
+        }
+    }
+
+    #[test]
+    fn test_reverse() {
+        let s = "reverse test \u{1b}[7m reverse test \u{1b}[0;m test test \u{1b}[97mwhite\u{1b}[0m";
+        println!("{}", s);
+
+        let result = convert_to_mackup(s);
+
+        println!("{}", result);
+    }
+
+    #[test]
     fn test_color_regex() {
         let mut results = vec![];
 
@@ -385,10 +466,6 @@ mod tests {
             line += 1;
         }
 
-        /*        for (text, [ select_graphic_rendition,control]) in RE.captures_iter(text).map(|c| c.extract()) {
-
-        } */
-
         for capt in results {
             println!("line {} capture: {:#?}", capt.0, capt.1)
         }
@@ -396,8 +473,9 @@ mod tests {
 
     #[test]
     fn test_capture_code() {
-        let _res = capture_code("0;1;38;5;185");
+        let mut vec = Vec::<Token>::new();
+        let _res = capture_code("0;1;38;5;185", &mut vec);
 
-        // println!("{:?}", res)
+        println!("{:?}", vec)
     }
 }
