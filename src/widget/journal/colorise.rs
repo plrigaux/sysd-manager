@@ -3,7 +3,7 @@
 use std::{fmt::Debug, num::ParseIntError, sync::LazyLock};
 
 use gtk::gdk;
-use log::{info, warn};
+use log::{debug, info, warn};
 use regex::Regex;
 
 use super::more_colors;
@@ -24,8 +24,7 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
 pub fn convert_to_mackup(text: &str, text_color: &gdk::RGBA) -> String {
     let token_list = get_tokens(text);
 
-    let s = make_markup(text, &token_list);
-    s
+    make_markup(text, &token_list, text_color.into())
 }
 
 fn get_tokens(text: &str) -> Vec<Token> {
@@ -65,19 +64,46 @@ fn get_tokens(text: &str) -> Vec<Token> {
     token_list
 }
 
-fn make_markup(text: &str, token_list: &Vec<Token>) -> String {
+fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> String {
     let mut out = String::with_capacity((text.len() as f32 * 1.5) as usize);
 
+    let mut sgr = SelectGraphicRendition::default();
+    let mut first = true;
     for token in token_list {
         match token {
-            Token::Text(begin, end) => out.push_str(&text[*begin..*end]),
-            _ => {}
+            Token::Text(begin, end) => {
+                first = !sgr.append_tags(&mut out, first);
+                out.push_str(&text[*begin..*end])
+            }
+            Token::Intensity(intensity) => sgr.set_intensity(Some(*intensity)),
+            Token::FgColor(term_color) => sgr.set_foreground_color(Some(*term_color)),
+            Token::BgColor(term_color) => sgr.set_background_color(Some(*term_color)),
+            Token::Italic => sgr.set_italic(true),
+            Token::Underline(underline) => sgr.set_underline(*underline),
+            Token::Blink => sgr.set_blink(true),
+            Token::Reversed => sgr.set_reversed(true),
+            Token::Hidden => sgr.set_hidden(true),
+            Token::Strikeout => sgr.set_strikeout(true),
+            Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
+            Token::UnHandled(a) => debug!("UnHandled {a}"),
+            Token::Reset(reset_type) => match reset_type {
+                ResetType::All => sgr.reset(),
+                ResetType::FgColor => sgr.set_foreground_color(None),
+                ResetType::BgColor => sgr.set_background_color(None),
+                ResetType::Intensity => sgr.set_intensity(None),
+                ResetType::Hidden => sgr.set_hidden(false),
+            },
         }
+    }
+
+    if !first {
+        out.push_str("</span>")
     }
 
     out
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 enum ColorCodeError {
     Malformed,
@@ -100,7 +126,7 @@ fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeEr
             "1" => Token::Intensity(Intensity::Bold),
             "2" => Token::Intensity(Intensity::Faint),
             "3" => Token::Italic,
-            "4" => Token::Underline,
+            "4" => Token::Underline(Underline::Single),
             "5" => Token::Blink,
             "6" => Token::Blink,
             "7" => Token::Reversed,
@@ -108,7 +134,7 @@ fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeEr
             "9" => Token::Strikeout,
             "22" => Token::Reset(ResetType::Intensity),
             "28" => Token::Reset(ResetType::Hidden),
-            "21" => Token::DoubleUnderline,
+            "21" => Token::Underline(Underline::Double),
             "30" => Token::FgColor(TermColor::Black),
             "31" => Token::FgColor(TermColor::Red),
             "32" => Token::FgColor(TermColor::Green),
@@ -202,14 +228,13 @@ enum Token {
     BgColor(TermColor),
     Intensity(Intensity),
     Italic,
-    Underline,
+    Underline(Underline),
     Blink,
     Reversed,
     Hidden,
     Strikeout,
     Text(usize, usize),
     Reset(ResetType),
-    DoubleUnderline,
     UnHandledCode(String),
     UnHandled(String),
 }
@@ -223,17 +248,26 @@ enum ResetType {
     Hidden,
 }
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Eq)]
 struct SelectGraphicRendition {
     foreground_color: Option<TermColor>,
     background_color: Option<TermColor>,
     intensity: Option<Intensity>,
     italic: Option<bool>,
-    underline: Option<bool>,
-    //blink: Option<Blink>,
+    underline: Option<Underline>,
+    blink: Option<bool>,
     reversed: Option<bool>,
     hidden: Option<bool>,
     strikeout: Option<bool>,
+}
+
+macro_rules! span {
+    (  $first:expr, $out:expr  ) => {{
+        if !$first {
+            $out.push_str("<span");
+            $first = true
+        }
+    }};
 }
 
 impl SelectGraphicRendition {
@@ -246,17 +280,18 @@ impl SelectGraphicRendition {
         self.reversed = None;
         self.hidden = None;
         self.strikeout = None;
+        self.blink = None;
     }
 
-    fn set_intensity(&mut self, intensity: Intensity) {
-        self.intensity = Some(intensity);
+    fn set_intensity(&mut self, intensity: Option<Intensity>) {
+        self.intensity = intensity;
     }
 
     fn set_italic(&mut self, italic: bool) {
         self.italic = Some(italic);
     }
 
-    fn set_underline(&mut self, underline: bool) {
+    fn set_underline(&mut self, underline: Underline) {
         self.underline = Some(underline);
     }
 
@@ -271,30 +306,105 @@ impl SelectGraphicRendition {
         self.hidden = Some(hidden);
     }
 
-    fn set_foreground_color(&mut self, color: TermColor) {
-        self.foreground_color = Some(color);
+    fn set_foreground_color(&mut self, color: Option<TermColor>) {
+        self.foreground_color = color;
     }
 
-    fn set_foreground_color_default(&mut self) {
-        self.foreground_color = None;
+    fn set_background_color(&mut self, color: Option<TermColor>) {
+        self.background_color = color;
     }
 
-    fn set_background_color(&mut self, color: TermColor) {
-        self.background_color = Some(color);
+    fn set_blink(&mut self, blink: bool) {
+        self.blink = Some(blink);
     }
 
-    fn set_background_color_default(&mut self) {
-        self.background_color = None;
+    fn append_tags(&self, out: &mut String, first: bool) -> bool {
+        if !first {
+            out.push_str("</span>")
+        }
+
+        let mut write_something = false;
+
+        if let Some(underline) = self.underline {
+            span!(write_something, out);
+
+            out.push_str(" underline=\"");
+            out.push_str(underline.pango());
+            out.push('\"');
+        }
+
+        if let Some(_strikeout) = self.strikeout {
+            span!(write_something, out);
+
+            out.push_str(" strikethrough=\"true\"");
+        }
+
+        if let Some(_italic) = self.italic {
+            span!(write_something, out);
+
+            out.push_str(" style=\"italic\"");
+        }
+
+        if let Some(intensity) = self.intensity {
+            span!(write_something, out);
+
+            out.push_str(" weight=\"");
+            out.push_str(intensity.pango());
+            out.push('\"');
+        }
+
+        if let Some(color) = self.foreground_color {
+            span!(write_something, out);
+
+            out.push_str(" color=\"");
+            out.push_str(&color.get_hexa_code());
+            out.push('\"');
+        }
+
+        if let Some(color) = self.background_color {
+            span!(write_something, out);
+
+            out.push_str(" background=\"");
+            out.push_str(&color.get_hexa_code());
+            out.push('\"');
+        }
+
+        if write_something {
+            out.push('>');
+        }
+
+        write_something
     }
 }
 
 /// The emphasis (bold, faint) states.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Intensity {
-    /// Bold.
     Bold,
-    /// Faint.
     Faint,
+}
+impl Intensity {
+    fn pango(&self) -> &str {
+        match self {
+            Intensity::Bold => "bold",
+            Intensity::Faint => "light",
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Underline {
+    Single,
+
+    Double,
+}
+impl Underline {
+    fn pango(&self) -> &str {
+        match self {
+            Underline::Single => "single",
+            Underline::Double => "double",
+        }
+    }
 }
 
 /// The 8 standard colors.
@@ -360,6 +470,12 @@ impl TermColor {
 
 impl From<gdk::RGBA> for TermColor {
     fn from(color: gdk::RGBA) -> Self {
+        TermColor::from(&color)
+    }
+}
+
+impl From<&gdk::RGBA> for TermColor {
+    fn from(color: &gdk::RGBA) -> Self {
         let r: u8 = (color.red() * 256.0) as u8;
         let g: u8 = (color.green() * 256.0) as u8;
         let b: u8 = (color.blue() * 256.0) as u8;
@@ -374,6 +490,8 @@ mod tests {
 
     extern crate cansi;
     extern crate colored;
+    use crate::widget::journal::colorise::Intensity;
+
     use super::*;
     use cansi::*;
 
@@ -506,5 +624,43 @@ mod tests {
         let color: TermColor = color_gtk.into();
         println!("{:?} {:?}", color, color_gtk);
         assert_eq!(color, color_term.get_vga(),);
+    }
+
+    #[test]
+    fn test_make_markup() {
+        let text = "this text is in italic not in bold.";
+        let vaec = vec![
+            Token::Text(0, 16),
+            Token::Italic,
+            Token::Text(16, 22),
+            Token::Reset(ResetType::All),
+            Token::Text(22, 30),
+            Token::Intensity(Intensity::Bold),
+            Token::Text(30, text.len()),
+        ];
+
+        let out = make_markup(text, &vaec, TermColor::Black);
+
+        println!("out: {out}");
+    }
+
+    #[test]
+    fn test_make_markup2() {
+        let text = "this text is in italic not in bold.";
+        let vaec = vec![
+            Token::Text(0, 16),
+            Token::Italic,
+            Token::Intensity(Intensity::Bold),
+            Token::Italic,
+            Token::Text(16, 22),
+            Token::Reset(ResetType::All),
+            Token::Text(22, 30),
+            Token::Intensity(Intensity::Bold),
+            Token::Text(30, text.len()),
+        ];
+
+        let out = make_markup(text, &vaec, TermColor::Black);
+
+        println!("out: {out}");
     }
 }
