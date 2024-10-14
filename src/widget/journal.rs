@@ -20,24 +20,10 @@ pub fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
     let buf = journal.buffer();
     buf.set_text("");
 
-    let color = journal.color();
-    println!("color {:?}", color);
-
-    let css = journal.css_classes();
-    println!("css_classes {:?}", css);
-
-    let css_name = journal.css_name();
-    println!("{:?}", css_name);
-
-
-
-    let sm = adw::StyleManager::default();
-    println!("color_scheme {:?}", sm.color_scheme());
-    println!("is_dark {:?}", sm.is_dark());
-
     if in_color {
+
         let mut start_iter = buf.start_iter();
-        let text = colorise::convert_to_mackup(&text);
+        let text = colorise::convert_to_mackup(&text, &journal.color());
         buf.insert_markup(&mut start_iter, &text);
     } else {
         buf.set_text(&text);

@@ -2,6 +2,7 @@
 
 use std::{fmt::Debug, num::ParseIntError, sync::LazyLock};
 
+use gtk::gdk;
 use log::{info, warn};
 use regex::Regex;
 
@@ -20,7 +21,7 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     re
 });
 
-pub fn convert_to_mackup(text: &str) -> String {
+pub fn convert_to_mackup(text: &str, text_color: &gdk::RGBA) -> String {
     let token_list = get_tokens(text);
 
     let s = make_markup(text, &token_list);
@@ -357,6 +358,15 @@ impl TermColor {
     }
 }
 
+impl From<gdk::RGBA> for TermColor {
+    fn from(color: gdk::RGBA) -> Self {
+        let r: u8 = (color.red() * 256.0) as u8;
+        let g: u8 = (color.green() * 256.0) as u8;
+        let b: u8 = (color.blue() * 256.0) as u8;
+        TermColor::VGA(r, g, b)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use ansi_parser::AnsiSequence;
@@ -438,7 +448,7 @@ mod tests {
         for s in TEST_STRS {
             println!("{}", s);
 
-            let result = convert_to_mackup(s);
+            let result = convert_to_mackup(s, &gdk::RGBA::WHITE);
 
             println!("{}", result);
         }
@@ -449,7 +459,7 @@ mod tests {
         let s = "reverse test \u{1b}[7m reverse test \u{1b}[0;m test test \u{1b}[97mwhite\u{1b}[0m";
         println!("{}", s);
 
-        let result = convert_to_mackup(s);
+        let result = convert_to_mackup(s, &gdk::RGBA::WHITE);
 
         println!("{}", result);
     }
@@ -477,5 +487,24 @@ mod tests {
         let _res = capture_code("0;1;38;5;185", &mut vec);
 
         println!("{:?}", vec)
+    }
+
+    #[test]
+    fn test_convert_color() {
+        for (a, b) in [
+            (gdk::RGBA::WHITE, TermColor::BrightWhite),
+            (gdk::RGBA::RED, TermColor::BrightRed),
+            (gdk::RGBA::GREEN, TermColor::BrightGreen),
+            (gdk::RGBA::BLUE, TermColor::BrightBlue),
+            (gdk::RGBA::BLACK, TermColor::Black),
+        ] {
+            assert_convert_color(a, b);
+        }
+    }
+
+    fn assert_convert_color(color_gtk: gdk::RGBA, color_term: TermColor) {
+        let color: TermColor = color_gtk.into();
+        println!("{:?} {:?}", color, color_gtk);
+        assert_eq!(color, color_term.get_vga(),);
     }
 }
