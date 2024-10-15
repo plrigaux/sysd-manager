@@ -14,13 +14,18 @@
             <default>false</default>
             <summary>Default window maximized behaviour</summary>
         </key>
-        <key name="dbus-level" type="s">
+        <key name="pref-dbus-level" type="s">
             <choices>
                 <choice value='Session' />
                 <choice value='System' />
             </choices>
             <default>'Session'</default>
             <summary>The dbus level</summary>
+        </key>
+
+        <key name="pref-journal-colors" type="b">
+            <default>true</default>
+            <summary>To see the journal logs with colors</summary>
         </key>
     </schema>
 </schemalist>

@@ -664,4 +664,13 @@ mod tests {
 
         println!("out: {out}");
     }
-}
+
+/*     fn link_test(){
+
+      let asdf =  "t 13 20:19:03 fedora abrt-notification[106883]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 2048 (wireplumber) crashed in g_data_set_internal()[0m
+Oct 13 20:19:02 fedora abrt-notification[106794]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 857 (bluetoothd) crashed in uhid_read_handler()[0m
+";
+
+ // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
+    }*/
+} 

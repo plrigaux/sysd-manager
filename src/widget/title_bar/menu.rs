@@ -100,11 +100,11 @@ pub fn on_startup(app: &adw::Application) {
         .activate(
             |application: &adw::Application, _, _| match preferences::build_preferences() {
                 Ok(preferences_window) => {
-                    if let Some(first_window) = application.windows().first() {
-                        preferences_window.set_transient_for(Some(first_window));
+                    if let Some(win) = application.active_window() {
+                        preferences_window.present(Some(&win));
+                    } else {
+                        preferences_window.present(None::<&gtk::Widget>);
                     }
-
-                    preferences_window.present();
                 }
                 Err(e) => {
                     error! {"{:?}",e}

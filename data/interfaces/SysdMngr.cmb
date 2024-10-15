@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
-<cambalache-project version="0.17.3" target_tk="gtk-4.0">
+<cambalache-project version="0.92.0" target_tk="gtk-4.0">
   <ui>
 	(1,None,"sysdmngr.ui","sysdmngr.ui",None,None,None,None,None,None,None),
 	(5,None,"title_bar.ui","title_bar.ui",None,None,None,None,None,None,None),
 	(7,1,"button_icon.ui","button_icon.ui","A button with an icon and a label.",None,None,None,None,None,None),
-	(9,None,None,"preferences.ui",None,None,None,None,None,None,None),
 	(16,1,"service_status.ui","service_status.ui",None,None,None,None,None,None,None),
-	(17,1,"unit_info.ui","unit_info.ui",None,None,None,None,None,None,None)
+	(17,1,"unit_info.ui","unit_info.ui",None,None,None,None,None,None,None),
+	(19,None,"preferences.ui","preferences.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.12",None),
@@ -15,43 +15,39 @@
 	(5,"gtk","4.12",None),
 	(7,"gtk","4.12",None),
 	(16,"gtk","4.12",None),
-	(17,"gtk","4.6",None)
+	(17,"gtk","4.6",None),
+	(19,"gtk","4.0",None),
+	(19,"libadwaita","1.6",None)
   </ui_library>
   <object>
-	(1,1,"GtkApplicationWindow",None,None,None,None,None,-1,None,None),
-	(1,2,"GtkPaned",None,1,None,None,None,-1,None,None),
-	(1,3,"GtkBox",None,2,None,None,None,-1,None,None),
-	(1,4,"GtkBox",None,2,None,None,None,None,None,None),
-	(1,5,"GtkSearchBar",None,4,None,None,None,-1,None,None),
-	(1,6,"GtkScrollbar","unit_col_view_scrolled_window",4,None,None,None,-1,None,None),
-	(1,7,"GtkColumnView","unit_browser",6,None,None,None,-1,None,None),
-	(1,8,"GtkHeaderBar",None,1,None,None,None,-1,None,None),
-	(4,1,"GtkHeaderBar",None,None,None,None,None,None,None,None),
-	(4,2,"GtkToggleButton","search_button",1,None,None,None,None,None,None),
-	(4,3,"GtkLabel","right_bar_label",1,None,None,None,1,None,None),
-	(4,4,"GtkButton",None,1,None,None,None,-1,"   "," &lt;packing&gt;\n        &lt;property name=\"position\"&gt;2&lt;/property&gt;\n      &lt;/packing&gt;"),
-	(5,1,"GtkHeaderBar",None,None,None,None,None,None,None,None),
-	(5,2,"GtkToggleButton","search_button",1,None,None,None,None,None,None),
-	(5,3,"GtkLabel","right_bar_label",1,None,None,None,1,None,None),
-	(5,6,"GtkMenuButton",None,1,None,None,None,-1,None,"&lt;packing&gt;&lt;property name=\"position\"&gt;2&lt;/property&gt;&lt;/packing&gt;"),
-	(5,7,"GtkPopoverMenu",None,6,None,None,None,-1,None,None),
-	(5,8,"(menu)",None,7,None,None,None,-1,None,None),
-	(5,9,"(item)",None,8,None,None,None,-1,None,None),
-	(5,10,"(item)",None,8,None,None,None,-1,None,None),
-	(5,12,"(item)",None,8,None,None,None,-1,None,None),
-	(5,13,"GtkLabel",None,1,None,None,None,-1,None,None),
-	(7,1,"GtkButton","ButtonIcon",None,None,None,None,None,None,None),
-	(7,2,"GtkBox",None,1,None,None,None,None,None,None),
-	(7,3,"GtkImage","button_icon",2,None,None,None,None,None,None),
+	(1,1,"GtkApplicationWindow",None,None,None,None,None,0,None,None),
+	(1,2,"GtkPaned",None,1,None,None,None,0,None,None),
+	(1,3,"GtkBox",None,2,None,None,None,1,None,None),
+	(1,4,"GtkBox",None,2,None,None,None,0,None,None),
+	(1,5,"GtkSearchBar",None,4,None,None,None,0,None,None),
+	(1,6,"GtkScrollbar","unit_col_view_scrolled_window",4,None,None,None,1,None,None),
+	(1,7,"GtkColumnView","unit_browser",6,None,None,None,0,None,None),
+	(1,8,"GtkHeaderBar",None,1,None,None,None,1,None,None),
+	(4,1,"GtkHeaderBar",None,None,None,None,None,0,None,None),
+	(4,2,"GtkToggleButton","search_button",1,None,None,None,0,None,None),
+	(4,3,"GtkLabel","right_bar_label",1,None,None,None,2,None,None),
+	(4,4,"GtkButton",None,1,None,None,None,1,"   "," &lt;packing&gt;\n        &lt;property name=\"position\"&gt;2&lt;/property&gt;\n      &lt;/packing&gt;"),
+	(5,1,"GtkHeaderBar",None,None,None,None,None,0,None,None),
+	(5,2,"GtkToggleButton","search_button",1,None,None,None,0,None,None),
+	(5,3,"GtkLabel","right_bar_label",1,None,None,None,3,None,None),
+	(5,6,"GtkMenuButton",None,1,None,None,None,1,None,"&lt;packing&gt;&lt;property name=\"position\"&gt;2&lt;/property&gt;&lt;/packing&gt;"),
+	(5,7,"GtkPopoverMenu",None,6,None,None,None,0,None,None),
+	(5,8,"(menu)",None,7,None,None,None,0,None,None),
+	(5,9,"(item)",None,8,None,None,None,0,None,None),
+	(5,10,"(item)",None,8,None,None,None,1,None,None),
+	(5,12,"(item)",None,8,None,None,None,2,None,None),
+	(5,13,"GtkLabel",None,1,None,None,None,2,None,None),
+	(7,1,"GtkButton","ButtonIcon",None,None,None,None,0,None,None),
+	(7,2,"GtkBox",None,1,None,None,None,0,None,None),
+	(7,3,"GtkImage","button_icon",2,None,None,None,0,None,None),
 	(7,4,"GtkLabel","button_label",2,None,None,None,1,None,None),
-	(9,1,"GtkWindow","preferences",None,None,None,None,-1,None,None),
-	(9,2,"GtkBox",None,1,None,None,None,-1,None,None),
-	(9,3,"GtkCenterBox",None,2,None,None,None,-1,None,None),
-	(9,6,"GtkLabel",None,3,None,None,None,-1,None,None),
-	(9,7,"GtkDropDown","dbus_level_dropdown",3,None,None,None,-1,None,None),
-	(9,8,"GtkStringList",None,7,None,None,None,-1,None,None),
-	(16,1,"GtkGrid","ServiceStatus",None,None,None,None,None,None,None),
-	(16,2,"GtkLabel","name_description",1,None,None,None,None,None,None),
+	(16,1,"GtkGrid","ServiceStatus",None,None,None,None,0,None,None),
+	(16,2,"GtkLabel","name_description",1,None,None,None,0,None,None),
 	(16,3,"GtkLabel",None,1,None,None,None,1,None,None),
 	(16,4,"GtkLabel","info_loaded",1,None,None,None,2,None,None),
 	(16,5,"GtkLabel",None,1,None,None,None,3,None,None),
@@ -70,12 +66,20 @@
 	(16,18,"GtkLabel","info_cgroup",1,None,None,None,16,None,None),
 	(16,19,"GtkButton",None,1,None,None,None,17,None,None),
 	(16,20,"GtkButton",None,1,None,None,None,18,None,None),
-	(17,1,"GtkWindow","InfoWindow",None,None,None,None,None,None,None),
-	(17,2,"GtkHeaderBar","headerbar",1,None,"titlebar",None,None,None,None),
+	(17,1,"GtkWindow","InfoWindow",None,None,None,None,0,None,None),
+	(17,2,"GtkHeaderBar","headerbar",1,None,"titlebar",None,0,None,None),
 	(17,3,"GtkScrolledWindow",None,1,None,None,None,1,None,None),
-	(17,4,"GtkListBox","unit_properties",3,None,None,None,None,None,None),
-	(17,5,"GtkButton",None,2,None,None,None,-1,None,None),
-	(17,6,"GtkImage",None,5,None,None,None,-1,None,None)
+	(17,4,"GtkListBox","unit_properties",3,None,None,None,0,None,None),
+	(17,5,"GtkButton",None,2,None,None,None,0,None,None),
+	(17,6,"GtkImage",None,5,None,None,None,0,None,None),
+	(19,1,"AdwPreferencesDialog","preferences",None,None,None,None,0,None,None),
+	(19,2,"AdwPreferencesPage",None,1,None,None,None,0,None,None),
+	(19,3,"AdwPreferencesGroup",None,2,None,None,None,0,None,None),
+	(19,7,"AdwActionRow",None,3,None,None,None,1,None,None),
+	(19,10,"GtkSwitch","journal_colors",7,None,None,None,0,None,None),
+	(19,11,"AdwActionRow",None,3,None,None,None,0,None,None),
+	(19,12,"GtkDropDown","dbus_level_dropdown",11,None,None,None,0,None,None),
+	(19,13,"GtkStringList",None,12,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -111,21 +115,6 @@
 	(7,1,"GtkWidget","focusable","True",None,None,None,None,None,None,None,None,None),
 	(7,1,"GtkWidget","receives-default","True",None,None,None,None,None,None,None,None,None),
 	(7,2,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
-	(9,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
-	(9,1,"GtkWindow","default-height","500",None,None,None,None,None,None,None,None,None),
-	(9,1,"GtkWindow","default-width","400",None,None,None,None,None,None,None,None,None),
-	(9,1,"GtkWindow","modal","True",None,None,None,None,None,None,None,None,None),
-	(9,1,"GtkWindow","title","Preferences",None,None,None,None,None,None,None,None,None),
-	(9,2,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
-	(9,2,"GtkWidget","margin-bottom","15",None,None,None,None,None,None,None,None,None),
-	(9,2,"GtkWidget","margin-end","20",None,None,None,None,None,None,None,None,None),
-	(9,2,"GtkWidget","margin-start","20",None,None,None,None,None,None,None,None,None),
-	(9,2,"GtkWidget","margin-top","15",None,None,None,None,None,None,None,None,None),
-	(9,3,"GtkCenterBox","end-widget",None,None,None,None,None,7,None,None,None,None),
-	(9,3,"GtkCenterBox","shrink-center-last","False",None,None,None,None,None,None,None,None,None),
-	(9,3,"GtkCenterBox","start-widget",None,None,None,None,None,6,None,None,None,None),
-	(9,6,"GtkLabel","label","DBus level",None,None,None,None,None,None,None,None,None),
-	(9,7,"GtkDropDown","model",None,None,None,None,None,8,None,None,None,None),
 	(16,1,"GtkGrid","baseline-row","5",None,None,None,None,None,None,None,None,None),
 	(16,1,"GtkGrid","column-homogeneous","True",None,None,None,None,None,None,None,None,None),
 	(16,1,"GtkGrid","column-spacing","5",None,None,None,None,None,None,None,None,None),
@@ -157,7 +146,14 @@
 	(17,1,"GtkWindow","title","Unit Info",None,None,None,None,None,None,None,None,None),
 	(17,5,"GtkButton","child",None,None,None,None,None,6,None,None,None,None),
 	(17,5,"GtkWidget","tooltip-text","Copy data",None,None,None,None,None,None,None,None,None),
-	(17,6,"GtkImage","icon-name","edit-copy",None,None,None,None,None,None,None,None,None)
+	(17,6,"GtkImage","icon-name","edit-copy",None,None,None,None,None,None,None,None,None),
+	(19,3,"AdwPreferencesGroup","title","Configuration properties",0,None,None,None,None,None,None,None,None),
+	(19,7,"AdwActionRow","subtitle","To see the logs in color",None,None,None,None,None,None,None,None,None),
+	(19,7,"AdwPreferencesRow","title","Journal colors",None,None,None,None,None,None,None,None,None),
+	(19,10,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
+	(19,11,"AdwPreferencesRow","title","Dbus level",None,None,None,None,None,None,None,None,None),
+	(19,12,"GtkDropDown","model",None,0,None,None,None,13,None,None,None,None),
+	(19,12,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(16,1,2,"GtkGridLayoutChild","column","0",None,None,None,None),
@@ -208,9 +204,9 @@
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),
 	(5,13,"GtkWidget",2,2,None,1,None,None,None,None),
-	(9,8,"GtkStringList",1,1,None,None,None,None,None,None),
-	(9,8,"GtkStringList",2,2,"Session",1,None,None,None,None),
-	(9,8,"GtkStringList",2,3,"System",1,None,None,None,None)
+	(19,13,"GtkStringList",1,1,None,None,None,None,None,None),
+	(19,13,"GtkStringList",2,2,"Session",1,None,0,None,None),
+	(19,13,"GtkStringList",2,3,"System",1,None,0,None,None)
   </object_data>
   <object_data_arg>
 	(5,13,"GtkWidget",2,2,"name","title")

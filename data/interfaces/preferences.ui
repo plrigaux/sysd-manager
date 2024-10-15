@@ -1,42 +1,47 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.90.4 -->
+<!-- Created with Cambalache 0.92.1 -->
 <interface>
-  <requires lib="gtk" version="4.12"/>
-  <object class="GtkWindow" id="preferences">
-    <property name="child">
-      <object class="GtkBox">
-        <property name="margin-bottom">15</property>
-        <property name="margin-end">20</property>
-        <property name="margin-start">20</property>
-        <property name="margin-top">15</property>
-        <property name="orientation">vertical</property>
+  <!-- interface-name preferences.ui -->
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <object class="AdwPreferencesDialog" id="preferences">
+    <child>
+      <object class="AdwPreferencesPage">
         <child>
-          <object class="GtkCenterBox">
-            <property name="end-widget">
-              <object class="GtkDropDown" id="dbus_level_dropdown">
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item>Session</item>
-                      <item>System</item>
-                    </items>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Configuration properties</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Dbus level</property>
+                <child>
+                  <object class="GtkDropDown" id="dbus_level_dropdown">
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item>Session</item>
+                          <item>System</item>
+                        </items>
+                      </object>
+                    </property>
+                    <property name="valign">center</property>
                   </object>
-                </property>
+                </child>
               </object>
-            </property>
-            <property name="shrink-center-last">False</property>
-            <property name="start-widget">
-              <object class="GtkLabel">
-                <property name="label">DBus level</property>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="subtitle">To see the logs in color</property>
+                <property name="title">Journal colors</property>
+                <child>
+                  <object class="GtkSwitch" id="journal_colors">
+                    <property name="valign">baseline-center</property>
+                  </object>
+                </child>
               </object>
-            </property>
+            </child>
           </object>
         </child>
       </object>
-    </property>
-    <property name="default-height">500</property>
-    <property name="default-width">400</property>
-    <property name="modal">True</property>
-    <property name="title">Preferences</property>
+    </child>
   </object>
 </interface>

@@ -483,7 +483,7 @@ fn build_ui(application: &adw::Application) {
 
     let ablement_switch = gtk::Switch::builder()
         .focusable(true)
-        .vexpand(false)
+        .valign(gtk::Align::BaselineCenter)
         .build();
 
     {

@@ -1,6 +1,6 @@
 use gtk::{
     gio::{self, Settings},
-    glib,
+    glib::{self, GString},
     prelude::*,
 };
 use log::{info, warn};
@@ -16,13 +16,14 @@ pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     pref
 });
 
-const KEY_DBUS_LEVEL: &str = "dbus-level";
+const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
+const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 
-pub fn build_preferences() -> Result<gtk::Window, SysDManagerErrors> {
+pub fn build_preferences() -> Result<adw::PreferencesDialog, SysDManagerErrors> {
     let builder = gtk::Builder::from_resource("/io/github/plrigaux/sysd-manager/preferences.ui");
 
     let id_name = "preferences";
-    let Some(window) = builder.object::<gtk::Window>(id_name) else {
+    let Some(window) = builder.object::<adw::PreferencesDialog>(id_name) else {
         return Err(SysDManagerErrors::GTKBuilderObjectNotfound(
             id_name.to_owned(),
         ));
@@ -34,9 +35,9 @@ pub fn build_preferences() -> Result<gtk::Window, SysDManagerErrors> {
             id_name.to_owned(),
         ));
     };
-
+    let settings = get_settings();
     {
-        let settings = get_settings();
+        let settings = settings.clone();
         dbus_level_dropdown.connect_selected_notify(move |toggle_button| {
             let idx = toggle_button.selected();
             info!("Values Selected {:?}", idx);
@@ -55,9 +56,32 @@ pub fn build_preferences() -> Result<gtk::Window, SysDManagerErrors> {
         });
     }
 
+ 
+
+    let id_name = "journal_colors";
+    let Some(journal_colors_switch) = builder.object::<gtk::Switch>(id_name) else {
+        return Err(SysDManagerErrors::GTKBuilderObjectNotfound(
+            id_name.to_owned(),
+        ));
+    };
+    {
+        let settings = settings.clone();
+        journal_colors_switch.connect_state_notify(move |toggle_switch| {
+            let state = toggle_switch.state();
+            info!("Switch state {:?}", state);
+            let _ = set_journal_colors(&settings, state);
+        });
+    }
+
+
     let level = PREFERENCES.dbus_level();
+    let journal_colors = PREFERENCES.journal_colors();
 
     dbus_level_dropdown.set_selected(level as u32);
+
+
+    journal_colors_switch.set_state(journal_colors);
+    journal_colors_switch.set_active(journal_colors);
 
     Ok(window)
 }
@@ -69,6 +93,13 @@ fn get_settings() -> Settings {
 fn set_dbus_level(settings: &Settings, level: DbusLevel) -> Result<(), glib::BoolError> {
     let res = settings.set_string(KEY_DBUS_LEVEL, level.as_str());
     PREFERENCES.set_dbus_level(level);
+
+    res
+}
+
+fn set_journal_colors(settings: &Settings, display: bool) -> Result<(), glib::BoolError> {
+    let res = settings.set_boolean(KEY_PREF_JOURNAL_COLORS, display);
+    PREFERENCES.set_journal_colors(display);
 
     res
 }
@@ -86,6 +117,12 @@ impl DbusLevel {
             DbusLevel::Session => "Session",
             DbusLevel::System => "System",
         }
+    }
+}
+
+impl From<GString> for DbusLevel {
+    fn from(level: GString) -> Self {
+        level.as_str().into()
     }
 }
 
@@ -110,6 +147,7 @@ impl From<u32> for DbusLevel {
 
 pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
+    journal_colors: RwLock<bool>,
 }
 
 impl Preferences {
@@ -117,24 +155,32 @@ impl Preferences {
         *self.dbus_level.read().unwrap()
     }
 
+    pub fn journal_colors(&self) -> bool {
+        *self.journal_colors.read().unwrap()
+    }
+
     pub fn new_with_setting(settings: &Settings) -> Self {
-        let level = Preferences::get_dbus_level_settings(settings);
+        let level = settings.string(KEY_DBUS_LEVEL).into();
+        let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
 
         Preferences {
             dbus_level: RwLock::new(level),
+            journal_colors: RwLock::new(journal_colors),
         }
-    }
-
-    fn get_dbus_level_settings(settings: &Settings) -> DbusLevel {
-        let level: glib::GString = settings.string(KEY_DBUS_LEVEL);
-        DbusLevel::from(level.as_str())
     }
 
     pub fn set_dbus_level(&self, dbus_level: DbusLevel) {
         info!("set_dbus_level: {}", dbus_level.as_str());
 
-        let mut self_dbus_level = self.dbus_level.write().unwrap();
+        let mut self_dbus_level = self.dbus_level.write().expect("supposed to write");
         *self_dbus_level = dbus_level;
+    }
+
+    pub fn set_journal_colors(&self, display: bool) {
+        info!("set_journal_colors: {display}");
+
+        let mut journal_colors = self.journal_colors.write().expect("supposed to write");
+        *journal_colors = display;
     }
 }
 
