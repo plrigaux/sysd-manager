@@ -6,6 +6,7 @@ use gtk::{gio, prelude::ActionMapExtManual};
 use crate::analyze::build_analyze_window;
 use crate::info;
 use crate::systemd_gui::APP_ID;
+use crate::widget::preferences::PreferencesDialog;
 use log::error;
 
 use super::preferences;
@@ -98,7 +99,7 @@ pub fn on_startup(app: &adw::Application) {
 
     let preferences: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder("preferences")
         .activate(
-            |application: &adw::Application, _, _| match preferences::build_preferences() {
+            |application: &adw::Application, _, _| /* match preferences::build_preferences() {
                 Ok(preferences_window) => {
                     if let Some(win) = application.active_window() {
                         preferences_window.present(Some(&win));
@@ -109,7 +110,11 @@ pub fn on_startup(app: &adw::Application) {
                 Err(e) => {
                     error! {"{:?}",e}
                 }
-            },
+            }, */
+            {
+                let pdialog = PreferencesDialog::new();
+                pdialog.present();
+            }
         )
         .build();
 

@@ -18,8 +18,8 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
 
-use crate::widget::preferences::DbusLevel;
-use crate::widget::preferences::PREFERENCES;
+use crate::widget::preferences::data::DbusLevel;
+use crate::widget::preferences::data::PREFERENCES;
 
 pub mod enums;
 

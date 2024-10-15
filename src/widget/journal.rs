@@ -1,7 +1,7 @@
 use crate::systemd::{self, data::UnitInfo};
 use gtk::prelude::*;
 
-use super::preferences::PREFERENCES;
+use super::preferences::data::PREFERENCES;
 mod colorise;
 mod more_colors;
 

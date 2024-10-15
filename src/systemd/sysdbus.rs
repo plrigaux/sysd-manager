@@ -19,7 +19,7 @@ use zvariant::Type;
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::ActiveState;
 use crate::systemd::enums::UnitType;
-use crate::widget::preferences::DbusLevel;
+use crate::widget::preferences::data::DbusLevel;
 
 use super::enums::EnablementStatus;
 

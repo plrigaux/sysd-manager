@@ -7,7 +7,7 @@
 	(7,1,"button_icon.ui","button_icon.ui","A button with an icon and a label.",None,None,None,None,None,None),
 	(16,1,"service_status.ui","service_status.ui",None,None,None,None,None,None,None),
 	(17,1,"unit_info.ui","unit_info.ui",None,None,None,None,None,None,None),
-	(19,None,"preferences.ui","preferences.ui",None,None,None,None,None,None,None)
+	(19,1,"preferences.ui","preferences.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.12",None),
@@ -16,8 +16,8 @@
 	(7,"gtk","4.12",None),
 	(16,"gtk","4.12",None),
 	(17,"gtk","4.6",None),
-	(19,"gtk","4.0",None),
-	(19,"libadwaita","1.6",None)
+	(19,"gtk","4.12",None),
+	(19,"libadwaita","1.5",None)
   </ui_library>
   <object>
 	(1,1,"GtkApplicationWindow",None,None,None,None,None,0,None,None),
@@ -72,7 +72,7 @@
 	(17,4,"GtkListBox","unit_properties",3,None,None,None,0,None,None),
 	(17,5,"GtkButton",None,2,None,None,None,0,None,None),
 	(17,6,"GtkImage",None,5,None,None,None,0,None,None),
-	(19,1,"AdwPreferencesDialog","preferences",None,None,None,None,0,None,None),
+	(19,1,"AdwPreferencesDialog","PreferencesWindow",None,None,None,None,0,None,None),
 	(19,2,"AdwPreferencesPage",None,1,None,None,None,0,None,None),
 	(19,3,"AdwPreferencesGroup",None,2,None,None,None,0,None,None),
 	(19,7,"AdwActionRow",None,3,None,None,None,1,None,None),

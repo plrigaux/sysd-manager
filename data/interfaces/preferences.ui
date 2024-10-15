@@ -2,9 +2,9 @@
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
   <!-- interface-name preferences.ui -->
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.6"/>
-  <object class="AdwPreferencesDialog" id="preferences">
+  <requires lib="gtk" version="4.10"/>
+  <requires lib="libadwaita" version="1.5"/>
+  <template class="PreferencesWindow" parent="AdwPreferencesDialog">
     <child>
       <object class="AdwPreferencesPage">
         <child>
@@ -43,5 +43,5 @@
         </child>
       </object>
     </child>
-  </object>
+  </template>
 </interface>
