@@ -12,7 +12,7 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
     let re = match Regex::new(
         r"(?x)
-        \x1B  # ESC
+        \u{1b}  # ESC
         (?:   # 7-bit C1 Fe (except CSI)
             [@-Z\^-_]
         |   # or [ for CSI, followed by a control sequence
@@ -24,9 +24,9 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
             # or ] for OSC hyperlink
             \]8;;
             ([\s!-~]*) #link
-            \x1B[\u{07}\\]
+            [\u{7}\\]
             (.*)       #link text
-            \x1B\]8;;\x1B[\u{07}\\]
+            \u{1b}\]8;;[\u{7}\\]
         )",
     ) {
         Ok(ok) => ok,
@@ -47,6 +47,8 @@ pub fn convert_to_mackup(text: &str, text_color: &gdk::RGBA) -> String {
 }
 
 fn get_tokens(text: &str) -> Vec<Token> {
+    println!("{:?}", text);
+
     let mut token_list = Vec::<Token>::new();
     let mut last_end: usize = 0;
 
@@ -66,7 +68,9 @@ fn get_tokens(text: &str) -> Vec<Token> {
                 if let Some(select_graphic_rendition_match) = captures.get(1) {
                     let select_graphic_rendition = select_graphic_rendition_match.as_str();
                     match capture_code(select_graphic_rendition, &mut token_list) {
-                        Ok(_) => {}
+                        Ok(_) => {
+                            continue;
+                        }
                         Err(e) => {
                             warn!("while parsing {select_graphic_rendition} got error {:?}", e)
                         }
@@ -76,13 +80,13 @@ fn get_tokens(text: &str) -> Vec<Token> {
         } else if let Some(link_match) = captures.get(3) {
             if let Some(link_text_match) = captures.get(4) {
                 token_list.push(Token::Hyperlink(
-                    link_match.as_str().to_owned(),
-                    link_text_match.as_str().to_owned(),
+                    link_match.as_str(),
+                    link_text_match.as_str(),
                 ));
+                continue;
             }
         }
         token_list.push(Token::UnHandled(main_match.as_str().to_owned()));
-        continue;
     }
 
     if text.len() != last_end {
@@ -113,7 +117,12 @@ fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> S
             Token::Strikeout => sgr.set_strikeout(true),
             Token::Hyperlink(link, link_text) => {
                 info!("Do hyperlink {link} {link_text}");
-                out.push_str(&link_text)
+
+                out.push_str("<a href=\"");
+                out.push_str(&link_text);
+                out.push_str("\">");
+                out.push_str(&link_text); //TODO escape <>
+                out.push_str("</a>");
             }
             Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
             Token::UnHandled(a) => debug!("UnHandled {a}"),
@@ -255,7 +264,7 @@ fn find_color(it: &mut std::str::Split<'_, char>) -> Result<TermColor, ColorCode
 }
 
 #[derive(Debug)]
-enum Token {
+enum Token<'a> {
     FgColor(TermColor),
     BgColor(TermColor),
     Intensity(Intensity),
@@ -267,7 +276,7 @@ enum Token {
     Strikeout,
     Text(usize, usize),
     Reset(ResetType),
-    Hyperlink(String, String),
+    Hyperlink(&'a str, &'a str),
     UnHandledCode(String),
     UnHandled(String),
 }
@@ -709,12 +718,15 @@ mod tests {
             println!("capture: {:#?}", capt)
         }
     }
-    /*     fn link_test(){
 
-          let asdf =  "t 13 20:19:03 fedora abrt-notification[106883]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 2048 (wireplumber) crashed in g_data_set_internal()[0m
-    Oct 13 20:19:02 fedora abrt-notification[106794]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 857 (bluetoothd) crashed in uhid_read_handler()[0m
-    ";
+    #[test]
+    fn test_link_regex2() {
+        let test_text = "Oct 15 08:07:19 fedora abrt-notification[160431]: \u{1b}]8;;man:abrt(1)\u{7}[🡕]\u{1b}]8;;\u{7}   end of line";
 
-     // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
-        }*/
+        for capt in RE.captures_iter(test_text) {
+            println!("capture: {:#?}", capt);
+            assert_eq!("man:abrt(1)", capt.get(3).unwrap().as_str());
+            assert_eq!("[🡕]", capt.get(4).unwrap().as_str());
+        }
+    }
 }

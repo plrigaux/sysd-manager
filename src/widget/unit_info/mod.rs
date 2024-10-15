@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use gtk::{prelude::*, Orientation};
-use log::{error, info, warn};
+use log::{error, warn, debug};
 use serde::Deserialize;
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Type, Value};
@@ -136,7 +136,7 @@ macro_rules! get_value {
 
     ($map:expr, $key:expr, $dft:expr) => {{
         let Some(value) = $map.get($key) else {
-            info!("Key doesn't exists: {:?}", $key);
+            debug!("Key doesn't exists: {:?}", $key);
             return $dft;
         };
         value
