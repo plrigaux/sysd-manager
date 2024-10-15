@@ -10,7 +10,25 @@ use super::more_colors;
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
-    let re = match Regex::new(r"\x1B(?:[@-Z\\-_]|\[([0-?]*)[ -/]*([@-~]))") {
+    let re = match Regex::new(
+        r"(?x)
+        \x1B  # ESC
+        (?:   # 7-bit C1 Fe (except CSI)
+            [@-Z\^-_]
+        |   # or [ for CSI, followed by a control sequence
+            \[
+            ([0-?]*)  # Parameter bytes
+            [ -/]*    # Intermediate bytes
+            ([@-~])   # Final byte
+        |
+            # or ] for OSC hyperlink
+            \]8;;
+            ([\s!-~]*) #link
+            \x1B[\u{07}\\]
+            (.*)       #link text
+            \x1B\]8;;\x1B[\u{07}\\]
+        )",
+    ) {
         Ok(ok) => ok,
         Err(e) => {
             log::error!("Rexgex compile error : {:?}", e);
@@ -21,6 +39,7 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     re
 });
 
+// echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
 pub fn convert_to_mackup(text: &str, text_color: &gdk::RGBA) -> String {
     let token_list = get_tokens(text);
 
@@ -41,21 +60,29 @@ fn get_tokens(text: &str) -> Vec<Token> {
         }
         last_end = end;
 
-        let control = captures.get(2).map_or("", |m| m.as_str());
-        if control != "m" {
-            token_list.push(Token::UnHandled(main_match.as_str().to_owned()));
-            continue;
-        }
-
-        if let Some(select_graphic_rendition_match) = captures.get(1) {
-            let select_graphic_rendition = select_graphic_rendition_match.as_str();
-            match capture_code(select_graphic_rendition, &mut token_list) {
-                Ok(_) => {}
-                Err(e) => {
-                    warn!("while parsing {select_graphic_rendition} got error {:?}", e)
+        if let Some(osc_contol) = captures.get(2) {
+            let control = osc_contol.as_str();
+            if control == "m" {
+                if let Some(select_graphic_rendition_match) = captures.get(1) {
+                    let select_graphic_rendition = select_graphic_rendition_match.as_str();
+                    match capture_code(select_graphic_rendition, &mut token_list) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("while parsing {select_graphic_rendition} got error {:?}", e)
+                        }
+                    };
                 }
-            };
+            }
+        } else if let Some(link_match) = captures.get(3) {
+            if let Some(link_text_match) = captures.get(4) {
+                token_list.push(Token::Hyperlink(
+                    link_match.as_str().to_owned(),
+                    link_text_match.as_str().to_owned(),
+                ));
+            }
         }
+        token_list.push(Token::UnHandled(main_match.as_str().to_owned()));
+        continue;
     }
 
     if text.len() != last_end {
@@ -84,8 +111,13 @@ fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> S
             Token::Reversed => sgr.set_reversed(true),
             Token::Hidden => sgr.set_hidden(true),
             Token::Strikeout => sgr.set_strikeout(true),
+            Token::Hyperlink(link, link_text) => {
+                info!("Do hyperlink {link} {link_text}");
+                out.push_str(&link_text)
+            }
             Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
             Token::UnHandled(a) => debug!("UnHandled {a}"),
+
             Token::Reset(reset_type) => match reset_type {
                 ResetType::All => sgr.reset(),
                 ResetType::FgColor => sgr.set_foreground_color(None),
@@ -235,6 +267,7 @@ enum Token {
     Strikeout,
     Text(usize, usize),
     Reset(ResetType),
+    Hyperlink(String, String),
     UnHandledCode(String),
     UnHandled(String),
 }
@@ -665,12 +698,23 @@ mod tests {
         println!("out: {out}");
     }
 
-/*     fn link_test(){
+    #[test]
+    fn test_link_regex() {
+        let test_str = "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\u{07}[🡕]\x1b]8;;\x1b\u{7} test \x1b[0m";
 
-      let asdf =  "t 13 20:19:03 fedora abrt-notification[106883]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 2048 (wireplumber) crashed in g_data_set_internal()[0m
-Oct 13 20:19:02 fedora abrt-notification[106794]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 857 (bluetoothd) crashed in uhid_read_handler()[0m
-";
+        //let test_str = "begin \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test";
+        //let test_str = "begin \x1b]8;;qwer:\x1b\\[🡕]\x1b]8;;\x1b\\ test";
 
- // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
-    }*/
-} 
+        for capt in RE.captures_iter(test_str) {
+            println!("capture: {:#?}", capt)
+        }
+    }
+    /*     fn link_test(){
+
+          let asdf =  "t 13 20:19:03 fedora abrt-notification[106883]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 2048 (wireplumber) crashed in g_data_set_internal()[0m
+    Oct 13 20:19:02 fedora abrt-notification[106794]: ]8;;man:abrt(1)[🡕]]8;; [0;1;31m[0;1;39m[0;1;31mProcess 857 (bluetoothd) crashed in uhid_read_handler()[0m
+    ";
+
+     // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
+        }*/
+}
