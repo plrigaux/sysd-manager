@@ -47,7 +47,6 @@ pub fn convert_to_mackup(text: &str, text_color: &gdk::RGBA) -> String {
 }
 
 fn get_tokens(text: &str) -> Vec<Token> {
-    println!("{:?}", text);
 
     let mut token_list = Vec::<Token>::new();
     let mut last_end: usize = 0;

@@ -91,7 +91,6 @@ macro_rules! create_column_filter {
     }};
 }
 
-
 pub fn launch() -> glib::ExitCode {
     // Create a new application
     let app = adw::Application::builder().application_id(APP_ID).build();
@@ -318,12 +317,6 @@ fn build_ui(application: &adw::Application) {
     save_unit_file_button.set_focusable(true);
     save_unit_file_button.set_receives_default(true);
 
-    /*     let save_unit_file_button = gtk::Button::builder()
-           .child(&build_icon_label("Save", "document-save"))
-           .focusable(true)
-           .receives_default(true)
-           .build();
-    */
     let unit_file_label = gtk::Label::builder()
         .hexpand(true)
         .selectable(true)
@@ -529,32 +522,43 @@ fn build_ui(application: &adw::Application) {
             }
 
             let (enable_result, action) = if enabled {
-                (systemd::enable_unit_files(&unit), "Enable")
+                (systemd::enable_unit_files(&unit), EnablementStatus::Enabled)
             } else {
-                (systemd::disable_unit_files(&unit), "Disable")
+                (
+                    systemd::disable_unit_files(&unit),
+                    EnablementStatus::Disabled,
+                )
             };
 
             match enable_result {
                 Ok(enablement_status_ret) => {
                     info!("New statut: {}", enablement_status_ret.to_string());
                 }
-                Err(e) => warn!(
-                    "{action} unit \"{}\": FAILED!, reason : {:?}",
-                    unit.primary(),
-                    e
-                ),
+
+                Err(error) => {
+                    warn!(
+                        "Action \"{:?}\" on unit \"{}\": FAILED!, reason : {:?}",
+                        action,
+                        unit.primary(),
+                        error
+                    );
+                   
+                    //TODO put a timer to set back the switch
+
+                    return Propagation::Stop;
+                }
             }
 
-            let unit_file_state =
-                systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
-            info!("New Status : {:?}", unit_file_state);
+            //let unit_file_state =
+            //    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
+            //info!("New Status : {:?}", unit_file_state);
 
-            let enabled_new = unit_file_state == EnablementStatus::Enabled;
-            switch.set_active(enabled_new);
+            let enabled_new = action == EnablementStatus::Enabled;
+            switch.set_state(enabled_new);
             set_switch_tooltip(enabled_new, switch);
-            unit.set_enable_status(unit_file_state.to_string());
+            unit.set_enable_status(action.to_string());
 
-            handle_switch_sensivity(unit_file_state, switch);
+            handle_switch_sensivity(action, switch);
 
             Propagation::Proceed
         });
@@ -914,6 +918,7 @@ fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch) {
     switch.set_tooltip_text(Some(text));
 }
 
+/// Whether the widget responds to input.
 fn handle_switch_sensivity(unit_file_state: EnablementStatus, switch: &gtk::Switch) {
     let sensitive = if unit_file_state == EnablementStatus::Enabled
         || unit_file_state == EnablementStatus::Disabled
