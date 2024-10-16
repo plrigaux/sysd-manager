@@ -6,7 +6,7 @@ glib::wrapper! {
     pub struct ButtonIcon(ObjectSubclass<imp::ButtonIcon>)
         @extends gtk::Button, gtk::Widget,
         @implements gtk::Accessible, gtk::Actionable,
-                    gtk::Buildable, gtk::ConstraintTarget;
+                    gtk::Buildable;
 }
 
 impl ButtonIcon {

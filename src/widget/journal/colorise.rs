@@ -117,11 +117,11 @@ fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> S
             Token::Hyperlink(link, link_text) => {
                 info!("Do hyperlink {link} {link_text}");
 
-                out.push_str("<a href=\"");
-                out.push_str(&link_text);
-                out.push_str("\">");
+                //out.push_str("<a href=\"");
+                //out.push_str(&link_text);
+                //out.push_str("\">");
                 out.push_str(&link_text); //TODO escape <>
-                out.push_str("</a>");
+                //out.push_str("</a>");
             }
             Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
             Token::UnHandled(a) => debug!("UnHandled {a}"),

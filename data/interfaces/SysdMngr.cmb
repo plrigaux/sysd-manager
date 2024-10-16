@@ -7,7 +7,8 @@
 	(7,1,"button_icon.ui","button_icon.ui","A button with an icon and a label.",None,None,None,None,None,None),
 	(16,1,"service_status.ui","service_status.ui",None,None,None,None,None,None,None),
 	(17,1,"unit_info.ui","unit_info.ui",None,None,None,None,None,None,None),
-	(19,1,"preferences.ui","preferences.ui",None,None,None,None,None,None,None)
+	(19,1,"preferences.ui","preferences.ui",None,None,None,None,None,None,None),
+	(20,1,None,"unit_file_panel.ui","Unit file panel",None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.12",None),
@@ -79,7 +80,14 @@
 	(19,10,"GtkSwitch","journal_colors",7,None,None,None,0,None,None),
 	(19,11,"AdwActionRow",None,3,None,None,None,0,None,None),
 	(19,12,"GtkDropDown","dbus_level_dropdown",11,None,None,None,0,None,None),
-	(19,13,"GtkStringList",None,12,None,None,None,0,None,None)
+	(19,13,"GtkStringList",None,12,None,None,None,0,None,None),
+	(20,1,"GtkBox","UnitFilePanel",None,None,None,None,0,None,None),
+	(20,2,"GtkBox",None,1,None,None,None,1,None,None),
+	(20,3,"GtkScrolledWindow",None,2,None,None,None,0,None,None),
+	(20,4,"GtkTextView","unit_file_text",3,None,None,None,0,None,None),
+	(20,6,"GtkBox",None,1,None,None,None,2,None,None),
+	(20,7,"GtkLabel","file_path_label",6,None,None,None,0,None,None),
+	(20,8,"ButtonIcon","save_button",6,None,None,None,1,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -153,7 +161,19 @@
 	(19,10,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
 	(19,11,"AdwPreferencesRow","title","Dbus level",None,None,None,None,None,None,None,None,None),
 	(19,12,"GtkDropDown","model",None,0,None,None,None,13,None,None,None,None),
-	(19,12,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None)
+	(19,12,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
+	(20,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(20,3,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(20,4,"GtkTextView","left-margin","5",None,None,None,None,None,None,None,None,None),
+	(20,4,"GtkTextView","monospace","True",None,None,None,None,None,None,None,None,None),
+	(20,4,"GtkTextView","right-margin","5",None,None,None,None,None,None,None,None,None),
+	(20,4,"GtkTextView","wrap-mode","word-char",None,None,None,None,None,None,None,None,None),
+	(20,4,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(20,7,"GtkLabel","selectable","True",None,None,None,None,None,None,None,None,None),
+	(20,7,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(20,7,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(20,8,"GtkButton","icon-name","document-save",None,None,None,None,None,None,None,None,None),
+	(20,8,"GtkButton","label","Save",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(16,1,2,"GtkGridLayoutChild","column","0",None,None,None,None),
@@ -201,7 +221,8 @@
 	(6,16,20,"GtkButton","clicked","handle_all_details_click",None,None,None,None,None),
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
 	(8,19,10,"GtkSwitch","state-set","journal_switch_state_set",None,0,1,0,None),
-	(9,19,12,"GtkDropDown","activate","dbus_level_dropdown",None,0,1,0,None)
+	(9,19,12,"GtkDropDown","activate","dbus_level_dropdown",None,0,1,0,None),
+	(10,20,8,"GtkButton","clicked","save_file",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

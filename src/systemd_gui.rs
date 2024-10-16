@@ -7,6 +7,7 @@ use gtk::{gio, prelude::*, SingleSelection};
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
 use crate::widget::journal::update_journal;
+use crate::widget::unit_file_panel::UnitFilePanel;
 use crate::widget::{self, title_bar, unit_info};
 use log::{debug, error, info, warn};
 
@@ -298,46 +299,7 @@ fn build_ui(application: &adw::Application) {
         .build();
 
     //-------------------------------------------
-
-    let unit_file_info = gtk::TextView::builder()
-        .focusable(true)
-        .wrap_mode(gtk::WrapMode::WordChar)
-        .left_margin(5)
-        .right_margin(5)
-        .monospace(true)
-        .build();
-
-    let unit_file_stack_scrolled_window = gtk::ScrolledWindow::builder()
-        .vexpand(true)
-        .focusable(true)
-        .child(&unit_file_info)
-        .build();
-
-    let save_unit_file_button = ButtonIcon::new("Save", "document-save");
-    save_unit_file_button.set_focusable(true);
-    save_unit_file_button.set_receives_default(true);
-
-    let unit_file_label = gtk::Label::builder()
-        .hexpand(true)
-        .selectable(true)
-        .xalign(0.0)
-        .build();
-
-    let unit_file_box = gtk::Box::builder()
-        .orientation(Orientation::Vertical)
-        .build();
-
-    unit_file_box.append(&unit_file_stack_scrolled_window);
-
-    let unit_file_bottom_box = gtk::Box::builder()
-        .spacing(5)
-        .orientation(Orientation::Horizontal)
-        .build();
-
-    unit_file_bottom_box.append(&unit_file_label);
-    unit_file_bottom_box.append(&save_unit_file_button);
-
-    unit_file_box.append(&unit_file_bottom_box);
+    let unit_file_panel = UnitFilePanel::new();
 
     let unit_journal_view = gtk::TextView::builder()
         .focusable(true)
@@ -445,7 +407,7 @@ fn build_ui(application: &adw::Application) {
         &unit_analyse_scrolled_window,
         Some(&gtk::Label::new(Some("Unit Info"))),
     );
-    info_stack.append_page(&unit_file_box, Some(&gtk::Label::new(Some("Unit File"))));
+    info_stack.append_page(&unit_file_panel, Some(&gtk::Label::new(Some("Unit File"))));
     info_stack.append_page(
         &unit_journal_box,
         Some(&gtk::Label::new(Some("Unit Journal"))),
@@ -648,19 +610,6 @@ fn build_ui(application: &adw::Application) {
     main_box.set_start_child(Some(&left_pane));
     main_box.set_end_child(Some(&right_pane));
 
-    /*     main_box.set_shrink_end_child(false);
-    main_box.set_shrink_start_child(false);
-    main_box.set_resize_start_child(false);
-    main_box.set_resize_end_child(false);
-
-    println!(
-        "rs {} re {} ss {} se {}",
-        main_box.resizes_start_child(),
-        main_box.resizes_end_child(),
-        main_box.shrinks_start_child(),
-        main_box.shrinks_end_child()
-    ); */
-
     let search_bar = gtk::SearchBar::builder()
         .valign(gtk::Align::Start)
         // .key_capture_widget(&window)
@@ -824,20 +773,7 @@ fn build_ui(application: &adw::Application) {
     }
 
     {
-        // NOTE: Save Button
-        let unit_file_info = unit_file_info.clone();
-
-        save_unit_file_button.connect_clicked(move |_| {
-            let buffer = unit_file_info.buffer();
-            let start = buffer.start_iter();
-            let end = buffer.end_iter();
-            let text = buffer.text(&start, &end, true);
-
-            selected_unit!(|unit: &UnitInfo| systemd::save_text_to_file(&unit, &text));
-        });
-    }
-    {
-        let unit_file_info = unit_file_info.clone();
+        //let unit_file_info = unit_file_info.clone();
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal_view.clone();
         let header_label = title_bar_elements.right_bar_label.clone();
@@ -862,16 +798,7 @@ fn build_ui(application: &adw::Application) {
                 *selected_unit = Some(unit.clone());
             }
 
-            let description = systemd::get_unit_file_info(&unit);
-
-            let fp = match unit.file_path() {
-                Some(s) => s,
-                None => "".to_owned(),
-            };
-
-            unit_file_label.set_label(&fp);
-
-            unit_file_info.buffer().set_text(&description);
+            unit_file_panel.set_file_content(&unit);
 
             let ablement_status =
                 systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
