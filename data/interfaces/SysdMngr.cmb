@@ -16,7 +16,7 @@
 	(7,"gtk","4.12",None),
 	(16,"gtk","4.12",None),
 	(17,"gtk","4.6",None),
-	(19,"gtk","4.12",None),
+	(19,"gtk","4.10",None),
 	(19,"libadwaita","1.5",None)
   </ui_library>
   <object>
@@ -199,7 +199,9 @@
   <object_signal>
 	(5,16,19,"GtkButton","clicked","handle_refresh_click",None,None,1,None,None),
 	(6,16,20,"GtkButton","clicked","handle_all_details_click",None,None,None,None,None),
-	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None)
+	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
+	(8,19,10,"GtkSwitch","state-set","journal_switch_state_set",None,0,1,0,None),
+	(9,19,12,"GtkDropDown","activate","dbus_level_dropdown",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

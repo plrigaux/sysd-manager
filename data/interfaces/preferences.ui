@@ -24,6 +24,7 @@
                       </object>
                     </property>
                     <property name="valign">center</property>
+                    <signal name="activate" handler="dbus_level_dropdown_activate" swapped="yes"/>
                   </object>
                 </child>
               </object>
@@ -35,6 +36,7 @@
                 <child>
                   <object class="GtkSwitch" id="journal_colors">
                     <property name="valign">baseline-center</property>
+                    <signal name="state-set" handler="journal_switch_state_set" swapped="yes"/>
                   </object>
                 </child>
               </object>

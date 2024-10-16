@@ -1,6 +1,5 @@
 mod menu;
 
-use super::preferences;
 use gtk::pango::{AttrInt, AttrList, Weight};
 use gtk::prelude::*;
 use crate::widget::button_icon::ButtonIcon;

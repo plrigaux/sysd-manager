@@ -7,9 +7,6 @@ use crate::analyze::build_analyze_window;
 use crate::info;
 use crate::systemd_gui::APP_ID;
 use crate::widget::preferences::PreferencesDialog;
-use log::error;
-
-use super::preferences;
 
 pub const APP_TITLE: &str = "SysD Manager";
 
@@ -98,24 +95,14 @@ pub fn on_startup(app: &adw::Application) {
         .build();
 
     let preferences: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder("preferences")
-        .activate(
-            |application: &adw::Application, _, _| /* match preferences::build_preferences() {
-                Ok(preferences_window) => {
-                    if let Some(win) = application.active_window() {
-                        preferences_window.present(Some(&win));
-                    } else {
-                        preferences_window.present(None::<&gtk::Widget>);
-                    }
-                }
-                Err(e) => {
-                    error! {"{:?}",e}
-                }
-            }, */
-            {
-                let pdialog = PreferencesDialog::new();
-                pdialog.present();
+        .activate(|application: &adw::Application, _, _| {
+            let pdialog = PreferencesDialog::new();
+            if let Some(win) = application.active_window() {
+                pdialog.present(Some(&win));
+            } else {
+                pdialog.present(None::<&gtk::Widget>);
             }
-        )
+        })
         .build();
 
     app.add_action_entries([about, analyze_blame, systemd_info, preferences]);
