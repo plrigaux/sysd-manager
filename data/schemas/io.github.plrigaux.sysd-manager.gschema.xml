@@ -27,5 +27,10 @@
             <default>true</default>
             <summary>To see the journal logs with colors</summary>
         </key>
+        <key name="pref-unit-file-highlighting" type="b">
+            <default>true</default>
+            <summary>To display unit file highlighted</summary>
+        </key>
+        
     </schema>
 </schemalist>

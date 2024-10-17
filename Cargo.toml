@@ -47,9 +47,6 @@ adw = { version = "0.7", package = "libadwaita", features = ["v1_5"] }
 regex = "1.11.0"
 
 [dev-dependencies]
-cansi = "2.2.1"
-colored = "2.1.0"
-ansi-parser = "0.9"
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"

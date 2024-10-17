@@ -18,6 +18,7 @@ pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
 
 pub const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
+pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum DbusLevel {
@@ -63,9 +64,23 @@ impl From<u32> for DbusLevel {
 pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
     journal_colors: RwLock<bool>,
+    unit_file_colors: RwLock<bool>,
 }
 
 impl Preferences {
+    pub fn new_with_setting(settings: &Settings) -> Self {
+        let level = settings.string(KEY_DBUS_LEVEL).into();
+        let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
+        let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
+
+
+        Preferences {
+            dbus_level: RwLock::new(level),
+            journal_colors: RwLock::new(journal_colors),
+            unit_file_colors: RwLock::new(unit_file_colors),
+        }
+    }
+
     pub fn dbus_level(&self) -> DbusLevel {
         *self.dbus_level.read().unwrap()
     }
@@ -74,14 +89,8 @@ impl Preferences {
         *self.journal_colors.read().unwrap()
     }
 
-    pub fn new_with_setting(settings: &Settings) -> Self {
-        let level = settings.string(KEY_DBUS_LEVEL).into();
-        let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
-
-        Preferences {
-            dbus_level: RwLock::new(level),
-            journal_colors: RwLock::new(journal_colors),
-        }
+    pub fn unit_file_colors(&self) -> bool {
+        *self.unit_file_colors.read().unwrap()
     }
 
     pub fn set_dbus_level(&self, dbus_level: DbusLevel) {
@@ -96,6 +105,13 @@ impl Preferences {
 
         let mut journal_colors = self.journal_colors.write().expect("supposed to write");
         *journal_colors = display;
+    }
+
+    pub fn set_unit_file_highlighting(&self, display: bool) {
+        info!("set_unit_file_highlighting: {display}");
+
+        let mut unit_file_colors = self.unit_file_colors.write().expect("supposed to write");
+        *unit_file_colors = display;
     }
 }
 

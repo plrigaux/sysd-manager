@@ -1,3 +1,4 @@
+mod dosini;
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 use crate::systemd::{self, data::UnitInfo};
@@ -51,8 +52,10 @@ mod imp {
 
     use crate::{
         systemd::{self, data::UnitInfo},
-        widget::button_icon::ButtonIcon,
+        widget::{button_icon::ButtonIcon, preferences::data::PREFERENCES},
     };
+
+    use super::dosini;
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -71,7 +74,6 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl UnitFilePanelImp {
-        
         #[template_callback]
         fn save_file(&self, button: &ButtonIcon) {
             info!("button {:?}", button);
@@ -98,9 +100,19 @@ mod imp {
         ) {
             self.file_path_label.set_label(file_path);
 
-            self.unit_file_text.buffer().set_text(file_content);
-
             let _old = self.unit.replace(Some(unit.clone()));
+
+            let in_color = PREFERENCES.unit_file_colors();
+
+            let buf = self.unit_file_text.buffer();
+            if in_color {
+                let mut start_iter = buf.start_iter();
+
+                let text = dosini::convert_to_mackup(&file_content, true);
+                buf.insert_markup(&mut start_iter, &text);
+            } else {
+                buf.set_text(&file_content);
+            }
         }
     }
 

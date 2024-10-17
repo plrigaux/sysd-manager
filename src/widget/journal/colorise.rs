@@ -1,12 +1,11 @@
 //https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
 
-use std::{borrow::Cow, fmt::Debug, num::ParseIntError, sync::LazyLock};
+use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
 
-use gtk::gdk;
 use log::{debug, info, warn};
 use regex::Regex;
 
-use super::more_colors;
+use super::more_colors::{self, ColorCodeError, TermColor};
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
@@ -149,20 +148,6 @@ fn make_markup<'a>(
     }
 
     Cow::from(out)
-}
-
-#[allow(dead_code)]
-#[derive(Debug)]
-enum ColorCodeError {
-    Malformed,
-    ParseIntError(ParseIntError),
-    UnexpectedCode(String),
-}
-
-impl From<ParseIntError> for ColorCodeError {
-    fn from(pe: ParseIntError) -> Self {
-        ColorCodeError::ParseIntError(pe)
-    }
 }
 
 fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeError> {
@@ -456,93 +441,14 @@ impl Underline {
     }
 }
 
-/// The 8 standard colors.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum TermColor {
-    Black,
-    Red,
-    Green,
-    Yellow,
-    Blue,
-    Magenta,
-    Cyan,
-    White,
-    BrightBlack,
-    BrightRed,
-    BrightGreen,
-    BrightYellow,
-    BrightBlue,
-    BrightMagenta,
-    BrightCyan,
-    BrightWhite,
-    VGA(u8, u8, u8),
-}
-
-impl TermColor {
-    pub fn get_hexa_code(&self) -> String {
-        match self {
-            Self::VGA(r, g, b) => format!("#{:02x}{:02x}{:02x}", r, g, b),
-            _ => self.get_vga().get_hexa_code(),
-        }
-    }
-
-    pub fn get_vga(&self) -> Self {
-        match self {
-            TermColor::Black => Self::VGA(0, 0, 0),
-            TermColor::Red => Self::VGA(0x80, 0, 0),
-            TermColor::Green => Self::VGA(0, 0x80, 0),
-            TermColor::Yellow => Self::VGA(0x80, 0x80, 0),
-            TermColor::Blue => Self::VGA(0, 0, 0x80),
-            TermColor::Magenta => Self::VGA(0x80, 0, 0x80),
-            TermColor::Cyan => Self::VGA(0, 0x80, 0x80),
-            TermColor::White => Self::VGA(0xc0, 0xc0, 0xc0),
-            TermColor::BrightBlack => Self::VGA(0x80, 0x80, 0x80),
-            TermColor::BrightRed => Self::VGA(0xff, 0, 0),
-            TermColor::BrightGreen => Self::VGA(0, 0xff, 0),
-            TermColor::BrightYellow => Self::VGA(0xff, 0xff, 0),
-            TermColor::BrightBlue => Self::VGA(0, 0, 0xff),
-            TermColor::BrightMagenta => Self::VGA(0xff, 0, 0xff),
-            TermColor::BrightCyan => Self::VGA(0, 0xff, 0xff),
-            TermColor::BrightWhite => Self::VGA(0xff, 0xff, 0xff),
-            TermColor::VGA(_, _, _) => *self,
-        }
-    }
-
-    fn new_vga(r: &str, g: &str, b: &str) -> Result<Self, ColorCodeError> {
-        let r: u8 = r.parse()?;
-        let g: u8 = g.parse()?;
-        let b: u8 = b.parse()?;
-
-        Ok(TermColor::VGA(r, g, b))
-    }
-}
-
-impl From<gdk::RGBA> for TermColor {
-    fn from(color: gdk::RGBA) -> Self {
-        TermColor::from(&color)
-    }
-}
-
-impl From<&gdk::RGBA> for TermColor {
-    fn from(color: &gdk::RGBA) -> Self {
-        let r: u8 = (color.red() * 256.0) as u8;
-        let g: u8 = (color.green() * 256.0) as u8;
-        let b: u8 = (color.blue() * 256.0) as u8;
-        TermColor::VGA(r, g, b)
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use ansi_parser::AnsiSequence;
-    use ansi_parser::{AnsiParser, Output};
 
-    extern crate cansi;
-    extern crate colored;
+    use gtk::gdk;
+
     use crate::widget::journal::colorise::Intensity;
 
     use super::*;
-    use cansi::*;
 
     const TEST_STRS : [&str; 4] = [  "This is \u{1b}[4mvery\u{1b}[0m\u{1b}[1m\u{1b}[96m Important\u{1b}[0m",
     "asdf \u{1b}[38;2;255;140;0;48;2;255;228;225mExample 24 bit color escape sequence\u{1b}[0m",
@@ -550,52 +456,11 @@ mod tests {
     "nothing \u{1b}[91mframed\u{1b}[7m test ok\u{1b}[0m"];
 
     #[test]
-    fn test_enable_unit_files_path() {
-        let parsed: Vec<Output> = "This is \u{1b}[3Asome text!".ansi_parse().take(2).collect();
-
-        assert_eq!(
-            vec![
-                Output::TextBlock("This is "),
-                Output::Escape(AnsiSequence::CursorUp(3))
-            ],
-            parsed
-        );
-
-        for block in parsed.into_iter() {
-            match block {
-                Output::TextBlock(text) => println!("{}", text),
-                Output::Escape(seq) => println!("{}", seq),
-            }
-        }
-    }
-
-    #[test]
     fn test_display() {
         let mut line = 0;
         for s in TEST_STRS {
             println!("line {} {}", line, s);
             line += 1;
-        }
-    }
-
-    #[test]
-    fn test_color() {
-        for s in TEST_STRS {
-            println!("{}", s);
-            let parsed: Vec<Output> = s.ansi_parse().collect();
-
-            println!("{:?}", parsed);
-        }
-    }
-
-    #[test]
-    fn test_color1() {
-        for s in TEST_STRS {
-            println!("{}", s);
-
-            let result = v3::categorise_text(s); // cansi function
-
-            println!("{:#?}", result);
         }
     }
 

@@ -1,5 +1,7 @@
 #![allow(dead_code)]
-use super::colorise::TermColor;
+use std::num::ParseIntError;
+
+use gtk::gdk;
 
 pub fn get_256color(code: u8) -> TermColor {
     let color = match code {
@@ -52,6 +54,96 @@ fn color_map216(code: u8) -> TermColor {
     }
 
     TermColor::VGA(r, g, b)
+}
+
+/// The 8 standard colors.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TermColor {
+    Black,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Cyan,
+    White,
+    BrightBlack,
+    BrightRed,
+    BrightGreen,
+    BrightYellow,
+    BrightBlue,
+    BrightMagenta,
+    BrightCyan,
+    BrightWhite,
+    VGA(u8, u8, u8),
+}
+
+impl TermColor {
+    pub fn get_hexa_code(&self) -> String {
+        match self {
+            Self::VGA(r, g, b) => format!("#{:02x}{:02x}{:02x}", r, g, b),
+            _ => self.get_vga().get_hexa_code(),
+        }
+    }
+
+    pub fn get_vga(&self) -> Self {
+        match self {
+            TermColor::Black => Self::VGA(0, 0, 0),
+            TermColor::Red => Self::VGA(0x80, 0, 0),
+            TermColor::Green => Self::VGA(0, 0x80, 0),
+            TermColor::Yellow => Self::VGA(0x80, 0x80, 0),
+            TermColor::Blue => Self::VGA(0, 0, 0x80),
+            TermColor::Magenta => Self::VGA(0x80, 0, 0x80),
+            TermColor::Cyan => Self::VGA(0, 0x80, 0x80),
+            TermColor::White => Self::VGA(0xc0, 0xc0, 0xc0),
+            TermColor::BrightBlack => Self::VGA(0x80, 0x80, 0x80),
+            TermColor::BrightRed => Self::VGA(0xff, 0, 0),
+            TermColor::BrightGreen => Self::VGA(0, 0xff, 0),
+            TermColor::BrightYellow => Self::VGA(0xff, 0xff, 0),
+            TermColor::BrightBlue => Self::VGA(0, 0, 0xff),
+            TermColor::BrightMagenta => Self::VGA(0xff, 0, 0xff),
+            TermColor::BrightCyan => Self::VGA(0, 0xff, 0xff),
+            TermColor::BrightWhite => Self::VGA(0xff, 0xff, 0xff),
+            TermColor::VGA(_, _, _) => *self,
+        }
+    }
+
+    pub fn new_vga(r: &str, g: &str, b: &str) -> Result<Self, ColorCodeError> {
+        let r: u8 = r.parse()?;
+        let g: u8 = g.parse()?;
+        let b: u8 = b.parse()?;
+
+        Ok(TermColor::VGA(r, g, b))
+    }
+}
+
+impl From<gdk::RGBA> for TermColor {
+    fn from(color: gdk::RGBA) -> Self {
+        TermColor::from(&color)
+    }
+}
+
+impl From<&gdk::RGBA> for TermColor {
+    fn from(color: &gdk::RGBA) -> Self {
+        let r: u8 = (color.red() * 256.0) as u8;
+        let g: u8 = (color.green() * 256.0) as u8;
+        let b: u8 = (color.blue() * 256.0) as u8;
+        TermColor::VGA(r, g, b)
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub enum ColorCodeError {
+    Malformed,
+    ParseIntError(ParseIntError),
+    UnexpectedCode(String),
+}
+
+impl From<ParseIntError> for ColorCodeError {
+    fn from(pe: ParseIntError) -> Self {
+        ColorCodeError::ParseIntError(pe)
+    }
 }
 
 #[cfg(test)]

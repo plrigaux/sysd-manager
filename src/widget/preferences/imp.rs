@@ -8,7 +8,7 @@ use log::{info, warn};
 use std::cell::OnceCell;
 
 use crate::systemd_gui;
-use crate::widget::preferences::data::{DbusLevel, KEY_DBUS_LEVEL, KEY_PREF_JOURNAL_COLORS};
+use crate::widget::preferences::data::{DbusLevel, KEY_DBUS_LEVEL, KEY_PREF_JOURNAL_COLORS, KEY_PREF_UNIT_FILE_HIGHLIGHTING};
 
 use super::data::PREFERENCES;
 
@@ -22,6 +22,9 @@ pub struct PreferencesDialog {
 
     #[template_child]
     pub journal_colors: TemplateChild<gtk::Switch>,
+
+    #[template_child]
+    pub unit_file_highlight: TemplateChild<gtk::Switch>,
 }
 
 #[gtk::template_callbacks]
@@ -64,17 +67,21 @@ impl PreferencesDialog {
     fn load_preferences_values(&self) {
         let level = PREFERENCES.dbus_level();
         let journal_colors = PREFERENCES.journal_colors();
+        let unit_file_colors = PREFERENCES.unit_file_colors();
 
         self.dbus_level_dropdown.set_selected(level as u32);
 
         self.journal_colors.set_state(journal_colors);
         self.journal_colors.set_active(journal_colors);
+
+        self.unit_file_highlight.set_state(unit_file_colors);
+        self.unit_file_highlight.set_active(unit_file_colors);
     }
 
-    #[template_callback]
+/*     #[template_callback]
     fn dbus_level_dropdown_activate(&self, dd: &gtk::DropDown) {
         info!("dd {:?}", dd);
-    }
+    } */
 
     #[template_callback]
     fn journal_switch_state_set(&self, state: bool) -> bool {
@@ -83,6 +90,20 @@ impl PreferencesDialog {
         self.journal_colors.set_state(state);
         PREFERENCES.set_journal_colors(state);
         if let Err(e) = self.settings().set_boolean(KEY_PREF_JOURNAL_COLORS, state) {
+            warn!("{}", e)
+        }
+
+        true
+    }
+
+
+    #[template_callback]
+    fn unit_file_highlighting_state_set(&self, state: bool) -> bool {
+        info!("unit_file_highlighting_switch {}", state);
+
+        self.unit_file_highlight.set_state(state);
+        PREFERENCES.set_unit_file_highlighting(state);
+        if let Err(e) = self.settings().set_boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING, state) {
             warn!("{}", e)
         }
 
