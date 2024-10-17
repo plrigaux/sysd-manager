@@ -1,6 +1,6 @@
 //https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
 
-use std::{fmt::Debug, num::ParseIntError, sync::LazyLock};
+use std::{borrow::Cow, fmt::Debug, num::ParseIntError, sync::LazyLock};
 
 use gtk::gdk;
 use log::{debug, info, warn};
@@ -40,10 +40,10 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
-pub fn convert_to_mackup(text: &str, text_color: &gdk::RGBA) -> String {
+pub fn convert_to_mackup<'a>(text: &'a str, text_color: &'a TermColor) -> Cow<'a, str> {
     let token_list = get_tokens(text);
 
-    make_markup(text, &token_list, text_color.into())
+    make_markup(text, &token_list, text_color)
 }
 
 fn get_tokens(text: &str) -> Vec<Token> {
@@ -93,7 +93,15 @@ fn get_tokens(text: &str) -> Vec<Token> {
     token_list
 }
 
-fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> String {
+fn make_markup<'a>(
+    text: &'a str,
+    token_list: &Vec<Token>,
+    _text_color: &TermColor,
+) -> Cow<'a, str> {
+    if token_list.len() == 1 {
+        return Cow::from(text);
+    }
+
     let mut out = String::with_capacity((text.len() as f32 * 1.5) as usize);
 
     let mut sgr = SelectGraphicRendition::default();
@@ -119,9 +127,9 @@ fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> S
                 //out.push_str("<a href=\"");
                 //out.push_str(&link_text);
                 //out.push_str("\">");
-                let new_link_text = convert_to_mackup(link_text, &gdk::RGBA::BLACK);
+                let new_link_text = convert_to_mackup(link_text, &TermColor::Black);
                 out.push_str(&new_link_text); //TODO escape <>
-                                          //out.push_str("</a>");
+                                              //out.push_str("</a>");
             }
             Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
             Token::UnHandled(a) => debug!("UnHandled {a}"),
@@ -140,7 +148,7 @@ fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> S
         out.push_str("</span>")
     }
 
-    out
+    Cow::from(out)
 }
 
 #[allow(dead_code)]
@@ -607,7 +615,7 @@ mod tests {
         for s in TEST_STRS {
             println!("{}", s);
 
-            let result = convert_to_mackup(s, &gdk::RGBA::WHITE);
+            let result = convert_to_mackup(s, &TermColor::Black);
 
             println!("{}", result);
         }
@@ -618,7 +626,7 @@ mod tests {
         let s = "reverse test \u{1b}[7m reverse test \u{1b}[0;m test test \u{1b}[97mwhite\u{1b}[0m";
         println!("{}", s);
 
-        let result = convert_to_mackup(s, &gdk::RGBA::WHITE);
+        let result = convert_to_mackup(s, &TermColor::Black);
 
         println!("{}", result);
     }
@@ -680,7 +688,7 @@ mod tests {
             Token::Text(&text[30..]),
         ];
 
-        let out = make_markup(text, &vaec, TermColor::Black);
+        let out = make_markup(text, &vaec, &TermColor::Black);
 
         println!("out: {out}");
     }
@@ -701,7 +709,7 @@ mod tests {
             Token::Text(&text[30..]),
         ];
 
-        let out = make_markup(text, &vaec, TermColor::Black);
+        let out = make_markup(text, &vaec, &TermColor::Black);
 
         println!("out: {out}");
     }
@@ -741,7 +749,7 @@ mod tests {
 
         let token_list = get_tokens(test_text);
         println!("token_list: {:#?}", token_list);
-        let out = make_markup(test_text, &token_list, gdk::RGBA::BLACK.into());
+        let out = make_markup(test_text, &token_list, &TermColor::Black);
 
         println!("out {out}");
     }

@@ -71,6 +71,7 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl UnitFilePanelImp {
+        
         #[template_callback]
         fn save_file(&self, button: &ButtonIcon) {
             info!("button {:?}", button);

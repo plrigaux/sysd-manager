@@ -1,4 +1,5 @@
 use crate::systemd::{self, data::UnitInfo};
+use colorise::TermColor;
 use gtk::prelude::*;
 
 use super::preferences::data::PREFERENCES;
@@ -26,7 +27,8 @@ pub fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
     if in_color {
 
         let mut start_iter = buf.start_iter();
-        let text = colorise::convert_to_mackup(&text, &journal.color());
+        let journal_color :TermColor = journal.color().into();
+        let text = colorise::convert_to_mackup(&text, &journal_color);
         buf.insert_markup(&mut start_iter, &text);
     } else {
         buf.set_text(&text);
