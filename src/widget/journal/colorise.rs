@@ -47,7 +47,6 @@ pub fn convert_to_mackup(text: &str, text_color: &gdk::RGBA) -> String {
 }
 
 fn get_tokens(text: &str) -> Vec<Token> {
-
     let mut token_list = Vec::<Token>::new();
     let mut last_end: usize = 0;
 
@@ -57,7 +56,7 @@ fn get_tokens(text: &str) -> Vec<Token> {
         let start = main_match.start();
 
         if start != last_end {
-            token_list.push(Token::Text(last_end, start));
+            token_list.push(Token::Text(&text[last_end..start]));
         }
         last_end = end;
 
@@ -89,7 +88,7 @@ fn get_tokens(text: &str) -> Vec<Token> {
     }
 
     if text.len() != last_end {
-        token_list.push(Token::Text(last_end, text.len()));
+        token_list.push(Token::Text(&text[last_end..]));
     }
     token_list
 }
@@ -101,9 +100,9 @@ fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> S
     let mut first = true;
     for token in token_list {
         match token {
-            Token::Text(begin, end) => {
+            Token::Text(sub_text) => {
                 first = !sgr.append_tags(&mut out, first);
-                out.push_str(&text[*begin..*end])
+                out.push_str(sub_text)
             }
             Token::Intensity(intensity) => sgr.set_intensity(Some(*intensity)),
             Token::FgColor(term_color) => sgr.set_foreground_color(Some(*term_color)),
@@ -120,8 +119,9 @@ fn make_markup(text: &str, token_list: &Vec<Token>, _text_color: TermColor) -> S
                 //out.push_str("<a href=\"");
                 //out.push_str(&link_text);
                 //out.push_str("\">");
-                out.push_str(&link_text); //TODO escape <>
-                //out.push_str("</a>");
+                let new_link_text = convert_to_mackup(link_text, &gdk::RGBA::BLACK);
+                out.push_str(&new_link_text); //TODO escape <>
+                                          //out.push_str("</a>");
             }
             Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
             Token::UnHandled(a) => debug!("UnHandled {a}"),
@@ -273,7 +273,7 @@ enum Token<'a> {
     Reversed,
     Hidden,
     Strikeout,
-    Text(usize, usize),
+    Text(&'a str),
     Reset(ResetType),
     Hyperlink(&'a str, &'a str),
     UnHandledCode(String),
@@ -671,13 +671,13 @@ mod tests {
     fn test_make_markup() {
         let text = "this text is in italic not in bold.";
         let vaec = vec![
-            Token::Text(0, 16),
+            Token::Text(&text[0..16]),
             Token::Italic,
-            Token::Text(16, 22),
+            Token::Text(&text[16..22]),
             Token::Reset(ResetType::All),
-            Token::Text(22, 30),
+            Token::Text(&text[22..30]),
             Token::Intensity(Intensity::Bold),
-            Token::Text(30, text.len()),
+            Token::Text(&text[30..]),
         ];
 
         let out = make_markup(text, &vaec, TermColor::Black);
@@ -689,16 +689,16 @@ mod tests {
     fn test_make_markup2() {
         let text = "this text is in italic not in bold.";
         let vaec = vec![
-            Token::Text(0, 16),
+            Token::Text(&text[0..16]),
             Token::Italic,
             Token::Intensity(Intensity::Bold),
             Token::Italic,
-            Token::Text(16, 20),
-            Token::Text(20, 22),
+            Token::Text(&text[16..20]),
+            Token::Text(&text[20..22]),
             Token::Reset(ResetType::All),
-            Token::Text(22, 30),
+            Token::Text(&text[22..30]),
             Token::Intensity(Intensity::Bold),
-            Token::Text(30, text.len()),
+            Token::Text(&text[30..]),
         ];
 
         let out = make_markup(text, &vaec, TermColor::Black);
@@ -727,5 +727,22 @@ mod tests {
             assert_eq!("man:abrt(1)", capt.get(3).unwrap().as_str());
             assert_eq!("[🡕]", capt.get(4).unwrap().as_str());
         }
+    }
+
+    #[test]
+    fn test_link_regex3() {
+        let test_text =  "Oct 16 16:03:05 fedora systemd[1]: \u{1b}[0;1;38;5;185m\u{1b}]8;;file://fedora/etc/systemd/system/tiny_daemon.service\u{7}/etc/s\u{1b}[0;1;39m\u{1b}[0;1;38;5;185mystemd/system/tiny_daemon.service\u{1b}]8;;\u{7}:18: Unknown key 'test' in section [Install], ignoring.\u{1b}[0m\n";
+
+        for capt in RE.captures_iter(test_text) {
+            println!("capture: {:#?}", capt);
+        }
+
+        //convert_to_mackup(&test_text, &gdk::RGBA::BLACK);
+
+        let token_list = get_tokens(test_text);
+        println!("token_list: {:#?}", token_list);
+        let out = make_markup(test_text, &token_list, gdk::RGBA::BLACK.into());
+
+        println!("out {out}");
     }
 }
