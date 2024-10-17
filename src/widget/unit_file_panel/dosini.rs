@@ -63,7 +63,7 @@ fn get_tokens(text: &str) -> Vec<Token> {
 
             if let Some(number) = captures.get(3) {
                 token_list.push(Token::Number(&number.as_str()));
-            } else if let Some(value) = captures.get(3) {
+            } else if let Some(value) = captures.get(4) {
                 token_list.push(Token::Value(&value.as_str()));
             }
         } else if let Some(section) = captures.get(5) {

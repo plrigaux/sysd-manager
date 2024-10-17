@@ -106,6 +106,7 @@ mod imp {
 
             let buf = self.unit_file_text.buffer();
             if in_color {
+                buf.set_text("");
                 let mut start_iter = buf.start_iter();
 
                 let text = dosini::convert_to_mackup(&file_content, true);

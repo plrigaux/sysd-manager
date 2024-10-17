@@ -162,7 +162,7 @@ pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, Sy
 /// Read the unit file and return it's contents so that we can display it
 pub fn get_unit_file_info(unit: &UnitInfo) -> String {
     let Some(file_path) = &unit.file_path() else {
-        warn!("No file path for {}", unit.primary());
+        info!("No file path for {}", unit.primary());
         return String::new();
     };
 
