@@ -2,58 +2,85 @@
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
   <!-- interface-name preferences.ui -->
-  <requires lib="gtk" version="4.10"/>
-  <requires lib="libadwaita" version="1.5"/>
+  <requires lib="gtk" version="4.10" />
+  <requires lib="libadwaita" version="1.5" />
   <template class="PreferencesWindow" parent="AdwPreferencesDialog">
     <child>
-      <object class="AdwPreferencesPage">
-        <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title">Configuration properties</property>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title">Dbus level</property>
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle">
+                <property name="title" translatable="yes">Preferences</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <property name="content">
+          <object class="GtkCenterBox">
+            <property name="vexpand">True</property>
+            <property name="orientation">vertical</property>
+            <child type="start">
+              <object class="AdwBanner" id="preference_banner">
+                <property name="title">It's your first connection, set the Dbus-level to "System" if
+                  you want to see all Systend units. asdf asdf asdfasdf asdf asdf asdf as df</property>
+              </object>
+            </child>
+            <child type="center">
+              <object class="AdwPreferencesPage">
                 <child>
-                  <object class="GtkDropDown" id="dbus_level_dropdown">
-                    <property name="model">
-                      <object class="GtkStringList">
-                        <items>
-                          <item>Session</item>
-                          <item>System</item>
-                        </items>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title">Configuration properties</property>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title">Dbus level</property>
+                        <child>
+                          <object class="GtkDropDown" id="dbus_level_dropdown">
+                            <property name="model">
+                              <object class="GtkStringList">
+                                <items>
+                                  <item>Session</item>
+                                  <item>System</item>
+                                </items>
+                              </object>
+                            </property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
                       </object>
-                    </property>
-                    <property name="valign">center</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="subtitle">To see the logs in color</property>
-                <property name="title">Journal colors</property>
-                <child>
-                  <object class="GtkSwitch" id="journal_colors">
-                    <property name="valign">baseline-center</property>
-                    <signal name="state-set" handler="journal_switch_state_set" swapped="yes"/>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="subtitle">Display a nice text highligth for the unit file</property>
-                <property name="title">Unit file highlighting</property>
-                <child>
-                  <object class="GtkSwitch" id="unit_file_highlight">
-                    <property name="valign">baseline-center</property>
-                    <signal name="state-set" handler="unit_file_highlighting_state_set" swapped="yes"/>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="subtitle">To see the logs in color</property>
+                        <property name="title">Journal colors</property>
+                        <child>
+                          <object class="GtkSwitch" id="journal_colors">
+                            <property name="valign">baseline-center</property>
+                            <signal name="state-set" handler="journal_switch_state_set"
+                              swapped="yes" />
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="subtitle">Display a nice text highligth for the unit file</property>
+                        <property name="title">Unit file highlighting</property>
+                        <child>
+                          <object class="GtkSwitch" id="unit_file_highlight">
+                            <property name="valign">baseline-center</property>
+                            <signal name="state-set" handler="unit_file_highlighting_state_set"
+                              swapped="yes" />
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
           </object>
-        </child>
+        </property>
       </object>
     </child>
   </template>
