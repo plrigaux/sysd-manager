@@ -146,6 +146,22 @@ impl From<ParseIntError> for ColorCodeError {
     }
 }
 
+/// The emphasis (bold, faint) states.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Intensity {
+    Bold,
+    Faint,
+}
+
+impl Intensity {
+    pub fn pango(&self) -> &str {
+        match self {
+            Intensity::Bold => "bold",
+            Intensity::Faint => "light",
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

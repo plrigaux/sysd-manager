@@ -1,4 +1,6 @@
 mod dosini;
+mod palette;
+
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 use crate::systemd::{self, data::UnitInfo};
@@ -34,6 +36,7 @@ impl UnitFilePanel {
 mod imp {
     use std::cell::RefCell;
 
+    use adw::StyleManager;
     use gtk::{
         glib,
         prelude::*,
@@ -107,9 +110,11 @@ mod imp {
             let buf = self.unit_file_text.buffer();
             if in_color {
                 buf.set_text("");
+
+                let dark = StyleManager::default().is_dark();
                 let mut start_iter = buf.start_iter();
 
-                let text = dosini::convert_to_mackup(&file_content, true);
+                let text = dosini::convert_to_mackup(&file_content, dark);
                 buf.insert_markup(&mut start_iter, &text);
             } else {
                 buf.set_text(&file_content);

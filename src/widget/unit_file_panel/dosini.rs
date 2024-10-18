@@ -2,8 +2,10 @@
 ///
 use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
 
-use crate::widget::journal::more_colors::TermColor;
+use crate::widget::journal::more_colors::Intensity;
 use regex::Regex;
+
+use super::palette::Palette;
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     let re = match Regex::new(
@@ -37,16 +39,35 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     re
 });
 
-// echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
-pub fn convert_to_mackup<'a>(text: &'a str, dark: bool) -> Cow<'a, str> {
-    let token_list = get_tokens(text);
+macro_rules! colorize_str {
+    (  $text:expr, $token:expr, $dark:expr, $sbuilder:expr) => {{
+        let style = $token.get_style($dark);
 
-    make_markup(text, &token_list, dark)
+        $sbuilder.push_str("<span color=\"");
+        $sbuilder.push_str(style.color.get_color());
+        $sbuilder.push_str("\"");
+        if let Some(intensity) = style.intensity {
+            $sbuilder.push_str(" weight=\"");
+            $sbuilder.push_str(intensity.pango());
+            $sbuilder.push('\"');
+        } 
+        $sbuilder.push('>');
+        $sbuilder.push_str($text);
+        $sbuilder.push_str("</span>");
+    }};
 }
 
-fn get_tokens(text: &str) -> Vec<Token> {
-    let mut token_list = Vec::<Token>::new();
+macro_rules! colorize {
+    ($text:expr, $token:expr, $dark:expr, $sbuilder:expr) => {{
+        colorize_str!($text.as_str(), $token, $dark, $sbuilder)
+    }};
+}
+
+// echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
+pub fn convert_to_mackup<'a>(text: &'a str, dark: bool) -> Cow<'a, str> {
     let mut last_end: usize = 0;
+
+    let mut out = String::with_capacity(text.len() * 2);
 
     for captures in RE.captures_iter(text) {
         let main_match = captures.get(0).expect("not suposed to happen");
@@ -55,69 +76,106 @@ fn get_tokens(text: &str) -> Vec<Token> {
         let start = main_match.start();
 
         if start != last_end {
-            token_list.push(Token::Text(&text[last_end..start]));
+            colorize_str!(&text[last_end..start], Token::Text, dark, out);
         }
 
         if let Some(label) = captures.get(1) {
-            token_list.push(Token::Label(&label.as_str()));
+            colorize!(label, Token::Label, dark, out);
+            out.push('=');
 
             if let Some(number) = captures.get(3) {
-                token_list.push(Token::Number(&number.as_str()));
+                colorize!(number, Token::Number, dark, out);
             } else if let Some(value) = captures.get(4) {
-                token_list.push(Token::Value(&value.as_str()));
+                colorize!(value, Token::Value, dark, out);
             }
         } else if let Some(section) = captures.get(5) {
-            token_list.push(Token::Section(&section.as_str()));
+            colorize!(section, Token::Section, dark, out);
         } else if let Some(comment) = captures.get(6) {
-            token_list.push(Token::Comment(&comment.as_str()));
+            colorize!(comment, Token::Comment, dark, out);
         }
 
         last_end = end;
     }
 
-    if text.len() != last_end {
-        token_list.push(Token::Text(&text[last_end..]));
+    if last_end == 0 {
+        return Cow::from(text);
     }
-    token_list
-}
 
-macro_rules! colorize {
-    (  $text:expr, $color:expr, $sbuilder:expr) => {{
-        $sbuilder.push_str("<span color=\"");
-        $sbuilder.push_str(&$color.get_hexa_code());
-        $sbuilder.push_str("\">");
-        $sbuilder.push_str($text);
-        $sbuilder.push_str("</span>");
-    }};
-}
+    out.push_str(&text[last_end..]);
 
-fn make_markup<'a>(text: &'a str, token_list: &Vec<Token>, _dark: bool) -> Cow<'a, str> {
-    let mut out = String::with_capacity(text.len() * 2);
-
-    for token in token_list {
-        match *token {
-            Token::Text(txt) => out.push_str(txt),
-            Token::Label(label) => {
-                colorize!(label, TermColor::Cyan, out);
-                out.push('=')
-            }
-            Token::Value(value) => colorize!(value, TermColor::BrightYellow, out),
-            Token::Number(num) => colorize!(num, TermColor::Yellow, out),
-            Token::Comment(comment) => colorize!(comment, TermColor::Green, out),
-            Token::Section(section) => colorize!(section, TermColor::BrightCyan, out),
-        }
-    }
     Cow::from(out)
 }
 
 #[derive(Debug)]
-enum Token<'a> {
-    Text(&'a str),
-    Label(&'a str),
-    Value(&'a str),
-    Number(&'a str),
-    Comment(&'a str),
-    Section(&'a str),
+enum Token {
+    Text,
+    Label,
+    Value,
+    Number,
+    Comment,
+    Section,
+}
+
+#[derive(Debug)]
+struct Style<'a> {
+    color: Palette<'a>,
+    intensity: Option<Intensity>,
+}
+
+impl<'a> Style<'a> {
+    fn new(color: Palette<'a>, intensity: Option<Intensity>) -> Style<'a> {
+        Self { color, intensity }
+    }
+}
+
+impl Token {
+    fn get_style(&self, dark: bool) -> Style {
+        let style = match self {
+            Token::Text => {
+                if dark {
+                    Style::new(Palette::Light5, None)
+                } else {
+                    Style::new(Palette::Dark5, None)
+                }
+            }
+            Token::Label => {
+                if dark {
+                    Style::new(Palette::Custom("#5bc8af"), Some(Intensity::Bold))
+                } else {
+                    Style::new(Palette::Custom("#218787"), Some(Intensity::Bold))
+                }
+            }
+            Token::Value => {
+                if dark {
+                    Style::new(Palette::Light4, None)
+                } else {
+                    Style::new(Palette::Custom("#504e55"), None)
+                }
+            }
+            Token::Number => {
+                if dark {
+                    Style::new(Palette::Custom("#7d8ac7"), None)
+                } else {
+                    Style::new(Palette::Custom("#4e57ba"), None)
+                }
+            }
+            Token::Comment => {
+                if dark {
+                    Style::new(Palette::Dark1, None)
+                } else {
+                    Style::new(Palette::Dark1, None)
+                }
+            }
+            Token::Section => {
+                if dark {
+                    Style::new(Palette::Orange2, Some(Intensity::Bold))
+                } else {
+                    Style::new(Palette::Orange5, Some(Intensity::Bold))
+                }
+            }
+        };
+        style
+    }
 }
 
 #[cfg(test)]
@@ -166,17 +224,6 @@ some text
 
         for capt in results {
             println!("capture: {:#?}", capt)
-        }
-    }
-
-    #[test]
-    fn test_color_token() {
-        let tokens = get_tokens(TEST_INI_FILE);
-        //println!("capture len: {}",TEST_INI_FILE);
-        println!("tokens len: {:#?}", tokens.len());
-
-        for token in tokens {
-            println!("{:?}", token)
         }
     }
 

@@ -5,7 +5,7 @@ use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
 use log::{debug, info, warn};
 use regex::Regex;
 
-use super::more_colors::{self, ColorCodeError, TermColor};
+use super::more_colors::{self, ColorCodeError, Intensity, TermColor};
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
@@ -408,21 +408,6 @@ impl SelectGraphicRendition {
         }
 
         write_something
-    }
-}
-
-/// The emphasis (bold, faint) states.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Intensity {
-    Bold,
-    Faint,
-}
-impl Intensity {
-    fn pango(&self) -> &str {
-        match self {
-            Intensity::Bold => "bold",
-            Intensity::Faint => "light",
-        }
     }
 }
 

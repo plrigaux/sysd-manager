@@ -73,7 +73,6 @@ impl Preferences {
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
 
-
         Preferences {
             dbus_level: RwLock::new(level),
             journal_colors: RwLock::new(journal_colors),
