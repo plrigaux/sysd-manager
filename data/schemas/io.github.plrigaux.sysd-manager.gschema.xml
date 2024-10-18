@@ -22,7 +22,6 @@
             <default>'Session'</default>
             <summary>The dbus level</summary>
         </key>
-
         <key name="pref-journal-colors" type="b">
             <default>true</default>
             <summary>To see the journal logs with colors</summary>
@@ -31,6 +30,9 @@
             <default>true</default>
             <summary>To display unit file highlighted</summary>
         </key>
-        
+        <key name="pref-app-first-connection" type="b">
+            <default>true</default>
+            <summary>Check if the first time that the user open the application</summary>
+        </key>
     </schema>
 </schemalist>

@@ -19,6 +19,7 @@ pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
 pub const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
+pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum DbusLevel {
@@ -65,6 +66,7 @@ pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
     journal_colors: RwLock<bool>,
     unit_file_colors: RwLock<bool>,
+    app_first_connection: RwLock<bool>,
 }
 
 impl Preferences {
@@ -72,11 +74,14 @@ impl Preferences {
         let level = settings.string(KEY_DBUS_LEVEL).into();
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
+        let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
+
 
         Preferences {
             dbus_level: RwLock::new(level),
             journal_colors: RwLock::new(journal_colors),
             unit_file_colors: RwLock::new(unit_file_colors),
+            app_first_connection: RwLock::new(app_first_connection),
         }
     }
 
@@ -90,6 +95,10 @@ impl Preferences {
 
     pub fn unit_file_colors(&self) -> bool {
         *self.unit_file_colors.read().unwrap()
+    }
+
+    pub fn is_app_first_connection(&self) -> bool {
+        *self.app_first_connection.read().unwrap()
     }
 
     pub fn set_dbus_level(&self, dbus_level: DbusLevel) {
@@ -111,6 +120,13 @@ impl Preferences {
 
         let mut unit_file_colors = self.unit_file_colors.write().expect("supposed to write");
         *unit_file_colors = display;
+    }
+
+    pub fn set_app_first_connection(&self, app_first_connection_new: bool) {
+        info!("set_app_first_connection: {app_first_connection_new}");
+
+        let mut app_first_connection = self.app_first_connection.write().expect("supposed to write");
+        *app_first_connection = app_first_connection_new;
     }
 }
 

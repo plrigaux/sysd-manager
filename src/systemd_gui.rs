@@ -7,6 +7,8 @@ use gtk::{gio, prelude::*, SingleSelection};
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
 use crate::widget::journal::update_journal;
+use crate::widget::preferences::data::PREFERENCES;
+use crate::widget::preferences::PreferencesDialog;
 use crate::widget::unit_file_panel::UnitFilePanel;
 use crate::widget::{self, title_bar, unit_info};
 use log::{debug, error, info, warn};
@@ -831,6 +833,14 @@ fn build_ui(application: &adw::Application) {
     }
 
     window.present();
+
+    if PREFERENCES.is_app_first_connection() {
+        info!("Is application first connection");
+
+        let pdialog = PreferencesDialog::new();
+
+        adw::prelude::AdwDialogExt::present(&pdialog, Some(&window));
+    }
 }
 
 fn fill_store(store: &gio::ListStore) {

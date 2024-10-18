@@ -8,7 +8,10 @@ use log::{info, warn};
 use std::cell::OnceCell;
 
 use crate::systemd_gui;
-use crate::widget::preferences::data::{DbusLevel, KEY_DBUS_LEVEL, KEY_PREF_JOURNAL_COLORS, KEY_PREF_UNIT_FILE_HIGHLIGHTING};
+use crate::widget::preferences::data::{
+    DbusLevel, KEY_DBUS_LEVEL, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS,
+    KEY_PREF_UNIT_FILE_HIGHLIGHTING,
+};
 
 use super::data::PREFERENCES;
 
@@ -25,6 +28,9 @@ pub struct PreferencesDialog {
 
     #[template_child]
     pub unit_file_highlight: TemplateChild<gtk::Switch>,
+
+    #[template_child]
+    pub preference_banner: TemplateChild<adw::Banner>,
 }
 
 #[gtk::template_callbacks]
@@ -53,7 +59,10 @@ impl PreferencesDialog {
 
                     PREFERENCES.set_dbus_level(level);
 
-                    info!("Save setting '{KEY_DBUS_LEVEL}' with value {:?}", level.as_str());
+                    info!(
+                        "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
+                        level.as_str()
+                    );
                 });
         }
     }
@@ -68,6 +77,7 @@ impl PreferencesDialog {
         let level = PREFERENCES.dbus_level();
         let journal_colors = PREFERENCES.journal_colors();
         let unit_file_colors = PREFERENCES.unit_file_colors();
+        let is_app_first_connection = PREFERENCES.is_app_first_connection();
 
         self.dbus_level_dropdown.set_selected(level as u32);
 
@@ -76,12 +86,15 @@ impl PreferencesDialog {
 
         self.unit_file_highlight.set_state(unit_file_colors);
         self.unit_file_highlight.set_active(unit_file_colors);
-    }
 
-/*     #[template_callback]
-    fn dbus_level_dropdown_activate(&self, dd: &gtk::DropDown) {
-        info!("dd {:?}", dd);
-    } */
+        self.preference_banner.set_revealed(is_app_first_connection);
+
+        self.preference_banner.set_use_markup(true);
+        self.preference_banner.set_title(
+            "It's your first connection
+You can set the application's Dbus level to <u>System</u> if you want to see all Systemd units.",
+        );
+    }
 
     #[template_callback]
     fn journal_switch_state_set(&self, state: bool) -> bool {
@@ -90,12 +103,14 @@ impl PreferencesDialog {
         self.journal_colors.set_state(state);
         PREFERENCES.set_journal_colors(state);
         if let Err(e) = self.settings().set_boolean(KEY_PREF_JOURNAL_COLORS, state) {
-            warn!("{}", e)
+            warn!(
+                "Save setting \"{KEY_PREF_JOURNAL_COLORS}\" error {}",
+                e
+            )
         }
 
         true
     }
-
 
     #[template_callback]
     fn unit_file_highlighting_state_set(&self, state: bool) -> bool {
@@ -103,8 +118,14 @@ impl PreferencesDialog {
 
         self.unit_file_highlight.set_state(state);
         PREFERENCES.set_unit_file_highlighting(state);
-        if let Err(e) = self.settings().set_boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING, state) {
-            warn!("{}", e)
+        if let Err(e) = self
+            .settings()
+            .set_boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING, state)
+        {
+            warn!(
+                "Save setting \"{KEY_PREF_UNIT_FILE_HIGHLIGHTING}\" error {}",
+                e
+            )
         }
 
         true
@@ -141,7 +162,20 @@ impl WindowImpl for PreferencesDialog {}
 
 impl AdwDialogImpl for PreferencesDialog {
     fn closed(&self) {
-        log::info!("Close preferences");
+        log::info!("Close preferences window");
+
+        if PREFERENCES.is_app_first_connection() {
+            PREFERENCES.set_app_first_connection(false);
+            if let Err(e) = self
+                .settings()
+                .set_boolean(KEY_PREF_APP_FIRST_CONNECTION, false)
+            {
+                warn!(
+                    "Save setting \"{KEY_PREF_APP_FIRST_CONNECTION}\" error {}",
+                    e
+                )
+            }
+        }
     }
 }
 
