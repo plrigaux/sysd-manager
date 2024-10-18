@@ -504,7 +504,7 @@ fn build_ui(application: &adw::Application) {
                         unit.primary(),
                         error
                     );
-                   
+
                     //TODO put a timer to set back the switch
 
                     return Propagation::Stop;
@@ -773,6 +773,16 @@ fn build_ui(application: &adw::Application) {
     }
 
     {
+        let system_manager = adw::StyleManager::default();
+        let unit_file_panel = unit_file_panel.clone();
+        system_manager.connect_dark_notify(move |a: &adw::StyleManager| {
+            let is_dark = a.is_dark();
+            info!("is dark {is_dark}");
+            unit_file_panel.set_dark(is_dark);
+        });
+    }
+
+    {
         //let unit_file_info = unit_file_info.clone();
         let ablement_switch = ablement_switch.clone();
         let unit_journal = unit_journal_view.clone();
@@ -819,6 +829,7 @@ fn build_ui(application: &adw::Application) {
             unit_analyse_scrolled_window.set_child(Some(&info_panel));
         });
     }
+
     window.present();
 }
 

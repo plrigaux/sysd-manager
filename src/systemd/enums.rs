@@ -24,7 +24,7 @@ impl EnablementStatus {
     /// into a UnitType by matching the first character.
     pub fn new(enablement_status: &str) -> EnablementStatus {
         if enablement_status.is_empty() {
-            warn!("Empty Enablement Status: \"{}\"", enablement_status);
+            info!("Empty Enablement Status: \"{}\"", enablement_status);
             return EnablementStatus::Unknown;
         }
 

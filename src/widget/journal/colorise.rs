@@ -121,7 +121,7 @@ fn make_markup<'a>(
             Token::Hidden => sgr.set_hidden(true),
             Token::Strikeout => sgr.set_strikeout(true),
             Token::Hyperlink(link, link_text) => {
-                info!("Do hyperlink {link} {link_text}");
+                debug!("Do hyperlink {link} {link_text}");
 
                 //out.push_str("<a href=\"");
                 //out.push_str(&link_text);

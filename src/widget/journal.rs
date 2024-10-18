@@ -23,6 +23,8 @@ pub fn update_journal(journal: &gtk::TextView, unit: &UnitInfo) {
     };
 
     let buf = journal.buffer();
+    buf.set_text(""); // clear text
+    
     if in_color {
         let mut start_iter = buf.start_iter();
         let journal_color: TermColor = journal.color().into();

@@ -17,6 +17,12 @@ impl UnitFilePanel {
         // Create new window
         let obj: UnitFilePanel = glib::Object::new();
 
+        let system_manager = adw::StyleManager::default();
+
+        let is_dark = system_manager.is_dark();
+
+        obj.set_dark(is_dark);
+
         obj
     }
 
@@ -31,12 +37,15 @@ impl UnitFilePanel {
         self.imp()
             .display_file_info(&file_path, &file_content, unit);
     }
+
+    pub fn set_dark(&self, is_dark: bool) {
+        self.imp().set_dark(is_dark)
+    }
 }
 
 mod imp {
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
 
-    use adw::StyleManager;
     use gtk::{
         glib,
         prelude::*,
@@ -72,7 +81,9 @@ mod imp {
         #[template_child]
         unit_file_text: TemplateChild<gtk::TextView>,
 
-        pub unit: RefCell<Option<UnitInfo>>,
+        unit: RefCell<Option<UnitInfo>>,
+
+        is_dark: Cell<bool>,
     }
 
     #[gtk::template_callbacks]
@@ -105,20 +116,37 @@ mod imp {
 
             let _old = self.unit.replace(Some(unit.clone()));
 
+            self.set_text(file_content);
+        }
+
+        fn set_text(&self, file_content: &str,) {
+
             let in_color = PREFERENCES.unit_file_colors();
 
             let buf = self.unit_file_text.buffer();
             if in_color {
                 buf.set_text("");
 
-                let dark = StyleManager::default().is_dark();
+                let is_dark = self.is_dark.get();
                 let mut start_iter = buf.start_iter();
 
-                let text = dosini::convert_to_mackup(&file_content, dark);
+                let text = dosini::convert_to_mackup(&file_content, is_dark);
                 buf.insert_markup(&mut start_iter, &text);
             } else {
                 buf.set_text(&file_content);
             }
+        }
+
+        pub(crate) fn set_dark(&self, is_dark: bool) {
+            self.is_dark.set(is_dark);
+
+            //get current text
+            let buffer = self.unit_file_text.buffer();
+            let start = buffer.start_iter();
+            let end = buffer.end_iter();
+            let file_content = buffer.text(&start, &end, true);
+
+            self.set_text(file_content.as_str());
         }
     }
 
