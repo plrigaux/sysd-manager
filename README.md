@@ -23,7 +23,9 @@ Any Linux distribution that has adopted **systemd**.
 
 ![Unit Journal](screenshots/journal.png)
 
-![Analyze](screenshots/analyse_blame.png)
+![Analyze Blame](screenshots/analyse_blame.png)
+
+![Unit Info](screenshots/unit_info_dark.png)
 
 ## Credit
 This project is inspired by the work of Guillaume Gomez https://github.com/GuillaumeGomez/systemd-manager/
