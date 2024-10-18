@@ -20,7 +20,7 @@
                 <choice value='System' />
             </choices>
             <default>'Session'</default>
-            <summary>The dbus level</summary>
+            <summary>The dbus level scope</summary>
         </key>
         <key name="pref-journal-colors" type="b">
             <default>true</default>
