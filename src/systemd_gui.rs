@@ -441,10 +441,13 @@ fn build_ui(application: &adw::Application) {
     let ablement_switch = gtk::Switch::builder()
         .focusable(true)
         .valign(gtk::Align::BaselineCenter)
+        .tooltip_text("To enable or disable a unit")
         .build();
 
+    let toast_overlay = adw::ToastOverlay::new();
     {
         let column_view = units_browser.clone();
+        let toast_overlay = toast_overlay.clone();
         ablement_switch.connect_state_set(move |switch, enabled| {
             // handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
 
@@ -481,7 +484,7 @@ fn build_ui(application: &adw::Application) {
             if enabled && enabled_status == EnablementStatus::Enabled
                 || !enabled && enabled_status != EnablementStatus::Enabled
             {
-                set_switch_tooltip(enabled, switch);
+                set_switch_tooltip(enabled, switch, &unit.primary());
                 return Propagation::Proceed;
             }
 
@@ -496,16 +499,34 @@ fn build_ui(application: &adw::Application) {
 
             match enable_result {
                 Ok(enablement_status_ret) => {
-                    info!("New statut: {}", enablement_status_ret.to_string());
+                    let toast_info = format!(
+                        "New active statut ({}) for unit {}",
+                        enablement_status_ret.to_string(),
+                        unit.primary(),
+                    );
+                    info!("{toast_info}");
+
+                    let toast = Toast::new(&toast_info);
+
+                    toast_overlay.add_toast(toast);
                 }
 
                 Err(error) => {
-                    warn!(
-                        "Action \"{:?}\" on unit \"{}\": FAILED!, reason : {:?}",
+                    let error_message = match error {
+                        systemd::SystemdErrors::SystemCtlError(s) => s,
+                        _ => format!("{:?}", error),
+                    };
+                    let toast_warn = format!(
+                        "Action \"{:?}\" on unit \"{}\": FAILED! {:?}",
                         action,
                         unit.primary(),
-                        error
+                        error_message
                     );
+                    warn!("{toast_warn}");
+
+                    let toast = Toast::new(&toast_warn);
+
+                    toast_overlay.add_toast(toast);
 
                     //TODO put a timer to set back the switch
 
@@ -519,7 +540,7 @@ fn build_ui(application: &adw::Application) {
 
             let enabled_new = action == EnablementStatus::Enabled;
             switch.set_state(enabled_new);
-            set_switch_tooltip(enabled_new, switch);
+            set_switch_tooltip(enabled, switch, &unit.primary());
             unit.set_enable_status(action.to_string());
 
             handle_switch_sensivity(action, switch);
@@ -539,7 +560,6 @@ fn build_ui(application: &adw::Application) {
     let restart_button = ButtonIcon::new("Retart", "view-refresh");
     control_box.append(&restart_button);
 
-    let toast_overlay = adw::ToastOverlay::new();
     {
         let toast_overlay = toast_overlay.clone();
         start_button.connect_clicked(move |_button| {
@@ -857,13 +877,16 @@ fn fill_store(store: &gio::ListStore) {
     info!("Unit list refreshed! list size {}", store.n_items())
 }
 
-fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch) {
-    let text = if enabled {
-        "Disable unit "
+fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch, unit_name: &str) {
+    let action_text = if enabled {
+        "Disable"
     } else {
-        "Enable unit"
+        "Enable"
     };
-    switch.set_tooltip_text(Some(text));
+
+    let text = format!("{action_text} unit <b>{unit_name}</b>");
+
+    switch.set_tooltip_markup(Some(&text));
 }
 
 /// Whether the widget responds to input.
@@ -873,11 +896,11 @@ fn handle_switch_sensivity(unit_file_state: EnablementStatus, switch: &gtk::Swit
     {
         true
     } else {
+        switch.set_tooltip_text(None);
         false
     };
 
     switch.set_sensitive(sensitive);
-    switch.set_tooltip_text(None);
 }
 
 fn update_active_state(unit: &UnitInfo, state: ActiveState) {
