@@ -18,6 +18,7 @@
 	(7,"gtk","4.12",None),
 	(16,"gtk","4.12",None),
 	(17,"gtk","4.6",None),
+	(20,"gtk","4.12",None),
 	(21,"gtk","4.10",None),
 	(21,"libadwaita","1.5",None),
 	(25,"gtk","4.12",None)
