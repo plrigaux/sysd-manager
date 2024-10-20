@@ -22,6 +22,8 @@
     </child>
     <child>
       <object class="ButtonIcon" id="journal_refresh_button">
+        <property name="button_icon_name">view-refresh</property>
+        <property name="button_label_text">Refresh</property>
         <property name="hexpand">True</property>
         <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
       </object>
