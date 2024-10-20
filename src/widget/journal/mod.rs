@@ -43,7 +43,7 @@ mod imp {
         prelude::*,
         subclass::{
             box_::BoxImpl,
-            prelude::{ObjectImpl, ObjectSubclass},
+            prelude::*,
             widget::{
                 CompositeTemplateCallbacksClass, CompositeTemplateClass,
                 CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
@@ -149,7 +149,14 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for JournalPanelImp {}
+    impl ObjectImpl for JournalPanelImp {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            self.journal_refresh_button.set_button_icon("view-refresh");
+            self.journal_refresh_button.set_button_label("Refresh");
+        }
+    }
     impl WidgetImpl for JournalPanelImp {}
     impl BoxImpl for JournalPanelImp {}
 }

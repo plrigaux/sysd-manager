@@ -6,19 +6,15 @@
   <template class="UnitFilePanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
         <child>
-          <object class="GtkScrolledWindow">
-            <property name="vexpand">True</property>
-            <child>
-              <object class="GtkTextView" id="unit_file_text">
-                <property name="hexpand">True</property>
-                <property name="left-margin">5</property>
-                <property name="monospace">True</property>
-                <property name="right-margin">5</property>
-                <property name="wrap-mode">word-char</property>
-              </object>
-            </child>
+          <object class="GtkTextView" id="unit_file_text">
+            <property name="hexpand">True</property>
+            <property name="left-margin">5</property>
+            <property name="monospace">True</property>
+            <property name="right-margin">5</property>
+            <property name="wrap-mode">word-char</property>
           </object>
         </child>
       </object>
@@ -34,8 +30,6 @@
         </child>
         <child>
           <object class="ButtonIcon" id="save_button">
-            <property name="icon-name">document-save</property>
-            <property name="label">Save</property>
             <signal name="clicked" handler="save_file" swapped="yes"/>
           </object>
         </child>

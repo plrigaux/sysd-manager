@@ -7,19 +7,15 @@
   <template class="JournalPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
         <child>
-          <object class="GtkScrolledWindow">
-            <property name="vexpand">True</property>
-            <child>
-              <object class="GtkTextView" id="journal_text">
-                <property name="editable">False</property>
-                <property name="hexpand">True</property>
-                <property name="left-margin">5</property>
-                <property name="monospace">True</property>
-                <property name="right-margin">5</property>
-              </object>
-            </child>
+          <object class="GtkTextView" id="journal_text">
+            <property name="editable">False</property>
+            <property name="hexpand">True</property>
+            <property name="left-margin">5</property>
+            <property name="monospace">True</property>
+            <property name="right-margin">5</property>
           </object>
         </child>
       </object>
@@ -27,8 +23,6 @@
     <child>
       <object class="ButtonIcon" id="journal_refresh_button">
         <property name="hexpand">True</property>
-        <property name="icon-name">view-refresh</property>
-        <property name="label">Refresh</property>
         <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
       </object>
     </child>

@@ -51,7 +51,7 @@ mod imp {
         prelude::*,
         subclass::{
             box_::BoxImpl,
-            prelude::{ObjectImpl, ObjectSubclass},
+            prelude::*,
             widget::{
                 CompositeTemplateCallbacksClass, CompositeTemplateClass,
                 CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
@@ -168,7 +168,14 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for UnitFilePanelImp {}
+    impl ObjectImpl for UnitFilePanelImp {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            self.save_button.set_button_icon("document-save");
+            self.save_button.set_button_label("Save");
+        }
+    }
     impl WidgetImpl for UnitFilePanelImp {}
     impl BoxImpl for UnitFilePanelImp {}
 }
