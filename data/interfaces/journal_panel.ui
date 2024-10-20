@@ -25,14 +25,11 @@
       </object>
     </child>
     <child>
-      <object class="GtkBox">
-        <child>
-          <object class="ButtonIcon" id="journal_refresh_button">
-            <property name="icon-name">view-refresh</property>
-            <property name="label">Refresh</property>
-            <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
-          </object>
-        </child>
+      <object class="ButtonIcon" id="journal_refresh_button">
+        <property name="hexpand">True</property>
+        <property name="icon-name">view-refresh</property>
+        <property name="label">Refresh</property>
+        <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
       </object>
     </child>
   </template>
