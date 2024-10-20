@@ -6,7 +6,7 @@ use gtk::{gio, prelude::*, SingleSelection};
 
 use crate::systemd::enums::{ActiveState, EnablementStatus, UnitType};
 use crate::widget::button_icon::ButtonIcon;
-use crate::widget::journal::update_journal;
+use crate::widget::journal::JournalPanel;
 use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::preferences::PreferencesDialog;
 use crate::widget::unit_file_panel::UnitFilePanel;
@@ -302,29 +302,8 @@ fn build_ui(application: &adw::Application) {
 
     //-------------------------------------------
     let unit_file_panel = UnitFilePanel::new();
+    let journal_panel = JournalPanel::new();
 
-    let unit_journal_view = gtk::TextView::builder()
-        .focusable(true)
-        .editable(false)
-        .accepts_tab(false)
-        .build();
-
-    let unit_journal_scrolled_window = gtk::ScrolledWindow::builder()
-        .vexpand(true)
-        .focusable(true)
-        .child(&unit_journal_view)
-        .build();
-
-    let unit_journal_box = gtk::Box::builder()
-        .orientation(Orientation::Vertical)
-        .build();
-
-    let refresh_log_button = ButtonIcon::new("Refresh", "view-refresh");
-    refresh_log_button.set_focusable(true);
-    refresh_log_button.set_receives_default(true);
-
-    unit_journal_box.append(&unit_journal_scrolled_window);
-    unit_journal_box.append(&refresh_log_button);
     // Analyse
     let unit_analyse_box = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -411,7 +390,7 @@ fn build_ui(application: &adw::Application) {
     );
     info_stack.append_page(&unit_file_panel, Some(&gtk::Label::new(Some("Unit File"))));
     info_stack.append_page(
-        &unit_journal_box,
+        &journal_panel,
         Some(&gtk::Label::new(Some("Unit Journal"))),
     );
 
@@ -782,17 +761,6 @@ fn build_ui(application: &adw::Application) {
     toolbar_view.add_top_bar(&title_bar_elements.header_bar);
 
     window.set_content(Some(&toast_overlay));
-    //window.set_content(content);
-
-    {
-        // NOTE: Journal Refresh Button
-        let refresh_button = refresh_log_button.clone();
-        let unit_journal = unit_journal_view.clone();
-
-        refresh_button.connect_clicked(move |_| {
-            selected_unit!(|unit: &UnitInfo| update_journal(&unit_journal, &unit));
-        });
-    }
 
     {
         let system_manager = adw::StyleManager::default();
@@ -807,7 +775,7 @@ fn build_ui(application: &adw::Application) {
     {
         //let unit_file_info = unit_file_info.clone();
         let ablement_switch = ablement_switch.clone();
-        let unit_journal = unit_journal_view.clone();
+        //let unit_journal = unit_journal_view.clone();
         let header_label = title_bar_elements.right_bar_label.clone();
         let unit_prop_store = unit_prop_store.clone();
 
@@ -841,7 +809,7 @@ fn build_ui(application: &adw::Application) {
 
             handle_switch_sensivity(ablement_status, &ablement_switch);
 
-            update_journal(&unit_journal, &unit);
+            journal_panel.display_journal(&unit);
             header_label.set_label(&unit.display_name());
             debug!("Unit {:#?}", unit);
 
