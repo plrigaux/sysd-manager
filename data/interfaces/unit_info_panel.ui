@@ -6,15 +6,8 @@
   <template class="UnitInfoPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkScrolledWindow">
-        <property name="vexpand">True</property>
-        <child>
-          <object class="GtkTextView" id="unit_info_textview"/>
-        </child>
-      </object>
-    </child>
-    <child>
       <object class="GtkBox">
+        <property name="spacing">5</property>
         <child>
           <object class="ButtonIcon" id="refresh_button">
             <property name="icon-name">view-refresh</property>
@@ -27,6 +20,16 @@
             <property name="icon-name">view-app-grid-symbolic</property>
             <property name="label">Show all information</property>
             <signal name="clicked" handler="show_all_clicked" swapped="yes"/>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
+        <child>
+          <object class="GtkTextView" id="unit_info_textview">
+            <property name="editable">False</property>
           </object>
         </child>
       </object>

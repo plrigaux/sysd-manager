@@ -10,7 +10,7 @@
 	(20,1,None,"unit_file_panel.ui","Unit file panel",None,None,None,None,None,None),
 	(21,1,"preferences.ui","preferences.ui",None,None,None,None,None,None,None),
 	(26,1,"journal_panel.ui","journal_panel.ui","Unit file panel",None,None,None,None,None,""),
-	(27,3,None,"unit_info_panel.ui",None,None,None,None,None,None,None)
+	(28,1,"unit_info_panel.ui","unit_info_panel.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.12",None),
@@ -22,7 +22,8 @@
 	(20,"gtk","4.12",None),
 	(21,"gtk","4.10",None),
 	(21,"libadwaita","1.5",None),
-	(26,"gtk","4.12",None)
+	(26,"gtk","4.12",None),
+	(28,"gtk","4.12",None)
   </ui_library>
   <object>
 	(1,1,"GtkApplicationWindow",None,None,None,None,None,0,None,None),
@@ -102,12 +103,12 @@
 	(26,2,"GtkScrolledWindow",None,1,None,None,None,0,None,None),
 	(26,3,"GtkTextView","journal_text",2,None,None,None,0,None,None),
 	(26,4,"ButtonIcon","journal_refresh_button",1,None,None,None,1,"",None),
-	(27,2,"GtkBox",None,3,None,None,None,1,None,None),
-	(27,3,"GtkBox","UnitInfoPanel",None,None,None,None,1,None,None),
-	(27,4,"GtkScrolledWindow",None,3,None,None,None,0,None,None),
-	(27,5,"GtkTextView","unit_info_textview",4,None,None,None,0,None,None),
-	(27,6,"ButtonIcon","refresh_button",2,None,None,None,0,None,None),
-	(27,7,"ButtonIcon","show_all_button",2,None,None,None,1,None,None)
+	(28,1,"GtkBox","UnitInfoPanel",None,None,None,None,0,None,None),
+	(28,2,"GtkScrolledWindow",None,1,None,None,None,1,None,None),
+	(28,3,"GtkTextView","unit_info_textview",2,None,None,None,0,None,None),
+	(28,4,"GtkBox",None,1,None,None,None,0,None,None),
+	(28,5,"ButtonIcon","refresh_button",4,None,None,None,0,None,None),
+	(28,6,"ButtonIcon","show_all_button",4,None,None,None,1,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -212,11 +213,14 @@
 	(26,4,"GtkButton","icon-name","view-refresh",None,None,None,None,None,None,None,None,None),
 	(26,4,"GtkButton","label","Refresh",None,None,None,None,None,None,None,None,None),
 	(26,4,"GtkWidget","hexpand","True",0,None,None,None,None,None,None,None,None),
-	(27,3,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
-	(27,6,"GtkButton","icon-name","view-refresh",None,None,None,None,None,None,None,None,None),
-	(27,6,"GtkButton","label","Refresh",None,None,None,None,None,None,None,None,None),
-	(27,7,"GtkButton","icon-name","view-app-grid-symbolic",None,None,None,None,None,None,None,None,None),
-	(27,7,"GtkButton","label","Show all information",None,None,None,None,None,None,None,None,None)
+	(28,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
+	(28,2,"GtkWidget","vexpand","True",0,None,None,None,None,None,None,None,None),
+	(28,3,"GtkTextView","editable","False",None,None,None,None,None,None,None,None,None),
+	(28,4,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
+	(28,5,"GtkButton","icon-name","view-refresh",0,None,None,None,None,None,None,None,None),
+	(28,5,"GtkButton","label","Refresh",0,None,None,None,None,None,None,None,None),
+	(28,6,"GtkButton","icon-name","view-app-grid-symbolic",0,None,None,None,None,None,None,None,None),
+	(28,6,"GtkButton","label","Show all information",0,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(16,1,2,"GtkGridLayoutChild","column","0",None,None,None,None),
@@ -267,8 +271,8 @@
 	(12,21,13,"GtkSwitch","state-set","journal_switch_state_set",None,None,1,0,None),
 	(13,21,15,"GtkSwitch","state-set","unit_file_highlighting_state_set",None,None,1,0,None),
 	(15,26,4,"GtkButton","clicked","refresh_journal_clicked",None,None,1,0,None),
-	(16,27,6,"GtkButton","clicked","refresh_info_clicked",None,0,1,0,None),
-	(17,27,7,"GtkButton","clicked","show_all_clicked",None,0,1,0,None)
+	(18,28,5,"GtkButton","clicked","refresh_info_clicked",None,None,1,0,None),
+	(19,28,6,"GtkButton","clicked","show_all_clicked",None,None,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

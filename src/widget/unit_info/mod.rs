@@ -334,8 +334,13 @@ fn fill_load_state(text: &mut String, map: &HashMap<String, OwnedValue>, is_dark
     let mut all_none = true;
     for p in three_param {
         if !p.is_none() {
-            all_none = false;
-            break;
+            if  let Value::Str(inner_str) = p.unwrap() as &Value {
+                if !inner_str.is_empty() {
+                    all_none = false;
+                    break;
+                }
+            }
+   
         }
     }
 
@@ -401,9 +406,9 @@ fn fill_docs(text: &mut String, map: &HashMap<String, OwnedValue>) {
     }
 }
 
-fn get_array_str<'a>(value: &'a zvariant::Value<'a>) -> Vec<&'a str> {
-    let vec = match value as &zvariant::Value {
-        zvariant::Value::Array(a) => {
+fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
+    let vec = match value as &Value {
+        Value::Array(a) => {
             let mut vec = Vec::with_capacity(a.len());
 
             let mut it = a.iter();
@@ -512,7 +517,7 @@ fn fill_main_pid(text: &mut String, map: &HashMap<String, OwnedValue>, unit: &Un
 fn get_main_pid(map: &HashMap<String, OwnedValue>) -> u32 {
     let value = get_value!(map, "MainPID", 0);
 
-    if let zvariant::Value::U32(main_pid) = value as &Value {
+    if let Value::U32(main_pid) = value as &Value {
         return *main_pid;
     }
     0
@@ -521,11 +526,11 @@ fn get_main_pid(map: &HashMap<String, OwnedValue>) -> u32 {
 fn get_exec_full<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
     let value = get_value!(map, "ExecStart", None);
 
-    if let zvariant::Value::Array(array) = value as &Value {
+    if let Value::Array(array) = value as &Value {
         if let Ok(Some(owned_value)) = array.get::<&Value>(0) {
-            if let zvariant::Value::Structure(zstruc) = owned_value {
+            if let Value::Structure(zstruc) = owned_value {
                 if let Some(val_0) = zstruc.fields().get(0) {
-                    if let zvariant::Value::Str(zstr) = val_0 {
+                    if let Value::Str(zstr) = val_0 {
                         return Some(zstr);
                     }
                 }
@@ -581,7 +586,7 @@ fn fill_tasks(text: &mut String, map: &HashMap<String, OwnedValue>) {
 fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "TimersCalendar");
 
-    let zvariant::Value::Array(array) = value as &Value else {
+    let Value::Array(array) = value as &Value else {
         return;
     };
 
@@ -593,19 +598,19 @@ fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedVa
         return;
     };
 
-    let zvariant::Value::Structure(zstruc) = val_listen_stc else {
+    let Value::Structure(zstruc) = val_listen_stc else {
         return;
     };
 
-    let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
+    let Some(Value::Str(val_0)) = zstruc.fields().get(0) else {
         return;
     };
 
-    let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
+    let Some(Value::Str(val_1)) = zstruc.fields().get(1) else {
         return;
     };
 
-    let Some(zvariant::Value::U64(_val_2)) = zstruc.fields().get(2) else {
+    let Some(Value::U64(_val_2)) = zstruc.fields().get(2) else {
         return;
     };
 
@@ -617,7 +622,7 @@ fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedVa
 fn fill_trigger_timers_monotonic(text: &mut String, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "TimersMonotonic");
 
-    let zvariant::Value::Array(array) = value as &Value else {
+    let Value::Array(array) = value as &Value else {
         return;
     };
 
@@ -657,7 +662,7 @@ struct Struct {
 fn fill_listen(text: &mut String, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Listen");
 
-    let zvariant::Value::Array(array) = value as &Value else {
+    let Value::Array(array) = value as &Value else {
         return;
     };
 
@@ -665,15 +670,15 @@ fn fill_listen(text: &mut String, map: &HashMap<String, OwnedValue>) {
         return;
     };
 
-    let zvariant::Value::Structure(zstruc) = val_listen_stc else {
+    let Value::Structure(zstruc) = val_listen_stc else {
         return;
     };
 
-    let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
+    let Some(Value::Str(val_0)) = zstruc.fields().get(0) else {
         return;
     };
 
-    let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
+    let Some(Value::Str(val_1)) = zstruc.fields().get(1) else {
         return;
     };
 
@@ -714,7 +719,7 @@ fn fill_control_group(text: &mut String, map: &HashMap<String, OwnedValue>) {
 }
 
 fn value_str<'a>(value: &'a Value<'a>) -> &'a str {
-    if let zvariant::Value::Str(converted) = value as &Value {
+    if let Value::Str(converted) = value as &Value {
         return converted.as_str();
     }
     warn!("Wrong zvalue conversion: {:?}", value);
@@ -727,7 +732,7 @@ const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: u64 = 1024;
 
 fn value_u64(value: &Value) -> u64 {
-    if let zvariant::Value::U64(converted) = value {
+    if let Value::U64(converted) = value {
         return *converted;
     }
     warn!("Wrong zvalue conversion: {:?}", value);
