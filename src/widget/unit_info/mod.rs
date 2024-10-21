@@ -189,7 +189,7 @@ mod imp {
 
 fn fill_all_info(unit: &UnitInfo) -> Result<String, Box<dyn std::error::Error>> {
     let mut text = String::new();
-    fill_name_description(&mut text, unit)?;
+    fill_name_description(&mut text, unit);
 
     let map = match systemd::fetch_system_unit_info_native(&unit) {
         Ok(m) => m,
@@ -199,46 +199,29 @@ fn fill_all_info(unit: &UnitInfo) -> Result<String, Box<dyn std::error::Error>> 
         }
     };
 
-    fill_description(&mut text, &map)?;
-    fill_dropin(&mut text, &map)?;
-    fill_active_state(&mut text, &map)?;
-    fill_load_state(&mut text, &map)?;
-    fill_docs(&mut text, &map)?;
-    fill_main_pid(&mut text, &map, unit)?;
-    fill_tasks(&mut text, &map)?;
-    fill_memory(&mut text, &map)?;
-    fill_cpu(&mut text, &map)?;
-    fill_trigger_timers_calendar(&mut text, &map)?;
-    fill_trigger_timers_monotonic(&mut text, &map)?;
-    fill_triggers(&mut text, &map)?;
-    fill_listen(&mut text, &map)?;
-    fill_control_group(&mut text, &map)?;
+    fill_description(&mut text, &map);
+    fill_dropin(&mut text, &map);
+    fill_active_state(&mut text, &map);
+    fill_load_state(&mut text, &map);
+    fill_docs(&mut text, &map);
+    fill_main_pid(&mut text, &map, unit);
+    fill_tasks(&mut text, &map);
+    fill_memory(&mut text, &map);
+    fill_cpu(&mut text, &map);
+    fill_trigger_timers_calendar(&mut text, &map);
+    fill_trigger_timers_monotonic(&mut text, &map);
+    fill_triggers(&mut text, &map);
+    fill_listen(&mut text, &map);
+    fill_control_group(&mut text, &map);
 
     Ok(text)
 }
 
-fn fill_name_description(
-    text: &mut String,
-    unit: &UnitInfo,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn fill_name_description(text: &mut String, unit: &UnitInfo) {
     fill_row(text, "Name:", &unit.primary())
 }
 
 const KEY_WIDTH: usize = 15;
-
-fn write_key(text: &mut String, key_label: &str) -> Result<(), Box<dyn std::error::Error>> {
-    write!(text, "{:>KEY_WIDTH$} ", key_label)?;
-    Ok(())
-}
-
-fn fill_row(
-    text: &mut String,
-    key_label: &str,
-    value: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
-    writeln!(text, "{:>KEY_WIDTH$} {}", key_label, value)?;
-    Ok(())
-}
 
 macro_rules! get_value {
     ($map:expr, $key:expr) => {
@@ -254,39 +237,55 @@ macro_rules! get_value {
     }};
 }
 
-fn fill_dropin(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "DropInPaths", Ok(()));
+macro_rules! strwriter {
+    ($dst:expr, $($arg:tt)*) => {
+        if let Err(e) = write!($dst, $($arg)*) {
+            warn!("writeln error : {:?}", e)
+        }
+    };
+}
+
+macro_rules! strwriterln {
+    ($dst:expr, $($arg:tt)*) => {
+        if let Err(e) = writeln!($dst, $($arg)*) {
+            warn!("writeln error : {:?}", e)
+        }
+    };
+}
+
+fn write_key(text: &mut String, key_label: &str) {
+    strwriter!(text, "{:>KEY_WIDTH$} ", key_label);
+}
+
+fn fill_row(text: &mut String, key_label: &str, value: &str) {
+    strwriterln!(text, "{:>KEY_WIDTH$} {}", key_label, value);
+}
+
+fn fill_dropin(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "DropInPaths");
 
     let drop_in_paths = get_array_str(value);
 
     if drop_in_paths.is_empty() {
-        return Ok(());
+        return;
     }
 
-    write_key(text, "Drop in:")?;
+    write_key(text, "Drop in:");
 
     for s in drop_in_paths {
         let (first, last) = s.rsplit_once('/').unwrap();
         text.push_str(first);
         text.push('\n');
 
-        writeln!(text, "{:KEY_WIDTH$} └─{}", " ", last)?;
+        strwriterln!(text, "{:KEY_WIDTH$} └─{}", " ", last);
     }
-    Ok(())
 }
 
-fn fill_active_state(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "ActiveState", Ok(()));
+fn fill_active_state(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "ActiveState");
     let state = value_str(value);
 
-    write_key(text, "Active State:")?;
-
+    write_key(text, "Active State:");
 
     let mut state_text = String::from(state);
     if let Some(substate) = get_substate(map) {
@@ -310,10 +309,7 @@ fn fill_active_state(
         text.push_str(" ago");
     }
 
-    writeln!(text, "")?;
-    Ok(())
-
-    //fill_row(text, "Active State:", &state_line)
+    strwriterln!(text, "");
 }
 
 fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
@@ -337,41 +333,30 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
     Some(since)
 }
 
-fn fill_description(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "Description", Ok(()));
+fn fill_description(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Description");
     fill_row(text, "Description:", value_str(value))
 }
 
-fn fill_load_state(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "LoadState", Ok(()));
+fn fill_load_state(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "LoadState");
     fill_row(text, "Load State:", value_str(value))
 }
 
-fn fill_docs(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "Documentation", Ok(()));
+fn fill_docs(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Documentation");
 
     let docs = get_array_str(value);
 
     let mut it = docs.iter();
 
     if let Some(doc) = it.next() {
-        fill_row(text, "Doc:", doc)?;
+        fill_row(text, "Doc:", doc);
     }
 
     while let Some(doc) = it.next() {
-        writeln!(text, "{:KEY_WIDTH$} {}", " ", doc)?;
+        strwriterln!(text, "{:KEY_WIDTH$} {}", " ", doc);
     }
-
-    Ok(())
 }
 
 fn get_array_str<'a>(value: &'a zvariant::Value<'a>) -> Vec<&'a str> {
@@ -394,30 +379,23 @@ fn get_array_str<'a>(value: &'a zvariant::Value<'a>) -> Vec<&'a str> {
     vec
 }
 
-fn fill_memory(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "MemoryCurrent", Ok(()));
+fn fill_memory(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "MemoryCurrent");
 
     let memory_current = value_u64(value);
     if memory_current == U64MAX {
-        return Ok(());
+        return;
     }
 
     let value_str = &human_bytes(memory_current);
     fill_row(text, "Memory:", value_str)
 }
 
-fn fill_main_pid(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-    unit: &UnitInfo,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn fill_main_pid(text: &mut String, map: &HashMap<String, OwnedValue>, unit: &UnitInfo) {
     let main_pid = get_main_pid(map);
 
     if 0 == main_pid {
-        Ok(())
+        // nothing
     } else {
         let exec_val = if let Some(exec) = get_exec(map) {
             exec
@@ -466,31 +444,25 @@ fn get_exec<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
     None
 }
 
-fn fill_cpu(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "CPUUsageNSec", Ok(()));
+fn fill_cpu(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "CPUUsageNSec");
 
     let value_u64 = value_u64(value);
     if value_u64 == U64MAX {
-        return Ok(());
+        return;
     }
 
     let value_str = &human_time(value_u64);
     fill_row(text, "CPU:", value_str)
 }
 
-fn fill_tasks(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "TasksCurrent", Ok(()));
+fn fill_tasks(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "TasksCurrent");
 
     let value_nb = value_u64(value);
 
     if value_nb == U64MAX {
-        return Ok(());
+        return;
     }
 
     let mut tasks_info = value_nb.to_string();
@@ -505,38 +477,35 @@ fn fill_tasks(
     fill_row(text, "Tasks:", &tasks_info)
 }
 
-fn fill_trigger_timers_calendar(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "TimersCalendar", Ok(()));
+fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "TimersCalendar");
 
     let zvariant::Value::Array(array) = value as &Value else {
-        return Ok(());
+        return;
     };
 
     if array.is_empty() {
-        return Ok(());
+        return;
     }
 
     let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
-        return Ok(());
+        return;
     };
 
     let zvariant::Value::Structure(zstruc) = val_listen_stc else {
-        return Ok(());
+        return;
     };
 
     let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
-        return Ok(());
+        return;
     };
 
     let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
-        return Ok(());
+        return;
     };
 
     let Some(zvariant::Value::U64(_val_2)) = zstruc.fields().get(2) else {
-        return Ok(());
+        return;
     };
 
     let timers = format!("{} {}", val_0, val_1);
@@ -544,39 +513,33 @@ fn fill_trigger_timers_calendar(
     fill_row(text, "Trigger:", &timers)
 }
 
-fn fill_trigger_timers_monotonic(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "TimersMonotonic", Ok(()));
+fn fill_trigger_timers_monotonic(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "TimersMonotonic");
 
     let zvariant::Value::Array(array) = value as &Value else {
-        return Ok(());
+        return;
     };
 
     if array.is_empty() {
-        return Ok(());
+        return;
     }
 
     let timers = value.to_string();
 
     if timers.is_empty() {
-        return Ok(());
+        return;
     }
 
     fill_row(text, "Trigger:", &timers)
 }
 
-fn fill_triggers(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "Triggers", Ok(()));
+fn fill_triggers(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Triggers");
 
     let triggers = get_array_str(value);
 
     if triggers.is_empty() {
-        return Ok(());
+        return;
     }
 
     //TODO add the active state of the triggers
@@ -590,30 +553,27 @@ struct Struct {
     field2: String,
 }
 
-fn fill_listen(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "Listen", Ok(()));
+fn fill_listen(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Listen");
 
     let zvariant::Value::Array(array) = value as &Value else {
-        return Ok(());
+        return;
     };
 
     let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
-        return Ok(());
+        return;
     };
 
     let zvariant::Value::Structure(zstruc) = val_listen_stc else {
-        return Ok(());
+        return;
     };
 
     let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
-        return Ok(());
+        return;
     };
 
     let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
-        return Ok(());
+        return;
     };
 
     let listen = format!("{} ({})", val_1, val_0);
@@ -621,16 +581,13 @@ fn fill_listen(
     fill_row(text, "Listen:", &listen)
 }
 
-fn fill_control_group(
-    text: &mut String,
-    map: &HashMap<String, OwnedValue>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let value = get_value!(map, "ControlGroup", Ok(()));
+fn fill_control_group(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "ControlGroup");
 
     let c_group = value_str(value);
 
     if c_group.is_empty() {
-        return Ok(());
+        return;
     }
 
     const KEY_LABEL: &str = "CGroup:";
@@ -638,20 +595,18 @@ fn fill_control_group(
     if let Some(exec_full) = get_exec_full(map) {
         let main_pid = get_main_pid(map);
 
-        write_key(text, KEY_LABEL)?;
+        write_key(text, KEY_LABEL);
 
         text.push_str(c_group);
         text.push('\n');
 
-        writeln!(
+        strwriterln!(
             text,
             "{:KEY_WIDTH$} └─{} {}",
             " ",
             &main_pid.to_string(),
             exec_full
-        )?;
-
-        Ok(())
+        );
     } else {
         fill_row(text, KEY_LABEL, c_group)
     }
