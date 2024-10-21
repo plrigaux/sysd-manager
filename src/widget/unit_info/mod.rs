@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::systemd::{self, data::UnitInfo};
+use crate::{
+    systemd::{self, data::UnitInfo},
+    widget::unit_file_panel::dosini,
+};
 use log::{debug, error, warn};
 use serde::Deserialize;
 use std::fmt::Write;
@@ -10,6 +13,8 @@ use zvariant::{DynamicType, OwnedValue, Type, Value};
 mod time_handling;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+
+use super::unit_file_panel::dosini::colorize_str;
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -182,25 +187,6 @@ mod imp {
     impl BoxImpl for UnitInfoPanelImp {}
 }
 
-/* pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
-    let info_box_main = gtk::Box::builder()
-        .orientation(Orientation::Vertical)
-        .spacing(5)
-        .build();
-
-    let info_box = gtk::Box::builder()
-        .orientation(Orientation::Vertical)
-        .spacing(5)
-        .build();
-
-    fill_all_info(&info_box, unit);
-
-    info_box_main.append(&info_box);
-    fill_buttons(&info_box_main, &info_box, unit);
-
-    info_box_main
-}
- */
 fn fill_all_info(unit: &UnitInfo) -> Result<String, Box<dyn std::error::Error>> {
     let mut text = String::new();
     fill_name_description(&mut text, unit)?;
@@ -240,7 +226,7 @@ fn fill_name_description(
 
 const KEY_WIDTH: usize = 15;
 
-fn fill_key(text: &mut String, key_label: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn write_key(text: &mut String, key_label: &str) -> Result<(), Box<dyn std::error::Error>> {
     write!(text, "{:>KEY_WIDTH$} ", key_label)?;
     Ok(())
 }
@@ -280,7 +266,7 @@ fn fill_dropin(
         return Ok(());
     }
 
-    fill_key(text, "Drop in:")?;
+    write_key(text, "Drop in:")?;
 
     for s in drop_in_paths {
         let (first, last) = s.rsplit_once('/').unwrap();
@@ -299,23 +285,35 @@ fn fill_active_state(
     let value = get_value!(map, "ActiveState", Ok(()));
     let state = value_str(value);
 
-    let mut state_line = String::from(state);
+    write_key(text, "Active State:")?;
 
+
+    let mut state_text = String::from(state);
     if let Some(substate) = get_substate(map) {
-        state_line.push_str(" (");
-        state_line.push_str(substate);
-        state_line.push(')');
+        state_text.push_str(" (");
+        state_text.push_str(substate);
+        state_text.push(')');
+    }
+
+    if state == "active" {
+        colorize_str(&state_text, dosini::Token::InfoActive, true, text);
+    } else {
+        //inactive must be
+        text.push_str(&state_text);
     }
 
     if let Some(since) = add_since(map, state) {
-        state_line.push_str(" since ");
-        state_line.push_str(&since.0);
-        state_line.push_str("; ");
-        state_line.push_str(&since.1);
-        state_line.push_str(" ago");
+        text.push_str(" since ");
+        text.push_str(&since.0);
+        text.push_str("; ");
+        text.push_str(&since.1);
+        text.push_str(" ago");
     }
 
-    fill_row(text, "Active State:", &state_line)
+    writeln!(text, "")?;
+    Ok(())
+
+    //fill_row(text, "Active State:", &state_line)
 }
 
 fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
@@ -363,11 +361,17 @@ fn fill_docs(
 
     let docs = get_array_str(value);
 
-    if docs.is_empty() {
-        return Ok(());
+    let mut it = docs.iter();
+
+    if let Some(doc) = it.next() {
+        fill_row(text, "Doc:", doc)?;
     }
 
-    fill_row(text, "Doc:", &docs.join("\n"))
+    while let Some(doc) = it.next() {
+        writeln!(text, "{:KEY_WIDTH$} {}", " ", doc)?;
+    }
+
+    Ok(())
 }
 
 fn get_array_str<'a>(value: &'a zvariant::Value<'a>) -> Vec<&'a str> {
@@ -634,7 +638,7 @@ fn fill_control_group(
     if let Some(exec_full) = get_exec_full(map) {
         let main_pid = get_main_pid(map);
 
-        fill_key(text, KEY_LABEL)?;
+        write_key(text, KEY_LABEL)?;
 
         text.push_str(c_group);
         text.push('\n');
