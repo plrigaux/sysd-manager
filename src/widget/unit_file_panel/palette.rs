@@ -1,3 +1,5 @@
+///https://developer.gnome.org/hig/reference/palette.html#palette
+
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum Palette<'a> {

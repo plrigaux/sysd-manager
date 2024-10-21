@@ -39,30 +39,11 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     re
 });
 
-
-pub fn colorize_str(text : &str, token : Token, is_dark : bool, sbuilder : &mut String) {
-    let style = token.get_style(is_dark);
-
-    sbuilder.push_str("<span color=\"");
-    sbuilder.push_str(style.color.get_color());
-    sbuilder.push_str("\"");
-    if let Some(intensity) = style.intensity {
-        sbuilder.push_str(" weight=\"");
-        sbuilder.push_str(intensity.pango());
-        sbuilder.push('\"');
-    } 
-    sbuilder.push('>');
-    sbuilder.push_str(text);
-    sbuilder.push_str("</span>");
-}
-
 macro_rules! colorize {
     ($text:expr, $token:expr, $dark:expr, $sbuilder:expr) => {{
-        colorize_str($text.as_str(), $token, $dark, &mut $sbuilder)
+        $token.colorize($text.as_str(), $dark, &mut $sbuilder)
     }};
 }
-
-
 
 // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
 pub fn convert_to_mackup<'a>(text: &'a str, dark: bool) -> Cow<'a, str> {
@@ -77,7 +58,7 @@ pub fn convert_to_mackup<'a>(text: &'a str, dark: bool) -> Cow<'a, str> {
         let start = main_match.start();
 
         if start != last_end {
-            colorize_str(&text[last_end..start], Token::Text, dark, &mut out);
+            Token::Text.colorize(&text[last_end..start], dark, &mut out);
         }
 
         if let Some(label) = captures.get(1) {
@@ -107,7 +88,7 @@ pub fn convert_to_mackup<'a>(text: &'a str, dark: bool) -> Cow<'a, str> {
     Cow::from(out)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Token {
     Text,
     Label,
@@ -117,6 +98,7 @@ pub enum Token {
     Section,
 
     InfoActive,
+    InfoDisable,
 }
 
 #[derive(Debug)]
@@ -183,8 +165,31 @@ impl Token {
                     Style::new(Palette::Green3, Some(Intensity::Bold))
                 }
             }
+            Token::InfoDisable => {
+                if dark {
+                    Style::new(Palette::Yellow3, Some(Intensity::Bold))
+                } else {
+                    Style::new(Palette::Yellow3, Some(Intensity::Bold))
+                }
+            }
         };
         style
+    }
+
+    pub fn colorize(&self, text: &str, is_dark: bool, sbuilder: &mut String) {
+        let style = self.get_style(is_dark);
+
+        sbuilder.push_str("<span color=\"");
+        sbuilder.push_str(style.color.get_color());
+        sbuilder.push_str("\"");
+        if let Some(intensity) = style.intensity {
+            sbuilder.push_str(" weight=\"");
+            sbuilder.push_str(intensity.pango());
+            sbuilder.push('\"');
+        }
+        sbuilder.push('>');
+        sbuilder.push_str(text);
+        sbuilder.push_str("</span>");
     }
 }
 

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     systemd::{self, data::UnitInfo},
-    widget::unit_file_panel::dosini,
+    widget::unit_file_panel::dosini::Token,
 };
 use log::{debug, error, warn};
 use serde::Deserialize;
@@ -14,9 +14,6 @@ mod time_handling;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
-use super::unit_file_panel::dosini::colorize_str;
-
-// ANCHOR: mod
 glib::wrapper! {
     pub struct UnitInfoPanel(ObjectSubclass<imp::UnitInfoPanelImp>)
         @extends gtk::Box, gtk::Widget,
@@ -183,9 +180,9 @@ fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
     };
 
     fill_description(&mut text, &map);
+    fill_load_state(&mut text, &map, is_dark);
     fill_dropin(&mut text, &map);
     fill_active_state(&mut text, &map, is_dark);
-    fill_load_state(&mut text, &map);
     fill_docs(&mut text, &map);
     fill_main_pid(&mut text, &map, unit);
     fill_tasks(&mut text, &map);
@@ -278,7 +275,7 @@ fn fill_active_state(text: &mut String, map: &HashMap<String, OwnedValue>, is_da
     }
 
     if state == "active" {
-        colorize_str(&state_text, dosini::Token::InfoActive, is_dark, text);
+        Token::InfoActive.colorize(&state_text, is_dark, text);
     } else {
         //inactive must be
         text.push_str(&state_text);
@@ -321,9 +318,71 @@ fn fill_description(text: &mut String, map: &HashMap<String, OwnedValue>) {
     fill_row(text, "Description:", value_str(value))
 }
 
-fn fill_load_state(text: &mut String, map: &HashMap<String, OwnedValue>) {
+fn fill_load_state(text: &mut String, map: &HashMap<String, OwnedValue>, is_dark: bool) {
     let value = get_value!(map, "LoadState");
-    fill_row(text, "Load State:", value_str(value))
+
+    write_key(text, "Loaded:");
+
+    text.push_str(value_str(value));
+
+    let three_param = [
+        map.get("FragmentPath"),
+        map.get("UnitFileState"),
+        map.get("UnitFilePreset"),
+    ];
+
+    let mut all_none = true;
+    for p in three_param {
+        if !p.is_none() {
+            all_none = false;
+            break;
+        }
+    }
+
+    if !all_none {
+        text.push_str(" (");
+
+        let [path_op, unit_file_state_op, unit_file_preset_op] = three_param;
+
+        let mut pad_left = false;
+
+        if let Some(path) = path_op {
+            text.push_str(value_str(path));
+            pad_left = true;
+        }
+
+        if let Some(unit_file_state) = unit_file_state_op {
+            if pad_left {
+                text.push_str("; ");
+            }
+
+            write_enabled_state(unit_file_state, is_dark, text);
+
+            pad_left = true;
+        }
+
+        if let Some(unit_file_preset) = unit_file_preset_op {
+            if pad_left {
+                text.push_str("; ");
+            }
+            text.push_str(" preset: ");
+            write_enabled_state(unit_file_preset, is_dark, text);
+        }
+
+        text.push(')');
+    }
+
+    strwriterln!(text, "");
+}
+
+fn write_enabled_state(unit_file_state: &OwnedValue, is_dark: bool, text: &mut String) {
+    let state = value_str(unit_file_state);
+
+    match state {
+        "enabled" => Token::InfoActive.colorize(state, is_dark, text),
+        "disabled" => Token::InfoDisable.colorize(state, is_dark, text),
+        _ => text.push_str(value_str(unit_file_state)),
+    };
 }
 
 fn fill_docs(text: &mut String, map: &HashMap<String, OwnedValue>) {
@@ -408,17 +467,17 @@ fn fill_memory(text: &mut String, map: &HashMap<String, OwnedValue>) {
 }
 
 fn write_mem_param(
-    peak_op: Option<&OwnedValue>,
+    mem_op: Option<&OwnedValue>,
     label: &str,
     pad_left: bool,
     text: &mut String,
 ) -> bool {
-    let Some(peak) = peak_op else {
+    let Some(mem) = mem_op else {
         return false;
     };
 
-    let peak_num = value_u64(peak);
-    if peak_num == U64MAX {
+    let mem_num = value_u64(mem);
+    if mem_num == U64MAX || mem_num == 0{
         return false;
     }
 
@@ -427,8 +486,8 @@ fn write_mem_param(
     }
 
     text.push_str(label);
-    let value_str = &human_bytes(peak_num);
-    text.push_str(value_str);
+    let mem_human = &human_bytes(mem_num);
+    text.push_str(mem_human);
 
     true
 }
