@@ -1,18 +1,188 @@
 use std::collections::HashMap;
 
-use gtk::{prelude::*, Orientation};
-use log::{error, warn, debug};
+use crate::systemd::{self, data::UnitInfo};
+use log::{debug, error, warn};
 use serde::Deserialize;
+use std::fmt::Write;
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Type, Value};
 
-use crate::systemd::{self, data::UnitInfo};
-
-use super::info_window::InfoWindow;
-
 mod time_handling;
 
-pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
+use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+
+// ANCHOR: mod
+glib::wrapper! {
+    pub struct UnitInfoPanel(ObjectSubclass<imp::UnitInfoPanelImp>)
+        @extends gtk::Box, gtk::Widget,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
+}
+
+impl UnitInfoPanel {
+    pub fn new(is_dark: bool) -> Self {
+        // Create new window
+        let obj: UnitInfoPanel = glib::Object::new();
+
+        obj.set_dark(is_dark);
+
+        obj
+    }
+
+    pub fn display_unit_info(&self, unit: &UnitInfo) {
+        self.imp().display_unit_info(unit);
+    }
+
+    pub fn set_dark(&self, is_dark: bool) {
+        self.imp().set_dark(is_dark)
+    }
+}
+
+mod imp {
+    use std::cell::{Cell, RefCell};
+
+    use gtk::{
+        glib,
+        prelude::*,
+        subclass::{
+            box_::BoxImpl,
+            prelude::*,
+            widget::{
+                CompositeTemplateCallbacksClass, CompositeTemplateClass,
+                CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
+            },
+        },
+        TemplateChild,
+    };
+
+    use log::{info, warn};
+
+    use crate::{
+        systemd::data::UnitInfo,
+        widget::{button_icon::ButtonIcon, info_window::InfoWindow},
+    };
+
+    use super::fill_all_info;
+
+    #[derive(Default, gtk::CompositeTemplate)]
+    #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
+    pub struct UnitInfoPanelImp {
+        #[template_child]
+        show_all_button: TemplateChild<ButtonIcon>,
+
+        #[template_child]
+        refresh_button: TemplateChild<ButtonIcon>,
+
+        #[template_child]
+        unit_info_textview: TemplateChild<gtk::TextView>,
+
+        unit: RefCell<Option<UnitInfo>>,
+
+        is_dark: Cell<bool>,
+    }
+
+    #[gtk::template_callbacks]
+    impl UnitInfoPanelImp {
+        #[template_callback]
+        fn refresh_info_clicked(&self, button: &ButtonIcon) {
+            info!("button {:?}", button);
+
+            let binding = self.unit.borrow();
+            let Some(unit) = binding.as_ref() else {
+                warn!("no unit file");
+                return;
+            };
+
+            self.update_unit_info(&unit)
+        }
+
+        #[template_callback]
+        fn show_all_clicked(&self, button: &ButtonIcon) {
+            info!("button {:?}", button);
+
+            let info_window = InfoWindow::new();
+
+            let binding = self.unit.borrow();
+            let Some(unit) = binding.as_ref() else {
+                warn!("no unit file");
+                return;
+            };
+
+            info_window.fill_data(&unit);
+
+            info_window.present();
+        }
+
+        pub(crate) fn display_unit_info(&self, unit: &UnitInfo) {
+            let _old = self.unit.replace(Some(unit.clone()));
+
+            self.update_unit_info(&unit)
+        }
+
+        /// Updates the associated journal `TextView` with the contents of the unit's journal log.
+        fn update_unit_info(&self, unit: &UnitInfo) {
+            /*             let text = match systemd::get_unit_journal(unit, in_color) {
+                           Ok(journal_output) => journal_output,
+                           Err(error) => {
+                               let text = match error.gui_description() {
+                                   Some(s) => s.clone(),
+                                   None => String::from(""),
+                               };
+                               text
+                           }
+                       };
+            */
+            let text = match fill_all_info(unit) {
+                Ok(s) => s,
+                Err(e) => {
+                    warn!("Error {:?}", e);
+                    return;
+                }
+            };
+
+            let journal_text: &gtk::TextView = self.unit_info_textview.as_ref();
+
+            let buf = journal_text.buffer();
+
+            buf.set_text(""); // clear text
+
+            let mut start_iter = buf.start_iter();
+
+            buf.insert_markup(&mut start_iter, &text);
+        }
+
+        pub(crate) fn set_dark(&self, is_dark: bool) {
+            self.is_dark.set(is_dark);
+        }
+    }
+
+    // The central trait for subclassing a GObject
+    #[glib::object_subclass]
+    impl ObjectSubclass for UnitInfoPanelImp {
+        const NAME: &'static str = "UnitInfoPanel";
+        type Type = super::UnitInfoPanel;
+        type ParentType = gtk::Box;
+
+        fn class_init(klass: &mut Self::Class) {
+            // The layout manager determines how child widgets are laid out.
+            klass.bind_template();
+            klass.bind_template_callbacks();
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for UnitInfoPanelImp {
+        fn constructed(&self) {
+            self.parent_constructed();
+        }
+    }
+    impl WidgetImpl for UnitInfoPanelImp {}
+    impl BoxImpl for UnitInfoPanelImp {}
+}
+
+/* pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
     let info_box_main = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(5)
@@ -30,13 +200,10 @@ pub fn fill_data(unit: &UnitInfo) -> gtk::Box {
 
     info_box_main
 }
-
-fn fill_all_info(info_box: &gtk::Box, unit: &UnitInfo) {
-    while let Some(child) = info_box.last_child() {
-        info_box.remove(&child)
-    }
-
-    fill_name_description(info_box, unit);
+ */
+fn fill_all_info(unit: &UnitInfo) -> Result<String, Box<dyn std::error::Error>> {
+    let mut text = String::new();
+    fill_name_description(&mut text, unit)?;
 
     let map = match systemd::fetch_system_unit_info_native(&unit) {
         Ok(m) => m,
@@ -46,87 +213,45 @@ fn fill_all_info(info_box: &gtk::Box, unit: &UnitInfo) {
         }
     };
 
-    fill_description(info_box, &map);
-    fill_dropin(info_box, &map);
-    fill_active_state(info_box, &map);
-    fill_load_state(info_box, &map);
-    fill_docs(info_box, &map);
-    fill_main_pid(info_box, &map, unit);
-    fill_tasks(info_box, &map);
-    fill_memory(info_box, &map);
-    fill_cpu(info_box, &map);
-    fill_trigger_timers_calendar(info_box, &map);
-    fill_trigger_timers_monotonic(info_box, &map);
-    fill_triggers(info_box, &map);
-    fill_listen(info_box, &map);
-    fill_control_group(info_box, &map);
+    fill_description(&mut text, &map)?;
+    fill_dropin(&mut text, &map)?;
+    fill_active_state(&mut text, &map)?;
+    fill_load_state(&mut text, &map)?;
+    fill_docs(&mut text, &map)?;
+    fill_main_pid(&mut text, &map, unit)?;
+    fill_tasks(&mut text, &map)?;
+    fill_memory(&mut text, &map)?;
+    fill_cpu(&mut text, &map)?;
+    fill_trigger_timers_calendar(&mut text, &map)?;
+    fill_trigger_timers_monotonic(&mut text, &map)?;
+    fill_triggers(&mut text, &map)?;
+    fill_listen(&mut text, &map)?;
+    fill_control_group(&mut text, &map)?;
+
+    Ok(text)
 }
 
-fn fill_buttons(info_box_main: &gtk::Box, info_box: &gtk::Box, unit: &UnitInfo) {
-    let refresh_button = gtk::Button::builder().label("Refresh").build();
-
-    {
-        let info_box = info_box.clone();
-        let unit = unit.clone();
-        refresh_button.connect_clicked(move |_a| {
-            //systemd_gui::selected_unit(|unit: &UnitInfo| self.fill_data(unit));
-            fill_all_info(&info_box, &unit);
-        });
-    }
-
-    let show_all_button = gtk::Button::builder().label("Show All").build();
-
-    {
-        let unit2 = unit.clone();
-        show_all_button.connect_clicked(move |_a| {
-            let info_window = InfoWindow::new();
-
-            info_window.fill_data(&unit2);
-
-            info_window.present();
-        });
-    }
-
-    let buttons_box = gtk::Box::builder()
-        .orientation(Orientation::Horizontal)
-        .spacing(5)
-        .build();
-
-    buttons_box.append(&refresh_button);
-    buttons_box.append(&show_all_button);
-    info_box_main.append(&buttons_box);
+fn fill_name_description(
+    text: &mut String,
+    unit: &UnitInfo,
+) -> Result<(), Box<dyn std::error::Error>> {
+    fill_row(text, "Name:", &unit.primary())
 }
 
-fn fill_name_description(info_box: &gtk::Box, unit: &UnitInfo) {
-    fill_row(info_box, "Name:", &unit.primary());
-    //fill_row(info_box, "Description:", &unit.description());
+const KEY_WIDTH: usize = 15;
+
+fn fill_key(text: &mut String, key_label: &str) -> Result<(), Box<dyn std::error::Error>> {
+    write!(text, "{:>KEY_WIDTH$} ", key_label)?;
+    Ok(())
 }
 
-fn fill_row(info_box: &gtk::Box, key_label: &str, value: &str) {
-    let item = gtk::Box::builder()
-        .orientation(Orientation::Horizontal)
-        .spacing(5)
-        .width_request(30)
-        .build();
-
-    let key_label = gtk::Label::builder()
-        .label(key_label)
-        .width_request(130)
-        .css_classes(["unit_info"])
-        .xalign(1.0)
-        .build();
-
-    item.append(&key_label);
-
-    let label_value = gtk::Label::builder()
-        .label(value)
-        .selectable(true)
-        .css_classes(["unit_info"])
-        .build();
-
-    item.append(&label_value);
-
-    info_box.append(&item);
+fn fill_row(
+    text: &mut String,
+    key_label: &str,
+    value: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    writeln!(text, "{:>KEY_WIDTH$} {}", key_label, value)?;
+    Ok(())
 }
 
 macro_rules! get_value {
@@ -143,30 +268,35 @@ macro_rules! get_value {
     }};
 }
 
-fn fill_dropin(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "DropInPaths");
+fn fill_dropin(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "DropInPaths", Ok(()));
 
     let drop_in_paths = get_array_str(value);
 
     if drop_in_paths.is_empty() {
-        return;
+        return Ok(());
     }
 
-    let mut drop_in = String::new();
+    fill_key(text, "Drop in:")?;
+
     for s in drop_in_paths {
         let (first, last) = s.rsplit_once('/').unwrap();
-        drop_in.push_str(first);
-        drop_in.push('\n');
-        drop_in.push_str("└─");
-        drop_in.push_str(last);
-        drop_in.push('\n');
-    }
+        text.push_str(first);
+        text.push('\n');
 
-    fill_row(info_box, "Drop in:", &drop_in);
+        writeln!(text, "{:KEY_WIDTH$} └─{}", " ", last)?;
+    }
+    Ok(())
 }
 
-fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "ActiveState");
+fn fill_active_state(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "ActiveState", Ok(()));
     let state = value_str(value);
 
     let mut state_line = String::from(state);
@@ -185,7 +315,7 @@ fn fill_active_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
         state_line.push_str(" ago");
     }
 
-    fill_row(info_box, "Active State:", &state_line)
+    fill_row(text, "Active State:", &state_line)
 }
 
 fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
@@ -209,26 +339,35 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
     Some(since)
 }
 
-fn fill_description(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "Description");
-    fill_row(info_box, "Description:", value_str(value));
+fn fill_description(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "Description", Ok(()));
+    fill_row(text, "Description:", value_str(value))
 }
 
-fn fill_load_state(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "LoadState");
-    fill_row(info_box, "Load State:", value_str(value));
+fn fill_load_state(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "LoadState", Ok(()));
+    fill_row(text, "Load State:", value_str(value))
 }
 
-fn fill_docs(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "Documentation");
+fn fill_docs(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "Documentation", Ok(()));
 
     let docs = get_array_str(value);
 
     if docs.is_empty() {
-        return;
+        return Ok(());
     }
 
-    fill_row(info_box, "Doc:", &docs.join("\n"));
+    fill_row(text, "Doc:", &docs.join("\n"))
 }
 
 fn get_array_str<'a>(value: &'a zvariant::Value<'a>) -> Vec<&'a str> {
@@ -251,22 +390,30 @@ fn get_array_str<'a>(value: &'a zvariant::Value<'a>) -> Vec<&'a str> {
     vec
 }
 
-fn fill_memory(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "MemoryCurrent");
+fn fill_memory(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "MemoryCurrent", Ok(()));
 
     let memory_current = value_u64(value);
     if memory_current == U64MAX {
-        return;
+        return Ok(());
     }
 
     let value_str = &human_bytes(memory_current);
-    fill_row(info_box, "Memory:", value_str);
+    fill_row(text, "Memory:", value_str)
 }
 
-fn fill_main_pid(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>, unit: &UnitInfo) {
+fn fill_main_pid(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
+) -> Result<(), Box<dyn std::error::Error>> {
     let main_pid = get_main_pid(map);
 
     if 0 == main_pid {
+        Ok(())
     } else {
         let exec_val = if let Some(exec) = get_exec(map) {
             exec
@@ -275,7 +422,7 @@ fn fill_main_pid(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>, unit: &
         };
 
         let v = &format!("{} ({})", main_pid, exec_val);
-        fill_row(info_box, "Main PID:", v);
+        fill_row(text, "Main PID:", v)
     }
 }
 
@@ -315,25 +462,31 @@ fn get_exec<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
     None
 }
 
-fn fill_cpu(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "CPUUsageNSec");
+fn fill_cpu(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "CPUUsageNSec", Ok(()));
 
     let value_u64 = value_u64(value);
     if value_u64 == U64MAX {
-        return;
+        return Ok(());
     }
 
     let value_str = &human_time(value_u64);
-    fill_row(info_box, "CPU:", value_str);
+    fill_row(text, "CPU:", value_str)
 }
 
-fn fill_tasks(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "TasksCurrent");
+fn fill_tasks(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "TasksCurrent", Ok(()));
 
     let value_nb = value_u64(value);
 
     if value_nb == U64MAX {
-        return;
+        return Ok(());
     }
 
     let mut tasks_info = value_nb.to_string();
@@ -345,77 +498,86 @@ fn fill_tasks(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
         tasks_info.push_str(")");
     }
 
-    fill_row(info_box, "Tasks:", &tasks_info);
+    fill_row(text, "Tasks:", &tasks_info)
 }
 
-fn fill_trigger_timers_calendar(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "TimersCalendar");
+fn fill_trigger_timers_calendar(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "TimersCalendar", Ok(()));
 
     let zvariant::Value::Array(array) = value as &Value else {
-        return;
+        return Ok(());
     };
 
     if array.is_empty() {
-        return;
+        return Ok(());
     }
 
     let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
-        return;
+        return Ok(());
     };
 
     let zvariant::Value::Structure(zstruc) = val_listen_stc else {
-        return;
+        return Ok(());
     };
 
     let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
-        return;
+        return Ok(());
     };
 
     let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
-        return;
+        return Ok(());
     };
 
     let Some(zvariant::Value::U64(_val_2)) = zstruc.fields().get(2) else {
-        return;
+        return Ok(());
     };
 
     let timers = format!("{} {}", val_0, val_1);
 
-    fill_row(info_box, "Trigger:", &timers);
+    fill_row(text, "Trigger:", &timers)
 }
 
-fn fill_trigger_timers_monotonic(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "TimersMonotonic");
+fn fill_trigger_timers_monotonic(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "TimersMonotonic", Ok(()));
 
     let zvariant::Value::Array(array) = value as &Value else {
-        return;
+        return Ok(());
     };
 
     if array.is_empty() {
-        return;
+        return Ok(());
     }
 
     let timers = value.to_string();
 
     if timers.is_empty() {
-        return;
+        return Ok(());
     }
 
-    fill_row(info_box, "Trigger:", &timers);
+    fill_row(text, "Trigger:", &timers)
 }
 
-fn fill_triggers(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "Triggers");
+fn fill_triggers(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "Triggers", Ok(()));
 
     let triggers = get_array_str(value);
 
     if triggers.is_empty() {
-        return;
+        return Ok(());
     }
 
     //TODO add the active state of the triggers
 
-    fill_row(info_box, "Triggers:", &triggers.join("\n"));
+    fill_row(text, "Triggers:", &triggers.join("\n"))
 }
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
@@ -424,41 +586,47 @@ struct Struct {
     field2: String,
 }
 
-fn fill_listen(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "Listen");
+fn fill_listen(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "Listen", Ok(()));
 
     let zvariant::Value::Array(array) = value as &Value else {
-        return;
+        return Ok(());
     };
 
     let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
-        return;
+        return Ok(());
     };
 
     let zvariant::Value::Structure(zstruc) = val_listen_stc else {
-        return;
+        return Ok(());
     };
 
     let Some(zvariant::Value::Str(val_0)) = zstruc.fields().get(0) else {
-        return;
+        return Ok(());
     };
 
     let Some(zvariant::Value::Str(val_1)) = zstruc.fields().get(1) else {
-        return;
+        return Ok(());
     };
 
     let listen = format!("{} ({})", val_1, val_0);
 
-    fill_row(info_box, "Listen:", &listen);
+    fill_row(text, "Listen:", &listen)
 }
 
-fn fill_control_group(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "ControlGroup");
+fn fill_control_group(
+    text: &mut String,
+    map: &HashMap<String, OwnedValue>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let value = get_value!(map, "ControlGroup", Ok(()));
 
     let c_group = value_str(value);
 
     if c_group.is_empty() {
-        return;
+        return Ok(());
     }
 
     const KEY_LABEL: &str = "CGroup:";
@@ -466,19 +634,22 @@ fn fill_control_group(info_box: &gtk::Box, map: &HashMap<String, OwnedValue>) {
     if let Some(exec_full) = get_exec_full(map) {
         let main_pid = get_main_pid(map);
 
-        let mut group = String::new();
+        fill_key(text, KEY_LABEL)?;
 
-        group.push_str(c_group);
-        group.push('\n');
-        group.push_str("└─");
-        group.push_str(&main_pid.to_string());
-        group.push(' ');
-        group.push_str(exec_full);
-        group.push('\n');
+        text.push_str(c_group);
+        text.push('\n');
 
-        fill_row(info_box, KEY_LABEL, &group);
+        writeln!(
+            text,
+            "{:KEY_WIDTH$} └─{} {}",
+            " ",
+            &main_pid.to_string(),
+            exec_full
+        )?;
+
+        Ok(())
     } else {
-        fill_row(info_box, KEY_LABEL, c_group);
+        fill_row(text, KEY_LABEL, c_group)
     }
 }
 

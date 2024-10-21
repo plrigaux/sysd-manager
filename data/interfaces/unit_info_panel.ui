@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.92.1 -->
+<interface>
+  <!-- interface-name unit_info_panel.ui -->
+  <requires lib="gtk" version="4.12"/>
+  <template class="UnitInfoPanel" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
+        <child>
+          <object class="GtkTextView" id="unit_info_textview"/>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <child>
+          <object class="ButtonIcon" id="refresh_button">
+            <property name="icon-name">view-refresh</property>
+            <property name="label">Refresh</property>
+            <signal name="clicked" handler="refresh_info_clicked" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="ButtonIcon" id="show_all_button">
+            <property name="icon-name">view-app-grid-symbolic</property>
+            <property name="label">Show all information</property>
+            <signal name="clicked" handler="show_all_clicked" swapped="yes"/>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

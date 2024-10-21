@@ -10,7 +10,8 @@ use crate::widget::journal::JournalPanel;
 use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::preferences::PreferencesDialog;
 use crate::widget::unit_file_panel::UnitFilePanel;
-use crate::widget::{self, title_bar, unit_info};
+use crate::widget::unit_info::UnitInfoPanel;
+use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 
 use crate::systemd;
@@ -374,25 +375,24 @@ fn build_ui(application: &adw::Application) {
         box_.upcast::<gtk::Widget>()
     });
 
-    let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
-        .vexpand(true)
-        .focusable(true)
-        .build();
+    let system_manager = adw::StyleManager::default();
 
+    let is_dark = system_manager.is_dark();
+
+    let unit_info_panel = UnitInfoPanel::new(is_dark);
+    /*     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
+           .vexpand(true)
+           .focusable(true)
+           .build();
+    */
     let info_stack = gtk::Notebook::builder()
         .vexpand(true)
         //.transition_type(gtk::StackTransitionType::Crossfade)
         .build();
 
-    info_stack.append_page(
-        &unit_analyse_scrolled_window,
-        Some(&gtk::Label::new(Some("Unit Info"))),
-    );
+    info_stack.append_page(&unit_info_panel, Some(&gtk::Label::new(Some("Unit Info"))));
     info_stack.append_page(&unit_file_panel, Some(&gtk::Label::new(Some("Unit File"))));
-    info_stack.append_page(
-        &journal_panel,
-        Some(&gtk::Label::new(Some("Unit Journal"))),
-    );
+    info_stack.append_page(&journal_panel, Some(&gtk::Label::new(Some("Unit Journal"))));
 
     let right_pane = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -798,6 +798,8 @@ fn build_ui(application: &adw::Application) {
                 *selected_unit = Some(unit.clone());
             }
 
+            unit_info_panel.display_unit_info(&unit);
+
             unit_file_panel.set_file_content(&unit);
 
             let ablement_status =
@@ -815,8 +817,9 @@ fn build_ui(application: &adw::Application) {
 
             unit_prop_store.remove_all();
 
-            let info_panel = unit_info::fill_data(&unit);
-            unit_analyse_scrolled_window.set_child(Some(&info_panel));
+         
+            /*          let info_panel = unit_info::fill_data(&unit);
+            unit_analyse_scrolled_window.set_child(Some(&info_panel)); */
         });
     }
 
@@ -846,11 +849,7 @@ fn fill_store(store: &gio::ListStore) {
 }
 
 fn set_switch_tooltip(enabled: bool, switch: &gtk::Switch, unit_name: &str) {
-    let action_text = if enabled {
-        "Disable"
-    } else {
-        "Enable"
-    };
+    let action_text = if enabled { "Disable" } else { "Enable" };
 
     let text = format!("{action_text} unit <b>{unit_name}</b>");
 
