@@ -125,24 +125,7 @@ mod imp {
 
         /// Updates the associated journal `TextView` with the contents of the unit's journal log.
         fn update_unit_info(&self, unit: &UnitInfo) {
-            /*             let text = match systemd::get_unit_journal(unit, in_color) {
-                           Ok(journal_output) => journal_output,
-                           Err(error) => {
-                               let text = match error.gui_description() {
-                                   Some(s) => s.clone(),
-                                   None => String::from(""),
-                               };
-                               text
-                           }
-                       };
-            */
-            let text = match fill_all_info(unit) {
-                Ok(s) => s,
-                Err(e) => {
-                    warn!("Error {:?}", e);
-                    return;
-                }
-            };
+            let text = fill_all_info(unit, self.is_dark.get());
 
             let journal_text: &gtk::TextView = self.unit_info_textview.as_ref();
 
@@ -187,7 +170,7 @@ mod imp {
     impl BoxImpl for UnitInfoPanelImp {}
 }
 
-fn fill_all_info(unit: &UnitInfo) -> Result<String, Box<dyn std::error::Error>> {
+fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
     let mut text = String::new();
     fill_name_description(&mut text, unit);
 
@@ -201,7 +184,7 @@ fn fill_all_info(unit: &UnitInfo) -> Result<String, Box<dyn std::error::Error>> 
 
     fill_description(&mut text, &map);
     fill_dropin(&mut text, &map);
-    fill_active_state(&mut text, &map);
+    fill_active_state(&mut text, &map, is_dark);
     fill_load_state(&mut text, &map);
     fill_docs(&mut text, &map);
     fill_main_pid(&mut text, &map, unit);
@@ -214,7 +197,7 @@ fn fill_all_info(unit: &UnitInfo) -> Result<String, Box<dyn std::error::Error>> 
     fill_listen(&mut text, &map);
     fill_control_group(&mut text, &map);
 
-    Ok(text)
+    text
 }
 
 fn fill_name_description(text: &mut String, unit: &UnitInfo) {
@@ -281,7 +264,7 @@ fn fill_dropin(text: &mut String, map: &HashMap<String, OwnedValue>) {
     }
 }
 
-fn fill_active_state(text: &mut String, map: &HashMap<String, OwnedValue>) {
+fn fill_active_state(text: &mut String, map: &HashMap<String, OwnedValue>, is_dark: bool) {
     let value = get_value!(map, "ActiveState");
     let state = value_str(value);
 
@@ -295,7 +278,7 @@ fn fill_active_state(text: &mut String, map: &HashMap<String, OwnedValue>) {
     }
 
     if state == "active" {
-        colorize_str(&state_text, dosini::Token::InfoActive, true, text);
+        colorize_str(&state_text, dosini::Token::InfoActive, is_dark, text);
     } else {
         //inactive must be
         text.push_str(&state_text);
@@ -387,8 +370,63 @@ fn fill_memory(text: &mut String, map: &HashMap<String, OwnedValue>) {
         return;
     }
 
+    write_key(text, "Memory:");
+
     let value_str = &human_bytes(memory_current);
-    fill_row(text, "Memory:", value_str)
+
+    text.push_str(value_str);
+
+    let three_param = [
+        map.get("MemoryPeak"),
+        map.get("MemorySwapPeak"),
+        map.get("MemorySwapCurrent"),
+    ];
+
+    let mut all_none = true;
+    for p in three_param {
+        if !p.is_none() {
+            all_none = false;
+            break;
+        }
+    }
+
+    if !all_none {
+
+        text.push_str(" (");
+        
+        let [peak_op, swap_peak_op, swap_op] = three_param;
+
+        let pad_left = write_mem_param(peak_op, "peak: ", false, text);
+        write_mem_param(swap_peak_op, "swap: ", pad_left,  text);
+        write_mem_param(swap_op, "swap peak: ", pad_left,  text);
+
+        text.push(')');
+    }
+
+    //Memory: 1.9M (peak: 6.2M swap: 224.0K swap peak: 444.0K)
+
+    strwriterln!(text, "");
+}
+
+fn write_mem_param(peak_op: Option<&OwnedValue>, label: &str, pad_left : bool, text: &mut String) -> bool {
+    let Some(peak) = peak_op else {
+        return false;
+    };
+
+    let peak_num = value_u64(peak);
+    if peak_num == U64MAX {
+        return false;
+    }
+
+    if pad_left {
+        text.push_str(" ");
+    }
+
+    text.push_str(label);
+    let value_str = &human_bytes(peak_num);
+    text.push_str(value_str);
+
+    true
 }
 
 fn fill_main_pid(text: &mut String, map: &HashMap<String, OwnedValue>, unit: &UnitInfo) {
@@ -633,7 +671,7 @@ fn value_u64(value: &Value) -> u64 {
     U64MAX
 }
 
-/// Converts bytes to human-readable values
+/// Converts bytes to human-readable values in base 10
 fn human_bytes(bytes: u64) -> String {
     // let size: f64 = *bytes as f64;
 
@@ -643,11 +681,8 @@ fn human_bytes(bytes: u64) -> String {
 
     let base = (bytes as f64).log10() / UNIT.log10();
 
-    let mut result: String = format!("{:.1}", UNIT.powf(base - base.floor()))
-        .trim_end_matches(".0")
-        .to_string();
+    let mut result: String = format!("{:.1}", UNIT.powf(base - base.floor()));
 
-    result.push_str(" ");
     result.push_str(SUFFIX[base.floor() as usize]);
 
     result
