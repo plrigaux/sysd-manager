@@ -391,14 +391,13 @@ fn fill_memory(text: &mut String, map: &HashMap<String, OwnedValue>) {
     }
 
     if !all_none {
-
         text.push_str(" (");
-        
+
         let [peak_op, swap_peak_op, swap_op] = three_param;
 
         let pad_left = write_mem_param(peak_op, "peak: ", false, text);
-        write_mem_param(swap_peak_op, "swap: ", pad_left,  text);
-        write_mem_param(swap_op, "swap peak: ", pad_left,  text);
+        write_mem_param(swap_peak_op, "swap: ", pad_left, text);
+        write_mem_param(swap_op, "swap peak: ", pad_left, text);
 
         text.push(')');
     }
@@ -408,7 +407,12 @@ fn fill_memory(text: &mut String, map: &HashMap<String, OwnedValue>) {
     strwriterln!(text, "");
 }
 
-fn write_mem_param(peak_op: Option<&OwnedValue>, label: &str, pad_left : bool, text: &mut String) -> bool {
+fn write_mem_param(
+    peak_op: Option<&OwnedValue>,
+    label: &str,
+    pad_left: bool,
+    text: &mut String,
+) -> bool {
     let Some(peak) = peak_op else {
         return false;
     };
@@ -661,7 +665,7 @@ fn value_str<'a>(value: &'a Value<'a>) -> &'a str {
 /// 2^16-1
 const U64MAX: u64 = 18_446_744_073_709_551_615;
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
-const UNIT: f64 = 1024.0;
+const UNIT: u64 = 1024;
 
 fn value_u64(value: &Value) -> u64 {
     if let zvariant::Value::U64(converted) = value {
@@ -673,19 +677,32 @@ fn value_u64(value: &Value) -> u64 {
 
 /// Converts bytes to human-readable values in base 10
 fn human_bytes(bytes: u64) -> String {
-    // let size: f64 = *bytes as f64;
+    let mut base: usize = 0;
 
-    if bytes <= 0 {
-        return "0 B".to_string();
+    let mut byte_new = bytes;
+
+    loop {
+        if UNIT > byte_new {
+            break;
+        }
+        base += 1;
+        byte_new = byte_new >> 10;
     }
 
-    let base = (bytes as f64).log10() / UNIT.log10();
+    let pbase = UNIT.pow(base as u32);
+    let value = bytes as f64 / pbase as f64;
 
-    let mut result: String = format!("{:.1}", UNIT.powf(base - base.floor()));
+    let mut human_str = if base == 0 {
+        bytes.to_string()
+    } else {
+        format!("{:.1}", value)
+    };
 
-    result.push_str(SUFFIX[base.floor() as usize]);
+    if let Some(suffix) = SUFFIX.get(base) {
+        human_str.push_str(suffix);
+    }
 
-    result
+    human_str
 }
 
 const T_SUFFIX: [&str; 9] = ["ns", "us", "ms", "s", "Ks", "Ms", "Gs", "Ts", "Ps"];
@@ -723,6 +740,12 @@ mod tests {
         println!("{}", human_bytes(3));
         println!("{}", human_bytes(18446744073709551615));
         println!("{}", human_bytes(1024));
+        println!("{}", human_bytes(1024));
+        println!("{}", human_bytes(2048));
+        println!("{}", human_bytes(2000));
+        println!("{}", human_bytes(1950));
+
+        println!("{}", human_bytes(2_048_000));
     }
 
     #[test]
