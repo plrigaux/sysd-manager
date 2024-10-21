@@ -30,6 +30,8 @@
         </child>
         <child>
           <object class="ButtonIcon" id="save_button">
+            <property name="icon-name">document-save</property>
+            <property name="label">Save</property>
             <signal name="clicked" handler="save_file" swapped="yes"/>
           </object>
         </child>

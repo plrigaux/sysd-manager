@@ -1,4 +1,4 @@
-use crate::gtk::{glib, subclass::prelude::*};
+use crate::gtk::glib;
 
 glib::wrapper! {
     pub struct ButtonIcon(ObjectSubclass<imp::ButtonIconImpl>)
@@ -10,18 +10,10 @@ glib::wrapper! {
 impl ButtonIcon {
     pub fn new(label: &str, icon_name: &str) -> Self {
         let obj: ButtonIcon = glib::Object::new();
-        obj.set_button_icon(icon_name);
-        obj.set_button_label(label);
+        obj.set_icon_name(icon_name);
+        obj.set_label(label);
 
         obj
-    }
-
-    pub fn set_button_label(&self, label: &str) {
-        self.imp().button_label.set_label(label);
-    }
-
-    pub fn set_button_icon(&self, icon_name: &str) {
-        self.imp().button_icon.set_icon_name(Some(icon_name));
     }
 }
 
@@ -36,11 +28,11 @@ mod imp {
     #[template(resource = "/io/github/plrigaux/sysd-manager/button_icon.ui")]
     #[properties(wrapper_type = super::ButtonIcon)]
     pub struct ButtonIconImpl {
-        #[property(get, set)]
+        #[property(get, set, name = "icon-name")]
         pub(super) button_icon_name: RefCell<String>,
 
         #[property(get, set)]
-        pub(super) button_label_text: RefCell<String>,
+        pub(super) label: RefCell<String>,
 
         #[template_child]
         pub button_icon: TemplateChild<gtk::Image>,
@@ -74,11 +66,11 @@ mod imp {
             // Bind label to number
             // `SYNC_CREATE` ensures that the label will be immediately set
             let obj = self.obj();
-            obj.bind_property::<gtk::Label>("button_label_text", self.button_label.as_ref(), "label")
+            obj.bind_property::<gtk::Label>("label", self.button_label.as_ref(), "label")
                 .sync_create()
                 .build();
 
-                obj.bind_property::<gtk::Image>("button_icon_name", self.button_icon.as_ref(), "icon-name")
+                obj.bind_property::<gtk::Image>("icon-name", self.button_icon.as_ref(), "icon-name")
                 .sync_create()
                 .build();
         }

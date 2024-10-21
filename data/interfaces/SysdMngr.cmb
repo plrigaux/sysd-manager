@@ -100,7 +100,7 @@
 	(26,1,"GtkBox","JournalPanel",None,None,None,None,0,None,None),
 	(26,2,"GtkScrolledWindow",None,1,None,None,None,0,None,None),
 	(26,3,"GtkTextView","journal_text",2,None,None,None,0,None,None),
-	(26,4,"ButtonIcon","journal_refresh_button",1,None,None,None,1,"        &lt;property name=\"button_icon_name\"&gt;view-refresh&lt;/property&gt;\n        &lt;property name=\"button_label_text\"&gt;Refresh&lt;/property&gt;",None)
+	(26,4,"ButtonIcon","journal_refresh_button",1,None,None,None,1,"",None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -178,6 +178,8 @@
 	(20,7,"GtkLabel","selectable","True",None,None,None,None,None,None,None,None,None),
 	(20,7,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
 	(20,7,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(20,8,"GtkButton","icon-name","document-save",None,None,None,None,None,None,None,None,None),
+	(20,8,"GtkButton","label","Save",None,None,None,None,None,None,None,None,None),
 	(21,2,"AdwToolbarView","content",None,0,None,None,None,5,None,None,None,None),
 	(21,3,"AdwHeaderBar","title-widget",None,0,None,None,None,4,None,None,None,None),
 	(21,4,"AdwWindowTitle","title","Preferences",1,None,None,None,None,None,None,None,None),
@@ -200,6 +202,8 @@
 	(26,3,"GtkTextView","monospace","True",0,None,None,None,None,None,None,None,None),
 	(26,3,"GtkTextView","right-margin","5",0,None,None,None,None,None,None,None,None),
 	(26,3,"GtkWidget","hexpand","True",0,None,None,None,None,None,None,None,None),
+	(26,4,"GtkButton","icon-name","view-refresh",None,None,None,None,None,None,None,None,None),
+	(26,4,"GtkButton","label","Refresh",None,None,None,None,None,None,None,None,None),
 	(26,4,"GtkWidget","hexpand","True",0,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>

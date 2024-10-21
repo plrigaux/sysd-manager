@@ -23,10 +23,10 @@
     <child>
       <object class="ButtonIcon" id="journal_refresh_button">
         <property name="hexpand">True</property>
+        <property name="icon-name">view-refresh</property>
+        <property name="label">Refresh</property>
         <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
         <!-- Custom object fragments -->
-        <property name="button_icon_name">view-refresh</property>
-        <property name="button_label_text">Refresh</property>
       </object>
     </child>
   </template>

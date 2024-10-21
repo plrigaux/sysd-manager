@@ -119,8 +119,7 @@ mod imp {
             self.set_text(file_content);
         }
 
-        fn set_text(&self, file_content: &str,) {
-
+        fn set_text(&self, file_content: &str) {
             let in_color = PREFERENCES.unit_file_colors();
 
             let buf = self.unit_file_text.buffer();
@@ -168,14 +167,7 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for UnitFilePanelImp {
-        fn constructed(&self) {
-            self.parent_constructed();
-
-            self.save_button.set_button_icon("document-save");
-            self.save_button.set_button_label("Save");
-        }
-    }
+    impl ObjectImpl for UnitFilePanelImp {}
     impl WidgetImpl for UnitFilePanelImp {}
     impl BoxImpl for UnitFilePanelImp {}
 }
