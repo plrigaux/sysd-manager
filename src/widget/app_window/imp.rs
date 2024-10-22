@@ -1,10 +1,11 @@
 use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
-use gtk::{gio, glib, prelude::*, subclass::widget::*};
+use gtk::{gio, glib, prelude::*};
 use log::info;
 
-use crate::systemd_gui;
+
+use crate::{systemd_gui, widget::title_bar::menu};
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -14,6 +15,10 @@ const IS_MAXIMIZED: &str = "is-maximized";
 #[template(resource = "/io/github/plrigaux/sysd-manager/app_window.ui")]
 pub struct AppWindowImpl {
     pub settings: OnceCell<gio::Settings>,
+
+    #[template_child]
+    header_bar: TemplateChild<adw::HeaderBar>,
+
 }
 
 #[glib::object_subclass]
@@ -40,6 +45,9 @@ impl ObjectImpl for AppWindowImpl {
         //let obj = self.obj();
         self.setup_settings();
         self.load_window_size();
+
+        let menu_button = menu::build_menu();
+        self.header_bar.pack_end(&menu_button);
     }
 }
 

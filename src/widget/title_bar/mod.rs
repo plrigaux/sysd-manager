@@ -1,4 +1,4 @@
-mod menu;
+pub mod menu;
 
 use gtk::pango::{AttrInt, AttrList, Weight};
 use gtk::prelude::*;

@@ -20,13 +20,16 @@
                         <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkBox">
+                            <property name="spacing">5</property>
                             <child>
                               <object class="GtkLabel">
                                 <property name="label">Enabled:</property>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkSwitch"/>
+                              <object class="GtkSwitch">
+                                <property name="valign">baseline-center</property>
+                              </object>
                             </child>
                             <child>
                               <object class="GtkButton">
@@ -76,8 +79,7 @@
               </object>
             </property>
             <child type="top">
-              <object class="AdwHeaderBar">
-                <property name="decoration-layout">Unit Name</property>
+              <object class="AdwHeaderBar" id="header_bar">
                 <property name="title-widget">
                   <object class="AdwWindowTitle">
                     <property name="title">SysD Manager</property>
@@ -101,7 +103,7 @@
                 </child>
                 <child type="start">
                   <object class="GtkLabel">
-                    <property name="label">Un</property>
+                    <property name="label">Unit name</property>
                   </object>
                 </child>
               </object>

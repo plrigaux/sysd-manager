@@ -96,7 +96,7 @@
 	(34,1,"AdwApplicationWindow","SysdMainAppWindow",None,None,None,None,0,None,None),
 	(34,2,"AdwToastOverlay",None,1,None,None,None,0,None,None),
 	(34,3,"AdwToolbarView",None,2,None,None,None,0,None,None),
-	(34,4,"AdwHeaderBar",None,3,None,"top",None,0,None,None),
+	(34,4,"AdwHeaderBar","header_bar",3,None,"top",None,0,None,None),
 	(34,5,"GtkPaned",None,3,None,None,None,1,None,None),
 	(34,6,"GtkPaned",None,5,None,None,None,1,None,None),
 	(34,7,"GtkBox",None,6,None,None,None,0,None,None),
@@ -112,10 +112,10 @@
 	(34,25,"AdwWindowTitle",None,4,None,None,None,0,None,None),
 	(34,26,"GtkBox",None,6,None,None,None,1,None,None),
 	(34,27,"GtkLabel",None,26,None,None,None,0,None,None),
-	(34,28,"GtkButton",None,4,None,None,None,1,None,None),
-	(34,29,"GtkButton",None,4,None,None,None,2,None,None),
+	(34,28,"GtkButton",None,4,None,"start",None,1,None,None),
+	(34,29,"GtkButton",None,4,None,"start",None,2,None,None),
 	(34,30,"AdwButtonContent",None,29,None,None,None,0,None,None),
-	(34,31,"GtkLabel",None,4,None,None,None,3,None,None)
+	(34,31,"GtkLabel",None,4,None,"start",None,3,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -211,12 +211,13 @@
 	(34,1,"GtkWindow","default-height","720",None,None,None,None,None,None,None,None,None),
 	(34,1,"GtkWindow","default-width","1280",None,None,None,None,None,None,None,None,None),
 	(34,3,"AdwToolbarView","content",None,None,None,None,None,5,None,None,None,None),
-	(34,4,"AdwHeaderBar","decoration-layout","Unit Name",None,None,None,None,None,None,None,None,None),
 	(34,4,"AdwHeaderBar","title-widget",None,None,None,None,None,25,None,None,None,None),
 	(34,6,"GtkPaned","end-child",None,None,None,None,None,7,None,None,None,None),
 	(34,6,"GtkPaned","start-child",None,None,None,None,None,26,None,None,None,None),
 	(34,7,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(34,16,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
 	(34,17,"GtkLabel","label","Enabled:",0,None,None,None,None,None,None,None,None),
+	(34,18,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
 	(34,20,"AdwButtonContent","icon-name","media-playback-start-symbolic",0,None,None,None,None,None,None,None,None),
 	(34,20,"AdwButtonContent","label","Start",0,None,None,None,None,None,None,None,None),
 	(34,22,"AdwButtonContent","icon-name","process-stop",0,None,None,None,None,None,None,None,None),
@@ -229,7 +230,7 @@
 	(34,28,"GtkWidget","tooltip-text","Filter uniresults",None,None,None,None,None,None,None,None,None),
 	(34,30,"AdwButtonContent","icon-name","view-refresh",None,None,None,None,None,None,None,None,None),
 	(34,30,"AdwButtonContent","label","Refresh",None,None,None,None,None,None,None,None,None),
-	(34,31,"GtkLabel","label","Un",None,None,None,None,None,None,None,None,None)
+	(34,31,"GtkLabel","label","Unit name",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
