@@ -536,7 +536,7 @@ fn build_ui(application: &adw::Application) {
     let stop_button = ButtonIcon::new("Stop", "process-stop");
     control_box.append(&stop_button);
 
-    let restart_button = ButtonIcon::new("Retart", "view-refresh");
+    let restart_button = ButtonIcon::new("Restart", "view-refresh");
     control_box.append(&restart_button);
 
     {
@@ -752,15 +752,16 @@ fn build_ui(application: &adw::Application) {
     left_pane.append(&search_bar);
     left_pane.append(&unit_col_view_scrolled_window);
 
-    let window = widget::window::AppWindow::new(application);
+    let window = widget::app_window::AppWindow::new(application);
+    //let window = widget::window::AppWindow::new(application);
 
-    let toolbar_view = adw::ToolbarView::builder().content(&main_box).build();
+/*     let toolbar_view = adw::ToolbarView::builder().content(&main_box).build();
 
     toast_overlay.set_child(Some(&toolbar_view));
 
     toolbar_view.add_top_bar(&title_bar_elements.header_bar);
 
-    window.set_content(Some(&toast_overlay));
+    window.set_content(Some(&toast_overlay)); */
 
     {
         let system_manager = adw::StyleManager::default();
