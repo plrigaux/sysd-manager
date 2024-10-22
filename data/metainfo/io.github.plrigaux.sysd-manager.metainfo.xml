@@ -62,6 +62,15 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.1.10" date="2024-10-22">
+      <description>
+        <ul>
+          <li>Add some colors on the unit information panel</li>
+          <li>Add more information details on the unit information panel</li>
+          <li>Fix the bytes calculation</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.9" date="2024-10-18">
       <description>
         <ul>
