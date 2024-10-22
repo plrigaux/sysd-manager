@@ -113,10 +113,10 @@ def main():
 
 
 def clean():
-    list_dir = ["builddir", ".flatpak-builder", CARGO_SOURCES, "repo"]
+    list_dir = ["builddir", ".flatpak-builder", CARGO_SOURCES, "repo", "tmp", FLATPACK_BUILD_DIR]
 
     for dir in list_dir:
-        print(f"{color.BOLD}Deleting{color.END} {dir}")
+        print(f"{color.BOLD}Deleting{color.END} {color.YELLOW}{dir}{color.END}")
         bcommon.cmd_run(["rm", "-fr", dir])
 
 
@@ -270,8 +270,10 @@ def generate(source_dir=FLATHUB_DIR):
 
     bcommon.cmd_run(["mkdir", "-p", source_dir])
 
-    with open(f"{source_dir}/{CARGO_SOURCES}", "w") as out:
+    cargo_source_file = f"{source_dir}/{CARGO_SOURCES}"
+    with open(cargo_source_file, "w") as out:
         json.dump(generated_sources, out, indent=4, sort_keys=False)
+        print(f"{color.CYAN}New cargo sources{color.END} to {cargo_source_file}")
 
 
 def diag():
