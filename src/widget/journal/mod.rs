@@ -65,7 +65,7 @@ mod imp {
     #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
     pub struct JournalPanelImp {
         #[template_child]
-        journal_refresh_button: TemplateChild<ButtonIcon>,
+        journal_refresh_button: TemplateChild<gtk::Button>,
 
         #[template_child]
         journal_text: TemplateChild<gtk::TextView>,

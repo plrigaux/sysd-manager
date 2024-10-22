@@ -64,7 +64,7 @@ mod imp {
 
     use crate::{
         systemd::{self, data::UnitInfo},
-        widget::{button_icon::ButtonIcon, preferences::data::PREFERENCES},
+        widget::preferences::data::PREFERENCES,
     };
 
     use super::dosini;
@@ -73,7 +73,7 @@ mod imp {
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
     pub struct UnitFilePanelImp {
         #[template_child]
-        save_button: TemplateChild<ButtonIcon>,
+        save_button: TemplateChild<gtk::Button>,
 
         #[template_child]
         file_path_label: TemplateChild<gtk::Label>,
@@ -89,7 +89,7 @@ mod imp {
     #[gtk::template_callbacks]
     impl UnitFilePanelImp {
         #[template_callback]
-        fn save_file(&self, button: &ButtonIcon) {
+        fn save_file(&self, button: &gtk::Button) {
             info!("button {:?}", button);
 
             let binding = self.unit.borrow();

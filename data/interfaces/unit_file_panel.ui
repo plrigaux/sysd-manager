@@ -1,8 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
+  <!-- interface-name unit_file_panel.ui -->
   <!-- interface-description Unit file panel -->
   <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.4"/>
   <template class="UnitFilePanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
@@ -29,9 +31,13 @@
           </object>
         </child>
         <child>
-          <object class="ButtonIcon" id="save_button">
-            <property name="icon-name">document-save</property>
-            <property name="label">Save</property>
+          <object class="GtkButton" id="save_button">
+            <property name="child">
+              <object class="AdwButtonContent">
+                <property name="icon-name">document-save</property>
+                <property name="label">Save</property>
+              </object>
+            </property>
             <signal name="clicked" handler="save_file" swapped="yes"/>
           </object>
         </child>

@@ -4,8 +4,21 @@
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit file panel -->
   <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.4"/>
   <template class="JournalPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkButton" id="journal_refresh_button">
+        <property name="child">
+          <object class="AdwButtonContent">
+            <property name="icon-name">view-refresh</property>
+            <property name="label">Refresh</property>
+          </object>
+        </property>
+        <property name="hexpand">True</property>
+        <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
+      </object>
+    </child>
     <child>
       <object class="GtkScrolledWindow">
         <property name="vexpand">True</property>
@@ -20,15 +33,5 @@
         </child>
       </object>
     </child>
-    <child>
-      <object class="ButtonIcon" id="journal_refresh_button">
-        <property name="hexpand">True</property>
-        <property name="icon-name">view-refresh</property>
-        <property name="label">Refresh</property>
-        <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
-        <!-- Custom object fragments -->
-      </object>
-    </child>
   </template>
-  <!-- Custom interface fragments -->
 </interface>
