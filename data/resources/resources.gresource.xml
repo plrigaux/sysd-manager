@@ -8,7 +8,6 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="button_icon.ui">interfaces/button_icon.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_info.ui">interfaces/unit_info.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="preferences.ui">interfaces/preferences.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="service_status.ui">interfaces/service_status.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_info_panel.ui">interfaces/unit_info_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_file_panel.ui">interfaces/unit_file_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="journal_panel.ui">interfaces/journal_panel.ui</file>
