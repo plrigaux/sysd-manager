@@ -3,22 +3,33 @@
 <interface>
   <!-- interface-name unit_info_panel.ui -->
   <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.4"/>
   <template class="UnitInfoPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox">
         <property name="spacing">5</property>
         <child>
-          <object class="ButtonIcon" id="refresh_button">
-            <property name="icon-name">view-refresh</property>
-            <property name="label">Refresh</property>
+          <object class="GtkButton" id="refresh_button">
+            <property name="child">
+              <object class="AdwButtonContent">
+                <property name="icon-name">view-refresh</property>
+                <property name="label">_Refresh</property>
+                <property name="use-underline">True</property>
+              </object>
+            </property>
             <signal name="clicked" handler="refresh_info_clicked" swapped="yes"/>
           </object>
         </child>
         <child>
-          <object class="ButtonIcon" id="show_all_button">
-            <property name="icon-name">view-app-grid-symbolic</property>
-            <property name="label">Show all information</property>
+          <object class="GtkButton" id="show_all_button">
+            <property name="child">
+              <object class="AdwButtonContent">
+                <property name="icon-name">view-app-grid-symbolic</property>
+                <property name="label" translatable="yes">Show all _information</property>
+                <property name="use-underline">True</property>
+              </object>
+            </property>
             <signal name="clicked" handler="show_all_clicked" swapped="yes"/>
           </object>
         </child>
