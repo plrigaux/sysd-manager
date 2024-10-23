@@ -4,7 +4,7 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
 use log::info;
 
-use crate::{systemd_gui, widget::title_bar::menu};
+use crate::{systemd_gui, widget::{title_bar::menu, unit_list::UnitListPanel}};
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -20,6 +20,9 @@ pub struct AppWindowImpl {
 
     #[template_child]
     toast_overlay: TemplateChild<adw::ToastOverlay>,
+
+    #[template_child]
+    unit_list_panel: TemplateChild<UnitListPanel>,
 }
 
 #[glib::object_subclass]

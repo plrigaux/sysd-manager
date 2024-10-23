@@ -72,9 +72,9 @@
                         </child>
                       </object>
                     </property>
-                     <property name="start-child">
-                      <object class="UnitListPanel"/>
-                    </property> 
+                    <property name="start-child">
+                      <object class="UnitListPanel" id="unit_list_panel"/>
+                    </property>
                   </object>
                 </child>
               </object>

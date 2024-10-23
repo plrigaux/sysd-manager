@@ -5,6 +5,7 @@
   <requires lib="gio" version="2.44"/>
   <template class="UnitListPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
+    <property name="vexpand">True</property>
     <property name="width-request">60</property>
     <child>
       <object class="GtkSearchBar">
@@ -19,6 +20,7 @@
     </child>
     <child>
       <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
         <child>
           <object class="GtkColumnView" id="units_browser">
             <property name="model">
@@ -36,11 +38,31 @@
                 </property>
               </object>
             </property>
+            <property name="vexpand">True</property>
             <child>
               <object class="GtkColumnViewColumn">
                 <property name="factory">
-                  <object class="GtkSignalListItemFactory"/>
+                  <object class="GtkSignalListItemFactory">
+                    <signal name="bind" handler="col_unit_name_factory_setup"/>
+                    <signal name="bind" handler="col_unit_name_factory_bind"/>
+                  </object>
                 </property>
+                <property name="fixed-width">140</property>
+                <property name="resizable">True</property>
+                <property name="title">Unit</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColumnViewColumn">
+                <property name="factory">
+                  <object class="GtkSignalListItemFactory">
+                    <signal name="bind" handler="col_type_factory_bind"/>
+                    <signal name="setup" handler="col_type_factory_setup"/>
+                  </object>
+                </property>
+                <property name="fixed-width">75</property>
+                <property name="resizable">True</property>
+                <property name="title">Type</property>
               </object>
             </child>
           </object>

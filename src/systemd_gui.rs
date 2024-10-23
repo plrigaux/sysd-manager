@@ -123,7 +123,6 @@ fn load_css() {
 
 fn build_ui(application: &adw::Application) {
 
-    let asdf = UnitListPanel::new();
     let store = gtk::gio::ListStore::new::<UnitInfo>();
 
     fill_store(&store);
