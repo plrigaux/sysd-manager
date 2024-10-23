@@ -8,7 +8,7 @@
     <property name="default-height">720</property>
     <property name="default-width">1280</property>
     <child>
-      <object class="AdwToastOverlay">
+      <object class="AdwToastOverlay" id="toast_overlay">
         <child>
           <object class="AdwToolbarView">
             <property name="content">
@@ -29,10 +29,13 @@
                             <child>
                               <object class="GtkSwitch">
                                 <property name="valign">baseline-center</property>
+                                <signal name="state-set" handler="switch_ablement_state_set" swapped="yes"/>
                               </object>
                             </child>
                             <child>
                               <object class="GtkButton">
+                                <property name="tooltip-text">Start unit</property>
+                                <signal name="clicked" handler="button_start_clicked" swapped="yes"/>
                                 <child>
                                   <object class="AdwButtonContent">
                                     <property name="icon-name">media-playback-start-symbolic</property>
@@ -43,16 +46,20 @@
                             </child>
                             <child>
                               <object class="GtkButton">
+                                <signal name="clicked" handler="button_stop_clicked" swapped="yes"/>
                                 <child>
                                   <object class="AdwButtonContent">
                                     <property name="icon-name">process-stop</property>
                                     <property name="label">Stop</property>
+                                    <property name="tooltip-text">Stop unit</property>
                                   </object>
                                 </child>
                               </object>
                             </child>
                             <child>
                               <object class="GtkButton">
+                                <property name="tooltip-text">Restart unit</property>
+                                <signal name="clicked" handler="button_restart_clicked" swapped="yes"/>
                                 <child>
                                   <object class="AdwButtonContent">
                                     <property name="icon-name">view-refresh</property>
@@ -65,15 +72,9 @@
                         </child>
                       </object>
                     </property>
-                    <property name="start-child">
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">place holder</property>
-                          </object>
-                        </child>
-                      </object>
-                    </property>
+                     <property name="start-child">
+                      <object class="UnitListPanel"/>
+                    </property> 
                   </object>
                 </child>
               </object>
@@ -88,7 +89,8 @@
                 <child type="start">
                   <object class="GtkButton">
                     <property name="icon-name">system-search</property>
-                    <property name="tooltip-text">Filter uniresults</property>
+                    <property name="tooltip-text">Filter units list </property>
+                    <signal name="clicked" handler="button_search_clicked" swapped="yes"/>
                   </object>
                 </child>
                 <child type="start">

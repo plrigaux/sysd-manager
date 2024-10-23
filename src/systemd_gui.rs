@@ -11,6 +11,7 @@ use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::preferences::PreferencesDialog;
 use crate::widget::unit_file_panel::UnitFilePanel;
 use crate::widget::unit_info::UnitInfoPanel;
+use crate::widget::unit_list::UnitListPanel;
 use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 
@@ -121,6 +122,8 @@ fn load_css() {
 }
 
 fn build_ui(application: &adw::Application) {
+
+    let asdf = UnitListPanel::new();
     let store = gtk::gio::ListStore::new::<UnitInfo>();
 
     fill_store(&store);

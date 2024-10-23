@@ -4,7 +4,6 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
 use log::info;
 
-
 use crate::{systemd_gui, widget::title_bar::menu};
 
 const WINDOW_WIDTH: &str = "window-width";
@@ -19,6 +18,8 @@ pub struct AppWindowImpl {
     #[template_child]
     header_bar: TemplateChild<adw::HeaderBar>,
 
+    #[template_child]
+    toast_overlay: TemplateChild<adw::ToastOverlay>,
 }
 
 #[glib::object_subclass]
@@ -30,7 +31,7 @@ impl ObjectSubclass for AppWindowImpl {
     fn class_init(klass: &mut Self::Class) {
         // The layout manager determines how child widgets are laid out.
         klass.bind_template();
-        //klass.bind_template_callbacks();
+        klass.bind_template_callbacks();
     }
 
     fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -51,6 +52,7 @@ impl ObjectImpl for AppWindowImpl {
     }
 }
 
+#[gtk::template_callbacks]
 impl AppWindowImpl {
     fn setup_settings(&self) {
         let settings: gio::Settings = gio::Settings::new(systemd_gui::APP_ID);
@@ -116,21 +118,36 @@ impl AppWindowImpl {
             obj.maximize();
         }
     }
+
+    #[template_callback]
+    fn switch_ablement_state_set(&self, _state: bool, _button: &gtk::Switch) -> bool {
+        true // to stop the signal emission
+    }
+
+    #[template_callback]
+    fn button_start_clicked(&self, _button: &gtk::Button) {}
+
+    #[template_callback]
+    fn button_stop_clicked(&self, _button: &gtk::Button) {}
+
+    #[template_callback]
+    fn button_restart_clicked(&self, _button: &gtk::Button) {}
+
+    #[template_callback]
+    fn button_search_clicked(&self, _button: &gtk::Button) {}
 }
 
 impl WidgetImpl for AppWindowImpl {}
-impl WindowImpl for AppWindowImpl {}
-/* impl WindowImpl for AppWindowImpl {
-   /*  // Save window state right before the window will be closed
+impl WindowImpl for AppWindowImpl {
+    // Save window state right before the window will be closed
     fn close_request(&self) -> glib::Propagation {
         // Save window size
         log::debug!("Close window");
-        self.obj()
-            .save_window_size()
+        self.save_window_size()
             .expect("Failed to save window state");
         // Allow to invoke other event handlers
         glib::Propagation::Proceed
-    } */
-} */
+    }
+}
 impl AdwApplicationWindowImpl for AppWindowImpl {}
 impl ApplicationWindowImpl for AppWindowImpl {}

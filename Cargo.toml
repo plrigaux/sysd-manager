@@ -32,7 +32,7 @@ path = "build.rs"
 lto = true
 
 [dependencies]
-gtk = { version = "0.9", package = "gtk4", features = ["v4_12"] }
+gtk = { version = "0.9", package = "gtk4", features = ["v4_14"] }
 log = "0.4"
 libc = "0.2"
 env_logger = "0.11.3"

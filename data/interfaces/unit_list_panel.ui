@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.92.1 -->
+<interface>
+  <requires lib="gtk" version="4.14"/>
+  <requires lib="gio" version="2.44"/>
+  <template class="UnitListPanel" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <property name="width-request">60</property>
+    <child>
+      <object class="GtkSearchBar">
+        <child>
+          <object class="GtkBox">
+            <child>
+              <object class="GtkSearchEntry"/>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkScrolledWindow">
+        <child>
+          <object class="GtkColumnView" id="units_browser">
+            <property name="model">
+              <object class="GtkSingleSelection">
+                <property name="model">
+                  <object class="GtkFilterListModel">
+                    <property name="model">
+                      <object class="GtkSortListModel">
+                        <property name="model">
+                          <object class="GListStore" id="list_store"/>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </property>
+            <child>
+              <object class="GtkColumnViewColumn">
+                <property name="factory">
+                  <object class="GtkSignalListItemFactory"/>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
