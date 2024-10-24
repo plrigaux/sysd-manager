@@ -467,7 +467,7 @@ fn build_ui(application: &adw::Application) {
                 return Propagation::Proceed;
             }
 
-            let (enable_result, action) = if enabled {
+            let (enable_result, enable_status) = if enabled {
                 (systemd::enable_unit_files(&unit), EnablementStatus::Enabled)
             } else {
                 (
@@ -497,7 +497,7 @@ fn build_ui(application: &adw::Application) {
                     };
                     let toast_warn = format!(
                         "Action \"{:?}\" on unit \"{}\": FAILED! {:?}",
-                        action,
+                        enable_status,
                         unit.primary(),
                         error_message
                     );
@@ -517,12 +517,12 @@ fn build_ui(application: &adw::Application) {
             //    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
             //info!("New Status : {:?}", unit_file_state);
 
-            let enabled_new = action == EnablementStatus::Enabled;
+            let enabled_new = enable_status == EnablementStatus::Enabled;
             switch.set_state(enabled_new);
             set_switch_tooltip(enabled, switch, &unit.primary());
-            unit.set_enable_status(action.to_string());
+            unit.set_enable_status(enable_status as u32);
 
-            handle_switch_sensivity(action, switch);
+            handle_switch_sensivity(enable_status, switch);
 
             Propagation::Proceed
         });
@@ -689,11 +689,11 @@ fn build_ui(application: &adw::Application) {
                 let text = entry1.text();
 
                 let unit_type = unit.unit_type();
-                let enable_status = unit.enable_status();
+                let enable_status :EnablementStatus = unit.enable_status().into();
                 let active_state: ActiveState = unit.active_state().into();
 
                 filter_button_unit_type.contains_value(&Some(unit_type))
-                    && filter_button_status.contains_value(&enable_status)
+                    && filter_button_status.contains_value(&Some(enable_status.to_str().to_owned()))
                     && if text.is_empty() {
                         true
                     } else {
@@ -806,7 +806,7 @@ fn build_ui(application: &adw::Application) {
             let ablement_status =
                 systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
 
-            unit.set_enable_status(ablement_status.to_string());
+            unit.set_enable_status(ablement_status as u32);
             ablement_switch.set_active(ablement_status == EnablementStatus::Enabled);
             ablement_switch.set_state(ablement_switch.is_active());
 

@@ -1,7 +1,11 @@
 use std::cell::{OnceCell, RefCell};
 
-use adw::{subclass::prelude::*, Toast};
-use gtk::{gio, glib::{self, property::PropertySet}, prelude::*};
+use adw::{subclass::prelude::*, Toast, ToastOverlay};
+use gtk::{
+    gio,
+    glib::{self, property::PropertySet, Propagation},
+    prelude::*,
+};
 use log::{error, info, warn};
 
 use crate::{
@@ -78,21 +82,6 @@ impl ObjectSubclass for AppWindowImpl {
     }
 }
 
-impl ObjectImpl for AppWindowImpl {
-    fn constructed(&self) {
-        self.parent_constructed();
-        // Load latest window state
-        //let obj = self.obj();
-        self.setup_settings();
-        self.load_window_size();
-
-        let menu_button = menu::build_menu();
-        self.header_bar.pack_end(&menu_button);
-
-        self.unit_list_panel.register_selection_change(&self.obj());
-    }
-}
-
 macro_rules! current_unit {
     ($app:expr) => {{
         current_unit!($app, ())
@@ -107,6 +96,26 @@ macro_rules! current_unit {
 
         unit.clone()
     }};
+}
+
+impl ObjectImpl for AppWindowImpl {
+    fn constructed(&self) {
+        self.parent_constructed();
+        // Load latest window state
+        //let obj = self.obj();
+        self.setup_settings();
+        self.load_window_size();
+
+        let menu_button = menu::build_menu();
+        self.header_bar.pack_end(&menu_button);
+
+        let tst = self.obj();
+        self.unit_list_panel.register_selection_change(&tst);
+
+        let app = self.current_unit.clone();
+
+        AppWindowImpl::set_switch_state_set(&self.ablement_switch, app, &self.toast_overlay);
+    }
 }
 
 #[gtk::template_callbacks]
@@ -177,10 +186,10 @@ impl AppWindowImpl {
     }
 
     #[template_callback]
-    fn switch_ablement_state_set(&self, state: bool, switch: &gtk::Switch) -> bool {
-        let unit = current_unit!(self, true);
+    fn switch_ablement_state_set(&self, _state: bool, _switch: &gtk::Switch) -> bool {
+        //let unit = current_unit!(self, true);
 
-        controls::switch_ablement_state_set(self, state, switch, &unit);
+        //controls::switch_ablement_state_set(self, state, switch, &unit);
 
         true // to stop the signal emission
     }
@@ -254,6 +263,25 @@ impl AppWindowImpl {
         self.restart_button.set_sensitive(true);
 
         self.current_unit.set(Some(unit.clone()));
+    }
+
+    fn set_switch_state_set(ablement_switch: &gtk::Switch, zxcv: RefCell<Option<UnitInfo>>, toast_overlay : &ToastOverlay) {
+
+        let to = toast_overlay.clone();
+        ablement_switch.connect_state_set(move |switch, enabled| {
+            let unit_op = zxcv.borrow();
+
+            let Some(unit) = unit_op.as_ref() else {
+                warn!("No selected unit!");
+                return Propagation::Proceed;
+            };
+
+            //let unit = current_unit!(self, Propagation::Proceed);
+
+            controls::switch_ablement_state_set(&to, enabled, switch, &unit);
+
+            Propagation::Proceed
+        });
     }
 }
 

@@ -188,7 +188,7 @@ impl UnitListPanelImp {
             }
         };
 
-        info!("Selection unit {}", unit.primary());
+        info!("Selection changed, new unit {}", unit.primary());
 
         match self.app_window.get() {
             Some(win) => win.selection_change(&unit),
@@ -198,7 +198,7 @@ impl UnitListPanelImp {
 
     pub(super) fn register_selection_change(&self, app_window: &AppWindow) {
         if let Err(_result) = self.app_window.set(app_window.clone()) {
-            warn!("One cell error! Itwas full.")
+            warn!("One cell error! It was full.")
         };
     }
 }

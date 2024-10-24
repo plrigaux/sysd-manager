@@ -1,21 +1,20 @@
-use adw::Toast;
-use log::{debug, info, warn};
+use adw::{Toast, ToastOverlay};
+use log::{info, warn};
 
 use crate::systemd::{self, data::UnitInfo, enums::{ActiveState, EnablementStatus}};
 
-use super::imp::AppWindowImpl;
 use crate::gtk::prelude::*;
 
 pub(super) fn switch_ablement_state_set(
-    app_win: &AppWindowImpl,
+    toast_overlay: &ToastOverlay,
     state: bool,
     switch: &gtk::Switch,
     unit: &UnitInfo,
 ) {
     // handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
 
-    debug!(
-        "active {} state {} new {state}",
+    info!(
+        "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} new_state {state}", unit.primary(), EnablementStatus::from(unit.enable_status()).to_str(),
         switch.is_active(),
         switch.state()
     );
@@ -49,7 +48,7 @@ pub(super) fn switch_ablement_state_set(
 
             let toast = Toast::new(&toast_info);
 
-            app_win.toast_overlay.add_toast(toast);
+            toast_overlay.add_toast(toast);
         }
 
         Err(error) => {
@@ -57,6 +56,7 @@ pub(super) fn switch_ablement_state_set(
                 systemd::SystemdErrors::SystemCtlError(s) => s,
                 _ => format!("{:?}", error),
             };
+
             let toast_warn = format!(
                 "Action \"{:?}\" on unit \"{}\": FAILED! {:?}",
                 action,
@@ -67,7 +67,7 @@ pub(super) fn switch_ablement_state_set(
 
             let toast = Toast::new(&toast_warn);
 
-            app_win.toast_overlay.add_toast(toast);
+            toast_overlay.add_toast(toast);
 
             //TODO put a timer to set back the switch
         }
@@ -80,7 +80,7 @@ pub(super) fn switch_ablement_state_set(
     let enabled_new = action == EnablementStatus::Enabled;
     switch.set_state(enabled_new);
 
-    unit.set_enable_status(action.to_string());
+    unit.set_enable_status(action as u32);
 
     handle_switch_sensivity(action, switch, unit);
 }

@@ -31,6 +31,7 @@ impl ExMenuButton {
         binding.add_item(label);
     }
 
+    //TODO accept &str
     pub fn contains_value(&self, value : &Option<String>) -> bool {
         let imp = self.imp();
         let set = imp.filter_set.borrow();

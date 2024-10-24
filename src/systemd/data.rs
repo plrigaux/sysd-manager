@@ -62,8 +62,8 @@ pub mod imp {
         pub(super) object_path: RwLock<String>,
         #[property(get, set)]
         pub(super) file_path: RwLock<Option<String>>,
-        #[property(get, set, default = None)]
-        pub(super) enable_status: RwLock<Option<String>>,
+        #[property(get, set, default = 0)]
+        pub(super) enable_status: RwLock<u32>,
     }
 
     #[glib::object_subclass]
