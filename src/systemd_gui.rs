@@ -1,4 +1,3 @@
-use adw::prelude::AdwApplicationWindowExt;
 use adw::Toast;
 use gtk::pango::{self, Weight};
 use gtk::{gdk, Orientation};
@@ -11,7 +10,6 @@ use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::preferences::PreferencesDialog;
 use crate::widget::unit_file_panel::UnitFilePanel;
 use crate::widget::unit_info::UnitInfoPanel;
-use crate::widget::unit_list::UnitListPanel;
 use crate::widget::{self, title_bar};
 use log::{debug, error, info, warn};
 

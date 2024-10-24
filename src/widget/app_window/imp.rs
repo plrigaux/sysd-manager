@@ -1,15 +1,19 @@
-use std::cell::OnceCell;
+use std::cell::{OnceCell, RefCell};
 
 use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
-use log::info;
+use log::{info, warn};
 
 use crate::{
-    systemd::data::UnitInfo, systemd_gui, widget::{
+    systemd::{data::UnitInfo, enums::EnablementStatus},
+    systemd_gui,
+    widget::{
         journal::JournalPanel, title_bar::menu, unit_file_panel::UnitFilePanel,
         unit_info::UnitInfoPanel, unit_list::UnitListPanel,
-    }
+    },
 };
+
+use super::controls;
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -18,13 +22,13 @@ const IS_MAXIMIZED: &str = "is-maximized";
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/app_window.ui")]
 pub struct AppWindowImpl {
-    pub settings: OnceCell<gio::Settings>,
+    settings: OnceCell<gio::Settings>,
 
     #[template_child]
     header_bar: TemplateChild<adw::HeaderBar>,
 
     #[template_child]
-    toast_overlay: TemplateChild<adw::ToastOverlay>,
+    pub(super) toast_overlay: TemplateChild<adw::ToastOverlay>,
 
     #[template_child]
     unit_list_panel: TemplateChild<UnitListPanel>,
@@ -37,6 +41,20 @@ pub struct AppWindowImpl {
 
     #[template_child]
     unit_journal_panel: TemplateChild<JournalPanel>,
+
+    #[template_child]
+    ablement_switch: TemplateChild<gtk::Switch>,
+
+    #[template_child]
+    start_button: TemplateChild<gtk::Button>,
+
+    #[template_child]
+    stop_button: TemplateChild<gtk::Button>,
+
+    #[template_child]
+    restart_button: TemplateChild<gtk::Button>,
+
+    current_unit: RefCell<Option<UnitInfo>>,
 }
 
 #[glib::object_subclass]
@@ -139,7 +157,13 @@ impl AppWindowImpl {
     }
 
     #[template_callback]
-    fn switch_ablement_state_set(&self, _state: bool, _button: &gtk::Switch) -> bool {
+    fn switch_ablement_state_set(&self, state: bool, switch: &gtk::Switch) -> bool {
+        let unit_op = self.current_unit.borrow();
+        match unit_op.as_ref() {
+            Some(unit) => controls::switch_ablement_state_set(self, state, switch, unit),
+            None => warn!("No selected unit!"),
+        }
+
         true // to stop the signal emission
     }
 
@@ -155,11 +179,16 @@ impl AppWindowImpl {
     #[template_callback]
     fn button_search_clicked(&self, _button: &gtk::Button) {}
 
-
-    pub(super) fn selection_change(&self, unit : &UnitInfo) {
+    pub(super) fn selection_change(&self, unit: &UnitInfo) {
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);
         self.unit_journal_panel.display_journal(unit);
+
+        controls::handle_switch_sensivity(EnablementStatus::Unknown, &self.ablement_switch, unit);
+
+        self.start_button.set_sensitive(true);
+        self.stop_button.set_sensitive(true);
+        self.restart_button.set_sensitive(true);
     }
 }
 

@@ -3,7 +3,7 @@ use crate::gtk::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib;
 
 glib::wrapper! {
-    pub struct UnitInfo(ObjectSubclass<imp::UnitInfo>);
+    pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
 }
 
 impl UnitInfo {
@@ -17,7 +17,7 @@ impl UnitInfo {
         object_path: &str,
     ) -> Self {
         let this_object: Self = glib::Object::new();
-        let imp: &imp::UnitInfo = this_object.imp();
+        let imp: &imp::UnitInfoImpl = this_object.imp();
 
         imp.set_primary(primary.to_owned());
         *imp.description.write().unwrap() = description.to_owned();
@@ -39,7 +39,7 @@ pub mod imp {
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitInfo)]
-    pub struct UnitInfo {
+    pub struct UnitInfoImpl {
         #[property(get, set = Self::set_primary )]
         pub(super) primary: RwLock<String>,
         #[property(get)]
@@ -67,7 +67,7 @@ pub mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for UnitInfo {
+    impl ObjectSubclass for UnitInfoImpl {
         const NAME: &'static str = "UnitInfo";
         type Type = super::UnitInfo;
 
@@ -77,9 +77,9 @@ pub mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for UnitInfo {}
+    impl ObjectImpl for UnitInfoImpl {}
 
-    impl UnitInfo {
+    impl UnitInfoImpl {
         pub fn set_primary(&self, primary: String) {
             let mut split_char_index = primary.len();
             for (i, c) in primary.chars().enumerate() {

@@ -4,6 +4,7 @@ use gtk::{gio, glib, subclass::prelude::*};
 use crate::systemd::data::UnitInfo;
 
 mod imp;
+mod controls;
 
 glib::wrapper! {
     pub struct AppWindow(ObjectSubclass<imp::AppWindowImpl>)
