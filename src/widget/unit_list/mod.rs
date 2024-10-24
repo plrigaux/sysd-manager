@@ -23,4 +23,8 @@ impl UnitListPanel {
         let obj = self.imp();
         obj.register_selection_change(app_window);
     }
+
+    pub fn search_bar(&self) -> gtk::SearchBar {
+        self.imp().search_bar()
+    }
 }

@@ -41,6 +41,7 @@ impl UnitFilePanel {
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark)
     }
+
 }
 
 mod imp {
@@ -146,6 +147,11 @@ mod imp {
             let file_content = buffer.text(&start, &end, true);
 
             self.set_text(file_content.as_str());
+        }
+
+        pub(super) fn search_bar(&self) -> gtk::SearchBar {
+          //  self.search_bar.clone()
+          gtk::SearchBar::new()
         }
     }
 

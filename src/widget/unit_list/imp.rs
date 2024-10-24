@@ -37,6 +37,9 @@ pub struct UnitListPanelImp {
     #[template_child]
     single_selection: TemplateChild<gtk::SingleSelection>,
 
+    #[template_child]
+    search_bar: TemplateChild<gtk::SearchBar>,
+
     app_window: OnceCell<AppWindow>,
 }
 
@@ -200,6 +203,10 @@ impl UnitListPanelImp {
         if let Err(_result) = self.app_window.set(app_window.clone()) {
             warn!("One cell error! It was full.")
         };
+    }
+
+    pub fn search_bar(&self) -> gtk::SearchBar {
+        self.search_bar.clone()
     }
 }
 

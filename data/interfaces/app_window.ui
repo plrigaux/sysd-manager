@@ -14,7 +14,7 @@
             <property name="content">
               <object class="GtkPaned">
                 <child>
-                  <object class="GtkPaned">
+                  <object class="GtkPaned" id="paned">
                     <property name="end-child">
                       <object class="GtkBox">
                         <property name="orientation">vertical</property>
@@ -111,9 +111,12 @@
                         </child>
                       </object>
                     </property>
+                    <property name="position-set">True</property>
+                    <property name="shrink-start-child">False</property>
                     <property name="start-child">
                       <object class="UnitListPanel" id="unit_list_panel"/>
                     </property>
+                    <property name="wide-handle">True</property>
                   </object>
                 </child>
               </object>
@@ -125,25 +128,21 @@
                     <property name="title">SysD Manager</property>
                   </object>
                 </property>
-                <child type="start">
-                  <object class="GtkButton">
+                <child>
+                  <object class="GtkToggleButton">
                     <property name="icon-name">system-search</property>
-                    <property name="tooltip-text">Filter units list </property>
-                    <signal name="clicked" handler="button_search_clicked" swapped="yes"/>
+                    <property name="tooltip-text">Open search bar</property>
+                    <signal name="toggled" handler="button_search_toggled" swapped="yes"/>
                   </object>
                 </child>
                 <child type="start">
                   <object class="GtkButton">
-                    <child>
-                      <object class="AdwButtonContent">
-                        <property name="icon-name">view-refresh</property>
-                        <property name="label">Refresh</property>
-                      </object>
-                    </child>
+                    <property name="icon-name">view-refresh</property>
+                    <property name="tooltip-text">Refresh unit list</property>
                   </object>
                 </child>
                 <child type="start">
-                  <object class="GtkLabel">
+                  <object class="GtkLabel" id="unit_name_label">
                     <property name="label">Unit name</property>
                   </object>
                 </child>

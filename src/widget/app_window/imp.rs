@@ -62,7 +62,15 @@ pub struct AppWindowImpl {
     #[template_child]
     restart_button: TemplateChild<gtk::Button>,
 
+    #[template_child]
+    paned: TemplateChild<gtk::Paned>,
+
+    #[template_child]
+    unit_name_label: TemplateChild<gtk::Label>,
+
     current_unit: RefCell<Option<UnitInfo>>,
+
+    search_bar: RefCell<gtk::SearchBar>,
 }
 
 #[glib::object_subclass]
@@ -104,7 +112,7 @@ impl ObjectImpl for AppWindowImpl {
         // Load latest window state
         //let obj = self.obj();
         self.setup_settings();
-        self.load_window_size();
+        let (width, _height) = self.load_window_size();
 
         let menu_button = menu::build_menu();
         self.header_bar.pack_end(&menu_button);
@@ -112,9 +120,19 @@ impl ObjectImpl for AppWindowImpl {
         let tst = self.obj();
         self.unit_list_panel.register_selection_change(&tst);
 
-        let app = self.current_unit.clone();
+        let current_unit = self.current_unit.clone();
 
-        AppWindowImpl::set_switch_state_set(&self.ablement_switch, app, &self.toast_overlay);
+        AppWindowImpl::set_switch_state_set(
+            &self.ablement_switch,
+            current_unit,
+            &self.toast_overlay,
+        );
+
+        let search_bar = self.unit_list_panel.search_bar();
+
+        self.search_bar.set(search_bar);
+
+        self.paned.set_position(width / 2);
     }
 }
 
@@ -149,7 +167,7 @@ impl AppWindowImpl {
         Ok(())
     }
 
-    fn load_window_size(&self) {
+    fn load_window_size(&self) -> (i32, i32) {
         // Get the window state from `settings`
         let settings = self.settings();
 
@@ -183,6 +201,8 @@ impl AppWindowImpl {
         if is_maximized {
             obj.maximize();
         }
+
+        (width, height)
     }
 
     #[template_callback]
@@ -248,10 +268,21 @@ impl AppWindowImpl {
         }
     }
 
+    /*     #[template_callback]
+       fn button_search_clicked(&self, _button: &gtk::Button) {
+           self.search_bar.borrow().set_search_mode(true);
+       }
+    */
     #[template_callback]
-    fn button_search_clicked(&self, _button: &gtk::Button) {}
+    fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
+        self.search_bar
+            .borrow()
+            .set_search_mode(toggle_button.is_active());
+    }
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
+
+        self.unit_name_label.set_label(&unit.primary());
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);
         self.unit_journal_panel.display_journal(unit);
@@ -265,11 +296,14 @@ impl AppWindowImpl {
         self.current_unit.set(Some(unit.clone()));
     }
 
-    fn set_switch_state_set(ablement_switch: &gtk::Switch, zxcv: RefCell<Option<UnitInfo>>, toast_overlay : &ToastOverlay) {
-
+    fn set_switch_state_set(
+        ablement_switch: &gtk::Switch,
+        current_unit: RefCell<Option<UnitInfo>>,
+        toast_overlay: &ToastOverlay,
+    ) {
         let to = toast_overlay.clone();
         ablement_switch.connect_state_set(move |switch, enabled| {
-            let unit_op = zxcv.borrow();
+            let unit_op = current_unit.borrow();
 
             let Some(unit) = unit_op.as_ref() else {
                 warn!("No selected unit!");
