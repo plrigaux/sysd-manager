@@ -1,11 +1,15 @@
 use std::cell::{OnceCell, RefCell};
 
-use adw::subclass::prelude::*;
-use gtk::{gio, glib, prelude::*};
-use log::{info, warn};
+use adw::{subclass::prelude::*, Toast};
+use gtk::{gio, glib::{self, property::PropertySet}, prelude::*};
+use log::{error, info, warn};
 
 use crate::{
-    systemd::{data::UnitInfo, enums::EnablementStatus},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{ActiveState, EnablementStatus},
+    },
     systemd_gui,
     widget::{
         journal::JournalPanel, title_bar::menu, unit_file_panel::UnitFilePanel,
@@ -89,6 +93,22 @@ impl ObjectImpl for AppWindowImpl {
     }
 }
 
+macro_rules! current_unit {
+    ($app:expr) => {{
+        current_unit!($app, ())
+    }};
+
+    ($app:expr, $opt:expr) => {{
+        let unit_op = $app.current_unit.borrow();
+        let Some(unit) = unit_op.as_ref() else {
+            warn!("No selected unit!");
+            return $opt;
+        };
+
+        unit.clone()
+    }};
+}
+
 #[gtk::template_callbacks]
 impl AppWindowImpl {
     fn setup_settings(&self) {
@@ -158,23 +178,66 @@ impl AppWindowImpl {
 
     #[template_callback]
     fn switch_ablement_state_set(&self, state: bool, switch: &gtk::Switch) -> bool {
-        let unit_op = self.current_unit.borrow();
-        match unit_op.as_ref() {
-            Some(unit) => controls::switch_ablement_state_set(self, state, switch, unit),
-            None => warn!("No selected unit!"),
-        }
+        let unit = current_unit!(self, true);
+
+        controls::switch_ablement_state_set(self, state, switch, &unit);
 
         true // to stop the signal emission
     }
 
     #[template_callback]
-    fn button_start_clicked(&self, _button: &gtk::Button) {}
+    fn button_start_clicked(&self, _button: &gtk::Button) {
+        let unit = current_unit!(self);
+
+        match systemd::start_unit(&unit) {
+            Ok(_job) => {
+                let info = format!("Unit \"{}\" has been started!", unit.primary());
+
+                info!("{info}");
+
+                let toast = Toast::new(&info);
+                self.toast_overlay.add_toast(toast);
+
+                controls::update_active_state(&unit, ActiveState::Active);
+            }
+            Err(e) => error!("Can't start the unit {}, because: {:?}", unit.primary(), e),
+        }
+    }
 
     #[template_callback]
-    fn button_stop_clicked(&self, _button: &gtk::Button) {}
+    fn button_stop_clicked(&self, _button: &gtk::Button) {
+        let unit = current_unit!(self);
+
+        match systemd::stop_unit(&unit) {
+            Ok(_job) => {
+                let info = format!("Unit \"{}\" has been stopped!", unit.primary());
+                info!("{info}");
+                let toast = Toast::new(&info);
+                self.toast_overlay.add_toast(toast);
+
+                controls::update_active_state(&unit, ActiveState::Inactive)
+            }
+
+            Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
+        }
+    }
 
     #[template_callback]
-    fn button_restart_clicked(&self, _button: &gtk::Button) {}
+    fn button_restart_clicked(&self, _button: &gtk::Button) {
+        let unit = current_unit!(self);
+
+        match systemd::restart_unit(&unit) {
+            Ok(_job) => {
+                let info = format!("Unit \"{}\" has been restarted!", unit.primary());
+                info!("{info}");
+                let toast = Toast::new(&info);
+                self.toast_overlay.add_toast(toast);
+
+                controls::update_active_state(&unit, ActiveState::Active);
+            }
+            Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
+        }
+    }
 
     #[template_callback]
     fn button_search_clicked(&self, _button: &gtk::Button) {}
@@ -189,6 +252,8 @@ impl AppWindowImpl {
         self.start_button.set_sensitive(true);
         self.stop_button.set_sensitive(true);
         self.restart_button.set_sensitive(true);
+
+        self.current_unit.set(Some(unit.clone()));
     }
 }
 

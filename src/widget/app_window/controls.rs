@@ -1,7 +1,7 @@
 use adw::Toast;
 use log::{debug, info, warn};
 
-use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus};
+use crate::systemd::{self, data::UnitInfo, enums::{ActiveState, EnablementStatus}};
 
 use super::imp::AppWindowImpl;
 use crate::gtk::prelude::*;
@@ -124,4 +124,9 @@ pub(super) fn handle_switch_sensivity(
     };
 
     switch.set_sensitive(sensitive);
+}
+
+pub(super) fn update_active_state(unit: &UnitInfo, state: ActiveState) {
+    unit.set_active_state(state as u32);
+    unit.set_active_state_icon(state.icon_name().to_owned());
 }
