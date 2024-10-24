@@ -4,7 +4,12 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
 use log::info;
 
-use crate::{systemd_gui, widget::{title_bar::menu, unit_list::UnitListPanel}};
+use crate::{
+    systemd::data::UnitInfo, systemd_gui, widget::{
+        journal::JournalPanel, title_bar::menu, unit_file_panel::UnitFilePanel,
+        unit_info::UnitInfoPanel, unit_list::UnitListPanel,
+    }
+};
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -23,6 +28,15 @@ pub struct AppWindowImpl {
 
     #[template_child]
     unit_list_panel: TemplateChild<UnitListPanel>,
+
+    #[template_child]
+    unit_info_panel: TemplateChild<UnitInfoPanel>,
+
+    #[template_child]
+    unit_file_panel: TemplateChild<UnitFilePanel>,
+
+    #[template_child]
+    unit_journal_panel: TemplateChild<JournalPanel>,
 }
 
 #[glib::object_subclass]
@@ -52,6 +66,8 @@ impl ObjectImpl for AppWindowImpl {
 
         let menu_button = menu::build_menu();
         self.header_bar.pack_end(&menu_button);
+
+        self.unit_list_panel.register_selection_change(&self.obj());
     }
 }
 
@@ -138,6 +154,13 @@ impl AppWindowImpl {
 
     #[template_callback]
     fn button_search_clicked(&self, _button: &gtk::Button) {}
+
+
+    pub(super) fn selection_change(&self, unit : &UnitInfo) {
+        self.unit_info_panel.display_unit_info(unit);
+        self.unit_file_panel.set_file_content(unit);
+        self.unit_journal_panel.display_journal(unit);
+    }
 }
 
 impl WidgetImpl for AppWindowImpl {}

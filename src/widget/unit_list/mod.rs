@@ -1,4 +1,6 @@
 use gtk::glib;
+use gtk::subclass::prelude::*;
+use super::app_window::AppWindow;
 
 mod imp;
 
@@ -17,4 +19,8 @@ impl UnitListPanel {
     }
 
 
+    pub fn register_selection_change(&self, app_window : &AppWindow) {
+        let obj = self.imp();
+        obj.register_selection_change(app_window);
+    }
 }

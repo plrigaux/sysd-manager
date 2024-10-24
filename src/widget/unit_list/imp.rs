@@ -1,3 +1,5 @@
+use std::cell::OnceCell;
+
 use gtk::{
     gio::{self},
     glib::{self, Object},
@@ -13,9 +15,12 @@ use gtk::{
     TemplateChild,
 };
 
-use log::{info, warn};
+use log::{error, info, warn};
 
-use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus};
+use crate::{
+    systemd::{self, data::UnitInfo, enums::EnablementStatus},
+    widget::app_window::AppWindow,
+};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -28,6 +33,11 @@ pub struct UnitListPanelImp {
 
     #[template_child]
     units_browser: TemplateChild<gtk::ColumnView>,
+
+    #[template_child]
+    single_selection: TemplateChild<gtk::SingleSelection>,
+
+    app_window: OnceCell<AppWindow>,
 }
 
 macro_rules! factory_setup {
@@ -161,6 +171,35 @@ impl UnitListPanelImp {
     #[template_callback]
     fn col_description_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
         factory_bind!(item_obj, description);
+    }
+
+    #[template_callback]
+    fn single_selection_selection_changed(&self, position: u32) {
+        let Some(object) = self.single_selection.selected_item() else {
+            warn!("No object selected, position {position}");
+            return;
+        };
+
+        let unit = match object.downcast::<UnitInfo>() {
+            Ok(unit) => unit,
+            Err(val) => {
+                error!("Object.downcast::<UnitInfo> Error: {:?}", val);
+                return;
+            }
+        };
+
+        info!("Selection unit {}", unit.primary());
+
+        match self.app_window.get() {
+            Some(win) => win.selection_change(&unit),
+            None => warn!("No selection_change handler"),
+        }
+    }
+
+    pub(super) fn register_selection_change(&self, app_window: &AppWindow) {
+        if let Err(_result) = self.app_window.set(app_window.clone()) {
+            warn!("One cell error! Itwas full.")
+        };
     }
 }
 

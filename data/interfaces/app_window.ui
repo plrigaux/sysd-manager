@@ -18,6 +18,7 @@
                     <property name="end-child">
                       <object class="GtkBox">
                         <property name="orientation">vertical</property>
+                        <property name="spacing">5</property>
                         <child>
                           <object class="GtkBox">
                             <property name="spacing">5</property>
@@ -66,6 +67,40 @@
                                     <property name="label">Restart</property>
                                   </object>
                                 </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwViewSwitcher">
+                            <property name="policy">wide</property>
+                            <property name="stack">unit_stack</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwViewStack" id="unit_stack">
+                            <child>
+                              <object class="AdwViewStackPage">
+                                <property name="child">
+                                  <object class="UnitInfoPanel" id="unit_info_panel"/>
+                                </property>
+                                <property name="title">Unit Info</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwViewStackPage">
+                                <property name="child">
+                                  <object class="UnitFilePanel" id="unit_file_panel"/>
+                                </property>
+                                <property name="title">File</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwViewStackPage">
+                                <property name="child">
+                                  <object class="JournalPanel" id="unit_journal_panel"/>
+                                </property>
+                                <property name="title">Journal</property>
                               </object>
                             </child>
                           </object>

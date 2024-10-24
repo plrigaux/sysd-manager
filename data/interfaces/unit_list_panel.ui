@@ -25,7 +25,7 @@
         <child>
           <object class="GtkColumnView" id="units_browser">
             <property name="model">
-              <object class="GtkSingleSelection">
+              <object class="GtkSingleSelection" id="single_selection">
                 <property name="model">
                   <object class="GtkFilterListModel">
                     <property name="model">
@@ -37,18 +37,19 @@
                     </property>
                   </object>
                 </property>
+                <signal name="selection-changed" handler="single_selection_selection_changed" swapped="yes"/>
               </object>
             </property>
             <property name="vexpand">True</property>
             <child>
-              <object class="GtkColumnViewColumn" id="cvc_unit">
+              <object class="GtkColumnViewColumn">
                 <property name="factory">
                   <object class="GtkSignalListItemFactory">
                     <signal name="bind" handler="col_unit_name_factory_setup"/>
                     <signal name="bind" handler="col_unit_name_factory_bind"/>
                   </object>
                 </property>
-                <property name="fixed-width">200</property>
+                <property name="fixed-width">140</property>
                 <property name="resizable">True</property>
                 <property name="title">Unit</property>
               </object>
