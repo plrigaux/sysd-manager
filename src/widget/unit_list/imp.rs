@@ -1,6 +1,5 @@
-
 use gtk::{
-    gio,
+    gio::{self},
     glib::{self, Object},
     prelude::*,
     subclass::{
@@ -8,7 +7,7 @@ use gtk::{
         prelude::*,
         widget::{
             CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
+            CompositeTemplateInitializingExt, WidgetImpl,
         },
     },
     TemplateChild,
@@ -16,13 +15,19 @@ use gtk::{
 
 use log::{info, warn};
 
-use crate::systemd::{self, data::UnitInfo};
+use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
 pub struct UnitListPanelImp {
     #[template_child]
     list_store: TemplateChild<gio::ListStore>,
+
+    #[template_child]
+    unit_list_sort_list_model: TemplateChild<gtk::SortListModel>,
+
+    #[template_child]
+    units_browser: TemplateChild<gtk::ColumnView>,
 }
 
 macro_rules! factory_setup {
@@ -35,19 +40,62 @@ macro_rules! factory_setup {
     }};
 }
 
-
-macro_rules! factory_bind {
-    ($item_obj:expr, $func:ident) => {{
+macro_rules! downcast_list_item {
+    ($item_obj:expr) => {{
         let item = $item_obj
             .downcast_ref::<gtk::ListItem>()
             .expect("item.downcast_ref::<gtk::ListItem>()");
+        item
+    }};
+}
+
+macro_rules! factory_bind_pre {
+    ($item_obj:expr) => {{
+        let item = downcast_list_item!($item_obj);
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
+        (child, entry)
+    }};
+}
+
+macro_rules! factory_bind {
+    ($item_obj:expr, $func:ident) => {{
+        let (child, entry) = factory_bind_pre!($item_obj);
         let v = entry.$func();
         child.set_text(Some(&v));
     }};
 }
 
+macro_rules! create_column_filter {
+    ($func:ident) => {{
+        let col_sorter = gtk::CustomSorter::new(move |obj1, obj2| {
+            let Some(unit1) = obj1.downcast_ref::<UnitInfo>() else {
+                panic!("some wrong downcast_ref {:?}", obj1);
+            };
+
+            let Some(unit2) = obj2.downcast_ref::<UnitInfo>() else {
+                panic!("some wrong downcast_ref {:?}", obj2);
+            };
+
+            unit1.$func().cmp(&unit2.$func()).into()
+        });
+        col_sorter
+    }};
+}
+
+macro_rules! column_view_column_set_sorter {
+    ($list_item:expr, $col_idx:expr, $sort_func:ident) => {
+        let item = $list_item.item($col_idx);
+
+        let item_out = item.expect("Expect item x to be not None");
+        let downcast_ref = item_out
+            .downcast_ref::<gtk::ColumnViewColumn>()
+            .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+        let sorter = create_column_filter!($sort_func);
+        downcast_ref.set_sorter(Some(&sorter));
+    };
+}
 
 #[gtk::template_callbacks]
 impl UnitListPanelImp {
@@ -59,7 +107,6 @@ impl UnitListPanelImp {
     #[template_callback]
     fn col_unit_name_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
         factory_bind!(item_obj, display_name);
-        
     }
 
     #[template_callback]
@@ -70,6 +117,50 @@ impl UnitListPanelImp {
     #[template_callback]
     fn col_type_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
         factory_bind!(item_obj, unit_type);
+    }
+
+    #[template_callback]
+    fn col_enable_status_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        factory_setup!(item_obj);
+    }
+
+    #[template_callback]
+    fn col_enable_status_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        let (child, entry) = factory_bind_pre!(item_obj);
+
+        let status_code: EnablementStatus = entry.enable_status().into();
+
+        child.set_text(Some(status_code.to_str()));
+
+        entry.bind_property("enable_status", &child, "text").build();
+    }
+
+    #[template_callback]
+    fn col_active_status_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        let item = downcast_list_item!(item_obj);
+        let image = gtk::Image::new();
+        item.set_child(Some(&image));
+    }
+
+    #[template_callback]
+    fn col_active_status_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        let item = downcast_list_item!(item_obj);
+        let child = item.child().and_downcast::<gtk::Image>().unwrap();
+        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
+        child.set_icon_name(Some(&entry.active_state_icon()));
+        entry
+            .bind_property("active_state_icon", &child, "icon-name")
+            .build();
+    }
+
+    #[template_callback]
+    fn col_description_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        factory_setup!(item_obj);
+    }
+
+    #[template_callback]
+    fn col_description_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        factory_bind!(item_obj, description);
     }
 }
 
@@ -94,6 +185,17 @@ impl ObjectSubclass for UnitListPanelImp {
 impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let list_model: gio::ListModel = self.units_browser.columns();
+
+        column_view_column_set_sorter!(list_model, 0, primary);
+        column_view_column_set_sorter!(list_model, 1, unit_type);
+        column_view_column_set_sorter!(list_model, 2, enable_status);
+        column_view_column_set_sorter!(list_model, 3, active_state);
+
+        let sorter = self.units_browser.sorter();
+
+        self.unit_list_sort_list_model.set_sorter(sorter.as_ref());
 
         fill_store(&self.list_store);
 

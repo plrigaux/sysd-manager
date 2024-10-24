@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
   <!-- interface-name app_window.ui -->
-  <requires lib="libadwaita" version="1.5"/>
   <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.5"/>
   <template class="SysdMainAppWindow" parent="AdwApplicationWindow">
     <property name="default-height">720</property>
     <property name="default-width">1280</property>

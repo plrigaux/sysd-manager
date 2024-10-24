@@ -1,12 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
-  <requires lib="gtk" version="4.14"/>
+  <!-- interface-name unit_list_panel.ui -->
   <requires lib="gio" version="2.44"/>
+  <requires lib="gtk" version="4.14"/>
   <template class="UnitListPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <property name="vexpand">True</property>
-    <property name="width-request">60</property>
+    <property name="width-request">150</property>
     <child>
       <object class="GtkSearchBar">
         <child>
@@ -28,7 +29,7 @@
                 <property name="model">
                   <object class="GtkFilterListModel">
                     <property name="model">
-                      <object class="GtkSortListModel">
+                      <object class="GtkSortListModel" id="unit_list_sort_list_model">
                         <property name="model">
                           <object class="GListStore" id="list_store"/>
                         </property>
@@ -40,14 +41,14 @@
             </property>
             <property name="vexpand">True</property>
             <child>
-              <object class="GtkColumnViewColumn">
+              <object class="GtkColumnViewColumn" id="cvc_unit">
                 <property name="factory">
                   <object class="GtkSignalListItemFactory">
                     <signal name="bind" handler="col_unit_name_factory_setup"/>
                     <signal name="bind" handler="col_unit_name_factory_bind"/>
                   </object>
                 </property>
-                <property name="fixed-width">140</property>
+                <property name="fixed-width">200</property>
                 <property name="resizable">True</property>
                 <property name="title">Unit</property>
               </object>
@@ -63,6 +64,47 @@
                 <property name="fixed-width">75</property>
                 <property name="resizable">True</property>
                 <property name="title">Type</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColumnViewColumn">
+                <property name="factory">
+                  <object class="GtkSignalListItemFactory">
+                    <signal name="bind" handler="col_enable_status_factory_bind"/>
+                    <signal name="setup" handler="col_enable_status_factory_setup"/>
+                  </object>
+                </property>
+                <property name="fixed-width">70</property>
+                <property name="resizable">True</property>
+                <property name="title">Enable
+status</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColumnViewColumn">
+                <property name="factory">
+                  <object class="GtkSignalListItemFactory">
+                    <signal name="bind" handler="col_active_status_factory_bind"/>
+                    <signal name="setup" handler="col_active_status_factory_setup"/>
+                  </object>
+                </property>
+                <property name="fixed-width">75</property>
+                <property name="resizable">True</property>
+                <property name="title">Active
+status</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColumnViewColumn">
+                <property name="expand">True</property>
+                <property name="factory">
+                  <object class="GtkSignalListItemFactory">
+                    <signal name="bind" handler="col_description_factory_bind"/>
+                    <signal name="setup" handler="col_description_factory_setup"/>
+                  </object>
+                </property>
+                <property name="resizable">True</property>
+                <property name="title">Description</property>
               </object>
             </child>
           </object>
