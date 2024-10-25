@@ -17,12 +17,6 @@ impl JournalPanel {
         // Create new window
         let obj: JournalPanel = glib::Object::new();
 
-        let system_manager = adw::StyleManager::default();
-
-        let is_dark = system_manager.is_dark();
-
-        obj.set_dark(is_dark);
-
         obj
     }
 

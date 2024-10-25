@@ -188,6 +188,16 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
+    fn items_changed(&self, _position: u32) {
+        //info!("items_changed {position}");
+    }
+
+    #[template_callback]
+    fn sections_changed(&self, position: u32) { 
+        info!("sections_changed {position}");
+    }
+
+    #[template_callback]
     fn single_selection_selection_changed(&self, position: u32) {
         let Some(object) = self.single_selection.selected_item() else {
             warn!("No object selected, position {position}");
@@ -205,7 +215,7 @@ impl UnitListPanelImp {
         info!("Selection changed, new unit {}", unit.primary());
 
         match self.app_window.get() {
-            Some(win) => win.selection_change(&unit),
+            Some(app_win) => app_win.selection_change(&unit),
             None => warn!("No selection_change handler"),
         }
     }
@@ -257,6 +267,14 @@ impl ObjectImpl for UnitListPanelImp {
         fill_store(&self.list_store);
 
         fill_search_bar(&self.search_bar, &self.filter_list_model);
+
+        self.single_selection.connect_autoselect_notify(|_f| info!("connect_autoselect_notify "));
+
+        self.single_selection.connect_selected_item_notify(|_f| info!("connect_selected_item_notify "));
+
+        self.single_selection.connect_selected_notify(|_f| info!("connect_selected_notify ")); // FOR THE SEARCH
+
+        self.single_selection.connect_selection_changed(|_f, a, b| info!("connect_selection_changed a {a} b {b}"));
     }
 }
 impl WidgetImpl for UnitListPanelImp {}

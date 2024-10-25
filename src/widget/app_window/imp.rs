@@ -12,7 +12,7 @@ use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus},
+        enums::ActiveState,
     },
     systemd_gui,
     widget::{
@@ -281,13 +281,12 @@ impl AppWindowImpl {
     }
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
-
         self.unit_name_label.set_label(&unit.primary());
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);
         self.unit_journal_panel.display_journal(unit);
 
-        controls::handle_switch_sensivity(EnablementStatus::Unknown, &self.ablement_switch, unit);
+        controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 
         self.start_button.set_sensitive(true);
         self.stop_button.set_sensitive(true);
@@ -316,6 +315,12 @@ impl AppWindowImpl {
 
             Propagation::Proceed
         });
+    }
+
+    pub(super) fn set_dark(&self, is_dark: bool) {
+        self.unit_file_panel.set_dark(is_dark);
+        self.unit_info_panel.set_dark(is_dark);
+        self.unit_journal_panel.set_dark(is_dark);
     }
 }
 

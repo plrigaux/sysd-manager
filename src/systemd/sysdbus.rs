@@ -214,7 +214,7 @@ pub fn list_units_description_and_state(
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
             Some(unit_info) => {
                 unit_info.set_file_path(unit_file.path);
-                let status_code : u32 = unit_file.status_code.into();
+                let status_code: u32 = unit_file.status_code.into();
                 unit_info.set_enable_status(status_code);
             }
             None => log::debug!(

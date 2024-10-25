@@ -11,14 +11,6 @@ glib::wrapper! {
 }
 
 impl UnitListPanel {
-    pub fn new() -> Self {
-        // Create new window
-        let obj: UnitListPanel = glib::Object::new();
-
-        obj
-    }
-
-
     pub fn register_selection_change(&self, app_window : &AppWindow) {
         let obj = self.imp();
         obj.register_selection_change(app_window);

@@ -1,7 +1,11 @@
 use adw::{Toast, ToastOverlay};
 use log::{info, warn};
 
-use crate::systemd::{self, data::UnitInfo, enums::{ActiveState, EnablementStatus}};
+use crate::systemd::{
+    self,
+    data::UnitInfo,
+    enums::{ActiveState, EnablementStatus},
+};
 
 use crate::gtk::prelude::*;
 
@@ -82,7 +86,7 @@ pub(super) fn switch_ablement_state_set(
 
     unit.set_enable_status(action as u32);
 
-    handle_switch_sensivity(action, switch, unit);
+    handle_switch_sensivity(switch, unit, false);
 }
 
 fn set_switch_tooltip(enabled: EnablementStatus, switch: &gtk::Switch, unit_name: &str) {
@@ -96,10 +100,27 @@ fn set_switch_tooltip(enabled: EnablementStatus, switch: &gtk::Switch, unit_name
 }
 
 pub(super) fn handle_switch_sensivity(
-    mut unit_file_state: EnablementStatus,
     switch: &gtk::Switch,
     unit: &UnitInfo,
+    check_current_state: bool,
 ) {
+    let mut unit_file_state: EnablementStatus = unit.enable_status().into();
+    
+    if check_current_state {
+        let current_state = match systemd::get_unit_file_state(unit) {
+            Ok(a) => a,
+            Err(e) => {
+                warn!("get unit state fail {:?}", e);
+                unit_file_state
+            }
+        };
+
+        if current_state != unit_file_state {
+            unit_file_state = current_state;
+            unit.set_enable_status(unit_file_state as u32);
+        }
+    }
+
     if unit_file_state == EnablementStatus::Unknown {
         unit_file_state = unit.enable_status().into();
 
