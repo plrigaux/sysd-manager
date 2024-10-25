@@ -1,5 +1,5 @@
 pub mod menu;
-
+/* 
 use gtk::pango::{AttrInt, AttrList, Weight};
 use gtk::prelude::*;
 use crate::widget::button_icon::ButtonIcon;
@@ -66,3 +66,4 @@ pub struct TitleBar {
     pub search_button: gtk::ToggleButton,
     pub refresh_button: ButtonIcon,
 }
+ */

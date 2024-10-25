@@ -8,9 +8,10 @@ use crate::widget::button_icon::ButtonIcon;
 use crate::widget::journal::JournalPanel;
 use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::preferences::PreferencesDialog;
+use crate::widget::title_bar::menu;
 use crate::widget::unit_file_panel::UnitFilePanel;
 use crate::widget::unit_info::UnitInfoPanel;
-use crate::widget::{self, title_bar};
+use crate::widget::{self};
 use log::{debug, error, info, warn};
 
 use crate::systemd;
@@ -99,7 +100,7 @@ pub fn launch() -> glib::ExitCode {
     let app = adw::Application::builder().application_id(APP_ID).build();
     app.connect_startup(|app| {
         load_css();
-        title_bar::on_startup(app)
+        menu::on_startup(app)
     });
     app.connect_activate(build_ui);
 
@@ -120,7 +121,6 @@ fn load_css() {
 }
 
 fn build_ui(application: &adw::Application) {
-
     let store = gtk::gio::ListStore::new::<UnitInfo>();
 
     fill_store(&store);
@@ -616,7 +616,7 @@ fn build_ui(application: &adw::Application) {
         // .key_capture_widget(&window)
         .build();
 
-    let title_bar_elements = title_bar::build_title_bar(&search_bar);
+    //let title_bar_elements = title_bar::build_title_bar(&search_bar);
 
     let search_entry = gtk::SearchEntry::new();
     search_entry.set_hexpand(true);
@@ -660,16 +660,16 @@ fn build_ui(application: &adw::Application) {
     search_bar.set_child(Some(&search_box));
 
     {
-        let search_button = title_bar_elements.search_button.clone();
+        /*         let search_button = title_bar_elements.search_button.clone();
         search_entry.connect_search_started(move |_| {
             search_button.set_active(true);
-        });
+        }); */
     }
     {
-        let search_button = title_bar_elements.search_button.clone();
+        /*         let search_button = title_bar_elements.search_button.clone();
         search_entry.connect_stop_search(move |_| {
             search_button.set_active(false);
-        });
+        }); */
     }
 
     {
@@ -689,7 +689,7 @@ fn build_ui(application: &adw::Application) {
                 let text = entry1.text();
 
                 let unit_type = unit.unit_type();
-                let enable_status :EnablementStatus = unit.enable_status().into();
+                let enable_status: EnablementStatus = unit.enable_status().into();
                 let active_state: ActiveState = unit.active_state().into();
 
                 filter_button_unit_type.contains_value(&Some(unit_type))
@@ -740,13 +740,13 @@ fn build_ui(application: &adw::Application) {
     }
 
     {
-        let store = store.clone();
+        /*         let store = store.clone();
 
         title_bar_elements
             .refresh_button
             .connect_clicked(move |_button| {
                 fill_store(&store);
-            });
+            }); */
     }
 
     left_pane.append(&search_bar);
@@ -755,7 +755,7 @@ fn build_ui(application: &adw::Application) {
     let window = widget::app_window::AppWindow::new(application);
     //let window = widget::window::AppWindow::new(application);
 
-/*     let toolbar_view = adw::ToolbarView::builder().content(&main_box).build();
+    /*     let toolbar_view = adw::ToolbarView::builder().content(&main_box).build();
 
     toast_overlay.set_child(Some(&toolbar_view));
 
@@ -777,7 +777,7 @@ fn build_ui(application: &adw::Application) {
         //let unit_file_info = unit_file_info.clone();
         let ablement_switch = ablement_switch.clone();
         //let unit_journal = unit_journal_view.clone();
-        let header_label = title_bar_elements.right_bar_label.clone();
+        //let header_label = title_bar_elements.right_bar_label.clone();
         let unit_prop_store = unit_prop_store.clone();
 
         columnview_selection_model.connect_selected_item_notify(move |single_selection| {
@@ -813,12 +813,11 @@ fn build_ui(application: &adw::Application) {
             handle_switch_sensivity(ablement_status, &ablement_switch);
 
             journal_panel.display_journal(&unit);
-            header_label.set_label(&unit.display_name());
+            //header_label.set_label(&unit.display_name());
             debug!("Unit {:#?}", unit);
 
             unit_prop_store.remove_all();
 
-         
             /*          let info_panel = unit_info::fill_data(&unit);
             unit_analyse_scrolled_window.set_child(Some(&info_panel)); */
         });

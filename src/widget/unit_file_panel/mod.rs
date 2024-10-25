@@ -148,11 +148,6 @@ mod imp {
 
             self.set_text(file_content.as_str());
         }
-
-        pub(super) fn search_bar(&self) -> gtk::SearchBar {
-          //  self.search_bar.clone()
-          gtk::SearchBar::new()
-        }
     }
 
     // The central trait for subclassing a GObject

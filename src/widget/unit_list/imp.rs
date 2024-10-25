@@ -1,8 +1,11 @@
-use std::cell::OnceCell;
+use std::{
+    cell::{OnceCell, RefMut},
+    rc::Rc,
+};
 
 use gtk::{
     gio::{self},
-    glib::{self, Object},
+    glib::{self, BoxedAnyObject, Object},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -12,15 +15,20 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetImpl,
         },
     },
-    TemplateChild,
+    SearchBar, TemplateChild,
 };
 
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::EnablementStatus},
-    widget::app_window::AppWindow,
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{ActiveState, EnablementStatus, UnitType},
+    },
+    widget::{app_window::AppWindow, menu_button::ExMenuButton},
 };
+use strum::IntoEnumIterator;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -39,6 +47,9 @@ pub struct UnitListPanelImp {
 
     #[template_child]
     search_bar: TemplateChild<gtk::SearchBar>,
+
+    #[template_child]
+    filter_list_model: TemplateChild<gtk::FilterListModel>,
 
     app_window: OnceCell<AppWindow>,
 }
@@ -245,7 +256,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         fill_store(&self.list_store);
 
-        warn!("UnitListPanelImp constructed");
+        fill_search_bar(&self.search_bar, &self.filter_list_model);
     }
 }
 impl WidgetImpl for UnitListPanelImp {}
@@ -263,4 +274,115 @@ fn fill_store(store: &gio::ListStore) {
         store.append(&value);
     }
     info!("Unit list refreshed! list size {}", store.n_items())
+}
+
+fn fill_search_bar(search_bar: &SearchBar, filter_list_model: &gtk::FilterListModel) {
+    let search_entry = gtk::SearchEntry::new();
+    search_entry.set_hexpand(true);
+
+    let mut filter_button_unit_type = ExMenuButton::new("Type");
+    let mut filter_button_status = ExMenuButton::new("Enablement");
+    let mut filter_button_active = ExMenuButton::new("Active");
+
+    let search_box = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(5)
+        .build();
+
+    for unit_type in UnitType::iter().filter(|x| match *x {
+        UnitType::Unknown(_) => false,
+        _ => true,
+    }) {
+        filter_button_unit_type.add_item(unit_type.to_str());
+    }
+
+    for status in EnablementStatus::iter().filter(|x| match *x {
+        EnablementStatus::Unknown => false,
+        //EnablementStatus::Unasigned => false,
+        _ => true,
+    }) {
+        filter_button_status.add_item(status.to_str());
+    }
+
+    for status in ActiveState::iter().filter(|x| match *x {
+        ActiveState::Unknown => false,
+        //EnablementStatus::Unasigned => false,
+        _ => true,
+    }) {
+        filter_button_active.add_item(status.label());
+    }
+
+    search_box.append(&search_entry);
+    search_box.append(&filter_button_unit_type);
+    search_box.append(&filter_button_status);
+    search_box.append(&filter_button_active);
+
+    search_bar.set_child(Some(&search_box));
+
+    {
+        let entry1 = search_entry.clone();
+
+        let custom_filter = {
+            let filter_button_unit_type = filter_button_unit_type.clone();
+            let filter_button_status = filter_button_status.clone();
+            let filter_button_active = filter_button_active.clone();
+
+            let custom_filter = gtk::CustomFilter::new(move |object| {
+                let Some(unit) = object.downcast_ref::<UnitInfo>() else {
+                    error!("some wrong downcast_ref {:?}", object);
+                    return false;
+                };
+
+                let text = entry1.text();
+
+                let unit_type = unit.unit_type();
+                let enable_status: EnablementStatus = unit.enable_status().into();
+                let active_state: ActiveState = unit.active_state().into();
+
+                filter_button_unit_type.contains_value(&Some(unit_type))
+                    && filter_button_status.contains_value(&Some(enable_status.to_str().to_owned()))
+                    && if text.is_empty() {
+                        true
+                    } else {
+                        unit.display_name().contains(text.as_str())
+                    }
+                    && filter_button_active.contains_value(&Some(active_state.to_string()))
+            });
+
+            custom_filter
+        };
+
+        filter_button_unit_type.set_filter(custom_filter.clone());
+        filter_button_status.set_filter(custom_filter.clone());
+        filter_button_active.set_filter(custom_filter.clone());
+
+        filter_list_model.set_filter(Some(&custom_filter));
+
+        let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
+
+        search_entry.connect_search_changed(move |entry| {
+            let text = entry.text();
+
+            debug!("Search text \"{text}\"");
+
+            let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
+
+            let change_type = if text.is_empty() {
+                gtk::FilterChange::LessStrict
+            } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
+                gtk::FilterChange::MoreStrict
+            } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
+                gtk::FilterChange::LessStrict
+            } else {
+                gtk::FilterChange::Different
+            };
+
+            debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
+            last_filter.replace_range(.., text.as_str());
+            custom_filter.changed(change_type);
+
+            //FIXME when the filter become empty the colunm view display nothing until you click on it
+            //unit_col_view_scrolled_window.queue_draw(); //TODO investigate the need
+        });
+    }
 }
