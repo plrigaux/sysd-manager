@@ -213,19 +213,28 @@ pub fn list_units_description_and_state(
     for unit_file in unit_files.drain(..) {
         match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
             Some(unit_info) => {
-                unit_info.set_file_path(unit_file.path);
-                let status_code: u32 = unit_file.status_code.into();
-                unit_info.set_enable_status(status_code);
+                fill_unit_file(unit_info, &unit_file);
             }
-            None => log::debug!(
-                "Unit \"{}\" status \"{}\" not loaded!",
-                unit_file.full_name(),
-                unit_file.status_code.to_string()
-            ),
+            None => {
+                log::debug!(
+                    "Unit \"{}\" status \"{}\" not loaded!",
+                    unit_file.full_name(),
+                    unit_file.status_code.to_string()
+                );
+                let mut unit = UnitInfo::new(unit_file.full_name(),"","", ActiveState::Unknown,"","","");
+                fill_unit_file(&mut unit, &unit_file);
+                units_map.insert(unit_file.full_name().to_ascii_lowercase(), unit);
+            }
         }
     }
 
     Ok(units_map)
+}
+
+fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
+    unit_info.set_file_path(unit_file.path.clone());
+    let status_code: u32 = unit_file.status_code.into();
+    unit_info.set_enable_status(status_code);
 }
 
 /// Takes a unit name as input and attempts to start it
