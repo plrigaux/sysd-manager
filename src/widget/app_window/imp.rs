@@ -281,6 +281,8 @@ impl AppWindowImpl {
     }
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
+        self.current_unit.set(Some(unit.clone()));
+        
         self.unit_name_label.set_label(&unit.primary());
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);
@@ -292,7 +294,7 @@ impl AppWindowImpl {
         self.stop_button.set_sensitive(true);
         self.restart_button.set_sensitive(true);
 
-        self.current_unit.set(Some(unit.clone()));
+       
     }
 
     fn set_switch_state_set(

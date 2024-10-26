@@ -232,7 +232,7 @@ pub fn list_units_description_and_state(
 }
 
 fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
-    unit_info.set_file_path(unit_file.path.clone());
+    unit_info.set_file_path(Some(unit_file.path.clone()));
     let status_code: u32 = unit_file.status_code.into();
     unit_info.set_enable_status(status_code);
 }
@@ -364,6 +364,7 @@ pub fn fetch_system_unit_info_native(
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let connection = get_connection(level)?;
 
+    info!("path {path}");
     let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
         fdo::PropertiesProxy::builder(&connection)
             .destination(DESTINATION_SYSTEMD)?

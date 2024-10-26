@@ -203,7 +203,7 @@ impl UnitListPanelImp {
         let app_window = app_window.clone();
 
         self.single_selection
-            .connect_selected_notify(move |single_selection| {
+            .connect_selected_item_notify(move |single_selection| {
                 info!("connect_selected_notify ");
                 let Some(object) = single_selection.selected_item() else {
                     warn!("No object selected");

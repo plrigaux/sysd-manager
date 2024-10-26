@@ -105,7 +105,7 @@ pub(super) fn handle_switch_sensivity(
     check_current_state: bool,
 ) {
     let mut unit_file_state: EnablementStatus = unit.enable_status().into();
-    
+
     if check_current_state {
         let current_state = match systemd::get_unit_file_state(unit) {
             Ok(a) => a,
@@ -121,16 +121,12 @@ pub(super) fn handle_switch_sensivity(
         }
     }
 
-    if unit_file_state == EnablementStatus::Unknown {
-        unit_file_state = unit.enable_status().into();
-
-        if unit_file_state == EnablementStatus::Enabled {
-            switch.set_state(true);
-            switch.set_active(true);
-        } else {
-            switch.set_state(false);
-            switch.set_active(false);
-        }
+    if unit_file_state == EnablementStatus::Enabled {
+        switch.set_state(true);
+        switch.set_active(true);
+    } else {
+        switch.set_state(false);
+        switch.set_active(false);
     }
 
     let sensitive = if unit_file_state == EnablementStatus::Enabled

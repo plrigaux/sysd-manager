@@ -20,7 +20,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
     let map = match systemd::fetch_system_unit_info_native(&unit) {
         Ok(m) => m,
         Err(e) => {
-            error!("Fail to retreive Unit info: {:?}", e);
+            error!("Fail to retreive Unit info for {}:?: {:?}", unit.primary(), e);
             HashMap::new()
         }
     };

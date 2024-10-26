@@ -332,7 +332,6 @@
 	(62,40,46,"GtkToggleButton","toggled","button_search_toggled",None,0,1,0,None),
 	(63,44,4,"GtkButton","clicked","clear_filter_selection",None,0,1,0,None),
 	(64,44,2,"GtkPopover","closed","popover_closed",None,0,0,0,None),
-	(65,45,10,"GtkSelectionModel","selection-changed","single_selection_selection_changed",None,None,1,0,None),
 	(66,45,15,"GtkSignalListItemFactory","bind","col_unit_name_factory_setup",None,None,0,0,None),
 	(67,45,15,"GtkSignalListItemFactory","bind","col_unit_name_factory_bind",None,None,0,0,None),
 	(68,45,17,"GtkSignalListItemFactory","bind","col_type_factory_bind",None,None,0,0,None),
@@ -342,9 +341,7 @@
 	(72,45,21,"GtkSignalListItemFactory","bind","col_active_status_factory_bind",None,None,0,0,None),
 	(73,45,21,"GtkSignalListItemFactory","setup","col_active_status_factory_setup",None,None,0,0,None),
 	(74,45,23,"GtkSignalListItemFactory","bind","col_description_factory_bind",None,None,0,0,None),
-	(75,45,23,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None),
-	(76,45,10,"GtkSectionModel","sections-changed","sections_changed",None,0,1,0,None),
-	(77,45,10,"GListModel","items-changed","items_changed",None,0,1,0,None)
+	(75,45,23,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),
