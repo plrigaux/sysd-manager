@@ -109,8 +109,8 @@ pub(super) fn handle_switch_sensivity(
     if check_current_state {
         let current_state = match systemd::get_unit_file_state(unit) {
             Ok(a) => a,
-            Err(e) => {
-                warn!("get unit state fail {:?}", e);
+            Err(_e) => {
+                warn!("get unit {:#?} state fail!", unit.primary());
                 unit_file_state
             }
         };

@@ -1,7 +1,4 @@
-use std::{
-    cell::{OnceCell, RefMut},
-    rc::Rc,
-};
+use std::{cell::RefMut, rc::Rc};
 
 use gtk::{
     gio::{self},
@@ -50,8 +47,6 @@ pub struct UnitListPanelImp {
 
     #[template_child]
     filter_list_model: TemplateChild<gtk::FilterListModel>,
-
-    app_window: OnceCell<AppWindow>,
 }
 
 macro_rules! factory_setup {
@@ -156,7 +151,14 @@ impl UnitListPanelImp {
 
         child.set_text(Some(status_code.to_str()));
 
-        entry.bind_property("enable_status", &child, "text").build();
+        entry
+            .bind_property("enable_status", &child, "text")
+            .transform_to(|_, status: u32| {
+                let estatus: EnablementStatus = status.into();
+                let str = estatus.to_string();
+                Some(str)
+            })
+            .build();
     }
 
     #[template_callback]
@@ -188,42 +190,38 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn items_changed(&self, _position: u32) {
-        //info!("items_changed {position}");
-    }
-
-    #[template_callback]
-    fn sections_changed(&self, position: u32) { 
+    fn sections_changed(&self, position: u32) {
         info!("sections_changed {position}");
     }
 
-    #[template_callback]
-    fn single_selection_selection_changed(&self, position: u32) {
-        let Some(object) = self.single_selection.selected_item() else {
-            warn!("No object selected, position {position}");
-            return;
-        };
-
-        let unit = match object.downcast::<UnitInfo>() {
-            Ok(unit) => unit,
-            Err(val) => {
-                error!("Object.downcast::<UnitInfo> Error: {:?}", val);
-                return;
-            }
-        };
-
-        info!("Selection changed, new unit {}", unit.primary());
-
-        match self.app_window.get() {
-            Some(app_win) => app_win.selection_change(&unit),
-            None => warn!("No selection_change handler"),
-        }
-    }
-
     pub(super) fn register_selection_change(&self, app_window: &AppWindow) {
+        /*      error!("register_selection_change");
         if let Err(_result) = self.app_window.set(app_window.clone()) {
             warn!("One cell error! It was full.")
-        };
+        }; */
+
+        let app_window = app_window.clone();
+
+        self.single_selection
+            .connect_selected_notify(move |single_selection| {
+                info!("connect_selected_notify ");
+                let Some(object) = single_selection.selected_item() else {
+                    warn!("No object selected");
+                    return;
+                };
+
+                let unit = match object.downcast::<UnitInfo>() {
+                    Ok(unit) => unit,
+                    Err(val) => {
+                        error!("Object.downcast::<UnitInfo> Error: {:?}", val);
+                        return;
+                    }
+                };
+
+                info!("Selection changed, new unit {}", unit.primary());
+
+                app_window.selection_change(&unit);
+            }); // FOR THE SEARCH
     }
 
     pub fn search_bar(&self) -> gtk::SearchBar {
@@ -267,14 +265,6 @@ impl ObjectImpl for UnitListPanelImp {
         fill_store(&self.list_store);
 
         fill_search_bar(&self.search_bar, &self.filter_list_model);
-
-        self.single_selection.connect_autoselect_notify(|_f| info!("connect_autoselect_notify "));
-
-        self.single_selection.connect_selected_item_notify(|_f| info!("connect_selected_item_notify "));
-
-        self.single_selection.connect_selected_notify(|_f| info!("connect_selected_notify ")); // FOR THE SEARCH
-
-        self.single_selection.connect_selection_changed(|_f, a, b| info!("connect_selection_changed a {a} b {b}"));
     }
 }
 impl WidgetImpl for UnitListPanelImp {}

@@ -29,9 +29,6 @@
                     </property>
                   </object>
                 </property>
-                <signal name="selection-changed" handler="single_selection_selection_changed" swapped="yes"/>
-                <signal name="sections-changed" handler="sections_changed" swapped="yes"/>
-                <signal name="items-changed" handler="items_changed" swapped="yes"/>
               </object>
             </property>
             <property name="vexpand">True</property>

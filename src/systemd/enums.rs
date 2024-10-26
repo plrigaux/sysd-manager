@@ -4,8 +4,9 @@ use log::info;
 use std::fmt::Display;
 use strum::EnumIter;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default)]
 pub enum EnablementStatus {
+    #[default]
     Unknown = 0,
     Alias = 1,
     Bad = 2,
