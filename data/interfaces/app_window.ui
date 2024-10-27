@@ -126,23 +126,7 @@
                               </object>
                             </property>
                             <property name="sidebar">
-                              <object class="GtkBox">
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label">testte test </property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwEntryRow">
-                                    <property name="input-hints">emoji | inhibit-osk | lowercase | no-emoji | none | spellcheck | uppercase-sentences | vertical-writing | word-completion</property>
-                                    <property name="input-purpose">digits</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkEntry"/>
-                                </child>
-                              </object>
+                              <object class="KillPanel" id="kill_panel"/>
                             </property>
                             <property name="sidebar-position">end</property>
                           </object>

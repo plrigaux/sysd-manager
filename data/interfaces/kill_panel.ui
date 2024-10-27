@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.92.1 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <template class="KillPanel" parent="GtkBox">
+    <property name="baseline-position">top</property>
+    <property name="orientation">vertical</property>
+    <property name="spacing">5</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="label">Kill process</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Send signal: </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkEntry" id="entry_text">
+            <property name="tooltip-text">Number only</property>
+            <signal name="changed" handler="kill_signal_text_change" swapped="yes"/>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkButton" id="cancel_button">
+            <property name="label">Cancel</property>
+            <signal name="clicked" handler="button_cancel_clicked" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="send_button">
+            <property name="css-classes">suggested-action</property>
+            <property name="label">Send</property>
+            <property name="sensitive">False</property>
+            <signal name="clicked" handler="button_send_clicked" swapped="yes"/>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

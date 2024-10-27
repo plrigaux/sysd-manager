@@ -12,7 +12,8 @@
 	(32,1,"unit_file_panel.ui","unit_file_panel.ui","Unit file panel",None,None,None,None,None,None),
 	(40,1,"app_window.ui","app_window.ui",None,None,None,None,None,None,None),
 	(44,None,"ex_menu_button.ui","ex_menu_button.ui",None,None,None,None,None,None,None),
-	(45,1,"unit_list_panel.ui","unit_list_panel.ui",None,None,None,None,None,None,None)
+	(45,1,"unit_list_panel.ui","unit_list_panel.ui",None,None,None,None,None,None,None),
+	(46,1,None,"kill_panel.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.12",None),
@@ -30,7 +31,8 @@
 	(44,"gtk","4.12",None),
 	(44,"libadwaita","1.5",None),
 	(45,"gio","2.44",None),
-	(45,"gtk","4.14",None)
+	(45,"gtk","4.14",None),
+	(46,"gtk","4.12",None)
   </ui_library>
   <object>
 	(1,1,"GtkApplicationWindow",None,None,None,None,None,0,None,None),
@@ -125,8 +127,6 @@
 	(40,49,"UnitListPanel","unit_list_panel",5,None,None,None,1,None,None),
 	(40,50,"AdwOverlaySplitView","side_overlay",6,None,None,None,1,None,None),
 	(40,51,"GtkBox",None,50,None,None,None,0,None,None),
-	(40,55,"GtkBox",None,50,None,None,None,1,None,None),
-	(40,56,"GtkLabel",None,55,None,None,None,0,None,None),
 	(40,57,"AdwViewSwitcher",None,51,None,None,None,0,None,None),
 	(40,58,"AdwViewStack","unit_stack",51,None,None,None,1,None,None),
 	(40,59,"AdwViewStackPage",None,58,None,None,None,0,None,None),
@@ -135,8 +135,7 @@
 	(40,62,"UnitFilePanel","unit_file_panel",61,None,None,None,0,None,None),
 	(40,63,"AdwViewStackPage",None,58,None,None,None,2,None,None),
 	(40,64,"JournalPanel","unit_journal_panel",63,None,None,None,0,None,None),
-	(40,65,"AdwEntryRow",None,55,None,None,None,1,None,None),
-	(40,66,"GtkEntry",None,55,None,None,None,2,None,None),
+	(40,65,"KillPanel","kill_panel",50,None,None,None,1,None,None),
 	(44,1,"GtkMenuButton","ExMenuButton",None,None,None,None,0,None,None),
 	(44,2,"GtkPopover","popover",1,None,None,None,0,None,None),
 	(44,3,"GtkBox","pop_content",2,None,None,None,0,None,None),
@@ -158,7 +157,15 @@
 	(45,20,"GtkColumnViewColumn",None,9,None,None,None,4,None,None),
 	(45,21,"GtkSignalListItemFactory",None,20,None,None,None,0,None,None),
 	(45,22,"GtkColumnViewColumn",None,9,None,None,None,5,None,None),
-	(45,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None)
+	(45,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None),
+	(46,1,"GtkBox","KillPanel",None,None,None,None,0,None,None),
+	(46,2,"GtkLabel",None,1,None,None,None,0,None,None),
+	(46,3,"GtkBox",None,1,None,None,None,2,None,None),
+	(46,7,"GtkBox",None,1,None,None,None,1,None,None),
+	(46,8,"GtkLabel",None,7,None,None,None,0,None,None),
+	(46,9,"GtkEntry","entry_text",7,None,None,None,1,None,None),
+	(46,10,"GtkButton","cancel_button",3,None,None,None,0,None,None),
+	(46,11,"GtkButton","send_button",3,None,None,None,1,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -288,10 +295,8 @@
 	(40,48,"AdwButtonContent","label","Kill",None,None,None,None,None,None,None,None,None),
 	(40,50,"AdwOverlaySplitView","collapsed","True",None,None,None,None,None,None,None,None,None),
 	(40,50,"AdwOverlaySplitView","content",None,None,None,None,None,51,None,None,None,None),
-	(40,50,"AdwOverlaySplitView","sidebar",None,None,None,None,None,55,None,None,None,None),
+	(40,50,"AdwOverlaySplitView","sidebar",None,None,None,None,None,65,None,None,None,None),
 	(40,50,"AdwOverlaySplitView","sidebar-position","end",None,None,None,None,None,None,None,None,None),
-	(40,55,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
-	(40,56,"GtkLabel","label","testte test ",None,None,None,None,None,None,None,None,None),
 	(40,57,"AdwViewSwitcher","policy","wide",0,None,None,None,None,None,None,None,None),
 	(40,57,"AdwViewSwitcher","stack",None,0,None,None,None,None,None,None,None,None),
 	(40,59,"AdwViewStackPage","child",None,0,None,None,None,60,None,None,None,None),
@@ -300,8 +305,6 @@
 	(40,61,"AdwViewStackPage","title","File",0,None,None,None,None,None,None,None,None),
 	(40,63,"AdwViewStackPage","child",None,0,None,None,None,64,None,None,None,None),
 	(40,63,"AdwViewStackPage","title","Journal",0,None,None,None,None,None,None,None,None),
-	(40,65,"AdwEntryRow","input-hints","emoji | inhibit-osk | lowercase | no-emoji | none | spellcheck | uppercase-sentences | vertical-writing | word-completion",None,None,None,None,None,None,None,None,None),
-	(40,65,"AdwEntryRow","input-purpose","digits",None,None,None,None,None,None,None,None,None),
 	(44,1,"GtkMenuButton","popover",None,None,None,None,None,2,None,None,None,None),
 	(44,2,"GtkPopover","child",None,None,None,None,None,3,None,None,None,None),
 	(44,3,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
@@ -335,7 +338,19 @@
 	(45,22,"GtkColumnViewColumn","expand","True",0,None,None,None,None,None,None,None,None),
 	(45,22,"GtkColumnViewColumn","factory",None,0,None,None,None,23,None,None,None,None),
 	(45,22,"GtkColumnViewColumn","resizable","True",0,None,None,None,None,None,None,None,None),
-	(45,22,"GtkColumnViewColumn","title","Description",0,None,None,None,None,None,None,None,None)
+	(45,22,"GtkColumnViewColumn","title","Description",0,None,None,None,None,None,None,None,None),
+	(46,1,"GtkBox","baseline-position","top",None,None,None,None,None,None,None,None,None),
+	(46,1,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
+	(46,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(46,2,"GtkLabel","label","Kill process",None,None,None,None,None,None,None,None,None),
+	(46,3,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
+	(46,7,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
+	(46,8,"GtkLabel","label","Send signal: ",0,None,None,None,None,None,None,None,None),
+	(46,9,"GtkWidget","tooltip-text","Number only",None,None,None,None,None,None,None,None,None),
+	(46,10,"GtkButton","label","Cancel",None,None,None,None,None,None,None,None,None),
+	(46,11,"GtkButton","label","Send",None,None,None,None,None,None,None,None,None),
+	(46,11,"GtkWidget","css-classes","suggested-action",None,None,None,None,None,None,None,None,None),
+	(46,11,"GtkWidget","sensitive","False",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
@@ -361,7 +376,10 @@
 	(73,45,21,"GtkSignalListItemFactory","setup","col_active_status_factory_setup",None,None,0,0,None),
 	(74,45,23,"GtkSignalListItemFactory","bind","col_description_factory_bind",None,None,0,0,None),
 	(75,45,23,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None),
-	(76,40,47,"GtkButton","clicked","button_kill_clicked",None,0,1,0,None)
+	(76,40,47,"GtkButton","clicked","button_kill_clicked",None,0,1,0,None),
+	(77,46,10,"GtkButton","clicked","button_cancel_clicked",None,0,1,0,None),
+	(78,46,11,"GtkButton","clicked","button_send_clicked",None,0,1,0,None),
+	(81,46,9,"GtkEditable","changed","kill_signal_text_change",None,0,0,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

@@ -12,8 +12,8 @@ use crate::{
     systemd::{self, data::UnitInfo, enums::ActiveState},
     systemd_gui,
     widget::{
-        journal::JournalPanel, title_bar::menu, unit_file_panel::UnitFilePanel,
-        unit_info::UnitInfoPanel, unit_list::UnitListPanel,
+        journal::JournalPanel, kill_panel::KillPanel, title_bar::menu,
+        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel, unit_list::UnitListPanel,
     },
 };
 
@@ -70,6 +70,9 @@ pub struct AppWindowImpl {
     #[template_child]
     side_overlay: TemplateChild<adw::OverlaySplitView>,
 
+    #[template_child]
+    kill_panel: TemplateChild<KillPanel>,
+
     current_unit: RefCell<Option<UnitInfo>>,
 
     search_bar: RefCell<gtk::SearchBar>,
@@ -119,8 +122,10 @@ impl ObjectImpl for AppWindowImpl {
         let menu_button = menu::build_menu();
         self.header_bar.pack_end(&menu_button);
 
-        let tst = self.obj();
-        self.unit_list_panel.register_selection_change(&tst);
+        let app_window = self.obj();
+        self.unit_list_panel.register_selection_change(&app_window);
+
+        self.kill_panel.register(&self.side_overlay, &self.toast_overlay);
 
         let search_bar = self.unit_list_panel.search_bar();
 
