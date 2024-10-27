@@ -60,7 +60,7 @@ pub mod imp {
         pub(super) followed_unit: RwLock<String>,
         #[property(get)]
         pub(super) object_path: RwLock<String>,
-        #[property(get, set, nullable)]
+        #[property(get, set, nullable, default = None)]
         pub(super) file_path: RwLock<Option<String>>,
         #[property(get, set, default = 0)]
         pub(super) enable_status: RwLock<u32>,

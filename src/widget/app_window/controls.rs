@@ -53,6 +53,12 @@ pub(super) fn switch_ablement_state_set(
             let toast = Toast::new(&toast_info);
 
             toast_overlay.add_toast(toast);
+
+            unit.set_enable_status(action as u32);
+
+            let enabled_new = action == EnablementStatus::Enabled;
+            switch.set_state(enabled_new);
+        
         }
 
         Err(error) => {
@@ -62,7 +68,7 @@ pub(super) fn switch_ablement_state_set(
             };
 
             let toast_warn = format!(
-                "Action \"{:?}\" on unit \"{}\": FAILED! {:?}",
+                "Action \"{:?}\" on unit \"{}\" FAILED!\n{:?}",
                 action,
                 unit.primary(),
                 error_message
@@ -81,10 +87,6 @@ pub(super) fn switch_ablement_state_set(
     //    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
     //info!("New Status : {:?}", unit_file_state);
 
-    let enabled_new = action == EnablementStatus::Enabled;
-    switch.set_state(enabled_new);
-
-    unit.set_enable_status(action as u32);
 
     handle_switch_sensivity(switch, unit, false);
 }

@@ -1,19 +1,15 @@
 use std::cell::{OnceCell, RefCell};
 
-use adw::{subclass::prelude::*, Toast, ToastOverlay};
+use adw::{subclass::prelude::*, Toast};
 use gtk::{
     gio,
-    glib::{self, property::PropertySet, Propagation},
+    glib::{self, property::PropertySet},
     prelude::*,
 };
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 
 use crate::{
-    systemd::{
-        self,
-        data::UnitInfo,
-        enums::ActiveState,
-    },
+    systemd::{self, data::UnitInfo, enums::ActiveState},
     systemd_gui,
     widget::{
         journal::JournalPanel, title_bar::menu, unit_file_panel::UnitFilePanel,
@@ -60,6 +56,9 @@ pub struct AppWindowImpl {
     stop_button: TemplateChild<gtk::Button>,
 
     #[template_child]
+    kill_button: TemplateChild<gtk::Button>,
+
+    #[template_child]
     restart_button: TemplateChild<gtk::Button>,
 
     #[template_child]
@@ -67,6 +66,9 @@ pub struct AppWindowImpl {
 
     #[template_child]
     unit_name_label: TemplateChild<gtk::Label>,
+
+    #[template_child]
+    side_overlay: TemplateChild<adw::OverlaySplitView>,
 
     current_unit: RefCell<Option<UnitInfo>>,
 
@@ -119,14 +121,6 @@ impl ObjectImpl for AppWindowImpl {
 
         let tst = self.obj();
         self.unit_list_panel.register_selection_change(&tst);
-
-        let current_unit = self.current_unit.clone();
-
-        AppWindowImpl::set_switch_state_set(
-            &self.ablement_switch,
-            current_unit,
-            &self.toast_overlay,
-        );
 
         let search_bar = self.unit_list_panel.search_bar();
 
@@ -206,10 +200,29 @@ impl AppWindowImpl {
     }
 
     #[template_callback]
-    fn switch_ablement_state_set(&self, _state: bool, _switch: &gtk::Switch) -> bool {
+    fn switch_ablement_state_set(&self, switch_new_state: bool, switch: &gtk::Switch) -> bool {
         //let unit = current_unit!(self, true);
 
         //controls::switch_ablement_state_set(self, state, switch, &unit);
+
+        info!(
+            "switch_ablement_state_set new {switch_new_state} ss {}",
+            switch.state()
+        );
+
+        if switch_new_state == switch.state() {
+            debug!("no state change");
+            return true;
+        }
+
+        let unit_op = self.current_unit.borrow();
+
+        let Some(unit) = unit_op.as_ref() else {
+            warn!("No selected unit!");
+            return true;
+        };
+
+        controls::switch_ablement_state_set(&self.toast_overlay, switch_new_state, switch, &unit);
 
         true // to stop the signal emission
     }
@@ -268,11 +281,13 @@ impl AppWindowImpl {
         }
     }
 
-    /*     #[template_callback]
-       fn button_search_clicked(&self, _button: &gtk::Button) {
-           self.search_bar.borrow().set_search_mode(true);
-       }
-    */
+    #[template_callback]
+    fn button_kill_clicked(&self, _button: &gtk::Button) {
+        //let unit = current_unit!(self);
+        let collapsed = self.side_overlay.is_collapsed();
+        self.side_overlay.set_collapsed(!collapsed);
+    }
+
     #[template_callback]
     fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
         self.search_bar
@@ -282,7 +297,7 @@ impl AppWindowImpl {
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
         self.current_unit.set(Some(unit.clone()));
-        
+
         self.unit_name_label.set_label(&unit.primary());
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);
@@ -293,30 +308,6 @@ impl AppWindowImpl {
         self.start_button.set_sensitive(true);
         self.stop_button.set_sensitive(true);
         self.restart_button.set_sensitive(true);
-
-       
-    }
-
-    fn set_switch_state_set(
-        ablement_switch: &gtk::Switch,
-        current_unit: RefCell<Option<UnitInfo>>,
-        toast_overlay: &ToastOverlay,
-    ) {
-        let to = toast_overlay.clone();
-        ablement_switch.connect_state_set(move |switch, enabled| {
-            let unit_op = current_unit.borrow();
-
-            let Some(unit) = unit_op.as_ref() else {
-                warn!("No selected unit!");
-                return Propagation::Proceed;
-            };
-
-            //let unit = current_unit!(self, Propagation::Proceed);
-
-            controls::switch_ablement_state_set(&to, enabled, switch, &unit);
-
-            Propagation::Proceed
-        });
     }
 
     pub(super) fn set_dark(&self, is_dark: bool) {

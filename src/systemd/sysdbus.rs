@@ -221,7 +221,15 @@ pub fn list_units_description_and_state(
                     unit_file.full_name(),
                     unit_file.status_code.to_string()
                 );
-                let mut unit = UnitInfo::new(unit_file.full_name(),"","", ActiveState::Unknown,"","","");
+                let mut unit = UnitInfo::new(
+                    unit_file.full_name(),
+                    "",
+                    "",
+                    ActiveState::Unknown,
+                    "",
+                    "",
+                    "",
+                );
                 fill_unit_file(&mut unit, &unit_file);
                 units_map.insert(unit_file.full_name().to_ascii_lowercase(), unit);
             }
@@ -385,7 +393,7 @@ mod tests {
 
     use super::*;
 
-    pub const TEST_SERVICE: &str = "jackett.service";
+    pub const TEST_SERVICE: &str = "tiny_daemon.service";
 
     fn init() {
         let _ = env_logger::builder()
@@ -403,7 +411,6 @@ mod tests {
 
     /*     #[test]
     fn dbus_test() -> Result<(), SystemdErrors> {
-        // let file: &str = "/etc/systemd/system/jackett.service";
         let file1: &str = TEST_SERVICE;
         let mut message = dbus_message("GetUnitFileState")?;
 
@@ -421,7 +428,6 @@ mod tests {
 
     /*    #[test]
        fn test_get_unit_file_state() {
-           // let file: &str = "/etc/systemd/system/jackett.service";
            let file1: &str = TEST_SERVICE;
 
            let status = get_unit_file_state_path(DbusLevel::System, file1);
@@ -561,6 +567,16 @@ mod tests {
         debug!("Architecture: {:?}", prop.get("Architecture").unwrap()); */
     } */
 
+    use crate::{
+        systemd::{
+            sysdbus::{
+                get_connection, DESTINATION_SYSTEMD, INTERFACE_SYSTEMD_MANAGER, PATH_SYSTEMD,
+            },
+            SystemdErrors,
+        },
+        widget::preferences::data::DbusLevel,
+    };
+
     /*     #[test]
        fn test_prop34() -> Result<(), Box<dyn std::error::Error>> {
            let dest = "org.freedesktop.portal.Desktop";
@@ -593,23 +609,42 @@ mod tests {
            Ok(())
        }
     */
-    /*     #[test]
+    #[test]
     pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
-        let unit_file: &str = TEST_SERVICE;
-        let mut message = dbus_message("GetUnit")?;
-        let message_items = &[MessageItem::Str(unit_file.to_owned())];
-        message.append_items(message_items);
+        let unit_file: &str = "tiny_daemon.service";
 
-        let load_unit_ret = dbus_connect(message)?;
-        debug!("{:?}", load_unit_ret);
+        let connection = get_connection(DbusLevel::System)?;
+
+        let message = connection.call_method(
+            Some(DESTINATION_SYSTEMD),
+            PATH_SYSTEMD,
+            Some(INTERFACE_SYSTEMD_MANAGER),
+            "GetUnit",
+            &(unit_file),
+        )?;
+
+        println!("message {:?}", message);
+
+        let body = message.body();
+
+        let z: zvariant::ObjectPath = body.deserialize()?;
+        //let z :String = body.deserialize()?;
+
+        println!("obj {:?}", z.as_str());
+
+        /*         let body = message.body();
+
+        let des = body.deserialize();
+
+        println!("{:#?}", des); */
         Ok(())
-    } */
+    }
 
     /*     #[test]
     pub fn test_get_unit_parameters() {
         init();
         let dest = DESTINATION_SYSTEMD;
-        let path = "/org/freedesktop/systemd1/unit/jackett_2eservice";
+        let path = "/org/freedesktop/systemd1/unit/tiny_5fdaemon_2eservice";
 
         let interface = INTERFACE_SYSTEMD_UNIT;
         let c = dbus::ffidisp::Connection::new_system().unwrap();
@@ -624,7 +659,7 @@ mod tests {
 
         let btree_map = fetch_system_unit_info(
             DbusLevel::System,
-            "/org/freedesktop/systemd1/unit/jackett_2eservice",
+            "/org/freedesktop/systemd1/unit/tiny_5fdaemon_2eservice",
         )?;
 
         debug!("ALL PARAM: {:#?}", btree_map);

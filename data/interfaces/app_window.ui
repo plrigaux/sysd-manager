@@ -31,7 +31,6 @@
                               <object class="GtkSwitch" id="ablement_switch">
                                 <property name="sensitive">False</property>
                                 <property name="valign">baseline-center</property>
-                                <signal name="state-set" handler="switch_ablement_state_set" swapped="yes"/>
                               </object>
                             </child>
                             <child>
@@ -73,40 +72,79 @@
                                 </child>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkButton" id="kill_button">
+                                <signal name="clicked" handler="button_kill_clicked" swapped="yes"/>
+                                <child>
+                                  <object class="AdwButtonContent">
+                                    <property name="icon-name">face-sick-symbolic</property>
+                                    <property name="label">Kill</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
                         <child>
-                          <object class="AdwViewSwitcher">
-                            <property name="policy">wide</property>
-                            <property name="stack">unit_stack</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="AdwViewStack" id="unit_stack">
-                            <child>
-                              <object class="AdwViewStackPage">
-                                <property name="child">
-                                  <object class="UnitInfoPanel" id="unit_info_panel"/>
-                                </property>
-                                <property name="title">Unit Info</property>
+                          <object class="AdwOverlaySplitView" id="side_overlay">
+                            <property name="collapsed">True</property>
+                            <property name="content">
+                              <object class="GtkBox">
+                                <child>
+                                  <object class="AdwViewSwitcher">
+                                    <property name="policy">wide</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwViewStack" id="unit_stack">
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="child">
+                                          <object class="UnitInfoPanel" id="unit_info_panel"/>
+                                        </property>
+                                        <property name="title">Unit Info</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="child">
+                                          <object class="UnitFilePanel" id="unit_file_panel"/>
+                                        </property>
+                                        <property name="title">File</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="child">
+                                          <object class="JournalPanel" id="unit_journal_panel"/>
+                                        </property>
+                                        <property name="title">Journal</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
                               </object>
-                            </child>
-                            <child>
-                              <object class="AdwViewStackPage">
-                                <property name="child">
-                                  <object class="UnitFilePanel" id="unit_file_panel"/>
-                                </property>
-                                <property name="title">File</property>
+                            </property>
+                            <property name="sidebar">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">testte test </property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwEntryRow">
+                                    <property name="input-hints">emoji | inhibit-osk | lowercase | no-emoji | none | spellcheck | uppercase-sentences | vertical-writing | word-completion</property>
+                                    <property name="input-purpose">digits</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry"/>
+                                </child>
                               </object>
-                            </child>
-                            <child>
-                              <object class="AdwViewStackPage">
-                                <property name="child">
-                                  <object class="JournalPanel" id="unit_journal_panel"/>
-                                </property>
-                                <property name="title">Journal</property>
-                              </object>
-                            </child>
+                            </property>
+                            <property name="sidebar-position">end</property>
                           </object>
                         </child>
                       </object>
