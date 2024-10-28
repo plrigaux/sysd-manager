@@ -160,12 +160,14 @@
 	(45,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None),
 	(46,1,"GtkBox","KillPanel",None,None,None,None,0,None,None),
 	(46,2,"GtkLabel",None,1,None,None,None,0,None,None),
-	(46,3,"GtkBox",None,1,None,None,None,2,None,None),
-	(46,7,"GtkBox",None,1,None,None,None,1,None,None),
+	(46,3,"GtkBox",None,1,None,None,None,4,None,None),
+	(46,7,"GtkBox",None,1,None,None,None,3,None,None),
 	(46,8,"GtkLabel",None,7,None,None,None,0,None,None),
 	(46,9,"GtkEntry","entry_text",7,None,None,None,1,None,None),
 	(46,10,"GtkButton","cancel_button",3,None,None,None,0,None,None),
-	(46,11,"GtkButton","send_button",3,None,None,None,1,None,None)
+	(46,11,"GtkButton","send_button",3,None,None,None,1,None,None),
+	(46,13,"AdwPreferencesGroup",None,1,None,None,None,1,None,None),
+	(46,14,"AdwEntryRow",None,13,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -342,7 +344,10 @@
 	(46,1,"GtkBox","baseline-position","top",None,None,None,None,None,None,None,None,None),
 	(46,1,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
 	(46,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(46,1,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
+	(46,1,"GtkWidget","margin-start","5",None,None,None,None,None,None,None,None,None),
 	(46,2,"GtkLabel","label","Kill process",None,None,None,None,None,None,None,None,None),
+	(46,2,"GtkWidget","css-classes","title-1",None,None,None,None,None,None,None,None,None),
 	(46,3,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
 	(46,7,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
 	(46,8,"GtkLabel","label","Send signal: ",0,None,None,None,None,None,None,None,None),
@@ -350,7 +355,8 @@
 	(46,10,"GtkButton","label","Cancel",None,None,None,None,None,None,None,None,None),
 	(46,11,"GtkButton","label","Send",None,None,None,None,None,None,None,None,None),
 	(46,11,"GtkWidget","css-classes","suggested-action",None,None,None,None,None,None,None,None,None),
-	(46,11,"GtkWidget","sensitive","False",None,None,None,None,None,None,None,None,None)
+	(46,11,"GtkWidget","sensitive","False",None,None,None,None,None,None,None,None,None),
+	(46,14,"AdwPreferencesRow","title","Send signal: ",0,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
@@ -379,7 +385,7 @@
 	(76,40,47,"GtkButton","clicked","button_kill_clicked",None,0,1,0,None),
 	(77,46,10,"GtkButton","clicked","button_cancel_clicked",None,0,1,0,None),
 	(78,46,11,"GtkButton","clicked","button_send_clicked",None,0,1,0,None),
-	(81,46,9,"GtkEditable","changed","kill_signal_text_change",None,0,0,0,None)
+	(81,46,9,"GtkEditable","changed","kill_signal_text_change",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

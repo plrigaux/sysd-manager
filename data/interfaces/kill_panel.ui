@@ -2,34 +2,35 @@
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
   <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.6"/>
   <template class="KillPanel" parent="GtkBox">
     <property name="baseline-position">top</property>
+    <property name="margin-end">5</property>
+    <property name="margin-start">5</property>
     <property name="orientation">vertical</property>
     <property name="spacing">5</property>
     <child>
       <object class="GtkLabel">
+        <property name="css-classes">title-1</property>
         <property name="label">Kill process</property>
       </object>
     </child>
     <child>
-      <object class="GtkBox">
-        <property name="spacing">5</property>
+      <object class="AdwPreferencesGroup">
+        <property name="title">Signal</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Send signal: </property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkEntry" id="entry_text">
-            <property name="tooltip-text">Number only</property>
-            <signal name="changed" handler="kill_signal_text_change" swapped="yes"/>
+          <object class="AdwEntryRow" id="signal_id_text">
+            <property name="title">Send signal: </property>
+            <signal name="insert-text" handler="kill_signal_insert_text" swapped="yes" after="yes"/>
           </object>
         </child>
       </object>
     </child>
     <child>
       <object class="GtkBox">
-        <property name="spacing">5</property>
+        <property name="halign">end</property>
+        <property name="margin-top">10</property>
+        <property name="spacing">10</property>
         <child>
           <object class="GtkButton" id="cancel_button">
             <property name="label">Cancel</property>

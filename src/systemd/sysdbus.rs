@@ -74,6 +74,22 @@ impl StartMode {
     }
 }
 
+/// KillUnit() may be used to kill (i.e. send a signal to) all processes of a unit. 
+/// Takes the unit name, an enum who and a UNIX signal number to send. 
+/// The who enum is one of "main", "control" or "all". If "main", only the main process of a unit is killed. If "control" only the control process of the unit is killed, if "all" all processes are killed. A "control" process is for example a process that is configured via ExecStop= and is spawned in parallel to the main daemon process, in order to shut it down.
+enum KillWho {Main, Control, All}
+
+impl KillWho {
+    fn as_str(&self) -> &'static str {
+        match self {
+            KillWho::Replace => "main",
+            KillWho::Fail => "control",
+            KillWho::Isolate => "all",
+        }
+    }
+}
+
+
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
     let message = connection.call_method(

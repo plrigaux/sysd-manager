@@ -54,7 +54,7 @@ mod imp {
         send_button: TemplateChild<gtk::Button>,
 
         #[template_child]
-        entry_text: TemplateChild<gtk::Entry>,
+        signal_id_text: TemplateChild<adw::EntryRow>,
 
         side_overlay: OnceCell<OverlaySplitView>,
 
@@ -80,7 +80,7 @@ mod imp {
                 .set_collapsed(true);
 
             self.unit.set(None);
-            self.entry_text.set_text("");
+            //self.entry_text.set_text("");
         }
 
         pub fn register(
@@ -97,12 +97,12 @@ mod imp {
                 .expect("toast_overlay once");
         }
 
-        /*         #[template_callback]
-        fn entry_insert_text(&self, entry: &gtk::Entry, text: &str) {
-            info!("entry_insert_text {text}");
-        } */
-
         #[template_callback]
+        fn kill_signal_insert_text(&self, entry: &gtk::Entry, text: &str, position : u32) {
+            info!("entry_insert_text {text}");
+        }
+
+/*         #[template_callback]
         fn kill_signal_text_change(&self, entry: &gtk::Entry) {
             let text = entry.text();
             debug!("entry_changed {}", text);
@@ -121,7 +121,7 @@ mod imp {
             }
 
             self.send_button.set_sensitive(true);
-        }
+        } */
     }
 
     // The central trait for subclassing a GObject
@@ -150,4 +150,53 @@ mod imp {
 
     impl WidgetImpl for JournalPanelImp {}
     impl BoxImpl for JournalPanelImp {}
+}
+
+
+struct Signal {
+    id : u32,
+    name : &'static str,
+    default_action : &'static str,
+    comment : &'static str,
+}
+
+fn test() {
+
+    Signal{ id : 1, name: "SIGHUP", default_action: "Terminate", comment: "Hang up controlling terminal or process" };
+/* 1 SIGHUP     Terminate   Hang up controlling terminal or   Yes
+    process  
+2 SIGINT     Terminate   Interrupt from keyboard, Control-C    Yes
+3 SIGQUIT    Dump        Quit from keyboard, Control-\         Yes
+4 SIGILL     Dump        Illegal instruction                   Yes
+5 SIGTRAP    Dump        Breakpoint for debugging              No
+6 SIGABRT    Dump        Abnormal termination                  Yes
+6 SIGIOT     Dump        Equivalent to SIGABRT                 No
+7 SIGBUS     Dump        Bus error                             No
+8 SIGFPE     Dump        Floating-point exception              Yes
+9 SIGKILL    Terminate   Forced-process termination            Yes
+10 SIGUSR1    Terminate   Available to processes               Yes
+11 SIGSEGV    Dump        Invalid memory reference             Yes
+12 SIGUSR2    Terminate   Available to processes               Yes
+13 SIGPIPE    Terminate   Write to pipe with no readers        Yes
+14 SIGALRM    Terminate   Real-timer clock                     Yes
+15 SIGTERM    Terminate   Process termination                  Yes
+16 SIGSTKFLT  Terminate   Coprocessor stack error              No
+17 SIGCHLD    Ignore      Child process stopped or terminated  Yes
+    or got a signal if traced 
+18 SIGCONT    Continue    Resume execution, if stopped         Yes
+19 SIGSTOP    Stop        Stop process execution, Ctrl-Z       Yes
+20 SIGTSTP    Stop        Stop process issued from tty         Yes
+21 SIGTTIN    Stop        Background process requires input    Yes
+22 SIGTTOU    Stop        Background process requires output   Yes
+23 SIGURG     Ignore      Urgent condition on socket           No
+24 SIGXCPU    Dump        CPU time limit exceeded              No
+25 SIGXFSZ    Dump        File size limit exceeded             No
+26 SIGVTALRM  Terminate   Virtual timer clock                  No
+27 SIGPROF    Terminate   Profile timer clock                  No
+28 SIGWINCH   Ignore      Window resizing                      No
+29 SIGIO      Terminate   I/O now possible                     No
+29 SIGPOLL    Terminate   Equivalent to SIGIO                  No
+30 SIGPWR     Terminate   Power supply failure                 No
+31 SIGSYS     Dump        Bad system call                      No
+31 SIGUNUSED  Dump        Equivalent to SIGSYS                 No */
 }
