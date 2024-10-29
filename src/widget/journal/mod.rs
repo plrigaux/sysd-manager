@@ -46,11 +46,11 @@ mod imp {
         TemplateChild,
     };
 
-    use log::{info, warn};
+    use log::{debug, warn};
 
     use crate::{
         systemd::{self, data::UnitInfo},
-        widget::{button_icon::ButtonIcon, preferences::data::PREFERENCES},
+        widget::preferences::data::PREFERENCES,
     };
 
     use super::{colorise, more_colors::TermColor};
@@ -72,8 +72,8 @@ mod imp {
     #[gtk::template_callbacks]
     impl JournalPanelImp {
         #[template_callback]
-        fn refresh_journal_clicked(&self, button: &ButtonIcon) {
-            info!("button {:?}", button);
+        fn refresh_journal_clicked(&self, button: &gtk::Button) {
+            debug!("button {:?}", button);
 
             let binding = self.unit.borrow();
             let Some(unit) = binding.as_ref() else {

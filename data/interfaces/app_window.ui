@@ -91,9 +91,11 @@
                             <property name="collapsed">True</property>
                             <property name="content">
                               <object class="GtkBox">
+                                <property name="orientation">vertical</property>
                                 <child>
                                   <object class="AdwViewSwitcher">
                                     <property name="policy">wide</property>
+                                    <property name="stack">unit_stack</property>
                                   </object>
                                 </child>
                                 <child>
