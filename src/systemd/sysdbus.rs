@@ -23,6 +23,7 @@ use crate::widget::preferences::data::DbusLevel;
 
 use super::enums::EnablementStatus;
 
+use super::enums::KillWho;
 use super::SystemdErrors;
 use super::SystemdUnit;
 
@@ -39,6 +40,7 @@ const METHOD_START_UNIT: &str = "StartUnit";
 const METHOD_STOP_UNIT: &str = "StopUnit";
 const METHOD_RESTART_UNIT: &str = "RestartUnit";
 const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
+const METHOD_KILL_UNIT: &str = "KillUnit";
 
 #[allow(dead_code)]
 enum StartMode {
@@ -73,22 +75,6 @@ impl StartMode {
         }
     }
 }
-
-/// KillUnit() may be used to kill (i.e. send a signal to) all processes of a unit. 
-/// Takes the unit name, an enum who and a UNIX signal number to send. 
-/// The who enum is one of "main", "control" or "all". If "main", only the main process of a unit is killed. If "control" only the control process of the unit is killed, if "all" all processes are killed. A "control" process is for example a process that is configured via ExecStop= and is spawned in parallel to the main daemon process, in order to shut it down.
-enum KillWho {Main, Control, All}
-
-impl KillWho {
-    fn as_str(&self) -> &'static str {
-        match self {
-            KillWho::Replace => "main",
-            KillWho::Fail => "control",
-            KillWho::Isolate => "all",
-        }
-    }
-}
-
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
@@ -262,17 +248,17 @@ fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
 }
 
 /// Takes a unit name as input and attempts to start it
-pub fn start_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+pub(super) fn start_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
     systemd_action(METHOD_START_UNIT, level, unit, StartMode::Fail)
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub fn stop_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+pub(super) fn stop_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
     systemd_action(METHOD_STOP_UNIT, level, unit, StartMode::Fail)
 }
 
 /// Enqeues a start job, and possibly depending jobs.
-pub fn restart_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+pub(super) fn restart_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
     systemd_action(METHOD_RESTART_UNIT, level, unit, StartMode::Fail)
 }
 
@@ -289,6 +275,33 @@ fn systemd_action(
         Some(INTERFACE_SYSTEMD_MANAGER),
         method,
         &(unit, mode.as_str()),
+    )?;
+
+    let body = message.body();
+    let o: zvariant::ObjectPath = body.deserialize()?;
+
+    let created_job_object = o.to_string();
+
+    info!("{method} SUCCESS, response {created_job_object}");
+
+    Ok(created_job_object)
+}
+
+pub(super) fn kill_unit(
+    method: &str,
+    level: DbusLevel,
+    unit: &str,
+    mode: KillWho,
+    signal: u32,
+) -> Result<String, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_KILL_UNIT,
+        &(unit, mode.as_str(), signal.to_string()),
     )?;
 
     let body = message.body();

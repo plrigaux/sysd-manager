@@ -1,6 +1,8 @@
+use crate::gtk::prelude::*;
 use gtk::glib;
-use log::warn;
+use gtk::glib::EnumValue;
 use log::info;
+use log::warn;
 use std::fmt::Display;
 use strum::EnumIter;
 
@@ -91,7 +93,7 @@ impl From<u32> for EnablementStatus {
     fn from(value: u32) -> Self {
         match value {
             0 => Self::Unknown,
-            1 => Self::Alias,                         
+            1 => Self::Alias,
             2 => Self::Bad,
             3 => Self::Disabled,
             4 => Self::Enabled,
@@ -102,7 +104,6 @@ impl From<u32> for EnablementStatus {
             9 => Self::Static,
             10 => Self::Trancient,
             _ => Self::Unknown,
-
         }
     }
 }
@@ -173,7 +174,7 @@ pub enum UnitType {
     Socket,
     Swap,
     Target,
-    Timer,    
+    Timer,
     Unknown(String),
 }
 
@@ -192,7 +193,7 @@ impl UnitType {
             "socket" => UnitType::Socket,
             "swap" => UnitType::Swap,
             "target" => UnitType::Target,
-            "timer" => UnitType::Timer,          
+            "timer" => UnitType::Timer,
             _ => {
                 info!("Unknown Type: {}", system_type);
                 UnitType::Unknown(system_type.to_string())
@@ -215,6 +216,49 @@ impl UnitType {
             Self::Timer => "timer",
             Self::Swap => "swap",
             Self::Unknown(_) => "",
+        };
+
+        str_label
+    }
+}
+
+/// KillUnit() may be used to kill (i.e. send a signal to) all processes of a unit.
+/// Takes the unit name, an enum who and a UNIX signal number to send.
+/// The who enum is one of "main", "control" or "all". If "main", only the main process of a unit is killed. If "control" only the control process of the unit is killed, if "all" all processes are killed. A "control" process is for example a process that is configured via ExecStop= and is spawned in parallel to the main daemon process, in order to shut it down.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, glib::Enum)]
+#[enum_type(name = "KillWho")]
+pub enum KillWho {
+    /// If "main", only the main process of a unit is killed.
+    #[enum_value(name = "main", nick = "main")]
+    Main,
+
+    ///If "control" only the control process of the unit is killed
+    /// A "control" process is for example a process that is configured via ExecStop= and is spawned in parallel to the main daemon process, in order to shut it down.
+    #[enum_value(name = "control", nick = "main")]
+    Control,
+
+    ///If "all" all processes are killed.
+    #[enum_value(name = "all", nick = "main")]
+    All,
+}
+
+impl KillWho {
+    pub fn to_string(&self) -> String {
+        let value: glib::Value = self.to_value();
+
+        let out = if let Some(enum_value) = EnumValue::from_value(&value) {
+            enum_value.1.name()
+        } else {
+            ""
+        };
+        out.to_string()
+    }
+
+    pub fn as_str(&self) -> &str {
+        let str_label = match self {
+            Self::Main => "main",
+            Self::Control => "control",
+            Self::All => "all",
         };
 
         str_label
@@ -271,5 +315,16 @@ mod tests {
         let val = status as u32;
         let convert: ActiveState = val.into();
         assert_eq!(convert, status)
+    }
+
+    #[test]
+    fn test_kill_who_glib() {
+        assert_kill(KillWho::All);
+        assert_kill(KillWho::Main);
+        assert_kill(KillWho::Control);
+    }
+
+    fn assert_kill(kill: KillWho) {
+        assert_eq!(kill.as_str(), kill.to_string())
     }
 }

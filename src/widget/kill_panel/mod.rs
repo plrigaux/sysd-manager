@@ -1,16 +1,21 @@
-use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+use gtk::{
+    glib::{self},
+    subclass::prelude::ObjectSubclassIsExt,
+};
+
+use crate::systemd::data::UnitInfo;
 
 // ANCHOR: mod
 glib::wrapper! {
-    pub struct KillPanel(ObjectSubclass<imp::JournalPanelImp>)
+    pub struct KillPanel(ObjectSubclass<imp::KillPanelImp>)
         @extends gtk::Box, gtk::Widget,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
 impl KillPanel {
-    /*    pub fn display_journal(&self, unit: &UnitInfo) {
-        self.imp().display_journal(unit);
-    } */
+    pub fn set_unit(&self, unit: &UnitInfo) {
+        self.imp().set_unit(unit);
+    }
 
     pub fn register(
         &self,
@@ -25,10 +30,9 @@ impl KillPanel {
 mod imp {
     use std::cell::{OnceCell, RefCell};
 
-    use adw::{OverlaySplitView, ToastOverlay};
+    use adw::{prelude::*, EnumListModel, OverlaySplitView, ToastOverlay};
     use gtk::{
         glib::{self, property::PropertySet},
-        prelude::*,
         subclass::{
             box_::BoxImpl,
             prelude::*,
@@ -40,13 +44,13 @@ mod imp {
         TemplateChild,
     };
 
-    use log::{debug, info};
+    use log::{debug, info, warn};
 
-    use crate::systemd::data::UnitInfo;
+    use crate::systemd::{data::UnitInfo, enums::KillWho};
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/kill_panel.ui")]
-    pub struct JournalPanelImp {
+    pub struct KillPanelImp {
         #[template_child]
         cancel_button: TemplateChild<gtk::Button>,
 
@@ -54,7 +58,16 @@ mod imp {
         send_button: TemplateChild<gtk::Button>,
 
         #[template_child]
-        signal_id_text: TemplateChild<adw::EntryRow>,
+        signal_id_entry: TemplateChild<adw::EntryRow>,
+
+        #[template_child]
+        who_to_kill: TemplateChild<adw::ComboRow>,
+
+        #[template_child]
+        unit_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        signals_group: TemplateChild<adw::PreferencesGroup>,
 
         side_overlay: OnceCell<OverlaySplitView>,
 
@@ -64,10 +77,28 @@ mod imp {
     }
 
     #[gtk::template_callbacks]
-    impl JournalPanelImp {
+    impl KillPanelImp {
         #[template_callback]
         fn button_send_clicked(&self, button: &gtk::Button) {
             info!("button_send_clicked {:?}", button);
+
+            let text = self.signal_id_entry.text();
+
+            let Ok(signal_id) = text.parse::<u32>() else {
+                warn!("Kill signal id not a number");
+                return;
+            };
+
+            let a = self.who_to_kill.selected();
+
+            let unit_borrow = self.unit.borrow();
+
+            let Some(unit) = unit_borrow.as_ref() else {
+                warn!("No unit ");
+                return;
+            };
+
+            info!("kill {} sgnal {} who {}", unit.primary(), signal_id, a)
         }
 
         #[template_callback]
@@ -97,13 +128,16 @@ mod imp {
                 .expect("toast_overlay once");
         }
 
-        #[template_callback]
-        fn kill_signal_insert_text(&self, entry: &gtk::Entry, text: &str, position : u32) {
-            info!("entry_insert_text {text}");
+        pub fn set_unit(&self, unit: &UnitInfo) {
+            self.unit.set(Some(unit.clone()));
+
+            let label_text = &unit.primary();
+            self.unit_label.set_label(label_text);
+            self.unit_label.set_tooltip_text(Some(label_text));
         }
 
-/*         #[template_callback]
-        fn kill_signal_text_change(&self, entry: &gtk::Entry) {
+        #[template_callback]
+        fn kill_signal_text_change(&self, entry: &adw::EntryRow) {
             let text = entry.text();
             debug!("entry_changed {}", text);
 
@@ -121,12 +155,12 @@ mod imp {
             }
 
             self.send_button.set_sensitive(true);
-        } */
+        }
     }
 
     // The central trait for subclassing a GObject
     #[glib::object_subclass]
-    impl ObjectSubclass for JournalPanelImp {
+    impl ObjectSubclass for KillPanelImp {
         const NAME: &'static str = "KillPanel";
         type Type = super::KillPanel;
         type ParentType = gtk::Box;
@@ -142,61 +176,260 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for JournalPanelImp {
+    impl ObjectImpl for KillPanelImp {
         fn constructed(&self) {
             self.parent_constructed();
+
+            let model = EnumListModel::new(KillWho::static_type());
+
+            self.who_to_kill.set_model(Some(&model));
+
+            let expression = gtk::PropertyExpression::new(
+                adw::EnumListItem::static_type(),
+                None::<gtk::Expression>,
+                "name",
+            );
+
+            self.who_to_kill.set_expression(Some(expression));
+
+            let edit = self.signal_id_entry.delegate().unwrap();
+
+            let pattern = |c: char| !c.is_ascii_digit();
+
+            gtk::Editable::connect_insert_text(&edit, move |entry, text, position| {
+                if text.contains(pattern) {
+                    glib::signal::signal_stop_emission_by_name(entry, "insert-text");
+                    entry.insert_text(&text.replace(pattern, ""), position);
+                }
+            });
+
+            for sg in signals() {
+                let action_row = adw::ActionRow::builder().title(sg.name).subtitle(sg.comment).build();
+
+                self.signals_group.add(&action_row);
+
+            }
         }
     }
 
-    impl WidgetImpl for JournalPanelImp {}
-    impl BoxImpl for JournalPanelImp {}
-}
+    impl WidgetImpl for KillPanelImp {}
+    impl BoxImpl for KillPanelImp {}
 
+    struct Signal {
+        id: u32,
+        name: &'static str,
+        default_action: &'static str,
+        comment: &'static str,
+    }
 
-struct Signal {
-    id : u32,
-    name : &'static str,
-    default_action : &'static str,
-    comment : &'static str,
-}
+    fn signals() -> [Signal; 34] {
+        let list = [
+            Signal {
+                id: 1,
+                name: "SIGHUP",
+                default_action: "Terminate",
+                comment: "Hang up controlling terminal or process",
+            },
+            Signal {
+                id: 2,
+                name: "SIGINT",
+                default_action: "Terminate",
+                comment: "Interrupt from keyboard, Control-C",
+            },
+            Signal {
+                id: 3,
+                name: "SIGQUIT",
+                default_action: "Dump",
+                comment: "Quit from keyboard, Control-\"",
+            },
+            Signal {
+                id: 4,
+                name: "SIGILL",
+                default_action: "Dump",
+                comment: "Illegal instruction",
+            },
+            Signal {
+                id: 5,
+                name: "SIGTRAP",
+                default_action: "Dump",
+                comment: "Breakpoint for debugging",
+            },
+            Signal {
+                id: 6,
+                name: "SIGABRT",
+                default_action: "Dump",
+                comment: "Abnormal termination",
+            },
+            Signal {
+                id: 6,
+                name: "SIGIOT",
+                default_action: "Dump",
+                comment: "Equivalent to SIGABRT",
+            },
+            Signal {
+                id: 7,
+                name: "SIGBUS",
+                default_action: "Dump",
+                comment: "Bus error",
+            },
+            Signal {
+                id: 8,
+                name: "SIGFPE",
+                default_action: "Dump",
+                comment: "Floating-point exception",
+            },
+            Signal {
+                id: 9,
+                name: "SIGKILL",
+                default_action: "Terminate",
+                comment: "Forced-process termination",
+            },
+            Signal {
+                id: 10,
+                name: "SIGUSR1",
+                default_action: "Terminate",
+                comment: "Available to processes",
+            },
+            Signal {
+                id: 11,
+                name: "SIGSEGV",
+                default_action: "Dump",
+                comment: "Invalid memory reference",
+            },
+            Signal {
+                id: 12,
+                name: "SIGUSR2",
+                default_action: "Terminate",
+                comment: "Available to processes",
+            },
+            Signal {
+                id: 13,
+                name: "SIGPIPE",
+                default_action: "Terminate",
+                comment: "Write to pipe with no readers",
+            },
+            Signal {
+                id: 14,
+                name: "SIGALRM",
+                default_action: "Terminate",
+                comment: "Real-timer clock",
+            },
+            Signal {
+                id: 15,
+                name: "SIGTERM",
+                default_action: "Terminate",
+                comment: "Process termination",
+            },
+            Signal {
+                id: 16,
+                name: "SIGSTKFLT",
+                default_action: "Terminate",
+                comment: "Coprocessor stack error",
+            },
+            Signal {
+                id: 17,
+                name: "SIGCHLD",
+                default_action: "Ignore",
+                comment: "Child process stopped or terminated or got a signal if traced",
+            },
+            Signal {
+                id: 18,
+                name: "SIGCONT",
+                default_action: "Continue",
+                comment: "Resume execution, if stopped",
+            },
+            Signal {
+                id: 19,
+                name: "SIGSTOP",
+                default_action: "Stop",
+                comment: "Stop process execution, Ctrl-Z",
+            },
+            Signal {
+                id: 20,
+                name: "SIGTSTP",
+                default_action: "Stop",
+                comment: "Stop process issued from tty",
+            },
+            Signal {
+                id: 21,
+                name: "SIGTTIN",
+                default_action: "Stop",
+                comment: "Background process requires input",
+            },
+            Signal {
+                id: 22,
+                name: "SIGTTOU",
+                default_action: "Stop",
+                comment: "Background process requires output",
+            },
+            Signal {
+                id: 23,
+                name: "SIGURG",
+                default_action: "Ignore",
+                comment: "Urgent condition on socket",
+            },
+            Signal {
+                id: 24,
+                name: "SIGXCPU",
+                default_action: "Dump",
+                comment: "CPU time limit exceeded",
+            },
+            Signal {
+                id: 25,
+                name: "SIGXFSZ",
+                default_action: "Dump",
+                comment: "File size limit exceeded",
+            },
+            Signal {
+                id: 26,
+                name: "SIGVTALRM",
+                default_action: "Terminate",
+                comment: "Virtual timer clock",
+            },
+            Signal {
+                id: 27,
+                name: "SIGPROF",
+                default_action: "Terminate",
+                comment: "Profile timer clock",
+            },
+            Signal {
+                id: 28,
+                name: "SIGWINCH",
+                default_action: "Ignore",
+                comment: "Window resizing",
+            },
+            Signal {
+                id: 29,
+                name: "SIGIO",
+                default_action: "Terminate",
+                comment: "I/O now possible",
+            },
+            Signal {
+                id: 29,
+                name: "SIGPOLL",
+                default_action: "Terminate",
+                comment: "Equivalent to SIGIO",
+            },
+            Signal {
+                id: 30,
+                name: "SIGPWR",
+                default_action: "Terminate",
+                comment: "Power supply failure",
+            },
+            Signal {
+                id: 31,
+                name: "SIGSYS",
+                default_action: "Dump",
+                comment: "Bad system call",
+            },
+            Signal {
+                id: 31,
+                name: "SIGUNUSED",
+                default_action: "Dump",
+                comment: "Equivalent to SIGSYS",
+            },
+        ];
 
-fn test() {
-
-    Signal{ id : 1, name: "SIGHUP", default_action: "Terminate", comment: "Hang up controlling terminal or process" };
-/* 1 SIGHUP     Terminate   Hang up controlling terminal or   Yes
-    process  
-2 SIGINT     Terminate   Interrupt from keyboard, Control-C    Yes
-3 SIGQUIT    Dump        Quit from keyboard, Control-\         Yes
-4 SIGILL     Dump        Illegal instruction                   Yes
-5 SIGTRAP    Dump        Breakpoint for debugging              No
-6 SIGABRT    Dump        Abnormal termination                  Yes
-6 SIGIOT     Dump        Equivalent to SIGABRT                 No
-7 SIGBUS     Dump        Bus error                             No
-8 SIGFPE     Dump        Floating-point exception              Yes
-9 SIGKILL    Terminate   Forced-process termination            Yes
-10 SIGUSR1    Terminate   Available to processes               Yes
-11 SIGSEGV    Dump        Invalid memory reference             Yes
-12 SIGUSR2    Terminate   Available to processes               Yes
-13 SIGPIPE    Terminate   Write to pipe with no readers        Yes
-14 SIGALRM    Terminate   Real-timer clock                     Yes
-15 SIGTERM    Terminate   Process termination                  Yes
-16 SIGSTKFLT  Terminate   Coprocessor stack error              No
-17 SIGCHLD    Ignore      Child process stopped or terminated  Yes
-    or got a signal if traced 
-18 SIGCONT    Continue    Resume execution, if stopped         Yes
-19 SIGSTOP    Stop        Stop process execution, Ctrl-Z       Yes
-20 SIGTSTP    Stop        Stop process issued from tty         Yes
-21 SIGTTIN    Stop        Background process requires input    Yes
-22 SIGTTOU    Stop        Background process requires output   Yes
-23 SIGURG     Ignore      Urgent condition on socket           No
-24 SIGXCPU    Dump        CPU time limit exceeded              No
-25 SIGXFSZ    Dump        File size limit exceeded             No
-26 SIGVTALRM  Terminate   Virtual timer clock                  No
-27 SIGPROF    Terminate   Profile timer clock                  No
-28 SIGWINCH   Ignore      Window resizing                      No
-29 SIGIO      Terminate   I/O now possible                     No
-29 SIGPOLL    Terminate   Equivalent to SIGIO                  No
-30 SIGPWR     Terminate   Power supply failure                 No
-31 SIGSYS     Dump        Bad system call                      No
-31 SIGUNUSED  Dump        Equivalent to SIGSYS                 No */
+        list
+    }
 }

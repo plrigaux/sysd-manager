@@ -74,6 +74,7 @@
                             </child>
                             <child>
                               <object class="GtkButton" id="kill_button">
+                                <property name="sensitive">False</property>
                                 <signal name="clicked" handler="button_kill_clicked" swapped="yes"/>
                                 <child>
                                   <object class="AdwButtonContent">

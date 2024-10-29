@@ -125,7 +125,8 @@ impl ObjectImpl for AppWindowImpl {
         let app_window = self.obj();
         self.unit_list_panel.register_selection_change(&app_window);
 
-        self.kill_panel.register(&self.side_overlay, &self.toast_overlay);
+        self.kill_panel
+            .register(&self.side_overlay, &self.toast_overlay);
 
         let search_bar = self.unit_list_panel.search_bar();
 
@@ -206,10 +207,6 @@ impl AppWindowImpl {
 
     #[template_callback]
     fn switch_ablement_state_set(&self, switch_new_state: bool, switch: &gtk::Switch) -> bool {
-        //let unit = current_unit!(self, true);
-
-        //controls::switch_ablement_state_set(self, state, switch, &unit);
-
         info!(
             "switch_ablement_state_set new {switch_new_state} ss {}",
             switch.state()
@@ -220,12 +217,7 @@ impl AppWindowImpl {
             return true;
         }
 
-        let unit_op = self.current_unit.borrow();
-
-        let Some(unit) = unit_op.as_ref() else {
-            warn!("No selected unit!");
-            return true;
-        };
+        let unit = current_unit!(self, true);
 
         controls::switch_ablement_state_set(&self.toast_overlay, switch_new_state, switch, &unit);
 
@@ -288,7 +280,10 @@ impl AppWindowImpl {
 
     #[template_callback]
     fn button_kill_clicked(&self, _button: &gtk::Button) {
-        //let unit = current_unit!(self);
+        let unit = current_unit!(self);
+
+        self.kill_panel.set_unit(&unit);
+
         let collapsed = self.side_overlay.is_collapsed();
         self.side_overlay.set_collapsed(!collapsed);
     }
@@ -307,12 +302,14 @@ impl AppWindowImpl {
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);
         self.unit_journal_panel.display_journal(unit);
+        self.kill_panel.set_unit(unit);
 
         controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 
         self.start_button.set_sensitive(true);
         self.stop_button.set_sensitive(true);
         self.restart_button.set_sensitive(true);
+        self.kill_button.set_sensitive(true);
     }
 
     pub(super) fn set_dark(&self, is_dark: bool) {
