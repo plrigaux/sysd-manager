@@ -265,6 +265,17 @@ impl KillWho {
     }
 }
 
+impl From<u32> for KillWho {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => KillWho::Main,
+            1 => KillWho::Control,
+            2 => KillWho::All,
+            _ => KillWho::Main
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

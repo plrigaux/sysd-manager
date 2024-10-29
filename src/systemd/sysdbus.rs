@@ -288,12 +288,11 @@ fn systemd_action(
 }
 
 pub(super) fn kill_unit(
-    method: &str,
     level: DbusLevel,
     unit: &str,
     mode: KillWho,
-    signal: u32,
-) -> Result<String, SystemdErrors> {
+    signal: i32,
+) -> Result<(), SystemdErrors> {
     let connection = get_connection(level)?;
 
     let message = connection.call_method(
@@ -301,17 +300,12 @@ pub(super) fn kill_unit(
         PATH_SYSTEMD,
         Some(INTERFACE_SYSTEMD_MANAGER),
         METHOD_KILL_UNIT,
-        &(unit, mode.as_str(), signal.to_string()),
+        &(unit, mode.as_str(), signal),
     )?;
+    
+    info!("Kill SUCCESS, response {message}");
 
-    let body = message.body();
-    let o: zvariant::ObjectPath = body.deserialize()?;
-
-    let created_job_object = o.to_string();
-
-    info!("{method} SUCCESS, response {created_job_object}");
-
-    Ok(created_job_object)
+    Ok(())
 }
 
 fn convert_to_string(value: &zvariant::Value) -> String {

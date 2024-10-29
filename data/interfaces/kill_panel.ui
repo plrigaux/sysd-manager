@@ -69,9 +69,9 @@
       </object>
     </child>
     <child>
-      <object class="GtkScrolledWindow">
-        <property name="vexpand">True</property>
-        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">True</property>
+            <child>
           <object class="AdwPreferencesGroup" id="signals_group">
             <property name="description">most common linux signals</property>
             <property name="title">Common signals</property>
@@ -79,8 +79,6 @@
         </child>
       </object>
     </child>
-    <child>
-      <object class="AdwClampScrollable"/>
-    </child>
+
   </template>
 </interface>

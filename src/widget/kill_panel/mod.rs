@@ -46,7 +46,7 @@ mod imp {
 
     use log::{debug, info, warn};
 
-    use crate::systemd::{data::UnitInfo, enums::KillWho};
+    use crate::systemd::{self, data::UnitInfo, enums::KillWho};
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/kill_panel.ui")]
@@ -69,6 +69,8 @@ mod imp {
         #[template_child]
         signals_group: TemplateChild<adw::PreferencesGroup>,
 
+        /*  #[template_child]
+        signals_group_box: TemplateChild<gtk::Box>, */
         side_overlay: OnceCell<OverlaySplitView>,
 
         toast_overlay: OnceCell<ToastOverlay>,
@@ -84,12 +86,12 @@ mod imp {
 
             let text = self.signal_id_entry.text();
 
-            let Ok(signal_id) = text.parse::<u32>() else {
+            let Ok(signal_id) = text.parse::<i32>() else {
                 warn!("Kill signal id not a number");
                 return;
             };
 
-            let a = self.who_to_kill.selected();
+            let who: KillWho = self.who_to_kill.selected().into();
 
             let unit_borrow = self.unit.borrow();
 
@@ -98,7 +100,11 @@ mod imp {
                 return;
             };
 
-            info!("kill {} sgnal {} who {}", unit.primary(), signal_id, a)
+            //info!("kill {} sgnal {} who {:?}", unit.primary(), signal_id, kw);
+
+            let response = systemd::kill_unit(unit, who, signal_id);
+
+            info!("kill {} signal {} who {:?} response {:?}", unit.primary(), signal_id, who, response);
         }
 
         #[template_callback]
@@ -146,12 +152,9 @@ mod imp {
                 return;
             }
 
-            for c in text.chars() {
-                //  if c.is
-                if !c.is_digit(10) {
-                    self.send_button.set_sensitive(false);
-                    return;
-                }
+            if text.contains(pattern_not_digit) {
+                self.send_button.set_sensitive(false);
+                return;
             }
 
             self.send_button.set_sensitive(true);
@@ -187,27 +190,40 @@ mod imp {
             let expression = gtk::PropertyExpression::new(
                 adw::EnumListItem::static_type(),
                 None::<gtk::Expression>,
-                "name",
+                "nick",
             );
 
             self.who_to_kill.set_expression(Some(expression));
 
             let edit = self.signal_id_entry.delegate().unwrap();
 
-            let pattern = |c: char| !c.is_ascii_digit();
-
             gtk::Editable::connect_insert_text(&edit, move |entry, text, position| {
-                if text.contains(pattern) {
+                if text.contains(pattern_not_digit) {
                     glib::signal::signal_stop_emission_by_name(entry, "insert-text");
-                    entry.insert_text(&text.replace(pattern, ""), position);
+                    entry.insert_text(&text.replace(pattern_not_digit, ""), position);
                 }
             });
 
             for sg in signals() {
-                let action_row = adw::ActionRow::builder().title(sg.name).subtitle(sg.comment).build();
+                let title = sg.name;
+                let action_row = adw::ActionRow::builder()
+                    .title(title)
+                    .subtitle(sg.comment)
+                    .build();
 
+                let button_label = sg.id.to_string();
+                let action_button = gtk::Button::builder()
+                    .label(&button_label)
+                    .css_classes(["circular", "raised"])
+                    .valign(gtk::Align::BaselineCenter)
+                    .build();
+
+                let entry_row = self.signal_id_entry.clone();
+                action_button.connect_clicked(move |_| {
+                    entry_row.set_text(&button_label);
+                });
+                action_row.add_suffix(&action_button);
                 self.signals_group.add(&action_row);
-
             }
         }
     }
@@ -215,6 +231,11 @@ mod imp {
     impl WidgetImpl for KillPanelImp {}
     impl BoxImpl for KillPanelImp {}
 
+    fn pattern_not_digit(c: char) -> bool {
+        !c.is_ascii_digit()
+    }
+
+    #[allow(dead_code)]
     struct Signal {
         id: u32,
         name: &'static str,

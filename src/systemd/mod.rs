@@ -11,7 +11,7 @@ use std::string::FromUtf8Error;
 use std::sync::LazyLock;
 
 use data::UnitInfo;
-use enums::{EnablementStatus, UnitType};
+use enums::{EnablementStatus, KillWho, UnitType};
 use gtk::glib::GString;
 use log::{error, info, warn};
 use std::fs::{self, File};
@@ -214,11 +214,7 @@ pub fn get_unit_journal(unit: &UnitInfo, in_color: bool) -> Result<String, Syste
 
     let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path];
     let env = [("SYSTEMD_COLORS", "true")];
-    let environment_variable: Option<&[(&str, &str)]> = if in_color {
-        Some(&env)
-    } else {
-        None
-    };
+    let environment_variable: Option<&[(&str, &str)]> = if in_color { Some(&env) } else { None };
 
     let outout_utf8 = commander_output(&jounal_cmd_line, environment_variable)?.stdout;
 
@@ -389,6 +385,15 @@ pub fn fetch_system_unit_info_native(
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::fetch_system_unit_info_native(level, &unit.object_path())
+}
+
+pub fn kill_unit(
+    unit: &UnitInfo,
+    who: KillWho,
+    signal: i32,
+) -> Result<(), SystemdErrors> {
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    sysdbus::kill_unit(level, &unit.primary(), who, signal)
 }
 
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {

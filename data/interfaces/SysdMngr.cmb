@@ -169,8 +169,9 @@
 	(46,16,"AdwComboRow","who_to_kill",15,None,None,None,0,"",None),
 	(46,17,"GtkLabel",None,2,None,None,None,0,None,None),
 	(46,18,"GtkLabel","unit_label",1,None,None,None,1,None,None),
-	(46,22,"GtkScrolledWindow",None,1,None,None,None,5,None,None),
-	(46,23,"AdwPreferencesGroup","signals_group",22,None,None,None,0,None,None)
+	(46,26,"AdwPreferencesGroup","signals_group",1,None,None,None,5,None,None),
+	(46,27,"GtkScrolledWindow",None,26,None,None,None,0,None,None),
+	(46,29,"GtkBox","signals_group_box",27,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -366,9 +367,10 @@
 	(46,18,"GtkLabel","ellipsize","end",None,None,None,None,None,None,None,None,None),
 	(46,18,"GtkLabel","single-line-mode","True",None,None,None,None,None,None,None,None,None),
 	(46,18,"GtkLabel","width-chars","30",None,None,None,None,None,None,None,None,None),
-	(46,22,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
-	(46,23,"AdwPreferencesGroup","description","most common linux signals",0,None,None,None,None,None,None,None,None),
-	(46,23,"AdwPreferencesGroup","title","Common signals",0,None,None,None,None,None,None,None,None)
+	(46,26,"AdwPreferencesGroup","description","most common linux signals",0,None,None,None,None,None,None,None,None),
+	(46,26,"AdwPreferencesGroup","title","Common signals",0,None,None,None,None,None,None,None,None),
+	(46,27,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(46,29,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
