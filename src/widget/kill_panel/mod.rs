@@ -30,7 +30,7 @@ impl KillPanel {
 mod imp {
     use std::cell::{OnceCell, RefCell};
 
-    use adw::{prelude::*, EnumListModel, OverlaySplitView, ToastOverlay};
+    use adw::{prelude::*, EnumListModel, OverlaySplitView, Toast, ToastOverlay};
     use gtk::{
         glib::{self, property::PropertySet},
         subclass::{
@@ -100,11 +100,28 @@ mod imp {
                 return;
             };
 
-            //info!("kill {} sgnal {} who {:?}", unit.primary(), signal_id, kw);
+            match systemd::kill_unit(unit, who, signal_id) {
+                Ok(_) => {
+                    let msg = format!(
+                        "Kill signal {} send succesfully to {} at {:?} level",
+                        signal_id,
+                        unit.primary(),
+                        who.as_str()
+                    );
 
-            let response = systemd::kill_unit(unit, who, signal_id);
+                    info!("{}", msg);
 
-            info!("kill {} signal {} who {:?} response {:?}", unit.primary(), signal_id, who, response);
+                    let toast = Toast::new(&msg);
+                    self.toast_overlay.get().unwrap().add_toast(toast)
+                }
+                Err(e) => warn!(
+                    "kill {} signal {} who {:?} response {:?}",
+                    unit.primary(),
+                    signal_id,
+                    who,
+                    e
+                ),
+            }
         }
 
         #[template_callback]
