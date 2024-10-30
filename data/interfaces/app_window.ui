@@ -94,6 +94,7 @@
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="AdwViewSwitcher">
+                                    <property name="margin-bottom">5</property>
                                     <property name="policy">wide</property>
                                     <property name="stack">unit_stack</property>
                                   </object>
@@ -105,6 +106,7 @@
                                         <property name="child">
                                           <object class="UnitInfoPanel" id="unit_info_panel"/>
                                         </property>
+                                        <property name="icon-name">emblem-documents-symbolic</property>
                                         <property name="title">Unit Info</property>
                                       </object>
                                     </child>
@@ -113,6 +115,7 @@
                                         <property name="child">
                                           <object class="UnitFilePanel" id="unit_file_panel"/>
                                         </property>
+                                        <property name="icon-name">text-x-generic-symbolic</property>
                                         <property name="title">File</property>
                                       </object>
                                     </child>
@@ -121,6 +124,7 @@
                                         <property name="child">
                                           <object class="JournalPanel" id="unit_journal_panel"/>
                                         </property>
+                                        <property name="icon-name">format-justify-fill</property>
                                         <property name="title">Journal</property>
                                       </object>
                                     </child>
