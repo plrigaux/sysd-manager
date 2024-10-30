@@ -2,13 +2,22 @@
 
 This application exists to easily allow user to manage their **systemd units** via a GUI. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs. 
 
+## Disclaimer
+This application is not intended to a profesional system administrator audience. 
+
+If you consider yourself an administator, please refer to `systemctl` and `journalctl` documentation.
+
 ## Features
 
 Here are __Sysd Manager__ main features :
+* Unit file browser with serach and filtering
 * Enable or disable a unit
 * Activate or desactivate a unit
 * View and modify unit file
+* Unit file syntax highlighting 
+* Journal file syntax highlighting 
 * List of all running units, ordered by the time they took to initialize __systemd-analyze blame__
+* Follow Dark and Light style switching
 
 
 *__Note__ if you need a feature communicate with the author or contribute to the project. If you're stuck take a look at __systemctl__.*
@@ -19,13 +28,16 @@ Any Linux distribution that has adopted **systemd**.
 
 ## Screenshots
 
-![Unit Files](screenshots/unit_file.png)
+![Unit Info](screenshots/unit_info_dark.png)
 
-![Unit Journal](screenshots/journal.png)
+![Unit Info](screenshots/unit_info.png)
+
+![Unit Files](screenshots/unit_file_dark.png)
+
+![Unit Journal](screenshots/journal_dark.png)
 
 ![Analyze Blame](screenshots/analyse_blame.png)
 
-![Unit Info](screenshots/unit_info_dark.png)
 
 ## Credit
 This project is inspired by the work of Guillaume Gomez https://github.com/GuillaumeGomez/systemd-manager/
@@ -35,17 +47,15 @@ Contact me on my [GitHub](https://github.com/plrigaux/sysd-manager) if you want 
 
 ## Project Roadmap
 For now new features are planned to be added, such as:
-* File list browser
+
 * Non-blocking calls
-* Syntax highlighting 
 * Always administrator mode
 * Svec the window state
 * Improve UX
     * Better layout
-    * Follow Dark and Light syte switch
+
 
 ## Installation Instructions
-
 
 ### From your computer
 
@@ -120,6 +130,14 @@ sh ./create_rpm
 It will create a rpm file in the target/generate-rpm subdirectory.
 
 ### Flatpak
+
+__SysD Manager__ can be build as a flatpak, but the flatpak version has limitations that can be overcome.
+
+The limitation are :
+* can't display journal
+* Can't save the unit file
+
+The application discloses how to overcome those limitations.
 
 #### Install the builder
 
