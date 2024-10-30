@@ -393,11 +393,11 @@ def deploy(from_git: bool):
 
     generate(FLATHUB_DIR)
 
-    set_manifest(from_git, FLATHUB_DIR)
+    set_manifest(True, FLATHUB_DIR)
 
 
 def tag():
-    commit = bcommon.get_tag_commit("v0.1.7")
+    commit = bcommon.get_tag_commit(None)
     print("commit", commit)
 
 

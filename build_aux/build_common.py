@@ -3,6 +3,8 @@ import pprint
 import git
 import tomllib
 from typing import Optional
+from typing import Optional
+
 
 class color:
     PURPLE = "\033[95m"
@@ -42,6 +44,34 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True) -
     return ret.returncode
 
 
+def cmd_run_str(
+    cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True
+) -> str:
+
+    if cwd:
+        print(f"{color.GREEN}Change Working Dir to: {cwd}{color.END}")
+
+    if verbose:
+        cmd_str = " ".join(cmd)
+        print(f"{color.DARKCYAN}{cmd_str}{color.END}")
+
+    try:
+        out = subprocess.check_output(cmd, shell=shell, cwd=cwd)
+        out = out.decode("utf-8")
+        return out
+    except subprocess.CalledProcessError as err:
+
+        if on_fail_exit:
+            print(f"{color.RED}Called Process Error! {color.END}")
+            cmd_str = " ".join(cmd)
+            print(f"{color.YELLOW}{cmd_str}{color.END}")
+            pprint.pp(err)
+            print(f"{color.RED}Exit program{color.END}")
+            exit(1)
+
+    return ""
+
+
 def clean_gschema():
     cmd_run(
         [
@@ -73,11 +103,41 @@ def get_version_tag() -> str:
     return tag_name
 
 
-def get_tag_commit(tag_label :str) -> Optional[str]:
+def get_tag_commit(tag_label: Optional[str]) -> Optional[str]:
+
+    if not tag_label:
+        tag_label = get_version_tag()
+        print("tag", None)
+
+
     repo = git.Repo(".")
+
+    """     out1 = None
 
     for t in repo.tags:
         if tag_label == str(t):
-            return str(t.commit)
-        
-    return None
+            out1 = str(t.commit)
+            print(out1) """
+
+    out2 = cmd_run_str(
+        [
+            "git",
+            "rev-parse",
+            tag_label,
+        ]
+    )
+
+
+    out2 = out2[:-1]
+
+    print(f"tag {tag_label} commit {out2}")
+
+    """     if out2.find(out1):
+        print("get tag error")
+        print("out1", out1)
+        print("out2", out2)
+        exit(1) """
+
+
+
+    return out2
