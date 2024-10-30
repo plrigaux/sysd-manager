@@ -162,7 +162,7 @@ impl Token {
                 if dark {
                     Style::new(Palette::Green3, Some(Intensity::Bold))
                 } else {
-                    Style::new(Palette::Green3, Some(Intensity::Bold))
+                    Style::new(Palette::Green5, Some(Intensity::Bold))
                 }
             }
             Token::InfoDisable => {
