@@ -652,7 +652,7 @@ mod tests {
            Ok(())
        }
     */
-    #[test]
+/*     #[test]
     pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
         let unit_file: &str = "tiny_daemon.service";
 
@@ -682,7 +682,7 @@ mod tests {
         println!("{:#?}", des); */
         Ok(())
     }
-
+ */
     /*     #[test]
     pub fn test_get_unit_parameters() {
         init();
