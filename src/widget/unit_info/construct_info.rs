@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 
 use crate::{
@@ -17,12 +16,27 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
     let mut text = String::new();
     fill_name_description(&mut text, unit);
 
-    let map = match systemd::fetch_system_unit_info_native(&unit) {
-        Ok(m) => m,
-        Err(e) => {
-            error!("Fail to retreive Unit info for {}:?: {:?}", unit.primary(), e);
-            HashMap::new()
+    let map = if unit.pathexist() {
+        match systemd::fetch_system_unit_info_native(&unit) {
+            Ok(m) => m,
+            Err(e) => {
+                error!(
+                    "Fail to retrieve Unit info for {:?} {:?}",
+                    unit.primary(),
+                    e
+                );
+                HashMap::new()
+            }
         }
+    } else {
+        let mut map = HashMap::new();
+        let value = Value::Str("not loaded".into());
+
+        let owned_value: OwnedValue = value
+            .try_to_owned()
+            .expect("This method can currently only fail on Unix platforms for Value::Fd variant.");
+        map.insert("LoadState".to_owned(), owned_value);
+        map
     };
 
     fill_description(&mut text, &map);
@@ -180,13 +194,12 @@ fn fill_load_state(text: &mut String, map: &HashMap<String, OwnedValue>, is_dark
     let mut all_none = true;
     for p in three_param {
         if !p.is_none() {
-            if  let Value::Str(inner_str) = p.unwrap() as &Value {
+            if let Value::Str(inner_str) = p.unwrap() as &Value {
                 if !inner_str.is_empty() {
                     all_none = false;
                     break;
                 }
             }
-   
         }
     }
 
@@ -328,7 +341,7 @@ fn write_mem_param(
     };
 
     let mem_num = value_u64(mem);
-    if mem_num == U64MAX || mem_num == 0{
+    if mem_num == U64MAX || mem_num == 0 {
         return false;
     }
 

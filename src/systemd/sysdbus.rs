@@ -395,7 +395,7 @@ pub fn fetch_system_unit_info_native(
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let connection = get_connection(level)?;
 
-    info!("path {path}");
+    debug!("path {path}");
     let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
         fdo::PropertiesProxy::builder(&connection)
             .destination(DESTINATION_SYSTEMD)?

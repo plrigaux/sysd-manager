@@ -58,6 +58,8 @@ pub mod imp {
         pub(super) sub_state: RwLock<String>,
         #[property(get)]
         pub(super) followed_unit: RwLock<String>,
+
+        #[property(get = Self::has_object_path, name = "pathexist", type = bool)]
         #[property(get)]
         pub(super) object_path: RwLock<String>,
         #[property(get, set, nullable, default = None)]
@@ -95,6 +97,19 @@ pub mod imp {
             *self.unit_type.write().unwrap() = unit_type;
 
             *self.primary.write().unwrap() = primary;
+        }
+
+        pub fn has_object_path(&self) -> bool {
+            let res = self.object_path.read();
+
+            match res {
+                Ok(a) => {
+                    let empty_object_path = (*a).is_empty();
+                    !empty_object_path
+                }
+                Err(_) => false,
+            }
+            //.unwrap().is_empty();
         }
     }
 }
