@@ -69,17 +69,12 @@
       </object>
     </child>
     <child>
-      <object class="AdwPreferencesGroup" id="signals_group">
-        <property name="description">most common linux signals</property>
-        <property name="title">Common signals</property>
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
         <child>
-          <object class="GtkScrolledWindow">
-            <property name="vexpand">True</property>
-            <child>
-              <object class="GtkBox" id="signals_group_box">
-                <property name="orientation">vertical</property>
-              </object>
-            </child>
+          <object class="AdwPreferencesGroup" id="signals_group">
+            <property name="description">most common linux signals</property>
+            <property name="title">Common signals</property>
           </object>
         </child>
       </object>

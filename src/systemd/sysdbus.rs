@@ -274,7 +274,7 @@ pub fn get_unit_object_path(level: DbusLevel, unit: &str) -> Result<String, Syst
         METHOD_GET_UNIT,
         &(unit),
     )?;
-  
+
     let body = message.body();
 
     let object_path: zvariant::ObjectPath = body.deserialize()?;
@@ -652,7 +652,9 @@ mod tests {
            Ok(())
        }
     */
-/*     #[test]
+
+    #[ignore= "need a connection to a service"]
+    #[test]
     pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
         let unit_file: &str = "tiny_daemon.service";
 
@@ -682,7 +684,7 @@ mod tests {
         println!("{:#?}", des); */
         Ok(())
     }
- */
+
     /*     #[test]
     pub fn test_get_unit_parameters() {
         init();

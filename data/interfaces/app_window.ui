@@ -133,6 +133,7 @@
                                 </child>
                               </object>
                             </property>
+                            <property name="min-sidebar-width">200.0</property>
                             <property name="sidebar">
                               <object class="KillPanel" id="kill_panel"/>
                             </property>
