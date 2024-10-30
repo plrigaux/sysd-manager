@@ -23,7 +23,8 @@ impl UnitInfo {
         *imp.description.write().unwrap() = description.to_owned();
         *imp.load_state.write().unwrap() = load_state.to_owned();
         *imp.active_state.write().unwrap() = active_state as u32;
-        *imp.active_state_icon.write().unwrap() = active_state.icon_name().to_string();
+        let icon_name = active_state.icon_name().map(|s| s.to_string());
+        *imp.active_state_icon.write().unwrap() = icon_name;
         *imp.sub_state.write().unwrap() = sub_state.to_owned();
         *imp.followed_unit.write().unwrap() = followed_unit.to_owned();
         *imp.object_path.write().unwrap() = object_path.to_owned();
@@ -52,8 +53,8 @@ pub mod imp {
         pub(super) load_state: RwLock<String>,
         #[property(get, set)]
         pub(super) active_state: RwLock<u32>,
-        #[property(get, set)]
-        pub(super) active_state_icon: RwLock<String>,
+        #[property(get, set, nullable)]
+        pub(super) active_state_icon: RwLock<Option<String>>,
         #[property(get)]
         pub(super) sub_state: RwLock<String>,
         #[property(get)]

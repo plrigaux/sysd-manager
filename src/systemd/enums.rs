@@ -127,11 +127,11 @@ impl ActiveState {
         }
     }
 
-    pub fn icon_name(&self) -> &str {
+    pub fn icon_name(&self) -> Option<&str> {
         match self {
-            ActiveState::Active => "object-select-symbolic",
-            ActiveState::Inactive => "window-close-symbolic",
-            ActiveState::Unknown => "action-unavailable-symbolic",
+            ActiveState::Active => Some("object-select-symbolic"),
+            ActiveState::Inactive => Some("window-close-symbolic"),
+            ActiveState::Unknown => None,
         }
     }
 

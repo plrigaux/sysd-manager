@@ -173,7 +173,8 @@ impl UnitListPanelImp {
         let item = downcast_list_item!(item_obj);
         let child = item.child().and_downcast::<gtk::Image>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
-        child.set_icon_name(Some(&entry.active_state_icon()));
+        let icon_name = &entry.active_state_icon();
+        child.set_icon_name(icon_name.as_deref());
         entry
             .bind_property("active_state_icon", &child, "icon-name")
             .build();
