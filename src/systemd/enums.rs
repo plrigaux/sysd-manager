@@ -229,16 +229,16 @@ impl UnitType {
 #[enum_type(name = "KillWho")]
 pub enum KillWho {
     /// If "main", only the main process of a unit is killed.
-    #[enum_value(name = "main", nick = "main")]
+    #[enum_value(name = "main", nick = "Only the main unit's process")]
     Main,
 
     ///If "control" only the control process of the unit is killed
     /// A "control" process is for example a process that is configured via ExecStop= and is spawned in parallel to the main daemon process, in order to shut it down.
-    #[enum_value(name = "control", nick = "main")]
+    #[enum_value(name = "control", nick = "Only the unit's controled processes")]
     Control,
 
     ///If "all" all processes are killed.
-    #[enum_value(name = "all", nick = "main")]
+    #[enum_value(name = "all", nick = "All unit's processes")]
     All,
 }
 

@@ -38,10 +38,10 @@
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title">Who</property>
+        <property name="description">which processes</property>
+        <property name="title">Who to kill</property>
         <child>
           <object class="AdwComboRow" id="who_to_kill">
-            <property name="title">who to kill</property>
             <!-- Custom object fragments -->
           </object>
         </child>
@@ -69,16 +69,20 @@
       </object>
     </child>
     <child>
+      <object class="AdwPreferencesGroup" id="signals_group">
+        <property name="description">most common linux signals</property>
+        <property name="title">Common signals</property>
+        <child>
           <object class="GtkScrolledWindow">
             <property name="vexpand">True</property>
             <child>
-          <object class="AdwPreferencesGroup" id="signals_group">
-            <property name="description">most common linux signals</property>
-            <property name="title">Common signals</property>
+              <object class="GtkBox" id="signals_group_box">
+                <property name="orientation">vertical</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>
     </child>
-
   </template>
 </interface>
