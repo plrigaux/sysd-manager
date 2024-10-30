@@ -21,23 +21,13 @@
       <caption>Unit Files</caption>
     </screenshot>
     <screenshot>
-      <image type="source">
-        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_file.png</image>
+      <image type="source" environment="gnome:dark">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_info_dark.png</image>
       <caption>Unit Files</caption>
     </screenshot>
     <screenshot>
       <image type="source">
-        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal.png</image>
-      <caption>Unit Journal</caption>
-    </screenshot>
-    <screenshot>
-      <image type="source">
-        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/analyse_blame.png</image>
-      <caption>Analyze</caption>
-    </screenshot>
-    <screenshot>
-      <image type="source" environment="gnome:dark">
-        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_info_dark.png</image>
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_file.png</image>
       <caption>Unit Files</caption>
     </screenshot>
     <screenshot>
@@ -46,12 +36,21 @@
       <caption>Unit Files</caption>
     </screenshot>
     <screenshot>
+      <image type="source">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal.png</image>
+      <caption>Unit Journal</caption>
+    </screenshot>
+    <screenshot>
       <image type="source" environment="gnome:dark">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal_dark.png</image>
       <caption>Unit Journal</caption>
     </screenshot>
-
-
+    <screenshot>
+      <image type="source">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/analyse_blame.png</image>
+      <caption>
+        Analyze</caption>
+    </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/plrigaux/sysd-manager</url>
   <url type="bugtracker">https://github.com/plrigaux/sysd-manager/issues</url>
@@ -62,6 +61,15 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.1.11" date="2024-10-30">
+      <description>
+        <ul>
+          <li>New functionality: ability to send a kill signal to a unit</li>
+          <li>The list now displays loaded and unloaded units</li>
+          <li>Various look and feel changes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.10" date="2024-10-22">
       <description>
         <ul>
