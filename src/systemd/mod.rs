@@ -145,6 +145,11 @@ pub fn restart_unit(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     sysdbus::restart_unit(level, &unit.primary())
 }
 
+pub fn get_unit_object_path(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    sysdbus::get_unit_object_path(level, &unit.primary())
+}
+
 pub fn enable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
     match systemctl::enable_unit_files_path(&sytemd_unit.primary()) {
         Ok(_) => Ok(EnablementStatus::Enabled),

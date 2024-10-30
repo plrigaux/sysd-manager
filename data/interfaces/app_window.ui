@@ -31,6 +31,7 @@
                               <object class="GtkSwitch" id="ablement_switch">
                                 <property name="sensitive">False</property>
                                 <property name="valign">baseline-center</property>
+                                <signal name="state-set" handler="switch_ablement_state_set" swapped="yes"/>
                               </object>
                             </child>
                             <child>

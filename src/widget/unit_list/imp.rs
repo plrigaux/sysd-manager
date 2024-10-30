@@ -82,6 +82,7 @@ macro_rules! factory_bind {
         let (child, entry) = factory_bind_pre!($item_obj);
         let v = entry.$func();
         child.set_text(Some(&v));
+        (child, entry)
     }};
 }
 
@@ -187,7 +188,8 @@ impl UnitListPanelImp {
 
     #[template_callback]
     fn col_description_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_bind!(item_obj, description);
+        let (child, unit) = factory_bind!(item_obj, description);
+        unit.bind_property("description", &child, "text").build();
     }
 
     #[template_callback]
@@ -234,13 +236,16 @@ impl UnitListPanelImp {
             Ok(map) => map.into_values().collect(),
             Err(_e) => vec![],
         };
-    
+
         self.list_store.remove_all();
-    
+
         for value in unit_files {
             self.list_store.append(&value);
         }
-        info!("Unit list refreshed! list size {}", self.list_store.n_items())
+        info!(
+            "Unit list refreshed! list size {}",
+            self.list_store.n_items()
+        )
     }
 }
 
@@ -260,7 +265,6 @@ impl ObjectSubclass for UnitListPanelImp {
     fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
         obj.init_template();
     }
-    
 }
 
 impl ObjectImpl for UnitListPanelImp {
@@ -285,8 +289,6 @@ impl ObjectImpl for UnitListPanelImp {
 }
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
-
-
 
 fn fill_search_bar(search_bar: &SearchBar, filter_list_model: &gtk::FilterListModel) {
     let search_entry = gtk::SearchEntry::new();

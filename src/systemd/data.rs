@@ -47,7 +47,7 @@ pub mod imp {
         display_name: RwLock<String>,
         #[property(get)]
         unit_type: RwLock<String>,
-        #[property(get)]
+        #[property(get, set)]
         pub(super) description: RwLock<String>,
         #[property(get)]
         pub(super) load_state: RwLock<String>,
@@ -61,7 +61,7 @@ pub mod imp {
         pub(super) followed_unit: RwLock<String>,
 
         #[property(get = Self::has_object_path, name = "pathexist", type = bool)]
-        #[property(get)]
+        #[property(get, set)]
         pub(super) object_path: RwLock<String>,
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RwLock<Option<String>>,

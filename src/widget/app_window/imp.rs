@@ -208,7 +208,7 @@ impl AppWindowImpl {
     #[template_callback]
     fn switch_ablement_state_set(&self, switch_new_state: bool, switch: &gtk::Switch) -> bool {
         info!(
-            "switch_ablement_state_set new {switch_new_state} ss {}",
+            "switch_ablement_state_set new {switch_new_state} old {}",
             switch.state()
         );
 
@@ -221,6 +221,7 @@ impl AppWindowImpl {
 
         controls::switch_ablement_state_set(&self.toast_overlay, switch_new_state, switch, &unit);
 
+        self.unit_info_panel.display_unit_info(&unit);
         true // to stop the signal emission
     }
 
@@ -228,9 +229,16 @@ impl AppWindowImpl {
     fn button_start_clicked(&self, _button: &gtk::Button) {
         let unit = current_unit!(self);
 
-        match systemd::start_unit(&unit) {
-            Ok(_job) => {
-                let info = format!("Unit \"{}\" has been started!", unit.primary());
+        let start_results: Result<String, systemd::SystemdErrors> = systemd::start_unit(&unit);
+
+        self.start_restart(&unit, start_results, "start")
+    }
+
+    //Dry
+    fn start_restart(&self, unit : &UnitInfo, start_results: Result<String, systemd::SystemdErrors>, action : &str ) {
+        let job_op = match start_results {
+            Ok(job) => {
+                let info = format!("Unit \"{}\" has been {action}ed!", unit.primary());
 
                 info!("{info}");
 
@@ -238,8 +246,38 @@ impl AppWindowImpl {
                 self.toast_overlay.add_toast(toast);
 
                 controls::update_active_state(&unit, ActiveState::Active);
+
+                Some(job)
             }
-            Err(e) => error!("Can't start the unit {}, because: {:?}", unit.primary(), e),
+            Err(e) => {
+                error!(
+                    "Can't {action} the unit {:?}, because: {:?}",
+                    unit.primary(),
+                    e
+                );
+                None
+            }
+        };
+
+        let Some(_job) = job_op else {
+            return;
+        };
+
+        if unit.pathexist() {
+            self.unit_info_panel.display_unit_info(&unit);
+            return;
+        }
+
+        match systemd::get_unit_object_path(&unit) {
+            Ok(object_path) => {
+                unit.set_object_path(object_path);
+                self.unit_info_panel.display_unit_info(&unit);
+            }
+            Err(e) => warn!(
+                "Can't retrieve unit's {:?} object path, because: {:?}",
+                unit.primary(),
+                e
+            ),
         }
     }
 
@@ -253,8 +291,8 @@ impl AppWindowImpl {
                 info!("{info}");
                 let toast = Toast::new(&info);
                 self.toast_overlay.add_toast(toast);
-
-                controls::update_active_state(&unit, ActiveState::Inactive)
+                
+                self.unit_info_panel.display_unit_info(&unit);
             }
 
             Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
@@ -265,17 +303,9 @@ impl AppWindowImpl {
     fn button_restart_clicked(&self, _button: &gtk::Button) {
         let unit = current_unit!(self);
 
-        match systemd::restart_unit(&unit) {
-            Ok(_job) => {
-                let info = format!("Unit \"{}\" has been restarted!", unit.primary());
-                info!("{info}");
-                let toast = Toast::new(&info);
-                self.toast_overlay.add_toast(toast);
-
-                controls::update_active_state(&unit, ActiveState::Active);
-            }
-            Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
-        }
+        let start_results = systemd::restart_unit(&unit) ;
+        self.start_restart(&unit, start_results, "restart")
+      
     }
 
     #[template_callback]

@@ -39,7 +39,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
         map
     };
 
-    fill_description(&mut text, &map);
+    fill_description(&mut text, &map, unit);
     fill_load_state(&mut text, &map, is_dark);
     fill_dropin(&mut text, &map);
     fill_active_state(&mut text, &map, is_dark);
@@ -173,9 +173,14 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
     Some(since)
 }
 
-fn fill_description(text: &mut String, map: &HashMap<String, OwnedValue>) {
+fn fill_description(text: &mut String, map: &HashMap<String, OwnedValue>, unit : &UnitInfo) {
     let value = get_value!(map, "Description");
-    fill_row(text, "Description:", value_str(value))
+    let description = value_str(value);
+    fill_row(text, "Description:", description);
+
+    if unit.description().is_empty() && !description.is_empty() {
+        unit.set_description(description);
+    }
 }
 
 fn fill_load_state(text: &mut String, map: &HashMap<String, OwnedValue>, is_dark: bool) {

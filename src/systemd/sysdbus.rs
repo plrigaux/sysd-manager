@@ -41,6 +41,7 @@ const METHOD_STOP_UNIT: &str = "StopUnit";
 const METHOD_RESTART_UNIT: &str = "RestartUnit";
 const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
+const METHOD_GET_UNIT: &str = "GetUnit";
 
 #[allow(dead_code)]
 enum StartMode {
@@ -262,6 +263,25 @@ pub(super) fn restart_unit(level: DbusLevel, unit: &str) -> Result<String, Syste
     systemd_action(METHOD_RESTART_UNIT, level, unit, StartMode::Fail)
 }
 
+/// Used to get the unit object path for a unit name
+pub fn get_unit_object_path(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_GET_UNIT,
+        &(unit),
+    )?;
+  
+    let body = message.body();
+
+    let object_path: zvariant::ObjectPath = body.deserialize()?;
+
+    Ok(object_path.as_str().to_owned())
+}
+
 fn systemd_action(
     method: &str,
     level: DbusLevel,
@@ -302,7 +322,7 @@ pub(super) fn kill_unit(
         METHOD_KILL_UNIT,
         &(unit, mode.as_str(), signal),
     )?;
-    
+
     info!("Kill SUCCESS, response {message}");
 
     Ok(())
