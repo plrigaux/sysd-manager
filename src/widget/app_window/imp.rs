@@ -295,6 +295,11 @@ impl AppWindowImpl {
             .set_search_mode(toggle_button.is_active());
     }
 
+    #[template_callback]
+    fn refresh_button_clicked(&self, _button: &gtk::Button) {
+        self.unit_list_panel.fill_store();
+    }
+
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
         self.current_unit.set(Some(unit.clone()));
 

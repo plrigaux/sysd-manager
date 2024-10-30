@@ -404,7 +404,8 @@
 	(76,40,47,"GtkButton","clicked","button_kill_clicked",None,0,1,0,None),
 	(77,46,10,"GtkButton","clicked","button_cancel_clicked",None,0,1,0,None),
 	(78,46,11,"GtkButton","clicked","button_send_clicked",None,0,1,0,None),
-	(86,46,14,"GtkEditable","changed","kill_signal_text_change",None,0,1,0,None)
+	(86,46,14,"GtkEditable","changed","kill_signal_text_change",None,0,1,0,None),
+	(87,40,20,"GtkButton","clicked","refresh_button_clicked",None,0,0,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

@@ -227,6 +227,20 @@ impl UnitListPanelImp {
     pub fn search_bar(&self) -> gtk::SearchBar {
         self.search_bar.clone()
     }
+
+    pub(super) fn fill_store(&self) {
+        let unit_files: Vec<UnitInfo> = match systemd::list_units_description_and_state() {
+            Ok(map) => map.into_values().collect(),
+            Err(_e) => vec![],
+        };
+    
+        self.list_store.remove_all();
+    
+        for value in unit_files {
+            self.list_store.append(&value);
+        }
+        info!("Unit list refreshed! list size {}", self.list_store.n_items())
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -245,6 +259,7 @@ impl ObjectSubclass for UnitListPanelImp {
     fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
         obj.init_template();
     }
+    
 }
 
 impl ObjectImpl for UnitListPanelImp {
@@ -262,7 +277,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         self.unit_list_sort_list_model.set_sorter(sorter.as_ref());
 
-        fill_store(&self.list_store);
+        self.fill_store();
 
         fill_search_bar(&self.search_bar, &self.filter_list_model);
     }
@@ -270,19 +285,7 @@ impl ObjectImpl for UnitListPanelImp {
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
 
-fn fill_store(store: &gio::ListStore) {
-    let unit_files: Vec<UnitInfo> = match systemd::list_units_description_and_state() {
-        Ok(map) => map.into_values().collect(),
-        Err(_e) => vec![],
-    };
 
-    store.remove_all();
-
-    for value in unit_files {
-        store.append(&value);
-    }
-    info!("Unit list refreshed! list size {}", store.n_items())
-}
 
 fn fill_search_bar(search_bar: &SearchBar, filter_list_model: &gtk::FilterListModel) {
     let search_entry = gtk::SearchEntry::new();

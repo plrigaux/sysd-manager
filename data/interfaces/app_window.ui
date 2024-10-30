@@ -168,6 +168,7 @@
                   <object class="GtkButton">
                     <property name="icon-name">view-refresh</property>
                     <property name="tooltip-text">Refresh unit list</property>
+                    <signal name="clicked" handler="refresh_button_clicked" swapped="yes"/>
                   </object>
                 </child>
                 <child type="start">

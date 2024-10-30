@@ -1,6 +1,6 @@
+use super::app_window::AppWindow;
 use gtk::glib;
 use gtk::subclass::prelude::*;
-use super::app_window::AppWindow;
 
 mod imp;
 
@@ -11,12 +11,16 @@ glib::wrapper! {
 }
 
 impl UnitListPanel {
-    pub fn register_selection_change(&self, app_window : &AppWindow) {
+    pub fn register_selection_change(&self, app_window: &AppWindow) {
         let obj = self.imp();
         obj.register_selection_change(app_window);
     }
 
     pub fn search_bar(&self) -> gtk::SearchBar {
         self.imp().search_bar()
+    }
+
+    pub fn fill_store(&self) {
+        self.imp().fill_store()
     }
 }
