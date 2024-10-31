@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
   <!-- interface-name app_window.ui -->
-  <requires lib="gtk" version="4.12"/>
+  <requires lib="gtk" version="4.14"/>
   <requires lib="libadwaita" version="1.5"/>
   <template class="SysdMainAppWindow" parent="AdwApplicationWindow">
     <property name="default-height">720</property>
@@ -45,6 +45,15 @@
                                     <property name="label">Start</property>
                                   </object>
                                 </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwSplitButton">
+                                <property name="icon-name">media-playback-start-symbolic</property>
+                                <property name="label">Sart</property>
+                                <property name="popover">
+                                  <object class="GtkPopoverMenu" id="stard_menu_id"/>
+                                </property>
                               </object>
                             </child>
                             <child>
@@ -174,9 +183,7 @@
                   </object>
                 </child>
                 <child type="start">
-                  <object class="GtkLabel" id="unit_name_label">
-                    <property name="label">Unit name</property>
-                  </object>
+                  <object class="GtkLabel" id="unit_name_label"/>
                 </child>
               </object>
             </child>
