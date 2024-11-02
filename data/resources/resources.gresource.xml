@@ -14,6 +14,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="app_window.ui">interfaces/app_window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_panel.ui">interfaces/unit_list_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="kill_panel.ui">interfaces/kill_panel.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_control_panel.ui">interfaces/unit_control_panel.ui</file>    
     <file compressed="true" alias="style.css">styles/style.css</file>
   </gresource>
 </gresources>

@@ -1,18 +1,18 @@
 use glib::Object;
-use gtk::{gio, glib, subclass::prelude::*};
+use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
 
+mod controls;
 mod imp;
 
 glib::wrapper! {
-    pub struct AppWindow(ObjectSubclass<imp::AppWindowImpl>)
-        @extends adw::ApplicationWindow, gtk::Window, adw::Window, gtk::Widget,
-        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
-                    gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
+    pub struct UnitControlPanel(ObjectSubclass<imp::UnitControlPanelImpl>)
+    @extends gtk::Box, gtk::Widget,
+    @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-impl AppWindow {
+impl UnitControlPanel {
     pub fn new(app: &adw::Application) -> Self {
         // Create new window
         Object::builder().property("application", app).build()
@@ -24,5 +24,9 @@ impl AppWindow {
 
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark);
+    }
+
+    pub fn set_overlay(&self, toast_overlay: &adw::ToastOverlay) {
+        self.imp().set_overlay(toast_overlay);
     }
 }

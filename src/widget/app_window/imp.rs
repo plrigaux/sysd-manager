@@ -1,23 +1,21 @@
 use std::cell::{OnceCell, RefCell};
 
-use adw::{subclass::prelude::*, Toast};
+use adw::subclass::prelude::*;
 use gtk::{
     gio,
     glib::{self, property::PropertySet},
     prelude::*,
 };
-use log::{debug, error, info, warn};
+use log::info;
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::ActiveState},
+    systemd::data::UnitInfo,
     systemd_gui,
     widget::{
-        journal::JournalPanel, kill_panel::KillPanel, title_bar::menu,
-        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel, unit_list::UnitListPanel,
+        title_bar::menu,
+        unit_control_panel::UnitControlPanel, unit_list::UnitListPanel,
     },
 };
-
-use super::controls;
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -38,28 +36,7 @@ pub struct AppWindowImpl {
     unit_list_panel: TemplateChild<UnitListPanel>,
 
     #[template_child]
-    unit_info_panel: TemplateChild<UnitInfoPanel>,
-
-    #[template_child]
-    unit_file_panel: TemplateChild<UnitFilePanel>,
-
-    #[template_child]
-    unit_journal_panel: TemplateChild<JournalPanel>,
-
-    #[template_child]
-    ablement_switch: TemplateChild<gtk::Switch>,
-
-    #[template_child]
-    start_button: TemplateChild<gtk::Button>,
-
-    #[template_child]
-    stop_button: TemplateChild<gtk::Button>,
-
-    #[template_child]
-    kill_button: TemplateChild<gtk::Button>,
-
-    #[template_child]
-    restart_button: TemplateChild<gtk::Button>,
+    unit_control_panel: TemplateChild<UnitControlPanel>,
 
     #[template_child]
     paned: TemplateChild<gtk::Paned>,
@@ -67,18 +44,7 @@ pub struct AppWindowImpl {
     #[template_child]
     unit_name_label: TemplateChild<gtk::Label>,
 
-    #[template_child]
-    side_overlay: TemplateChild<adw::OverlaySplitView>,
-
-    #[template_child]
-    kill_panel: TemplateChild<KillPanel>,
-
-
-/*     #[template_child]
-    mstart: TemplateChild<gio::MenuModel>, */
-
-    current_unit: RefCell<Option<UnitInfo>>,
-
+    //current_unit: RefCell<Option<UnitInfo>>,
     search_bar: RefCell<gtk::SearchBar>,
 }
 
@@ -99,22 +65,6 @@ impl ObjectSubclass for AppWindowImpl {
     }
 }
 
-macro_rules! current_unit {
-    ($app:expr) => {{
-        current_unit!($app, ())
-    }};
-
-    ($app:expr, $opt:expr) => {{
-        let unit_op = $app.current_unit.borrow();
-        let Some(unit) = unit_op.as_ref() else {
-            warn!("No selected unit!");
-            return $opt;
-        };
-
-        unit.clone()
-    }};
-}
-
 impl ObjectImpl for AppWindowImpl {
     fn constructed(&self) {
         self.parent_constructed();
@@ -129,8 +79,7 @@ impl ObjectImpl for AppWindowImpl {
         let app_window = self.obj();
         self.unit_list_panel.register_selection_change(&app_window);
 
-        self.kill_panel
-            .register(&self.side_overlay, &self.toast_overlay);
+        self.unit_control_panel.set_overlay(&self.toast_overlay);
 
         let search_bar = self.unit_list_panel.search_bar();
 
@@ -210,119 +159,6 @@ impl AppWindowImpl {
     }
 
     #[template_callback]
-    fn switch_ablement_state_set(&self, switch_new_state: bool, switch: &gtk::Switch) -> bool {
-        info!(
-            "switch_ablement_state_set new {switch_new_state} old {}",
-            switch.state()
-        );
-
-        if switch_new_state == switch.state() {
-            debug!("no state change");
-            return true;
-        }
-
-        let unit = current_unit!(self, true);
-
-        controls::switch_ablement_state_set(&self.toast_overlay, switch_new_state, switch, &unit);
-
-        self.unit_info_panel.display_unit_info(&unit);
-        true // to stop the signal emission
-    }
-
-    #[template_callback]
-    fn button_start_clicked(&self, _button: &gtk::Button) {
-        let unit = current_unit!(self);
-
-        let start_results: Result<String, systemd::SystemdErrors> = systemd::start_unit(&unit);
-
-        self.start_restart(&unit, start_results, "start")
-    }
-
-    //Dry
-    fn start_restart(&self, unit : &UnitInfo, start_results: Result<String, systemd::SystemdErrors>, action : &str ) {
-        let job_op = match start_results {
-            Ok(job) => {
-                let info = format!("Unit \"{}\" has been {action}ed!", unit.primary());
-
-                info!("{info}");
-
-                let toast = Toast::new(&info);
-                self.toast_overlay.add_toast(toast);
-
-                controls::update_active_state(&unit, ActiveState::Active);
-
-                Some(job)
-            }
-            Err(e) => {
-                error!(
-                    "Can't {action} the unit {:?}, because: {:?}",
-                    unit.primary(),
-                    e
-                );
-                None
-            }
-        };
-
-        let Some(_job) = job_op else {
-            return;
-        };
-
-        if unit.pathexist() {
-            self.unit_info_panel.display_unit_info(&unit);
-            return;
-        }
-
-        match systemd::get_unit_object_path(&unit) {
-            Ok(object_path) => {
-                unit.set_object_path(object_path);
-                self.unit_info_panel.display_unit_info(&unit);
-            }
-            Err(e) => warn!(
-                "Can't retrieve unit's {:?} object path, because: {:?}",
-                unit.primary(),
-                e
-            ),
-        }
-    }
-
-    #[template_callback]
-    fn button_stop_clicked(&self, _button: &gtk::Button) {
-        let unit = current_unit!(self);
-
-        match systemd::stop_unit(&unit) {
-            Ok(_job) => {
-                let info = format!("Unit \"{}\" has been stopped!", unit.primary());
-                info!("{info}");
-                let toast = Toast::new(&info);
-                self.toast_overlay.add_toast(toast);
-                
-                self.unit_info_panel.display_unit_info(&unit);
-            }
-
-            Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
-        }
-    }
-
-    #[template_callback]
-    fn button_restart_clicked(&self, _button: &gtk::Button) {
-        let unit = current_unit!(self);
-
-        let start_results = systemd::restart_unit(&unit) ;
-        self.start_restart(&unit, start_results, "restart")
-      
-    }
-
-    #[template_callback]
-    fn button_kill_clicked(&self, _button: &gtk::Button) {
-        let unit = current_unit!(self);
-
-        self.kill_panel.set_unit(&unit);
-
-        let collapsed = self.side_overlay.is_collapsed();
-        self.side_overlay.set_collapsed(!collapsed);
-    }
-
-    #[template_callback]
     fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
         self.search_bar
             .borrow()
@@ -335,26 +171,15 @@ impl AppWindowImpl {
     }
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
-        self.current_unit.set(Some(unit.clone()));
+        //self.current_unit.set(Some(unit.clone()));
 
         self.unit_name_label.set_label(&unit.primary());
-        self.unit_info_panel.display_unit_info(unit);
-        self.unit_file_panel.set_file_content(unit);
-        self.unit_journal_panel.display_journal(unit);
-        self.kill_panel.set_unit(unit);
 
-        controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
-
-        self.start_button.set_sensitive(true);
-        self.stop_button.set_sensitive(true);
-        self.restart_button.set_sensitive(true);
-        self.kill_button.set_sensitive(true);
+        self.unit_control_panel.selection_change(unit);
     }
 
     pub(super) fn set_dark(&self, is_dark: bool) {
-        self.unit_file_panel.set_dark(is_dark);
-        self.unit_info_panel.set_dark(is_dark);
-        self.unit_journal_panel.set_dark(is_dark);
+        self.unit_control_panel.set_dark(is_dark);
     }
 }
 
