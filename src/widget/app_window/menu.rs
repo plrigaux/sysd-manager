@@ -18,7 +18,7 @@ fn build_popover_menu() -> gtk::PopoverMenu {
     menu.append(Some("Systemd Info"), Some("app.systemd_info"));
     menu.append(Some("Preferences"), Some("app.preferences"));
     menu.append(Some("Search Unit"), Some("app.search_units"));
-
+    menu.append(Some("_Keyboard Shortcuts"), Some("win.show-help-overlay"));
     let unit_menu_popover = gtk::PopoverMenu::builder().menu_model(&menu).build();
 
     unit_menu_popover

@@ -175,10 +175,15 @@ impl AppWindowImpl {
 
     pub(super) fn build_action(&self, application: &adw::Application) {
         let search_toggle_button = self.search_toggle_button.clone();
+        let unit_list_panel = self.unit_list_panel.clone();
         let search_units: gio::ActionEntry<adw::Application> =
             gio::ActionEntry::builder("search_units")
                 .activate(move |_application: &adw::Application, _, _| {
-                    search_toggle_button.activate();
+                    if !search_toggle_button.is_active() {
+                        search_toggle_button.activate();
+                    } else {
+                        unit_list_panel.button_search_toggled(true);
+                    }
                 })
                 .build();
 
