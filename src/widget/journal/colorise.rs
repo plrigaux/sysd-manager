@@ -151,7 +151,7 @@ fn make_markup<'a>(
 }
 
 fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeError> {
-    let mut it = code_line.split(';');
+    let mut it = code_line.split(&[';',':']); // insome case they use : as separator
 
     while let Some(code) = it.next() {
         let token = match code {
@@ -220,7 +220,7 @@ fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeEr
     Ok(())
 }
 
-fn find_color(it: &mut std::str::Split<'_, char>) -> Result<TermColor, ColorCodeError> {
+fn find_color(it: &mut std::str::Split<'_, &[char; 2]>) -> Result<TermColor, ColorCodeError> {
     let Some(sub_code) = it.next() else {
         return Err(ColorCodeError::Malformed);
     };
