@@ -73,8 +73,6 @@ pub struct AppWindowImpl {
     #[template_child]
     kill_panel: TemplateChild<KillPanel>,
 
-    #[template_child]
-    stard_menu_id: TemplateChild<gtk::PopoverMenu>,
 
 /*     #[template_child]
     mstart: TemplateChild<gio::MenuModel>, */

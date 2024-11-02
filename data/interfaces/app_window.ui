@@ -51,9 +51,6 @@
                               <object class="AdwSplitButton">
                                 <property name="icon-name">media-playback-start-symbolic</property>
                                 <property name="label">Sart</property>
-                                <property name="popover">
-                                  <object class="GtkPopoverMenu" id="stard_menu_id"/>
-                                </property>
                               </object>
                             </child>
                             <child>
