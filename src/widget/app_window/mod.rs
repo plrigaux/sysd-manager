@@ -4,6 +4,8 @@ use gtk::{gio, glib, subclass::prelude::*};
 use crate::systemd::data::UnitInfo;
 
 mod imp;
+pub mod menu;
+
 
 glib::wrapper! {
     pub struct AppWindow(ObjectSubclass<imp::AppWindowImpl>)
@@ -15,7 +17,11 @@ glib::wrapper! {
 impl AppWindow {
     pub fn new(app: &adw::Application) -> Self {
         // Create new window
-        Object::builder().property("application", app).build()
+        let obj : Self = Object::builder().property("application", app).build();
+
+        obj.imp().build_action(app);
+
+        obj
     }
 
     pub fn selection_change(&self, unit: &UnitInfo) {

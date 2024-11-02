@@ -17,6 +17,7 @@ fn build_popover_menu() -> gtk::PopoverMenu {
     menu.append(Some("About"), Some("app.about"));
     menu.append(Some("Systemd Info"), Some("app.systemd_info"));
     menu.append(Some("Preferences"), Some("app.preferences"));
+    menu.append(Some("Search Unit"), Some("app.search_units"));
 
     let unit_menu_popover = gtk::PopoverMenu::builder().menu_model(&menu).build();
 
@@ -105,9 +106,9 @@ pub fn on_startup(app: &adw::Application) {
         })
         .build();
 
-    app.add_action_entries([about, analyze_blame, systemd_info, preferences]);
-
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
+
+    app.add_action_entries([about, analyze_blame, systemd_info, preferences]);
 }
 
 fn create_about() -> adw::AboutDialog {

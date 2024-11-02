@@ -36,7 +36,7 @@
                   </object>
                 </property>
                 <child>
-                  <object class="GtkToggleButton">
+                  <object class="GtkToggleButton" id="search_toggle_button">
                     <property name="icon-name">system-search</property>
                     <property name="tooltip-text">Open search bar</property>
                     <signal name="toggled" handler="button_search_toggled" swapped="yes"/>

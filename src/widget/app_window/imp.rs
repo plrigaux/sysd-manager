@@ -1,21 +1,16 @@
-use std::cell::{OnceCell, RefCell};
+use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
-use gtk::{
-    gio,
-    glib::{self, property::PropertySet},
-    prelude::*,
-};
+use gtk::{gio, glib, prelude::*};
 use log::info;
 
 use crate::{
     systemd::data::UnitInfo,
     systemd_gui,
-    widget::{
-        title_bar::menu,
-        unit_control_panel::UnitControlPanel, unit_list::UnitListPanel,
-    },
+    widget::{unit_control_panel::UnitControlPanel, unit_list::UnitListPanel},
 };
+
+use super::menu;
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -44,8 +39,8 @@ pub struct AppWindowImpl {
     #[template_child]
     unit_name_label: TemplateChild<gtk::Label>,
 
-    //current_unit: RefCell<Option<UnitInfo>>,
-    search_bar: RefCell<gtk::SearchBar>,
+    #[template_child]
+    search_toggle_button: TemplateChild<gtk::ToggleButton>,
 }
 
 #[glib::object_subclass]
@@ -73,19 +68,16 @@ impl ObjectImpl for AppWindowImpl {
         self.setup_settings();
         let (width, _height) = self.load_window_size();
 
-        let menu_button = menu::build_menu();
-        self.header_bar.pack_end(&menu_button);
-
         let app_window = self.obj();
         self.unit_list_panel.register_selection_change(&app_window);
 
         self.unit_control_panel.set_overlay(&self.toast_overlay);
 
-        let search_bar = self.unit_list_panel.search_bar();
-
-        self.search_bar.set(search_bar);
-
         self.paned.set_position(width / 2);
+
+        let menu_button = menu::build_menu();
+
+        self.header_bar.pack_end(&menu_button);
     }
 }
 
@@ -160,9 +152,8 @@ impl AppWindowImpl {
 
     #[template_callback]
     fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
-        self.search_bar
-            .borrow()
-            .set_search_mode(toggle_button.is_active());
+        self.unit_list_panel
+            .button_search_toggled(toggle_button.is_active());
     }
 
     #[template_callback]
@@ -180,6 +171,20 @@ impl AppWindowImpl {
 
     pub(super) fn set_dark(&self, is_dark: bool) {
         self.unit_control_panel.set_dark(is_dark);
+    }
+
+    pub(super) fn build_action(&self, application: &adw::Application) {
+        let search_toggle_button = self.search_toggle_button.clone();
+        let search_units: gio::ActionEntry<adw::Application> =
+            gio::ActionEntry::builder("search_units")
+                .activate(move |_application: &adw::Application, _, _| {
+                    search_toggle_button.activate();
+                })
+                .build();
+
+        application.add_action_entries([search_units]);
+
+        application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
     }
 }
 

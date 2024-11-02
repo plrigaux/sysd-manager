@@ -1,4 +1,7 @@
-use std::{cell::RefMut, rc::Rc};
+use std::{
+    cell::{OnceCell, RefMut},
+    rc::Rc,
+};
 
 use gtk::{
     gio::{self},
@@ -47,6 +50,8 @@ pub struct UnitListPanelImp {
 
     #[template_child]
     filter_list_model: TemplateChild<gtk::FilterListModel>,
+
+    search_entry: OnceCell<gtk::SearchEntry>,
 }
 
 macro_rules! factory_setup {
@@ -247,6 +252,16 @@ impl UnitListPanelImp {
             self.list_store.n_items()
         )
     }
+
+    pub(super) fn button_search_toggled(&self, toggle_button_is_active: bool) {
+        self.search_bar.set_search_mode(toggle_button_is_active);
+
+        if toggle_button_is_active {
+            let se = self.search_entry.get().unwrap();
+
+            se.grab_focus();
+        }
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -284,13 +299,18 @@ impl ObjectImpl for UnitListPanelImp {
 
         self.fill_store();
 
-        fill_search_bar(&self.search_bar, &self.filter_list_model);
+        let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
+
+        let _ = self.search_entry.set(search_entry);
     }
 }
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
 
-fn fill_search_bar(search_bar: &SearchBar, filter_list_model: &gtk::FilterListModel) {
+fn fill_search_bar(
+    search_bar: &SearchBar,
+    filter_list_model: &gtk::FilterListModel,
+) -> gtk::SearchEntry {
     let search_entry = gtk::SearchEntry::new();
     search_entry.set_hexpand(true);
 
@@ -398,5 +418,7 @@ fn fill_search_bar(search_bar: &SearchBar, filter_list_model: &gtk::FilterListMo
             //FIXME when the filter become empty the colunm view display nothing until you click on it
             //unit_col_view_scrolled_window.queue_draw(); //TODO investigate the need
         });
+
+        search_entry
     }
 }

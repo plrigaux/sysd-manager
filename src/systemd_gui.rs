@@ -2,10 +2,10 @@ use gtk::gdk;
 use gtk::glib;
 use gtk::prelude::*;
 
+use crate::widget::app_window::menu;
+use crate::widget::app_window::AppWindow;
 use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::preferences::PreferencesDialog;
-use crate::widget::title_bar::menu;
-use crate::widget::{self};
 use log::info;
 
 pub const APP_ID: &str = "io.github.plrigaux.sysd-manager";
@@ -36,20 +36,8 @@ fn load_css() {
 }
 
 fn build_ui(application: &adw::Application) {
-    {
-        /*         let search_button = title_bar_elements.search_button.clone();
-        search_entry.connect_search_started(move |_| {
-            search_button.set_active(true);
-        }); */
-    }
-    {
-        /*         let search_button = title_bar_elements.search_button.clone();
-        search_entry.connect_stop_search(move |_| {
-            search_button.set_active(false);
-        }); */
-    }
-
-    let window = widget::app_window::AppWindow::new(application);
+    
+    let window = AppWindow::new(application);
 
     {
         let window = window.clone();

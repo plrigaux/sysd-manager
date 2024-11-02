@@ -10,14 +10,12 @@ use log::{debug, error, info, warn};
 use crate::{
     systemd::{self, data::UnitInfo, enums::ActiveState},
     widget::{
-        journal::JournalPanel, kill_panel::KillPanel,
-        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
+        journal::JournalPanel, kill_panel::KillPanel, unit_file_panel::UnitFilePanel,
+        unit_info::UnitInfoPanel,
     },
 };
 
 use super::controls;
-
-
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
@@ -103,7 +101,9 @@ impl UnitControlPanelImpl {
     pub(super) fn set_overlay(&self, toast_overlay: &adw::ToastOverlay) {
         self.kill_panel.register(&self.side_overlay, toast_overlay);
 
-        self.toast_overlay.set(toast_overlay.clone());
+        if let Err(e) = self.toast_overlay.set(toast_overlay.clone()) {
+            warn!("Set Toast Overlay Issue: {:?}", e)
+        }
     }
 
     #[template_callback]
