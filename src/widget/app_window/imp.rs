@@ -14,6 +14,7 @@ use super::menu;
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
+const PANED_SEPARATOR_POSITION: &str = "paned-separator-position";
 const IS_MAXIMIZED: &str = "is-maximized";
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -63,17 +64,16 @@ impl ObjectSubclass for AppWindowImpl {
 impl ObjectImpl for AppWindowImpl {
     fn constructed(&self) {
         self.parent_constructed();
+
         // Load latest window state
-        //let obj = self.obj();
         self.setup_settings();
-        let (width, _height) = self.load_window_size();
+
+        self.load_window_size();
 
         let app_window = self.obj();
         self.unit_list_panel.register_selection_change(&app_window);
 
         self.unit_control_panel.set_overlay(&self.toast_overlay);
-
-        self.paned.set_position(width / 2);
 
         let menu_button = menu::build_menu();
 
@@ -109,16 +109,20 @@ impl AppWindowImpl {
         settings.set_int(WINDOW_HEIGHT, height)?;
         settings.set_boolean(IS_MAXIMIZED, obj.is_maximized())?;
 
+        let separator_position = self.paned.position();
+        settings.set_int(PANED_SEPARATOR_POSITION, separator_position)?;
+
         Ok(())
     }
 
-    fn load_window_size(&self) -> (i32, i32) {
+    fn load_window_size(&self) {
         // Get the window state from `settings`
         let settings = self.settings();
 
         let mut width = settings.int(WINDOW_WIDTH);
         let mut height = settings.int(WINDOW_HEIGHT);
         let is_maximized = settings.boolean(IS_MAXIMIZED);
+        let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
 
         info!("Window settings: width {width}, height {height}, is-maximized {is_maximized}");
 
@@ -147,7 +151,11 @@ impl AppWindowImpl {
             obj.maximize();
         }
 
-        (width, height)
+        if separator_position < 0 {
+            separator_position = width / 2;
+        }
+
+        self.paned.set_position(separator_position);
     }
 
     #[template_callback]

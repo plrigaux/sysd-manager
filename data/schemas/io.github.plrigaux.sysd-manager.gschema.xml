@@ -14,6 +14,10 @@
             <default>false</default>
             <summary>Default window maximized behaviour</summary>
         </key>
+        <key name="paned-separator-position" type="i">
+            <default>-1</default>
+            <summary>The position of the separator in pixels, from the left/top.</summary>
+        </key>
         <key name="pref-dbus-level" type="s">
             <choices>
                 <choice value='Session' />
