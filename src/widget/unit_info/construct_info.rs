@@ -283,7 +283,7 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
             vec
         }
         _ => {
-            warn!("Wrong zvalue conversion: {:?}", value.dynamic_signature());
+            warn!("Wrong zvalue conversion: {:?}", value.signature());
             return Vec::new();
         }
     };

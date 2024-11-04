@@ -12,6 +12,7 @@ use log::info;
 use serde::Deserialize;
 use zbus::blocking::fdo;
 use zbus::blocking::Connection;
+use zbus::names::InterfaceName;
 use zvariant::ObjectPath;
 use zvariant::OwnedValue;
 use zvariant::Type;
@@ -28,7 +29,7 @@ use super::SystemdErrors;
 use super::SystemdUnit;
 
 const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
-//const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
+const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
 const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
@@ -141,10 +142,17 @@ struct LUnit<'a> {
 }
 
 fn get_connection(level: DbusLevel) -> Result<Connection, SystemdErrors> {
-    let connection = match level {
-        DbusLevel::Session => zbus::blocking::Connection::session()?,
-        DbusLevel::System => zbus::blocking::Connection::system()?,
+    println!("Level {:?}, id {}", level, level as u32);
+    let connection_builder = match level {
+        DbusLevel::Session => zbus::blocking::connection::Builder::session()?,
+        DbusLevel::System => zbus::blocking::connection::Builder::system()?,
     };
+
+    let connection = connection_builder
+        .auth_mechanism(zbus::AuthMechanism::External)
+        .build()?;
+
+    //println!("connection {:#?}", connection);
 
     Ok(connection)
 }
@@ -270,7 +278,10 @@ struct Bla {
     the_bool: bool,
     asdf: (String, String, String),
 }
-pub(super) fn enable_unit_files(level: DbusLevel, unit_file: &str) -> Result<String, SystemdErrors> {
+pub(super) fn enable_unit_files(
+    level: DbusLevel,
+    unit_file: &str,
+) -> Result<String, SystemdErrors> {
     let connection = get_connection(level)?;
 
     let v = vec![unit_file];
@@ -293,7 +304,10 @@ pub(super) fn enable_unit_files(level: DbusLevel, unit_file: &str) -> Result<Str
     Ok(created_job_object)
 }
 
-pub(super) fn disable_unit_files(level: DbusLevel, unit_file: &str) -> Result<String, SystemdErrors> {
+pub(super) fn disable_unit_files(
+    level: DbusLevel,
+    unit_file: &str,
+) -> Result<String, SystemdErrors> {
     let connection = get_connection(level)?;
 
     let v = vec![unit_file];
@@ -435,7 +449,7 @@ fn convert_to_string(value: &zvariant::Value) -> String {
             d_str
         }
         zvariant::Value::Fd(fd) => fd.to_string(),
-        zvariant::Value::Maybe(maybe) => maybe.to_string(),
+        //zvariant::Value::Maybe(maybe) => maybe.to_string(),
     };
     str_value
 }
@@ -475,7 +489,8 @@ pub fn fetch_system_unit_info_native(
             .path(path)?
             .build()?;
 
-    let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(None.into())?;
+    let interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+    let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
 
     Ok(properties)
 }

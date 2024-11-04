@@ -426,8 +426,7 @@
 	(90,47,5,"GtkButton","clicked","button_start_clicked",None,None,1,0,None),
 	(91,47,8,"GtkButton","clicked","button_stop_clicked",None,None,1,0,None),
 	(92,47,10,"GtkButton","clicked","button_restart_clicked",None,None,1,0,None),
-	(93,47,12,"GtkButton","clicked","button_kill_clicked",None,None,1,0,None),
-	(94,21,16,"GtkListBoxRow","activate","enable_unit_file_activate",None,0,1,0,None)
+	(93,47,12,"GtkButton","clicked","button_kill_clicked",None,None,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),
