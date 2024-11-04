@@ -28,7 +28,7 @@
         </key>
         <key name="pref-journal-colors" type="b">
             <default>true</default>
-            <summary>To see the journal logs with colors</summary>
+            <summary>To display journal colors</summary>
         </key>
         <key name="pref-unit-file-highlighting" type="b">
             <default>true</default>
@@ -37,6 +37,21 @@
         <key name="pref-app-first-connection" type="b">
             <default>true</default>
             <summary>Check if the first time that the user open the application</summary>
+        </key>
+
+        <key name="pref-enable-unit-mode" type="s">
+            <choices>
+                <choice value='Subprocess call' />
+                <choice value='D-bus call' />
+            </choices>
+            <default>'Session'</default>
+            <summary>The mode your want to use to enable / disable unit files</summary>
+            <description>
+                Albeit the application wants to use systemd dbus call most of the time, it
+                appears that to enable or disable unit file systemd isn't the best solution.
+
+                The workaround solution is invoke the subprocesses *systemctl* enable or disable unit files.                
+              </description>
         </key>
     </schema>
 </schemalist>
