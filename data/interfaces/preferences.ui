@@ -12,9 +12,7 @@
             <property name="orientation">vertical</property>
             <property name="vexpand">True</property>
             <child type="start">
-              <object class="AdwBanner" id="preference_banner">
-                <property name="title">It's your first connection, set the Dbus-level to &lt;u&gt;System&lt;/u&gt; if  you want to see all Systemd units.</property>
-              </object>
+              <object class="AdwBanner" id="preference_banner"/>
             </child>
             <child type="center">
               <object class="AdwPreferencesPage">
@@ -61,6 +59,12 @@
                             <signal name="state-set" handler="unit_file_highlighting_state_set" swapped="yes"/>
                           </object>
                         </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwComboRow" id="enable_unit_file_mode">
+                        <property name="subtitle">The mode used to enable / disable unit files</property>
+                        <property name="title">Enable unit file mode</property>
                       </object>
                     </child>
                   </object>

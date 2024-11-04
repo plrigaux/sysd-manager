@@ -18,8 +18,8 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
 
-use crate::widget::preferences::data::DbusLevel;
 use crate::widget::preferences::data::PREFERENCES;
+use crate::widget::preferences::data::{DbusLevel, EnableUnitFileMode};
 
 pub mod enums;
 
@@ -150,18 +150,38 @@ pub fn get_unit_object_path(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     sysdbus::get_unit_object_path(level, &unit.primary())
 }
 
-pub fn enable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    match systemctl::enable_unit_files_path(&sytemd_unit.primary()) {
-        Ok(_) => Ok(EnablementStatus::Enabled),
-        Err(e) => Err(e),
-    }
+pub fn enable_unit_files(unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
+    let result = match PREFERENCES.enable_unit_file_mode() {
+        EnableUnitFileMode::Command => match systemctl::enable_unit_files_path(&unit.primary()) {
+            Ok(_) => Ok(EnablementStatus::Enabled),
+            Err(e) => Err(e),
+        },
+        EnableUnitFileMode::DBus => {
+            let level: DbusLevel = PREFERENCES.dbus_level().into();
+            if let Some(unit_file_path) = unit.file_path() {
+                let _str_res = sysdbus::enable_unit_files(level, &unit_file_path)?;
+            }
+            Ok(EnablementStatus::Enabled)
+        }
+    };
+    result
 }
 
-pub fn disable_unit_files(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    match systemctl::disable_unit_files_path(&sytemd_unit.primary()) {
-        Ok(_) => Ok(EnablementStatus::Disabled),
-        Err(e) => Err(e),
-    }
+pub fn disable_unit_files(unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
+    let result = match PREFERENCES.enable_unit_file_mode() {
+        EnableUnitFileMode::Command => match systemctl::disable_unit_files_path(&unit.primary()) {
+            Ok(_) => Ok(EnablementStatus::Disabled),
+            Err(e) => Err(e),
+        },
+        EnableUnitFileMode::DBus => {
+            let level: DbusLevel = PREFERENCES.dbus_level().into();
+            if let Some(unit_file_path) = unit.file_path() {
+                let _str_res = sysdbus::disable_unit_files(level, &unit_file_path)?;
+            }
+            Ok(EnablementStatus::Disabled)
+        }
+    };
+    result
 }
 
 /// Read the unit file and return it's contents so that we can display it
@@ -392,11 +412,7 @@ pub fn fetch_system_unit_info_native(
     sysdbus::fetch_system_unit_info_native(level, &unit.object_path())
 }
 
-pub fn kill_unit(
-    unit: &UnitInfo,
-    who: KillWho,
-    signal: i32,
-) -> Result<(), SystemdErrors> {
+pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::kill_unit(level, &unit.primary(), who, signal)
 }

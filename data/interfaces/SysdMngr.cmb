@@ -84,6 +84,7 @@
 	(21,13,"GtkSwitch","journal_colors",12,None,None,None,0,None,None),
 	(21,14,"AdwActionRow",None,8,None,None,None,2,None,None),
 	(21,15,"GtkSwitch","unit_file_highlight",14,None,None,None,0,None,None),
+	(21,16,"AdwComboRow","enable_unit_file_mode",8,None,None,None,3,None,None),
 	(29,1,"GtkBox","UnitInfoPanel",None,None,None,None,0,None,None),
 	(29,2,"GtkBox",None,1,None,None,None,0,None,None),
 	(29,3,"GtkButton","refresh_button",2,None,None,None,0,None,None),
@@ -236,6 +237,8 @@
 	(21,14,"AdwActionRow","subtitle","Display a nice text highligth for the unit file",0,None,None,None,None,None,None,None,None),
 	(21,14,"AdwPreferencesRow","title","Unit file highlighting",0,None,None,None,None,None,None,None,None),
 	(21,15,"GtkWidget","valign","baseline-center",0,None,None,None,None,None,None,None,None),
+	(21,16,"AdwActionRow","subtitle","The mode used to enable / disable unit files",None,None,None,None,None,None,None,None,None),
+	(21,16,"AdwPreferencesRow","title","Enable unit file mode",None,None,None,None,None,None,None,None,None),
 	(29,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(29,2,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
 	(29,3,"GtkButton","child",None,0,None,None,None,4,None,None,None,None),
@@ -423,7 +426,8 @@
 	(90,47,5,"GtkButton","clicked","button_start_clicked",None,None,1,0,None),
 	(91,47,8,"GtkButton","clicked","button_stop_clicked",None,None,1,0,None),
 	(92,47,10,"GtkButton","clicked","button_restart_clicked",None,None,1,0,None),
-	(93,47,12,"GtkButton","clicked","button_kill_clicked",None,None,1,0,None)
+	(93,47,12,"GtkButton","clicked","button_kill_clicked",None,None,1,0,None),
+	(94,21,16,"GtkListBoxRow","activate","enable_unit_file_activate",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

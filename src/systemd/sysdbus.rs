@@ -42,6 +42,8 @@ const METHOD_RESTART_UNIT: &str = "RestartUnit";
 const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_GET_UNIT: &str = "GetUnit";
+const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFiles";
+const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
 
 #[allow(dead_code)]
 enum StartMode {
@@ -261,6 +263,57 @@ pub(super) fn stop_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdE
 /// Enqeues a start job, and possibly depending jobs.
 pub(super) fn restart_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
     systemd_action(METHOD_RESTART_UNIT, level, unit, StartMode::Fail)
+}
+
+#[derive(Debug, Type, Deserialize)]
+struct Bla {
+    the_bool: bool,
+    asdf: (String, String, String),
+}
+pub(super) fn enable_unit_files(level: DbusLevel, unit_file: &str) -> Result<String, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    let v = vec![unit_file];
+
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_ENABLE_UNIT_FILES,
+        &(v, false, true),
+    )?;
+
+    let body = message.body();
+    let o: Bla = body.deserialize()?;
+
+    let created_job_object = format!("{:?}", o);
+
+    info!("{METHOD_ENABLE_UNIT_FILES} SUCCESS, response {created_job_object}");
+
+    Ok(created_job_object)
+}
+
+pub(super) fn disable_unit_files(level: DbusLevel, unit_file: &str) -> Result<String, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    let v = vec![unit_file];
+
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_DISABLE_UNIT_FILES,
+        &(v, false),
+    )?;
+
+    let body = message.body();
+    let o: Bla = body.deserialize()?;
+
+    let created_job_object = format!("{:?}", o);
+
+    info!("{METHOD_DISABLE_UNIT_FILES} SUCCESS, response {created_job_object}");
+
+    Ok(created_job_object)
 }
 
 /// Used to get the unit object path for a unit name
@@ -653,7 +706,7 @@ mod tests {
        }
     */
 
-    #[ignore= "need a connection to a service"]
+    #[ignore = "need a connection to a service"]
     #[test]
     pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
         let unit_file: &str = "tiny_daemon.service";

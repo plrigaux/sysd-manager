@@ -39,13 +39,13 @@
             <summary>Check if the first time that the user open the application</summary>
         </key>
 
-        <key name="pref-enable-unit-mode" type="s">
+        <key name="pref-enable-unit-file-mode" type="s">
             <choices>
                 <choice value='Subprocess call' />
                 <choice value='D-bus call' />
             </choices>
-            <default>'Session'</default>
-            <summary>The mode your want to use to enable / disable unit files</summary>
+            <default>'Subprocess call'</default>
+            <summary>The mode used to enable / disable unit files</summary>
             <description>
                 Albeit the application wants to use systemd dbus call most of the time, it
                 appears that to enable or disable unit file systemd isn't the best solution.

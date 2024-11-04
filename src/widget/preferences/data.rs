@@ -1,6 +1,6 @@
 use gtk::{
     gio::{self, Settings},
-    glib::GString,
+    glib::{self, GString},
     prelude::SettingsExt,
 };
 use log::info;
@@ -20,6 +20,7 @@ pub const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
+pub const KEY_PREF_ENABLE_UNIT_FILE_MODE: &str = "pref-enable-unit-file-mode";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum DbusLevel {
@@ -62,11 +63,54 @@ impl From<u32> for DbusLevel {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
+#[enum_type(name = "EnableUnitFileMode")]
+pub enum EnableUnitFileMode {
+    #[default]
+    Command = 0,
+    DBus = 1,
+}
+
+impl EnableUnitFileMode {
+    pub fn as_str(&self) -> &str {
+        match self {
+            EnableUnitFileMode::Command => "Subprocess call",
+            EnableUnitFileMode::DBus => "D-bus call",
+        }
+    }
+}
+
+impl From<GString> for EnableUnitFileMode {
+    fn from(level: GString) -> Self {
+        level.as_str().into()
+    }
+}
+
+impl From<&str> for EnableUnitFileMode {
+    fn from(level: &str) -> Self {
+        if "System".eq(level) {
+            EnableUnitFileMode::Command
+        } else {
+            EnableUnitFileMode::DBus
+        }
+    }
+}
+
+impl From<u32> for EnableUnitFileMode {
+    fn from(level: u32) -> Self {
+        match level {
+            1 => EnableUnitFileMode::DBus,
+            _ => EnableUnitFileMode::Command,
+        }
+    }
+}
+
 pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
     journal_colors: RwLock<bool>,
     unit_file_colors: RwLock<bool>,
     app_first_connection: RwLock<bool>,
+    enable_unit_file_mode: RwLock<EnableUnitFileMode>,
 }
 
 impl Preferences {
@@ -75,13 +119,14 @@ impl Preferences {
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
-
+        let enable_unit_file_mode = settings.string(KEY_PREF_ENABLE_UNIT_FILE_MODE).into();
 
         Preferences {
             dbus_level: RwLock::new(level),
             journal_colors: RwLock::new(journal_colors),
             unit_file_colors: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
+            enable_unit_file_mode: RwLock::new(enable_unit_file_mode),
         }
     }
 
@@ -101,11 +146,22 @@ impl Preferences {
         *self.app_first_connection.read().unwrap()
     }
 
+    pub fn enable_unit_file_mode(&self) -> EnableUnitFileMode {
+        *self.enable_unit_file_mode.read().unwrap()
+    }
+
     pub fn set_dbus_level(&self, dbus_level: DbusLevel) {
         info!("set_dbus_level: {}", dbus_level.as_str());
 
         let mut self_dbus_level = self.dbus_level.write().expect("supposed to write");
         *self_dbus_level = dbus_level;
+    }
+
+    pub fn set_enable_unit_file_mode(&self, enable_unit_file_mode: EnableUnitFileMode) {
+        info!("enable_unit_file_mode: {}", enable_unit_file_mode.as_str());
+
+        let mut self_enable_unit_file_mode = self.enable_unit_file_mode.write().expect("supposed to write");
+        *self_enable_unit_file_mode = enable_unit_file_mode;
     }
 
     pub fn set_journal_colors(&self, display: bool) {
@@ -125,7 +181,10 @@ impl Preferences {
     pub fn set_app_first_connection(&self, app_first_connection_new: bool) {
         info!("set_app_first_connection: {app_first_connection_new}");
 
-        let mut app_first_connection = self.app_first_connection.write().expect("supposed to write");
+        let mut app_first_connection = self
+            .app_first_connection
+            .write()
+            .expect("supposed to write");
         *app_first_connection = app_first_connection_new;
     }
 }
