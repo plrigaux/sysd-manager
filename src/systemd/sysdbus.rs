@@ -9,10 +9,14 @@ use log::debug;
 /* use dbus::arg::messageitem::MessageItem;
 use dbus::Message; */
 use log::info;
+use log::warn;
 use serde::Deserialize;
 use zbus::blocking::fdo;
 use zbus::blocking::Connection;
+use zbus::blocking::MessageIterator;
+use zbus::message::Flags;
 use zbus::names::InterfaceName;
+use zbus::Message;
 use zvariant::ObjectPath;
 use zvariant::OwnedValue;
 use zvariant::Type;
@@ -142,7 +146,7 @@ struct LUnit<'a> {
 }
 
 fn get_connection(level: DbusLevel) -> Result<Connection, SystemdErrors> {
-    println!("Level {:?}, id {}", level, level as u32);
+    debug!("Level {:?}, id {}", level, level as u32);
     let connection_builder = match level {
         DbusLevel::Session => zbus::blocking::connection::Builder::session()?,
         DbusLevel::System => zbus::blocking::connection::Builder::system()?,
@@ -282,52 +286,97 @@ pub(super) fn enable_unit_files(
     level: DbusLevel,
     unit_file: &str,
 ) -> Result<String, SystemdErrors> {
-    let connection = get_connection(level)?;
-
     let v = vec![unit_file];
 
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        METHOD_ENABLE_UNIT_FILES,
-        &(v, false, true),
-    )?;
+    let method = METHOD_ENABLE_UNIT_FILES;
 
-    let body = message.body();
-    let o: Bla = body.deserialize()?;
+    let message = Message::method_call(PATH_SYSTEMD, method)?
+        .with_flags(Flags::AllowInteractiveAuth)?
+        .destination(DESTINATION_SYSTEMD)?
+        .interface(INTERFACE_SYSTEMD_MANAGER)?
+        .build(&(v, false, true))?;
 
-    let created_job_object = format!("{:?}", o);
-
-    info!("{METHOD_ENABLE_UNIT_FILES} SUCCESS, response {created_job_object}");
-
-    Ok(created_job_object)
+    send_message(level, method, &message)
+    //send_message(level, method, &send_message)
 }
 
 pub(super) fn disable_unit_files(
     level: DbusLevel,
     unit_file: &str,
 ) -> Result<String, SystemdErrors> {
-    let connection = get_connection(level)?;
-
     let v = vec![unit_file];
 
-    let message = connection.call_method(
+    /*     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
         Some(INTERFACE_SYSTEMD_MANAGER),
         METHOD_DISABLE_UNIT_FILES,
         &(v, false),
-    )?;
+    )?; */
 
-    let body = message.body();
-    let o: Bla = body.deserialize()?;
+    let method = METHOD_DISABLE_UNIT_FILES;
 
-    let created_job_object = format!("{:?}", o);
+    let message = Message::method_call(PATH_SYSTEMD, method)?
+        .with_flags(Flags::AllowInteractiveAuth)?
+        .destination(DESTINATION_SYSTEMD)?
+        .interface(INTERFACE_SYSTEMD_MANAGER)?
+        .build(&(v, false))?;
 
-    info!("{METHOD_DISABLE_UNIT_FILES} SUCCESS, response {created_job_object}");
+    send_message(level, method, &message)
+}
 
-    Ok(created_job_object)
+fn send_message(
+    level: DbusLevel,
+    method: &str,
+    send_message: &Message,
+) -> Result<String, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    connection.send(send_message)?;
+
+    let mut stream = MessageIterator::from(connection);
+
+    while let Some(message_res) = stream.next() {
+        debug!("Message response {:?}", message_res);
+        match message_res {
+            Ok(return_message) => match return_message.message_type() {
+                zbus::message::Type::MethodReturn => {
+                    let body = return_message.body();
+                    /*
+
+                    let job_path: zvariant::ObjectPath = body.deserialize()?;
+
+                    let created_job_object = job_path.to_string();
+                    info!("{method} SUCCESS, response job id {created_job_object}"); */
+
+                    //let retun_msg: Bla = body.deserialize()?;
+
+                    let retun_msg: zvariant::Str = body.deserialize()?;
+
+                    let created_job_object = format!("{:?}", retun_msg);
+
+                    info!("{method} SUCCESS, response {created_job_object}");
+
+                    return Ok(created_job_object);
+                }
+                zbus::message::Type::MethodCall => {
+                    warn!("Not supposed to happen");
+                    break;
+                }
+                zbus::message::Type::Error => {
+                    let error = zbus::Error::from(return_message);
+                    return Err(SystemdErrors::from(error));
+                }
+                zbus::message::Type::Signal => continue,
+            },
+            Err(e) => return Err(SystemdErrors::from(e)),
+        };
+        //unreaceble
+        //break;
+    }
+
+    warn!("{:?} ????, response supposed to be Unreachable", method);
+    Ok(String::from("Unreachable"))
 }
 
 /// Used to get the unit object path for a unit name
@@ -356,22 +405,49 @@ fn systemd_action(
     mode: StartMode,
 ) -> Result<String, SystemdErrors> {
     let connection = get_connection(level)?;
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        method,
-        &(unit, mode.as_str()),
-    )?;
 
-    let body = message.body();
-    let o: zvariant::ObjectPath = body.deserialize()?;
+    let send_message = Message::method_call(PATH_SYSTEMD, method)?
+        .with_flags(Flags::AllowInteractiveAuth)?
+        .destination(DESTINATION_SYSTEMD)?
+        .interface(INTERFACE_SYSTEMD_MANAGER)?
+        .build(&(unit, mode.as_str()))?;
 
-    let created_job_object = o.to_string();
+    connection.send(&send_message)?;
 
-    info!("{method} SUCCESS, response {created_job_object}");
+    let mut stream = MessageIterator::from(connection);
 
-    Ok(created_job_object)
+    while let Some(message_res) = stream.next() {
+        debug!("Message response {:?}", message_res);
+        match message_res {
+            Ok(return_message) => match return_message.message_type() {
+                zbus::message::Type::MethodReturn => {
+                    let body = return_message.body();
+
+                    let job_path: zvariant::ObjectPath = body.deserialize()?;
+
+                    let created_job_object = job_path.to_string();
+                    info!("{method} SUCCESS, response job id {created_job_object}");
+
+                    return Ok(created_job_object);
+                }
+                zbus::message::Type::MethodCall => {
+                    warn!("Not supposed to happen");
+                    break;
+                }
+                zbus::message::Type::Error => {
+                    let error = zbus::Error::from(return_message);
+                    return Err(SystemdErrors::from(error));
+                }
+                zbus::message::Type::Signal => continue,
+            },
+            Err(e) => return Err(SystemdErrors::from(e)),
+        };
+        //unreaceble
+        //break;
+    }
+
+    warn!("{:?} ????, response supposed to be Unreachable", method);
+    Ok(String::from("Unreachable"))
 }
 
 pub(super) fn kill_unit(

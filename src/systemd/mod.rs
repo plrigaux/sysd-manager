@@ -39,7 +39,7 @@ pub enum SystemdErrors {
     IoError(std::io::Error),
     Utf8Error(FromUtf8Error),
     SystemCtlError(String),
-    DBusErrorStr(String),
+    //DBusErrorStr(String),
     Malformed,
     ZBusError(zbus::Error),
     ZBusFdoError(zbus::fdo::Error),
@@ -158,9 +158,7 @@ pub fn enable_unit_files(unit: &UnitInfo) -> Result<EnablementStatus, SystemdErr
         },
         EnableUnitFileMode::DBus => {
             let level: DbusLevel = PREFERENCES.dbus_level().into();
-            if let Some(unit_file_path) = unit.file_path() {
-                let _str_res = sysdbus::enable_unit_files(level, &unit_file_path)?;
-            }
+            let _str_res = sysdbus::enable_unit_files(level, &unit.primary())?;
             Ok(EnablementStatus::Enabled)
         }
     };
@@ -175,9 +173,7 @@ pub fn disable_unit_files(unit: &UnitInfo) -> Result<EnablementStatus, SystemdEr
         },
         EnableUnitFileMode::DBus => {
             let level: DbusLevel = PREFERENCES.dbus_level().into();
-            if let Some(unit_file_path) = unit.file_path() {
-                let _str_res = sysdbus::disable_unit_files(level, &unit_file_path)?;
-            }
+            let _str_res = sysdbus::disable_unit_files(level, &unit.primary())?;
             Ok(EnablementStatus::Disabled)
         }
     };
