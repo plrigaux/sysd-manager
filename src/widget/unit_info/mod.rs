@@ -118,9 +118,9 @@ mod imp {
         fn update_unit_info(&self, unit: &UnitInfo) {
             let text = fill_all_info(unit, self.is_dark.get());
 
-            let journal_text: &gtk::TextView = self.unit_info_textview.as_ref();
+            let unit_info_text_view: &gtk::TextView = self.unit_info_textview.as_ref();
 
-            let buf = journal_text.buffer();
+            let buf = unit_info_text_view.buffer();
 
             buf.set_text(""); // clear text
 

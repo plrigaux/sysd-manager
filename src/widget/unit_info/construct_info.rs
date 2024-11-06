@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
+    info,
     systemd::{self, data::UnitInfo},
     widget::unit_file_panel::dosini::Token,
 };
@@ -16,8 +17,30 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
     let mut text = String::new();
     fill_name_description(&mut text, unit);
 
-    let map = if unit.pathexist() {
-        match systemd::fetch_system_unit_info_native(&unit) {
+    let mut path_exists = unit.pathexists();
+
+    if !path_exists {
+        match systemd::get_unit_object_path(unit) {
+            Ok(object_path) => {
+                info!(
+                    "retreived object path for {:?}, object path {:?}",
+                    unit.primary(),
+                    unit.object_path()
+                );
+
+                unit.set_object_path(object_path);
+                path_exists = true;
+            }
+            Err(e) => warn!(
+                "Fail retreiving object path for {:?}, Error {:?}",
+                unit.primary(),
+                e
+            ),
+        }
+    }
+
+    let map = if path_exists {
+        match systemd::fetch_system_unit_info_native(unit) {
             Ok(m) => m,
             Err(e) => {
                 error!(
@@ -29,6 +52,11 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
             }
         }
     } else {
+        info!(
+            "path don't exist for {:?}, object path {:?}",
+            unit.primary(),
+            unit.object_path()
+        );
         let mut map = HashMap::new();
         let value = Value::Str("not loaded".into());
 
@@ -173,7 +201,7 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
     Some(since)
 }
 
-fn fill_description(text: &mut String, map: &HashMap<String, OwnedValue>, unit : &UnitInfo) {
+fn fill_description(text: &mut String, map: &HashMap<String, OwnedValue>, unit: &UnitInfo) {
     let value = get_value!(map, "Description");
     let description = value_str(value);
     fill_row(text, "Description:", description);

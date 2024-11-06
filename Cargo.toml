@@ -32,7 +32,8 @@ path = "build.rs"
 lto = true
 
 [dependencies]
-gtk = { version = "0.9", package = "gtk4", features = ["v4_14"] }
+gtk = { version = "0.9", package = "gtk4", features = ["v4_16"] }
+adw = { version = "0.7", package = "libadwaita", features = ["v1_6"] }
 log = "0.4"
 libc = "0.2"
 env_logger = "0.11.3"
@@ -43,7 +44,6 @@ zbus = "5"
 zvariant = "5"
 serde = "1.0"
 chrono = "0.4.38"
-adw = { version = "0.7", package = "libadwaita", features = ["v1_5"] }
 regex = "1.11.0"
 
 [dev-dependencies]

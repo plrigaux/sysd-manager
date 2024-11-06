@@ -60,7 +60,7 @@ pub mod imp {
         #[property(get)]
         pub(super) followed_unit: RwLock<String>,
 
-        #[property(get = Self::has_object_path, name = "pathexist", type = bool)]
+        #[property(get = Self::has_object_path, name = "pathexists", type = bool)]
         #[property(get, set)]
         pub(super) object_path: RwLock<String>,
         #[property(get, set, nullable, default = None)]
