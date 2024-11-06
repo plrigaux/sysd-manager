@@ -530,6 +530,7 @@ pub fn fetch_system_unit_info_native(
     let interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
     let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
 
+    debug!("properties {:?}", properties);
     Ok(properties)
 }
 

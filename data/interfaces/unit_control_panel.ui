@@ -38,7 +38,13 @@
           <object class="AdwSplitButton">
             <property name="dropdown-tooltip">Modes</property>
             <property name="popover">
-              <object class="GtkPopover"/>
+              <object class="GtkPopover">
+                <child>
+                  <object class="GtkBox" id="start_modes">
+                    <property name="orientation">vertical</property>
+                  </object>
+                </child>
+              </object>
             </property>
             <child>
               <object class="AdwButtonContent">

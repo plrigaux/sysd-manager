@@ -8,7 +8,11 @@ use gtk::{
 use log::{debug, error, info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::ActiveState},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{ActiveState, StartStopMode},
+    },
     widget::{
         journal::JournalPanel, kill_panel::KillPanel, unit_file_panel::UnitFilePanel,
         unit_info::UnitInfoPanel,
@@ -16,6 +20,7 @@ use crate::{
 };
 
 use super::controls;
+use strum::IntoEnumIterator;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
@@ -49,6 +54,9 @@ pub struct UnitControlPanelImpl {
 
     #[template_child]
     kill_panel: TemplateChild<KillPanel>,
+
+    #[template_child]
+    start_modes: TemplateChild<gtk::Box>,
 
     toast_overlay: OnceCell<adw::ToastOverlay>,
 
@@ -92,7 +100,26 @@ macro_rules! current_unit {
 
 impl ObjectImpl for UnitControlPanelImpl {
     fn constructed(&self) {
+        let default = StartStopMode::Fail;
         self.parent_constructed();
+
+        let mut ck_group : Option<gtk::CheckButton> = None;
+        for mode in StartStopMode::iter() {
+            let ck = gtk::CheckButton::builder().label(mode.as_str()).build();
+
+            if mode == default {
+                ck.set_active(true);
+            }
+
+            self.start_modes.append(&ck);
+
+            if ck_group.is_none() {
+                ck_group = Some(ck);
+            } else {
+                ck.set_group(ck_group.as_ref());
+            }
+            
+        }
     }
 }
 
@@ -174,7 +201,7 @@ impl UnitControlPanelImpl {
             return;
         };
 
-        if unit.pathexist() {
+        if unit.pathexists() {
             self.unit_info_panel.display_unit_info(&unit);
             return;
         }

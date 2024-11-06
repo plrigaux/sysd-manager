@@ -343,7 +343,7 @@ mod tests {
 
 
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum, EnumIter)]
 #[enum_type(name = "EnableUnitFileMode")]
 //#[allow(dead_code)]
 pub enum StartStopMode {
