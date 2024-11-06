@@ -36,8 +36,16 @@
         </child>
         <child>
           <object class="AdwSplitButton">
-            <property name="icon-name">media-playback-start-symbolic</property>
-            <property name="label">Sart</property>
+            <property name="dropdown-tooltip">Modes</property>
+            <property name="popover">
+              <object class="GtkPopover"/>
+            </property>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="icon-name">media-playback-start-symbolic</property>
+                <property name="label">Start</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>

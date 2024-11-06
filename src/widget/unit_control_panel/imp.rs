@@ -137,7 +137,7 @@ impl UnitControlPanelImpl {
 
         let start_results: Result<String, systemd::SystemdErrors> = systemd::start_unit(&unit);
 
-        self.start_restart(&unit, start_results, "start")
+        self.start_restart(&unit, start_results, "start", ActiveState::Active)
     }
 
     //Dry
@@ -146,17 +146,17 @@ impl UnitControlPanelImpl {
         unit: &UnitInfo,
         start_results: Result<String, systemd::SystemdErrors>,
         action: &str,
+        new_active_state: ActiveState,
     ) {
         let job_op = match start_results {
             Ok(job) => {
                 let info = format!("Unit \"{}\" has been {action}ed!", unit.primary());
-
                 info!("{info}");
 
                 let toast = Toast::new(&info);
                 self.toast_overlay.get().unwrap().add_toast(toast);
 
-                controls::update_active_state(&unit, ActiveState::Active);
+                controls::update_active_state(unit, new_active_state);
 
                 Some(job)
             }
@@ -196,18 +196,8 @@ impl UnitControlPanelImpl {
     fn button_stop_clicked(&self, _button: &gtk::Button) {
         let unit = current_unit!(self);
 
-        match systemd::stop_unit(&unit) {
-            Ok(_job) => {
-                let info = format!("Unit \"{}\" has been stopped!", unit.primary());
-                info!("{info}");
-                let toast = Toast::new(&info);
-                self.toast_overlay.get().unwrap().add_toast(toast);
-
-                self.unit_info_panel.display_unit_info(&unit);
-            }
-
-            Err(e) => error!("Can't stop the unit {}, because: {:?}", unit.primary(), e),
-        }
+        let stop_results = systemd::stop_unit(&unit);
+        self.start_restart(&unit, stop_results, "stop", ActiveState::Inactive)
     }
 
     #[template_callback]
@@ -215,7 +205,7 @@ impl UnitControlPanelImpl {
         let unit = current_unit!(self);
 
         let start_results = systemd::restart_unit(&unit);
-        self.start_restart(&unit, start_results, "restart")
+        self.start_restart(&unit, start_results, "restart", ActiveState::Active)
     }
 
     #[template_callback]
