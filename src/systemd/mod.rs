@@ -150,31 +150,49 @@ pub fn get_unit_object_path(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     sysdbus::get_unit_object_path(level, &unit.primary())
 }
 
-pub fn enable_unit_files(unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
+pub fn enable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
     let result = match PREFERENCES.enable_unit_file_mode() {
         EnableUnitFileMode::Command => match systemctl::enable_unit_files_path(&unit.primary()) {
-            Ok(_) => Ok(EnablementStatus::Enabled),
+            Ok(s) => Ok((EnablementStatus::Enabled, s)),
             Err(e) => Err(e),
         },
         EnableUnitFileMode::DBus => {
             let level: DbusLevel = PREFERENCES.dbus_level().into();
-            let _str_res = sysdbus::enable_unit_files(level, &unit.primary())?;
-            Ok(EnablementStatus::Enabled)
+            let msg_return = sysdbus::enable_unit_files(level, &unit.primary())?;
+
+            let msg = if msg_return.vec.len() > 0 {
+                let a = &msg_return.vec[0];
+                format!(
+                    "Created {} '{}' → '{}'",
+                    a.change_type, a.file_name, a.destination
+                )
+            } else {
+                "Success".to_string()
+            };
+
+            Ok((EnablementStatus::Enabled, msg))
         }
     };
     result
 }
 
-pub fn disable_unit_files(unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
+pub fn disable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
     let result = match PREFERENCES.enable_unit_file_mode() {
         EnableUnitFileMode::Command => match systemctl::disable_unit_files_path(&unit.primary()) {
-            Ok(_) => Ok(EnablementStatus::Disabled),
+            Ok(s) => Ok((EnablementStatus::Disabled, s)),
             Err(e) => Err(e),
         },
         EnableUnitFileMode::DBus => {
             let level: DbusLevel = PREFERENCES.dbus_level().into();
-            let _str_res = sysdbus::disable_unit_files(level, &unit.primary())?;
-            Ok(EnablementStatus::Disabled)
+            let msg_return = sysdbus::disable_unit_files(level, &unit.primary())?;
+
+            let msg = if msg_return.len() > 0 {
+                let a = &msg_return[0];
+                format!("{} '{}'", a.change_type, a.file_name,)
+            } else {
+                "Success".to_string()
+            };
+            Ok((EnablementStatus::Disabled, msg))
         }
     };
     result

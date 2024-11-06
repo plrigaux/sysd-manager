@@ -32,33 +32,26 @@ pub(super) fn switch_ablement_state_set(
         return;
     }
 
-    let (enable_result, action) = if state {
-        (systemd::enable_unit_files(&unit), EnablementStatus::Enabled)
+    let enable_result = if state {
+        systemd::enable_unit_files(&unit)
     } else {
-        (
-            systemd::disable_unit_files(&unit),
-            EnablementStatus::Disabled,
-        )
+        systemd::disable_unit_files(&unit)
     };
 
     match enable_result {
         Ok(enablement_status_ret) => {
-            let toast_info = format!(
-                "New active statut ({}) for unit {}",
-                enablement_status_ret.to_string(),
-                unit.primary(),
-            );
+            let toast_info = enablement_status_ret.1;
             info!("{toast_info}");
 
             let toast = Toast::new(&toast_info);
 
             toast_overlay.add_toast(toast);
 
+            let action = enablement_status_ret.0;
             unit.set_enable_status(action as u32);
 
             let enabled_new = action == EnablementStatus::Enabled;
             switch.set_state(enabled_new);
-        
         }
 
         Err(error) => {
@@ -67,6 +60,12 @@ pub(super) fn switch_ablement_state_set(
                 _ => format!("{:?}", error),
             };
 
+            let action = if state {
+                EnablementStatus::Enabled
+            } else {
+                EnablementStatus::Disabled
+            };
+            
             let toast_warn = format!(
                 "Action \"{:?}\" on unit \"{}\" FAILED!\n{:?}",
                 action,
@@ -86,7 +85,6 @@ pub(super) fn switch_ablement_state_set(
     //let unit_file_state =
     //    systemd::get_unit_file_state(&unit).unwrap_or(EnablementStatus::Unknown);
     //info!("New Status : {:?}", unit_file_state);
-
 
     handle_switch_sensivity(switch, unit, false);
 }
