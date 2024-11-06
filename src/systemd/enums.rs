@@ -339,3 +339,43 @@ mod tests {
         assert_eq!(kill.as_str(), kill.to_string())
     }
 }
+
+
+
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
+#[enum_type(name = "EnableUnitFileMode")]
+//#[allow(dead_code)]
+pub enum StartStopMode {
+    ///If "replace" the call will start the unit and its dependencies,
+    /// possibly replacing already queued jobs that conflict with this.
+    Replace,
+
+    ///If "fail" the call will start the unit and its dependencies, but will fail if this
+    ///would change an already queued job.
+    #[default]
+    Fail,
+
+    ///If "isolate" the call will start the unit in
+    ///question and terminate all units that aren't dependencies of it.
+    ///Note that "isolate" mode is invalid for method **StopUnit**.
+    Isolate,
+
+    ///If "ignore-dependencies" it will start a unit but ignore all its dependencies.
+    IgnoreDependencies,
+
+    ///If "ignore-requirements" it will start a unit but only ignore the requirement dependencies.
+    IgnoreRequirements,
+}
+
+impl StartStopMode {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            StartStopMode::Replace => "replace",
+            StartStopMode::Fail => "fail",
+            StartStopMode::Isolate => "isolate",
+            StartStopMode::IgnoreDependencies => "ignore-dependencies",
+            StartStopMode::IgnoreRequirements => "ignore-requirements",
+        }
+    }
+}

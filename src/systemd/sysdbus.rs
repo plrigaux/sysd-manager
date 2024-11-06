@@ -30,6 +30,7 @@ use crate::widget::preferences::data::DbusLevel;
 use super::enums::EnablementStatus;
 
 use super::enums::KillWho;
+use super::enums::StartStopMode;
 use super::SystemdErrors;
 use super::SystemdUnit;
 
@@ -50,40 +51,6 @@ const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFiles";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
-
-#[allow(dead_code)]
-enum StartMode {
-    ///If "replace" the call will start the unit and its dependencies,
-    /// possibly replacing already queued jobs that conflict with this.
-    Replace,
-
-    ///If "fail" the call will start the unit and its dependencies, but will fail if this
-    ///would change an already queued job.
-    Fail,
-
-    ///If "isolate" the call will start the unit in
-    ///question and terminate all units that aren't dependencies of it.
-    ///Note that "isolate" mode is invalid for method **StopUnit**.
-    Isolate,
-
-    ///If "ignore-dependencies" it will start a unit but ignore all its dependencies.
-    IgnoreDependencies,
-
-    ///If "ignore-requirements" it will start a unit but only ignore the requirement dependencies.
-    IgnoreRequirements,
-}
-
-impl StartMode {
-    fn as_str(&self) -> &'static str {
-        match self {
-            StartMode::Replace => "replace",
-            StartMode::Fail => "fail",
-            StartMode::Isolate => "isolate",
-            StartMode::IgnoreDependencies => "ignore-dependencies",
-            StartMode::IgnoreRequirements => "ignore-requirements",
-        }
-    }
-}
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
@@ -214,9 +181,9 @@ pub fn get_unit_file_state_path(
     )?;
 
     let body = message.body();
-    let enablement_status: zvariant::Str = body.deserialize()?;
+    let enablement_status: &str = body.deserialize()?;
 
-    Ok(EnablementStatus::new(enablement_status.as_str()))
+    Ok(EnablementStatus::new(enablement_status))
 }
 
 pub fn list_units_description_and_state(
@@ -264,18 +231,50 @@ fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
 }
 
 /// Takes a unit name as input and attempts to start it
-pub(super) fn start_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
-    systemd_action(METHOD_START_UNIT, level, unit, StartMode::Fail)
+pub(super) fn start_unit(level: DbusLevel, unit_name: &str) -> Result<String, SystemdErrors> {
+    let mode = StartStopMode::Fail;
+    send_disenable_message(
+        level,
+        METHOD_START_UNIT,
+        &(unit_name, mode.as_str()),
+        handle_start_stop_answer,
+    )
+}
+
+fn handle_start_stop_answer(
+    method: &str,
+    return_message: &Message,
+) -> Result<String, SystemdErrors> {
+    let body = return_message.body();
+
+    let job_path: zvariant::ObjectPath = body.deserialize()?;
+
+    let created_job_object = job_path.to_string();
+    info!("{method} SUCCESS, response job id {created_job_object}");
+
+    return Ok(created_job_object);
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub(super) fn stop_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
-    systemd_action(METHOD_STOP_UNIT, level, unit, StartMode::Fail)
+pub(super) fn stop_unit(level: DbusLevel, unit_name: &str) -> Result<String, SystemdErrors> {
+    let mode = StartStopMode::Fail;
+    send_disenable_message(
+        level,
+        METHOD_STOP_UNIT,
+        &(unit_name, mode.as_str()),
+        handle_start_stop_answer,
+    )
 }
 
 /// Enqeues a start job, and possibly depending jobs.
 pub(super) fn restart_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
-    systemd_action(METHOD_RESTART_UNIT, level, unit, StartMode::Fail)
+    let mode = StartStopMode::Fail;
+    send_disenable_message(
+        level,
+        METHOD_RESTART_UNIT,
+        &(unit, mode.as_str()),
+        handle_start_stop_answer,
+    )
 }
 
 #[derive(Debug, Type, Deserialize)]
@@ -295,9 +294,9 @@ pub struct EnableUnitFilesReturn {
 
 pub(super) fn enable_unit_files(
     level: DbusLevel,
-    unit_file: &str,
+    unit_name: &str,
 ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    let v = vec![unit_file];
+    let v = vec![unit_name];
 
     fn handle_answer(
         _method: &str,
@@ -324,9 +323,9 @@ pub(super) fn enable_unit_files(
 
 pub(super) fn disable_unit_files(
     level: DbusLevel,
-    unit_file: &str,
+    unit_name: &str,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    let v = vec![unit_file];
+    let v = vec![unit_name];
 
     fn handle_answer(
         _method: &str,
@@ -414,77 +413,24 @@ pub fn get_unit_object_path(level: DbusLevel, unit: &str) -> Result<String, Syst
     Ok(object_path.as_str().to_owned())
 }
 
-fn systemd_action(
-    method: &str,
-    level: DbusLevel,
-    unit: &str,
-    mode: StartMode,
-) -> Result<String, SystemdErrors> {
-    let connection = get_connection(level)?;
-
-    let send_message = Message::method_call(PATH_SYSTEMD, method)?
-        .with_flags(Flags::AllowInteractiveAuth)?
-        .destination(DESTINATION_SYSTEMD)?
-        .interface(INTERFACE_SYSTEMD_MANAGER)?
-        .build(&(unit, mode.as_str()))?;
-
-    connection.send(&send_message)?;
-
-    let mut stream = MessageIterator::from(connection);
-
-    while let Some(message_res) = stream.next() {
-        debug!("Message response {:?}", message_res);
-        match message_res {
-            Ok(return_message) => match return_message.message_type() {
-                zbus::message::Type::MethodReturn => {
-                    let body = return_message.body();
-
-                    let job_path: zvariant::ObjectPath = body.deserialize()?;
-
-                    let created_job_object = job_path.to_string();
-                    info!("{method} SUCCESS, response job id {created_job_object}");
-
-                    return Ok(created_job_object);
-                }
-                zbus::message::Type::MethodCall => {
-                    warn!("Not supposed to happen");
-                    break;
-                }
-                zbus::message::Type::Error => {
-                    let error = zbus::Error::from(return_message);
-                    return Err(SystemdErrors::from(error));
-                }
-                zbus::message::Type::Signal => continue,
-            },
-            Err(e) => return Err(SystemdErrors::from(e)),
-        };
-        //unreaceble
-        //break;
-    }
-
-    warn!("{:?} ????, response supposed to be Unreachable", method);
-    Ok(String::from("Unreachable"))
-}
-
 pub(super) fn kill_unit(
     level: DbusLevel,
-    unit: &str,
+    unit_name: &str,
     mode: KillWho,
     signal: i32,
 ) -> Result<(), SystemdErrors> {
-    let connection = get_connection(level)?;
+    fn handle_answer(_method: &str, _return_message: &Message) -> Result<(), SystemdErrors> {
+        info!("Kill SUCCESS");
 
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
+        return Ok(());
+    }
+
+    send_disenable_message(
+        level,
         METHOD_KILL_UNIT,
-        &(unit, mode.as_str(), signal),
-    )?;
-
-    info!("Kill SUCCESS, response {message}");
-
-    Ok(())
+        &(unit_name, mode.as_str(), signal),
+        handle_answer,
+    )
 }
 
 fn convert_to_string(value: &zvariant::Value) -> String {
