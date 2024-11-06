@@ -38,16 +38,16 @@ pub struct UnitControlPanelImpl {
     ablement_switch: TemplateChild<gtk::Switch>,
 
     #[template_child]
-    start_button: TemplateChild<gtk::Button>,
+    start_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
-    stop_button: TemplateChild<gtk::Button>,
+    stop_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
     kill_button: TemplateChild<gtk::Button>,
 
     #[template_child]
-    restart_button: TemplateChild<gtk::Button>,
+    restart_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
     side_overlay: TemplateChild<adw::OverlaySplitView>,
@@ -57,6 +57,12 @@ pub struct UnitControlPanelImpl {
 
     #[template_child]
     start_modes: TemplateChild<gtk::Box>,
+
+    #[template_child]
+    stop_modes: TemplateChild<gtk::Box>,
+
+    #[template_child]
+    restart_modes: TemplateChild<gtk::Box>,
 
     toast_overlay: OnceCell<adw::ToastOverlay>,
 
@@ -100,26 +106,11 @@ macro_rules! current_unit {
 
 impl ObjectImpl for UnitControlPanelImpl {
     fn constructed(&self) {
-        let default = StartStopMode::Fail;
         self.parent_constructed();
 
-        let mut ck_group : Option<gtk::CheckButton> = None;
-        for mode in StartStopMode::iter() {
-            let ck = gtk::CheckButton::builder().label(mode.as_str()).build();
-
-            if mode == default {
-                ck.set_active(true);
-            }
-
-            self.start_modes.append(&ck);
-
-            if ck_group.is_none() {
-                ck_group = Some(ck);
-            } else {
-                ck.set_group(ck_group.as_ref());
-            }
-            
-        }
+        self.set_modes(&self.start_modes, false);
+        self.set_modes(&self.stop_modes, true);
+        self.set_modes(&self.restart_modes,false);
     }
 }
 
@@ -159,7 +150,7 @@ impl UnitControlPanelImpl {
     }
 
     #[template_callback]
-    fn button_start_clicked(&self, _button: &gtk::Button) {
+    fn button_start_clicked(&self, _button: &adw::SplitButton) {
         let unit = current_unit!(self);
 
         let start_results: Result<String, systemd::SystemdErrors> = systemd::start_unit(&unit);
@@ -220,7 +211,7 @@ impl UnitControlPanelImpl {
     }
 
     #[template_callback]
-    fn button_stop_clicked(&self, _button: &gtk::Button) {
+    fn button_stop_clicked(&self, _button: &adw::SplitButton) {
         let unit = current_unit!(self);
 
         let stop_results = systemd::stop_unit(&unit);
@@ -228,7 +219,7 @@ impl UnitControlPanelImpl {
     }
 
     #[template_callback]
-    fn button_restart_clicked(&self, _button: &gtk::Button) {
+    fn button_restart_clicked(&self, _button: &adw::SplitButton) {
         let unit = current_unit!(self);
 
         let start_results = systemd::restart_unit(&unit);
@@ -272,6 +263,31 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.set_dark(is_dark);
         self.unit_info_panel.set_dark(is_dark);
         self.unit_journal_panel.set_dark(is_dark);
+    }
+
+    fn set_modes(&self, modes_box: &gtk::Box, is_stop_mode : bool) {
+        let default = StartStopMode::Fail;
+        let mut ck_group: Option<gtk::CheckButton> = None;
+        for mode in StartStopMode::iter() {
+
+            if is_stop_mode && mode == StartStopMode::Isolate {
+                continue;
+            }
+
+            let ck = gtk::CheckButton::builder().label(mode.as_str()).build();
+
+            if mode == default {
+                ck.set_active(true);
+            }
+
+            modes_box.append(&ck);
+
+            if ck_group.is_none() {
+                ck_group = Some(ck);
+            } else {
+                ck.set_group(ck_group.as_ref());
+            }
+        }
     }
 }
 
