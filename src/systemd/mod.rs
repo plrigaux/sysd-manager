@@ -1,7 +1,6 @@
 pub mod analyze;
 pub mod data;
 mod sysdbus;
-mod systemctl;
 
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
@@ -19,7 +18,7 @@ use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
 
 use crate::widget::preferences::data::PREFERENCES;
-use crate::widget::preferences::data::{DbusLevel, EnableUnitFileMode};
+use crate::widget::preferences::data::DbusLevel;
 
 pub mod enums;
 
@@ -151,51 +150,33 @@ pub fn get_unit_object_path(unit: &UnitInfo) -> Result<String, SystemdErrors> {
 }
 
 pub fn enable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
-    let result = match PREFERENCES.enable_unit_file_mode() {
-        EnableUnitFileMode::Command => match systemctl::enable_unit_files_path(&unit.primary()) {
-            Ok(s) => Ok((EnablementStatus::Enabled, s)),
-            Err(e) => Err(e),
-        },
-        EnableUnitFileMode::DBus => {
-            let level: DbusLevel = PREFERENCES.dbus_level().into();
-            let msg_return = sysdbus::enable_unit_files(level, &unit.primary())?;
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let msg_return = sysdbus::enable_unit_files(level, &unit.primary())?;
 
-            let msg = if msg_return.vec.len() > 0 {
-                let a = &msg_return.vec[0];
-                format!(
-                    "Created {} '{}' → '{}'",
-                    a.change_type, a.file_name, a.destination
-                )
-            } else {
-                "Success".to_string()
-            };
-
-            Ok((EnablementStatus::Enabled, msg))
-        }
+    let msg = if msg_return.vec.len() > 0 {
+        let a = &msg_return.vec[0];
+        format!(
+            "Created {} '{}' → '{}'",
+            a.change_type, a.file_name, a.destination
+        )
+    } else {
+        "Success".to_string()
     };
-    result
+
+    Ok((EnablementStatus::Enabled, msg))
 }
 
 pub fn disable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
-    let result = match PREFERENCES.enable_unit_file_mode() {
-        EnableUnitFileMode::Command => match systemctl::disable_unit_files_path(&unit.primary()) {
-            Ok(s) => Ok((EnablementStatus::Disabled, s)),
-            Err(e) => Err(e),
-        },
-        EnableUnitFileMode::DBus => {
-            let level: DbusLevel = PREFERENCES.dbus_level().into();
-            let msg_return = sysdbus::disable_unit_files(level, &unit.primary())?;
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let msg_return = sysdbus::disable_unit_files(level, &unit.primary())?;
 
-            let msg = if msg_return.len() > 0 {
-                let a = &msg_return[0];
-                format!("{} '{}'", a.change_type, a.file_name,)
-            } else {
-                "Success".to_string()
-            };
-            Ok((EnablementStatus::Disabled, msg))
-        }
+    let msg = if msg_return.len() > 0 {
+        let a = &msg_return[0];
+        format!("{} '{}'", a.change_type, a.file_name,)
+    } else {
+        "Success".to_string()
     };
-    result
+    Ok((EnablementStatus::Disabled, msg))
 }
 
 /// Read the unit file and return it's contents so that we can display it

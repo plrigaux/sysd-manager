@@ -20,7 +20,6 @@ pub const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
-pub const KEY_PREF_ENABLE_UNIT_FILE_MODE: &str = "pref-enable-unit-file-mode";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum DbusLevel {
@@ -110,7 +109,6 @@ pub struct Preferences {
     journal_colors: RwLock<bool>,
     unit_file_colors: RwLock<bool>,
     app_first_connection: RwLock<bool>,
-    enable_unit_file_mode: RwLock<EnableUnitFileMode>,
 }
 
 impl Preferences {
@@ -119,14 +117,12 @@ impl Preferences {
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
-        let enable_unit_file_mode = settings.string(KEY_PREF_ENABLE_UNIT_FILE_MODE).into();
 
         Preferences {
             dbus_level: RwLock::new(level),
             journal_colors: RwLock::new(journal_colors),
             unit_file_colors: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
-            enable_unit_file_mode: RwLock::new(enable_unit_file_mode),
         }
     }
 
@@ -146,22 +142,11 @@ impl Preferences {
         *self.app_first_connection.read().unwrap()
     }
 
-    pub fn enable_unit_file_mode(&self) -> EnableUnitFileMode {
-        *self.enable_unit_file_mode.read().unwrap()
-    }
-
     pub fn set_dbus_level(&self, dbus_level: DbusLevel) {
         info!("set_dbus_level: {}", dbus_level.as_str());
 
         let mut self_dbus_level = self.dbus_level.write().expect("supposed to write");
         *self_dbus_level = dbus_level;
-    }
-
-    pub fn set_enable_unit_file_mode(&self, enable_unit_file_mode: EnableUnitFileMode) {
-        info!("enable_unit_file_mode: {}", enable_unit_file_mode.as_str());
-
-        let mut self_enable_unit_file_mode = self.enable_unit_file_mode.write().expect("supposed to write");
-        *self_enable_unit_file_mode = enable_unit_file_mode;
     }
 
     pub fn set_journal_colors(&self, display: bool) {

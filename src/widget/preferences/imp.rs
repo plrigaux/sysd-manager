@@ -1,4 +1,3 @@
-use adw::prelude::ComboRowExt;
 use gio::Settings;
 
 use adw::subclass::prelude::*;
@@ -10,10 +9,11 @@ use std::cell::OnceCell;
 
 use crate::systemd_gui;
 use crate::widget::preferences::data::{
-    DbusLevel, KEY_DBUS_LEVEL, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_ENABLE_UNIT_FILE_MODE, KEY_PREF_JOURNAL_COLORS, KEY_PREF_UNIT_FILE_HIGHLIGHTING
+    DbusLevel, KEY_DBUS_LEVEL, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS,
+    KEY_PREF_UNIT_FILE_HIGHLIGHTING,
 };
 
-use super::data::{EnableUnitFileMode, PREFERENCES};
+use super::data::PREFERENCES;
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
@@ -31,9 +31,6 @@ pub struct PreferencesDialog {
 
     #[template_child]
     pub preference_banner: TemplateChild<adw::Banner>,
-
-    #[template_child]
-    enable_unit_file_mode: TemplateChild<adw::ComboRow>,
 }
 
 #[gtk::template_callbacks]
@@ -68,31 +65,6 @@ impl PreferencesDialog {
                     );
                 });
         }
-
-        {
-            let settings = settings.clone();
-            self.enable_unit_file_mode
-                .connect_selected_notify(move |combo_row| {
-                    let idx = combo_row.selected();
-
-                    info!("Values Selected {:?}", idx);
-
-                    let mode: EnableUnitFileMode = idx.into();
-
-                    if let Err(e) =
-                        settings.set_string(KEY_PREF_ENABLE_UNIT_FILE_MODE, mode.as_str())
-                    {
-                        warn!("{}", e)
-                    }
-
-                    PREFERENCES.set_enable_unit_file_mode(mode);
-
-                    info!(
-                        "Save setting '{KEY_PREF_ENABLE_UNIT_FILE_MODE}' with value {:?}",
-                        mode.as_str()
-                    );
-                });
-        }
     }
 
     fn settings(&self) -> &gio::Settings {
@@ -106,8 +78,6 @@ impl PreferencesDialog {
         let journal_colors = PREFERENCES.journal_colors();
         let unit_file_colors = PREFERENCES.unit_file_colors();
         let is_app_first_connection = PREFERENCES.is_app_first_connection();
-        let enable_unit_file_mode = PREFERENCES.enable_unit_file_mode();
-
 
         self.dbus_level_dropdown.set_selected(level as u32);
 
@@ -123,11 +93,7 @@ impl PreferencesDialog {
         self.preference_banner.set_title(
             "It's your first connection
 You can set the application's Dbus level to <u>System</u> if you want to see all Systemd units.",
-
-
         );
-
-        self.enable_unit_file_mode.set_selected(enable_unit_file_mode as u32);
     }
 
     #[template_callback]
@@ -161,7 +127,6 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 
         true
     }
-
 }
 
 #[glib::object_subclass]
@@ -185,12 +150,6 @@ impl ObjectImpl for PreferencesDialog {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let model = gtk::StringList::new(&[
-            EnableUnitFileMode::Command.as_str(),
-            EnableUnitFileMode::DBus.as_str(),
-        ]);
-
-        self.enable_unit_file_mode.set_model(Some(&model));
         // Load latest window state
         self.setup_settings();
         self.load_preferences_values();
