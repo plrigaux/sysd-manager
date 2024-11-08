@@ -231,8 +231,11 @@ fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
 }
 
 /// Takes a unit name as input and attempts to start it
-pub(super) fn start_unit(level: DbusLevel, unit_name: &str) -> Result<String, SystemdErrors> {
-    let mode = StartStopMode::Fail;
+pub(super) fn start_unit(
+    level: DbusLevel,
+    unit_name: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
     send_disenable_message(
         level,
         METHOD_START_UNIT,
@@ -256,8 +259,11 @@ fn handle_start_stop_answer(
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub(super) fn stop_unit(level: DbusLevel, unit_name: &str) -> Result<String, SystemdErrors> {
-    let mode = StartStopMode::Fail;
+pub(super) fn stop_unit(
+    level: DbusLevel,
+    unit_name: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
     send_disenable_message(
         level,
         METHOD_STOP_UNIT,
@@ -267,8 +273,11 @@ pub(super) fn stop_unit(level: DbusLevel, unit_name: &str) -> Result<String, Sys
 }
 
 /// Enqeues a start job, and possibly depending jobs.
-pub(super) fn restart_unit(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
-    let mode = StartStopMode::Fail;
+pub(super) fn restart_unit(
+    level: DbusLevel,
+    unit: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
     send_disenable_message(
         level,
         METHOD_RESTART_UNIT,
@@ -552,7 +561,7 @@ mod tests {
     #[ignore = "need a connection to a service"]
     #[test]
     fn stop_service_test() -> Result<(), SystemdErrors> {
-        stop_unit(DbusLevel::System, TEST_SERVICE)?;
+        stop_unit(DbusLevel::System, TEST_SERVICE, StartStopMode::Fail)?;
         Ok(())
     }
 

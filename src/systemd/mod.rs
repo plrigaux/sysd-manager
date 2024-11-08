@@ -11,7 +11,7 @@ use std::string::FromUtf8Error;
 use std::sync::LazyLock;
 
 use data::UnitInfo;
-use enums::{EnablementStatus, KillWho, UnitType};
+use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
 use gtk::glib::GString;
 use log::{error, info, warn};
 use std::fs::{self, File};
@@ -129,20 +129,20 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
 }
 
 /// Takes a unit name as input and attempts to start it
-pub fn start_unit(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+pub fn start_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::start_unit(level, &unit.primary())
+    sysdbus::start_unit(level, &unit.primary(), mode)
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub fn stop_unit(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+pub fn stop_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::stop_unit(level, &unit.primary())
+    sysdbus::stop_unit(level, &unit.primary(), mode)
 }
 
-pub fn restart_unit(unit: &UnitInfo) -> Result<String, SystemdErrors> {
+pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::restart_unit(level, &unit.primary())
+    sysdbus::restart_unit(level, &unit.primary(), mode)
 }
 
 pub fn get_unit_object_path(unit: &UnitInfo) -> Result<String, SystemdErrors> {

@@ -1,9 +1,10 @@
-use glib::Object;
+//use glib::Object;
 use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
 
 mod controls;
+mod enums;
 mod imp;
 
 glib::wrapper! {
@@ -13,11 +14,6 @@ glib::wrapper! {
 }
 
 impl UnitControlPanel {
-    pub fn new(app: &adw::Application) -> Self {
-        // Create new window
-        Object::builder().property("application", app).build()
-    }
-
     pub fn selection_change(&self, unit: &UnitInfo) {
         self.imp().selection_change(unit);
     }

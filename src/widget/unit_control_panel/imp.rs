@@ -14,16 +14,17 @@ use crate::{
         enums::{ActiveState, StartStopMode},
     },
     widget::{
-        journal::JournalPanel, kill_panel::KillPanel, unit_file_panel::UnitFilePanel,
-        unit_info::UnitInfoPanel,
+        journal::JournalPanel, kill_panel::KillPanel,
+        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
 };
 
-use super::controls;
+use super::{controls, enums::UnitContolType, UnitControlPanel};
 use strum::IntoEnumIterator;
 
-#[derive(Default, gtk::CompositeTemplate)]
+#[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
+#[properties(wrapper_type = super::UnitControlPanel)]
 pub struct UnitControlPanelImpl {
     #[template_child]
     unit_info_panel: TemplateChild<UnitInfoPanel>,
@@ -69,6 +70,13 @@ pub struct UnitControlPanelImpl {
     current_unit: RefCell<Option<UnitInfo>>,
 
     search_bar: RefCell<gtk::SearchBar>,
+
+    #[property(get, set)]
+    pub start_mode: RefCell<String>,
+    #[property(get, set)]
+    pub stop_mode: RefCell<String>,
+    #[property(get, set)]
+    pub restart_mode: RefCell<String>,
 }
 
 #[glib::object_subclass]
@@ -104,13 +112,14 @@ macro_rules! current_unit {
     }};
 }
 
+#[glib::derived_properties]
 impl ObjectImpl for UnitControlPanelImpl {
     fn constructed(&self) {
         self.parent_constructed();
 
-        self.set_modes(&self.start_modes, false);
-        self.set_modes(&self.stop_modes, true);
-        self.set_modes(&self.restart_modes,false);
+        self.set_modes(&self.start_modes, UnitContolType::Start);
+        self.set_modes(&self.stop_modes, UnitContolType::Stop);
+        self.set_modes(&self.restart_modes, UnitContolType::Restart);
     }
 }
 
@@ -153,9 +162,17 @@ impl UnitControlPanelImpl {
     fn button_start_clicked(&self, _button: &adw::SplitButton) {
         let unit = current_unit!(self);
 
-        let start_results: Result<String, systemd::SystemdErrors> = systemd::start_unit(&unit);
+        let mode: StartStopMode = (&self.start_mode).into();
 
-        self.start_restart(&unit, start_results, "start", ActiveState::Active)
+        let start_results: Result<String, systemd::SystemdErrors> =
+            systemd::start_unit(&unit, mode);
+
+        self.start_restart(
+            &unit,
+            start_results,
+            UnitContolType::Start,
+            ActiveState::Active,
+        )
     }
 
     //Dry
@@ -163,12 +180,16 @@ impl UnitControlPanelImpl {
         &self,
         unit: &UnitInfo,
         start_results: Result<String, systemd::SystemdErrors>,
-        action: &str,
+        action: UnitContolType,
         new_active_state: ActiveState,
     ) {
         let job_op = match start_results {
             Ok(job) => {
-                let info = format!("Unit \"{}\" has been {action}ed!", unit.primary());
+                let info = format!(
+                    "Unit \"{}\" has been {}ed!",
+                    unit.primary(),
+                    action.as_str()
+                );
                 info!("{info}");
 
                 let toast = Toast::new(&info);
@@ -180,7 +201,8 @@ impl UnitControlPanelImpl {
             }
             Err(e) => {
                 error!(
-                    "Can't {action} the unit {:?}, because: {:?}",
+                    "Can't {} the unit {:?}, because: {:?}",
+                    action.as_str(),
                     unit.primary(),
                     e
                 );
@@ -213,17 +235,27 @@ impl UnitControlPanelImpl {
     #[template_callback]
     fn button_stop_clicked(&self, _button: &adw::SplitButton) {
         let unit = current_unit!(self);
-
-        let stop_results = systemd::stop_unit(&unit);
-        self.start_restart(&unit, stop_results, "stop", ActiveState::Inactive)
+        let mode: StartStopMode = (&self.stop_mode).into();
+        let stop_results = systemd::stop_unit(&unit, mode);
+        self.start_restart(
+            &unit,
+            stop_results,
+            UnitContolType::Stop,
+            ActiveState::Inactive,
+        )
     }
 
     #[template_callback]
     fn button_restart_clicked(&self, _button: &adw::SplitButton) {
         let unit = current_unit!(self);
-
-        let start_results = systemd::restart_unit(&unit);
-        self.start_restart(&unit, start_results, "restart", ActiveState::Active)
+        let mode: StartStopMode = (&self.restart_mode).into();
+        let start_results = systemd::restart_unit(&unit, mode);
+        self.start_restart(
+            &unit,
+            start_results,
+            UnitContolType::Restart,
+            ActiveState::Active,
+        )
     }
 
     #[template_callback]
@@ -265,22 +297,32 @@ impl UnitControlPanelImpl {
         self.unit_journal_panel.set_dark(is_dark);
     }
 
-    fn set_modes(&self, modes_box: &gtk::Box, is_stop_mode : bool) {
+    fn set_modes(&self, modes_box: &gtk::Box, control_type: UnitContolType) {
         let default = StartStopMode::Fail;
         let mut ck_group: Option<gtk::CheckButton> = None;
-        for mode in StartStopMode::iter() {
 
-            if is_stop_mode && mode == StartStopMode::Isolate {
+        for mode in StartStopMode::iter() {
+            if control_type == UnitContolType::Stop && mode == StartStopMode::Isolate {
                 continue;
             }
 
             let ck = gtk::CheckButton::builder().label(mode.as_str()).build();
 
+            modes_box.append(&ck);
+
+            let source_property = format!("{}_mode", control_type.as_str());
+            let unit_control_panel = self.obj();
+            ck.bind_property(
+                "active",
+                &unit_control_panel as &UnitControlPanel,
+                &source_property,
+            )
+            .transform_to(move |_, _active: bool| Some(mode.as_str()))
+            .build();
+
             if mode == default {
                 ck.set_active(true);
             }
-
-            modes_box.append(&ck);
 
             if ck_group.is_none() {
                 ck_group = Some(ck);

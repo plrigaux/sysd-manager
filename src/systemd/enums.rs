@@ -3,6 +3,7 @@ use gtk::glib;
 use gtk::glib::EnumValue;
 use log::info;
 use log::warn;
+use std::cell::RefCell;
 use std::fmt::Display;
 use strum::EnumIter;
 
@@ -271,7 +272,7 @@ impl From<u32> for KillWho {
             0 => KillWho::Main,
             1 => KillWho::Control,
             2 => KillWho::All,
-            _ => KillWho::Main
+            _ => KillWho::Main,
         }
     }
 }
@@ -340,9 +341,6 @@ mod tests {
     }
 }
 
-
-
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum, EnumIter)]
 #[enum_type(name = "EnableUnitFileMode")]
 //#[allow(dead_code)]
@@ -371,11 +369,31 @@ pub enum StartStopMode {
 impl StartStopMode {
     pub fn as_str(&self) -> &'static str {
         match self {
-            StartStopMode::Replace => "replace",
             StartStopMode::Fail => "fail",
+            StartStopMode::Replace => "replace",
             StartStopMode::Isolate => "isolate",
             StartStopMode::IgnoreDependencies => "ignore-dependencies",
             StartStopMode::IgnoreRequirements => "ignore-requirements",
         }
+    }
+}
+
+impl From<&RefCell<String>> for StartStopMode {
+    fn from(value: &RefCell<String>) -> Self {
+        let s = value.borrow();
+
+        let mode = match s.as_str() {
+            "fail" => StartStopMode::Fail,
+            "replace" => StartStopMode::Replace,
+            "isolate" => StartStopMode::Isolate,
+            "ignore-dependencies" => StartStopMode::IgnoreDependencies,
+            "ignore-requirements" => StartStopMode::IgnoreRequirements,
+
+            unknown => {
+                warn!("unknown  mode {:?}", unknown);
+                StartStopMode::Fail
+            }
+        };
+        mode
     }
 }
