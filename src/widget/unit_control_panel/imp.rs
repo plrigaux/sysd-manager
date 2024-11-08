@@ -14,8 +14,8 @@ use crate::{
         enums::{ActiveState, StartStopMode},
     },
     widget::{
-        journal::JournalPanel, kill_panel::KillPanel,
-        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
+        journal::JournalPanel, kill_panel::KillPanel, unit_file_panel::UnitFilePanel,
+        unit_info::UnitInfoPanel,
     },
 };
 
@@ -172,6 +172,7 @@ impl UnitControlPanelImpl {
             start_results,
             UnitContolType::Start,
             ActiveState::Active,
+            mode,
         )
     }
 
@@ -182,13 +183,15 @@ impl UnitControlPanelImpl {
         start_results: Result<String, systemd::SystemdErrors>,
         action: UnitContolType,
         new_active_state: ActiveState,
+        mode: StartStopMode,
     ) {
         let job_op = match start_results {
             Ok(job) => {
                 let info = format!(
-                    "Unit \"{}\" has been {}ed!",
+                    "Unit \"{}\" has been {}ed with mode {:?}!",
                     unit.primary(),
-                    action.as_str()
+                    action.as_str(),
+                    mode.as_str()
                 );
                 info!("{info}");
 
@@ -242,6 +245,7 @@ impl UnitControlPanelImpl {
             stop_results,
             UnitContolType::Stop,
             ActiveState::Inactive,
+            mode,
         )
     }
 
@@ -255,6 +259,7 @@ impl UnitControlPanelImpl {
             start_results,
             UnitContolType::Restart,
             ActiveState::Active,
+            mode,
         )
     }
 
