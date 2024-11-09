@@ -64,7 +64,7 @@ https://hughsie.github.io/oars/index.html
     <release version="1.0.0" date="2024-11-08">
       <description>
         <ul>
-          <li>Provide the option to change the action Start, Stop and Restart mode</li>
+          <li>Provide the option to change mode for Start, Stop and Restart actions</li>
           <li>If unit's object path doesn't exist it asks it again</li>
           <li>Add keyboard shortcut Ctrl-f for opening search input</li>
           <li>Fix enable disable switch</li>

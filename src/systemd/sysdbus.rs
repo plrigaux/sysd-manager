@@ -9,6 +9,7 @@ use log::debug;
 /* use dbus::arg::messageitem::MessageItem;
 use dbus::Message; */
 use log::info;
+use log::trace;
 use log::warn;
 use serde::Deserialize;
 use zbus::blocking::fdo;
@@ -35,8 +36,8 @@ use super::SystemdErrors;
 use super::SystemdUnit;
 
 const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
-const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
-const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
+pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
+pub(super) const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
 const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
 const METHOD_LIST_UNIT: &str = "ListUnits";
@@ -501,15 +502,20 @@ fn convert_to_string(value: &zvariant::Value) -> String {
     str_value
 }
 
-pub fn fetch_system_info(level: DbusLevel) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    fetch_system_unit_info(level, PATH_SYSTEMD)
+pub fn fetch_system_info(
+    level: DbusLevel,
+    unit_type: UnitType,
+) -> Result<BTreeMap<String, String>, SystemdErrors> {
+    fetch_system_unit_info(level, PATH_SYSTEMD, unit_type)
 }
 
 pub fn fetch_system_unit_info(
     level: DbusLevel,
     path: &str,
+    unit_type: UnitType,
 ) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let properties: HashMap<String, OwnedValue> = fetch_system_unit_info_native(level, path)?;
+    let properties: HashMap<String, OwnedValue> =
+        fetch_system_unit_info_native(level, path, unit_type)?;
 
     let mut map = BTreeMap::new();
 
@@ -526,6 +532,7 @@ pub fn fetch_system_unit_info(
 pub fn fetch_system_unit_info_native(
     level: DbusLevel,
     path: &str,
+    unit_type: UnitType,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let connection = get_connection(level)?;
 
@@ -536,11 +543,23 @@ pub fn fetch_system_unit_info_native(
             .path(path)?
             .build()?;
 
-    let interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
-    let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
+    let unit_interface = unit_type.interface();
 
-    debug!("properties {:?}", properties);
-    Ok(properties)
+    let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+
+    let mut unit_properties: HashMap<String, OwnedValue> =
+        properties_proxy.get_all(unit_interface_name)?;
+
+    if INTERFACE_SYSTEMD_UNIT != unit_interface {
+        let interface_name = InterfaceName::try_from(unit_interface).unwrap();
+
+        let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
+
+        unit_properties.extend(properties);
+    }
+
+    trace!("properties {:?}", unit_properties);
+    Ok(unit_properties)
 }
 
 #[cfg(test)]
@@ -638,6 +657,7 @@ mod tests {
         let btree_map = fetch_system_unit_info(
             DbusLevel::System,
             "/org/freedesktop/systemd1/unit/tiny_5fdaemon_2eservice",
+            UnitType::Service,
         )?;
 
         debug!("ALL PARAM: {:#?}", btree_map);
@@ -659,6 +679,20 @@ mod tests {
         init();
         let _res = disable_unit_files(DbusLevel::System, TEST_SERVICE)?;
 
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_fetch_info() -> Result<(), SystemdErrors> {
+        init();
+
+        let path = get_unit_object_path(DbusLevel::System, TEST_SERVICE)?;
+
+        println!("unit {} Path {}", TEST_SERVICE, path);
+        let map = fetch_system_unit_info(DbusLevel::System, &path, UnitType::Service)?;
+
+        println!("{:#?}", map);
         Ok(())
     }
 }

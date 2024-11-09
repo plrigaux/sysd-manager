@@ -17,8 +17,8 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
 
-use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::preferences::data::DbusLevel;
+use crate::widget::preferences::data::PREFERENCES;
 
 pub mod enums;
 
@@ -392,19 +392,22 @@ fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::fetch_system_info(level)
+    let unit_type: UnitType = UnitType::Unknown("SystemD".to_string());
+    sysdbus::fetch_system_info(level, unit_type)
 }
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::fetch_system_unit_info(level, &unit.object_path())
+    let unit_type: UnitType = UnitType::new(&unit.unit_type());
+    sysdbus::fetch_system_unit_info(level, &unit.object_path(), unit_type)
 }
 
 pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::fetch_system_unit_info_native(level, &unit.object_path())
+    let unit_type: UnitType = UnitType::new(&unit.unit_type());
+    sysdbus::fetch_system_unit_info_native(level, &unit.object_path(), unit_type)
 }
 
 pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {

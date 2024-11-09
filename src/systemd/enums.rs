@@ -7,6 +7,9 @@ use std::cell::RefCell;
 use std::fmt::Display;
 use strum::EnumIter;
 
+use super::sysdbus::INTERFACE_SYSTEMD_MANAGER;
+use super::sysdbus::INTERFACE_SYSTEMD_UNIT;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default)]
 pub enum EnablementStatus {
     #[default]
@@ -172,10 +175,12 @@ pub enum UnitType {
     Scope,
     Service,
     Slice,
+    Snapshot,
     Socket,
     Swap,
     Target,
     Timer,
+    Manager,
     Unknown(String),
 }
 
@@ -195,6 +200,7 @@ impl UnitType {
             "swap" => UnitType::Swap,
             "target" => UnitType::Target,
             "timer" => UnitType::Timer,
+            "snapshot" => UnitType::Snapshot,
             _ => {
                 info!("Unknown Type: {}", system_type);
                 UnitType::Unknown(system_type.to_string())
@@ -216,7 +222,31 @@ impl UnitType {
             Self::Target => "target",
             Self::Timer => "timer",
             Self::Swap => "swap",
-            Self::Unknown(_) => "",
+            Self::Snapshot => "snapshot",
+            _ => "",
+        };
+
+        str_label
+    }
+
+    pub fn interface(&self) -> &str {
+        let str_label = match self {
+            Self::Automount => "org.freedesktop.systemd1.Automount",
+            //Self::Busname => "busname",
+            Self::Device => "org.freedesktop.systemd1.Device",
+            Self::Mount => "org.freedesktop.systemd1.Mount",
+            Self::Path => "org.freedesktop.systemd1.Path",
+            Self::Scope => "org.freedesktop.systemd1.Sscope",
+            Self::Service => "org.freedesktop.systemd1.Service",
+            Self::Slice => "org.freedesktop.systemd1.Slice",
+            Self::Socket => "org.freedesktop.systemd1.Socket",
+            Self::Target => "org.freedesktop.systemd1.Target",
+            Self::Timer => "org.freedesktop.systemd1.Timer",
+            Self::Swap => "org.freedesktop.systemd1.Swap",
+            Self::Snapshot => "org.freedesktop.systemd1.Snapshot",
+            Self::Manager => INTERFACE_SYSTEMD_MANAGER,
+            
+            _ => INTERFACE_SYSTEMD_UNIT,
         };
 
         str_label
