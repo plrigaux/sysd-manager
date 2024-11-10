@@ -245,11 +245,34 @@ impl UnitType {
             Self::Swap => "org.freedesktop.systemd1.Swap",
             Self::Snapshot => "org.freedesktop.systemd1.Snapshot",
             Self::Manager => INTERFACE_SYSTEMD_MANAGER,
-            
+
             _ => INTERFACE_SYSTEMD_UNIT,
         };
 
         str_label
+    }
+
+    pub(crate) fn extends_unit(&self) -> bool {
+        let extends_unit = match self {
+            Self::Automount => true,
+            //Self::Busname => "busname",
+            Self::Device => true,
+            Self::Mount => true,
+            Self::Path => true,
+            Self::Scope => true,
+            Self::Service => true,
+            Self::Slice => true,
+            Self::Socket => true,
+            Self::Target => true,
+            Self::Timer => true,
+            Self::Swap => true,
+            Self::Snapshot => true,
+            Self::Manager => false,
+
+            _ => false,
+        };
+
+        extends_unit
     }
 }
 

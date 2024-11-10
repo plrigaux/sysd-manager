@@ -502,11 +502,8 @@ fn convert_to_string(value: &zvariant::Value) -> String {
     str_value
 }
 
-pub fn fetch_system_info(
-    level: DbusLevel,
-    unit_type: UnitType,
-) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    fetch_system_unit_info(level, PATH_SYSTEMD, unit_type)
+pub fn fetch_system_info(level: DbusLevel) -> Result<BTreeMap<String, String>, SystemdErrors> {
+    fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager)
 }
 
 pub fn fetch_system_unit_info(
@@ -514,15 +511,15 @@ pub fn fetch_system_unit_info(
     path: &str,
     unit_type: UnitType,
 ) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let properties: HashMap<String, OwnedValue> =
+    let mut properties: HashMap<String, OwnedValue> =
         fetch_system_unit_info_native(level, path, unit_type)?;
 
     let mut map = BTreeMap::new();
 
-    for (key, value) in properties.iter() {
-        debug!("{:?} {:?}", key, value);
+    for (key, value) in properties.drain() {
+        trace!("{:?} {:?}", key, value);
 
-        let str_val = convert_to_string(value);
+        let str_val = convert_to_string(&value);
         map.insert(key.to_owned(), str_val);
     }
 
@@ -545,21 +542,21 @@ pub fn fetch_system_unit_info_native(
 
     let unit_interface = unit_type.interface();
 
-    let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+    let interface_name = InterfaceName::try_from(unit_interface).unwrap();
 
-    let mut unit_properties: HashMap<String, OwnedValue> =
-        properties_proxy.get_all(unit_interface_name)?;
+    let mut properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
 
-    if INTERFACE_SYSTEMD_UNIT != unit_interface {
-        let interface_name = InterfaceName::try_from(unit_interface).unwrap();
+    if unit_type.extends_unit() {
+        let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
 
-        let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
+        let unit_properties: HashMap<String, OwnedValue> =
+            properties_proxy.get_all(unit_interface_name)?;
 
-        unit_properties.extend(properties);
+        properties.extend(unit_properties);
     }
 
-    trace!("properties {:?}", unit_properties);
-    Ok(unit_properties)
+    trace!("properties {:?}", properties);
+    Ok(properties)
 }
 
 #[cfg(test)]
@@ -572,7 +569,7 @@ mod tests {
     fn init() {
         let _ = env_logger::builder()
             .target(env_logger::Target::Stdout)
-            .filter_level(log::LevelFilter::Trace)
+            .filter_level(log::LevelFilter::Debug)
             .is_test(true)
             .try_init();
     }
@@ -691,6 +688,17 @@ mod tests {
 
         println!("unit {} Path {}", TEST_SERVICE, path);
         let map = fetch_system_unit_info(DbusLevel::System, &path, UnitType::Service)?;
+
+        println!("{:#?}", map);
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_fetch_system_info() -> Result<(), SystemdErrors> {
+        init();
+
+        let map = fetch_system_info(DbusLevel::System)?;
 
         println!("{:#?}", map);
         Ok(())

@@ -1,9 +1,41 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.92.1 -->
+<!-- Created with Cambalache 0.92.2 -->
 <interface>
   <!-- interface-name app_window.ui -->
   <requires lib="gtk" version="4.14"/>
   <requires lib="libadwaita" version="1.5"/>
+  <requires lib="gio" version="2.0"/>
+  <menu id="main-menu">
+    <section>
+      <attribute name="label">Commands</attribute>
+      <item>
+        <attribute name="label">Reload</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.analyze_blame</attribute>
+        <attribute name="label">Analyze Blame</attribute>
+      </item>
+    </section>
+    <section>
+      <attribute name="label" translatable="yes">Config</attribute>
+      <item>
+        <attribute name="action">app.preferences</attribute>
+        <attribute name="label" translatable="yes">Preferences</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.about</attribute>
+        <attribute name="label" translatable="yes">About</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.systemd_info</attribute>
+        <attribute name="label">Systemd Info</attribute>
+      </item>
+      <item>
+        <attribute name="action">win.show-help-overlay</attribute>
+        <attribute name="label">Keyboard Shortcuts</attribute>
+      </item>
+    </section>
+  </menu>
   <template class="SysdMainAppWindow" parent="AdwApplicationWindow">
     <property name="default-height">720</property>
     <property name="default-width">1280</property>
@@ -51,6 +83,12 @@
                 </child>
                 <child type="start">
                   <object class="GtkLabel" id="unit_name_label"/>
+                </child>
+                <child type="end">
+                  <object class="GtkMenuButton">
+                    <property name="icon-name">open-menu-symbolic</property>
+                    <property name="menu-model">main-menu</property>
+                  </object>
                 </child>
               </object>
             </child>

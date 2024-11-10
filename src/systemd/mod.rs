@@ -392,8 +392,8 @@ fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    let unit_type: UnitType = UnitType::Unknown("SystemD".to_string());
-    sysdbus::fetch_system_info(level, unit_type)
+ 
+    sysdbus::fetch_system_info(level)
 }
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {

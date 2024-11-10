@@ -1,9 +1,7 @@
-
 use crate::systemd::data::UnitInfo;
 
-
-mod time_handling;
 mod construct_info;
+mod time_handling;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
@@ -51,13 +49,9 @@ mod imp {
 
     use log::{info, warn};
 
-    use crate::{
-        systemd::data::UnitInfo,
-        widget::info_window::InfoWindow,
-    };
+    use crate::{systemd::data::UnitInfo, widget::info_window::InfoWindow};
 
     use super::construct_info::fill_all_info;
-
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
@@ -92,16 +86,16 @@ mod imp {
         }
 
         #[template_callback]
-        fn show_all_clicked(&self, button: &gtk::Button) {
-            info!("button {:?}", button);
-
-            let info_window = InfoWindow::new();
-
+        fn show_all_clicked(&self, _button: &gtk::Button) {
             let binding = self.unit.borrow();
             let Some(unit) = binding.as_ref() else {
                 warn!("no unit file");
                 return;
             };
+
+            let info_window = InfoWindow::new();
+
+            info!("show_all_clicked {:?}", unit.primary());
 
             info_window.fill_data(&unit);
 

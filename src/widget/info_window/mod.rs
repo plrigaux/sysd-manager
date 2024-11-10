@@ -5,9 +5,10 @@ use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 use log::{error, warn};
 
-use crate::info::rowitem;
 use crate::systemd;
 use crate::systemd::data::UnitInfo;
+
+mod rowitem;
 
 glib::wrapper! {
     pub struct InfoWindow(ObjectSubclass<imp::InfoWindowImp>)
@@ -107,5 +108,27 @@ impl InfoWindow {
         let mut title = String::from("Unit Info - ");
         title.push_str(&unit.primary());
         self.set_title(Some(&title));
+    }
+
+    pub fn fill_systemd_info(&self) {
+        let unit_prop_store = &self.imp().store;
+
+        if let Some(ref mut store) = *unit_prop_store.borrow_mut() {
+            store.remove_all();
+
+            match systemd::fetch_system_info() {
+                Ok(map) => {
+                    for (key, value) in map {
+                        //println!("{key} :-: {value}");
+                        store.append(&rowitem::Metadata::new(key, value));
+                    }
+                }
+                Err(e) => error!("Fail to retreive Unit info: {:?}", e),
+            }
+        } else {
+            warn!("Store not supposed to be None");
+        };
+      
+        self.set_title(Some("Systemd Info"));
     }
 }

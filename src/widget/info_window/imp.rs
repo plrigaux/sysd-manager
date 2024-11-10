@@ -3,7 +3,7 @@ use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 use std::cell::RefCell;
 
-use crate::info::rowitem;
+use super::rowitem;
 
 // ANCHOR: imp
 #[derive(Debug, Default, gtk::CompositeTemplate)]

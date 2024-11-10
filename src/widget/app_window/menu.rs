@@ -4,39 +4,12 @@ use gtk::prelude::*;
 use gtk::{gio, prelude::ActionMapExtManual};
 
 use crate::analyze::build_analyze_window;
-use crate::info;
 use crate::systemd_gui::APP_ID;
+use crate::widget::info_window;
 use crate::widget::preferences::PreferencesDialog;
 
 pub const APP_TITLE: &str = "SysD Manager";
 
-fn build_popover_menu() -> gtk::PopoverMenu {
-    let menu = gio::Menu::new();
-
-    menu.append(Some("Analyze Blame"), Some("app.analyze_blame"));
-    menu.append(Some("About"), Some("app.about"));
-    menu.append(Some("Systemd Info"), Some("app.systemd_info"));
-    menu.append(Some("Preferences"), Some("app.preferences"));
-    menu.append(Some("Search Unit"), Some("app.search_units"));
-    menu.append(Some("_Keyboard Shortcuts"), Some("win.show-help-overlay"));
-    let unit_menu_popover = gtk::PopoverMenu::builder().menu_model(&menu).build();
-
-    unit_menu_popover
-}
-
-pub fn build_menu() -> gtk::MenuButton {
-    let popover = build_popover_menu();
-    let menu_button = gtk::MenuButton::builder()
-        .focusable(true)
-        .receives_default(true)
-        .icon_name("open-menu-symbolic")
-        .halign(gtk::Align::End)
-        .direction(gtk::ArrowType::Down)
-        .popover(&popover)
-        .build();
-
-    menu_button
-}
 
 pub fn on_startup(app: &adw::Application) {
     let about = gio::ActionEntry::builder("about")
@@ -84,7 +57,8 @@ pub fn on_startup(app: &adw::Application) {
 
     let systemd_info = gio::ActionEntry::builder("systemd_info")
         .activate(|application: &adw::Application, _, _| {
-            let systemd_info_window = info::build_systemd_info();
+            let systemd_info_window = info_window::InfoWindow::new();
+            systemd_info_window.fill_systemd_info();
 
             if let Some(first_window) = application.windows().first() {
                 systemd_info_window.set_transient_for(Some(first_window));

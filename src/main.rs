@@ -10,7 +10,6 @@ use gtk::gio;
 use gtk::glib;
 mod analyze;
 mod errors;
-mod info;
 mod widget;
 
 use log::{info, warn};

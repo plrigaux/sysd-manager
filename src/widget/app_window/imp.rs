@@ -10,8 +10,6 @@ use crate::{
     widget::{unit_control_panel::UnitControlPanel, unit_list::UnitListPanel},
 };
 
-use super::menu;
-
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
 const PANED_SEPARATOR_POSITION: &str = "paned-separator-position";
@@ -74,10 +72,6 @@ impl ObjectImpl for AppWindowImpl {
         self.unit_list_panel.register_selection_change(&app_window);
 
         self.unit_control_panel.set_overlay(&self.toast_overlay);
-
-        let menu_button = menu::build_menu();
-
-        self.header_bar.pack_end(&menu_button);
     }
 }
 
