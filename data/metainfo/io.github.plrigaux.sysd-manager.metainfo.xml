@@ -10,10 +10,14 @@
   <summary>A GUI to manage systemd units</summary>
   <!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
   <description>
-    <p>This application exists to allow a user to manage their systemd units via a GUI. Not only
+    <p>This application exists to allow a user to manage their systemd units via a Gaphical User interface (GUI). Not only
       are you able to make changes to the enablement and running status of each units, but
-      you will also be able to view and modify their unit files and peak at their journal logs.</p>
+      you will also be able to view and modify their unit file and peak at their journal logs.</p>
   </description>
+  <branding>
+    <color type="primary" scheme_preference="light">#a1ba87</color>
+    <color type="primary" scheme_preference="dark">#424d38</color>
+  </branding>
   <screenshots>
     <screenshot type="default">
       <image type="source">
