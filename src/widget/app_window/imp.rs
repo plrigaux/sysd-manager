@@ -193,6 +193,14 @@ impl AppWindowImpl {
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
     }
+
+    pub fn overlay(&self)-> &adw::ToastOverlay{
+       &self.toast_overlay
+    }
+
+    pub(super) fn add_toast(&self, toast: adw::Toast) {
+        self.toast_overlay.add_toast(toast)
+    }
 }
 
 impl WidgetImpl for AppWindowImpl {}

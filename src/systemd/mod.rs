@@ -168,7 +168,7 @@ pub fn enable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), 
 
 pub fn disable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-    let msg_return = sysdbus::disable_unit_files(level, &unit.primary())?;
+    let msg_return = sysdbus::disable_unit_files(level, &[&unit.primary()])?;
 
     let msg = if msg_return.len() > 0 {
         let a = &msg_return[0];
@@ -440,4 +440,10 @@ pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
         }
     }
     Ok(())
+}
+
+
+pub fn reload_all_units() -> Result<(), SystemdErrors>  {
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    sysdbus::reload_all_units(level)
 }

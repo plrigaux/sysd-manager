@@ -6,7 +6,6 @@ use crate::systemd::data::UnitInfo;
 mod imp;
 pub mod menu;
 
-
 glib::wrapper! {
     pub struct AppWindow(ObjectSubclass<imp::AppWindowImpl>)
         @extends adw::ApplicationWindow, gtk::Window, adw::Window, gtk::Widget,
@@ -17,7 +16,7 @@ glib::wrapper! {
 impl AppWindow {
     pub fn new(app: &adw::Application) -> Self {
         // Create new window
-        let obj : Self = Object::builder().property("application", app).build();
+        let obj: Self = Object::builder().property("application", app).build();
 
         obj.imp().build_action(app);
 
@@ -30,5 +29,9 @@ impl AppWindow {
 
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark);
+    }
+
+    pub fn add_toast(&self, toast: adw::Toast) {
+        self.imp().add_toast(toast)
     }
 }

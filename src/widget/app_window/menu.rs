@@ -2,14 +2,17 @@ use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
 use gtk::prelude::*;
 use gtk::{gio, prelude::ActionMapExtManual};
+use log::error;
+use log::info;
 
 use crate::analyze::build_analyze_window;
+use crate::systemd;
 use crate::systemd_gui::APP_ID;
+use crate::widget::app_window::AppWindow;
 use crate::widget::info_window;
 use crate::widget::preferences::PreferencesDialog;
 
 pub const APP_TITLE: &str = "SysD Manager";
-
 
 pub fn on_startup(app: &adw::Application) {
     let about = gio::ActionEntry::builder("about")
@@ -80,9 +83,43 @@ pub fn on_startup(app: &adw::Application) {
         })
         .build();
 
+    let reload_all_units: gio::ActionEntry<adw::Application> =
+        gio::ActionEntry::builder("reload_all_units")
+            .activate(|application: &adw::Application, _, _| {
+                match systemd::reload_all_units() {
+                    Ok(_) => {
+                        info!("All units relaoded!");
+                        add_toast(application, "All units relaoded!");
+                    }
+                    Err(e) => {
+                        error!("Roload failed {:?}", e);
+                        add_toast(application, "Roload failed!");
+                    }
+                };
+            })
+            .build();
+
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
 
-    app.add_action_entries([about, analyze_blame, systemd_info, preferences]);
+    app.add_action_entries([
+        about,
+        analyze_blame,
+        systemd_info,
+        preferences,
+        reload_all_units,
+    ]);
+}
+
+fn add_toast(application: &adw::Application, toast_msg: &str) {
+    if let Some(win) = application.active_window() {
+        let app_win_op: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+
+        if let Some(app_win) = app_win_op {
+            let toast = adw::Toast::new(toast_msg);
+
+            app_win.add_toast(toast);
+        }
+    }
 }
 
 fn create_about() -> adw::AboutDialog {

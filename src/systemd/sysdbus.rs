@@ -52,6 +52,7 @@ const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFiles";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
+const METHOD_RELOAD: &str = "Reload";
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
@@ -333,10 +334,8 @@ pub(super) fn enable_unit_files(
 
 pub(super) fn disable_unit_files(
     level: DbusLevel,
-    unit_name: &str,
+    unit_names: &[&str],
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    let v = vec![unit_name];
-
     fn handle_answer(
         _method: &str,
         return_message: &Message,
@@ -350,7 +349,12 @@ pub(super) fn disable_unit_files(
         return Ok(return_msg);
     }
 
-    send_disenable_message(level, METHOD_DISABLE_UNIT_FILES, &(v, false), handle_answer)
+    send_disenable_message(
+        level,
+        METHOD_DISABLE_UNIT_FILES,
+        &(unit_names, false),
+        handle_answer,
+    )
 }
 
 fn send_disenable_message<T, U>(
@@ -421,6 +425,15 @@ pub fn get_unit_object_path(level: DbusLevel, unit: &str) -> Result<String, Syst
     let object_path: zvariant::ObjectPath = body.deserialize()?;
 
     Ok(object_path.as_str().to_owned())
+}
+
+pub fn reload_all_units(level: DbusLevel) -> Result<(), SystemdErrors> {
+    fn reload_answer(method: &str, _return_message: &Message) -> Result<(), SystemdErrors> {
+        info!("{method} SUCCESS");
+        return Ok(());
+    }
+
+    send_disenable_message(level, METHOD_RELOAD, &(), reload_answer)
 }
 
 pub(super) fn kill_unit(
@@ -674,7 +687,7 @@ mod tests {
     #[test]
     fn test_disable_unit_files() -> Result<(), SystemdErrors> {
         init();
-        let _res = disable_unit_files(DbusLevel::System, TEST_SERVICE)?;
+        let _res = disable_unit_files(DbusLevel::System, &[TEST_SERVICE])?;
 
         Ok(())
     }
