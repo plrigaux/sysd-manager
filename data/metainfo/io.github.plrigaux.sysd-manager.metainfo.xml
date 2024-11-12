@@ -10,10 +10,9 @@
   <summary>A GUI to manage systemd units</summary>
   <!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
   <description>
-    <p>This application exists to allow a user to manage their systemd units via a Gaphical User
-      interface (GUI). Not only
-      are you able to make changes to the enablement and running status of each units, but
-      you will also be able to view and modify their unit file and peak at their journal logs.</p>
+    <p>Manage your Services, Timers, Sockets and other units. You can enable, disable, stop and start them. Also,
+      you can view their config file and peak at their journal logs.
+    </p>  
   </description>
   <branding>
     <color type="primary" scheme_preference="light">#a1ba87</color>
@@ -76,6 +75,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.1.1" date="2024-11-12">
+      <description>
+        <ul>
+          <li>Add reload all units function</li>
+          <li>Modify logo</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.1" date="2024-11-09">
       <description>
         <ul>
