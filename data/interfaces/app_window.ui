@@ -74,7 +74,7 @@
                   </object>
                 </child>
                 <child type="start">
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="refresh_unit_list_button">
                     <property name="icon-name">view-refresh</property>
                     <property name="tooltip-text">Refresh unit list</property>
                     <signal name="clicked" handler="refresh_button_clicked" swapped="yes"/>

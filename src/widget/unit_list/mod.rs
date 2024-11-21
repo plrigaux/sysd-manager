@@ -11,9 +11,9 @@ glib::wrapper! {
 }
 
 impl UnitListPanel {
-    pub fn register_selection_change(&self, app_window: &AppWindow) {
+    pub fn register_selection_change(&self, app_window: &AppWindow, refresh_unit_list_button : &gtk::Button) {
         let obj = self.imp();
-        obj.register_selection_change(app_window);
+        obj.register_selection_change(app_window, refresh_unit_list_button);
     }
 
     pub fn search_bar(&self) -> gtk::SearchBar {

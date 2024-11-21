@@ -188,7 +188,7 @@
 	(50,14,"AdwHeaderBar","header_bar",9,None,"top",None,1,None,None),
 	(50,15,"AdwWindowTitle",None,14,None,None,None,0,None,None),
 	(50,16,"GtkToggleButton","search_toggle_button",14,None,None,None,1,None,None),
-	(50,17,"GtkButton",None,14,None,"start",None,2,None,None),
+	(50,17,"GtkButton","refresh_unit_list_button",14,None,"start",None,2,None,None),
 	(50,18,"GtkLabel","unit_name_label",14,None,"start",None,3,None,None),
 	(50,19,"GtkMenuButton",None,14,None,"end",None,4,None,None),
 	(50,20,"(item)",None,21,None,None,None,2,None,None),

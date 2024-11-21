@@ -52,6 +52,8 @@ pub struct UnitListPanelImp {
     filter_list_model: TemplateChild<gtk::FilterListModel>,
 
     search_entry: OnceCell<gtk::SearchEntry>,
+
+    refresh_unit_list_button: OnceCell<gtk::Button>,
 }
 
 macro_rules! factory_setup {
@@ -202,7 +204,11 @@ impl UnitListPanelImp {
         info!("sections_changed {position}");
     }
 
-    pub(super) fn register_selection_change(&self, app_window: &AppWindow) {
+    pub(super) fn register_selection_change(
+        &self,
+        app_window: &AppWindow,
+        refresh_unit_list_button: &gtk::Button,
+    ) {
         /*      error!("register_selection_change");
         if let Err(_result) = self.app_window.set(app_window.clone()) {
             warn!("One cell error! It was full.")
@@ -230,6 +236,12 @@ impl UnitListPanelImp {
 
                 app_window.selection_change(&unit);
             }); // FOR THE SEARCH
+
+        self.refresh_unit_list_button
+            .set(refresh_unit_list_button.clone())
+            .expect("refresh_unit_list_button was already set!");
+
+        self.fill_store();
     }
 
     pub fn search_bar(&self) -> gtk::SearchBar {
@@ -237,20 +249,34 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn fill_store(&self) {
-        let unit_files: Vec<UnitInfo> = match systemd::list_units_description_and_state() {
-            Ok(map) => map.into_values().collect(),
-            Err(_e) => vec![],
-        };
+        {
+            let list_store = self.list_store.clone();
 
-        self.list_store.remove_all();
+            let refresh_unit_list_button =
+                self.refresh_unit_list_button.get().expect("Supposed to bet set").clone();
 
-        for value in unit_files {
-            self.list_store.append(&value);
+            glib::spawn_future_local(async move {
+
+                refresh_unit_list_button.set_sensitive(false);
+                let unit_files: Vec<UnitInfo> = gio::spawn_blocking(move || {
+                    match systemd::list_units_description_and_state() {
+                        Ok(map) => map.into_values().collect(),
+                        Err(_e) => vec![],
+                    }
+                })
+                .await
+                .expect("Task needs to finish successfully.");
+
+                list_store.remove_all();
+
+                for value in unit_files {
+                    list_store.append(&value);
+                }
+                info!("Unit list refreshed! list size {}", list_store.n_items());
+
+                refresh_unit_list_button.set_sensitive(true);
+            });
         }
-        info!(
-            "Unit list refreshed! list size {}",
-            self.list_store.n_items()
-        )
     }
 
     pub(super) fn button_search_toggled(&self, toggle_button_is_active: bool) {
@@ -296,8 +322,6 @@ impl ObjectImpl for UnitListPanelImp {
         let sorter = self.units_browser.sorter();
 
         self.unit_list_sort_list_model.set_sorter(sorter.as_ref());
-
-        self.fill_store();
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 

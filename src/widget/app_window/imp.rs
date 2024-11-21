@@ -40,6 +40,9 @@ pub struct AppWindowImpl {
 
     #[template_child]
     search_toggle_button: TemplateChild<gtk::ToggleButton>,
+
+    #[template_child]
+    refresh_unit_list_button: TemplateChild<gtk::Button>,
 }
 
 #[glib::object_subclass]
@@ -67,9 +70,8 @@ impl ObjectImpl for AppWindowImpl {
         self.setup_settings();
 
         self.load_window_size();
-
         let app_window = self.obj();
-        self.unit_list_panel.register_selection_change(&app_window);
+        self.unit_list_panel.register_selection_change(&app_window, &self.refresh_unit_list_button);
 
         self.unit_control_panel.set_overlay(&self.toast_overlay);
     }
@@ -159,8 +161,12 @@ impl AppWindowImpl {
     }
 
     #[template_callback]
-    fn refresh_button_clicked(&self, _button: &gtk::Button) {
+    fn refresh_button_clicked(&self, button: &gtk::Button) {
+        info!("refresh false");
+        button.set_sensitive(false);
         self.unit_list_panel.fill_store();
+        button.set_sensitive(true);
+        info!("refresh true");
     }
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
