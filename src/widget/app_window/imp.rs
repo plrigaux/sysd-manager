@@ -2,7 +2,7 @@ use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
-use log::{info, warn};
+use log::{debug, info, warn};
 
 use crate::{
     systemd::data::UnitInfo,
@@ -83,6 +83,27 @@ impl ObjectImpl for AppWindowImpl {
 
         self.unit_control_panel.set_overlay(&self.toast_overlay);
 
+        self.setup_dropdown();
+    }
+}
+
+#[gtk::template_callbacks]
+impl AppWindowImpl {
+    fn setup_settings(&self) {
+        let settings: gio::Settings = gio::Settings::new(systemd_gui::APP_ID);
+
+        self.settings
+            .set(settings)
+            .expect("`settings` should not be set before calling `setup_settings`.");
+    }
+
+    fn settings(&self) -> &gio::Settings {
+        self.settings
+            .get()
+            .expect("`settings` should be set in `setup_settings`.")
+    }
+
+    fn setup_dropdown(&self) {
         let expression = gtk::PropertyExpression::new(
             adw::EnumListItem::static_type(),
             None::<gtk::Expression>,
@@ -96,53 +117,40 @@ impl ObjectImpl for AppWindowImpl {
 
         self.system_session_dropdown.set_model(Some(&model));
 
-        let level = PREFERENCES.dbus_level();
-
-        self.system_session_dropdown.set_selected(level as u32);
-    }
-}
-
-#[gtk::template_callbacks]
-impl AppWindowImpl {
-    fn setup_settings(&self) {
-        let settings: gio::Settings = gio::Settings::new(systemd_gui::APP_ID);
-
         {
-            let settings = settings.clone();
+            let settings = self.settings().clone();
             let unit_list_panel = self.unit_list_panel.clone();
 
+            let level = PREFERENCES.dbus_level();
+            let level_num = level as u32;
+            self.system_session_dropdown.set_selected(level_num);
+            let selected = self.system_session_dropdown.selected();
+            info!("Set system_session_dropdown {:?} {} selected {}", level, level_num, selected);
+
             self.system_session_dropdown
-                .connect_selected_notify(move |dropdown| {
+                .connect_selected_item_notify(move |dropdown| {
                     let idx = dropdown.selected();
-
-                    info!("Values Selected {:?}", idx,);
-
                     let level: DbusLevel = idx.into();
 
-                    if let Err(e) = settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
-                        warn!("{}", e)
-                    }
+                    debug!(
+                        "System Session Values Selected idx {:?} level {:?}",
+                        idx, level
+                    );
 
-                    PREFERENCES.set_dbus_level(level);
+                    if let Err(e) = settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
+                        warn!("Save setting Error {}", e)
+                    }
 
                     info!(
                         "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
                         level.as_str()
                     );
 
+                    PREFERENCES.set_dbus_level(level);
+
                     unit_list_panel.fill_store();
                 });
         }
-
-        self.settings
-            .set(settings)
-            .expect("`settings` should not be set before calling `setup_settings`.");
-    }
-
-    fn settings(&self) -> &gio::Settings {
-        self.settings
-            .get()
-            .expect("`settings` should be set in `setup_settings`.")
     }
 
     pub fn save_window_size(&self) -> Result<(), glib::BoolError> {

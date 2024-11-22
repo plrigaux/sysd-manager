@@ -2,7 +2,8 @@
 from build_aux.build_common import color
 import build_aux.build_common as bc
 import argparse
-
+from pathlib import Path
+import os
 
 def main():
     parser = argparse.ArgumentParser(
@@ -21,8 +22,8 @@ def main():
 
     parser.add_argument(
         "action",
-        help="create and push a git version",
-        choices=["version"],
+        choices=["version", "gschema", "clean-gschema"],
+        help="actions to perform",
     )
 
     parser.add_argument(
@@ -42,6 +43,10 @@ def main():
     match args.action:
         case "version":
             version(args.allow_dirty, args.message, args.force)
+        case "gschema":
+            gschema()
+        case "clean-gschema":
+            clean_gschema()
 
 
 def version(allow_dirty: bool, message: str, force: bool):
@@ -69,6 +74,37 @@ def version(allow_dirty: bool, message: str, force: bool):
 
     bc.cmd_run(git_tag)
     bc.cmd_run(git_push)
+
+
+def gschema():
+
+    home = Path.home()
+    GLIB_SCHEMAS_DIR: str = ".local/share/glib-2.0/schemas/"
+    GLIB_SCHEMAS_FILE: str = "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml"
+
+    out_dir = os.path.join(home, GLIB_SCHEMAS_DIR)
+
+    bc.cmd_run(
+        [
+            "install",
+            "-v",
+            "-D",
+            GLIB_SCHEMAS_FILE,
+            "-t",
+            out_dir,
+        ]
+    )
+
+    bc.cmd_run(
+        [
+            "glib-compile-schemas",
+            out_dir,
+        ]
+    )
+
+
+def clean_gschema():
+    bc.clean_gschema()
 
 
 if __name__ == "__main__":

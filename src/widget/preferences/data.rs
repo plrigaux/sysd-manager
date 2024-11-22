@@ -3,7 +3,7 @@ use gtk::{
     glib::{self, GString},
     prelude::{SettingsExt, ToValue},
 };
-use log::info;
+use log::{debug, info};
 
 use std::sync::{LazyLock, RwLock};
 
@@ -24,10 +24,10 @@ pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
 #[enum_type(name = "DbusLevel")]
 pub enum DbusLevel {
-    #[enum_value(name = "Session", nick = "Session Bus")]
+    #[enum_value(name = "session", nick = "Session Bus")]
     #[default]
     Session = 0,
-    #[enum_value(name = "System", nick = "System Bus")]
+    #[enum_value(name = "system", nick = "System Bus")]
     System = 1,
 }
 
@@ -115,7 +115,9 @@ pub struct Preferences {
 
 impl Preferences {
     pub fn new_with_setting(settings: &Settings) -> Self {
+        let level_str = settings.string(KEY_DBUS_LEVEL);
         let level = settings.string(KEY_DBUS_LEVEL).into();
+        debug!("level {:?} {:?}", level_str, level);
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);

@@ -212,10 +212,6 @@ impl UnitListPanelImp {
         app_window: &AppWindow,
         refresh_unit_list_button: &gtk::Button,
     ) {
-        /*      error!("register_selection_change");
-        if let Err(_result) = self.app_window.set(app_window.clone()) {
-            warn!("One cell error! It was full.")
-        }; */
 
         let app_window = app_window.clone();
 
@@ -257,7 +253,7 @@ impl UnitListPanelImp {
             let panel_stack = self.panel_stack.clone();
 
             let refresh_unit_list_button =
-                self.refresh_unit_list_button.get().expect("Supposed to bet set").clone();
+                self.refresh_unit_list_button.get().expect("Supposed to be set").clone();
 
             glib::spawn_future_local(async move {
 

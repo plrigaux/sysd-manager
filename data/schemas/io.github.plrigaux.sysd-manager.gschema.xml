@@ -20,10 +20,10 @@
         </key>
         <key name="pref-dbus-level" type="s">
             <choices>
-                <choice value='Session' />
-                <choice value='System' />
+                <choice value='session' />
+                <choice value='system' />
             </choices>
-            <default>'Session'</default>
+            <default>'session'</default>
             <summary>The dbus level scope</summary>
         </key>
         <key name="pref-journal-colors" type="b">

@@ -43,12 +43,6 @@
                         </child>
                       </object>
                     </child>
-                    <child>
-                      <object class="AdwComboRow" id="enable_unit_file_mode">
-                        <property name="subtitle">The mode used to enable / disable unit files</property>
-                        <property name="title">Enable unit file mode</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
