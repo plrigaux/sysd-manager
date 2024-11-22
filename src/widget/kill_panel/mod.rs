@@ -30,7 +30,7 @@ impl KillPanel {
 mod imp {
     use std::cell::{OnceCell, RefCell};
 
-    use adw::{prelude::*, EnumListModel, OverlaySplitView, Toast, ToastOverlay};
+    use adw::prelude::*;
     use gtk::{
         glib::{self, property::PropertySet},
         subclass::{
@@ -71,9 +71,9 @@ mod imp {
 
         /*  #[template_child]
         signals_group_box: TemplateChild<gtk::Box>, */
-        side_overlay: OnceCell<OverlaySplitView>,
+        side_overlay: OnceCell<adw::OverlaySplitView>,
 
-        toast_overlay: OnceCell<ToastOverlay>,
+        toast_overlay: OnceCell<adw::ToastOverlay>,
 
         unit: RefCell<Option<UnitInfo>>,
     }
@@ -111,7 +111,7 @@ mod imp {
 
                     info!("{}", msg);
 
-                    let toast = Toast::new(&msg);
+                    let toast = adw::Toast::new(&msg);
                     self.toast_overlay.get().unwrap().add_toast(toast)
                 }
                 Err(e) => warn!(
@@ -200,7 +200,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let model = EnumListModel::new(KillWho::static_type());
+            let model = adw::EnumListModel::new(KillWho::static_type());
 
             self.who_to_kill.set_model(Some(&model));
 

@@ -1,7 +1,7 @@
 use gtk::{
     gio::{self, Settings},
     glib::{self, GString},
-    prelude::SettingsExt,
+    prelude::{SettingsExt, ToValue},
 };
 use log::info;
 
@@ -21,19 +21,21 @@ pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
+#[enum_type(name = "DbusLevel")]
 pub enum DbusLevel {
+    #[enum_value(name = "Session", nick = "Session Bus")]
     #[default]
     Session = 0,
+    #[enum_value(name = "System", nick = "System Bus")]
     System = 1,
 }
 
 impl DbusLevel {
     pub fn as_str(&self) -> &str {
-        match self {
-            DbusLevel::Session => "Session",
-            DbusLevel::System => "System",
-        }
+        let level_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
+
+        level_value.name()
     }
 }
 
@@ -45,7 +47,7 @@ impl From<GString> for DbusLevel {
 
 impl From<&str> for DbusLevel {
     fn from(level: &str) -> Self {
-        if "System".eq(level) {
+        if "system".eq(&level.to_lowercase()) {
             DbusLevel::System
         } else {
             DbusLevel::Session

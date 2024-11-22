@@ -89,6 +89,9 @@
                     <property name="menu-model">main-menu</property>
                   </object>
                 </child>
+                <child type="end">
+                  <object class="GtkDropDown" id="system_session_dropdown"/>
+                </child>
               </object>
             </child>
           </object>

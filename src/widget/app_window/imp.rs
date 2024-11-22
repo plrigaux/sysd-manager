@@ -2,12 +2,16 @@ use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
-use log::info;
+use log::{info, warn};
 
 use crate::{
     systemd::data::UnitInfo,
     systemd_gui,
-    widget::{unit_control_panel::UnitControlPanel, unit_list::UnitListPanel},
+    widget::{
+        preferences::data::{DbusLevel, KEY_DBUS_LEVEL, PREFERENCES},
+        unit_control_panel::UnitControlPanel,
+        unit_list::UnitListPanel,
+    },
 };
 
 const WINDOW_WIDTH: &str = "window-width";
@@ -43,6 +47,9 @@ pub struct AppWindowImpl {
 
     #[template_child]
     refresh_unit_list_button: TemplateChild<gtk::Button>,
+
+    #[template_child]
+    system_session_dropdown: TemplateChild<gtk::DropDown>,
 }
 
 #[glib::object_subclass]
@@ -71,9 +78,27 @@ impl ObjectImpl for AppWindowImpl {
 
         self.load_window_size();
         let app_window = self.obj();
-        self.unit_list_panel.register_selection_change(&app_window, &self.refresh_unit_list_button);
+        self.unit_list_panel
+            .register_selection_change(&app_window, &self.refresh_unit_list_button);
 
         self.unit_control_panel.set_overlay(&self.toast_overlay);
+
+        let expression = gtk::PropertyExpression::new(
+            adw::EnumListItem::static_type(),
+            None::<gtk::Expression>,
+            "nick",
+        );
+
+        self.system_session_dropdown
+            .set_expression(Some(expression));
+
+        let model = adw::EnumListModel::new(DbusLevel::static_type());
+
+        self.system_session_dropdown.set_model(Some(&model));
+
+        let level = PREFERENCES.dbus_level();
+
+        self.system_session_dropdown.set_selected(level as u32);
     }
 }
 
@@ -81,6 +106,34 @@ impl ObjectImpl for AppWindowImpl {
 impl AppWindowImpl {
     fn setup_settings(&self) {
         let settings: gio::Settings = gio::Settings::new(systemd_gui::APP_ID);
+
+        {
+            let settings = settings.clone();
+            let unit_list_panel = self.unit_list_panel.clone();
+
+            self.system_session_dropdown
+                .connect_selected_notify(move |dropdown| {
+                    let idx = dropdown.selected();
+
+                    info!("Values Selected {:?}", idx,);
+
+                    let level: DbusLevel = idx.into();
+
+                    if let Err(e) = settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
+                        warn!("{}", e)
+                    }
+
+                    PREFERENCES.set_dbus_level(level);
+
+                    info!(
+                        "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
+                        level.as_str()
+                    );
+
+                    unit_list_panel.fill_store();
+                });
+        }
+
         self.settings
             .set(settings)
             .expect("`settings` should not be set before calling `setup_settings`.");
@@ -200,8 +253,8 @@ impl AppWindowImpl {
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
     }
 
-    pub fn overlay(&self)-> &adw::ToastOverlay{
-       &self.toast_overlay
+    pub fn overlay(&self) -> &adw::ToastOverlay {
+        &self.toast_overlay
     }
 
     pub(super) fn add_toast(&self, toast: adw::Toast) {

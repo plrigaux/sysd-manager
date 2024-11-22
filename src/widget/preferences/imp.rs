@@ -9,8 +9,7 @@ use std::cell::OnceCell;
 
 use crate::systemd_gui;
 use crate::widget::preferences::data::{
-    DbusLevel, KEY_DBUS_LEVEL, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS,
-    KEY_PREF_UNIT_FILE_HIGHLIGHTING,
+    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_UNIT_FILE_HIGHLIGHTING,
 };
 
 use super::data::PREFERENCES;
@@ -19,9 +18,6 @@ use super::data::PREFERENCES;
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
 pub struct PreferencesDialog {
     pub settings: OnceCell<Settings>,
-
-    #[template_child]
-    pub dbus_level_dropdown: TemplateChild<gtk::DropDown>,
 
     #[template_child]
     pub journal_colors: TemplateChild<gtk::Switch>,
@@ -43,28 +39,6 @@ impl PreferencesDialog {
                 .set(settings1)
                 .expect("`settings` should not be set before calling `setup_settings`.");
         }
-        {
-            let settings = settings.clone();
-            self.dbus_level_dropdown
-                .connect_selected_notify(move |dropdown| {
-                    let idx = dropdown.selected();
-
-                    info!("Values Selected {:?}", idx,);
-
-                    let level: DbusLevel = idx.into();
-
-                    if let Err(e) = settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
-                        warn!("{}", e)
-                    }
-
-                    PREFERENCES.set_dbus_level(level);
-
-                    info!(
-                        "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
-                        level.as_str()
-                    );
-                });
-        }
     }
 
     fn settings(&self) -> &gio::Settings {
@@ -74,12 +48,9 @@ impl PreferencesDialog {
     }
 
     fn load_preferences_values(&self) {
-        let level = PREFERENCES.dbus_level();
         let journal_colors = PREFERENCES.journal_colors();
         let unit_file_colors = PREFERENCES.unit_file_colors();
         let is_app_first_connection = PREFERENCES.is_app_first_connection();
-
-        self.dbus_level_dropdown.set_selected(level as u32);
 
         self.journal_colors.set_state(journal_colors);
         self.journal_colors.set_active(journal_colors);

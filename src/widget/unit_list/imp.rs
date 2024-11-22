@@ -51,6 +51,9 @@ pub struct UnitListPanelImp {
     #[template_child]
     filter_list_model: TemplateChild<gtk::FilterListModel>,
 
+    #[template_child]
+    panel_stack: TemplateChild<gtk::Stack>,
+
     search_entry: OnceCell<gtk::SearchEntry>,
 
     refresh_unit_list_button: OnceCell<gtk::Button>,
@@ -251,6 +254,7 @@ impl UnitListPanelImp {
     pub(super) fn fill_store(&self) {
         {
             let list_store = self.list_store.clone();
+            let panel_stack = self.panel_stack.clone();
 
             let refresh_unit_list_button =
                 self.refresh_unit_list_button.get().expect("Supposed to bet set").clone();
@@ -258,6 +262,7 @@ impl UnitListPanelImp {
             glib::spawn_future_local(async move {
 
                 refresh_unit_list_button.set_sensitive(false);
+                panel_stack.set_visible_child_name("spinner");
                 let unit_files: Vec<UnitInfo> = gio::spawn_blocking(move || {
                     match systemd::list_units_description_and_state() {
                         Ok(map) => map.into_values().collect(),
@@ -275,6 +280,7 @@ impl UnitListPanelImp {
                 info!("Unit list refreshed! list size {}", list_store.n_items());
 
                 refresh_unit_list_button.set_sensitive(true);
+                panel_stack.set_visible_child_name("unit_list");
             });
         }
     }
