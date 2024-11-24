@@ -31,10 +31,10 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
                 unit.set_object_path(object_path);
                 path_exists = true;
             }
-            Err(e) => warn!(
-                "Fail retreiving object path for {:?}, Error {:?}",
+            Err(error) => info!(
+                "Fail retreiving object path for {:?}!\nError {:?}",
                 unit.primary(),
-                e
+                error
             ),
         }
     }

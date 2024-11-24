@@ -33,7 +33,7 @@ mod imp {
     use std::cell::{Cell, RefCell};
 
     use gtk::{
-        glib,
+        gio, glib,
         prelude::*,
         subclass::{
             box_::BoxImpl,
@@ -92,32 +92,48 @@ mod imp {
 
         /// Updates the associated journal `TextView` with the contents of the unit's journal log.
         fn update_journal(&self, unit: &UnitInfo) {
-            let in_color = PREFERENCES.journal_colors();
+            
+            let journal_text: gtk::TextView = self.journal_text.clone();
+            let unit = unit.clone();
+            let journal_refresh_button = self.journal_refresh_button.clone();
 
-            let text = match systemd::get_unit_journal(unit, in_color) {
-                Ok(journal_output) => journal_output,
-                Err(error) => {
-                    let text = match error.gui_description() {
-                        Some(s) => s.clone(),
-                        None => String::from(""),
-                    };
-                    text
+            glib::spawn_future_local(async move {
+                let in_color = PREFERENCES.journal_colors();
+                /*                 refresh_unit_list_button.set_sensitive(false);
+                panel_stack.set_visible_child_name("spinner"); */
+
+                journal_refresh_button.set_sensitive(false);
+
+                let text =
+                    gio::spawn_blocking(move || match systemd::get_unit_journal(&unit, in_color) {
+                        Ok(journal_output) => journal_output,
+                        Err(error) => {
+                            let text = match error.gui_description() {
+                                Some(s) => s.clone(),
+                                None => String::from(""),
+                            };
+                            text
+                        }
+                    })
+                    .await
+                    .expect("Task needs to finish successfully.");
+
+                let buf = journal_text.buffer();
+                buf.set_text(""); // clear text
+
+                if in_color {
+                    let mut start_iter = buf.start_iter();
+                    let journal_color: TermColor = journal_text.color().into();
+                    let text = colorise::convert_to_mackup(&text, &journal_color);
+                    buf.insert_markup(&mut start_iter, &text);
+                } else {
+                    buf.set_text(&text);
                 }
-            };
 
-            let journal_text: &gtk::TextView = self.journal_text.as_ref();
+                journal_refresh_button.set_sensitive(true);
 
-            let buf = journal_text.buffer();
-            buf.set_text(""); // clear text
+            });
 
-            if in_color {
-                let mut start_iter = buf.start_iter();
-                let journal_color: TermColor = journal_text.color().into();
-                let text = colorise::convert_to_mackup(&text, &journal_color);
-                buf.insert_markup(&mut start_iter, &text);
-            } else {
-                buf.set_text(&text);
-            }
         }
 
         pub(crate) fn set_dark(&self, is_dark: bool) {
