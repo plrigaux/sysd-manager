@@ -96,6 +96,7 @@ mod imp {
             let journal_text: gtk::TextView = self.journal_text.clone();
             let unit = unit.clone();
             let journal_refresh_button = self.journal_refresh_button.clone();
+            let oldest_first = true;
 
             glib::spawn_future_local(async move {
                 let in_color = PREFERENCES.journal_colors();
@@ -105,7 +106,7 @@ mod imp {
                 journal_refresh_button.set_sensitive(false);
 
                 let text =
-                    gio::spawn_blocking(move || match systemd::get_unit_journal(&unit, in_color) {
+                    gio::spawn_blocking(move || match systemd::get_unit_journal(&unit, in_color, oldest_first) {
                         Ok(journal_output) => journal_output,
                         Err(error) => {
                             let text = match error.gui_description() {

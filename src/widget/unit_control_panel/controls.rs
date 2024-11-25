@@ -1,4 +1,3 @@
-use adw::{Toast, ToastOverlay};
 use log::{info, warn};
 
 use crate::systemd::{
@@ -10,7 +9,7 @@ use crate::systemd::{
 use crate::gtk::prelude::*;
 
 pub(super) fn switch_ablement_state_set(
-    toast_overlay: &ToastOverlay,
+    toast_overlay: &adw::ToastOverlay,
     state: bool,
     switch: &gtk::Switch,
     unit: &UnitInfo,
@@ -43,7 +42,7 @@ pub(super) fn switch_ablement_state_set(
             let toast_info = enablement_status_ret.1;
             info!("{toast_info}");
 
-            let toast = Toast::new(&toast_info);
+            let toast = adw::Toast::new(&toast_info);
 
             toast_overlay.add_toast(toast);
 
@@ -74,7 +73,7 @@ pub(super) fn switch_ablement_state_set(
             );
             warn!("{toast_warn}");
 
-            let toast = Toast::new(&toast_warn);
+            let toast = adw::Toast::new(&toast_warn);
 
             toast_overlay.add_toast(toast);
 

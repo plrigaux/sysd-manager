@@ -229,7 +229,11 @@ fn file_open_get_content(file_path: &str) -> Option<String> {
 }
 
 /// Obtains the journal log for the given unit.
-pub fn get_unit_journal(unit: &UnitInfo, in_color: bool) -> Result<String, SystemdErrors> {
+pub fn get_unit_journal(
+    unit: &UnitInfo,
+    in_color: bool,
+    oldest_first: bool,
+) -> Result<String, SystemdErrors> {
     let unit_path = unit.primary();
 
     let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path];
@@ -246,13 +250,16 @@ pub fn get_unit_journal(unit: &UnitInfo, in_color: bool) -> Result<String, Syste
         }
     };
 
-    let tmp = logs
-        .lines()
-        .rev()
-        .map(|x| x.trim())
-        .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x);
+    let text = if oldest_first {
+        logs.lines()
+            .rev()
+            .map(|x| x.trim())
+            .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x)
+    } else {
+        logs
+    };
 
-    Ok(tmp)
+    Ok(text)
 }
 
 pub fn commander_output(
@@ -392,7 +399,7 @@ fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
- 
+
     sysdbus::fetch_system_info(level)
 }
 
@@ -442,8 +449,7 @@ pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-
-pub fn reload_all_units() -> Result<(), SystemdErrors>  {
+pub fn reload_all_units() -> Result<(), SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::reload_all_units(level)
 }
