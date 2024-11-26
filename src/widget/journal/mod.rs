@@ -3,9 +3,7 @@ use crate::systemd::data::UnitInfo;
 mod colorise;
 pub mod more_colors;
 
-use gtk::{glib, prelude::TextBufferExt, subclass::prelude::ObjectSubclassIsExt, TextBuffer};
-
-use super::unit_file_panel::dosini::Token;
+use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -32,6 +30,13 @@ impl JournalPanel {
 }
 
 mod imp {
+
+    enum JournalAnswers {
+        Tokens(Vec<colorise::Token>, String),
+        Text(String),
+        Markup(String),
+    }
+
     use std::cell::{Cell, RefCell};
 
     use gtk::{
@@ -48,14 +53,14 @@ mod imp {
         TemplateChild,
     };
 
-    use log::{debug, info, warn};
+    use log::{debug, warn};
 
     use crate::{
         systemd::{self, data::UnitInfo},
         widget::preferences::data::PREFERENCES,
     };
 
-    use super::{colorise, more_colors::TermColor};
+    use super::colorise;
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
@@ -98,7 +103,7 @@ mod imp {
             let unit = unit.clone();
             let journal_refresh_button = self.journal_refresh_button.clone();
             let oldest_first = false;
-            let journal_color: TermColor = journal_text.color().into();
+            //let journal_color: TermColor = journal_text.color().into();
 
             glib::spawn_future_local(async move {
                 let in_color = PREFERENCES.journal_colors();
@@ -107,7 +112,7 @@ mod imp {
 
                 journal_refresh_button.set_sensitive(false);
 
-                let text = gio::spawn_blocking(move || {
+                let journal_answer = gio::spawn_blocking(move || {
                     match systemd::get_unit_journal(&unit, in_color, oldest_first) {
                         Ok(journal_output) => {
                             let text = if in_color {
@@ -117,13 +122,11 @@ mod imp {
                                     f.write_all(journal_output.as_bytes()).unwrap();
                                 } */
 
-                                let journal_output2 = journal_output.clone();
+                                let tokens: Vec<colorise::Token> =
+                                    colorise::convert_to_tag(&journal_output);
 
-                                let asdf = colorise::convert_to_tag(&journal_output2);
-
-                             
                                 //colorise::write_text(&asdf, buf);
-                  /*               let text =
+                                /*               let text =
                                     colorise::convert_to_mackup(&journal_output, &journal_color);
                                 let text = text.to_string(); */
 
@@ -133,9 +136,9 @@ mod imp {
                                     f.write_all(text.as_bytes()).unwrap();
                                 } */
 
-                                Ok(asdf)
+                                JournalAnswers::Tokens(tokens, journal_output)
                             } else {
-                                Err(journal_output)
+                                JournalAnswers::Text(journal_output)
                             };
 
                             //info!("Log size {} chars", text.len());
@@ -146,7 +149,7 @@ mod imp {
                                 Some(s) => s.clone(),
                                 None => String::from(""),
                             };
-                            Err(text)
+                            JournalAnswers::Markup(text)
                         }
                     }
                 })
@@ -156,16 +159,18 @@ mod imp {
                 let buf = journal_text.buffer();
                 buf.set_text(""); // clear text
 
-                match text {
-                    Ok(a)  =>{
-
+                match journal_answer {
+                    JournalAnswers::Tokens(tokens, text) => {
+                        colorise::write_text(&tokens, &buf, &text);
                     }
-                    Err(s)  =>{
-                        buf.set_text(&s);
+                    JournalAnswers::Text(text) => buf.set_text(&text),
+                    JournalAnswers::Markup(markup_text) => {
+                        let mut start_iter = buf.start_iter();
+                        buf.insert_markup(&mut start_iter, &markup_text);
                     }
                 };
 
-          /*       if in_color {
+                /*       if in_color {
                     let mut start_iter = buf.start_iter();
                     buf.insert_markup(&mut start_iter, &text);
                 } else {

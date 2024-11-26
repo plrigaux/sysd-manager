@@ -1,6 +1,6 @@
 //https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
 
-use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
+use std::{fmt::Debug, sync::LazyLock};
 
 use gtk::{pango, prelude::TextBufferExt};
 use log::{debug, info, warn};
@@ -39,19 +39,19 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     re
 });
 
-static RE_AMP: LazyLock<Regex> = LazyLock::new(|| {
+/* static RE_AMP: LazyLock<Regex> = LazyLock::new(|| {
     let re_amp = Regex::new(r"[\&\u{00A8}]").unwrap();
     re_amp
-});
+}); */
 
 // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
-pub fn convert_to_mackup<'a>(text: &'a str, text_color: &'a TermColor) -> Cow<'a, str> {
+/* pub fn convert_to_mackup<'a>(text: &'a str, text_color: &'a TermColor) -> Cow<'a, str> {
     /*   let token_list = get_tokens(text);
 
     make_markup(text, &token_list, text_color) */
     todo!()
 }
-
+ */
 pub fn convert_to_tag(text: &str) -> Vec<Token> {
     let token_list = get_tokens(text);
 
@@ -106,7 +106,7 @@ fn get_tokens(text: &str) -> Vec<Token> {
     }
     token_list
 }
-
+/* 
 fn make_markup<'a>(
     text: &'a str,
     token_list: &Vec<Token>,
@@ -128,9 +128,7 @@ fn make_markup<'a>(
 
                 let sub_text = &text[*start..*end];
 
-                let replaced = RE_AMP.replace_all(sub_text, "&amp;");
-
-                out.push_str(&replaced)
+                out.push_str(&sub_text)
             }
             Token::Intensity(intensity) => sgr.set_intensity(Some(*intensity)),
             Token::FgColor(term_color) => sgr.set_foreground_color(Some(*term_color)),
@@ -174,15 +172,15 @@ fn make_markup<'a>(
 
     Cow::from(out)
 }
-
-pub(super) fn write_text(asdf: &Vec<Token>, buf: &gtk::TextBuffer, text: &str) {
+ */
+pub(super) fn write_text(tokens: &Vec<Token>, buf: &gtk::TextBuffer, text: &str) {
     let tag_table = buf.tag_table();
 
     let mut iter = buf.start_iter();
 
     let mut sgr = SelectGraphicRendition::default();
 
-    for token in asdf {
+    for token in tokens {
         match token {
             Token::Text(start, end) => {
                 // !sgr.append_tags(&mut out, first);
@@ -381,14 +379,14 @@ pub struct SelectGraphicRendition {
     strikeout: Option<bool>,
 }
 
-macro_rules! span {
+/* macro_rules! span {
     (  $first:expr, $out:expr  ) => {{
         if !$first {
             $out.push_str("<span");
             $first = true
         }
     }};
-}
+} */
 
 impl SelectGraphicRendition {
     fn reset(&mut self) {
@@ -437,7 +435,7 @@ impl SelectGraphicRendition {
     fn set_blink(&mut self, blink: bool) {
         self.blink = Some(blink);
     }
-
+/* 
     fn append_tags(&self, out: &mut String, first: bool) -> bool {
         if !first {
             out.push_str("</span>")
@@ -495,7 +493,7 @@ impl SelectGraphicRendition {
 
         write_something
     }
-
+ */
     fn apply_tags(
         &mut self,
         tag_table: &gtk::TextTagTable,
@@ -554,12 +552,12 @@ pub enum Underline {
     Double,
 }
 impl Underline {
-    fn pango_str(&self) -> &str {
+/*     fn pango_str(&self) -> &str {
         match self {
             Underline::Single => "single",
             Underline::Double => "double",
         }
-    }
+    } */
 
     fn pango(&self) -> pango::Underline {
         match self {
@@ -574,7 +572,7 @@ mod tests {
 
     use gtk::gdk;
 
-    use crate::widget::journal::colorise::Intensity;
+    
 
     use super::*;
 
@@ -603,7 +601,7 @@ mod tests {
         }
     }
 
-    #[test]
+/*     #[test]
     fn test_full() {
         for s in TEST_STRS {
             println!("{}", s);
@@ -612,9 +610,9 @@ mod tests {
 
             println!("{}", result);
         }
-    }
+    } */
 
-    #[test]
+/*     #[test]
     fn test_reverse() {
         let s = "reverse test \u{1b}[7m reverse test \u{1b}[0;m test test \u{1b}[97mwhite\u{1b}[0m";
         println!("{}", s);
@@ -622,7 +620,7 @@ mod tests {
         let result = convert_to_mackup(s, &TermColor::Black);
 
         println!("{}", result);
-    }
+    } */
 
     #[test]
     fn test_color_regex() {
@@ -668,7 +666,7 @@ mod tests {
         assert_eq!(color, color_term.get_vga(),);
     }
 
-    #[test]
+/*     #[test]
     fn test_make_markup() {
         let text = "this text is in italic not in bold.";
         let vaec = vec![
@@ -684,7 +682,7 @@ mod tests {
         let out = make_markup(text, &vaec, &TermColor::Black);
 
         println!("out: {out}");
-    }
+    } */
 
     /*     #[test]
     fn test_make_markup2() {
@@ -730,7 +728,7 @@ mod tests {
         }
     }
 
-    #[test]
+/*     #[test]
     fn test_link_regex3() {
         let test_text =  "Oct 16 16:03:05 fedora systemd[1]: \u{1b}[0;1;38;5;185m\u{1b}]8;;file://fedora/etc/systemd/system/tiny_daemon.service\u{7}/etc/s\u{1b}[0;1;39m\u{1b}[0;1;38;5;185mystemd/system/tiny_daemon.service\u{1b}]8;;\u{7}:18: Unknown key 'test' in section [Install], ignoring.\u{1b}[0m\n";
 
@@ -745,7 +743,7 @@ mod tests {
         let out = make_markup(test_text, &token_list, &TermColor::Black);
 
         println!("out {out}");
-    }
+    } */
 
     #[test]
     fn test_tok_amp() {
@@ -755,7 +753,7 @@ mod tests {
 
         println!("out {:?}", token_list);
     }
-
+/* 
     #[test]
     fn test_tok_amp_regex() {
         //let re_amp = Regex::new(r"\&").unwrap();
@@ -766,8 +764,8 @@ mod tests {
 
         println!("replaced {}", replaced);
     }
-
-    #[test]
+ */
+/*     #[test]
     fn test_tok_amp_convert() {
         //let re_amp = Regex::new(r"\&").unwrap();
 
@@ -776,5 +774,5 @@ mod tests {
         let out = convert_to_mackup(test_text, &TermColor::Black);
 
         println!("replaced {}", out);
-    }
+    } */
 }

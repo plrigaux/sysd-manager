@@ -236,7 +236,7 @@ pub fn get_unit_journal(
 ) -> Result<String, SystemdErrors> {
     let unit_path = unit.primary();
 
-    let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path];
+    let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path, "-n", "100"];
     
     debug!("{JOURNALCTL} -b -u {unit_path}");
 
