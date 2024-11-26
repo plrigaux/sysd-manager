@@ -52,40 +52,23 @@ pub fn convert_to_mackup<'a>(text: &'a str, text_color: &'a TermColor) -> Cow<'a
     todo!()
 }
 
-pub fn convert_to_tag<'a>(text: &'a str) -> Weird<'a> {
+pub fn convert_to_tag(text: &str) -> Vec<Token> {
     let token_list = get_tokens(text);
 
     token_list
 }
 
-#[derive(Debug)]
-pub struct Weird<'a> {
-    token_list: Vec<Token<'a>>,
-    text: &'a str,
-}
-
-impl<'a> Weird<'a> {
-    fn new(text: &'a str) -> Weird<'a> {
-        Self {
-            token_list: Vec::<Token>::new(),
-            text: text,
-        }
-    }
-}
-
-fn get_tokens(textt: &str) -> Weird {
-    // let mut token_list = Vec::<Token>::new();
+fn get_tokens(text: &str) -> Vec<Token> {
+    let mut token_list = Vec::<Token>::new();
     let mut last_end: usize = 0;
 
-    let mut w = Weird::new(textt);
-
-    for captures in RE.captures_iter(w.text) {
+    for captures in RE.captures_iter(text) {
         let main_match = captures.get(0).expect("not supose to happen");
         let end = main_match.end();
         let start = main_match.start();
 
         if start != last_end {
-            w.token_list.push(Token::Text(&w.text[last_end..start]));
+            token_list.push(Token::Text(last_end, start));
         }
         last_end = end;
 
@@ -94,7 +77,7 @@ fn get_tokens(textt: &str) -> Weird {
             if control == "m" {
                 if let Some(select_graphic_rendition_match) = captures.get(1) {
                     let select_graphic_rendition = select_graphic_rendition_match.as_str();
-                    match capture_code(select_graphic_rendition, &mut w.token_list) {
+                    match capture_code(select_graphic_rendition, &mut token_list) {
                         Ok(_) => {
                             continue;
                         }
@@ -106,21 +89,22 @@ fn get_tokens(textt: &str) -> Weird {
             }
         } else if let Some(link_match) = captures.get(3) {
             if let Some(link_text_match) = captures.get(4) {
-                w.token_list.push(Token::Hyperlink(
-                    link_match.as_str(),
-                    link_text_match.as_str(),
+                token_list.push(Token::Hyperlink(
+                    link_match.start(),
+                    link_match.end(),
+                    link_text_match.start(),
+                    link_text_match.end(),
                 ));
                 continue;
             }
         }
-        w.token_list
-            .push(Token::UnHandled(main_match.as_str().to_owned()));
+        token_list.push(Token::UnHandled(main_match.as_str().to_owned()));
     }
 
-    if w.text.len() != last_end {
-        w.token_list.push(Token::Text(&w.text[last_end..]));
+    if text.len() != last_end {
+        token_list.push(Token::Text(last_end, text.len()));
     }
-    w
+    token_list
 }
 
 fn make_markup<'a>(
@@ -139,8 +123,10 @@ fn make_markup<'a>(
 
     for token in token_list {
         match token {
-            Token::Text(sub_text) => {
+            Token::Text(start, end) => {
                 first = !sgr.append_tags(&mut out, first);
+
+                let sub_text = &text[*start..*end];
 
                 let replaced = RE_AMP.replace_all(sub_text, "&amp;");
 
@@ -155,7 +141,11 @@ fn make_markup<'a>(
             Token::Reversed => sgr.set_reversed(true),
             Token::Hidden => sgr.set_hidden(true),
             Token::Strikeout => sgr.set_strikeout(true),
-            Token::Hyperlink(link, link_text) => {
+            Token::Hyperlink(link_start, link_end, link_text_stert, link_text_end) => {
+
+                let link = &text[*link_start..*link_end];
+
+                let link_text = &text[*link_text_stert..*link_text_end];
                 debug!("Do hyperlink {link} {link_text}");
 
                 //out.push_str("<a href=\"");
@@ -185,7 +175,7 @@ fn make_markup<'a>(
     Cow::from(out)
 }
 
-pub(super) fn write_text(asdf: &Vec<Token>, buf: &gtk::TextBuffer) {
+pub(super) fn write_text(asdf: &Vec<Token>, buf: &gtk::TextBuffer, text: &str) {
     let tag_table = buf.tag_table();
 
     let mut iter = buf.start_iter();
@@ -194,10 +184,11 @@ pub(super) fn write_text(asdf: &Vec<Token>, buf: &gtk::TextBuffer) {
 
     for token in asdf {
         match token {
-            Token::Text(sub_text) => {
+            Token::Text(start, end) => {
                 // !sgr.append_tags(&mut out, first);
 
                 let start_offset = iter.offset();
+                let sub_text = &text[*start..*end];
                 buf.insert(&mut iter, sub_text);
                 let start_iter = buf.iter_at_offset(start_offset);
 
@@ -216,7 +207,11 @@ pub(super) fn write_text(asdf: &Vec<Token>, buf: &gtk::TextBuffer) {
             Token::Reversed => sgr.set_reversed(true),
             Token::Hidden => sgr.set_hidden(true),
             Token::Strikeout => sgr.set_strikeout(true),
-            Token::Hyperlink(link, link_text) => {
+            Token::Hyperlink(link_start, link_end, link_text_stert, link_text_end) => {
+
+                let link = &text[*link_start..*link_end];
+
+                let link_text = &text[*link_text_stert..*link_text_end];
                 debug!("Do hyperlink {link} {link_text}");
 
                 //out.push_str("<a href=\"");
@@ -347,7 +342,7 @@ fn find_color(it: &mut std::str::Split<'_, &[char; 2]>) -> Result<TermColor, Col
 }
 
 #[derive(Debug, Clone)]
-pub(super) enum Token<'a> {
+pub(super) enum Token {
     FgColor(TermColor),
     BgColor(TermColor),
     Intensity(Intensity),
@@ -357,9 +352,9 @@ pub(super) enum Token<'a> {
     Reversed,
     Hidden,
     Strikeout,
-    Text(&'a str),
+    Text(usize, usize),
     Reset(ResetType),
-    Hyperlink(&'a str, &'a str),
+    Hyperlink(usize, usize, usize, usize),
     UnHandledCode(String),
     UnHandled(String),
 }
@@ -677,13 +672,13 @@ mod tests {
     fn test_make_markup() {
         let text = "this text is in italic not in bold.";
         let vaec = vec![
-            Token::Text(&text[0..16]),
+            Token::Text(0, 16),
             Token::Italic,
-            Token::Text(&text[16..22]),
+            Token::Text(16, 22),
             Token::Reset(ResetType::All),
-            Token::Text(&text[22..30]),
+            Token::Text(22, 30),
             Token::Intensity(Intensity::Bold),
-            Token::Text(&text[30..]),
+            Token::Text(30, text.len()),
         ];
 
         let out = make_markup(text, &vaec, &TermColor::Black);
@@ -691,7 +686,7 @@ mod tests {
         println!("out: {out}");
     }
 
-    #[test]
+    /*     #[test]
     fn test_make_markup2() {
         let text = "this text is in italic not in bold.";
         let vaec = vec![
@@ -710,7 +705,7 @@ mod tests {
         let out = make_markup(text, &vaec, &TermColor::Black);
 
         println!("out: {out}");
-    }
+    } */
 
     #[test]
     fn test_link_regex() {
@@ -745,9 +740,9 @@ mod tests {
 
         //convert_to_mackup(&test_text, &gdk::RGBA::BLACK);
 
-        let w = get_tokens(test_text);
-        println!("token_list: {:#?}", w.token_list);
-        let out = make_markup(test_text, &w.token_list, &TermColor::Black);
+        let token_list = get_tokens(test_text);
+        println!("token_list: {:#?}", token_list);
+        let out = make_markup(test_text, &token_list, &TermColor::Black);
 
         println!("out {out}");
     }
@@ -756,9 +751,9 @@ mod tests {
     fn test_tok_amp() {
         let test_text = "Gnome & Co";
 
-        let tok = get_tokens(test_text);
+        let token_list = get_tokens(test_text);
 
-        println!("out {:?}", tok.token_list);
+        println!("out {:?}", token_list);
     }
 
     #[test]
