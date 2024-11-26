@@ -12,7 +12,7 @@ use std::sync::LazyLock;
 use data::UnitInfo;
 use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
 use gtk::glib::GString;
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
@@ -237,6 +237,9 @@ pub fn get_unit_journal(
     let unit_path = unit.primary();
 
     let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path];
+    
+    debug!("{JOURNALCTL} -b -u {unit_path}");
+
     let env = [("SYSTEMD_COLORS", "true")];
     let environment_variable: Option<&[(&str, &str)]> = if in_color { Some(&env) } else { None };
 

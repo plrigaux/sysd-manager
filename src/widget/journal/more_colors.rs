@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 use std::num::ParseIntError;
 
-use gtk::gdk;
+use crate::gtk::glib::translate::IntoGlib;
+use gtk::{gdk, pango};
 
 pub fn get_256color(code: u8) -> TermColor {
     let color = match code {
@@ -108,6 +109,27 @@ impl TermColor {
         }
     }
 
+    pub fn get_rgba(&self) -> gdk::RGBA {
+        match self {
+            TermColor::Black => gdk::RGBA::BLACK,
+            TermColor::Red => gdk::RGBA::RED,
+            TermColor::Green => gdk::RGBA::GREEN,
+            TermColor::Blue => gdk::RGBA::BLUE,
+            TermColor::White => gdk::RGBA::WHITE,
+            TermColor::VGA(r, g, b) => gdk::RGBA::new(
+                *r as f32 / 255f32,
+                *g as f32 / 255f32,
+                *b as f32 / 255f32,
+                1f32,
+            ),
+            _ => {
+                let vga = self.get_vga();
+                vga.get_rgba()
+            }
+           
+        }
+    }
+
     pub fn new_vga(r: &str, g: &str, b: &str) -> Result<Self, ColorCodeError> {
         let r: u8 = r.parse()?;
         let g: u8 = g.parse()?;
@@ -154,10 +176,17 @@ pub enum Intensity {
 }
 
 impl Intensity {
-    pub fn pango(&self) -> &str {
+    pub fn pango_str(&self) -> &str {
         match self {
             Intensity::Bold => "bold",
             Intensity::Faint => "light",
+        }
+    }
+
+    pub(crate) fn pango_i32(&self) -> i32 {
+        match self {
+            Intensity::Bold => pango::Weight::Bold.into_glib(),
+            Intensity::Faint => pango::Weight::Light.into_glib(),
         }
     }
 }

@@ -184,7 +184,7 @@ impl Token {
         sbuilder.push_str("\"");
         if let Some(intensity) = style.intensity {
             sbuilder.push_str(" weight=\"");
-            sbuilder.push_str(intensity.pango());
+            sbuilder.push_str(intensity.pango_str());
             sbuilder.push('\"');
         }
         sbuilder.push('>');

@@ -2,6 +2,7 @@
 
 use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
 
+use gtk::{pango, prelude::TextBufferExt};
 use log::{debug, info, warn};
 use regex::Regex;
 
@@ -38,24 +39,53 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     re
 });
 
+static RE_AMP: LazyLock<Regex> = LazyLock::new(|| {
+    let re_amp = Regex::new(r"[\&\u{00A8}]").unwrap();
+    re_amp
+});
+
 // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
 pub fn convert_to_mackup<'a>(text: &'a str, text_color: &'a TermColor) -> Cow<'a, str> {
-    let token_list = get_tokens(text);
+    /*   let token_list = get_tokens(text);
 
-    make_markup(text, &token_list, text_color)
+    make_markup(text, &token_list, text_color) */
+    todo!()
 }
 
-fn get_tokens(text: &str) -> Vec<Token> {
-    let mut token_list = Vec::<Token>::new();
+pub fn convert_to_tag<'a>(text: &'a str) -> Weird<'a> {
+    let token_list = get_tokens(text);
+
+    token_list
+}
+
+#[derive(Debug)]
+pub struct Weird<'a> {
+    token_list: Vec<Token<'a>>,
+    text: &'a str,
+}
+
+impl<'a> Weird<'a> {
+    fn new(text: &'a str) -> Weird<'a> {
+        Self {
+            token_list: Vec::<Token>::new(),
+            text: text,
+        }
+    }
+}
+
+fn get_tokens(textt: &str) -> Weird {
+    // let mut token_list = Vec::<Token>::new();
     let mut last_end: usize = 0;
 
-    for captures in RE.captures_iter(text) {
+    let mut w = Weird::new(textt);
+
+    for captures in RE.captures_iter(w.text) {
         let main_match = captures.get(0).expect("not supose to happen");
         let end = main_match.end();
         let start = main_match.start();
 
         if start != last_end {
-            token_list.push(Token::Text(&text[last_end..start]));
+            w.token_list.push(Token::Text(&w.text[last_end..start]));
         }
         last_end = end;
 
@@ -64,7 +94,7 @@ fn get_tokens(text: &str) -> Vec<Token> {
             if control == "m" {
                 if let Some(select_graphic_rendition_match) = captures.get(1) {
                     let select_graphic_rendition = select_graphic_rendition_match.as_str();
-                    match capture_code(select_graphic_rendition, &mut token_list) {
+                    match capture_code(select_graphic_rendition, &mut w.token_list) {
                         Ok(_) => {
                             continue;
                         }
@@ -76,20 +106,21 @@ fn get_tokens(text: &str) -> Vec<Token> {
             }
         } else if let Some(link_match) = captures.get(3) {
             if let Some(link_text_match) = captures.get(4) {
-                token_list.push(Token::Hyperlink(
+                w.token_list.push(Token::Hyperlink(
                     link_match.as_str(),
                     link_text_match.as_str(),
                 ));
                 continue;
             }
         }
-        token_list.push(Token::UnHandled(main_match.as_str().to_owned()));
+        w.token_list
+            .push(Token::UnHandled(main_match.as_str().to_owned()));
     }
 
-    if text.len() != last_end {
-        token_list.push(Token::Text(&text[last_end..]));
+    if w.text.len() != last_end {
+        w.token_list.push(Token::Text(&w.text[last_end..]));
     }
-    token_list
+    w
 }
 
 fn make_markup<'a>(
@@ -105,11 +136,15 @@ fn make_markup<'a>(
 
     let mut sgr = SelectGraphicRendition::default();
     let mut first = true;
+
     for token in token_list {
         match token {
             Token::Text(sub_text) => {
                 first = !sgr.append_tags(&mut out, first);
-                out.push_str(sub_text)
+
+                let replaced = RE_AMP.replace_all(sub_text, "&amp;");
+
+                out.push_str(&replaced)
             }
             Token::Intensity(intensity) => sgr.set_intensity(Some(*intensity)),
             Token::FgColor(term_color) => sgr.set_foreground_color(Some(*term_color)),
@@ -126,9 +161,9 @@ fn make_markup<'a>(
                 //out.push_str("<a href=\"");
                 //out.push_str(&link_text);
                 //out.push_str("\">");
-                let new_link_text = convert_to_mackup(link_text, &TermColor::Black);
-                out.push_str(&new_link_text); //TODO escape <>
-                                              //out.push_str("</a>");
+                // let new_link_text = convert_to_mackup(link_text, &TermColor::Black);
+                // out.push_str(&new_link_text); //TODO escape <>
+                //out.push_str("</a>");
             }
             Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
             Token::UnHandled(a) => debug!("UnHandled {a}"),
@@ -150,8 +185,64 @@ fn make_markup<'a>(
     Cow::from(out)
 }
 
+pub(super) fn write_text(asdf: &Vec<Token>, buf: &gtk::TextBuffer) {
+    let tag_table = buf.tag_table();
+
+    let mut iter = buf.start_iter();
+
+    let mut sgr = SelectGraphicRendition::default();
+
+    for token in asdf {
+        match token {
+            Token::Text(sub_text) => {
+                // !sgr.append_tags(&mut out, first);
+
+                let start_offset = iter.offset();
+                buf.insert(&mut iter, sub_text);
+                let start_iter = buf.iter_at_offset(start_offset);
+
+                sgr.apply_tags(&tag_table, buf, &start_iter, &iter);
+                /*                 for tag in  sgr.tags.iter() {
+                    buf.apply_tag(tag, &start_iter, &iter);
+                }  */
+            }
+
+            Token::Intensity(intensity) => sgr.set_intensity(Some(*intensity)),
+            Token::FgColor(term_color) => sgr.set_foreground_color(Some(*term_color)),
+            Token::BgColor(term_color) => sgr.set_background_color(Some(*term_color)),
+            Token::Italic => sgr.set_italic(true),
+            Token::Underline(underline) => sgr.set_underline(*underline),
+            Token::Blink => sgr.set_blink(true),
+            Token::Reversed => sgr.set_reversed(true),
+            Token::Hidden => sgr.set_hidden(true),
+            Token::Strikeout => sgr.set_strikeout(true),
+            Token::Hyperlink(link, link_text) => {
+                debug!("Do hyperlink {link} {link_text}");
+
+                //out.push_str("<a href=\"");
+                //out.push_str(&link_text);
+                //out.push_str("\">");
+                //let new_link_text = convert_to_mackup(link_text, &TermColor::Black);
+
+                //out.push_str(&new_link_text); //TODO escape <>
+                //out.push_str("</a>");
+            }
+            Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
+            Token::UnHandled(a) => debug!("UnHandled {a}"),
+
+            Token::Reset(reset_type) => match reset_type {
+                ResetType::All => sgr.reset(),
+                ResetType::FgColor => sgr.set_foreground_color(None),
+                ResetType::BgColor => sgr.set_background_color(None),
+                ResetType::Intensity => sgr.set_intensity(None),
+                ResetType::Hidden => sgr.set_hidden(false),
+            },
+        }
+    }
+}
+
 fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeError> {
-    let mut it = code_line.split(&[';',':']); // insome case they use : as separator
+    let mut it = code_line.split(&[';', ':']); // insome case they use : as separator
 
     while let Some(code) = it.next() {
         let token = match code {
@@ -255,8 +346,8 @@ fn find_color(it: &mut std::str::Split<'_, &[char; 2]>) -> Result<TermColor, Col
     Ok(color)
 }
 
-#[derive(Debug)]
-enum Token<'a> {
+#[derive(Debug, Clone)]
+pub(super) enum Token<'a> {
     FgColor(TermColor),
     BgColor(TermColor),
     Intensity(Intensity),
@@ -273,8 +364,8 @@ enum Token<'a> {
     UnHandled(String),
 }
 
-#[derive(Debug)]
-enum ResetType {
+#[derive(Debug, Clone)]
+pub(super) enum ResetType {
     All,
     FgColor,
     BgColor,
@@ -283,7 +374,7 @@ enum ResetType {
 }
 
 #[derive(Default, PartialEq, Eq)]
-struct SelectGraphicRendition {
+pub struct SelectGraphicRendition {
     foreground_color: Option<TermColor>,
     background_color: Option<TermColor>,
     intensity: Option<Intensity>,
@@ -363,7 +454,7 @@ impl SelectGraphicRendition {
             span!(write_something, out);
 
             out.push_str(" underline=\"");
-            out.push_str(underline.pango());
+            out.push_str(underline.pango_str());
             out.push('\"');
         }
 
@@ -383,7 +474,7 @@ impl SelectGraphicRendition {
             span!(write_something, out);
 
             out.push_str(" weight=\"");
-            out.push_str(intensity.pango());
+            out.push_str(intensity.pango_str());
             out.push('\"');
         }
 
@@ -409,6 +500,56 @@ impl SelectGraphicRendition {
 
         write_something
     }
+
+    fn apply_tags(
+        &mut self,
+        tag_table: &gtk::TextTagTable,
+        buf: &gtk::TextBuffer,
+        start_iter: &gtk::TextIter,
+        iter: &gtk::TextIter,
+    ) {
+        if let Some(underline) = self.underline {
+            let tt = gtk::TextTag::builder().underline(underline.pango()).build();
+            tag_table.add(&tt);
+            buf.apply_tag(&tt, start_iter, iter);
+        }
+
+        if let Some(strikeout) = self.strikeout {
+            let tt = gtk::TextTag::builder().strikethrough(strikeout).build();
+            tag_table.add(&tt);
+            buf.apply_tag(&tt, start_iter, iter);
+        }
+
+        if let Some(_italic) = self.italic {
+            let tt = gtk::TextTag::builder().style(pango::Style::Italic).build();
+            tag_table.add(&tt);
+            buf.apply_tag(&tt, start_iter, iter);
+        }
+
+        if let Some(intensity) = self.intensity {
+            let tt = gtk::TextTag::builder()
+                .weight(intensity.pango_i32())
+                .build();
+            tag_table.add(&tt);
+            buf.apply_tag(&tt, start_iter, iter);
+        }
+
+        if let Some(color) = self.foreground_color {
+            let tt = gtk::TextTag::builder()
+                .foreground_rgba(&color.get_rgba())
+                .build();
+            tag_table.add(&tt);
+            buf.apply_tag(&tt, start_iter, iter);
+        }
+
+        if let Some(color) = self.background_color {
+            let tt = gtk::TextTag::builder()
+                .background_rgba(&color.get_rgba())
+                .build();
+            tag_table.add(&tt);
+            buf.apply_tag(&tt, start_iter, iter);
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -418,10 +559,17 @@ pub enum Underline {
     Double,
 }
 impl Underline {
-    fn pango(&self) -> &str {
+    fn pango_str(&self) -> &str {
         match self {
             Underline::Single => "single",
             Underline::Double => "double",
+        }
+    }
+
+    fn pango(&self) -> pango::Underline {
+        match self {
+            Underline::Single => pango::Underline::Single,
+            Underline::Double => pango::Underline::Double,
         }
     }
 }
@@ -597,10 +745,41 @@ mod tests {
 
         //convert_to_mackup(&test_text, &gdk::RGBA::BLACK);
 
-        let token_list = get_tokens(test_text);
-        println!("token_list: {:#?}", token_list);
-        let out = make_markup(test_text, &token_list, &TermColor::Black);
+        let w = get_tokens(test_text);
+        println!("token_list: {:#?}", w.token_list);
+        let out = make_markup(test_text, &w.token_list, &TermColor::Black);
 
         println!("out {out}");
+    }
+
+    #[test]
+    fn test_tok_amp() {
+        let test_text = "Gnome & Co";
+
+        let tok = get_tokens(test_text);
+
+        println!("out {:?}", tok.token_list);
+    }
+
+    #[test]
+    fn test_tok_amp_regex() {
+        //let re_amp = Regex::new(r"\&").unwrap();
+
+        let test_text = "Gnome & Co";
+
+        let replaced = RE_AMP.replace_all(test_text, "&amp;");
+
+        println!("replaced {}", replaced);
+    }
+
+    #[test]
+    fn test_tok_amp_convert() {
+        //let re_amp = Regex::new(r"\&").unwrap();
+
+        let test_text = "Gnome & Co";
+
+        let out = convert_to_mackup(test_text, &TermColor::Black);
+
+        println!("replaced {}", out);
     }
 }

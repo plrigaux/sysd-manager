@@ -3,7 +3,9 @@ use crate::systemd::data::UnitInfo;
 mod colorise;
 pub mod more_colors;
 
-use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+use gtk::{glib, prelude::TextBufferExt, subclass::prelude::ObjectSubclassIsExt, TextBuffer};
+
+use super::unit_file_panel::dosini::Token;
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -46,7 +48,7 @@ mod imp {
         TemplateChild,
     };
 
-    use log::{debug, warn};
+    use log::{debug, info, warn};
 
     use crate::{
         systemd::{self, data::UnitInfo},
@@ -92,11 +94,11 @@ mod imp {
 
         /// Updates the associated journal `TextView` with the contents of the unit's journal log.
         fn update_journal(&self, unit: &UnitInfo) {
-            
             let journal_text: gtk::TextView = self.journal_text.clone();
             let unit = unit.clone();
             let journal_refresh_button = self.journal_refresh_button.clone();
-            let oldest_first = true;
+            let oldest_first = false;
+            let journal_color: TermColor = journal_text.color().into();
 
             glib::spawn_future_local(async move {
                 let in_color = PREFERENCES.journal_colors();
@@ -105,36 +107,73 @@ mod imp {
 
                 journal_refresh_button.set_sensitive(false);
 
-                let text =
-                    gio::spawn_blocking(move || match systemd::get_unit_journal(&unit, in_color, oldest_first) {
-                        Ok(journal_output) => journal_output,
+                let text = gio::spawn_blocking(move || {
+                    match systemd::get_unit_journal(&unit, in_color, oldest_first) {
+                        Ok(journal_output) => {
+                            let text = if in_color {
+                                /*   if unit.primary().eq("user@1000.service") {
+                                    let mut f = std::fs::File::create("1000_raw.txt").unwrap();
+                                    use std::io::Write;
+                                    f.write_all(journal_output.as_bytes()).unwrap();
+                                } */
+
+                                let journal_output2 = journal_output.clone();
+
+                                let asdf = colorise::convert_to_tag(&journal_output2);
+
+                             
+                                //colorise::write_text(&asdf, buf);
+                  /*               let text =
+                                    colorise::convert_to_mackup(&journal_output, &journal_color);
+                                let text = text.to_string(); */
+
+                                /*          if unit.primary().eq("user@1000.service") {
+                                    let mut f = std::fs::File::create("1000_color.txt").unwrap();
+                                    use std::io::Write;
+                                    f.write_all(text.as_bytes()).unwrap();
+                                } */
+
+                                Ok(asdf)
+                            } else {
+                                Err(journal_output)
+                            };
+
+                            //info!("Log size {} chars", text.len());
+                            text
+                        }
                         Err(error) => {
                             let text = match error.gui_description() {
                                 Some(s) => s.clone(),
                                 None => String::from(""),
                             };
-                            text
+                            Err(text)
                         }
-                    })
-                    .await
-                    .expect("Task needs to finish successfully.");
+                    }
+                })
+                .await
+                .expect("Task needs to finish successfully.");
 
                 let buf = journal_text.buffer();
                 buf.set_text(""); // clear text
 
-                if in_color {
+                match text {
+                    Ok(a)  =>{
+
+                    }
+                    Err(s)  =>{
+                        buf.set_text(&s);
+                    }
+                };
+
+          /*       if in_color {
                     let mut start_iter = buf.start_iter();
-                    let journal_color: TermColor = journal_text.color().into();
-                    let text = colorise::convert_to_mackup(&text, &journal_color);
                     buf.insert_markup(&mut start_iter, &text);
                 } else {
                     buf.set_text(&text);
-                }
+                } */
 
                 journal_refresh_button.set_sensitive(true);
-
             });
-
         }
 
         pub(crate) fn set_dark(&self, is_dark: bool) {
