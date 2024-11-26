@@ -28,7 +28,12 @@
         </key>
         <key name="pref-journal-colors" type="b">
             <default>true</default>
-            <summary>To display journal colors</summary>
+            <summary>To display journal's logs colors</summary>
+        </key>
+        <key name="pref-journal-events" type="u">
+            <default>100</default>
+            <summary>Limits number of events returned by the journal.</summary>
+            <description>The 0 value to disable the limit.</description>
         </key>
         <key name="pref-unit-file-highlighting" type="b">
             <default>true</default>
@@ -46,12 +51,10 @@
             </choices>
             <default>'Subprocess call'</default>
             <summary>The mode used to enable / disable unit files</summary>
-            <description>
-                Albeit the application wants to use systemd dbus call most of the time, it
-                appears that to enable or disable unit file systemd isn't the best solution.
-
-                The workaround solution is invoke the subprocesses *systemctl* enable or disable unit files.                
-              </description>
+            <description> Albeit the application wants to use systemd dbus call most of the time, it
+                appears that to enable or disable unit file systemd isn't the best solution. The
+                workaround solution is invoke the subprocesses *systemctl* enable or disable unit
+                files. </description>
         </key>
     </schema>
 </schemalist>

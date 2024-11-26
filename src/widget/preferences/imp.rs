@@ -1,7 +1,7 @@
 use gio::Settings;
 
 use adw::subclass::prelude::*;
-use gtk::prelude::SettingsExt;
+use gtk::prelude::{AdjustmentExt, SettingsExt, ToValue};
 use gtk::subclass::prelude::ObjectImplExt;
 use gtk::{gio, glib};
 use log::{info, warn};
@@ -27,6 +27,9 @@ pub struct PreferencesDialog {
 
     #[template_child]
     pub preference_banner: TemplateChild<adw::Banner>,
+
+    #[template_child]
+    journal_events: TemplateChild<adw::SpinRow>,
 }
 
 #[gtk::template_callbacks]
@@ -55,6 +58,10 @@ impl PreferencesDialog {
         self.journal_colors.set_state(journal_colors);
         self.journal_colors.set_active(journal_colors);
 
+        let events = PREFERENCES.journal_events();
+
+        self.journal_events.set_value(events as f64);
+
         self.unit_file_highlight.set_state(unit_file_colors);
         self.unit_file_highlight.set_active(unit_file_colors);
 
@@ -76,6 +83,15 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         if let Err(e) = self.settings().set_boolean(KEY_PREF_JOURNAL_COLORS, state) {
             warn!("Save setting \"{KEY_PREF_JOURNAL_COLORS}\" error {}", e)
         }
+
+        true
+    }
+
+    #[template_callback]
+    fn journal_events_output(&self, spin: adw::SpinRow) -> bool{
+
+        let asdf = spin.adjustment();
+        info!("journal_event_output {:?}, {:?}", asdf.value(), asdf.to_value());
 
         true
     }

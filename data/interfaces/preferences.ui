@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 0.92.2 -->
 <interface>
   <!-- interface-name preferences.ui -->
-  <requires lib="gtk" version="4.10"/>
-  <requires lib="libadwaita" version="1.5"/>
+  <requires lib="gtk" version="4.16"/>
+  <requires lib="libadwaita" version="1.6"/>
   <template class="PreferencesWindow" parent="AdwPreferencesDialog">
     <child>
       <object class="AdwToolbarView">
@@ -21,6 +21,23 @@
                     <property name="title">Configuration properties</property>
                     <child>
                       <object class="AdwActionRow">
+                        <property name="subtitle">Display a nice text highligth for the unit file</property>
+                        <property name="title">Unit file highlighting</property>
+                        <child>
+                          <object class="GtkSwitch" id="unit_file_highlight">
+                            <property name="valign">baseline-center</property>
+                            <signal name="state-set" handler="unit_file_highlighting_state_set" swapped="yes"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title">Journal properties</property>
+                    <child>
+                      <object class="AdwActionRow">
                         <property name="subtitle">To see the logs in color</property>
                         <property name="title">Journal colors</property>
                         <child>
@@ -32,15 +49,19 @@
                       </object>
                     </child>
                     <child>
-                      <object class="AdwActionRow">
-                        <property name="subtitle">Display a nice text highligth for the unit file</property>
-                        <property name="title">Unit file highlighting</property>
-                        <child>
-                          <object class="GtkSwitch" id="unit_file_highlight">
-                            <property name="valign">baseline-center</property>
-                            <signal name="state-set" handler="unit_file_highlighting_state_set" swapped="yes"/>
+                      <object class="AdwSpinRow" id="journal_events">
+                        <property name="adjustment">
+                          <object class="GtkAdjustment">
+                            <property name="page-increment">10.0</property>
+                            <property name="step-increment">1.0</property>
+                            <property name="upper">4294967295.0</property>
+                            <property name="value">50.0</property>
                           </object>
-                        </child>
+                        </property>
+                        <property name="subtitle">0 to no limits</property>
+                        <property name="subtitle-lines">2</property>
+                        <property name="title">Journal's events limit</property>
+                        <signal name="output" handler="journal_events_output" swapped="yes"/>
                       </object>
                     </child>
                   </object>
