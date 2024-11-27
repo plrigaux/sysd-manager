@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
-<cambalache-project version="0.92.0" target_tk="gtk-4.0">
+<cambalache-project version="0.94.0" target_tk="gtk-4.0">
   <ui>
 	(1,None,"sysdmngr.ui","sysdmngr.ui",None,None,None,None,None,None,None),
 	(5,None,"title_bar.ui","title_bar.ui",None,None,None,None,None,None,None),
@@ -480,7 +480,7 @@
 	(119,45,63,"GtkSignalListItemFactory","bind","col_description_factory_bind",None,None,0,0,None),
 	(120,45,63,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None),
 	(121,21,18,"GtkSwitch","state-set","journal_switch_state_set",None,None,1,0,None),
-	(123,21,20,"AdwSpinRow","output","journal_events_output",None,0,1,0,None)
+	(125,21,20,"AdwSpinRow","wrapped","journal_events_wrapped",None,0,0,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

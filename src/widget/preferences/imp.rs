@@ -1,9 +1,7 @@
 use gio::Settings;
 
 use adw::subclass::prelude::*;
-use gtk::prelude::{AdjustmentExt, SettingsExt, ToValue};
-use gtk::subclass::prelude::ObjectImplExt;
-use gtk::{gio, glib};
+use gtk::{gio, glib, prelude::*};
 use log::{info, warn};
 use std::cell::OnceCell;
 
@@ -88,12 +86,20 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
     }
 
     #[template_callback]
-    fn journal_events_output(&self, spin: adw::SpinRow) -> bool{
+    fn journal_events_changed(&self, spin: adw::SpinRow) {
+        let value = spin.value();
 
-        let asdf = spin.adjustment();
-        info!("journal_event_output {:?}, {:?}", asdf.value(), asdf.to_value());
+        info!("journal_events_changed to {:?}", value);
 
-        true
+        let v32 = if value > f64::from(i32::MAX) {
+            u32::MAX
+        } else if value < f64::from(i32::MIN) {
+            u32::MIN
+        } else {
+            value.round() as u32
+        };
+
+        PREFERENCES.set_journal_events(v32);
     }
 
     #[template_callback]
@@ -113,6 +119,20 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         }
 
         true
+    }
+
+    fn save_preference_settings(&self) {
+        let setting = self.settings();
+
+        if let Err(e) = self
+            .settings
+            .set_boolean(KEY_PREF_APP_FIRST_CONNECTION, false)
+        {
+            warn!(
+                "Save setting \"{KEY_PREF_APP_FIRST_CONNECTION}\" error {}",
+                e
+            )
+        }
     }
 }
 
@@ -161,9 +181,9 @@ impl AdwDialogImpl for PreferencesDialog {
                 )
             }
         }
+
+        self.save_preference_settings();
     }
 }
 
 impl PreferencesDialogImpl for PreferencesDialog {}
-
-// ANCHOR_END: imp
