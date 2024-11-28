@@ -18,7 +18,7 @@ pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
 
 pub const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
-pub const KEY_PREF_JOURNAL_EVENTS: &str = "pref-journal-events";
+pub const KEY_PREF_JOURNAL_MAX_EVENTS: &str = "pref-journal-max-events";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 
@@ -121,7 +121,7 @@ impl Preferences {
         let level = settings.string(KEY_DBUS_LEVEL).into();
         debug!("level {:?} {:?}", level_str, level);
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
-        let journal_events = settings.uint(KEY_PREF_JOURNAL_EVENTS);
+        let journal_events = settings.uint(KEY_PREF_JOURNAL_MAX_EVENTS);
 
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);

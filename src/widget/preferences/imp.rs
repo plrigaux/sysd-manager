@@ -1,16 +1,17 @@
 use gio::Settings;
 
 use adw::subclass::prelude::*;
+use gtk::glib::BoolError;
 use gtk::{gio, glib, prelude::*};
 use log::{info, warn};
 use std::cell::OnceCell;
 
 use crate::systemd_gui;
-use crate::widget::preferences::data::{
-    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_UNIT_FILE_HIGHLIGHTING,
-};
 
-use super::data::PREFERENCES;
+use super::data::{
+    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_MAX_EVENTS,
+    KEY_PREF_UNIT_FILE_HIGHLIGHTING, PREFERENCES,
+};
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
@@ -78,9 +79,6 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 
         self.journal_colors.set_state(state);
         PREFERENCES.set_journal_colors(state);
-        if let Err(e) = self.settings().set_boolean(KEY_PREF_JOURNAL_COLORS, state) {
-            warn!("Save setting \"{KEY_PREF_JOURNAL_COLORS}\" error {}", e)
-        }
 
         true
     }
@@ -108,31 +106,26 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 
         self.unit_file_highlight.set_state(state);
         PREFERENCES.set_unit_file_highlighting(state);
-        if let Err(e) = self
-            .settings()
-            .set_boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING, state)
-        {
-            warn!(
-                "Save setting \"{KEY_PREF_UNIT_FILE_HIGHLIGHTING}\" error {}",
-                e
-            )
-        }
 
         true
     }
 
-    fn save_preference_settings(&self) {
-        let setting = self.settings();
+    fn save_preference_settings(&self) -> Result<(), BoolError> {
+        let settings = self.settings();
 
-        if let Err(e) = self
-            .settings
-            .set_boolean(KEY_PREF_APP_FIRST_CONNECTION, false)
-        {
-            warn!(
-                "Save setting \"{KEY_PREF_APP_FIRST_CONNECTION}\" error {}",
-                e
-            )
-        }
+        let app_first_connection = PREFERENCES.is_app_first_connection();
+        settings.set_boolean(KEY_PREF_APP_FIRST_CONNECTION, app_first_connection)?;
+
+        let journal_colors = PREFERENCES.journal_colors();
+        settings.set_boolean(KEY_PREF_JOURNAL_COLORS, journal_colors)?;
+
+        let journal_events = PREFERENCES.journal_events();
+        settings.set_uint(KEY_PREF_JOURNAL_MAX_EVENTS, journal_events)?;
+
+        let unit_file_colors = PREFERENCES.unit_file_colors();
+        settings.set_boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING, unit_file_colors)?;
+
+        Ok(())
     }
 }
 
@@ -169,20 +162,11 @@ impl AdwDialogImpl for PreferencesDialog {
     fn closed(&self) {
         log::info!("Close preferences window");
 
-        if PREFERENCES.is_app_first_connection() {
-            PREFERENCES.set_app_first_connection(false);
-            if let Err(e) = self
-                .settings()
-                .set_boolean(KEY_PREF_APP_FIRST_CONNECTION, false)
-            {
-                warn!(
-                    "Save setting \"{KEY_PREF_APP_FIRST_CONNECTION}\" error {}",
-                    e
-                )
-            }
-        }
+        PREFERENCES.set_app_first_connection(false);
 
-        self.save_preference_settings();
+        if let Err(error) = self.save_preference_settings() {
+            warn!("Save setting  error {:?}", error)
+        }
     }
 }
 

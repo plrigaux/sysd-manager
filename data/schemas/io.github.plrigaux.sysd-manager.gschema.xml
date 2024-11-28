@@ -30,7 +30,7 @@
             <default>true</default>
             <summary>To display journal's logs colors</summary>
         </key>
-        <key name="pref-journal-events" type="u">
+        <key name="pref-journal-max-events" type="u">
             <default>100</default>
             <summary>Limits number of events returned by the journal.</summary>
             <description>The 0 value to disable the limit.</description>
