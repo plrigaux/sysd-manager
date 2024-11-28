@@ -233,12 +233,19 @@ pub fn get_unit_journal(
     unit: &UnitInfo,
     in_color: bool,
     oldest_first: bool,
+    max_events: u32,
 ) -> Result<String, SystemdErrors> {
     let unit_path = unit.primary();
 
-    let jounal_cmd_line = [JOURNALCTL, "-b", "-u", &unit_path, "-n", "100"];
-    
-    debug!("{JOURNALCTL} -b -u {unit_path}");
+    let mut jounal_cmd_line = vec![JOURNALCTL, "-b", "-u", &unit_path];
+
+    let max_events_str = max_events.to_string();
+    if max_events > 0 {
+        jounal_cmd_line.push("-n"); 
+        jounal_cmd_line.push( &max_events_str);
+    }
+
+    debug!("{:?}", jounal_cmd_line);
 
     let env = [("SYSTEMD_COLORS", "true")];
     let environment_variable: Option<&[(&str, &str)]> = if in_color { Some(&env) } else { None };

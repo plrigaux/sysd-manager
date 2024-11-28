@@ -84,7 +84,7 @@
 	(21,16,"AdwPreferencesGroup",None,7,None,None,None,1,None,None),
 	(21,17,"AdwActionRow",None,16,None,None,None,0,None,None),
 	(21,18,"GtkSwitch","journal_colors",17,None,None,None,0,None,None),
-	(21,20,"AdwSpinRow","journal_events",16,None,None,None,1,None,None),
+	(21,20,"AdwSpinRow","journal_max_events",16,None,None,None,1,None,None),
 	(21,21,"GtkAdjustment",None,20,None,None,None,0,None,None),
 	(29,1,"GtkBox","UnitInfoPanel",None,None,None,None,0,None,None),
 	(29,2,"GtkBox",None,1,None,None,None,0,None,None),
@@ -261,7 +261,6 @@
 	(21,20,"AdwActionRow","subtitle-lines","2",None,None,None,None,None,None,None,None,None),
 	(21,20,"AdwPreferencesRow","title","Journal's events limit",None,None,None,None,None,None,None,None,None),
 	(21,20,"AdwSpinRow","adjustment",None,None,None,None,None,21,None,None,None,None),
-	(21,21,"GtkAdjustment","page-increment","10.0",None,None,None,None,None,None,None,None,None),
 	(21,21,"GtkAdjustment","step-increment","1.0",None,None,None,None,None,None,None,None,None),
 	(21,21,"GtkAdjustment","upper","4294967295.0",None,None,None,None,None,None,None,None,None),
 	(21,21,"GtkAdjustment","value","50.0",None,None,None,None,None,None,None,None,None),
@@ -480,7 +479,7 @@
 	(119,45,63,"GtkSignalListItemFactory","bind","col_description_factory_bind",None,None,0,0,None),
 	(120,45,63,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None),
 	(121,21,18,"GtkSwitch","state-set","journal_switch_state_set",None,None,1,0,None),
-	(125,21,20,"AdwSpinRow","wrapped","journal_events_wrapped",None,0,0,0,None)
+	(126,21,20,"GtkEditable","changed","journal_max_events_changed",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

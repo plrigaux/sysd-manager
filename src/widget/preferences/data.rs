@@ -143,7 +143,7 @@ impl Preferences {
         *self.journal_colors.read().unwrap()
     }
 
-    pub fn journal_events(&self) -> u32 {
+    pub fn journal_max_events(&self) -> u32 {
         *self.journal_events.read().unwrap()
     }
 

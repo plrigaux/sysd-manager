@@ -49,10 +49,9 @@
                       </object>
                     </child>
                     <child>
-                      <object class="AdwSpinRow" id="journal_events">
+                      <object class="AdwSpinRow" id="journal_max_events">
                         <property name="adjustment">
                           <object class="GtkAdjustment">
-                            <property name="page-increment">10.0</property>
                             <property name="step-increment">1.0</property>
                             <property name="upper">4294967295.0</property>
                             <property name="value">50.0</property>
@@ -61,7 +60,7 @@
                         <property name="subtitle">0 to no limits</property>
                         <property name="subtitle-lines">2</property>
                         <property name="title">Journal's events limit</property>
-                        <signal name="changed" handler="journal_events_changed" swapped="yes"/>
+                        <signal name="changed" handler="journal_max_events_changed" swapped="yes"/>
                       </object>
                     </child>
                   </object>

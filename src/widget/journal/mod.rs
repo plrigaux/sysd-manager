@@ -103,6 +103,7 @@ mod imp {
             let unit = unit.clone();
             let journal_refresh_button = self.journal_refresh_button.clone();
             let oldest_first = false;
+            let journal_max_events = PREFERENCES.journal_max_events();
             //let journal_color: TermColor = journal_text.color().into();
 
             glib::spawn_future_local(async move {
@@ -113,36 +114,21 @@ mod imp {
                 journal_refresh_button.set_sensitive(false);
 
                 let journal_answer = gio::spawn_blocking(move || {
-                    match systemd::get_unit_journal(&unit, in_color, oldest_first) {
+                    match systemd::get_unit_journal(&unit, in_color, oldest_first, journal_max_events) {
                         Ok(journal_output) => {
-                            let text = if in_color {
-                                /*   if unit.primary().eq("user@1000.service") {
-                                    let mut f = std::fs::File::create("1000_raw.txt").unwrap();
-                                    use std::io::Write;
-                                    f.write_all(journal_output.as_bytes()).unwrap();
-                                } */
+                            let journal_answers = if in_color {
 
                                 let tokens: Vec<colorise::Token> =
                                     colorise::convert_to_tag(&journal_output);
 
-                                //colorise::write_text(&asdf, buf);
-                                /*               let text =
-                                    colorise::convert_to_mackup(&journal_output, &journal_color);
-                                let text = text.to_string(); */
-
-                                /*          if unit.primary().eq("user@1000.service") {
-                                    let mut f = std::fs::File::create("1000_color.txt").unwrap();
-                                    use std::io::Write;
-                                    f.write_all(text.as_bytes()).unwrap();
-                                } */
-
+                             
                                 JournalAnswers::Tokens(tokens, journal_output)
                             } else {
                                 JournalAnswers::Text(journal_output)
                             };
 
                             //info!("Log size {} chars", text.len());
-                            text
+                            journal_answers
                         }
                         Err(error) => {
                             let text = match error.gui_description() {

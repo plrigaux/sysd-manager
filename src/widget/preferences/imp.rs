@@ -28,7 +28,7 @@ pub struct PreferencesDialog {
     pub preference_banner: TemplateChild<adw::Banner>,
 
     #[template_child]
-    journal_events: TemplateChild<adw::SpinRow>,
+    journal_max_events: TemplateChild<adw::SpinRow>,
 }
 
 #[gtk::template_callbacks]
@@ -57,9 +57,9 @@ impl PreferencesDialog {
         self.journal_colors.set_state(journal_colors);
         self.journal_colors.set_active(journal_colors);
 
-        let events = PREFERENCES.journal_events();
+        let events = PREFERENCES.journal_max_events();
 
-        self.journal_events.set_value(events as f64);
+        self.journal_max_events.set_value(events as f64);
 
         self.unit_file_highlight.set_state(unit_file_colors);
         self.unit_file_highlight.set_active(unit_file_colors);
@@ -82,14 +82,15 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 
         true
     }
-
+   
     #[template_callback]
-    fn journal_events_changed(&self, spin: adw::SpinRow) {
+    fn journal_max_events_changed(&self, spin: adw::SpinRow) {
         let value = spin.value();
+        let text = spin.text();
 
-        info!("journal_events_changed to {:?}", value);
+        info!("journal_events_changed to {:?} , text {:?}", value, text);
 
-        let v32 = if value > f64::from(i32::MAX) {
+        let value32 = if value > f64::from(i32::MAX) {
             u32::MAX
         } else if value < f64::from(i32::MIN) {
             u32::MIN
@@ -97,7 +98,16 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
             value.round() as u32
         };
 
-        PREFERENCES.set_journal_events(v32);
+        let value32_parse = match text.parse::<u32>() {
+            Ok(a) => a,
+            Err(_e) => {
+                warn!("Parse error {:?} to u32", text);
+                //spin.set_text(&value32.to_string());
+                value32
+            }
+        };
+
+        PREFERENCES.set_journal_events(value32_parse);
     }
 
     #[template_callback]
@@ -119,7 +129,7 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         let journal_colors = PREFERENCES.journal_colors();
         settings.set_boolean(KEY_PREF_JOURNAL_COLORS, journal_colors)?;
 
-        let journal_events = PREFERENCES.journal_events();
+        let journal_events = PREFERENCES.journal_max_events();
         settings.set_uint(KEY_PREF_JOURNAL_MAX_EVENTS, journal_events)?;
 
         let unit_file_colors = PREFERENCES.unit_file_colors();
