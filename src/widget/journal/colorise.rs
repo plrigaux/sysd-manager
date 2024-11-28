@@ -39,19 +39,6 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     re
 });
 
-/* static RE_AMP: LazyLock<Regex> = LazyLock::new(|| {
-    let re_amp = Regex::new(r"[\&\u{00A8}]").unwrap();
-    re_amp
-}); */
-
-// echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
-/* pub fn convert_to_mackup<'a>(text: &'a str, text_color: &'a TermColor) -> Cow<'a, str> {
-    /*   let token_list = get_tokens(text);
-
-    make_markup(text, &token_list, text_color) */
-    todo!()
-}
- */
 pub fn convert_to_tag(text: &str) -> Vec<Token> {
     let token_list = get_tokens(text);
 
@@ -106,73 +93,7 @@ fn get_tokens(text: &str) -> Vec<Token> {
     }
     token_list
 }
-/* 
-fn make_markup<'a>(
-    text: &'a str,
-    token_list: &Vec<Token>,
-    _text_color: &TermColor,
-) -> Cow<'a, str> {
-    if token_list.len() == 1 {
-        return Cow::from(text);
-    }
 
-    let mut out = String::with_capacity((text.len() as f32 * 1.5) as usize);
-
-    let mut sgr = SelectGraphicRendition::default();
-    let mut first = true;
-
-    for token in token_list {
-        match token {
-            Token::Text(start, end) => {
-                first = !sgr.append_tags(&mut out, first);
-
-                let sub_text = &text[*start..*end];
-
-                out.push_str(&sub_text)
-            }
-            Token::Intensity(intensity) => sgr.set_intensity(Some(*intensity)),
-            Token::FgColor(term_color) => sgr.set_foreground_color(Some(*term_color)),
-            Token::BgColor(term_color) => sgr.set_background_color(Some(*term_color)),
-            Token::Italic => sgr.set_italic(true),
-            Token::Underline(underline) => sgr.set_underline(*underline),
-            Token::Blink => sgr.set_blink(true),
-            Token::Reversed => sgr.set_reversed(true),
-            Token::Hidden => sgr.set_hidden(true),
-            Token::Strikeout => sgr.set_strikeout(true),
-            Token::Hyperlink(link_start, link_end, link_text_stert, link_text_end) => {
-
-                let link = &text[*link_start..*link_end];
-
-                let link_text = &text[*link_text_stert..*link_text_end];
-                debug!("Do hyperlink {link} {link_text}");
-
-                //out.push_str("<a href=\"");
-                //out.push_str(&link_text);
-                //out.push_str("\">");
-                // let new_link_text = convert_to_mackup(link_text, &TermColor::Black);
-                // out.push_str(&new_link_text); //TODO escape <>
-                //out.push_str("</a>");
-            }
-            Token::UnHandledCode(code) => info!("UnHandledCode {code}"),
-            Token::UnHandled(a) => debug!("UnHandled {a}"),
-
-            Token::Reset(reset_type) => match reset_type {
-                ResetType::All => sgr.reset(),
-                ResetType::FgColor => sgr.set_foreground_color(None),
-                ResetType::BgColor => sgr.set_background_color(None),
-                ResetType::Intensity => sgr.set_intensity(None),
-                ResetType::Hidden => sgr.set_hidden(false),
-            },
-        }
-    }
-
-    if !first {
-        out.push_str("</span>")
-    }
-
-    Cow::from(out)
-}
- */
 pub(super) fn write_text(tokens: &Vec<Token>, buf: &gtk::TextBuffer, text: &str) {
     let tag_table = buf.tag_table();
 
@@ -435,65 +356,7 @@ impl SelectGraphicRendition {
     fn set_blink(&mut self, blink: bool) {
         self.blink = Some(blink);
     }
-/* 
-    fn append_tags(&self, out: &mut String, first: bool) -> bool {
-        if !first {
-            out.push_str("</span>")
-        }
 
-        let mut write_something = false;
-
-        if let Some(underline) = self.underline {
-            span!(write_something, out);
-
-            out.push_str(" underline=\"");
-            out.push_str(underline.pango_str());
-            out.push('\"');
-        }
-
-        if let Some(_strikeout) = self.strikeout {
-            span!(write_something, out);
-
-            out.push_str(" strikethrough=\"true\"");
-        }
-
-        if let Some(_italic) = self.italic {
-            span!(write_something, out);
-
-            out.push_str(" style=\"italic\"");
-        }
-
-        if let Some(intensity) = self.intensity {
-            span!(write_something, out);
-
-            out.push_str(" weight=\"");
-            out.push_str(intensity.pango_str());
-            out.push('\"');
-        }
-
-        if let Some(color) = self.foreground_color {
-            span!(write_something, out);
-
-            out.push_str(" color=\"");
-            out.push_str(&color.get_hexa_code());
-            out.push('\"');
-        }
-
-        if let Some(color) = self.background_color {
-            span!(write_something, out);
-
-            out.push_str(" background=\"");
-            out.push_str(&color.get_hexa_code());
-            out.push('\"');
-        }
-
-        if write_something {
-            out.push('>');
-        }
-
-        write_something
-    }
- */
     fn apply_tags(
         &mut self,
         tag_table: &gtk::TextTagTable,

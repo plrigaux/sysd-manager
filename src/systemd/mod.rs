@@ -241,8 +241,8 @@ pub fn get_unit_journal(
 
     let max_events_str = max_events.to_string();
     if max_events > 0 {
-        jounal_cmd_line.push("-n"); 
-        jounal_cmd_line.push( &max_events_str);
+        jounal_cmd_line.push("-n");
+        jounal_cmd_line.push(&max_events_str);
     }
 
     debug!("{:?}", jounal_cmd_line);

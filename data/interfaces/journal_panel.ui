@@ -1,34 +1,56 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.92.1 -->
+<!-- Created with Cambalache 0.94.0 -->
 <interface>
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit file panel -->
   <requires lib="gtk" version="4.12"/>
-  <requires lib="libadwaita" version="1.4"/>
+  <requires lib="libadwaita" version="1.6"/>
   <template class="JournalPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkButton" id="journal_refresh_button">
-        <property name="child">
-          <object class="AdwButtonContent">
-            <property name="icon-name">view-refresh</property>
-            <property name="label">Refresh</property>
-          </object>
-        </property>
-        <property name="hexpand">True</property>
-        <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
-      </object>
-    </child>
-    <child>
-      <object class="GtkScrolledWindow">
-        <property name="vexpand">True</property>
+      <object class="GtkStack" id="panel_stack">
         <child>
-          <object class="GtkTextView" id="journal_text">
-            <property name="editable">False</property>
-            <property name="hexpand">True</property>
-            <property name="left-margin">5</property>
-            <property name="monospace">True</property>
-            <property name="right-margin">5</property>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="AdwSpinner"/>
+            </property>
+            <property name="name">spinner</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkButton" id="journal_refresh_button">
+                    <property name="child">
+                      <object class="AdwButtonContent">
+                        <property name="icon-name">view-refresh</property>
+                        <property name="label">Refresh</property>
+                      </object>
+                    </property>
+                    <property name="hexpand">True</property>
+                    <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="scrolled_window">
+                    <property name="vexpand">True</property>
+                    <child>
+                      <object class="GtkTextView" id="journal_text">
+                        <property name="editable">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="left-margin">5</property>
+                        <property name="monospace">True</property>
+                        <property name="right-margin">5</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+            <property name="name">journal</property>
           </object>
         </child>
       </object>

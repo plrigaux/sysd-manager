@@ -71,6 +71,12 @@ mod imp {
         #[template_child]
         journal_text: TemplateChild<gtk::TextView>,
 
+        #[template_child]
+        panel_stack: TemplateChild<gtk::Stack>,
+
+        #[template_child]
+        scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
         unit: RefCell<Option<UnitInfo>>,
 
         is_dark: Cell<bool>,
@@ -104,24 +110,27 @@ mod imp {
             let journal_refresh_button = self.journal_refresh_button.clone();
             let oldest_first = false;
             let journal_max_events = PREFERENCES.journal_max_events();
+            let panel_stack = self.panel_stack.clone();
+            let scrolled_window = self.scrolled_window.clone();
             //let journal_color: TermColor = journal_text.color().into();
 
             glib::spawn_future_local(async move {
                 let in_color = PREFERENCES.journal_colors();
-                /*                 refresh_unit_list_button.set_sensitive(false);
-                panel_stack.set_visible_child_name("spinner"); */
-
+                panel_stack.set_visible_child_name("spinner");
                 journal_refresh_button.set_sensitive(false);
 
                 let journal_answer = gio::spawn_blocking(move || {
-                    match systemd::get_unit_journal(&unit, in_color, oldest_first, journal_max_events) {
+                    match systemd::get_unit_journal(
+                        &unit,
+                        in_color,
+                        oldest_first,
+                        journal_max_events,
+                    ) {
                         Ok(journal_output) => {
                             let journal_answers = if in_color {
-
                                 let tokens: Vec<colorise::Token> =
                                     colorise::convert_to_tag(&journal_output);
 
-                             
                                 JournalAnswers::Tokens(tokens, journal_output)
                             } else {
                                 JournalAnswers::Text(journal_output)
@@ -156,14 +165,10 @@ mod imp {
                     }
                 };
 
-                /*       if in_color {
-                    let mut start_iter = buf.start_iter();
-                    buf.insert_markup(&mut start_iter, &text);
-                } else {
-                    buf.set_text(&text);
-                } */
-
                 journal_refresh_button.set_sensitive(true);
+                let vadjustment = scrolled_window.vadjustment();
+                vadjustment.set_value(vadjustment.upper());
+                panel_stack.set_visible_child_name("journal");
             });
         }
 
