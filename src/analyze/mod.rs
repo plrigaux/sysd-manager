@@ -1,16 +1,21 @@
 use std::cell::Ref;
 
 use crate::{
-    systemd::{analyze::*, SystemdErrors},
+    systemd::{
+        analyze::{self, Analyze},
+        SystemdErrors,
+    },
     widget::grid_cell::{Entry, GridCell},
 };
-use gtk::prelude::*;
+
 use gtk::{
     gio,
-    glib::{object::Cast, BoxedAnyObject},
+    glib::{self, object::Cast, BoxedAnyObject},
     pango::{AttrInt, AttrList, Weight},
+    prelude::*,
     Orientation, Window,
 };
+use log::{info, warn};
 
 pub fn build_analyze_window() -> Result<Window, SystemdErrors> {
     let analyse_box = build_analyze()?;
@@ -48,7 +53,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
         .build();
 
     // Setup the Analyze stack
-    let analyze_tree = setup_systemd_analyze_tree(&total_time_label)?;
+    let (analyze_tree, store) = setup_systemd_analyze_tree()?;
 
     let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
@@ -59,27 +64,17 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
     unit_analyse_box.append(&total_time_label);
     unit_analyse_box.append(&unit_analyse_scrolled_window);
 
+    fill_store(&store, &total_time_label);
+
     Ok(unit_analyse_box)
 }
 
 /// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
-fn setup_systemd_analyze_tree(
-    total_time_label: &gtk::Label,
-) -> Result<gtk::ColumnView, SystemdErrors> {
+fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), SystemdErrors> {
     let store = gio::ListStore::new::<BoxedAnyObject>();
 
-    let units = blame()?;
+    let single_selection = gtk::SingleSelection::new(Some(store.clone()));
 
-    let mut time_full = 0;
-
-    for value in units.into_iter() {
-        time_full = value.time;
-        store.append(&BoxedAnyObject::new(value));
-    }
-
-    let single_selection = gtk::SingleSelection::new(Some(store));
-    /*     let analyze_tree = gtk::ColumnView::new(Some(single_selection));
-    analyze_tree.set_focusable(true); */
     let analyze_tree = gtk::ColumnView::builder()
         .focusable(true)
         .model(&single_selection)
@@ -130,8 +125,37 @@ fn setup_systemd_analyze_tree(
     analyze_tree.append_column(&col1_time);
     analyze_tree.append_column(&col2_unit);
 
-    let time = (time_full as f32) / 1000f32;
-    total_time_label.set_label(format!("{} seconds", time).as_str());
+    Ok((analyze_tree, store))
+}
 
-    Ok(analyze_tree)
+fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label) {
+    {
+        let list_store = list_store.clone();
+        let total_time_label = total_time_label.clone();
+
+        glib::spawn_future_local(async move {
+            let units = gio::spawn_blocking(move || match analyze::blame() {
+                Ok(units) => units,
+                Err(error) => {
+                    warn!("Analyse blame Error {:?}", error);
+                    vec![]
+                }
+            })
+            .await
+            .expect("Task needs to finish successfully.");
+
+            list_store.remove_all();
+            let mut time_full = 0;
+
+            for value in units {
+                time_full = value.time;
+                list_store.append(&BoxedAnyObject::new(value));
+            }
+
+            info!("Unit list refreshed! list size {}", list_store.n_items());
+
+            let time = (time_full as f32) / 1000f32;
+            total_time_label.set_label(format!("{} seconds", time).as_str());
+        });
+    }
 }
