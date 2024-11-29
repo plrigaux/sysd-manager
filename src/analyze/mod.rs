@@ -17,6 +17,8 @@ use gtk::{
 };
 use log::{info, warn};
 
+const PAGE_BLAME : &str = "blame";
+
 pub fn build_analyze_window() -> Result<Window, SystemdErrors> {
     let analyse_box = build_analyze()?;
 
@@ -61,10 +63,17 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
         .child(&analyze_tree)
         .build();
 
-    unit_analyse_box.append(&total_time_label);
-    unit_analyse_box.append(&unit_analyse_scrolled_window);
+    let stack = gtk::Stack::new();
 
-    fill_store(&store, &total_time_label);
+    let spinner = adw::Spinner::new();
+
+    stack.add_named(&spinner, Some("spinner"));
+    stack.add_named(&unit_analyse_scrolled_window, Some(PAGE_BLAME));
+
+    unit_analyse_box.append(&total_time_label);
+    unit_analyse_box.append(&stack);
+
+    fill_store(&store, &total_time_label, &stack);
 
     Ok(unit_analyse_box)
 }
@@ -128,10 +137,11 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
     Ok((analyze_tree, store))
 }
 
-fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label) {
+fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack: &gtk::Stack) {
     {
         let list_store = list_store.clone();
         let total_time_label = total_time_label.clone();
+        let stack = stack.clone();
 
         glib::spawn_future_local(async move {
             let units = gio::spawn_blocking(move || match analyze::blame() {
@@ -156,6 +166,7 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label) {
 
             let time = (time_full as f32) / 1000f32;
             total_time_label.set_label(format!("{} seconds", time).as_str());
+            stack.set_visible_child_name(PAGE_BLAME);
         });
     }
 }
