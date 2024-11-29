@@ -75,10 +75,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+
+   <release version="1.3.1" date="2024-11-29">
+      <description>
+        <ul>
+          <li>Unit's initialize time (Analyze blame) is now fetch asynchronously to avoid to block the application</li>  
+        </ul>
+      </description>
+    </release>
   <release version="1.3.0" date="2024-11-28">
       <description>
         <ul>
-          <li>Load journal events in another thread</li>
+          <li>Journal events are fetch asynchronously to avoid to block the application</li>
           <li>Setting to limit the number of journal events</li>
         </ul>
       </description>
@@ -146,7 +154,7 @@ https://hughsie.github.io/oars/index.html
         <ul>
           <li>Display a first opening message</li>
           <li>Improve the preference dialogue</li>
-          <li>Unit file text higlighting</li>
+          <li>Unit file text highlighting</li>
           <li>Improve enable switch response</li>
           <li>Display journal logs text style</li>
         </ul>
@@ -155,8 +163,8 @@ https://hughsie.github.io/oars/index.html
     <release version="0.1.8" date="2024-10-08">
       <description>
         <ul>
-          <li>Remove the flatpack test at stratup</li>
-          <li>Migrate some widjets to libadwaita</li>
+          <li>Remove the flatpack test at startup</li>
+          <li>Migrate some widgets to libadwaita</li>
         </ul>
       </description>
     </release>
