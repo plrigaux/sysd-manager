@@ -48,9 +48,8 @@ Contact me on my [GitHub](https://github.com/plrigaux/sysd-manager) if you want 
 ## Project Roadmap
 For now new features are planned to be added, such as:
 
-* Non-blocking calls
+* Non-blocking calls (in progress)
 * Always administrator mode
-* Svec the window state
 * Improve UX
     * Better layout
 
@@ -63,7 +62,8 @@ For now new features are planned to be added, such as:
 * Install the build essentials
   * Install GTK 4 and the build essentials. [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html)
   * Install libadwaita [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
-* Compile and run  ```cargo run```
+* Compile and install  ```cargo install sysd-manager```
+* Run ```sysd-manager```
 
 ### Install on RHEL, Fedora, and CentOS based distributions
 You can install the application from COPR
@@ -84,7 +84,7 @@ Then you can simply install sysd-manager with the following command
 ```
 sudo dnf install sysd-manager
 ```
-### Generate RPM for copr
+### Generate RPM for COPR
 
 1 be in the mock group
 Add your user name to the mock group
@@ -92,8 +92,8 @@ Add your user name to the mock group
 sudo usermod -a -G mock <my user name>
 ```
 
-### Generate a RPM localy
-You can generate youe rpm localy with the help of the crate `cargo-generate-rpm`.
+### Generate a RPM locally
+You can generate your rpm locally with the help of the crate `cargo-generate-rpm`.
 
 #### Install
 ```
