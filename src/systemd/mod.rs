@@ -294,8 +294,8 @@ pub fn commander_output(
                         "{}",
                         String::from_utf8(output.stderr).expect("from_utf8 failed")
                     );
-                    let v = prog_n_args.iter().map(|s| s.to_string()).collect();
-                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(v));
+                    let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec));
                 }
             }
             Ok(output)

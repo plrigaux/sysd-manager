@@ -9,15 +9,15 @@ use crate::{
 };
 
 use gtk::{
-    gio,
+    gio::{self},
     glib::{self, object::Cast, BoxedAnyObject},
     pango::{AttrInt, AttrList, Weight},
     prelude::*,
-    Orientation, Window,
+    Orientation, TextView, Window,
 };
 use log::{info, warn};
 
-const PAGE_BLAME : &str = "blame";
+const PAGE_BLAME: &str = "blame";
 
 pub fn build_analyze_window() -> Result<Window, SystemdErrors> {
     let analyse_box = build_analyze()?;
@@ -144,11 +144,11 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
         let stack = stack.clone();
 
         glib::spawn_future_local(async move {
-            let units = gio::spawn_blocking(move || match analyze::blame() {
-                Ok(units) => units,
+            let units_rep = gio::spawn_blocking(move || match analyze::blame() {
+                Ok(units) => Ok(units),
                 Err(error) => {
                     warn!("Analyse blame Error {:?}", error);
-                    vec![]
+                    Err(error)
                 }
             })
             .await
@@ -157,16 +157,34 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
             list_store.remove_all();
             let mut time_full = 0;
 
-            for value in units {
-                time_full = value.time;
-                list_store.append(&BoxedAnyObject::new(value));
+            match units_rep {
+                Ok(units) => {
+                    for value in units {
+                        time_full = value.time;
+                        list_store.append(&BoxedAnyObject::new(value));
+                    }
+
+                    info!("Unit list refreshed! list size {}", list_store.n_items());
+
+                    let time = (time_full as f32) / 1000f32;
+                    total_time_label.set_label(format!("{} seconds", time).as_str());
+                    stack.set_visible_child_name(PAGE_BLAME);
+                }
+                Err(error) => match error.gui_description() {
+                    Some(markup_text) => {
+                        let tv = TextView::new();
+                        let buf = tv.buffer();
+
+                        let mut start_iter = buf.start_iter();
+                        buf.insert_markup(&mut start_iter, &markup_text);
+                      
+                        let flatpack_permission = "flatpack_permission";
+                        stack.add_named(&tv, Some(flatpack_permission));
+                        stack.set_visible_child_name(flatpack_permission)
+                    }
+                    None => stack.set_visible_child_name(PAGE_BLAME),
+                },
             }
-
-            info!("Unit list refreshed! list size {}", list_store.n_items());
-
-            let time = (time_full as f32) / 1000f32;
-            total_time_label.set_label(format!("{} seconds", time).as_str());
-            stack.set_visible_child_name(PAGE_BLAME);
         });
     }
 }
