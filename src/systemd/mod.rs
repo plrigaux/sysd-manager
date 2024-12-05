@@ -313,12 +313,20 @@ pub fn commander_output(
 }
 
 pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
-    let mut command = if *IS_FLATPAK_MODE {
+
+    let command = if *IS_FLATPAK_MODE {
         let mut cmd = Command::new(FLATPAK_SPAWN);
         cmd.arg("--host");
         for v in prog_n_args {
             cmd.arg(v);
         }
+
+        if let Some(envs) = environment_variables {
+            for env in envs {
+                cmd.arg(format!("--env={}={}", env.0, env.1));
+            }
+        }
+
         cmd
     } else {
         let mut cmd = Command::new(prog_n_args[0]);
@@ -326,14 +334,15 @@ pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &s
         for i in 1..prog_n_args.len() {
             cmd.arg(prog_n_args[i]);
         }
+
+        if let Some(envs) = environment_variables {
+            for env in envs {
+                cmd.env(env.0, env.1);
+            }
+        }
+
         cmd
     };
-
-    if let Some(envs) = environment_variables {
-        for env in envs {
-            command.env(env.0, env.1);
-        }
-    }
 
     command
 }
