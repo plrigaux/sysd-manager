@@ -45,6 +45,7 @@ zvariant = "5"
 serde = "1.0"
 chrono = "0.4.38"
 regex = "1.11.0"
+sysd =  { version = "0.10", package = "systemd"} 
 
 [dev-dependencies]
 

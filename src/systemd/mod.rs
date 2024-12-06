@@ -1,5 +1,6 @@
 pub mod analyze;
 pub mod data;
+mod journal;
 mod sysdbus;
 
 use std::borrow::Cow;
@@ -12,7 +13,7 @@ use std::sync::LazyLock;
 use data::UnitInfo;
 use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
 use gtk::glib::GString;
-use log::{debug, error, info, warn};
+use log::{error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
@@ -24,7 +25,6 @@ pub mod enums;
 
 const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
 const FLATPACK: &str = "flatpack";
-const JOURNALCTL: &str = "journalctl";
 const FLATPAK_SPAWN: &str = "flatpak-spawn";
 
 static IS_FLATPAK_MODE: LazyLock<bool> = LazyLock::new(|| match env::var(SYSDMNG_DIST_MODE) {
@@ -235,41 +235,7 @@ pub fn get_unit_journal(
     oldest_first: bool,
     max_events: u32,
 ) -> Result<String, SystemdErrors> {
-    let unit_path = unit.primary();
-
-    let mut jounal_cmd_line = vec![JOURNALCTL, "-b", "-u", &unit_path];
-
-    let max_events_str = max_events.to_string();
-    if max_events > 0 {
-        jounal_cmd_line.push("-n");
-        jounal_cmd_line.push(&max_events_str);
-    }
-
-    debug!("{:?}", jounal_cmd_line);
-
-    let env = [("SYSTEMD_COLORS", "true")];
-    let environment_variable: Option<&[(&str, &str)]> = if in_color { Some(&env) } else { None };
-
-    let outout_utf8 = commander_output(&jounal_cmd_line, environment_variable)?.stdout;
-
-    let logs = match String::from_utf8(outout_utf8) {
-        Ok(logs) => logs,
-        Err(e) => {
-            warn!("Can't retreive journal:  {:?}", e);
-            return Ok(String::new());
-        }
-    };
-
-    let text = if oldest_first {
-        logs.lines()
-            .rev()
-            .map(|x| x.trim())
-            .fold(String::with_capacity(logs.len()), |acc, x| acc + "\n" + x)
-    } else {
-        logs
-    };
-
-    Ok(text)
+    journal::get_unit_journal(unit, in_color, oldest_first, max_events)
 }
 
 pub fn commander_output(
@@ -313,7 +279,6 @@ pub fn commander_output(
 }
 
 pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
-
     let command = if *IS_FLATPAK_MODE {
         let mut cmd = Command::new(FLATPAK_SPAWN);
         cmd.arg("--host");

@@ -38,13 +38,7 @@
                   <object class="GtkScrolledWindow" id="scrolled_window">
                     <property name="vexpand">True</property>
                     <child>
-                      <object class="GtkTextView" id="journal_text">
-                        <property name="editable">False</property>
-                        <property name="hexpand">True</property>
-                        <property name="left-margin">5</property>
-                        <property name="monospace">True</property>
-                        <property name="right-margin">5</property>
-                      </object>
+                      <object class="GtkListView" id="journal_events"/>
                     </child>
                   </object>
                 </child>
