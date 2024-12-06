@@ -2,11 +2,12 @@ enum JournalAnswers {
     Tokens(Vec<colorise::Token>, String),
     Text(String),
     Markup(String),
-    Events(Vec<(u64, String)>),
+    Events(Vec<(u128, String)>),
 }
 
 use std::cell::{Cell, OnceCell, RefCell};
 
+use chrono::{Local, TimeZone};
 use gtk::{
     gio, glib,
     prelude::*,
@@ -109,7 +110,7 @@ impl JournalPanelImp {
                 JournalAnswers::Events(mut text) => {
                     store.remove_all();
                     for (time, message) in text.drain(..) {
-                        let je = JournalEvent::new(time, message);
+                        let je = JournalEvent::new(time as u64, message);
                         store.append(&je);
                     }
                 }
@@ -186,9 +187,16 @@ impl ObjectImpl for JournalPanelImp {
 
             let buf = child.buffer();
 
-            
+            let local_result = Local.timestamp_millis_opt(entry.timestamp() as i64);
 
-            buf.set_text(&entry.message());
+            let a = match local_result {
+                chrono::offset::LocalResult::Single(l) => l.format("%Y-%m-%d %T").to_string(),
+                chrono::offset::LocalResult::Ambiguous(a, _b) => a.format("%Y-%m-%d %T").to_string(),
+                chrono::offset::LocalResult::None => "NONE".to_owned(),
+            };
+
+            let construct = format!("{a} {}", entry.message());
+            buf.set_text(&construct);
         });
 
         self.journal_events.set_factory(Some(&factory));

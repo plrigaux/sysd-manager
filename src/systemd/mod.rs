@@ -245,7 +245,7 @@ pub fn get_unit_journal(
     in_color: bool,
     oldest_first: bool,
     max_events: u32,
-) -> Result<Vec<(u64, String)>, SystemdErrors> {
+) -> Result<Vec<(u128, String)>, SystemdErrors> {
     journal::get_unit_journal2(unit, in_color, oldest_first, max_events)
 }
 

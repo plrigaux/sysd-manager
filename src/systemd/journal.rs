@@ -1,10 +1,10 @@
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use log::{debug, info};
-use sysd::{id128::Id128, journal::OpenOptions, Journal};
-
+use sysd::{id128::Id128, journal::OpenOptions, sd_try, Journal};
 
 use super::{data::UnitInfo, SystemdErrors};
-/* 
+/*
 const JOURNALCTL: &str = "journalctl";
 
 /// Obtains the journal log for the given unit.
@@ -61,7 +61,7 @@ pub(super) fn get_unit_journal2(
     _in_color: bool,
     _oldest_first: bool,
     max_events: u32,
-) -> Result<Vec<(u64, String)>, SystemdErrors> {
+) -> Result<Vec<(u128, String)>, SystemdErrors> {
     info!("Starting journal-logger");
 
     // Open the journal
@@ -98,9 +98,16 @@ pub(super) fn get_unit_journal2(
 
         match message_op {
             Some(message) => {
-                let a = journal.monotonic_timestamp()?;
-              //  let journal_event = JournalEvent::new(a.0, message);
-                vec.push((a.0, message));
+                let mut timestamp_us: u64 = 0;
+
+                let timestamp: SystemTime = journal.timestamp()?;
+
+                let since_the_epoch = timestamp
+                .duration_since(UNIX_EPOCH)
+                .expect("Time went backwards");
+                let in_ms = since_the_epoch.as_millis();
+
+                vec.push((in_ms, message));
             }
             None => {}
         }
