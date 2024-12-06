@@ -2,7 +2,7 @@ use crate::systemd::data::UnitInfo;
 
 mod colorise;
 mod imp;
-mod rowitem;
+pub mod rowitem;
 pub mod more_colors;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};

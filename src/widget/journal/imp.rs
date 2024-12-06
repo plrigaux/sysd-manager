@@ -2,6 +2,7 @@ enum JournalAnswers {
     Tokens(Vec<colorise::Token>, String),
     Text(String),
     Markup(String),
+    Events(Vec<(u64, String)>),
 }
 
 use std::cell::{Cell, OnceCell, RefCell};
@@ -80,7 +81,7 @@ impl JournalPanelImp {
         let oldest_first = false;
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
-       // let scrolled_window = self.scrolled_window.clone();
+        // let scrolled_window = self.scrolled_window.clone();
         //let journal_color: TermColor = journal_text.color().into();
 
         let store = self.store.get().unwrap().clone();
@@ -88,28 +89,10 @@ impl JournalPanelImp {
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
             panel_stack.set_visible_child_name("spinner");
-            journal_refresh_button.set_sensitive(false);  
+            journal_refresh_button.set_sensitive(false);
             let journal_answer = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(&unit, in_color, oldest_first, journal_max_events) {
-                    Ok(journal_output) => {
-
-               /*          store1.remove_all();
-                        for line in journal_output.lines() {
-                            let je = JournalEvent::new(line.to_owned());
-                            store1.append(&je);
-                        } */
-                        let journal_answers = if in_color {
-                            let tokens: Vec<colorise::Token> =
-                                colorise::convert_to_tag(&journal_output);
-
-                            JournalAnswers::Tokens(tokens, journal_output)
-                        } else {
-                            JournalAnswers::Text(journal_output)
-                        };
-
-                        //info!("Log size {} chars", text.len());
-                        journal_answers
-                    }
+                    Ok(journal_output) => JournalAnswers::Events(journal_output),
                     Err(error) => {
                         let text = match error.gui_description() {
                             Some(s) => s.clone(),
@@ -123,23 +106,17 @@ impl JournalPanelImp {
             .expect("Task needs to finish successfully.");
 
             match journal_answer {
-                JournalAnswers::Tokens(tokens, text) => {
-       /*              store.remove_all();
-                    for line in text.lines() {
-                        let je = JournalEvent::new(line.to_owned());
+                JournalAnswers::Events(mut text) => {
+                    store.remove_all();
+                    for (time, message) in text.drain(..) {
+                        let je = JournalEvent::new(time, message);
                         store.append(&je);
-                    } */
-                }
-                JournalAnswers::Text(text) => {
-    /*                 store.remove_all();
-                    for line in text.lines() {
-                        let je = JournalEvent::new(line.to_owned());
-                        store.append(&je);
-                    } */
+                    }
                 }
                 JournalAnswers::Markup(_markup_text) => {
                     warn!("Journal error");
                 }
+                _ => warn!("Unandled"),
             };
 
             journal_refresh_button.set_sensitive(true);
@@ -208,7 +185,10 @@ impl ObjectImpl for JournalPanelImp {
             let entry = item.item().and_downcast::<JournalEvent>().unwrap();
 
             let buf = child.buffer();
-            buf.set_text(&entry.col1());
+
+            
+
+            buf.set_text(&entry.message());
         });
 
         self.journal_events.set_factory(Some(&factory));

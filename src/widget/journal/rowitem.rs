@@ -11,18 +11,18 @@ impl Default for JournalEvent {
 }
 
 impl JournalEvent {
-    pub fn new(col1: String) -> Self {
+    pub fn new(event_timestamp : u64, message: String) -> Self {
 
             let obj: JournalEvent = glib::Object::new();
-            obj.set_col1(col1);
-         //   obj.set_col2(col2);
+            obj.set_message(message);
+            obj.set_timestamp(event_timestamp);
     
             obj
     }
 }
 
 mod imp {
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
@@ -30,9 +30,10 @@ mod imp {
     #[properties(wrapper_type = super::JournalEvent)]
     pub struct JournalEventImpl {
         #[property(get, set)]
-        pub col1: RefCell<String>,
-/*         #[property(get, set)]
-        pub col2: RefCell<String>, */
+        pub message: RefCell<String>,
+        
+        #[property(get, set)]
+        pub timestamp: Cell<u64>, 
     }
 
     #[glib::object_subclass]

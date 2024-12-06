@@ -18,6 +18,7 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
 
+use crate::widget::journal::rowitem::JournalEvent;
 use crate::widget::preferences::data::DbusLevel;
 use crate::widget::preferences::data::PREFERENCES;
 
@@ -44,6 +45,7 @@ pub enum SystemdErrors {
     ZBusFdoError(zbus::fdo::Error),
     CmdNoFlatpakSpawn,
     CmdNoFreedesktopFlatpakPermission(Vec<String>),
+    JournalError(String),
 }
 
 impl SystemdErrors {
@@ -89,6 +91,15 @@ impl From<zbus::Error> for SystemdErrors {
 impl From<zbus::fdo::Error> for SystemdErrors {
     fn from(error: zbus::fdo::Error) -> Self {
         SystemdErrors::ZBusFdoError(error)
+    }
+}
+
+impl From<Box<dyn std::error::Error>> for SystemdErrors {
+    fn from(error: Box<dyn std::error::Error>) -> Self {
+
+        let msg = format!("{}", error);
+        
+        SystemdErrors::JournalError(msg)
     }
 }
 
@@ -234,8 +245,8 @@ pub fn get_unit_journal(
     in_color: bool,
     oldest_first: bool,
     max_events: u32,
-) -> Result<String, SystemdErrors> {
-    journal::get_unit_journal(unit, in_color, oldest_first, max_events)
+) -> Result<Vec<(u64, String)>, SystemdErrors> {
+    journal::get_unit_journal2(unit, in_color, oldest_first, max_events)
 }
 
 pub fn commander_output(
