@@ -18,7 +18,6 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
 
-use crate::widget::journal::rowitem::JournalEvent;
 use crate::widget::preferences::data::DbusLevel;
 use crate::widget::preferences::data::PREFERENCES;
 
@@ -119,6 +118,13 @@ impl SystemdUnit {
             None => &self.name,
         }
     }
+}
+
+
+pub struct JournalEventRaw {
+    pub message: String,
+    pub time: u64,
+    pub priority: u8,
 }
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
@@ -245,7 +251,7 @@ pub fn get_unit_journal(
     in_color: bool,
     oldest_first: bool,
     max_events: u32,
-) -> Result<Vec<(u128, String)>, SystemdErrors> {
+) -> Result<Vec<JournalEventRaw>, SystemdErrors> {
     journal::get_unit_journal2(unit, in_color, oldest_first, max_events)
 }
 

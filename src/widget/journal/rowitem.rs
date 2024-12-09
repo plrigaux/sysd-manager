@@ -1,5 +1,7 @@
 use gtk::glib;
 
+use crate::systemd::JournalEventRaw;
+
 glib::wrapper! {
     pub struct JournalEvent(ObjectSubclass<imp::JournalEventImpl>);
 }
@@ -11,11 +13,12 @@ impl Default for JournalEvent {
 }
 
 impl JournalEvent {
-    pub fn new(event_timestamp : u64, message: String) -> Self {
+    pub fn new(event : JournalEventRaw) -> Self {
 
             let obj: JournalEvent = glib::Object::new();
-            obj.set_message(message);
-            obj.set_timestamp(event_timestamp);
+            obj.set_message(event.message);
+            obj.set_timestamp(event.time);
+            obj.set_priority(event.priority);
     
             obj
     }
@@ -34,6 +37,10 @@ mod imp {
         
         #[property(get, set)]
         pub timestamp: Cell<u64>, 
+
+
+        #[property(get, set)]
+        pub priority: Cell<u8>, 
     }
 
     #[glib::object_subclass]

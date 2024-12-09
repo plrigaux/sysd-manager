@@ -1,8 +1,8 @@
 enum JournalAnswers {
-    Tokens(Vec<colorise::Token>, String),
-    Text(String),
+    //Tokens(Vec<colorise::Token>, String),
+    //Text(String),
     Markup(String),
-    Events(Vec<(u128, String)>),
+    Events(Vec<JournalEventRaw>),
 }
 
 use std::cell::{Cell, OnceCell, RefCell};
@@ -25,11 +25,11 @@ use gtk::{
 use log::{debug, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo},
+    systemd::{self, data::UnitInfo, JournalEventRaw},
     widget::preferences::data::PREFERENCES,
 };
 
-use super::{colorise, rowitem::JournalEvent};
+use super::rowitem::JournalEvent;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
@@ -109,15 +109,14 @@ impl JournalPanelImp {
             match journal_answer {
                 JournalAnswers::Events(mut text) => {
                     store.remove_all();
-                    for (time, message) in text.drain(..) {
-                        let je = JournalEvent::new(time as u64, message);
+                    for je in text.drain(..) {
+                        let je = JournalEvent::new(je);
                         store.append(&je);
                     }
                 }
                 JournalAnswers::Markup(_markup_text) => {
                     warn!("Journal error");
                 }
-                _ => warn!("Unandled"),
             };
 
             journal_refresh_button.set_sensitive(true);

@@ -1,9 +1,9 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use log::{debug, info};
-use sysd::{id128::Id128, journal::OpenOptions, sd_try, Journal};
+use sysd::{id128::Id128, journal::OpenOptions, Journal};
 
-use super::{data::UnitInfo, SystemdErrors};
+use super::{data::UnitInfo, JournalEventRaw, SystemdErrors};
 /*
 const JOURNALCTL: &str = "journalctl";
 
@@ -51,8 +51,10 @@ pub(super) fn get_unit_journal(
     Ok(text)
 }
  */
+
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
 const KEY_MESSAGE: &str = "MESSAGE";
+const KEY_PRIORITY: &str = "PRIORITY";
 
 const KEY_BOOT: &str = "_BOOT_ID";
 
@@ -61,11 +63,12 @@ pub(super) fn get_unit_journal2(
     _in_color: bool,
     _oldest_first: bool,
     max_events: u32,
-) -> Result<Vec<(u128, String)>, SystemdErrors> {
+) -> Result<Vec<JournalEventRaw>, SystemdErrors> {
     info!("Starting journal-logger");
 
     // Open the journal
     let mut journal = OpenOptions::default()
+        .extra_raw_flags(4)
         //.system(true)
         .open()
         .expect("Could not open journal");
@@ -98,16 +101,26 @@ pub(super) fn get_unit_journal2(
 
         match message_op {
             Some(message) => {
-                let mut timestamp_us: u64 = 0;
-
                 let timestamp: SystemTime = journal.timestamp()?;
 
                 let since_the_epoch = timestamp
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards");
+                    .duration_since(UNIX_EPOCH)
+                    .expect("Time went backwards");
                 let in_ms = since_the_epoch.as_millis();
 
-                vec.push((in_ms, message));
+                let priority_op = get_data(&mut journal, KEY_PRIORITY);
+
+                // let cc = priority_op.and_then(|s| s.parse::<u8>().map_err(|e| None)).map_or(7, f);
+
+                let priority = priority_op
+                    .map_or(7.to_string(), |s| s)
+                    .parse::<u8>()
+                    .map_or(7, |u| u);
+
+
+                    let je = JournalEventRaw {message, time : in_ms as u64, priority};
+
+                vec.push(je);
             }
             None => {}
         }

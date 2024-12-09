@@ -32,16 +32,16 @@ path = "build.rs"
 lto = true
 
 [dependencies]
-gtk = { version = "0.9", package = "gtk4", features = ["v4_16"] }
-adw = { version = "0.7", package = "libadwaita", features = ["v1_6"] }
+gtk = { version = "0.9.4", package = "gtk4", features = ["v4_16"] }
+adw = { version = "0.7.1", package = "libadwaita", features = ["v1_6"] }
 log = "0.4"
 libc = "0.2"
 env_logger = "0.11.3"
 dotenv = "0.15.0"
 strum = { version = "0.26", features = ["derive"] }
-tokio = { version = "1.41", features = ["full"] }
-zbus = "5"
-zvariant = "5"
+tokio = { version = "1.42", features = ["full"] }
+zbus = "5.1"
+zvariant = "5.1"
 serde = "1.0"
 chrono = "0.4.38"
 regex = "1.11.0"
