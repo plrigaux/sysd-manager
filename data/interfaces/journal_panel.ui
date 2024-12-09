@@ -4,6 +4,7 @@
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit file panel -->
   <requires lib="gtk" version="4.12"/>
+  <requires lib="gio" version="2.44"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="JournalPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
@@ -38,7 +39,19 @@
                   <object class="GtkScrolledWindow" id="scrolled_window">
                     <property name="vexpand">True</property>
                     <child>
-                      <object class="GtkListView" id="journal_events"/>
+                      <object class="GtkListView" id="journal_events">
+                        <property name="model">
+                          <object class="GtkNoSelection">
+                            <property name="model">
+                              <object class="GtkSortListModel">
+                                <property name="model">
+                                  <object class="GListStore" id="list_store"/>
+                                </property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
                     </child>
                   </object>
                 </child>

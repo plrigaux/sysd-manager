@@ -5,7 +5,7 @@ enum JournalAnswers {
     Events(Vec<JournalEventRaw>),
 }
 
-use std::cell::{Cell, OnceCell, RefCell};
+use std::cell::{Cell, RefCell};
 
 use chrono::{Local, TimeZone};
 use gtk::{
@@ -22,7 +22,7 @@ use gtk::{
     TemplateChild,
 };
 
-use log::{debug, warn};
+use log::{debug, info, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, JournalEventRaw},
@@ -48,7 +48,8 @@ pub struct JournalPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    store: OnceCell<gio::ListStore>,
+    #[template_child]
+    list_store: TemplateChild<gio::ListStore>,
 
     is_dark: Cell<bool>,
 }
@@ -85,7 +86,7 @@ impl JournalPanelImp {
         // let scrolled_window = self.scrolled_window.clone();
         //let journal_color: TermColor = journal_text.color().into();
 
-        let store = self.store.get().unwrap().clone();
+        let store = self.list_store.clone();
 
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
@@ -107,11 +108,14 @@ impl JournalPanelImp {
             .expect("Task needs to finish successfully.");
 
             match journal_answer {
-                JournalAnswers::Events(mut text) => {
+                JournalAnswers::Events(mut events) => {
+                    info!("Number of event {}", events.len());
+
                     store.remove_all();
-                    for je in text.drain(..) {
-                        let je = JournalEvent::new(je);
-                        store.append(&je);
+
+                    for je in events.drain(..) {
+                        let journal_event = JournalEvent::new(je);
+                        store.append(&journal_event);
                     }
                 }
                 JournalAnswers::Markup(_markup_text) => {
@@ -152,16 +156,6 @@ impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let list_store = gio::ListStore::new::<JournalEvent>();
-
-        if let Err(_old) = self.store.set(list_store.clone()) {
-            warn!("Store already assigned");
-        }
-
-        let selection_model = gtk::NoSelection::new(Some(list_store));
-
-        self.journal_events.set_model(Some(&selection_model));
-
         let factory = gtk::SignalListItemFactory::new();
         // the "setup" stage is used for creating the widgets
         factory.connect_setup(move |_factory, item_obj| {
@@ -190,7 +184,9 @@ impl ObjectImpl for JournalPanelImp {
 
             let a = match local_result {
                 chrono::offset::LocalResult::Single(l) => l.format("%Y-%m-%d %T").to_string(),
-                chrono::offset::LocalResult::Ambiguous(a, _b) => a.format("%Y-%m-%d %T").to_string(),
+                chrono::offset::LocalResult::Ambiguous(a, _b) => {
+                    a.format("%Y-%m-%d %T").to_string()
+                }
                 chrono::offset::LocalResult::None => "NONE".to_owned(),
             };
 
