@@ -4,6 +4,7 @@ use crate::systemd::data::UnitInfo;
 mod imp;
 pub mod rowitem;
 pub mod more_colors;
+pub mod palette;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 

@@ -4,6 +4,8 @@ use std::num::ParseIntError;
 use crate::gtk::glib::translate::IntoGlib;
 use gtk::{gdk, pango};
 
+use super::palette::Palette;
+
 pub fn get_256color(code: u8) -> TermColor {
     let color = match code {
         0 => TermColor::Black,
@@ -126,7 +128,6 @@ impl TermColor {
                 let vga = self.get_vga();
                 vga.get_rgba()
             }
-           
         }
     }
 
@@ -150,6 +151,18 @@ impl From<&gdk::RGBA> for TermColor {
         let r: u8 = (color.red() * 256.0) as u8;
         let g: u8 = (color.green() * 256.0) as u8;
         let b: u8 = (color.blue() * 256.0) as u8;
+        TermColor::VGA(r, g, b)
+    }
+}
+
+impl From<Palette<'_>> for TermColor {
+    fn from(palette: Palette) -> Self {
+        let color = palette.get_color();
+
+        let r = u8::from_str_radix(&color[1..=2], 16).unwrap();
+        let g = u8::from_str_radix(&color[3..=4], 16).unwrap();
+        let b = u8::from_str_radix(&color[5..=6], 16).unwrap();
+
         TermColor::VGA(r, g, b)
     }
 }
@@ -232,5 +245,26 @@ mod tests {
 
             assert_eq!(hex_val, elem.1, "code {}", elem.0)
         }
+    }
+
+    #[test]
+    fn test_color_convert() {
+        let color: TermColor = Palette::Red3.into();
+
+        println!("{:?}", color)
+    }
+
+    #[test]
+    fn test_color_convert1() {
+        let color = Palette::Red3.get_color();
+
+        println!(
+            "color {} r {:?} b {:?} g {:?}",
+            color,
+            &color[1..=2],
+            &color[3..=4],
+            &color[5..=6]
+        );
+
     }
 }

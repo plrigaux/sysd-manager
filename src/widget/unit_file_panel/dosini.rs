@@ -2,10 +2,9 @@
 ///
 use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
 
-use crate::widget::journal::more_colors::Intensity;
+use crate::widget::journal::{more_colors::Intensity, palette::Palette};
 use regex::Regex;
 
-use super::palette::Palette;
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     let re = match Regex::new(

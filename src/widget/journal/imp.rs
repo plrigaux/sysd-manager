@@ -5,11 +5,10 @@ enum JournalAnswers {
     Events(Vec<JournalEventRaw>),
 }
 
-use std::cell::{Cell, RefCell};
-
+use crate::gtk::glib::translate::IntoGlib;
 use chrono::{Local, TimeZone};
 use gtk::{
-    gio, glib,
+    gdk, gio, glib, pango,
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -19,7 +18,11 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    TemplateChild,
+    TemplateChild, TextTag,
+};
+use std::{
+    cell::{Cell, RefCell},
+    sync::LazyLock,
 };
 
 use log::{debug, info, warn};
@@ -29,7 +32,7 @@ use crate::{
     widget::preferences::data::PREFERENCES,
 };
 
-use super::rowitem::JournalEvent;
+use super::{more_colors::TermColor, palette::Palette, rowitem::JournalEvent};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
@@ -182,7 +185,7 @@ impl ObjectImpl for JournalPanelImp {
 
             let local_result = Local.timestamp_millis_opt(entry.timestamp() as i64);
 
-            let a = match local_result {
+            let prefix = match local_result {
                 chrono::offset::LocalResult::Single(l) => l.format("%Y-%m-%d %T").to_string(),
                 chrono::offset::LocalResult::Ambiguous(a, _b) => {
                     a.format("%Y-%m-%d %T").to_string()
@@ -190,8 +193,37 @@ impl ObjectImpl for JournalPanelImp {
                 chrono::offset::LocalResult::None => "NONE".to_owned(),
             };
 
-            let construct = format!("{a} {}", entry.message());
-            buf.set_text(&construct);
+            /*           <para>When outputting to a tty, lines are colored according to priority:
+            lines of level ERROR and higher  3-1
+                      are colored red; lines of level
+                      WARNING are colored yellow; 4
+                      lines of level NOTICE are highlighted; 5
+                      lines of level INFO are displayed normally; lines of level  6
+                      DEBUG are colored grey.</para> */
+
+            let priority = entry.priority();
+
+            if priority == 6 {
+                let construct = format!("{} {} {}", priority, prefix, entry.message());
+                buf.set_text(&construct);
+            } else {
+                let tag_table = buf.tag_table();
+
+                let mut iter = buf.start_iter();
+                let construct = format!("{} {} ", priority, prefix);
+                buf.insert(&mut iter, &construct);
+
+                let start_offset = iter.offset();
+                buf.insert(&mut iter, &entry.message());
+                let start_iter = buf.iter_at_offset(start_offset);
+
+                let tags = get_tags(priority);
+                
+                for tt in tags {
+                    tag_table.add(&tt);
+                    buf.apply_tag(&tt, &start_iter, &iter);
+                } 
+            }
         });
 
         self.journal_events.set_factory(Some(&factory));
@@ -199,3 +231,54 @@ impl ObjectImpl for JournalPanelImp {
 }
 impl WidgetImpl for JournalPanelImp {}
 impl BoxImpl for JournalPanelImp {}
+
+static RED: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+    let color: TermColor = Palette::Red3.into();
+    let rgba = color.get_rgba();
+    rgba
+});
+
+static YELLOW: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+    let color: TermColor = Palette::Yellow3.into();
+    let rgba = color.get_rgba();
+    rgba
+});
+
+fn get_tags(priority: u8) -> Vec<TextTag> {
+    let tags = match priority {
+        0..=3 => {
+            let bold = gtk::TextTag::builder()
+                .weight(pango::Weight::Bold.into_glib())
+                .build();
+
+            let tag_color = gtk::TextTag::builder().foreground_rgba(&RED).build();
+
+            vec![bold, tag_color]
+        }
+        4 => {
+            let bold = gtk::TextTag::builder()
+                .weight(pango::Weight::Bold.into_glib())
+                .build();
+
+            let tag_color = gtk::TextTag::builder().foreground_rgba(&YELLOW).build();
+
+            vec![bold, tag_color]
+        }
+        5 => {
+            let tag = gtk::TextTag::builder()
+                .weight(pango::Weight::Bold.into_glib())
+                .build();
+
+            vec![tag]
+        }
+        _ => {
+            let color: TermColor = Palette::Light3.into();
+            let tag_color = gtk::TextTag::builder()
+                .foreground_rgba(&color.get_rgba())
+                .build();
+
+            vec![tag_color]
+        }
+    };
+    tags
+}

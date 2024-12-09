@@ -69,13 +69,11 @@ pub(super) fn get_unit_journal2(
     info!("Starting journal-logger");
 
     // Open the journal
-    let mut journal = OpenOptions::default()
-        // .extra_raw_flags(4)
-        //.system(true)
+    let mut journal = OpenOptions::default() 
         .open()
         .expect("Could not open journal");
 
-    let mut i = 0;
+   
 
     let boot_id = Id128::from_boot()?;
     //debug!("BOOT {}", boot_id);
@@ -101,12 +99,12 @@ pub(super) fn get_unit_journal2(
     let mut vec = Vec::new();
 
     let default = "NONE".to_string();
+    let default_priority = "7".to_string();
 
-    let default_priority = "NONE".to_string();
-
+    let mut index = 0;
     loop {        
         if journal.next()? == 0 {
-            debug!("BREAK nb {}", i);
+            debug!("BREAK nb {}", index);
             break;
         }
 
@@ -131,8 +129,8 @@ pub(super) fn get_unit_journal2(
 
         vec.push(journal_event);
 
-        i += 1;
-        if i >= max_events {
+        index += 1;
+        if index >= max_events {
             warn!("journal events maxed!");
             return Ok(vec);
         }

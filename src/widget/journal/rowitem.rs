@@ -13,14 +13,13 @@ impl Default for JournalEvent {
 }
 
 impl JournalEvent {
-    pub fn new(event : JournalEventRaw) -> Self {
+    pub fn new(event: JournalEventRaw) -> Self {
+        let obj: JournalEvent = glib::Object::new();
+        obj.set_message(event.message);
+        obj.set_timestamp(event.time);
+        obj.set_priority(event.priority);
 
-            let obj: JournalEvent = glib::Object::new();
-            obj.set_message(event.message);
-            obj.set_timestamp(event.time);
-            obj.set_priority(event.priority);
-    
-            obj
+        obj
     }
 }
 
@@ -34,13 +33,12 @@ mod imp {
     pub struct JournalEventImpl {
         #[property(get, set)]
         pub message: RefCell<String>,
-        
-        #[property(get, set)]
-        pub timestamp: Cell<u64>, 
-
 
         #[property(get, set)]
-        pub priority: Cell<u8>, 
+        pub timestamp: Cell<u64>,
+
+        #[property(get, set)]
+        pub priority: Cell<u8>,
     }
 
     #[glib::object_subclass]

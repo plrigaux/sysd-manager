@@ -1,5 +1,5 @@
 pub mod dosini;
-mod palette;
+
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
