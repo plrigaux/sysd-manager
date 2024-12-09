@@ -13,12 +13,12 @@ impl Default for JournalEvent {
 }
 
 impl JournalEvent {
-    pub fn new(event: JournalEventRaw) -> Self {
+    pub fn new(event: JournalEventRaw, is_dark :bool) -> Self {
         let obj: JournalEvent = glib::Object::new();
         obj.set_message(event.message);
         obj.set_timestamp(event.time);
         obj.set_priority(event.priority);
-
+        obj.set_is_dark(is_dark);
         obj
     }
 }
@@ -39,6 +39,9 @@ mod imp {
 
         #[property(get, set)]
         pub priority: Cell<u8>,
+
+        #[property(get, set)]
+        pub is_dark: Cell<bool>,
     }
 
     #[glib::object_subclass]

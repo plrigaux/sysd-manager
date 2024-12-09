@@ -40,6 +40,12 @@
                     <property name="vexpand">True</property>
                     <child>
                       <object class="GtkListView" id="journal_events">
+                        <property name="factory">
+                          <object class="GtkSignalListItemFactory">
+                            <signal name="setup" handler="event_list_setup" swapped="yes"/>
+                            <signal name="bind" handler="event_list_bind" swapped="yes"/>
+                          </object>
+                        </property>
                         <property name="model">
                           <object class="GtkNoSelection">
                             <property name="model">

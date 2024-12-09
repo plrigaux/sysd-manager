@@ -90,6 +90,7 @@ impl JournalPanelImp {
         //let journal_color: TermColor = journal_text.color().into();
 
         let store = self.list_store.clone();
+        let is_dark = self.is_dark.get();
 
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
@@ -117,7 +118,7 @@ impl JournalPanelImp {
                     store.remove_all();
 
                     for je in events.drain(..) {
-                        let journal_event = JournalEvent::new(je);
+                        let journal_event = JournalEvent::new(je, is_dark);
                         store.append(&journal_event);
                     }
                 }
@@ -134,6 +135,58 @@ impl JournalPanelImp {
 
     pub(crate) fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
+    }
+
+    #[template_callback]
+    fn event_list_setup(&self, item_obj: &glib::Object) {
+        let item = item_obj
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
+
+        let text_view = gtk::TextView::new();
+        item.set_child(Some(&text_view));
+    }
+
+    #[template_callback]
+    fn event_list_bind(&self, item_obj: &glib::Object) {
+        let item = item_obj
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
+
+        let child = item.child().and_downcast::<gtk::TextView>().unwrap();
+        let entry = item.item().and_downcast::<JournalEvent>().unwrap();
+
+        let text_buffer = child.buffer();
+
+        let local_result = Local.timestamp_millis_opt(entry.timestamp() as i64);
+
+        let prefix = match local_result {
+            chrono::offset::LocalResult::Single(l) => l.format("%Y-%m-%d %T").to_string(),
+            chrono::offset::LocalResult::Ambiguous(a, _b) => a.format("%Y-%m-%d %T").to_string(),
+            chrono::offset::LocalResult::None => "NONE".to_owned(),
+        };
+
+        let priority = entry.priority();
+
+        if priority == 6 {
+            let construct = format!("{} {} {}", priority, prefix, entry.message());
+            text_buffer.set_text(&construct);
+        } else {
+            let tag_table = text_buffer.tag_table();
+
+            let mut iter = text_buffer.start_iter();
+            let construct = format!("{} {} ", priority, prefix);
+            text_buffer.insert(&mut iter, &construct);
+
+            let start_offset = iter.offset();
+            text_buffer.insert(&mut iter, &entry.message());
+            let start_iter = text_buffer.iter_at_offset(start_offset);
+
+            let tag = get_tag(priority, self.is_dark.get());
+
+            tag_table.add(&tag);
+            text_buffer.apply_tag(&tag, &start_iter, &iter);
+        }
     }
 }
 
@@ -158,75 +211,6 @@ impl ObjectSubclass for JournalPanelImp {
 impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
-
-        let factory = gtk::SignalListItemFactory::new();
-        // the "setup" stage is used for creating the widgets
-        factory.connect_setup(move |_factory, item_obj| {
-            let item = item_obj
-                .downcast_ref::<gtk::ListItem>()
-                .expect("item.downcast_ref::<gtk::ListItem>()");
-
-            let tv = gtk::TextView::new();
-            item.set_child(Some(&tv));
-        });
-
-        // the bind stage is used for "binding" the data to the created widgets on the
-        // "setup" stage
-        factory.connect_bind(move |_factory, item| {
-            let item = item
-                .downcast_ref::<gtk::ListItem>()
-                .expect("item.downcast_ref::<gtk::ListItem>()");
-            // let app_info = item.item().and_downcast::<gio::AppInfo>().unwrap();
-
-            let child = item.child().and_downcast::<gtk::TextView>().unwrap();
-            let entry = item.item().and_downcast::<JournalEvent>().unwrap();
-
-            let buf = child.buffer();
-
-            let local_result = Local.timestamp_millis_opt(entry.timestamp() as i64);
-
-            let prefix = match local_result {
-                chrono::offset::LocalResult::Single(l) => l.format("%Y-%m-%d %T").to_string(),
-                chrono::offset::LocalResult::Ambiguous(a, _b) => {
-                    a.format("%Y-%m-%d %T").to_string()
-                }
-                chrono::offset::LocalResult::None => "NONE".to_owned(),
-            };
-
-            /*           <para>When outputting to a tty, lines are colored according to priority:
-            lines of level ERROR and higher  3-1
-                      are colored red; lines of level
-                      WARNING are colored yellow; 4
-                      lines of level NOTICE are highlighted; 5
-                      lines of level INFO are displayed normally; lines of level  6
-                      DEBUG are colored grey.</para> */
-
-            let priority = entry.priority();
-
-            if priority == 6 {
-                let construct = format!("{} {} {}", priority, prefix, entry.message());
-                buf.set_text(&construct);
-            } else {
-                let tag_table = buf.tag_table();
-
-                let mut iter = buf.start_iter();
-                let construct = format!("{} {} ", priority, prefix);
-                buf.insert(&mut iter, &construct);
-
-                let start_offset = iter.offset();
-                buf.insert(&mut iter, &entry.message());
-                let start_iter = buf.iter_at_offset(start_offset);
-
-                let tags = get_tags(priority);
-                
-                for tt in tags {
-                    tag_table.add(&tt);
-                    buf.apply_tag(&tt, &start_iter, &iter);
-                } 
-            }
-        });
-
-        self.journal_events.set_factory(Some(&factory));
     }
 }
 impl WidgetImpl for JournalPanelImp {}
@@ -238,46 +222,58 @@ static RED: LazyLock<gdk::RGBA> = LazyLock::new(|| {
     rgba
 });
 
-static YELLOW: LazyLock<gdk::RGBA> = LazyLock::new(|| {
-    let color: TermColor = Palette::Yellow3.into();
+static RED_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+    let color: TermColor = Palette::Red4.into();
     let rgba = color.get_rgba();
     rgba
 });
 
-fn get_tags(priority: u8) -> Vec<TextTag> {
+static YELLOW: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+    let color: TermColor = Palette::Yellow5.into();
+    let rgba = color.get_rgba();
+    rgba
+});
+
+static YELLOW_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+    let color: TermColor = Palette::Yellow4.into();
+    let rgba = color.get_rgba();
+    rgba
+});
+
+/// When outputting to a tty, lines are colored according to priority:
+///        lines of level ERROR and higher  3-1
+///                  are colored red; lines of level
+///                  WARNING are colored yellow; 4
+///                  lines of level NOTICE are highlighted; 5
+///                  lines of level INFO are displayed normally; lines of level  6
+///                  DEBUG are colored grey.
+///
+fn get_tag(priority: u8, is_dark: bool) -> TextTag {
     let tags = match priority {
         0..=3 => {
-            let bold = gtk::TextTag::builder()
+            let color = if is_dark { &RED_DARK } else { &RED };
+
+            gtk::TextTag::builder()
                 .weight(pango::Weight::Bold.into_glib())
-                .build();
-
-            let tag_color = gtk::TextTag::builder().foreground_rgba(&RED).build();
-
-            vec![bold, tag_color]
+                .foreground_rgba(color)
+                .build()
         }
         4 => {
-            let bold = gtk::TextTag::builder()
+            let color = if is_dark { &YELLOW_DARK } else { &YELLOW };
+
+            gtk::TextTag::builder()
                 .weight(pango::Weight::Bold.into_glib())
-                .build();
-
-            let tag_color = gtk::TextTag::builder().foreground_rgba(&YELLOW).build();
-
-            vec![bold, tag_color]
+                .foreground_rgba(color)
+                .build()
         }
-        5 => {
-            let tag = gtk::TextTag::builder()
-                .weight(pango::Weight::Bold.into_glib())
-                .build();
-
-            vec![tag]
-        }
+        5 => gtk::TextTag::builder()
+            .weight(pango::Weight::Bold.into_glib())
+            .build(),
         _ => {
             let color: TermColor = Palette::Light3.into();
-            let tag_color = gtk::TextTag::builder()
+            gtk::TextTag::builder()
                 .foreground_rgba(&color.get_rgba())
-                .build();
-
-            vec![tag_color]
+                .build()
         }
     };
     tags
