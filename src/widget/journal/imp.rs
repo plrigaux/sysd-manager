@@ -38,6 +38,9 @@ const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
 const PANEL_SPINNER: &str = "spinner";
 
+const ASCD: &str = "view-sort-ascending";
+const DESC: &str = "view-sort-descending";
+
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
 pub struct JournalPanelImp {
@@ -52,6 +55,12 @@ pub struct JournalPanelImp {
 
     #[template_child]
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+    #[template_child]
+    from_last_boot_check_button: TemplateChild<gtk::CheckButton>,
+
+    #[template_child]
+    journal_toggle_sort_button: TemplateChild<gtk::Button>,
 
     unit: RefCell<Option<UnitInfo>>,
 
@@ -201,6 +210,27 @@ impl JournalPanelImp {
             tag_table.add(&tag);
             text_buffer.apply_tag(&tag, &start_iter, &iter);
         }
+    }
+
+    #[template_callback]
+    fn toggle_sort_clicked(&self, button: &gtk::Button) {
+        info!("toggle_sort_clicked");
+
+        let child = button.child().and_downcast::<adw::ButtonContent>().unwrap();
+
+        let icon_name = child.icon_name();
+
+        if icon_name == ASCD {
+            child.set_icon_name(DESC);
+        } else {
+            //     view-sort-descending
+            child.set_icon_name(ASCD);
+        }
+    }
+
+    #[template_callback]
+    fn from_last_boot_toggled(&self, check: &gtk::CheckButton) {
+        info!("from_last_boot_toggled {}", check.is_active());
     }
 }
 
