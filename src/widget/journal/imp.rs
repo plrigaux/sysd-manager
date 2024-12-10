@@ -223,8 +223,8 @@ static RED: LazyLock<gdk::RGBA> = LazyLock::new(|| {
 });
 
 static RED_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
-    let color: TermColor = Palette::Red4.into();
-    let rgba = color.get_rgba();
+    let color: TermColor = Palette::Custom("#ef4b4b").into();
+     let rgba = color.get_rgba();
     rgba
 });
 
@@ -235,7 +235,7 @@ static YELLOW: LazyLock<gdk::RGBA> = LazyLock::new(|| {
 });
 
 static YELLOW_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
-    let color: TermColor = Palette::Yellow4.into();
+    let color: TermColor = Palette::Custom("#e5e540").into();
     let rgba = color.get_rgba();
     rgba
 });
@@ -270,7 +270,7 @@ fn get_tag(priority: u8, is_dark: bool) -> TextTag {
             .weight(pango::Weight::Bold.into_glib())
             .build(),
         _ => {
-            let color: TermColor = Palette::Light3.into();
+            let color =  TermColor::VGA(128, 128, 128);
             gtk::TextTag::builder()
                 .foreground_rgba(&color.get_rgba())
                 .build()
