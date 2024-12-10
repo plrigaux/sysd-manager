@@ -34,6 +34,10 @@ use crate::{
 
 use super::{more_colors::TermColor, palette::Palette, rowitem::JournalEvent};
 
+const PANEL_EMPTY: &str = "empty";
+const PANEL_JOURNAL: &str = "journal";
+const PANEL_SPINNER: &str = "spinner";
+
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
 pub struct JournalPanelImp {
@@ -90,11 +94,11 @@ impl JournalPanelImp {
         //let journal_color: TermColor = journal_text.color().into();
 
         let store = self.list_store.clone();
-        let is_dark = self.is_dark.get();
+        let journal_events = self.journal_events.clone();
 
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
-            panel_stack.set_visible_child_name("spinner");
+            panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
             let journal_answer = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(&unit, in_color, oldest_first, journal_max_events) {
@@ -111,25 +115,35 @@ impl JournalPanelImp {
             .await
             .expect("Task needs to finish successfully.");
 
-            match journal_answer {
+            let panel = match journal_answer {
                 JournalAnswers::Events(mut events) => {
-                    info!("Number of event {}", events.len());
+                    let size = events.len();
+                    info!("Number of event {}", size);
 
                     store.remove_all();
 
                     for je in events.drain(..) {
-                        let journal_event = JournalEvent::new(je, is_dark);
+                        let journal_event = JournalEvent::new(je);
                         store.append(&journal_event);
+                    }
+
+                    journal_events.show();
+
+                    if size == 0 {
+                        PANEL_EMPTY
+                    } else {
+                        PANEL_JOURNAL
                     }
                 }
                 JournalAnswers::Markup(_markup_text) => {
                     warn!("Journal error");
+                    PANEL_EMPTY
                 }
             };
 
             journal_refresh_button.set_sensitive(true);
 
-            panel_stack.set_visible_child_name("journal");
+            panel_stack.set_visible_child_name(panel);
         });
     }
 
@@ -224,7 +238,7 @@ static RED: LazyLock<gdk::RGBA> = LazyLock::new(|| {
 
 static RED_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
     let color: TermColor = Palette::Custom("#ef4b4b").into();
-     let rgba = color.get_rgba();
+    let rgba = color.get_rgba();
     rgba
 });
 
@@ -270,7 +284,7 @@ fn get_tag(priority: u8, is_dark: bool) -> TextTag {
             .weight(pango::Weight::Bold.into_glib())
             .build(),
         _ => {
-            let color =  TermColor::VGA(128, 128, 128);
+            let color = TermColor::VGA(128, 128, 128);
             gtk::TextTag::builder()
                 .foreground_rgba(&color.get_rgba())
                 .build()

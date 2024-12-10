@@ -66,6 +66,18 @@
             <property name="name">journal</property>
           </object>
         </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="description">No events can be good</property>
+                <property name="icon-name">dialog-question</property>
+                <property name="title">No journal events</property>
+              </object>
+            </property>
+            <property name="name">empty</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>

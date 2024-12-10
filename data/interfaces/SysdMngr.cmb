@@ -108,6 +108,8 @@
 	(30,17,"GtkSortListModel",None,16,None,None,None,0,None,None),
 	(30,18,"GListStore","list_store",17,None,None,None,0,None,None),
 	(30,19,"GtkSignalListItemFactory",None,15,None,None,None,1,None,None),
+	(30,20,"GtkStackPage",None,6,None,None,None,2,None,None),
+	(30,22,"AdwStatusPage",None,20,None,None,None,0,None,None),
 	(32,1,"GtkBox","UnitFilePanel",None,None,None,None,0,None,None),
 	(32,2,"GtkScrolledWindow",None,1,None,None,None,0,None,None),
 	(32,3,"GtkTextView","unit_file_text",2,None,None,None,0,None,None),
@@ -300,6 +302,11 @@
 	(30,15,"GtkListView","model",None,None,None,None,None,16,None,None,None,None),
 	(30,16,"GtkNoSelection","model",None,None,None,None,None,17,None,None,None,None),
 	(30,17,"GtkSortListModel","model",None,None,None,None,None,18,None,None,None,None),
+	(30,20,"GtkStackPage","child",None,None,None,None,None,22,None,None,None,None),
+	(30,20,"GtkStackPage","name","empty",None,None,None,None,None,None,None,None,None),
+	(30,22,"AdwStatusPage","description","No events can be good",None,None,None,None,None,None,None,None,None),
+	(30,22,"AdwStatusPage","icon-name","dialog-question",None,None,None,None,None,None,None,None,None),
+	(30,22,"AdwStatusPage","title","No journal events",None,None,None,None,None,None,None,None,None),
 	(32,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(32,2,"GtkWidget","vexpand","True",0,None,None,None,None,None,None,None,None),
 	(32,3,"GtkTextView","left-margin","5",0,None,None,None,None,None,None,None,None),
@@ -492,8 +499,8 @@
 	(120,45,63,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None),
 	(121,21,18,"GtkSwitch","state-set","journal_switch_state_set",None,None,1,0,None),
 	(126,21,20,"GtkEditable","changed","journal_max_events_changed",None,0,1,0,None),
-	(128,30,11,"GtkButton","clicked","refresh_journal_clicked",None,None,1,0,None),
-	(129,30,19,"GtkSignalListItemFactory","setup","event_list_setup",None,0,0,0,None),
+	(128,30,11,"GtkButton","clicked","refresh_journal_clicked",None,0,1,0,None),
+	(129,30,19,"GtkSignalListItemFactory","setup","event_list_setup",None,0,1,0,None),
 	(130,30,19,"GtkSignalListItemFactory","bind","event_list_bind",None,0,1,0,None)
   </object_signal>
   <object_data>
