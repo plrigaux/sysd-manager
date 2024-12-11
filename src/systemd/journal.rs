@@ -90,10 +90,12 @@ pub(super) fn get_unit_journal2(
     let unit_primary = unit.primary();
     let unit_name = unit_primary.as_str();
 
-    info!("JOURNAL UNIT NAME {}", unit_name);
+    let level = PREFERENCES.dbus_level() ;
 
-    match PREFERENCES.dbus_level() {
-        DbusLevel::Session => {
+    info!("JOURNAL UNIT NAME {} level {:?}", unit_name, level);
+
+    match level {
+        DbusLevel::System => {
             journal.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
             journal.match_or()?;
             journal.match_add(KEY_UNIT, unit_name)?;
@@ -104,7 +106,7 @@ pub(super) fn get_unit_journal2(
             journal.match_or()?;
             journal.match_add(KEY_SYSTEMD_SLICE, unit_name)?;
         }
-        DbusLevel::System => {
+        DbusLevel::Session => {
             journal.match_add(KEY_SYSTEMS_USER_UNIT, unit_name)?;
             journal.match_or()?;
             journal.match_add(KEY_USER_UNIT, unit_name)?;
