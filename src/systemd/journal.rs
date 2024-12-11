@@ -3,6 +3,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use log::{debug, info, warn};
 use sysd::{id128::Id128, journal::OpenOptions, Journal};
 
+use crate::widget::preferences::data::{DbusLevel, PREFERENCES};
+
 use super::{data::UnitInfo, JournalEventRaw, SystemdErrors};
 /*
 const JOURNALCTL: &str = "journalctl";
@@ -53,10 +55,18 @@ pub(super) fn get_unit_journal(
  */
 
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
+const KEY_SYSTEMS_USER_UNIT: &str = "_SYSTEMD_USER_UNIT";
 const KEY_UNIT: &str = "UNIT";
+const KEY_USER_UNIT: &str = "USER_UNIT";
+const KEY_COREDUMP_UNIT: &str = "COREDUMP_UNIT";
+const KEY_COREDUMP_USER_UNIT: &str = "COREDUMP_USER_UNIT";
+const KEY_OBJECT_SYSTEMD_UNIT: &str = "OBJECT_SYSTEMD_UNIT";
+const KEY_OBJECT_SYSTEMD_USER_UNIT: &str = "OBJECT_SYSTEMD_USER_UNIT";
+const KEY_SYSTEMD_SLICE: &str = "_SYSTEMD_SLICE";
+const KEY_SYSTEMD_USER_SLICE: &str = "_SYSTEMD_USER_SLICE";
+
 const KEY_MESSAGE: &str = "MESSAGE";
 const KEY_PRIORITY: &str = "PRIORITY";
-const KEY_COREDUMP_UNIT: &str = "COREDUMP_UNIT";
 
 const KEY_BOOT: &str = "_BOOT_ID";
 
@@ -69,11 +79,9 @@ pub(super) fn get_unit_journal2(
     info!("Starting journal-logger");
 
     // Open the journal
-    let mut journal = OpenOptions::default() 
+    let mut journal = OpenOptions::default()
         .open()
         .expect("Could not open journal");
-
-   
 
     let boot_id = Id128::from_boot()?;
     //debug!("BOOT {}", boot_id);
@@ -82,17 +90,33 @@ pub(super) fn get_unit_journal2(
     let unit_primary = unit.primary();
     let unit_name = unit_primary.as_str();
 
-    warn!("JOURNAL UNIT NAME {}", unit_name);
+    info!("JOURNAL UNIT NAME {}", unit_name);
 
-    journal.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
-    journal.match_or()?;
-    journal.match_add(KEY_UNIT, unit_name)?;
-    journal.match_or()?;
-    journal.match_add(KEY_COREDUMP_UNIT, unit_name)?;
-    journal.match_or()?;
-    journal.match_add("OBJECT_SYSTEMD_UNIT", unit_name)?;
-    journal.match_or()?;
-    journal.match_add("_SYSTEMD_SLICE", unit_name)?;
+    match PREFERENCES.dbus_level() {
+        DbusLevel::Session => {
+            journal.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_COREDUMP_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_OBJECT_SYSTEMD_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_SYSTEMD_SLICE, unit_name)?;
+        }
+        DbusLevel::System => {
+            journal.match_add(KEY_SYSTEMS_USER_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_USER_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_COREDUMP_USER_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_OBJECT_SYSTEMD_USER_UNIT, unit_name)?;
+            journal.match_or()?;
+            journal.match_add(KEY_SYSTEMD_USER_SLICE, unit_name)?;
+        }
+    };
+
     journal.match_and()?;
     journal.match_add(KEY_BOOT, boot_str)?;
 
@@ -102,7 +126,7 @@ pub(super) fn get_unit_journal2(
     let default_priority = "7".to_string();
 
     let mut index = 0;
-    loop {        
+    loop {
         if journal.next()? == 0 {
             debug!("BREAK nb {}", index);
             break;
