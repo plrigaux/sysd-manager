@@ -203,7 +203,17 @@ impl JournalPanelImp {
             .downcast_ref::<gtk::ListItem>()
             .expect("item.downcast_ref::<gtk::ListItem>()");
 
-        let text_view = gtk::TextView::new();
+        let adj = gtk::Adjustment::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let text_view = gtk::TextView::builder()
+            .height_request(16) //to force min heigt
+            .editable(false)
+            .cursor_visible(false)
+            .monospace(true)
+            .hadjustment(&adj)
+            //.can_focus(false)
+            //.can_target(false)
+            .build();
+
         item.set_child(Some(&text_view));
     }
 

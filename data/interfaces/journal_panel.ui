@@ -63,9 +63,13 @@
                 </child>
                 <child>
                   <object class="GtkScrolledWindow" id="scrolled_window">
+                    <property name="hscrollbar-policy">always</property>
+                    <property name="propagate-natural-width">True</property>
                     <property name="vexpand">True</property>
+                    <property name="vscrollbar-policy">always</property>
                     <child>
                       <object class="GtkListView" id="journal_events">
+                        <property name="enable-rubberband">True</property>
                         <property name="factory">
                           <object class="GtkSignalListItemFactory">
                             <signal name="setup" handler="event_list_setup" swapped="yes"/>
@@ -73,6 +77,7 @@
                             <signal name="unbind" handler="event_list_unbind" swapped="yes"/>
                           </object>
                         </property>
+                        <property name="hscroll-policy">natural</property>
                         <property name="model">
                           <object class="GtkNoSelection">
                             <property name="model">
