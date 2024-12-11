@@ -62,12 +62,49 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_toggle_sort_button: TemplateChild<gtk::Button>,
 
+    #[template_child]
+    list_sort_model: TemplateChild<gtk::SortListModel>,
+
     unit: RefCell<Option<UnitInfo>>,
 
     #[template_child]
     list_store: TemplateChild<gio::ListStore>,
 
     is_dark: Cell<bool>,
+}
+
+macro_rules! create_sorter_ascd {
+    ($self:expr) => {{
+        let sorter = gtk::CustomSorter::new(move |obj1, obj2| {
+            let unit1 = obj1
+                .downcast_ref::<JournalEvent>()
+                .expect("Needs to be JournalEvent");
+            let unit2 = obj2
+                .downcast_ref::<JournalEvent>()
+                .expect("Needs to be JournalEvent");
+
+            unit1.timestamp().cmp(&unit2.timestamp()).into()
+        });
+
+        $self.list_sort_model.set_sorter(Some(&sorter))
+    }};
+}
+
+macro_rules! create_sorter_desc {
+    ($self:expr) => {{
+        let sorter = gtk::CustomSorter::new(move |obj1, obj2| {
+            let unit1 = obj1
+                .downcast_ref::<JournalEvent>()
+                .expect("Needs to be JournalEvent");
+            let unit2 = obj2
+                .downcast_ref::<JournalEvent>()
+                .expect("Needs to be JournalEvent");
+
+            unit2.timestamp().cmp(&unit1.timestamp()).into()
+        });
+
+        $self.list_sort_model.set_sorter(Some(&sorter))
+    }};
 }
 
 #[gtk::template_callbacks]
@@ -101,9 +138,9 @@ impl JournalPanelImp {
         let panel_stack = self.panel_stack.clone();
         // let scrolled_window = self.scrolled_window.clone();
         //let journal_color: TermColor = journal_text.color().into();
-
+        //let scrolled_window = self.scrolled_window.clone();
         let store = self.list_store.clone();
-        let journal_events = self.journal_events.clone();
+        //let journal_events = self.journal_events.clone();
 
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
@@ -136,7 +173,7 @@ impl JournalPanelImp {
                         store.append(&journal_event);
                     }
 
-                    journal_events.show();
+                    //journal_events.vadjustment();
 
                     if size == 0 {
                         PANEL_EMPTY
@@ -174,10 +211,16 @@ impl JournalPanelImp {
     fn event_list_bind(&self, item_obj: &glib::Object) {
         let item = item_obj
             .downcast_ref::<gtk::ListItem>()
-            .expect("item.downcast_ref::<gtk::ListItem>()");
+            .expect("Needs to be ListItem");
 
-        let child = item.child().and_downcast::<gtk::TextView>().unwrap();
-        let entry = item.item().and_downcast::<JournalEvent>().unwrap();
+        let child = item
+            .child()
+            .and_downcast::<gtk::TextView>()
+            .expect("The child has to be a `TextView`.");
+        let entry = item
+            .item()
+            .and_downcast::<JournalEvent>()
+            .expect("The item has to be an `JournalEvent`.");
 
         let text_buffer = child.buffer();
 
@@ -191,14 +234,16 @@ impl JournalPanelImp {
 
         let priority = entry.priority();
 
-        if priority == 6 {
+        if priority == 6 || !PREFERENCES.journal_colors() {
             let construct = format!("{} {} {}", priority, prefix, entry.message());
             text_buffer.set_text(&construct);
         } else {
             let tag_table = text_buffer.tag_table();
+            //text_buffer.set_text("");
 
             let mut iter = text_buffer.start_iter();
             let construct = format!("{} {} ", priority, prefix);
+
             text_buffer.insert(&mut iter, &construct);
 
             let start_offset = iter.offset();
@@ -213,6 +258,19 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
+    fn event_list_unbind(&self, item_obj: &glib::Object) {
+        // Get `TaskRow` from `ListItem`
+        let task_row = item_obj
+            .downcast_ref::<gtk::ListItem>()
+            .expect("Needs to be ListItem")
+            .child()
+            .and_downcast::<gtk::TextView>()
+            .expect("The child has to be a `TextView`.");
+
+        task_row.buffer().set_text("");
+    }
+
+    #[template_callback]
     fn toggle_sort_clicked(&self, button: &gtk::Button) {
         info!("toggle_sort_clicked");
 
@@ -222,9 +280,13 @@ impl JournalPanelImp {
 
         if icon_name == ASCD {
             child.set_icon_name(DESC);
+
+            create_sorter_desc!(self);
         } else {
             //     view-sort-descending
             child.set_icon_name(ASCD);
+
+            create_sorter_ascd!(self);
         }
     }
 
@@ -255,6 +317,8 @@ impl ObjectSubclass for JournalPanelImp {
 impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        create_sorter_ascd!(self);
     }
 }
 impl WidgetImpl for JournalPanelImp {}
