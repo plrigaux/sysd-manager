@@ -10,7 +10,7 @@ use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 use std::sync::LazyLock;
 
-use data::UnitInfo;
+use data::{JournalEvent, UnitInfo};
 use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
 use gtk::glib::GString;
 use log::{error, info, warn};
@@ -95,9 +95,8 @@ impl From<zbus::fdo::Error> for SystemdErrors {
 
 impl From<Box<dyn std::error::Error>> for SystemdErrors {
     fn from(error: Box<dyn std::error::Error>) -> Self {
-
         let msg = format!("{}", error);
-        
+
         SystemdErrors::JournalError(msg)
     }
 }
@@ -118,13 +117,6 @@ impl SystemdUnit {
             None => &self.name,
         }
     }
-}
-
-
-pub struct JournalEventRaw {
-    pub message: String,
-    pub time: u64,
-    pub priority: u8,
 }
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
@@ -251,7 +243,7 @@ pub fn get_unit_journal(
     in_color: bool,
     oldest_first: bool,
     max_events: u32,
-) -> Result<Vec<JournalEventRaw>, SystemdErrors> {
+) -> Result<Vec<JournalEvent>, SystemdErrors> {
     journal::get_unit_journal2(unit, in_color, oldest_first, max_events)
 }
 

@@ -2,7 +2,6 @@ use crate::systemd::data::UnitInfo;
 
 //mod colorise;
 mod imp;
-pub mod rowitem;
 pub mod more_colors;
 pub mod palette;
 

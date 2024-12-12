@@ -2,7 +2,7 @@ enum JournalAnswers {
     //Tokens(Vec<colorise::Token>, String),
     //Text(String),
     Markup(String),
-    Events(Vec<JournalEventRaw>),
+    Events(Vec<JournalEvent>),
 }
 
 use chrono::{Local, TimeZone};
@@ -28,11 +28,14 @@ use std::{
 use log::{debug, info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, JournalEventRaw},
+    systemd::{
+        self,
+        data::{JournalEvent, UnitInfo},
+    },
     widget::preferences::data::PREFERENCES,
 };
 
-use super::{more_colors::TermColor, palette::Palette, rowitem::JournalEvent};
+use super::{more_colors::TermColor, palette::Palette};
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -136,12 +139,8 @@ impl JournalPanelImp {
         let oldest_first = false;
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
-        // let scrolled_window = self.scrolled_window.clone();
-        //let journal_color: TermColor = journal_text.color().into();
-        //let scrolled_window = self.scrolled_window.clone();
         let store = self.list_store.clone();
-        //let journal_events = self.journal_events.clone();
-
+    
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
             panel_stack.set_visible_child_name(PANEL_SPINNER);
@@ -168,8 +167,7 @@ impl JournalPanelImp {
 
                     store.remove_all();
 
-                    for je in events.drain(..) {
-                        let journal_event = JournalEvent::new(je);
+                    for journal_event in events.drain(..) {
                         store.append(&journal_event);
                     }
 
@@ -241,22 +239,20 @@ impl JournalPanelImp {
 
         let priority = entry.priority();
         let construct = format!("{} {} {}", priority, prefix, entry.message());
-  
+
         event_display.set_text(&construct);
         if priority == 6 || !PREFERENCES.journal_colors() {
             let construct = format!("{} {} {}", priority, prefix, entry.message());
             event_display.set_text(&construct);
         } else {
-     
             let mut construct = format!("{} {} ", priority, prefix);
             let start = construct.len() as u32;
             construct.push_str(&entry.message());
-         
+
             let is_dark = self.is_dark.get();
             let attributes = get_attrlist(priority, is_dark, start);
             event_display.set_text(&construct);
-            event_display.set_attributes(Some(
-                &attributes));
+            event_display.set_attributes(Some(&attributes));
         }
     }
 
