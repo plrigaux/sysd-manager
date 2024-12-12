@@ -77,6 +77,9 @@
                             <signal name="unbind" handler="event_list_unbind" swapped="yes"/>
                           </object>
                         </property>
+                        <property name="hadjustment">
+                          <object class="GtkAdjustment"/>
+                        </property>
                         <property name="hscroll-policy">natural</property>
                         <property name="model">
                           <object class="GtkNoSelection">

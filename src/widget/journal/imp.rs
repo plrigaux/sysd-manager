@@ -8,7 +8,8 @@ enum JournalAnswers {
 use crate::gtk::glib::translate::IntoGlib;
 use chrono::{Local, TimeZone};
 use gtk::{
-    gdk, gio, glib, pango,
+    gdk, gio, glib,
+    pango::{self, AttrList},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -203,16 +204,21 @@ impl JournalPanelImp {
             .downcast_ref::<gtk::ListItem>()
             .expect("item.downcast_ref::<gtk::ListItem>()");
 
-        let adj = gtk::Adjustment::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        let text_view = gtk::TextView::builder()
-            .height_request(16) //to force min heigt
-            .editable(false)
-            .cursor_visible(false)
-            .monospace(true)
-            .hadjustment(&adj)
-            //.can_focus(false)
-            //.can_target(false)
-            .build();
+        //let adj = gtk::Adjustment::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let text_view = gtk::Label::new(None);
+        text_view.set_height_request(16); //to force min heigt
+        text_view.set_selectable(true);
+        text_view.set_xalign(0.0);
+        text_view.set_single_line_mode(false);
+        text_view.add_css_class("unit_info");
+
+        //text_view.set_editable(false);
+        //text_view.set_cursor_visible(false);
+        //text_view.set_monospace(true);
+        //.hadjustment(&adj)
+        //.can_focus(false)
+        //.can_target(false)
+        //.build();
 
         item.set_child(Some(&text_view));
     }
@@ -225,14 +231,14 @@ impl JournalPanelImp {
 
         let child = item
             .child()
-            .and_downcast::<gtk::TextView>()
-            .expect("The child has to be a `TextView`.");
+            .and_downcast::<gtk::Label>()
+            .expect("The child has to be a `gtk::Label`.");
         let entry = item
             .item()
             .and_downcast::<JournalEvent>()
             .expect("The item has to be an `JournalEvent`.");
 
-        let text_buffer = child.buffer();
+        //let text_buffer = child.buffer();
 
         let local_result = Local.timestamp_millis_opt(entry.timestamp() as i64);
 
@@ -243,8 +249,32 @@ impl JournalPanelImp {
         };
 
         let priority = entry.priority();
+        let construct = format!("{} {} {}", priority, prefix, entry.message());
 
-        if priority == 6 || !PREFERENCES.journal_colors() {
+        if priority <= 3 {
+            let asdf = pango::AttrList::new();
+
+            let mut a = pango::AttrColor::new_foreground(0xFFFF, 0, 0);
+            a.set_start_index(8);
+
+            let mut fd = pango::FontDescription::new();
+            fd.set_weight(pango::Weight::Bold);
+
+            asdf.insert(a);
+            asdf.insert(pango::AttrFontDesc::new(&fd));
+
+            child.set_attributes(Some(&asdf));
+        } else {
+            let asdf = pango::AttrList::new();
+
+            let mut a = pango::AttrColor::new_foreground(0, 0, 0xFFFF);
+            a.set_start_index(8);
+            asdf.insert(a);
+            child.set_attributes(Some(&asdf));
+        }
+
+        child.set_text(&construct);
+        /*  if priority == 6 || !PREFERENCES.journal_colors() {
             let construct = format!("{} {} {}", priority, prefix, entry.message());
             text_buffer.set_text(&construct);
         } else {
@@ -264,7 +294,7 @@ impl JournalPanelImp {
 
             tag_table.add(&tag);
             text_buffer.apply_tag(&tag, &start_iter, &iter);
-        }
+        } */
     }
 
     #[template_callback]
@@ -274,10 +304,11 @@ impl JournalPanelImp {
             .downcast_ref::<gtk::ListItem>()
             .expect("Needs to be ListItem")
             .child()
-            .and_downcast::<gtk::TextView>()
-            .expect("The child has to be a `TextView`.");
+            .and_downcast::<gtk::Label>()
+            .expect("The child has to be a `gtk::Label`.");
 
-        task_row.buffer().set_text("");
+        //task_row.buffer().set_text("");
+        task_row.set_text("");
     }
 
     #[template_callback]
