@@ -131,6 +131,21 @@ impl TermColor {
         }
     }
 
+    pub fn get_rgb_u16(&self) -> (u16, u16, u16) {
+        match *self {
+            TermColor::VGA(r, g, b) => {
+                let r16: u16 = (r as u16) << 8 | r as u16;
+                let g16: u16 = (g as u16) << 8 | g as u16;
+                let b16: u16 = (b as u16) << 8 | b as u16;
+                (r16, g16, b16)
+            }
+            _ => {
+                let vga = self.get_vga();
+                vga.get_rgb_u16()
+            }
+        }
+    }
+
     pub fn new_vga(r: &str, g: &str, b: &str) -> Result<Self, ColorCodeError> {
         let r: u8 = r.parse()?;
         let g: u8 = g.parse()?;
@@ -265,6 +280,16 @@ mod tests {
             &color[3..=4],
             &color[5..=6]
         );
+    }
 
+    #[test]
+    fn test_color_u16() {
+        let color = TermColor::Black.get_rgb_u16();
+
+        println!("color r {:?} b {:?} g {:?}", color.0, color.1, color.2);
+
+        let color = TermColor::BrightWhite.get_rgb_u16();
+
+        println!("color r {:?} b {:?} g {:?}", color.0, color.1, color.2);
     }
 }

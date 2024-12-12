@@ -299,7 +299,7 @@
 	(30,9,"GtkStackPage","name","journal",0,None,None,None,None,None,None,None,None),
 	(30,10,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
 	(30,13,"GtkScrolledWindow","hscrollbar-policy","always",None,None,None,None,None,None,None,None,None),
-	(30,13,"GtkScrolledWindow","propagate-natural-width","True",None,None,None,None,None,None,None,None,None),
+	(30,13,"GtkScrolledWindow","overlay-scrolling","False",None,None,None,None,None,None,None,None,None),
 	(30,13,"GtkScrolledWindow","vscrollbar-policy","always",None,None,None,None,None,None,None,None,None),
 	(30,13,"GtkWidget","vexpand","True",0,None,None,None,None,None,None,None,None),
 	(30,15,"GtkListView","enable-rubberband","True",None,None,None,None,None,None,None,None,None),

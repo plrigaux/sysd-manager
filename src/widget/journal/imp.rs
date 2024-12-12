@@ -5,11 +5,10 @@ enum JournalAnswers {
     Events(Vec<JournalEventRaw>),
 }
 
-use crate::gtk::glib::translate::IntoGlib;
 use chrono::{Local, TimeZone};
 use gtk::{
-    gdk, gio, glib,
-    pango::{self, AttrList},
+    gio, glib,
+    pango::{self},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -19,7 +18,7 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    TemplateChild, TextTag,
+    TemplateChild,
 };
 use std::{
     cell::{Cell, RefCell},
@@ -204,23 +203,15 @@ impl JournalPanelImp {
             .downcast_ref::<gtk::ListItem>()
             .expect("item.downcast_ref::<gtk::ListItem>()");
 
-        //let adj = gtk::Adjustment::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        let text_view = gtk::Label::new(None);
-        text_view.set_height_request(16); //to force min heigt
-        text_view.set_selectable(true);
-        text_view.set_xalign(0.0);
-        text_view.set_single_line_mode(false);
-        text_view.add_css_class("unit_info");
+        let event_display = gtk::Label::builder()
+            .height_request(10) //to force min heigt
+            .selectable(true)
+            .xalign(0.0)
+            .single_line_mode(false)
+            .css_classes(["unit_info"])
+            .build();
 
-        //text_view.set_editable(false);
-        //text_view.set_cursor_visible(false);
-        //text_view.set_monospace(true);
-        //.hadjustment(&adj)
-        //.can_focus(false)
-        //.can_target(false)
-        //.build();
-
-        item.set_child(Some(&text_view));
+        item.set_child(Some(&event_display));
     }
 
     #[template_callback]
@@ -229,7 +220,7 @@ impl JournalPanelImp {
             .downcast_ref::<gtk::ListItem>()
             .expect("Needs to be ListItem");
 
-        let child = item
+        let event_display = item
             .child()
             .and_downcast::<gtk::Label>()
             .expect("The child has to be a `gtk::Label`.");
@@ -250,65 +241,37 @@ impl JournalPanelImp {
 
         let priority = entry.priority();
         let construct = format!("{} {} {}", priority, prefix, entry.message());
-
-        if priority <= 3 {
-            let asdf = pango::AttrList::new();
-
-            let mut a = pango::AttrColor::new_foreground(0xFFFF, 0, 0);
-            a.set_start_index(8);
-
-            let mut fd = pango::FontDescription::new();
-            fd.set_weight(pango::Weight::Bold);
-
-            asdf.insert(a);
-            asdf.insert(pango::AttrFontDesc::new(&fd));
-
-            child.set_attributes(Some(&asdf));
-        } else {
-            let asdf = pango::AttrList::new();
-
-            let mut a = pango::AttrColor::new_foreground(0, 0, 0xFFFF);
-            a.set_start_index(8);
-            asdf.insert(a);
-            child.set_attributes(Some(&asdf));
-        }
-
-        child.set_text(&construct);
-        /*  if priority == 6 || !PREFERENCES.journal_colors() {
+  
+        event_display.set_text(&construct);
+        if priority == 6 || !PREFERENCES.journal_colors() {
             let construct = format!("{} {} {}", priority, prefix, entry.message());
-            text_buffer.set_text(&construct);
+            event_display.set_text(&construct);
         } else {
-            let tag_table = text_buffer.tag_table();
-            //text_buffer.set_text("");
-
-            let mut iter = text_buffer.start_iter();
-            let construct = format!("{} {} ", priority, prefix);
-
-            text_buffer.insert(&mut iter, &construct);
-
-            let start_offset = iter.offset();
-            text_buffer.insert(&mut iter, &entry.message());
-            let start_iter = text_buffer.iter_at_offset(start_offset);
-
-            let tag = get_tag(priority, self.is_dark.get());
-
-            tag_table.add(&tag);
-            text_buffer.apply_tag(&tag, &start_iter, &iter);
-        } */
+     
+            let mut construct = format!("{} {} ", priority, prefix);
+            let start = construct.len() as u32;
+            construct.push_str(&entry.message());
+         
+            let is_dark = self.is_dark.get();
+            let attributes = get_attrlist(priority, is_dark, start);
+            event_display.set_text(&construct);
+            event_display.set_attributes(Some(
+                &attributes));
+        }
     }
 
     #[template_callback]
     fn event_list_unbind(&self, item_obj: &glib::Object) {
         // Get `TaskRow` from `ListItem`
-        let task_row = item_obj
+        let event_display = item_obj
             .downcast_ref::<gtk::ListItem>()
             .expect("Needs to be ListItem")
             .child()
             .and_downcast::<gtk::Label>()
             .expect("The child has to be a `gtk::Label`.");
 
-        //task_row.buffer().set_text("");
-        task_row.set_text("");
+        event_display.set_text("");
+        event_display.set_attributes(None);
     }
 
     #[template_callback]
@@ -365,29 +328,57 @@ impl ObjectImpl for JournalPanelImp {
 impl WidgetImpl for JournalPanelImp {}
 impl BoxImpl for JournalPanelImp {}
 
-static RED: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+static RED: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Red3.into();
-    let rgba = color.get_rgba();
+    let rgba = color.get_rgb_u16();
     rgba
 });
 
-static RED_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+static RED_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Custom("#ef4b4b").into();
-    let rgba = color.get_rgba();
+    let rgba = color.get_rgb_u16();
     rgba
 });
 
-static YELLOW: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+static YELLOW: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Yellow5.into();
-    let rgba = color.get_rgba();
+    let rgba = color.get_rgb_u16();
     rgba
 });
 
-static YELLOW_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
+static YELLOW_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Custom("#e5e540").into();
-    let rgba = color.get_rgba();
+    let rgba = color.get_rgb_u16();
     rgba
 });
+
+macro_rules! set_attr_color {
+    ($attrlist:expr, $r:expr, $g:expr, $b:expr, $start:expr) => {{
+        let mut attr_color = pango::AttrColor::new_foreground($r, $g, $b);
+        attr_color.set_start_index($start);
+
+        $attrlist.insert(attr_color);
+    }};
+}
+
+macro_rules! set_attr_bold {
+    ($attr_list:expr,  $start:expr) => {{
+        let mut font_description = pango::FontDescription::new();
+        font_description.set_weight(pango::Weight::Bold);
+
+        let mut attr_font_description = pango::AttrFontDesc::new(&font_description);
+        attr_font_description.set_start_index($start);
+
+        $attr_list.insert(attr_font_description);
+    }};
+}
+
+macro_rules! set_attr_color_bold {
+    ($attr_list:expr, $r:expr, $g:expr, $b:expr, $start:expr) => {{
+        set_attr_color!($attr_list, $r, $g, $b, $start);
+        set_attr_bold!($attr_list, $start);
+    }};
+}
 
 /// When outputting to a tty, lines are colored according to priority:
 ///        lines of level ERROR and higher  3-1
@@ -397,33 +388,29 @@ static YELLOW_DARK: LazyLock<gdk::RGBA> = LazyLock::new(|| {
 ///                  lines of level INFO are displayed normally; lines of level  6
 ///                  DEBUG are colored grey.
 ///
-fn get_tag(priority: u8, is_dark: bool) -> TextTag {
-    let tags = match priority {
+fn get_attrlist(priority: u8, is_dark: bool, start: u32) -> pango::AttrList {
+    let attr_list = pango::AttrList::new();
+    match priority {
         0..=3 => {
             let color = if is_dark { &RED_DARK } else { &RED };
 
-            gtk::TextTag::builder()
-                .weight(pango::Weight::Bold.into_glib())
-                .foreground_rgba(color)
-                .build()
+            set_attr_color_bold!(attr_list, color.0, color.1, color.2, start);
         }
         4 => {
             let color = if is_dark { &YELLOW_DARK } else { &YELLOW };
 
-            gtk::TextTag::builder()
-                .weight(pango::Weight::Bold.into_glib())
-                .foreground_rgba(color)
-                .build()
+            set_attr_color_bold!(attr_list, color.0, color.1, color.2, start);
         }
-        5 => gtk::TextTag::builder()
-            .weight(pango::Weight::Bold.into_glib())
-            .build(),
+        5 => {
+            set_attr_bold!(attr_list, start);
+        }
+        7 => {
+            set_attr_color!(attr_list, 0x8888, 0x8888, 0x8888, start);
+        }
+
         _ => {
-            let color = TermColor::VGA(128, 128, 128);
-            gtk::TextTag::builder()
-                .foreground_rgba(&color.get_rgba())
-                .build()
+            warn!("Priority {priority} not handeled")
         }
     };
-    tags
+    attr_list
 }
