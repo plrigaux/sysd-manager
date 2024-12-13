@@ -59,9 +59,6 @@ pub struct JournalPanelImp {
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
     #[template_child]
-    from_last_boot_check_button: TemplateChild<gtk::CheckButton>,
-
-    #[template_child]
     journal_toggle_sort_button: TemplateChild<gtk::Button>,
 
     #[template_child]
@@ -280,11 +277,11 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
-    fn from_last_boot_toggled(&self, check: &gtk::CheckButton) {
-        info!("from_last_boot_toggled {}", check.is_active());
+    fn boot_id_text_change(&self, entry: &adw::EntryRow) {
+        let text = entry.text();
+        info!("boot id entry_changed {}", text);
     }
 }
-
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
 impl ObjectSubclass for JournalPanelImp {

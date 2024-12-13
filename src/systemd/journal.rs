@@ -1,3 +1,8 @@
+/// Call systemd journal
+/// 
+/// Fields
+/// https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html#
+/// 
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use chrono::Local;
