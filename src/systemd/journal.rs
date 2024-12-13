@@ -1,5 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use chrono::Local;
 use log::{debug, info, warn};
 use sysd::{id128::Id128, journal::OpenOptions, Journal};
 
@@ -21,10 +22,13 @@ const KEY_OBJECT_SYSTEMD_USER_UNIT: &str = "OBJECT_SYSTEMD_USER_UNIT";
 const KEY_SYSTEMD_SLICE: &str = "_SYSTEMD_SLICE";
 const KEY_SYSTEMD_USER_SLICE: &str = "_SYSTEMD_USER_SLICE";
 
+const KEY_BOOT_ID: &str = "_BOOT_ID";
 const KEY_MESSAGE: &str = "MESSAGE";
 const KEY_PRIORITY: &str = "PRIORITY";
+const KEY_PID: &str = "_PID";
+const KEY_COMM: &str = "_COMM";
 
-const KEY_BOOT: &str = "_BOOT_ID";
+pub const BOOT_IDX: u8 = 200;
 
 pub(super) fn get_unit_journal2(
     unit: &UnitInfo,
@@ -76,7 +80,7 @@ pub(super) fn get_unit_journal2(
     };
 
     journal.match_and()?;
-    journal.match_add(KEY_BOOT, boot_str)?;
+    journal.match_add(KEY_BOOT_ID, boot_str)?;
 
     let mut vec = Vec::new();
 
@@ -84,6 +88,8 @@ pub(super) fn get_unit_journal2(
     let default_priority = "7".to_string();
 
     let mut index = 0;
+    let mut last_boot_id = String::new();
+
     loop {
         if journal.next()? == 0 {
             debug!("BREAK nb {}", index);
@@ -100,10 +106,28 @@ pub(super) fn get_unit_journal2(
             .expect("Time went backwards");
         let time_in_ms = since_the_epoch.as_millis();
 
+        let pid = get_data(&mut journal, KEY_PID, &default);
         let priority_str = get_data(&mut journal, KEY_PRIORITY, &default_priority);
         let priority = priority_str.parse::<u8>().map_or(7, |u| u);
 
-        let journal_event = JournalEvent::new_param(priority, time_in_ms as u64, message);
+        let name = get_data(&mut journal, KEY_COMM, &default);
+
+        let boot_id = get_data(&mut journal, KEY_BOOT_ID, &default);
+
+        let prefix = make_prefix(time_in_ms, name, pid);
+
+        let journal_event = JournalEvent::new_param(priority, time_in_ms as u64, prefix, message);
+
+        if boot_id != last_boot_id && !last_boot_id.is_empty() {
+            let boot_event = JournalEvent::new_param(
+                BOOT_IDX,
+                time_in_ms as u64 + 1,
+                format!("-- Boot {boot_id} --"),
+                String::new(),
+            );
+            last_boot_id = boot_id;
+            vec.push(boot_event);
+        }
 
         vec.push(journal_event);
 
@@ -135,4 +159,16 @@ fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
         }
     };
     value
+}
+
+fn make_prefix(timestamp: u128, name: String, pid: String) -> String {
+    let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, timestamp as i64);
+    let fmt = "%b %d %T";
+    let date = match local_result {
+        chrono::offset::LocalResult::Single(l) => l.format(fmt).to_string(),
+        chrono::offset::LocalResult::Ambiguous(a, _b) => a.format(fmt).to_string(),
+        chrono::offset::LocalResult::None => "NONE".to_owned(),
+    };
+
+    format!("{date} {name}[{pid}]: ")
 }

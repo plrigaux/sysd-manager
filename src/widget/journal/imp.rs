@@ -5,7 +5,6 @@ enum JournalAnswers {
     Events(Vec<JournalEvent>),
 }
 
-use chrono::{Local, TimeZone};
 use gtk::{
     gio, glib,
     pango::{self},
@@ -140,7 +139,7 @@ impl JournalPanelImp {
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
         let store = self.list_store.clone();
-    
+
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
             panel_stack.set_visible_child_name(PANEL_SPINNER);
@@ -229,23 +228,13 @@ impl JournalPanelImp {
 
         //let text_buffer = child.buffer();
 
-        let local_result = Local.timestamp_millis_opt(entry.timestamp() as i64);
-
-        let prefix = match local_result {
-            chrono::offset::LocalResult::Single(l) => l.format("%Y-%m-%d %T").to_string(),
-            chrono::offset::LocalResult::Ambiguous(a, _b) => a.format("%Y-%m-%d %T").to_string(),
-            chrono::offset::LocalResult::None => "NONE".to_owned(),
-        };
-
         let priority = entry.priority();
-        let construct = format!("{} {} {}", priority, prefix, entry.message());
 
-        event_display.set_text(&construct);
         if priority == 6 || !PREFERENCES.journal_colors() {
-            let construct = format!("{} {} {}", priority, prefix, entry.message());
+            let construct = format!("{}{}", entry.prefix(), entry.message());
             event_display.set_text(&construct);
         } else {
-            let mut construct = format!("{} {} ", priority, prefix);
+            let mut construct = entry.prefix();
             let start = construct.len() as u32;
             construct.push_str(&entry.message());
 
