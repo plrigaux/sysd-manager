@@ -47,24 +47,33 @@
             <property name="popover">
               <object class="GtkPopover">
                 <property name="width-request">300</property>
+                <signal name="closed" handler="journal_menu_popover_closed" swapped="yes"/>
+                <signal name="activate-default" handler="journal_menu_popover_activate_default" swapped="yes"/>
+                <signal name="show" handler="journal_menu_popover_show" swapped="yes"/>
                 <child>
                   <object class="GtkBox">
                     <property name="orientation">vertical</property>
                     <property name="spacing">5</property>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="journal_boot_all_button">
                         <property name="label">All</property>
+                        <signal name="clicked" handler="journal_boot_all_button_clicked" swapped="yes"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="journal_boot_current_button">
                         <property name="label">Current</property>
+                        <signal name="clicked" handler="journal_boot_current_button_clicked" swapped="yes"/>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwEntryRow">
+                      <object class="AdwEntryRow" id="journal_boot_id_entry">
+                        <property name="css-classes">.monospace</property>
                         <property name="title">Boot id</property>
                         <property name="use-underline">True</property>
+                        <signal name="apply" handler="journal_boot_id_entry_apply" swapped="yes"/>
+                        <signal name="changed" handler="journal_boot_id_entry_change" swapped="yes"/>
+                        <signal name="entry-activated" handler="journal_boot_id_entry_activate" swapped="yes"/>
                       </object>
                     </child>
                   </object>

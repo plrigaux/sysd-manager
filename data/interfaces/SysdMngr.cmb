@@ -116,9 +116,9 @@
 	(30,36,"AdwButtonContent",None,35,None,None,None,0,None,None),
 	(30,37,"GtkMenuButton",None,32,None,None,None,2,None,None),
 	(30,46,"GtkPopover",None,37,None,None,None,0,None,None),
-	(30,47,"GtkButton",None,50,None,None,None,0,None,None),
-	(30,48,"GtkButton",None,50,None,None,None,1,None,None),
-	(30,49,"AdwEntryRow",None,50,None,None,None,2,None,None),
+	(30,47,"GtkButton","journal_boot_all_button",50,None,None,None,0,None,None),
+	(30,48,"GtkButton","journal_boot_current_button",50,None,None,None,1,None,None),
+	(30,49,"AdwEntryRow","journal_boot_id_entry",50,None,None,None,2,None,None),
 	(30,50,"GtkBox",None,46,None,None,None,0,None,None),
 	(32,1,"GtkBox","UnitFilePanel",None,None,None,None,0,None,None),
 	(32,2,"GtkScrolledWindow",None,1,None,None,None,0,None,None),
@@ -342,6 +342,7 @@
 	(30,48,"GtkButton","label","Current",None,None,None,None,None,None,None,None,None),
 	(30,49,"AdwPreferencesRow","title","Boot id",None,None,None,None,None,None,None,None,None),
 	(30,49,"AdwPreferencesRow","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(30,49,"GtkWidget","css-classes",".monospace",None,None,None,None,None,None,None,None,None),
 	(30,50,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
 	(30,50,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
 	(32,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
@@ -540,7 +541,15 @@
 	(130,30,19,"GtkSignalListItemFactory","bind","event_list_bind",None,0,1,0,None),
 	(135,30,19,"GtkSignalListItemFactory","unbind","event_list_unbind",None,0,1,0,None),
 	(136,30,33,"GtkButton","clicked","refresh_journal_clicked",None,None,1,0,None),
-	(137,30,35,"GtkButton","clicked","toggle_sort_clicked",None,None,1,0,None)
+	(137,30,35,"GtkButton","clicked","toggle_sort_clicked",None,None,1,0,None),
+	(138,30,46,"GtkPopover","closed","journal_menu_popover_closed",None,0,1,0,None),
+	(139,30,47,"GtkButton","clicked","journal_boot_all_button_clicked",None,0,1,0,None),
+	(140,30,48,"GtkButton","clicked","journal_boot_current_button_clicked",None,0,1,0,None),
+	(141,30,49,"AdwEntryRow","apply","journal_boot_id_entry_apply",None,0,1,0,None),
+	(142,30,49,"GtkEditable","changed","journal_boot_id_entry_change",None,0,1,0,None),
+	(144,30,49,"AdwEntryRow","entry-activated","journal_boot_id_entry_activate",None,0,1,0,None),
+	(145,30,46,"GtkPopover","activate-default","journal_menu_popover_activate_default",None,0,1,0,None),
+	(146,30,46,"GtkWidget","show","journal_menu_popover_show",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),
