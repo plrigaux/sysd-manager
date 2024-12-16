@@ -1,5 +1,6 @@
 pub mod analyze;
 pub mod data;
+pub mod journal_data;
 mod journal;
 mod sysdbus;
 
@@ -10,9 +11,10 @@ use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
 use std::sync::LazyLock;
 
-use data::{JournalEvent, UnitInfo};
+use data::UnitInfo;
 use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
 use gtk::glib::GString;
+use journal_data::JournalEvent;
 use log::{error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};

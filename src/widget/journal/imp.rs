@@ -29,7 +29,7 @@ use log::{debug, info, warn};
 use crate::{
     systemd::{
         self,
-        data::{JournalEvent, UnitInfo},
+        data::UnitInfo, journal_data::JournalEvent,
     },
     widget::preferences::data::PREFERENCES,
 };
@@ -63,6 +63,9 @@ pub struct JournalPanelImp {
 
     #[template_child]
     list_sort_model: TemplateChild<gtk::SortListModel>,
+
+/*     #[template_child]
+    journal_menu_popover: TemplateChild<gtk::PopoverMenu>, */
 
     unit: RefCell<Option<UnitInfo>>,
 
@@ -303,6 +306,12 @@ impl ObjectSubclass for JournalPanelImp {
 impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+        let t = self.list_store.item_type();
+
+        warn!("Type {:?}", t);
+
+/*         let entry = gtk::Entry::new();
+        self.journal_menu_popover.add_child(&entry, "boot_id_entry"); */
 
         create_sorter_ascd!(self);
     }

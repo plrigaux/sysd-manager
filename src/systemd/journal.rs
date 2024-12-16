@@ -2,6 +2,7 @@
 /// 
 /// Fields
 /// https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html#
+/// https://www.freedesktop.org/software/systemd/man/latest/sd_journal_open.html
 /// 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -12,8 +13,7 @@ use sysd::{id128::Id128, journal::OpenOptions, Journal};
 use crate::widget::preferences::data::{DbusLevel, PREFERENCES};
 
 use super::{
-    data::{JournalEvent, UnitInfo},
-    SystemdErrors,
+    data::UnitInfo, journal_data::JournalEvent, SystemdErrors
 };
 
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
