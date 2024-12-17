@@ -32,6 +32,7 @@ const KEY_PID: &str = "_PID";
 const KEY_COMM: &str = "_COMM";
 
 pub const BOOT_IDX: u8 = 200;
+pub const EVENT_MAX_ID: u8 = 201;
 
 pub(super) fn get_unit_journal(
     unit: &UnitInfo,
@@ -152,7 +153,16 @@ pub(super) fn get_unit_journal(
         if max_events != 0 {
             index += 1;
             if index >= max_events {
-                warn!("journal events maxed!");
+
+                let limit_event = JournalEvent::new_param(
+                    EVENT_MAX_ID,
+                    time_in_ms as u64 + 1,
+                    String::new(),
+                    format!("Limit of {max_events} log events reached! If needed, go to Preferences to change the limit."),
+                );
+                vec.push(limit_event);
+
+                warn!("Journal log events reach the {max_events} limit!");
                 return Ok(vec);
             }
         }

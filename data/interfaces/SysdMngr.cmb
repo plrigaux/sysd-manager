@@ -106,11 +106,9 @@
 	(30,15,"GtkListView","journal_events",13,None,None,None,0,None,None),
 	(30,16,"GtkNoSelection",None,15,None,None,None,0,None,None),
 	(30,17,"GtkSortListModel","list_sort_model",16,None,None,None,0,None,None),
-	(30,18,"GListStore","list_store",17,None,None,None,0,None,None),
 	(30,19,"GtkSignalListItemFactory",None,15,None,None,None,1,None,None),
 	(30,20,"GtkStackPage",None,6,None,None,None,2,None,None),
 	(30,22,"AdwStatusPage",None,20,None,None,None,0,None,None),
-	(30,31,"GtkAdjustment",None,15,None,None,None,2,None,None),
 	(30,32,"GtkBox",None,1,None,None,None,0,None,None),
 	(30,33,"GtkButton","journal_refresh_button",32,None,None,None,0,None,None),
 	(30,34,"AdwButtonContent",None,33,None,None,None,0,None,None),
@@ -315,10 +313,8 @@
 	(30,15,"GtkListView","enable-rubberband","True",None,None,None,None,None,None,None,None,None),
 	(30,15,"GtkListView","factory",None,None,None,None,None,19,None,None,None,None),
 	(30,15,"GtkListView","model",None,None,None,None,None,16,None,None,None,None),
-	(30,15,"GtkScrollable","hadjustment",None,None,None,None,None,31,None,None,None,None),
 	(30,15,"GtkScrollable","hscroll-policy","natural",None,None,None,None,None,None,None,None,None),
 	(30,16,"GtkNoSelection","model",None,None,None,None,None,17,None,None,None,None),
-	(30,17,"GtkSortListModel","model",None,None,None,None,None,18,None,None,None,None),
 	(30,20,"GtkStackPage","child",None,None,None,None,None,22,None,None,None,None),
 	(30,20,"GtkStackPage","name","empty",None,None,None,None,None,None,None,None,None),
 	(30,22,"AdwStatusPage","description","No events can be good",None,None,None,None,None,None,None,None,None),
@@ -561,7 +557,8 @@
 	(140,30,48,"GtkButton","clicked","journal_boot_current_button_clicked",None,0,1,0,None),
 	(142,30,49,"GtkEditable","changed","journal_boot_id_entry_change",None,0,1,0,None),
 	(145,30,46,"GtkPopover","activate-default","journal_menu_popover_activate_default",None,0,1,0,None),
-	(146,30,46,"GtkWidget","show","journal_menu_popover_show",None,0,1,0,None)
+	(146,30,46,"GtkWidget","show","journal_menu_popover_show",None,0,1,0,None),
+	(147,30,19,"GtkSignalListItemFactory","teardown","event_list_teardown",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

@@ -4,7 +4,6 @@
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit file panel -->
   <requires lib="gtk" version="4.12"/>
-  <requires lib="gio" version="2.44"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="JournalPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
@@ -114,18 +113,11 @@
                             <signal name="teardown" handler="event_list_teardown" swapped="yes"/>
                           </object>
                         </property>
-                        <property name="hadjustment">
-                          <object class="GtkAdjustment"/>
-                        </property>
                         <property name="hscroll-policy">natural</property>
                         <property name="model">
                           <object class="GtkNoSelection">
                             <property name="model">
-                              <object class="GtkSortListModel" id="list_sort_model">
-                                <property name="model">
-                                  <object class="GListStore" id="list_store"/>
-                                </property>
-                              </object>
+                              <object class="GtkSortListModel" id="list_sort_model"/>
                             </property>
                           </object>
                         </property>

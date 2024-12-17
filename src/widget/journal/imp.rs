@@ -6,7 +6,7 @@ enum JournalAnswers {
 }
 
 use gtk::{
-    gio, glib,
+    gio, glib::{self, property::PropertySet},
     pango::{self},
     prelude::*,
     subclass::{
@@ -28,7 +28,7 @@ use std::{
 use log::{debug, info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, journal::BOOT_IDX, journal_data::JournalEvent, BootFilter},
+    systemd::{self, data::UnitInfo, journal::{BOOT_IDX, EVENT_MAX_ID}, journal_data::JournalEvent, BootFilter},
     widget::preferences::data::PREFERENCES,
 };
 
@@ -76,8 +76,9 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_boot_id_entry: TemplateChild<adw::EntryRow>,
 
-    #[template_child]
-    list_store: TemplateChild<gio::ListStore>,
+    /*     #[template_child]
+    list_store: TemplateChild<gio::ListStore>, */
+    list_store: RefCell<Option<gio::ListStore>>,
 
     unit: RefCell<Option<UnitInfo>>,
 
@@ -150,7 +151,8 @@ impl JournalPanelImp {
         let oldest_first = false;
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
-        let store = self.list_store.clone();
+        let store_ref = self.list_store.borrow();
+        let store = store_ref.as_ref().expect("Liststore supposed to be set").clone();
         let boot_filter = self.boot_filter.borrow().clone();
 
         glib::spawn_future_local(async move {
@@ -186,7 +188,7 @@ impl JournalPanelImp {
                     store.remove_all();
 
                     for journal_event in events.drain(..) {
-                        store.append(&journal_event);
+                        store.append(&journal_event);                        
                     }
 
                     //journal_events.vadjustment();
@@ -426,9 +428,15 @@ impl ObjectSubclass for JournalPanelImp {
 impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
-        let t = self.list_store.item_type();
+
+        let list_store = gio::ListStore::new::<JournalEvent>();
+
+        let t = list_store.item_type();
 
         warn!("Type {:?}", t);
+ 
+        self.list_sort_model.set_model(Some(&list_store));
+        self.list_store.set(Some(list_store));
 
         create_sorter_ascd!(self);
 
@@ -468,6 +476,18 @@ static YELLOW: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
 
 static YELLOW_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Custom("#e5e540").into();
+    let rgba = color.get_rgb_u16();
+    rgba
+});
+
+static BLUE: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
+    let color: TermColor = Palette::Blue3.into();
+    let rgba = color.get_rgb_u16();
+    rgba
+});
+
+static BLUE_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
+    let color: TermColor = Palette::Blue5.into();
     let rgba = color.get_rgb_u16();
     rgba
 });
@@ -526,6 +546,12 @@ fn get_attrlist(priority: u8, is_dark: bool) -> pango::AttrList {
         }
         BOOT_IDX => {
             set_attr_bold!(attr_list);
+        }
+
+        EVENT_MAX_ID => {
+            let color = if is_dark { &BLUE } else { &BLUE_DARK };
+
+            set_attr_color_bold!(attr_list, color.0, color.1, color.2);
         }
         _ => {
             warn!("Priority {priority} not handeled")
