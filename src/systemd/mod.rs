@@ -121,7 +121,7 @@ impl SystemdUnit {
     }
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, PartialEq)]
 pub enum BootFilter {   
     #[default]
     Current,
@@ -253,8 +253,9 @@ pub fn get_unit_journal(
     in_color: bool,
     oldest_first: bool,
     max_events: u32,
+    boot_filter : BootFilter
 ) -> Result<Vec<JournalEvent>, SystemdErrors> {
-    journal::get_unit_journal2(unit, in_color, oldest_first, max_events)
+    journal::get_unit_journal(unit, in_color, oldest_first, max_events, boot_filter)
 }
 
 pub fn commander_output(

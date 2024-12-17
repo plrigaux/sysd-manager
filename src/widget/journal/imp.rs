@@ -67,8 +67,6 @@ pub struct JournalPanelImp {
     #[template_child]
     list_sort_model: TemplateChild<gtk::SortListModel>,
 
-    /*     #[template_child]
-    journal_menu_popover: TemplateChild<gtk::PopoverMenu>, */
     #[template_child]
     journal_boot_current_button: TemplateChild<gtk::Button>,
 
@@ -78,10 +76,10 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_boot_id_entry: TemplateChild<adw::EntryRow>,
 
-    unit: RefCell<Option<UnitInfo>>,
-
     #[template_child]
     list_store: TemplateChild<gio::ListStore>,
+
+    unit: RefCell<Option<UnitInfo>>,
 
     is_dark: Cell<bool>,
 
@@ -128,37 +126,45 @@ impl JournalPanelImp {
     fn refresh_journal_clicked(&self, button: &gtk::Button) {
         debug!("button {:?}", button);
 
-        let binding = self.unit.borrow();
-        let Some(unit) = binding.as_ref() else {
-            warn!("no unit file");
-            return;
-        };
-
-        self.update_journal(&unit)
+        self.update_journal();
     }
 
     pub(crate) fn display_journal(&self, unit: &UnitInfo) {
         let _old = self.unit.replace(Some(unit.clone()));
 
-        self.update_journal(&unit)
+        self.update_journal()
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
-    fn update_journal(&self, unit: &UnitInfo) {
+    fn update_journal(&self) {
         //let journal_text: gtk::TextView = self.journal_text.clone();
-        let unit = unit.clone();
+
+        let binding = self.unit.borrow();
+        let Some(unit_ref) = binding.as_ref() else {
+            warn!("No unit file");
+            return;
+        };
+
+        let unit = unit_ref.clone();
         let journal_refresh_button = self.journal_refresh_button.clone();
         let oldest_first = false;
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
         let store = self.list_store.clone();
+        let boot_filter = self.boot_filter.borrow().clone();
 
         glib::spawn_future_local(async move {
             let in_color = PREFERENCES.journal_colors();
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
             let journal_answer = gio::spawn_blocking(move || {
-                match systemd::get_unit_journal(&unit, in_color, oldest_first, journal_max_events) {
+                match systemd::get_unit_journal(
+                    &unit,
+                    in_color,
+                    oldest_first,
+                    journal_max_events,
+                    boot_filter,
+                ) {
                     Ok(journal_output) => JournalAnswers::Events(journal_output),
                     Err(error) => {
                         let text = match error.gui_description() {
@@ -317,7 +323,12 @@ impl JournalPanelImp {
         };
 
         if let Some(boot_filter) = boot_filter_op {
-            self.boot_filter.replace(boot_filter);
+            let replaced = self.boot_filter.replace(boot_filter.clone());
+
+            if replaced != boot_filter {
+                //filter updated
+                self.update_journal();
+            }
         }
     }
 
@@ -349,21 +360,16 @@ impl JournalPanelImp {
     #[template_callback]
     fn journal_boot_all_button_clicked(&self) {
         info!("journal_boot_all_button_clicked");
-
-        self.journal_boot_all_button.add_css_class(CLASS_SUCCESS);
-        self.journal_boot_current_button
-            .remove_css_class(CLASS_SUCCESS);
         self.clear_boot_id();
+        self.journal_boot_all_button.add_css_class(CLASS_SUCCESS);
     }
 
     #[template_callback]
     fn journal_boot_current_button_clicked(&self) {
         info!("journal_boot_current_button_clicked");
-
+        self.clear_boot_id();
         self.journal_boot_current_button
             .add_css_class(CLASS_SUCCESS);
-        self.journal_boot_all_button.remove_css_class(CLASS_SUCCESS);
-        self.clear_boot_id();
     }
 
     fn clear_boot_id(&self) {
@@ -380,13 +386,10 @@ impl JournalPanelImp {
     }
 
     pub(super) fn set_boot_id_style(&self) {
-       
         let boot_id_text: glib::GString = self.journal_boot_id_entry.text();
 
         match validate_boot_id(&boot_id_text) {
-            BootIdValidation::Fail => {
-                self.journal_boot_id_entry.add_css_class(CLASS_ERROR)
-            }
+            BootIdValidation::Fail => self.journal_boot_id_entry.add_css_class(CLASS_ERROR),
             BootIdValidation::Partial => {
                 self.journal_boot_id_entry.remove_css_class(CLASS_WARNING);
                 self.journal_boot_id_entry.remove_css_class(CLASS_ERROR);

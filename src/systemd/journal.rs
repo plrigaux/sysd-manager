@@ -1,9 +1,9 @@
 /// Call systemd journal
-/// 
+///
 /// Fields
 /// https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html#
 /// https://www.freedesktop.org/software/systemd/man/latest/sd_journal_open.html
-/// 
+///
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use chrono::Local;
@@ -12,9 +12,7 @@ use sysd::{id128::Id128, journal::OpenOptions, Journal};
 
 use crate::widget::preferences::data::{DbusLevel, PREFERENCES};
 
-use super::{
-    data::UnitInfo, journal_data::JournalEvent, SystemdErrors
-};
+use super::{data::UnitInfo, journal_data::JournalEvent, BootFilter, SystemdErrors};
 
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
 const KEY_SYSTEMS_USER_UNIT: &str = "_SYSTEMD_USER_UNIT";
@@ -35,11 +33,12 @@ const KEY_COMM: &str = "_COMM";
 
 pub const BOOT_IDX: u8 = 200;
 
-pub(super) fn get_unit_journal2(
+pub(super) fn get_unit_journal(
     unit: &UnitInfo,
     _in_color: bool,
     _oldest_first: bool,
     max_events: u32,
+    boot_filter: BootFilter,
 ) -> Result<Vec<JournalEvent>, SystemdErrors> {
     info!("Starting journal-logger");
 
@@ -47,10 +46,6 @@ pub(super) fn get_unit_journal2(
     let mut journal = OpenOptions::default()
         .open()
         .expect("Could not open journal");
-
-    let boot_id = Id128::from_boot()?;
-    //debug!("BOOT {}", boot_id);
-    let boot_str = format!("{}", boot_id);
 
     let unit_primary = unit.primary();
     let unit_name = unit_primary.as_str();
@@ -84,8 +79,22 @@ pub(super) fn get_unit_journal2(
         }
     };
 
-    journal.match_and()?;
-    journal.match_add(KEY_BOOT_ID, boot_str)?;
+    match boot_filter {
+        BootFilter::Current => {
+            let boot_id = Id128::from_boot()?;
+            let boot_str = format!("{}", boot_id);
+
+            journal.match_and()?;
+            journal.match_add(KEY_BOOT_ID, boot_str)?;
+        }
+        BootFilter::All => {
+            //No filter
+        }
+        BootFilter::Id(boot_id) => {
+            journal.match_and()?;
+            journal.match_add(KEY_BOOT_ID, boot_id)?;
+        }
+    }
 
     let mut vec = Vec::new();
 
@@ -177,4 +186,3 @@ fn make_prefix(timestamp: u128, name: String, pid: String) -> String {
 
     format!("{date} {name}[{pid}]: ")
 }
-
