@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<interface>
+  <requires lib="gtk" version="4.16"/>
+  <template class="JournalRow" parent="GtkBox">
+    <property name="height-request">10</property>
+    <child>
+      <object class="GtkLabel" id="prefix_label">
+        <property name="css-classes">journal_message</property>
+        <property name="selectable">True</property>
+        <property name="xalign">0.0</property>
+        <property name="yalign">0.0</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="message_label">
+        <property name="css-classes">unit_info</property>
+        <property name="selectable">True</property>
+        <property name="xalign">0.0</property>
+        <property name="yalign">0.0</property>
+      </object>
+    </child>
+  </template>
+</interface>

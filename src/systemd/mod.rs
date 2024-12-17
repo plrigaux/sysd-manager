@@ -1,7 +1,7 @@
 pub mod analyze;
 pub mod data;
 pub mod journal_data;
-mod journal;
+pub mod journal;
 mod sysdbus;
 
 use std::borrow::Cow;

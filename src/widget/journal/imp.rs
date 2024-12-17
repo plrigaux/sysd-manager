@@ -28,11 +28,11 @@ use std::{
 use log::{debug, info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, journal_data::JournalEvent, BootFilter},
+    systemd::{self, data::UnitInfo, journal::BOOT_IDX, journal_data::JournalEvent, BootFilter},
     widget::preferences::data::PREFERENCES,
 };
 
-use super::{more_colors::TermColor, palette::Palette};
+use super::{journal_row::JournalRow, more_colors::TermColor, palette::Palette};
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -219,15 +219,18 @@ impl JournalPanelImp {
             .downcast_ref::<gtk::ListItem>()
             .expect("item.downcast_ref::<gtk::ListItem>()");
 
-        let event_display = gtk::Label::builder()
-            .height_request(10) //to force min heigt
-            .selectable(true)
-            .xalign(0.0)
-            .single_line_mode(false)
-            .css_classes(["unit_info"])
-            .build();
+        let event_display = JournalRow::new();
 
         item.set_child(Some(&event_display));
+    }
+
+    #[template_callback]
+    fn event_list_teardown(&self, item_obj: &glib::Object) {
+        let item = item_obj
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
+
+        item.set_child(None::<&gtk::Widget>);
     }
 
     #[template_callback]
@@ -238,8 +241,8 @@ impl JournalPanelImp {
 
         let event_display = item
             .child()
-            .and_downcast::<gtk::Label>()
-            .expect("The child has to be a `gtk::Label`.");
+            .and_downcast::<JournalRow>()
+            .expect("The child has to be a `JournalRow`.");
         let entry = item
             .item()
             .and_downcast::<JournalEvent>()
@@ -250,17 +253,13 @@ impl JournalPanelImp {
         let priority = entry.priority();
 
         if priority == 6 || !PREFERENCES.journal_colors() {
-            let construct = format!("{}{}", entry.prefix(), entry.message());
-            event_display.set_text(&construct);
+            event_display.set_text(&entry.prefix(), &entry.message());
         } else {
-            let mut construct = entry.prefix();
-            let start = construct.len() as u32;
-            construct.push_str(&entry.message());
-
             let is_dark = self.is_dark.get();
-            let attributes = get_attrlist(priority, is_dark, start);
-            event_display.set_text(&construct);
-            event_display.set_attributes(Some(&attributes));
+            event_display.set_text(&entry.prefix(), &entry.message());
+            let attributes = get_attrlist(priority, is_dark);
+
+            event_display.set_message_attributes(Some(&attributes));
         }
     }
 
@@ -271,11 +270,10 @@ impl JournalPanelImp {
             .downcast_ref::<gtk::ListItem>()
             .expect("Needs to be ListItem")
             .child()
-            .and_downcast::<gtk::Label>()
-            .expect("The child has to be a `gtk::Label`.");
+            .and_downcast::<JournalRow>()
+            .expect("The child has to be a `gtk::JournalRow`.");
 
-        event_display.set_text("");
-        event_display.set_attributes(None);
+        event_display.clear();
     }
 
     #[template_callback]
@@ -475,30 +473,27 @@ static YELLOW_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
 });
 
 macro_rules! set_attr_color {
-    ($attrlist:expr, $r:expr, $g:expr, $b:expr, $start:expr) => {{
-        let mut attr_color = pango::AttrColor::new_foreground($r, $g, $b);
-        attr_color.set_start_index($start);
-
+    ($attrlist:expr, $r:expr, $g:expr, $b:expr) => {{
+        let attr_color = pango::AttrColor::new_foreground($r, $g, $b);
         $attrlist.insert(attr_color);
     }};
 }
 
 macro_rules! set_attr_bold {
-    ($attr_list:expr,  $start:expr) => {{
+    ($attr_list:expr) => {{
         let mut font_description = pango::FontDescription::new();
         font_description.set_weight(pango::Weight::Bold);
 
-        let mut attr_font_description = pango::AttrFontDesc::new(&font_description);
-        attr_font_description.set_start_index($start);
+        let attr_font_description = pango::AttrFontDesc::new(&font_description);
 
         $attr_list.insert(attr_font_description);
     }};
 }
 
 macro_rules! set_attr_color_bold {
-    ($attr_list:expr, $r:expr, $g:expr, $b:expr, $start:expr) => {{
-        set_attr_color!($attr_list, $r, $g, $b, $start);
-        set_attr_bold!($attr_list, $start);
+    ($attr_list:expr, $r:expr, $g:expr, $b:expr) => {{
+        set_attr_color!($attr_list, $r, $g, $b);
+        set_attr_bold!($attr_list);
     }};
 }
 
@@ -510,26 +505,28 @@ macro_rules! set_attr_color_bold {
 ///                  lines of level INFO are displayed normally; lines of level  6
 ///                  DEBUG are colored grey.
 ///
-fn get_attrlist(priority: u8, is_dark: bool, start: u32) -> pango::AttrList {
+fn get_attrlist(priority: u8, is_dark: bool) -> pango::AttrList {
     let attr_list = pango::AttrList::new();
     match priority {
         0..=3 => {
             let color = if is_dark { &RED_DARK } else { &RED };
 
-            set_attr_color_bold!(attr_list, color.0, color.1, color.2, start);
+            set_attr_color_bold!(attr_list, color.0, color.1, color.2);
         }
         4 => {
             let color = if is_dark { &YELLOW_DARK } else { &YELLOW };
 
-            set_attr_color_bold!(attr_list, color.0, color.1, color.2, start);
+            set_attr_color_bold!(attr_list, color.0, color.1, color.2);
         }
         5 => {
-            set_attr_bold!(attr_list, start);
+            set_attr_bold!(attr_list);
         }
         7 => {
-            set_attr_color!(attr_list, 0x8888, 0x8888, 0x8888, start);
+            set_attr_color!(attr_list, 0x8888, 0x8888, 0x8888);
         }
-
+        BOOT_IDX => {
+            set_attr_bold!(attr_list);
+        }
         _ => {
             warn!("Priority {priority} not handeled")
         }

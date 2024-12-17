@@ -2,6 +2,7 @@ use crate::systemd::data::UnitInfo;
 
 //mod colorise;
 mod imp;
+mod journal_row;
 pub mod more_colors;
 pub mod palette;
 
@@ -16,9 +17,7 @@ glib::wrapper! {
 
 impl JournalPanel {
     pub fn new() -> Self {
-        // Create new window
         let obj: JournalPanel = glib::Object::new();
-
         obj
     }
 

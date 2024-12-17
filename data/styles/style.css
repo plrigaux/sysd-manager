@@ -6,3 +6,10 @@ label.unit_info {
     font-family: 'Droid Sans Mono', 'monospace', monospace;
 }
 
+label.journal_prefix {
+    font-family: 'Droid Sans Mono', 'monospace', monospace;
+}
+
+label.journal_message {
+    font-family: 'Droid Sans Mono', 'monospace', monospace;
+}

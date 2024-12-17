@@ -132,15 +132,18 @@ pub(super) fn get_unit_journal(
 
         let journal_event = JournalEvent::new_param(priority, time_in_ms as u64, prefix, message);
 
-        if boot_id != last_boot_id && !last_boot_id.is_empty() {
-            let boot_event = JournalEvent::new_param(
-                BOOT_IDX,
-                time_in_ms as u64 + 1,
-                format!("-- Boot {boot_id} --"),
-                String::new(),
-            );
+        if boot_id != last_boot_id {
+            if !last_boot_id.is_empty() {
+                let boot_event = JournalEvent::new_param(
+                    BOOT_IDX,
+                    time_in_ms as u64 - 1,
+                    String::new(),
+                    format!("-- Boot {boot_id} --"),
+                );
+                vec.push(boot_event);
+            }
+
             last_boot_id = boot_id;
-            vec.push(boot_event);
         }
 
         vec.push(journal_event);
