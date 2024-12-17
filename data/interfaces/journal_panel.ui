@@ -55,15 +55,15 @@
                     <property name="orientation">vertical</property>
                     <property name="spacing">5</property>
                     <child>
-                      <object class="GtkButton" id="journal_boot_all_button">
-                        <property name="label">All</property>
-                        <signal name="clicked" handler="journal_boot_all_button_clicked" swapped="yes"/>
+                      <object class="GtkButton" id="journal_boot_current_button">
+                        <property name="label">Current boot</property>
+                        <signal name="clicked" handler="journal_boot_current_button_clicked" swapped="yes"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkButton" id="journal_boot_current_button">
-                        <property name="label">Current</property>
-                        <signal name="clicked" handler="journal_boot_current_button_clicked" swapped="yes"/>
+                      <object class="GtkButton" id="journal_boot_all_button">
+                        <property name="label">All events</property>
+                        <signal name="clicked" handler="journal_boot_all_button_clicked" swapped="yes"/>
                       </object>
                     </child>
                     <child>
@@ -71,9 +71,7 @@
                         <property name="css-classes">.monospace</property>
                         <property name="title">Boot id</property>
                         <property name="use-underline">True</property>
-                        <signal name="apply" handler="journal_boot_id_entry_apply" swapped="yes"/>
                         <signal name="changed" handler="journal_boot_id_entry_change" swapped="yes"/>
-                        <signal name="entry-activated" handler="journal_boot_id_entry_activate" swapped="yes"/>
                       </object>
                     </child>
                   </object>

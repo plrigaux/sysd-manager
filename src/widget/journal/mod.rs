@@ -29,5 +29,9 @@ impl JournalPanel {
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark)
     }
+
+    fn set_boot_id_style(&self) {
+        self.imp().set_boot_id_style();
+    }
 }
 

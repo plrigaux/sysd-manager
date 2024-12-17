@@ -121,6 +121,14 @@ impl SystemdUnit {
     }
 }
 
+#[derive(Default, Clone)]
+pub enum BootFilter {   
+    #[default]
+    Current,
+    All,
+    Id(String)
+}
+
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     return sysdbus::get_unit_file_state_path(level, &sytemd_unit.primary());

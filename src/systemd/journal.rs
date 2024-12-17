@@ -177,3 +177,4 @@ fn make_prefix(timestamp: u128, name: String, pid: String) -> String {
 
     format!("{date} {name}[{pid}]: ")
 }
+

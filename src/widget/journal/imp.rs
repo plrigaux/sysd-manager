@@ -28,7 +28,7 @@ use std::{
 use log::{debug, info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, journal_data::JournalEvent},
+    systemd::{self, data::UnitInfo, journal_data::JournalEvent, BootFilter},
     widget::preferences::data::PREFERENCES,
 };
 
@@ -84,6 +84,8 @@ pub struct JournalPanelImp {
     list_store: TemplateChild<gio::ListStore>,
 
     is_dark: Cell<bool>,
+
+    boot_filter: RefCell<BootFilter>,
 }
 
 macro_rules! create_sorter_ascd {
@@ -299,6 +301,24 @@ impl JournalPanelImp {
     #[template_callback]
     fn journal_menu_popover_closed(&self) {
         info!("journal_menu_popover_closed");
+
+        let boot_filter_op = if self.journal_boot_all_button.has_css_class(CLASS_SUCCESS) {
+            Some(BootFilter::All)
+        } else if self.journal_boot_id_entry.has_css_class(CLASS_SUCCESS) {
+            let boot_id = self.journal_boot_id_entry.text();
+            Some(BootFilter::Id(boot_id.to_string()))
+        } else if self
+            .journal_boot_current_button
+            .has_css_class(CLASS_SUCCESS)
+        {
+            Some(BootFilter::Current)
+        } else {
+            None
+        };
+
+        if let Some(boot_filter) = boot_filter_op {
+            self.boot_filter.replace(boot_filter);
+        }
     }
 
     #[template_callback]
@@ -309,6 +329,21 @@ impl JournalPanelImp {
     #[template_callback]
     fn journal_menu_popover_show(&self) {
         info!("journal_menu_popover_show");
+
+        self.clear_boot_id();
+
+        let boot_filter_ref: &BootFilter = &self.boot_filter.borrow();
+
+        match boot_filter_ref {
+            BootFilter::Current => self
+                .journal_boot_current_button
+                .add_css_class(CLASS_SUCCESS),
+            BootFilter::All => self.journal_boot_all_button.add_css_class(CLASS_SUCCESS),
+            BootFilter::Id(boot_id) => {
+                self.journal_boot_id_entry.set_text(boot_id);
+                self.journal_boot_id_entry.add_css_class(CLASS_SUCCESS);
+            }
+        }
     }
 
     #[template_callback]
@@ -331,38 +366,42 @@ impl JournalPanelImp {
         self.clear_boot_id();
     }
 
-    #[template_callback]
-    fn journal_boot_id_entry_apply(&self) {
-        info!("journal_boot_id_entry_apply");
-
-        self.journal_boot_current_button
-            .remove_css_class(CLASS_SUCCESS);
-        self.journal_boot_all_button.remove_css_class(CLASS_SUCCESS);
-
-        self.set_boot_id_css_class(CLASS_SUCCESS);
-    }
-
-    fn set_boot_id_css_class(&self, css_class: &str) {
-        self.clear_boot_id();
-        self.journal_boot_id_entry.add_css_class(css_class);
-    }
-
     fn clear_boot_id(&self) {
-        self.journal_boot_id_entry.remove_css_class(CLASS_WARNING);
-        self.journal_boot_id_entry.remove_css_class(CLASS_ERROR);
-        self.journal_boot_id_entry.remove_css_class(CLASS_SUCCESS);
+        for css_class in [CLASS_WARNING, CLASS_ERROR, CLASS_SUCCESS] {
+            self.journal_boot_id_entry.remove_css_class(css_class);
+            self.journal_boot_all_button.remove_css_class(css_class);
+            self.journal_boot_current_button.remove_css_class(css_class);
+        }
     }
 
     #[template_callback]
     fn journal_boot_id_entry_change(&self) {
-        set_boot_id_style(&self.journal_boot_id_entry);
+        self.set_boot_id_style();
     }
 
-    #[template_callback]
-    fn journal_boot_id_entry_activate(&self) {
-        let text = self.journal_boot_id_entry.text();
+    pub(super) fn set_boot_id_style(&self) {
+       
+        let boot_id_text: glib::GString = self.journal_boot_id_entry.text();
 
-        info!("journal_boot_id_entry_activate {}", text);
+        match validate_boot_id(&boot_id_text) {
+            BootIdValidation::Fail => {
+                self.journal_boot_id_entry.add_css_class(CLASS_ERROR)
+            }
+            BootIdValidation::Partial => {
+                self.journal_boot_id_entry.remove_css_class(CLASS_WARNING);
+                self.journal_boot_id_entry.remove_css_class(CLASS_ERROR);
+                self.journal_boot_id_entry.remove_css_class(CLASS_SUCCESS);
+            }
+            BootIdValidation::Valid => {
+                self.clear_boot_id();
+                self.journal_boot_id_entry.add_css_class(CLASS_SUCCESS);
+            }
+            BootIdValidation::Over => {
+                self.journal_boot_id_entry.remove_css_class(CLASS_SUCCESS);
+                self.journal_boot_id_entry.remove_css_class(CLASS_ERROR);
+                self.journal_boot_id_entry.add_css_class(CLASS_WARNING)
+            }
+        };
     }
 }
 // The central trait for subclassing a GObject
@@ -390,17 +429,14 @@ impl ObjectImpl for JournalPanelImp {
 
         warn!("Type {:?}", t);
 
-        /*         let entry = gtk::Entry::new();
-        self.journal_menu_popover.add_child(&entry, "boot_id_entry"); */
-
         create_sorter_ascd!(self);
 
         let event_controller_focus = gtk::EventControllerFocus::new();
         {
-            let journal_boot_id_entry = self.journal_boot_id_entry.clone();
+            let obj = self.obj().clone();
             event_controller_focus.connect_enter(move |_controller_focus| {
-                info!("connect_enter");              
-                set_boot_id_style(&journal_boot_id_entry);
+                info!("connect_enter");
+                obj.set_boot_id_style();
             });
         }
 
@@ -522,32 +558,6 @@ fn validate_boot_id(boot_id: &str) -> BootIdValidation {
         32 => BootIdValidation::Valid,
         _ => BootIdValidation::Over,
     }
-}
-
-fn set_boot_id_style(journal_boot_id_entry : &adw::EntryRow) {
-    let boot_id_text: glib::GString = journal_boot_id_entry.text();
-
-    match validate_boot_id(&boot_id_text) {
-        BootIdValidation::Fail => {
-            journal_boot_id_entry.remove_css_class(CLASS_WARNING);
-            journal_boot_id_entry.remove_css_class(CLASS_SUCCESS);
-            journal_boot_id_entry.add_css_class(CLASS_ERROR)
-        }
-        BootIdValidation::Partial => {
-            journal_boot_id_entry.remove_css_class(CLASS_WARNING);
-            journal_boot_id_entry.remove_css_class(CLASS_ERROR);
-            journal_boot_id_entry.remove_css_class(CLASS_SUCCESS);
-        }
-        BootIdValidation::Valid => {
-/*                 journal_boot_current_button
-                .remove_css_class(CLASS_SUCCESS);
-            journal_boot_all_button.remove_css_class(CLASS_SUCCESS); */
-            journal_boot_id_entry.remove_css_class(CLASS_WARNING);
-            journal_boot_id_entry.remove_css_class(CLASS_ERROR);
-            journal_boot_id_entry.add_css_class(CLASS_SUCCESS);
-        }
-        BootIdValidation::Over => journal_boot_id_entry.add_css_class(CLASS_WARNING),
-    };
 }
 
 #[cfg(test)]
