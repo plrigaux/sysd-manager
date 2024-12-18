@@ -105,13 +105,24 @@ pub(super) fn get_unit_journal(
     let mut index = 0;
     let mut last_boot_id = String::new();
 
+    let message_max_char = PREFERENCES.journal_event_max_size() as usize;
+
     loop {
         if journal.next()? == 0 {
             debug!("BREAK nb {}", index);
             break;
         }
 
-        let message = get_data(&mut journal, KEY_MESSAGE, &default);
+        let mut message = get_data(&mut journal, KEY_MESSAGE, &default);
+
+        if message_max_char != 0 && message.len() > message_max_char {
+            warn!(
+                "MESSAGE LEN {} will truncate to {message_max_char}",
+                message.len()
+            );
+
+            message = truncate(message, message_max_char);
+        }
 
         //TODO get the u64 timestamp directly
         let timestamp: SystemTime = journal.timestamp()?;
@@ -153,7 +164,6 @@ pub(super) fn get_unit_journal(
         if max_events != 0 {
             index += 1;
             if index >= max_events {
-
                 let limit_event = JournalEvent::new_param(
                     EVENT_MAX_ID,
                     time_in_ms as u64 + 1,
@@ -169,6 +179,17 @@ pub(super) fn get_unit_journal(
     }
 
     Ok(vec)
+}
+
+fn truncate(s: String, max_chars: usize) -> String {
+    match s.char_indices().nth(max_chars - 1) {
+        None => s,
+        Some((idx, _)) => {
+            let mut trunk_string = s[..idx].to_string();
+            trunk_string.push('\u{2026}');
+            trunk_string
+        }
+    }
 }
 
 fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
@@ -198,4 +219,27 @@ fn make_prefix(timestamp: u128, name: String, pid: String) -> String {
     };
 
     format!("{date} {name}[{pid}]: ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_truncate() {
+        let s = "12345678901234567890".to_string();
+
+        let new_s = truncate(s.clone(), 10);
+
+        println!("{s} {new_s}")
+    }
+
+    #[test]
+    fn test_truncate2() {
+        let s = "1".to_string();
+
+        let new_s = truncate(s.clone(), 1);
+
+        println!("{s} {new_s}")
+    }
 }

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.94.0 -->
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
   <!-- interface-name preferences.ui -->
   <requires lib="gtk" version="4.16"/>
@@ -57,10 +57,27 @@
                             <property name="value">50.0</property>
                           </object>
                         </property>
-                        <property name="subtitle">0 to no limits</property>
+                        <property name="subtitle">The maximum of event log event
+&lt;i&gt;0 to no limit&lt;/i&gt;</property>
                         <property name="subtitle-lines">2</property>
                         <property name="title">Journal's events limit</property>
                         <signal name="changed" handler="journal_max_events_changed" swapped="yes"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSpinRow" id="journal_event_max_size">
+                        <property name="adjustment">
+                          <object class="GtkAdjustment">
+                            <property name="step-increment">1.0</property>
+                            <property name="upper">4294967295.0</property>
+                            <property name="value">50.0</property>
+                          </object>
+                        </property>
+                        <property name="subtitle">The journal event maximum characters
+&lt;i&gt;0 to no limit&lt;/i&gt;</property>
+                        <property name="subtitle-lines">2</property>
+                        <property name="title">Journal's event max size</property>
+                        <signal name="changed" handler="journal_event_max_size_changed" swapped="yes"/>
                       </object>
                     </child>
                   </object>

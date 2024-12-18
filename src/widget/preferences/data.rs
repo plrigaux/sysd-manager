@@ -19,6 +19,7 @@ pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
 pub const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 pub const KEY_PREF_JOURNAL_MAX_EVENTS: &str = "pref-journal-max-events";
+pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 
@@ -111,6 +112,7 @@ pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
     journal_colors: RwLock<bool>,
     journal_events: RwLock<u32>,
+    journal_event_max_size: RwLock<u32>,
     unit_file_colors: RwLock<bool>,
     app_first_connection: RwLock<bool>,
 }
@@ -122,7 +124,7 @@ impl Preferences {
         debug!("level {:?} {:?}", level_str, level);
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let journal_events = settings.uint(KEY_PREF_JOURNAL_MAX_EVENTS);
-
+        let journal_event_max_size = settings.uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
 
@@ -130,6 +132,7 @@ impl Preferences {
             dbus_level: RwLock::new(level),
             journal_colors: RwLock::new(journal_colors),
             journal_events: RwLock::new(journal_events),
+            journal_event_max_size: RwLock::new(journal_event_max_size),
             unit_file_colors: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
         }
@@ -145,6 +148,10 @@ impl Preferences {
 
     pub fn journal_max_events(&self) -> u32 {
         *self.journal_events.read().unwrap()
+    }
+
+    pub fn journal_event_max_size(&self) -> u32 {
+        *self.journal_event_max_size.read().unwrap()
     }
 
     pub fn unit_file_colors(&self) -> bool {
@@ -167,6 +174,16 @@ impl Preferences {
 
         let mut journal_events = self.journal_events.write().expect("supposed to write");
         *journal_events = journal_events_new;
+    }
+
+    pub fn set_journal_event_max_size(&self, journal_event_max_size_new: u32) {
+        info!("journal_event_max_size: {journal_event_max_size_new}");
+
+        let mut journal_event_max_size = self
+            .journal_event_max_size
+            .write()
+            .expect("supposed to write");
+        *journal_event_max_size = journal_event_max_size_new;
     }
 
     pub fn set_journal_colors(&self, display: bool) {

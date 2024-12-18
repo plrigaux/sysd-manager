@@ -6,7 +6,8 @@ enum JournalAnswers {
 }
 
 use gtk::{
-    gio, glib::{self, property::PropertySet},
+    gio,
+    glib::{self, property::PropertySet},
     pango::{self},
     prelude::*,
     subclass::{
@@ -28,7 +29,13 @@ use std::{
 use log::{debug, info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, journal::{BOOT_IDX, EVENT_MAX_ID}, journal_data::JournalEvent, BootFilter},
+    systemd::{
+        self,
+        data::UnitInfo,
+        journal::{BOOT_IDX, EVENT_MAX_ID},
+        journal_data::JournalEvent,
+        BootFilter,
+    },
     widget::preferences::data::PREFERENCES,
 };
 
@@ -152,7 +159,10 @@ impl JournalPanelImp {
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
         let store_ref = self.list_store.borrow();
-        let store = store_ref.as_ref().expect("Liststore supposed to be set").clone();
+        let store = store_ref
+            .as_ref()
+            .expect("Liststore supposed to be set")
+            .clone();
         let boot_filter = self.boot_filter.borrow().clone();
 
         glib::spawn_future_local(async move {
@@ -187,9 +197,16 @@ impl JournalPanelImp {
 
                     store.remove_all();
 
+                    let mut i: usize = 0;
                     for journal_event in events.drain(..) {
-                        store.append(&journal_event);                        
+                        store.append(&journal_event);
+                        i += 1;
+                        if i % 1000 == 0 {
+                            info!("Added {i} events")
+                        }
                     }
+
+                    info!("Finish added {i} events!");
 
                     //journal_events.vadjustment();
 
@@ -434,7 +451,7 @@ impl ObjectImpl for JournalPanelImp {
         let t = list_store.item_type();
 
         warn!("Type {:?}", t);
- 
+
         self.list_sort_model.set_model(Some(&list_store));
         self.list_store.set(Some(list_store));
 
