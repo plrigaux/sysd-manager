@@ -62,6 +62,7 @@ For now new features are planned to be added, such as:
 * Install the build essentials
   * Install GTK 4 and the build essentials. [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html)
   * Install libadwaita [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
+  * Install systemd development library **libsystemd-dev**
 * Compile and install  ```cargo install sysd-manager```
 * Run ```sysd-manager```
 
