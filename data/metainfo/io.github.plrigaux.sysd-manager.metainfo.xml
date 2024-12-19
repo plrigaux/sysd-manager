@@ -10,9 +10,10 @@
   <summary>A GUI to manage systemd units</summary>
   <!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
   <description>
-    <p>Manage your Services, Timers, Sockets and other units. You can enable, disable, stop and start them. Also,
+    <p>Manage your Services, Timers, Sockets and other units. You can enable, disable, stop and
+      start them. Also,
       you can view their config file and peak at their journal logs.
-    </p>  
+    </p>
   </description>
   <branding>
     <color type="primary" scheme_preference="light">#a1ba87</color>
@@ -75,22 +76,33 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-
-   <release version="1.3.2" date="2024-12-06">
+    <release version="1.4" date="2024-12-19">
       <description>
-        <ul>        
+        <ul>
+          <li>Add invocation Id on unit info file</li>
+          <li>Add a filter base on "boot id" for journal events</li>
+          <li>Add preferences to limit journal events</li>
+          <li>Add Flatpack permission filesystem=/var/log:ro to access journal events</li>
+          <li>Acquire journal events directly from systemd lib</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.3.2" date="2024-12-06">
+      <description>
+        <ul>
           <li>Fix journal coloring for flatpak version</li>
         </ul>
       </description>
     </release>
-   <release version="1.3.1" date="2024-11-29">
+    <release version="1.3.1" date="2024-11-29">
       <description>
         <ul>
-          <li>Unit's initialize time (Analyze blame) is now fetch asynchronously to avoid to block the application</li>  
+          <li>Unit's initialize time (Analyze blame) is now fetch asynchronously to avoid to block
+            the application</li>
         </ul>
       </description>
     </release>
-  <release version="1.3.0" date="2024-11-28">
+    <release version="1.3.0" date="2024-11-28">
       <description>
         <ul>
           <li>Journal events are fetch asynchronously to avoid to block the application</li>
