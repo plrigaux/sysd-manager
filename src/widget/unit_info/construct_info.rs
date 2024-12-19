@@ -141,12 +141,23 @@ fn fill_dropin(text: &mut String, map: &HashMap<String, OwnedValue>) {
 
     write_key(text, "Drop in:");
 
+    let mut is_first = true;
+    let mut drops = Vec::new();
     for s in drop_in_paths {
         let (first, last) = s.rsplit_once('/').unwrap();
-        text.push_str(first);
-        text.push('\n');
 
-        strwriterln!(text, "{:KEY_WIDTH$} └─{}", " ", last);
+        if is_first {
+            text.push_str(first);
+            text.push('\n');
+            is_first = false;
+        } else {
+            //strwriterln!(text, "{:KEY_WIDTH$} {}", " ", first);
+        }
+        drops.push(last);
+    }
+    if !drops.is_empty() {
+        //TODO create a link
+        strwriterln!(text, "{:KEY_WIDTH$} └─{}", " ", drops.join(", "));
     }
 }
 
