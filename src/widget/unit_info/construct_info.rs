@@ -483,6 +483,10 @@ fn fill_invocation(text: &mut String, map: &HashMap<String, OwnedValue>) {
         return;
     };
 
+    if array.is_empty() {
+        return;
+    };
+
     let mut invocation = String::with_capacity(32);
     for idx in 0..array.len() {
         let Ok(Some(val)) = array.get::<Value>(idx) else {
@@ -502,6 +506,13 @@ fn fill_invocation(text: &mut String, map: &HashMap<String, OwnedValue>) {
     fill_row(text, "Invocation:", &invocation)
 }
 
+#[derive(Clone, Value, OwnedValue)]
+struct TimersCalendar<'a> {
+    timer_base: Str<'a>,
+    calendar_specification: Str<'a>,
+    elapsation_point: u64,
+}
+
 fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "TimersCalendar");
 
@@ -509,33 +520,21 @@ fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedVa
         return;
     };
 
-    if array.is_empty() {
-        return;
+    for idx in 0..array.len() {
+        let Ok(Some(val)) = array.get::<Value>(idx) else {
+            warn!("Can't get value from array");
+            continue;
+        };
+
+        match TimersCalendar::try_from(val) {
+            Ok(timer) => {
+                let timers = format!("{} {}", timer.timer_base, timer.calendar_specification);
+
+                fill_row(text, "Trigger:", &timers)
+            }
+            Err(e) => warn!("TimersMonotonic ERROR {:?}", e),
+        }
     }
-
-    let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
-        return;
-    };
-
-    let Value::Structure(zstruc) = val_listen_stc else {
-        return;
-    };
-
-    let Some(Value::Str(val_0)) = zstruc.fields().get(0) else {
-        return;
-    };
-
-    let Some(Value::Str(val_1)) = zstruc.fields().get(1) else {
-        return;
-    };
-
-    let Some(Value::U64(_val_2)) = zstruc.fields().get(2) else {
-        return;
-    };
-
-    let timers = format!("{} {}", val_0, val_1);
-
-    fill_row(text, "Trigger:", &timers)
 }
 
 #[derive(Clone, Value, OwnedValue)]
