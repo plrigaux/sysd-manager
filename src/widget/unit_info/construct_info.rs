@@ -490,11 +490,12 @@ fn fill_invocation(text: &mut String, map: &HashMap<String, OwnedValue>) {
     let mut invocation = String::with_capacity(32);
     for idx in 0..array.len() {
         let Ok(Some(val)) = array.get::<Value>(idx) else {
-            warn!("Can't get value from array");
+            warn!("Can't get value from array at index {idx}");
             continue;
         };
 
         let Value::U8(converted) = val else {
+            warn!("Can't convert value to u8");
             continue;
         };
 
@@ -557,7 +558,7 @@ fn fill_trigger_timers_monotonic(text: &mut String, map: &HashMap<String, OwnedV
 
     for idx in 0..array.len() {
         let Ok(Some(val)) = array.get::<Value>(idx) else {
-            warn!("Can't get value from array");
+            warn!("Can't get value from array at index {idx}");
             continue;
         };
 
