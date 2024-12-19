@@ -2,6 +2,7 @@ use crate::systemd::data::UnitInfo;
 
 mod construct_info;
 mod time_handling;
+mod colorise_info;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
