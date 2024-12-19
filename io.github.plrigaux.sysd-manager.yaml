@@ -11,6 +11,8 @@ finish-args:
 - --socket=wayland
 - --device=dri
 - --filesystem=host
+# Needed to access journal logs
+- --filesystem=/var/log:ro
 - --env=RUST_LOG=info
 - --env=RUST_BACKTRACE=1
 - --env=SYSDMNG_DIST_MODE=flatpack
