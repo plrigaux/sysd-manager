@@ -9,7 +9,7 @@ use log::{debug, error, warn};
 use serde::Deserialize;
 use std::fmt::Write;
 use time_handling::get_since_and_passed_time;
-use zvariant::{DynamicType, OwnedValue, Type, Value};
+use zvariant::{DynamicType, OwnedValue, Str, Type, Value};
 
 use super::time_handling;
 
@@ -76,6 +76,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> String {
     fill_tasks(&mut text, &map);
     fill_memory(&mut text, &map);
     fill_cpu(&mut text, &map);
+    fill_invocation(&mut text, &map);
     fill_trigger_timers_calendar(&mut text, &map);
     fill_trigger_timers_monotonic(&mut text, &map);
     fill_triggers(&mut text, &map);
@@ -475,6 +476,32 @@ fn fill_tasks(text: &mut String, map: &HashMap<String, OwnedValue>) {
     fill_row(text, "Tasks:", &tasks_info)
 }
 
+fn fill_invocation(text: &mut String, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "InvocationID");
+
+    let Value::Array(array) = value as &Value else {
+        return;
+    };
+
+    let mut invocation = String::with_capacity(32);
+    for idx in 0..array.len() {
+        let Ok(Some(val)) = array.get::<Value>(idx) else {
+            warn!("Can't get value from array");
+            continue;
+        };
+
+        let Value::U8(converted) = val else {
+            continue;
+        };
+
+        let hexa = format!("{:x}", converted);
+
+        invocation.push_str(&hexa);
+    }
+
+    fill_row(text, "Invocation:", &invocation)
+}
+
 fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "TimersCalendar");
 
@@ -511,6 +538,13 @@ fn fill_trigger_timers_calendar(text: &mut String, map: &HashMap<String, OwnedVa
     fill_row(text, "Trigger:", &timers)
 }
 
+#[derive(Clone, Value, OwnedValue)]
+struct TimersMonotonic<'a> {
+    timer_base: Str<'a>,
+    usec_offset: u64,
+    elapsation_point: u64,
+}
+
 fn fill_trigger_timers_monotonic(text: &mut String, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "TimersMonotonic");
 
@@ -522,13 +556,23 @@ fn fill_trigger_timers_monotonic(text: &mut String, map: &HashMap<String, OwnedV
         return;
     }
 
-    let timers = value.to_string();
+    for idx in 0..array.len() {
+        let Ok(Some(val)) = array.get::<Value>(idx) else {
+            warn!("Can't get value from array");
+            continue;
+        };
 
-    if timers.is_empty() {
-        return;
+        match TimersMonotonic::try_from(val) {
+            Ok(timer) => {
+                let string = format!(
+                    "{} usec_offset={} elapsation_point={}",
+                    timer.timer_base, timer.usec_offset, timer.elapsation_point
+                );
+                fill_row(text, "Trigger:", &string);
+            }
+            Err(e) => warn!("TimersMonotonic ERROR {:?}", e),
+        }
     }
-
-    fill_row(text, "Trigger:", &timers)
 }
 
 fn fill_triggers(text: &mut String, map: &HashMap<String, OwnedValue>) {
@@ -689,6 +733,8 @@ fn human_time(value: u64) -> String {
 #[cfg(test)]
 mod tests {
 
+    use chrono::Local;
+
     use super::*;
     #[test]
     fn test1() {
@@ -715,5 +761,36 @@ mod tests {
         println!("{}", human_time(32_235_000));
         println!("{}", human_time(321_235_000));
         println!("{}", human_time(3_234_235_000));
+    }
+
+    #[test]
+    fn test_timer_mono() {
+        let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, 86400000000 as i64);
+        let fmt = "%b %d %T %Y";
+        let date = match local_result {
+            chrono::offset::LocalResult::Single(l) => l.format(fmt).to_string(),
+            chrono::offset::LocalResult::Ambiguous(a, _b) => a.format(fmt).to_string(),
+            chrono::offset::LocalResult::None => "NONE".to_owned(),
+        };
+
+        println!("date {}", date);
+
+        let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, 173787328907 as i64);
+        let fmt = "%b %d %T %Y";
+        let date = match local_result {
+            chrono::offset::LocalResult::Single(l) => l.format(fmt).to_string(),
+            chrono::offset::LocalResult::Ambiguous(a, _b) => a.format(fmt).to_string(),
+            chrono::offset::LocalResult::None => "NONE".to_owned(),
+        };
+
+        println!("date {}", date);
+    }
+
+    #[test]
+    fn test_invocation() {
+        let _a = [
+            23, 184, 156, 61, 114, 189, 74, 235, 186, 102, 85, 32, 183, 33, 38, 165,
+        ];
+        //Invocation: 17b89c3d72bd4aebba665520b72126a5
     }
 }
