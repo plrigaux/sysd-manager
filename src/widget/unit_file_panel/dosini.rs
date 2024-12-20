@@ -87,6 +87,7 @@ pub fn convert_to_mackup<'a>(text: &'a str, dark: bool) -> Cow<'a, str> {
     Cow::from(out)
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Copy, Clone)]
 pub enum Token {
     Text,

@@ -3,19 +3,17 @@ use std::collections::HashMap;
 use crate::{
     info,
     systemd::{self, data::UnitInfo},
-    widget::unit_file_panel::dosini::Token,
 };
 use log::{debug, error, warn};
 use serde::Deserialize;
-use std::fmt::Write;
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Type, Value};
 
-use super::{colorise_info::InfoToken, time_handling};
+use super::{time_handling, UnitInfoWriter};
 
-pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> Vec<InfoToken> {
-    let mut unit_info_tokens = Vec::new();
-    fill_name_description(&mut unit_info_tokens, unit);
+pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
+    //let mut unit_info_tokens = Vec::new();
+    fill_name_description(unit_writer, unit);
 
     let mut path_exists = unit.pathexists();
 
@@ -67,27 +65,25 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, is_dark: bool) -> Vec<InfoToken> {
         map
     };
 
-    fill_description(&mut unit_info_tokens, &map, unit);
-    fill_load_state(&mut unit_info_tokens, &map);
-    fill_dropin(&mut unit_info_tokens, &map);
-    fill_active_state(&mut unit_info_tokens, &map);
-    fill_docs(&mut unit_info_tokens, &map);
-    fill_main_pid(&mut unit_info_tokens, &map, unit);
-    fill_tasks(&mut unit_info_tokens, &map);
-    fill_memory(&mut unit_info_tokens, &map);
-    fill_cpu(&mut unit_info_tokens, &map);
-    fill_invocation(&mut unit_info_tokens, &map);
-    fill_trigger_timers_calendar(&mut unit_info_tokens, &map);
-    fill_trigger_timers_monotonic(&mut unit_info_tokens, &map);
-    fill_triggers(&mut unit_info_tokens, &map);
-    fill_listen(&mut unit_info_tokens, &map);
-    fill_control_group(&mut unit_info_tokens, &map);
-
-    unit_info_tokens
+    fill_description(unit_writer, &map, unit);
+    fill_load_state(unit_writer, &map);
+    fill_dropin(unit_writer, &map);
+    fill_active_state(unit_writer, &map);
+    fill_docs(unit_writer, &map);
+    fill_main_pid(unit_writer, &map, unit);
+    fill_tasks(unit_writer, &map);
+    fill_memory(unit_writer, &map);
+    fill_cpu(unit_writer, &map);
+    fill_invocation(unit_writer, &map);
+    fill_trigger_timers_calendar(unit_writer, &map);
+    fill_trigger_timers_monotonic(unit_writer, &map);
+    fill_triggers(unit_writer, &map);
+    fill_listen(unit_writer, &map);
+    fill_control_group(unit_writer, &map);
 }
 
-fn fill_name_description(unit_info_tokens: &mut Vec<InfoToken>, unit: &UnitInfo) {
-    fill_row(unit_info_tokens, "Name:", &unit.primary())
+fn fill_name_description(unit_writer: &mut UnitInfoWriter, unit: &UnitInfo) {
+    fill_row(unit_writer, "Name:", &unit.primary())
 }
 
 const KEY_WIDTH: usize = 15;
@@ -106,7 +102,7 @@ macro_rules! get_value {
     }};
 }
 
-macro_rules! strwriter {
+/* macro_rules! strwriter {
     ($dst:expr, $($arg:tt)*) => {
         if let Err(e) = write!($dst, $($arg)*) {
             warn!("writeln error : {:?}", e)
@@ -120,20 +116,19 @@ macro_rules! strwriterln {
             warn!("writeln error : {:?}", e)
         }
     };
-}
+} */
 
-fn write_key(unit_info_tokens: &mut Vec<InfoToken>, key_label: &str) {
+fn write_key(unit_writer: &mut UnitInfoWriter, key_label: &str) {
     let s = format!("{:>KEY_WIDTH$} ", key_label);
-    unit_info_tokens.push(InfoToken::Text(s));
+    unit_writer.insert(&s);
 }
 
-fn fill_row(unit_info_tokens: &mut Vec<InfoToken>, key_label: &str, value: &str) {
+fn fill_row(unit_writer: &mut UnitInfoWriter, key_label: &str, value: &str) {
     let s = format!("{:>KEY_WIDTH$} {}\n", key_label, value);
-
-    unit_info_tokens.push(InfoToken::Text(s));
+    unit_writer.insert(&s);
 }
 
-fn fill_dropin(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "DropInPaths");
 
     let drop_in_paths = get_array_str(value);
@@ -142,7 +137,7 @@ fn fill_dropin(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Owne
         return;
     }
 
-    write_key(unit_info_tokens, "Drop in:");
+    write_key(unit_writer, "Drop in:");
 
     let mut is_first = true;
     let mut drops = Vec::new();
@@ -150,8 +145,8 @@ fn fill_dropin(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Owne
         let (first, last) = file_name.rsplit_once('/').unwrap();
 
         if is_first {
-            unit_info_tokens.push(InfoToken::Text(first.to_string()));
-            unit_info_tokens.push(InfoToken::NewLine);
+            unit_writer.insert(first);
+            unit_writer.new_line();
             is_first = false;
         } else {
             //strwriterln!(text, "{:KEY_WIDTH$} {}", " ", first);
@@ -160,27 +155,27 @@ fn fill_dropin(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Owne
     }
 
     if !drops.is_empty() {
-        unit_info_tokens.push(InfoToken::Text(format!("{:KEY_WIDTH$} └─", " ")));
+        //unit_writer.insert(&format!("{:KEY_WIDTH$} └─", " ")));
+        unit_writer.insert(&format!("{:KEY_WIDTH$} └─", " "));
 
         is_first = true;
         for (d, link) in drops.iter() {
             if !is_first {
-                unit_info_tokens.push(InfoToken::Text(", ".to_string()));
+                unit_writer.insert(", ");
             }
-            let hp = InfoToken::HyperLink(d.to_string(), link.to_string());
-            unit_info_tokens.push(hp);
+
+            unit_writer.hyper_link(d, link);
             is_first = false;
         }
-
-        unit_info_tokens.push(InfoToken::NewLine);
+        unit_writer.new_line();
     }
 }
 
-fn fill_active_state(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "ActiveState");
     let state = value_str(value);
 
-    write_key(unit_info_tokens, "Active State:");
+    write_key(unit_writer, "Active State:");
 
     let mut state_text = String::from(state);
     if let Some(substate) = get_substate(map) {
@@ -189,13 +184,11 @@ fn fill_active_state(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String
         state_text.push(')');
     }
 
-    let tok = if state == "active" {
-        InfoToken::InfoActive(state_text)
+    if state == "active" {
+        unit_writer.insert_active(&state_text);
     } else {
-        InfoToken::Text(state_text)
+        unit_writer.insert(&state_text);
     };
-
-    unit_info_tokens.push(tok);
 
     if let Some(since) = add_since(map, state) {
         let mut text = String::new();
@@ -205,10 +198,10 @@ fn fill_active_state(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String
         text.push_str(&since.1);
         text.push_str(" ago");
 
-        unit_info_tokens.push(InfoToken::Text(text));
+        unit_writer.insert(&text);
     }
 
-    unit_info_tokens.push(InfoToken::NewLine);
+    unit_writer.new_line();
 }
 
 fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
@@ -233,25 +226,25 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
 }
 
 fn fill_description(
-    unit_info_tokens: &mut Vec<InfoToken>,
+    unit_writer: &mut UnitInfoWriter,
     map: &HashMap<String, OwnedValue>,
     unit: &UnitInfo,
 ) {
     let value = get_value!(map, "Description");
     let description = value_str(value);
-    fill_row(unit_info_tokens, "Description:", description);
+    fill_row(unit_writer, "Description:", description);
 
     if unit.description().is_empty() && !description.is_empty() {
         unit.set_description(description);
     }
 }
 
-fn fill_load_state(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "LoadState");
 
-    write_key(unit_info_tokens, "Loaded:");
+    write_key(unit_writer, "Loaded:");
 
-    unit_info_tokens.push(InfoToken::Text(value_str(value).to_string()));
+    unit_writer.insert(value_str(value));
 
     let three_param = [
         map.get("FragmentPath"),
@@ -272,54 +265,52 @@ fn fill_load_state(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, 
     }
 
     if !all_none {
-        unit_info_tokens.push(InfoToken::Text(" (".to_string()));
+        unit_writer.insert(" (");
 
         let [path_op, unit_file_state_op, unit_file_preset_op] = three_param;
 
         let mut pad_left = false;
 
         if let Some(path) = path_op {
-            unit_info_tokens.push(InfoToken::Text(value_str(path).to_string()));
+            unit_writer.insert(value_str(path));
             pad_left = true;
         }
 
         if let Some(unit_file_state) = unit_file_state_op {
             if pad_left {
-                unit_info_tokens.push(InfoToken::Text("; ".to_string()));
+                unit_writer.insert("; ");
             }
 
-            write_enabled_state(unit_file_state, unit_info_tokens);
+            write_enabled_state(unit_writer, unit_file_state);
 
             pad_left = true;
         }
 
         if let Some(unit_file_preset) = unit_file_preset_op {
             if pad_left {
-                unit_info_tokens.push(InfoToken::Text("; ".to_string()));
+                unit_writer.insert("; ");
             }
-            unit_info_tokens.push(InfoToken::Text(" preset: ".to_string()));
-            write_enabled_state(unit_file_preset, unit_info_tokens);
+            unit_writer.insert(" preset: ");
+            write_enabled_state(unit_writer, unit_file_preset);
         }
 
-        unit_info_tokens.push(InfoToken::Char(')'));
+        unit_writer.insert(")");
     }
 
-    unit_info_tokens.push(InfoToken::NewLine);
+    unit_writer.new_line();
 }
 
-fn write_enabled_state(unit_file_state: &OwnedValue, unit_info_tokens: &mut Vec<InfoToken>) {
+fn write_enabled_state(unit_writer: &mut UnitInfoWriter, unit_file_state: &OwnedValue) {
     let state = value_str(unit_file_state);
 
-    let tok = match state {
-        "enabled" => InfoToken::InfoActive(state.to_string()),
-        "disabled" => InfoToken::InfoDisable(state.to_string()),
-        _ => InfoToken::Text(value_str(unit_file_state).to_string()),
+    match state {
+        "enabled" => unit_writer.insert_active(state),
+        "disabled" => unit_writer.insert_disable(state),
+        _ => unit_writer.insert(state),
     };
-
-    unit_info_tokens.push(tok);
 }
 
-fn fill_docs(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Documentation");
 
     let docs = get_array_str(value);
@@ -327,12 +318,12 @@ fn fill_docs(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedV
     let mut it = docs.iter();
 
     if let Some(doc) = it.next() {
-        fill_row(unit_info_tokens, "Doc:", doc);
+        fill_row(unit_writer, "Doc:", doc);
     }
 
     while let Some(doc) = it.next() {
         let text = format!("{:KEY_WIDTH$} {}\n", " ", doc);
-        unit_info_tokens.push(InfoToken::Text(text));
+        unit_writer.insert(&text);
     }
 }
 
@@ -356,7 +347,7 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
     vec
 }
 
-fn fill_memory(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "MemoryCurrent");
 
     let memory_current = value_u64(value);
@@ -364,11 +355,11 @@ fn fill_memory(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Owne
         return;
     }
 
-    write_key(unit_info_tokens, "Memory:");
+    write_key(unit_writer, "Memory:");
 
     let value_str = human_bytes(memory_current);
 
-    unit_info_tokens.push(InfoToken::Text(value_str));
+    unit_writer.insert(&value_str);
 
     let three_param = [
         map.get("MemoryPeak"),
@@ -385,29 +376,27 @@ fn fill_memory(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Owne
     }
 
     if !all_none {
-        unit_info_tokens.push(InfoToken::TextStr(" ("));
+        unit_writer.insert(" (");
 
         let [peak_op, swap_peak_op, swap_op] = three_param;
 
-        let pad_left = write_mem_param(peak_op, "peak: ", false, unit_info_tokens);
-        write_mem_param(swap_peak_op, "swap: ", pad_left, unit_info_tokens);
-        write_mem_param(swap_op, "swap peak: ", pad_left, unit_info_tokens);
+        let pad_left = write_mem_param(peak_op, "peak: ", false, unit_writer);
+        write_mem_param(swap_peak_op, "swap: ", pad_left, unit_writer);
+        write_mem_param(swap_op, "swap peak: ", pad_left, unit_writer);
 
-        unit_info_tokens.push(InfoToken::Char(')'));
-
+        unit_writer.insert(")");
     }
 
     //Memory: 1.9M (peak: 6.2M swap: 224.0K swap peak: 444.0K)
 
-    unit_info_tokens.push(InfoToken::NewLine);
-
+    unit_writer.new_line();
 }
 
 fn write_mem_param<'a>(
     mem_op: Option<&OwnedValue>,
     label: &str,
     pad_left: bool,
-    unit_info_tokens: &mut Vec<InfoToken>,
+    unit_writer: &mut UnitInfoWriter,
 ) -> bool {
     let Some(mem) = mem_op else {
         return false;
@@ -419,17 +408,21 @@ fn write_mem_param<'a>(
     }
 
     if pad_left {
-        unit_info_tokens.push(InfoToken::TextStr(" "));
+        unit_writer.insert(" ");
     }
 
-    unit_info_tokens.push(InfoToken::TextStr(label));
+    unit_writer.insert(label);
     let mem_human = human_bytes(mem_num);
-    unit_info_tokens.push(InfoToken::Text(mem_human));
+    unit_writer.insert(&mem_human);
 
     true
 }
 
-fn fill_main_pid(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>, unit: &UnitInfo) {
+fn fill_main_pid(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
+) {
     let main_pid = get_main_pid(map);
 
     if 0 == main_pid {
@@ -442,7 +435,7 @@ fn fill_main_pid(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Ow
         };
 
         let v = &format!("{} ({})", main_pid, exec_val);
-        fill_row(unit_info_tokens, "Main PID:", v)
+        fill_row(unit_writer, "Main PID:", v)
     }
 }
 
@@ -482,7 +475,7 @@ fn get_exec<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
     None
 }
 
-fn fill_cpu(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "CPUUsageNSec");
 
     let value_u64 = value_u64(value);
@@ -491,10 +484,10 @@ fn fill_cpu(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedVa
     }
 
     let value_str = &human_time(value_u64);
-    fill_row(unit_info_tokens, "CPU:", value_str)
+    fill_row(unit_writer, "CPU:", value_str)
 }
 
-fn fill_tasks(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "TasksCurrent");
 
     let value_nb = value_u64(value);
@@ -512,10 +505,10 @@ fn fill_tasks(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Owned
         tasks_info.push_str(")");
     }
 
-    fill_row(unit_info_tokens, "Tasks:", &tasks_info)
+    fill_row(unit_writer, "Tasks:", &tasks_info)
 }
 
-fn fill_invocation(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_invocation(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "InvocationID");
 
     let Value::Array(array) = value as &Value else {
@@ -543,7 +536,7 @@ fn fill_invocation(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, 
         invocation.push_str(&hexa);
     }
 
-    fill_row(unit_info_tokens, "Invocation:", &invocation)
+    fill_row(unit_writer, "Invocation:", &invocation)
 }
 
 #[derive(Clone, Value, OwnedValue)]
@@ -553,7 +546,10 @@ struct TimersCalendar<'a> {
     elapsation_point: u64,
 }
 
-fn fill_trigger_timers_calendar(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_trigger_timers_calendar(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+) {
     let value = get_value!(map, "TimersCalendar");
 
     let Value::Array(array) = value as &Value else {
@@ -570,7 +566,7 @@ fn fill_trigger_timers_calendar(unit_info_tokens: &mut Vec<InfoToken>, map: &Has
             Ok(timer) => {
                 let timers = format!("{} {}", timer.timer_base, timer.calendar_specification);
 
-                fill_row(unit_info_tokens, "Trigger:", &timers)
+                fill_row(unit_writer, "Trigger:", &timers)
             }
             Err(e) => warn!("TimersMonotonic ERROR {:?}", e),
         }
@@ -584,7 +580,10 @@ struct TimersMonotonic<'a> {
     elapsation_point: u64,
 }
 
-fn fill_trigger_timers_monotonic(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_trigger_timers_monotonic(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+) {
     let value = get_value!(map, "TimersMonotonic");
 
     let Value::Array(array) = value as &Value else {
@@ -607,14 +606,14 @@ fn fill_trigger_timers_monotonic(unit_info_tokens: &mut Vec<InfoToken>, map: &Ha
                     "{} usec_offset={} elapsation_point={}",
                     timer.timer_base, timer.usec_offset, timer.elapsation_point
                 );
-                fill_row(unit_info_tokens, "Trigger:", &string);
+                fill_row(unit_writer, "Trigger:", &string);
             }
             Err(e) => warn!("TimersMonotonic ERROR {:?}", e),
         }
     }
 }
 
-fn fill_triggers(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Triggers");
 
     let triggers = get_array_str(value);
@@ -625,7 +624,7 @@ fn fill_triggers(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Ow
 
     //TODO add the active state of the triggers
 
-    fill_row(unit_info_tokens, "Triggers:", &triggers.join("\n"))
+    fill_row(unit_writer, "Triggers:", &triggers.join("\n"))
 }
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
@@ -634,7 +633,7 @@ struct Struct {
     field2: String,
 }
 
-fn fill_listen(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Listen");
 
     let Value::Array(array) = value as &Value else {
@@ -659,10 +658,10 @@ fn fill_listen(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, Owne
 
     let listen = format!("{} ({})", val_1, val_0);
 
-    fill_row(text, "Listen:", &listen)
+    fill_row(unit_writer, "Listen:", &listen)
 }
 
-fn fill_control_group(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<String, OwnedValue>) {
+fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "ControlGroup");
 
     let c_group = value_str(value);
@@ -676,20 +675,22 @@ fn fill_control_group(unit_info_tokens: &mut Vec<InfoToken>, map: &HashMap<Strin
     if let Some(exec_full) = get_exec_full(map) {
         let main_pid = get_main_pid(map);
 
-        write_key(text, KEY_LABEL);
+        write_key(unit_writer, KEY_LABEL);
 
-        text.push_str(c_group);
-        text.push('\n');
+        unit_writer.insert(c_group);
+        unit_writer.new_line();
 
-        strwriterln!(
-            text,
+        let s = format!(
             "{:KEY_WIDTH$} └─{} {}",
             " ",
             &main_pid.to_string(),
             exec_full
         );
+
+        unit_writer.insert(&s);
+        unit_writer.new_line();
     } else {
-        fill_row(unit_info_tokens, KEY_LABEL, c_group)
+        fill_row(unit_writer, KEY_LABEL, c_group)
     }
 }
 
