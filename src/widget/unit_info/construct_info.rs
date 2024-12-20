@@ -9,7 +9,7 @@ use serde::Deserialize;
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Type, Value};
 
-use super::{time_handling, UnitInfoWriter};
+use super::{time_handling, writer::UnitInfoWriter};
 
 pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     //let mut unit_info_tokens = Vec::new();
@@ -69,12 +69,12 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_load_state(unit_writer, &map);
     fill_dropin(unit_writer, &map);
     fill_active_state(unit_writer, &map);
+    fill_invocation(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_tasks(unit_writer, &map);
     fill_memory(unit_writer, &map);
     fill_cpu(unit_writer, &map);
-    fill_invocation(unit_writer, &map);
     fill_trigger_timers_calendar(unit_writer, &map);
     fill_trigger_timers_monotonic(unit_writer, &map);
     fill_triggers(unit_writer, &map);
@@ -164,7 +164,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
                 unit_writer.insert(", ");
             }
 
-            unit_writer.hyper_link(d, link);
+            unit_writer.hyperlink(d, link);
             is_first = false;
         }
         unit_writer.new_line();
@@ -272,7 +272,8 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
         let mut pad_left = false;
 
         if let Some(path) = path_op {
-            unit_writer.insert(value_str(path));
+            let p = value_str(path);
+            unit_writer.hyperlink(p, p);
             pad_left = true;
         }
 
@@ -290,7 +291,7 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
             if pad_left {
                 unit_writer.insert("; ");
             }
-            unit_writer.insert(" preset: ");
+            unit_writer.insert("preset: ");
             write_enabled_state(unit_writer, unit_file_preset);
         }
 
@@ -496,16 +497,22 @@ fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
         return;
     }
 
-    let mut tasks_info = value_nb.to_string();
+    write_key(unit_writer, "Tasks:");
+
+    let tasks_info = value_nb.to_string();
+    unit_writer.insert(&tasks_info);
 
     if let Some(value) = map.get("TasksMax") {
-        tasks_info.push_str(" (limit: ");
+        let mut limit = String::from(" (limit: ");
         let value_u64 = value_u64(value);
-        tasks_info.push_str(&value_u64.to_string());
-        tasks_info.push_str(")");
+        limit.push_str(&value_u64.to_string());
+        limit.push_str(")");
+
+        unit_writer.insert_grey(&limit);
     }
 
-    fill_row(unit_writer, "Tasks:", &tasks_info)
+    unit_writer.new_line();
+    //fill_row(unit_writer, "Tasks:", &tasks_info)
 }
 
 fn fill_invocation(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
@@ -680,14 +687,19 @@ fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Ow
         unit_writer.insert(c_group);
         unit_writer.new_line();
 
+
+        unit_writer.insert(&format!(
+            "{:KEY_WIDTH$} └─",
+            " ",           
+        ));
+
         let s = format!(
-            "{:KEY_WIDTH$} └─{} {}",
-            " ",
+            "{} {}",            
             &main_pid.to_string(),
             exec_full
         );
 
-        unit_writer.insert(&s);
+        unit_writer.insert_grey(&s);
         unit_writer.new_line();
     } else {
         fill_row(unit_writer, KEY_LABEL, c_group)
