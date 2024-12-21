@@ -59,7 +59,7 @@ mod imp {
 
     use log::{info, warn};
 
-    use crate::{systemd::data::UnitInfo, widget::info_window::InfoWindow};
+    use crate::{systemd::{data::UnitInfo, flatpak_host_file_path}, widget::info_window::InfoWindow};
 
     use super::{
         construct_info::fill_all_info,
@@ -294,7 +294,9 @@ mod imp {
         if let Some(link_value) = link_value_op {
             match link_value.get::<String>() {
                 Ok(file_link) => {
-                    let uri = format!("file://{}", file_link);
+
+                    let file_link_tweak = flatpak_host_file_path(&file_link);
+                    let uri = format!("file://{}", file_link_tweak);
 
                     let file = gio::File::for_uri(&uri);
                     let launcher = FileLauncher::new(Some(&file));

@@ -392,7 +392,7 @@ fn write_with_priviledge(file_path: &String, host_file_path: Cow<'_, str>, text:
     }
 }
 
-fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
+pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
     let host_file_path = if *IS_FLATPAK_MODE {
         Cow::from(format!("/run/host{file_path}"))
     } else {
