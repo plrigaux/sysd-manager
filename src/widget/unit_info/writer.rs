@@ -8,10 +8,13 @@ pub struct UnitInfoWriter {
     is_dark: bool,
 }
 
-const TAG_NAME_HYPER_LINK: &str = "hyperlink";
+//const TAG_NAME_HYPER_LINK: &str = "hyperlink";
 const TAG_NAME_ACTIVE: &str = "active";
+const TAG_NAME_ACTIVE_DARK: &str = "active_dark";
 const TAG_NAME_DISABLE: &str = "disable";
+const TAG_NAME_DISABLE_DARK: &str = "disable_dark";
 const TAG_NAME_GREY: &str = "grey";
+const TAG_NAME_GREY_DARK: &str = "grey_dark";
 
 impl UnitInfoWriter {
     pub fn new(buf: TextBuffer, iter: TextIter, is_dark: bool) -> Self {
@@ -35,7 +38,7 @@ impl UnitInfoWriter {
     }
 
     pub fn insert_grey(&mut self, text: &str) {
-        self.insert_tag(text, Self::create_grey_tag,None);
+        self.insert_tag(text, Self::create_grey_tag, None);
     }
 
     pub fn hyperlink(&mut self, text: &str, link: &str) {
@@ -51,24 +54,23 @@ impl UnitInfoWriter {
             ],
         );
 
-
         tag_op
     }
 
     fn create_active_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
-        let tag_op = buf.tag_table().lookup(TAG_NAME_ACTIVE);
+        let (color, name) = if is_dark {
+            (Palette::Green3.get_color(), TAG_NAME_ACTIVE_DARK)
+        } else {
+            (Palette::Green5.get_color(), TAG_NAME_ACTIVE)
+        };
+
+        let tag_op = buf.tag_table().lookup(name);
         if tag_op.is_some() {
             return tag_op;
         }
 
-        let color = if is_dark {
-            Palette::Green3.get_color()
-        } else {
-            Palette::Green5.get_color()
-        };
-
         let tag_op = buf.create_tag(
-            Some(TAG_NAME_ACTIVE),
+            Some(name),
             &[
                 ("foreground", &color.to_value()),
                 ("weight", &pango::Weight::Bold.into_glib().to_value()),
@@ -79,19 +81,19 @@ impl UnitInfoWriter {
     }
 
     fn create_disable_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
-        let tag_op = buf.tag_table().lookup(TAG_NAME_DISABLE);
+        let (color, name) = if is_dark {
+            (Palette::Yellow3.get_color(), TAG_NAME_DISABLE_DARK)
+        } else {
+            (Palette::Yellow4.get_color(), TAG_NAME_DISABLE)
+        };
+
+        let tag_op = buf.tag_table().lookup(name);
         if tag_op.is_some() {
             return tag_op;
         }
 
-        let color = if is_dark {
-            Palette::Yellow3.get_color()
-        } else {
-            Palette::Yellow3.get_color()
-        };
-
         let tag_op = buf.create_tag(
-            Some(TAG_NAME_DISABLE),
+            Some(name),
             &[
                 ("foreground", &color.to_value()),
                 ("weight", &pango::Weight::Bold.into_glib().to_value()),
@@ -101,25 +103,26 @@ impl UnitInfoWriter {
     }
 
     fn create_grey_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
-        let tag_op = buf.tag_table().lookup(TAG_NAME_GREY);
+        let (color, name) = if is_dark {
+            (Palette::Dark1.get_color(), TAG_NAME_GREY_DARK)
+        } else {
+            (Palette::Dark2.get_color(), TAG_NAME_GREY)
+        };
+
+        let tag_op = buf.tag_table().lookup(name);
         if tag_op.is_some() {
             return tag_op;
         }
 
-        let color = if is_dark {
-            Palette::Dark1.get_color()
-        } else {
-            Palette::Dark2.get_color()
-        };
-
-        let tag_op = buf.create_tag(Some(TAG_NAME_GREY), &[("foreground", &color.to_value())]);
+        let tag_op = buf.create_tag(Some(name), &[("foreground", &color.to_value())]);
         tag_op
     }
 
     fn insert_tag(
         &mut self,
         text: &str,
-        create_tag: impl Fn(&TextBuffer, bool) -> Option<TextTag>, link : Option<&str>
+        create_tag: impl Fn(&TextBuffer, bool) -> Option<TextTag>,
+        link: Option<&str>,
     ) {
         let start_offset = self.iter.offset();
         self.buf.insert(&mut self.iter, text);
@@ -127,16 +130,12 @@ impl UnitInfoWriter {
         let tag_op = create_tag(&self.buf, self.is_dark);
 
         if let Some(tag) = tag_op {
-
             if let Some(link) = link {
-
                 let val = link.to_value();
-                unsafe{
+                unsafe {
                     tag.set_data("link", val);
-                }               
+                }
             }
-    
-
 
             let start_iter = self.buf.iter_at_offset(start_offset);
             self.buf.apply_tag(&tag, &start_iter, &self.iter);

@@ -43,6 +43,7 @@ mod imp {
     use std::cell::{Cell, RefCell};
 
     use gtk::{
+        gdk, gio,
         glib::{self, Value},
         prelude::*,
         subclass::{
@@ -53,7 +54,7 @@ mod imp {
                 CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
             },
         },
-        FileLauncher, TemplateChild, UriLauncher,
+        FileLauncher, TemplateChild,
     };
 
     use log::{info, warn};
@@ -164,13 +165,29 @@ mod imp {
     impl ObjectImpl for UnitInfoPanelImp {
         fn constructed(&self) {
             self.parent_constructed();
+            {
+                let text_view = self.unit_info_textview.clone();
+                let event_controller_key = gtk::EventControllerKey::new();
 
-            let event_controller_key = gtk::EventControllerKey::new();
+                event_controller_key.connect_key_pressed(
+                    move |_event_controller_key, keyval: gdk::Key, _keycode, _modifiers| {
+                        info!("Key {:?}", keyval);
 
-            event_controller_key.connect_key_pressed(|a, key, c, d| {
-                info!("Key {:?}", key);
-                glib::Propagation::Proceed
-            });
+                        match keyval {
+                            gdk::Key::Return | gdk::Key::KP_Enter => {
+                                let buffer = text_view.buffer();
+                                let mark = buffer.get_insert();
+                                let iter = buffer.iter_at_mark(&mark);
+
+                                follow_if_link(iter);
+                            }
+                            _ => {}
+                        }
+                        glib::Propagation::Proceed
+                    },
+                );
+                self.unit_info_textview.add_controller(event_controller_key);
+            }
 
             {
                 let event_controller_motion = gtk::EventControllerMotion::new();
@@ -193,7 +210,7 @@ mod imp {
             {
                 let gesture_click = gtk::GestureClick::new();
                 let text_view = self.unit_info_textview.clone();
-                gesture_click.connect_released(move |_gesture_click, n_press, x, y| {
+                gesture_click.connect_released(move |_gesture_click, _n_press, x, y| {
                     let buf = text_view.buffer();
 
                     // we shouldn't follow a link if the user has selected something
@@ -207,44 +224,11 @@ mod imp {
                         return;
                     };
 
-                    let tags = iter.tags();
-
-                    let mut link_value_op = None;
-
-                    for tag in tags.iter() {
-                        //info!("TAG {:?} {:?}", tag, tag.name());
-
-                        link_value_op = unsafe {
-                            let val: Option<std::ptr::NonNull<Value>> = tag.data("link");
-                            if let Some(link_value_nonull) = val {
-                                Some(link_value_nonull.as_ref())
-                            } else {
-                                None
-                            }
-                        };
-
-                        if link_value_op.is_some() {
-                            break;
-                        }
-                    }
-
-                    if let Some(link_value) = link_value_op {
-                       match link_value.get::<String>() {
-                        Ok(s) => {
-                            let uri = format!("file://{}", s);
-                            let launcher = UriLauncher::new(&uri);
-                        },
-                        Err(e) => warn!(""),
-                                           }
-
-                      
-                    }
+                    follow_if_link(iter);
                 });
 
                 self.unit_info_textview.add_controller(gesture_click);
             }
-
-            self.unit_info_textview.add_controller(event_controller_key);
         }
     }
     impl WidgetImpl for UnitInfoPanelImp {}
@@ -281,6 +265,50 @@ mod imp {
                 text_view.set_cursor_from_name(Some("pointer"));
             } else {
                 text_view.set_cursor_from_name(Some("text"));
+            }
+        }
+    }
+
+    fn follow_if_link(iter: gtk::TextIter) {
+        let tags = iter.tags();
+
+        let mut link_value_op = None;
+
+        for tag in tags.iter() {
+            //info!("TAG {:?} {:?}", tag, tag.name());
+
+            link_value_op = unsafe {
+                let val: Option<std::ptr::NonNull<Value>> = tag.data("link");
+                if let Some(link_value_nonull) = val {
+                    Some(link_value_nonull.as_ref())
+                } else {
+                    None
+                }
+            };
+
+            if link_value_op.is_some() {
+                break;
+            }
+        }
+
+        if let Some(link_value) = link_value_op {
+            match link_value.get::<String>() {
+                Ok(file_link) => {
+                    let uri = format!("file://{}", file_link);
+
+                    let file = gio::File::for_uri(&uri);
+                    let launcher = FileLauncher::new(Some(&file));
+                    launcher.launch(
+                        None::<&gtk::Window>,
+                        None::<&gio::Cancellable>,
+                        move |result| {
+                            if let Err(error) = result {
+                                warn!("Finished launch {} Error {:?}", uri, error)
+                            }
+                        },
+                    );
+                }
+                Err(e) => warn!("Link value Error {:?}", e),
             }
         }
     }
