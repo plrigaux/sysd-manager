@@ -129,7 +129,11 @@ impl UnitInfoWriter {
         if let Some(tag) = tag_op {
 
             if let Some(link) = link {
-                //tag.set_data("link", link);
+
+                let val = link.to_value();
+                unsafe{
+                    tag.set_data("link", val);
+                }               
             }
     
 

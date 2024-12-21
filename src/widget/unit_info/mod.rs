@@ -4,10 +4,7 @@ mod construct_info;
 mod time_handling;
 mod writer;
 
-use gtk::{
-    glib,
-    subclass::prelude::ObjectSubclassIsExt,
-};
+use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 glib::wrapper! {
     pub struct UnitInfoPanel(ObjectSubclass<imp::UnitInfoPanelImp>)
@@ -32,13 +29,21 @@ impl UnitInfoPanel {
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark)
     }
+
+    fn hovering_over_link(&self) -> bool {
+        self.imp().hovering_over_link.get()
+    }
+
+    fn set_hovering_over_link(&self, hovering_over_link: bool) {
+        self.imp().hovering_over_link.set(hovering_over_link);
+    }
 }
 
 mod imp {
     use std::cell::{Cell, RefCell};
 
     use gtk::{
-        glib,
+        glib::{self, Value},
         prelude::*,
         subclass::{
             box_::BoxImpl,
@@ -48,14 +53,14 @@ mod imp {
                 CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
             },
         },
-        TemplateChild,
+        FileLauncher, TemplateChild, UriLauncher,
     };
 
     use log::{info, warn};
 
     use crate::{systemd::data::UnitInfo, widget::info_window::InfoWindow};
 
-    use super::{construct_info::fill_all_info, writer::UnitInfoWriter};
+    use super::{construct_info::fill_all_info, writer::UnitInfoWriter, UnitInfoPanel};
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
@@ -72,6 +77,8 @@ mod imp {
         unit: RefCell<Option<UnitInfo>>,
 
         is_dark: Cell<bool>,
+
+        pub hovering_over_link: Cell<bool>,
     }
 
     #[gtk::template_callbacks]
@@ -157,8 +164,124 @@ mod imp {
     impl ObjectImpl for UnitInfoPanelImp {
         fn constructed(&self) {
             self.parent_constructed();
+
+            let event_controller_key = gtk::EventControllerKey::new();
+
+            event_controller_key.connect_key_pressed(|a, key, c, d| {
+                info!("Key {:?}", key);
+                glib::Propagation::Proceed
+            });
+
+            {
+                let event_controller_motion = gtk::EventControllerMotion::new();
+
+                let text_view = self.unit_info_textview.clone();
+                let info_panel = self.obj().clone();
+                event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
+                    let (tx, ty) = text_view.window_to_buffer_coords(
+                        gtk::TextWindowType::Widget,
+                        x as i32,
+                        y as i32,
+                    );
+
+                    set_cursor_if_appropriate(&info_panel, &text_view, tx, ty);
+                });
+                self.unit_info_textview
+                    .add_controller(event_controller_motion);
+            }
+
+            {
+                let gesture_click = gtk::GestureClick::new();
+                let text_view = self.unit_info_textview.clone();
+                gesture_click.connect_released(move |_gesture_click, n_press, x, y| {
+                    let buf = text_view.buffer();
+
+                    // we shouldn't follow a link if the user has selected something
+                    if let Some((start, end)) = buf.selection_bounds() {
+                        if start.offset() != end.offset() {
+                            return;
+                        }
+                    }
+
+                    let Some(iter) = text_view.iter_at_location(x as i32, y as i32) else {
+                        return;
+                    };
+
+                    let tags = iter.tags();
+
+                    let mut link_value_op = None;
+
+                    for tag in tags.iter() {
+                        //info!("TAG {:?} {:?}", tag, tag.name());
+
+                        link_value_op = unsafe {
+                            let val: Option<std::ptr::NonNull<Value>> = tag.data("link");
+                            if let Some(link_value_nonull) = val {
+                                Some(link_value_nonull.as_ref())
+                            } else {
+                                None
+                            }
+                        };
+
+                        if link_value_op.is_some() {
+                            break;
+                        }
+                    }
+
+                    if let Some(link_value) = link_value_op {
+                       match link_value.get::<String>() {
+                        Ok(s) => {
+                            let uri = format!("file://{}", s);
+                            let launcher = UriLauncher::new(&uri);
+                        },
+                        Err(e) => warn!(""),
+                                           }
+
+                      
+                    }
+                });
+
+                self.unit_info_textview.add_controller(gesture_click);
+            }
+
+            self.unit_info_textview.add_controller(event_controller_key);
         }
     }
     impl WidgetImpl for UnitInfoPanelImp {}
     impl BoxImpl for UnitInfoPanelImp {}
+
+    fn set_cursor_if_appropriate(
+        info_panel: &UnitInfoPanel,
+        text_view: &gtk::TextView,
+        x: i32,
+        y: i32,
+    ) {
+        let mut hovering = false;
+        if let Some(iter) = text_view.iter_at_location(x, y) {
+            let tags = iter.tags();
+
+            for tag in tags.iter() {
+                //info!("TAG {:?} {:?}", tag, tag.name());
+
+                let val = unsafe {
+                    let val: Option<std::ptr::NonNull<Value>> = tag.data("link");
+                    val
+                };
+
+                if val.is_some() {
+                    hovering = true;
+                    break;
+                }
+            }
+        }
+
+        if info_panel.hovering_over_link() != hovering {
+            info_panel.set_hovering_over_link(hovering);
+            if hovering {
+                text_view.set_cursor_from_name(Some("pointer"));
+            } else {
+                text_view.set_cursor_from_name(Some("text"));
+            }
+        }
+    }
 }
