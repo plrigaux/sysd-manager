@@ -15,6 +15,7 @@ const TAG_NAME_DISABLE: &str = "disable";
 const TAG_NAME_DISABLE_DARK: &str = "disable_dark";
 const TAG_NAME_GREY: &str = "grey";
 const TAG_NAME_GREY_DARK: &str = "grey_dark";
+pub const TAG_DATA_LINK: &str = "link";
 
 impl UnitInfoWriter {
     pub fn new(buf: TextBuffer, iter: TextIter, is_dark: bool) -> Self {
@@ -104,9 +105,9 @@ impl UnitInfoWriter {
 
     fn create_grey_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Palette::Dark1.get_color(), TAG_NAME_GREY_DARK)
+            (Palette::Light5.get_color(), TAG_NAME_GREY_DARK)
         } else {
-            (Palette::Dark2.get_color(), TAG_NAME_GREY)
+            (Palette::Dark1.get_color(), TAG_NAME_GREY)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -131,9 +132,9 @@ impl UnitInfoWriter {
 
         if let Some(tag) = tag_op {
             if let Some(link) = link {
-                let val = link.to_value();
+                let link_value = link.to_value();
                 unsafe {
-                    tag.set_data("link", val);
+                    tag.set_data(TAG_DATA_LINK, link_value);
                 }
             }
 

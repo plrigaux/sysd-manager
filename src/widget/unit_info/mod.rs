@@ -61,7 +61,11 @@ mod imp {
 
     use crate::{systemd::data::UnitInfo, widget::info_window::InfoWindow};
 
-    use super::{construct_info::fill_all_info, writer::UnitInfoWriter, UnitInfoPanel};
+    use super::{
+        construct_info::fill_all_info,
+        writer::{UnitInfoWriter, TAG_DATA_LINK},
+        UnitInfoPanel,
+    };
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
@@ -171,8 +175,6 @@ mod imp {
 
                 event_controller_key.connect_key_pressed(
                     move |_event_controller_key, keyval: gdk::Key, _keycode, _modifiers| {
-                        info!("Key {:?}", keyval);
-
                         match keyval {
                             gdk::Key::Return | gdk::Key::KP_Enter => {
                                 let buffer = text_view.buffer();
@@ -245,10 +247,8 @@ mod imp {
             let tags = iter.tags();
 
             for tag in tags.iter() {
-                //info!("TAG {:?} {:?}", tag, tag.name());
-
                 let val = unsafe {
-                    let val: Option<std::ptr::NonNull<Value>> = tag.data("link");
+                    let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
                     val
                 };
 
@@ -278,7 +278,7 @@ mod imp {
             //info!("TAG {:?} {:?}", tag, tag.name());
 
             link_value_op = unsafe {
-                let val: Option<std::ptr::NonNull<Value>> = tag.data("link");
+                let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
                 if let Some(link_value_nonull) = val {
                     Some(link_value_nonull.as_ref())
                 } else {

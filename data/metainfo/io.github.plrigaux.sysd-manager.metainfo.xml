@@ -76,6 +76,15 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+   <release version="1.5" date="2024-12-20">
+      <description>
+        <ul>
+          <li>Unit info now displays file links</li>
+          <li>Unit info now displays Invocation</li>
+          <li>Unit info now displays some gray shade</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.4" date="2024-12-19">
       <description>
         <ul>
