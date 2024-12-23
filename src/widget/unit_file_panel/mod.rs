@@ -1,6 +1,5 @@
 pub mod dosini;
 
-
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 use crate::systemd::{self, data::UnitInfo};
@@ -41,7 +40,6 @@ impl UnitFilePanel {
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark)
     }
-
 }
 
 mod imp {
@@ -69,6 +67,8 @@ mod imp {
     };
 
     use super::dosini;
+
+    const SUGGESTED_ACTION: &str = "suggested-action";
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -135,6 +135,8 @@ mod imp {
             } else {
                 buf.set_text(&file_content);
             }
+
+            self.save_button.remove_css_class(SUGGESTED_ACTION);
         }
 
         pub(crate) fn set_dark(&self, is_dark: bool) {
@@ -168,7 +170,18 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for UnitFilePanelImp {}
+    impl ObjectImpl for UnitFilePanelImp {
+        fn constructed(&self) {
+            self.parent_constructed();
+            {
+                let buffer = self.unit_file_text.buffer();
+                let save_button = self.save_button.clone();
+                buffer.connect_begin_user_action(move |_buf| {
+                    save_button.add_css_class(SUGGESTED_ACTION);
+                });
+            }
+        }
+    }
     impl WidgetImpl for UnitFilePanelImp {}
     impl BoxImpl for UnitFilePanelImp {}
 }
