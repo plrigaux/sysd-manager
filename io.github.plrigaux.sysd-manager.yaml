@@ -10,7 +10,9 @@ finish-args:
 - --socket=fallback-x11
 - --socket=wayland
 - --device=dri
-- --filesystem=host
+# Needed to access /usr whre are located unit config files
+- --filesystem=host-os
+- --filesystem=host-etc
 # Needed to access journal logs
 - --filesystem=/var/log:ro
 - --env=RUST_LOG=info

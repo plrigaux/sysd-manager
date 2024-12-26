@@ -1,6 +1,7 @@
 pub mod dosini;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+use log::warn;
 
 use crate::systemd::{self, data::UnitInfo};
 
@@ -26,13 +27,15 @@ impl UnitFilePanel {
     }
 
     pub fn set_file_content(&self, unit: &UnitInfo) {
-        let file_content = systemd::get_unit_file_info(&unit);
-
-        let file_path = match unit.file_path() {
-            Some(s) => s,
-            None => "".to_owned(),
+        let file_content = match systemd::get_unit_file_info(&unit) {
+            Ok(content) => content,
+            Err(e) => {
+                warn!("get_unit_file_info Error: {:?}", e);
+                "".to_owned()
+            },
         };
 
+        let file_path = unit.file_path().map_or("".to_owned(), |a|a);
         self.imp()
             .display_file_info(&file_path, &file_content, unit);
     }
@@ -62,7 +65,7 @@ mod imp {
     use log::{info, warn};
 
     use crate::{
-        systemd::{self, data::UnitInfo},
+        systemd::{self, data::UnitInfo, generate_file_uri},
         widget::preferences::data::PREFERENCES,
     };
 
@@ -77,10 +80,10 @@ mod imp {
         save_button: TemplateChild<gtk::Button>,
 
         #[template_child]
-        file_path_label: TemplateChild<gtk::Label>,
+        unit_file_text: TemplateChild<gtk::TextView>,
 
         #[template_child]
-        unit_file_text: TemplateChild<gtk::TextView>,
+        file_link: TemplateChild<gtk::LinkButton>,
 
         unit: RefCell<Option<UnitInfo>>,
 
@@ -104,7 +107,16 @@ mod imp {
             let end = buffer.end_iter();
             let text = buffer.text(&start, &end, true);
 
-            systemd::save_text_to_file(unit, &text);
+            match systemd::save_text_to_file(unit, &text) {
+                Ok(_bytes_written) => {
+                    button.remove_css_class(SUGGESTED_ACTION)
+                },
+                Err(error) => {
+                    warn!("Unable to open file: {:?}, Error {:?}", unit.file_path(), error);
+                },
+            };
+
+            
         }
 
         pub(crate) fn display_file_info(
@@ -113,7 +125,11 @@ mod imp {
             file_content: &str,
             unit: &UnitInfo,
         ) {
-            self.file_path_label.set_label(file_path);
+            let uri = generate_file_uri(file_path);
+
+            self.file_link.set_uri(&uri);
+
+            self.file_link.set_label(file_path);
 
             let _old = self.unit.replace(Some(unit.clone()));
 

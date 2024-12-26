@@ -23,19 +23,31 @@
     </child>
     <child>
       <object class="GtkBox">
+        <property name="margin-bottom">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-start">5</property>
+        <property name="margin-top">5</property>
         <child>
-          <object class="GtkLabel" id="file_path_label">
-            <property name="hexpand">True</property>
-            <property name="selectable">True</property>
+          <object class="GtkLabel">
+            <property name="label">File path: </property>
             <property name="xalign">0.0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton" id="file_link">
+            <property name="halign">start</property>
+            <property name="hexpand">True</property>
+            <property name="label">link</property>
           </object>
         </child>
         <child>
           <object class="GtkButton" id="save_button">
             <property name="child">
               <object class="AdwButtonContent">
+                <property name="halign">baseline-center</property>
                 <property name="icon-name">document-save</property>
                 <property name="label">Save</property>
+                <property name="valign">baseline-center</property>
               </object>
             </property>
             <signal name="clicked" handler="save_file" swapped="yes"/>

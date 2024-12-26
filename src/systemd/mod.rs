@@ -1,7 +1,7 @@
 pub mod analyze;
 pub mod data;
-pub mod journal_data;
 pub mod journal;
+pub mod journal_data;
 mod sysdbus;
 
 use std::borrow::Cow;
@@ -37,6 +37,7 @@ static IS_FLATPAK_MODE: LazyLock<bool> = LazyLock::new(|| match env::var(SYSDMNG
 #[derive(Debug)]
 #[allow(unused)]
 pub enum SystemdErrors {
+    Custom(String),
     IoError(std::io::Error),
     Utf8Error(FromUtf8Error),
     SystemCtlError(String),
@@ -47,6 +48,8 @@ pub enum SystemdErrors {
     CmdNoFlatpakSpawn,
     CmdNoFreedesktopFlatpakPermission(Vec<String>),
     JournalError(String),
+    NoFilePathforUnit(String),
+    FlatpakAccess(ErrorKind),
 }
 
 impl SystemdErrors {
@@ -122,11 +125,11 @@ impl SystemdUnit {
 }
 
 #[derive(Default, Clone, PartialEq)]
-pub enum BootFilter {   
+pub enum BootFilter {
     #[default]
     Current,
     All,
-    Id(String)
+    Id(String),
 }
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
@@ -199,52 +202,55 @@ pub fn disable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String),
 }
 
 /// Read the unit file and return it's contents so that we can display it
-pub fn get_unit_file_info(unit: &UnitInfo) -> String {
+pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     let Some(file_path) = &unit.file_path() else {
         info!("No file path for {}", unit.primary());
-        return String::new();
+        return Ok(String::new());
     };
 
-    if let Some(content) = file_open_get_content(file_path) {
-        return content;
-    }
-
-    if *IS_FLATPAK_MODE {
-        info!("Flatpack {}", unit.primary());
-        match commander_output(&["cat", file_path], None) {
-            Ok(cat_output) => {
-                match String::from_utf8(cat_output.stdout) {
-                    Ok(content) => {
-                        return content;
+    match file_open_get_content(file_path) {
+        Ok(content) => Ok(content),
+        Err(err) => {
+            if *IS_FLATPAK_MODE {
+                info!("Flatpack {}", unit.primary());
+                match commander_output(&["cat", file_path], None) {
+                    Ok(cat_output) => {
+                        match String::from_utf8(cat_output.stdout) {
+                            Ok(content) => {
+                                Ok(content)
+                            }
+                            Err(e) => {
+                                warn!("Can't retreive contnent:  {:?}", e);
+                                Err(SystemdErrors::Custom("Utf8Error".to_owned()))
+                            }
+                        }
                     }
                     Err(e) => {
-                        warn!("Can't retreive journal:  {:?}", e);
+                        warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
+                        Err(e)
                     }
-                };
-            }
-            Err(e) => {
-                warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
+                }
+            } else {
+                Err(err)
             }
         }
     }
-
-    String::new()
 }
 
-fn file_open_get_content(file_path: &str) -> Option<String> {
+fn file_open_get_content(file_path: &str) -> Result<String, SystemdErrors> {
     let file_path = flatpak_host_file_path(file_path);
 
     let mut file = match File::open(file_path.as_ref()) {
         Ok(f) => f,
         Err(e) => {
             warn!("Can't open file \"{file_path}\", reason: {}", e);
-            return None;
+            return Err(SystemdErrors::IoError(e));
         }
     };
     let mut output = String::new();
     let _ = file.read_to_string(&mut output);
 
-    Some(output)
+    Ok(output)
 }
 
 /// Obtains the journal log for the given unit.
@@ -253,7 +259,7 @@ pub fn get_unit_journal(
     in_color: bool,
     oldest_first: bool,
     max_events: u32,
-    boot_filter : BootFilter
+    boot_filter: BootFilter,
 ) -> Result<Vec<JournalEvent>, SystemdErrors> {
     journal::get_unit_journal(unit, in_color, oldest_first, max_events, boot_filter)
 }
@@ -262,9 +268,7 @@ pub fn commander_output(
     prog_n_args: &[&str],
     environment_variables: Option<&[(&str, &str)]>,
 ) -> Result<std::process::Output, SystemdErrors> {
-    let output_result = commander(prog_n_args, environment_variables).output();
-
-    let new_output_result = match output_result {
+    let new_output_result = match commander(prog_n_args, environment_variables).output() {
         Ok(output) => {
             if *IS_FLATPAK_MODE {
                 info!("Journal status: {}", output.status);
@@ -286,13 +290,10 @@ pub fn commander_output(
             }
             Ok(output)
         }
-        Err(e) => {
-            match test_flatpak_spawn() {
-                Ok(_) => (),
-                Err(e) => return Err(e),
-            };
-            Err(SystemdErrors::IoError(e))
-        }
+        Err(err) => match test_flatpak_spawn() {
+            Ok(()) => Err(SystemdErrors::IoError(err)),
+            Err(e1) => return Err(e1),
+        },
     };
 
     new_output_result
@@ -332,73 +333,123 @@ pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &s
     command
 }
 
-pub fn save_text_to_file(unit: &UnitInfo, text: &GString) {
+pub fn save_text_to_file(unit: &UnitInfo, text: &GString) -> Result<usize, SystemdErrors> {
     let Some(file_path) = &unit.file_path() else {
         error!("No file path for {}", unit.primary());
-        return;
+        return Err(SystemdErrors::NoFilePathforUnit(unit.primary().to_string()));
     };
 
     let host_file_path = flatpak_host_file_path(file_path);
+    match write_on_disk(text, &host_file_path) {
+        Ok(bytes_written) => Ok(bytes_written),
+        Err(error) => {
+            if let SystemdErrors::IoError(ref err) = error {
+                match err.kind() {
+                    ErrorKind::PermissionDenied => {
+                        info!(
+                            "Some error : {}, try executing command as another user",
+                            err
+                        );
+                        write_with_priviledge(file_path, host_file_path, text)
+                    }
+                    _ => {
+                        warn!("Unable to open file: {:?}", err);
+                        Err(error)
+                    }
+                }
+            } else {
+                Err(error)
+            }
+        }
+    }
+}
 
-    let mut file = match fs::OpenOptions::new()
-        .write(true)
-        .open(host_file_path.as_ref())
-    {
+fn write_on_disk(text: &GString, file_path: &str) -> Result<usize, SystemdErrors> {
+    let mut file = match fs::OpenOptions::new().write(true).open(file_path) {
         Ok(file) => file,
         Err(err) => {
-            match err.kind() {
-                ErrorKind::PermissionDenied | ErrorKind::NotFound => {
-                    info!("Some error : {}, try another approach", err);
-                    write_with_priviledge(file_path, host_file_path, text);
-                }
-                _ => {
-                    error!("Unable to open file: {:?}", err);
-                }
-            }
-            return;
+            return Err(SystemdErrors::IoError(err));
         }
     };
 
     match file.write(text.as_bytes()) {
-        Ok(l) => error!("{l} bytes writen to {}", file_path),
-        Err(err) => error!("Unable to write to file: {:?}", err),
+        Ok(bytes_written) => {
+            info!("{bytes_written} bytes writen to {}", file_path);
+            Ok(bytes_written)
+        }
+        Err(err) => Err(SystemdErrors::IoError(err)),
     }
 }
 
-fn write_with_priviledge(file_path: &String, host_file_path: Cow<'_, str>, text: &GString) {
+fn write_with_priviledge(
+    file_path: &String,
+    host_file_path: Cow<'_, str>,
+    text: &GString,
+) -> Result<usize, SystemdErrors> {
     let mut cmd = commander(&["pkexec", "tee", "tee", host_file_path.as_ref()], None);
-    let mut child = cmd
-        .stdin(Stdio::piped())
-        .stdout(Stdio::null())
-        .spawn()
-        .expect("failed to execute pkexec tee");
+    let child_result = cmd.stdin(Stdio::piped()).stdout(Stdio::null()).spawn();
+
+    let mut child = match child_result {
+        Ok(child) => child,
+        Err(error) => {
+            error!("failed to execute pkexec tee. Error {:?}", error);
+            return Err(SystemdErrors::IoError(error));
+        }
+    };
 
     let child_stdin = match child.stdin.as_mut() {
         Some(cs) => cs,
         None => {
-            error!("Unable to write to file: No stdin");
-            return;
+            return Err(SystemdErrors::Custom(
+                "Unable to write to file: No stdin".to_owned(),
+            ));
         }
     };
 
-    match child_stdin.write_all(text.as_bytes()) {
-        Ok(_) => info!("Write content as root on {}", file_path),
-        Err(e) => error!("Write error: {:?}", e),
-    }
+    let bytes = text.as_bytes();
+
+    match child_stdin.write_all(bytes) {
+        Ok(bytes_written) => {
+            info!("Write content as root on {}", file_path);
+            bytes_written
+        }
+        Err(error) => return Err(SystemdErrors::IoError(error)),
+    };
 
     match child.wait() {
-        Ok(exit) => info!("Subprocess exit code: {:?}", exit),
-        Err(e) => error!("Failed to wait suprocess: {:?}", e),
+        Ok(exit_status) => {
+            info!("Subprocess exit status: {:?}", exit_status);
+
+            if !exit_status.success() {
+                warn!("Subprocess exit code: {:?}", exit_status.code());
+                //TODO Flatpak
+            }
+
+            Ok(bytes.len())
+        }
+        Err(error) => {
+            warn!("Failed to wait suprocess: {:?}", error);
+            return Err(SystemdErrors::IoError(error));
+        }
     }
 }
 
+/// To be able to acces the Flatpack mounted files.
+/// Limit to /usr for the leat access principle
 pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
-    let host_file_path = if *IS_FLATPAK_MODE {
-        Cow::from(format!("/run/host{file_path}"))
-    } else {
-        Cow::from(file_path)
-    };
+    let host_file_path =
+        if *IS_FLATPAK_MODE && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
+            Cow::from(format!("/run/host{file_path}"))
+        } else {
+            Cow::from(file_path)
+        };
     host_file_path
+}
+
+pub fn generate_file_uri(file_path: &str) -> String {
+    let flatpak_host_file_path = flatpak_host_file_path(file_path);
+    let uri = format!("file://{}", flatpak_host_file_path);
+    uri
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
