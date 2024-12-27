@@ -50,6 +50,7 @@ pub enum SystemdErrors {
     JournalError(String),
     NoFilePathforUnit(String),
     FlatpakAccess(ErrorKind),
+    NotAuthorized,
 }
 
 impl SystemdErrors {
@@ -214,17 +215,13 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
             if *IS_FLATPAK_MODE {
                 info!("Flatpack {}", unit.primary());
                 match commander_output(&["cat", file_path], None) {
-                    Ok(cat_output) => {
-                        match String::from_utf8(cat_output.stdout) {
-                            Ok(content) => {
-                                Ok(content)
-                            }
-                            Err(e) => {
-                                warn!("Can't retreive contnent:  {:?}", e);
-                                Err(SystemdErrors::Custom("Utf8Error".to_owned()))
-                            }
+                    Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
+                        Ok(content) => Ok(content),
+                        Err(e) => {
+                            warn!("Can't retreive contnent:  {:?}", e);
+                            Err(SystemdErrors::Custom("Utf8Error".to_owned()))
                         }
-                    }
+                    },
                     Err(e) => {
                         warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
                         Err(e)
@@ -333,7 +330,7 @@ pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &s
     command
 }
 
-pub fn save_text_to_file(unit: &UnitInfo, text: &GString) -> Result<usize, SystemdErrors> {
+pub fn save_text_to_file(unit: &UnitInfo, text: &GString) -> Result<(String, usize), SystemdErrors> {
     let Some(file_path) = &unit.file_path() else {
         error!("No file path for {}", unit.primary());
         return Err(SystemdErrors::NoFilePathforUnit(unit.primary().to_string()));
@@ -341,7 +338,7 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) -> Result<usize, Syste
 
     let host_file_path = flatpak_host_file_path(file_path);
     match write_on_disk(text, &host_file_path) {
-        Ok(bytes_written) => Ok(bytes_written),
+        Ok(bytes_written) => Ok((file_path.clone(), bytes_written)),
         Err(error) => {
             if let SystemdErrors::IoError(ref err) = error {
                 match err.kind() {
@@ -350,7 +347,7 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) -> Result<usize, Syste
                             "Some error : {}, try executing command as another user",
                             err
                         );
-                        write_with_priviledge(file_path, host_file_path, text)
+                        write_with_priviledge(file_path, host_file_path, text).map(|bytes_written| (file_path.clone(), bytes_written))
                     }
                     _ => {
                         warn!("Unable to open file: {:?}", err);
@@ -386,8 +383,13 @@ fn write_with_priviledge(
     host_file_path: Cow<'_, str>,
     text: &GString,
 ) -> Result<usize, SystemdErrors> {
-    let mut cmd = commander(&["pkexec", "tee", "tee", host_file_path.as_ref()], None);
-    let child_result = cmd.stdin(Stdio::piped()).stdout(Stdio::null()).spawn();
+    let prog_n_args = &["pkexec", "tee", "tee", host_file_path.as_ref()];
+    let mut cmd = commander(prog_n_args, None);
+    let child_result = cmd
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn();
 
     let mut child = match child_result {
         Ok(child) => child,
@@ -407,11 +409,11 @@ fn write_with_priviledge(
     };
 
     let bytes = text.as_bytes();
+    let bytes_written = bytes.len();
 
     match child_stdin.write_all(bytes) {
-        Ok(bytes_written) => {
+        Ok(()) => {
             info!("Write content as root on {}", file_path);
-            bytes_written
         }
         Err(error) => return Err(SystemdErrors::IoError(error)),
     };
@@ -419,19 +421,53 @@ fn write_with_priviledge(
     match child.wait() {
         Ok(exit_status) => {
             info!("Subprocess exit status: {:?}", exit_status);
-
             if !exit_status.success() {
-                warn!("Subprocess exit code: {:?}", exit_status.code());
-                //TODO Flatpak
-            }
+                let code = exit_status.code();
+                warn!("Subprocess exit code: {:?}", code);
 
-            Ok(bytes.len())
+                let Some(code) = code else {
+                    return Err(SystemdErrors::Custom(
+                        "Subprocess exit code: None".to_owned(),
+                    ));
+                };
+
+                match code {
+                    1 => {
+                        if *IS_FLATPAK_MODE {
+                            let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
+                            return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec));
+                        }
+                    }
+                    126 | 127 => return Err(SystemdErrors::NotAuthorized),
+                    _ => {
+                        return Err(SystemdErrors::Custom(format!(
+                            "Subprocess exit code: {code}"
+                        )))
+                    }
+                };
+
+                /*  match child.stderr {
+                    Some(ref mut out) => {
+                        let mut buf_string = String::new();
+                        match out.read_to_string(&mut buf_string) {
+                            Ok(a) => {
+                                info!("Stderr {} {}", a, buf_string);
+                                println!("{}", buf_string);
+                            }
+                            Err(e) => error!("{:?}", e),
+                        };
+                    }
+                    None => {}
+                }; */
+            }
         }
         Err(error) => {
-            warn!("Failed to wait suprocess: {:?}", error);
+            //warn!("Failed to wait suprocess: {:?}", error);
             return Err(SystemdErrors::IoError(error));
         }
-    }
+    };
+
+    Ok(bytes_written)
 }
 
 /// To be able to acces the Flatpack mounted files.

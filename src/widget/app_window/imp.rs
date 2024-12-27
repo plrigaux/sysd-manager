@@ -81,7 +81,7 @@ impl ObjectImpl for AppWindowImpl {
         self.unit_list_panel
             .register_selection_change(&app_window, &self.refresh_unit_list_button);
 
-        self.unit_control_panel.set_overlay(&self.toast_overlay);
+        self.unit_control_panel.set_overlay(&app_window, &self.toast_overlay);
 
         self.setup_dropdown();
     }

@@ -5,6 +5,8 @@ use log::warn;
 
 use crate::systemd::{self, data::UnitInfo};
 
+use super::app_window::AppWindow;
+
 // ANCHOR: mod
 glib::wrapper! {
     pub struct UnitFilePanel(ObjectSubclass<imp::UnitFilePanelImp>)
@@ -32,10 +34,10 @@ impl UnitFilePanel {
             Err(e) => {
                 warn!("get_unit_file_info Error: {:?}", e);
                 "".to_owned()
-            },
+            }
         };
 
-        let file_path = unit.file_path().map_or("".to_owned(), |a|a);
+        let file_path = unit.file_path().map_or("".to_owned(), |a| a);
         self.imp()
             .display_file_info(&file_path, &file_content, unit);
     }
@@ -43,11 +45,16 @@ impl UnitFilePanel {
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark)
     }
+
+    pub fn register(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
+        self.imp().register(app_window, toast_overlay);
+    }
 }
 
 mod imp {
-    use std::cell::{Cell, RefCell};
+    use std::cell::{Cell, OnceCell, RefCell};
 
+    use adw::prelude::AdwDialogExt;
     use gtk::{
         glib,
         prelude::*,
@@ -66,7 +73,7 @@ mod imp {
 
     use crate::{
         systemd::{self, data::UnitInfo, generate_file_uri},
-        widget::preferences::data::PREFERENCES,
+        widget::{app_window::AppWindow, preferences::data::PREFERENCES},
     };
 
     use super::dosini;
@@ -84,6 +91,10 @@ mod imp {
 
         #[template_child]
         file_link: TemplateChild<gtk::LinkButton>,
+
+        toast_overlay: OnceCell<adw::ToastOverlay>,
+
+        app_window: OnceCell<AppWindow>,
 
         unit: RefCell<Option<UnitInfo>>,
 
@@ -108,15 +119,54 @@ mod imp {
             let text = buffer.text(&start, &end, true);
 
             match systemd::save_text_to_file(unit, &text) {
-                Ok(_bytes_written) => {
-                    button.remove_css_class(SUGGESTED_ACTION)
-                },
+                Ok((file_path, _bytes_written)) => {
+                    button.remove_css_class(SUGGESTED_ACTION);
+                    let msg = format!("File <u>{file_path}</u> saved succesfully!");
+                    let toast = adw::Toast::builder().use_markup(true).title(&msg).build();
+                    self.toast_overlay.get().unwrap().add_toast(toast)
+                }
                 Err(error) => {
-                    warn!("Unable to open file: {:?}, Error {:?}", unit.file_path(), error);
-                },
-            };
+                    warn!(
+                        "Unable to save file: {:?}, Error {:?}",
+                        unit.file_path(),
+                        error
+                    );
 
-            
+                    match error {
+                        systemd::SystemdErrors::CmdNoFreedesktopFlatpakPermission(_vec) => {
+                            let dialog = adw::AlertDialog::builder()
+                            .heading("Flatpak permission needed!")
+                            .body("To save this file content, it requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged as a Flatpak.\n
+<b>Option 1:</b> You can use Flatseal. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program.\n
+<b>Option 2:</b> Edit the file through another editor.")
+.body_use_markup(true)
+.title("Not able to save")
+.can_close(true)
+.default_response("Close dialog")
+.build();
+
+                            let window =
+                                self.app_window.get().expect("AppWindow supposed to be set");
+                            dialog.present(Some(window));
+                        }
+
+                        systemd::SystemdErrors::NotAuthorized => {
+                            let toast = adw::Toast::builder()
+                                .use_markup(true)
+                                .title("Not able to save file, permission not granted!")
+                                .build();
+                            self.toast_overlay.get().unwrap().add_toast(toast)
+                        }
+                        _ => {
+                            let toast = adw::Toast::builder()
+                                .use_markup(true)
+                                .title("Not able to save file, an error happened!")
+                                .build();
+                            self.toast_overlay.get().unwrap().add_toast(toast)
+                        }
+                    }
+                }
+            };
         }
 
         pub(crate) fn display_file_info(
@@ -165,6 +215,16 @@ mod imp {
             let file_content = buffer.text(&start, &end, true);
 
             self.set_text(file_content.as_str());
+        }
+
+        pub(crate) fn register(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
+            self.toast_overlay
+                .set(toast_overlay.clone())
+                .expect("toast_overlay once");
+
+            self.app_window
+                .set(app_window.clone())
+                .expect("toast_overlay once");
         }
     }
 

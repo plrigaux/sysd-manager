@@ -3,6 +3,8 @@ use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
 
+use super::app_window::AppWindow;
+
 mod controls;
 mod enums;
 mod imp;
@@ -22,7 +24,7 @@ impl UnitControlPanel {
         self.imp().set_dark(is_dark);
     }
 
-    pub fn set_overlay(&self, toast_overlay: &adw::ToastOverlay) {
-        self.imp().set_overlay(toast_overlay);
+    pub fn set_overlay(&self,  app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
+        self.imp().set_overlay(app_window, toast_overlay);
     }
 }

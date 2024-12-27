@@ -14,8 +14,7 @@ use crate::{
         enums::{ActiveState, StartStopMode},
     },
     widget::{
-        journal::JournalPanel, kill_panel::KillPanel, unit_file_panel::UnitFilePanel,
-        unit_info::UnitInfoPanel,
+        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel, unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel
     },
 };
 
@@ -125,8 +124,9 @@ impl ObjectImpl for UnitControlPanelImpl {
 
 #[gtk::template_callbacks]
 impl UnitControlPanelImpl {
-    pub(super) fn set_overlay(&self, toast_overlay: &adw::ToastOverlay) {
+    pub(super) fn set_overlay(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
         self.kill_panel.register(&self.side_overlay, toast_overlay);
+        self.unit_file_panel.register(app_window, toast_overlay);
 
         if let Err(e) = self.toast_overlay.set(toast_overlay.clone()) {
             warn!("Set Toast Overlay Issue: {:?}", e)
