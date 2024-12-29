@@ -9,7 +9,7 @@ authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
 description = "A GUI to manage systemd units"
 keywords = ["gtk4", "linux", "systemd"]
 rust-version = "1.80"
-build = "build.rs"
+#build = "build.rs"
 include = [
     "build.rs",
     "/src",
@@ -32,19 +32,19 @@ path = "build.rs"
 lto = true
 
 [dependencies]
-gtk = { version = "0.9.4", package = "gtk4", features = ["v4_16"] }
+gtk = { version = "0.9.5", package = "gtk4", features = ["v4_16"] }
 adw = { version = "0.7.1", package = "libadwaita", features = ["v1_6"] }
 log = "0.4"
 libc = "0.2"
-env_logger = "0.11.3"
-dotenv = "0.15.0"
+env_logger = "0.11"
+dotenv = "0.15"
 strum = { version = "0.26", features = ["derive"] }
 tokio = { version = "1.42", features = ["full"] }
 zbus = "5.2"
 zvariant = "5.1"
 serde = "1.0"
-chrono = "0.4.38"
-regex = "1.11.0"
+chrono = "0.4.39"
+regex = "1.11"
 sysd =  { version = "0.10", package = "systemd"} 
 
 [dev-dependencies]

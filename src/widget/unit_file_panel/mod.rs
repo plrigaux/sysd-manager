@@ -1,4 +1,5 @@
 pub mod dosini;
+mod flatpak;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 use log::warn;
@@ -76,7 +77,7 @@ mod imp {
         widget::{app_window::AppWindow, preferences::data::PREFERENCES},
     };
 
-    use super::dosini;
+    use super::{dosini, flatpak};
 
     const SUGGESTED_ACTION: &str = "suggested-action";
 
@@ -155,7 +156,7 @@ mod imp {
                                 .use_markup(true)
                                 .title("Not able to save file, permission not granted!")
                                 .build();
-                            self.toast_overlay.get().unwrap().add_toast(toast)
+                            self.toast_overlay.get().unwrap().add_toast(toast);
                         }
                         _ => {
                             let toast = adw::Toast::builder()
@@ -225,6 +226,11 @@ mod imp {
             self.app_window
                 .set(app_window.clone())
                 .expect("toast_overlay once");
+
+            let dialog = flatpak::new("/home/pier/school.txt");
+            let window = self.app_window.get().expect("AppWindow supposed to be set");
+
+            dialog.present(Some(window));
         }
     }
 
