@@ -63,7 +63,8 @@ def version(allow_dirty: bool, message: str, force: bool):
 
     if not message:
         print(f'Message needed (-m "a message ...")')
-        exit()
+        message = f'version {tag_name}'
+        print(f'Message supplied (-m "{message}")')
 
     git_tag = ["git", "tag", "-m", f'"{message}"', tag_name]
     git_push = ["git", "push", "origin", "tag", tag_name]
