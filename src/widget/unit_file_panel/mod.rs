@@ -134,8 +134,8 @@ mod imp {
                     );
 
                     match error {
-                        systemd::SystemdErrors::CmdNoFreedesktopFlatpakPermission(_vec) => {
-                            let dialog = flatpak::new(file_path);
+                        systemd::SystemdErrors::CmdNoFreedesktopFlatpakPermission(_vec, file_path) => {
+                            let dialog = flatpak::new(&file_path);
                             let window = self.app_window.get().expect("AppWindow supposed to be set");
                 
                             dialog.present(Some(window));

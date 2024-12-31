@@ -52,7 +52,7 @@ pub enum SystemdErrors {
     ZBusError(zbus::Error),
     ZBusFdoError(zbus::fdo::Error),
     CmdNoFlatpakSpawn,
-    CmdNoFreedesktopFlatpakPermission(Vec<String>),
+    CmdNoFreedesktopFlatpakPermission(Vec<String>, String),
     JournalError(String),
     NoFilePathforUnit(String),
     FlatpakAccess(ErrorKind),
@@ -67,7 +67,7 @@ impl SystemdErrors {
 Please install it to enable all features.";
                 Some(value.to_owned())
             }
-            SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmdl) => {
+            SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmdl, _file_path) => {
                 let msg = format!(
                 "Requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.\n
 <b>Option 1:</b> You can use Flatseal. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program\n
@@ -288,7 +288,7 @@ pub fn commander_output(
                         String::from_utf8(output.stderr).expect("from_utf8 failed")
                     );
                     let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
-                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec));
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec, String::new()));
                 }
             }
             Ok(output)
@@ -441,7 +441,7 @@ fn write_with_priviledge(
                     1 => {
                         if IS_FLATPAK_MODE {
                             let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
-                            return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec));
+                            return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec, host_file_path.to_string()));
                         }
                     }
                     126 | 127 => return Err(SystemdErrors::NotAuthorized),
