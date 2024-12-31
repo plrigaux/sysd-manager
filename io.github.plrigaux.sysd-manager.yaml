@@ -17,7 +17,7 @@ finish-args:
 - --filesystem=/var/log:ro
 - --env=RUST_LOG=info
 - --env=RUST_BACKTRACE=1
-- --env=SYSDMNG_DIST_MODE=flatpack
+#- --env=SYSDMNG_DIST_MODE=flatpack
 # Needed to talk to systemd1 with dbus
 - --talk-name=org.freedesktop.systemd1
 - --system-talk-name=org.freedesktop.systemd1
@@ -32,7 +32,7 @@ modules:
       CARGO_HOME: /run/build/sysd-manager/cargo
   build-commands:
   - cargo --offline fetch --manifest-path Cargo.toml --verbose
-  - cargo --offline build --release --verbose
+  - cargo --offline build --release --verbose --features flatpak
   - install -Dm755 ./target/release/sysd-manager -t /app/bin/
   - install -Dm644 ./data/applications/io.github.plrigaux.sysd-manager.desktop -t /app/share/applications
   - install -Dm644 ./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg -t /app/share/icons/hicolor/scalable/apps/

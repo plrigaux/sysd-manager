@@ -135,19 +135,9 @@ mod imp {
 
                     match error {
                         systemd::SystemdErrors::CmdNoFreedesktopFlatpakPermission(_vec) => {
-                            let dialog = adw::AlertDialog::builder()
-                            .heading("Flatpak permission needed!")
-                            .body("To save this file content, it requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged as a Flatpak.\n
-<b>Option 1:</b> You can use Flatseal. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program.\n
-<b>Option 2:</b> Edit the file through another editor.")
-.body_use_markup(true)
-.title("Not able to save")
-.can_close(true)
-.default_response("Close dialog")
-.build();
-
-                            let window =
-                                self.app_window.get().expect("AppWindow supposed to be set");
+                            let dialog = flatpak::new(file_path);
+                            let window = self.app_window.get().expect("AppWindow supposed to be set");
+                
                             dialog.present(Some(window));
                         }
 
@@ -227,10 +217,10 @@ mod imp {
                 .set(app_window.clone())
                 .expect("toast_overlay once");
 
-            let dialog = flatpak::new("/home/pier/school.txt");
+            /* let dialog = flatpak::new("/home/pier/school.txt");
             let window = self.app_window.get().expect("AppWindow supposed to be set");
 
-            dialog.present(Some(window));
+            dialog.present(Some(window)); */
         }
     }
 

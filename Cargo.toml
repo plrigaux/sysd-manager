@@ -28,6 +28,10 @@ path = "src/main.rs"
 name = "force-build"
 path = "build.rs"
 
+[features]
+default = []
+flatpak = []
+
 [profile.release]
 lto = true
 

@@ -6,10 +6,8 @@ mod sysdbus;
 
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
-use std::env;
 use std::process::{Command, Stdio};
 use std::string::FromUtf8Error;
-use std::sync::LazyLock;
 
 use data::UnitInfo;
 use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
@@ -25,14 +23,22 @@ use crate::widget::preferences::data::PREFERENCES;
 
 pub mod enums;
 
-const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
-const FLATPACK: &str = "flatpack";
+//const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
+//const FLATPACK: &str = "flatpak";
 const FLATPAK_SPAWN: &str = "flatpak-spawn";
 
-static IS_FLATPAK_MODE: LazyLock<bool> = LazyLock::new(|| match env::var(SYSDMNG_DIST_MODE) {
+/* static IS_FLATPAK_MODE: LazyLock<bool> = LazyLock::new(|| match env::var(SYSDMNG_DIST_MODE) {
     Ok(val) => FLATPACK.eq(&val),
     Err(_) => false,
-});
+}); */
+
+#[cfg(feature = "flatpak")]
+const IS_FLATPAK_MODE : bool = false;
+
+#[cfg(not(feature = "flatpak"))]
+const IS_FLATPAK_MODE : bool = true;
+
+
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -212,7 +218,7 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     match file_open_get_content(file_path) {
         Ok(content) => Ok(content),
         Err(err) => {
-            if *IS_FLATPAK_MODE {
+            if IS_FLATPAK_MODE {
                 info!("Flatpack {}", unit.primary());
                 match commander_output(&["cat", file_path], None) {
                     Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
@@ -267,7 +273,7 @@ pub fn commander_output(
 ) -> Result<std::process::Output, SystemdErrors> {
     let new_output_result = match commander(prog_n_args, environment_variables).output() {
         Ok(output) => {
-            if *IS_FLATPAK_MODE {
+            if IS_FLATPAK_MODE {
                 info!("Journal status: {}", output.status);
 
                 if !output.status.success() {
@@ -297,7 +303,7 @@ pub fn commander_output(
 }
 
 pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
-    let command = if *IS_FLATPAK_MODE {
+    let command = if IS_FLATPAK_MODE {
         let mut cmd = Command::new(FLATPAK_SPAWN);
         cmd.arg("--host");
         for v in prog_n_args {
@@ -433,7 +439,7 @@ fn write_with_priviledge(
 
                 match code {
                     1 => {
-                        if *IS_FLATPAK_MODE {
+                        if IS_FLATPAK_MODE {
                             let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
                             return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec));
                         }
@@ -446,19 +452,7 @@ fn write_with_priviledge(
                     }
                 };
 
-                /*  match child.stderr {
-                    Some(ref mut out) => {
-                        let mut buf_string = String::new();
-                        match out.read_to_string(&mut buf_string) {
-                            Ok(a) => {
-                                info!("Stderr {} {}", a, buf_string);
-                                println!("{}", buf_string);
-                            }
-                            Err(e) => error!("{:?}", e),
-                        };
-                    }
-                    None => {}
-                }; */
+             
             }
         }
         Err(error) => {
@@ -474,7 +468,7 @@ fn write_with_priviledge(
 /// Limit to /usr for the leat access principle
 pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
     let host_file_path =
-        if *IS_FLATPAK_MODE && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
+        if IS_FLATPAK_MODE && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
             Cow::from(format!("/run/host{file_path}"))
         } else {
             Cow::from(file_path)
@@ -514,7 +508,7 @@ pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), Syste
 }
 
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
-    if !*IS_FLATPAK_MODE {
+    if !IS_FLATPAK_MODE {
         return Ok(());
     }
 
