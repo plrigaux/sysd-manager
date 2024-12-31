@@ -5,7 +5,7 @@ use crate::{
         analyze::{self, Analyze},
         SystemdErrors,
     },
-    widget::grid_cell::{Entry, GridCell},
+    widget::{grid_cell::{Entry, GridCell}, unit_file_panel::flatpak},
 };
 
 use gtk::{
@@ -170,20 +170,32 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
                     total_time_label.set_label(format!("{} seconds", time).as_str());
                     stack.set_visible_child_name(PAGE_BLAME);
                 }
-                Err(error) => match error.gui_description() {
-                    Some(markup_text) => {
-                        let tv = TextView::new();
-                        let buf = tv.buffer();
+                Err(error) => {
+                    const FLATPACK_PERMISSION :&str = "flatpak_permission";
+                   
 
-                        let mut start_iter = buf.start_iter();
-                        buf.insert_markup(&mut start_iter, &markup_text);
-                      
-                        let flatpack_permission = "flatpack_permission";
-                        stack.add_named(&tv, Some(flatpack_permission));
-                        stack.set_visible_child_name(flatpack_permission)
-                    }
-                    None => stack.set_visible_child_name(PAGE_BLAME),
-                },
+                    match error {
+                        SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmd, _) => {
+                            let dialog = flatpak::inner_msg( cmd, None);
+                           
+                            stack.add_named(&dialog, Some(FLATPACK_PERMISSION));
+                            stack.set_visible_child_name(FLATPACK_PERMISSION)
+                        },
+                        SystemdErrors::CmdNoFlatpakSpawn => {
+                            let tv = TextView::new();
+                            let buf = tv.buffer();
+
+                            let mut start_iter = buf.start_iter();
+                            let gui_description = error.gui_description().unwrap_or(String::new());
+                            buf.insert_markup(&mut start_iter, &gui_description);
+
+                          
+                            stack.add_named(&tv, Some(FLATPACK_PERMISSION));
+                            stack.set_visible_child_name(FLATPACK_PERMISSION)
+                        }
+                        _ => stack.set_visible_child_name(PAGE_BLAME),
+                    };
+                }
             }
         });
     }

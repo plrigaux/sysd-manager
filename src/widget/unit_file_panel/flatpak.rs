@@ -1,7 +1,29 @@
 use adw::prelude::AdwDialogExt;
 use gtk::prelude::{BoxExt, ButtonExt, WidgetExt};
 
-pub fn new(file_link: &str) -> adw::Dialog {
+pub fn new(command_line: Option<String>, file_link: Option<String>) -> adw::Dialog {
+    let content = inner_msg(command_line, file_link);
+
+    let close_button = gtk::Button::builder()
+        .label("Close")
+        .margin_bottom(5)
+        .margin_top(20)
+        .halign(gtk::Align::Center)
+        .build();
+
+    content.append(&close_button);
+
+    let dialog = adw::Dialog::builder().child(&content).build();
+    {
+        let dialog = dialog.clone();
+        close_button.connect_clicked(move |_b| {
+            dialog.close();
+        });
+    }
+    dialog
+}
+
+pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk::Box {
     let content = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(20)
@@ -39,36 +61,31 @@ pub fn new(file_link: &str) -> adw::Dialog {
     picture.set_height_request(272);
     picture.set_width_request(576);
 
-
     content.append(&picture);
-    //content
 
+    let lbl = if let Some(file_link) = file_link {
+        format!(
+            "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor.",
+            file_link
+        )
+    } else if let Some(cmd) = command_line {
+        format!(
+            "<b>Option 2:</b> In your terminal, run the command: <u>{}</u>",
+            cmd
+        )
+    } else {
+        String::new()
+    };
 
     let description2 = gtk::Label::builder()
-    .selectable(true)
-    .label(format!("<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor.", file_link))
-    .use_markup(true)
-    .wrap(true)
-    .xalign(0.0)
-    .build();
+        .selectable(true)
+        .label(lbl)
+        .use_markup(true)
+        .wrap(true)
+        .xalign(0.0)
+        .build();
 
     content.append(&description2);
 
-    let close_button = gtk::Button::builder()
-        .label("Close")
-        .margin_bottom(5)
-        .margin_top(20)
-        .halign(gtk::Align::Center)
-        .build();
-
-    content.append(&close_button);
-
-    let dialog = adw::Dialog::builder().child(&content).build();
-    {
-        let dialog = dialog.clone();
-        close_button.connect_clicked(move |_b| {
-            dialog.close();
-        });
-    }
-    dialog
+    content
 }

@@ -50,7 +50,7 @@ pub enum SystemdErrors {
     ZBusError(zbus::Error),
     ZBusFdoError(zbus::fdo::Error),
     CmdNoFlatpakSpawn,
-    CmdNoFreedesktopFlatpakPermission(Vec<String>, String),
+    CmdNoFreedesktopFlatpakPermission(Option<String>, Option<String>),
     JournalError(String),
     NoFilePathforUnit(String),
     FlatpakAccess(ErrorKind),
@@ -65,11 +65,9 @@ impl SystemdErrors {
 Please install it to enable all features.";
                 Some(value.to_owned())
             }
-            SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmdl, _file_path) => {
-                let msg = format!(
-                "Requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.\n
-<b>Option 1:</b> You can use Flatseal. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program\n
-<b>Option 2:</b> In your terminal, run the command: <u>{}</u>", cmdl.join(" "));
+            SystemdErrors::CmdNoFreedesktopFlatpakPermission(_cmdl, _file_path) => {            
+                let msg = 
+                "Requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.".to_owned();
                 Some(msg)
             }
             _ => None,
@@ -290,10 +288,7 @@ pub fn commander_output(
                         String::from_utf8(output.stderr).expect("from_utf8 failed")
                     );
                     let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
-                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(
-                        vec,
-                        String::new(),
-                    ));
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(Some(vec), None));
                 }
             }
             Ok(output)
@@ -449,10 +444,10 @@ fn write_with_priviledge(
                 let subprocess_error = match code {
                     1 => {
                         if IS_FLATPAK_MODE {
-                            let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
+                            let vec = prog_n_args.iter().map(|s| s.to_string()).collect::<Vec<String>>().join(" ");
                             SystemdErrors::CmdNoFreedesktopFlatpakPermission(
-                                vec,
-                                host_file_path.to_string(),
+                                Some(vec),
+                                Some(host_file_path.to_string()),
                             )
                         } else {
                             SystemdErrors::Custom(format!("Subprocess exit code: {code}"))
