@@ -17,7 +17,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="kill_panel.ui">interfaces/kill_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_control_panel.ui">interfaces/unit_control_panel.ui</file>    
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">interfaces/shortcuts.ui</file>
-    <file compressed="true" alias="add_permission_dark.mp4">../screenshots/add_permission_dark.mp4</file>
+    <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>
     <file compressed="true" alias="style.css">styles/style.css</file>
   </gresource>
 </gresources>
