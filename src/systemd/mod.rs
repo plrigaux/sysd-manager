@@ -215,7 +215,7 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
 
     match file_open_get_content(file_path) {
         Ok(content) => Ok(content),
-        Err(err) => {
+        Err(_err) => {
             #[cfg(feature = "flatpak")]
             {
                 info!("Flatpack {}", unit.primary());
@@ -236,7 +236,7 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
 
             #[cfg(not(feature = "flatpak"))]
             {
-                Err(err)
+                Err(_err)
             }
         }
     }
