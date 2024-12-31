@@ -25,7 +25,7 @@ COPR_REPO = "sysd-manager"
 
 APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
-#FLATHUB_DIR = "../flathub"
+# FLATHUB_DIR = "../flathub"
 FLATHUB_DIR = "../io.github.plrigaux.sysd-manager"
 FLATPACK_BUILD_DIR = "../flatpak_sysdm"
 CARGO_LOCK = "Cargo.lock"
@@ -113,7 +113,14 @@ def main():
 
 
 def clean():
-    list_dir = ["builddir", ".flatpak-builder", CARGO_SOURCES, "repo", "tmp", FLATPACK_BUILD_DIR]
+    list_dir = [
+        "builddir",
+        ".flatpak-builder",
+        CARGO_SOURCES,
+        "repo",
+        "tmp",
+        FLATPACK_BUILD_DIR,
+    ]
 
     for dir in list_dir:
         print(f"{color.BOLD}Deleting{color.END} {color.YELLOW}{dir}{color.END}")
@@ -334,7 +341,9 @@ def set_manifest(from_git: bool, out_dir):
             print(f"{color.RED}commit not found for tag {tag_name}")
             exit(0)
 
-        print(f"Set tag {color.CYAN}{tag_name}{color.END} and commit {color.CYAN}{commit}{color.END} to manifest")    
+        print(
+            f"Set tag {color.CYAN}{tag_name}{color.END} and commit {color.CYAN}{commit}{color.END} to manifest"
+        )
 
         modules_obj_0["sources"][0] = {
             "type": "git",
@@ -394,6 +403,12 @@ def deploy(from_git: bool):
     generate(FLATHUB_DIR)
 
     set_manifest(True, FLATHUB_DIR)
+
+    version = bcommon.get_version_tag()
+
+    bcommon.cmd_run(["git", "pull"], cwd=FLATHUB_DIR)
+    bcommon.cmd_run(["git", "commit", "-a", "-m", version], cwd=FLATHUB_DIR)
+    bcommon.cmd_run(["git", "push"], cwd=FLATHUB_DIR)
 
 
 def tag():
