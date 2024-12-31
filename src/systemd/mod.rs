@@ -33,12 +33,10 @@ const FLATPAK_SPAWN: &str = "flatpak-spawn";
 }); */
 
 #[cfg(feature = "flatpak")]
-const IS_FLATPAK_MODE : bool = false;
+const IS_FLATPAK_MODE: bool = true;
 
 #[cfg(not(feature = "flatpak"))]
-const IS_FLATPAK_MODE : bool = true;
-
-
+const IS_FLATPAK_MODE: bool = false;
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -218,7 +216,8 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     match file_open_get_content(file_path) {
         Ok(content) => Ok(content),
         Err(err) => {
-            if IS_FLATPAK_MODE {
+            #[cfg(feature = "flatpak")]
+            {
                 info!("Flatpack {}", unit.primary());
                 match commander_output(&["cat", file_path], None) {
                     Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
@@ -233,7 +232,10 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
                         Err(e)
                     }
                 }
-            } else {
+            }
+
+            #[cfg(not(feature = "flatpak"))]
+            {
                 Err(err)
             }
         }
@@ -288,7 +290,10 @@ pub fn commander_output(
                         String::from_utf8(output.stderr).expect("from_utf8 failed")
                     );
                     let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
-                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec, String::new()));
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(
+                        vec,
+                        String::new(),
+                    ));
                 }
             }
             Ok(output)
@@ -302,41 +307,44 @@ pub fn commander_output(
     new_output_result
 }
 
+#[cfg(feature = "flatpak")]
 pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
-    let command = if IS_FLATPAK_MODE {
-        let mut cmd = Command::new(FLATPAK_SPAWN);
-        cmd.arg("--host");
-        for v in prog_n_args {
-            cmd.arg(v);
+    let mut cmd = Command::new(FLATPAK_SPAWN);
+    cmd.arg("--host");
+    for v in prog_n_args {
+        cmd.arg(v);
+    }
+
+    if let Some(envs) = environment_variables {
+        for env in envs {
+            cmd.arg(format!("--env={}={}", env.0, env.1));
         }
+    }
 
-        if let Some(envs) = environment_variables {
-            for env in envs {
-                cmd.arg(format!("--env={}={}", env.0, env.1));
-            }
-        }
-
-        cmd
-    } else {
-        let mut cmd = Command::new(prog_n_args[0]);
-
-        for i in 1..prog_n_args.len() {
-            cmd.arg(prog_n_args[i]);
-        }
-
-        if let Some(envs) = environment_variables {
-            for env in envs {
-                cmd.env(env.0, env.1);
-            }
-        }
-
-        cmd
-    };
-
-    command
+    cmd
 }
 
-pub fn save_text_to_file(unit: &UnitInfo, text: &GString) -> Result<(String, usize), SystemdErrors> {
+#[cfg(not(feature = "flatpak"))]
+pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
+    let mut cmd = Command::new(prog_n_args[0]);
+
+    for i in 1..prog_n_args.len() {
+        cmd.arg(prog_n_args[i]);
+    }
+
+    if let Some(envs) = environment_variables {
+        for env in envs {
+            cmd.env(env.0, env.1);
+        }
+    }
+
+    cmd
+}
+
+pub fn save_text_to_file(
+    unit: &UnitInfo,
+    text: &GString,
+) -> Result<(String, usize), SystemdErrors> {
     let Some(file_path) = &unit.file_path() else {
         error!("No file path for {}", unit.primary());
         return Err(SystemdErrors::NoFilePathforUnit(unit.primary().to_string()));
@@ -353,7 +361,8 @@ pub fn save_text_to_file(unit: &UnitInfo, text: &GString) -> Result<(String, usi
                             "Some error : {}, try executing command as another user",
                             err
                         );
-                        write_with_priviledge(file_path, host_file_path, text).map(|bytes_written| (file_path.clone(), bytes_written))
+                        write_with_priviledge(file_path, host_file_path, text)
+                            .map(|bytes_written| (file_path.clone(), bytes_written))
                     }
                     _ => {
                         warn!("Unable to open file: {:?}", err);
@@ -437,22 +446,22 @@ fn write_with_priviledge(
                     ));
                 };
 
-                match code {
+                let subprocess_error = match code {
                     1 => {
                         if IS_FLATPAK_MODE {
                             let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
-                            return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(vec, host_file_path.to_string()));
+                            SystemdErrors::CmdNoFreedesktopFlatpakPermission(
+                                vec,
+                                host_file_path.to_string(),
+                            )
+                        } else {
+                            SystemdErrors::Custom(format!("Subprocess exit code: {code}"))
                         }
                     }
                     126 | 127 => return Err(SystemdErrors::NotAuthorized),
-                    _ => {
-                        return Err(SystemdErrors::Custom(format!(
-                            "Subprocess exit code: {code}"
-                        )))
-                    }
+                    _ => SystemdErrors::Custom(format!("Subprocess exit code: {code}")),
                 };
-
-             
+                return Err(subprocess_error);
             }
         }
         Err(error) => {
@@ -466,14 +475,21 @@ fn write_with_priviledge(
 
 /// To be able to acces the Flatpack mounted files.
 /// Limit to /usr for the leat access principle
+#[cfg(feature = "flatpak")]
 pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
-    let host_file_path =
-        if IS_FLATPAK_MODE && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
-            Cow::from(format!("/run/host{file_path}"))
-        } else {
-            Cow::from(file_path)
-        };
+    let host_file_path = if file_path.starts_with("/usr") || file_path.starts_with("/etc") {
+        Cow::from(format!("/run/host{file_path}"))
+    } else {
+        Cow::from(file_path)
+    };
     host_file_path
+}
+
+/// To be able to acces the Flatpack mounted files.
+/// Limit to /usr for the leat access principle
+#[cfg(not(feature = "flatpak"))]
+pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
+    Cow::from(file_path)
 }
 
 pub fn generate_file_uri(file_path: &str) -> String {

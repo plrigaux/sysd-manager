@@ -76,14 +76,22 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-  <release version="1.5.1" date="2024-12-20">
+    <release version="1.6" date="2024-12-30">
+      <description>
+        <ul>
+          <li>Improve User Experience for the Save file button</li>
+          <li>Reduce needed Flatpak file permissions</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.5.1" date="2024-12-20">
       <description>
         <ul>
           <li>Fix unit info links under Flatpak</li>
         </ul>
       </description>
     </release>
-   <release version="1.5.0" date="2024-12-20">
+    <release version="1.5.0" date="2024-12-20">
       <description>
         <ul>
           <li>Unit info now displays file links</li>
