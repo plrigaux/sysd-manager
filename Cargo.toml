@@ -50,6 +50,7 @@ serde = "1.0"
 chrono = "0.4.39"
 regex = "1.11"
 sysd =  { version = "0.10", package = "systemd"} 
+clap = { version = "4.5.23", features = ["derive"] }
 
 [dev-dependencies]
 

@@ -9,6 +9,7 @@ mod systemd;
 mod systemd_gui;
 mod widget;
 
+use clap::{command, ArgAction, Parser};
 use gtk::{gdk, gio, glib, prelude::*};
 
 use log::{info, warn};
@@ -20,10 +21,30 @@ use widget::{
     preferences::{data::PREFERENCES, PreferencesDialog},
 };
 
+/// Simple program to greet a person
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Name of the unit
+    #[arg()]
+    unit: Option<String>,
+
+    /// Specify the user session bus
+    #[arg(short, long)]
+    user: bool,
+
+    /// Specify the system session bus (This is the implied default)
+    #[arg(short, long)]
+    system: bool,
+}
+
 fn main() -> glib::ExitCode {
     dotenv().ok();
 
     env_logger::init();
+
+    let args = Args::parse();
+
 
     info!("Program starting up");
 
@@ -35,10 +56,6 @@ fn main() -> glib::ExitCode {
         Err(e) => warn!("Failed to register resources. Error: {:?}", e),
     }
 
-    launch()
-}
-
-pub fn launch() -> glib::ExitCode {
     // Create a new application
     let app = adw::Application::builder().application_id(APP_ID).build();
     app.connect_startup(|app| {
@@ -47,7 +64,8 @@ pub fn launch() -> glib::ExitCode {
     });
     app.connect_activate(build_ui);
 
-    app.run()
+    let empty: Vec<String> = vec![];
+    app.run_with_args(&empty)
 }
 
 fn load_css() {
