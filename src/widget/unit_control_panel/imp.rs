@@ -2,7 +2,7 @@ use std::cell::{OnceCell, RefCell};
 
 use adw::{subclass::prelude::*, Toast};
 use gtk::{
-    glib::{self, property::PropertySet},
+    glib::{self},
     prelude::*,
 };
 use log::{debug, error, info, warn};
@@ -12,9 +12,11 @@ use crate::{
         self,
         data::UnitInfo,
         enums::{ActiveState, StartStopMode},
+        errors::SystemdErrors,
     },
     widget::{
-        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel, unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel
+        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel,
+        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
 };
 
@@ -164,8 +166,7 @@ impl UnitControlPanelImpl {
 
         let mode: StartStopMode = (&self.start_mode).into();
 
-        let start_results: Result<String, systemd::SystemdErrors> =
-            systemd::start_unit(&unit, mode);
+        let start_results: Result<String, SystemdErrors> = systemd::start_unit(&unit, mode);
 
         self.start_restart(
             &unit,
@@ -180,7 +181,7 @@ impl UnitControlPanelImpl {
     fn start_restart(
         &self,
         unit: &UnitInfo,
-        start_results: Result<String, systemd::SystemdErrors>,
+        start_results: Result<String, SystemdErrors>,
         action: UnitContolType,
         new_active_state: ActiveState,
         mode: StartStopMode,
@@ -281,7 +282,13 @@ impl UnitControlPanelImpl {
     }
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
-        self.current_unit.set(Some(unit.clone()));
+        let old_unit = self.current_unit.replace(Some(unit.clone()));
+        if let Some(old_unit) = old_unit {
+            if old_unit.primary() == unit.primary() {
+                info! {"Same unit {}",unit.primary() };
+                return;
+            }
+        }
 
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);

@@ -15,6 +15,7 @@ use gtk::{gdk, gio, glib, prelude::*};
 use log::{info, warn};
 
 use dotenv::dotenv;
+use systemd::data::UnitInfo;
 use systemd_gui::{new_settings, APP_ID};
 use widget::{
     app_window::{menu, AppWindow},
@@ -29,7 +30,7 @@ fn main() -> glib::ExitCode {
 
     env_logger::init();
 
-    handle_args();
+    let unit = handle_args();
 
     info!("Program starting up");
 
@@ -47,7 +48,10 @@ fn main() -> glib::ExitCode {
         load_css();
         menu::on_startup(app)
     });
-    app.connect_activate(build_ui);
+
+    app.connect_activate(move |app| {
+        build_ui(app, unit.clone());
+    });
 
     app.run_with_args::<String>(&[])
 }
@@ -65,7 +69,7 @@ fn load_css() {
     );
 }
 
-fn build_ui(application: &adw::Application) {
+fn build_ui(application: &adw::Application, unit : Option<UnitInfo>) {
     let window = AppWindow::new(application);
 
     {
@@ -79,6 +83,8 @@ fn build_ui(application: &adw::Application) {
             window.set_dark(is_dark);
         });
     }
+
+    window.set_unit(unit);
 
     window.present();
 
@@ -108,21 +114,27 @@ struct Args {
     system: bool,
 }
 
-fn handle_args() {
+fn handle_args() -> Option<UnitInfo> {
     let args = Args::parse();
 
-    if args.unit == None {
-        let level = PREFERENCES.dbus_level();
+    let level = PREFERENCES.dbus_level();
 
-        match (args.system, args.user) {           
-            (true, _) => PREFERENCES.set_dbus_level(DbusLevel::System),
-            (false, true) => PREFERENCES.set_dbus_level(DbusLevel::Session),
-            (false, false) => {}
-        }
-
-        if level != PREFERENCES.dbus_level() {
-            let settings = new_settings();
-            PREFERENCES.save_dbus_level(&settings);
-        }
+    match (args.system, args.user) {
+        (true, _) => PREFERENCES.set_dbus_level(DbusLevel::System),
+        (false, true) => PREFERENCES.set_dbus_level(DbusLevel::Session),
+        (false, false) => {}
     }
+
+    if level != PREFERENCES.dbus_level() {
+        let settings = new_settings();
+        PREFERENCES.save_dbus_level(&settings);
+    }
+
+    if args.unit.is_some() {
+        match systemd::fetch_unit(&args.unit.unwrap()) {
+            Ok(unit) => return Some(unit),
+            Err(e) => warn!("Cli unit: {:?}", e),
+        };
+    }
+    None
 }

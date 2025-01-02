@@ -18,9 +18,11 @@ use zbus::blocking::MessageIterator;
 use zbus::message::Flags;
 use zbus::names::InterfaceName;
 use zbus::Message;
+
 use zvariant::DynamicType;
 use zvariant::ObjectPath;
 use zvariant::OwnedValue;
+use zvariant::Str;
 use zvariant::Type;
 
 use crate::systemd::data::UnitInfo;
@@ -604,29 +606,31 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
     The job type as string
     The job object path
      */
-    let primary = properties_proxy.get(interface_name.clone(), "Id")?.to_string();
 
-    let description = properties_proxy
+    let primary: Str<'_> = properties_proxy
+        .get(interface_name.clone(), "Id")?
+        .try_into()?;
+
+    let description: Str<'_> = properties_proxy
         .get(interface_name.clone(), "Description")?
-        .to_string();
+        .try_into()?;
 
-    let load_state = properties_proxy
+    let load_state: Str<'_> = properties_proxy
         .get(interface_name.clone(), "LoadState")?
-        .to_string();
+        .try_into()?;
 
-    let active_state_str = properties_proxy
+    let active_state_str: Str<'_> = properties_proxy
         .get(interface_name.clone(), "ActiveState")?
-        .to_string();
+        .try_into()?;
 
     let active_state: ActiveState = active_state_str.as_str().into();
 
-    let sub_state = properties_proxy
+    let sub_state: Str<'_> = properties_proxy
         .get(interface_name.clone(), "SubState")?
-        .to_string();
-
-    let followed_unit = properties_proxy
+        .try_into()?;
+    let followed_unit: Str<'_> = properties_proxy
         .get(interface_name, "Following")?
-        .to_string();
+        .try_into()?;
 
     let unit = UnitInfo::new(
         &primary,
@@ -782,7 +786,37 @@ mod tests {
 
         let map = fetch_system_info(DbusLevel::System)?;
 
-        println!("{:#?}", map);
+        info!("{:#?}", map);
         Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_fetch_unit() -> Result<(), SystemdErrors> {
+        init();
+
+        let unit = fetch_unit(DbusLevel::System, TEST_SERVICE)?;
+
+        info!("{:#?}", unit);
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_fetch_unit_fail_wrong_name() -> Result<(), SystemdErrors> {
+        init();
+
+        let fake = format!("{TEST_SERVICE}_fake");
+        match fetch_unit(DbusLevel::System, &fake) {
+            Ok(_) => todo!(),
+            Err(e) => {
+                warn!("{:?}", e);
+                if let SystemdErrors::NoSuchUnit(_msg) = e {
+                    return Ok(());
+                } else {
+                    return Err(SystemdErrors::Custom("Wrong expected Error".to_owned()));
+                }
+            }
+        }
     }
 }

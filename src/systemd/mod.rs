@@ -1,5 +1,6 @@
 pub mod analyze;
 pub mod data;
+pub mod errors;
 pub mod journal;
 pub mod journal_data;
 mod sysdbus;
@@ -7,10 +8,10 @@ mod sysdbus;
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
 use std::process::{Command, Stdio};
-use std::string::FromUtf8Error;
 
 use data::UnitInfo;
 use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
+use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::JournalEvent;
 use log::{error, info, warn};
@@ -37,77 +38,6 @@ const IS_FLATPAK_MODE: bool = true;
 
 #[cfg(not(feature = "flatpak"))]
 const IS_FLATPAK_MODE: bool = false;
-
-#[derive(Debug)]
-#[allow(unused)]
-pub enum SystemdErrors {
-    Custom(String),
-    IoError(std::io::Error),
-    Utf8Error(FromUtf8Error),
-    SystemCtlError(String),
-    //DBusErrorStr(String),
-    Malformed,
-    ZBusError(zbus::Error),
-    ZBusFdoError(zbus::fdo::Error),
-    CmdNoFlatpakSpawn,
-    CmdNoFreedesktopFlatpakPermission(Option<String>, Option<String>),
-    JournalError(String),
-    NoFilePathforUnit(String),
-    FlatpakAccess(ErrorKind),
-    NotAuthorized,
-}
-
-impl SystemdErrors {
-    pub fn gui_description(&self) -> Option<String> {
-        let desc = match self {
-            SystemdErrors::CmdNoFlatpakSpawn => {
-                let value = "The program <b>flatpack-spawn</b> is needed if you use the application from Flatpack.\n
-Please install it to enable all features.";
-                Some(value.to_owned())
-            }
-            SystemdErrors::CmdNoFreedesktopFlatpakPermission(_cmdl, _file_path) => {            
-                let msg = 
-                "Requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.".to_owned();
-                Some(msg)
-            }
-            _ => None,
-        };
-
-        desc
-    }
-}
-
-impl From<std::io::Error> for SystemdErrors {
-    fn from(error: std::io::Error) -> Self {
-        SystemdErrors::IoError(error)
-    }
-}
-
-impl From<FromUtf8Error> for SystemdErrors {
-    fn from(error: FromUtf8Error) -> Self {
-        SystemdErrors::Utf8Error(error)
-    }
-}
-
-impl From<zbus::Error> for SystemdErrors {
-    fn from(error: zbus::Error) -> Self {
-        SystemdErrors::ZBusError(error)
-    }
-}
-
-impl From<zbus::fdo::Error> for SystemdErrors {
-    fn from(error: zbus::fdo::Error) -> Self {
-        SystemdErrors::ZBusFdoError(error)
-    }
-}
-
-impl From<Box<dyn std::error::Error>> for SystemdErrors {
-    fn from(error: Box<dyn std::error::Error>) -> Self {
-        let msg = format!("{}", error);
-
-        SystemdErrors::JournalError(msg)
-    }
-}
 
 #[derive(Clone, Debug)]
 #[allow(unused)]
@@ -288,7 +218,10 @@ pub fn commander_output(
                         String::from_utf8(output.stderr).expect("from_utf8 failed")
                     );
                     let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
-                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(Some(vec), None));
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(
+                        Some(vec),
+                        None,
+                    ));
                 }
             }
             Ok(output)
@@ -444,7 +377,11 @@ fn write_with_priviledge(
                 let subprocess_error = match code {
                     1 => {
                         if IS_FLATPAK_MODE {
-                            let vec = prog_n_args.iter().map(|s| s.to_string()).collect::<Vec<String>>().join(" ");
+                            let vec = prog_n_args
+                                .iter()
+                                .map(|s| s.to_string())
+                                .collect::<Vec<String>>()
+                                .join(" ");
                             SystemdErrors::CmdNoFreedesktopFlatpakPermission(
                                 Some(vec),
                                 Some(host_file_path.to_string()),
@@ -513,11 +450,9 @@ pub fn fetch_system_unit_info_native(
     sysdbus::fetch_system_unit_info_native(level, &unit.object_path(), unit_type)
 }
 
-pub fn fetch_unit(
-    unit_primary_name: &str,
-) -> Result<UnitInfo, SystemdErrors> {
+pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
-   sysdbus::fetch_unit(level, &unit_primary_name)
+    sysdbus::fetch_unit(level, &unit_primary_name)
 }
 
 pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {

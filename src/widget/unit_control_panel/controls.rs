@@ -3,7 +3,7 @@ use log::{info, warn};
 use crate::systemd::{
     self,
     data::UnitInfo,
-    enums::{ActiveState, EnablementStatus},
+    enums::{ActiveState, EnablementStatus}, errors::SystemdErrors,
 };
 
 use crate::gtk::prelude::*;
@@ -55,7 +55,7 @@ pub(super) fn switch_ablement_state_set(
 
         Err(error) => {
             let error_message = match error {
-                systemd::SystemdErrors::SystemCtlError(s) => s,
+                SystemdErrors::SystemCtlError(s) => s,
                 _ => format!("{:?}", error),
             };
 

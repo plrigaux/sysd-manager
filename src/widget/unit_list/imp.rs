@@ -1,5 +1,5 @@
 use std::{
-    cell::{OnceCell, RefMut},
+    cell::{OnceCell, RefCell, RefMut},
     rc::Rc,
 };
 
@@ -15,7 +15,7 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetImpl,
         },
     },
-    SearchBar, TemplateChild,
+     SearchBar, TemplateChild,
 };
 
 use log::{debug, error, info, warn};
@@ -57,6 +57,8 @@ pub struct UnitListPanelImp {
     search_entry: OnceCell<gtk::SearchEntry>,
 
     refresh_unit_list_button: OnceCell<gtk::Button>,
+
+    unit: RefCell<Option<UnitInfo>>,
 }
 
 macro_rules! factory_setup {
@@ -212,8 +214,8 @@ impl UnitListPanelImp {
         app_window: &AppWindow,
         refresh_unit_list_button: &gtk::Button,
     ) {
-
         let app_window = app_window.clone();
+        let list_widjet = self.obj().clone();
 
         self.single_selection
             .connect_selected_item_notify(move |single_selection| {
@@ -233,6 +235,7 @@ impl UnitListPanelImp {
 
                 info!("Selection changed, new unit {}", unit.primary());
 
+                list_widjet.set_unit(&unit);
                 app_window.selection_change(&unit);
             }); // FOR THE SEARCH
 
@@ -248,37 +251,61 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn fill_store(&self) {
-        {
-            let list_store = self.list_store.clone();
-            let panel_stack = self.panel_stack.clone();
+        let list_store = self.list_store.clone();
+        let panel_stack = self.panel_stack.clone();
+        let single_selection = self.single_selection.clone();
+        let unit_list = self.obj().clone();
+        //let units_browser = self.units_browser.clone();
 
-            let refresh_unit_list_button =
-                self.refresh_unit_list_button.get().expect("Supposed to be set").clone();
+        let refresh_unit_list_button = self
+            .refresh_unit_list_button
+            .get()
+            .expect("Supposed to be set")
+            .clone();
 
-            glib::spawn_future_local(async move {
-
-                refresh_unit_list_button.set_sensitive(false);
-                panel_stack.set_visible_child_name("spinner");
-                let unit_files: Vec<UnitInfo> = gio::spawn_blocking(move || {
-                    match systemd::list_units_description_and_state() {
-                        Ok(map) => map.into_values().collect(),
-                        Err(_e) => vec![],
-                    }
+        glib::spawn_future_local(async move {
+            refresh_unit_list_button.set_sensitive(false);
+            panel_stack.set_visible_child_name("spinner");
+            let unit_files: Vec<UnitInfo> =
+                gio::spawn_blocking(move || match systemd::list_units_description_and_state() {
+                    Ok(map) => map.into_values().collect(),
+                    Err(_e) => vec![],
                 })
                 .await
                 .expect("Task needs to finish successfully.");
 
-                list_store.remove_all();
+            list_store.remove_all();
 
-                for value in unit_files {
-                    list_store.append(&value);
+            for value in unit_files {
+                list_store.append(&value);
+            }
+
+            info!("Unit list refreshed! list size {}", list_store.n_items());
+
+            refresh_unit_list_button.set_sensitive(true);
+            panel_stack.set_visible_child_name("unit_list");
+
+            let selected_item = single_selection.selected_item();
+            if selected_item.is_none() {
+                let selected_unit = unit_list.selected_unit();
+                if let Some(selected_unit) = selected_unit {
+                    let selected_unit_name = selected_unit.primary();
+                    if let Some(index) = list_store.find_with_equal_func(|object| {
+                        let list_unit = object
+                            .downcast_ref::<UnitInfo>()
+                            .expect("Needs to be UnitInfo");
+
+                        list_unit.primary().eq(&selected_unit_name)
+                    }) {
+                        info!(
+                            "Force selection to index {:?} to select unit {:?}",
+                            index, selected_unit_name
+                        );
+                        single_selection.select_item(index, true);                        
+                    }
                 }
-                info!("Unit list refreshed! list size {}", list_store.n_items());
-
-                refresh_unit_list_button.set_sensitive(true);
-                panel_stack.set_visible_child_name("unit_list");
-            });
-        }
+            }
+        });
     }
 
     pub(super) fn button_search_toggled(&self, toggle_button_is_active: bool) {
@@ -289,6 +316,27 @@ impl UnitListPanelImp {
 
             se.grab_focus();
         }
+    }
+
+    pub fn set_unit(&self, unit: &UnitInfo) {
+        let old = self.unit.replace(Some(unit.clone()));
+        if let Some(old) = old {
+            if old.primary() == unit.primary() {
+                return;
+            }
+        } else {
+            return;
+        }
+
+        let finding = self.list_store.find(unit);
+
+        if let Some(row) = finding {
+            self.single_selection.select_item(row, true);
+        }
+    }
+
+    pub fn selected_unit(&self) -> Option<UnitInfo> {
+        self.unit.borrow().clone()
     }
 }
 

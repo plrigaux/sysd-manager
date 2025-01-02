@@ -227,11 +227,15 @@ impl AppWindowImpl {
     }
 
     pub(super) fn selection_change(&self, unit: &UnitInfo) {
-        //self.current_unit.set(Some(unit.clone()));
-
         self.unit_name_label.set_label(&unit.primary());
-
         self.unit_control_panel.selection_change(unit);
+    }
+
+    pub(super) fn set_unit(&self, unit: Option<UnitInfo>) {
+        if let Some(unit) = unit {
+            self.selection_change(&unit);
+            self.unit_list_panel.set_unit(&unit);
+        }
     }
 
     pub(super) fn set_dark(&self, is_dark: bool) {

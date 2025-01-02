@@ -1,3 +1,5 @@
+use crate::systemd::data::UnitInfo;
+
 use super::app_window::AppWindow;
 use gtk::glib;
 use gtk::subclass::prelude::*;
@@ -11,7 +13,11 @@ glib::wrapper! {
 }
 
 impl UnitListPanel {
-    pub fn register_selection_change(&self, app_window: &AppWindow, refresh_unit_list_button : &gtk::Button) {
+    pub fn register_selection_change(
+        &self,
+        app_window: &AppWindow,
+        refresh_unit_list_button: &gtk::Button,
+    ) {
         let obj = self.imp();
         obj.register_selection_change(app_window, refresh_unit_list_button);
     }
@@ -24,7 +30,15 @@ impl UnitListPanel {
         self.imp().fill_store()
     }
 
-    pub fn button_search_toggled(&self, toggle_button_is_active : bool) {
+    pub fn button_search_toggled(&self, toggle_button_is_active: bool) {
         self.imp().button_search_toggled(toggle_button_is_active);
+    }
+
+    pub fn set_unit(&self, unit: &UnitInfo) {
+        self.imp().set_unit(unit);
+    }
+
+    pub fn selected_unit(&self) -> Option<UnitInfo>{
+        self.imp().selected_unit()
     }
 }

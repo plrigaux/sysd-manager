@@ -3,9 +3,12 @@ use std::cell::Ref;
 use crate::{
     systemd::{
         analyze::{self, Analyze},
-        SystemdErrors,
+        errors::SystemdErrors,
     },
-    widget::{grid_cell::{Entry, GridCell}, unit_file_panel::flatpak},
+    widget::{
+        grid_cell::{Entry, GridCell},
+        unit_file_panel::flatpak,
+    },
 };
 
 use gtk::{
@@ -171,16 +174,15 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
                     stack.set_visible_child_name(PAGE_BLAME);
                 }
                 Err(error) => {
-                    const FLATPACK_PERMISSION :&str = "flatpak_permission";
-                   
+                    const FLATPACK_PERMISSION: &str = "flatpak_permission";
 
                     match error {
                         SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmd, _) => {
-                            let dialog = flatpak::inner_msg( cmd, None);
-                           
+                            let dialog = flatpak::inner_msg(cmd, None);
+
                             stack.add_named(&dialog, Some(FLATPACK_PERMISSION));
                             stack.set_visible_child_name(FLATPACK_PERMISSION)
-                        },
+                        }
                         SystemdErrors::CmdNoFlatpakSpawn => {
                             let tv = TextView::new();
                             let buf = tv.buffer();
@@ -189,7 +191,6 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
                             let gui_description = error.gui_description().unwrap_or(String::new());
                             buf.insert_markup(&mut start_iter, &gui_description);
 
-                          
                             stack.add_named(&tv, Some(FLATPACK_PERMISSION));
                             stack.set_visible_child_name(FLATPACK_PERMISSION)
                         }

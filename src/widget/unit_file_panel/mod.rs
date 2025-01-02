@@ -73,7 +73,7 @@ mod imp {
     use log::{info, warn};
 
     use crate::{
-        systemd::{self, data::UnitInfo, generate_file_uri},
+        systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
         widget::{app_window::AppWindow, preferences::data::PREFERENCES},
     };
 
@@ -134,14 +134,18 @@ mod imp {
                     );
 
                     match error {
-                        systemd::SystemdErrors::CmdNoFreedesktopFlatpakPermission(command_line, file_path) => {
+                        SystemdErrors::CmdNoFreedesktopFlatpakPermission(
+                            command_line,
+                            file_path,
+                        ) => {
                             let dialog = flatpak::new(command_line, file_path);
-                            let window = self.app_window.get().expect("AppWindow supposed to be set");
-                
+                            let window =
+                                self.app_window.get().expect("AppWindow supposed to be set");
+
                             dialog.present(Some(window));
                         }
 
-                        systemd::SystemdErrors::NotAuthorized => {
+                        SystemdErrors::NotAuthorized => {
                             let toast = adw::Toast::builder()
                                 .use_markup(true)
                                 .title("Not able to save file, permission not granted!")
