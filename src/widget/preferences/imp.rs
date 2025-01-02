@@ -6,7 +6,7 @@ use gtk::{gio, glib, prelude::*};
 use log::{info, warn};
 use std::cell::OnceCell;
 
-use crate::systemd_gui;
+use crate::systemd_gui::new_settings;
 
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_JOURNAL_MAX_EVENTS, KEY_PREF_UNIT_FILE_HIGHLIGHTING, PREFERENCES
@@ -36,7 +36,7 @@ pub struct PreferencesDialog {
 #[gtk::template_callbacks]
 impl PreferencesDialog {
     fn setup_settings(&self) {
-        let settings = gio::Settings::new(systemd_gui::APP_ID);
+        let settings = new_settings();
         {
             let settings1 = settings.clone();
             self.settings

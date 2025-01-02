@@ -114,9 +114,8 @@ fn handle_args() {
     if args.unit == None {
         let level = PREFERENCES.dbus_level();
 
-        match (args.system, args.user) {
-            (true, true) => {}
-            (true, false) => PREFERENCES.set_dbus_level(DbusLevel::System),
+        match (args.system, args.user) {           
+            (true, _) => PREFERENCES.set_dbus_level(DbusLevel::System),
             (false, true) => PREFERENCES.set_dbus_level(DbusLevel::Session),
             (false, false) => {}
         }

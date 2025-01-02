@@ -2,11 +2,11 @@ use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
-use log::{debug, info, warn};
+use log::{debug, info};
 
 use crate::{
     systemd::data::UnitInfo,
-    systemd_gui,
+    systemd_gui::new_settings,
     widget::{
         preferences::data::{DbusLevel, PREFERENCES},
         unit_control_panel::UnitControlPanel,
@@ -91,7 +91,7 @@ impl ObjectImpl for AppWindowImpl {
 #[gtk::template_callbacks]
 impl AppWindowImpl {
     fn setup_settings(&self) {
-        let settings: gio::Settings = gio::Settings::new(systemd_gui::APP_ID);
+        let settings: gio::Settings = new_settings();
 
         self.settings
             .set(settings)
