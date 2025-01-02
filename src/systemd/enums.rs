@@ -138,19 +138,21 @@ impl ActiveState {
             ActiveState::Unknown => None,
         }
     }
-
-    pub fn from_str(input: &str) -> Self {
-        match input {
-            "active" => ActiveState::Active,
-            "inactive" => ActiveState::Inactive,
-            _ => ActiveState::Unknown,
-        }
-    }
 }
 
 impl Display for ActiveState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.label())
+    }
+}
+
+impl From<&str> for ActiveState {
+    fn from(value: &str) -> Self {
+        match value {
+            "active" => ActiveState::Active,
+            "inactive" => ActiveState::Inactive,
+            _ => ActiveState::Unknown,
+        }
     }
 }
 

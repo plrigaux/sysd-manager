@@ -149,7 +149,7 @@ fn list_units_description(
     let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
 
     for service_struct in array.iter() {
-        let active_state = ActiveState::from_str(service_struct.active_state);
+        let active_state: ActiveState = service_struct.active_state.into();
 
         let unit = UnitInfo::new(
             service_struct.primary_unit_name,
@@ -409,15 +409,22 @@ where
 }
 
 /// Used to get the unit object path for a unit name
-pub fn get_unit_object_path(level: DbusLevel, unit: &str) -> Result<String, SystemdErrors> {
+pub fn get_unit_object_path(level: DbusLevel, unit_name: &str) -> Result<String, SystemdErrors> {
     let connection = get_connection(level)?;
 
+    get_unit_object_path_connection(unit_name, &connection)
+}
+
+fn get_unit_object_path_connection(
+    unit_name: &str,
+    connection: &Connection,
+) -> Result<String, SystemdErrors> {
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
         Some(INTERFACE_SYSTEMD_MANAGER),
         METHOD_GET_UNIT,
-        &(unit),
+        &(unit_name),
     )?;
 
     let body = message.body();
@@ -570,6 +577,68 @@ pub fn fetch_system_unit_info_native(
 
     trace!("properties {:?}", properties);
     Ok(properties)
+}
+
+pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    let object_path = get_unit_object_path_connection(unit_primary_name, &connection)?;
+
+    debug!("path {object_path}");
+    let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
+        fdo::PropertiesProxy::builder(&connection)
+            .destination(DESTINATION_SYSTEMD)?
+            .path(object_path.clone())?
+            .build()?;
+
+    let interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+
+    /*     The primary unit name as string
+    The human readable description string
+    The load state (i.e. whether the unit file has been loaded successfully)
+    The active state (i.e. whether the unit is currently started or not)
+    The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
+    A unit that is being followed in its state by this unit, if there is any, otherwise the empty string.
+    The unit object path
+    If there is a job queued for the job unit the numeric job id, 0 otherwise
+    The job type as string
+    The job object path
+     */
+    let primary = properties_proxy.get(interface_name.clone(), "Id")?.to_string();
+
+    let description = properties_proxy
+        .get(interface_name.clone(), "Description")?
+        .to_string();
+
+    let load_state = properties_proxy
+        .get(interface_name.clone(), "LoadState")?
+        .to_string();
+
+    let active_state_str = properties_proxy
+        .get(interface_name.clone(), "ActiveState")?
+        .to_string();
+
+    let active_state: ActiveState = active_state_str.as_str().into();
+
+    let sub_state = properties_proxy
+        .get(interface_name.clone(), "SubState")?
+        .to_string();
+
+    let followed_unit = properties_proxy
+        .get(interface_name, "Following")?
+        .to_string();
+
+    let unit = UnitInfo::new(
+        &primary,
+        &description,
+        &load_state,
+        active_state,
+        &sub_state,
+        &followed_unit,
+        &object_path,
+    );
+
+    Ok(unit)
 }
 
 #[cfg(test)]
