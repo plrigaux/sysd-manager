@@ -1,22 +1,22 @@
 use gtk::{
-    gio::{self, Settings},
+    gio::Settings,
     glib::{self, GString},
     prelude::{SettingsExt, ToValue},
 };
-use log::{debug, info};
+use log::{info, warn};
 
 use std::sync::{LazyLock, RwLock};
 
-use crate::systemd_gui;
+use crate::systemd_gui::new_settings;
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
-    let settings = gio::Settings::new(systemd_gui::APP_ID);
-    let pref = Preferences::new_with_setting(&settings);
+    let settings = new_settings();
+    let pref = Preferences::new_with_setting(settings);
 
     pref
 });
 
-pub const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
+const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 pub const KEY_PREF_JOURNAL_MAX_EVENTS: &str = "pref-journal-max-events";
 pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
@@ -118,10 +118,8 @@ pub struct Preferences {
 }
 
 impl Preferences {
-    pub fn new_with_setting(settings: &Settings) -> Self {
-        let level_str = settings.string(KEY_DBUS_LEVEL);
+    pub fn new_with_setting(settings: Settings) -> Self {
         let level = settings.string(KEY_DBUS_LEVEL).into();
-        debug!("level {:?} {:?}", level_str, level);
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let journal_events = settings.uint(KEY_PREF_JOURNAL_MAX_EVENTS);
         let journal_event_max_size = settings.uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE);
@@ -167,6 +165,17 @@ impl Preferences {
 
         let mut self_dbus_level = self.dbus_level.write().expect("supposed to write");
         *self_dbus_level = dbus_level;
+    }
+
+    pub fn save_dbus_level(&self, settings: &Settings) {
+        let level = self.dbus_level();
+        match settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
+            Ok(()) => info!(
+                "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
+                level.as_str()
+            ),
+            Err(e) =>  warn!("Save setting Error {}", e),
+        }   
     }
 
     pub fn set_journal_events(&self, journal_events_new: u32) {

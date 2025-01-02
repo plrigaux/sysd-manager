@@ -9,42 +9,27 @@ mod systemd;
 mod systemd_gui;
 mod widget;
 
-use clap::{command, ArgAction, Parser};
+use clap::{command, Parser};
 use gtk::{gdk, gio, glib, prelude::*};
 
 use log::{info, warn};
 
 use dotenv::dotenv;
-use systemd_gui::APP_ID;
+use systemd_gui::{new_settings, APP_ID};
 use widget::{
     app_window::{menu, AppWindow},
-    preferences::{data::PREFERENCES, PreferencesDialog},
+    preferences::{
+        data::{DbusLevel, PREFERENCES},
+        PreferencesDialog,
+    },
 };
-
-/// Simple program to greet a person
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Name of the unit
-    #[arg()]
-    unit: Option<String>,
-
-    /// Specify the user session bus
-    #[arg(short, long)]
-    user: bool,
-
-    /// Specify the system session bus (This is the implied default)
-    #[arg(short, long)]
-    system: bool,
-}
 
 fn main() -> glib::ExitCode {
     dotenv().ok();
 
     env_logger::init();
 
-    let args = Args::parse();
-
+    handle_args();
 
     info!("Program starting up");
 
@@ -64,8 +49,7 @@ fn main() -> glib::ExitCode {
     });
     app.connect_activate(build_ui);
 
-    let empty: Vec<String> = vec![];
-    app.run_with_args(&empty)
+    app.run_with_args::<String>(&[])
 }
 
 fn load_css() {
@@ -104,5 +88,42 @@ fn build_ui(application: &adw::Application) {
         let pdialog = PreferencesDialog::new();
 
         adw::prelude::AdwDialogExt::present(&pdialog, Some(&window));
+    }
+}
+
+/// A GUI interface to manage systemd units
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Name of the unit
+    #[arg()]
+    unit: Option<String>,
+
+    /// Specify the user session bus
+    #[arg(short, long)]
+    user: bool,
+
+    /// Specify the system session bus (This is the implied default)
+    #[arg(short, long)]
+    system: bool,
+}
+
+fn handle_args() {
+    let args = Args::parse();
+
+    if args.unit == None {
+        let level = PREFERENCES.dbus_level();
+
+        match (args.system, args.user) {
+            (true, true) => {}
+            (true, false) => PREFERENCES.set_dbus_level(DbusLevel::System),
+            (false, true) => PREFERENCES.set_dbus_level(DbusLevel::Session),
+            (false, false) => {}
+        }
+
+        if level != PREFERENCES.dbus_level() {
+            let settings = new_settings();
+            PREFERENCES.save_dbus_level(&settings);
+        }
     }
 }

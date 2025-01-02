@@ -8,7 +8,7 @@ use crate::{
     systemd::data::UnitInfo,
     systemd_gui,
     widget::{
-        preferences::data::{DbusLevel, KEY_DBUS_LEVEL, PREFERENCES},
+        preferences::data::{DbusLevel, PREFERENCES},
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
     },
@@ -81,7 +81,8 @@ impl ObjectImpl for AppWindowImpl {
         self.unit_list_panel
             .register_selection_change(&app_window, &self.refresh_unit_list_button);
 
-        self.unit_control_panel.set_overlay(&app_window, &self.toast_overlay);
+        self.unit_control_panel
+            .set_overlay(&app_window, &self.toast_overlay);
 
         self.setup_dropdown();
     }
@@ -125,7 +126,10 @@ impl AppWindowImpl {
             let level_num = level as u32;
             self.system_session_dropdown.set_selected(level_num);
             let selected = self.system_session_dropdown.selected();
-            info!("Set system_session_dropdown {:?} {} selected {}", level, level_num, selected);
+            info!(
+                "Set system_session_dropdown {:?} {} selected {}",
+                level, level_num, selected
+            );
 
             self.system_session_dropdown
                 .connect_selected_item_notify(move |dropdown| {
@@ -137,16 +141,8 @@ impl AppWindowImpl {
                         idx, level
                     );
 
-                    if let Err(e) = settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
-                        warn!("Save setting Error {}", e)
-                    }
-
-                    info!(
-                        "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
-                        level.as_str()
-                    );
-
                     PREFERENCES.set_dbus_level(level);
+                    PREFERENCES.save_dbus_level(&settings);
 
                     unit_list_panel.fill_store();
                 });
