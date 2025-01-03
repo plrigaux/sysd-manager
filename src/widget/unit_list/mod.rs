@@ -38,7 +38,8 @@ impl UnitListPanel {
         self.imp().set_unit(unit);
     }
 
-    pub fn selected_unit(&self) -> Option<UnitInfo>{
+    pub fn selected_unit(&self) -> Option<UnitInfo> {
         self.imp().selected_unit()
     }
+
 }

@@ -1,17 +1,24 @@
 use std::{
-    cell::{Cell, OnceCell, RefCell, RefMut},
+    cell::{OnceCell, RefCell, RefMut},
     rc::Rc,
+    thread,
+    time::Duration,
 };
 
 use gtk::{
-    ffi::GTK_INVALID_LIST_POSITION, gio::{self}, glib::{self, BoxedAnyObject, Object}, prelude::*, subclass::{
+    ffi::GTK_INVALID_LIST_POSITION,
+    gio::{self},
+    glib::{self, BoxedAnyObject, Object},
+    prelude::*,
+    subclass::{
         box_::BoxImpl,
         prelude::*,
         widget::{
             CompositeTemplateCallbacksClass, CompositeTemplateClass,
             CompositeTemplateInitializingExt, WidgetImpl,
         },
-    }, SearchBar, TemplateChild
+    },
+    ListScrollFlags, SearchBar, TemplateChild,
 };
 
 use log::{debug, error, info, warn};
@@ -56,7 +63,7 @@ pub struct UnitListPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    selected_index : Cell<u32>
+    //force_selected_index: Cell<u32>,
 }
 
 macro_rules! factory_setup {
@@ -253,7 +260,7 @@ impl UnitListPanelImp {
         let panel_stack = self.panel_stack.clone();
         let single_selection = self.single_selection.clone();
         let unit_list = self.obj().clone();
-        //let units_browser = self.units_browser.clone();
+        let units_browser = self.units_browser.clone();
 
         let refresh_unit_list_button = self
             .refresh_unit_list_button
@@ -282,7 +289,8 @@ impl UnitListPanelImp {
 
             refresh_unit_list_button.set_sensitive(true);
             panel_stack.set_visible_child_name("unit_list");
-  
+
+            let mut force_selected_index = GTK_INVALID_LIST_POSITION;
             let selected_item = single_selection.selected_item();
             if selected_item.is_none() {
                 let selected_unit = unit_list.selected_unit();
@@ -299,11 +307,36 @@ impl UnitListPanelImp {
                             "Force selection to index {:?} to select unit {:?}",
                             index, selected_unit_name
                         );
-                        single_selection.select_item(index, true);    
-                        //self.selected_index.set(index);                    
+                        single_selection.select_item(index, true);
+                        //unit_list.set_force_to_select(index);
+                        force_selected_index = index;
                     }
                 }
             }
+
+            //Add a delay to ask to select the unit because it seems that the columnview and the scroll
+            // window needs a bit of time after the liststore has benn updated
+            glib::spawn_future_local(async move {
+                if force_selected_index == GTK_INVALID_LIST_POSITION {
+                    return;
+                }
+
+                gio::spawn_blocking(move || {
+                    let five_seconds = Duration::from_secs(1);
+                    thread::sleep(five_seconds);
+                })
+                .await
+                .expect("Task needs to finish successfully.");
+
+                info!("Focus on selected unit list row (index {force_selected_index})");
+                //needs a bit of time
+                units_browser.scroll_to(
+                    force_selected_index + 8, // to centerish on the selected unit
+                    None,
+                    ListScrollFlags::FOCUS,
+                    None,
+                );
+            });
         });
     }
 
@@ -361,7 +394,7 @@ impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        self.selected_index.set(GTK_INVALID_LIST_POSITION);
+        //self.force_selected_index.set(GTK_INVALID_LIST_POSITION);
 
         let list_model: gio::ListModel = self.units_browser.columns();
 
