@@ -18,6 +18,7 @@ Here are __Sysd Manager__ main features :
 * Journal file syntax highlighting 
 * List of all running units, ordered by the time they took to initialize __systemd-analyze blame__
 * Follow Dark and Light style switching
+* Select a unit at program opening by passing a unit name as cli argument (see --help)
 
 
 *__Note__ if you need a feature communicate with the author or contribute to the project. If you're stuck take a look at __systemctl__.*
@@ -50,9 +51,8 @@ For now new features are planned to be added, such as:
 
 * Non-blocking calls (in progress)
 * Always administrator mode
-* Improve UX
-    * Better layout
-
+* Disply unit dependancies
+* Improve UX (continuously)
 
 ## Installation Instructions
 
@@ -66,7 +66,8 @@ For now new features are planned to be added, such as:
 * Compile and install  ```cargo install sysd-manager```
 * Run ```sysd-manager```
 
-### Install on RHEL, Fedora, and CentOS based distributions
+### Install on RHEL, Fedora, and CentOS based distributions 
+__Important__ not up to date for a while, since Fedora rust librairies needed to build the project aren't updated.
 You can install the application from COPR
 
 #### Add the repo
