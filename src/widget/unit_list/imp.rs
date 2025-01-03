@@ -1,21 +1,17 @@
 use std::{
-    cell::{OnceCell, RefCell, RefMut},
+    cell::{Cell, OnceCell, RefCell, RefMut},
     rc::Rc,
 };
 
 use gtk::{
-    gio::{self},
-    glib::{self, BoxedAnyObject, Object},
-    prelude::*,
-    subclass::{
+    ffi::GTK_INVALID_LIST_POSITION, gio::{self}, glib::{self, BoxedAnyObject, Object}, prelude::*, subclass::{
         box_::BoxImpl,
         prelude::*,
         widget::{
             CompositeTemplateCallbacksClass, CompositeTemplateClass,
             CompositeTemplateInitializingExt, WidgetImpl,
         },
-    },
-     SearchBar, TemplateChild,
+    }, SearchBar, TemplateChild
 };
 
 use log::{debug, error, info, warn};
@@ -59,6 +55,8 @@ pub struct UnitListPanelImp {
     refresh_unit_list_button: OnceCell<gtk::Button>,
 
     unit: RefCell<Option<UnitInfo>>,
+
+    selected_index : Cell<u32>
 }
 
 macro_rules! factory_setup {
@@ -284,7 +282,7 @@ impl UnitListPanelImp {
 
             refresh_unit_list_button.set_sensitive(true);
             panel_stack.set_visible_child_name("unit_list");
-
+  
             let selected_item = single_selection.selected_item();
             if selected_item.is_none() {
                 let selected_unit = unit_list.selected_unit();
@@ -301,7 +299,8 @@ impl UnitListPanelImp {
                             "Force selection to index {:?} to select unit {:?}",
                             index, selected_unit_name
                         );
-                        single_selection.select_item(index, true);                        
+                        single_selection.select_item(index, true);    
+                        //self.selected_index.set(index);                    
                     }
                 }
             }
@@ -361,6 +360,8 @@ impl ObjectSubclass for UnitListPanelImp {
 impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        self.selected_index.set(GTK_INVALID_LIST_POSITION);
 
         let list_model: gio::ListModel = self.units_browser.columns();
 
