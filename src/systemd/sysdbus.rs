@@ -160,7 +160,7 @@ fn list_units_description(
             active_state,
             service_struct.sub_state,
             service_struct.followed_unit,
-            service_struct.unit_object_path.as_str(),
+            Some(service_struct.unit_object_path.as_str()),
         );
 
         map.insert(service_struct.primary_unit_name.to_ascii_lowercase(), unit);
@@ -217,7 +217,7 @@ pub fn list_units_description_and_state(
                     ActiveState::Unknown,
                     "",
                     "",
-                    "",
+                    None,
                 );
                 fill_unit_file(&mut unit, &unit_file);
                 units_map.insert(unit_file.full_name().to_ascii_lowercase(), unit);
@@ -410,13 +410,6 @@ where
     Err(SystemdErrors::Malformed)
 }
 
-/// Used to get the unit object path for a unit name
-pub fn get_unit_object_path(level: DbusLevel, unit_name: &str) -> Result<String, SystemdErrors> {
-    let connection = get_connection(level)?;
-
-    get_unit_object_path_connection(unit_name, &connection)
-}
-
 fn get_unit_object_path_connection(
     unit_name: &str,
     connection: &Connection,
@@ -530,11 +523,11 @@ pub fn fetch_system_info(level: DbusLevel) -> Result<BTreeMap<String, String>, S
 
 pub fn fetch_system_unit_info(
     level: DbusLevel,
-    path: &str,
+    object_path: &str,
     unit_type: UnitType,
 ) -> Result<BTreeMap<String, String>, SystemdErrors> {
     let mut properties: HashMap<String, OwnedValue> =
-        fetch_system_unit_info_native(level, path, unit_type)?;
+        fetch_system_unit_info_native(level, object_path, unit_type)?;
 
     let mut map = BTreeMap::new();
 
@@ -550,16 +543,16 @@ pub fn fetch_system_unit_info(
 
 pub fn fetch_system_unit_info_native(
     level: DbusLevel,
-    path: &str,
+    object_path: &str,
     unit_type: UnitType,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let connection = get_connection(level)?;
 
-    debug!("path {path}");
+    debug!("Unit path: {object_path}");
     let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
         fdo::PropertiesProxy::builder(&connection)
             .destination(DESTINATION_SYSTEMD)?
-            .path(path)?
+            .path(object_path)?
             .build()?;
 
     let unit_interface = unit_type.interface();
@@ -639,10 +632,53 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
         active_state,
         &sub_state,
         &followed_unit,
-        &object_path,
+        Some(&object_path),
     );
 
     Ok(unit)
+}
+
+pub(super) fn unit_dbus_path_from_name(name: &str) -> String {
+    let converted = bus_label_escape(name);
+    const PREFIX: &str = "/org/freedesktop/systemd1/unit/";
+
+    let mut out = String::with_capacity(PREFIX.len() + converted.len());
+    out.push_str(PREFIX);
+    out.push_str(&converted);
+    out
+}
+
+fn bus_label_escape(name: &str) -> String {
+    /* Escapes all chars that D-Bus' object path cannot deal
+     * with. Can be reversed with bus_path_unescape(). We special
+     * case the empty string. */
+
+    if name.is_empty() {
+        return String::from("_");
+    }
+
+    let mut r = String::with_capacity(name.len() * 3 + 1);
+
+    /* Escape everything that is not a-zA-Z0-9. We also escape 0-9 if it's the first character */
+    for (i, c) in name.bytes().enumerate() {
+        if !c.is_ascii_alphabetic() && !(i != 0 && c.is_ascii_digit()) {
+            r.push('_');
+            r.push(hexchar(c >> 4));
+            r.push(hexchar(c));
+        } else {
+            r.push(c as char);
+        }
+    }
+
+    return r;
+}
+
+fn hexchar(x: u8) -> char {
+    const TABLE: [char; 16] = [
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+    ];
+
+    return TABLE[(x & 15) as usize];
 }
 
 #[cfg(test)]
@@ -770,7 +806,7 @@ mod tests {
     fn test_fetch_info() -> Result<(), SystemdErrors> {
         init();
 
-        let path = get_unit_object_path(DbusLevel::System, TEST_SERVICE)?;
+        let path = unit_dbus_path_from_name(TEST_SERVICE);
 
         println!("unit {} Path {}", TEST_SERVICE, path);
         let map = fetch_system_unit_info(DbusLevel::System, &path, UnitType::Service)?;
@@ -817,6 +853,21 @@ mod tests {
                     return Err(SystemdErrors::Custom("Wrong expected Error".to_owned()));
                 }
             }
+        }
+    }
+
+    #[test]
+    fn test_name_convertion() {
+        let tests = [
+            ("tiny_daemon.service", "tiny_5fdaemon_2eservice"),
+            ("-.mount", "_2d_2emount"),
+            ("sys-devices-pci0000:00-0000:00:1d.0-0000:3d:00.0-nvme-nvme0-nvme0n1-nvme0n1p1.device", "sys_2ddevices_2dpci0000_3a00_2d0000_3a00_3a1d_2e0_2d0000_3a3d_3a00_2e0_2dnvme_2dnvme0_2dnvme0n1_2dnvme0n1p1_2edevice"),
+            ("1first", "_31first")
+        ];
+
+        for (origin, expected) in tests {
+            let convertion = bus_label_escape(origin);
+            assert_eq!(convertion, expected);
         }
     }
 }

@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{
-    info,
-    systemd::{self, data::UnitInfo},
-};
+use crate::systemd::{self, data::UnitInfo};
 use log::{debug, error, warn};
 use serde::Deserialize;
 use time_handling::get_since_and_passed_time;
@@ -15,54 +12,23 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     //let mut unit_info_tokens = Vec::new();
     fill_name_description(unit_writer, unit);
 
-    let mut path_exists = unit.pathexists();
-
-    if !path_exists {
-        match systemd::get_unit_object_path(unit) {
-            Ok(object_path) => {
-                info!(
-                    "retreived object path for {:?}, object path {:?}",
-                    unit.primary(),
-                    unit.object_path()
-                );
-
-                unit.set_object_path(object_path);
-                path_exists = true;
-            }
-            Err(error) => info!(
-                "Fail retreiving object path for {:?}!\nError {:?}",
+    let map = match systemd::fetch_system_unit_info_native(unit) {
+        Ok(m) => m,
+        Err(e) => {
+            error!(
+                "Fail to retrieve Unit info for {:?} {:?}",
                 unit.primary(),
-                error
-            ),
-        }
-    }
+                e
+            );
+            let mut map = HashMap::new();
+            let value = Value::Str("not loaded".into());
 
-    let map = if path_exists {
-        match systemd::fetch_system_unit_info_native(unit) {
-            Ok(m) => m,
-            Err(e) => {
-                error!(
-                    "Fail to retrieve Unit info for {:?} {:?}",
-                    unit.primary(),
-                    e
-                );
-                HashMap::new()
-            }
+            let owned_value: OwnedValue = value.try_to_owned().expect(
+                "This method can currently only fail on Unix platforms for Value::Fd variant.",
+            );
+            map.insert("LoadState".to_owned(), owned_value);
+            map
         }
-    } else {
-        info!(
-            "path don't exist for {:?}, object path {:?}",
-            unit.primary(),
-            unit.object_path()
-        );
-        let mut map = HashMap::new();
-        let value = Value::Str("not loaded".into());
-
-        let owned_value: OwnedValue = value
-            .try_to_owned()
-            .expect("This method can currently only fail on Unix platforms for Value::Fd variant.");
-        map.insert("LoadState".to_owned(), owned_value);
-        map
     };
 
     fill_description(unit_writer, &map, unit);
@@ -220,9 +186,12 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
 
     let duration = value_u64(value);
 
-    let since = get_since_and_passed_time(duration);
-
-    Some(since)
+    if duration != 0 {
+        let since = get_since_and_passed_time(duration);
+        Some(since)
+    } else {
+        None
+    }
 }
 
 fn fill_description(
@@ -687,17 +656,9 @@ fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Ow
         unit_writer.insert(c_group);
         unit_writer.new_line();
 
+        unit_writer.insert(&format!("{:KEY_WIDTH$} └─", " ",));
 
-        unit_writer.insert(&format!(
-            "{:KEY_WIDTH$} └─",
-            " ",           
-        ));
-
-        let s = format!(
-            "{} {}",            
-            &main_pid.to_string(),
-            exec_full
-        );
+        let s = format!("{} {}", &main_pid.to_string(), exec_full);
 
         unit_writer.insert_grey(&s);
         unit_writer.new_line();

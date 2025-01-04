@@ -99,11 +99,6 @@ pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, Syst
     sysdbus::restart_unit(level, &unit.primary(), mode)
 }
 
-pub fn get_unit_object_path(unit: &UnitInfo) -> Result<String, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::get_unit_object_path(level, &unit.primary())
-}
-
 pub fn enable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     let msg_return = sysdbus::enable_unit_files(level, &unit.primary())?;
@@ -439,7 +434,16 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     let unit_type: UnitType = UnitType::new(&unit.unit_type());
-    sysdbus::fetch_system_unit_info(level, &unit.object_path(), unit_type)
+    let object_path = match unit.object_path() {
+        Some(s) => s,
+        None => {
+            let object_path = sysdbus::unit_dbus_path_from_name(&unit.primary());
+            unit.set_object_path(object_path.clone());
+            object_path
+        }
+    };
+
+    sysdbus::fetch_system_unit_info(level, &object_path, unit_type)
 }
 
 pub fn fetch_system_unit_info_native(
@@ -447,7 +451,17 @@ pub fn fetch_system_unit_info_native(
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     let unit_type: UnitType = UnitType::new(&unit.unit_type());
-    sysdbus::fetch_system_unit_info_native(level, &unit.object_path(), unit_type)
+
+    let object_path = match unit.object_path() {
+        Some(s) => s,
+        None => {
+            let object_path = sysdbus::unit_dbus_path_from_name(&unit.primary());
+            unit.set_object_path(object_path.clone());
+            object_path
+        }
+    };
+
+    sysdbus::fetch_system_unit_info_native(level, &object_path, unit_type)
 }
 
 pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {

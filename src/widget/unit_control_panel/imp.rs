@@ -218,22 +218,7 @@ impl UnitControlPanelImpl {
             return;
         };
 
-        if unit.pathexists() {
-            self.unit_info_panel.display_unit_info(&unit);
-            return;
-        }
-
-        match systemd::get_unit_object_path(&unit) {
-            Ok(object_path) => {
-                unit.set_object_path(object_path);
-                self.unit_info_panel.display_unit_info(&unit);
-            }
-            Err(e) => warn!(
-                "Can't retrieve unit's {:?} object path, because: {:?}",
-                unit.primary(),
-                e
-            ),
-        }
+        self.unit_info_panel.display_unit_info(&unit);
     }
 
     #[template_callback]

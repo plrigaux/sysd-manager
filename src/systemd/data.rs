@@ -14,7 +14,7 @@ impl UnitInfo {
         active_state: ActiveState,
         sub_state: &str,
         followed_unit: &str,
-        object_path: &str,
+        object_path: Option<&str>,
     ) -> Self {
         let this_object: Self = glib::Object::new();
         let imp: &imp::UnitInfoImpl = this_object.imp();
@@ -27,12 +27,11 @@ impl UnitInfo {
         *imp.active_state_icon.write().unwrap() = icon_name;
         *imp.sub_state.write().unwrap() = sub_state.to_owned();
         *imp.followed_unit.write().unwrap() = followed_unit.to_owned();
-        *imp.object_path.write().unwrap() = object_path.to_owned();
+        *imp.object_path.write().unwrap() = object_path.map(str::to_string);
 
         this_object
     }
 }
-
 
 mod imp {
     use std::sync::RwLock;
@@ -61,9 +60,9 @@ mod imp {
         #[property(get)]
         pub(super) followed_unit: RwLock<String>,
 
-        #[property(get = Self::has_object_path, name = "pathexists", type = bool)]
+        //#[property(get = Self::has_object_path, name = "pathexists", type = bool)]
         #[property(get, set)]
-        pub(super) object_path: RwLock<String>,
+        pub(super) object_path: RwLock<Option<String>>,
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RwLock<Option<String>>,
         #[property(get, set, default = 0)]
@@ -99,20 +98,6 @@ mod imp {
             *self.unit_type.write().unwrap() = unit_type;
 
             *self.primary.write().unwrap() = primary;
-        }
-
-        pub fn has_object_path(&self) -> bool {
-            let res = self.object_path.read();
-
-            match res {
-                Ok(a) => {
-                    let empty_object_path = (*a).is_empty();
-                    !empty_object_path
-                }
-                Err(_) => false,
-            }
-            //.unwrap().is_empty();
-        }
+        }     
     }
-
 }
