@@ -27,15 +27,7 @@ impl UnitInfo {
         *imp.active_state_icon.write().unwrap() = icon_name;
         *imp.sub_state.write().unwrap() = sub_state.to_owned();
         *imp.followed_unit.write().unwrap() = followed_unit.to_owned();
-        *imp.object_path.write().unwrap() = if let Some(object_path) = object_path {
-            if object_path.is_empty() {
-                None
-            } else {
-                Some(object_path.to_owned())
-            }
-        } else {
-            None
-        };
+        *imp.object_path.write().unwrap() = object_path.map(str::to_owned);
 
         this_object
     }
