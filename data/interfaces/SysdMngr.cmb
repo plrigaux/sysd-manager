@@ -16,7 +16,8 @@
 	(49,1,"unit_control_panel.ui","unit_control_panel.ui",None,None,None,None,None,None,None),
 	(50,7,"app_window.ui","app_window.ui",None,None,None,None,None,None,None),
 	(51,1,None,"journal_row.ui",None,None,None,None,None,None,None),
-	(53,1,"unit_list_panel.ui","unit_list_panel.ui",None,None,None,None,None,None,None)
+	(53,1,"unit_list_panel.ui","unit_list_panel.ui",None,None,None,None,None,None,None),
+	(54,1,None,"unit_dependencies_panel.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.12",None),
@@ -183,7 +184,7 @@
 	(49,28,"JournalPanel","unit_journal_panel",27,None,None,None,0,None,None),
 	(49,29,"KillPanel","kill_panel",19,None,None,None,1,None,None),
 	(49,33,"AdwViewStackPage",None,22,None,None,None,1,None,None),
-	(49,34,"GtkLabel",None,33,None,None,None,0,None,None),
+	(49,34,"UnitDependenciesPanel","unit_dependencies_panel_panel",33,None,None,None,0,None,None),
 	(50,1,"(menu)","main-menu",None,None,None,None,0,None,None),
 	(50,6,"(item)",None,27,None,None,None,2,None,None),
 	(50,7,"AdwApplicationWindow","SysdMainAppWindow",None,None,None,None,1,None,None),
@@ -231,7 +232,19 @@
 	(53,20,"GtkColumnViewColumn",None,9,None,None,None,4,None,None),
 	(53,21,"GtkSignalListItemFactory",None,20,None,None,None,0,None,None),
 	(53,22,"GtkColumnViewColumn",None,9,None,None,None,5,None,None),
-	(53,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None)
+	(53,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None),
+	(54,1,"GtkBox","UnitDependenciesPanel",None,None,None,None,0,None,None),
+	(54,2,"GtkBox",None,1,None,None,None,0,None,None),
+	(54,3,"GtkSwitch","reverse_switch",2,None,None,None,1,None,None),
+	(54,4,"GtkLabel",None,2,None,None,None,0,None,None),
+	(54,7,"GtkStack","unit_dependencies_panel_stack",1,None,None,None,1,None,None),
+	(54,10,"GtkStackPage",None,7,None,None,None,0,None,None),
+	(54,11,"GtkStackPage",None,7,None,None,None,1,None,None),
+	(54,13,"GtkStackPage",None,7,None,None,None,2,None,None),
+	(54,15,"AdwStatusPage",None,10,None,None,None,0,None,None),
+	(54,16,"AdwSpinner",None,11,None,None,None,0,None,None),
+	(54,17,"GtkScrolledWindow",None,13,None,None,None,0,None,None),
+	(54,18,"GtkTextView","unit_dependencies_textview",17,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -467,10 +480,9 @@
 	(49,27,"AdwViewStackPage","icon-name","format-justify-fill",0,None,None,None,None,None,None,None,None),
 	(49,27,"AdwViewStackPage","name","journal_page",None,None,None,None,None,None,None,None,None),
 	(49,27,"AdwViewStackPage","title","Journal",0,None,None,None,None,None,None,None,None),
-	(49,33,"AdwViewStackPage","child",None,0,None,None,None,34,None,None,None,None),
+	(49,33,"AdwViewStackPage","child",None,None,None,None,None,34,None,None,None,None),
 	(49,33,"AdwViewStackPage","name","dependencies_page",None,None,None,None,None,None,None,None,None),
 	(49,33,"AdwViewStackPage","title","Dependencies",None,None,None,None,None,None,None,None,None),
-	(49,34,"GtkLabel","label","Empty Page",0,None,None,None,None,None,None,None,None),
 	(50,6,"(item)","action","app.about",0,None,None,None,None,None,None,None,None),
 	(50,6,"(item)","label","About",1,None,None,None,None,None,None,None,None),
 	(50,7,"GtkWindow","default-height","720",0,None,None,None,None,None,None,None,None),
@@ -545,7 +557,18 @@
 	(53,22,"GtkColumnViewColumn","expand","True",0,None,None,None,None,None,None,None,None),
 	(53,22,"GtkColumnViewColumn","factory",None,0,None,None,None,23,None,None,None,None),
 	(53,22,"GtkColumnViewColumn","resizable","True",0,None,None,None,None,None,None,None,None),
-	(53,22,"GtkColumnViewColumn","title","Description",0,None,None,None,None,None,None,None,None)
+	(53,22,"GtkColumnViewColumn","title","Description",0,None,None,None,None,None,None,None,None),
+	(54,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(54,3,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
+	(54,4,"GtkLabel","label","reverse ",None,None,None,None,None,None,None,None,None),
+	(54,10,"GtkStackPage","child",None,None,None,None,None,15,None,None,None,None),
+	(54,10,"GtkStackPage","name","empty",None,None,None,None,None,None,None,None,None),
+	(54,11,"GtkStackPage","child",None,None,None,None,None,16,None,None,None,None),
+	(54,11,"GtkStackPage","name","spinner",None,None,None,None,None,None,None,None,None),
+	(54,13,"GtkStackPage","child",None,None,None,None,None,17,None,None,None,None),
+	(54,13,"GtkStackPage","name","dependencies",None,None,None,None,None,None,None,None,None),
+	(54,15,"AdwStatusPage","title","No dependencies events",None,None,None,None,None,None,None,None,None),
+	(54,17,"GtkScrolledWindow","child",None,None,None,None,None,18,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),

@@ -10,3 +10,4 @@ pub mod unit_file_panel;
 pub mod unit_list;
 pub mod kill_panel;
 pub mod unit_control_panel;
+pub mod unit_dependencies_panel;

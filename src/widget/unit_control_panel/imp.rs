@@ -15,8 +15,7 @@ use crate::{
         errors::SystemdErrors,
     },
     widget::{
-        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel,
-        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
+        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel, unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel
     },
 };
 
@@ -29,6 +28,9 @@ use strum::IntoEnumIterator;
 pub struct UnitControlPanelImpl {
     #[template_child]
     unit_info_panel: TemplateChild<UnitInfoPanel>,
+
+    #[template_child]
+    unit_dependencies_panel: TemplateChild<UnitDependenciesPanel>,
 
     #[template_child]
     unit_file_panel: TemplateChild<UnitFilePanel>,

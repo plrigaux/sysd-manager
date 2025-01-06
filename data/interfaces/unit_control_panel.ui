@@ -134,9 +134,7 @@
                 <child>
                   <object class="AdwViewStackPage">
                     <property name="child">
-                      <object class="GtkLabel">
-                        <property name="label">Empty Page</property>
-                      </object>
+                      <object class="UnitDependenciesPanel" id="unit_dependencies_panel"/>
                     </property>
                     <property name="name">dependencies_page</property>
                     <property name="title">Dependencies</property>

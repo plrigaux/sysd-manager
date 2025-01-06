@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<interface>
+  <requires lib="gtk" version="4.6"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <template class="UnitDependenciesPanel" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkBox">
+        <child>
+          <object class="GtkLabel">
+            <property name="label">reverse </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSwitch" id="reverse_switch">
+            <property name="valign">baseline-center</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkStack" id="unit_dependencies_panel_stack">
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="title">No dependencies events</property>
+              </object>
+            </property>
+            <property name="name">empty</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="AdwSpinner"/>
+            </property>
+            <property name="name">spinner</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="GtkScrolledWindow">
+                <property name="child">
+                  <object class="GtkTextView" id="unit_dependencies_textview"/>
+                </property>
+              </object>
+            </property>
+            <property name="name">dependencies</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
