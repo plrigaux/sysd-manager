@@ -256,9 +256,42 @@ impl AppWindowImpl {
                 })
                 .build();
 
-        application.add_action_entries([search_units]);
+        let open_info: gio::ActionEntry<adw::Application> = {
+            let unit_control_panel = self.unit_control_panel.clone();
+            gio::ActionEntry::builder("open_info")
+                .activate(move |_application: &adw::Application, _, _| {
+                    info!("Open journal events");
+                    unit_control_panel.display_info_page();
+                })
+                .build()
+        };
+
+        let open_dependencies: gio::ActionEntry<adw::Application> = {
+            let unit_control_panel = self.unit_control_panel.clone();
+            gio::ActionEntry::builder("open_dependencies")
+                .activate(move |_application: &adw::Application, _, _| {
+                    info!("Open journal events");
+                    unit_control_panel.display_dependencies_page();
+                })
+                .build()
+        };
+
+        let open_journal: gio::ActionEntry<adw::Application> = {
+            let unit_control_panel = self.unit_control_panel.clone();
+            gio::ActionEntry::builder("open_journal")
+                .activate(move |_application: &adw::Application, _, _| {
+                    info!("Open journal events");
+                    unit_control_panel.display_journal_page();
+                })
+                .build()
+        };
+
+        application.add_action_entries([search_units, open_info, open_dependencies, open_journal]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
+        application.set_accels_for_action("app.open_info", &["<Ctrl>i"]);
+        application.set_accels_for_action("app.open_dependencies", &["<Ctrl>d"]);
+        application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {
@@ -273,16 +306,15 @@ impl AppWindowImpl {
 impl WidgetImpl for AppWindowImpl {}
 impl WindowImpl for AppWindowImpl {
     // Save window state right before the window will be closed
-    fn close_request(&self) -> glib::Propagation {     
-
+    fn close_request(&self) -> glib::Propagation {
         // Save window size
         log::debug!("Close window");
         self.save_window_size()
             .expect("Failed to save window state");
-                
-            self.parent_close_request();
+
+        self.parent_close_request();
         // Allow to invoke other event handlers
-        glib::Propagation::Proceed       
+        glib::Propagation::Proceed
     }
 }
 impl AdwApplicationWindowImpl for AppWindowImpl {}

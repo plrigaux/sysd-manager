@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.92.1 -->
 <interface>
   <!-- interface-name shortcuts.ui -->
-  <requires lib="gtk" version="4.6"/>
+  <requires lib="gtk" version="4.6" />
   <object class="GtkShortcutsWindow" id="help_overlay">
     <property name="modal">True</property>
     <child>
@@ -22,6 +22,29 @@
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.search_units</property>
                 <property name="title" translatable="yes" context="shortcut window">Open search</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkShortcutsGroup">
+            <property name="title" translatable="yes" context="shortcut window">Pages</property>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">app.open_info</property>
+                <property name="title" translatable="yes" context="shortcut window">Display unit information</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">app.open_dependencies</property>
+                <property name="title" translatable="yes" context="shortcut window">Display unit dependencies</property>
+              </object>
+            </child>
+                 <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">app.open_journal</property>
+                <property name="title" translatable="yes" context="shortcut window">Display unit journal events</property>
               </object>
             </child>
           </object>

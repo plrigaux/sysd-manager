@@ -127,6 +127,7 @@
                       <object class="UnitInfoPanel" id="unit_info_panel"/>
                     </property>
                     <property name="icon-name">emblem-documents-symbolic</property>
+                    <property name="name">info_page</property>
                     <property name="title">Unit Info</property>
                   </object>
                 </child>
@@ -137,6 +138,7 @@
                         <property name="label">Empty Page</property>
                       </object>
                     </property>
+                    <property name="name">dependencies_page</property>
                     <property name="title">Dependencies</property>
                   </object>
                 </child>
@@ -155,6 +157,7 @@
                       <object class="JournalPanel" id="unit_journal_panel"/>
                     </property>
                     <property name="icon-name">format-justify-fill</property>
+                    <property name="name">journal_page</property>
                     <property name="title">Journal</property>
                   </object>
                 </child>
@@ -170,25 +173,4 @@
       </object>
     </child>
   </template>
-  <object class="AdwViewStackPage">
-    <property name="child">
-      <object class="GtkLabel">
-        <property name="label">Empty Page</property>
-      </object>
-    </property>
-  </object>
-  <object class="AdwViewStackPage">
-    <property name="child">
-      <object class="GtkLabel">
-        <property name="label">Empty Page</property>
-      </object>
-    </property>
-  </object>
-  <object class="AdwViewStackPage">
-    <property name="child">
-      <object class="GtkLabel">
-        <property name="label">Empty Page</property>
-      </object>
-    </property>
-  </object>
 </interface>

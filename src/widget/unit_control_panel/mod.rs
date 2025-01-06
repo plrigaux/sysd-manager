@@ -24,7 +24,19 @@ impl UnitControlPanel {
         self.imp().set_dark(is_dark);
     }
 
-    pub fn set_overlay(&self,  app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
+    pub fn set_overlay(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
         self.imp().set_overlay(app_window, toast_overlay);
+    }
+
+    pub fn display_info_page(&self) {
+        self.imp().display_info_page();
+    }
+
+    pub fn display_dependencies_page(&self) {
+        self.imp().display_dependencies_page();
+    }
+    
+    pub fn display_journal_page(&self) {
+        self.imp().display_journal_page();
     }
 }

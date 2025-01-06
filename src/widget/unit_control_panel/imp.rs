@@ -359,6 +359,19 @@ impl UnitControlPanelImpl {
             }
         }
     }
+
+    pub(super) fn display_info_page(&self) {
+        self.unit_panel_stack.set_visible_child_name("info_page");
+    }
+
+    pub(super) fn display_dependencies_page(&self) {
+        self.unit_panel_stack
+            .set_visible_child_name("dependencies_page");
+    }
+
+    pub(super) fn display_journal_page(&self) {
+        self.unit_panel_stack.set_visible_child_name("journal_page");
+    }
 }
 
 impl WidgetImpl for UnitControlPanelImpl {}
