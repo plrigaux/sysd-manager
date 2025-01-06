@@ -41,7 +41,7 @@ pub struct UnitDependenciesPanelImp {
     unit: RefCell<Option<UnitInfo>>,
 
     #[property(get, set)]
-    is_dark: Cell<bool>,
+    dark: Cell<bool>,
 
     unit_dependencies_loaded: Cell<bool>,
 }

@@ -310,8 +310,9 @@ impl UnitControlPanelImpl {
 
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_file_content(unit);
-        self.unit_journal_panel.display_journal(unit);
+        self.unit_journal_panel.set_unit(unit);
         self.kill_panel.set_unit(unit);
+        self.unit_dependencies_panel.set_unit(unit);
 
         controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 
@@ -325,6 +326,7 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.set_dark(is_dark);
         self.unit_info_panel.set_dark(is_dark);
         self.unit_journal_panel.set_dark(is_dark);
+        self.unit_dependencies_panel.set_dark(is_dark);
     }
 
     fn set_modes(&self, modes_box: &gtk::Box, control_type: UnitContolType) {
@@ -373,6 +375,10 @@ impl UnitControlPanelImpl {
 
     pub(super) fn display_journal_page(&self) {
         self.unit_panel_stack.set_visible_child_name("journal_page");
+    }
+
+    pub fn display_definition_file_page(&self) {
+        self.unit_panel_stack.set_visible_child_name("definition_file_page");
     }
 }
 

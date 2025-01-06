@@ -41,7 +41,13 @@
                 <property name="title" translatable="yes" context="shortcut window">Display unit dependencies</property>
               </object>
             </child>
-                 <child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">app.open_file</property>
+                <property name="title" translatable="yes" context="shortcut window">Display unit definition file</property>
+              </object>
+            </child>
+            <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.open_journal</property>
                 <property name="title" translatable="yes" context="shortcut window">Display unit journal events</property>

@@ -146,6 +146,7 @@
                       <object class="UnitFilePanel" id="unit_file_panel"/>
                     </property>
                     <property name="icon-name">text-x-generic-symbolic</property>
+                    <property name="name">definition_file_page</property>
                     <property name="title">File</property>
                   </object>
                 </child>

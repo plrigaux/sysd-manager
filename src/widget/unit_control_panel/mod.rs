@@ -35,8 +35,12 @@ impl UnitControlPanel {
     pub fn display_dependencies_page(&self) {
         self.imp().display_dependencies_page();
     }
-    
+
     pub fn display_journal_page(&self) {
         self.imp().display_journal_page();
+    }
+
+    pub fn display_definition_file_page(&self) {
+        self.imp().display_definition_file_page();
     }
 }

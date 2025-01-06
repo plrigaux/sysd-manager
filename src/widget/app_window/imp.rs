@@ -260,7 +260,6 @@ impl AppWindowImpl {
             let unit_control_panel = self.unit_control_panel.clone();
             gio::ActionEntry::builder("open_info")
                 .activate(move |_application: &adw::Application, _, _| {
-                    info!("Open journal events");
                     unit_control_panel.display_info_page();
                 })
                 .build()
@@ -270,7 +269,6 @@ impl AppWindowImpl {
             let unit_control_panel = self.unit_control_panel.clone();
             gio::ActionEntry::builder("open_dependencies")
                 .activate(move |_application: &adw::Application, _, _| {
-                    info!("Open journal events");
                     unit_control_panel.display_dependencies_page();
                 })
                 .build()
@@ -280,18 +278,27 @@ impl AppWindowImpl {
             let unit_control_panel = self.unit_control_panel.clone();
             gio::ActionEntry::builder("open_journal")
                 .activate(move |_application: &adw::Application, _, _| {
-                    info!("Open journal events");
                     unit_control_panel.display_journal_page();
                 })
                 .build()
         };
 
-        application.add_action_entries([search_units, open_info, open_dependencies, open_journal]);
+        let open_file: gio::ActionEntry<adw::Application> = {
+            let unit_control_panel = self.unit_control_panel.clone();
+            gio::ActionEntry::builder("open_file")
+                .activate(move |_application: &adw::Application, _, _| {
+                    unit_control_panel.display_definition_file_page();
+                })
+                .build()
+        };
+
+        application.add_action_entries([search_units, open_info, open_dependencies, open_journal, open_file]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
         application.set_accels_for_action("app.open_info", &["<Ctrl>i"]);
         application.set_accels_for_action("app.open_dependencies", &["<Ctrl>d"]);
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
+        application.set_accels_for_action("app.open_file", &["<Ctrl>u"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {

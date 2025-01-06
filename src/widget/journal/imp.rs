@@ -89,13 +89,13 @@ pub struct JournalPanelImp {
 
     unit_journal_loaded: Cell<bool>,
 
-    /*     #[template_child]
-    list_store: TemplateChild<gio::ListStore>, */
     list_store: RefCell<Option<gio::ListStore>>,
 
+    #[property(get, set=Self::set_unit)]
     unit: RefCell<Option<UnitInfo>>,
 
-    is_dark: Cell<bool>,
+    #[property(get, set)]
+    dark: Cell<bool>,
 
     boot_filter: RefCell<BootFilter>,
 }
@@ -155,7 +155,7 @@ impl JournalPanelImp {
         self.update_journal();
     }
 
-    pub(crate) fn display_journal(&self, unit: &UnitInfo) {
+    pub(crate) fn set_unit(&self, unit: &UnitInfo) {
         let old_unit = self.unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit {
             if old_unit.primary() != unit.primary() {
@@ -254,10 +254,6 @@ impl JournalPanelImp {
         });
     }
 
-    pub(crate) fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
-    }
-
     #[template_callback]
     fn event_list_setup(&self, item_obj: &glib::Object) {
         let item = item_obj
@@ -300,7 +296,7 @@ impl JournalPanelImp {
         if priority == 6 || !PREFERENCES.journal_colors() {
             event_display.set_text(&entry.prefix(), &entry.message());
         } else {
-            let is_dark = self.is_dark.get();
+            let is_dark = self.dark.get();
             event_display.set_text(&entry.prefix(), &entry.message());
             let attributes = get_attrlist(priority, is_dark);
 
