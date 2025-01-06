@@ -118,24 +118,39 @@ impl From<u32> for EnablementStatus {
 pub enum ActiveState {
     Unknown = 0,
     Active = 1,
+    Reloading = 2,
     #[default]
-    Inactive = 2,
+    Inactive = 3,
+    Failed = 4,
+    Activating = 5,
+    Deactivating = 6,
+    Maintenance = 7,
+    Refreshing = 8,
 }
 
 impl ActiveState {
     pub fn label(&self) -> &str {
         match self {
-            ActiveState::Active => "active",
-            ActiveState::Inactive => "inactive",
             ActiveState::Unknown => "unknown",
+            ActiveState::Active => "active",
+            ActiveState::Reloading => "reloading",
+            ActiveState::Inactive => "inactive",
+            ActiveState::Failed => "failed",
+            ActiveState::Activating => "activating",
+            ActiveState::Deactivating => "deactivating",
+            ActiveState::Maintenance => "maintenance",
+            ActiveState::Refreshing => "refreshing",
         }
     }
 
     pub fn icon_name(&self) -> Option<&str> {
         match self {
-            ActiveState::Active => Some("object-select-symbolic"),
-            ActiveState::Inactive => Some("window-close-symbolic"),
-            ActiveState::Unknown => None,
+            ActiveState::Active
+            | ActiveState::Reloading
+            | ActiveState::Refreshing
+            | ActiveState::Activating => Some("object-select-symbolic"),
+            ActiveState::Inactive | ActiveState::Deactivating => Some("window-close-symbolic"),
+            _ => None,
         }
     }
 }
@@ -150,7 +165,13 @@ impl From<&str> for ActiveState {
     fn from(value: &str) -> Self {
         match value {
             "active" => ActiveState::Active,
+            "reloading" => ActiveState::Reloading,
             "inactive" => ActiveState::Inactive,
+            "failed" => ActiveState::Failed,
+            "activating" => ActiveState::Activating,
+            "deactivating" => ActiveState::Deactivating,
+            "maintenance" => ActiveState::Maintenance,
+            "refreshing" => ActiveState::Refreshing,
             _ => ActiveState::Unknown,
         }
     }
@@ -204,7 +225,7 @@ impl UnitType {
             "timer" => UnitType::Timer,
             "snapshot" => UnitType::Snapshot,
             _ => {
-                info!("Unknown Type: {}", system_type);
+                warn!("Unknown Unit Type: {}", system_type);
                 UnitType::Unknown(system_type.to_string())
             }
         }
@@ -225,7 +246,7 @@ impl UnitType {
             Self::Target => "target",
             Self::Timer => "timer",
             Self::Swap => "swap",
-            Self::Snapshot => "snapshot",         
+            Self::Snapshot => "snapshot",
             _ => "",
         };
 
@@ -330,6 +351,41 @@ impl From<u32> for KillWho {
             2 => KillWho::All,
             _ => KillWho::Main,
         }
+    }
+}
+
+
+#[allow(dead_code)] // to remove ater full impementation
+pub enum DependencyType {
+    Forward,
+    Reverse,
+    After,
+    Before,
+}
+
+impl DependencyType {
+    pub(super) fn properties(&self) -> &[&str] {
+        let properties: &[&str] = match self {
+            DependencyType::Forward => &[
+                "Requires",
+                "Requisite",
+                "Wants",
+                "ConsistsOf",
+                "BindsTo",
+                "Upholds",
+            ],
+            DependencyType::Reverse => &[
+                "RequiredBy",
+                "RequisiteOf",
+                "WantedBy",
+                "PartOf",
+                "BoundBy",
+                "UpheldBy",
+            ],
+            DependencyType::After => &["After"],
+            DependencyType::Before => &["Before"],
+        };
+        properties
     }
 }
 

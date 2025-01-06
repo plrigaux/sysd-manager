@@ -30,6 +30,7 @@ use crate::systemd::enums::ActiveState;
 use crate::systemd::enums::UnitType;
 use crate::widget::preferences::data::DbusLevel;
 
+use super::enums::DependencyType;
 use super::enums::EnablementStatus;
 
 use super::enums::KillWho;
@@ -577,6 +578,7 @@ pub fn fetch_system_unit_info_native(
 pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
     let connection = get_connection(level)?;
 
+    //TODO got get direct object_path
     let object_path = get_unit_object_path_connection(unit_primary_name, &connection)?;
 
     debug!("path {object_path}");
@@ -636,6 +638,24 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
     );
 
     Ok(unit)
+}
+
+
+
+pub(super) fn unit_get_dependencies(
+    level: DbusLevel,
+    _unit_object_path: &str,
+    dependency_type: DependencyType,
+) -> Result<(), SystemdErrors>  {
+
+    let _connection = get_connection(level)?;
+
+    let asdf = dependency_type.properties();
+
+    for a in asdf {
+        println!("{}", a);
+    }
+    Ok(())
 }
 
 pub(super) fn unit_dbus_path_from_name(name: &str) -> String {

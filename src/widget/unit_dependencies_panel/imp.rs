@@ -1,4 +1,3 @@
-
 use gtk::{
     glib::{self},
     prelude::*,
@@ -15,9 +14,9 @@ use gtk::{
 
 use std::cell::{Cell, RefCell};
 
-use log::debug;
+use log::{debug, warn};
 
-use crate::systemd::data::UnitInfo;
+use crate::systemd::{self, data::UnitInfo, enums::DependencyType};
 
 /* const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -27,8 +26,7 @@ const PANEL_SPINNER: &str = "spinner";
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_dependencies_panel.ui")]
 #[properties(wrapper_type = super::UnitDependenciesPanel)]
 pub struct UnitDependenciesPanelImp {
-   
-     #[template_child]
+    #[template_child]
     unit_dependencies_panel_stack: TemplateChild<gtk::Stack>,
 
     #[template_child]
@@ -46,7 +44,6 @@ pub struct UnitDependenciesPanelImp {
     unit_dependencies_loaded: Cell<bool>,
 }
 
-
 #[gtk::template_callbacks]
 impl UnitDependenciesPanelImp {
     fn set_visible_on_page(&self, value: bool) {
@@ -57,7 +54,7 @@ impl UnitDependenciesPanelImp {
             && !self.unit_dependencies_loaded.get()
             && self.unit.borrow().is_some()
         {
-            //self.update_journal()
+            self.update_dependencies()
         }
     }
 
@@ -70,8 +67,19 @@ impl UnitDependenciesPanelImp {
         }
 
         if self.visible_on_page.get() {
-            //self.update_journal()
+            self.update_dependencies()
         }
+    }
+
+    fn update_dependencies(&self) {
+        let binding = self.unit.borrow();
+        let Some(unit_ref) = binding.as_ref() else {
+            warn!("No unit file");
+            return;
+        };
+
+        let dep_type = DependencyType::Forward;
+        let _results = systemd::fetch_unit_dependencies(unit_ref, dep_type);
     }
 }
 // The central trait for subclassing a GObject

@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::process::{Command, Stdio};
 
 use data::UnitInfo;
-use enums::{EnablementStatus, KillWho, StartStopMode, UnitType};
+use enums::{DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
 use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::JournalEvent;
@@ -452,6 +452,12 @@ pub fn fetch_system_unit_info_native(
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     let unit_type: UnitType = UnitType::new(&unit.unit_type());
 
+    let object_path = get_unit_path(unit);
+
+    sysdbus::fetch_system_unit_info_native(level, &object_path, unit_type)
+}
+
+fn get_unit_path(unit: &UnitInfo) -> String {
     let object_path = match unit.object_path() {
         Some(s) => s,
         None => {
@@ -460,8 +466,7 @@ pub fn fetch_system_unit_info_native(
             object_path
         }
     };
-
-    sysdbus::fetch_system_unit_info_native(level, &object_path, unit_type)
+    object_path
 }
 
 pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
@@ -504,4 +509,19 @@ pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
 pub fn reload_all_units() -> Result<(), SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
     sysdbus::reload_all_units(level)
+}
+
+
+pub fn fetch_unit_dependencies(
+    unit: &UnitInfo,
+    dependency_type: DependencyType,
+) -> Result<(), SystemdErrors>  {
+
+ 
+    let level: DbusLevel = PREFERENCES.dbus_level().into();
+
+    let object_path = get_unit_path(unit);
+
+    sysdbus::unit_get_dependencies(level, &object_path, dependency_type)
+   
 }
