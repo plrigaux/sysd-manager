@@ -66,6 +66,9 @@ pub struct UnitControlPanelImpl {
     #[template_child]
     restart_modes: TemplateChild<gtk::Box>,
 
+    #[template_child]
+    unit_panel_stack: TemplateChild<adw::ViewStack>,
+
     toast_overlay: OnceCell<adw::ToastOverlay>,
 
     current_unit: RefCell<Option<UnitInfo>>,
@@ -121,6 +124,34 @@ impl ObjectImpl for UnitControlPanelImpl {
         self.set_modes(&self.start_modes, UnitContolType::Start);
         self.set_modes(&self.stop_modes, UnitContolType::Stop);
         self.set_modes(&self.restart_modes, UnitContolType::Restart);
+
+        self.unit_panel_stack.connect_pages_notify(|view_stack| {
+            info!("page notify {:?}", view_stack.visible_child_name());
+        });
+
+        /*         self.unit_panel_stack.connect_visible_child_name_notify(|view_stack| {
+            info!("connect_visible_child_name_notify {:?}", view_stack.visible_child_name());
+        }); */
+        {
+            let unit_journal_panel = self.unit_journal_panel.clone();
+            self.unit_panel_stack
+                .connect_visible_child_notify(move |view_stack| {
+                    debug!(
+                        "connect_visible_child_notify {:?}",
+                        view_stack.visible_child_name()
+                    );
+
+                    if let Some(child) = view_stack.visible_child() {
+                        if let Some(journal_panel) = child.downcast_ref::<JournalPanel>() {
+                            debug!("It a journal");
+
+                            journal_panel.set_visible_on_page(true);
+                        } else {
+                            unit_journal_panel.set_visible_on_page(false);
+                        }
+                    }
+                });
+        }
     }
 }
 

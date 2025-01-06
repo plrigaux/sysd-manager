@@ -26,7 +26,7 @@ use std::{
     sync::LazyLock,
 };
 
-use log::{debug, info, warn};
+use log::{debug, error, info, warn};
 
 use crate::{
     systemd::{
@@ -53,8 +53,9 @@ const CLASS_SUCCESS: &str = "success";
 const CLASS_WARNING: &str = "warning";
 const CLASS_ERROR: &str = "error";
 
-#[derive(Default, gtk::CompositeTemplate)]
+#[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
+#[properties(wrapper_type = super::JournalPanel)]
 pub struct JournalPanelImp {
     #[template_child]
     journal_refresh_button: TemplateChild<gtk::Button>,
@@ -82,6 +83,11 @@ pub struct JournalPanelImp {
 
     #[template_child]
     journal_boot_id_entry: TemplateChild<adw::EntryRow>,
+
+    #[property(get, set=Self::set_visible_on_page)]
+    visible_on_page: Cell<bool>,
+
+    unit_journal_loaded: Cell<bool>,
 
     /*     #[template_child]
     list_store: TemplateChild<gio::ListStore>, */
@@ -130,6 +136,18 @@ macro_rules! create_sorter_desc {
 
 #[gtk::template_callbacks]
 impl JournalPanelImp {
+    fn set_visible_on_page(&self, value: bool) {
+        debug!("set_visible_on_page val {value}");
+        self.visible_on_page.set(value);
+
+        if self.visible_on_page.get()
+            && !self.unit_journal_loaded.get()
+            && self.unit.borrow().is_some()
+        {
+            self.update_journal()
+        }
+    }
+
     #[template_callback]
     fn refresh_journal_clicked(&self, button: &gtk::Button) {
         debug!("button {:?}", button);
@@ -138,9 +156,16 @@ impl JournalPanelImp {
     }
 
     pub(crate) fn display_journal(&self, unit: &UnitInfo) {
-        let _old = self.unit.replace(Some(unit.clone()));
+        let old_unit = self.unit.replace(Some(unit.clone()));
+        if let Some(old_unit) = old_unit {
+            if old_unit.primary() != unit.primary() {
+                self.unit_journal_loaded.set(false)
+            }
+        }
 
-        self.update_journal()
+        if self.visible_on_page.get() {
+            self.update_journal()
+        }
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
@@ -153,6 +178,7 @@ impl JournalPanelImp {
             return;
         };
 
+        self.unit_journal_loaded.set(true); // maybe wait at the full loaded
         let unit = unit_ref.clone();
         let journal_refresh_button = self.journal_refresh_button.clone();
         let oldest_first = false;
@@ -389,6 +415,31 @@ impl JournalPanelImp {
             .add_css_class(CLASS_SUCCESS);
     }
 
+    #[template_callback]
+    fn on_journal_hide(&self) {
+        error!("journal hide");
+    }
+
+    #[template_callback]
+    fn on_journal_show(&self) {
+        error!("journal show");
+    }
+
+    #[template_callback]
+    fn on_journal_move_focus(&self) {
+        error!("journal on_journal_move_focus");
+    }
+
+    #[template_callback]
+    fn on_journal_realize(&self) {
+        error!("journal realize");
+    }
+
+    #[template_callback]
+    fn on_journal_unrealize(&self) {
+        error!("journal unrealize");
+    }
+
     fn clear_boot_id(&self) {
         for css_class in [CLASS_WARNING, CLASS_ERROR, CLASS_SUCCESS] {
             self.journal_boot_id_entry.remove_css_class(css_class);
@@ -442,6 +493,7 @@ impl ObjectSubclass for JournalPanelImp {
     }
 }
 
+#[glib::derived_properties]
 impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
@@ -471,6 +523,7 @@ impl ObjectImpl for JournalPanelImp {
     }
 }
 impl WidgetImpl for JournalPanelImp {}
+
 impl BoxImpl for JournalPanelImp {}
 
 static RED: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.92.1 -->
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
   <!-- interface-name unit_control_panel.ui -->
   <requires lib="gtk" version="4.12"/>
@@ -116,11 +116,11 @@
               <object class="AdwViewSwitcher">
                 <property name="margin-bottom">5</property>
                 <property name="policy">wide</property>
-                <property name="stack">unit_stack</property>
+                <property name="stack">unit_panel_stack</property>
               </object>
             </child>
             <child>
-              <object class="AdwViewStack" id="unit_stack">
+              <object class="AdwViewStack" id="unit_panel_stack">
                 <child>
                   <object class="AdwViewStackPage">
                     <property name="child">
@@ -128,6 +128,16 @@
                     </property>
                     <property name="icon-name">emblem-documents-symbolic</property>
                     <property name="title">Unit Info</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwViewStackPage">
+                    <property name="child">
+                      <object class="GtkLabel">
+                        <property name="label">Empty Page</property>
+                      </object>
+                    </property>
+                    <property name="title">Dependencies</property>
                   </object>
                 </child>
                 <child>
@@ -160,4 +170,25 @@
       </object>
     </child>
   </template>
+  <object class="AdwViewStackPage">
+    <property name="child">
+      <object class="GtkLabel">
+        <property name="label">Empty Page</property>
+      </object>
+    </property>
+  </object>
+  <object class="AdwViewStackPage">
+    <property name="child">
+      <object class="GtkLabel">
+        <property name="label">Empty Page</property>
+      </object>
+    </property>
+  </object>
+  <object class="AdwViewStackPage">
+    <property name="child">
+      <object class="GtkLabel">
+        <property name="label">Empty Page</property>
+      </object>
+    </property>
+  </object>
 </interface>

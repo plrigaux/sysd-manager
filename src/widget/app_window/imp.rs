@@ -273,13 +273,16 @@ impl AppWindowImpl {
 impl WidgetImpl for AppWindowImpl {}
 impl WindowImpl for AppWindowImpl {
     // Save window state right before the window will be closed
-    fn close_request(&self) -> glib::Propagation {
+    fn close_request(&self) -> glib::Propagation {     
+
         // Save window size
         log::debug!("Close window");
         self.save_window_size()
             .expect("Failed to save window state");
+                
+            self.parent_close_request();
         // Allow to invoke other event handlers
-        glib::Propagation::Proceed
+        glib::Propagation::Proceed       
     }
 }
 impl AdwApplicationWindowImpl for AppWindowImpl {}
