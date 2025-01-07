@@ -62,7 +62,6 @@ pub struct UnitListPanelImp {
     refresh_unit_list_button: OnceCell<gtk::Button>,
 
     unit: RefCell<Option<UnitInfo>>,
-
     //force_selected_index: Cell<u32>,
 }
 
@@ -446,12 +445,8 @@ fn fill_search_bar(
         filter_button_status.add_item(status.to_str());
     }
 
-    for status in ActiveState::iter().filter(|x| match *x {
-        ActiveState::Unknown => false,
-        //EnablementStatus::Unasigned => false,
-        _ => true,
-    }) {
-        filter_button_active.add_item(status.label());
+    for status in ActiveState::iter() {
+        filter_button_active.add_item(status.as_str());
     }
 
     search_box.append(&search_entry);
@@ -481,14 +476,14 @@ fn fill_search_bar(
                 let enable_status: EnablementStatus = unit.enable_status().into();
                 let active_state: ActiveState = unit.active_state().into();
 
-                filter_button_unit_type.contains_value(&Some(unit_type))
-                    && filter_button_status.contains_value(&Some(enable_status.to_str().to_owned()))
+                filter_button_unit_type.contains_value(Some(&unit_type))
+                    && filter_button_status.contains_value(Some(enable_status.to_str()))
                     && if text.is_empty() {
                         true
                     } else {
                         unit.display_name().contains(text.as_str())
                     }
-                    && filter_button_active.contains_value(&Some(active_state.to_string()))
+                    && filter_button_active.contains_value(Some(active_state.as_str()))
             });
 
             custom_filter

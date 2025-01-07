@@ -58,11 +58,9 @@ impl ExMenuButton {
     fn unset_toggle(&self) {
         self.toggle.set_active(false);
 
-        let filter_change;
-        let mut new_set: HashSet<String> = HashSet::new();
-        {
+        let filter_change = {
+            let mut new_set: HashSet<String> = HashSet::new();
             let map = self.check_boxes.borrow();
-            let old_set = self.filter_set.borrow();
 
             for (key, check_button) in map.iter() {
                 if check_button.is_active() {
@@ -70,10 +68,15 @@ impl ExMenuButton {
                 }
             }
 
-            filter_change = Self::determine_filter_change(&new_set, &old_set);
-        }
+            let filter_change = {
+                let old_set = self.filter_set.borrow();
+                Self::determine_filter_change(&new_set, &old_set)
+            };
 
-        self.filter_set.replace(new_set);
+            self.filter_set.replace(new_set);
+
+            filter_change
+        };
 
         debug!("Filter Level {:?}", filter_change);
 
@@ -188,7 +191,6 @@ mod tests {
 
         assess_filter_change(&new_set, &old_set, Some(FilterChange::MoreStrict));
 
-
         let old_set: HashSet<String> = create_set(&["1", "2", "3"]);
         let new_set: HashSet<String> = create_set(&["3", "4"]);
 
@@ -198,12 +200,12 @@ mod tests {
         let new_set: HashSet<String> = create_set(&["4", "5"]);
 
         assess_filter_change(&new_set, &old_set, Some(FilterChange::Different));
-     
+
         let old_set: HashSet<String> = create_set(&["3", "4"]);
         let new_set: HashSet<String> = create_set(&["1", "2", "3"]);
 
         assess_filter_change(&new_set, &old_set, Some(FilterChange::Different));
-      
+
         let old_set: HashSet<String> = create_set(&["4", "5"]);
         let new_set: HashSet<String> = create_set(&["1", "2", "3"]);
 

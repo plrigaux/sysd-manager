@@ -11,13 +11,13 @@ glib::wrapper! {
 
 impl ExMenuButton {
     pub fn new(label: &str) -> Self {
-        let obj : ExMenuButton = glib::Object::new();
+        let obj: ExMenuButton = glib::Object::new();
         obj.set_button_label(label);
 
         let imp = obj.imp();
         imp.check_boxes.replace(HashMap::new());
         imp.filter_set.replace(HashSet::new());
-     
+
         obj
     }
 
@@ -31,11 +31,10 @@ impl ExMenuButton {
         binding.add_item(label);
     }
 
-    //TODO accept &str
-    pub fn contains_value(&self, value : &Option<String>) -> bool {
+    pub fn contains_value(&self, value: Option<&str>) -> bool {
         let imp = self.imp();
         let set = imp.filter_set.borrow();
-        
+
         if set.is_empty() {
             return true;
         }
@@ -44,12 +43,10 @@ impl ExMenuButton {
             Some(v) => set.contains(v),
             None => set.is_empty(),
         }
-       
     }
 
-    pub fn set_filter(&self, filter : gtk::CustomFilter) {
+    pub fn set_filter(&self, filter: gtk::CustomFilter) {
         let imp = self.imp();
         imp.filter.replace(filter);
     }
-
 }

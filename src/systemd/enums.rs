@@ -129,7 +129,7 @@ pub enum ActiveState {
 }
 
 impl ActiveState {
-    pub fn label(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         match self {
             ActiveState::Unknown => "unknown",
             ActiveState::Active => "active",
@@ -157,7 +157,7 @@ impl ActiveState {
 
 impl Display for ActiveState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.label())
+        write!(f, "{}", self.as_str())
     }
 }
 
@@ -182,7 +182,13 @@ impl From<u32> for ActiveState {
         match value {
             0 => Self::Unknown,
             1 => Self::Active,
-            2 => Self::Inactive,
+            2 => Self::Reloading,
+            3 => Self::Inactive,
+            4 => Self::Failed,
+            5 => Self::Activating,
+            6 => Self::Deactivating,
+            7 => Self::Maintenance,
+            8 => Self::Refreshing,
             _ => Self::Unknown,
         }
     }
@@ -354,7 +360,6 @@ impl From<u32> for KillWho {
     }
 }
 
-
 #[allow(dead_code)] // to remove ater full impementation
 pub enum DependencyType {
     Forward,
@@ -386,70 +391,6 @@ impl DependencyType {
             DependencyType::Before => &["Before"],
         };
         properties
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_enablement_status_any_number() {
-        assert_eq!(
-            <u32 as Into<EnablementStatus>>::into(1000),
-            EnablementStatus::Unknown
-        )
-    }
-
-    #[test]
-    fn test_enablement_status_mapping() {
-        //assert_num_mapping(EnablementStatus::Unasigned);
-        assert_num_mapping(EnablementStatus::Bad);
-        assert_num_mapping(EnablementStatus::Enabled);
-        assert_num_mapping(EnablementStatus::Disabled);
-        assert_num_mapping(EnablementStatus::Linked);
-        assert_num_mapping(EnablementStatus::Masked);
-        assert_num_mapping(EnablementStatus::Static);
-        assert_num_mapping(EnablementStatus::Alias);
-        assert_num_mapping(EnablementStatus::Generated);
-        assert_num_mapping(EnablementStatus::Trancient);
-        assert_num_mapping(EnablementStatus::Unknown);
-    }
-
-    fn assert_num_mapping(status: EnablementStatus) {
-        let val = status as u32;
-        let convert: EnablementStatus = val.into();
-        assert_eq!(convert, status)
-    }
-
-    #[test]
-    fn test_active_state_any_number() {
-        assert_eq!(<u32 as Into<ActiveState>>::into(1000), ActiveState::Unknown)
-    }
-
-    #[test]
-    fn test_active_state_mapping() {
-        assert_num_mapping_active_state(ActiveState::Unknown);
-        assert_num_mapping_active_state(ActiveState::Active);
-        assert_num_mapping_active_state(ActiveState::Inactive);
-    }
-
-    fn assert_num_mapping_active_state(status: ActiveState) {
-        let val = status as u32;
-        let convert: ActiveState = val.into();
-        assert_eq!(convert, status)
-    }
-
-    #[test]
-    fn test_kill_who_glib() {
-        assert_kill(KillWho::All);
-        assert_kill(KillWho::Main);
-        assert_kill(KillWho::Control);
-    }
-
-    fn assert_kill(kill: KillWho) {
-        assert_eq!(kill.as_str(), kill.to_string())
     }
 }
 
@@ -507,5 +448,75 @@ impl From<&RefCell<String>> for StartStopMode {
             }
         };
         mode
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use strum::IntoEnumIterator;
+
+    use super::*;
+
+    #[test]
+    fn test_enablement_status_any_number() {
+        assert_eq!(
+            <u32 as Into<EnablementStatus>>::into(1000),
+            EnablementStatus::Unknown
+        )
+    }
+
+    #[test]
+    fn test_enablement_status_mapping() {
+        //assert_num_mapping(EnablementStatus::Unasigned);
+        assert_num_mapping(EnablementStatus::Bad);
+        assert_num_mapping(EnablementStatus::Enabled);
+        assert_num_mapping(EnablementStatus::Disabled);
+        assert_num_mapping(EnablementStatus::Linked);
+        assert_num_mapping(EnablementStatus::Masked);
+        assert_num_mapping(EnablementStatus::Static);
+        assert_num_mapping(EnablementStatus::Alias);
+        assert_num_mapping(EnablementStatus::Generated);
+        assert_num_mapping(EnablementStatus::Trancient);
+        assert_num_mapping(EnablementStatus::Unknown);
+    }
+
+    fn assert_num_mapping(status: EnablementStatus) {
+        let val = status as u32;
+        let convert: EnablementStatus = val.into();
+        assert_eq!(convert, status)
+    }
+
+    #[test]
+    fn test_active_state_any_number() {
+        assert_eq!(<u32 as Into<ActiveState>>::into(1000), ActiveState::Unknown)
+    }
+
+    #[test]
+    fn test_active_state_mapping() {
+        assert_num_mapping_active_state(ActiveState::Unknown);
+        assert_num_mapping_active_state(ActiveState::Active);
+        assert_num_mapping_active_state(ActiveState::Inactive);
+
+        for state in ActiveState::iter() {
+            assert_num_mapping_active_state(state);
+        }
+    }
+
+    fn assert_num_mapping_active_state(status: ActiveState) {
+        let val = status as u32;
+        let convert: ActiveState = val.into();
+        assert_eq!(convert, status)
+    }
+
+    #[test]
+    fn test_kill_who_glib() {
+        assert_kill(KillWho::All);
+        assert_kill(KillWho::Main);
+        assert_kill(KillWho::Control);
+    }
+
+    fn assert_kill(kill: KillWho) {
+        assert_eq!(kill.as_str(), kill.to_string())
     }
 }
