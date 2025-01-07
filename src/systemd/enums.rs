@@ -6,6 +6,7 @@ use log::warn;
 use std::cell::RefCell;
 use std::fmt::Display;
 use strum::EnumIter;
+use zvariant::OwnedValue;
 
 use super::sysdbus::INTERFACE_SYSTEMD_MANAGER;
 use super::sysdbus::INTERFACE_SYSTEMD_UNIT;
@@ -153,6 +154,20 @@ impl ActiveState {
             _ => None,
         }
     }
+
+    pub(crate) fn glyph(&self) -> char {
+        match self {
+            ActiveState::Active => '●',
+            ActiveState::Reloading => '↻',
+            ActiveState::Inactive => '○',
+            ActiveState::Failed => '×',
+            ActiveState::Activating => '●',
+            ActiveState::Deactivating => '●',
+            ActiveState::Maintenance => '○',
+            ActiveState::Refreshing => '↻',
+            _ => ' ',
+        }
+    }
 }
 
 impl Display for ActiveState {
@@ -190,6 +205,18 @@ impl From<u32> for ActiveState {
             7 => Self::Maintenance,
             8 => Self::Refreshing,
             _ => Self::Unknown,
+        }
+    }
+}
+
+impl From<Option<&OwnedValue>> for ActiveState {
+    fn from(value: Option<&OwnedValue>) -> Self {
+        match value {
+            Some(value) => {
+                let state_str: &str = value.try_into().unwrap_or_default();
+                ActiveState::from(state_str)
+            }
+            None => ActiveState::Unknown,
         }
     }
 }

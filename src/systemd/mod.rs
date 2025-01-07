@@ -522,6 +522,6 @@ pub fn fetch_unit_dependencies(
 
     let object_path = get_unit_path(unit);
 
-    sysdbus::unit_get_dependencies(level, &object_path, dependency_type)
+    sysdbus::unit_get_dependencies(level,&unit.primary(), &object_path, dependency_type)
    
 }

@@ -1,42 +1,29 @@
 //! Dbus abstraction
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
 
-use std::collections::BTreeMap;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
-use log::debug;
+use log::{debug, info, trace, warn};
 
-/* use dbus::arg::messageitem::MessageItem;
-use dbus::Message; */
-use log::info;
-use log::trace;
-use log::warn;
 use serde::Deserialize;
-use zbus::blocking::fdo;
-use zbus::blocking::Connection;
-use zbus::blocking::MessageIterator;
-use zbus::message::Flags;
-use zbus::names::InterfaceName;
-use zbus::Message;
+use zbus::{
+    blocking::{fdo, Connection, MessageIterator, Proxy},
+    message::Flags,
+    names::InterfaceName,
+    Message,
+};
 
-use zvariant::DynamicType;
-use zvariant::ObjectPath;
-use zvariant::OwnedValue;
-use zvariant::Str;
-use zvariant::Type;
+use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::ActiveState;
 use crate::systemd::enums::UnitType;
 use crate::widget::preferences::data::DbusLevel;
 
-use super::enums::DependencyType;
-use super::enums::EnablementStatus;
-
-use super::enums::KillWho;
-use super::enums::StartStopMode;
-use super::SystemdErrors;
-use super::SystemdUnit;
+use super::{
+    enums::{DependencyType, EnablementStatus, KillWho, StartStopMode},
+    SystemdErrors, SystemdUnit,
+};
 
 const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
@@ -640,22 +627,162 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
     Ok(unit)
 }
 
-
-
 pub(super) fn unit_get_dependencies(
-    level: DbusLevel,
-    _unit_object_path: &str,
+    dbus_level: DbusLevel,
+    unit_name: &str,
+    unit_object_path: &str,
     dependency_type: DependencyType,
-) -> Result<(), SystemdErrors>  {
+) -> Result<(), SystemdErrors> {
+    let connection = get_connection(dbus_level)?;
+    let dependencies_properties = dependency_type.properties();
+    let mut units = HashSet::new();
 
-    let _connection = get_connection(level)?;
+    let mut out = String::new();
+    //writeln!(out, "{}", unit_name).unwrap();
+    reteive_dependencies(
+        unit_name,
+        unit_object_path,
+        dependencies_properties,
+        &connection,
+        &mut units,
+        0,
+        &mut out,
+        0,
+        false,
+    )?;
 
-    let asdf = dependency_type.properties();
+    println!("{}", out);
 
-    for a in asdf {
-        println!("{}", a);
-    }
     Ok(())
+}
+
+fn reteive_dependencies(
+    parent_unit_name: &str,
+    unit_object_path: &str,
+    dependencies_properties: &[&str],
+    connection: &Connection,
+    units: &mut HashSet<String>,
+    level: usize,
+    out: &mut String,
+    branches: usize,
+    last: bool,
+) -> Result<(), SystemdErrors> {
+    /*     if level >= 4 {
+        warn!("Level too deep");
+        return Ok(());
+    } */
+
+    let map = fetch_unit_all_properties(connection, unit_object_path)?;
+
+    let mut set = BTreeSet::new();
+    for property_key in dependencies_properties {
+        let value = map.get(*property_key);
+        let Some(value) = value else {
+            warn!("property key {:?} does't exist", property_key);
+            continue;
+        };
+
+        let array: &Array = value.try_into()?;
+        for sv in array.iter() {
+            let unit_name: &str = sv.try_into()?;
+
+            if units.contains(unit_name) {
+                continue;
+            }
+
+            set.insert(unit_name);
+            units.insert(unit_name.to_string());
+        }
+    }
+
+    info!("Unit {:?} Level {} Set {:#?}", parent_unit_name, level, set);
+    list_dependencies_print(parent_unit_name, out, level, &map, branches, last);
+
+    let mut it = set.iter().peekable();
+    while let Some(unit_name) = it.next() {
+        let objet_path = unit_dbus_path_from_name(unit_name);
+
+        reteive_dependencies(
+            unit_name,
+            &objet_path,
+            dependencies_properties,
+            connection,
+            units,
+            level + 1,
+            out,
+            branches << 1,
+            it.peek().is_none(),
+        )?;
+    }
+
+    //units.remove(parent_unit_name);
+    Ok(())
+}
+
+const SPECIAL_GLYPH_TREE_VERTICAL: &str = "│ ";
+const SPECIAL_GLYPH_TREE_SPACE: &str = "  ";
+const SPECIAL_GLYPH_TREE_RIGHT: &str = "└─";
+const SPECIAL_GLYPH_TREE_BRANCH: &str = "├─";
+
+fn list_dependencies_print(
+    unit_name: &str,
+    out: &mut String,
+    level: usize,
+    map: &HashMap<String, OwnedValue>,
+    branches: usize,
+    last: bool,
+) {
+    let state: ActiveState = map.get("ActiveState").into();
+
+    let stete_glyph = state.glyph();
+
+    out.push(stete_glyph);
+    out.push(' ');
+
+    for i in (0..level).rev() {
+        let mask : usize = 1 << i;
+        let glyph = if (branches & mask) != 0 {
+            SPECIAL_GLYPH_TREE_VERTICAL
+        } else {
+            SPECIAL_GLYPH_TREE_SPACE
+        };
+        out.push_str(glyph);
+    }
+
+    let glyph = if last {
+        SPECIAL_GLYPH_TREE_RIGHT
+    } else {
+        SPECIAL_GLYPH_TREE_BRANCH
+    };
+
+    out.push_str(glyph);
+
+    out.push_str(unit_name);
+    out.push('\n');
+}
+
+fn fetch_unit_all_properties(
+    connection: &Connection,
+    path: &str,
+) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+    //debug!("Unit path {path}");
+    let proxy = Proxy::new(
+        &connection,
+        DESTINATION_SYSTEMD,
+        path,
+        "org.freedesktop.DBus.Properties",
+    )?;
+
+    let all_properties: HashMap<String, OwnedValue> =
+        match proxy.call("GetAll", &(INTERFACE_SYSTEMD_UNIT)) {
+            Ok(m) => m,
+            Err(e) => {
+                warn!("{:#?}", e);
+                return Err(e.into());
+            }
+        };
+
+    Ok(all_properties)
 }
 
 pub(super) fn unit_dbus_path_from_name(name: &str) -> String {
@@ -859,6 +986,40 @@ mod tests {
 
     #[ignore = "need a connection to a service"]
     #[test]
+    fn test_fetch_unit_dependencies() -> Result<(), SystemdErrors> {
+        init();
+
+        let path = unit_dbus_path_from_name(TEST_SERVICE);
+        let res = unit_get_dependencies(
+            DbusLevel::System,
+            TEST_SERVICE,
+            &path,
+            DependencyType::Forward,
+        );
+
+        info!("{:#?}", res);
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_fetch_unit_reverse_dependencies() -> Result<(), SystemdErrors> {
+        init();
+
+        let path = unit_dbus_path_from_name(TEST_SERVICE);
+        let res = unit_get_dependencies(
+            DbusLevel::System,
+            TEST_SERVICE,
+            &path,
+            DependencyType::Reverse,
+        );
+
+        info!("{:#?}", res);
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
     fn test_fetch_unit_fail_wrong_name() -> Result<(), SystemdErrors> {
         init();
 
@@ -888,6 +1049,28 @@ mod tests {
         for (origin, expected) in tests {
             let convertion = bus_label_escape(origin);
             assert_eq!(convertion, expected);
+        }
+    }
+
+    #[test]
+    fn test_branches_logic() {
+        let branches: usize = 0;
+        let re = branches & (1 << 0);
+
+        println!("b {} r {}", branches, re);
+
+        let branches: usize = 1;
+        let re = branches & (1 << 0);
+
+        println!("b {} r {}", branches, re);
+
+        let branches: usize = branches << 1;
+
+        for i in 0..3 {
+            let mask : usize = 1 << i;
+            let re = branches & mask;
+
+            println!("b {} m {} r {}", branches, mask, re);
         }
     }
 }
