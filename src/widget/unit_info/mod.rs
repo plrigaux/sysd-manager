@@ -29,18 +29,13 @@ impl UnitInfoPanel {
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark)
     }
-
-    fn hovering_over_link(&self) -> bool {
-        self.imp().hovering_over_link.get()
-    }
-
-    fn set_hovering_over_link(&self, hovering_over_link: bool) {
-        self.imp().hovering_over_link.set(hovering_over_link);
-    }
 }
 
 mod imp {
-    use std::cell::{Cell, RefCell};
+    use std::{
+        cell::{Cell, RefCell},
+        rc::Rc,
+    };
 
     use gtk::{
         gdk, gio,
@@ -67,7 +62,6 @@ mod imp {
     use super::{
         construct_info::fill_all_info,
         writer::{UnitInfoWriter, TAG_DATA_LINK},
-        UnitInfoPanel,
     };
 
     #[derive(Default, gtk::CompositeTemplate)]
@@ -86,7 +80,7 @@ mod imp {
 
         is_dark: Cell<bool>,
 
-        pub hovering_over_link: Cell<bool>,
+        pub hovering_over_link: Rc<Cell<bool>>,
     }
 
     #[gtk::template_callbacks]
@@ -170,13 +164,17 @@ mod imp {
     impl ObjectImpl for UnitInfoPanelImp {
         fn constructed(&self) {
             self.parent_constructed();
-            build_textview_link_platform(&self.unit_info_textview, &self.obj());
+         
+            build_textview_link_platform(&self.unit_info_textview, self.hovering_over_link.clone());
         }
     }
     impl WidgetImpl for UnitInfoPanelImp {}
     impl BoxImpl for UnitInfoPanelImp {}
 
-    fn build_textview_link_platform(text_view_or: &gtk::TextView, info_panel : &UnitInfoPanel) {
+    fn build_textview_link_platform(
+        text_view_or: &gtk::TextView,
+        hovering_over_link: Rc<Cell<bool>>,
+    ) {
         {
             let text_view = text_view_or.clone();
             let event_controller_key = gtk::EventControllerKey::new();
@@ -203,7 +201,7 @@ mod imp {
             let event_controller_motion = gtk::EventControllerMotion::new();
 
             let text_view = text_view_or.clone();
-            let info_panel = info_panel.clone();
+            let hovering_over_link = hovering_over_link.clone();
             event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
                 let (tx, ty) = text_view.window_to_buffer_coords(
                     gtk::TextWindowType::Widget,
@@ -211,7 +209,7 @@ mod imp {
                     y as i32,
                 );
 
-                set_cursor_if_appropriate(&info_panel, &text_view, tx, ty);
+                set_cursor_if_appropriate(hovering_over_link.clone(), &text_view, tx, ty);
             });
             text_view_or.add_controller(event_controller_motion);
         }
@@ -241,7 +239,7 @@ mod imp {
     }
 
     fn set_cursor_if_appropriate(
-        info_panel: &UnitInfoPanel,
+        hovering_over_link: Rc<Cell<bool>>,
         text_view: &gtk::TextView,
         x: i32,
         y: i32,
@@ -263,8 +261,8 @@ mod imp {
             }
         }
 
-        if info_panel.hovering_over_link() != hovering {
-            info_panel.set_hovering_over_link(hovering);
+        if hovering_over_link.get() != hovering {
+            hovering_over_link.set(hovering);
             if hovering {
                 text_view.set_cursor_from_name(Some("pointer"));
             } else {
