@@ -321,8 +321,8 @@ impl UnitListPanelImp {
                 }
 
                 gio::spawn_blocking(move || {
-                    let five_seconds = Duration::from_secs(1);
-                    thread::sleep(five_seconds);
+                    let seconds = Duration::from_secs(1);
+                    thread::sleep(seconds);
                 })
                 .await
                 .expect("Task needs to finish successfully.");
@@ -330,7 +330,7 @@ impl UnitListPanelImp {
                 info!("Focus on selected unit list row (index {force_selected_index})");
                 //needs a bit of time
                 units_browser.scroll_to(
-                    force_selected_index + 8, // to centerish on the selected unit
+                    force_selected_index, // to centerish on the selected unit
                     None,
                     ListScrollFlags::FOCUS,
                     None,
@@ -350,19 +350,34 @@ impl UnitListPanelImp {
     }
 
     pub fn set_unit(&self, unit: &UnitInfo) {
+        info!("List {}", unit.primary());
         let old = self.unit.replace(Some(unit.clone()));
+
         if let Some(old) = old {
             if old.primary() == unit.primary() {
+                info!("List {} == {}", old.primary(), unit.primary());
                 return;
             }
-        } else {
-            return;
         }
 
-        let finding = self.list_store.find(unit);
+        let unit_name = unit.primary();
+        let finding = self.list_store.find_with_equal_func(|object| {
+            let unit_item = object
+                .downcast_ref::<UnitInfo>()
+                .expect("item.downcast_ref::<gtk::ListItem>()");
+
+            unit_name == unit_item.primary()
+        });
 
         if let Some(row) = finding {
             self.single_selection.select_item(row, true);
+
+            self.units_browser.scroll_to(
+                row, // to centerish on the selected unit
+                None,
+                ListScrollFlags::FOCUS,
+                None,
+            );
         }
     }
 

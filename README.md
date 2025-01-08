@@ -14,6 +14,7 @@ Here are __Sysd Manager__ main features :
 * Enable or disable a unit
 * Activate or desactivate a unit
 * View and modify unit file
+* View and navigate unit's dependencies
 * Unit file syntax highlighting 
 * Journal file syntax highlighting 
 * List of all running units, ordered by the time they took to initialize __systemd-analyze blame__
@@ -51,7 +52,6 @@ For now new features are planned to be added, such as:
 
 * Non-blocking calls (in progress)
 * Always administrator mode
-* Disply unit dependancies
 * Improve UX (continuously)
 
 ## Installation Instructions
