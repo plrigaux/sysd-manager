@@ -569,7 +569,12 @@
 	(54,13,"GtkStackPage","child",None,None,None,None,None,17,None,None,None,None),
 	(54,13,"GtkStackPage","name","dependencies",None,None,None,None,None,None,None,None,None),
 	(54,15,"AdwStatusPage","title","No dependencies events",None,None,None,None,None,None,None,None,None),
-	(54,17,"GtkScrolledWindow","child",None,None,None,None,None,18,None,None,None,None)
+	(54,17,"GtkScrolledWindow","child",None,None,None,None,None,18,None,None,None,None),
+	(54,18,"GtkWidget","margin-bottom","10",None,None,None,None,None,None,None,None,None),
+	(54,18,"GtkWidget","margin-end","10",None,None,None,None,None,None,None,None,None),
+	(54,18,"GtkWidget","margin-start","10",None,None,None,None,None,None,None,None,None),
+	(54,18,"GtkWidget","margin-top","5",None,None,None,None,None,None,None,None,None),
+	(54,18,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),

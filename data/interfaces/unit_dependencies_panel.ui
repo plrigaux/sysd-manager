@@ -44,7 +44,13 @@
             <property name="child">
               <object class="GtkScrolledWindow">
                 <property name="child">
-                  <object class="GtkTextView" id="unit_dependencies_textview"/>
+                  <object class="GtkTextView" id="unit_dependencies_textview">
+                    <property name="margin-bottom">10</property>
+                    <property name="margin-end">10</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-top">10</property>
+                    <property name="vexpand">True</property>
+                  </object>
                 </property>
               </object>
             </property>

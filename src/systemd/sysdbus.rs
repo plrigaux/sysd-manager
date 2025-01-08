@@ -15,14 +15,11 @@ use zbus::{
 
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
-use crate::systemd::data::UnitInfo;
-use crate::systemd::enums::ActiveState;
-use crate::systemd::enums::UnitType;
+use crate::systemd::{data::UnitInfo, enums::{ActiveState, UnitType}};
 use crate::widget::preferences::data::DbusLevel;
 
 use super::{
-    enums::{DependencyType, EnablementStatus, KillWho, StartStopMode},
-    SystemdErrors, SystemdUnit,
+    enums::{DependencyType, EnablementStatus, KillWho, StartStopMode}, Dependency, SystemdErrors, SystemdUnit
 };
 
 const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
@@ -627,45 +624,37 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
     Ok(unit)
 }
 
+
 pub(super) fn unit_get_dependencies(
     dbus_level: DbusLevel,
     unit_name: &str,
     unit_object_path: &str,
     dependency_type: DependencyType,
-) -> Result<(), SystemdErrors> {
+) -> Result<Dependency, SystemdErrors> {
     let connection = get_connection(dbus_level)?;
     let dependencies_properties = dependency_type.properties();
     let mut units = HashSet::new();
 
-    let mut out = String::new();
+
+    let mut dependency = Dependency::new(unit_name);
     //writeln!(out, "{}", unit_name).unwrap();
     reteive_dependencies(
-        unit_name,
+        &mut dependency,
         unit_object_path,
         dependencies_properties,
         &connection,
         &mut units,
-        0,
-        &mut out,
-        0,
-        false,
     )?;
 
-    println!("{}", out);
-
-    Ok(())
+    Ok(dependency)
 }
 
 fn reteive_dependencies(
-    parent_unit_name: &str,
+    dependency: &mut Dependency,
     unit_object_path: &str,
     dependencies_properties: &[&str],
     connection: &Connection,
     units: &mut HashSet<String>,
-    level: usize,
-    out: &mut String,
-    branches: usize,
-    last: bool,
 ) -> Result<(), SystemdErrors> {
     /*     if level >= 4 {
         warn!("Level too deep");
@@ -674,7 +663,9 @@ fn reteive_dependencies(
 
     let map = fetch_unit_all_properties(connection, unit_object_path)?;
 
+    dependency.state = map.get("ActiveState").into();
     let mut set = BTreeSet::new();
+    //let mut set = BTreeSet::new();
     for property_key in dependencies_properties {
         let value = map.get(*property_key);
         let Some(value) = value else {
@@ -683,6 +674,7 @@ fn reteive_dependencies(
         };
 
         let array: &Array = value.try_into()?;
+      
         for sv in array.iter() {
             let unit_name: &str = sv.try_into()?;
 
@@ -695,70 +687,26 @@ fn reteive_dependencies(
         }
     }
 
-    info!("Unit {:?} Level {} Set {:#?}", parent_unit_name, level, set);
-    list_dependencies_print(parent_unit_name, out, level, &map, branches, last);
+    //info!("Unit {:?} Level {} Set {:#?}", parent_unit_name, level, set);
+    //list_dependencies_print(parent_unit_name, out, level, &map, branches, last);
 
-    let mut it = set.iter().peekable();
-    while let Some(unit_name) = it.next() {
-        let objet_path = unit_dbus_path_from_name(unit_name);
+    for child_name in set {
+        let objet_path = unit_dbus_path_from_name(&child_name);
 
+        let mut child_depency = Dependency::new(child_name);
         reteive_dependencies(
-            unit_name,
+            &mut child_depency,
             &objet_path,
             dependencies_properties,
             connection,
             units,
-            level + 1,
-            out,
-            branches << 1,
-            it.peek().is_none(),
         )?;
+
+        dependency.children.insert(child_depency);
     }
 
     //units.remove(parent_unit_name);
     Ok(())
-}
-
-const SPECIAL_GLYPH_TREE_VERTICAL: &str = "│ ";
-const SPECIAL_GLYPH_TREE_SPACE: &str = "  ";
-const SPECIAL_GLYPH_TREE_RIGHT: &str = "└─";
-const SPECIAL_GLYPH_TREE_BRANCH: &str = "├─";
-
-fn list_dependencies_print(
-    unit_name: &str,
-    out: &mut String,
-    level: usize,
-    map: &HashMap<String, OwnedValue>,
-    branches: usize,
-    last: bool,
-) {
-    let state: ActiveState = map.get("ActiveState").into();
-
-    let stete_glyph = state.glyph();
-
-    out.push(stete_glyph);
-    out.push(' ');
-
-    for i in (0..level).rev() {
-        let mask : usize = 1 << i;
-        let glyph = if (branches & mask) != 0 {
-            SPECIAL_GLYPH_TREE_VERTICAL
-        } else {
-            SPECIAL_GLYPH_TREE_SPACE
-        };
-        out.push_str(glyph);
-    }
-
-    let glyph = if last {
-        SPECIAL_GLYPH_TREE_RIGHT
-    } else {
-        SPECIAL_GLYPH_TREE_BRANCH
-    };
-
-    out.push_str(glyph);
-
-    out.push_str(unit_name);
-    out.push('\n');
 }
 
 fn fetch_unit_all_properties(
@@ -997,7 +945,7 @@ mod tests {
             DependencyType::Forward,
         );
 
-        info!("{:#?}", res);
+        info!("{:#?}", res.unwrap()    );
         Ok(())
     }
 
@@ -1067,7 +1015,7 @@ mod tests {
         let branches: usize = branches << 1;
 
         for i in 0..3 {
-            let mask : usize = 1 << i;
+            let mask: usize = 1 << i;
             let re = branches & mask;
 
             println!("b {} m {} r {}", branches, mask, re);

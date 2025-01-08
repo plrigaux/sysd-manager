@@ -15,7 +15,9 @@ use crate::{
         errors::SystemdErrors,
     },
     widget::{
-        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel, unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel
+        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel,
+        unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel,
+        unit_info::UnitInfoPanel,
     },
 };
 
@@ -136,6 +138,7 @@ impl ObjectImpl for UnitControlPanelImpl {
         }); */
         {
             let unit_journal_panel = self.unit_journal_panel.clone();
+            let unit_dependencies_panel = self.unit_dependencies_panel.clone();
             self.unit_panel_stack
                 .connect_visible_child_notify(move |view_stack| {
                     debug!(
@@ -144,12 +147,17 @@ impl ObjectImpl for UnitControlPanelImpl {
                     );
 
                     if let Some(child) = view_stack.visible_child() {
-                        if let Some(journal_panel) = child.downcast_ref::<JournalPanel>() {
+                        if child.downcast_ref::<JournalPanel>().is_some() {
                             debug!("It a journal");
-
-                            journal_panel.set_visible_on_page(true);
+                            unit_journal_panel.set_visible_on_page(true);
+                            unit_dependencies_panel.set_visible_on_page(false);
+                        } else if child.downcast_ref::<UnitDependenciesPanel>().is_some() {
+                            debug!("It's  dependency");
+                            unit_journal_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_visible_on_page(true);
                         } else {
                             unit_journal_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_visible_on_page(false);
                         }
                     }
                 });
@@ -378,7 +386,8 @@ impl UnitControlPanelImpl {
     }
 
     pub fn display_definition_file_page(&self) {
-        self.unit_panel_stack.set_visible_child_name("definition_file_page");
+        self.unit_panel_stack
+            .set_visible_child_name("definition_file_page");
     }
 }
 

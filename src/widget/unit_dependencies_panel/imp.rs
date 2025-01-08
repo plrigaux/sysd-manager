@@ -1,4 +1,5 @@
 use gtk::{
+    gio,
     glib::{self},
     prelude::*,
     subclass::{
@@ -16,7 +17,12 @@ use std::cell::{Cell, RefCell};
 
 use log::{debug, warn};
 
-use crate::systemd::{self, data::UnitInfo, enums::DependencyType};
+use crate::{
+    systemd::{self, data::UnitInfo, enums::DependencyType, Dependency},
+    widget::unit_info::writer::{
+        UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL
+    },
+};
 
 /* const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -78,9 +84,155 @@ impl UnitDependenciesPanelImp {
             return;
         };
 
+        self.unit_dependencies_loaded.set(true); // maybe wait at the full loaded
+
         let dep_type = DependencyType::Forward;
-        let _results = systemd::fetch_unit_dependencies(unit_ref, dep_type);
+        let unit = unit_ref.clone();
+        let textview = self.unit_dependencies_textview.clone();
+        let stack = self.unit_dependencies_panel_stack.clone();
+        let dark = self.dark.get();
+
+        glib::spawn_future_local(async move {
+            stack.set_visible_child_name("spinner");
+            let dependencies =
+                gio::spawn_blocking(move || {
+                    match systemd::fetch_unit_dependencies(&unit, dep_type) {
+                        Ok(dep) => Some(dep),
+                        Err(error) => {
+                            warn!(
+                                "Fetching {:?} dependencies error {:?}",
+                                unit.primary(),
+                                error
+                            );
+                            None
+                        }
+                    }
+                })
+                .await
+                .expect("Task needs to finish successfully.");
+
+            let Some(dependencies) = dependencies else {
+                stack.set_visible_child_name("empty");
+                return;
+            };
+
+            let buf = textview.buffer();
+            buf.set_text(""); // clear text
+
+            let start_iter = buf.start_iter();
+
+            let mut info_writer = UnitInfoWriter::new(buf, start_iter, dark);
+
+            info_writer.insertln(&dependencies.unit_name);
+
+            let mut it = dependencies.children.iter().peekable();
+            while let Some(child) = it.next() {
+                UnitDependenciesPanelImp::display_dependencies(
+                    &mut info_writer,
+                    child,
+                    1,
+                    0,
+                    it.peek().is_none(),
+                );
+            }
+
+            stack.set_visible_child_name("dependencies");
+        });
     }
+
+    fn display_dependencies(
+        info_writer: &mut UnitInfoWriter,
+        dependency: &Dependency,
+        level: u16,
+        branches : usize,
+        last: bool,
+    ) {
+        let state_glyph = dependency.state.glyph();
+
+        let gl = format!("{state_glyph} ");
+
+        match dependency.state {
+            systemd::enums::ActiveState::Active
+            | systemd::enums::ActiveState::Reloading
+            | systemd::enums::ActiveState::Activating
+            | systemd::enums::ActiveState::Refreshing => info_writer.insert_active(&gl),
+
+            systemd::enums::ActiveState::Inactive | systemd::enums::ActiveState::Deactivating => {
+                info_writer.insert(&gl);
+            }
+            _ => info_writer.insert_red(&gl),
+        }
+
+        for i in (0..=level).rev() {
+            let mask: usize = 1 << i;
+            let glyph = if (branches & mask) != 0 {
+                SPECIAL_GLYPH_TREE_VERTICAL
+            } else {
+                SPECIAL_GLYPH_TREE_SPACE
+            };
+            info_writer.insert(glyph);
+        }
+
+        let glyph = if last {
+            SPECIAL_GLYPH_TREE_RIGHT
+        } else {
+            SPECIAL_GLYPH_TREE_BRANCH
+        };
+
+        info_writer.insert(glyph);
+        info_writer.insert(&dependency.unit_name);
+        info_writer.newline();
+
+        let mut it = dependency.children.iter().peekable();
+        while let Some(child) = it.next() {
+            UnitDependenciesPanelImp::display_dependencies(
+                info_writer,
+                &child,
+                level + 1,
+                branches,
+                it.peek().is_none(),
+            );
+        }
+    }
+
+    /*
+    fn list_dependencies_print(
+        unit_name: &str,
+        out: &mut String,
+        level: usize,
+        map: &HashMap<String, OwnedValue>,
+        branches: usize,
+        last: bool,
+    ) {
+        let state: ActiveState = map.get("ActiveState").into();
+
+        let stete_glyph = state.glyph();
+
+        out.push(stete_glyph);
+        out.push(' ');
+
+        for i in (0..level).rev() {
+            let mask: usize = 1 << i;
+            let glyph = if (branches & mask) != 0 {
+                SPECIAL_GLYPH_TREE_VERTICAL
+            } else {
+                SPECIAL_GLYPH_TREE_SPACE
+            };
+            out.push_str(glyph);
+        }
+
+        let glyph = if last {
+            SPECIAL_GLYPH_TREE_RIGHT
+        } else {
+            SPECIAL_GLYPH_TREE_BRANCH
+        };
+
+        out.push_str(glyph);
+
+        out.push_str(unit_name);
+        out.push('\n');
+    }
+    */
 }
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
@@ -104,6 +256,8 @@ impl ObjectSubclass for UnitDependenciesPanelImp {
 impl ObjectImpl for UnitDependenciesPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        self.unit_dependencies_loaded.set(false);
     }
 }
 

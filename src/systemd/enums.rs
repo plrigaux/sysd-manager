@@ -388,6 +388,7 @@ impl From<u32> for KillWho {
 }
 
 #[allow(dead_code)] // to remove ater full impementation
+#[derive(Debug, Copy, Clone)]
 pub enum DependencyType {
     Forward,
     Reverse,

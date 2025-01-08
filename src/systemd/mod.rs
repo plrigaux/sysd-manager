@@ -6,11 +6,11 @@ pub mod journal_data;
 mod sysdbus;
 
 use std::borrow::Cow;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::process::{Command, Stdio};
 
 use data::UnitInfo;
-use enums::{DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
+use enums::{ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
 use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::JournalEvent;
@@ -511,17 +511,43 @@ pub fn reload_all_units() -> Result<(), SystemdErrors> {
     sysdbus::reload_all_units(level)
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct Dependency {
+    pub unit_name: String,
+    pub state: ActiveState,
+    pub children: BTreeSet<Dependency>,
+}
+
+impl Dependency {
+    pub fn new(unit_name: &str) -> Self {
+        Self {
+            unit_name: unit_name.to_string(),
+            state: ActiveState::Unknown,
+            children: BTreeSet::new(),
+        }
+    }
+}
+
+impl Ord for Dependency {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.unit_name.cmp(&other.unit_name)
+    }
+}
+
+impl PartialOrd for Dependency {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.unit_name.partial_cmp(&other.unit_name)
+    }
+}
+
 
 pub fn fetch_unit_dependencies(
     unit: &UnitInfo,
     dependency_type: DependencyType,
-) -> Result<(), SystemdErrors>  {
-
- 
+) -> Result<Dependency, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
 
     let object_path = get_unit_path(unit);
 
-    sysdbus::unit_get_dependencies(level,&unit.primary(), &object_path, dependency_type)
-   
+    sysdbus::unit_get_dependencies(level, &unit.primary(), &object_path, dependency_type)
 }

@@ -11,11 +11,18 @@ pub struct UnitInfoWriter {
 //const TAG_NAME_HYPER_LINK: &str = "hyperlink";
 const TAG_NAME_ACTIVE: &str = "active";
 const TAG_NAME_ACTIVE_DARK: &str = "active_dark";
+const TAG_NAME_RED: &str = "red";
+const TAG_NAME_RED_DARK: &str = "red_dark";
 const TAG_NAME_DISABLE: &str = "disable";
 const TAG_NAME_DISABLE_DARK: &str = "disable_dark";
 const TAG_NAME_GREY: &str = "grey";
 const TAG_NAME_GREY_DARK: &str = "grey_dark";
 pub const TAG_DATA_LINK: &str = "link";
+
+pub const SPECIAL_GLYPH_TREE_VERTICAL: &str = "│ ";
+pub const SPECIAL_GLYPH_TREE_SPACE: &str = "  ";
+pub const SPECIAL_GLYPH_TREE_RIGHT: &str = "└─";
+pub const SPECIAL_GLYPH_TREE_BRANCH: &str = "├─";
 
 impl UnitInfoWriter {
     pub fn new(buf: TextBuffer, iter: TextIter, is_dark: bool) -> Self {
@@ -23,16 +30,26 @@ impl UnitInfoWriter {
     }
 
     pub fn insert(&mut self, text: &str) {
-        self.buf.insert(&mut self.iter, text);
+        self.buf.insert(&mut self.iter, text);  
     }
 
-    pub fn new_line(&mut self) {
+    pub fn insertln(&mut self, text: &str) {
+        self.buf.insert(&mut self.iter, text);        
+        self.buf.insert(&mut self.iter, "\n");
+    }
+
+    pub fn newline(&mut self) {
         self.buf.insert(&mut self.iter, "\n");
     }
 
     pub fn insert_active(&mut self, text: &str) {
         self.insert_tag(text, Self::create_active_tag, None);
     }
+
+    pub fn insert_red(&mut self, text: &str) {
+        self.insert_tag(text, Self::create_red_tag, None);
+    }
+
 
     pub fn insert_disable(&mut self, text: &str) {
         self.insert_tag(text, Self::create_disable_tag, None);
@@ -78,6 +95,28 @@ impl UnitInfoWriter {
             ],
         );
 
+        tag_op
+    }
+
+    fn create_red_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+        let (color, name) = if is_dark {
+            (Palette::Red4.get_color(), TAG_NAME_RED_DARK)
+        } else {
+            (Palette::Red3.get_color(), TAG_NAME_RED)
+        };
+
+        let tag_op = buf.tag_table().lookup(name);
+        if tag_op.is_some() {
+            return tag_op;
+        }
+
+        let tag_op = buf.create_tag(
+            Some(name),
+            &[
+                ("foreground", &color.to_value()),
+                ("weight", &pango::Weight::Bold.into_glib().to_value()),
+            ],
+        );
         tag_op
     }
 

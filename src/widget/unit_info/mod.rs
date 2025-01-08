@@ -2,7 +2,7 @@ use crate::systemd::data::UnitInfo;
 
 mod construct_info;
 mod time_handling;
-mod writer;
+pub mod writer;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
@@ -139,8 +139,6 @@ mod imp {
             let mut info_writer = UnitInfoWriter::new(buf, start_iter, is_dark);
 
             fill_all_info(unit, &mut info_writer);
-
-            //buf.insert_markup(&mut start_iter, &text);
         }
 
         pub(crate) fn set_dark(&self, is_dark: bool) {

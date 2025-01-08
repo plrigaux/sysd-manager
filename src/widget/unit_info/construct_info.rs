@@ -6,7 +6,10 @@ use serde::Deserialize;
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Type, Value};
 
-use super::{time_handling, writer::UnitInfoWriter};
+use super::{
+    time_handling,
+    writer::{UnitInfoWriter, SPECIAL_GLYPH_TREE_RIGHT},
+};
 
 pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     //let mut unit_info_tokens = Vec::new();
@@ -68,22 +71,6 @@ macro_rules! get_value {
     }};
 }
 
-/* macro_rules! strwriter {
-    ($dst:expr, $($arg:tt)*) => {
-        if let Err(e) = write!($dst, $($arg)*) {
-            warn!("writeln error : {:?}", e)
-        }
-    };
-}
-
-macro_rules! strwriterln {
-    ($dst:expr, $($arg:tt)*) => {
-        if let Err(e) = writeln!($dst, $($arg)*) {
-            warn!("writeln error : {:?}", e)
-        }
-    };
-} */
-
 fn write_key(unit_writer: &mut UnitInfoWriter, key_label: &str) {
     let s = format!("{:>KEY_WIDTH$} ", key_label);
     unit_writer.insert(&s);
@@ -111,8 +98,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
         let (first, last) = file_name.rsplit_once('/').unwrap();
 
         if is_first {
-            unit_writer.insert(first);
-            unit_writer.new_line();
+            unit_writer.insertln(first);
             is_first = false;
         } else {
             //strwriterln!(text, "{:KEY_WIDTH$} {}", " ", first);
@@ -121,8 +107,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     }
 
     if !drops.is_empty() {
-        //unit_writer.insert(&format!("{:KEY_WIDTH$} └─", " ")));
-        unit_writer.insert(&format!("{:KEY_WIDTH$} └─", " "));
+        unit_writer.insert(&format!("{:KEY_WIDTH$} {}", " ", SPECIAL_GLYPH_TREE_RIGHT));
 
         is_first = true;
         for (d, link) in drops.iter() {
@@ -133,7 +118,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
             unit_writer.hyperlink(d, link);
             is_first = false;
         }
-        unit_writer.new_line();
+        unit_writer.newline();
     }
 }
 
@@ -167,7 +152,7 @@ fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
         unit_writer.insert(&text);
     }
 
-    unit_writer.new_line();
+    unit_writer.newline();
 }
 
 fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
@@ -267,7 +252,7 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
         unit_writer.insert(")");
     }
 
-    unit_writer.new_line();
+    unit_writer.newline();
 }
 
 fn write_enabled_state(unit_writer: &mut UnitInfoWriter, unit_file_state: &OwnedValue) {
@@ -359,7 +344,7 @@ fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
     //Memory: 1.9M (peak: 6.2M swap: 224.0K swap peak: 444.0K)
 
-    unit_writer.new_line();
+    unit_writer.newline();
 }
 
 fn write_mem_param<'a>(
@@ -480,7 +465,7 @@ fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
         unit_writer.insert_grey(&limit);
     }
 
-    unit_writer.new_line();
+    unit_writer.newline();
     //fill_row(unit_writer, "Tasks:", &tasks_info)
 }
 
@@ -653,15 +638,14 @@ fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Ow
 
         write_key(unit_writer, KEY_LABEL);
 
-        unit_writer.insert(c_group);
-        unit_writer.new_line();
+        unit_writer.insertln(c_group);
 
-        unit_writer.insert(&format!("{:KEY_WIDTH$} └─", " ",));
+        unit_writer.insert(&format!("{:KEY_WIDTH$} {}", " ", SPECIAL_GLYPH_TREE_RIGHT));
 
         let s = format!("{} {}", &main_pid.to_string(), exec_full);
 
         unit_writer.insert_grey(&s);
-        unit_writer.new_line();
+        unit_writer.newline();
     } else {
         fill_row(unit_writer, KEY_LABEL, c_group)
     }
