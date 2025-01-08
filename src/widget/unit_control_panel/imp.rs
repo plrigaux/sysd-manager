@@ -139,6 +139,7 @@ impl ObjectImpl for UnitControlPanelImpl {
         {
             let unit_journal_panel = self.unit_journal_panel.clone();
             let unit_dependencies_panel = self.unit_dependencies_panel.clone();
+            let unit_file_panel = self.unit_file_panel.clone();
             self.unit_panel_stack
                 .connect_visible_child_notify(move |view_stack| {
                     debug!(
@@ -151,13 +152,21 @@ impl ObjectImpl for UnitControlPanelImpl {
                             debug!("It a journal");
                             unit_journal_panel.set_visible_on_page(true);
                             unit_dependencies_panel.set_visible_on_page(false);
+                            unit_file_panel.set_visible_on_page(false);
                         } else if child.downcast_ref::<UnitDependenciesPanel>().is_some() {
                             debug!("It's  dependency");
                             unit_journal_panel.set_visible_on_page(false);
                             unit_dependencies_panel.set_visible_on_page(true);
+                            unit_file_panel.set_visible_on_page(false);
+                        } else if child.downcast_ref::<UnitFilePanel>().is_some() {
+                            debug!("It's file panel");
+                            unit_journal_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_visible_on_page(true);
+                            unit_file_panel.set_visible_on_page(true);
                         } else {
                             unit_journal_panel.set_visible_on_page(false);
                             unit_dependencies_panel.set_visible_on_page(false);
+                            unit_file_panel.set_visible_on_page(false);
                         }
                     }
                 });
@@ -317,7 +326,7 @@ impl UnitControlPanelImpl {
         }
 
         self.unit_info_panel.display_unit_info(unit);
-        self.unit_file_panel.set_file_content(unit);
+        self.unit_file_panel.set_unit(unit);
         self.unit_journal_panel.set_unit(unit);
         self.kill_panel.set_unit(unit);
         self.unit_dependencies_panel.set_unit(unit);

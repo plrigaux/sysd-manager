@@ -15,11 +15,15 @@ use zbus::{
 
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
-use crate::systemd::{data::UnitInfo, enums::{ActiveState, UnitType}};
+use crate::systemd::{
+    data::UnitInfo,
+    enums::{ActiveState, UnitType},
+};
 use crate::widget::preferences::data::DbusLevel;
 
 use super::{
-    enums::{DependencyType, EnablementStatus, KillWho, StartStopMode}, Dependency, SystemdErrors, SystemdUnit
+    enums::{DependencyType, EnablementStatus, KillWho, StartStopMode},
+    Dependency, SystemdErrors, SystemdUnit,
 };
 
 const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
@@ -608,7 +612,7 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
         .get(interface_name.clone(), "SubState")?
         .try_into()?;
     let followed_unit: Str<'_> = properties_proxy
-        .get(interface_name, "Following")?
+        .get(interface_name.clone(), "Following")?
         .try_into()?;
 
     let unit = UnitInfo::new(
@@ -621,9 +625,24 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
         Some(&object_path),
     );
 
+    let fragment_path = match properties_proxy.get(interface_name, "FragmentPath") {
+        Ok(value) => match <OwnedValue as TryInto<Str<'_>>>::try_into(value) {
+            Ok(fp) => Some(fp.to_string()),
+            Err(e) => {
+                warn!("fragment_path {:?}", e);
+                None
+            }
+        },
+        Err(e) => {
+            warn!("fragment_path {:?}", e);
+            None
+        }
+    };
+
+    unit.set_file_path(fragment_path);
+
     Ok(unit)
 }
-
 
 pub(super) fn unit_get_dependencies(
     dbus_level: DbusLevel,
@@ -634,7 +653,6 @@ pub(super) fn unit_get_dependencies(
     let connection = get_connection(dbus_level)?;
     let dependencies_properties = dependency_type.properties();
     let mut units = HashSet::new();
-
 
     let mut dependency = Dependency::new(unit_name);
     //writeln!(out, "{}", unit_name).unwrap();
@@ -674,7 +692,7 @@ fn reteive_dependencies(
         };
 
         let array: &Array = value.try_into()?;
-      
+
         for sv in array.iter() {
             let unit_name: &str = sv.try_into()?;
 
@@ -945,7 +963,7 @@ mod tests {
             DependencyType::Forward,
         );
 
-        info!("{:#?}", res.unwrap()    );
+        info!("{:#?}", res.unwrap());
         Ok(())
     }
 

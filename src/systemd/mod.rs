@@ -132,7 +132,7 @@ pub fn disable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String),
 /// Read the unit file and return it's contents so that we can display it
 pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     let Some(file_path) = &unit.file_path() else {
-        info!("No file path for {}", unit.primary());
+        warn!("No file path for {:?}", unit.primary());
         return Ok(String::new());
     };
 
