@@ -578,18 +578,6 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
 
     let interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
 
-    /*     The primary unit name as string
-    The human readable description string
-    The load state (i.e. whether the unit file has been loaded successfully)
-    The active state (i.e. whether the unit is currently started or not)
-    The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
-    A unit that is being followed in its state by this unit, if there is any, otherwise the empty string.
-    The unit object path
-    If there is a job queued for the job unit the numeric job id, 0 otherwise
-    The job type as string
-    The job object path
-     */
-
     let primary: Str<'_> = properties_proxy
         .get(interface_name.clone(), "Id")?
         .try_into()?;

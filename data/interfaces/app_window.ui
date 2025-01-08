@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.94.0 -->
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
   <!-- interface-name app_window.ui -->
   <requires lib="gtk" version="4.14"/>
@@ -47,7 +47,9 @@
                 <child>
                   <object class="GtkPaned" id="paned">
                     <property name="end-child">
-                      <object class="UnitControlPanel" id="unit_control_panel"/>
+                      <object class="UnitControlPanel" id="unit_control_panel">
+                        <property name="margin-start">10</property>
+                      </object>
                     </property>
                     <property name="position-set">True</property>
                     <property name="shrink-start-child">False</property>
