@@ -526,6 +526,14 @@ impl Dependency {
             children: BTreeSet::new(),
         }
     }
+    
+    fn partial_clone(&self) -> Dependency {
+        Self {
+            unit_name: self.unit_name.clone(),
+            state: self.state,
+            children: BTreeSet::new(),
+        }
+    }
 }
 
 impl Ord for Dependency {
@@ -543,10 +551,11 @@ impl PartialOrd for Dependency {
 pub fn fetch_unit_dependencies(
     unit: &UnitInfo,
     dependency_type: DependencyType,
+    plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level().into();
 
     let object_path = get_unit_path(unit);
 
-    sysdbus::unit_get_dependencies(level, &unit.primary(), &object_path, dependency_type)
+    sysdbus::unit_get_dependencies(level, &unit.primary(), &object_path, dependency_type, plain)
 }

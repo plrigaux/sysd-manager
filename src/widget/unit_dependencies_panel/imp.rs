@@ -53,7 +53,9 @@ pub struct UnitDependenciesPanelImp {
 
     unit_dependencies_loaded: Cell<bool>,
 
-    pub(super) dependency_type: Cell<DependencyType>
+    pub(super) dependency_type: Cell<DependencyType>,
+
+    plain: Cell<bool>,
 }
 
 #[gtk::template_callbacks]
@@ -98,12 +100,13 @@ impl UnitDependenciesPanelImp {
         let textview = self.unit_dependencies_textview.clone();
         let stack = self.unit_dependencies_panel_stack.clone();
         let dark = self.dark.get();
+        let plain = self.plain.get();
 
         glib::spawn_future_local(async move {
             stack.set_visible_child_name("spinner");
             let dependencies =
                 gio::spawn_blocking(move || {
-                    match systemd::fetch_unit_dependencies(&unit, dep_type) {
+                    match systemd::fetch_unit_dependencies(&unit, dep_type, plain) {
                         Ok(dep) => Some(dep),
                         Err(error) => {
                             warn!(
@@ -180,7 +183,8 @@ impl UnitDependenciesPanelImp {
         };
 
         info_writer.insert(glyph);
-        info_writer.insert(&dependency.unit_name);
+        info_writer.insert(" ");
+        info_writer.hyperlink(&dependency.unit_name, &dependency.unit_name);
         info_writer.newline();
 
         let child_spacer = format!("{spacer}{child_pading}");
@@ -231,6 +235,12 @@ impl UnitDependenciesPanelImp {
                 });
         }
     }
+
+    #[template_callback]
+    fn plain_option_toggled(&self, check_button: &gtk::CheckButton) {
+        self.plain.set(check_button.is_active());
+        self.update_dependencies();
+    }    
 }
 // The central trait for subclassing a GObject
 #[glib::object_subclass]

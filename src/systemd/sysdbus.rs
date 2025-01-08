@@ -637,6 +637,7 @@ pub(super) fn unit_get_dependencies(
     unit_name: &str,
     unit_object_path: &str,
     dependency_type: DependencyType,
+    plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
     let connection = get_connection(dbus_level)?;
     let dependencies_properties = dependency_type.properties();
@@ -650,9 +651,24 @@ pub(super) fn unit_get_dependencies(
         dependencies_properties,
         &connection,
         &mut units,
+        plain,
     )?;
 
+    if plain {        
+        let mut all_children = BTreeSet::new();
+        flatit(&dependency, &mut all_children);
+        dependency.children.clear();
+        dependency.children.append(&mut all_children);
+    }
+
     Ok(dependency)
+}
+
+fn flatit(parent: &Dependency, all_children: &mut BTreeSet<Dependency>) {
+    for child in parent.children.iter() {
+        flatit(child, all_children);
+        all_children.insert(child.partial_clone());
+    }   
 }
 
 fn reteive_dependencies(
@@ -661,8 +677,8 @@ fn reteive_dependencies(
     dependencies_properties: &[&str],
     connection: &Connection,
     units: &mut HashSet<String>,
+    plain: bool,
 ) -> Result<(), SystemdErrors> {
-
     let map = fetch_unit_all_properties(connection, unit_object_path)?;
 
     dependency.state = map.get("ActiveState").into();
@@ -689,19 +705,18 @@ fn reteive_dependencies(
         }
     }
 
-    //info!("Unit {:?} Level {} Set {:#?}", parent_unit_name, level, set);
-    //list_dependencies_print(parent_unit_name, out, level, &map, branches, last);
-
     for child_name in set {
         let objet_path = unit_dbus_path_from_name(&child_name);
 
         let mut child_depency = Dependency::new(child_name);
+
         reteive_dependencies(
             &mut child_depency,
             &objet_path,
             dependencies_properties,
             connection,
             units,
+            plain,
         )?;
 
         dependency.children.insert(child_depency);
@@ -945,6 +960,7 @@ mod tests {
             TEST_SERVICE,
             &path,
             DependencyType::Forward,
+            false,
         );
 
         info!("{:#?}", res.unwrap());
@@ -962,6 +978,7 @@ mod tests {
             TEST_SERVICE,
             &path,
             DependencyType::Reverse,
+            false,
         );
 
         info!("{:#?}", res);

@@ -59,7 +59,10 @@ mod imp {
 
     use log::{info, warn};
 
-    use crate::{systemd::{data::UnitInfo, generate_file_uri}, widget::info_window::InfoWindow};
+    use crate::{
+        systemd::{data::UnitInfo, generate_file_uri},
+        widget::info_window::InfoWindow,
+    };
 
     use super::{
         construct_info::fill_all_info,
@@ -167,72 +170,75 @@ mod imp {
     impl ObjectImpl for UnitInfoPanelImp {
         fn constructed(&self) {
             self.parent_constructed();
-            {
-                let text_view = self.unit_info_textview.clone();
-                let event_controller_key = gtk::EventControllerKey::new();
-
-                event_controller_key.connect_key_pressed(
-                    move |_event_controller_key, keyval: gdk::Key, _keycode, _modifiers| {
-                        match keyval {
-                            gdk::Key::Return | gdk::Key::KP_Enter => {
-                                let buffer = text_view.buffer();
-                                let mark = buffer.get_insert();
-                                let iter = buffer.iter_at_mark(&mark);
-
-                                follow_if_link(iter);
-                            }
-                            _ => {}
-                        }
-                        glib::Propagation::Proceed
-                    },
-                );
-                self.unit_info_textview.add_controller(event_controller_key);
-            }
-
-            {
-                let event_controller_motion = gtk::EventControllerMotion::new();
-
-                let text_view = self.unit_info_textview.clone();
-                let info_panel = self.obj().clone();
-                event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
-                    let (tx, ty) = text_view.window_to_buffer_coords(
-                        gtk::TextWindowType::Widget,
-                        x as i32,
-                        y as i32,
-                    );
-
-                    set_cursor_if_appropriate(&info_panel, &text_view, tx, ty);
-                });
-                self.unit_info_textview
-                    .add_controller(event_controller_motion);
-            }
-
-            {
-                let gesture_click = gtk::GestureClick::new();
-                let text_view = self.unit_info_textview.clone();
-                gesture_click.connect_released(move |_gesture_click, _n_press, x, y| {
-                    let buf = text_view.buffer();
-
-                    // we shouldn't follow a link if the user has selected something
-                    if let Some((start, end)) = buf.selection_bounds() {
-                        if start.offset() != end.offset() {
-                            return;
-                        }
-                    }
-
-                    let Some(iter) = text_view.iter_at_location(x as i32, y as i32) else {
-                        return;
-                    };
-
-                    follow_if_link(iter);
-                });
-
-                self.unit_info_textview.add_controller(gesture_click);
-            }
+            build_textview_link_platform(&self.unit_info_textview, &self.obj());
         }
     }
     impl WidgetImpl for UnitInfoPanelImp {}
     impl BoxImpl for UnitInfoPanelImp {}
+
+    fn build_textview_link_platform(text_view_or: &gtk::TextView, info_panel : &UnitInfoPanel) {
+        {
+            let text_view = text_view_or.clone();
+            let event_controller_key = gtk::EventControllerKey::new();
+
+            event_controller_key.connect_key_pressed(
+                move |_event_controller_key, keyval: gdk::Key, _keycode, _modifiers| {
+                    match keyval {
+                        gdk::Key::Return | gdk::Key::KP_Enter => {
+                            let buffer = text_view.buffer();
+                            let mark = buffer.get_insert();
+                            let iter = buffer.iter_at_mark(&mark);
+
+                            follow_if_link(iter);
+                        }
+                        _ => {}
+                    }
+                    glib::Propagation::Proceed
+                },
+            );
+            text_view_or.add_controller(event_controller_key);
+        }
+
+        {
+            let event_controller_motion = gtk::EventControllerMotion::new();
+
+            let text_view = text_view_or.clone();
+            let info_panel = info_panel.clone();
+            event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
+                let (tx, ty) = text_view.window_to_buffer_coords(
+                    gtk::TextWindowType::Widget,
+                    x as i32,
+                    y as i32,
+                );
+
+                set_cursor_if_appropriate(&info_panel, &text_view, tx, ty);
+            });
+            text_view_or.add_controller(event_controller_motion);
+        }
+
+        {
+            let gesture_click = gtk::GestureClick::new();
+            let text_view = text_view_or.clone();
+            gesture_click.connect_released(move |_gesture_click, _n_press, x, y| {
+                let buf = text_view.buffer();
+
+                // we shouldn't follow a link if the user has selected something
+                if let Some((start, end)) = buf.selection_bounds() {
+                    if start.offset() != end.offset() {
+                        return;
+                    }
+                }
+
+                let Some(iter) = text_view.iter_at_location(x as i32, y as i32) else {
+                    return;
+                };
+
+                follow_if_link(iter);
+            });
+
+            text_view_or.add_controller(gesture_click);
+        }
+    }
 
     fn set_cursor_if_appropriate(
         info_panel: &UnitInfoPanel,

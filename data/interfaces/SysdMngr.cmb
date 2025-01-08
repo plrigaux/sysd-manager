@@ -244,7 +244,9 @@
 	(54,16,"AdwSpinner",None,11,None,None,None,0,None,None),
 	(54,17,"GtkScrolledWindow",None,13,None,None,None,0,None,None),
 	(54,18,"GtkTextView","unit_dependencies_textview",17,None,None,None,0,None,None),
-	(54,19,"GtkDropDown","dependency_types_dropdown",2,None,None,None,0,None,None)
+	(54,19,"GtkDropDown","dependency_types_dropdown",2,None,None,None,0,None,None),
+	(54,20,"GtkCheckButton",None,2,None,None,None,2,None,None),
+	(54,21,"GtkLabel",None,2,None,None,None,1,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -325,6 +327,7 @@
 	(29,6,"AdwButtonContent","use-underline","True",0,None,None,None,None,None,None,None,None),
 	(29,7,"GtkWidget","vexpand","True",0,None,None,None,None,None,None,None,None),
 	(29,8,"GtkTextView","editable","False",0,None,None,None,None,None,None,None,None),
+	(29,8,"GtkTextView","monospace","True",None,None,None,None,None,None,None,None,None),
 	(30,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(30,7,"GtkStackPage","child",None,0,None,None,None,8,None,None,None,None),
 	(30,7,"GtkStackPage","name","spinner",0,None,None,None,None,None,None,None,None),
@@ -563,6 +566,7 @@
 	(53,22,"GtkColumnViewColumn","resizable","True",0,None,None,None,None,None,None,None,None),
 	(53,22,"GtkColumnViewColumn","title","Description",0,None,None,None,None,None,None,None,None),
 	(54,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(54,2,"GtkWidget","halign","end",None,None,None,None,None,None,None,None,None),
 	(54,10,"GtkStackPage","child",None,None,None,None,None,15,None,None,None,None),
 	(54,10,"GtkStackPage","name","empty",None,None,None,None,None,None,None,None,None),
 	(54,11,"GtkStackPage","child",None,None,None,None,None,16,None,None,None,None),
@@ -573,7 +577,10 @@
 	(54,17,"GtkScrolledWindow","child",None,None,None,None,None,18,None,None,None,None),
 	(54,18,"GtkTextView","editable","False",None,None,None,None,None,None,None,None,None),
 	(54,18,"GtkTextView","monospace","True",None,None,None,None,None,None,None,None,None),
-	(54,18,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None)
+	(54,18,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(54,19,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
+	(54,20,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
+	(54,21,"GtkLabel","label","plain",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
@@ -617,7 +624,8 @@
 	(175,53,21,"GtkSignalListItemFactory","bind","col_active_status_factory_bind",None,None,0,0,None),
 	(176,53,21,"GtkSignalListItemFactory","setup","col_active_status_factory_setup",None,None,0,0,None),
 	(177,53,23,"GtkSignalListItemFactory","bind","col_description_factory_bind",None,None,0,0,None),
-	(178,53,23,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None)
+	(178,53,23,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None),
+	(179,54,20,"GtkCheckButton","toggled","plain_option_toggled",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),
