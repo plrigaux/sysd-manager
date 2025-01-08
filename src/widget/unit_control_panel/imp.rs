@@ -179,6 +179,7 @@ impl UnitControlPanelImpl {
     pub(super) fn set_overlay(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
         self.kill_panel.register(&self.side_overlay, toast_overlay);
         self.unit_file_panel.register(app_window, toast_overlay);
+        self.unit_dependencies_panel.register(app_window);
 
         if let Err(e) = self.toast_overlay.set(toast_overlay.clone()) {
             warn!("Set Toast Overlay Issue: {:?}", e)

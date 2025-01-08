@@ -4,6 +4,8 @@ use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::enums::DependencyType;
 
+use super::app_window::AppWindow;
+
 glib::wrapper! {
     pub struct UnitDependenciesPanel(ObjectSubclass<imp::UnitDependenciesPanelImp>)
         @extends gtk::Box, gtk::Widget,
@@ -16,11 +18,15 @@ impl UnitDependenciesPanel {
         obj
     }
 
-    pub(super) fn replace_dependency_type(&self, dt: DependencyType) -> DependencyType  {
+    pub(super) fn replace_dependency_type(&self, dt: DependencyType) -> DependencyType {
         self.imp().dependency_type.replace(dt)
     }
 
     pub(super) fn update_dependencies(&self) {
         self.imp().update_dependencies()
+    }
+
+    pub fn register(&self, app_window: &AppWindow) {
+        self.imp().register(app_window);
     }
 }

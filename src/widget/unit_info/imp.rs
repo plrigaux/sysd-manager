@@ -1,10 +1,10 @@
-
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
 };
 
 use gtk::{
+    gio,
     glib::{self},
     prelude::*,
     subclass::{
@@ -14,19 +14,20 @@ use gtk::{
             CompositeTemplateCallbacksClass, CompositeTemplateClass,
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
-    }, TemplateChild,
+    },
+    FileLauncher, TemplateChild,
 };
 
 use log::{info, warn};
 
 use crate::{
-    systemd::data::UnitInfo,
-    widget::info_window::InfoWindow,
+    systemd::{data::UnitInfo, generate_file_uri},
+    widget::{app_window::AppWindow, info_window::InfoWindow},
 };
 
 use super::{
     construct_info::fill_all_info,
-    text_view_hyperlink,
+    text_view_hyperlink::{self, LinkActivator},
     writer::UnitInfoWriter,
 };
 
@@ -46,7 +47,7 @@ pub struct UnitInfoPanelImp {
 
     is_dark: Cell<bool>,
 
-    pub hovering_over_link: Rc<Cell<bool>>,
+    hovering_over_link: Rc<Cell<bool>>,
 }
 
 #[gtk::template_callbacks]
@@ -131,11 +132,29 @@ impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
+        let activator = LinkActivator::new(activate_link, None);
+
         text_view_hyperlink::build_textview_link_platform(
             &self.unit_info_textview,
             self.hovering_over_link.clone(),
+            activator,
         );
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}
 impl BoxImpl for UnitInfoPanelImp {}
+
+fn activate_link(file_link: &str, _app_window: &Option<AppWindow>) {
+    let uri = generate_file_uri(&file_link);
+    let file = gio::File::for_uri(&uri);
+    let launcher = FileLauncher::new(Some(&file));
+    launcher.launch(
+        None::<&gtk::Window>,
+        None::<&gio::Cancellable>,
+        move |result| {
+            if let Err(error) = result {
+                warn!("Finished launch {} Error {:?}", uri, error)
+            }
+        },
+    );
+}

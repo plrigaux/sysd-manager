@@ -69,7 +69,7 @@ fn load_css() {
     );
 }
 
-fn build_ui(application: &adw::Application, unit : Option<UnitInfo>) {
+fn build_ui(application: &adw::Application, unit: Option<UnitInfo>) {
     let window = AppWindow::new(application);
 
     {
@@ -130,11 +130,15 @@ fn handle_args() -> Option<UnitInfo> {
         PREFERENCES.save_dbus_level(&settings);
     }
 
-    if args.unit.is_some() {
-        match systemd::fetch_unit(&args.unit.unwrap()) {
-            Ok(unit) => return Some(unit),
-            Err(e) => warn!("Cli unit: {:?}", e),
-        };
+    let Some(unit_name) = args.unit else {
+        return None;
+    };
+
+    match systemd::fetch_unit(&unit_name) {
+        Ok(unit) => Some(unit),
+        Err(e) => {
+            warn!("Cli unit: {:?}", e);
+            None
+        }
     }
-    None
 }

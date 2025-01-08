@@ -1,21 +1,49 @@
 use std::{cell::Cell, rc::Rc};
 
-use gtk::{gdk, gio, glib::{self, Value}, prelude::*, FileLauncher};
+use gtk::{
+    gdk,
+    glib::{self, Value},
+    prelude::*,
+};
 use log::warn;
 
-use crate::systemd::generate_file_uri;
+use crate::widget::app_window::AppWindow;
 
 use super::writer::TAG_DATA_LINK;
 
+pub struct LinkActivator {
+    f: fn(&str, &Option<AppWindow>),
+    app: Option<AppWindow>,
+}
+
+impl LinkActivator {
+    pub fn new(f: fn(&str, &Option<AppWindow>), app: Option<AppWindow>) -> Self {
+        LinkActivator { f, app }
+    }
+
+    pub fn run(&self, s: &str) {
+        (self.f)(s, &self.app)
+    }
+}
+
+impl Clone for LinkActivator {
+    fn clone(&self) -> LinkActivator {
+        LinkActivator {
+            f: self.f,
+            app: self.app.clone(),
+        }
+    }
+}
 
 pub fn build_textview_link_platform(
     text_view_or: &gtk::TextView,
     hovering_over_link: Rc<Cell<bool>>,
+    link_activator: LinkActivator,
 ) {
     {
         let text_view = text_view_or.clone();
         let event_controller_key = gtk::EventControllerKey::new();
-
+        let link_activator = link_activator.clone();
         event_controller_key.connect_key_pressed(
             move |_event_controller_key, keyval: gdk::Key, _keycode, _modifiers| {
                 match keyval {
@@ -24,7 +52,7 @@ pub fn build_textview_link_platform(
                         let mark = buffer.get_insert();
                         let iter = buffer.iter_at_mark(&mark);
 
-                        follow_if_link(iter);
+                        follow_if_link(iter, link_activator.clone());
                     }
                     _ => {}
                 }
@@ -36,15 +64,12 @@ pub fn build_textview_link_platform(
 
     {
         let event_controller_motion = gtk::EventControllerMotion::new();
-
         let text_view = text_view_or.clone();
         let hovering_over_link = hovering_over_link.clone();
+
         event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
-            let (tx, ty) = text_view.window_to_buffer_coords(
-                gtk::TextWindowType::Widget,
-                x as i32,
-                y as i32,
-            );
+            let (tx, ty) =
+                text_view.window_to_buffer_coords(gtk::TextWindowType::Widget, x as i32, y as i32);
 
             set_cursor_if_appropriate(hovering_over_link.clone(), &text_view, tx, ty);
         });
@@ -54,6 +79,7 @@ pub fn build_textview_link_platform(
     {
         let gesture_click = gtk::GestureClick::new();
         let text_view = text_view_or.clone();
+        let link_activator = link_activator.clone();
         gesture_click.connect_released(move |_gesture_click, _n_press, x, y| {
             let buf = text_view.buffer();
 
@@ -68,7 +94,7 @@ pub fn build_textview_link_platform(
                 return;
             };
 
-            follow_if_link(iter);
+            follow_if_link(iter, link_activator.clone());
         });
 
         text_view_or.add_controller(gesture_click);
@@ -108,15 +134,15 @@ fn set_cursor_if_appropriate(
     }
 }
 
-fn follow_if_link(iter: gtk::TextIter) {
-    let tags = iter.tags();
+fn follow_if_link(text_iter: gtk::TextIter, link_activator: LinkActivator) {
+    let tags = text_iter.tags();
 
-    let mut link_value_op = None;
+    let mut link_value = None;
 
     for tag in tags.iter() {
         //info!("TAG {:?} {:?}", tag, tag.name());
 
-        link_value_op = unsafe {
+        link_value = unsafe {
             let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
             if let Some(link_value_nonull) = val {
                 Some(link_value_nonull.as_ref())
@@ -125,26 +151,15 @@ fn follow_if_link(iter: gtk::TextIter) {
             }
         };
 
-        if link_value_op.is_some() {
+        if link_value.is_some() {
             break;
         }
     }
 
-    if let Some(link_value) = link_value_op {
+    if let Some(link_value) = link_value {
         match link_value.get::<String>() {
             Ok(file_link) => {
-                let uri = generate_file_uri(&file_link);
-                let file = gio::File::for_uri(&uri);
-                let launcher = FileLauncher::new(Some(&file));
-                launcher.launch(
-                    None::<&gtk::Window>,
-                    None::<&gio::Cancellable>,
-                    move |result| {
-                        if let Err(error) = result {
-                            warn!("Finished launch {} Error {:?}", uri, error)
-                        }
-                    },
-                );
+                link_activator.run(&file_link);
             }
             Err(e) => warn!("Link value Error {:?}", e),
         }

@@ -13,15 +13,24 @@ use gtk::{
     TemplateChild,
 };
 
-use std::cell::{Cell, RefCell};
+use std::{
+    cell::{Cell, RefCell},
+    rc::Rc,
+};
 
-use log::{debug, warn};
+use log::{debug, info, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::DependencyType, Dependency},
-    widget::unit_info::writer::{
-        UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-        SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+    widget::{
+        app_window::AppWindow,
+        unit_info::{
+            text_view_hyperlink::{self, LinkActivator},
+            writer::{
+                UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+                SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+            },
+        },
     },
 };
 
@@ -56,11 +65,44 @@ pub struct UnitDependenciesPanelImp {
     pub(super) dependency_type: Cell<DependencyType>,
 
     plain: Cell<bool>,
+
+    hovering_over_link: Rc<Cell<bool>>,
+}
+
+impl UnitDependenciesPanelImp {
+    pub(crate) fn register(&self, app_window: &AppWindow) {
+        {
+            let app_window = app_window.clone();
+
+            let activator = LinkActivator::new(activate_link, Some(app_window));
+
+            text_view_hyperlink::build_textview_link_platform(
+                &self.unit_dependencies_textview,
+                self.hovering_over_link.clone(),
+                activator,
+            );
+        }
+    }
+}
+
+fn activate_link(unit_name: &str, app_window: &Option<AppWindow>) {
+    info!("open unit {:?} dependency", unit_name);
+    let unit = match systemd::fetch_unit(&unit_name) {
+        Ok(unit) => Some(unit),
+        Err(e) => {
+            warn!("Cli unit: {:?}", e);
+            None
+        }
+    };
+
+    match app_window {
+        Some(app_window) => app_window.set_unit(unit),
+        None => {}
+    }
 }
 
 #[gtk::template_callbacks]
 impl UnitDependenciesPanelImp {
-
     fn set_visible_on_page(&self, value: bool) {
         debug!("set_visible_on_page val {value}");
         self.visible_on_page.set(value);
@@ -240,7 +282,7 @@ impl UnitDependenciesPanelImp {
     fn plain_option_toggled(&self, check_button: &gtk::CheckButton) {
         self.plain.set(check_button.is_active());
         self.update_dependencies();
-    }    
+    }
 }
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
