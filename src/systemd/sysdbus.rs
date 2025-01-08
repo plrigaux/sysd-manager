@@ -662,10 +662,6 @@ fn reteive_dependencies(
     connection: &Connection,
     units: &mut HashSet<String>,
 ) -> Result<(), SystemdErrors> {
-    /*     if level >= 4 {
-        warn!("Level too deep");
-        return Ok(());
-    } */
 
     let map = fetch_unit_all_properties(connection, unit_object_path)?;
 

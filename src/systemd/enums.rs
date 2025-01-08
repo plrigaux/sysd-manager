@@ -1,10 +1,7 @@
-use crate::gtk::prelude::*;
-use gtk::glib;
-use gtk::glib::EnumValue;
-use log::info;
-use log::warn;
-use std::cell::RefCell;
-use std::fmt::Display;
+use gtk::prelude::*;
+use gtk::glib::{self, EnumValue};
+use log::{info, warn};
+use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
 use zvariant::OwnedValue;
 
@@ -387,13 +384,18 @@ impl From<u32> for KillWho {
     }
 }
 
-#[allow(dead_code)] // to remove ater full impementation
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
+#[enum_type(name = "DependencyType")]
 pub enum DependencyType {
-    Forward,
-    Reverse,
-    After,
-    Before,
+    #[enum_value(name = "forward", nick = "Forward")]
+    #[default]
+    Forward = 0,
+    #[enum_value(name = "reverse", nick = "Reverse")]
+    Reverse = 1,
+    #[enum_value(name = "after", nick = "After")]
+    After = 2,
+    #[enum_value(name = "before", nick = "Before")]
+    Before = 3,
 }
 
 impl DependencyType {
@@ -419,6 +421,18 @@ impl DependencyType {
             DependencyType::Before => &["Before"],
         };
         properties
+    }
+}
+
+impl From<u32> for DependencyType {
+    fn from(dtype: u32) -> Self {
+        match dtype {
+            0 =>  DependencyType::Forward,
+            1 =>  DependencyType::Reverse,
+            2 =>  DependencyType::After,
+            3 =>  DependencyType::Before,
+            _ =>  DependencyType::Forward,
+        }
     }
 }
 

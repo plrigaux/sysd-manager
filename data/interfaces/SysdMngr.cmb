@@ -236,8 +236,6 @@
 	(53,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None),
 	(54,1,"GtkBox","UnitDependenciesPanel",None,None,None,None,0,None,None),
 	(54,2,"GtkBox",None,1,None,None,None,0,None,None),
-	(54,3,"GtkSwitch","reverse_switch",2,None,None,None,1,None,None),
-	(54,4,"GtkLabel",None,2,None,None,None,0,None,None),
 	(54,7,"GtkStack","unit_dependencies_panel_stack",1,None,None,None,1,None,None),
 	(54,10,"GtkStackPage",None,7,None,None,None,0,None,None),
 	(54,11,"GtkStackPage",None,7,None,None,None,1,None,None),
@@ -245,7 +243,8 @@
 	(54,15,"AdwStatusPage",None,10,None,None,None,0,None,None),
 	(54,16,"AdwSpinner",None,11,None,None,None,0,None,None),
 	(54,17,"GtkScrolledWindow",None,13,None,None,None,0,None,None),
-	(54,18,"GtkTextView","unit_dependencies_textview",17,None,None,None,0,None,None)
+	(54,18,"GtkTextView","unit_dependencies_textview",17,None,None,None,0,None,None),
+	(54,19,"GtkDropDown","dependency_types_dropdown",2,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -483,6 +482,7 @@
 	(49,27,"AdwViewStackPage","name","journal_page",None,None,None,None,None,None,None,None,None),
 	(49,27,"AdwViewStackPage","title","Journal",0,None,None,None,None,None,None,None,None),
 	(49,33,"AdwViewStackPage","child",None,None,None,None,None,34,None,None,None,None),
+	(49,33,"AdwViewStackPage","icon-name","view-list-symbolic",None,None,None,None,None,None,None,None,None),
 	(49,33,"AdwViewStackPage","name","dependencies_page",None,None,None,None,None,None,None,None,None),
 	(49,33,"AdwViewStackPage","title","Dependencies",None,None,None,None,None,None,None,None,None),
 	(50,6,"(item)","action","app.about",0,None,None,None,None,None,None,None,None),
@@ -563,8 +563,6 @@
 	(53,22,"GtkColumnViewColumn","resizable","True",0,None,None,None,None,None,None,None,None),
 	(53,22,"GtkColumnViewColumn","title","Description",0,None,None,None,None,None,None,None,None),
 	(54,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
-	(54,3,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
-	(54,4,"GtkLabel","label","reverse ",None,None,None,None,None,None,None,None,None),
 	(54,10,"GtkStackPage","child",None,None,None,None,None,15,None,None,None,None),
 	(54,10,"GtkStackPage","name","empty",None,None,None,None,None,None,None,None,None),
 	(54,11,"GtkStackPage","child",None,None,None,None,None,16,None,None,None,None),

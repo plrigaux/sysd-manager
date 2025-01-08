@@ -136,6 +136,7 @@
                     <property name="child">
                       <object class="UnitDependenciesPanel" id="unit_dependencies_panel"/>
                     </property>
+                    <property name="icon-name">view-list-symbolic</property>
                     <property name="name">dependencies_page</property>
                     <property name="title">Dependencies</property>
                   </object>

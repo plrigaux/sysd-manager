@@ -39,6 +39,9 @@ pub struct UnitDependenciesPanelImp {
     #[template_child]
     unit_dependencies_textview: TemplateChild<gtk::TextView>,
 
+    #[template_child]
+    dependency_types_dropdown: TemplateChild<gtk::DropDown>,
+
     #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
 
@@ -49,10 +52,13 @@ pub struct UnitDependenciesPanelImp {
     dark: Cell<bool>,
 
     unit_dependencies_loaded: Cell<bool>,
+
+    pub(super) dependency_type: Cell<DependencyType>
 }
 
 #[gtk::template_callbacks]
 impl UnitDependenciesPanelImp {
+
     fn set_visible_on_page(&self, value: bool) {
         debug!("set_visible_on_page val {value}");
         self.visible_on_page.set(value);
@@ -78,7 +84,7 @@ impl UnitDependenciesPanelImp {
         }
     }
 
-    fn update_dependencies(&self) {
+    pub(super) fn update_dependencies(&self) {
         let binding = self.unit.borrow();
         let Some(unit_ref) = binding.as_ref() else {
             warn!("No unit file");
@@ -87,7 +93,7 @@ impl UnitDependenciesPanelImp {
 
         self.unit_dependencies_loaded.set(true); // maybe wait at the full loaded
 
-        let dep_type = DependencyType::Forward;
+        let dep_type = self.dependency_type.get();
         let unit = unit_ref.clone();
         let textview = self.unit_dependencies_textview.clone();
         let stack = self.unit_dependencies_panel_stack.clone();
@@ -190,6 +196,41 @@ impl UnitDependenciesPanelImp {
             );
         }
     }
+
+    fn setup_dependency_type_dropdown(&self) {
+        let expression = gtk::PropertyExpression::new(
+            adw::EnumListItem::static_type(),
+            None::<gtk::Expression>,
+            "nick",
+        );
+
+        self.dependency_types_dropdown
+            .set_expression(Some(expression));
+
+        let model = adw::EnumListModel::new(DependencyType::static_type());
+
+        self.dependency_types_dropdown.set_model(Some(&model));
+
+        {
+            let dependency_panel = self.obj().clone();
+            self.dependency_types_dropdown
+                .connect_selected_item_notify(move |dropdown| {
+                    let idx = dropdown.selected();
+                    let dependency_type: DependencyType = idx.into();
+
+                    debug!(
+                        "System Session Values Selected idx {:?} level {:?}",
+                        idx, -1
+                    );
+
+                    let old = dependency_panel.replace_dependency_type(dependency_type);
+
+                    if old != dependency_type {
+                        dependency_panel.update_dependencies()
+                    }
+                });
+        }
+    }
 }
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
@@ -215,6 +256,8 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         self.parent_constructed();
 
         self.unit_dependencies_loaded.set(false);
+
+        self.setup_dependency_type_dropdown();
     }
 }
 
