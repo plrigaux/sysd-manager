@@ -19,7 +19,8 @@
           </object>
         </child>
         <child>
-          <object class="GtkCheckButton" id="plain_option_check">
+          <object class="GtkCheckButton">
+            <property name="margin-end">5</property>
             <signal name="toggled" handler="plain_option_toggled" swapped="yes"/>
           </object>
         </child>
