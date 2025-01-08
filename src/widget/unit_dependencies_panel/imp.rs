@@ -20,7 +20,8 @@ use log::{debug, warn};
 use crate::{
     systemd::{self, data::UnitInfo, enums::DependencyType, Dependency},
     widget::unit_info::writer::{
-        UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL
+        UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+        SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
     },
 };
 
@@ -125,13 +126,14 @@ impl UnitDependenciesPanelImp {
 
             info_writer.insertln(&dependencies.unit_name);
 
+            let spacer = String::from(SPECIAL_GLYPH_TREE_SPACE);
             let mut it = dependencies.children.iter().peekable();
+
             while let Some(child) = it.next() {
                 UnitDependenciesPanelImp::display_dependencies(
                     &mut info_writer,
                     child,
-                    1,
-                    0,
+                    &spacer,
                     it.peek().is_none(),
                 );
             }
@@ -143,8 +145,8 @@ impl UnitDependenciesPanelImp {
     fn display_dependencies(
         info_writer: &mut UnitInfoWriter,
         dependency: &Dependency,
-        level: u16,
-        branches : usize,
+
+        spacer: &str,
         last: bool,
     ) {
         let state_glyph = dependency.state.glyph();
@@ -163,76 +165,31 @@ impl UnitDependenciesPanelImp {
             _ => info_writer.insert_red(&gl),
         }
 
-        for i in (0..=level).rev() {
-            let mask: usize = 1 << i;
-            let glyph = if (branches & mask) != 0 {
-                SPECIAL_GLYPH_TREE_VERTICAL
-            } else {
-                SPECIAL_GLYPH_TREE_SPACE
-            };
-            info_writer.insert(glyph);
-        }
+        info_writer.insert(&spacer);
 
-        let glyph = if last {
-            SPECIAL_GLYPH_TREE_RIGHT
+        let (glyph, child_pading) = if last {
+            (SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE)
         } else {
-            SPECIAL_GLYPH_TREE_BRANCH
+            (SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_VERTICAL)
         };
 
         info_writer.insert(glyph);
         info_writer.insert(&dependency.unit_name);
         info_writer.newline();
 
+        let child_spacer = format!("{spacer}{child_pading}");
+
         let mut it = dependency.children.iter().peekable();
         while let Some(child) = it.next() {
+            let child_last = it.peek().is_none();
             UnitDependenciesPanelImp::display_dependencies(
                 info_writer,
                 &child,
-                level + 1,
-                branches,
-                it.peek().is_none(),
+                &child_spacer,
+                child_last,
             );
         }
     }
-
-    /*
-    fn list_dependencies_print(
-        unit_name: &str,
-        out: &mut String,
-        level: usize,
-        map: &HashMap<String, OwnedValue>,
-        branches: usize,
-        last: bool,
-    ) {
-        let state: ActiveState = map.get("ActiveState").into();
-
-        let stete_glyph = state.glyph();
-
-        out.push(stete_glyph);
-        out.push(' ');
-
-        for i in (0..level).rev() {
-            let mask: usize = 1 << i;
-            let glyph = if (branches & mask) != 0 {
-                SPECIAL_GLYPH_TREE_VERTICAL
-            } else {
-                SPECIAL_GLYPH_TREE_SPACE
-            };
-            out.push_str(glyph);
-        }
-
-        let glyph = if last {
-            SPECIAL_GLYPH_TREE_RIGHT
-        } else {
-            SPECIAL_GLYPH_TREE_BRANCH
-        };
-
-        out.push_str(glyph);
-
-        out.push_str(unit_name);
-        out.push('\n');
-    }
-    */
 }
 // The central trait for subclassing a GObject
 #[glib::object_subclass]

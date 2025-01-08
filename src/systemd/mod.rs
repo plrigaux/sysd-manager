@@ -540,7 +540,6 @@ impl PartialOrd for Dependency {
     }
 }
 
-
 pub fn fetch_unit_dependencies(
     unit: &UnitInfo,
     dependency_type: DependencyType,
