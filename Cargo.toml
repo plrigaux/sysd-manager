@@ -43,14 +43,14 @@ libc = "0.2"
 env_logger = "0.11"
 dotenv = "0.15"
 strum = { version = "0.26", features = ["derive"] }
-tokio = { version = "1.42", features = ["full"] }
+tokio = { version = "1.43", features = ["full"] }
 zbus = "5.2"
 zvariant = "5.1"
 serde = "1.0"
 chrono = "0.4.39"
 regex = "1.11"
 sysd =  { version = "0.10", package = "systemd"} 
-clap = { version = "4.5.23", features = ["derive"] }
+clap = { version = "4.5.26", features = ["derive"] }
 
 [dev-dependencies]
 

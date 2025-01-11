@@ -91,10 +91,10 @@ mod imp {
                 }
             }
 
-            let display_name = (&primary[..split_char_index]).to_owned();
+            let display_name = primary[..split_char_index].to_owned();
             *self.display_name.write().unwrap() = display_name;
 
-            let unit_type = (&primary[(split_char_index + 1)..]).to_owned();
+            let unit_type = primary[(split_char_index + 1)..].to_owned();
             *self.unit_type.write().unwrap() = unit_type;
 
             *self.primary.write().unwrap() = primary;

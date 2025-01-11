@@ -130,9 +130,10 @@ fn handle_args() -> Option<UnitInfo> {
         PREFERENCES.save_dbus_level(&settings);
     }
 
-    let Some(unit_name) = args.unit else {
-        return None;
-    };
+    let unit_name = args.unit?;
+    //let Some(unit_name) = args.unit else {
+    //    return None;
+    //};
 
     match systemd::fetch_unit(&unit_name) {
         Ok(unit) => Some(unit),

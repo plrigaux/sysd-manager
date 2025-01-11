@@ -66,12 +66,12 @@ pub enum BootFilter {
 }
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
-    return sysdbus::get_unit_file_state_path(level, &sytemd_unit.primary());
+    let level: DbusLevel = PREFERENCES.dbus_level();
+    sysdbus::get_unit_file_state_path(level, &sytemd_unit.primary())
 }
 
 pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
 
     match sysdbus::list_units_description_and_state(level) {
         Ok(map) => Ok(map),
@@ -84,26 +84,26 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
 
 /// Takes a unit name as input and attempts to start it
 pub fn start_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     sysdbus::start_unit(level, &unit.primary(), mode)
 }
 
 /// Takes a unit name as input and attempts to stop it.
 pub fn stop_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     sysdbus::stop_unit(level, &unit.primary(), mode)
 }
 
 pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     sysdbus::restart_unit(level, &unit.primary(), mode)
 }
 
 pub fn enable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     let msg_return = sysdbus::enable_unit_files(level, &unit.primary())?;
 
-    let msg = if msg_return.vec.len() > 0 {
+    let msg = if msg_return.vec.is_empty() {
         let a = &msg_return.vec[0];
         format!(
             "Created {} '{}' → '{}'",
@@ -117,10 +117,10 @@ pub fn enable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), 
 }
 
 pub fn disable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     let msg_return = sysdbus::disable_unit_files(level, &[&unit.primary()])?;
 
-    let msg = if msg_return.len() > 0 {
+    let msg = if msg_return.is_empty() {
         let a = &msg_return[0];
         format!("{} '{}'", a.change_type, a.file_name,)
     } else {
@@ -251,8 +251,8 @@ pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &s
 pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
     let mut cmd = Command::new(prog_n_args[0]);
 
-    for i in 1..prog_n_args.len() {
-        cmd.arg(prog_n_args[i]);
+    for arg in prog_n_args.iter().skip(1) {
+        cmd.arg(arg);
     }
 
     if let Some(envs) = environment_variables {
@@ -449,7 +449,7 @@ pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String
 pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     let unit_type: UnitType = UnitType::new(&unit.unit_type());
 
     let object_path = get_unit_path(unit);
@@ -458,15 +458,14 @@ pub fn fetch_system_unit_info_native(
 }
 
 fn get_unit_path(unit: &UnitInfo) -> String {
-    let object_path = match unit.object_path() {
+    match unit.object_path() {
         Some(s) => s,
         None => {
             let object_path = sysdbus::unit_dbus_path_from_name(&unit.primary());
             unit.set_object_path(object_path.clone());
             object_path
         }
-    };
-    object_path
+    }
 }
 
 pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
@@ -507,7 +506,7 @@ pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
 }
 
 pub fn reload_all_units() -> Result<(), SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     sysdbus::reload_all_units(level)
 }
 
@@ -526,7 +525,7 @@ impl Dependency {
             children: BTreeSet::new(),
         }
     }
-    
+
     fn partial_clone(&self) -> Dependency {
         Self {
             unit_name: self.unit_name.clone(),
@@ -544,7 +543,7 @@ impl Ord for Dependency {
 
 impl PartialOrd for Dependency {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.unit_name.partial_cmp(&other.unit_name)
+        Some(self.cmp(other))
     }
 }
 
@@ -553,7 +552,7 @@ pub fn fetch_unit_dependencies(
     dependency_type: DependencyType,
     plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level = PREFERENCES.dbus_level();
 
     let object_path = get_unit_path(unit);
 

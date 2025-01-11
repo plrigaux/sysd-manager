@@ -166,7 +166,7 @@ impl UnitListPanelImp {
 
         let status_code: EnablementStatus = entry.enable_status().into();
 
-        child.set_text(Some(status_code.to_str()));
+        child.set_text(Some(status_code.as_str()));
 
         entry
             .bind_property("enable_status", &child, "text")
@@ -457,7 +457,7 @@ fn fill_search_bar(
         //EnablementStatus::Unasigned => false,
         _ => true,
     }) {
-        filter_button_status.add_item(status.to_str());
+        filter_button_status.add_item(status.as_str());
     }
 
     for status in ActiveState::iter() {
@@ -492,7 +492,7 @@ fn fill_search_bar(
                 let active_state: ActiveState = unit.active_state().into();
 
                 filter_button_unit_type.contains_value(Some(&unit_type))
-                    && filter_button_status.contains_value(Some(enable_status.to_str()))
+                    && filter_button_status.contains_value(Some(enable_status.as_str()))
                     && if text.is_empty() {
                         true
                     } else {

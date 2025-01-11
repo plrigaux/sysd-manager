@@ -1,5 +1,5 @@
-use gtk::prelude::*;
 use gtk::glib::{self, EnumValue};
+use gtk::prelude::*;
 use log::{info, warn};
 use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
@@ -53,8 +53,8 @@ impl EnablementStatus {
         }
     }
 
-    pub fn to_str(&self) -> &str {
-        let str_label = match self {
+    pub fn as_str(&self) -> &str {
+        match self {
             EnablementStatus::Alias => "alias",
             EnablementStatus::Bad => "bad",
             EnablementStatus::Disabled => "disabled",
@@ -66,13 +66,13 @@ impl EnablementStatus {
             EnablementStatus::Generated => "generated",
             EnablementStatus::Trancient => "trancient",
             EnablementStatus::Unknown => "",
-        };
-
-        str_label
+        }
     }
+}
 
-    pub fn to_string(&self) -> String {
-        self.to_str().to_owned()
+impl Display for EnablementStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.as_str())
     }
 }
 
@@ -81,7 +81,7 @@ impl From<Option<String>> for EnablementStatus {
         if let Some(str_val) = value {
             return EnablementStatus::new(&str_val);
         }
-        return EnablementStatus::Unknown;
+        EnablementStatus::Unknown
     }
 }
 
@@ -262,7 +262,7 @@ impl UnitType {
     }
 
     pub fn to_str(&self) -> &str {
-        let str_label = match self {
+        match self {
             Self::Automount => "automount",
             Self::Busname => "busname",
             Self::Device => "device",
@@ -278,13 +278,11 @@ impl UnitType {
             Self::Swap => "swap",
             Self::Snapshot => "snapshot",
             _ => "",
-        };
-
-        str_label
+        }
     }
 
     pub fn interface(&self) -> &str {
-        let str_label = match self {
+        match self {
             Self::Automount => "org.freedesktop.systemd1.Automount",
             //Self::Busname => "busname",
             Self::Device => "org.freedesktop.systemd1.Device",
@@ -301,13 +299,11 @@ impl UnitType {
             Self::Timer => "org.freedesktop.systemd1.Timer",
 
             _ => INTERFACE_SYSTEMD_UNIT,
-        };
-
-        str_label
+        }
     }
 
     pub(crate) fn extends_unit(&self) -> bool {
-        let extends_unit = match self {
+        match self {
             Self::Automount => true,
             //Self::Busname => "busname",
             Self::Device => true,
@@ -324,9 +320,7 @@ impl UnitType {
             Self::Timer => true,
 
             _ => false,
-        };
-
-        extends_unit
+        }
     }
 }
 
@@ -351,7 +345,17 @@ pub enum KillWho {
 }
 
 impl KillWho {
-    pub fn to_string(&self) -> String {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Main => "main",
+            Self::Control => "control",
+            Self::All => "all",
+        }
+    }
+}
+
+impl Display for KillWho {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let value: glib::Value = self.to_value();
 
         let out = if let Some(enum_value) = EnumValue::from_value(&value) {
@@ -359,17 +363,8 @@ impl KillWho {
         } else {
             ""
         };
-        out.to_string()
-    }
 
-    pub fn as_str(&self) -> &str {
-        let str_label = match self {
-            Self::Main => "main",
-            Self::Control => "control",
-            Self::All => "all",
-        };
-
-        str_label
+        write!(f, "{}", out)
     }
 }
 
@@ -427,11 +422,11 @@ impl DependencyType {
 impl From<u32> for DependencyType {
     fn from(dtype: u32) -> Self {
         match dtype {
-            0 =>  DependencyType::Forward,
-            1 =>  DependencyType::Reverse,
-            2 =>  DependencyType::After,
-            3 =>  DependencyType::Before,
-            _ =>  DependencyType::Forward,
+            0 => DependencyType::Forward,
+            1 => DependencyType::Reverse,
+            2 => DependencyType::After,
+            3 => DependencyType::Before,
+            _ => DependencyType::Forward,
         }
     }
 }

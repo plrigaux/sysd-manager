@@ -3,7 +3,8 @@ use log::{info, warn};
 use crate::systemd::{
     self,
     data::UnitInfo,
-    enums::{ActiveState, EnablementStatus}, errors::SystemdErrors,
+    enums::{ActiveState, EnablementStatus},
+    errors::SystemdErrors,
 };
 
 use crate::gtk::prelude::*;
@@ -17,7 +18,7 @@ pub(super) fn switch_ablement_state_set(
     // handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
 
     info!(
-        "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} new_state {state}", unit.primary(), EnablementStatus::from(unit.enable_status()).to_str(),
+        "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} new_state {state}", unit.primary(), EnablementStatus::from(unit.enable_status()).as_str(),
         switch.is_active(),
         switch.state()
     );
@@ -64,7 +65,7 @@ pub(super) fn switch_ablement_state_set(
             } else {
                 EnablementStatus::Disabled
             };
-            
+
             let toast_warn = format!(
                 "Action \"{:?}\" on unit \"{}\" FAILED!\n{:?}",
                 action,
