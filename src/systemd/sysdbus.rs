@@ -248,7 +248,7 @@ fn handle_start_stop_answer(
     let created_job_object = job_path.to_string();
     info!("{method} SUCCESS, response job id {created_job_object}");
 
-    return Ok(created_job_object);
+    Ok(created_job_object)
 }
 
 /// Takes a unit name as input and attempts to stop it.
@@ -312,7 +312,7 @@ pub(super) fn enable_unit_files(
 
         debug!("ret {:?}", return_msg);
 
-        return Ok(return_msg);
+        Ok(return_msg)
     }
 
     send_disenable_message(
@@ -337,7 +337,7 @@ pub(super) fn disable_unit_files(
 
         debug!("ret {:?}", return_msg);
 
-        return Ok(return_msg);
+        Ok(return_msg)
     }
 
     send_disenable_message(
@@ -368,9 +368,9 @@ where
 
     connection.send(&message)?;
 
-    let mut stream = MessageIterator::from(connection);
+    let stream = MessageIterator::from(connection);
 
-    while let Some(message_res) = stream.next() {
+    for message_res in stream {
         debug!("Message response {:?}", message_res);
         match message_res {
             Ok(return_message) => match return_message.message_type() {
@@ -391,8 +391,6 @@ where
             },
             Err(e) => return Err(SystemdErrors::from(e)),
         };
-        //unreaceble
-        //break;
     }
 
     warn!("{:?} ????, response supposed to be Unreachable", method);
@@ -421,7 +419,7 @@ fn get_unit_object_path_connection(
 pub fn reload_all_units(level: DbusLevel) -> Result<(), SystemdErrors> {
     fn reload_answer(method: &str, _return_message: &Message) -> Result<(), SystemdErrors> {
         info!("{method} SUCCESS");
-        return Ok(());
+        Ok(())
     }
 
     send_disenable_message(level, METHOD_RELOAD, &(), reload_answer)
@@ -436,7 +434,7 @@ pub(super) fn kill_unit(
     fn handle_answer(_method: &str, _return_message: &Message) -> Result<(), SystemdErrors> {
         info!("Kill SUCCESS");
 
-        return Ok(());
+        Ok(())
     }
 
     send_disenable_message(
@@ -479,9 +477,9 @@ fn convert_to_string(value: &zvariant::Value) -> String {
         zvariant::Value::Dict(d) => {
             let mut d_str = String::from("{ ");
             for (mik, miv) in d.iter() {
-                d_str.push_str(&convert_to_string(&mik));
+                d_str.push_str(&convert_to_string(mik));
                 d_str.push_str(" : ");
-                d_str.push_str(&convert_to_string(&miv));
+                d_str.push_str(&convert_to_string(miv));
             }
             d_str.push_str(" }");
             d_str
@@ -651,10 +649,9 @@ pub(super) fn unit_get_dependencies(
         dependencies_properties,
         &connection,
         &mut units,
-        plain,
     )?;
 
-    if plain {        
+    if plain {
         let mut all_children = BTreeSet::new();
         flatit(&dependency, &mut all_children);
         dependency.children.clear();
@@ -668,7 +665,7 @@ fn flatit(parent: &Dependency, all_children: &mut BTreeSet<Dependency>) {
     for child in parent.children.iter() {
         flatit(child, all_children);
         all_children.insert(child.partial_clone());
-    }   
+    }
 }
 
 fn reteive_dependencies(
@@ -677,7 +674,6 @@ fn reteive_dependencies(
     dependencies_properties: &[&str],
     connection: &Connection,
     units: &mut HashSet<String>,
-    plain: bool,
 ) -> Result<(), SystemdErrors> {
     let map = fetch_unit_all_properties(connection, unit_object_path)?;
 
@@ -706,7 +702,7 @@ fn reteive_dependencies(
     }
 
     for child_name in set {
-        let objet_path = unit_dbus_path_from_name(&child_name);
+        let objet_path = unit_dbus_path_from_name(child_name);
 
         let mut child_depency = Dependency::new(child_name);
 
@@ -716,7 +712,6 @@ fn reteive_dependencies(
             dependencies_properties,
             connection,
             units,
-            plain,
         )?;
 
         dependency.children.insert(child_depency);
@@ -732,7 +727,7 @@ fn fetch_unit_all_properties(
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     //debug!("Unit path {path}");
     let proxy = Proxy::new(
-        &connection,
+        connection,
         DESTINATION_SYSTEMD,
         path,
         "org.freedesktop.DBus.Properties",
@@ -773,7 +768,7 @@ fn bus_label_escape(name: &str) -> String {
 
     /* Escape everything that is not a-zA-Z0-9. We also escape 0-9 if it's the first character */
     for (i, c) in name.bytes().enumerate() {
-        if !c.is_ascii_alphabetic() && !(i != 0 && c.is_ascii_digit()) {
+        if !c.is_ascii_alphabetic() || i != 0 && c.is_ascii_digit() {
             r.push('_');
             r.push(hexchar(c >> 4));
             r.push(hexchar(c));
@@ -782,7 +777,7 @@ fn bus_label_escape(name: &str) -> String {
         }
     }
 
-    return r;
+    r
 }
 
 fn hexchar(x: u8) -> char {
@@ -790,7 +785,7 @@ fn hexchar(x: u8) -> char {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
     ];
 
-    return TABLE[(x & 15) as usize];
+    TABLE[(x & 15) as usize]
 }
 
 #[cfg(test)]
@@ -829,10 +824,7 @@ mod tests {
     fn test_list_unit_files() -> Result<(), SystemdErrors> {
         let units = list_unit_files(&get_connection(DbusLevel::System)?)?;
 
-        let serv = units
-            .iter()
-            .filter(|ud| ud.full_name() == TEST_SERVICE)
-            .nth(0);
+        let serv = units.iter().find(|ud| ud.full_name() == TEST_SERVICE);
 
         debug!("{:#?}", serv);
         Ok(())
@@ -996,9 +988,9 @@ mod tests {
             Err(e) => {
                 warn!("{:?}", e);
                 if let SystemdErrors::NoSuchUnit(_msg) = e {
-                    return Ok(());
+                    Ok(())
                 } else {
-                    return Err(SystemdErrors::Custom("Wrong expected Error".to_owned()));
+                    Err(SystemdErrors::Custom("Wrong expected Error".to_owned()))
                 }
             }
         }

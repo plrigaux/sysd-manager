@@ -30,3 +30,9 @@ impl UnitDependenciesPanel {
         self.imp().register(app_window);
     }
 }
+
+impl Default for UnitDependenciesPanel {
+    fn default() -> Self {
+        UnitDependenciesPanel::new()
+    }
+}

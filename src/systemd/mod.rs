@@ -136,33 +136,29 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
         return Ok(String::new());
     };
 
+    #[cfg(feature = "flatpak")]
     match file_open_get_content(file_path) {
         Ok(content) => Ok(content),
         Err(_err) => {
-            #[cfg(feature = "flatpak")]
-            {
-                info!("Flatpack {}", unit.primary());
-                match commander_output(&["cat", file_path], None) {
-                    Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
-                        Ok(content) => Ok(content),
-                        Err(e) => {
-                            warn!("Can't retreive contnent:  {:?}", e);
-                            Err(SystemdErrors::Custom("Utf8Error".to_owned()))
-                        }
-                    },
+            info!("Flatpack {}", unit.primary());
+            match commander_output(&["cat", file_path], None) {
+                Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
+                    Ok(content) => Ok(content),
                     Err(e) => {
-                        warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
-                        Err(e)
+                        warn!("Can't retreive contnent:  {:?}", e);
+                        Err(SystemdErrors::Custom("Utf8Error".to_owned()))
                     }
+                },
+                Err(e) => {
+                    warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
+                    Err(e)
                 }
-            }
-
-            #[cfg(not(feature = "flatpak"))]
-            {
-                Err(_err)
             }
         }
     }
+
+    #[cfg(not(feature = "flatpak"))]
+    file_open_get_content(file_path)
 }
 
 fn file_open_get_content(file_path: &str) -> Result<String, SystemdErrors> {
@@ -426,13 +422,13 @@ pub fn generate_file_uri(file_path: &str) -> String {
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
 
     sysdbus::fetch_system_info(level)
 }
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     let unit_type: UnitType = UnitType::new(&unit.unit_type());
     let object_path = match unit.object_path() {
         Some(s) => s,
@@ -469,12 +465,12 @@ fn get_unit_path(unit: &UnitInfo) -> String {
 }
 
 pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
-    sysdbus::fetch_unit(level, &unit_primary_name)
+    let level: DbusLevel = PREFERENCES.dbus_level();
+    sysdbus::fetch_unit(level, unit_primary_name)
 }
 
 pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level().into();
+    let level: DbusLevel = PREFERENCES.dbus_level();
     sysdbus::kill_unit(level, &unit.primary(), who, signal)
 }
 

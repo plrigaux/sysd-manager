@@ -16,7 +16,7 @@ pub fn blame() -> Result<Vec<Analyze>, SystemdErrors> {
         .lines()
         .rev()
         .map(|x| {
-            let mut iterator = x.trim().split_whitespace();
+            let mut iterator = x.split_whitespace();
             Analyze {
                 time: parse_time(iterator.next().unwrap()),
                 service: String::from(iterator.next().unwrap()),

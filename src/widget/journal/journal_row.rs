@@ -82,3 +82,9 @@ mod imp {
     impl WidgetImpl for JournalRowImp {}
     impl BoxImpl for JournalRowImp {}
 }
+
+impl Default for JournalRow {
+    fn default() -> Self {
+        JournalRow::new()
+    }
+}

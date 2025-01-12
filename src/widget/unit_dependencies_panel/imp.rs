@@ -87,7 +87,7 @@ impl UnitDependenciesPanelImp {
 
 fn activate_link(unit_name: &str, app_window: &Option<AppWindow>) {
     info!("open unit {:?} dependency", unit_name);
-    let unit = match systemd::fetch_unit(&unit_name) {
+    let unit = match systemd::fetch_unit(unit_name) {
         Ok(unit) => Some(unit),
         Err(e) => {
             warn!("Cli unit: {:?}", e);
@@ -95,9 +95,8 @@ fn activate_link(unit_name: &str, app_window: &Option<AppWindow>) {
         }
     };
 
-    match app_window {
-        Some(app_window) => app_window.set_unit(unit),
-        None => {}
+    if let Some(app_window) = app_window {
+        app_window.set_unit(unit)
     }
 }
 
@@ -216,7 +215,7 @@ impl UnitDependenciesPanelImp {
             _ => info_writer.insert_red(&gl),
         }
 
-        info_writer.insert(&spacer);
+        info_writer.insert(spacer);
 
         let (glyph, child_pading) = if last {
             (SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE)
@@ -236,7 +235,7 @@ impl UnitDependenciesPanelImp {
             let child_last = it.peek().is_none();
             UnitDependenciesPanelImp::display_dependencies(
                 info_writer,
-                &child,
+                child,
                 &child_spacer,
                 child_last,
             );

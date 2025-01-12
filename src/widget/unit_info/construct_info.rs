@@ -208,12 +208,14 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
 
     let mut all_none = true;
     for p in three_param {
-        if !p.is_none() {
-            if let Value::Str(inner_str) = p.unwrap() as &Value {
-                if !inner_str.is_empty() {
-                    all_none = false;
-                    break;
-                }
+        let Some(value) = p else {
+            continue;
+        };
+
+        if let Value::Str(inner_str) = value as &Value {
+            if !inner_str.is_empty() {
+                all_none = false;
+                break;
             }
         }
     }
@@ -276,30 +278,26 @@ fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>
         fill_row(unit_writer, "Doc:", doc);
     }
 
-    while let Some(doc) = it.next() {
+    for doc in it {
         let text = format!("{:KEY_WIDTH$} {}\n", " ", doc);
         unit_writer.insert(&text);
     }
 }
 
 fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
-    let vec = match value as &Value {
+    match value as &Value {
         Value::Array(a) => {
             let mut vec = Vec::with_capacity(a.len());
-
-            let mut it = a.iter();
-            while let Some(mi) = it.next() {
+            for mi in a.iter() {
                 vec.push(value_str(mi));
             }
-
             vec
         }
         _ => {
             warn!("Wrong zvalue conversion: {:?}", value.signature());
-            return Vec::new();
+            Vec::new()
         }
-    };
-    vec
+    }
 }
 
 fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
@@ -324,7 +322,7 @@ fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
     let mut all_none = true;
     for p in three_param {
-        if !p.is_none() {
+        if p.is_some() {
             all_none = false;
             break;
         }
@@ -347,7 +345,7 @@ fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     unit_writer.newline();
 }
 
-fn write_mem_param<'a>(
+fn write_mem_param(
     mem_op: Option<&OwnedValue>,
     label: &str,
     pad_left: bool,
@@ -403,17 +401,14 @@ fn get_main_pid(map: &HashMap<String, OwnedValue>) -> u32 {
     0
 }
 
-fn get_exec_full<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
+fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<&str> {
     let value = get_value!(map, "ExecStart", None);
 
+    //TODO extract to a struct
     if let Value::Array(array) = value as &Value {
-        if let Ok(Some(owned_value)) = array.get::<&Value>(0) {
-            if let Value::Structure(zstruc) = owned_value {
-                if let Some(val_0) = zstruc.fields().get(0) {
-                    if let Value::Str(zstr) = val_0 {
-                        return Some(zstr);
-                    }
-                }
+        if let Ok(Some(Value::Structure(zstruc))) = array.get::<&Value>(0) {
+            if let Some(Value::Str(zstr)) = zstruc.fields().first() {
+                return Some(zstr);
             }
         }
     }
@@ -421,7 +416,7 @@ fn get_exec_full<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
     None
 }
 
-fn get_exec<'a>(map: &'a HashMap<String, OwnedValue>) -> Option<&'a str> {
+fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<&str> {
     if let Some(exec_full) = get_exec_full(map) {
         if let Some((_pre, last)) = exec_full.rsplit_once('/') {
             return Some(last);
@@ -460,7 +455,7 @@ fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
         let mut limit = String::from(" (limit: ");
         let value_u64 = value_u64(value);
         limit.push_str(&value_u64.to_string());
-        limit.push_str(")");
+        limit.push(')');
 
         unit_writer.insert_grey(&limit);
     }
@@ -588,7 +583,7 @@ fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
     fill_row(unit_writer, "Triggers:", &triggers.join("\n"))
 }
 
-#[derive(Deserialize, Type, PartialEq, Debug)]
+#[derive(Deserialize, Type, PartialEq, Debug, Default)]
 struct Struct {
     field1: String,
     field2: String,
@@ -609,7 +604,7 @@ fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
         return;
     };
 
-    let Some(Value::Str(val_0)) = zstruc.fields().get(0) else {
+    let Some(Value::Str(val_0)) = zstruc.fields().first() else {
         return;
     };
 
@@ -683,7 +678,7 @@ fn human_bytes(bytes: u64) -> String {
             break;
         }
         base += 1;
-        byte_new = byte_new >> 10;
+        byte_new >>= 10;
     }
 
     let pbase = UNIT.pow(base as u32);
@@ -706,7 +701,7 @@ const T_SUFFIX: [&str; 9] = ["ns", "us", "ms", "s", "Ks", "Ms", "Gs", "Ts", "Ps"
 const T_UNIT: f64 = 1000.0;
 
 fn human_time(value: u64) -> String {
-    if value <= 0 {
+    if value == 0 {
         return "0".to_string();
     }
 
@@ -721,7 +716,7 @@ fn human_time(value: u64) -> String {
     .trim_end_matches(".0")
     .to_string();
 
-    result.push_str(" ");
+    result.push(' ');
     result.push_str(T_SUFFIX[base.floor() as usize]);
 
     result
@@ -762,7 +757,7 @@ mod tests {
 
     #[test]
     fn test_timer_mono() {
-        let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, 86400000000 as i64);
+        let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, 86400000000);
         let fmt = "%b %d %T %Y";
         let date = match local_result {
             chrono::offset::LocalResult::Single(l) => l.format(fmt).to_string(),
@@ -772,7 +767,7 @@ mod tests {
 
         println!("date {}", date);
 
-        let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, 173787328907 as i64);
+        let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, 173787328907);
         let fmt = "%b %d %T %Y";
         let date = match local_result {
             chrono::offset::LocalResult::Single(l) => l.format(fmt).to_string(),

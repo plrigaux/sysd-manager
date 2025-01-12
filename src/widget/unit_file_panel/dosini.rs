@@ -5,9 +5,8 @@ use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
 use crate::widget::journal::{more_colors::Intensity, palette::Palette};
 use regex::Regex;
 
-
 static RE: LazyLock<Regex> = LazyLock::new(|| {
-    let re = match Regex::new(
+    match Regex::new(
         r"(?xm)
             (?:  
                 (^\w+\s*)=                            # Label
@@ -33,9 +32,7 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
             log::error!("Rexgex compile error : {:?}", e);
             panic!("Rexgex compile error : {:?}", e)
         }
-    };
-
-    re
+    }
 });
 
 macro_rules! colorize {
@@ -45,7 +42,7 @@ macro_rules! colorize {
 }
 
 // echo "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test \x1b[0m"
-pub fn convert_to_mackup<'a>(text: &'a str, dark: bool) -> Cow<'a, str> {
+pub fn convert_to_mackup(text: &str, dark: bool) -> Cow<'_, str> {
     let mut last_end: usize = 0;
 
     let mut out = String::with_capacity(text.len() * 2);
@@ -145,11 +142,11 @@ impl Token {
                 }
             }
             Token::Comment => {
-                if dark {
+/*                 if dark {
                     Style::new(Palette::Dark1, None)
-                } else {
+                } else { */
                     Style::new(Palette::Dark1, None)
-                }
+                //}
             }
             Token::Section => {
                 if dark {
@@ -166,11 +163,11 @@ impl Token {
                 }
             }
             Token::InfoDisable => {
-                if dark {
+   /*              if dark {
                     Style::new(Palette::Yellow3, Some(Intensity::Bold))
-                } else {
+                } else { */
                     Style::new(Palette::Yellow3, Some(Intensity::Bold))
-                }
+               // }
             }
         };
         style
@@ -181,7 +178,7 @@ impl Token {
 
         sbuilder.push_str("<span color=\"");
         sbuilder.push_str(style.color.get_color());
-        sbuilder.push_str("\"");
+        sbuilder.push('\"');
         if let Some(intensity) = style.intensity {
             sbuilder.push_str(" weight=\"");
             sbuilder.push_str(intensity.pango_str());

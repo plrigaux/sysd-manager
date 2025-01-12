@@ -1,4 +1,4 @@
-///https://developer.gnome.org/hig/reference/palette.html#palette
+//https://developer.gnome.org/hig/reference/palette.html#palette
 
 #[allow(dead_code)]
 #[derive(Debug)]

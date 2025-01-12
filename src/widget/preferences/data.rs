@@ -11,9 +11,7 @@ use crate::systemd_gui::new_settings;
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();
-    let pref = Preferences::new_with_setting(settings);
-
-    pref
+    Preferences::new_with_setting(settings)
 });
 
 const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
@@ -174,8 +172,8 @@ impl Preferences {
                 "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
                 level.as_str()
             ),
-            Err(e) =>  warn!("Save setting Error {}", e),
-        }   
+            Err(e) => warn!("Save setting Error {}", e),
+        }
     }
 
     pub fn set_journal_events(&self, journal_events_new: u32) {

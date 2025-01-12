@@ -71,7 +71,7 @@ impl InfoWindow {
                 }
 
                 let l2 = gtk::Label::builder()
-                    .label(&meta.col2())
+                    .label(meta.col2())
                     .selectable(true)
                     .build();
 
@@ -92,7 +92,7 @@ impl InfoWindow {
         if let Some(ref mut store) = *unit_prop_store.borrow_mut() {
             store.remove_all();
 
-            match systemd::fetch_system_unit_info(&unit) {
+            match systemd::fetch_system_unit_info(unit) {
                 Ok(map) => {
                     for (key, value) in map {
                         //println!("{key} :-: {value}");
@@ -128,7 +128,13 @@ impl InfoWindow {
         } else {
             warn!("Store not supposed to be None");
         };
-      
+
         self.set_title(Some("Systemd Info"));
+    }
+}
+
+impl Default for InfoWindow {
+    fn default() -> Self {
+        Self::new()
     }
 }

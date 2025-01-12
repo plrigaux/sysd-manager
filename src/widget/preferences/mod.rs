@@ -19,3 +19,9 @@ impl PreferencesDialog {
         obj
     }
 }
+
+impl Default for PreferencesDialog {
+    fn default() -> Self {
+        PreferencesDialog::new()
+    }
+}

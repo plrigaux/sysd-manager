@@ -445,10 +445,7 @@ fn fill_search_bar(
         .spacing(5)
         .build();
 
-    for unit_type in UnitType::iter().filter(|x| match *x {
-        UnitType::Unknown(_) => false,
-        _ => true,
-    }) {
+    for unit_type in UnitType::iter().filter(|x|  !matches!(*x, UnitType::Unknown(_))) {
         filter_button_unit_type.add_item(unit_type.to_str());
     }
 

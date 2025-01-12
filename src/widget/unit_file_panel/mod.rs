@@ -17,17 +17,16 @@ impl UnitFilePanel {
     pub fn new() -> Self {
         // Create new window
         let obj: UnitFilePanel = glib::Object::new();
-
-        /*         let system_manager = adw::StyleManager::default();
-
-        let is_dark = system_manager.is_dark();
-
-        obj.set_dark(is_dark); */
-
         obj
     }
 
     pub fn register(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
         self.imp().register(app_window, toast_overlay);
+    }
+}
+
+impl Default for UnitFilePanel {
+    fn default() -> Self {
+        UnitFilePanel::new()
     }
 }

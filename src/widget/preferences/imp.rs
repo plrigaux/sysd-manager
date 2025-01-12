@@ -9,7 +9,8 @@ use std::cell::OnceCell;
 use crate::systemd_gui::new_settings;
 
 use super::data::{
-    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_JOURNAL_MAX_EVENTS, KEY_PREF_UNIT_FILE_HIGHLIGHTING, PREFERENCES
+    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
+    KEY_PREF_JOURNAL_MAX_EVENTS, KEY_PREF_UNIT_FILE_HIGHLIGHTING, PREFERENCES,
 };
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -108,22 +109,20 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 
         info!("{var_name} to {:?} , text {:?}", value, text);
 
-        let value32_parse = match text.parse::<u32>() {
+        match text.parse::<u32>() {
             Ok(a) => a,
             Err(_e) => {
                 warn!("Parse error {:?} to u32", text);
                 //spin.set_text(&value32.to_string());
-                let value32 = if value > f64::from(i32::MAX) {
+                if value > f64::from(i32::MAX) {
                     u32::MAX
                 } else if value < f64::from(i32::MIN) {
                     u32::MIN
                 } else {
                     value.round() as u32
-                };
-                value32
+                }
             }
-        };
-        value32_parse
+        }
     }
 
     #[template_callback]

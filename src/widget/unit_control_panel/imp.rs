@@ -201,7 +201,7 @@ impl UnitControlPanelImpl {
         let unit = current_unit!(self, true);
 
         controls::switch_ablement_state_set(
-            &self.toast_overlay.get().unwrap(),
+            self.toast_overlay.get().unwrap(),
             switch_new_state,
             switch,
             &unit,
@@ -269,7 +269,7 @@ impl UnitControlPanelImpl {
             return;
         };
 
-        self.unit_info_panel.display_unit_info(&unit);
+        self.unit_info_panel.display_unit_info(unit);
     }
 
     #[template_callback]

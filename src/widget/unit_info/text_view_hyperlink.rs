@@ -144,11 +144,7 @@ fn follow_if_link(text_iter: gtk::TextIter, link_activator: LinkActivator) {
 
         link_value = unsafe {
             let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
-            if let Some(link_value_nonull) = val {
-                Some(link_value_nonull.as_ref())
-            } else {
-                None
-            }
+            val.map(|link_value_nonull| link_value_nonull.as_ref())
         };
 
         if link_value.is_some() {

@@ -62,7 +62,7 @@ impl UnitInfoPanelImp {
             return;
         };
 
-        self.update_unit_info(&unit)
+        self.update_unit_info(unit)
     }
 
     #[template_callback]
@@ -77,7 +77,7 @@ impl UnitInfoPanelImp {
 
         info!("show_all_clicked {:?}", unit.primary());
 
-        info_window.fill_data(&unit);
+        info_window.fill_data(unit);
 
         info_window.present();
     }
@@ -85,7 +85,7 @@ impl UnitInfoPanelImp {
     pub(crate) fn display_unit_info(&self, unit: &UnitInfo) {
         let _old = self.unit.replace(Some(unit.clone()));
 
-        self.update_unit_info(&unit)
+        self.update_unit_info(unit)
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
@@ -145,7 +145,7 @@ impl WidgetImpl for UnitInfoPanelImp {}
 impl BoxImpl for UnitInfoPanelImp {}
 
 fn activate_link(file_link: &str, _app_window: &Option<AppWindow>) {
-    let uri = generate_file_uri(&file_link);
+    let uri = generate_file_uri(file_link);
     let file = gio::File::for_uri(&uri);
     let launcher = FileLauncher::new(Some(&file));
     launcher.launch(

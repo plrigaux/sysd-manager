@@ -120,7 +120,7 @@ impl ExMenuButton {
     fn clear_filter_selection(&self, _button: &gtk::Button) {
         let map = self.check_boxes.borrow();
 
-        for check_button in map.values().into_iter() {
+        for check_button in map.values() {
             check_button.set_active(false);
         }
     }

@@ -261,7 +261,7 @@ mod imp {
     }
 
     fn signals() -> [Signal; 34] {
-        let list = [
+        [
             Signal {
                 id: 1,
                 name: "SIGHUP",
@@ -466,8 +466,6 @@ mod imp {
                 default_action: "Dump",
                 comment: "Equivalent to SIGSYS",
             },
-        ];
-
-        list
+        ]
     }
 }

@@ -89,7 +89,7 @@ impl UnitFilePanelImp {
             return;
         };
 
-        let file_content = match systemd::get_unit_file_info(&unit_ref) {
+        let file_content = match systemd::get_unit_file_info(unit_ref) {
             Ok(content) => content,
             Err(e) => {
                 warn!("get_unit_file_info Error: {:?}", e);
@@ -174,10 +174,10 @@ impl UnitFilePanelImp {
             let is_dark = self.dark.get();
             let mut start_iter = buf.start_iter();
 
-            let text = dosini::convert_to_mackup(&file_content, is_dark);
+            let text = dosini::convert_to_mackup(file_content, is_dark);
             buf.insert_markup(&mut start_iter, &text);
         } else {
-            buf.set_text(&file_content);
+            buf.set_text(file_content);
         }
 
         self.save_button.remove_css_class(SUGGESTED_ACTION);

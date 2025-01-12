@@ -524,38 +524,32 @@ impl BoxImpl for JournalPanelImp {}
 
 static RED: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Red3.into();
-    let rgba = color.get_rgb_u16();
-    rgba
+    color.get_rgb_u16()
 });
 
 static RED_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Custom("#ef4b4b").into();
-    let rgba = color.get_rgb_u16();
-    rgba
+    color.get_rgb_u16()
 });
 
 static YELLOW: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Yellow5.into();
-    let rgba = color.get_rgb_u16();
-    rgba
+    color.get_rgb_u16()
 });
 
 static YELLOW_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Custom("#e5e540").into();
-    let rgba = color.get_rgb_u16();
-    rgba
+    color.get_rgb_u16()
 });
 
 static BLUE: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Blue3.into();
-    let rgba = color.get_rgb_u16();
-    rgba
+    color.get_rgb_u16()
 });
 
 static BLUE_DARK: LazyLock<(u16, u16, u16)> = LazyLock::new(|| {
     let color: TermColor = Palette::Blue5.into();
-    let rgba = color.get_rgb_u16();
-    rgba
+    color.get_rgb_u16()
 });
 
 macro_rules! set_attr_color {
@@ -636,9 +630,7 @@ enum BootIdValidation {
 
 fn validate_boot_id(boot_id: &str) -> BootIdValidation {
     for c in boot_id.chars() {
-        if c.is_ascii_digit() {
-            continue;
-        } else if matches!(c, 'a'..='f') {
+        if c.is_ascii_digit() || matches!(c, 'a'..='f') {
             continue;
         } else {
             return BootIdValidation::Fail;

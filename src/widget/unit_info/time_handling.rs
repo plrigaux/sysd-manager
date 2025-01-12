@@ -51,7 +51,7 @@ fn most_significant_duration(duration: Duration) -> String {
 
     let minutes = duration.num_minutes();
 
-    let dur = match minutes {
+    match minutes {
         0 => {
             format!("{}s", duration.num_seconds())
         }
@@ -62,9 +62,7 @@ fn most_significant_duration(duration: Duration) -> String {
         _ => {
             format!("{minutes} minutes")
         }
-    };
-
-    dur
+    }
 }
 
 #[cfg(test)]

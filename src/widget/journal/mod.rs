@@ -23,3 +23,8 @@ impl JournalPanel {
     }
 }
 
+impl Default for JournalPanel {
+    fn default() -> Self {
+        JournalPanel::new()
+    }
+}

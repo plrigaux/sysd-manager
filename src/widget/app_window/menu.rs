@@ -129,7 +129,7 @@ fn create_about() -> adw::AboutDialog {
 
     let authors: Vec<&str> = CARGO_PKG_AUTHORS.split(',').collect();
 
-    let about = adw::AboutDialog::builder()
+    adw::AboutDialog::builder()
         .developers(authors)
         .name("About")
         .application_name(APP_TITLE)
@@ -139,7 +139,5 @@ fn create_about() -> adw::AboutDialog {
         .comments(CARGO_PKG_DESCRIPTION)
         .website("https://github.com/plrigaux/sysd-manager")
         .issue_url("https://github.com/plrigaux/sysd-manager/issues")
-        .build();
-
-    about
+        .build()
 }

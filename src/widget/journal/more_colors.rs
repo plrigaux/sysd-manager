@@ -7,7 +7,7 @@ use gtk::{gdk, pango};
 use super::palette::Palette;
 
 pub fn get_256color(code: u8) -> TermColor {
-    let color = match code {
+    match code {
         0 => TermColor::Black,
         1 => TermColor::Red,
         2 => TermColor::Green,
@@ -26,15 +26,13 @@ pub fn get_256color(code: u8) -> TermColor {
         15 => TermColor::BrightWhite,
         16..=231 => color_map216(code),
         232..=255 => grayscale(code),
-    };
-
-    color
+    }
 }
 
 fn grayscale(code: u8) -> TermColor {
     let gray_scale: u8 = (code - 232) * 10 + 8;
 
-    TermColor::VGA(gray_scale, gray_scale, gray_scale)
+    TermColor::Vga(gray_scale, gray_scale, gray_scale)
 }
 
 fn color_map216(code: u8) -> TermColor {
@@ -56,7 +54,7 @@ fn color_map216(code: u8) -> TermColor {
         b += 55
     }
 
-    TermColor::VGA(r, g, b)
+    TermColor::Vga(r, g, b)
 }
 
 /// The 8 standard colors.
@@ -78,36 +76,36 @@ pub enum TermColor {
     BrightMagenta,
     BrightCyan,
     BrightWhite,
-    VGA(u8, u8, u8),
+    Vga(u8, u8, u8),
 }
 
 impl TermColor {
     pub fn get_hexa_code(&self) -> String {
         match self {
-            Self::VGA(r, g, b) => format!("#{:02x}{:02x}{:02x}", r, g, b),
+            Self::Vga(r, g, b) => format!("#{:02x}{:02x}{:02x}", r, g, b),
             _ => self.get_vga().get_hexa_code(),
         }
     }
 
     pub fn get_vga(&self) -> Self {
         match self {
-            TermColor::Black => Self::VGA(0, 0, 0),
-            TermColor::Red => Self::VGA(0x80, 0, 0),
-            TermColor::Green => Self::VGA(0, 0x80, 0),
-            TermColor::Yellow => Self::VGA(0x80, 0x80, 0),
-            TermColor::Blue => Self::VGA(0, 0, 0x80),
-            TermColor::Magenta => Self::VGA(0x80, 0, 0x80),
-            TermColor::Cyan => Self::VGA(0, 0x80, 0x80),
-            TermColor::White => Self::VGA(0xc0, 0xc0, 0xc0),
-            TermColor::BrightBlack => Self::VGA(0x80, 0x80, 0x80),
-            TermColor::BrightRed => Self::VGA(0xff, 0, 0),
-            TermColor::BrightGreen => Self::VGA(0, 0xff, 0),
-            TermColor::BrightYellow => Self::VGA(0xff, 0xff, 0),
-            TermColor::BrightBlue => Self::VGA(0, 0, 0xff),
-            TermColor::BrightMagenta => Self::VGA(0xff, 0, 0xff),
-            TermColor::BrightCyan => Self::VGA(0, 0xff, 0xff),
-            TermColor::BrightWhite => Self::VGA(0xff, 0xff, 0xff),
-            TermColor::VGA(_, _, _) => *self,
+            TermColor::Black => Self::Vga(0, 0, 0),
+            TermColor::Red => Self::Vga(0x80, 0, 0),
+            TermColor::Green => Self::Vga(0, 0x80, 0),
+            TermColor::Yellow => Self::Vga(0x80, 0x80, 0),
+            TermColor::Blue => Self::Vga(0, 0, 0x80),
+            TermColor::Magenta => Self::Vga(0x80, 0, 0x80),
+            TermColor::Cyan => Self::Vga(0, 0x80, 0x80),
+            TermColor::White => Self::Vga(0xc0, 0xc0, 0xc0),
+            TermColor::BrightBlack => Self::Vga(0x80, 0x80, 0x80),
+            TermColor::BrightRed => Self::Vga(0xff, 0, 0),
+            TermColor::BrightGreen => Self::Vga(0, 0xff, 0),
+            TermColor::BrightYellow => Self::Vga(0xff, 0xff, 0),
+            TermColor::BrightBlue => Self::Vga(0, 0, 0xff),
+            TermColor::BrightMagenta => Self::Vga(0xff, 0, 0xff),
+            TermColor::BrightCyan => Self::Vga(0, 0xff, 0xff),
+            TermColor::BrightWhite => Self::Vga(0xff, 0xff, 0xff),
+            TermColor::Vga(_, _, _) => *self,
         }
     }
 
@@ -118,7 +116,7 @@ impl TermColor {
             TermColor::Green => gdk::RGBA::GREEN,
             TermColor::Blue => gdk::RGBA::BLUE,
             TermColor::White => gdk::RGBA::WHITE,
-            TermColor::VGA(r, g, b) => gdk::RGBA::new(
+            TermColor::Vga(r, g, b) => gdk::RGBA::new(
                 *r as f32 / 255f32,
                 *g as f32 / 255f32,
                 *b as f32 / 255f32,
@@ -133,7 +131,7 @@ impl TermColor {
 
     pub fn get_rgb_u16(&self) -> (u16, u16, u16) {
         match *self {
-            TermColor::VGA(r, g, b) => {
+            TermColor::Vga(r, g, b) => {
                 let r16: u16 = (r as u16) << 8 | r as u16;
                 let g16: u16 = (g as u16) << 8 | g as u16;
                 let b16: u16 = (b as u16) << 8 | b as u16;
@@ -151,7 +149,7 @@ impl TermColor {
         let g: u8 = g.parse()?;
         let b: u8 = b.parse()?;
 
-        Ok(TermColor::VGA(r, g, b))
+        Ok(TermColor::Vga(r, g, b))
     }
 }
 
@@ -166,7 +164,7 @@ impl From<&gdk::RGBA> for TermColor {
         let r: u8 = (color.red() * 256.0) as u8;
         let g: u8 = (color.green() * 256.0) as u8;
         let b: u8 = (color.blue() * 256.0) as u8;
-        TermColor::VGA(r, g, b)
+        TermColor::Vga(r, g, b)
     }
 }
 
@@ -178,7 +176,7 @@ impl From<Palette<'_>> for TermColor {
         let g = u8::from_str_radix(&color[3..=4], 16).unwrap();
         let b = u8::from_str_radix(&color[5..=6], 16).unwrap();
 
-        TermColor::VGA(r, g, b)
+        TermColor::Vga(r, g, b)
     }
 }
 

@@ -30,11 +30,11 @@ impl UnitInfoWriter {
     }
 
     pub fn insert(&mut self, text: &str) {
-        self.buf.insert(&mut self.iter, text);  
+        self.buf.insert(&mut self.iter, text);
     }
 
     pub fn insertln(&mut self, text: &str) {
-        self.buf.insert(&mut self.iter, text);        
+        self.buf.insert(&mut self.iter, text);
         self.buf.insert(&mut self.iter, "\n");
     }
 
@@ -50,7 +50,6 @@ impl UnitInfoWriter {
         self.insert_tag(text, Self::create_red_tag, None);
     }
 
-
     pub fn insert_disable(&mut self, text: &str) {
         self.insert_tag(text, Self::create_disable_tag, None);
     }
@@ -64,15 +63,13 @@ impl UnitInfoWriter {
     }
 
     fn create_hyperlink_tag(buf: &TextBuffer, _is_dark: bool) -> Option<TextTag> {
-        let tag_op = buf.create_tag(
+        buf.create_tag(
             None,
             &[
                 //  ("foreground", &"blue".to_value()),
                 ("underline", &pango::Underline::SingleLine.to_value()),
             ],
-        );
-
-        tag_op
+        )
     }
 
     fn create_active_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
@@ -87,15 +84,13 @@ impl UnitInfoWriter {
             return tag_op;
         }
 
-        let tag_op = buf.create_tag(
+        buf.create_tag(
             Some(name),
             &[
                 ("foreground", &color.to_value()),
                 ("weight", &pango::Weight::Bold.into_glib().to_value()),
             ],
-        );
-
-        tag_op
+        )
     }
 
     fn create_red_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
@@ -110,14 +105,13 @@ impl UnitInfoWriter {
             return tag_op;
         }
 
-        let tag_op = buf.create_tag(
+        buf.create_tag(
             Some(name),
             &[
                 ("foreground", &color.to_value()),
                 ("weight", &pango::Weight::Bold.into_glib().to_value()),
             ],
-        );
-        tag_op
+        )
     }
 
     fn create_disable_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
@@ -132,14 +126,13 @@ impl UnitInfoWriter {
             return tag_op;
         }
 
-        let tag_op = buf.create_tag(
+        buf.create_tag(
             Some(name),
             &[
                 ("foreground", &color.to_value()),
                 ("weight", &pango::Weight::Bold.into_glib().to_value()),
             ],
-        );
-        tag_op
+        )
     }
 
     fn create_grey_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
@@ -154,8 +147,7 @@ impl UnitInfoWriter {
             return tag_op;
         }
 
-        let tag_op = buf.create_tag(Some(name), &[("foreground", &color.to_value())]);
-        tag_op
+        buf.create_tag(Some(name), &[("foreground", &color.to_value())])
     }
 
     fn insert_tag(

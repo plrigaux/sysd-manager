@@ -33,9 +33,9 @@ pub(super) fn switch_ablement_state_set(
     }
 
     let enable_result = if state {
-        systemd::enable_unit_files(&unit)
+        systemd::enable_unit_files(unit)
     } else {
-        systemd::disable_unit_files(&unit)
+        systemd::disable_unit_files(unit)
     };
 
     match enable_result {
