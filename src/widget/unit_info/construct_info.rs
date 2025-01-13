@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use crate::systemd::{self, data::UnitInfo};
 use log::{debug, error, warn};
-use serde::Deserialize;
 use time_handling::get_since_and_passed_time;
-use zvariant::{DynamicType, OwnedValue, Str, Type, Value};
+use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 use super::{
     time_handling,
@@ -68,6 +67,26 @@ macro_rules! get_value {
             return $dft;
         };
         value
+    }};
+}
+
+macro_rules! clean_message {
+    ($result:expr) => {
+        clean_message!($result, "", ())
+    };
+
+    ($result:expr,  $log_prefix:expr) => {
+        clean_message!($result, $log_prefix, ())
+    };
+
+    ($result:expr, $log_prefix:expr, $default_return:expr) => {{
+        match $result {
+            Ok(ok) => ok,
+            Err(e) => {
+                log::warn!("{} {:?}", $log_prefix, e);
+                return $default_return;
+            }
+        }
     }};
 }
 
@@ -384,7 +403,7 @@ fn fill_main_pid(
         let exec_val = if let Some(exec) = get_exec(map) {
             exec
         } else {
-            &unit.display_name()
+            unit.display_name()
         };
 
         let v = &format!("{} ({})", main_pid, exec_val);
@@ -401,25 +420,58 @@ fn get_main_pid(map: &HashMap<String, OwnedValue>) -> u32 {
     0
 }
 
-fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<&str> {
+#[derive(Clone, Value, Debug, OwnedValue)]
+struct ExecStart<'a> {
+    path: Str<'a>,
+    argv: Vec<Str<'a>>,
+    ignore_errors: bool,
+
+    //TODO check the param naming
+    start_time: u64,
+    stop_time: u64,
+    field6: u64,
+    field7: u64,
+    field8: u32,
+    code: i32,
+    status: i32,
+}
+
+// Value: Array(Dynamic { child: Structure(Dynamic { fields: [Str, Array(Dynamic { child: Str }), Bool, U64, U64, U64, U64, U32, I32, I32] }) })
+fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<String> {
     let value = get_value!(map, "ExecStart", None);
 
-    //TODO extract to a struct
-    if let Value::Array(array) = value as &Value {
-        if let Ok(Some(Value::Structure(zstruc))) = array.get::<&Value>(0) {
-            if let Some(Value::Str(zstr)) = zstruc.fields().first() {
-                return Some(zstr);
-            }
-        }
+    debug!(
+        "ExecStart Signature {:?} Value: {:?}",
+        value.value_signature(),
+        value
+    );
+
+    let Value::Array(array) = value as &Value else {
+        return None;
+    };
+
+    for idx in 0..array.len() {
+        let Ok(Some(val)) = array.get::<Value>(idx) else {
+            warn!("Can't get value from array");
+            continue;
+        };
+
+        let exec_start = clean_message!(ExecStart::try_from(val), "ExecStart", None);
+
+        let array_of_str: Vec<_> = exec_start.argv.iter().map(|s| s.as_str()).collect();
+
+        let cmd_line_joined = array_of_str.join(" ");
+
+        return Some(cmd_line_joined);
     }
 
     None
 }
 
-fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<&str> {
+fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
     if let Some(exec_full) = get_exec_full(map) {
         if let Some((_pre, last)) = exec_full.rsplit_once('/') {
-            return Some(last);
+            return Some(last.to_string());
         }
     }
     None
@@ -518,14 +570,11 @@ fn fill_trigger_timers_calendar(
             continue;
         };
 
-        match TimersCalendar::try_from(val) {
-            Ok(timer) => {
-                let timers = format!("{} {}", timer.timer_base, timer.calendar_specification);
+        let timer = clean_message!(TimersCalendar::try_from(val), "TimersMonotonic");
 
-                fill_row(unit_writer, "Trigger:", &timers)
-            }
-            Err(e) => warn!("TimersMonotonic ERROR {:?}", e),
-        }
+        let timers = format!("{} {}", timer.timer_base, timer.calendar_specification);
+
+        fill_row(unit_writer, "Trigger:", &timers)
     }
 }
 
@@ -583,10 +632,10 @@ fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
     fill_row(unit_writer, "Triggers:", &triggers.join("\n"))
 }
 
-#[derive(Deserialize, Type, PartialEq, Debug, Default)]
-struct Struct {
-    field1: String,
-    field2: String,
+#[derive(Value, OwnedValue)]
+struct ListenStruct<'a> {
+    listen_type: Str<'a>,
+    path: Str<'a>,
 }
 
 fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
@@ -596,23 +645,13 @@ fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
         return;
     };
 
-    let Ok(Some(val_listen_stc)) = array.get::<&Value>(0) else {
+    let Ok(Some(val_listen_stc)) = array.get::<Value>(0) else {
         return;
     };
 
-    let Value::Structure(zstruc) = val_listen_stc else {
-        return;
-    };
+    let listen_struct = clean_message!(ListenStruct::try_from(val_listen_stc), "Listen info");
 
-    let Some(Value::Str(val_0)) = zstruc.fields().first() else {
-        return;
-    };
-
-    let Some(Value::Str(val_1)) = zstruc.fields().get(1) else {
-        return;
-    };
-
-    let listen = format!("{} ({})", val_1, val_0);
+    let listen = format!("{} ({})", listen_struct.path, listen_struct.listen_type);
 
     fill_row(unit_writer, "Listen:", &listen)
 }
