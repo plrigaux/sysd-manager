@@ -76,17 +76,22 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-      <release version="1.8.1" date="2025-01-18">
+    <release version="1.8.1" date="2025-01-18">
       <description>
         <ul>
-          <li>Fix Unit info: CGroup now displays command line with argument</li>          
+          <li>Fix Unit info: "CGroup"</li>
+          <ul>
+            <li>Now displays command line with arguments</li>
+            <li>Now displays all processes</li>
+          </ul>
         </ul>
       </description>
     </release>
     <release version="1.8" date="2025-01-08">
       <description>
         <ul>
-          <li>New information page "Dependencies" to be able to view and navigate unit's dependencies</li>
+          <li>New information page "Dependencies" to be able to view and navigate unit's
+            dependencies</li>
           <li>New keyboard shortcuts no navigate unit's information pages</li>
           <li>Lazy load journal event</li>
           <li>Lazy load unit configuration file</li>
