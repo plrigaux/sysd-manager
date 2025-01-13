@@ -788,6 +788,32 @@ fn hexchar(x: u8) -> char {
     TABLE[(x & 15) as usize]
 }
 
+#[derive(Deserialize, Type, PartialEq, Debug)]
+pub struct UnitProcess {
+    pub path: String,
+    pub pid: u32,
+    pub name: String,
+}
+
+pub fn retreive_unit_processes(
+    dbus_level: DbusLevel,
+    unit_name: &str,
+) -> Result<Vec<UnitProcess>, SystemdErrors> {
+    let connection = get_connection(dbus_level)?;
+
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        "GetUnitProcesses",
+        &(unit_name),
+    )?;
+
+    let unit_processes: Vec<UnitProcess> = message.body().deserialize()?;
+
+    Ok(unit_processes)
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -1011,25 +1037,46 @@ mod tests {
         }
     }
 
+    #[derive(Deserialize, Type, PartialEq, Debug)]
+    struct TestTruct {
+        a: String,
+        b: u32,
+        c: String,
+    }
+
+    #[ignore = "need a connection to a service"]
     #[test]
-    fn test_branches_logic() {
-        let branches: usize = 0;
-        let re = branches & (1 << 0);
+    pub fn test_get_unit_processes() -> Result<(), SystemdErrors> {
+        let unit_file: &str = "cups.service";
 
-        println!("b {} r {}", branches, re);
+        let connection = get_connection(DbusLevel::System)?;
 
-        let branches: usize = 1;
-        let re = branches & (1 << 0);
+        let message = connection.call_method(
+            Some(DESTINATION_SYSTEMD),
+            PATH_SYSTEMD,
+            Some(INTERFACE_SYSTEMD_MANAGER),
+            "GetUnitProcesses",
+            &(unit_file),
+        )?;
 
-        println!("b {} r {}", branches, re);
+        println!("message {:?}", message);
 
-        let branches: usize = branches << 1;
+        let body = message.body();
 
-        for i in 0..3 {
-            let mask: usize = 1 << i;
-            let re = branches & mask;
+        //let z: zvariant::ObjectPath = body.deserialize()?;
+        //let z :String = body.deserialize()?;
 
-            println!("b {} m {} r {}", branches, mask, re);
-        }
+        println!("body {:?}", body.signature());
+
+        let pizza: Vec<TestTruct> = body.deserialize()?;
+
+        println!("pizza {:?}", pizza);
+
+        /*         let body = message.body();
+
+        let des = body.deserialize();
+
+        println!("{:#?}", des); */
+        Ok(())
     }
 }

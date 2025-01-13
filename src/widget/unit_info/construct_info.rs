@@ -38,6 +38,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_dropin(unit_writer, &map);
     fill_active_state(unit_writer, &map);
     fill_invocation(unit_writer, &map);
+    fill_triggered_by(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_tasks(unit_writer, &map);
@@ -47,7 +48,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_trigger_timers_monotonic(unit_writer, &map);
     fill_triggers(unit_writer, &map);
     fill_listen(unit_writer, &map);
-    fill_control_group(unit_writer, &map);
+    fill_control_group(unit_writer, &map, unit);
 }
 
 fn fill_name_description(unit_writer: &mut UnitInfoWriter, unit: &UnitInfo) {
@@ -632,6 +633,24 @@ fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
     fill_row(unit_writer, "Triggers:", &triggers.join("\n"))
 }
 
+//TODO add units states
+fn fill_triggered_by(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "TriggeredBy");
+
+    let triggers = get_array_str(value);
+
+    let mut it = triggers.iter();
+
+    if let Some(trigger) = it.next() {
+        fill_row(unit_writer, "TriggeredBy:", trigger);
+    }
+
+    for trigger in it {
+        let text = format!("{:KEY_WIDTH$} {}\n", " ", trigger);
+        unit_writer.insert(&text);
+    }
+}
+
 #[derive(Value, OwnedValue)]
 struct ListenStruct<'a> {
     listen_type: Str<'a>,
@@ -656,7 +675,7 @@ fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     fill_row(unit_writer, "Listen:", &listen)
 }
 
-fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>, unit :&UnitInfo ) {
     let value = get_value!(map, "ControlGroup");
 
     let c_group = value_str(value);
@@ -665,23 +684,18 @@ fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Ow
         return;
     }
 
-    const KEY_LABEL: &str = "CGroup:";
+    fill_row(unit_writer, "CGroup:", c_group);
 
-    if let Some(exec_full) = get_exec_full(map) {
-        let main_pid = get_main_pid(map);
+    //TODO put in separate thread
+    let unit_processes = clean_message!( systemd::retreive_unit_processes(unit));
 
-        write_key(unit_writer, KEY_LABEL);
-
-        unit_writer.insertln(c_group);
-
+    for unit_process in unit_processes {
         unit_writer.insert(&format!("{:KEY_WIDTH$} {}", " ", SPECIAL_GLYPH_TREE_RIGHT));
 
-        let s = format!("{} {}", &main_pid.to_string(), exec_full);
+        let process_info = format!("{} {}", unit_process.pid, unit_process.name);
 
-        unit_writer.insert_grey(&s);
+        unit_writer.insert_grey(&process_info);
         unit_writer.newline();
-    } else {
-        fill_row(unit_writer, KEY_LABEL, c_group)
     }
 }
 

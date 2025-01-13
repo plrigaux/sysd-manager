@@ -15,6 +15,7 @@ use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::JournalEvent;
 use log::{error, info, warn};
+use sysdbus::UnitProcess;
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
@@ -553,4 +554,12 @@ pub fn fetch_unit_dependencies(
     let object_path = get_unit_path(unit);
 
     sysdbus::unit_get_dependencies(level, &unit.primary(), &object_path, dependency_type, plain)
+}
+
+pub fn retreive_unit_processes(
+    unit: &UnitInfo,
+) -> Result<Vec<UnitProcess>, SystemdErrors> {
+    let level = PREFERENCES.dbus_level();
+
+    sysdbus::retreive_unit_processes(level, &unit.primary())
 }
