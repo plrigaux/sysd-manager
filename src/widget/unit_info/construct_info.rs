@@ -697,71 +697,69 @@ fn fill_control_group(
     fill_row(unit_writer, "CGroup:", c_group);
 
     //TODO put in separate thread maybe?
-    let unit_processes = clean_message!(systemd::retreive_unit_processes(unit), "Get processes");
+    let mut unit_processes =
+        clean_message!(systemd::retreive_unit_processes(unit), "Get processes");
 
-    let mut prev: Option<&UnitProcess> = None;
-    let mut it = unit_processes.iter().peekable();
+    let main_unit_name = unit.primary();
 
-    while let Some(unit_process) = it.next() {
-        let unit_name = unit_process.unit_name();
+    // get the main unit first
+    if let Some(unit_process_set) = unit_processes.remove(&main_unit_name) {
+        for (sub_idx, unit_process) in unit_process_set.iter().enumerate() {
+            let is_last = sub_idx == unit_process_set.len() - 1;
+            print_process(unit_writer, "", unit_process, is_last);
+        }
+    }
 
-/*         if unit_name == "udev" || unit_name == "cups.service" {
-            warn!("{:#?}", unit_process);
-        } */
+    for (idx, (_, unit_process_set)) in unit_processes.iter().enumerate() {
+        let is_last = idx == unit_processes.len() - 1;
+        //let is_first = idx == 0;
+        let mut padding = "";
 
-        let mut pad = "";
+        for (sub_idx, unit_process) in unit_process_set.iter().enumerate() {
+            let is_first_sub = sub_idx == 0;
+            let is_last_sub = sub_idx == unit_process_set.len() - 1;
 
-        let next = it.peek();
-
-        if not_previous(&prev, unit_name) {
-            if unit_name != unit.primary() {
-                let glyph = if next.is_some() {
-                    SPECIAL_GLYPH_TREE_BRANCH
-                } else {
+            if is_first_sub {
+                let glyph = if is_last {
                     SPECIAL_GLYPH_TREE_RIGHT
+                } else {
+                    SPECIAL_GLYPH_TREE_BRANCH
                 };
 
                 unit_writer.insert(&format!("{:KEY_WIDTH$} {}", " ", glyph));
-
-                unit_writer.insert(unit_name);
+                unit_writer.insert(unit_process.unit_name());
                 unit_writer.newline();
-                pad = if next.is_some() {
+
+                padding = if !is_last {
                     SPECIAL_GLYPH_TREE_VERTICAL
                 } else {
                     SPECIAL_GLYPH_TREE_SPACE
-                }
+                };
             }
-        } else {
-            pad = SPECIAL_GLYPH_TREE_VERTICAL
+
+            print_process(unit_writer, padding, unit_process, is_last_sub);
         }
-
-        let glyph = if let Some(next_up) = next {
-            if next_up.unit_name() == unit_name {
-                SPECIAL_GLYPH_TREE_BRANCH
-            } else {
-                SPECIAL_GLYPH_TREE_RIGHT
-            }
-        } else {
-            SPECIAL_GLYPH_TREE_RIGHT
-        };
-
-        unit_writer.insert(&format!("{:KEY_WIDTH$} {}{}", " ", pad, glyph));
-
-        let process_info = format!("{} {}", unit_process.pid, unit_process.name);
-
-        unit_writer.insert_grey(&process_info);
-        unit_writer.newline();
-
-        prev = Some(unit_process);
     }
 }
 
-fn not_previous(prev: &Option<&UnitProcess>, unit_name: &str) -> bool {
-    if let Some(current) = prev {
-        current.unit_name() != unit_name
+fn print_process(
+    unit_writer: &mut UnitInfoWriter,
+    padding: &str,
+    unit_process: &UnitProcess,
+    is_last_sub: bool,
+) {
+    let glyph = if !is_last_sub {
+        SPECIAL_GLYPH_TREE_BRANCH
     } else {
-        true
-    }
+        SPECIAL_GLYPH_TREE_RIGHT
+    };
+
+    unit_writer.insert(&format!("{:KEY_WIDTH$} {}{}", " ", padding, glyph));
+
+    let process_info = format!("{} {}", unit_process.pid, unit_process.name);
+
+    unit_writer.insert_grey(&process_info);
+    unit_writer.newline();
 }
 
 fn value_str<'a>(value: &'a Value<'a>) -> &'a str {

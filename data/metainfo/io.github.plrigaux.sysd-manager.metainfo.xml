@@ -79,11 +79,8 @@ https://hughsie.github.io/oars/index.html
     <release version="1.8.1" date="2025-01-14">
       <description>
         <ul>
-          <li>Fix Unit info: "CGroup"</li>
-          <ul>
-            <li>Now displays command line with arguments</li>
-            <li>Now displays all processes</li>
-          </ul>
+          <li>Fix Unit info: CGroup now displays command line with arguments</li>
+          <li>Fix Unit info: CGroup now displays all processes</li>
         </ul>
       </description>
     </release>

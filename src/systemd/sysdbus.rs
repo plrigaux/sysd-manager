@@ -22,7 +22,6 @@ use crate::systemd::{
 use crate::widget::preferences::data::DbusLevel;
 
 use super::{
-    data::UnitProcess,
     enums::{DependencyType, EnablementStatus, KillWho, StartStopMode},
     Dependency, SystemdErrors, SystemdUnit,
 };
@@ -789,10 +788,17 @@ fn hexchar(x: u8) -> char {
     TABLE[(x & 15) as usize]
 }
 
+#[derive(Deserialize, Type, PartialEq, Debug)]
+pub(super) struct UnitProcessDeserialize {
+    pub(super) path: String,
+    pub(super) pid: u32,
+    pub(super) name: String,
+}
+
 pub fn retreive_unit_processes(
     dbus_level: DbusLevel,
     unit_name: &str,
-) -> Result<Vec<UnitProcess>, SystemdErrors> {
+) -> Result<Vec<UnitProcessDeserialize>, SystemdErrors> {
     let connection = get_connection(dbus_level)?;
 
     let message = connection.call_method(
@@ -803,38 +809,9 @@ pub fn retreive_unit_processes(
         &(unit_name),
     )?;
 
-    #[derive(Deserialize, Type, PartialEq, Debug)]
-    struct UnitProcessDeserialize {
-        path: String,
-        pid: u32,
-        name: String,
-    }
+    let unit_processes: Vec<UnitProcessDeserialize> = message.body().deserialize()?;
 
-    let mut unit_processes: Vec<UnitProcessDeserialize> = message.body().deserialize()?;
-
-    let mut unit_processes_out = Vec::with_capacity(unit_processes.len());
-    for unit_process in unit_processes.drain(..) {
-        let unit_process = {
-            let Some(unit_name) = unit_process.path.rsplit_once('/').map(|a| a.1) else {
-                continue;
-            };
-
-            let unit_name_idx = unit_process.path.len() - unit_name.len();
-
-            UnitProcess {
-                path: unit_process.path,
-                pid: unit_process.pid,
-                name: unit_process.name,
-                unit_name: unit_name_idx,
-            }
-        };
-
-        unit_processes_out.push(unit_process);
-    }
-
-    unit_processes_out.sort();
-
-    Ok(unit_processes_out)
+    Ok(unit_processes)
 }
 
 #[cfg(test)]

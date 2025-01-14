@@ -557,8 +557,39 @@ pub fn fetch_unit_dependencies(
 
 pub fn retreive_unit_processes(
     unit: &UnitInfo,
-) -> Result<Vec<UnitProcess>, SystemdErrors> {
+) -> Result<BTreeMap<String, BTreeSet<UnitProcess>>, SystemdErrors> {
     let level = PREFERENCES.dbus_level();
 
-    sysdbus::retreive_unit_processes(level, &unit.primary())
+    let unit_processes = sysdbus::retreive_unit_processes(level, &unit.primary())?;
+
+    // let mut unit_processes_out = Vec::with_capacity(unit_processes.len());
+    let mut unit_processes_map: BTreeMap<String, BTreeSet<UnitProcess>> = BTreeMap::new();
+    for unit_process in unit_processes {
+        let unit_process = {
+            let Some(unit_name) = unit_process.path.rsplit_once('/').map(|a| a.1) else {
+                warn!("No unit name for path {:?}", unit_process.path);
+                continue;
+            };
+
+            let unit_name_idx = unit_process.path.len() - unit_name.len();
+
+            UnitProcess {
+                path: unit_process.path,
+                pid: unit_process.pid,
+                name: unit_process.name,
+                unit_name: unit_name_idx,
+            }
+        };
+
+        if let Some(set) = unit_processes_map.get_mut(unit_process.unit_name()) {            
+            set.insert(unit_process);
+        } else {
+            let mut set = BTreeSet::new();
+            let key = unit_process.unit_name().to_string();
+            set.insert(unit_process);
+            unit_processes_map.insert(key, set);
+        }
+    }
+
+    Ok(unit_processes_map)
 }
