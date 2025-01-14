@@ -62,7 +62,6 @@ pub struct UnitListPanelImp {
     refresh_unit_list_button: OnceCell<gtk::Button>,
 
     unit: RefCell<Option<UnitInfo>>,
-    //force_selected_index: Cell<u32>,
 }
 
 macro_rules! factory_setup {
@@ -212,7 +211,9 @@ impl UnitListPanelImp {
     fn sections_changed(&self, position: u32) {
         info!("sections_changed {position}");
     }
+}
 
+impl UnitListPanelImp {
     pub(super) fn register_selection_change(
         &self,
         app_window: &AppWindow,
@@ -239,7 +240,7 @@ impl UnitListPanelImp {
 
                 info!("Selection changed, new unit {}", unit.primary());
 
-                list_widjet.set_unit(&unit);
+                list_widjet.set_unit_internal(&unit);
                 app_window.selection_change(&unit);
             }); // FOR THE SEARCH
 
@@ -328,6 +329,9 @@ impl UnitListPanelImp {
                 .expect("Task needs to finish successfully.");
 
                 info!("Focus on selected unit list row (index {force_selected_index})");
+
+                //FIXME (sysd-manager:48115): Gtk-CRITICAL **: 15:44:27.932: gtk_column_view_scroll_to: assertion 'pos < gtk_list_base_get_n_items (GTK_LIST_BASE (self->listview))' failed
+                
                 //needs a bit of time
                 units_browser.scroll_to(
                     force_selected_index, // to centerish on the selected unit
@@ -349,16 +353,20 @@ impl UnitListPanelImp {
         }
     }
 
-    pub fn set_unit(&self, unit: &UnitInfo) {
-        info!("List {}", unit.primary());
-        let old = self.unit.replace(Some(unit.clone()));
+    pub fn set_unit_internal(&self, unit: &UnitInfo) {
+        let _ = self.unit.replace(Some(unit.clone()));
+    }
 
+    pub fn set_unit(&self, unit: &UnitInfo) {
+        let old = self.unit.replace(Some(unit.clone()));
         if let Some(old) = old {
             if old.primary() == unit.primary() {
                 info!("List {} == {}", old.primary(), unit.primary());
                 return;
             }
         }
+
+        info!("List {}", unit.primary());
 
         let unit_name = unit.primary();
         let finding = self.list_store.find_with_equal_func(|object| {
@@ -445,7 +453,7 @@ fn fill_search_bar(
         .spacing(5)
         .build();
 
-    for unit_type in UnitType::iter().filter(|x|  !matches!(*x, UnitType::Unknown(_))) {
+    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
         filter_button_unit_type.add_item(unit_type.to_str());
     }
 

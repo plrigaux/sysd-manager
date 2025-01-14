@@ -9,13 +9,12 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::process::{Command, Stdio};
 
-use data::UnitInfo;
+use data::{UnitInfo, UnitProcess};
 use enums::{ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
 use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::JournalEvent;
 use log::{error, info, warn};
-use sysdbus::UnitProcess;
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;

@@ -22,6 +22,7 @@ use crate::systemd::{
 use crate::widget::preferences::data::DbusLevel;
 
 use super::{
+    data::UnitProcess,
     enums::{DependencyType, EnablementStatus, KillWho, StartStopMode},
     Dependency, SystemdErrors, SystemdUnit,
 };
@@ -788,13 +789,6 @@ fn hexchar(x: u8) -> char {
     TABLE[(x & 15) as usize]
 }
 
-#[derive(Deserialize, Type, PartialEq, Debug)]
-pub struct UnitProcess {
-    pub path: String,
-    pub pid: u32,
-    pub name: String,
-}
-
 pub fn retreive_unit_processes(
     dbus_level: DbusLevel,
     unit_name: &str,
@@ -809,9 +803,38 @@ pub fn retreive_unit_processes(
         &(unit_name),
     )?;
 
-    let unit_processes: Vec<UnitProcess> = message.body().deserialize()?;
+    #[derive(Deserialize, Type, PartialEq, Debug)]
+    struct UnitProcessDeserialize {
+        path: String,
+        pid: u32,
+        name: String,
+    }
 
-    Ok(unit_processes)
+    let mut unit_processes: Vec<UnitProcessDeserialize> = message.body().deserialize()?;
+
+    let mut unit_processes_out = Vec::with_capacity(unit_processes.len());
+    for unit_process in unit_processes.drain(..) {
+        let unit_process = {
+            let Some(unit_name) = unit_process.path.rsplit_once('/').map(|a| a.1) else {
+                continue;
+            };
+
+            let unit_name_idx = unit_process.path.len() - unit_name.len();
+
+            UnitProcess {
+                path: unit_process.path,
+                pid: unit_process.pid,
+                name: unit_process.name,
+                unit_name: unit_name_idx,
+            }
+        };
+
+        unit_processes_out.push(unit_process);
+    }
+
+    unit_processes_out.sort();
+
+    Ok(unit_processes_out)
 }
 
 #[cfg(test)]
@@ -1047,36 +1070,14 @@ mod tests {
     #[ignore = "need a connection to a service"]
     #[test]
     pub fn test_get_unit_processes() -> Result<(), SystemdErrors> {
-        let unit_file: &str = "cups.service";
+        let unit_file: &str = "system.slice";
 
-        let connection = get_connection(DbusLevel::System)?;
+        let list = retreive_unit_processes(DbusLevel::System, unit_file)?;
 
-        let message = connection.call_method(
-            Some(DESTINATION_SYSTEMD),
-            PATH_SYSTEMD,
-            Some(INTERFACE_SYSTEMD_MANAGER),
-            "GetUnitProcesses",
-            &(unit_file),
-        )?;
+        for up in list {
+            println!("{:#?}", up)
+        }
 
-        println!("message {:?}", message);
-
-        let body = message.body();
-
-        //let z: zvariant::ObjectPath = body.deserialize()?;
-        //let z :String = body.deserialize()?;
-
-        println!("body {:?}", body.signature());
-
-        let pizza: Vec<TestTruct> = body.deserialize()?;
-
-        println!("pizza {:?}", pizza);
-
-        /*         let body = message.body();
-
-        let des = body.deserialize();
-
-        println!("{:#?}", des); */
         Ok(())
     }
 }

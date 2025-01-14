@@ -1,13 +1,19 @@
 use std::collections::HashMap;
 
-use crate::systemd::{self, data::UnitInfo};
+use crate::systemd::{
+    self,
+    data::{UnitInfo, UnitProcess},
+};
 use log::{debug, error, warn};
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 use super::{
     time_handling,
-    writer::{UnitInfoWriter, SPECIAL_GLYPH_TREE_RIGHT},
+    writer::{
+        UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+        SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+    },
 };
 
 pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
@@ -675,7 +681,11 @@ fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     fill_row(unit_writer, "Listen:", &listen)
 }
 
-fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>, unit :&UnitInfo ) {
+fn fill_control_group(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
+) {
     let value = get_value!(map, "ControlGroup");
 
     let c_group = value_str(value);
@@ -686,16 +696,71 @@ fn fill_control_group(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Ow
 
     fill_row(unit_writer, "CGroup:", c_group);
 
-    //TODO put in separate thread
-    let unit_processes = clean_message!( systemd::retreive_unit_processes(unit));
+    //TODO put in separate thread maybe?
+    let unit_processes = clean_message!(systemd::retreive_unit_processes(unit), "Get processes");
 
-    for unit_process in unit_processes {
-        unit_writer.insert(&format!("{:KEY_WIDTH$} {}", " ", SPECIAL_GLYPH_TREE_RIGHT));
+    let mut prev: Option<&UnitProcess> = None;
+    let mut it = unit_processes.iter().peekable();
+
+    while let Some(unit_process) = it.next() {
+        let unit_name = unit_process.unit_name();
+
+/*         if unit_name == "udev" || unit_name == "cups.service" {
+            warn!("{:#?}", unit_process);
+        } */
+
+        let mut pad = "";
+
+        let next = it.peek();
+
+        if not_previous(&prev, unit_name) {
+            if unit_name != unit.primary() {
+                let glyph = if next.is_some() {
+                    SPECIAL_GLYPH_TREE_BRANCH
+                } else {
+                    SPECIAL_GLYPH_TREE_RIGHT
+                };
+
+                unit_writer.insert(&format!("{:KEY_WIDTH$} {}", " ", glyph));
+
+                unit_writer.insert(unit_name);
+                unit_writer.newline();
+                pad = if next.is_some() {
+                    SPECIAL_GLYPH_TREE_VERTICAL
+                } else {
+                    SPECIAL_GLYPH_TREE_SPACE
+                }
+            }
+        } else {
+            pad = SPECIAL_GLYPH_TREE_VERTICAL
+        }
+
+        let glyph = if let Some(next_up) = next {
+            if next_up.unit_name() == unit_name {
+                SPECIAL_GLYPH_TREE_BRANCH
+            } else {
+                SPECIAL_GLYPH_TREE_RIGHT
+            }
+        } else {
+            SPECIAL_GLYPH_TREE_RIGHT
+        };
+
+        unit_writer.insert(&format!("{:KEY_WIDTH$} {}{}", " ", pad, glyph));
 
         let process_info = format!("{} {}", unit_process.pid, unit_process.name);
 
         unit_writer.insert_grey(&process_info);
         unit_writer.newline();
+
+        prev = Some(unit_process);
+    }
+}
+
+fn not_previous(prev: &Option<&UnitProcess>, unit_name: &str) -> bool {
+    if let Some(current) = prev {
+        current.unit_name() != unit_name
+    } else {
+        true
     }
 }
 

@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use super::enums::ActiveState;
 use crate::gtk::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib;
@@ -99,5 +101,37 @@ mod imp {
 
             *self.primary.write().unwrap() = primary;
         }
+    }
+}
+
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct UnitProcess {
+    pub path: String,
+    pub pid: u32,
+    pub name: String,
+    pub(crate) unit_name: usize,
+}
+
+impl UnitProcess {
+    pub fn unit_name(&self) -> &str {
+        &self.path[self.unit_name..]
+    }
+}
+
+impl Ord for UnitProcess {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let cmp: Ordering = self.unit_name().cmp(other.unit_name());
+        if self.unit_name().cmp(other.unit_name()) == Ordering::Equal {
+            self.pid.cmp(&other.pid)
+        } else {
+            cmp
+        }
+    }
+}
+
+impl PartialOrd for UnitProcess {
+    fn partial_cmp(&self, other: &UnitProcess) -> Option<Ordering> {
+       Some(self.cmp(other))
     }
 }
