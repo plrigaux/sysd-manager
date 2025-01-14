@@ -48,6 +48,7 @@ pub struct UnitInfoPanelImp {
     is_dark: Cell<bool>,
 
     hovering_over_link: Rc<Cell<bool>>,
+    hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
 }
 
 #[gtk::template_callbacks]
@@ -137,6 +138,7 @@ impl ObjectImpl for UnitInfoPanelImp {
         text_view_hyperlink::build_textview_link_platform(
             &self.unit_info_textview,
             self.hovering_over_link.clone(),
+            self.hovering_over_link_tag.clone(),
             activator,
         );
     }

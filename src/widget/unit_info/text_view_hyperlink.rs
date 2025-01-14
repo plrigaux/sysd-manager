@@ -1,9 +1,12 @@
-use std::{cell::Cell, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    rc::Rc,
+};
 
 use gtk::{
     gdk,
     glib::{self, Value},
-    prelude::*,
+     prelude::*,
 };
 use log::{info, warn};
 
@@ -38,6 +41,7 @@ impl Clone for LinkActivator {
 pub fn build_textview_link_platform(
     text_view_or: &gtk::TextView,
     hovering_over_link: Rc<Cell<bool>>,
+    hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
     link_activator: LinkActivator,
 ) {
     {
@@ -66,12 +70,19 @@ pub fn build_textview_link_platform(
         let event_controller_motion = gtk::EventControllerMotion::new();
         let text_view = text_view_or.clone();
         let hovering_over_link = hovering_over_link.clone();
+        let hovering_over_link_tag = hovering_over_link_tag.clone();
 
         event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
             let (tx, ty) =
                 text_view.window_to_buffer_coords(gtk::TextWindowType::Widget, x as i32, y as i32);
 
-            set_cursor_if_appropriate(hovering_over_link.clone(), &text_view, tx, ty);
+            set_cursor_if_appropriate(
+                hovering_over_link.clone(),
+                hovering_over_link_tag.clone(),
+                &text_view,
+                tx,
+                ty,
+            );
         });
         text_view_or.add_controller(event_controller_motion);
     }
@@ -80,8 +91,18 @@ pub fn build_textview_link_platform(
         let gesture_click = gtk::GestureClick::new();
         let text_view = text_view_or.clone();
         let link_activator = link_activator.clone();
-        gesture_click.connect_released(move |_gesture_click, _n_press, x, y| {
+        gesture_click.connect_released(move |_gesture_click, _n_press, mut x, mut y| {
             let buf = text_view.buffer();
+
+            //Adjust to the scrolling
+            if let Some(vadj) = text_view.vadjustment() {
+                y += vadj.value();
+            }
+
+            //Adjust to the scrolling
+            if let Some(hadj) = text_view.hadjustment() {
+                x += hadj.value();
+            }
 
             // we shouldn't follow a link if the user has selected something
             if let Some((start, end)) = buf.selection_bounds() {
@@ -103,14 +124,16 @@ pub fn build_textview_link_platform(
 
 fn set_cursor_if_appropriate(
     hovering_over_link: Rc<Cell<bool>>,
+    _hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
     text_view: &gtk::TextView,
     x: i32,
     y: i32,
 ) {
     let mut hovering = false;
+    //let mut hovering_tag: Option<gtk::TextTag> = None;
+
     if let Some(iter) = text_view.iter_at_location(x, y) {
         let tags = iter.tags();
-
         for tag in tags.iter() {
             let val = unsafe {
                 let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
@@ -119,6 +142,7 @@ fn set_cursor_if_appropriate(
 
             if val.is_some() {
                 hovering = true;
+                //hovering_tag = Some(tag.clone());
                 break;
             }
         }
@@ -128,8 +152,10 @@ fn set_cursor_if_appropriate(
         hovering_over_link.set(hovering);
         if hovering {
             text_view.set_cursor_from_name(Some("pointer"));
+            //tag.set_property( "underline", pango::Underline::DoubleLine.to_value());
         } else {
             text_view.set_cursor_from_name(Some("text"));
+            //let cp_tag = hovering_over_link_tag.get_mut();
         }
     }
 }
