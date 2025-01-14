@@ -291,26 +291,31 @@ impl UnitListPanelImp {
             panel_stack.set_visible_child_name("unit_list");
 
             let mut force_selected_index = GTK_INVALID_LIST_POSITION;
-            let selected_item = single_selection.selected_item();
-            if selected_item.is_none() {
-                let selected_unit = unit_list.selected_unit();
-                if let Some(selected_unit) = selected_unit {
-                    let selected_unit_name = selected_unit.primary();
-                    if let Some(index) = list_store.find_with_equal_func(|object| {
-                        let list_unit = object
-                            .downcast_ref::<UnitInfo>()
-                            .expect("Needs to be UnitInfo");
 
-                        list_unit.primary().eq(&selected_unit_name)
-                    }) {
-                        info!(
-                            "Force selection to index {:?} to select unit {:?}",
-                            index, selected_unit_name
-                        );
-                        single_selection.select_item(index, true);
-                        //unit_list.set_force_to_select(index);
-                        force_selected_index = index;
-                    }
+            let selected_unit = unit_list.selected_unit();
+            if let Some(selected_unit) = selected_unit {
+                let selected_unit_name = selected_unit.primary();
+
+                debug!(
+                    "LS items-n {} name {}",
+                    list_store.n_items(),
+                    selected_unit_name
+                );
+
+                if let Some(index) = list_store.find_with_equal_func(|object| {
+                    let list_unit = object
+                        .downcast_ref::<UnitInfo>()
+                        .expect("Needs to be UnitInfo");
+
+                    list_unit.primary().eq(&selected_unit_name)
+                }) {
+                    info!(
+                        "Force selection to index {:?} to select unit {:?}",
+                        index, selected_unit_name
+                    );
+                    single_selection.select_item(index, true);
+                    //unit_list.set_force_to_select(index);
+                    force_selected_index = index;
                 }
             }
 
@@ -330,9 +335,7 @@ impl UnitListPanelImp {
 
                 info!("Focus on selected unit list row (index {force_selected_index})");
 
-                //FIXME (sysd-manager:48115): Gtk-CRITICAL **: 15:44:27.932: gtk_column_view_scroll_to: assertion 'pos < gtk_list_base_get_n_items (GTK_LIST_BASE (self->listview))' failed
-                
-                //needs a bit of time
+                //needs a bit of time to generate the list
                 units_browser.scroll_to(
                     force_selected_index, // to centerish on the selected unit
                     None,
@@ -366,9 +369,24 @@ impl UnitListPanelImp {
             }
         }
 
-        info!("List {}", unit.primary());
-
         let unit_name = unit.primary();
+
+        debug!(
+            "Unit List {} list_store {} filter {} sort_model {}",
+            unit_name,
+            self.list_store.n_items(),
+            self.filter_list_model.n_items(),
+            self.unit_list_sort_list_model.n_items()
+        );
+
+        //Don't  select and focus if filter out
+        if let Some(filter) = self.filter_list_model.filter() {
+            if !filter.match_(unit) {
+                debug!("Unit {} no Match", unit_name);
+                return;
+            }
+        }
+
         let finding = self.list_store.find_with_equal_func(|object| {
             let unit_item = object
                 .downcast_ref::<UnitInfo>()
@@ -378,12 +396,12 @@ impl UnitListPanelImp {
         });
 
         if let Some(row) = finding {
-            self.single_selection.select_item(row, true);
+            debug!("Scroll to row {}", row);
 
             self.units_browser.scroll_to(
                 row, // to centerish on the selected unit
                 None,
-                ListScrollFlags::FOCUS,
+                ListScrollFlags::FOCUS | ListScrollFlags::SELECT,
                 None,
             );
         }
