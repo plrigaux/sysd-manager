@@ -76,11 +76,12 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="1.8.1" date="2025-01-14">
+    <release version="1.8.2" date="2025-01-14">
       <description>
         <ul>
           <li>Fix Unit info: CGroup now displays command line with arguments</li>
           <li>Fix Unit info: CGroup now displays all processes</li>
+          <li>Fix Unit dependencies hyperlinks</li>          
         </ul>
       </description>
     </release>
