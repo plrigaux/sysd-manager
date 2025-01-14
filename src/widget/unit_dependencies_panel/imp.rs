@@ -69,6 +69,15 @@ pub struct UnitDependenciesPanelImp {
     hovering_over_link: Rc<Cell<bool>>,
 }
 
+#[gtk::template_callbacks]
+impl UnitDependenciesPanelImp {
+    #[template_callback]
+    fn plain_option_toggled(&self, check_button: &gtk::CheckButton) {
+        self.plain.set(check_button.is_active());
+        self.update_dependencies();
+    }
+}
+
 impl UnitDependenciesPanelImp {
     pub(crate) fn register(&self, app_window: &AppWindow) {
         {
@@ -83,25 +92,7 @@ impl UnitDependenciesPanelImp {
             );
         }
     }
-}
 
-fn activate_link(unit_name: &str, app_window: &Option<AppWindow>) {
-    info!("open unit {:?} dependency", unit_name);
-    let unit = match systemd::fetch_unit(unit_name) {
-        Ok(unit) => Some(unit),
-        Err(e) => {
-            warn!("Cli unit: {:?}", e);
-            None
-        }
-    };
-
-    if let Some(app_window) = app_window {
-        app_window.set_unit(unit)
-    }
-}
-
-#[gtk::template_callbacks]
-impl UnitDependenciesPanelImp {
     fn set_visible_on_page(&self, value: bool) {
         debug!("set_visible_on_page val {value}");
         self.visible_on_page.set(value);
@@ -195,7 +186,6 @@ impl UnitDependenciesPanelImp {
     fn display_dependencies(
         info_writer: &mut UnitInfoWriter,
         dependency: &Dependency,
-
         spacer: &str,
         last: bool,
     ) {
@@ -276,13 +266,23 @@ impl UnitDependenciesPanelImp {
                 });
         }
     }
+}
 
-    #[template_callback]
-    fn plain_option_toggled(&self, check_button: &gtk::CheckButton) {
-        self.plain.set(check_button.is_active());
-        self.update_dependencies();
+fn activate_link(unit_name: &str, app_window: &Option<AppWindow>) {
+    info!("open unit dependency {:?} ", unit_name);
+    let unit = match systemd::fetch_unit(unit_name) {
+        Ok(unit) => Some(unit),
+        Err(e) => {
+            warn!("Cli unit: {:?}", e);
+            None
+        }
+    };
+
+    if let Some(app_window) = app_window {
+        app_window.set_unit(unit)
     }
 }
+
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
 impl ObjectSubclass for UnitDependenciesPanelImp {

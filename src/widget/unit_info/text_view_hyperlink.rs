@@ -5,7 +5,7 @@ use gtk::{
     glib::{self, Value},
     prelude::*,
 };
-use log::warn;
+use log::{info, warn};
 
 use crate::widget::app_window::AppWindow;
 
@@ -137,10 +137,11 @@ fn set_cursor_if_appropriate(
 fn follow_if_link(text_iter: gtk::TextIter, link_activator: LinkActivator) {
     let tags = text_iter.tags();
 
-    let mut link_value = None;
+    info!("Tags nb {:?}", tags.len());
 
+    let mut link_value = None;
     for tag in tags.iter() {
-        //info!("TAG {:?} {:?}", tag, tag.name());
+        info!("TAG {:?} {:?}", tag, tag.name());
 
         link_value = unsafe {
             let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
@@ -154,8 +155,9 @@ fn follow_if_link(text_iter: gtk::TextIter, link_activator: LinkActivator) {
 
     if let Some(link_value) = link_value {
         match link_value.get::<String>() {
-            Ok(file_link) => {
-                link_activator.run(&file_link);
+            Ok(link) => {
+                warn!("Link: {link}");
+                link_activator.run(&link);
             }
             Err(e) => warn!("Link value Error {:?}", e),
         }

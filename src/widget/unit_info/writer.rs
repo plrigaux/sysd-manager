@@ -1,4 +1,5 @@
 use gtk::{glib::translate::IntoGlib, pango, prelude::*, TextBuffer, TextIter, TextTag};
+use log::debug;
 
 use crate::widget::journal::palette::Palette;
 
@@ -62,9 +63,21 @@ impl UnitInfoWriter {
         self.insert_tag(text, Self::create_hyperlink_tag, Some(link));
     }
 
-    fn create_hyperlink_tag(buf: &TextBuffer, _is_dark: bool) -> Option<TextTag> {
+    fn create_hyperlink_tag(
+        buf: &TextBuffer,
+        _is_dark: bool,
+        tag_name: Option<&str>,
+    ) -> Option<TextTag> {
+
+        if let Some(tag_name) = tag_name {
+            let tag_op = buf.tag_table().lookup(tag_name);
+            if tag_op.is_some() {
+                return tag_op;
+            }
+        }
+
         buf.create_tag(
-            None,
+            tag_name,
             &[
                 //  ("foreground", &"blue".to_value()),
                 ("underline", &pango::Underline::SingleLine.to_value()),
@@ -72,7 +85,11 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_active_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_active_tag(
+        buf: &TextBuffer,
+        is_dark: bool,
+        _tag_name: Option<&str>,
+    ) -> Option<TextTag> {
         let (color, name) = if is_dark {
             (Palette::Green3.get_color(), TAG_NAME_ACTIVE_DARK)
         } else {
@@ -93,7 +110,7 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_red_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_red_tag(buf: &TextBuffer, is_dark: bool, _tag_name: Option<&str>) -> Option<TextTag> {
         let (color, name) = if is_dark {
             (Palette::Red4.get_color(), TAG_NAME_RED_DARK)
         } else {
@@ -114,7 +131,11 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_disable_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_disable_tag(
+        buf: &TextBuffer,
+        is_dark: bool,
+        _tag_name: Option<&str>,
+    ) -> Option<TextTag> {
         let (color, name) = if is_dark {
             (Palette::Yellow3.get_color(), TAG_NAME_DISABLE_DARK)
         } else {
@@ -135,7 +156,11 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_grey_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_grey_tag(
+        buf: &TextBuffer,
+        is_dark: bool,
+        _tag_name: Option<&str>,
+    ) -> Option<TextTag> {
         let (color, name) = if is_dark {
             (Palette::Light5.get_color(), TAG_NAME_GREY_DARK)
         } else {
@@ -153,17 +178,18 @@ impl UnitInfoWriter {
     fn insert_tag(
         &mut self,
         text: &str,
-        create_tag: impl Fn(&TextBuffer, bool) -> Option<TextTag>,
+        create_tag: impl Fn(&TextBuffer, bool, Option<&str>) -> Option<TextTag>,
         link: Option<&str>,
     ) {
         let start_offset = self.iter.offset();
         self.buf.insert(&mut self.iter, text);
 
-        let tag_op = create_tag(&self.buf, self.is_dark);
+        let tag = create_tag(&self.buf, self.is_dark, link);
 
-        if let Some(tag) = tag_op {
+        if let Some(tag) = tag {
             if let Some(link) = link {
                 let link_value = link.to_value();
+                debug!("text {} link {:?}", text, link_value);
                 unsafe {
                     tag.set_data(TAG_DATA_LINK, link_value);
                 }

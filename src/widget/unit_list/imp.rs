@@ -371,7 +371,7 @@ impl UnitListPanelImp {
 
         let unit_name = unit.primary();
 
-        debug!(
+        info!(
             "Unit List {} list_store {} filter {} sort_model {}",
             unit_name,
             self.list_store.n_items(),
@@ -382,7 +382,9 @@ impl UnitListPanelImp {
         //Don't  select and focus if filter out
         if let Some(filter) = self.filter_list_model.filter() {
             if !filter.match_(unit) {
-                debug!("Unit {} no Match", unit_name);
+                //Unselect
+                self.single_selection.set_selected(GTK_INVALID_LIST_POSITION);
+                info!("Unit {} no Match", unit_name);
                 return;
             }
         }
@@ -396,7 +398,7 @@ impl UnitListPanelImp {
         });
 
         if let Some(row) = finding {
-            debug!("Scroll to row {}", row);
+            info!("Scroll to row {}", row);
 
             self.units_browser.scroll_to(
                 row, // to centerish on the selected unit
