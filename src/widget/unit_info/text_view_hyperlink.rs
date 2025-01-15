@@ -1,7 +1,10 @@
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
-    gdk, gio, glib::{self, Value}, pango, prelude::*
+    gdk, gio,
+    glib::{self, Value},
+    pango,
+    prelude::*,
 };
 use log::{info, warn};
 
@@ -56,7 +59,7 @@ impl LinkActivator {
                     None
                 }
             };
-        
+
             if let Some(app_window) = &self.app {
                 app_window.set_unit(unit)
             }
@@ -75,12 +78,41 @@ impl Clone for LinkActivator {
 }
 
 pub fn build_textview_link_platform(
-    text_view_or: &gtk::TextView,
+    text_view_original: &gtk::TextView,
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
     link_activator: LinkActivator,
 ) {
+    text_view_original.set_has_tooltip(true);
+
+    text_view_original.connect_query_tooltip(|text_view, mut x, mut y, keyboard_mode, tool_tip| {
+        let s = format!("TT x {} y {} b {}", x, y, keyboard_mode);
+        tool_tip.set_text(Some(&s));
+
+        //Adjust to the scrolling
+        if let Some(vadj) = text_view.vadjustment() {
+            y += vadj.value() as i32;
+        }
+
+        //Adjust to the scrolling
+        if let Some(hadj) = text_view.hadjustment() {
+            x += hadj.value() as i32;
+        }
+
+        let Some(iter) = text_view.iter_at_location(x, y) else {
+            return false;
+        };
+
+        let Some(link) = retreive_tag_link_value(iter) else {
+            return false;
+        };
+
+        tool_tip.set_text(Some(&link));
+
+        true
+    });
+
     {
-        let text_view = text_view_or.clone();
+        let text_view = text_view_original.clone();
         let event_controller_key = gtk::EventControllerKey::new();
         let link_activator = link_activator.clone();
         event_controller_key.connect_key_pressed(
@@ -98,12 +130,12 @@ pub fn build_textview_link_platform(
                 glib::Propagation::Proceed
             },
         );
-        text_view_or.add_controller(event_controller_key);
+        text_view_original.add_controller(event_controller_key);
     }
 
     {
         let event_controller_motion = gtk::EventControllerMotion::new();
-        let text_view = text_view_or.clone();
+        let text_view = text_view_original.clone();
         let hovering_over_link_tag = hovering_over_link_tag.clone();
 
         event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
@@ -112,12 +144,12 @@ pub fn build_textview_link_platform(
 
             set_cursor_if_appropriate(hovering_over_link_tag.clone(), &text_view, tx, ty);
         });
-        text_view_or.add_controller(event_controller_motion);
+        text_view_original.add_controller(event_controller_motion);
     }
 
     {
         let gesture_click = gtk::GestureClick::new();
-        let text_view = text_view_or.clone();
+        let text_view = text_view_original.clone();
         let link_activator = link_activator.clone();
         gesture_click.connect_released(move |_gesture_click, _n_press, mut x, mut y| {
             let buf = text_view.buffer();
@@ -146,7 +178,7 @@ pub fn build_textview_link_platform(
             follow_if_link(iter, link_activator.clone());
         });
 
-        text_view_or.add_controller(gesture_click);
+        text_view_original.add_controller(gesture_click);
     }
 }
 
@@ -175,6 +207,8 @@ fn set_cursor_if_appropriate(
 
     let (change, previous_not_null) = {
         let previous_tag = hovering_over_link_tag.borrow();
+
+        //It works empiricaly
         (!previous_tag.eq(&hovering_tag), previous_tag.is_some())
     };
 
@@ -184,13 +218,7 @@ fn set_cursor_if_appropriate(
 
             hovering_tag.set_property(PROP_UNDERLINE, pango::Underline::DoubleLine.to_value());
 
-            if previous_not_null {
-                let previous_tag = hovering_over_link_tag.borrow();
-                previous_tag
-                    .as_ref()
-                    .unwrap()
-                    .set_property(PROP_UNDERLINE, pango::Underline::SingleLine.to_value())
-            }
+            reset_hyper_tag(&hovering_over_link_tag, previous_not_null);
         } else {
             text_view.set_cursor_from_name(Some("text"));
 
@@ -215,14 +243,18 @@ fn reset_hyper_tag(
 }
 
 fn follow_if_link(text_iter: gtk::TextIter, link_activator: LinkActivator) {
-    let tags = text_iter.tags();
+    let link = retreive_tag_link_value(text_iter);
 
-    info!("Tags nb {:?}", tags.len());
+    if let Some(link) = link {
+        link_activator.run(&link);
+    }
+}
+
+fn retreive_tag_link_value(text_iter: gtk::TextIter) -> Option<String> {
+    let tags = text_iter.tags();
 
     let mut link_value = None;
     for tag in tags.iter() {
-        info!("TAG {:?} {:?}", tag, tag.name());
-
         link_value = unsafe {
             let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
             val.map(|link_value_nonull| link_value_nonull.as_ref())
@@ -235,11 +267,9 @@ fn follow_if_link(text_iter: gtk::TextIter, link_activator: LinkActivator) {
 
     if let Some(link_value) = link_value {
         match link_value.get::<String>() {
-            Ok(link) => {
-                warn!("Link: {link}");
-                link_activator.run(&link);
-            }
+            Ok(link) => return Some(link),
             Err(e) => warn!("Link value Error {:?}", e),
         }
     }
+    None
 }
