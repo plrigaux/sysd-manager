@@ -27,8 +27,7 @@ use crate::{
         unit_info::{
             text_view_hyperlink::{self, LinkActivator},
             writer::{
-                UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-                SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+                HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL
             },
         },
     },
@@ -215,7 +214,7 @@ impl UnitDependenciesPanelImp {
 
         info_writer.insert(glyph);
         info_writer.insert(" ");
-        info_writer.hyperlink(&dependency.unit_name, &dependency.unit_name);
+        info_writer.hyperlink(&dependency.unit_name, &dependency.unit_name, HyperLinkType::Unit);
         info_writer.newline();
 
         let child_spacer = format!("{spacer}{child_pading}");

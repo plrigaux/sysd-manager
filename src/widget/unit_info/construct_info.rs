@@ -11,7 +11,7 @@ use zvariant::{DynamicType, OwnedValue, Str, Value};
 use super::{
     time_handling,
     writer::{
-        UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+        HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
         SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
     },
 };
@@ -141,7 +141,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
                 unit_writer.insert(", ");
             }
 
-            unit_writer.hyperlink(d, link);
+            unit_writer.hyperlink(d, link, HyperLinkType::File);
             is_first = false;
         }
         unit_writer.newline();
@@ -255,7 +255,7 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
 
         if let Some(path) = path_op {
             let p = value_str(path);
-            unit_writer.hyperlink(p, p);
+            unit_writer.hyperlink(p, p, HyperLinkType::File);
             pad_left = true;
         }
 
@@ -300,13 +300,29 @@ fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>
 
     let mut it = docs.iter();
 
-    if let Some(doc) = it.next() {
-        fill_row(unit_writer, "Doc:", doc);
+    if let Some(doc) = it.next() {       
+        let s = format!("{:>KEY_WIDTH$} ", "Doc:");
+        unit_writer.insert(&s);
+
+        insert_doc(unit_writer, doc);
+        unit_writer.newline();
     }
 
     for doc in it {
-        let text = format!("{:KEY_WIDTH$} {}\n", " ", doc);
+        let text = format!("{:KEY_WIDTH$} ", " ");
         unit_writer.insert(&text);
+        insert_doc(unit_writer, doc);
+        unit_writer.newline();
+    }
+}
+
+fn insert_doc(unit_writer: &mut UnitInfoWriter, doc: &str) {
+    if doc.starts_with("man:") {
+        unit_writer.hyperlink(doc, doc, HyperLinkType::Man);
+    } else if doc.starts_with("http") {
+        unit_writer.hyperlink(doc, doc, HyperLinkType::Http);
+    } else {
+        unit_writer.insert(doc);
     }
 }
 

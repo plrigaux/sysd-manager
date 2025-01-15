@@ -20,12 +20,20 @@ const TAG_NAME_GREY: &str = "grey";
 const TAG_NAME_GREY_DARK: &str = "grey_dark";
 pub const TAG_DATA_LINK: &str = "link";
 
-pub const PROP_UNDERLINE : &str = "underline";
+pub const PROP_UNDERLINE: &str = "underline";
 
 pub const SPECIAL_GLYPH_TREE_VERTICAL: &str = "│ ";
 pub const SPECIAL_GLYPH_TREE_SPACE: &str = "  ";
 pub const SPECIAL_GLYPH_TREE_RIGHT: &str = "└─";
 pub const SPECIAL_GLYPH_TREE_BRANCH: &str = "├─";
+
+pub enum HyperLinkType {
+    File,
+    Unit,
+    Http,
+    Man,
+    None,
+}
 
 impl UnitInfoWriter {
     pub fn new(buf: TextBuffer, iter: TextIter, is_dark: bool) -> Self {
@@ -46,30 +54,26 @@ impl UnitInfoWriter {
     }
 
     pub fn insert_active(&mut self, text: &str) {
-        self.insert_tag(text, Self::create_active_tag, None);
+        self.insert_tag(text, Self::create_active_tag, None, HyperLinkType::None);
     }
 
     pub fn insert_red(&mut self, text: &str) {
-        self.insert_tag(text, Self::create_red_tag, None);
+        self.insert_tag(text, Self::create_red_tag, None, HyperLinkType::None);
     }
 
     pub fn insert_disable(&mut self, text: &str) {
-        self.insert_tag(text, Self::create_disable_tag, None);
+        self.insert_tag(text, Self::create_disable_tag, None, HyperLinkType::None);
     }
 
     pub fn insert_grey(&mut self, text: &str) {
-        self.insert_tag(text, Self::create_grey_tag, None);
+        self.insert_tag(text, Self::create_grey_tag, None, HyperLinkType::None);
     }
 
-    pub fn hyperlink(&mut self, text: &str, link: &str) {
-        self.insert_tag(text, Self::create_hyperlink_tag, Some(link));
+    pub fn hyperlink(&mut self, text: &str, link: &str, type_ : HyperLinkType) {
+        self.insert_tag(text, Self::create_hyperlink_tag, Some(link), type_);
     }
 
-    fn create_hyperlink_tag(
-        buf: &TextBuffer,
-        _is_dark: bool,
-    ) -> Option<TextTag> {
-
+    fn create_hyperlink_tag(buf: &TextBuffer, _is_dark: bool) -> Option<TextTag> {
         buf.create_tag(
             None,
             &[
@@ -162,6 +166,7 @@ impl UnitInfoWriter {
         text: &str,
         create_tag: impl Fn(&TextBuffer, bool) -> Option<TextTag>,
         link: Option<&str>,
+        _type_ : HyperLinkType
     ) {
         let start_offset = self.iter.offset();
         self.buf.insert(&mut self.iter, text);
