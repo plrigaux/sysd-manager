@@ -99,7 +99,7 @@ impl InfoWindow {
                         store.append(&rowitem::Metadata::new(key, value));
                     }
                 }
-                Err(e) => error!("Fail to retreive Unit info: {:?}", e),
+                Err(e) => warn!("Fails to retreive Unit info: {:?}", e),
             }
         } else {
             warn!("Store not supposed to be None");

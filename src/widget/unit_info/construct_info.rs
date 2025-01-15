@@ -4,7 +4,7 @@ use crate::systemd::{
     self,
     data::{UnitInfo, UnitProcess},
 };
-use log::{debug, error, warn};
+use log::{debug, warn};
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
@@ -23,8 +23,8 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     let map = match systemd::fetch_system_unit_info_native(unit) {
         Ok(m) => m,
         Err(e) => {
-            error!(
-                "Fail to retrieve Unit info for {:?} {:?}",
+            warn!(
+                "Fails to retrieve Unit info for {:?} {:?}",
                 unit.primary(),
                 e
             );
