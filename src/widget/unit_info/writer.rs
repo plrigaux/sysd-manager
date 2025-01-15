@@ -1,7 +1,9 @@
+use std::borrow::Cow;
+
 use gtk::{glib::translate::IntoGlib, pango, prelude::*, TextBuffer, TextIter, TextTag};
 use log::debug;
 
-use crate::widget::journal::palette::Palette;
+use crate::{systemd::generate_file_uri, widget::journal::palette::Palette};
 
 pub struct UnitInfoWriter {
     buf: TextBuffer,
@@ -33,6 +35,30 @@ pub enum HyperLinkType {
     Http,
     Man,
     None,
+}
+
+impl HyperLinkType {
+    fn ensure_link_type<'a>(&self, link: &'a str) -> Cow<'a, str> {
+        match self {
+            HyperLinkType::File => {
+                if link.starts_with("file://") {
+                    Cow::from(link)
+                } else {
+                    Cow::from(generate_file_uri(link))
+                }
+            }
+            HyperLinkType::Unit => {
+                if link.starts_with("unit://") {
+                    Cow::from(link)
+                } else {
+                    Cow::from(format!("unit://{}", link))
+                }
+            }
+            HyperLinkType::Http => Cow::from(link),
+            HyperLinkType::Man => Cow::from(link),
+            HyperLinkType::None => Cow::from(link),
+        }
+    }
 }
 
 impl UnitInfoWriter {
@@ -69,7 +95,7 @@ impl UnitInfoWriter {
         self.insert_tag(text, Self::create_grey_tag, None, HyperLinkType::None);
     }
 
-    pub fn hyperlink(&mut self, text: &str, link: &str, type_ : HyperLinkType) {
+    pub fn hyperlink(&mut self, text: &str, link: &str, type_: HyperLinkType) {
         self.insert_tag(text, Self::create_hyperlink_tag, Some(link), type_);
     }
 
@@ -166,7 +192,7 @@ impl UnitInfoWriter {
         text: &str,
         create_tag: impl Fn(&TextBuffer, bool) -> Option<TextTag>,
         link: Option<&str>,
-        _type_ : HyperLinkType
+        type_: HyperLinkType,
     ) {
         let start_offset = self.iter.offset();
         self.buf.insert(&mut self.iter, text);
@@ -175,6 +201,8 @@ impl UnitInfoWriter {
 
         if let Some(tag) = tag {
             if let Some(link) = link {
+                let link = type_.ensure_link_type(link);
+
                 let link_value = link.to_value();
                 debug!("text {} link {:?}", text, link_value);
                 unsafe {

@@ -18,7 +18,7 @@ use std::{
     rc::Rc,
 };
 
-use log::{debug, info, warn};
+use log::{debug, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::DependencyType, Dependency},
@@ -82,7 +82,7 @@ impl UnitDependenciesPanelImp {
         {
             let app_window = app_window.clone();
 
-            let activator = LinkActivator::new(activate_link, Some(app_window));
+            let activator = LinkActivator::new( Some(app_window));
 
             text_view_hyperlink::build_textview_link_platform(
                 &self.unit_dependencies_textview,
@@ -264,21 +264,6 @@ impl UnitDependenciesPanelImp {
                     }
                 });
         }
-    }
-}
-
-fn activate_link(unit_name: &str, app_window: &Option<AppWindow>) {
-    info!("open unit dependency {:?} ", unit_name);
-    let unit = match systemd::fetch_unit(unit_name) {
-        Ok(unit) => Some(unit),
-        Err(e) => {
-            warn!("Cli unit: {:?}", e);
-            None
-        }
-    };
-
-    if let Some(app_window) = app_window {
-        app_window.set_unit(unit)
     }
 }
 

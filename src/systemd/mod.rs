@@ -397,7 +397,7 @@ fn write_with_priviledge(
 }
 
 /// To be able to acces the Flatpack mounted files.
-/// Limit to /usr for the leat access principle
+/// Limit to /usr for the least access principle
 #[cfg(feature = "flatpak")]
 pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
     let host_file_path = if file_path.starts_with("/usr") || file_path.starts_with("/etc") {
@@ -409,7 +409,7 @@ pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
 }
 
 /// To be able to acces the Flatpack mounted files.
-/// Limit to /usr for the leat access principle
+/// Limit to /usr for the least access principle
 #[cfg(not(feature = "flatpak"))]
 pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
     Cow::from(file_path)
@@ -417,8 +417,7 @@ pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
 
 pub fn generate_file_uri(file_path: &str) -> String {
     let flatpak_host_file_path = flatpak_host_file_path(file_path);
-    let uri = format!("file://{}", flatpak_host_file_path);
-    uri
+    format!("file://{}", flatpak_host_file_path)
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
@@ -581,7 +580,7 @@ pub fn retreive_unit_processes(
             }
         };
 
-        if let Some(set) = unit_processes_map.get_mut(unit_process.unit_name()) {            
+        if let Some(set) = unit_processes_map.get_mut(unit_process.unit_name()) {
             set.insert(unit_process);
         } else {
             let mut set = BTreeSet::new();

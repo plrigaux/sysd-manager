@@ -4,7 +4,6 @@ use std::{
 };
 
 use gtk::{
-    gio,
     glib::{self},
     prelude::*,
     subclass::{
@@ -15,15 +14,12 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    FileLauncher, TemplateChild,
+    TemplateChild,
 };
 
 use log::{info, warn};
 
-use crate::{
-    systemd::{data::UnitInfo, generate_file_uri},
-    widget::{app_window::AppWindow, info_window::InfoWindow},
-};
+use crate::{systemd::data::UnitInfo, widget::info_window::InfoWindow};
 
 use super::{
     construct_info::fill_all_info,
@@ -132,7 +128,7 @@ impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let activator = LinkActivator::new(activate_link, None);
+        let activator = LinkActivator::new(None);
 
         text_view_hyperlink::build_textview_link_platform(
             &self.unit_info_textview,
@@ -143,18 +139,3 @@ impl ObjectImpl for UnitInfoPanelImp {
 }
 impl WidgetImpl for UnitInfoPanelImp {}
 impl BoxImpl for UnitInfoPanelImp {}
-
-fn activate_link(file_link: &str, _app_window: &Option<AppWindow>) {
-    let uri = generate_file_uri(file_link);
-    let file = gio::File::for_uri(&uri);
-    let launcher = FileLauncher::new(Some(&file));
-    launcher.launch(
-        None::<&gtk::Window>,
-        None::<&gio::Cancellable>,
-        move |result| {
-            if let Err(error) = result {
-                warn!("Finished launch {} Error {:?}", uri, error)
-            }
-        },
-    );
-}

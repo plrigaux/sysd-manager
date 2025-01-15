@@ -1,39 +1,74 @@
-use std::{
-    cell::RefCell,
-    rc::Rc,
-};
+use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
-    gdk,
-    glib::{self, Value},
-    pango,
-    prelude::*,
+    gdk, gio, glib::{self, Value}, pango, prelude::*
 };
 use log::{info, warn};
 
-use crate::widget::app_window::AppWindow;
+use crate::{systemd, widget::app_window::AppWindow};
 
 use super::writer::{PROP_UNDERLINE, TAG_DATA_LINK};
 
 pub struct LinkActivator {
-    f: fn(&str, &Option<AppWindow>),
     app: Option<AppWindow>,
 }
 
 impl LinkActivator {
-    pub fn new(f: fn(&str, &Option<AppWindow>), app: Option<AppWindow>) -> Self {
-        LinkActivator { f, app }
+    pub fn new(app: Option<AppWindow>) -> Self {
+        LinkActivator { app }
     }
 
-    pub fn run(&self, s: &str) {
-        (self.f)(s, &self.app)
+    pub fn run(&self, link: &str) {
+        if link.starts_with("file://") {
+            let uri = gio::File::for_uri(link);
+            let launcher = gtk::FileLauncher::new(Some(&uri));
+            let link = link.to_owned();
+            launcher.launch(
+                None::<&gtk::Window>,
+                None::<&gio::Cancellable>,
+                move |result| {
+                    if let Err(error) = result {
+                        warn!("Finished launch {} Error {:?}", link, error)
+                    }
+                },
+            );
+        } else if link.starts_with("http://")
+            || link.starts_with("https://")
+            || link.starts_with("man:")
+        {
+            let launcher = gtk::UriLauncher::new(link);
+            let link = link.to_owned();
+            launcher.launch(
+                None::<&gtk::Window>,
+                None::<&gio::Cancellable>,
+                move |result| {
+                    if let Err(error) = result {
+                        warn!("Finished launch {} Error {:?}", link, error)
+                    }
+                },
+            );
+        } else if let Some(unit_name) = link.strip_prefix("unit://") {
+            info!("open unit dependency {:?} ", unit_name);
+            let unit = match systemd::fetch_unit(unit_name) {
+                Ok(unit) => Some(unit),
+                Err(e) => {
+                    warn!("Cli unit: {:?}", e);
+                    None
+                }
+            };
+        
+            if let Some(app_window) = &self.app {
+                app_window.set_unit(unit)
+            }
+        } else {
+            warn!("Not handle link {:?}", link)
+        }
     }
 }
 
 impl Clone for LinkActivator {
     fn clone(&self) -> LinkActivator {
         LinkActivator {
-            f: self.f,
             app: self.app.clone(),
         }
     }
@@ -75,12 +110,7 @@ pub fn build_textview_link_platform(
             let (tx, ty) =
                 text_view.window_to_buffer_coords(gtk::TextWindowType::Widget, x as i32, y as i32);
 
-            set_cursor_if_appropriate(
-                hovering_over_link_tag.clone(),
-                &text_view,
-                tx,
-                ty,
-            );
+            set_cursor_if_appropriate(hovering_over_link_tag.clone(), &text_view, tx, ty);
         });
         text_view_or.add_controller(event_controller_motion);
     }
