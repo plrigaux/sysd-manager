@@ -538,13 +538,13 @@ fn fill_search_bar(
         filter_button_status.set_filter(custom_filter.clone());
         filter_button_active.set_filter(custom_filter.clone()); */
 
-        let on_close = OnClose::new(&custom_filter);
+        let on_close = OnClose::new_filter(&custom_filter);
         filter_button_unit_type.set_on_close(on_close);
 
-        let on_close = OnClose::new(&custom_filter);
+        let on_close = OnClose::new_filter(&custom_filter);
         filter_button_status.set_on_close(on_close);
 
-        let on_close = OnClose::new(&custom_filter);
+        let on_close = OnClose::new_filter(&custom_filter);
         filter_button_active.set_on_close(on_close);
 
         filter_list_model.set_filter(Some(&custom_filter));

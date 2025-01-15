@@ -4,7 +4,7 @@ use std::{
 };
 
 use gtk::{glib, prelude::*, subclass::prelude::*};
-use log::info;
+use log::debug;
 
 use super::OnClose;
 
@@ -30,7 +30,7 @@ pub struct ExMenuButtonImpl {
     pub(super) filter_set: RefCell<HashSet<String>>,
 
     on_close: RefCell<OnClose>,
-
+    
     //pub(super) filter: RefCell<gtk::CustomFilter>,
     #[property(get=Self::label, set=Self::set_label)]
     #[allow(dead_code)]
@@ -81,7 +81,7 @@ impl ExMenuButtonImpl {
         let new_set_ref = &self.filter_set.borrow();
         on_close.old_new_compare(&old_set, new_set_ref);
 
-        info!("New set {:#?}", new_set_ref);
+        debug!("New set {:#?}", new_set_ref);
     }
 
     #[template_callback(name = "clear_filter_selection")]

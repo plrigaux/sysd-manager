@@ -76,6 +76,13 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+  <release version="1.9.0" date="2025-01-15">
+      <description>
+        <ul>
+          <li>Unit dependencies: add an unit type filter</li>         
+        </ul>
+      </description>
+    </release>
     <release version="1.8.2" date="2025-01-14">
       <description>
         <ul>

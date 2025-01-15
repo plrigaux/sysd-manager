@@ -1,5 +1,7 @@
 mod imp;
 
+use std::collections::HashSet;
+
 use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::enums::DependencyType;
@@ -24,6 +26,10 @@ impl UnitDependenciesPanel {
 
     pub(super) fn update_dependencies(&self) {
         self.imp().update_dependencies()
+    }
+
+    pub(super) fn update_dependencies_filtered(&self, unit_type_filter : &HashSet<String>) {
+        self.imp().update_dependencies_filtered(unit_type_filter)
     }
 
     pub fn register(&self, app_window: &AppWindow) {

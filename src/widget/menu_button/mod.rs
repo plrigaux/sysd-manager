@@ -8,6 +8,8 @@ use log::debug;
 use crate::gtk::prelude::FilterExt;
 use crate::gtk::{glib, subclass::prelude::*};
 
+use super::unit_dependencies_panel::UnitDependenciesPanel;
+
 glib::wrapper! {
     pub struct ExMenuButton(ObjectSubclass<imp::ExMenuButtonImpl>)
         @extends gtk::Widget,
@@ -39,25 +41,44 @@ impl ExMenuButton {
     }
 }
 
+impl Default for ExMenuButton {
+    fn default() -> Self {
+        ExMenuButton::new("")
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct OnClose {
     filter: Option<gtk::CustomFilter>,
+    dependencies: Option<UnitDependenciesPanel>,
 }
 
 impl OnClose {
-    pub fn new(filter: &gtk::CustomFilter) -> Self {
+    pub fn new_filter(filter: &gtk::CustomFilter) -> Self {
         OnClose {
             filter: Some(filter.clone()),
+            dependencies: None,
+        }
+    }
+
+    pub fn new_dep(dep: &UnitDependenciesPanel) -> Self {
+        OnClose {
+            filter: None,
+            dependencies: Some(dep.clone()),
         }
     }
 
     pub fn old_new_compare(&self, old: &HashSet<String>, new: &HashSet<String>) {
-        let filter_change = Self::determine_filter_change(new, old);
+        if let Some(filter) = &self.filter {
+            let filter_change = Self::determine_filter_change(new, old);
 
-        if let Some(filter_change) = filter_change {
-            if let Some(filter) = &self.filter {
+            if let Some(filter_change) = filter_change {
                 filter.changed(filter_change);
                 debug!("Filter change Level {:?}", filter_change);
+            }
+        } else if let Some(dependencies) = &self.dependencies {
+            if !old.eq(new) {
+                dependencies.update_dependencies_filtered(new);
             }
         }
     }

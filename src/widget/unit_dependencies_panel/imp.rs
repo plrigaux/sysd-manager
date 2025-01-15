@@ -15,20 +15,20 @@ use gtk::{
 
 use std::{
     cell::{Cell, RefCell},
+    collections::{BTreeSet, HashSet},
     rc::Rc,
 };
-
-use log::{debug, warn};
 
 use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::DependencyType,
+        enums::{DependencyType, UnitType},
         Dependency,
     },
     widget::{
         app_window::AppWindow,
+        menu_button::{ExMenuButton, OnClose},
         unit_info::{
             text_view_hyperlink::{self, LinkActivator},
             writer::{
@@ -38,6 +38,8 @@ use crate::{
         },
     },
 };
+use log::{debug, warn};
+use strum::IntoEnumIterator;
 
 /* const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -56,8 +58,8 @@ pub struct UnitDependenciesPanelImp {
     #[template_child]
     dependency_types_dropdown: TemplateChild<gtk::DropDown>,
 
-/*     #[template_child]
-    type_popover: TemplateChild<gtk::Box>, */
+    #[template_child]
+    controls_box: TemplateChild<gtk::Box>,
 
     #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
@@ -75,6 +77,8 @@ pub struct UnitDependenciesPanelImp {
     plain: Cell<bool>,
 
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
+
+    unit_type_filter: RefCell<HashSet<String>>,
 }
 
 #[gtk::template_callbacks]
@@ -126,6 +130,11 @@ impl UnitDependenciesPanelImp {
         }
     }
 
+    pub(super) fn update_dependencies_filtered(&self, unit_type_filter: &HashSet<String>) {
+        self.unit_type_filter.replace(unit_type_filter.clone());
+        self.update_dependencies();
+    }
+
     pub(super) fn update_dependencies(&self) {
         let binding = self.unit.borrow();
         let Some(unit_ref) = binding.as_ref() else {
@@ -140,7 +149,10 @@ impl UnitDependenciesPanelImp {
         let textview = self.unit_dependencies_textview.clone();
         let stack = self.unit_dependencies_panel_stack.clone();
         let dark = self.dark.get();
-        let plain = self.plain.get();
+        let mut plain = self.plain.get();
+        let unit_type_filter = self.unit_type_filter.borrow().clone();
+
+        plain = plain || !unit_type_filter.is_empty();
 
         glib::spawn_future_local(async move {
             stack.set_visible_child_name("spinner");
@@ -161,10 +173,22 @@ impl UnitDependenciesPanelImp {
                 .await
                 .expect("Task needs to finish successfully.");
 
-            let Some(dependencies) = dependencies else {
+            let Some(mut dependencies) = dependencies else {
                 stack.set_visible_child_name("empty");
                 return;
             };
+
+            if !unit_type_filter.is_empty() {
+                let mut set = BTreeSet::new();
+                for dep in dependencies.children {
+                    if let Some((_, unit_type)) = dep.unit_name.rsplit_once('.') {
+                        if unit_type_filter.contains(unit_type) {
+                            set.insert(dep);
+                        }
+                    }
+                }
+                dependencies.children = set;
+            }
 
             let buf = textview.buffer();
             buf.set_text(""); // clear text
@@ -306,7 +330,7 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         self.unit_dependencies_loaded.set(false);
 
         self.setup_dependency_type_dropdown();
-/* 
+
         let mut filter_button_unit_type = ExMenuButton::new("Type");
         filter_button_unit_type.set_margin_end(5);
         filter_button_unit_type.set_tooltip_text(Some("Filter dependencies by types"));
@@ -315,7 +339,11 @@ impl ObjectImpl for UnitDependenciesPanelImp {
             filter_button_unit_type.add_item(unit_type.to_str());
         }
 
-        self.type_popover.append(&filter_button_unit_type); */
+        self.controls_box.prepend(&filter_button_unit_type);
+
+        let dep = self.obj();
+        let on_close = OnClose::new_dep(&dep);
+        filter_button_unit_type.set_on_close(on_close);
     }
 }
 
