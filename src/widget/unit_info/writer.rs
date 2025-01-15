@@ -20,6 +20,8 @@ const TAG_NAME_GREY: &str = "grey";
 const TAG_NAME_GREY_DARK: &str = "grey_dark";
 pub const TAG_DATA_LINK: &str = "link";
 
+pub const PROP_UNDERLINE : &str = "underline";
+
 pub const SPECIAL_GLYPH_TREE_VERTICAL: &str = "│ ";
 pub const SPECIAL_GLYPH_TREE_SPACE: &str = "  ";
 pub const SPECIAL_GLYPH_TREE_RIGHT: &str = "└─";
@@ -72,7 +74,7 @@ impl UnitInfoWriter {
             None,
             &[
                 //  ("foreground", &"blue".to_value()),
-                ("underline", &pango::Underline::SingleLine.to_value()),
+                (PROP_UNDERLINE, &pango::Underline::SingleLine.to_value()),
             ],
         )
     }

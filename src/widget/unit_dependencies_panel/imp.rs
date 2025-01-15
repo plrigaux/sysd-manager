@@ -66,7 +66,6 @@ pub struct UnitDependenciesPanelImp {
 
     plain: Cell<bool>,
 
-    hovering_over_link: Rc<Cell<bool>>,
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
 }
 
@@ -88,7 +87,6 @@ impl UnitDependenciesPanelImp {
 
             text_view_hyperlink::build_textview_link_platform(
                 &self.unit_dependencies_textview,
-                self.hovering_over_link.clone(),
                 self.hovering_over_link_tag.clone(),
                 activator,
             );

@@ -1,18 +1,19 @@
 use std::{
-    cell::{Cell, RefCell},
+    cell::RefCell,
     rc::Rc,
 };
 
 use gtk::{
     gdk,
     glib::{self, Value},
-     prelude::*,
+    pango,
+    prelude::*,
 };
 use log::{info, warn};
 
 use crate::widget::app_window::AppWindow;
 
-use super::writer::TAG_DATA_LINK;
+use super::writer::{PROP_UNDERLINE, TAG_DATA_LINK};
 
 pub struct LinkActivator {
     f: fn(&str, &Option<AppWindow>),
@@ -40,7 +41,6 @@ impl Clone for LinkActivator {
 
 pub fn build_textview_link_platform(
     text_view_or: &gtk::TextView,
-    hovering_over_link: Rc<Cell<bool>>,
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
     link_activator: LinkActivator,
 ) {
@@ -69,7 +69,6 @@ pub fn build_textview_link_platform(
     {
         let event_controller_motion = gtk::EventControllerMotion::new();
         let text_view = text_view_or.clone();
-        let hovering_over_link = hovering_over_link.clone();
         let hovering_over_link_tag = hovering_over_link_tag.clone();
 
         event_controller_motion.connect_motion(move |_motion_ctl, x, y| {
@@ -77,7 +76,6 @@ pub fn build_textview_link_platform(
                 text_view.window_to_buffer_coords(gtk::TextWindowType::Widget, x as i32, y as i32);
 
             set_cursor_if_appropriate(
-                hovering_over_link.clone(),
                 hovering_over_link_tag.clone(),
                 &text_view,
                 tx,
@@ -123,14 +121,12 @@ pub fn build_textview_link_platform(
 }
 
 fn set_cursor_if_appropriate(
-    hovering_over_link: Rc<Cell<bool>>,
-    _hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
+    hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
     text_view: &gtk::TextView,
     x: i32,
     y: i32,
 ) {
-    let mut hovering = false;
-    //let mut hovering_tag: Option<gtk::TextTag> = None;
+    let mut hovering_tag: Option<gtk::TextTag> = None;
 
     if let Some(iter) = text_view.iter_at_location(x, y) {
         let tags = iter.tags();
@@ -141,22 +137,50 @@ fn set_cursor_if_appropriate(
             };
 
             if val.is_some() {
-                hovering = true;
-                //hovering_tag = Some(tag.clone());
+                hovering_tag = Some(tag.clone());
                 break;
             }
         }
     }
 
-    if hovering_over_link.get() != hovering {
-        hovering_over_link.set(hovering);
-        if hovering {
+    let (change, previous_not_null) = {
+        let previous_tag = hovering_over_link_tag.borrow();
+        (!previous_tag.eq(&hovering_tag), previous_tag.is_some())
+    };
+
+    if change {
+        if let Some(ref hovering_tag) = hovering_tag {
             text_view.set_cursor_from_name(Some("pointer"));
-            //tag.set_property( "underline", pango::Underline::DoubleLine.to_value());
+
+            hovering_tag.set_property(PROP_UNDERLINE, pango::Underline::DoubleLine.to_value());
+
+            if previous_not_null {
+                let previous_tag = hovering_over_link_tag.borrow();
+                previous_tag
+                    .as_ref()
+                    .unwrap()
+                    .set_property(PROP_UNDERLINE, pango::Underline::SingleLine.to_value())
+            }
         } else {
             text_view.set_cursor_from_name(Some("text"));
-            //let cp_tag = hovering_over_link_tag.get_mut();
+
+            reset_hyper_tag(&hovering_over_link_tag, previous_not_null);
         }
+
+        hovering_over_link_tag.replace(hovering_tag);
+    }
+}
+
+fn reset_hyper_tag(
+    hovering_over_link_tag: &Rc<RefCell<Option<gtk::TextTag>>>,
+    previous_not_null: bool,
+) {
+    if previous_not_null {
+        let previous_tag = hovering_over_link_tag.borrow();
+        previous_tag
+            .as_ref()
+            .unwrap()
+            .set_property(PROP_UNDERLINE, pango::Underline::SingleLine.to_value())
     }
 }
 
