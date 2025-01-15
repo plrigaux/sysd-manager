@@ -29,7 +29,7 @@ use crate::{
         data::UnitInfo,
         enums::{ActiveState, EnablementStatus, UnitType},
     },
-    widget::{app_window::AppWindow, menu_button::ExMenuButton},
+    widget::{app_window::AppWindow, menu_button::{ExMenuButton, OnClose}},
 };
 use strum::IntoEnumIterator;
 
@@ -383,7 +383,8 @@ impl UnitListPanelImp {
         if let Some(filter) = self.filter_list_model.filter() {
             if !filter.match_(unit) {
                 //Unselect
-                self.single_selection.set_selected(GTK_INVALID_LIST_POSITION);
+                self.single_selection
+                    .set_selected(GTK_INVALID_LIST_POSITION);
                 info!("Unit {} no Match", unit_name);
                 return;
             }
@@ -468,6 +469,10 @@ fn fill_search_bar(
     let mut filter_button_status = ExMenuButton::new("Enablement");
     let mut filter_button_active = ExMenuButton::new("Active");
 
+    filter_button_unit_type.set_tooltip_text(Some("Filter by types"));
+    filter_button_status.set_tooltip_text(Some("Filter by enablement status"));
+    filter_button_active.set_tooltip_text(Some("Filter by active state"));
+
     let search_box = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .spacing(5)
@@ -529,9 +534,18 @@ fn fill_search_bar(
             custom_filter
         };
 
-        filter_button_unit_type.set_filter(custom_filter.clone());
+/*         filter_button_unit_type.set_filter(custom_filter.clone());
         filter_button_status.set_filter(custom_filter.clone());
-        filter_button_active.set_filter(custom_filter.clone());
+        filter_button_active.set_filter(custom_filter.clone()); */
+
+        let on_close = OnClose::new(&custom_filter);
+        filter_button_unit_type.set_on_close(on_close);
+
+        let on_close = OnClose::new(&custom_filter);
+        filter_button_status.set_on_close(on_close);
+
+        let on_close = OnClose::new(&custom_filter);
+        filter_button_active.set_on_close(on_close);
 
         filter_list_model.set_filter(Some(&custom_filter));
 

@@ -3,13 +3,16 @@ use std::{
     collections::{HashMap, HashSet},
 };
 
-use gtk::{glib, prelude::*, subclass::prelude::*, FilterChange};
-use log::debug;
+use gtk::{glib, prelude::*, subclass::prelude::*};
+use log::info;
 
-#[derive(Debug, Default, gtk::CompositeTemplate)]
+use super::OnClose;
+
+#[derive(Debug, Default, glib::Properties, gtk::CompositeTemplate)]
 //#[template(file = "ex_menu_button.ui")]
 #[template(resource = "/io/github/plrigaux/sysd-manager/ex_menu_button.ui")]
-pub struct ExMenuButton {
+#[properties(wrapper_type = super::ExMenuButton)]
+pub struct ExMenuButtonImpl {
     #[template_child]
     pub toggle: TemplateChild<gtk::ToggleButton>,
 
@@ -26,11 +29,16 @@ pub struct ExMenuButton {
 
     pub(super) filter_set: RefCell<HashSet<String>>,
 
-    pub(super) filter: RefCell<gtk::CustomFilter>,
+    on_close: RefCell<OnClose>,
+
+    //pub(super) filter: RefCell<gtk::CustomFilter>,
+    #[property(get=Self::label, set=Self::set_label)]
+    #[allow(dead_code)]
+    label: RefCell<String>,
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for ExMenuButton {
+impl ObjectSubclass for ExMenuButtonImpl {
     const NAME: &'static str = "ExMenuButton";
     type Type = super::ExMenuButton;
     type ParentType = gtk::Widget;
@@ -46,7 +54,7 @@ impl ObjectSubclass for ExMenuButton {
 }
 
 #[gtk::template_callbacks]
-impl ExMenuButton {
+impl ExMenuButtonImpl {
     #[template_callback]
     fn toggle_toggled(&self, toggle: &gtk::ToggleButton) {
         if toggle.is_active() {
@@ -58,62 +66,22 @@ impl ExMenuButton {
     fn unset_toggle(&self) {
         self.toggle.set_active(false);
 
-        let filter_change = {
-            let mut new_set: HashSet<String> = HashSet::new();
-            let map = self.check_boxes.borrow();
+        let mut new_set: HashSet<String> = HashSet::new();
+        let map = self.check_boxes.borrow();
 
-            for (key, check_button) in map.iter() {
-                if check_button.is_active() {
-                    new_set.insert(key.to_owned());
-                }
+        for (key, check_button) in map.iter() {
+            if check_button.is_active() {
+                new_set.insert(key.to_owned());
             }
-
-            let filter_change = {
-                let old_set = self.filter_set.borrow();
-                Self::determine_filter_change(&new_set, &old_set)
-            };
-
-            self.filter_set.replace(new_set);
-
-            filter_change
-        };
-
-        debug!("Filter Level {:?}", filter_change);
-
-        if let Some(fc) = filter_change {
-            self.filter.borrow().changed(fc)
         }
-    }
 
-    fn determine_filter_change(
-        new_set: &HashSet<String>,
-        old_set: &HashSet<String>,
-    ) -> Option<FilterChange> {
-        let filter_change: Option<FilterChange>;
-        if old_set.is_empty() && !new_set.is_empty() {
-            filter_change = Some(FilterChange::MoreStrict);
-        } else if !old_set.is_empty() && new_set.is_empty() {
-            filter_change = Some(FilterChange::LessStrict);
-        } else if old_set.len() == new_set.len() {
-            filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
-                None
-            } else {
-                Some(FilterChange::Different)
-            };
-        } else if old_set.len() > new_set.len() {
-            filter_change = if new_set.iter().all(|item| old_set.contains(item)) {
-                Some(FilterChange::MoreStrict)
-            } else {
-                Some(FilterChange::Different)
-            };
-        } else {
-            filter_change = if old_set.iter().all(|item| new_set.contains(item)) {
-                Some(FilterChange::LessStrict)
-            } else {
-                Some(FilterChange::Different)
-            };
-        }
-        filter_change
+        let old_set = self.filter_set.replace(new_set);
+        let on_close = self.on_close.borrow();
+
+        let new_set_ref = &self.filter_set.borrow();
+        on_close.old_new_compare(&old_set, new_set_ref);
+
+        info!("New set {:#?}", new_set_ref);
     }
 
     #[template_callback(name = "clear_filter_selection")]
@@ -132,9 +100,37 @@ impl ExMenuButton {
         let mut map = self.check_boxes.borrow_mut();
         map.insert(label.to_owned(), check.clone());
     }
+
+    fn label(&self) -> String {
+        self.button_label.label().to_string()
+    }
+
+    fn set_label(&self, label: &str) {
+        self.button_label.set_label(label);
+    }
+
+    pub fn contains_value(&self, value: Option<&str>) -> bool {
+        let set = self.filter_set.borrow();
+
+        if set.is_empty() {
+            return true;
+        }
+
+        match value {
+            Some(v) => set.contains(v),
+            None => set.is_empty(),
+        }
+    }
 }
 
-impl ObjectImpl for ExMenuButton {
+impl ExMenuButtonImpl {
+    pub fn set_on_close(&self, closure: OnClose) {
+        self.on_close.replace(closure);
+    }
+}
+
+#[glib::derived_properties]
+impl ObjectImpl for ExMenuButtonImpl {
     // Needed for direct subclasses of GtkWidget;
     // Here you need to unparent all direct children
     // of your template.
@@ -142,22 +138,24 @@ impl ObjectImpl for ExMenuButton {
         self.dispose_template();
     }
 
-    fn constructed(&self) {}
+    fn constructed(&self) {
+        self.parent_constructed();
+    }
 }
 
-impl WidgetImpl for ExMenuButton {
+impl WidgetImpl for ExMenuButtonImpl {
     fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
         self.parent_size_allocate(width, height, baseline);
         self.popover.present();
     }
 }
 
-impl BuildableImpl for ExMenuButton {}
+impl BuildableImpl for ExMenuButtonImpl {}
 
 #[cfg(test)]
 mod tests {
 
-    use super::*;
+    /*  use super::*;
 
     #[test]
     fn test_filter_change() {
@@ -222,12 +220,12 @@ mod tests {
         old_set: &HashSet<String>,
         expected_filter_change: Option<FilterChange>,
     ) {
-        let determined_filter_change = ExMenuButton::determine_filter_change(new_set, old_set);
+        let determined_filter_change = ExMenuButtonImpl::determine_filter_change(new_set, old_set);
 
         assert_eq!(
             expected_filter_change, determined_filter_change,
             "Old {:?} New {:?} --> Expected {:?} but determined {:?}",
             old_set, new_set, expected_filter_change, determined_filter_change
         );
-    }
+    } */
 }

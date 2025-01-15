@@ -235,7 +235,7 @@
 	(53,22,"GtkColumnViewColumn",None,9,None,None,None,5,None,None),
 	(53,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None),
 	(54,1,"GtkBox","UnitDependenciesPanel",None,None,None,None,0,None,None),
-	(54,2,"GtkBox",None,1,None,None,None,0,None,None),
+	(54,2,"GtkBox","controls_box",1,None,None,None,0,None,None),
 	(54,7,"GtkStack","unit_dependencies_panel_stack",1,None,None,None,1,None,None),
 	(54,10,"GtkStackPage",None,7,None,None,None,0,None,None),
 	(54,11,"GtkStackPage",None,7,None,None,None,1,None,None),
@@ -244,9 +244,13 @@
 	(54,16,"AdwSpinner",None,11,None,None,None,0,None,None),
 	(54,17,"GtkScrolledWindow",None,13,None,None,None,0,None,None),
 	(54,18,"GtkTextView","unit_dependencies_textview",17,None,None,None,0,None,None),
-	(54,19,"GtkDropDown","dependency_types_dropdown",2,None,None,None,0,None,None),
-	(54,20,"GtkCheckButton",None,2,None,None,None,2,None,None),
-	(54,21,"GtkLabel",None,2,None,None,None,1,None,None)
+	(54,19,"GtkDropDown","dependency_types_dropdown",2,None,None,None,1,None,None),
+	(54,20,"GtkCheckButton",None,2,None,None,None,3,None,None),
+	(54,21,"GtkLabel",None,2,None,None,None,2,None,None),
+	(54,22,"GtkMenuButton",None,2,None,None,None,0,None,None),
+	(54,23,"GtkPopover",None,22,None,None,None,0,None,None),
+	(54,24,"GtkBox","type_popover",23,None,None,None,0,None,None),
+	(54,25,"GtkButton",None,24,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -567,6 +571,7 @@
 	(53,22,"GtkColumnViewColumn","title","Description",0,None,None,None,None,None,None,None,None),
 	(54,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
 	(54,2,"GtkWidget","halign","end",None,None,None,None,None,None,None,None,None),
+	(54,2,"GtkWidget","margin-bottom","5",None,None,None,None,None,None,None,None,None),
 	(54,10,"GtkStackPage","child",None,None,None,None,None,15,None,None,None,None),
 	(54,10,"GtkStackPage","name","empty",None,None,None,None,None,None,None,None,None),
 	(54,11,"GtkStackPage","child",None,None,None,None,None,16,None,None,None,None),
@@ -580,7 +585,13 @@
 	(54,18,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
 	(54,19,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
 	(54,20,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
-	(54,21,"GtkLabel","label","plain",None,None,None,None,None,None,None,None,None)
+	(54,21,"GtkLabel","label","plain",None,None,None,None,None,None,None,None,None),
+	(54,22,"GtkMenuButton","label","Type",None,None,None,None,None,None,None,None,None),
+	(54,22,"GtkMenuButton","popover",None,None,None,None,None,23,None,None,None,None),
+	(54,22,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
+	(54,24,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
+	(54,24,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(54,25,"GtkButton","label","Clear",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),

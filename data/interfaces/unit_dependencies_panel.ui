@@ -6,8 +6,9 @@
   <template class="UnitDependenciesPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="controls_box">
         <property name="halign">end</property>
+        <property name="margin-bottom">5</property>
         <child>
           <object class="GtkDropDown" id="dependency_types_dropdown">
             <property name="margin-end">5</property>

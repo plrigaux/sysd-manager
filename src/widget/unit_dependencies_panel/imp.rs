@@ -21,13 +21,19 @@ use std::{
 use log::{debug, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::DependencyType, Dependency},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::DependencyType,
+        Dependency,
+    },
     widget::{
         app_window::AppWindow,
         unit_info::{
             text_view_hyperlink::{self, LinkActivator},
             writer::{
-                HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL
+                HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+                SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
             },
         },
     },
@@ -49,6 +55,9 @@ pub struct UnitDependenciesPanelImp {
 
     #[template_child]
     dependency_types_dropdown: TemplateChild<gtk::DropDown>,
+
+/*     #[template_child]
+    type_popover: TemplateChild<gtk::Box>, */
 
     #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
@@ -82,7 +91,7 @@ impl UnitDependenciesPanelImp {
         {
             let app_window = app_window.clone();
 
-            let activator = LinkActivator::new( Some(app_window));
+            let activator = LinkActivator::new(Some(app_window));
 
             text_view_hyperlink::build_textview_link_platform(
                 &self.unit_dependencies_textview,
@@ -214,7 +223,11 @@ impl UnitDependenciesPanelImp {
 
         info_writer.insert(glyph);
         info_writer.insert(" ");
-        info_writer.hyperlink(&dependency.unit_name, &dependency.unit_name, HyperLinkType::Unit);
+        info_writer.hyperlink(
+            &dependency.unit_name,
+            &dependency.unit_name,
+            HyperLinkType::Unit,
+        );
         info_writer.newline();
 
         let child_spacer = format!("{spacer}{child_pading}");
@@ -293,6 +306,16 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         self.unit_dependencies_loaded.set(false);
 
         self.setup_dependency_type_dropdown();
+/* 
+        let mut filter_button_unit_type = ExMenuButton::new("Type");
+        filter_button_unit_type.set_margin_end(5);
+        filter_button_unit_type.set_tooltip_text(Some("Filter dependencies by types"));
+
+        for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
+            filter_button_unit_type.add_item(unit_type.to_str());
+        }
+
+        self.type_popover.append(&filter_button_unit_type); */
     }
 }
 
