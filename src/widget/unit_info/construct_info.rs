@@ -4,6 +4,7 @@ use crate::systemd::{
     self,
     data::{UnitInfo, UnitProcess},
 };
+
 use log::{debug, warn};
 use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
@@ -40,11 +41,15 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     };
 
     fill_description(unit_writer, &map, unit);
+    //fill_follows(unit_writer, &map); for mount units
+    fill_transient(unit_writer, &map);
     fill_load_state(unit_writer, &map);
     fill_dropin(unit_writer, &map);
     fill_active_state(unit_writer, &map);
     fill_invocation(unit_writer, &map);
     fill_triggered_by(unit_writer, &map);
+    fill_where(unit_writer, &map);
+    fill_what(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_tasks(unit_writer, &map);
@@ -55,6 +60,8 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_triggers(unit_writer, &map);
     fill_listen(unit_writer, &map);
     fill_control_group(unit_writer, &map, unit);
+
+    //TODO do  Device: (mount)
 }
 
 fn fill_name_description(unit_writer: &mut UnitInfoWriter, unit: &UnitInfo) {
@@ -150,7 +157,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
 fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "ActiveState");
-    let state = value_str(value);
+    let state = value_to_str(value);
 
     write_key(unit_writer, "Active State:");
 
@@ -183,7 +190,7 @@ fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
 
 fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
     let value = get_value!(map, "SubState", None);
-    Some(value_str(value))
+    Some(value_to_str(value))
 }
 
 fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, String)> {
@@ -211,7 +218,7 @@ fn fill_description(
     unit: &UnitInfo,
 ) {
     let value = get_value!(map, "Description");
-    let description = value_str(value);
+    let description = value_to_str(value);
     fill_row(unit_writer, "Description:", description);
 
     if unit.description().is_empty() && !description.is_empty() {
@@ -224,7 +231,7 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
 
     write_key(unit_writer, "Loaded:");
 
-    unit_writer.insert(value_str(value));
+    unit_writer.insert(value_to_str(value));
 
     let three_param = [
         map.get("FragmentPath"),
@@ -254,7 +261,7 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
         let mut pad_left = false;
 
         if let Some(path) = path_op {
-            let p = value_str(path);
+            let p = value_to_str(path);
             unit_writer.hyperlink(p, p, HyperLinkType::File);
             pad_left = true;
         }
@@ -284,13 +291,53 @@ fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
 }
 
 fn write_enabled_state(unit_writer: &mut UnitInfoWriter, unit_file_state: &OwnedValue) {
-    let state = value_str(unit_file_state);
+    let state = value_to_str(unit_file_state);
 
     match state {
         "enabled" => unit_writer.insert_active(state),
         "disabled" => unit_writer.insert_disable(state),
         _ => unit_writer.insert(state),
     };
+}
+
+/* fn fill_follows(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "Following");
+    warn!("Following {:?}",value );
+    let value = value_to_str(value);
+    let s = format!("unit currently follows state of {value}");
+    fill_row(unit_writer, "Follows:", &s);
+} */
+
+fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    //fill_what_string(unit_writer, map, "Transient", "Transient:")
+
+    let value = get_value!(map, "Transient");
+
+    let transient = clean_message!(bool::try_from(value), "Wrong zvalue conversion");
+
+    let value = if transient { "yes" } else { "no" };
+    if transient {
+        fill_row(unit_writer, "Transient:", value);
+    }
+}
+
+fn fill_where(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    fill_what_string(unit_writer, map, "Where", "Where:")
+}
+
+fn fill_what(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    fill_what_string(unit_writer, map, "What", "What:")
+}
+
+fn fill_what_string(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    key: &str,
+    key_label: &str,
+) {
+    let value = get_value!(map, key);
+    let value = value_to_str(value);
+    fill_row(unit_writer, key_label, value);
 }
 
 fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
@@ -300,7 +347,7 @@ fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>
 
     let mut it = docs.iter();
 
-    if let Some(doc) = it.next() {       
+    if let Some(doc) = it.next() {
         let s = format!("{:>KEY_WIDTH$} ", "Doc:");
         unit_writer.insert(&s);
 
@@ -331,7 +378,7 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
         Value::Array(a) => {
             let mut vec = Vec::with_capacity(a.len());
             for mi in a.iter() {
-                vec.push(value_str(mi));
+                vec.push(value_to_str(mi));
             }
             vec
         }
@@ -704,7 +751,7 @@ fn fill_control_group(
 ) {
     let value = get_value!(map, "ControlGroup");
 
-    let c_group = value_str(value);
+    let c_group = value_to_str(value);
 
     if c_group.is_empty() {
         return;
@@ -778,7 +825,7 @@ fn print_process(
     unit_writer.newline();
 }
 
-fn value_str<'a>(value: &'a Value<'a>) -> &'a str {
+fn value_to_str<'a>(value: &'a Value<'a>) -> &'a str {
     if let Value::Str(converted) = value as &Value {
         return converted.as_str();
     }

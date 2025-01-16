@@ -76,10 +76,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-  <release version="1.9.0" date="2025-01-15">
+    <release version="1.9.1" date="2025-01-16">
       <description>
         <ul>
-          <li>Unit dependencies: add an unit type filter</li>         
+          <li>Fix scope unit information</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.9.0" date="2025-01-15">
+      <description>
+        <ul>
+          <li>Unit information: action man an http links</li>
+          <li>Unit dependencies: add an unit type filter</li>
         </ul>
       </description>
     </release>
@@ -88,7 +96,7 @@ https://hughsie.github.io/oars/index.html
         <ul>
           <li>Fix Unit info: CGroup now displays command line with arguments</li>
           <li>Fix Unit info: CGroup now displays all processes</li>
-          <li>Fix Unit dependencies hyperlinks</li>          
+          <li>Fix Unit dependencies hyperlinks</li>
         </ul>
       </description>
     </release>

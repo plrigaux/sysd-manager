@@ -289,7 +289,7 @@ impl UnitType {
             Self::Manager => INTERFACE_SYSTEMD_MANAGER,
             Self::Mount => "org.freedesktop.systemd1.Mount",
             Self::Path => "org.freedesktop.systemd1.Path",
-            Self::Scope => "org.freedesktop.systemd1.Sscope",
+            Self::Scope => "org.freedesktop.systemd1.Scope",
             Self::Service => "org.freedesktop.systemd1.Service",
             Self::Slice => "org.freedesktop.systemd1.Slice",
             Self::Snapshot => "org.freedesktop.systemd1.Snapshot",
