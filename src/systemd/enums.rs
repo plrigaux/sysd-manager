@@ -239,8 +239,8 @@ pub enum UnitType {
 
 impl UnitType {
     /// Takes the pathname of the unit as input to determine what type of unit it is.
-    pub fn new(system_type: &str) -> UnitType {
-        match system_type {
+    pub fn new(unit_type: &str) -> UnitType {
+        match unit_type {
             "automount" => UnitType::Automount,
             "busname" => UnitType::Busname,
             "device" => UnitType::Device,
@@ -255,8 +255,8 @@ impl UnitType {
             "timer" => UnitType::Timer,
             "snapshot" => UnitType::Snapshot,
             _ => {
-                warn!("Unknown Unit Type: {}", system_type);
-                UnitType::Unknown(system_type.to_string())
+                warn!("Unknown Unit Type: {}", unit_type);
+                UnitType::Unknown(unit_type.to_string())
             }
         }
     }
@@ -323,6 +323,20 @@ impl UnitType {
         }
     }
 }
+
+impl From<&str> for UnitType {
+    fn from(value: &str) -> Self {
+        UnitType::new(value)
+    }
+}
+
+
+impl From<String> for UnitType {
+    fn from(value: String) -> Self {
+        UnitType::new(&value)
+    }
+}
+
 
 /// KillUnit() may be used to kill (i.e. send a signal to) all processes of a unit.
 /// Takes the unit name, an enum who and a UNIX signal number to send.

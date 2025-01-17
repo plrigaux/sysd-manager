@@ -10,7 +10,7 @@ use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 use super::{
-    time_handling,
+    time_handling::{self, now_monotonic, now_realtime},
     writer::{
         HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
         SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
@@ -41,23 +41,22 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     };
 
     fill_description(unit_writer, &map, unit);
-    //fill_follows(unit_writer, &map); for mount units
-    fill_transient(unit_writer, &map);
+    fill_follows(unit_writer, &map);
     fill_load_state(unit_writer, &map);
+    fill_transient(unit_writer, &map);
     fill_dropin(unit_writer, &map);
     fill_active_state(unit_writer, &map);
     fill_invocation(unit_writer, &map);
     fill_triggered_by(unit_writer, &map);
     fill_where(unit_writer, &map);
     fill_what(unit_writer, &map);
+    fill_trigger(unit_writer, &map, unit);
+    fill_triggers(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_tasks(unit_writer, &map);
     fill_memory(unit_writer, &map);
     fill_cpu(unit_writer, &map);
-    fill_trigger_timers_calendar(unit_writer, &map);
-    fill_trigger_timers_monotonic(unit_writer, &map);
-    fill_triggers(unit_writer, &map);
     fill_listen(unit_writer, &map);
     fill_control_group(unit_writer, &map, unit);
 
@@ -159,7 +158,7 @@ fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
     let value = get_value!(map, "ActiveState");
     let state = value_to_str(value);
 
-    write_key(unit_writer, "Active State:");
+    write_key(unit_writer, "Active:");
 
     let mut state_text = String::from(state);
     if let Some(substate) = get_substate(map) {
@@ -180,8 +179,7 @@ fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
         text.push_str(&since.0);
         text.push_str("; ");
         text.push_str(&since.1);
-        text.push_str(" ago");
-
+      
         unit_writer.insert(&text);
     }
 
@@ -202,7 +200,7 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
 
     let value = get_value!(map, key, None);
 
-    let duration = value_u64(value);
+    let duration = value_to_u64(value);
 
     if duration != 0 {
         let since = get_since_and_passed_time(duration);
@@ -300,23 +298,25 @@ fn write_enabled_state(unit_writer: &mut UnitInfoWriter, unit_file_state: &Owned
     };
 }
 
-/* fn fill_follows(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_follows(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Following");
-    warn!("Following {:?}",value );
     let value = value_to_str(value);
+
+    if value.is_empty() {
+        return;
+    }
+
     let s = format!("unit currently follows state of {value}");
     fill_row(unit_writer, "Follows:", &s);
-} */
+}
 
 fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    //fill_what_string(unit_writer, map, "Transient", "Transient:")
-
     let value = get_value!(map, "Transient");
 
     let transient = clean_message!(bool::try_from(value), "Wrong zvalue conversion");
 
-    let value = if transient { "yes" } else { "no" };
     if transient {
+        let value = if transient { "yes" } else { "no" };
         fill_row(unit_writer, "Transient:", value);
     }
 }
@@ -337,7 +337,9 @@ fn fill_what_string(
 ) {
     let value = get_value!(map, key);
     let value = value_to_str(value);
-    fill_row(unit_writer, key_label, value);
+    if !value.is_empty() {
+        fill_row(unit_writer, key_label, value);
+    }
 }
 
 fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
@@ -392,7 +394,7 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
 fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "MemoryCurrent");
 
-    let memory_current = value_u64(value);
+    let memory_current = value_to_u64(value);
     if memory_current == U64MAX {
         return;
     }
@@ -444,7 +446,7 @@ fn write_mem_param(
         return false;
     };
 
-    let mem_num = value_u64(mem);
+    let mem_num = value_to_u64(mem);
     if mem_num == U64MAX || mem_num == 0 {
         return false;
     }
@@ -469,16 +471,17 @@ fn fill_main_pid(
 
     if 0 == main_pid {
         // nothing
-    } else {
-        let exec_val = if let Some(exec) = get_exec(map) {
-            exec
-        } else {
-            unit.display_name()
-        };
-
-        let v = &format!("{} ({})", main_pid, exec_val);
-        fill_row(unit_writer, "Main PID:", v)
+        return;
     }
+
+    let exec_val = if let Some(exec) = get_exec(map) {
+        exec
+    } else {
+        unit.display_name()
+    };
+
+    let v = &format!("{} ({})", main_pid, exec_val);
+    fill_row(unit_writer, "Main PID:", v)
 }
 
 fn get_main_pid(map: &HashMap<String, OwnedValue>) -> u32 {
@@ -507,7 +510,7 @@ struct ExecStart<'a> {
 }
 
 // Value: Array(Dynamic { child: Structure(Dynamic { fields: [Str, Array(Dynamic { child: Str }), Bool, U64, U64, U64, U64, U32, I32, I32] }) })
-fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<String> {
+fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart> {
     let value = get_value!(map, "ExecStart", None);
 
     debug!(
@@ -528,11 +531,11 @@ fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<String> {
 
         let exec_start = clean_message!(ExecStart::try_from(val), "ExecStart", None);
 
-        let array_of_str: Vec<_> = exec_start.argv.iter().map(|s| s.as_str()).collect();
+        /*         let array_of_str: Vec<_> = exec_start.argv.iter().map(|s| s.as_str()).collect();
 
-        let cmd_line_joined = array_of_str.join(" ");
+        let cmd_line_joined = array_of_str.join(" "); */
 
-        return Some(cmd_line_joined);
+        return Some(exec_start);
     }
 
     None
@@ -540,7 +543,7 @@ fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<String> {
 
 fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
     if let Some(exec_full) = get_exec_full(map) {
-        if let Some((_pre, last)) = exec_full.rsplit_once('/') {
+        if let Some((_pre, last)) = exec_full.path.rsplit_once('/') {
             return Some(last.to_string());
         }
     }
@@ -550,7 +553,7 @@ fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
 fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "CPUUsageNSec");
 
-    let value_u64 = value_u64(value);
+    let value_u64 = value_to_u64(value);
     if value_u64 == U64MAX {
         return;
     }
@@ -562,7 +565,7 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
 fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "TasksCurrent");
 
-    let value_nb = value_u64(value);
+    let value_nb = value_to_u64(value);
 
     if value_nb == U64MAX {
         return;
@@ -575,7 +578,7 @@ fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
 
     if let Some(value) = map.get("TasksMax") {
         let mut limit = String::from(" (limit: ");
-        let value_u64 = value_u64(value);
+        let value_u64 = value_to_u64(value);
         limit.push_str(&value_u64.to_string());
         limit.push(')');
 
@@ -624,10 +627,87 @@ struct TimersCalendar<'a> {
     elapsation_point: u64,
 }
 
-fn fill_trigger_timers_calendar(
+macro_rules! timestamp_is_set {
+    ($t:expr) => {
+        $t > 0 && $t != U64MAX
+    };
+}
+
+fn fill_trigger(
     unit_writer: &mut UnitInfoWriter,
     map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
 ) {
+    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
+    if !systemd::enums::UnitType::Timer.eq(&unit_type) {
+        return;
+    }
+
+    let next_elapse_realtime = map
+        .get("NextElapseUSecRealtime")
+        .map_or(U64MAX, |v| value_to_u64(v));
+    let next_elapse_monotonic = map
+        .get("NextElapseUSecMonotonic")
+        .map_or(U64MAX, |v| value_to_u64(v));
+
+    let now_realtime = now_realtime();
+    let now_monotonic = now_monotonic();
+
+    let next_elapse = calc_next_elapse(
+        now_realtime,
+        now_monotonic,
+        next_elapse_realtime,
+        next_elapse_monotonic,
+    );
+
+    let trigger_msg = if timestamp_is_set!(next_elapse) {  
+       let (first, second) =  get_since_and_passed_time(next_elapse);
+
+       format!("{first}; {second}")
+    } else {
+        "n/a".to_owned()
+    };
+
+    fill_row(unit_writer, "Trigger:", &trigger_msg);
+}
+
+
+
+///from systemd
+fn calc_next_elapse(
+    now_realtime: u64,
+    now_monotonic: u64,
+    next_elapse_realtime: u64,
+    next_elapse_monotonic: u64,
+) -> u64 {
+    if timestamp_is_set!(next_elapse_monotonic) {
+        let converted = if next_elapse_monotonic > now_monotonic {
+            now_realtime + (next_elapse_monotonic - now_monotonic)
+        } else {
+            now_realtime - (now_monotonic - next_elapse_monotonic)
+        };
+
+        if timestamp_is_set!(next_elapse_realtime) {
+            converted.min(next_elapse_realtime)
+        } else {
+            converted
+        }
+    } else {
+        next_elapse_realtime
+    }
+}
+
+/* fn fill_trigger_timers_calendar(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
+) {
+    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
+
+    if !systemd::enums::UnitType::Timer.eq(&unit_type) {
+        return;
+    }
+
     let value = get_value!(map, "TimersCalendar");
 
     let Value::Array(array) = value as &Value else {
@@ -647,7 +727,7 @@ fn fill_trigger_timers_calendar(
         fill_row(unit_writer, "Trigger:", &timers)
     }
 }
-
+ */
 #[derive(Clone, Value, OwnedValue)]
 struct TimersMonotonic<'a> {
     timer_base: Str<'a>,
@@ -655,10 +735,17 @@ struct TimersMonotonic<'a> {
     elapsation_point: u64,
 }
 
-fn fill_trigger_timers_monotonic(
+/* fn fill_trigger_timers_monotonic(
     unit_writer: &mut UnitInfoWriter,
     map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
 ) {
+    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
+
+    if !systemd::enums::UnitType::Timer.eq(&unit_type) {
+        return;
+    }
+
     let value = get_value!(map, "TimersMonotonic");
 
     let Value::Array(array) = value as &Value else {
@@ -687,7 +774,7 @@ fn fill_trigger_timers_monotonic(
         }
     }
 }
-
+ */
 fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Triggers");
 
@@ -829,7 +916,7 @@ fn value_to_str<'a>(value: &'a Value<'a>) -> &'a str {
     if let Value::Str(converted) = value as &Value {
         return converted.as_str();
     }
-    warn!("Wrong zvalue conversion: {:?}", value);
+    warn!("Wrong zvalue conversion to String: {:?}", value);
     ""
 }
 
@@ -838,11 +925,11 @@ const U64MAX: u64 = 18_446_744_073_709_551_615;
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: u64 = 1024;
 
-fn value_u64(value: &Value) -> u64 {
+fn value_to_u64(value: &Value) -> u64 {
     if let Value::U64(converted) = value {
         return *converted;
     }
-    warn!("Wrong zvalue conversion: {:?}", value);
+    warn!("Wrong zvalue conversion to u64: {:?}", value);
     U64MAX
 }
 
