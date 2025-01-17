@@ -12,19 +12,20 @@ use std::fmt::Write;
 } */
 
 pub fn get_since_and_passed_time(timestamp_u64: u64) -> (String, String) {
-    let since_local = get_since_date_local(timestamp_u64);
+    let since_local = get_date_local(timestamp_u64);
 
     //let now = Local::now();
 
     //let duration = now.signed_duration_since(since_local);
 
     (
-        since_local.to_rfc2822(),
+        //%a, %d %b %Y %H:%M:%S %z
+        format!("{}", since_local.format("%a, %d %b %Y %H:%M:%S %Z")),
         format_timestamp_relative_full(timestamp_u64),
     )
 }
 
-fn get_since_date_local(timestamp_u64: u64) -> DateTime<Local> {
+fn get_date_local(timestamp_u64: u64) -> DateTime<Local> {
     let since = match Utc.timestamp_micros(timestamp_u64 as i64) {
         chrono::offset::LocalResult::Single(a) => a,
         chrono::offset::LocalResult::Ambiguous(a, _b) => a,
@@ -91,11 +92,11 @@ const USEC_PER_MSEC: u64 = 1000;
 const SEC_PER_MINUTE: u64 = 60;
 
 fn format_timestamp_relative_full(timestamp_u64: u64) -> String {
-    let since_local = get_since_date_local(timestamp_u64);
+    let since_time = get_date_local(timestamp_u64);
 
     let now = Local::now();
 
-    let delta = now.signed_duration_since(since_local);
+    let delta = now.signed_duration_since(since_time);
 
     format_timestamp_relative_full_delta(delta)
 }
@@ -175,7 +176,7 @@ fn format_timestamp_relative_full_delta(delta: TimeDelta) -> String {
             let ms = d_us / USEC_PER_MSEC;
             swrite!(out, "{ms}ms {suffix}");
         } else if d_us > 0 {
-            swrite!(out, "{d_us}us {suffix}");
+            swrite!(out, "{d_us}μs {suffix}");
         } else {
             out.push_str("now");
         }
@@ -185,47 +186,7 @@ fn format_timestamp_relative_full_delta(delta: TimeDelta) -> String {
 
     out
 }
-/*
-fn most_significant_duration(duration: Duration) -> String {
-    let days = duration.num_days();
 
-    let mut day_duration = if days > 0 {
-        let plur = if days == 1 { "" } else { "s" };
-
-        format!("{days} day{plur}")
-    } else {
-        String::new()
-    };
-
-    if days > 3 {
-        return day_duration;
-    } else if days > 0 {
-        day_duration.push(' ');
-    }
-
-    let mut hours = duration.num_hours();
-    if hours > 0 {
-        hours -= days * 24;
-
-        return format!("{day_duration}{hours}h",);
-    }
-
-    let minutes = duration.num_minutes();
-
-    match minutes {
-        0 => {
-            format!("{}s", duration.num_seconds())
-        }
-        1..10 => {
-            let seconds = duration.num_seconds() % 60;
-            format!("{minutes}min {}s", seconds)
-        }
-        _ => {
-            format!("{minutes} minutes")
-        }
-    }
-}
-*/
 pub fn now_monotonic() -> u64 {
     now(libc::CLOCK_MONOTONIC)
 }
@@ -294,7 +255,7 @@ mod tests {
 
     #[test]
     fn test_duration2() {
-        let prev = get_since_date_local(1727116768682604);
+        let prev = get_date_local(1727116768682604);
 
         let now = Local::now();
 
@@ -336,18 +297,23 @@ mod tests {
         ActiveExitTimestamp	1727501504134907
         ActiveExitTimestampMonotonic	384672550797 */
 
-        let enter = get_since_date_local(1727500436962647);
-        let exit = get_since_date_local(1727501504134907);
+        let enter = get_date_local(1727500436962647);
+        let exit = get_date_local(1727501504134907);
 
         let d = exit.signed_duration_since(enter);
         println!("{:?} {:?}", format_timestamp_relative_full_delta(d), d);
     }
 
-    const USEC_PER_SEC: u64 = 1_000_000;
-    const USEC_PER_YEAR: u64 = SEC_PER_YEAR * USEC_PER_SEC;
-    const USEC_PER_MONTH: u64 = SEC_PER_MONTH * USEC_PER_SEC;
-    const USEC_PER_DAY: u64 = SEC_PER_DAY * USEC_PER_SEC;
-    const USEC_PER_WEEK: u64 = SEC_PER_WEEK * USEC_PER_SEC;
+    const SEC_PER_YEAR_I: i64 = SEC_PER_YEAR as i64;
+    const SEC_PER_MONTH_I: i64 = SEC_PER_MONTH as i64;
+    const SEC_PER_DAY_I: i64 = SEC_PER_DAY as i64;
+    const SEC_PER_WEEK_I: i64 = SEC_PER_WEEK as i64;
+
+    const USEC_PER_SEC: i64 = 1_000_000;
+    const USEC_PER_YEAR: i64 = SEC_PER_YEAR_I * USEC_PER_SEC;
+    const USEC_PER_MONTH: i64 = SEC_PER_MONTH_I * USEC_PER_SEC;
+    const USEC_PER_DAY: i64 = SEC_PER_DAY_I * USEC_PER_SEC;
+    const USEC_PER_WEEK: i64 = SEC_PER_WEEK_I * USEC_PER_SEC;
     //const USEC_PER_MIN : u64 = USEC_PER_SEC * 60;
 
     #[test]
@@ -355,68 +321,58 @@ mod tests {
         //println!("{} - {}", now_realtime(), (USEC_PER_YEAR + USEC_PER_MONTH));
 
         let tests = vec![
+            (-(USEC_PER_YEAR + USEC_PER_MONTH), "1 year 1 month ago"),
             (
-                now_realtime() - (USEC_PER_YEAR + USEC_PER_MONTH),
-                "1 year 1 month ago",
-            ),
-            (
-                now_realtime() + (USEC_PER_YEAR + (1.5 * USEC_PER_MONTH as f64) as u64),
+                (USEC_PER_YEAR + (1.5 * USEC_PER_MONTH as f64) as i64),
                 "1 year 1 month left",
             ),
             (
-                now_realtime() - (USEC_PER_YEAR + (2 * USEC_PER_MONTH)),
+                -(USEC_PER_YEAR + (2 * USEC_PER_MONTH)),
                 "1 year 2 months ago",
             ),
+            (-(2 * USEC_PER_YEAR + USEC_PER_MONTH), "2 years 1 month ago"),
             (
-                now_realtime() - (2 * USEC_PER_YEAR + USEC_PER_MONTH),
-                "2 years 1 month ago",
-            ),
-            (
-                now_realtime() - (2 * USEC_PER_YEAR + 2 * USEC_PER_MONTH),
+                -(2 * USEC_PER_YEAR + 2 * USEC_PER_MONTH),
                 "2 years 2 months ago",
             ),
+            (-(USEC_PER_MONTH + USEC_PER_DAY), "1 month 1 day ago"),
+            (-(USEC_PER_MONTH + 2 * USEC_PER_DAY), "1 month 2 days ago"),
+            (-(2 * USEC_PER_MONTH + USEC_PER_DAY), "2 months 1 day ago"),
             (
-                now_realtime() - (USEC_PER_MONTH + USEC_PER_DAY),
-                "1 month 1 day ago",
-            ),
-            (
-                now_realtime() - (USEC_PER_MONTH + 2 * USEC_PER_DAY),
-                "1 month 2 days ago",
-            ),
-            (
-                now_realtime() - (2 * USEC_PER_MONTH + USEC_PER_DAY),
-                "2 months 1 day ago",
-            ),
-            (
-                now_realtime() - (2 * USEC_PER_MONTH + 2 * USEC_PER_DAY),
+                -(2 * USEC_PER_MONTH + 2 * USEC_PER_DAY),
                 "2 months 2 days ago",
             ),
             /* Weeks and days */
-             (
-                now_realtime() - (USEC_PER_WEEK + USEC_PER_DAY),
-                "1 week 1 day ago",
-            ),
+            (-(USEC_PER_WEEK + USEC_PER_DAY), "1 week 1 day ago"),
+            (-(USEC_PER_WEEK + 2 * USEC_PER_DAY), "1 week 2 days ago"),
+            (-(2 * USEC_PER_WEEK + USEC_PER_DAY), "2 weeks 1 day ago"),
             (
-                now_realtime() - (USEC_PER_WEEK + 2 * USEC_PER_DAY),
-                "1 week 2 days ago",
-            ),
-            (
-                now_realtime() - (2 * USEC_PER_WEEK + USEC_PER_DAY),
-                "2 weeks 1 day ago",
-            ),
-            (
-                now_realtime() - (2 * USEC_PER_WEEK + 2 * USEC_PER_DAY),
+                -(2 * USEC_PER_WEEK + 2 * USEC_PER_DAY),
                 "2 weeks 2 days ago",
-            ), 
-/*             (
-                now_realtime() - 7 * USEC_PER_MIN,
-                "now",
-            ),  */
+            ),
+            (-3 * 1000, "3ms ago"),
+            (-2, "2μs ago"),
+            (0, "now"),
         ];
 
         for (time_us, time_output) in tests {
-            let value = format_timestamp_relative_full(time_us);
+            let time_us = -time_us;
+            let delta = TimeDelta::new(
+                time_us / USEC_PER_SEC,
+                (time_us % USEC_PER_SEC) as u32 * 1000,
+            )
+            .expect("Time delta not supposed to have bondaries issues");
+
+            let value = format_timestamp_relative_full_delta(delta);
             assert_eq!(value, time_output);
         }
+    }
+
+    #[test]
+    fn test_date_format() {
+        let date = Local::now();
+        println!("{}", date.format("%a, %d %b %Y %H:%M:%S %z"));
+        println!("{}", date.to_rfc2822());
+        println!("{}", date.to_rfc3339());     
     }
 }
