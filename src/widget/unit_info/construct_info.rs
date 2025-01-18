@@ -55,9 +55,10 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_tasks(unit_writer, &map);
+    fill_fd_store(unit_writer, &map);
     fill_memory(unit_writer, &map);
-    fill_cpu(unit_writer, &map);
     fill_listen(unit_writer, &map);
+    fill_cpu(unit_writer, &map);
     fill_control_group(unit_writer, &map, unit);
 
     //TODO do  Device: (mount)
@@ -179,7 +180,7 @@ fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
         text.push_str(&since.0);
         text.push_str("; ");
         text.push_str(&since.1);
-      
+
         unit_writer.insert(&text);
     }
 
@@ -391,10 +392,31 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
     }
 }
 
-fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "MemoryCurrent");
+fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let n_fd_store = value_to_u32(map.get("NFileDescriptorStore").map(|v| &**v), 0);
+    let fd_store_max = value_to_u32(map.get("FileDescriptorStoreMax").map(|v| &**v), 0);
 
-    let memory_current = value_to_u64(value);
+    if n_fd_store == 0 && fd_store_max == 0 {
+        return;
+    }
+
+    write_key(unit_writer, "FD Store:");
+
+    unit_writer.insert(&n_fd_store.to_string());
+    unit_writer.insert_grey(&format!(" (limit: {fd_store_max})"));
+}
+
+fn value_to_u32(value: Option<&Value>, default: u32) -> u32 {
+    if let Some(Value::U32(converted)) = value {
+        *converted
+    } else {
+        warn!("Wrong zvalue conversion to u32: {:?}", value);
+        default
+    }
+}
+
+fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let memory_current = valop_to_u64(map.get("MemoryCurrent"), U64MAX);
     if memory_current == U64MAX {
         return;
     }
@@ -563,26 +585,20 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
 }
 
 fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "TasksCurrent");
+    let tasks_current = valop_to_u64(map.get("TasksCurrent"), U64MAX);
 
-    let value_nb = value_to_u64(value);
-
-    if value_nb == U64MAX {
+    if tasks_current == U64MAX {
         return;
     }
 
     write_key(unit_writer, "Tasks:");
 
-    let tasks_info = value_nb.to_string();
+    let tasks_info = tasks_current.to_string();
     unit_writer.insert(&tasks_info);
 
-    if let Some(value) = map.get("TasksMax") {
-        let mut limit = String::from(" (limit: ");
-        let value_u64 = value_to_u64(value);
-        limit.push_str(&value_u64.to_string());
-        limit.push(')');
-
-        unit_writer.insert_grey(&limit);
+    let tasks_max = valop_to_u64(map.get("TasksMax"), U64MAX);
+    if tasks_max != U64MAX {
+        unit_writer.insert_grey(&format!(" (limit: {tasks_max})"));
     }
 
     unit_writer.newline();
@@ -660,18 +676,16 @@ fn fill_trigger(
         next_elapse_monotonic,
     );
 
-    let trigger_msg = if timestamp_is_set!(next_elapse) {  
-       let (first, second) =  get_since_and_passed_time(next_elapse);
+    let trigger_msg = if timestamp_is_set!(next_elapse) {
+        let (first, second) = get_since_and_passed_time(next_elapse);
 
-       format!("{first}; {second}")
+        format!("{first}; {second}")
     } else {
         "n/a".to_owned()
     };
 
     fill_row(unit_writer, "Trigger:", &trigger_msg);
 }
-
-
 
 ///from systemd
 fn calc_next_elapse(
@@ -931,6 +945,15 @@ fn value_to_u64(value: &Value) -> u64 {
     }
     warn!("Wrong zvalue conversion to u64: {:?}", value);
     U64MAX
+}
+
+fn valop_to_u64(value: Option<&OwnedValue>, default: u64) -> u64 {
+    if let Some(Value::U64(converted)) = value.map(|v| v as &Value) {
+        *converted
+    } else {
+        warn!("Wrong zvalue conversion to u64: {:?}", value);
+        default
+    }
 }
 
 /// Converts bytes to human-readable values in base 10

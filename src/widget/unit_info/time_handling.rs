@@ -14,13 +14,9 @@ use std::fmt::Write;
 pub fn get_since_and_passed_time(timestamp_u64: u64) -> (String, String) {
     let since_local = get_date_local(timestamp_u64);
 
-    //let now = Local::now();
-
-    //let duration = now.signed_duration_since(since_local);
-
-    (
-        //%a, %d %b %Y %H:%M:%S %z
-        format!("{}", since_local.format("%a, %d %b %Y %H:%M:%S %Z")),
+    (        
+        //format!("{}", since_local.format("%a, %d %b %Y %H:%M:%S %Z")),
+        since_local.to_rfc2822(),
         format_timestamp_relative_full(timestamp_u64),
     )
 }
@@ -103,10 +99,11 @@ fn format_timestamp_relative_full(timestamp_u64: u64) -> String {
 
 ///from systemd
 fn format_timestamp_relative_full_delta(delta: TimeDelta) -> String {
+    
     let is_ago = delta.num_seconds() >= 0;
-    let delta = delta.abs();
-
     let suffix = if is_ago { "ago" } else { "left" };
+
+    let delta = delta.abs();
 
     let d = delta.num_seconds() as u64;
 
@@ -321,47 +318,47 @@ mod tests {
         //println!("{} - {}", now_realtime(), (USEC_PER_YEAR + USEC_PER_MONTH));
 
         let tests = vec![
-            (-(USEC_PER_YEAR + USEC_PER_MONTH), "1 year 1 month ago"),
+            ((USEC_PER_YEAR + USEC_PER_MONTH), "1 year 1 month ago"),
             (
-                (USEC_PER_YEAR + (1.5 * USEC_PER_MONTH as f64) as i64),
+                -(USEC_PER_YEAR + (1.5 * USEC_PER_MONTH as f64) as i64),
                 "1 year 1 month left",
             ),
             (
-                -(USEC_PER_YEAR + (2 * USEC_PER_MONTH)),
+                (USEC_PER_YEAR + (2 * USEC_PER_MONTH)),
                 "1 year 2 months ago",
             ),
-            (-(2 * USEC_PER_YEAR + USEC_PER_MONTH), "2 years 1 month ago"),
+            ((2 * USEC_PER_YEAR + USEC_PER_MONTH), "2 years 1 month ago"),
             (
-                -(2 * USEC_PER_YEAR + 2 * USEC_PER_MONTH),
+                (2 * USEC_PER_YEAR + 2 * USEC_PER_MONTH),
                 "2 years 2 months ago",
             ),
-            (-(USEC_PER_MONTH + USEC_PER_DAY), "1 month 1 day ago"),
-            (-(USEC_PER_MONTH + 2 * USEC_PER_DAY), "1 month 2 days ago"),
-            (-(2 * USEC_PER_MONTH + USEC_PER_DAY), "2 months 1 day ago"),
+            ((USEC_PER_MONTH + USEC_PER_DAY), "1 month 1 day ago"),
+            ((USEC_PER_MONTH + 2 * USEC_PER_DAY), "1 month 2 days ago"),
+            ((2 * USEC_PER_MONTH + USEC_PER_DAY), "2 months 1 day ago"),
             (
-                -(2 * USEC_PER_MONTH + 2 * USEC_PER_DAY),
+                (2 * USEC_PER_MONTH + 2 * USEC_PER_DAY),
                 "2 months 2 days ago",
             ),
             /* Weeks and days */
-            (-(USEC_PER_WEEK + USEC_PER_DAY), "1 week 1 day ago"),
-            (-(USEC_PER_WEEK + 2 * USEC_PER_DAY), "1 week 2 days ago"),
-            (-(2 * USEC_PER_WEEK + USEC_PER_DAY), "2 weeks 1 day ago"),
+            ((USEC_PER_WEEK + USEC_PER_DAY), "1 week 1 day ago"),
+            ((USEC_PER_WEEK + 2 * USEC_PER_DAY), "1 week 2 days ago"),
+            ((2 * USEC_PER_WEEK + USEC_PER_DAY), "2 weeks 1 day ago"),
             (
-                -(2 * USEC_PER_WEEK + 2 * USEC_PER_DAY),
+                (2 * USEC_PER_WEEK + 2 * USEC_PER_DAY),
                 "2 weeks 2 days ago",
             ),
-            (-3 * 1000, "3ms ago"),
-            (-2, "2μs ago"),
+            (3 * 1000, "3ms ago"),
+            (2, "2μs ago"),
             (0, "now"),
         ];
 
         for (time_us, time_output) in tests {
-            let time_us = -time_us;
+            
             let delta = TimeDelta::new(
                 time_us / USEC_PER_SEC,
                 (time_us % USEC_PER_SEC) as u32 * 1000,
             )
-            .expect("Time delta not supposed to have bondaries issues");
+            .expect("Time delta not supposed to have bondary issues");
 
             let value = format_timestamp_relative_full_delta(delta);
             assert_eq!(value, time_output);
@@ -371,7 +368,9 @@ mod tests {
     #[test]
     fn test_date_format() {
         let date = Local::now();
-        println!("{}", date.format("%a, %d %b %Y %H:%M:%S %z"));
+
+        //%Z: Since chrono is not aware of timezones beyond their offsets, this specifier only prints the offset when used for formatting. The timezone abbreviation will NOT be printed. See this issue for more information.
+        println!("{}", date.format("%a, %d %b %Y %H:%M:%S %Z"));
         println!("{}", date.to_rfc2822());
         println!("{}", date.to_rfc3339());     
     }
