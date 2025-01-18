@@ -11,3 +11,4 @@ Cargo.lock
 cargo-sources.json
 /tiny_daemon/target/
 
+.vscode/launch.json

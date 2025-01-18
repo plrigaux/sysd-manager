@@ -10,7 +10,7 @@ use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 use super::{
-    time_handling::{self, now_monotonic, now_realtime},
+    time_handling::{self, format_timespan, now_monotonic, now_realtime, MSEC_PER_SEC},
     writer::{
         HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
         SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
@@ -45,23 +45,24 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_load_state(unit_writer, &map);
     fill_transient(unit_writer, &map);
     fill_dropin(unit_writer, &map);
-    fill_active_state(unit_writer, &map);
+    fill_active_state(unit_writer, &map, unit);
     fill_invocation(unit_writer, &map);
     fill_triggered_by(unit_writer, &map);
+    fill_device(unit_writer, &map);
     fill_where(unit_writer, &map);
     fill_what(unit_writer, &map);
     fill_trigger(unit_writer, &map, unit);
     fill_triggers(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
+    fill_ip(unit_writer, &map);
+    fill_io(unit_writer, &map);
     fill_tasks(unit_writer, &map);
     fill_fd_store(unit_writer, &map);
     fill_memory(unit_writer, &map);
     fill_listen(unit_writer, &map);
     fill_cpu(unit_writer, &map);
     fill_control_group(unit_writer, &map, unit);
-
-    //TODO do  Device: (mount)
 }
 
 fn fill_name_description(unit_writer: &mut UnitInfoWriter, unit: &UnitInfo) {
@@ -155,7 +156,11 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     }
 }
 
-fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_active_state(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
+) {
     let value = get_value!(map, "ActiveState");
     let state = value_to_str(value);
 
@@ -175,16 +180,44 @@ fn fill_active_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
     };
 
     if let Some(since) = add_since(map, state) {
-        let mut text = String::new();
-        text.push_str(" since ");
-        text.push_str(&since.0);
-        text.push_str("; ");
-        text.push_str(&since.1);
+        unit_writer.insert(&format!(" since {}; {}\n", since.0, since.1));
+        fill_duration(unit_writer, map, unit);
+    } else {
+        unit_writer.newline();
+    }
+}
 
-        unit_writer.insert(&text);
+macro_rules! timestamp_is_set {
+    ($t:expr) => {
+        $t > 0 && $t != U64MAX
+    };
+}
+
+fn fill_duration(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
+) {
+    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
+    if !systemd::enums::UnitType::Target.eq(&unit_type) {
+        return;
     }
 
-    unit_writer.newline();
+    let active_enter_timestamp = map
+        .get("ActiveEnterTimestamp")
+        .map_or(U64MAX, |v| value_to_u64(v));
+    let active_exit_timestamp = map
+        .get("ActiveExitTimestamp")
+        .map_or(U64MAX, |v| value_to_u64(v));
+
+    if timestamp_is_set!(active_enter_timestamp)
+        && timestamp_is_set!(active_exit_timestamp)
+        && active_exit_timestamp >= active_enter_timestamp
+    {
+        let duration = active_exit_timestamp - active_enter_timestamp;
+        let timespan = format_timespan(duration, MSEC_PER_SEC);
+        fill_row(unit_writer, "Duration:", &timespan);
+    }
 }
 
 fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
@@ -194,9 +227,10 @@ fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
 
 fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, String)> {
     let key = match state {
-        "active" => "ActiveEnterTimestamp",
-        "inactive" => "InactiveEnterTimestamp",
-        _ => "StateChangeTimestamp",
+        "active" | "reloading" | "refreshing" => "ActiveEnterTimestamp",
+        "inactive" | "failed" => "InactiveEnterTimestamp",
+        "activating" => "InactiveExitTimestamp",
+        _ => "ActiveExitTimestamp",
     };
 
     let value = get_value!(map, key, None);
@@ -322,6 +356,10 @@ fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedV
     }
 }
 
+fn fill_device(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    fill_what_string(unit_writer, map, "SysFSPath", "Device:")
+}
+
 fn fill_where(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     fill_what_string(unit_writer, map, "Where", "Where:")
 }
@@ -346,21 +384,20 @@ fn fill_what_string(
 fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Documentation");
 
-    let docs = get_array_str(value);
+    let Value::Array(array) = value as &Value else {
+        return;
+    };
 
-    let mut it = docs.iter();
+    for idx in 0..array.len() {
+        let Ok(Some(val)) = array.get::<Value>(idx) else {
+            warn!("Can't get value from array");
+            continue;
+        };
 
-    if let Some(doc) = it.next() {
-        let s = format!("{:>KEY_WIDTH$} ", "Doc:");
-        unit_writer.insert(&s);
+        let key = if idx == 0 { "Doc:" } else { "" };
 
-        insert_doc(unit_writer, doc);
-        unit_writer.newline();
-    }
-
-    for doc in it {
-        let text = format!("{:KEY_WIDTH$} ", " ");
-        unit_writer.insert(&text);
+        write_key(unit_writer, key);
+        let doc = value_to_str(&val);
         insert_doc(unit_writer, doc);
         unit_writer.newline();
     }
@@ -393,8 +430,8 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
 }
 
 fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let n_fd_store = value_to_u32(map.get("NFileDescriptorStore").map(|v| &**v), 0);
-    let fd_store_max = value_to_u32(map.get("FileDescriptorStoreMax").map(|v| &**v), 0);
+    let n_fd_store = valop_to_u32(map.get("NFileDescriptorStore"), 0);
+    let fd_store_max = valop_to_u32(map.get("FileDescriptorStoreMax"), 0);
 
     if n_fd_store == 0 && fd_store_max == 0 {
         return;
@@ -404,15 +441,6 @@ fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
 
     unit_writer.insert(&n_fd_store.to_string());
     unit_writer.insert_grey(&format!(" (limit: {fd_store_max})"));
-}
-
-fn value_to_u32(value: Option<&Value>, default: u32) -> u32 {
-    if let Some(Value::U32(converted)) = value {
-        *converted
-    } else {
-        warn!("Wrong zvalue conversion to u32: {:?}", value);
-        default
-    }
 }
 
 fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
@@ -584,6 +612,44 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
     fill_row(unit_writer, "CPU:", value_str)
 }
 
+fn fill_ip(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let ip_ingress_bytes = valop_to_u64(map.get("IPIngressBytes"), U64MAX);
+    let ip_egress_bytes = valop_to_u64(map.get("IPEgressBytes"), U64MAX);
+
+    if ip_ingress_bytes == U64MAX || ip_egress_bytes == U64MAX {
+        return;
+    }
+
+    fill_row(
+        unit_writer,
+        "IP:",
+        &format!(
+            "{} in, {} out",
+            human_bytes(ip_ingress_bytes),
+            human_bytes(ip_egress_bytes)
+        ),
+    );
+}
+
+fn fill_io(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let io_read_bytes = valop_to_u64(map.get("IOReadBytes"), U64MAX);
+    let io_write_bytes = valop_to_u64(map.get("IOWriteBytes"), U64MAX);
+
+    if io_read_bytes == U64MAX || io_write_bytes == U64MAX {
+        return;
+    }
+
+    fill_row(
+        unit_writer,
+        "IP:",
+        &format!(
+            "{} read, {} written",
+            human_bytes(io_read_bytes),
+            human_bytes(io_write_bytes)
+        ),
+    );
+}
+
 fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let tasks_current = valop_to_u64(map.get("TasksCurrent"), U64MAX);
 
@@ -641,12 +707,6 @@ struct TimersCalendar<'a> {
     timer_base: Str<'a>,
     calendar_specification: Str<'a>,
     elapsation_point: u64,
-}
-
-macro_rules! timestamp_is_set {
-    ($t:expr) => {
-        $t > 0 && $t != U64MAX
-    };
 }
 
 fn fill_trigger(
@@ -834,15 +894,19 @@ fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
         return;
     };
 
-    let Ok(Some(val_listen_stc)) = array.get::<Value>(0) else {
-        return;
-    };
+    for i in 0..array.len() {
+        let Ok(Some(val_listen_stc)) = array.get::<Value>(i) else {
+            continue;
+        };
 
-    let listen_struct = clean_message!(ListenStruct::try_from(val_listen_stc), "Listen info");
+        let listen_struct = clean_message!(ListenStruct::try_from(val_listen_stc), "Listen info");
 
-    let listen = format!("{} ({})", listen_struct.path, listen_struct.listen_type);
+        let key = if i == 0 { "Listen:" } else { "" };
+        write_key(unit_writer, key);
 
-    fill_row(unit_writer, "Listen:", &listen)
+        let listen = format!("{} ({})\n", listen_struct.path, listen_struct.listen_type);
+        unit_writer.insert(&listen);
+    }
 }
 
 fn fill_control_group(
@@ -935,7 +999,7 @@ fn value_to_str<'a>(value: &'a Value<'a>) -> &'a str {
 }
 
 /// 2^16-1
-const U64MAX: u64 = 18_446_744_073_709_551_615;
+pub const U64MAX: u64 = 18_446_744_073_709_551_615;
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: u64 = 1024;
 
@@ -948,10 +1012,27 @@ fn value_to_u64(value: &Value) -> u64 {
 }
 
 fn valop_to_u64(value: Option<&OwnedValue>, default: u64) -> u64 {
-    if let Some(Value::U64(converted)) = value.map(|v| v as &Value) {
+    let Some(value) = value else {
+        return default;
+    };
+
+    if let Value::U64(converted) = value as &Value {
         *converted
     } else {
         warn!("Wrong zvalue conversion to u64: {:?}", value);
+        default
+    }
+}
+
+fn valop_to_u32(value: Option<&OwnedValue>, default: u32) -> u32 {
+    let Some(value) = value else {
+        return default;
+    };
+
+    if let Value::U32(converted) = value as &Value {
+        *converted
+    } else {
+        warn!("Wrong zvalue conversion to u32: {:?}", value);
         default
     }
 }
