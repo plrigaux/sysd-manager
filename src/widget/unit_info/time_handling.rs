@@ -8,11 +8,6 @@ use std::fmt::Write;
 
 use super::construct_info::U64MAX;
 
-/* pub fn get_duration(duration: u64) -> String {
-    let duration_str = String::new();
-    duration_str
-} */
-
 pub fn get_since_and_passed_time(timestamp_u64: u64) -> (String, String) {
     let since_local = get_date_local(timestamp_u64);
 

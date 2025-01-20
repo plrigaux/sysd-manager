@@ -19,7 +19,7 @@ use gtk::{
 
 use log::{info, warn};
 
-use crate::{systemd::data::UnitInfo, widget::info_window::InfoWindow};
+use crate::{systemd::data::UnitInfo, widget::{app_window::AppWindow, info_window::InfoWindow}};
 
 use super::{
     construct_info::fill_all_info,
@@ -104,6 +104,20 @@ impl UnitInfoPanelImp {
     pub(crate) fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
     }
+
+    pub(crate) fn register(&self, app_window: &AppWindow) {
+        {
+            let app_window = app_window.clone();
+
+            let activator = LinkActivator::new(Some(app_window));
+
+            text_view_hyperlink::build_textview_link_platform(
+                &self.unit_info_textview,
+                self.hovering_over_link_tag.clone(),
+                activator,
+            );
+        }
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -127,14 +141,6 @@ impl ObjectSubclass for UnitInfoPanelImp {
 impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
-
-        let activator = LinkActivator::new(None);
-
-        text_view_hyperlink::build_textview_link_platform(
-            &self.unit_info_textview,
-            self.hovering_over_link_tag.clone(),
-            activator,
-        );
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}

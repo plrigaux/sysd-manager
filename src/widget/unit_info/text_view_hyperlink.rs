@@ -51,7 +51,7 @@ impl LinkActivator {
                 },
             );
         } else if let Some(unit_name) = link.strip_prefix("unit://") {
-            info!("open unit dependency {:?} ", unit_name);
+            info!("open unit {:?} ", unit_name);
             let unit = match systemd::fetch_unit(unit_name) {
                 Ok(unit) => Some(unit),
                 Err(e) => {
@@ -62,6 +62,8 @@ impl LinkActivator {
 
             if let Some(app_window) = &self.app {
                 app_window.set_unit(unit)
+            } else {
+                warn!("app_window missing");
             }
         } else {
             warn!("Not handle link {:?}", link)

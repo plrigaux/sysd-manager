@@ -8,6 +8,8 @@ pub mod writer;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
+use super::app_window::AppWindow;
+
 glib::wrapper! {
     pub struct UnitInfoPanel(ObjectSubclass<imp::UnitInfoPanelImp>)
         @extends gtk::Box, gtk::Widget,
@@ -30,5 +32,9 @@ impl UnitInfoPanel {
 
     pub fn set_dark(&self, is_dark: bool) {
         self.imp().set_dark(is_dark)
+    }
+
+    pub fn register(&self, app_window: &AppWindow) {
+        self.imp().register(app_window);
     }
 }

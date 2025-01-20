@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::systemd::{
     self,
@@ -10,7 +10,10 @@ use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 use super::{
-    time_handling::{self, format_timespan, now_monotonic, now_realtime, MSEC_PER_SEC, NSEC_PER_USEC, USEC_PER_MSEC},
+    time_handling::{
+        self, format_timespan, now_monotonic, now_realtime, MSEC_PER_SEC, NSEC_PER_USEC,
+        USEC_PER_MSEC,
+    },
     writer::{
         HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
         SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
@@ -125,33 +128,40 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
         return;
     }
 
-    write_key(unit_writer, "Drop in:");
+    let mut map = BTreeMap::new();
 
-    let mut is_first = true;
-    let mut drops = Vec::new();
     for file_name in drop_in_paths {
-        let (first, last) = file_name.rsplit_once('/').unwrap();
+        let (first, last) = match file_name.rsplit_once('/') {
+            Some((first, last)) => (first, last),
+            None => (file_name, ""),
+        };
 
-        if is_first {
-            unit_writer.insertln(first);
-            is_first = false;
-        } else {
-            //strwriterln!(text, "{:KEY_WIDTH$} {}", " ", first);
-        }
-        drops.push((last, file_name));
+        let suffixes = map.entry(first).or_insert(Vec::new());
+        suffixes.push((last, file_name));
     }
 
-    if !drops.is_empty() {
-        unit_writer.insert(&format!("{:KEY_WIDTH$} {}", " ", SPECIAL_GLYPH_TREE_RIGHT));
+    let mut is_first1 = true;
+    for (prefix, suffixes) in map {
+        let key_label = if is_first1 {
+            is_first1 = false;
+            "Drop in:"
+        } else {
+            ""
+        };
 
-        is_first = true;
-        for (d, link) in drops.iter() {
-            if !is_first {
+        let s = format!("{:>KEY_WIDTH$} {}\n", key_label, prefix);
+        unit_writer.insert(&s);
+
+        let mut is_first = true;
+        for (d, link) in suffixes.iter() {
+            if is_first {
+                unit_writer.insert(&format!("{:KEY_WIDTH$} {}", "", SPECIAL_GLYPH_TREE_RIGHT));
+                is_first = false;
+            } else {
                 unit_writer.insert(", ");
             }
 
             unit_writer.hyperlink(d, link, HyperLinkType::File);
-            is_first = false;
         }
         unit_writer.newline();
     }
@@ -364,7 +374,7 @@ fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     if !value.is_empty() {
         let s = format!("{:>KEY_WIDTH$} ", "Status:");
         unit_writer.insert(&s);
-        unit_writer.insert_status(value); 
+        unit_writer.insert_status(value);
         unit_writer.newline();
     }
 }
@@ -620,8 +630,7 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
         return;
     }
 
-   
-    let value_str =  format_timespan(cpu_usage_nsec / NSEC_PER_USEC, USEC_PER_MSEC);
+    let value_str = format_timespan(cpu_usage_nsec / NSEC_PER_USEC, USEC_PER_MSEC);
     fill_row(unit_writer, "CPU:", &value_str)
 }
 
@@ -811,15 +820,18 @@ fn fill_triggered_by(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
 
     let triggers = get_array_str(value);
 
-    let mut it = triggers.iter();
+    let mut is_first = true;
+    for trigger in triggers {
+        let key_label = if is_first {
+            is_first = false;
+            "TriggeredBy:"
+        } else {
+            ""
+        };
 
-    if let Some(trigger) = it.next() {
-        fill_row(unit_writer, "TriggeredBy:", trigger);
-    }
-
-    for trigger in it {
-        let text = format!("{:KEY_WIDTH$} {}\n", " ", trigger);
-        unit_writer.insert(&text);
+        write_key(unit_writer, key_label);
+        unit_writer.hyperlink(trigger, trigger, HyperLinkType::Unit);
+        unit_writer.newline();
     }
 }
 
@@ -1009,7 +1021,6 @@ fn human_bytes(bytes: u64) -> String {
     human_str
 }
 
-
 #[cfg(test)]
 mod tests {
 
@@ -1060,5 +1071,4 @@ mod tests {
         ];
         //Invocation: 17b89c3d72bd4aebba665520b72126a5
     }
-
 }
