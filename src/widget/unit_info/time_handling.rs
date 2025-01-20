@@ -86,8 +86,7 @@ const USEC_PER_YEAR: u64 = 31_557_600 * USEC_PER_SEC;
 const SEC_PER_DAY: u64 = 24 * SEC_PER_HOUR;
 const SEC_PER_WEEK: u64 = SEC_PER_DAY * 7;
 const SEC_PER_HOUR: u64 = 60 * 60;
-const USEC_PER_MSEC: u64 = 1000;
-const SEC_PER_MINUTE: u64 = 60;
+pub const SEC_PER_MINUTE: u64 = 60;
 pub const MSEC_PER_SEC: u64 = 1000;
 
 const USEC_PER_MONTH: u64 = SEC_PER_MONTH * USEC_PER_SEC;
@@ -95,6 +94,8 @@ const USEC_PER_WEEK: u64 = SEC_PER_WEEK * USEC_PER_SEC;
 const USEC_PER_DAY: u64 = SEC_PER_DAY * USEC_PER_SEC;
 const USEC_PER_HOUR: u64 = SEC_PER_HOUR * USEC_PER_SEC;
 const USEC_PER_MINUTE: u64 = SEC_PER_MINUTE * USEC_PER_SEC;
+pub const USEC_PER_MSEC: u64 = 1000;
+pub const NSEC_PER_USEC: u64 = 1_000;
 
 fn format_timestamp_relative_full(timestamp_u64: u64) -> String {
     let since_time = get_date_local(timestamp_u64);
@@ -208,9 +209,6 @@ fn now(clock_id: i32) -> u64 {
     let ret = unsafe { libc::clock_gettime(clock_id, &mut time) };
     assert!(ret == 0);
 
-    const USEC_PER_SEC: u64 = 1_000_000;
-    const NSEC_PER_USEC: u64 = 1_000;
-
     time.tv_sec as u64 * USEC_PER_SEC + time.tv_nsec as u64 / NSEC_PER_USEC
 }
 
@@ -236,13 +234,13 @@ pub fn format_timespan(mut duration: u64, accuracy: u64) -> String {
         ("min", USEC_PER_MINUTE),
         ("s", USEC_PER_SEC),
         ("ms", USEC_PER_MSEC),
-        ("us", 1),
+        ("μs", 1),
     ];
 
     let mut something = false;
     let mut done = false;
 
-    for (suffix, usec) in TABLE {
+    for (suffix, unit_magnitute_in_usec) in TABLE {
         if duration == 0 {
             break;
         }
@@ -251,36 +249,32 @@ pub fn format_timespan(mut duration: u64, accuracy: u64) -> String {
             break;
         }
 
-        if  duration < usec {
+        if  duration < unit_magnitute_in_usec {
             continue;
         }
 
-        if duration < usec {
-            break;
-        }
-
-        let a = duration / usec;
-        let mut b = duration % usec;
+        let a = duration / unit_magnitute_in_usec;
+        let mut b = duration % unit_magnitute_in_usec;
 
         if duration < USEC_PER_MINUTE && b > 0 {
-            let mut j = 0;
+            let mut zero_padding = 0;
 
-            let mut cc = usec;
+            let mut cc = unit_magnitute_in_usec;
             while cc > 1 {
-                j += 1;
+                zero_padding += 1;
                 cc /= 10;
             }
 
             let mut cc = accuracy;
             while cc > 1 {
                 b /= 10;
-                j -= 1;
+                zero_padding -= 1;
                 cc /= 10;
             }
 
-            if j > 0 {
-                let pad = if out.is_empty() { "" } else { " " };
-                swrite!(out, "{pad}{a}.{:0j$}{suffix}", b);
+            if zero_padding > 0 {
+                let space_padding = if out.is_empty() { "" } else { " " };
+                swrite!(out, "{space_padding}{a}.{:0zero_padding$}{suffix}", b);
 
                 duration = 0;
                 done = true;
@@ -478,5 +472,8 @@ mod tests {
         println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC , MSEC_PER_SEC));
         println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 4 * USEC_PER_MSEC, MSEC_PER_SEC));
         println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 4 * USEC_PER_MSEC  + 4, MSEC_PER_SEC));
+
+        println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 50 * USEC_PER_MSEC, MSEC_PER_SEC));
+      
     }
 }

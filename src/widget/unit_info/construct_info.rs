@@ -10,7 +10,7 @@ use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 use super::{
-    time_handling::{self, format_timespan, now_monotonic, now_realtime, MSEC_PER_SEC},
+    time_handling::{self, format_timespan, now_monotonic, now_realtime, MSEC_PER_SEC, NSEC_PER_USEC, USEC_PER_MSEC},
     writer::{
         HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
         SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
@@ -601,15 +601,15 @@ fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
 }
 
 fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let value = get_value!(map, "CPUUsageNSec");
+    let cpu_usage_nsec = valop_to_u64(map.get("CPUUsageNSec"), U64MAX);
 
-    let value_u64 = value_to_u64(value);
-    if value_u64 == U64MAX {
+    if cpu_usage_nsec == U64MAX {
         return;
     }
 
-    let value_str = &human_time(value_u64);
-    fill_row(unit_writer, "CPU:", value_str)
+   
+    let value_str =  format_timespan(cpu_usage_nsec / NSEC_PER_USEC, USEC_PER_MSEC);
+    fill_row(unit_writer, "CPU:", &value_str)
 }
 
 fn fill_ip(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
@@ -771,37 +771,6 @@ fn calc_next_elapse(
     }
 }
 
-/* fn fill_trigger_timers_calendar(
-    unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
-    unit: &UnitInfo,
-) {
-    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
-
-    if !systemd::enums::UnitType::Timer.eq(&unit_type) {
-        return;
-    }
-
-    let value = get_value!(map, "TimersCalendar");
-
-    let Value::Array(array) = value as &Value else {
-        return;
-    };
-
-    for idx in 0..array.len() {
-        let Ok(Some(val)) = array.get::<Value>(idx) else {
-            warn!("Can't get value from array");
-            continue;
-        };
-
-        let timer = clean_message!(TimersCalendar::try_from(val), "TimersMonotonic");
-
-        let timers = format!("{} {}", timer.timer_base, timer.calendar_specification);
-
-        fill_row(unit_writer, "Trigger:", &timers)
-    }
-}
- */
 #[derive(Clone, Value, OwnedValue)]
 struct TimersMonotonic<'a> {
     timer_base: Str<'a>,
@@ -809,46 +778,6 @@ struct TimersMonotonic<'a> {
     elapsation_point: u64,
 }
 
-/* fn fill_trigger_timers_monotonic(
-    unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
-    unit: &UnitInfo,
-) {
-    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
-
-    if !systemd::enums::UnitType::Timer.eq(&unit_type) {
-        return;
-    }
-
-    let value = get_value!(map, "TimersMonotonic");
-
-    let Value::Array(array) = value as &Value else {
-        return;
-    };
-
-    if array.is_empty() {
-        return;
-    }
-
-    for idx in 0..array.len() {
-        let Ok(Some(val)) = array.get::<Value>(idx) else {
-            warn!("Can't get value from array at index {idx}");
-            continue;
-        };
-
-        match TimersMonotonic::try_from(val) {
-            Ok(timer) => {
-                let string = format!(
-                    "{} usec_offset={} elapsation_point={}",
-                    timer.timer_base, timer.usec_offset, timer.elapsation_point
-                );
-                fill_row(unit_writer, "Trigger:", &string);
-            }
-            Err(e) => warn!("TimersMonotonic ERROR {:?}", e),
-        }
-    }
-}
- */
 fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Triggers");
 
@@ -1067,30 +996,6 @@ fn human_bytes(bytes: u64) -> String {
     human_str
 }
 
-const T_SUFFIX: [&str; 9] = ["ns", "us", "ms", "s", "Ks", "Ms", "Gs", "Ts", "Ps"];
-const T_UNIT: f64 = 1000.0;
-
-fn human_time(value: u64) -> String {
-    if value == 0 {
-        return "0".to_string();
-    }
-
-    let base = (value as f64).log10() / T_UNIT.log10();
-    let v = T_UNIT.powf(base - base.floor());
-
-    let mut result: String = if value <= 1_000_000_000 {
-        format!("{:.0}", v)
-    } else {
-        format!("{:.3}", v)
-    }
-    .trim_end_matches(".0")
-    .to_string();
-
-    result.push(' ');
-    result.push_str(T_SUFFIX[base.floor() as usize]);
-
-    result
-}
 
 #[cfg(test)]
 mod tests {
@@ -1110,19 +1015,6 @@ mod tests {
         println!("{}", human_bytes(1950));
 
         println!("{}", human_bytes(2_048_000));
-    }
-
-    #[test]
-    fn test2() {
-        println!("{}", human_time(0));
-        println!("{}", human_time(3));
-        //println!("{}", human_time(U64MAX));
-        println!("{}", human_time(1024));
-        println!("{}", human_time(1_606_848_000));
-        println!("{}", human_time(3_235_000));
-        println!("{}", human_time(32_235_000));
-        println!("{}", human_time(321_235_000));
-        println!("{}", human_time(3_234_235_000));
     }
 
     #[test]
@@ -1155,4 +1047,5 @@ mod tests {
         ];
         //Invocation: 17b89c3d72bd4aebba665520b72126a5
     }
+
 }
