@@ -40,6 +40,8 @@ mod imp {
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
+    use crate::systemd::enums::ActiveState;
+
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitInfo)]
     pub struct UnitInfoImpl {
@@ -53,9 +55,9 @@ mod imp {
         pub(super) description: RwLock<String>,
         #[property(get)]
         pub(super) load_state: RwLock<String>,
-        #[property(get, set)]
+        #[property(get, set=Self::set_active_state)]
         pub(super) active_state: RwLock<u32>,
-        #[property(get, set, nullable)]
+        #[property(get)]
         pub(super) active_state_icon: RwLock<Option<String>>,
         #[property(get)]
         pub(super) sub_state: RwLock<String>,
@@ -94,16 +96,24 @@ mod imp {
             }
 
             let display_name = primary[..split_char_index].to_owned();
-            *self.display_name.write().unwrap() = display_name;
+            *self.display_name.write().expect("set_primary display_name") = display_name;
 
             let unit_type = primary[(split_char_index + 1)..].to_owned();
-            *self.unit_type.write().unwrap() = unit_type;
+            *self.unit_type.write().expect("set_primary unit_type") = unit_type;
 
-            *self.primary.write().unwrap() = primary;
+            *self.primary.write().expect("set_primary primary") = primary;
+        }
+
+        pub fn set_active_state(&self, state: u32) {
+            *self.active_state.write().expect("set_active_state active_state") = state;
+
+            let state: ActiveState = state.into();
+
+            *self.active_state_icon.write().expect("set_active_state active_state_icon") =
+                state.icon_name().map(|s| s.to_owned());
         }
     }
 }
-
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct UnitProcess {
@@ -132,6 +142,6 @@ impl Ord for UnitProcess {
 
 impl PartialOrd for UnitProcess {
     fn partial_cmp(&self, other: &UnitProcess) -> Option<Ordering> {
-       Some(self.cmp(other))
+        Some(self.cmp(other))
     }
 }

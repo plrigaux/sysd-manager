@@ -3,7 +3,7 @@ use log::{info, warn};
 use crate::systemd::{
     self,
     data::UnitInfo,
-    enums::{ActiveState, EnablementStatus},
+    enums::EnablementStatus,
     errors::SystemdErrors,
 };
 
@@ -141,9 +141,4 @@ pub(super) fn handle_switch_sensivity(
     };
 
     switch.set_sensitive(sensitive);
-}
-
-pub(super) fn update_active_state(unit: &UnitInfo, state: ActiveState) {
-    unit.set_active_state(state as u32);
-    unit.set_active_state_icon(state.icon_name().to_owned());
 }

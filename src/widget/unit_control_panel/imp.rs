@@ -252,7 +252,7 @@ impl UnitControlPanelImpl {
                 let toast = Toast::new(&info);
                 self.toast_overlay.get().unwrap().add_toast(toast);
 
-                controls::update_active_state(unit, new_active_state);
+                unit.set_active_state(new_active_state as u32);              
 
                 Some(job)
             }
