@@ -62,6 +62,7 @@ macro_rules! plur_day {
     }};
 }
 
+#[macro_export]
 macro_rules! swrite {
 
     ($out:expr, $($y:expr),+) => {

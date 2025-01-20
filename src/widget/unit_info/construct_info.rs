@@ -1,8 +1,12 @@
 use std::collections::{BTreeMap, HashMap};
+use std::fmt::Write;
 
-use crate::systemd::{
-    self,
-    data::{UnitInfo, UnitProcess},
+use crate::{
+    swrite,
+    systemd::{
+        self,
+        data::{UnitInfo, UnitProcess},
+    },
 };
 
 use log::{debug, warn};
@@ -59,6 +63,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_status(unit_writer, &map);
+    fill_error(unit_writer, &map);
     fill_ip(unit_writer, &map);
     fill_io(unit_writer, &map);
     fill_tasks(unit_writer, &map);
@@ -376,6 +381,70 @@ fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
         unit_writer.insert(&s);
         unit_writer.insert_status(value);
         unit_writer.newline();
+    }
+}
+
+fn fill_error(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let status_errno = valop_to_u32(map.get("StatusErrno"), 0);
+    let status_bus_error = valop_to_str(map.get("StatusBusError"), "");
+    let status_varlink_error = valop_to_str(map.get("StatusVarlinkError"), "");
+
+    if status_errno == 0 && status_bus_error.is_empty() && status_varlink_error.is_empty() {
+        return;
+    }
+
+    write_key(unit_writer, "Error:");
+
+    let mut prefix = "";
+
+    if status_errno > 0 {
+        let mut text = format!("{prefix} {status_errno}");
+
+        if let Some(strerror) = strerror(status_errno as i32) {
+            swrite!(text, " ({strerror})");
+        }
+
+        unit_writer.insert(&text);
+        prefix = "; ";
+    }
+
+    if !status_bus_error.is_empty() {
+        let text = format!("{prefix} D-Bus: {status_bus_error}");
+        unit_writer.insert(&text);
+        prefix = "; ";
+    }
+
+    if !status_varlink_error.is_empty() {
+        let text = format!("{prefix} Varlink: {status_varlink_error}");
+        unit_writer.insert(&text);
+    }
+
+    unit_writer.newline();
+}
+
+fn strerror(err_no: i32) -> Option<String> {
+    const ERRNO_BUF_LEN: usize = 1024;
+    //let mut str_error = String::with_capacity(1024);
+    //let mut str_error: Vec<i8> = Vec::with_capacity(ERRNO_BUF_LEN);
+    let mut str_error = [0; ERRNO_BUF_LEN];
+    unsafe {
+        let str_error_raw_ptr: *mut libc::c_char = str_error.as_mut_ptr();
+        libc::strerror_r(err_no, str_error_raw_ptr, ERRNO_BUF_LEN);
+
+        let mut str_error_vec = Vec::with_capacity(64);
+        for c in str_error {
+            if c == 0 {
+                break;
+            }
+
+            str_error_vec.push(c as u8);
+        }
+
+        if let Ok(str_error) = String::from_utf8(str_error_vec) {
+            Some(str_error)
+        } else {
+            None
+        }
     }
 }
 
@@ -991,6 +1060,19 @@ fn valop_to_u32(value: Option<&OwnedValue>, default: u32) -> u32 {
     }
 }
 
+fn valop_to_str<'a>(value: Option<&'a OwnedValue>, default: &'a str) -> &'a str {
+    let Some(value) = value else {
+        return default;
+    };
+
+    if let Value::Str(converted) = value as &Value {
+        converted
+    } else {
+        warn!("Wrong zvalue conversion to str: {:?}", value);
+        default
+    }
+}
+
 /// Converts bytes to human-readable values in base 10
 fn human_bytes(bytes: u64) -> String {
     let mut base: usize = 0;
@@ -1070,5 +1152,13 @@ mod tests {
             23, 184, 156, 61, 114, 189, 74, 235, 186, 102, 85, 32, 183, 33, 38, 165,
         ];
         //Invocation: 17b89c3d72bd4aebba665520b72126a5
+    }
+
+    #[test]
+    fn test_strerror() {
+        for i in 0..35 {
+            let out = strerror(i);
+            println!("Error {i} {:?}", out);
+        }
     }
 }
