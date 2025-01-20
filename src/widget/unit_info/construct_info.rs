@@ -55,6 +55,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_triggers(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
+    fill_status(unit_writer, &map);
     fill_ip(unit_writer, &map);
     fill_io(unit_writer, &map);
     fill_tasks(unit_writer, &map);
@@ -353,6 +354,18 @@ fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedV
     if transient {
         let value = if transient { "yes" } else { "no" };
         fill_row(unit_writer, "Transient:", value);
+    }
+}
+
+fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let value = get_value!(map, "StatusText");
+    let value = value_to_str(value);
+
+    if !value.is_empty() {
+        let s = format!("{:>KEY_WIDTH$} ", "Status:");
+        unit_writer.insert(&s);
+        unit_writer.insert_status(value); 
+        unit_writer.newline();
     }
 }
 

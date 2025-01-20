@@ -20,6 +20,8 @@ const TAG_NAME_DISABLE: &str = "disable";
 const TAG_NAME_DISABLE_DARK: &str = "disable_dark";
 const TAG_NAME_GREY: &str = "grey";
 const TAG_NAME_GREY_DARK: &str = "grey_dark";
+const TAG_NAME_STATUS: &str = "blue";
+const TAG_NAME_STATUS_DARK: &str = "blue_dark";
 pub const TAG_DATA_LINK: &str = "link";
 
 pub const PROP_UNDERLINE: &str = "underline";
@@ -93,6 +95,10 @@ impl UnitInfoWriter {
 
     pub fn insert_grey(&mut self, text: &str) {
         self.insert_tag(text, Self::create_grey_tag, None, HyperLinkType::None);
+    }
+
+    pub fn insert_status(&mut self, text: &str) {
+        self.insert_tag(text, Self::create_status_tag, None, HyperLinkType::None);
     }
 
     pub fn hyperlink(&mut self, text: &str, link: &str, type_: HyperLinkType) {
@@ -185,6 +191,27 @@ impl UnitInfoWriter {
         }
 
         buf.create_tag(Some(name), &[("foreground", &color.to_value())])
+    }
+
+    fn create_status_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+        let (color, name) = if is_dark {
+            (Palette::Blue2.get_color(), TAG_NAME_STATUS_DARK)
+        } else {
+            (Palette::Blue4.get_color(), TAG_NAME_STATUS)
+        };
+
+        let tag_op = buf.tag_table().lookup(name);
+        if tag_op.is_some() {
+            return tag_op;
+        }
+
+        buf.create_tag(
+            Some(name),
+            &[
+                ("foreground", &color.to_value()),
+                ("weight", &pango::Weight::Bold.into_glib().to_value()),
+            ],
+        )
     }
 
     fn insert_tag(
