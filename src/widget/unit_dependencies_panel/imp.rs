@@ -199,8 +199,7 @@ impl UnitDependenciesPanelImp {
 
             info_writer.insertln(&dependencies.unit_name);
 
-            let mut spacer = String::from(" ");
-            spacer.push_str(SPECIAL_GLYPH_TREE_SPACE);
+            let spacer = String::from(SPECIAL_GLYPH_TREE_SPACE);
 
             let mut it = dependencies.children.iter().peekable();
 

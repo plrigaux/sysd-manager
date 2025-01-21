@@ -76,7 +76,21 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-  <release version="1.9.2" date="2025-01-18">
+    <release version="1.9.3" date="2025-01-21">
+      <description>
+      <p>This release worked on unit information</p>
+        <ul>
+        <li>Add "Error" Section</li>
+          <li>Add hyperlink on units described by "Trigger"</li>
+          <li>Add hyperlink on units described by "TriggeredBy"</li>
+          <li>Display active status on units described by "Trigger"</li>
+          <li>Display active status on units described by "TriggeredBy"</li>
+          <li>Complete the "Memory" section</li>
+          <li>Fix the "Drop in" section</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.9.2" date="2025-01-18">
       <description>
         <ul>
           <li>Fix unit information timer trigger</li>
