@@ -44,6 +44,7 @@ const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFiles";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
 const METHOD_RELOAD: &str = "Reload";
+const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
@@ -725,7 +726,6 @@ fn fetch_unit_all_properties(
     connection: &Connection,
     path: &str,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    //debug!("Unit path {path}");
     let proxy = Proxy::new(
         connection,
         DESTINATION_SYSTEMD,
@@ -788,6 +788,24 @@ fn hexchar(x: u8) -> char {
     TABLE[(x & 15) as usize]
 }
 
+pub fn get_unit_active_state(
+    dbus_level: DbusLevel,
+    unit_path: &str,
+) -> Result<ActiveState, SystemdErrors> {
+    let connection = get_connection(dbus_level)?;
+
+    let proxy = Proxy::new(
+        &connection,
+        DESTINATION_SYSTEMD,
+        unit_path,
+        INTERFACE_SYSTEMD_UNIT,
+    )?;
+
+    let active_state: Str = proxy.get_property("ActiveState")?;
+
+    Ok(ActiveState::from(active_state.as_str()))
+}
+
 #[derive(Deserialize, Type, PartialEq, Debug)]
 pub(super) struct UnitProcessDeserialize {
     pub(super) path: String,
@@ -805,7 +823,7 @@ pub fn retreive_unit_processes(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
         Some(INTERFACE_SYSTEMD_MANAGER),
-        "GetUnitProcesses",
+        METHOD_GET_UNIT_PROCESSES,
         &(unit_name),
     )?;
 
@@ -1046,7 +1064,7 @@ mod tests {
 
     #[ignore = "need a connection to a service"]
     #[test]
-    pub fn test_get_unit_processes() -> Result<(), SystemdErrors> {
+    fn test_get_unit_processes() -> Result<(), SystemdErrors> {
         let unit_file: &str = "system.slice";
 
         let list = retreive_unit_processes(DbusLevel::System, unit_file)?;
@@ -1054,6 +1072,19 @@ mod tests {
         for up in list {
             println!("{:#?}", up)
         }
+
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_get_unit_active_state() -> Result<(), SystemdErrors> {
+        let unit_object = unit_dbus_path_from_name(TEST_SERVICE);
+
+        println!("path : {unit_object}");
+        let state = get_unit_active_state(DbusLevel::System, &unit_object)?;
+
+        println!("state of {TEST_SERVICE} is {:?}", state);
 
         Ok(())
     }

@@ -152,17 +152,17 @@ impl ActiveState {
         }
     }
 
-    pub(crate) fn glyph(&self) -> char {
+    pub(crate) fn glyph_str(&self) -> &str {
         match self {
-            ActiveState::Active => '●',
-            ActiveState::Reloading => '↻',
-            ActiveState::Inactive => '○',
-            ActiveState::Failed => '×',
-            ActiveState::Activating => '●',
-            ActiveState::Deactivating => '●',
-            ActiveState::Maintenance => '○',
-            ActiveState::Refreshing => '↻',
-            _ => ' ',
+            ActiveState::Active => "●",
+            ActiveState::Reloading => "↻",
+            ActiveState::Inactive => "○",
+            ActiveState::Failed => "×",
+            ActiveState::Activating => "●",
+            ActiveState::Deactivating => "●",
+            ActiveState::Maintenance => "○",
+            ActiveState::Refreshing => "↻",
+            _ => " ",
         }
     }
 }
@@ -330,13 +330,11 @@ impl From<&str> for UnitType {
     }
 }
 
-
 impl From<String> for UnitType {
     fn from(value: String) -> Self {
         UnitType::new(&value)
     }
 }
-
 
 /// KillUnit() may be used to kill (i.e. send a signal to) all processes of a unit.
 /// Takes the unit name, an enum who and a UNIX signal number to send.

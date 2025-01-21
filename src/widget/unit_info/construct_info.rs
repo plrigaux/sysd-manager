@@ -920,9 +920,31 @@ fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
         return;
     }
 
-    //TODO add the active state of the triggers
+    let mut is_first = true;
+    for trigger_unit in triggers {
+        let key_label = if is_first {
+            is_first = false;
+            "Trigger:"
+        } else {
+            ""
+        };
 
-    fill_row(unit_writer, "Triggers:", &triggers.join("\n"))
+        write_key(unit_writer, key_label);
+
+        match systemd::get_unit_active_state(trigger_unit) {
+            Ok(state) => {
+                unit_writer.insert_state(state);
+            }
+            Err(e) => {
+                warn!("Can't find state of {trigger_unit}, {:?}", e);
+                unit_writer.insert(" ");
+            }
+        };
+
+        unit_writer.insert(" ");
+        unit_writer.hyperlink(trigger_unit, trigger_unit, HyperLinkType::Unit);
+        unit_writer.newline();
+    }
 }
 
 //TODO add units states
@@ -932,7 +954,7 @@ fn fill_triggered_by(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
     let triggers = get_array_str(value);
 
     let mut is_first = true;
-    for trigger in triggers {
+    for trigger_unit in triggers {
         let key_label = if is_first {
             is_first = false;
             "TriggeredBy:"
@@ -941,7 +963,19 @@ fn fill_triggered_by(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
         };
 
         write_key(unit_writer, key_label);
-        unit_writer.hyperlink(trigger, trigger, HyperLinkType::Unit);
+
+        match systemd::get_unit_active_state(trigger_unit) {
+            Ok(state) => {
+                unit_writer.insert_state(state);
+            }
+            Err(e) => {
+                warn!("Can't find state of {trigger_unit}, {:?}", e);
+                unit_writer.insert(" ");
+            }
+        };
+
+        unit_writer.insert(" ");
+        unit_writer.hyperlink(trigger_unit, trigger_unit, HyperLinkType::Unit);
         unit_writer.newline();
     }
 }

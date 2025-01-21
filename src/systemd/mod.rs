@@ -554,6 +554,14 @@ pub fn fetch_unit_dependencies(
     sysdbus::unit_get_dependencies(level, &unit.primary(), &object_path, dependency_type, plain)
 }
 
+pub fn get_unit_active_state(unit_name: &str) -> Result<ActiveState, SystemdErrors> {
+    let level = PREFERENCES.dbus_level();
+
+    let object_path = sysdbus::unit_dbus_path_from_name(unit_name);
+
+    sysdbus::get_unit_active_state(level, &object_path)
+}
+
 pub fn retreive_unit_processes(
     unit: &UnitInfo,
 ) -> Result<BTreeMap<String, BTreeSet<UnitProcess>>, SystemdErrors> {

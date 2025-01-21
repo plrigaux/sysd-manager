@@ -3,7 +3,10 @@ use std::borrow::Cow;
 use gtk::{glib::translate::IntoGlib, pango, prelude::*, TextBuffer, TextIter, TextTag};
 use log::debug;
 
-use crate::{systemd::generate_file_uri, widget::journal::palette::Palette};
+use crate::{
+    systemd::{self, enums::ActiveState, generate_file_uri},
+    widget::journal::palette::Palette,
+};
 
 pub struct UnitInfoWriter {
     buf: TextBuffer,
@@ -103,6 +106,22 @@ impl UnitInfoWriter {
 
     pub fn hyperlink(&mut self, text: &str, link: &str, type_: HyperLinkType) {
         self.insert_tag(text, Self::create_hyperlink_tag, Some(link), type_);
+    }
+
+    pub fn insert_state(&mut self, state: ActiveState) {
+        let glyph = state.glyph_str();
+
+        match state {
+            systemd::enums::ActiveState::Active
+            | systemd::enums::ActiveState::Reloading
+            | systemd::enums::ActiveState::Activating
+            | systemd::enums::ActiveState::Refreshing => self.insert_active(glyph),
+
+            systemd::enums::ActiveState::Inactive | systemd::enums::ActiveState::Deactivating => {
+                self.insert(glyph);
+            }
+            _ => self.insert_red(glyph),
+        }
     }
 
     fn create_hyperlink_tag(buf: &TextBuffer, _is_dark: bool) -> Option<TextTag> {

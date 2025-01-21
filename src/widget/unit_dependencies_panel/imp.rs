@@ -199,7 +199,9 @@ impl UnitDependenciesPanelImp {
 
             info_writer.insertln(&dependencies.unit_name);
 
-            let spacer = String::from(SPECIAL_GLYPH_TREE_SPACE);
+            let mut spacer = String::from(" ");
+            spacer.push_str(SPECIAL_GLYPH_TREE_SPACE);
+
             let mut it = dependencies.children.iter().peekable();
 
             while let Some(child) = it.next() {
@@ -221,22 +223,8 @@ impl UnitDependenciesPanelImp {
         spacer: &str,
         last: bool,
     ) {
-        let state_glyph = dependency.state.glyph();
-
-        let gl = format!("{state_glyph} ");
-
-        match dependency.state {
-            systemd::enums::ActiveState::Active
-            | systemd::enums::ActiveState::Reloading
-            | systemd::enums::ActiveState::Activating
-            | systemd::enums::ActiveState::Refreshing => info_writer.insert_active(&gl),
-
-            systemd::enums::ActiveState::Inactive | systemd::enums::ActiveState::Deactivating => {
-                info_writer.insert(&gl);
-            }
-            _ => info_writer.insert_red(&gl),
-        }
-
+        info_writer.insert_state(dependency.state);
+        //info_writer.insert(" ");
         info_writer.insert(spacer);
 
         let (glyph, child_pading) = if last {
