@@ -431,10 +431,11 @@ fn strerror(err_no: i32) -> Option<String> {
         let str_error_raw_ptr = str_error.as_mut_ptr() as *mut i8;
         libc::strerror_r(err_no, str_error_raw_ptr, ERRNO_BUF_LEN);
 
-        let nul_range_end = str_error.iter()
-        .position(|&c| c == b'\0')
-        .unwrap_or(ERRNO_BUF_LEN); 
-        
+        let nul_range_end = str_error
+            .iter()
+            .position(|&c| c == b'\0')
+            .unwrap_or(ERRNO_BUF_LEN);
+
         str_error.truncate(nul_range_end);
         if let Ok(str_error) = String::from_utf8(str_error) {
             Some(str_error)
@@ -528,11 +529,12 @@ fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
     write_key(unit_writer, "FD Store:");
 
     unit_writer.insert(&n_fd_store.to_string());
-    unit_writer.insert_grey(&format!(" (limit: {fd_store_max})"));
+    unit_writer.insert_grey(&format!(" (limit: {fd_store_max})\n"));
 }
 
 fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let memory_current = valop_to_u64(map.get("MemoryCurrent"), U64MAX);
+
     if memory_current == U64MAX {
         return;
     }
@@ -543,61 +545,105 @@ fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
     unit_writer.insert(&value_str);
 
-    let three_param = [
-        map.get("MemoryPeak"),
-        map.get("MemorySwapPeak"),
-        map.get("MemorySwapCurrent"),
+    type MemoryManaging = (&'static str, u64, &'static str, fn(u64) -> bool);
+
+    let mut memories: [MemoryManaging; 17] = [
+        ("MemoryMin", U64MAX, "min: ", is_zero),
+        ("MemoryLow", U64MAX, "low: ", is_zero),
+        ("StartupMemoryLow", U64MAX, "low (startup): ", is_zero),
+        ("MemoryHigh", U64MAX, "high: ", is_limit_max), //3
+        (
+            "StartupMemoryHigh",
+            U64MAX,
+            "high (startup): ",
+            is_limit_max,
+        ),
+        ("MemoryMax", U64MAX, "max: ", is_limit_max), //5
+        ("StartupMemoryMax", U64MAX, "max (startup): ", is_limit_max),
+        ("MemorySwapMax", U64MAX, "swap max: ", is_limit_max),
+        (
+            "StartupMemorySwapMax",
+            U64MAX,
+            "swap max (startup): ",
+            is_limit_max,
+        ),
+        ("MemoryZSwapMax", U64MAX, "zswap max: ", is_limit_max),
+        (
+            "StartupMemoryZSwapMax",
+            U64MAX,
+            "zswap max (startup): ",
+            is_limit_max,
+        ),
+        ("MemoryLimit", U64MAX, "limit: ", is_limit_max),
+        ("MemoryAvailable", U64MAX, "available: ", is_limit_max),
+        ("MemoryPeak", U64MAX, "peak: ", is_limit_max),
+        ("MemorySwapCurrent", U64MAX, "swap: ", is_limit_max_or_zero),
+        (
+            "MemorySwapPeak",
+            U64MAX,
+            "swap peak: ",
+            is_limit_max_or_zero,
+        ),
+        (
+            "MemoryZSwapCurrent",
+            U64MAX,
+            "zswap: ",
+            is_limit_max_or_zero,
+        ),
     ];
 
-    let mut all_none = true;
-    for p in three_param {
-        if p.is_some() {
-            all_none = false;
-            break;
+    for (key, value, _, _) in memories.iter_mut() {
+        if let Some(bus_value) = map.get(key as &str) {
+            if let Value::U64(converted) = bus_value as &Value {
+                *value = *converted;
+            }
         }
     }
 
-    if !all_none {
-        unit_writer.insert(" (");
+    let mut is_first = true;
+    let mut out = String::with_capacity(100);
+    for (key, value, label, not_valid) in memories {
+        if not_valid(value)
+            || (
+                key == "MemoryAvailable"
+            && is_limit_max(memories[3].1)//memory_high
+            && is_limit_max(memories[5].1)
+                //memory_max
+            )
+        {
+            continue;
+        }
 
-        let [peak_op, swap_peak_op, swap_op] = three_param;
+        if is_first {
+            out.push_str(" (");
+            is_first = false;
+        } else {
+            out.push_str(", ");
+        }
 
-        let pad_left = write_mem_param(peak_op, "peak: ", false, unit_writer);
-        write_mem_param(swap_peak_op, "swap: ", pad_left, unit_writer);
-        write_mem_param(swap_op, "swap peak: ", pad_left, unit_writer);
-
-        unit_writer.insert(")");
+        out.push_str(label);
+        let mem_human = human_bytes(value);
+        out.push_str(&mem_human);
     }
 
-    //Memory: 1.9M (peak: 6.2M swap: 224.0K swap peak: 444.0K)
+    if !is_first {
+        out.push(')');
+        unit_writer.insert(&out);
+    }
 
     unit_writer.newline();
 }
 
-fn write_mem_param(
-    mem_op: Option<&OwnedValue>,
-    label: &str,
-    pad_left: bool,
-    unit_writer: &mut UnitInfoWriter,
-) -> bool {
-    let Some(mem) = mem_op else {
-        return false;
-    };
+fn is_limit_max_or_zero(value: u64) -> bool {
+    value == 0 || value == U64MAX
+}
 
-    let mem_num = value_to_u64(mem);
-    if mem_num == U64MAX || mem_num == 0 {
-        return false;
-    }
+fn is_zero(value: u64) -> bool {
+    value == 0
+}
 
-    if pad_left {
-        unit_writer.insert(" ");
-    }
-
-    unit_writer.insert(label);
-    let mem_human = human_bytes(mem_num);
-    unit_writer.insert(&mem_human);
-
-    true
+fn is_limit_max(value: u64) -> bool {
+    value == U64MAX
 }
 
 fn fill_main_pid(
