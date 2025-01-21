@@ -425,22 +425,18 @@ fn fill_error(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
 fn strerror(err_no: i32) -> Option<String> {
     const ERRNO_BUF_LEN: usize = 1024;
     //let mut str_error = String::with_capacity(1024);
-    //let mut str_error: Vec<i8> = Vec::with_capacity(ERRNO_BUF_LEN);
-    let mut str_error = [0; ERRNO_BUF_LEN];
+    let mut str_error: Vec<u8> = vec![0; ERRNO_BUF_LEN];
+    //let mut str_error = [0; ERRNO_BUF_LEN];
     unsafe {
-        let str_error_raw_ptr: *mut libc::c_char = str_error.as_mut_ptr();
+        let str_error_raw_ptr = str_error.as_mut_ptr() as *mut i8;
         libc::strerror_r(err_no, str_error_raw_ptr, ERRNO_BUF_LEN);
 
-        let mut str_error_vec = Vec::with_capacity(64);
-        for c in str_error {
-            if c == 0 {
-                break;
-            }
-
-            str_error_vec.push(c as u8);
-        }
-
-        if let Ok(str_error) = String::from_utf8(str_error_vec) {
+        let nul_range_end = str_error.iter()
+        .position(|&c| c == b'\0')
+        .unwrap_or(ERRNO_BUF_LEN); 
+        
+        str_error.truncate(nul_range_end);
+        if let Ok(str_error) = String::from_utf8(str_error) {
             Some(str_error)
         } else {
             None
