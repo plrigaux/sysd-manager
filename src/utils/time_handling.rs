@@ -86,7 +86,11 @@ pub fn get_since_and_passed_time(
             let since_local = get_date_utc(timestamp);
             since_local.format("%a, %d %b %Y %H:%M:%S %Z").to_string()
         }
-        TimestampStyle::Unix => timestamp.to_string(),
+        TimestampStyle::Unix => {
+            let timestamp_sec = timestamp / USEC_PER_SEC as i64;
+
+            format!("@{timestamp_sec}")
+        }
     };
 
     (since, format_timestamp_relative_full(timestamp))
