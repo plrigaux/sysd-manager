@@ -34,7 +34,7 @@ Any Linux distribution that has adopted **systemd**.
 
 ![Unit Info](screenshots/unit_info.png)
 
-![Unit Dependencies](screenshots/unit_dependencies_dark.png)
+![Unit Dependencies](screenshots/dependencies_dark.png)
 
 ![Unit Files](screenshots/unit_file_dark.png)
 
