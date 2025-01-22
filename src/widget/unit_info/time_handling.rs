@@ -245,7 +245,7 @@ pub fn format_timespan(mut duration: u64, accuracy: u64) -> String {
             break;
         }
 
-        if  duration < unit_magnitute_in_usec {
+        if duration < unit_magnitute_in_usec {
             continue;
         }
 
@@ -290,8 +290,27 @@ pub fn format_timespan(mut duration: u64, accuracy: u64) -> String {
     out
 }
 
+fn localtime_or_gmtime_usec(time_usec: i64, utc: bool) -> libc::tm {
+    let layout = std::alloc::Layout::new::<libc::tm>();
+    let time_usec_ptr: *const i64 = &time_usec;
+
+    unsafe {
+        let returned_time_struct = std::alloc::alloc(layout) as *mut libc::tm;
+
+        if utc {
+            libc::gmtime_r(time_usec_ptr, returned_time_struct);
+        } else {
+            libc::localtime_r(time_usec_ptr, returned_time_struct);
+        }
+
+        *returned_time_struct
+    }
+}
+
 #[cfg(test)]
 mod tests {
+
+    use std::ffi::CStr;
 
     use chrono::{Duration, TimeDelta};
 
@@ -409,7 +428,10 @@ mod tests {
                 (USEC_PER_YEAR_I + (2 * USEC_PER_MONTH)),
                 "1 year 2 months ago",
             ),
-            ((2 * USEC_PER_YEAR_I + USEC_PER_MONTH), "2 years 1 month ago"),
+            (
+                (2 * USEC_PER_YEAR_I + USEC_PER_MONTH),
+                "2 years 1 month ago",
+            ),
             (
                 (2 * USEC_PER_YEAR_I + 2 * USEC_PER_MONTH),
                 "2 years 2 months ago",
@@ -464,12 +486,43 @@ mod tests {
         println!("{:?}", format_timespan(4 * USEC_PER_SEC, MSEC_PER_SEC));
         println!("{:?}", format_timespan(4 * USEC_PER_MSEC, MSEC_PER_SEC));
 
+        println!(
+            "{:?}",
+            format_timespan(
+                4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC,
+                MSEC_PER_SEC
+            )
+        );
+        println!(
+            "{:?}",
+            format_timespan(
+                4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 4 * USEC_PER_MSEC,
+                MSEC_PER_SEC
+            )
+        );
+        println!(
+            "{:?}",
+            format_timespan(
+                4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 4 * USEC_PER_MSEC + 4,
+                MSEC_PER_SEC
+            )
+        );
 
-        println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC , MSEC_PER_SEC));
-        println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 4 * USEC_PER_MSEC, MSEC_PER_SEC));
-        println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 4 * USEC_PER_MSEC  + 4, MSEC_PER_SEC));
+        println!(
+            "{:?}",
+            format_timespan(
+                4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 50 * USEC_PER_MSEC,
+                MSEC_PER_SEC
+            )
+        );
+    }
 
-        println!("{:?}", format_timespan(4 * USEC_PER_DAY + 4 * USEC_PER_HOUR + 4 * USEC_PER_SEC + 50 * USEC_PER_MSEC, MSEC_PER_SEC));
-      
+    #[test]
+    fn test_localtime_or_gmtime_usec() {
+        let asdf = localtime_or_gmtime_usec(0, false);
+        println!("time {:?}", asdf);
+
+        let c_str = unsafe { CStr::from_ptr(asdf.tm_zone) };
+        println!("time zone {:?}", c_str);
     }
 }
