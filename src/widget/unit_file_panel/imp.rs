@@ -18,13 +18,12 @@ use gtk::{
 use log::{debug, info, warn};
 
 use crate::{
+    consts::SUGGESTED_ACTION,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     widget::{app_window::AppWindow, preferences::data::PREFERENCES},
 };
 
 use super::{dosini, flatpak};
-
-const SUGGESTED_ACTION: &str = "suggested-action";
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -98,7 +97,7 @@ impl UnitFilePanelImp {
         };
 
         let file_path = unit_ref.file_path().map_or("".to_owned(), |a| a);
-       
+
         let uri = generate_file_uri(&file_path);
 
         self.file_link.set_uri(&uri);

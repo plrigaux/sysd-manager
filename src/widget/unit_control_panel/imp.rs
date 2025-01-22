@@ -8,6 +8,7 @@ use gtk::{
 use log::{debug, error, info, warn};
 
 use crate::{
+    consts::{DESTRUCTIVE_ACTION, SUGGESTED_ACTION},
     systemd::{
         self,
         data::UnitInfo,
@@ -182,7 +183,6 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
 
-
         if let Err(e) = self.toast_overlay.set(toast_overlay.clone()) {
             warn!("Set Toast Overlay Issue: {:?}", e)
         }
@@ -252,7 +252,8 @@ impl UnitControlPanelImpl {
                 let toast = Toast::new(&info);
                 self.toast_overlay.get().unwrap().add_toast(toast);
 
-                unit.set_active_state(new_active_state as u32);              
+                unit.set_active_state(new_active_state as u32);
+                self.highlight_controls(unit);
 
                 Some(job)
             }
@@ -323,7 +324,8 @@ impl UnitControlPanelImpl {
         let old_unit = self.current_unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit {
             if old_unit.primary() == unit.primary() {
-                info! {"Same unit {}",unit.primary() };
+                info! {"Same unit {}", unit.primary() };
+                self.highlight_controls(unit);
                 return;
             }
         }
@@ -340,6 +342,31 @@ impl UnitControlPanelImpl {
         self.stop_button.set_sensitive(true);
         self.restart_button.set_sensitive(true);
         self.kill_button.set_sensitive(true);
+
+        self.highlight_controls(unit);
+    }
+
+    //TODO bind to the property
+    fn highlight_controls(&self, unit: &UnitInfo) {
+        let status: ActiveState = unit.active_state().into();
+
+        match status {
+            ActiveState::Active
+            | ActiveState::Activating
+            | ActiveState::Reloading
+            | ActiveState::Refreshing => {
+                self.stop_button.add_css_class(DESTRUCTIVE_ACTION);
+                self.start_button.remove_css_class(SUGGESTED_ACTION);
+            }
+            ActiveState::Inactive | ActiveState::Deactivating => {
+                self.stop_button.remove_css_class(DESTRUCTIVE_ACTION);
+                self.start_button.add_css_class(SUGGESTED_ACTION);
+            }
+            _ => {
+                self.stop_button.remove_css_class(DESTRUCTIVE_ACTION);
+                self.start_button.remove_css_class(SUGGESTED_ACTION);
+            }
+        }
     }
 
     pub(super) fn set_dark(&self, is_dark: bool) {
