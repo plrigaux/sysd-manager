@@ -29,7 +29,10 @@ use crate::{
         data::UnitInfo,
         enums::{ActiveState, EnablementStatus, UnitType},
     },
-    widget::{app_window::AppWindow, menu_button::{ExMenuButton, OnClose}},
+    widget::{
+        app_window::AppWindow,
+        menu_button::{ExMenuButton, OnClose},
+    },
 };
 use strum::IntoEnumIterator;
 
@@ -240,8 +243,8 @@ impl UnitListPanelImp {
 
                 info!("Selection changed, new unit {}", unit.primary());
 
-                list_widjet.set_unit_internal(&unit);
-                app_window.selection_change(&unit);
+                list_widjet.set_unit_internal(Some(&unit));
+                app_window.selection_change(Some(&unit));
             }); // FOR THE SEARCH
 
         self.refresh_unit_list_button
@@ -360,7 +363,15 @@ impl UnitListPanelImp {
         let _ = self.unit.replace(Some(unit.clone()));
     }
 
-    pub fn set_unit(&self, unit: &UnitInfo) {
+    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
+        let unit = match unit {
+            Some(u) => u,
+            None => {
+                self.unit.replace(None);
+                return;
+            }
+        };
+
         let old = self.unit.replace(Some(unit.clone()));
         if let Some(old) = old {
             if old.primary() == unit.primary() {
@@ -534,7 +545,7 @@ fn fill_search_bar(
             custom_filter
         };
 
-/*         filter_button_unit_type.set_filter(custom_filter.clone());
+        /*         filter_button_unit_type.set_filter(custom_filter.clone());
         filter_button_status.set_filter(custom_filter.clone());
         filter_button_active.set_filter(custom_filter.clone()); */
 

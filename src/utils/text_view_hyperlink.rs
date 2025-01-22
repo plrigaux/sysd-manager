@@ -61,7 +61,7 @@ impl LinkActivator {
             };
 
             if let Some(app_window) = &self.app {
-                app_window.set_unit(unit)
+                app_window.set_unit(unit.as_ref())
             } else {
                 warn!("app_window missing");
             }

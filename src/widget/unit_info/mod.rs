@@ -23,7 +23,7 @@ impl UnitInfoPanel {
         obj
     }
 
-    pub fn display_unit_info(&self, unit: &UnitInfo) {
+    pub fn display_unit_info(&self, unit: Option<&UnitInfo>) {
         self.imp().display_unit_info(unit);
     }
 

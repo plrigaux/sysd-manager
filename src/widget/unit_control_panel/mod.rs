@@ -16,7 +16,7 @@ glib::wrapper! {
 }
 
 impl UnitControlPanel {
-    pub fn selection_change(&self, unit: &UnitInfo) {
+    pub fn selection_change(&self, unit: Option<&UnitInfo>) {
         self.imp().selection_change(unit);
     }
 

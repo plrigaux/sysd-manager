@@ -75,20 +75,23 @@ impl UnitInfoPanelImp {
         info_window.present();
     }
 
-    pub(crate) fn display_unit_info(&self, unit: &UnitInfo) {
-        let _old = self.unit.replace(Some(unit.clone()));
+    pub(crate) fn display_unit_info(&self, unit: Option<&UnitInfo>) {
+        match unit {
+            Some(unit) => {
+                let _old = self.unit.replace(Some(unit.clone()));
 
-        self.update_unit_info(unit)
+                self.update_unit_info(unit)
+            }
+            None => {
+                self.unit.replace(None);
+                self.clear();
+            }
+        };
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
     fn update_unit_info(&self, unit: &UnitInfo) {
-        let unit_info_text_view: &gtk::TextView = self.unit_info_textview.as_ref();
-
-        let buf = unit_info_text_view.buffer();
-
-        buf.set_text(""); // clear text
-
+        let buf = self.clear();
         let start_iter = buf.start_iter();
 
         let is_dark = self.is_dark.get();
@@ -96,6 +99,16 @@ impl UnitInfoPanelImp {
         let mut info_writer = UnitInfoWriter::new(buf, start_iter, is_dark);
 
         fill_all_info(unit, &mut info_writer);
+    }
+
+    fn clear(&self) -> gtk::TextBuffer {
+        let unit_info_text_view: &gtk::TextView = self.unit_info_textview.as_ref();
+
+        let buf = unit_info_text_view.buffer();
+
+        buf.set_text(""); // clear text
+
+        buf
     }
 
     pub(crate) fn set_dark(&self, is_dark: bool) {

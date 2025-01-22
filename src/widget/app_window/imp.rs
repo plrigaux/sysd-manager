@@ -131,6 +131,9 @@ impl AppWindowImpl {
                 level, level_num, selected
             );
 
+            let app_window = self.obj().clone();
+            let unit_control_panel = self.unit_control_panel.clone();
+
             self.system_session_dropdown
                 .connect_selected_item_notify(move |dropdown| {
                     let idx = dropdown.selected();
@@ -145,6 +148,7 @@ impl AppWindowImpl {
                     PREFERENCES.save_dbus_level(&settings);
 
                     unit_list_panel.fill_store();
+                    app_window.set_unit(None);
                 });
         }
     }
@@ -226,16 +230,19 @@ impl AppWindowImpl {
         info!("refresh true");
     }
 
-    pub(super) fn selection_change(&self, unit: &UnitInfo) {
-        self.unit_name_label.set_label(&unit.primary());
+    pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
+        if let Some(unit) = unit {
+            self.unit_name_label.set_label(&unit.primary());
+        } else {
+            self.unit_name_label.set_label("");
+        }
+
         self.unit_control_panel.selection_change(unit);
     }
 
-    pub(super) fn set_unit(&self, unit: Option<UnitInfo>) {
-        if let Some(unit) = unit {
-            self.selection_change(&unit);
-            self.unit_list_panel.set_unit(&unit);
-        }
+    pub(super) fn set_unit(&self, unit: Option<&UnitInfo>) {
+        self.selection_change(unit);
+        self.unit_list_panel.set_unit(unit);
     }
 
     pub(super) fn refresh_panels(&self) {

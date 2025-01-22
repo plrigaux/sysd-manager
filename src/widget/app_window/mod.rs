@@ -23,7 +23,7 @@ impl AppWindow {
         obj
     }
 
-    pub fn selection_change(&self, unit: &UnitInfo) {
+    pub fn selection_change(&self, unit: Option<&UnitInfo>) {
         self.imp().selection_change(unit);
     }
 
@@ -35,7 +35,7 @@ impl AppWindow {
         self.imp().add_toast(toast);
     }
 
-    pub fn set_unit(&self, unit: Option<UnitInfo>) {
+    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         self.imp().set_unit(unit);
     }
 

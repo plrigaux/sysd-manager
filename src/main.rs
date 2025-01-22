@@ -52,7 +52,7 @@ fn main() -> glib::ExitCode {
     });
 
     app.connect_activate(move |app| {
-        build_ui(app, unit.clone());
+        build_ui(app, unit.as_ref());
     });
 
     app.run_with_args::<String>(&[])
@@ -71,7 +71,7 @@ fn load_css() {
     );
 }
 
-fn build_ui(application: &adw::Application, unit: Option<UnitInfo>) {
+fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
     let window = AppWindow::new(application);
 
     {

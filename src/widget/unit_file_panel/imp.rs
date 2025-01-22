@@ -45,7 +45,7 @@ pub struct UnitFilePanelImp {
     #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
 
-    #[property(get, set=Self::set_unit)]
+    #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
     #[property(get, set)]
@@ -68,7 +68,7 @@ impl UnitFilePanelImp {
         }
     }
 
-    fn set_unit(&self, unit: &UnitInfo) {
+    fn set_unit(&self, unit: Option<&UnitInfo>) {
         let old_unit = self.unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit {
             if old_unit.primary() != unit.primary() {

@@ -13,7 +13,7 @@ glib::wrapper! {
 }
 
 impl KillPanel {
-    pub fn set_unit(&self, unit: &UnitInfo) {
+    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         self.imp().set_unit(unit);
     }
 
@@ -151,7 +151,7 @@ mod imp {
                 .expect("toast_overlay once");
         }
 
-        pub fn set_unit(&self, unit: &UnitInfo) {
+        pub fn set_unit(&self, unit: Option<&UnitInfo>) {
             self.unit.set(Some(unit.clone()));
 
             let label_text = &unit.primary();

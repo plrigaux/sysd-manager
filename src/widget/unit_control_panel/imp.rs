@@ -209,7 +209,7 @@ impl UnitControlPanelImpl {
             &unit,
         );
 
-        self.unit_info_panel.display_unit_info(&unit);
+        self.unit_info_panel.display_unit_info(Some(&unit));
         true // to stop the signal emission
     }
 
@@ -272,7 +272,7 @@ impl UnitControlPanelImpl {
             return;
         };
 
-        self.unit_info_panel.display_unit_info(unit);
+        self.unit_info_panel.display_unit_info(Some(unit));
     }
 
     #[template_callback]
@@ -320,7 +320,21 @@ impl UnitControlPanelImpl {
             .set_search_mode(toggle_button.is_active());
     }
 
-    pub(super) fn selection_change(&self, unit: &UnitInfo) {
+    pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
+        self.unit_info_panel.display_unit_info(unit);
+        self.unit_file_panel.set_unit(unit);
+        self.unit_journal_panel.set_unit(unit);
+        self.kill_panel.set_unit(unit);
+        self.unit_dependencies_panel.set_unit(unit);
+
+        let unit = match unit {
+            Some(u) => u,
+            None => {
+                self.current_unit.replace(None);
+                return;
+            }
+        };
+
         let old_unit = self.current_unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit {
             if old_unit.primary() == unit.primary() {
@@ -329,12 +343,6 @@ impl UnitControlPanelImpl {
                 return;
             }
         }
-
-        self.unit_info_panel.display_unit_info(unit);
-        self.unit_file_panel.set_unit(unit);
-        self.unit_journal_panel.set_unit(unit);
-        self.kill_panel.set_unit(unit);
-        self.unit_dependencies_panel.set_unit(unit);
 
         controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 
