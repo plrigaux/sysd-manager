@@ -1,7 +1,10 @@
 use chrono::{DateTime, Local, TimeDelta, TimeZone, Utc};
 use gtk::{glib, prelude::*};
 
-use std::fmt::{Display, Write};
+use std::{
+    ffi::CStr,
+    fmt::{Display, Write},
+};
 
 use crate::consts::U64MAX;
 
@@ -60,24 +63,46 @@ impl From<i32> for TimestampStyle {
     }
 }
 
-pub fn get_since_and_passed_time(timestamp_u64: u64) -> (String, String) {
-    let since_local = get_date_local(timestamp_u64);
+pub fn get_since_and_passed_time(
+    timestamp: i64,
+    timestamp_style: TimestampStyle,
+) -> (String, String) {
+    let since = match timestamp_style {
+        TimestampStyle::Pretty => {
+            //format!("{}", since_local.format("%a, %d %b %Y %H:%M:%S %Z")),
+            let since_local = get_date_local(timestamp);
 
-    (
-        //format!("{}", since_local.format("%a, %d %b %Y %H:%M:%S %Z")),
-        since_local.to_rfc2822(),
-        format_timestamp_relative_full(timestamp_u64),
-    )
+            let time: libc::tm = localtime_or_gmtime_usec(timestamp, false);
+            let time_zone = unsafe { CStr::from_ptr(time.tm_zone) };
+            let time_zone = match time_zone.to_str() {
+                Ok(s) => s,
+                Err(_e) => &since_local.format("%Z").to_string(),
+            };
+
+            let formated_time = since_local.format("%a, %d %b %Y %H:%M:%S").to_string();
+            format!("{formated_time} {time_zone}")
+        }
+        TimestampStyle::Utc => {
+            let since_local = get_date_utc(timestamp);
+            since_local.format("%a, %d %b %Y %H:%M:%S %Z").to_string()
+        }
+        TimestampStyle::Unix => timestamp.to_string(),
+    };
+
+    (since, format_timestamp_relative_full(timestamp))
 }
 
-fn get_date_local(timestamp_u64: u64) -> DateTime<Local> {
-    let since = match Utc.timestamp_micros(timestamp_u64 as i64) {
+fn get_date_local(timestamp: i64) -> DateTime<Local> {
+    let timestamp = get_date_utc(timestamp);
+    DateTime::from(timestamp)
+}
+
+fn get_date_utc(timestamp: i64) -> DateTime<Utc> {
+    match Utc.timestamp_micros(timestamp) {
         chrono::offset::LocalResult::Single(a) => a,
         chrono::offset::LocalResult::Ambiguous(a, _b) => a,
         chrono::offset::LocalResult::None => panic!("timestamp_opt None"),
-    };
-
-    DateTime::from(since)
+    }
 }
 
 macro_rules! plur {
@@ -145,8 +170,8 @@ const USEC_PER_MINUTE: u64 = SEC_PER_MINUTE * USEC_PER_SEC;
 pub const USEC_PER_MSEC: u64 = 1000;
 pub const NSEC_PER_USEC: u64 = 1_000;
 
-fn format_timestamp_relative_full(timestamp_u64: u64) -> String {
-    let since_time = get_date_local(timestamp_u64);
+fn format_timestamp_relative_full(timestamp: i64) -> String {
+    let since_time = get_date_local(timestamp);
 
     let now = Local::now();
 
@@ -371,13 +396,13 @@ mod tests {
 
     #[test]
     fn test_since() {
-        let since = get_since_and_passed_time(1727116768682604);
+        let since = get_since_and_passed_time(1727116768682604, TimestampStyle::Pretty);
         println!("since {:?}", since);
-        let since = get_since_and_passed_time(1727116768682442);
+        let since = get_since_and_passed_time(1727116768682442, TimestampStyle::Pretty);
         println!("since {:?}", since);
-        let since = get_since_and_passed_time(1727116768682435);
+        let since = get_since_and_passed_time(1727116768682435, TimestampStyle::Pretty);
         println!("since {:?}", since);
-        let since = get_since_and_passed_time(1727413184243915);
+        let since = get_since_and_passed_time(1727413184243915, TimestampStyle::Pretty);
         println!("since {:?}", since);
     }
 

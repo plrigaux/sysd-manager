@@ -2,11 +2,12 @@ use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 
 use crate::consts::U64MAX;
-use crate::utils::th;
+use crate::utils::th::{self, TimestampStyle};
 use crate::utils::writer::{
     HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
     SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
 };
+use crate::widget::preferences::data::PREFERENCES;
 use crate::{
     swrite,
     systemd::{
@@ -41,18 +42,20 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
         }
     };
 
+    let timestamp_style = PREFERENCES.timestamp_style();
+
     fill_description(unit_writer, &map, unit);
     fill_follows(unit_writer, &map);
     fill_load_state(unit_writer, &map);
     fill_transient(unit_writer, &map);
     fill_dropin(unit_writer, &map);
-    fill_active_state(unit_writer, &map, unit);
+    fill_active_state(unit_writer, &map, unit, timestamp_style);
     fill_invocation(unit_writer, &map);
     fill_triggered_by(unit_writer, &map);
     fill_device(unit_writer, &map);
     fill_where(unit_writer, &map);
     fill_what(unit_writer, &map);
-    fill_trigger(unit_writer, &map, unit);
+    fill_trigger(unit_writer, &map, unit, timestamp_style);
     fill_triggers(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
@@ -170,6 +173,7 @@ fn fill_active_state(
     unit_writer: &mut UnitInfoWriter,
     map: &HashMap<String, OwnedValue>,
     unit: &UnitInfo,
+    timestamp_style: TimestampStyle,
 ) {
     let value = get_value!(map, "ActiveState");
     let state = value_to_str(value);
@@ -189,7 +193,7 @@ fn fill_active_state(
         unit_writer.insert(&state_text);
     };
 
-    if let Some(since) = add_since(map, state) {
+    if let Some(since) = add_since(map, state, timestamp_style) {
         unit_writer.insert(&format!(" since {}; {}\n", since.0, since.1));
         fill_duration(unit_writer, map, unit);
     } else {
@@ -235,7 +239,11 @@ fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
     Some(value_to_str(value))
 }
 
-fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, String)> {
+fn add_since(
+    map: &HashMap<String, OwnedValue>,
+    state: &str,
+    timestamp_style: TimestampStyle,
+) -> Option<(String, String)> {
     let key = match state {
         "active" | "reloading" | "refreshing" => "ActiveEnterTimestamp",
         "inactive" | "failed" => "InactiveEnterTimestamp",
@@ -248,7 +256,7 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
     let duration = value_to_u64(value);
 
     if duration != 0 {
-        let since = th::get_since_and_passed_time(duration);
+        let since = th::get_since_and_passed_time(duration as i64, timestamp_style);
         Some(since)
     } else {
         None
@@ -840,6 +848,7 @@ fn fill_trigger(
     unit_writer: &mut UnitInfoWriter,
     map: &HashMap<String, OwnedValue>,
     unit: &UnitInfo,
+    timestamp_style: TimestampStyle,
 ) {
     let unit_type: systemd::enums::UnitType = unit.unit_type().into();
     if !systemd::enums::UnitType::Timer.eq(&unit_type) {
@@ -864,7 +873,7 @@ fn fill_trigger(
     );
 
     let trigger_msg = if timestamp_is_set!(next_elapse) {
-        let (first, second) = th::get_since_and_passed_time(next_elapse);
+        let (first, second) = th::get_since_and_passed_time(next_elapse as i64, timestamp_style);
 
         format!("{first}; {second}")
     } else {
