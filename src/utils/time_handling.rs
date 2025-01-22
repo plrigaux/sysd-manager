@@ -1,12 +1,64 @@
-use chrono::DateTime;
-use chrono::Local;
-use chrono::TimeDelta;
-use chrono::TimeZone;
-use chrono::Utc;
+use chrono::{DateTime, Local, TimeDelta, TimeZone, Utc};
+use gtk::{glib, prelude::*};
 
-use std::fmt::Write;
+use std::fmt::{Display, Write};
 
 use crate::consts::U64MAX;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, glib::Enum)]
+#[enum_type(name = "TimestampStyle")]
+pub enum TimestampStyle {
+    #[enum_value(name = "Pretty", nick = "Day YYYY-MM-DD HH:MM:SS TZ")]
+    Pretty,
+
+    #[enum_value(name = "UTC", nick = "Day YYYY-MM-DD HH:MM:SS UTC")]
+    Utc,
+
+    #[enum_value(name = "Unix", nick = "Seconds since the epoch")]
+    Unix,
+}
+
+impl TimestampStyle {}
+
+impl Display for TimestampStyle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value: glib::Value = self.to_value();
+
+        let out = if let Some((_enum_type, enum_value)) = glib::EnumValue::from_value(&value) {
+            enum_value.name()
+        } else {
+            ""
+        };
+
+        write!(f, "{}", out)
+    }
+}
+
+impl From<glib::GString> for TimestampStyle {
+    fn from(level: glib::GString) -> Self {
+        level.as_str().into()
+    }
+}
+
+impl From<&str> for TimestampStyle {
+    fn from(style: &str) -> Self {
+        match style {
+            "UTC" => TimestampStyle::Utc,
+            "Unix" => TimestampStyle::Unix,
+            _ => TimestampStyle::Pretty,
+        }
+    }
+}
+
+impl From<i32> for TimestampStyle {
+    fn from(style: i32) -> Self {
+        match style {
+            1 => TimestampStyle::Utc,
+            2 => TimestampStyle::Unix,
+            _ => TimestampStyle::Pretty,
+        }
+    }
+}
 
 pub fn get_since_and_passed_time(timestamp_u64: u64) -> (String, String) {
     let since_local = get_date_local(timestamp_u64);
@@ -313,6 +365,7 @@ mod tests {
     use std::ffi::CStr;
 
     use chrono::{Duration, TimeDelta};
+    use glib::value::ToValue;
 
     use super::*;
 
@@ -537,5 +590,12 @@ mod tests {
         println!("{}", date.format("%a, %d %b %Y %H:%M:%S %Z"));
         println!("{}", date.to_rfc2822());
         println!("{}", date.to_rfc3339());
+    }
+
+    #[test]
+    fn test_timestamp_style_enum() {
+        let v = TimestampStyle::Pretty.to_value();
+
+        println!("{:?}", v);
     }
 }

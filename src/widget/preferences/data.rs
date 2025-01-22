@@ -7,7 +7,7 @@ use log::{info, warn};
 
 use std::sync::{LazyLock, RwLock};
 
-use crate::systemd_gui::new_settings;
+use crate::{systemd_gui::new_settings, utils::th::TimestampStyle};
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();
@@ -20,6 +20,7 @@ pub const KEY_PREF_JOURNAL_MAX_EVENTS: &str = "pref-journal-max-events";
 pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
+pub const KEY_PREF_TIMESTAMP_STYLE: &str = "pref-timestamp-style";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
 #[enum_type(name = "DbusLevel")]
@@ -113,6 +114,7 @@ pub struct Preferences {
     journal_event_max_size: RwLock<u32>,
     unit_file_colors: RwLock<bool>,
     app_first_connection: RwLock<bool>,
+    timestamp_style: RwLock<TimestampStyle>,
 }
 
 impl Preferences {
@@ -123,6 +125,7 @@ impl Preferences {
         let journal_event_max_size = settings.uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
+        let timestamp_style = settings.string(KEY_PREF_TIMESTAMP_STYLE).into();
 
         Preferences {
             dbus_level: RwLock::new(level),
@@ -131,6 +134,7 @@ impl Preferences {
             journal_event_max_size: RwLock::new(journal_event_max_size),
             unit_file_colors: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
+            timestamp_style: RwLock::new(timestamp_style),
         }
     }
 
@@ -158,11 +162,22 @@ impl Preferences {
         *self.app_first_connection.read().unwrap()
     }
 
+    pub fn timestamp_style(&self) -> TimestampStyle {
+        *self.timestamp_style.read().unwrap()
+    }
+
     pub fn set_dbus_level(&self, dbus_level: DbusLevel) {
         info!("set_dbus_level: {}", dbus_level.as_str());
 
         let mut self_dbus_level = self.dbus_level.write().expect("supposed to write");
         *self_dbus_level = dbus_level;
+    }
+
+    pub fn set_timestamp_style(&self, timestamp_style: TimestampStyle) {
+        info!("set_timestamp_style: {}", timestamp_style);
+
+        let mut self_timestamp_style = self.timestamp_style.write().expect("supposed to write");
+        *self_timestamp_style = timestamp_style;
     }
 
     pub fn save_dbus_level(&self, settings: &Settings) {

@@ -38,7 +38,8 @@
         <key name="pref-journal-event-max-size" type="u">
             <default>3000</default>
             <summary>Limits a journal event maximum characters</summary>
-            <description>Sometime a journal event can be huge and need to be limited to preserve the application's operation. The 0 value to disable the limit.</description>
+            <description>Sometime a journal event can be huge and need to be limited to preserve the
+                application's operation. The 0 value to disable the limit.</description>
         </key>
         <key name="pref-unit-file-highlighting" type="b">
             <default>true</default>
@@ -48,7 +49,6 @@
             <default>true</default>
             <summary>Check if the first time that the user open the application</summary>
         </key>
-
         <key name="pref-enable-unit-file-mode" type="s">
             <choices>
                 <choice value='Subprocess call' />
@@ -60,6 +60,15 @@
                 appears that to enable or disable unit file systemd isn't the best solution. The
                 workaround solution is invoke the subprocesses *systemctl* enable or disable unit
                 files. </description>
+        </key>
+        <key name="pref-timestamp-style" type="s">
+            <choices>
+                <choice value='Pretty' />
+                <choice value='UTC' />
+                <choice value='Unix' />
+            </choices>
+            <default>'Pretty'</default>
+            <summary>Format of the printed timestamps</summary>
         </key>
     </schema>
 </schemalist>
