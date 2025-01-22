@@ -42,12 +42,12 @@
     </screenshot>
     <screenshot>
       <image type="source" environment="gnome:dark">
-        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_dependencies.png</image>
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/dependencies.png</image>
       <caption>Unit Dependencies</caption>
     </screenshot>
     <screenshot>
       <image type="source" environment="gnome:dark">
-        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_dependencies_dark.png</image>
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/dependencies_dark.png</image>
       <caption>Unit Dependencies</caption>
     </screenshot>
     <screenshot>
