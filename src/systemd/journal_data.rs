@@ -11,7 +11,7 @@ impl Default for JournalEvent {
 }
 
 impl JournalEvent {
-    pub fn new_param(priority: u8, time: u64, prefix: String, message: String) -> Self {
+    pub fn new_param(priority: u8, time: i64, prefix: String, message: String) -> Self {
         let obj: JournalEvent = glib::Object::new();
         obj.set_prefix(prefix);
         obj.set_message(message);
@@ -24,7 +24,11 @@ impl JournalEvent {
 mod imp {
     use std::sync::RwLock;
 
-    use gtk::{glib::{self, Object}, prelude::*, subclass::prelude::*};
+    use gtk::{
+        glib::{self, Object},
+        prelude::*,
+        subclass::prelude::*,
+    };
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::JournalEvent)]
@@ -36,7 +40,7 @@ mod imp {
         pub message: RwLock<String>,
 
         #[property(get, set)]
-        pub timestamp: RwLock<u64>,
+        pub timestamp: RwLock<i64>,
 
         #[property(get, set)]
         pub priority: RwLock<u8>,
