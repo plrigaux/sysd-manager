@@ -70,12 +70,6 @@
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal_dark.png</image>
       <caption>Unit Journal</caption>
     </screenshot>
-    <screenshot>
-      <image type="source">
-        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/analyse_blame.png</image>
-      <caption>
-        Analyze</caption>
-    </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/plrigaux/sysd-manager</url>
   <url type="bugtracker">https://github.com/plrigaux/sysd-manager/issues</url>
