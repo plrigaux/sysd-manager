@@ -428,7 +428,7 @@ fn strerror(err_no: i32) -> Option<String> {
     let mut str_error: Vec<u8> = vec![0; ERRNO_BUF_LEN];
     //let mut str_error = [0; ERRNO_BUF_LEN];
     unsafe {
-        let str_error_raw_ptr = str_error.as_mut_ptr() as *mut i8;
+        let str_error_raw_ptr = str_error.as_mut_ptr() as *mut libc::c_char;
         libc::strerror_r(err_no, str_error_raw_ptr, ERRNO_BUF_LEN);
 
         let nul_range_end = str_error
