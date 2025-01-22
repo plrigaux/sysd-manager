@@ -32,6 +32,9 @@ pub struct PreferencesDialog {
 
     #[template_child]
     journal_event_max_size: TemplateChild<adw::SpinRow>,
+
+    #[template_child]
+    timestamp_style: TemplateChild<adw::ComboRow>,
 }
 
 #[gtk::template_callbacks]

@@ -1,6 +1,12 @@
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 
+use crate::consts::U64MAX;
+use crate::utils::time_handling as th;
+use crate::utils::writer::{
+    HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+    SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+};
 use crate::{
     swrite,
     systemd::{
@@ -10,19 +16,7 @@ use crate::{
 };
 
 use log::{debug, warn};
-use time_handling::get_since_and_passed_time;
 use zvariant::{DynamicType, OwnedValue, Str, Value};
-
-use super::{
-    time_handling::{
-        self, format_timespan, now_monotonic, now_realtime, MSEC_PER_SEC, NSEC_PER_USEC,
-        USEC_PER_MSEC,
-    },
-    writer::{
-        HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-        SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
-    },
-};
 
 pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     //let mut unit_info_tokens = Vec::new();
@@ -231,7 +225,7 @@ fn fill_duration(
         && active_exit_timestamp >= active_enter_timestamp
     {
         let duration = active_exit_timestamp - active_enter_timestamp;
-        let timespan = format_timespan(duration, MSEC_PER_SEC);
+        let timespan = th::format_timespan(duration, th::MSEC_PER_SEC);
         fill_row(unit_writer, "Duration:", &timespan);
     }
 }
@@ -254,7 +248,7 @@ fn add_since(map: &HashMap<String, OwnedValue>, state: &str) -> Option<(String, 
     let duration = value_to_u64(value);
 
     if duration != 0 {
-        let since = get_since_and_passed_time(duration);
+        let since = th::get_since_and_passed_time(duration);
         Some(since)
     } else {
         None
@@ -741,7 +735,7 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
         return;
     }
 
-    let value_str = format_timespan(cpu_usage_nsec / NSEC_PER_USEC, USEC_PER_MSEC);
+    let value_str = th::format_timespan(cpu_usage_nsec / th::NSEC_PER_USEC, th::USEC_PER_MSEC);
     fill_row(unit_writer, "CPU:", &value_str)
 }
 
@@ -859,8 +853,8 @@ fn fill_trigger(
         .get("NextElapseUSecMonotonic")
         .map_or(U64MAX, |v| value_to_u64(v));
 
-    let now_realtime = now_realtime();
-    let now_monotonic = now_monotonic();
+    let now_realtime = th::now_realtime();
+    let now_monotonic = th::now_monotonic();
 
     let next_elapse = calc_next_elapse(
         now_realtime,
@@ -870,7 +864,7 @@ fn fill_trigger(
     );
 
     let trigger_msg = if timestamp_is_set!(next_elapse) {
-        let (first, second) = get_since_and_passed_time(next_elapse);
+        let (first, second) = th::get_since_and_passed_time(next_elapse);
 
         format!("{first}; {second}")
     } else {
@@ -1097,8 +1091,6 @@ fn value_to_str<'a>(value: &'a Value<'a>) -> &'a str {
     ""
 }
 
-/// 2^16-1
-pub const U64MAX: u64 = 18_446_744_073_709_551_615;
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: u64 = 1024;
 

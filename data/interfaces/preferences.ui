@@ -31,6 +31,12 @@
                         </child>
                       </object>
                     </child>
+                    <child>
+                      <object class="AdwComboRow" id="timestamp_style">
+                        <property name="subtitle"> Change the format of printed timestamps</property>
+                        <property name="title">Timestamp style</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>

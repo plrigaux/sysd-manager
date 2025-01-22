@@ -6,7 +6,7 @@ use chrono::Utc;
 
 use std::fmt::Write;
 
-use super::construct_info::U64MAX;
+use crate::consts::U64MAX;
 
 pub fn get_since_and_passed_time(timestamp_u64: u64) -> (String, String) {
     let since_local = get_date_local(timestamp_u64);
@@ -466,16 +466,6 @@ mod tests {
     }
 
     #[test]
-    fn test_date_format() {
-        let date = Local::now();
-
-        //%Z: Since chrono is not aware of timezones beyond their offsets, this specifier only prints the offset when used for formatting. The timezone abbreviation will NOT be printed. See this issue for more information.
-        println!("{}", date.format("%a, %d %b %Y %H:%M:%S %Z"));
-        println!("{}", date.to_rfc2822());
-        println!("{}", date.to_rfc3339());
-    }
-
-    #[test]
     fn test_format_timespan() {
         println!("{:?}", format_timespan(4 * USEC_PER_YEAR, MSEC_PER_SEC));
         println!("{:?}", format_timespan(4 * USEC_PER_MONTH, MSEC_PER_SEC));
@@ -524,5 +514,28 @@ mod tests {
 
         let c_str = unsafe { CStr::from_ptr(asdf.tm_zone) };
         println!("time zone {:?}", c_str);
+
+        let asdf = localtime_or_gmtime_usec(0, true);
+        println!("time {:?}", asdf);
+
+        let c_str = unsafe { CStr::from_ptr(asdf.tm_zone) };
+        println!("time zone {:?}", c_str);
+    }
+
+    #[test]
+    fn test_date_format() {
+        let date = Local::now();
+
+        //%Z: Since chrono is not aware of timezones beyond their offsets, this specifier only prints the offset when used for formatting. The timezone abbreviation will NOT be printed. See this issue for more information.
+        println!("{}", date.format("%a, %d %b %Y %H:%M:%S %Z"));
+        println!("{}", date.to_rfc2822());
+        println!("{}", date.to_rfc3339());
+
+        let date = Utc::now();
+
+        //%Z: Since chrono is not aware of timezones beyond their offsets, this specifier only prints the offset when used for formatting. The timezone abbreviation will NOT be printed. See this issue for more information.
+        println!("{}", date.format("%a, %d %b %Y %H:%M:%S %Z"));
+        println!("{}", date.to_rfc2822());
+        println!("{}", date.to_rfc3339());
     }
 }

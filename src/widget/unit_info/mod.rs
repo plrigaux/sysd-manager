@@ -2,9 +2,6 @@ use crate::systemd::data::UnitInfo;
 
 mod construct_info;
 mod imp;
-pub mod text_view_hyperlink;
-mod time_handling;
-pub mod writer;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 

@@ -4,9 +4,11 @@ extern crate gtk;
 extern crate log;
 
 mod analyze;
+mod consts;
 mod errors;
 mod systemd;
 mod systemd_gui;
+mod utils;
 mod widget;
 
 use clap::{command, Parser};

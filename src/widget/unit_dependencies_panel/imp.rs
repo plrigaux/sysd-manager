@@ -19,6 +19,13 @@ use std::{
     rc::Rc,
 };
 
+use crate::utils::{
+    text_view_hyperlink,
+    writer::{
+        HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+        SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+    },
+};
 use crate::{
     systemd::{
         self,
@@ -26,16 +33,10 @@ use crate::{
         enums::{DependencyType, UnitType},
         Dependency,
     },
+    utils::text_view_hyperlink::LinkActivator,
     widget::{
         app_window::AppWindow,
         menu_button::{ExMenuButton, OnClose},
-        unit_info::{
-            text_view_hyperlink::{self, LinkActivator},
-            writer::{
-                HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-                SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
-            },
-        },
     },
 };
 use log::{debug, warn};

@@ -19,13 +19,16 @@ use gtk::{
 
 use log::{info, warn};
 
-use crate::{systemd::data::UnitInfo, widget::{app_window::AppWindow, info_window::InfoWindow}};
-
-use super::{
-    construct_info::fill_all_info,
-    text_view_hyperlink::{self, LinkActivator},
-    writer::UnitInfoWriter,
+use crate::{
+    systemd::data::UnitInfo,
+    utils::{
+        text_view_hyperlink::{self, LinkActivator},
+        writer::UnitInfoWriter,
+    },
+    widget::{app_window::AppWindow, info_window::InfoWindow},
 };
+
+use super::construct_info::fill_all_info;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
