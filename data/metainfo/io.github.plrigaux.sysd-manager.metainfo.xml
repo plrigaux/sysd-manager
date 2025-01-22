@@ -41,14 +41,24 @@
       <caption>Unit Files</caption>
     </screenshot>
     <screenshot>
+      <image type="source" environment="gnome:dark">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_dependencies.png</image>
+      <caption>Unit Dependencies</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source" environment="gnome:dark">
+        https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_dependencies_dark.png</image>
+      <caption>Unit Dependencies</caption>
+    </screenshot>
+    <screenshot>
       <image type="source">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_file.png</image>
-      <caption>Unit Files</caption>
+      <caption>Unit File</caption>
     </screenshot>
     <screenshot>
       <image type="source" environment="gnome:dark">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_file_dark.png</image>
-      <caption>Unit Files</caption>
+      <caption>Unit File</caption>
     </screenshot>
     <screenshot>
       <image type="source">
@@ -78,15 +88,16 @@ https://hughsie.github.io/oars/index.html
   <releases>
     <release version="1.9.3" date="2025-01-21">
       <description>
-      <p>This release worked on unit information</p>
+        <p>This release worked on unit information</p>
         <ul>
-        <li>Add "Error" Section</li>
+          <li>Add "Error" Section</li>
           <li>Add hyperlink on units described by "Trigger"</li>
           <li>Add hyperlink on units described by "TriggeredBy"</li>
           <li>Display active status on units described by "Trigger"</li>
           <li>Display active status on units described by "TriggeredBy"</li>
           <li>Complete the "Memory" section</li>
           <li>Fix the "Drop in" section</li>
+          <li>Fix the "CPU" section</li>
         </ul>
       </description>
     </release>
