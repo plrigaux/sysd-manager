@@ -93,7 +93,7 @@ fn build_ui(application: &adw::Application, unit: Option<UnitInfo>) {
     if PREFERENCES.is_app_first_connection() {
         info!("Is application first connection");
 
-        let pdialog = PreferencesDialog::new();
+        let pdialog = PreferencesDialog::new(Some(&window));
 
         adw::prelude::AdwDialogExt::present(&pdialog, Some(&window));
     }

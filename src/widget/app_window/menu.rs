@@ -74,10 +74,13 @@ pub fn on_startup(app: &adw::Application) {
 
     let preferences: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder("preferences")
         .activate(|application: &adw::Application, _, _| {
-            let pdialog = PreferencesDialog::new();
             if let Some(win) = application.active_window() {
+                let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+
+                let pdialog = PreferencesDialog::new(app_window);
                 pdialog.present(Some(&win));
             } else {
+                let pdialog = PreferencesDialog::new(None);
                 pdialog.present(None::<&gtk::Widget>);
             }
         })

@@ -6,10 +6,10 @@ use gtk::{
     glib::{self, BoolError},
 };
 use log::{info, warn};
-use std::cell::OnceCell;
+use std::cell::{OnceCell, RefCell};
 
-use crate::systemd_gui::new_settings;
 use crate::utils::th::TimestampStyle;
+use crate::{systemd_gui::new_settings, widget::app_window::AppWindow};
 
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
@@ -39,10 +39,18 @@ pub struct PreferencesDialog {
 
     #[template_child]
     timestamp_style: TemplateChild<adw::ComboRow>,
+
+    app_window: RefCell<Option<AppWindow>>,
 }
 
 #[gtk::template_callbacks]
 impl PreferencesDialog {
+    pub(super) fn set_app_window(&self, app_window: Option<&AppWindow>) {
+        if let Some(app_window) = app_window {
+            self.app_window.replace(Some(app_window.clone()));
+        }
+    }
+
     fn setup_settings(&self) {
         let settings = new_settings();
         {

@@ -1,7 +1,9 @@
 pub mod data;
 mod imp;
 
-use gtk::{gio, glib};
+use gtk::{gio, glib, subclass::prelude::*};
+
+use super::app_window::AppWindow;
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -12,16 +14,17 @@ glib::wrapper! {
 }
 
 impl PreferencesDialog {
-    pub fn new() -> Self {
+    pub fn new(app_window: Option<&AppWindow>) -> Self {
         // Create new window
         let obj: PreferencesDialog = glib::Object::new();
 
+        obj.imp().set_app_window(app_window);
         obj
     }
 }
 
 impl Default for PreferencesDialog {
     fn default() -> Self {
-        PreferencesDialog::new()
+        PreferencesDialog::new(None)
     }
 }
