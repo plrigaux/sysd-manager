@@ -19,7 +19,7 @@ use super::data::{
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
-pub struct PreferencesDialog {
+pub struct PreferencesDialogImpl {
     pub settings: OnceCell<Settings>,
 
     #[template_child]
@@ -44,7 +44,7 @@ pub struct PreferencesDialog {
 }
 
 #[gtk::template_callbacks]
-impl PreferencesDialog {
+impl PreferencesDialogImpl {
     pub(super) fn set_app_window(&self, app_window: Option<&AppWindow>) {
         if let Some(app_window) = app_window {
             self.app_window.replace(Some(app_window.clone()));
@@ -179,7 +179,7 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for PreferencesDialog {
+impl ObjectSubclass for PreferencesDialogImpl {
     const NAME: &'static str = "PreferencesWindow";
     type Type = super::PreferencesDialog;
     type ParentType = adw::PreferencesDialog;
@@ -195,7 +195,7 @@ impl ObjectSubclass for PreferencesDialog {
     }
 }
 
-impl ObjectImpl for PreferencesDialog {
+impl ObjectImpl for PreferencesDialogImpl {
     fn constructed(&self) {
         self.parent_constructed();
 
@@ -237,10 +237,10 @@ impl ObjectImpl for PreferencesDialog {
         self.load_preferences_values();
     }
 }
-impl WidgetImpl for PreferencesDialog {}
-impl WindowImpl for PreferencesDialog {}
+impl WidgetImpl for PreferencesDialogImpl {}
+impl WindowImpl for PreferencesDialogImpl {}
 
-impl AdwDialogImpl for PreferencesDialog {
+impl AdwDialogImpl for PreferencesDialogImpl {
     fn closed(&self) {
         log::info!("Close preferences window");
 
@@ -249,7 +249,12 @@ impl AdwDialogImpl for PreferencesDialog {
         if let Err(error) = self.save_preference_settings() {
             warn!("Save setting  error {:?}", error)
         }
+
+        let binding = self.app_window.borrow();
+        if let Some(app_window) = binding.as_ref() {
+            app_window.refresh_panels()
+        };
     }
 }
 
-impl PreferencesDialogImpl for PreferencesDialog {}
+impl adw::subclass::prelude::PreferencesDialogImpl for PreferencesDialogImpl {}

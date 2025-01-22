@@ -23,6 +23,10 @@ impl UnitFilePanel {
     pub fn register(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
         self.imp().register(app_window, toast_overlay);
     }
+
+    pub fn refresh_panels(&self) {
+        self.imp().refresh_panels();
+    }
 }
 
 impl Default for UnitFilePanel {

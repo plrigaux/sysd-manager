@@ -346,6 +346,17 @@ impl UnitControlPanelImpl {
         self.highlight_controls(unit);
     }
 
+    pub(super) fn refresh_panels(&self) {
+        let binding = self.current_unit.borrow();
+        if let Some(unit) = binding.as_ref() {
+            self.highlight_controls(unit);
+
+            self.unit_file_panel.refresh_panels();
+            self.unit_info_panel.refresh_panels();
+            self.unit_journal_panel.refresh_panels();
+        }
+    }
+
     //TODO bind to the property
     fn highlight_controls(&self, unit: &UnitInfo) {
         let status: ActiveState = unit.active_state().into();

@@ -238,6 +238,10 @@ impl AppWindowImpl {
         }
     }
 
+    pub(super) fn refresh_panels(&self) {
+        self.unit_control_panel.refresh_panels()
+    }
+
     pub(super) fn set_dark(&self, is_dark: bool) {
         self.unit_control_panel.set_dark(is_dark);
     }
@@ -292,7 +296,13 @@ impl AppWindowImpl {
                 .build()
         };
 
-        application.add_action_entries([search_units, open_info, open_dependencies, open_journal, open_file]);
+        application.add_action_entries([
+            search_units,
+            open_info,
+            open_dependencies,
+            open_journal,
+            open_file,
+        ]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
         application.set_accels_for_action("app.open_info", &["<Ctrl>i"]);

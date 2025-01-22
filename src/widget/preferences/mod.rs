@@ -7,7 +7,7 @@ use super::app_window::AppWindow;
 
 // ANCHOR: mod
 glib::wrapper! {
-    pub struct PreferencesDialog(ObjectSubclass<imp::PreferencesDialog>)
+    pub struct PreferencesDialog(ObjectSubclass<imp::PreferencesDialogImpl>)
         @extends adw::PreferencesDialog, adw::Dialog, gtk::Widget,
         @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
                     gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;

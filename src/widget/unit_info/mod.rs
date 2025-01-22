@@ -34,4 +34,8 @@ impl UnitInfoPanel {
     pub fn register(&self, app_window: &AppWindow) {
         self.imp().register(app_window);
     }
+
+    pub fn refresh_panels(&self) {
+        self.imp().refresh_panels();
+    }
 }

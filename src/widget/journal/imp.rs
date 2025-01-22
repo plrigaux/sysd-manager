@@ -163,13 +163,14 @@ impl JournalPanelImp {
             }
         }
 
-        if self.visible_on_page.get() {
-            self.update_journal()
-        }
+        self.update_journal()
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
     fn update_journal(&self) {
+        if !self.visible_on_page.get() {
+            return;
+        }
         //let journal_text: gtk::TextView = self.journal_text.clone();
 
         let binding = self.unit.borrow();
@@ -469,6 +470,10 @@ impl JournalPanelImp {
                 self.journal_boot_id_entry.add_css_class(CLASS_WARNING)
             }
         };
+    }
+
+    pub(super) fn refresh_panels(&self) {
+        self.update_journal()
     }
 }
 // The central trait for subclassing a GObject

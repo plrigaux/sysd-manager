@@ -32,10 +32,14 @@ impl AppWindow {
     }
 
     pub fn add_toast(&self, toast: adw::Toast) {
-        self.imp().add_toast(toast)
+        self.imp().add_toast(toast);
     }
 
     pub fn set_unit(&self, unit: Option<UnitInfo>) {
-        self.imp().set_unit(unit)
+        self.imp().set_unit(unit);
+    }
+
+    pub fn refresh_panels(&self) {
+        self.imp().refresh_panels();
     }
 }

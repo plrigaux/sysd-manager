@@ -208,6 +208,12 @@ impl UnitFilePanelImp {
 
         dialog.present(Some(window)); */
     }
+
+    pub(super) fn refresh_panels(&self) {
+        if self.visible_on_page.get() {
+            self.set_file_content()
+        }
+    }
 }
 
 // The central trait for subclassing a GObject

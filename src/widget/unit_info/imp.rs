@@ -55,13 +55,7 @@ impl UnitInfoPanelImp {
     fn refresh_info_clicked(&self, button: &gtk::Button) {
         info!("button {:?}", button);
 
-        let binding = self.unit.borrow();
-        let Some(unit) = binding.as_ref() else {
-            warn!("no unit file");
-            return;
-        };
-
-        self.update_unit_info(unit)
+        self.refresh_panels();
     }
 
     #[template_callback]
@@ -120,6 +114,16 @@ impl UnitInfoPanelImp {
                 activator,
             );
         }
+    }
+
+    pub(super) fn refresh_panels(&self) {
+        let binding = self.unit.borrow();
+        let Some(unit) = binding.as_ref() else {
+            warn!("no unit file");
+            return;
+        };
+
+        self.update_unit_info(unit)
     }
 }
 
