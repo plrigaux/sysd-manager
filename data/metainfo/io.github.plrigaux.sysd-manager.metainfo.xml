@@ -80,6 +80,15 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+  <release version="1.10.0" date="2025-01-22">
+      <description>
+        <p>New features</p>
+        <ul>
+          <li>Start and stop buttons are highlighted according to the unit state</li>
+          <li>You can choose the timestamp style between : Pretty, UTC and Unix</li>         
+        </ul>
+      </description>
+    </release>
     <release version="1.9.4" date="2025-01-21">
       <description>
         <p>This release worked on unit information</p>
