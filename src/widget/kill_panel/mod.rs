@@ -152,6 +152,14 @@ mod imp {
         }
 
         pub fn set_unit(&self, unit: Option<&UnitInfo>) {
+            let unit = match unit {
+                Some(u) => u,
+                None => {
+                    self.unit.set(None);
+                    return;
+                }
+            };
+
             self.unit.set(Some(unit.clone()));
 
             let label_text = &unit.primary();

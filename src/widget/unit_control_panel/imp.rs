@@ -307,7 +307,7 @@ impl UnitControlPanelImpl {
     fn button_kill_clicked(&self, _button: &gtk::Button) {
         let unit = current_unit!(self);
 
-        self.kill_panel.set_unit(&unit);
+        self.kill_panel.set_unit(Some(&unit));
 
         let collapsed = self.side_overlay.is_collapsed();
         self.side_overlay.set_collapsed(!collapsed);

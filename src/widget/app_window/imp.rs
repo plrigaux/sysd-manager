@@ -132,7 +132,6 @@ impl AppWindowImpl {
             );
 
             let app_window = self.obj().clone();
-            let unit_control_panel = self.unit_control_panel.clone();
 
             self.system_session_dropdown
                 .connect_selected_item_notify(move |dropdown| {

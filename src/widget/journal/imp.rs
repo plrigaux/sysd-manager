@@ -91,7 +91,7 @@ pub struct JournalPanelImp {
 
     list_store: RefCell<Option<gio::ListStore>>,
 
-    #[property(get, set=Self::set_unit)]
+    #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
     #[property(get, set)]
@@ -155,7 +155,16 @@ impl JournalPanelImp {
         self.update_journal();
     }
 
-    pub(crate) fn set_unit(&self, unit: &UnitInfo) {
+    pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
+        let unit = match unit {
+            Some(u) => u,
+            None => {
+                self.unit.replace(None);
+                self.update_journal();
+                return;
+            }
+        };
+
         let old_unit = self.unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit {
             if old_unit.primary() != unit.primary() {
@@ -175,7 +184,8 @@ impl JournalPanelImp {
 
         let binding = self.unit.borrow();
         let Some(unit_ref) = binding.as_ref() else {
-            warn!("No unit file");
+            info!("No unit file");
+            self.panel_stack.set_visible_child_name(PANEL_EMPTY);
             return;
         };
 

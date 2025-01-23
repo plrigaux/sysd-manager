@@ -243,7 +243,7 @@ impl UnitListPanelImp {
 
                 info!("Selection changed, new unit {}", unit.primary());
 
-                list_widjet.set_unit_internal(Some(&unit));
+                list_widjet.set_unit_internal(&unit);
                 app_window.selection_change(Some(&unit));
             }); // FOR THE SEARCH
 

@@ -39,13 +39,13 @@ use crate::{
         menu_button::{ExMenuButton, OnClose},
     },
 };
-use log::{debug, warn};
+use log::{debug, info, warn};
 use strum::IntoEnumIterator;
 
-/* const PANEL_EMPTY: &str = "empty";
-const PANEL_JOURNAL: &str = "journal";
+const PANEL_EMPTY: &str = "empty";
+const PANEL_DEPENDENCIES: &str = "dependencies";
 const PANEL_SPINNER: &str = "spinner";
- */
+
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_dependencies_panel.ui")]
 #[properties(wrapper_type = super::UnitDependenciesPanel)]
@@ -65,7 +65,7 @@ pub struct UnitDependenciesPanelImp {
     #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
 
-    #[property(get, set=Self::set_unit)]
+    #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
     #[property(get, set)]
@@ -118,7 +118,16 @@ impl UnitDependenciesPanelImp {
         }
     }
 
-    fn set_unit(&self, unit: &UnitInfo) {
+    fn set_unit(&self, unit: Option<&UnitInfo>) {
+        let unit = match unit {
+            Some(u) => u,
+            None => {
+                self.unit.replace(None);
+                self.update_dependencies();
+                return;
+            }
+        };
+
         let old_unit = self.unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit {
             if old_unit.primary() != unit.primary() {
@@ -126,9 +135,7 @@ impl UnitDependenciesPanelImp {
             }
         }
 
-        if self.visible_on_page.get() {
-            self.update_dependencies()
-        }
+        self.update_dependencies()
     }
 
     pub(super) fn update_dependencies_filtered(&self, unit_type_filter: &HashSet<String>) {
@@ -137,9 +144,15 @@ impl UnitDependenciesPanelImp {
     }
 
     pub(super) fn update_dependencies(&self) {
+        if !self.visible_on_page.get() {
+            return;
+        }
+
         let binding = self.unit.borrow();
         let Some(unit_ref) = binding.as_ref() else {
-            warn!("No unit file");
+            info!("No unit file");
+            self.unit_dependencies_panel_stack
+                .set_visible_child_name(PANEL_EMPTY);
             return;
         };
 
@@ -156,7 +169,7 @@ impl UnitDependenciesPanelImp {
         plain = plain || !unit_type_filter.is_empty();
 
         glib::spawn_future_local(async move {
-            stack.set_visible_child_name("spinner");
+            stack.set_visible_child_name(PANEL_SPINNER);
             let dependencies =
                 gio::spawn_blocking(move || {
                     match systemd::fetch_unit_dependencies(&unit, dep_type, plain) {
@@ -175,7 +188,7 @@ impl UnitDependenciesPanelImp {
                 .expect("Task needs to finish successfully.");
 
             let Some(mut dependencies) = dependencies else {
-                stack.set_visible_child_name("empty");
+                stack.set_visible_child_name(PANEL_EMPTY);
                 return;
             };
 
@@ -213,7 +226,7 @@ impl UnitDependenciesPanelImp {
                 );
             }
 
-            stack.set_visible_child_name("dependencies");
+            stack.set_visible_child_name(PANEL_DEPENDENCIES);
         });
     }
 

@@ -69,6 +69,15 @@ impl UnitFilePanelImp {
     }
 
     fn set_unit(&self, unit: Option<&UnitInfo>) {
+        let unit = match unit {
+            Some(u) => u,
+            None => {
+                self.unit.replace(None);
+                self.set_file_content();
+                return;
+            }
+        };
+
         let old_unit = self.unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit {
             if old_unit.primary() != unit.primary() {
@@ -76,15 +85,18 @@ impl UnitFilePanelImp {
             }
         }
 
-        if self.visible_on_page.get() {
-            self.set_file_content()
-        }
+        self.set_file_content()
     }
 
     pub fn set_file_content(&self) {
+        if !self.visible_on_page.get() {
+            return;
+        }
+
         let binding = self.unit.borrow();
         let Some(unit_ref) = binding.as_ref() else {
             warn!("No unit file");
+            self.set_text("");
             return;
         };
 
