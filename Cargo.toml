@@ -24,7 +24,7 @@ default-run = "sysd-manager"
 name = "sysd-manager"
 path = "src/main.rs"
 
-#[[bin]]
+#[[bin]] test
 #name = "force-build"
 #path = "build.rs"
 
