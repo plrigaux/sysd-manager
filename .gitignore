@@ -11,4 +11,4 @@ Cargo.lock
 cargo-sources.json
 /tiny_daemon/target/
 /__pycache__
-.vscode/launch.json
+/.vscode/

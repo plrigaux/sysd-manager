@@ -9,3 +9,8 @@ label.journal_prefix {
 label.journal_message {
     font-family: 'Droid Sans Mono', 'monospace', monospace;
 }
+
+textview {
+    font-family: 'Fira Code', 'Droid Sans Mono', 'monospace', monospace;
+    font-size: 12pt;
+}
