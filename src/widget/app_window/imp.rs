@@ -1,7 +1,7 @@
 use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
-use gtk::{gio, glib, prelude::*};
+use gtk::{gio, glib, pango::FontDescription, prelude::*};
 use log::{debug, info};
 
 use crate::{
@@ -250,6 +250,10 @@ impl AppWindowImpl {
 
     pub(super) fn set_dark(&self, is_dark: bool) {
         self.unit_control_panel.set_dark(is_dark);
+    }
+
+    pub(super) fn set_text_font(&self, font_description: FontDescription) {
+        //self.unit_control_panel.set_text_font(font_description);
     }
 
     pub(super) fn build_action(&self, application: &adw::Application) {

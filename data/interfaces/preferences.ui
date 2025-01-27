@@ -37,6 +37,17 @@
                         <property name="title">Timestamp style</property>
                       </object>
                     </child>
+                    <child>
+                      <object class="AdwActionRow" id="select_font_row">
+                        <property name="title">Text font</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label">Select Font</property>
+                            <signal name="clicked" handler="select_font_clicked" swapped="yes"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>

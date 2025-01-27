@@ -1,9 +1,14 @@
 use gio::Settings;
 
-use adw::{prelude::*, subclass::prelude::*, EnumListItem};
+use adw::{
+    prelude::*,
+    subclass::{prelude::*, window},
+    EnumListItem,
+};
 use gtk::{
     gio,
     glib::{self, BoolError},
+    FontDialog,
 };
 use log::{info, warn};
 use std::cell::{OnceCell, RefCell};
@@ -39,6 +44,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     timestamp_style: TemplateChild<adw::ComboRow>,
+
+    #[template_child]
+    select_font_row: TemplateChild<adw::ActionRow>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -119,6 +127,32 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         let value32_parse = Self::get_spin_row_value("journal_event_max_size_changed", spin);
 
         PREFERENCES.set_journal_event_max_size(value32_parse);
+    }
+
+    #[template_callback]
+    fn select_font_clicked(&self) {
+        let font_dialog = gtk::FontDialog::builder().modal(false).build();
+
+        let parent = self.app_window.borrow();
+        let select_font_row = self.select_font_row.clone();
+        let window = parent.as_ref().map(|w| w.clone());
+
+        font_dialog.choose_font(
+            parent.as_ref(),
+            None,
+            None::<&gio::Cancellable>,
+            move |result| {
+                if let Ok(font_description) = result {
+                    let font_name = font_description.to_string();
+                    info!("Font {:?}", font_description.to_string());
+                    select_font_row.set_subtitle(&font_name);
+
+                    if let Some(window) = window {
+                        window.set_text_font(font_description);
+                    }
+                }
+            },
+        );
     }
 
     fn get_spin_row_value(var_name: &str, spin: adw::SpinRow) -> u32 {

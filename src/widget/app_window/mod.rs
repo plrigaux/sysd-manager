@@ -1,5 +1,5 @@
 use glib::Object;
-use gtk::{gio, glib, subclass::prelude::*};
+use gtk::{gio, glib, pango::FontDescription, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
 
@@ -41,5 +41,9 @@ impl AppWindow {
 
     pub fn refresh_panels(&self) {
         self.imp().refresh_panels();
+    }
+
+    pub fn set_text_font(&self, font_description: FontDescription) {
+        self.imp().set_text_font(font_description);
     }
 }
