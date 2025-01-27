@@ -107,7 +107,6 @@ impl UnitInfoPanelImp {
         let buf = unit_info_text_view.buffer();
 
         buf.set_text(""); // clear text
-
         buf
     }
 
@@ -161,6 +160,16 @@ impl ObjectSubclass for UnitInfoPanelImp {
 impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        /*         let pango_context = self.unit_info_textview.pango_context();
+        let font_descr = pango_context.font_description();
+        if let Some(font_descr) = font_descr {
+            let font_size = font_descr.size() / pango::SCALE;
+
+            warn!("Font size {font_size} unscalled {}", font_descr.size());
+
+            warn!("Font fam {:?}", font_descr.family());
+        } */
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}

@@ -114,6 +114,8 @@
                     <property name="overlay-scrolling">False</property>
                     <property name="vexpand">True</property>
                     <property name="vscrollbar-policy">always</property>
+                    <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="yes"/>
+                    <signal name="edge-reached" handler="scwin_edge_reached" swapped="yes"/>
                     <child>
                       <object class="GtkListView" id="journal_events">
                         <property name="enable-rubberband">True</property>

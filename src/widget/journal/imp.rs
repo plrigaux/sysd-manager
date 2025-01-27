@@ -447,6 +447,16 @@ impl JournalPanelImp {
         error!("journal unrealize");
     }
 
+    #[template_callback]
+    fn scwin_edge_overshot(&self, _pos: gtk::PositionType) {
+        //info!("scwin_edge_overshot {:?}", pos);
+    }
+
+    #[template_callback]
+    fn scwin_edge_reached(&self, _pos: gtk::PositionType) {
+        //info!("scwin_edge_reached {:?}", pos);
+    }
+
     fn clear_boot_id(&self) {
         for css_class in [CLASS_WARNING, CLASS_ERROR, CLASS_SUCCESS] {
             self.journal_boot_id_entry.remove_css_class(css_class);

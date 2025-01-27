@@ -629,7 +629,9 @@
 	(176,53,21,"GtkSignalListItemFactory","setup","col_active_status_factory_setup",None,None,0,0,None),
 	(177,53,23,"GtkSignalListItemFactory","bind","col_description_factory_bind",None,None,0,0,None),
 	(178,53,23,"GtkSignalListItemFactory","setup","col_description_factory_setup",None,None,0,0,None),
-	(179,54,20,"GtkCheckButton","toggled","plain_option_toggled",None,0,1,0,None)
+	(179,54,20,"GtkCheckButton","toggled","plain_option_toggled",None,0,1,0,None),
+	(180,30,13,"GtkScrolledWindow","edge-overshot","scwin_edge_overshot",None,0,1,0,None),
+	(181,30,13,"GtkScrolledWindow","edge-reached","scwin_edge_reached",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

@@ -5,5 +5,14 @@
     },
     "rust-analyzer.files.excludeDirs": [
         "builddir"
-    ]
+    ],
+    "[rust]": {
+        "editor.formatOnSave": true
+    },
+    "[css]": {
+        "editor.formatOnSave": true
+    },
+    "[json]": {
+        "editor.formatOnSave": true
+    }
 }
