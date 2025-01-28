@@ -4,8 +4,9 @@ use std::{
 };
 
 use gtk::{
+    ffi::GTK_STYLE_PROVIDER_PRIORITY_APPLICATION,
     glib::{self},
-    pango::FontDescription,
+    pango::{self, FontDescription},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -149,14 +150,48 @@ impl UnitInfoPanelImp {
     }
 
     fn set_text_font(&self, font_description: &FontDescription) {
-        warn!("set font {:?}", font_description.to_string());
-        let pango_context = self.unit_info_textview.pango_context();
+        let family = font_description.family();
+        let size = font_description.size() / pango::SCALE;
 
+        warn!("set font {:?}", font_description.to_string());
+        warn!(
+            "set familly {:?} size {}",
+            font_description.family(),
+            font_description.size()
+        );
+        // let pango_context = self.unit_info_textview.pango_context();
+
+        let provider = gtk::CssProvider::new();
+
+        let mut css = String::with_capacity(200);
+
+        css.push_str("textview {");
+        css.push_str("font-size: ");
+        css.push_str(&size.to_string());
+        css.push_str("pt;\n");
+
+        if let Some(family) = family {
+            css.push_str("font-family: ");
+            css.push('"');
+            css.push_str(family.as_str());
+            css.push_str("\";\n");
+        }
+        css.push_str("}");
+
+        warn!("css {:?}", css);
+        provider.load_from_string(&css);
+
+        let context = self.unit_info_textview.style_context();
+
+        context.add_provider(&provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION as u32);
+
+        //  provider.load_from_string(data);
+        /*
         let widjet_font_description = pango_context.font_description();
         if let Some(mut widjet_font_description) = widjet_font_description {
             widjet_font_description.set_size(font_description.size());
             if let Some(family) = font_description.family() {
-                widjet_font_description.set_family(family.as_str());
+                // widjet_font_description.set_family(family.as_str());
             }
 
             // let font_size = font_descr.size() / pango::SCALE;
@@ -164,7 +199,7 @@ impl UnitInfoPanelImp {
             //warn!("Font size {font_size} unscalled {}", font_descr.size());
 
             //warn!("Font fam {:?}", font_descr.family());
-        }
+        } */
     }
 }
 
