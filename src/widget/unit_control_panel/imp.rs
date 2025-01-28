@@ -18,7 +18,7 @@ use crate::{
     widget::{
         app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel,
         unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel,
-        unit_info::UnitInfoPanel,
+        unit_info::UnitInfoPanel, InterPanelAction,
     },
 };
 
@@ -363,6 +363,13 @@ impl UnitControlPanelImpl {
             self.unit_info_panel.refresh_panels();
             self.unit_journal_panel.refresh_panels();
         }
+    }
+
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.unit_file_panel.set_inter_action(action);
+        self.unit_journal_panel.set_inter_action(action);
+        self.unit_dependencies_panel.set_inter_action(action);
+        self.unit_info_panel.set_inter_action(action);
     }
 
     //TODO bind to the property

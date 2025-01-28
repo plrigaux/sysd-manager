@@ -1,14 +1,9 @@
 use gio::Settings;
 
-use adw::{
-    prelude::*,
-    subclass::{prelude::*, window},
-    EnumListItem,
-};
+use adw::{prelude::*, subclass::prelude::*, EnumListItem};
 use gtk::{
     gio,
     glib::{self, BoolError},
-    FontDialog,
 };
 use log::{info, warn};
 use std::cell::{OnceCell, RefCell};
@@ -148,7 +143,8 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
                     select_font_row.set_subtitle(&font_name);
 
                     if let Some(window) = window {
-                        window.set_text_font(font_description);
+                        let action = crate::widget::InterPanelAction::SetFont(&font_description);
+                        window.set_inter_action(&action);
                     }
                 }
             },

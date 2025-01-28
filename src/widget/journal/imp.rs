@@ -36,7 +36,7 @@ use crate::{
         journal_data::JournalEvent,
         BootFilter,
     },
-    widget::preferences::data::PREFERENCES,
+    widget::{preferences::data::PREFERENCES, InterPanelAction},
 };
 
 use super::{journal_row::JournalRow, more_colors::TermColor, palette::Palette};
@@ -495,7 +495,10 @@ impl JournalPanelImp {
     pub(super) fn refresh_panels(&self) {
         self.update_journal()
     }
+
+    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
 }
+
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
 impl ObjectSubclass for JournalPanelImp {

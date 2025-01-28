@@ -20,7 +20,7 @@ use log::{debug, info, warn};
 use crate::{
     consts::SUGGESTED_ACTION,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
-    widget::{app_window::AppWindow, preferences::data::PREFERENCES},
+    widget::{app_window::AppWindow, preferences::data::PREFERENCES, InterPanelAction},
 };
 
 use super::{dosini, flatpak};
@@ -226,6 +226,8 @@ impl UnitFilePanelImp {
             self.set_file_content()
         }
     }
+
+    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
 }
 
 // The central trait for subclassing a GObject

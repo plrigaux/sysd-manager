@@ -3,7 +3,7 @@ use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
 
-use super::app_window::AppWindow;
+use super::{app_window::AppWindow, InterPanelAction};
 
 mod controls;
 mod enums;
@@ -46,5 +46,9 @@ impl UnitControlPanel {
 
     pub fn refresh_panels(&self) {
         self.imp().refresh_panels();
+    }
+
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.imp().set_inter_action(action);
     }
 }

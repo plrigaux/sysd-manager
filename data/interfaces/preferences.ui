@@ -40,9 +40,11 @@
                     <child>
                       <object class="AdwActionRow" id="select_font_row">
                         <property name="title">Text font</property>
+                        <property name="valign">baseline</property>
                         <child>
                           <object class="GtkButton">
                             <property name="label">Select Font</property>
+                            <property name="valign">baseline-center</property>
                             <signal name="clicked" handler="select_font_clicked" swapped="yes"/>
                           </object>
                         </child>

@@ -5,6 +5,7 @@ use std::{
 
 use gtk::{
     glib::{self},
+    pango::FontDescription,
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -25,7 +26,7 @@ use crate::{
         text_view_hyperlink::{self, LinkActivator},
         writer::UnitInfoWriter,
     },
-    widget::{app_window::AppWindow, info_window::InfoWindow},
+    widget::{app_window::AppWindow, info_window::InfoWindow, InterPanelAction},
 };
 
 use super::construct_info::fill_all_info;
@@ -74,7 +75,9 @@ impl UnitInfoPanelImp {
 
         info_window.present();
     }
+}
 
+impl UnitInfoPanelImp {
     pub(crate) fn display_unit_info(&self, unit: Option<&UnitInfo>) {
         match unit {
             Some(unit) => {
@@ -137,6 +140,32 @@ impl UnitInfoPanelImp {
 
         self.update_unit_info(unit)
     }
+
+    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+        match *action {
+            InterPanelAction::SetFont(font_description) => self.set_text_font(font_description),
+            InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+        }
+    }
+
+    fn set_text_font(&self, font_description: &FontDescription) {
+        warn!("set font {:?}", font_description.to_string());
+        let pango_context = self.unit_info_textview.pango_context();
+
+        let widjet_font_description = pango_context.font_description();
+        if let Some(mut widjet_font_description) = widjet_font_description {
+            widjet_font_description.set_size(font_description.size());
+            if let Some(family) = font_description.family() {
+                widjet_font_description.set_family(family.as_str());
+            }
+
+            // let font_size = font_descr.size() / pango::SCALE;
+
+            //warn!("Font size {font_size} unscalled {}", font_descr.size());
+
+            //warn!("Font fam {:?}", font_descr.family());
+        }
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -160,16 +189,6 @@ impl ObjectSubclass for UnitInfoPanelImp {
 impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
-
-        /*         let pango_context = self.unit_info_textview.pango_context();
-        let font_descr = pango_context.font_description();
-        if let Some(font_descr) = font_descr {
-            let font_size = font_descr.size() / pango::SCALE;
-
-            warn!("Font size {font_size} unscalled {}", font_descr.size());
-
-            warn!("Font fam {:?}", font_descr.family());
-        } */
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}

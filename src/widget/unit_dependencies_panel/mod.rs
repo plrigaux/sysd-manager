@@ -6,7 +6,7 @@ use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::enums::DependencyType;
 
-use super::app_window::AppWindow;
+use super::{app_window::AppWindow, InterPanelAction};
 
 glib::wrapper! {
     pub struct UnitDependenciesPanel(ObjectSubclass<imp::UnitDependenciesPanelImp>)
@@ -28,13 +28,14 @@ impl UnitDependenciesPanel {
         self.imp().update_dependencies()
     }
 
-    pub(super) fn update_dependencies_filtered(&self, unit_type_filter : &HashSet<String>) {
+    pub(super) fn update_dependencies_filtered(&self, unit_type_filter: &HashSet<String>) {
         self.imp().update_dependencies_filtered(unit_type_filter)
     }
 
     pub fn register(&self, app_window: &AppWindow) {
         self.imp().register(app_window);
     }
+    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
 }
 
 impl Default for UnitDependenciesPanel {

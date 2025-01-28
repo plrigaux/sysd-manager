@@ -1,7 +1,9 @@
 use glib::Object;
-use gtk::{gio, glib, pango::FontDescription, subclass::prelude::*};
+use gtk::{gio, glib, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
+
+use super::InterPanelAction;
 
 mod imp;
 pub mod menu;
@@ -43,7 +45,7 @@ impl AppWindow {
         self.imp().refresh_panels();
     }
 
-    pub fn set_text_font(&self, font_description: FontDescription) {
-        self.imp().set_text_font(font_description);
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.imp().set_inter_action(action);
     }
 }

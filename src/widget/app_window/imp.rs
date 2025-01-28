@@ -1,7 +1,7 @@
 use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
-use gtk::{gio, glib, pango::FontDescription, prelude::*};
+use gtk::{gio, glib, prelude::*};
 use log::{debug, info};
 
 use crate::{
@@ -11,6 +11,7 @@ use crate::{
         preferences::data::{DbusLevel, PREFERENCES},
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
+        InterPanelAction,
     },
 };
 
@@ -252,8 +253,8 @@ impl AppWindowImpl {
         self.unit_control_panel.set_dark(is_dark);
     }
 
-    pub(super) fn set_text_font(&self, font_description: FontDescription) {
-        //self.unit_control_panel.set_text_font(font_description);
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.unit_control_panel.set_inter_action(action);
     }
 
     pub(super) fn build_action(&self, application: &adw::Application) {

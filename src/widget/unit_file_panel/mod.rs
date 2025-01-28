@@ -4,7 +4,7 @@ mod imp;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
-use super::app_window::AppWindow;
+use super::{app_window::AppWindow, InterPanelAction};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -26,6 +26,10 @@ impl UnitFilePanel {
 
     pub fn refresh_panels(&self) {
         self.imp().refresh_panels();
+    }
+
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.imp().set_inter_action(action);
     }
 }
 
