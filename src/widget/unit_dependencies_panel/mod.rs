@@ -35,7 +35,10 @@ impl UnitDependenciesPanel {
     pub fn register(&self, app_window: &AppWindow) {
         self.imp().register(app_window);
     }
-    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
+
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.imp().set_inter_action(action);
+    }
 }
 
 impl Default for UnitDependenciesPanel {

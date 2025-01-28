@@ -20,10 +20,6 @@ impl UnitControlPanel {
         self.imp().selection_change(unit);
     }
 
-    pub fn set_dark(&self, is_dark: bool) {
-        self.imp().set_dark(is_dark);
-    }
-
     pub fn set_overlay(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
         self.imp().set_overlay(app_window, toast_overlay);
     }

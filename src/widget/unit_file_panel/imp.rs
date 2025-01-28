@@ -20,7 +20,9 @@ use log::{debug, info, warn};
 use crate::{
     consts::SUGGESTED_ACTION,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
-    widget::{app_window::AppWindow, preferences::data::PREFERENCES, InterPanelAction},
+    widget::{
+        app_window::AppWindow, preferences::data::PREFERENCES, set_text_view_font, InterPanelAction,
+    },
 };
 
 use super::{dosini, flatpak};
@@ -48,8 +50,7 @@ pub struct UnitFilePanelImp {
     #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
-    #[property(get, set)]
-    dark: Cell<bool>,
+    is_dark: Cell<bool>,
 
     unit_dependencies_loaded: Cell<bool>,
 }
@@ -182,7 +183,7 @@ impl UnitFilePanelImp {
         if in_color {
             buf.set_text("");
 
-            let is_dark = self.dark.get();
+            let is_dark = self.is_dark.get();
             let mut start_iter = buf.start_iter();
 
             let text = dosini::convert_to_mackup(file_content, is_dark);
@@ -193,18 +194,10 @@ impl UnitFilePanelImp {
 
         self.save_button.remove_css_class(SUGGESTED_ACTION);
     }
-    /*
+
     pub(crate) fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
-
-        //get current text
-        let buffer = self.unit_file_text.buffer();
-        let start = buffer.start_iter();
-        let end = buffer.end_iter();
-        let file_content = buffer.text(&start, &end, true);
-
-        self.set_text(file_content.as_str());
-    } */
+    }
 
     pub(crate) fn register(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
         self.toast_overlay
@@ -227,7 +220,14 @@ impl UnitFilePanelImp {
         }
     }
 
-    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
+    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+        match *action {
+            InterPanelAction::SetFont(font_description) => {
+                set_text_view_font(font_description, &self.unit_file_text)
+            }
+            InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+        }
+    }
 }
 
 // The central trait for subclassing a GObject

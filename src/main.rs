@@ -77,12 +77,12 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
     {
         let window = window.clone();
         let system_manager = adw::StyleManager::default();
-        window.set_dark(system_manager.is_dark());
+        window.set_inter_action(&widget::InterPanelAction::SetDark(system_manager.is_dark()));
 
         system_manager.connect_dark_notify(move |a: &adw::StyleManager| {
             let is_dark = a.is_dark();
             info!("is dark {is_dark}");
-            window.set_dark(is_dark);
+            window.set_inter_action(&widget::InterPanelAction::SetDark(is_dark));
         });
     }
 

@@ -323,6 +323,7 @@
 	(21,28,"AdwPreferencesRow","title","Text font",None,None,None,None,None,None,None,None,None),
 	(21,28,"GtkWidget","valign","baseline",None,None,None,None,None,None,None,None,None),
 	(21,29,"GtkButton","label","Select Font",None,None,None,None,None,None,None,None,None),
+	(21,29,"GtkWidget","css-classes","suggested-action",None,None,None,None,None,None,None,None,None),
 	(21,29,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
 	(29,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(29,2,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),

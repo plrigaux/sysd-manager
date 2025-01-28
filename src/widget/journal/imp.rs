@@ -94,8 +94,7 @@ pub struct JournalPanelImp {
     #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
-    #[property(get, set)]
-    dark: Cell<bool>,
+    is_dark: Cell<bool>,
 
     boot_filter: RefCell<BootFilter>,
 }
@@ -307,7 +306,7 @@ impl JournalPanelImp {
         if priority == 6 || !PREFERENCES.journal_colors() {
             event_display.set_text(&entry.prefix(), &entry.message());
         } else {
-            let is_dark = self.dark.get();
+            let is_dark = self.is_dark.get();
             event_display.set_text(&entry.prefix(), &entry.message());
             let attributes = get_attrlist(priority, is_dark);
 
@@ -496,7 +495,18 @@ impl JournalPanelImp {
         self.update_journal()
     }
 
-    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
+    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+        match *action {
+            InterPanelAction::SetFont(_font_description) => {
+                //set_text_view_font(font_description, &self.unit_file_text)
+            }
+            InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+        }
+    }
+
+    fn set_dark(&self, is_dark: bool) {
+        self.is_dark.set(is_dark);
+    }
 }
 
 // The central trait for subclassing a GObject

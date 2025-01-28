@@ -29,10 +29,6 @@ impl AppWindow {
         self.imp().selection_change(unit);
     }
 
-    pub fn set_dark(&self, is_dark: bool) {
-        self.imp().set_dark(is_dark);
-    }
-
     pub fn add_toast(&self, toast: adw::Toast) {
         self.imp().add_toast(toast);
     }

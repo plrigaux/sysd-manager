@@ -366,10 +366,10 @@ impl UnitControlPanelImpl {
     }
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.unit_info_panel.set_inter_action(action);
+        self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
-        self.unit_dependencies_panel.set_inter_action(action);
-        self.unit_info_panel.set_inter_action(action);
     }
 
     //TODO bind to the property
@@ -393,13 +393,6 @@ impl UnitControlPanelImpl {
                 self.start_button.remove_css_class(SUGGESTED_ACTION);
             }
         }
-    }
-
-    pub(super) fn set_dark(&self, is_dark: bool) {
-        self.unit_file_panel.set_dark(is_dark);
-        self.unit_info_panel.set_dark(is_dark);
-        self.unit_journal_panel.set_dark(is_dark);
-        self.unit_dependencies_panel.set_dark(is_dark);
     }
 
     fn set_modes(&self, modes_box: &gtk::Box, control_type: UnitContolType) {

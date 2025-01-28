@@ -19,13 +19,6 @@ use std::{
     rc::Rc,
 };
 
-use crate::utils::{
-    text_view_hyperlink,
-    writer::{
-        HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-        SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
-    },
-};
 use crate::{
     systemd::{
         self,
@@ -37,7 +30,18 @@ use crate::{
     widget::{
         app_window::AppWindow,
         menu_button::{ExMenuButton, OnClose},
+        set_text_view_font,
     },
+};
+use crate::{
+    utils::{
+        text_view_hyperlink,
+        writer::{
+            HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+            SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+        },
+    },
+    widget::InterPanelAction,
 };
 use log::{debug, info, warn};
 use strum::IntoEnumIterator;
@@ -68,8 +72,7 @@ pub struct UnitDependenciesPanelImp {
     #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
-    #[property(get, set)]
-    dark: Cell<bool>,
+    is_dark: Cell<bool>,
 
     unit_dependencies_loaded: Cell<bool>,
 
@@ -162,7 +165,7 @@ impl UnitDependenciesPanelImp {
         let unit = unit_ref.clone();
         let textview = self.unit_dependencies_textview.clone();
         let stack = self.unit_dependencies_panel_stack.clone();
-        let dark = self.dark.get();
+        let dark = self.is_dark.get();
         let mut plain = self.plain.get();
         let unit_type_filter = self.unit_type_filter.borrow().clone();
 
@@ -302,6 +305,19 @@ impl UnitDependenciesPanelImp {
                     }
                 });
         }
+    }
+
+    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+        match *action {
+            InterPanelAction::SetFont(font_description) => {
+                set_text_view_font(font_description, &self.unit_dependencies_textview)
+            }
+            InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+        }
+    }
+
+    fn set_dark(&self, is_dark: bool) {
+        self.is_dark.set(is_dark);
     }
 }
 

@@ -249,10 +249,6 @@ impl AppWindowImpl {
         self.unit_control_panel.refresh_panels()
     }
 
-    pub(super) fn set_dark(&self, is_dark: bool) {
-        self.unit_control_panel.set_dark(is_dark);
-    }
-
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.unit_control_panel.set_inter_action(action);
     }
