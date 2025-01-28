@@ -1,5 +1,4 @@
 {
-    "mesonbuild.configureOnOpen": false,
     "files.watcherExclude": {
         "builddir/**": true
     },
