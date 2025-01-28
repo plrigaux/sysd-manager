@@ -21,6 +21,8 @@ pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 pub const KEY_PREF_TIMESTAMP_STYLE: &str = "pref-timestamp-style";
+pub const KEY_PREF_STYLE_TEXT_FONT_FAMILY: &str = "pref-style-text-font-family";
+pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
 #[enum_type(name = "DbusLevel")]
@@ -115,6 +117,8 @@ pub struct Preferences {
     unit_file_colors: RwLock<bool>,
     app_first_connection: RwLock<bool>,
     timestamp_style: RwLock<TimestampStyle>,
+    font_family: RwLock<String>,
+    font_size: RwLock<u32>,
 }
 
 impl Preferences {
@@ -126,6 +130,8 @@ impl Preferences {
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
         let timestamp_style = settings.string(KEY_PREF_TIMESTAMP_STYLE).into();
+        let font_family = settings.string(KEY_PREF_STYLE_TEXT_FONT_FAMILY);
+        let font_size = settings.uint(KEY_PREF_STYLE_TEXT_FONT_SIZE);
 
         Preferences {
             dbus_level: RwLock::new(level),
@@ -135,6 +141,8 @@ impl Preferences {
             unit_file_colors: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
             timestamp_style: RwLock::new(timestamp_style),
+            font_family: RwLock::new(font_family.to_string()),
+            font_size: RwLock::new(font_size),
         }
     }
 
@@ -164,6 +172,15 @@ impl Preferences {
 
     pub fn timestamp_style(&self) -> TimestampStyle {
         *self.timestamp_style.read().unwrap()
+    }
+
+    pub fn font_family(&self) -> String {
+        let read = self.font_family.read().unwrap();
+        read.clone()
+    }
+
+    pub fn font_size(&self) -> u32 {
+        *self.font_size.read().unwrap()
     }
 
     pub fn set_dbus_level(&self, dbus_level: DbusLevel) {
@@ -230,6 +247,16 @@ impl Preferences {
             .write()
             .expect("supposed to write");
         *app_first_connection = app_first_connection_new;
+    }
+
+    pub fn set_font_family(&self, font_family: &str) {
+        let mut font_family_rw = self.font_family.write().expect("supposed to write");
+        *font_family_rw = font_family.to_string();
+    }
+
+    pub fn set_font_size(&self, font_size: u32) {
+        let mut font_size_rw = self.font_size.write().expect("supposed to write");
+        *font_size_rw = font_size;
     }
 }
 
