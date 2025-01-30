@@ -1,6 +1,7 @@
 use gtk::{
     gio::Settings,
     glib::{self, GString},
+    pango::{self, FontDescription},
     prelude::{SettingsExt, ToValue},
 };
 use log::{info, warn};
@@ -249,14 +250,27 @@ impl Preferences {
         *app_first_connection = app_first_connection_new;
     }
 
-    pub fn set_font_family(&self, font_family: &str) {
+    fn set_font_family(&self, font_family: &str) {
         let mut font_family_rw = self.font_family.write().expect("supposed to write");
         *font_family_rw = font_family.to_string();
     }
 
-    pub fn set_font_size(&self, font_size: u32) {
+    fn set_font_size(&self, font_size: u32) {
         let mut font_size_rw = self.font_size.write().expect("supposed to write");
         *font_size_rw = font_size;
+    }
+
+    pub fn set_font(&self, font_description: &FontDescription) {
+        let family = font_description.family().map_or(GString::new(), |f| f);
+        self.set_font_family(&family);
+
+        let size = font_description.size() / pango::SCALE;
+        self.set_font_size(size as u32);
+    }
+
+    pub fn set_font_default(&self) {
+        self.set_font_family("");
+        self.set_font_size(0 as u32);
     }
 }
 

@@ -1,9 +1,7 @@
 use gtk::{
-    ffi::GTK_STYLE_PROVIDER_PRIORITY_APPLICATION,
-    pango::{self, FontDescription},
-    prelude::WidgetExt,
+    ffi::GTK_STYLE_PROVIDER_PRIORITY_APPLICATION, pango::FontDescription, prelude::WidgetExt,
 };
-use log::debug;
+use log::info;
 
 pub mod app_window;
 pub mod button_icon;
@@ -20,48 +18,30 @@ pub mod unit_info;
 pub mod unit_list;
 
 pub enum InterPanelAction<'a> {
-    SetFont(&'a FontDescription),
+    SetFont(Option<&'a FontDescription>),
+    SetFontProvider(Option<&'a gtk::CssProvider>, Option<&'a gtk::CssProvider>),
     SetDark(bool),
 }
 
-pub fn set_text_view_font(font_description: &FontDescription, text_view: &gtk::TextView) {
-    let family = font_description.family();
-    let size = font_description.size() / pango::SCALE;
+pub fn set_text_view_font(
+    old_provider: Option<&gtk::CssProvider>,
+    new_provider: Option<&gtk::CssProvider>,
+    text_view: &gtk::TextView,
+) {
+    if let Some(old_provider) = old_provider {
+        info!("set font default");
+        let provider = gtk::CssProvider::new();
+        let css = String::from("textview {}");
+        provider.load_from_string(&css);
 
-    debug!("set font {:?}", font_description.to_string());
-    debug!(
-        "set familly {:?} gravity {:?} weight {:?} size {} variations {:?} stretch {:?}",
-        font_description.family(),
-        font_description.gravity(),
-        font_description.weight(),
-        font_description.size(),
-        font_description.variations(),
-        font_description.stretch(),
-    );
-    // let pango_context = self.unit_info_textview.pango_context();
+        gtk::style_context_remove_provider_for_display(&text_view.display(), old_provider);
+    };
 
-    let provider = gtk::CssProvider::new();
-
-    let mut css = String::with_capacity(100);
-
-    css.push_str("textview {");
-    css.push_str("font-size: ");
-    css.push_str(&size.to_string());
-    css.push_str("px;\n");
-
-    if let Some(family) = family {
-        css.push_str("font-family: ");
-        css.push('"');
-        css.push_str(family.as_str());
-        css.push_str("\";\n");
+    if let Some(new_provider) = new_provider {
+        gtk::style_context_add_provider_for_display(
+            &text_view.display(),
+            new_provider,
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION as u32,
+        );
     }
-    css.push_str("}");
-
-    provider.load_from_string(&css);
-
-    gtk::style_context_add_provider_for_display(
-        &text_view.display(),
-        &provider,
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION as u32,
-    );
 }

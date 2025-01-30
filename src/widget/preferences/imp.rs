@@ -8,8 +8,8 @@ use gtk::{
 use log::{info, warn};
 use std::cell::{OnceCell, RefCell};
 
-use crate::utils::th::TimestampStyle;
 use crate::{systemd_gui::new_settings, widget::app_window::AppWindow};
+use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
 
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
@@ -47,6 +47,91 @@ pub struct PreferencesDialogImpl {
 }
 
 #[gtk::template_callbacks]
+impl PreferencesDialogImpl {
+    #[template_callback]
+    fn journal_switch_state_set(&self, state: bool) -> bool {
+        info!("journal_colors_switch {}", state);
+
+        self.journal_colors.set_state(state);
+        PREFERENCES.set_journal_colors(state);
+
+        true
+    }
+
+    #[template_callback]
+    fn journal_max_events_changed(&self, spin: adw::SpinRow) {
+        let value32_parse = Self::get_spin_row_value("journal_events_changed", spin);
+
+        PREFERENCES.set_journal_events(value32_parse);
+    }
+
+    #[template_callback]
+    fn journal_event_max_size_changed(&self, spin: adw::SpinRow) {
+        let value32_parse = Self::get_spin_row_value("journal_event_max_size_changed", spin);
+
+        PREFERENCES.set_journal_event_max_size(value32_parse);
+    }
+
+    #[template_callback]
+    fn unit_file_highlighting_state_set(&self, state: bool) -> bool {
+        info!("unit_file_highlighting_switch {}", state);
+
+        self.unit_file_highlight.set_state(state);
+        PREFERENCES.set_unit_file_highlighting(state);
+
+        true
+    }
+
+    #[template_callback]
+    fn select_font_clicked(&self) {
+        let font_dialog = gtk::FontDialog::builder().modal(false).build();
+
+        let parent = self.app_window.borrow();
+        let select_font_row = self.select_font_row.clone();
+        let window = parent.as_ref().map(|w| w.clone());
+
+        font_dialog.choose_font(
+            parent.as_ref(),
+            None,
+            None::<&gio::Cancellable>,
+            move |result| {
+                if let Ok(font_description) = result {
+                    let font_name = font_description.to_string();
+                    info!("Font {:?}", font_description.to_string());
+                    select_font_row.set_subtitle(&font_name);
+
+                    PREFERENCES.set_font(&font_description);
+
+                    if let Some(window) = window {
+                        let action = if PREFERENCES.font_family().is_empty()
+                            && PREFERENCES.font_size() == 0
+                        {
+                            InterPanelAction::SetFont(None)
+                        } else {
+                            InterPanelAction::SetFont(Some(&font_description))
+                        };
+
+                        window.set_inter_action(&action);
+                    }
+                }
+            },
+        );
+    }
+
+    #[template_callback]
+    fn select_font_default(&self) {
+        PREFERENCES.set_font_default();
+
+        let window = self.app_window.borrow();
+        if let Some(window) = window.as_ref() {
+            let action = crate::widget::InterPanelAction::SetFont(None);
+            window.set_inter_action(&action);
+        }
+
+        self.select_font_row.set_subtitle("default");
+    }
+}
+
 impl PreferencesDialogImpl {
     pub(super) fn set_app_window(&self, app_window: Option<&AppWindow>) {
         if let Some(app_window) = app_window {
@@ -100,57 +185,6 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         self.timestamp_style.set_selected(timestamp_style as u32);
     }
 
-    #[template_callback]
-    fn journal_switch_state_set(&self, state: bool) -> bool {
-        info!("journal_colors_switch {}", state);
-
-        self.journal_colors.set_state(state);
-        PREFERENCES.set_journal_colors(state);
-
-        true
-    }
-
-    #[template_callback]
-    fn journal_max_events_changed(&self, spin: adw::SpinRow) {
-        let value32_parse = Self::get_spin_row_value("journal_events_changed", spin);
-
-        PREFERENCES.set_journal_events(value32_parse);
-    }
-
-    #[template_callback]
-    fn journal_event_max_size_changed(&self, spin: adw::SpinRow) {
-        let value32_parse = Self::get_spin_row_value("journal_event_max_size_changed", spin);
-
-        PREFERENCES.set_journal_event_max_size(value32_parse);
-    }
-
-    #[template_callback]
-    fn select_font_clicked(&self) {
-        let font_dialog = gtk::FontDialog::builder().modal(false).build();
-
-        let parent = self.app_window.borrow();
-        let select_font_row = self.select_font_row.clone();
-        let window = parent.as_ref().map(|w| w.clone());
-
-        font_dialog.choose_font(
-            parent.as_ref(),
-            None,
-            None::<&gio::Cancellable>,
-            move |result| {
-                if let Ok(font_description) = result {
-                    let font_name = font_description.to_string();
-                    info!("Font {:?}", font_description.to_string());
-                    select_font_row.set_subtitle(&font_name);
-
-                    if let Some(window) = window {
-                        let action = crate::widget::InterPanelAction::SetFont(&font_description);
-                        window.set_inter_action(&action);
-                    }
-                }
-            },
-        );
-    }
-
     fn get_spin_row_value(var_name: &str, spin: adw::SpinRow) -> u32 {
         let value = spin.value();
         let text = spin.text();
@@ -171,16 +205,6 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
                 }
             }
         }
-    }
-
-    #[template_callback]
-    fn unit_file_highlighting_state_set(&self, state: bool) -> bool {
-        info!("unit_file_highlighting_switch {}", state);
-
-        self.unit_file_highlight.set_state(state);
-        PREFERENCES.set_unit_file_highlighting(state);
-
-        true
     }
 
     fn save_preference_settings(&self) -> Result<(), BoolError> {

@@ -3,6 +3,7 @@ use std::cell::{OnceCell, RefCell};
 use adw::{subclass::prelude::*, Toast};
 use gtk::{
     glib::{self},
+    pango::{self, FontDescription},
     prelude::*,
 };
 use log::{debug, error, info, warn};
@@ -86,6 +87,8 @@ pub struct UnitControlPanelImpl {
     pub stop_mode: RefCell<String>,
     #[property(get, set)]
     pub restart_mode: RefCell<String>,
+
+    old_font_provider: RefCell<Option<gtk::CssProvider>>,
 }
 
 #[glib::object_subclass]
@@ -230,51 +233,6 @@ impl UnitControlPanelImpl {
         )
     }
 
-    //Dry
-    fn start_restart(
-        &self,
-        unit: &UnitInfo,
-        start_results: Result<String, SystemdErrors>,
-        action: UnitContolType,
-        new_active_state: ActiveState,
-        mode: StartStopMode,
-    ) {
-        let job_op = match start_results {
-            Ok(job) => {
-                let info = format!(
-                    "Unit \"{}\" has been {}ed with mode {:?}!",
-                    unit.primary(),
-                    action.as_str(),
-                    mode.as_str()
-                );
-                info!("{info}");
-
-                let toast = Toast::new(&info);
-                self.toast_overlay.get().unwrap().add_toast(toast);
-
-                unit.set_active_state(new_active_state as u32);
-                self.highlight_controls(unit);
-
-                Some(job)
-            }
-            Err(e) => {
-                error!(
-                    "Can't {} the unit {:?}, because: {:?}",
-                    action.as_str(),
-                    unit.primary(),
-                    e
-                );
-                None
-            }
-        };
-
-        let Some(_job) = job_op else {
-            return;
-        };
-
-        self.unit_info_panel.display_unit_info(Some(unit));
-    }
-
     #[template_callback]
     fn button_stop_clicked(&self, _button: &adw::SplitButton) {
         let unit = current_unit!(self);
@@ -318,6 +276,53 @@ impl UnitControlPanelImpl {
         self.search_bar
             .borrow()
             .set_search_mode(toggle_button.is_active());
+    }
+}
+
+impl UnitControlPanelImpl {
+    //Dry
+    fn start_restart(
+        &self,
+        unit: &UnitInfo,
+        start_results: Result<String, SystemdErrors>,
+        action: UnitContolType,
+        new_active_state: ActiveState,
+        mode: StartStopMode,
+    ) {
+        let job_op = match start_results {
+            Ok(job) => {
+                let info = format!(
+                    "Unit \"{}\" has been {}ed with mode {:?}!",
+                    unit.primary(),
+                    action.as_str(),
+                    mode.as_str()
+                );
+                info!("{info}");
+
+                let toast = Toast::new(&info);
+                self.toast_overlay.get().unwrap().add_toast(toast);
+
+                unit.set_active_state(new_active_state as u32);
+                self.highlight_controls(unit);
+
+                Some(job)
+            }
+            Err(e) => {
+                error!(
+                    "Can't {} the unit {:?}, because: {:?}",
+                    action.as_str(),
+                    unit.primary(),
+                    e
+                );
+                None
+            }
+        };
+
+        let Some(_job) = job_op else {
+            return;
+        };
+
+        self.unit_info_panel.display_unit_info(Some(unit));
     }
 
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
@@ -366,10 +371,75 @@ impl UnitControlPanelImpl {
     }
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
+        if let InterPanelAction::SetFont(font_description) = action {
+            let provider = self.create_provider(font_description);
+
+            let binding = self.old_font_provider.borrow();
+            let old_provider = binding.as_ref();
+            let new_action = InterPanelAction::SetFontProvider(old_provider, provider.as_ref());
+            self.set_inter_action2(&new_action);
+
+            self.old_font_provider.replace(provider);
+        } else {
+            self.set_inter_action2(action);
+        };
+    }
+
+    fn set_inter_action2(&self, action: &InterPanelAction) {
         self.unit_info_panel.set_inter_action(action);
         self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
+    }
+
+    fn create_provider(
+        &self,
+        font_description: &Option<&FontDescription>,
+    ) -> Option<gtk::CssProvider> {
+        let Some(font_description) = font_description else {
+            info!("set font default");
+            let provider = gtk::CssProvider::new();
+            let css = String::from("textview {}");
+            provider.load_from_string(&css);
+
+            //gtk::style_context_remove_provider_for_display(&text_view.display(), &provider);
+            return None;
+        };
+
+        let family = font_description.family();
+        let size = font_description.size() / pango::SCALE;
+
+        info!("set font {:?}", font_description.to_string());
+        debug!(
+            "set familly {:?} gravity {:?} weight {:?} size {} variations {:?} stretch {:?}",
+            font_description.family(),
+            font_description.gravity(),
+            font_description.weight(),
+            font_description.size(),
+            font_description.variations(),
+            font_description.stretch(),
+        );
+
+        let provider = gtk::CssProvider::new();
+
+        let mut css = String::with_capacity(100);
+
+        css.push_str("textview {");
+        css.push_str("font-size: ");
+        css.push_str(&size.to_string());
+        css.push_str("px;\n");
+
+        if let Some(family) = family {
+            css.push_str("font-family: ");
+            css.push('"');
+            css.push_str(family.as_str());
+            css.push_str("\";\n");
+        }
+        css.push_str("}");
+
+        provider.load_from_string(&css);
+
+        Some(provider)
     }
 
     //TODO bind to the property
