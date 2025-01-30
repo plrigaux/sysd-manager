@@ -8,13 +8,15 @@ use gtk::{
 use log::{info, warn};
 use std::cell::{OnceCell, RefCell};
 
-use crate::{systemd_gui::new_settings, widget::app_window::AppWindow};
+use crate::{
+    systemd_gui::new_settings, utils::font_management::FONT_CONTEXT, widget::app_window::AppWindow,
+};
 use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
 
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
-    KEY_PREF_JOURNAL_MAX_EVENTS, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_HIGHLIGHTING,
-    PREFERENCES,
+    KEY_PREF_JOURNAL_MAX_EVENTS, KEY_PREF_STYLE_TEXT_FONT_FAMILY, KEY_PREF_STYLE_TEXT_FONT_SIZE,
+    KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_HIGHLIGHTING, PREFERENCES,
 };
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -87,12 +89,15 @@ impl PreferencesDialogImpl {
         let font_dialog = gtk::FontDialog::builder().modal(false).build();
 
         let parent = self.app_window.borrow();
-        let select_font_row = self.select_font_row.clone();
         let window = parent.as_ref().map(|w| w.clone());
+        let select_font_row = self.select_font_row.clone();
 
+        let font_description = FONT_CONTEXT.font_description();
+
+        warn!("FD {}", font_description.to_str());
         font_dialog.choose_font(
             parent.as_ref(),
-            None,
+            Some(&font_description),
             None::<&gio::Cancellable>,
             move |result| {
                 if let Ok(font_description) = result {
@@ -183,6 +188,10 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 
         let timestamp_style = PREFERENCES.timestamp_style();
         self.timestamp_style.set_selected(timestamp_style as u32);
+
+        let font_description = FONT_CONTEXT.font_description();
+        self.select_font_row
+            .set_subtitle(&font_description.to_string());
     }
 
     fn get_spin_row_value(var_name: &str, spin: adw::SpinRow) -> u32 {
@@ -227,6 +236,12 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
 
         let timestamp_style = PREFERENCES.timestamp_style();
         settings.set_string(KEY_PREF_TIMESTAMP_STYLE, &timestamp_style.to_string())?;
+
+        let font_family = PREFERENCES.font_family();
+        settings.set_string(KEY_PREF_STYLE_TEXT_FONT_FAMILY, &font_family)?;
+
+        let font_size = PREFERENCES.font_size();
+        settings.set_uint(KEY_PREF_STYLE_TEXT_FONT_SIZE, font_size)?;
 
         Ok(())
     }

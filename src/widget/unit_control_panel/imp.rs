@@ -16,10 +16,11 @@ use crate::{
         enums::{ActiveState, StartStopMode},
         errors::SystemdErrors,
     },
+    utils::font_management::{self, create_provider, FONT_CONTEXT},
     widget::{
         app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel,
-        unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel,
-        unit_info::UnitInfoPanel, InterPanelAction,
+        preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
+        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel, InterPanelAction,
     },
 };
 
@@ -122,60 +123,6 @@ macro_rules! current_unit {
 
         unit.clone()
     }};
-}
-
-#[glib::derived_properties]
-impl ObjectImpl for UnitControlPanelImpl {
-    fn constructed(&self) {
-        self.parent_constructed();
-
-        self.set_modes(&self.start_modes, UnitContolType::Start);
-        self.set_modes(&self.stop_modes, UnitContolType::Stop);
-        self.set_modes(&self.restart_modes, UnitContolType::Restart);
-
-        self.unit_panel_stack.connect_pages_notify(|view_stack| {
-            info!("page notify {:?}", view_stack.visible_child_name());
-        });
-
-        /*         self.unit_panel_stack.connect_visible_child_name_notify(|view_stack| {
-            info!("connect_visible_child_name_notify {:?}", view_stack.visible_child_name());
-        }); */
-        {
-            let unit_journal_panel = self.unit_journal_panel.clone();
-            let unit_dependencies_panel = self.unit_dependencies_panel.clone();
-            let unit_file_panel = self.unit_file_panel.clone();
-            self.unit_panel_stack
-                .connect_visible_child_notify(move |view_stack| {
-                    debug!(
-                        "connect_visible_child_notify {:?}",
-                        view_stack.visible_child_name()
-                    );
-
-                    if let Some(child) = view_stack.visible_child() {
-                        if child.downcast_ref::<JournalPanel>().is_some() {
-                            debug!("It a journal");
-                            unit_journal_panel.set_visible_on_page(true);
-                            unit_dependencies_panel.set_visible_on_page(false);
-                            unit_file_panel.set_visible_on_page(false);
-                        } else if child.downcast_ref::<UnitDependenciesPanel>().is_some() {
-                            debug!("It's  dependency");
-                            unit_journal_panel.set_visible_on_page(false);
-                            unit_dependencies_panel.set_visible_on_page(true);
-                            unit_file_panel.set_visible_on_page(false);
-                        } else if child.downcast_ref::<UnitFilePanel>().is_some() {
-                            debug!("It's file panel");
-                            unit_journal_panel.set_visible_on_page(false);
-                            unit_dependencies_panel.set_visible_on_page(true);
-                            unit_file_panel.set_visible_on_page(true);
-                        } else {
-                            unit_journal_panel.set_visible_on_page(false);
-                            unit_dependencies_panel.set_visible_on_page(false);
-                            unit_file_panel.set_visible_on_page(false);
-                        }
-                    }
-                });
-        }
-    }
 }
 
 #[gtk::template_callbacks]
@@ -372,13 +319,13 @@ impl UnitControlPanelImpl {
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         if let InterPanelAction::SetFont(font_description) = action {
-            let provider = self.create_provider(font_description);
-
-            let binding = self.old_font_provider.borrow();
-            let old_provider = binding.as_ref();
-            let new_action = InterPanelAction::SetFontProvider(old_provider, provider.as_ref());
-            self.set_inter_action2(&new_action);
-
+            let provider = create_provider(font_description);
+            {
+                let binding = self.old_font_provider.borrow();
+                let old_provider = binding.as_ref();
+                let new_action = InterPanelAction::SetFontProvider(old_provider, provider.as_ref());
+                self.set_inter_action2(&new_action);
+            }
             self.old_font_provider.replace(provider);
         } else {
             self.set_inter_action2(action);
@@ -390,56 +337,6 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
-    }
-
-    fn create_provider(
-        &self,
-        font_description: &Option<&FontDescription>,
-    ) -> Option<gtk::CssProvider> {
-        let Some(font_description) = font_description else {
-            info!("set font default");
-            let provider = gtk::CssProvider::new();
-            let css = String::from("textview {}");
-            provider.load_from_string(&css);
-
-            //gtk::style_context_remove_provider_for_display(&text_view.display(), &provider);
-            return None;
-        };
-
-        let family = font_description.family();
-        let size = font_description.size() / pango::SCALE;
-
-        info!("set font {:?}", font_description.to_string());
-        debug!(
-            "set familly {:?} gravity {:?} weight {:?} size {} variations {:?} stretch {:?}",
-            font_description.family(),
-            font_description.gravity(),
-            font_description.weight(),
-            font_description.size(),
-            font_description.variations(),
-            font_description.stretch(),
-        );
-
-        let provider = gtk::CssProvider::new();
-
-        let mut css = String::with_capacity(100);
-
-        css.push_str("textview {");
-        css.push_str("font-size: ");
-        css.push_str(&size.to_string());
-        css.push_str("px;\n");
-
-        if let Some(family) = family {
-            css.push_str("font-family: ");
-            css.push('"');
-            css.push_str(family.as_str());
-            css.push_str("\";\n");
-        }
-        css.push_str("}");
-
-        provider.load_from_string(&css);
-
-        Some(provider)
     }
 
     //TODO bind to the property
@@ -516,6 +413,83 @@ impl UnitControlPanelImpl {
     pub fn display_definition_file_page(&self) {
         self.unit_panel_stack
             .set_visible_child_name("definition_file_page");
+    }
+}
+
+#[glib::derived_properties]
+impl ObjectImpl for UnitControlPanelImpl {
+    fn constructed(&self) {
+        self.parent_constructed();
+
+        self.set_modes(&self.start_modes, UnitContolType::Start);
+        self.set_modes(&self.stop_modes, UnitContolType::Stop);
+        self.set_modes(&self.restart_modes, UnitContolType::Restart);
+
+        self.unit_panel_stack.connect_pages_notify(|view_stack| {
+            info!("page notify {:?}", view_stack.visible_child_name());
+        });
+
+        /*         self.unit_panel_stack.connect_visible_child_name_notify(|view_stack| {
+            info!("connect_visible_child_name_notify {:?}", view_stack.visible_child_name());
+        }); */
+        {
+            let unit_journal_panel = self.unit_journal_panel.clone();
+            let unit_dependencies_panel = self.unit_dependencies_panel.clone();
+            let unit_file_panel = self.unit_file_panel.clone();
+            self.unit_panel_stack
+                .connect_visible_child_notify(move |view_stack| {
+                    debug!(
+                        "connect_visible_child_notify {:?}",
+                        view_stack.visible_child_name()
+                    );
+
+                    if let Some(child) = view_stack.visible_child() {
+                        if child.downcast_ref::<JournalPanel>().is_some() {
+                            debug!("It a journal");
+                            unit_journal_panel.set_visible_on_page(true);
+                            unit_dependencies_panel.set_visible_on_page(false);
+                            unit_file_panel.set_visible_on_page(false);
+                        } else if child.downcast_ref::<UnitDependenciesPanel>().is_some() {
+                            debug!("It's  dependency");
+                            unit_journal_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_visible_on_page(true);
+                            unit_file_panel.set_visible_on_page(false);
+                        } else if child.downcast_ref::<UnitFilePanel>().is_some() {
+                            debug!("It's file panel");
+                            unit_journal_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_visible_on_page(true);
+                            unit_file_panel.set_visible_on_page(true);
+                        } else {
+                            //It' the last one InfoPanel
+                            unit_journal_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_visible_on_page(false);
+                            unit_file_panel.set_visible_on_page(false);
+                        }
+                    }
+                });
+        }
+
+        let family = PREFERENCES.font_family();
+        let size = PREFERENCES.font_size();
+
+        if !font_management::is_default_font(&family, size) {
+            let mut font_description = FontDescription::new();
+
+            if !family.is_empty() {
+                font_description.set_family(&family);
+            }
+
+            if size != 0 {
+                let scaled_size = size as i32 * pango::SCALE;
+                font_description.set_size(scaled_size);
+            }
+
+            let action = InterPanelAction::SetFont(Some(&font_description));
+
+            self.set_inter_action(&action);
+
+            FONT_CONTEXT.set_font_description(font_description);
+        }
     }
 }
 

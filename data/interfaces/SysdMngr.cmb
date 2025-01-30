@@ -94,7 +94,8 @@
 	(21,23,"GtkAdjustment",None,22,None,None,None,0,None,None),
 	(21,24,"AdwComboRow","timestamp_style",8,None,None,None,1,None,None),
 	(21,28,"AdwActionRow","select_font_row",8,None,None,None,2,None,None),
-	(21,29,"GtkButton",None,28,None,None,None,0,None,None),
+	(21,29,"GtkButton",None,28,None,None,None,1,None,None),
+	(21,30,"GtkButton",None,28,None,None,None,0,None,None),
 	(29,1,"GtkBox","UnitInfoPanel",None,None,None,None,0,None,None),
 	(29,2,"GtkBox",None,1,None,None,None,0,None,None),
 	(29,3,"GtkButton","refresh_button",2,None,None,None,0,None,None),
@@ -325,6 +326,8 @@
 	(21,29,"GtkButton","label","Select Font",None,None,None,None,None,None,None,None,None),
 	(21,29,"GtkWidget","css-classes","suggested-action",None,None,None,None,None,None,None,None,None),
 	(21,29,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
+	(21,30,"GtkButton","label","Default",None,None,None,None,None,None,None,None,None),
+	(21,30,"GtkWidget","valign","baseline-center",None,None,None,None,None,None,None,None,None),
 	(29,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(29,2,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
 	(29,3,"GtkButton","child",None,0,None,None,None,4,None,None,None,None),
@@ -639,7 +642,8 @@
 	(179,54,20,"GtkCheckButton","toggled","plain_option_toggled",None,0,1,0,None),
 	(180,30,13,"GtkScrolledWindow","edge-overshot","scwin_edge_overshot",None,0,1,0,None),
 	(181,30,13,"GtkScrolledWindow","edge-reached","scwin_edge_reached",None,0,1,0,None),
-	(182,21,29,"GtkButton","clicked","select_font_clicked",None,0,1,0,None)
+	(182,21,29,"GtkButton","clicked","select_font_clicked",None,0,1,0,None),
+	(183,21,30,"GtkButton","clicked","select_font_default",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

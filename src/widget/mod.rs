@@ -1,7 +1,4 @@
-use gtk::{
-    ffi::GTK_STYLE_PROVIDER_PRIORITY_APPLICATION, pango::FontDescription, prelude::WidgetExt,
-};
-use log::info;
+use gtk::pango::FontDescription;
 
 pub mod app_window;
 pub mod button_icon;
@@ -21,27 +18,4 @@ pub enum InterPanelAction<'a> {
     SetFont(Option<&'a FontDescription>),
     SetFontProvider(Option<&'a gtk::CssProvider>, Option<&'a gtk::CssProvider>),
     SetDark(bool),
-}
-
-pub fn set_text_view_font(
-    old_provider: Option<&gtk::CssProvider>,
-    new_provider: Option<&gtk::CssProvider>,
-    text_view: &gtk::TextView,
-) {
-    if let Some(old_provider) = old_provider {
-        info!("set font default");
-        let provider = gtk::CssProvider::new();
-        let css = String::from("textview {}");
-        provider.load_from_string(&css);
-
-        gtk::style_context_remove_provider_for_display(&text_view.display(), old_provider);
-    };
-
-    if let Some(new_provider) = new_provider {
-        gtk::style_context_add_provider_for_display(
-            &text_view.display(),
-            new_provider,
-            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION as u32,
-        );
-    }
 }

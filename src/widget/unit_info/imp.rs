@@ -22,12 +22,11 @@ use log::{info, warn};
 use crate::{
     systemd::data::UnitInfo,
     utils::{
+        font_management::{set_text_view_font, FONT_CONTEXT},
         text_view_hyperlink::{self, LinkActivator},
         writer::UnitInfoWriter,
     },
-    widget::{
-        app_window::AppWindow, info_window::InfoWindow, set_text_view_font, InterPanelAction,
-    },
+    widget::{app_window::AppWindow, info_window::InfoWindow, InterPanelAction},
 };
 
 use super::construct_info::fill_all_info;
@@ -174,7 +173,20 @@ impl ObjectSubclass for UnitInfoPanelImp {
 impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        set_font_context(&self.unit_info_textview);
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}
 impl BoxImpl for UnitInfoPanelImp {}
+
+fn set_font_context(text_view: &gtk::TextView) {
+    let context = text_view.pango_context();
+    let fd = context.font_description();
+    if let Some(fd) = fd {
+        log::warn!("FD {}", fd.to_string());
+        FONT_CONTEXT.set_font_description(fd);
+    } else {
+        log::warn!("NO FONT Description")
+    }
+}

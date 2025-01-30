@@ -26,13 +26,13 @@ use crate::{
         enums::{DependencyType, UnitType},
         Dependency,
     },
-    utils::text_view_hyperlink::LinkActivator,
+    utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
     widget::{
         app_window::AppWindow,
         menu_button::{ExMenuButton, OnClose},
-        set_text_view_font,
     },
 };
+
 use crate::{
     utils::{
         text_view_hyperlink,

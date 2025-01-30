@@ -20,9 +20,8 @@ use log::{debug, info, warn};
 use crate::{
     consts::SUGGESTED_ACTION,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
-    widget::{
-        app_window::AppWindow, preferences::data::PREFERENCES, set_text_view_font, InterPanelAction,
-    },
+    utils::font_management::set_text_view_font,
+    widget::{app_window::AppWindow, preferences::data::PREFERENCES, InterPanelAction},
 };
 
 use super::{dosini, flatpak};
