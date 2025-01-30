@@ -4,6 +4,7 @@ use adw::{prelude::*, subclass::prelude::*, EnumListItem};
 use gtk::{
     gio,
     glib::{self, BoolError},
+    pango,
 };
 use log::{info, warn};
 use std::cell::{OnceCell, RefCell};
@@ -86,7 +87,14 @@ impl PreferencesDialogImpl {
 
     #[template_callback]
     fn select_font_clicked(&self) {
-        let font_dialog = gtk::FontDialog::builder().modal(false).build();
+        let filter = gtk::CustomFilter::new(move |object| {
+            info!("OBJ type {}", object.type_()); //PangoFcFace
+            true
+        });
+        let font_dialog = gtk::FontDialog::builder()
+            .modal(false)
+            .filter(&filter)
+            .build();
 
         let parent = self.app_window.borrow();
         let window = parent.as_ref().map(|w| w.clone());
@@ -94,31 +102,33 @@ impl PreferencesDialogImpl {
 
         let font_description = FONT_CONTEXT.font_description();
 
-        warn!("FD {}", font_description.to_str());
+        warn!(
+            "FD {} family {:?} size {}",
+            font_description.to_str(),
+            font_description.family(),
+            font_description.size() / pango::SCALE
+        );
+
         font_dialog.choose_font(
             parent.as_ref(),
             Some(&font_description),
             None::<&gio::Cancellable>,
-            move |result| {
-                if let Ok(font_description) = result {
+            move |result| match result {
+                Ok(font_description) => {
                     let font_name = font_description.to_string();
-                    info!("Font {:?}", font_description.to_string());
-                    select_font_row.set_subtitle(&font_name);
+                    info!("Selected Font {:?}", font_description.to_string());
 
                     PREFERENCES.set_font(&font_description);
 
                     if let Some(window) = window {
-                        let action = if PREFERENCES.font_family().is_empty()
-                            && PREFERENCES.font_size() == 0
-                        {
-                            InterPanelAction::SetFont(None)
-                        } else {
-                            InterPanelAction::SetFont(Some(&font_description))
-                        };
+                        let action = InterPanelAction::SetFont(Some(&font_description));
 
                         window.set_inter_action(&action);
                     }
+
+                    select_font_row.set_subtitle(&font_name);
                 }
+                Err(e) => warn!("Select font error: {:?}", e),
             },
         );
     }
@@ -133,7 +143,16 @@ impl PreferencesDialogImpl {
             window.set_inter_action(&action);
         }
 
-        self.select_font_row.set_subtitle("default");
+        let select_font_row = self.select_font_row.clone();
+
+        glib::spawn_future_local(async move {
+            gio::spawn_blocking(move || {})
+                .await
+                .expect("Task needs to finish successfully.");
+
+            let font_description = FONT_CONTEXT.font_description();
+            select_font_row.set_subtitle(&font_description.to_string());
+        });
     }
 }
 

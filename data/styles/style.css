@@ -11,6 +11,6 @@ label.journal_message {
 }
 
 textview {
-    font-family: 'Fira Code', 'Droid Sans Mono', 'monospace', monospace;
+    font-family: 'Fira Code', 'Droid Sans Mono', monospace;
     font-size: 12pt;
 }

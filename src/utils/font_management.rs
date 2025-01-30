@@ -5,7 +5,7 @@ use gtk::{
     pango::{self, FontDescription},
     prelude::WidgetExt,
 };
-use log::{debug, info};
+use log::{debug, info, warn};
 
 pub static FONT_CONTEXT: LazyLock<FontContext> = LazyLock::new(|| FontContext::default());
 
@@ -98,12 +98,15 @@ pub fn set_text_view_font(
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION as u32,
         );
     }
+}
 
-    /*     let context = text_view.pango_context();
-    let fd = context.font_description();
-    if let Some(fd) = fd {
-        log::warn!("FD {}", fd.to_string())
+pub fn set_font_context(text_view: &gtk::TextView) {
+    let context = text_view.pango_context();
+    let font_description = context.font_description();
+    if let Some(font_description) = font_description {
+        info!("Font description {}", font_description.to_string());
+        FONT_CONTEXT.set_font_description(font_description);
     } else {
-        log::warn!("NO FONT ")
-    } */
+        warn!("NO FONT Description")
+    }
 }

@@ -520,7 +520,7 @@ fn fill_search_bar(
             let filter_button_status = filter_button_status.clone();
             let filter_button_active = filter_button_active.clone();
 
-            let custom_filter = gtk::CustomFilter::new(move |object| {
+            gtk::CustomFilter::new(move |object| {
                 let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                     error!("some wrong downcast_ref {:?}", object);
                     return false;
@@ -540,9 +540,7 @@ fn fill_search_bar(
                         unit.display_name().contains(text.as_str())
                     }
                     && filter_button_active.contains_value(Some(active_state.as_str()))
-            });
-
-            custom_filter
+            })
         };
 
         /*         filter_button_unit_type.set_filter(custom_filter.clone());
