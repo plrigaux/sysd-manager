@@ -4,9 +4,9 @@ use adw::{prelude::*, subclass::prelude::*, EnumListItem};
 use gtk::{
     gio,
     glib::{self, BoolError},
-    pango,
+    pango::{self, FontFace},
 };
-use log::{info, warn};
+use log::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 
 use crate::{
@@ -88,12 +88,20 @@ impl PreferencesDialogImpl {
     #[template_callback]
     fn select_font_clicked(&self) {
         let filter = gtk::CustomFilter::new(move |object| {
-            info!("OBJ type {}", object.type_()); //PangoFcFace
-            true
+            let Some(font_face) = object.downcast_ref::<FontFace>() else {
+                error!("some wrong downcast_ref {:?}", object);
+                return false;
+            };
+
+            let font_familly = font_face.family();
+
+            font_familly.is_monospace()
         });
+
         let font_dialog = gtk::FontDialog::builder()
             .modal(false)
             .filter(&filter)
+            .title("Pick a Monospace Font")
             .build();
 
         let parent = self.app_window.borrow();
@@ -102,12 +110,22 @@ impl PreferencesDialogImpl {
 
         let font_description = FONT_CONTEXT.font_description();
 
-        warn!(
+        debug!(
             "FD {} family {:?} size {}",
             font_description.to_str(),
             font_description.family(),
             font_description.size() / pango::SCALE
         );
+
+        /*         if let Some(family) = font_description.family() {
+            for sub_family in family.split(",") {
+                info!("set sub {sub_family}");
+                font_description.set_family(sub_family);
+                break;
+            }
+        } */
+
+        warn!("FD {} ", font_description.to_str(),);
 
         font_dialog.choose_font(
             parent.as_ref(),
@@ -222,7 +240,7 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         match text.parse::<u32>() {
             Ok(a) => a,
             Err(_e) => {
-                warn!("Parse error {:?} to u32", text);
+                info!("Parse error {:?} to u32 do falback to f64", text);
                 //spin.set_text(&value32.to_string());
                 if value > f64::from(i32::MAX) {
                     u32::MAX
