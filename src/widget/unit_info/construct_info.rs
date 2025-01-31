@@ -387,7 +387,7 @@ fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 }
 
 fn fill_error(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let status_errno = valop_to_u32(map.get("StatusErrno"), 0);
+    let status_errno = valop_to_i32(map.get("StatusErrno"), 0);
     let status_bus_error = valop_to_str(map.get("StatusBusError"), "");
     let status_varlink_error = valop_to_str(map.get("StatusVarlinkError"), "");
 
@@ -1130,6 +1130,19 @@ fn valop_to_u32(value: Option<&OwnedValue>, default: u32) -> u32 {
     };
 
     if let Value::U32(converted) = value as &Value {
+        *converted
+    } else {
+        warn!("Wrong zvalue conversion to u32: {:?}", value);
+        default
+    }
+}
+
+fn valop_to_i32(value: Option<&OwnedValue>, default: i32) -> i32 {
+    let Some(value) = value else {
+        return default;
+    };
+
+    if let Value::I32(converted) = value as &Value {
         *converted
     } else {
         warn!("Wrong zvalue conversion to u32: {:?}", value);
