@@ -80,6 +80,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.11.0" date="2025-01-30">
+      <description>
+        <ul>
+          <li>New Feature: select Monospace Font</li>
+          <li>Fix unit conversion</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.10.3" date="2025-01-27">
       <description>
         <ul>
