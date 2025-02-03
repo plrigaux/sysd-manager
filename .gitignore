@@ -7,8 +7,7 @@
 /tmp
 /repo
 /builddir
-/build_aux/__pycache__
 cargo-sources.json
 /tiny_daemon/target/
-/__pycache__/
+__pycache__/
 .vscode
