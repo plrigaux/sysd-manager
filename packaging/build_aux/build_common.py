@@ -172,5 +172,5 @@ def version(allow_dirty: bool, message: str, force: bool):
         git_tag.insert(2, "-f")
         git_push.insert(2, "-f")
 
-    bc.cmd_run(git_tag)
-    bc.cmd_run(git_push)
+    cmd_run(git_tag)
+    cmd_run(git_push)
