@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+import build_aux.build_common as bc
+from  build_aux.build_common import color
+import os
+import re
+
+AUR_DIR="../aur/sysd-manager"
+PKGBUILD="PKGBUILD"
+
+def main():
+    os.chdir("..")
+
+    #version
+    version = bc.get_version()
+    print(f"Version {color.BOLD}{color.CYAN}{version}{color.END}")
+
+    #set commit tag
+    tag_name = bc.get_version_tag()
+    print(f"Tag name {color.BOLD}{color.CYAN}{tag_name}{color.END}")
+
+
+    commit = bc.get_tag_commit(tag_name)
+
+    print(f"Commit {color.BOLD}{color.CYAN}{commit}{color.END}")
+
+
+    pkgbuild_text = ""
+
+    with open(f'packaging/aur/{PKGBUILD}', "r") as pkgbuild_file:
+        pkgbuild_text = pkgbuild_file.read()
+
+    #re.sub(r'pkgver', f"pkgver={version}", pkgbuild_text)
+    pkgbuild_text = pkgbuild_text.replace("pkgver=\n", f"pkgver={version}\n")
+
+    pkgbuild_text = pkgbuild_text.replace("_commit=\n", f"_commit={commit}\n")
+
+
+    print(pkgbuild_text)
+    #sums
+
+
+main()

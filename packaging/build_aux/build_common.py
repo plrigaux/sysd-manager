@@ -94,10 +94,15 @@ def toml() -> dict:
     return cargo_toml
 
 
-def get_version_tag() -> str:
+def get_version() -> str:
     cargo_toml = toml()
 
     version = cargo_toml["package"]["version"]
+
+    return version
+
+def get_version_tag() -> str:
+    version = get_version() 
     tag_name = f"v{version}"
 
     return tag_name
@@ -146,11 +151,11 @@ def get_tag_commit(tag_label: Optional[str]) -> Optional[str]:
 def version(allow_dirty: bool, message: str, force: bool):
     print(f"{color.CYAN}Create as git tag and push it{color.END}")
 
-    if bc.is_repo_dirty() and not allow_dirty:
+    if is_repo_dirty() and not allow_dirty:
         print(f"repo dirty {color.BOLD}Exit{color.END}")
         exit()
 
-    tag_name = bc.get_version_tag()
+    tag_name = get_version_tag()
 
     print(f"Program version {color.BOLD}{version}{color.END}")
     print(f"Git tag {color.BOLD}{color.YELLOW}{tag_name}{color.END}")

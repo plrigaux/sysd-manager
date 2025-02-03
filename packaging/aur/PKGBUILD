@@ -24,17 +24,11 @@ backup=()
 options=()
 install=
 changelog=
-_commit=799bad53e3290983942df51c57374ac86aaa4727
+_commit=
 source=("git+https://github.com/plrigaux/sysd-manager.git#commit=$_commit")
 noextract=()
-sha256sums=('2f8779493bfaf2d1c2485b209ca80a3830023695db4cb8b49dc0d18ff2ae3d2f')
+sha256sums=
 validpgpkeys=()
-#
-#prepare() {
-#  cd $pkgname
-#	export RUSTUP_TOOLCHAIN=stable
-#	cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
-#}
 
 build() {
   cd $pkgname
