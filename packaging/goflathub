@@ -4,7 +4,7 @@ import argparse
 import logging
 import json
 import oyaml as yaml
-
+import os
 import build_aux.build_common as bcommon
 import build_aux.flatpak_cargo_generator as cargo_gen
 
@@ -25,6 +25,7 @@ COPR_REPO = "sysd-manager"
 
 APP_ID = "io.github.plrigaux.sysd-manager"
 MANIFEST = f"{APP_ID}.yaml"
+MANIFEST_LOC = "packaging/flathub"
 # FLATHUB_DIR = "../flathub"
 FLATHUB_DIR = "../io.github.plrigaux.sysd-manager"
 FLATPACK_BUILD_DIR = "../flatpak_sysdm"
@@ -33,6 +34,9 @@ CARGO_SOURCES = "cargo-sources.json"
 
 
 def main():
+
+    os.chdir("..")
+
     parser = argparse.ArgumentParser(
         description="Copr RPM builder",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -326,7 +330,7 @@ def set_manifest(from_git: bool, out_dir):
     print(f"set manifest to file: {out_file}")
     manifest_obj = None
 
-    with open(MANIFEST, "r") as manifest:
+    with open(f"{MANIFEST_LOC}/{MANIFEST}", "r") as manifest:
         manifest_obj = yaml.safe_load(manifest)
 
     if from_git:
