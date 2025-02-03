@@ -141,3 +141,31 @@ def get_tag_commit(tag_label: Optional[str]) -> Optional[str]:
 
 
     return out2
+
+
+def version(allow_dirty: bool, message: str, force: bool):
+    print(f"{color.CYAN}Create as git tag and push it{color.END}")
+
+    if bc.is_repo_dirty() and not allow_dirty:
+        print(f"repo dirty {color.BOLD}Exit{color.END}")
+        exit()
+
+    tag_name = bc.get_version_tag()
+
+    print(f"Program version {color.BOLD}{version}{color.END}")
+    print(f"Git tag {color.BOLD}{color.YELLOW}{tag_name}{color.END}")
+
+    if not message:
+        print(f'Message needed (-m "a message ...")')
+        message = f'version {tag_name}'
+        print(f'Message supplied (-m "{message}")')
+
+    git_tag = ["git", "tag", "-m", f'"{message}"', tag_name]
+    git_push = ["git", "push", "origin", "tag", tag_name]
+
+    if force:
+        git_tag.insert(2, "-f")
+        git_push.insert(2, "-f")
+
+    bc.cmd_run(git_tag)
+    bc.cmd_run(git_push)

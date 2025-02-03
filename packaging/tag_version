@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+import build_aux.build_common as bc
+
+
+bt.version(False, None, False)

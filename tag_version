@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-from importlib.util import spec_from_loader, module_from_spec
-from importlib.machinery import SourceFileLoader 
-
-spec = spec_from_loader("bt", SourceFileLoader("bt", "./build-tools"))
-bt = module_from_spec(spec)
-spec.loader.exec_module(bt)
-
-bt.version(False, None, False)
