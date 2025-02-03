@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import build_aux.build_common as bc
 
+import os
 
+os.chdir("..")
 bc.version(False, None, False)
