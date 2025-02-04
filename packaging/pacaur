@@ -3,13 +3,38 @@ import build_aux.build_common as bc
 from  build_aux.build_common import color
 import os
 import re
+import argparse
 
 AUR_DIR="../aur/sysd-manager"
 PKGBUILD="PKGBUILD"
+AUR_OUT_DIR="../aur/sysd-manager"
 
 def main():
     os.chdir("..")
 
+    parser = argparse.ArgumentParser(
+        description="Aur builder",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument(
+        "action",
+        choices=[
+            "sum",
+            "pkfile",
+
+        ],
+        help="action to perform",)
+
+    args = parser.parse_args()
+
+    match args.action:
+        case "sum":
+            do_check_sum()
+        case "pkfile":
+            create_pkgbuild()
+
+def create_pkgbuild():
     #version
     version = bc.get_version()
     print(f"Version {color.BOLD}{color.CYAN}{version}{color.END}")
@@ -29,14 +54,40 @@ def main():
     with open(f'packaging/aur/{PKGBUILD}', "r") as pkgbuild_file:
         pkgbuild_text = pkgbuild_file.read()
 
-    #re.sub(r'pkgver', f"pkgver={version}", pkgbuild_text)
+    #set the version
     pkgbuild_text = pkgbuild_text.replace("pkgver=\n", f"pkgver={version}\n")
 
+    #put the commit label
     pkgbuild_text = pkgbuild_text.replace("_commit=\n", f"_commit={commit}\n")
 
 
+    with open(f'{AUR_OUT_DIR}/{PKGBUILD}', "w") as pkgbuild_file:
+        pkgbuild_file.write(pkgbuild_text)        
+    
+    
     print(pkgbuild_text)
     #sums
+
+
+def do_check_sum():
+    cmd = ["makepkg", "-g"]  
+    checksum = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
+
+    print("OUT: ", checksum)
+
+    pkgbuild_text = ""
+
+    with open(f'{AUR_OUT_DIR}/{PKGBUILD}', "r") as pkgbuild_file:
+        print("WRITE SUM on ")
+        pkgbuild_text = pkgbuild_file.read()
+        #set the version
+    
+    pkgbuild_text = pkgbuild_text.replace("sha256sums=()\n", checksum)
+
+    with open(f'{AUR_OUT_DIR}/{PKGBUILD}', "w") as pkgbuild_file:
+        print("WRITE SUM ")
+
+        pkgbuild_file.write(pkgbuild_text)       
 
 
 main()
