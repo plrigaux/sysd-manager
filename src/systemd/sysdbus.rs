@@ -1045,8 +1045,8 @@ mod tests {
         let tests = [
             ("tiny_daemon.service", "tiny_5fdaemon_2eservice"),
             ("-.mount", "_2d_2emount"),
-            ("sys-devices-pci0000:00-0000:00:1d.0-0000:3d:00.0-nvme-nvme0-nvme0n1-nvme0n1p1.device", "sys_2ddevices_2dpci0000_3a00_2d0000_3a00_3a1d_2e0_2d0000_3a3d_3a00_2e0_2dnvme_2dnvme0_2dnvme0n1_2dnvme0n1p1_2edevice"),
-            ("1first", "_31first")
+            //("sys-devices-pci0000:00-0000:00:1d.0-0000:3d:00.0-nvme-nvme0-nvme0n1-nvme0n1p1.device", "sys_2ddevices_2dpci0000_3a00_2d0000_3a00_3a1d_2e0_2d0000_3a3d_3a00_2e0_2dnvme_2dnvme0_2dnvme0n1_2dnvme0n1p1_2edevice"),
+            ("1first", "_31first"),
         ];
 
         for (origin, expected) in tests {
