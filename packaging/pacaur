@@ -22,6 +22,9 @@ def main():
         choices=[
             "sum",
             "pkfile",
+            "gen",
+            "clean",
+            "make"
 
         ],
         help="action to perform",)
@@ -29,10 +32,16 @@ def main():
     args = parser.parse_args()
 
     match args.action:
+        case "gen":
+            gen_pkfile()
         case "sum":
             do_check_sum()
         case "pkfile":
             create_pkgbuild()
+        case "clean":
+            clean()
+        case "make":
+            make()
 
 def create_pkgbuild():
     #version
@@ -89,5 +98,29 @@ def do_check_sum():
 
         pkgbuild_file.write(pkgbuild_text)       
 
+def gen_pkfile(): 
+    create_pkgbuild()
+    do_check_sum()
+
+    #makepkg --printsrcinfo > .SRCINFO
+
+def make(): 
+    gen_pkfile()
+
+    bc.cmd_run(["makepkg"], cwd=f"{AUR_OUT_DIR}")
+
+def clean():
+    list_dir = [
+        "PKGBUILD",
+        "src",
+        "sysd-manager",
+        "pkg",
+        "*.zst",
+    ]
+
+    for f in list_dir:
+        print(f"{color.BOLD}Deleting{color.END} {color.YELLOW}{f}{color.END}")
+        #x = " ".join(["rm", "-fr", f])
+        bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
 
 main()

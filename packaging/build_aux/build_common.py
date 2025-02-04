@@ -25,10 +25,23 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True) -
         print(f"{color.GREEN}Change Working Dir to: {cwd}{color.END}")
 
     if verbose:
-        cmd_str = " ".join(cmd)
+        cmd_str = ""
+        if isinstance(object, list):
+            cmd_str = " ".join(cmd)
+        else:
+            cmd_str = cmd
+
         print(f"{color.DARKCYAN}{cmd_str}{color.END}")
 
-    ret = subprocess.run(cmd, shell=shell, cwd=cwd)
+
+    cmd1 = ""
+    if shell:
+        cmd1 = " ".join(cmd)
+    else:
+        cmd1 = cmd
+
+    ret = subprocess.run(cmd1, shell=shell, cwd=cwd)
+
     try:
         ret.check_returncode()
     except subprocess.CalledProcessError as err:

@@ -66,110 +66,14 @@ For now new features are planned to be added, such as:
 * Compile and install  ```cargo install sysd-manager```
 * Run ```sysd-manager```
 
-### Install on RHEL, Fedora, and CentOS based distributions 
-__Important__ not up to date for a while, since Fedora rust librairies needed to build the project aren't updated.
-You can install the application from COPR
+### Arch
 
-#### Add the repo
-First, you need to have dnf-plugins-core installed
-```
-sudo dnf install dnf-plugins-core
-```
+A Arch package has been made for __SysD Manager__. It can be found at  https://aur.archlinux.org/packages/sysd-manager
 
-Then you can enable the repo with the following command
-```
-sudo dnf copr enable plrigaux/sysd-manager
-```
-#### Install with dnf
+### Flathub
 
-Then you can simply install sysd-manager with the following command
-```
-sudo dnf install sysd-manager
-```
-### Generate RPM for COPR
+__SysD Manager__ has a Flathub version. Search it on Gnome software or drirectly at https://flathub.org/apps/io.github.plrigaux.sysd-manager
 
-1 be in the mock group
-Add your user name to the mock group
-```
-sudo usermod -a -G mock <my user name>
-```
-
-### Generate a RPM locally
-You can generate your rpm locally with the help of the crate `cargo-generate-rpm`.
-
-#### Install
-```
-cargo install cargo-generate-rpm
-```
-
-#### Usage
-```
-cargo build --release
-strip -s target/release/sysd-manager
-cargo generate-rpm
-```
-
-#### Install with dnf
-
-Then you can install sysd-manager with the following command 
-
-*Don't forget to ajust the the rpm file path*
-```
-sudo dnf localinstall target/generate-rpm/sysd-manager[version-release-arch].rpm
-```
-
-#### Setup 
-```bash
-cargo install cargo-generate-rpm
-```
-#### Usage
-Run the following script. 
-
-```bash
-sh ./create_rpm
-```
-
-It will create a rpm file in the target/generate-rpm subdirectory.
-
-### Flatpak
-
-__SysD Manager__ can be build as a flatpak, but the flatpak version has limitations that can be overcome.
-
-The limitation are :
-* can't display journal
-* Can't save the unit file
-
-The application discloses how to overcome those limitations.
-
-#### Install the builder
-
-```
-flatpak install org.flatpak.Builder
-```
-
-#### Build the flatpak
-```
-./goflatub build
-```
-
-#### Run the flatpak
-
-To run the compiled flatpak execute the following command
-```
-./goflatub run
-```
-
-To access all program's functionnalities, you need the to have program __flatpak-spawn__ install on your system.
-
-
-#### Possible issue
-
-No remote refs found for ‘flathub’
-
-
-```
-flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-```
 
 ### APT
 *Later waiting for a contributor or when I will reinstall e Debian like distro*
