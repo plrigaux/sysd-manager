@@ -7,7 +7,9 @@ import argparse
 
 AUR_DIR="../aur/sysd-manager"
 PKGBUILD="PKGBUILD"
+INSTALL_FILE="sysd-manager.install" 
 AUR_OUT_DIR="../aur/sysd-manager"
+TEMPLATE_DIR='packaging/aur'
 
 def main():
     os.chdir("..")
@@ -60,7 +62,7 @@ def create_pkgbuild():
 
     pkgbuild_text = ""
 
-    with open(f'packaging/aur/{PKGBUILD}', "r") as pkgbuild_file:
+    with open(f'{TEMPLATE_DIR}/{PKGBUILD}', "r") as pkgbuild_file:
         pkgbuild_text = pkgbuild_file.read()
 
     #set the version
@@ -74,8 +76,10 @@ def create_pkgbuild():
         pkgbuild_file.write(pkgbuild_text)        
     
     
-    print(pkgbuild_text)
+    #print(pkgbuild_text)
     #sums
+
+    bc.cmd_run(["cp", f"{TEMPLATE_DIR}/{INSTALL_FILE}", f"{AUR_OUT_DIR}"])
 
 
 def do_check_sum():
@@ -98,11 +102,21 @@ def do_check_sum():
 
         pkgbuild_file.write(pkgbuild_text)       
 
+
+def generate_sourceinfo():
+    cmd = ["makepkg", "--printsrcinfo"]  
+    printsrcinfo = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
+
+    with open(f'{AUR_OUT_DIR}/.SRCINFO', "w") as srcinfo_file:
+        print("WRITE .SRCINFO")
+        srcinfo_file.write(printsrcinfo)     
+
+
 def gen_pkfile(): 
     create_pkgbuild()
     do_check_sum()
+    generate_sourceinfo()
 
-    #makepkg --printsrcinfo > .SRCINFO
 
 def make(): 
     gen_pkfile()
@@ -116,6 +130,8 @@ def clean():
         "sysd-manager",
         "pkg",
         "*.zst",
+        ".SRCINFO",
+        f"{INSTALL_FILE}",
     ]
 
     for f in list_dir:
