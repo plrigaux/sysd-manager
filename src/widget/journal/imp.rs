@@ -24,6 +24,7 @@ use gtk::{
 use std::{
     cell::{Cell, RefCell},
     sync::LazyLock,
+    time::Duration,
 };
 
 use log::{debug, error, info, warn};
@@ -373,22 +374,21 @@ impl JournalPanelImp {
             Some(u) => u,
             None => {
                 self.unit.replace(None);
-                self.update_journal();
+                self.update_journal(); //to clear the journal
                 return;
             }
         };
 
         let old_unit = self.unit.replace(Some(unit.clone()));
-        if let Some(old_unit) = old_unit {
-            if old_unit.primary() != unit.primary() {
-                self.unit_journal_loaded.set(false);
-                self.from_time.set(None);
-            }
-        } else {
+
+        if unit.primary() != old_unit.map_or(String::new(), |o_unit| o_unit.primary()) {
+            self.unit_journal_loaded.set(false);
             self.from_time.set(None);
         }
 
-        self.update_journal()
+        if self.visible_on_page.get() && !self.unit_journal_loaded.get() {
+            self.update_journal()
+        }
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
@@ -417,7 +417,8 @@ impl JournalPanelImp {
             .expect("Liststore supposed to be set")
             .clone();
         let boot_filter = self.boot_filter.borrow().clone();
-        let in_color = PREFERENCES.journal_colors();
+        //let in_color = PREFERENCES.journal_colors();
+        let duration = Duration::from_millis(1000); // wait a second
         let from_time = self.from_time.get();
         let journal = self.obj().clone();
 
@@ -428,7 +429,7 @@ impl JournalPanelImp {
             let journal_answer = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(
                     &unit,
-                    in_color,
+                    Some(duration),
                     oldest_first,
                     journal_max_events,
                     boot_filter,
@@ -472,7 +473,7 @@ impl JournalPanelImp {
                         journal.set_from_time(Some(ft));
                     }
 
-                    if size == 0 {
+                    if store.n_items() == 0 {
                         PANEL_EMPTY
                     } else {
                         PANEL_JOURNAL

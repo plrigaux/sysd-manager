@@ -1,8 +1,10 @@
 use gtk::glib;
 
-enum JournalEventChunkInfo {
+pub enum JournalEventChunkInfo {
     NoMore,
     ChunkMaxReached,
+    NoEventsAfterWaiting,
+    Invalidate,
 }
 
 pub struct JournalEventChunk {
@@ -34,12 +36,12 @@ impl JournalEventChunk {
         self.events.last()
     }
 
-    pub fn no_more(&mut self) {
-        self.info = JournalEventChunkInfo::NoMore;
+    pub fn set_info(&mut self, info: JournalEventChunkInfo) {
+        self.info = info;
     }
 
-    pub fn max_reached(&mut self) {
-        self.info = JournalEventChunkInfo::ChunkMaxReached;
+    pub fn is_empty(&self) -> bool {
+        self.events.is_empty()
     }
 }
 
