@@ -256,7 +256,7 @@ fn add_since(
     let duration = value_to_u64(value);
 
     if duration != 0 {
-        let since = th::get_since_and_passed_time(duration as i64, timestamp_style);
+        let since = th::get_since_and_passed_time(duration, timestamp_style);
         Some(since)
     } else {
         None
@@ -873,7 +873,7 @@ fn fill_trigger(
     );
 
     let trigger_msg = if timestamp_is_set!(next_elapse) {
-        let (first, second) = th::get_since_and_passed_time(next_elapse as i64, timestamp_style);
+        let (first, second) = th::get_since_and_passed_time(next_elapse, timestamp_style);
 
         format!("{first}; {second}")
     } else {

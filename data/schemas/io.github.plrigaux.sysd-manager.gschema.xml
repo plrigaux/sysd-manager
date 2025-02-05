@@ -65,8 +65,11 @@
         <key name="pref-timestamp-style" type="s">
             <choices>
                 <choice value='Pretty' />
+                <choice value='Pretty usec' />
                 <choice value='UTC' />
+                <choice value='UTC usec' />
                 <choice value='Unix' />
+                <choice value='Unix usec' />
             </choices>
             <default>'Pretty'</default>
             <summary>Format of the printed timestamps</summary>

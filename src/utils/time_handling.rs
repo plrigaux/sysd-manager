@@ -14,11 +14,20 @@ pub enum TimestampStyle {
     #[enum_value(name = "Pretty", nick = "Day YYYY-MM-DD HH:MM:SS TZ")]
     Pretty,
 
+    #[enum_value(name = "Pretty usec", nick = "Day YYYY-MM-DD HH:MM:SS.000000 TZ")]
+    PrettyUsec,
+
     #[enum_value(name = "UTC", nick = "Day YYYY-MM-DD HH:MM:SS UTC")]
     Utc,
 
+    #[enum_value(name = "UTC usec", nick = "Day YYYY-MM-DD HH:MM:SS.000000 UTC")]
+    UtcUsec,
+
     #[enum_value(name = "Unix", nick = "Seconds since the epoch")]
     Unix,
+
+    #[enum_value(name = "Unix usec", nick = "Micro seconds since the epoch")]
+    UnixUsec,
 }
 
 impl TimestampStyle {}
@@ -47,7 +56,10 @@ impl From<&str> for TimestampStyle {
     fn from(style: &str) -> Self {
         match style {
             "UTC" => TimestampStyle::Utc,
+            "UTC usec" => TimestampStyle::UtcUsec,
             "Unix" => TimestampStyle::Unix,
+            "Unix usec" => TimestampStyle::UnixUsec,
+            "Pretty usec" => TimestampStyle::PrettyUsec,
             _ => TimestampStyle::Pretty,
         }
     }
@@ -56,53 +68,66 @@ impl From<&str> for TimestampStyle {
 impl From<i32> for TimestampStyle {
     fn from(style: i32) -> Self {
         match style {
-            1 => TimestampStyle::Utc,
-            2 => TimestampStyle::Unix,
+            1 => TimestampStyle::PrettyUsec,
+            2 => TimestampStyle::Utc,
+            3 => TimestampStyle::UtcUsec,
+            4 => TimestampStyle::Unix,
+            5 => TimestampStyle::UnixUsec,
             _ => TimestampStyle::Pretty,
         }
     }
 }
 
 pub fn get_since_and_passed_time(
-    timestamp: i64,
+    timestamp_usec: u64,
     timestamp_style: TimestampStyle,
 ) -> (String, String) {
     let since = match timestamp_style {
-        TimestampStyle::Pretty => {
-            //format!("{}", since_local.format("%a, %d %b %Y %H:%M:%S %Z")),
-            let since_local = get_date_local(timestamp);
-
-            let time: libc::tm = localtime_or_gmtime_usec(timestamp, false);
-            let time_zone = unsafe { CStr::from_ptr(time.tm_zone) };
-            let time_zone = match time_zone.to_str() {
-                Ok(s) => s,
-                Err(_e) => &since_local.format("%Z").to_string(),
-            };
-
-            let formated_time = since_local.format("%a, %d %b %Y %H:%M:%S").to_string();
-            format!("{formated_time} {time_zone}")
-        }
+        TimestampStyle::Pretty => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S"),
+        TimestampStyle::PrettyUsec => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S%.6f"),
         TimestampStyle::Utc => {
-            let since_local = get_date_utc(timestamp);
+            let since_local = get_date_utc(timestamp_usec);
             since_local.format("%a, %d %b %Y %H:%M:%S %Z").to_string()
         }
+        TimestampStyle::UtcUsec => {
+            let since_local = get_date_utc(timestamp_usec);
+            since_local
+                .format("%a, %d %b %Y %H:%M:%S%.6f %Z")
+                .to_string()
+        }
         TimestampStyle::Unix => {
-            let timestamp_sec = timestamp / USEC_PER_SEC as i64;
-
+            let timestamp_sec = timestamp_usec / USEC_PER_SEC;
             format!("@{timestamp_sec}")
+        }
+        TimestampStyle::UnixUsec => {
+            format!("@{timestamp_usec}")
         }
     };
 
-    (since, format_timestamp_relative_full(timestamp))
+    (since, format_timestamp_relative_full(timestamp_usec))
 }
 
-fn get_date_local(timestamp: i64) -> DateTime<Local> {
-    let timestamp = get_date_utc(timestamp);
+fn pretty(timestamp_usec: u64, format: &str) -> String {
+    let since_local = get_date_local(timestamp_usec);
+
+    let time: libc::tm = localtime_or_gmtime_usec(timestamp_usec as i64, false);
+    let time_zone = unsafe { CStr::from_ptr(time.tm_zone) };
+    let time_zone = match time_zone.to_str() {
+        Ok(s) => s,
+        Err(_e) => &since_local.format("%Z").to_string(),
+    };
+
+    let formated_time = since_local.format(format).to_string();
+    format!("{formated_time} {time_zone}")
+}
+
+fn get_date_local(timestamp_usec: u64) -> DateTime<Local> {
+    let timestamp = get_date_utc(timestamp_usec);
     DateTime::from(timestamp)
 }
 
-fn get_date_utc(timestamp: i64) -> DateTime<Utc> {
-    match Utc.timestamp_micros(timestamp) {
+fn get_date_utc(timestamp_usec: u64) -> DateTime<Utc> {
+    match Utc.timestamp_micros(timestamp_usec as i64) {
         chrono::offset::LocalResult::Single(a) => a,
         chrono::offset::LocalResult::Ambiguous(a, _b) => a,
         chrono::offset::LocalResult::None => panic!("timestamp_opt None"),
@@ -174,8 +199,8 @@ const USEC_PER_MINUTE: u64 = SEC_PER_MINUTE * USEC_PER_SEC;
 pub const USEC_PER_MSEC: u64 = 1000;
 pub const NSEC_PER_USEC: u64 = 1_000;
 
-fn format_timestamp_relative_full(timestamp: i64) -> String {
-    let since_time = get_date_local(timestamp);
+fn format_timestamp_relative_full(timestamp_usec: u64) -> String {
+    let since_time = get_date_local(timestamp_usec);
 
     let now = Local::now();
 

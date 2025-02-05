@@ -11,11 +11,11 @@ impl Default for JournalEvent {
 }
 
 impl JournalEvent {
-    pub fn new_param(priority: u8, time: i64, prefix: String, message: String) -> Self {
+    pub fn new_param(priority: u8, time_in_usec: u64, prefix: String, message: String) -> Self {
         let obj: JournalEvent = glib::Object::new();
         obj.set_prefix(prefix);
         obj.set_message(message);
-        obj.set_timestamp(time);
+        obj.set_timestamp(time_in_usec);
         obj.set_priority(priority);
         obj
     }
@@ -40,7 +40,7 @@ mod imp {
         pub message: RwLock<String>,
 
         #[property(get, set)]
-        pub timestamp: RwLock<i64>,
+        pub timestamp: RwLock<u64>,
 
         #[property(get, set)]
         pub priority: RwLock<u8>,

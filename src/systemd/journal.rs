@@ -143,7 +143,7 @@ pub(super) fn get_unit_journal(
         let since_the_epoch = timestamp
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
-        let time_in_ms = since_the_epoch.as_millis() as i64;
+        let time_in_usec = since_the_epoch.as_micros() as u64;
 
         let pid = get_data(&mut journal_reader, KEY_PID, &default);
         let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
@@ -153,15 +153,15 @@ pub(super) fn get_unit_journal(
 
         let boot_id = get_data(&mut journal_reader, KEY_BOOT_ID, &default);
 
-        let prefix = make_prefix(time_in_ms, name, pid, timestamp_style);
+        let prefix = make_prefix(time_in_usec, name, pid, timestamp_style);
 
-        let journal_event = JournalEvent::new_param(priority, time_in_ms, prefix, message);
+        let journal_event = JournalEvent::new_param(priority, time_in_usec, prefix, message);
 
         if boot_id != last_boot_id {
             if !last_boot_id.is_empty() {
                 let boot_event = JournalEvent::new_param(
                     BOOT_IDX,
-                    time_in_ms - 1,
+                    time_in_usec - 1,
                     String::new(),
                     format!("-- Boot {boot_id} --"),
                 );
@@ -223,36 +223,46 @@ fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
 }
 
 const FMT: &str = "%b %d %T";
+const FMT_USEC: &str = "%b %d %T%.6f";
 
 macro_rules! formated_time {
-    ($local_result:expr) => {
+    ($local_result:expr, $fmt:expr) => {
         match $local_result {
-            chrono::offset::LocalResult::Single(l) => l.format(FMT).to_string(),
-            chrono::offset::LocalResult::Ambiguous(a, _b) => a.format(FMT).to_string(),
+            chrono::offset::LocalResult::Single(l) => l.format($fmt).to_string(),
+            chrono::offset::LocalResult::Ambiguous(a, _b) => a.format($fmt).to_string(),
             chrono::offset::LocalResult::None => "NONE".to_owned(),
         }
     };
 }
 
 fn make_prefix(
-    timestamp: i64,
+    timestamp_usec: u64,
     name: String,
     pid: String,
     timestamp_style: TimestampStyle,
 ) -> String {
     let date = match timestamp_style {
         TimestampStyle::Pretty => {
-            let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, timestamp);
-            formated_time!(local_result)
+            let local_result = chrono::TimeZone::timestamp_micros(&Local, timestamp_usec as i64);
+            formated_time!(local_result, FMT)
+        }
+        TimestampStyle::PrettyUsec => {
+            let local_result = chrono::TimeZone::timestamp_micros(&Local, timestamp_usec as i64);
+            formated_time!(local_result, FMT_USEC)
         }
         TimestampStyle::Utc => {
-            let local_result = chrono::TimeZone::timestamp_millis_opt(&Utc, timestamp);
-            formated_time!(local_result)
+            let local_result = chrono::TimeZone::timestamp_millis_opt(&Utc, timestamp_usec as i64);
+            formated_time!(local_result, FMT)
+        }
+        TimestampStyle::UtcUsec => {
+            let local_result = chrono::TimeZone::timestamp_millis_opt(&Utc, timestamp_usec as i64);
+            formated_time!(local_result, FMT_USEC)
         }
         TimestampStyle::Unix => {
-            let timestamp = timestamp / 1000;
+            let timestamp = timestamp_usec / 1000_000;
             format!("@{timestamp}")
         }
+        TimestampStyle::UnixUsec => format!("@{timestamp_usec}"),
     };
 
     format!("{date} {name}[{pid}]: ")
