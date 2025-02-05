@@ -2,7 +2,7 @@ enum JournalAnswers {
     //Tokens(Vec<colorise::Token>, String),
     //Text(String),
     Markup(String),
-    Events(Vec<JournalEvent>),
+    Events(JournalEventChunk),
 }
 
 use gtk::{
@@ -33,7 +33,7 @@ use crate::{
         self,
         data::UnitInfo,
         journal::{BOOT_IDX, EVENT_MAX_ID},
-        journal_data::JournalEvent,
+        journal_data::{JournalEvent, JournalEventChunk},
         BootFilter,
     },
     widget::{preferences::data::PREFERENCES, InterPanelAction},

@@ -13,7 +13,7 @@ use data::{UnitInfo, UnitProcess};
 use enums::{ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
 use errors::SystemdErrors;
 use gtk::glib::GString;
-use journal_data::JournalEvent;
+use journal_data::JournalEventChunk;
 use log::{error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
@@ -185,7 +185,7 @@ pub fn get_unit_journal(
     max_events: u32,
     boot_filter: BootFilter,
     from_time: Option<u64>,
-) -> Result<Vec<JournalEvent>, SystemdErrors> {
+) -> Result<JournalEventChunk, SystemdErrors> {
     journal::get_unit_journal(
         unit,
         in_color,

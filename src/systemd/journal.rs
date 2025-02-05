@@ -15,7 +15,11 @@ use crate::{
     widget::preferences::data::{DbusLevel, PREFERENCES},
 };
 
-use super::{data::UnitInfo, journal_data::JournalEvent, BootFilter, SystemdErrors};
+use super::{
+    data::UnitInfo,
+    journal_data::{JournalEvent, JournalEventChunk},
+    BootFilter, SystemdErrors,
+};
 
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
 const KEY_SYSTEMS_USER_UNIT: &str = "_SYSTEMD_USER_UNIT";
@@ -44,7 +48,7 @@ pub(super) fn get_unit_journal(
     max_events: u32,
     boot_filter: BootFilter,
     from_time: Option<u64>,
-) -> Result<Vec<JournalEvent>, SystemdErrors> {
+) -> Result<JournalEventChunk, SystemdErrors> {
     info!("Starting journal-logger");
 
     // Open the journal
@@ -101,7 +105,7 @@ pub(super) fn get_unit_journal(
         }
     }
 
-    let mut out_list = Vec::new();
+    let mut out_list = JournalEventChunk::new(max_events as usize);
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
@@ -116,13 +120,32 @@ pub(super) fn get_unit_journal(
     if let Some(from_time) = from_time {
         info!("Seek to {from_time}");
         if let Err(err) = journal_reader.seek_realtime_usec(from_time) {
-            warn!("Seek err {:?}", err);
+            warn!("Seek real time error {:?}", err);
         };
+
+        //skip the seek event
+        loop {
+            if journal_reader.next()? == 0 {
+                debug!("BREAK nb {}", index);
+                out_list.no_more();
+                return Ok(out_list);
+            }
+
+            let time_in_usec = get_realtime_usec(&journal_reader)?;
+
+            //Continue until time change
+            if time_in_usec != from_time {
+                journal_reader.previous()?; //go back one for capture
+                break;
+            }
+        }
     }
 
+    let mut last_time_in_usec: u64 = 0;
     loop {
         if journal_reader.next()? == 0 {
             debug!("BREAK nb {}", index);
+            out_list.no_more();
             break;
         }
 
@@ -138,12 +161,7 @@ pub(super) fn get_unit_journal(
         }
 
         //TODO get the u64 timestamp directly
-        let timestamp: SystemTime = journal_reader.timestamp()?;
-
-        let since_the_epoch = timestamp
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-        let time_in_usec = since_the_epoch.as_micros() as u64;
+        let time_in_usec = get_realtime_usec(&journal_reader)?;
 
         let pid = get_data(&mut journal_reader, KEY_PID, &default);
         let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
@@ -171,27 +189,33 @@ pub(super) fn get_unit_journal(
             last_boot_id = boot_id;
         }
 
-        out_list.push(journal_event);
-
         //if == 0 no limit
         if max_events != 0 {
             index += 1;
             if index >= max_events {
-                /*                 let limit_event = JournalEvent::new_param(
-                    EVENT_MAX_ID,
-                    time_in_ms + 1,
-                    String::new(),
-                    format!("Limit of {max_events} log events reached! If needed, go to Preferences to change the limit."),
-                );
-                out_list.push(limit_event); */
-
                 warn!("Journal log events reach the {max_events} limit!");
-                break;
+
+                if last_time_in_usec != time_in_usec {
+                    out_list.max_reached();
+                    break;
+                }
             }
         }
+        out_list.push(journal_event);
+
+        last_time_in_usec = time_in_usec;
     }
 
     Ok(out_list)
+}
+
+fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {
+    let timestamp: SystemTime = journal_reader.timestamp()?;
+    let since_the_epoch = timestamp
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
+    let time_in_usec = since_the_epoch.as_micros() as u64;
+    Ok(time_in_usec)
 }
 
 fn truncate(s: String, max_chars: usize) -> String {

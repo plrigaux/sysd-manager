@@ -1,5 +1,48 @@
 use gtk::glib;
 
+enum JournalEventChunkInfo {
+    NoMore,
+    ChunkMaxReached,
+}
+
+pub struct JournalEventChunk {
+    events: Vec<JournalEvent>,
+    info: JournalEventChunkInfo,
+}
+
+impl JournalEventChunk {
+    pub fn new(capacity: usize) -> Self {
+        let events = Vec::with_capacity(capacity);
+
+        let info = JournalEventChunkInfo::NoMore;
+        JournalEventChunk { events, info }
+    }
+
+    pub fn push(&mut self, event: JournalEvent) {
+        self.events.push(event);
+    }
+
+    pub fn len(&self) -> usize {
+        self.events.len()
+    }
+
+    pub fn iter(&self) -> core::slice::Iter<'_, JournalEvent> {
+        self.events.iter()
+    }
+
+    pub fn last(&self) -> Option<&JournalEvent> {
+        self.events.last()
+    }
+
+    pub fn no_more(&mut self) {
+        self.info = JournalEventChunkInfo::NoMore;
+    }
+
+    pub fn max_reached(&mut self) {
+        self.info = JournalEventChunkInfo::ChunkMaxReached;
+    }
+}
+
 glib::wrapper! {
     pub struct JournalEvent(ObjectSubclass<imp::JournalEventImpl>);
 }
