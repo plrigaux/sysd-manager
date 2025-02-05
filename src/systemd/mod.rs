@@ -184,8 +184,16 @@ pub fn get_unit_journal(
     oldest_first: bool,
     max_events: u32,
     boot_filter: BootFilter,
+    from_time: Option<u64>,
 ) -> Result<Vec<JournalEvent>, SystemdErrors> {
-    journal::get_unit_journal(unit, in_color, oldest_first, max_events, boot_filter)
+    journal::get_unit_journal(
+        unit,
+        in_color,
+        oldest_first,
+        max_events,
+        boot_filter,
+        from_time,
+    )
 }
 
 pub fn commander_output(

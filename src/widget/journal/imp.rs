@@ -97,6 +97,8 @@ pub struct JournalPanelImp {
     is_dark: Cell<bool>,
 
     boot_filter: RefCell<BootFilter>,
+
+    from_time: Cell<Option<u64>>,
 }
 
 macro_rules! create_sorter_ascd {
@@ -135,133 +137,11 @@ macro_rules! create_sorter_desc {
 
 #[gtk::template_callbacks]
 impl JournalPanelImp {
-    fn set_visible_on_page(&self, value: bool) {
-        debug!("set_visible_on_page val {value}");
-        self.visible_on_page.set(value);
-
-        if self.visible_on_page.get()
-            && !self.unit_journal_loaded.get()
-            && self.unit.borrow().is_some()
-        {
-            self.update_journal()
-        }
-    }
-
     #[template_callback]
     fn refresh_journal_clicked(&self, button: &gtk::Button) {
         debug!("button {:?}", button);
 
         self.update_journal();
-    }
-
-    pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
-        let unit = match unit {
-            Some(u) => u,
-            None => {
-                self.unit.replace(None);
-                self.update_journal();
-                return;
-            }
-        };
-
-        let old_unit = self.unit.replace(Some(unit.clone()));
-        if let Some(old_unit) = old_unit {
-            if old_unit.primary() != unit.primary() {
-                self.unit_journal_loaded.set(false)
-            }
-        }
-
-        self.update_journal()
-    }
-
-    /// Updates the associated journal `TextView` with the contents of the unit's journal log.
-    fn update_journal(&self) {
-        if !self.visible_on_page.get() {
-            return;
-        }
-        //let journal_text: gtk::TextView = self.journal_text.clone();
-
-        let binding = self.unit.borrow();
-        let Some(unit_ref) = binding.as_ref() else {
-            info!("No unit file");
-            self.panel_stack.set_visible_child_name(PANEL_EMPTY);
-            return;
-        };
-
-        self.unit_journal_loaded.set(true); // maybe wait at the full loaded
-        let unit = unit_ref.clone();
-        let journal_refresh_button = self.journal_refresh_button.clone();
-        let oldest_first = false;
-        let journal_max_events = PREFERENCES.journal_max_events();
-        let panel_stack = self.panel_stack.clone();
-        let store_ref = self.list_store.borrow();
-        let store = store_ref
-            .as_ref()
-            .expect("Liststore supposed to be set")
-            .clone();
-        let boot_filter = self.boot_filter.borrow().clone();
-
-        glib::spawn_future_local(async move {
-            let in_color = PREFERENCES.journal_colors();
-            panel_stack.set_visible_child_name(PANEL_SPINNER);
-            journal_refresh_button.set_sensitive(false);
-            let journal_answer = gio::spawn_blocking(move || {
-                match systemd::get_unit_journal(
-                    &unit,
-                    in_color,
-                    oldest_first,
-                    journal_max_events,
-                    boot_filter,
-                ) {
-                    Ok(journal_output) => JournalAnswers::Events(journal_output),
-                    Err(error) => {
-                        let text = match error.gui_description() {
-                            Some(s) => s.clone(),
-                            None => String::from(""),
-                        };
-                        JournalAnswers::Markup(text)
-                    }
-                }
-            })
-            .await
-            .expect("Task needs to finish successfully.");
-
-            let panel = match journal_answer {
-                JournalAnswers::Events(mut events) => {
-                    let size = events.len();
-                    info!("Number of event {}", size);
-
-                    store.remove_all();
-
-                    let mut i: usize = 0;
-                    for journal_event in events.drain(..) {
-                        store.append(&journal_event);
-                        i += 1;
-                        if i % 1000 == 0 {
-                            info!("Added {i} events")
-                        }
-                    }
-
-                    info!("Finish added {i} events!");
-
-                    //journal_events.vadjustment();
-
-                    if size == 0 {
-                        PANEL_EMPTY
-                    } else {
-                        PANEL_JOURNAL
-                    }
-                }
-                JournalAnswers::Markup(_markup_text) => {
-                    warn!("Journal error");
-                    PANEL_EMPTY
-                }
-            };
-
-            journal_refresh_button.set_sensitive(true);
-
-            panel_stack.set_visible_child_name(panel);
-        });
     }
 
     #[template_callback]
@@ -447,13 +327,18 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
-    fn scwin_edge_overshot(&self, _pos: gtk::PositionType) {
-        //info!("scwin_edge_overshot {:?}", pos);
+    fn scwin_edge_overshot(&self, pos: gtk::PositionType) {
+        info!("scwin_edge_overshot {:?}", pos);
     }
 
     #[template_callback]
-    fn scwin_edge_reached(&self, _pos: gtk::PositionType) {
-        //info!("scwin_edge_reached {:?}", pos);
+    fn scwin_edge_reached(&self, pos: gtk::PositionType) {
+        info!("scwin_edge_reached {:?}", pos);
+
+        if pos == gtk::PositionType::Bottom {
+            // load more
+            self.update_journal();
+        }
     }
 
     fn clear_boot_id(&self) {
@@ -467,6 +352,142 @@ impl JournalPanelImp {
     #[template_callback]
     fn journal_boot_id_entry_change(&self) {
         self.set_boot_id_style();
+    }
+}
+
+impl JournalPanelImp {
+    fn set_visible_on_page(&self, value: bool) {
+        debug!("set_visible_on_page val {value}");
+        self.visible_on_page.set(value);
+
+        if self.visible_on_page.get()
+            && !self.unit_journal_loaded.get()
+            && self.unit.borrow().is_some()
+        {
+            self.update_journal()
+        }
+    }
+
+    pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
+        let unit = match unit {
+            Some(u) => u,
+            None => {
+                self.unit.replace(None);
+                self.update_journal();
+                return;
+            }
+        };
+
+        let old_unit = self.unit.replace(Some(unit.clone()));
+        if let Some(old_unit) = old_unit {
+            if old_unit.primary() != unit.primary() {
+                self.unit_journal_loaded.set(false);
+                self.from_time.set(None);
+            }
+        } else {
+            self.from_time.set(None);
+        }
+
+        self.update_journal()
+    }
+
+    /// Updates the associated journal `TextView` with the contents of the unit's journal log.
+    fn update_journal(&self) {
+        if !self.visible_on_page.get() {
+            return;
+        }
+        //let journal_text: gtk::TextView = self.journal_text.clone();
+
+        let binding = self.unit.borrow();
+        let Some(unit_ref) = binding.as_ref() else {
+            info!("No unit file");
+            self.panel_stack.set_visible_child_name(PANEL_EMPTY);
+            return;
+        };
+
+        self.unit_journal_loaded.set(true); // maybe wait at the full loaded
+        let unit = unit_ref.clone();
+        let journal_refresh_button = self.journal_refresh_button.clone();
+        let oldest_first = false;
+        let journal_max_events = PREFERENCES.journal_max_events();
+        let panel_stack = self.panel_stack.clone();
+        let store_ref = self.list_store.borrow();
+        let store = store_ref
+            .as_ref()
+            .expect("Liststore supposed to be set")
+            .clone();
+        let boot_filter = self.boot_filter.borrow().clone();
+        let in_color = PREFERENCES.journal_colors();
+        let from_time = self.from_time.get();
+        let journal = self.obj().clone();
+
+        info!("Call from time {:?}", from_time);
+        glib::spawn_future_local(async move {
+            panel_stack.set_visible_child_name(PANEL_SPINNER);
+            journal_refresh_button.set_sensitive(false);
+            let journal_answer = gio::spawn_blocking(move || {
+                match systemd::get_unit_journal(
+                    &unit,
+                    in_color,
+                    oldest_first,
+                    journal_max_events,
+                    boot_filter,
+                    from_time,
+                ) {
+                    Ok(journal_output) => JournalAnswers::Events(journal_output),
+                    Err(error) => {
+                        let text = match error.gui_description() {
+                            Some(s) => s.clone(),
+                            None => String::from(""),
+                        };
+                        JournalAnswers::Markup(text)
+                    }
+                }
+            })
+            .await
+            .expect("Task needs to finish successfully.");
+
+            let panel = match journal_answer {
+                JournalAnswers::Events(events) => {
+                    let size = events.len();
+                    info!("Number of event {}", size);
+
+                    if from_time.is_none() {
+                        store.remove_all();
+                    }
+
+                    let mut i: usize = 0;
+                    for journal_event in events.iter() {
+                        store.append(journal_event);
+                        i += 1;
+                        if i % 100 == 0 {
+                            info!("Added {i} events")
+                        }
+                    }
+
+                    info!("Finish added {i} events!");
+
+                    if let Some(journal_event) = events.last() {
+                        let ft = journal_event.timestamp() as u64;
+                        journal.set_from_time(Some(ft));
+                    }
+
+                    if size == 0 {
+                        PANEL_EMPTY
+                    } else {
+                        PANEL_JOURNAL
+                    }
+                }
+                JournalAnswers::Markup(_markup_text) => {
+                    warn!("Journal error");
+                    PANEL_EMPTY
+                }
+            };
+
+            journal_refresh_button.set_sensitive(true);
+
+            panel_stack.set_visible_child_name(panel);
+        });
     }
 
     pub(super) fn set_boot_id_style(&self) {
@@ -500,6 +521,11 @@ impl JournalPanelImp {
             InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
             _ => {}
         }
+    }
+
+    pub(super) fn set_from_time(&self, from_time: Option<u64>) {
+        info!("From time {:?}", from_time);
+        self.from_time.set(from_time);
     }
 
     fn set_dark(&self, is_dark: bool) {
