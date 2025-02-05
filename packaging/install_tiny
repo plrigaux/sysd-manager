@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import inspect
+import pwd
+import shutil
+
+# Get the parent directory
+# currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# parentdir = os.path.dirname(currentdir)
+# sys.path.insert(0, parentdir)
+
+
+from build_aux.build_common import *
+
+os.chdir("..")
+
+print(f"{color.CYAN}{color.BOLD}Info:{color.END} make source")
+
+SERVICE_USER = pwd.getpwuid(os.getuid())[0]
+BASE_NAME = "tiny_daemon"
+SERVICE_NAME = "tiny_daemon.service"
+SERVICE_DIR = f"{os.path.expanduser('~')}/bin"
+SERVICE_PATH = f"/etc/systemd/system/{SERVICE_NAME}"
+EXEC_FILE = BASE_NAME
+PROG_SOURCE_DIR = BASE_NAME
+
+print(f"{color.CYAN}{color.BOLD}{SERVICE_USER}{color.END}")
+print(f"{color.CYAN}{color.BOLD}{SERVICE_NAME}{color.END}")
+print(f"{color.CYAN}{color.BOLD}{SERVICE_DIR}{color.END}")
+print(f"{color.CYAN}{color.BOLD}{SERVICE_PATH}{color.END}")
+
+os.path.expanduser("~")
+
+print(f"Checking if the service '{SERVICE_NAME}' is running ...")
+
+
+if (
+    cmd_run(["systemctl", "is-active", "--quiet", SERVICE_NAME], on_fail_exit=False)
+    == 0
+):
+    print(f"Service '{SERVICE_NAME}' is running")
+
+    if cmd_run(["sudo", "systemctl", "stop", SERVICE_NAME]) == 0:
+        print(f"Service '{SERVICE_NAME}' stopped")
+    else:
+        print(
+            f"{color.BOLD}ERROR${color.END}: The service '{SERVICE_NAME}' can not be stopped"
+        )
+        exit(1)
+
+else:
+    print(f"Service '{SERVICE_NAME}' is not running")
+
+print(f"Compile binary ...")
+cmd_run(["cargo", "build"], cwd=PROG_SOURCE_DIR)
+
+print(f"Install binary ...")
+# Source path
+cmd_run(["mkdir", "-p", SERVICE_DIR], verbose=False)
+cmd_run(
+    ["cp", f"{PROG_SOURCE_DIR}/target/debug/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
+)
+
+print(f"Creating Service unit file in '{SERVICE_PATH}' ...")
+
+unit_file = f"""[Unit]
+Description=It is tiny, but is not the tiniest
+After=network.target
+
+[Service]
+SyslogIdentifier={BASE_NAME}
+Restart=always
+RestartSec=5
+Type=simple
+User={SERVICE_USER}
+Group={SERVICE_USER}
+WorkingDirectory={SERVICE_DIR}
+ExecStart= "{SERVICE_DIR}/{EXEC_FILE}" --port 33001
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target"""
+
+if os.geteuid() == 0:
+    print("We're root!")
+else:
+    print("We're not root.")
+    cmd_run(["sudo", "python", "packaging/build_aux/write_to_file.py", SERVICE_PATH, unit_file], verbose=False)
+    
+print(f"{color.BOLD}Reload the systemd manager configuration ...{color.END}")
+cmd_run(
+    [
+        "sudo",
+        "systemctl",
+        "daemon-reload",
+    ]
+)
+
+print(f"{color.BOLD}Enable service ...{color.END}")
+cmd_run(["sudo", "systemctl", "enable", SERVICE_NAME])
+
+print(f"{color.BOLD}Start service ...{color.END}")
+cmd_run(["sudo", "systemctl", "start", SERVICE_NAME])

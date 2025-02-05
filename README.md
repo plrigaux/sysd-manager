@@ -87,13 +87,8 @@ To install **tiny_daemon**, in the project directory, just run this python scrip
 
 
 ```
+cd packaging
 python install_tiny 
-``` 
-
-or if install_tiny is executable (i.e. ```chmod +x install_tiny```)
-
-```
-./install_tiny 
 ``` 
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
