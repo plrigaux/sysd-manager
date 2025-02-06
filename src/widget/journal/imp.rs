@@ -6,8 +6,7 @@ enum JournalAnswers {
 }
 
 use gtk::{
-    gio,
-    glib::{self, property::PropertySet},
+    gio, glib,
     pango::{self},
     prelude::*,
     subclass::{
@@ -37,6 +36,7 @@ use crate::{
         journal_data::{JournalEvent, JournalEventChunk},
         BootFilter,
     },
+    utils::font_management::set_text_view_font,
     widget::{preferences::data::PREFERENCES, InterPanelAction},
 };
 
@@ -73,9 +73,8 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_toggle_sort_button: TemplateChild<gtk::Button>,
 
-    #[template_child]
-    list_sort_model: TemplateChild<gtk::SortListModel>,
-
+    /*     #[template_child]
+    list_sort_model: TemplateChild<gtk::SortListModel>, */
     #[template_child]
     journal_boot_current_button: TemplateChild<gtk::Button>,
 
@@ -90,8 +89,7 @@ pub struct JournalPanelImp {
 
     unit_journal_loaded: Cell<bool>,
 
-    list_store: RefCell<Option<gio::ListStore>>,
-
+    //list_store: RefCell<Option<gio::ListStore>>,
     #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
@@ -100,9 +98,11 @@ pub struct JournalPanelImp {
     boot_filter: RefCell<BootFilter>,
 
     from_time: Cell<Option<u64>>,
+
+    journal_text_view: RefCell<gtk::TextView>,
 }
 
-macro_rules! create_sorter_ascd {
+/* macro_rules! create_sorter_ascd {
     ($self:expr) => {{
         let sorter = gtk::CustomSorter::new(move |obj1, obj2| {
             let unit1 = obj1
@@ -134,7 +134,7 @@ macro_rules! create_sorter_desc {
 
         $self.list_sort_model.set_sorter(Some(&sorter))
     }};
-}
+} */
 
 #[gtk::template_callbacks]
 impl JournalPanelImp {
@@ -219,12 +219,12 @@ impl JournalPanelImp {
         if icon_name == ASCD {
             child.set_icon_name(DESC);
 
-            create_sorter_desc!(self);
+            //create_sorter_desc!(self);
         } else {
             //     view-sort-descending
             child.set_icon_name(ASCD);
 
-            create_sorter_ascd!(self);
+            //create_sorter_ascd!(self);
         }
     }
 
@@ -374,6 +374,7 @@ impl JournalPanelImp {
             Some(u) => u,
             None => {
                 self.unit.replace(None);
+                self.new_text_view();
                 self.update_journal(); //to clear the journal
                 return;
             }
@@ -382,8 +383,7 @@ impl JournalPanelImp {
         let old_unit = self.unit.replace(Some(unit.clone()));
 
         if unit.primary() != old_unit.map_or(String::new(), |o_unit| o_unit.primary()) {
-            self.unit_journal_loaded.set(false);
-            self.from_time.set(None);
+            self.new_text_view();
         }
 
         if self.visible_on_page.get() && !self.unit_journal_loaded.get() {
@@ -411,16 +411,23 @@ impl JournalPanelImp {
         let oldest_first = false;
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
-        let store_ref = self.list_store.borrow();
+
+        /*       let store_ref = self.list_store.borrow();
         let store = store_ref
             .as_ref()
             .expect("Liststore supposed to be set")
-            .clone();
+            .clone(); */
+
         let boot_filter = self.boot_filter.borrow().clone();
         //let in_color = PREFERENCES.journal_colors();
         let duration = Duration::from_millis(1000); // wait a second
         let from_time = self.from_time.get();
         let journal = self.obj().clone();
+
+        let text_buffer = {
+            let text_view = self.journal_text_view.borrow();
+            text_view.buffer()
+        };
 
         info!("Call from time {:?}", from_time);
         glib::spawn_future_local(async move {
@@ -454,12 +461,16 @@ impl JournalPanelImp {
                     info!("Number of event {}", size);
 
                     if from_time.is_none() {
-                        store.remove_all();
+                        text_buffer.set_text("");
                     }
 
                     let mut i: usize = 0;
+                    let mut it = text_buffer.end_iter();
                     for journal_event in events.iter() {
-                        store.append(journal_event);
+                        let text =
+                            format!("{} {}\n", journal_event.prefix(), journal_event.message());
+                        text_buffer.insert(&mut it, &text);
+                        //store.append(journal_event);
                         i += 1;
                         if i % 100 == 0 {
                             info!("Added {i} events")
@@ -473,7 +484,7 @@ impl JournalPanelImp {
                         journal.set_from_time(Some(ft));
                     }
 
-                    if store.n_items() == 0 {
+                    if text_buffer.char_count() <= 0 {
                         PANEL_EMPTY
                     } else {
                         PANEL_JOURNAL
@@ -520,6 +531,10 @@ impl JournalPanelImp {
     pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
         match *action {
             InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+            InterPanelAction::SetFontProvider(old, new) => {
+                let text_view = self.journal_text_view.borrow();
+                set_text_view_font(old, new, &text_view);
+            }
             _ => {}
         }
     }
@@ -531,6 +546,14 @@ impl JournalPanelImp {
 
     fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
+    }
+
+    fn new_text_view(&self) {
+        let tv: gtk::TextView = gtk::TextView::builder().build();
+        self.scrolled_window.set_child(Some(&tv));
+        self.journal_text_view.replace(tv);
+        self.from_time.set(None);
+        self.unit_journal_loaded.set(false);
     }
 }
 
@@ -557,11 +580,11 @@ impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let list_store = gio::ListStore::new::<JournalEvent>();
+        self.new_text_view();
+
+        /*     let list_store = gio::ListStore::new::<JournalEvent>();
 
         let t = list_store.item_type();
-
-        warn!("Type {:?}", t);
 
         self.list_sort_model.set_model(Some(&list_store));
         self.list_store.set(Some(list_store));
@@ -578,7 +601,7 @@ impl ObjectImpl for JournalPanelImp {
         }
 
         self.journal_boot_id_entry
-            .add_controller(event_controller_focus);
+            .add_controller(event_controller_focus); */
     }
 }
 impl WidgetImpl for JournalPanelImp {}
