@@ -433,6 +433,9 @@ impl ObjectImpl for UnitControlPanelImpl {
             info!("connect_visible_child_name_notify {:?}", view_stack.visible_child_name());
         }); */
         {
+            const VISIBLE_FALSE: InterPanelAction<'_> = InterPanelAction::SetVisibleOnPage(false);
+            const VISIBLE_TRUE: InterPanelAction<'_> = InterPanelAction::SetVisibleOnPage(true);
+
             let unit_journal_panel = self.unit_journal_panel.clone();
             let unit_dependencies_panel = self.unit_dependencies_panel.clone();
             let unit_file_panel = self.unit_file_panel.clone();
@@ -443,30 +446,27 @@ impl ObjectImpl for UnitControlPanelImpl {
                         view_stack.visible_child_name()
                     );
 
-                    let visible_false = InterPanelAction::SetVisibleOnPage(false);
-                    let visible_true = InterPanelAction::SetVisibleOnPage(true);
-
                     if let Some(child) = view_stack.visible_child() {
                         if child.downcast_ref::<JournalPanel>().is_some() {
                             debug!("It a journal");
-                            unit_dependencies_panel.set_inter_action(&visible_false);
-                            unit_file_panel.set_inter_action(&visible_false);
-                            unit_journal_panel.set_inter_action(&visible_true);
+                            unit_dependencies_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_file_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_journal_panel.set_inter_action(&VISIBLE_TRUE);
                         } else if child.downcast_ref::<UnitDependenciesPanel>().is_some() {
                             debug!("It's  dependency");
-                            unit_dependencies_panel.set_inter_action(&visible_true);
-                            unit_file_panel.set_inter_action(&visible_false);
-                            unit_journal_panel.set_inter_action(&visible_false);
+                            unit_dependencies_panel.set_inter_action(&VISIBLE_TRUE);
+                            unit_file_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_journal_panel.set_inter_action(&VISIBLE_FALSE);
                         } else if child.downcast_ref::<UnitFilePanel>().is_some() {
                             debug!("It's file panel");
-                            unit_dependencies_panel.set_inter_action(&visible_false);
-                            unit_file_panel.set_inter_action(&visible_true);
-                            unit_journal_panel.set_inter_action(&visible_false);
+                            unit_dependencies_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_file_panel.set_inter_action(&VISIBLE_TRUE);
+                            unit_journal_panel.set_inter_action(&VISIBLE_FALSE);
                         } else {
                             //It' the last one InfoPanel
-                            unit_journal_panel.set_inter_action(&visible_false);
-                            unit_dependencies_panel.set_inter_action(&visible_false);
-                            unit_file_panel.set_inter_action(&visible_false);
+                            unit_journal_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_dependencies_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_file_panel.set_inter_action(&VISIBLE_FALSE);
                         }
                     }
                 });
