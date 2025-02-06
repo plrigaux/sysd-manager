@@ -3,10 +3,9 @@ use std::borrow::Cow;
 use gtk::{glib::translate::IntoGlib, pango, prelude::*, TextBuffer, TextIter, TextTag};
 use log::debug;
 
-use crate::{
-    systemd::{self, enums::ActiveState, generate_file_uri},
-    widget::journal::palette::Palette,
-};
+use crate::systemd::{self, enums::ActiveState, generate_file_uri};
+
+use super::palette::Palette;
 
 pub struct UnitInfoWriter {
     buf: TextBuffer,
@@ -26,6 +25,8 @@ const TAG_NAME_GREY_DARK: &str = "grey_dark";
 const TAG_NAME_STATUS: &str = "blue";
 const TAG_NAME_STATUS_DARK: &str = "blue_dark";
 pub const TAG_DATA_LINK: &str = "link";
+const TAG_NAME_YELLOW_DARK: &str = "yellow_dark";
+const TAG_NAME_YELLOW: &str = "yellow";
 
 pub const PROP_UNDERLINE: &str = "underline";
 
@@ -33,6 +34,9 @@ pub const SPECIAL_GLYPH_TREE_VERTICAL: &str = "│ ";
 pub const SPECIAL_GLYPH_TREE_SPACE: &str = "  ";
 pub const SPECIAL_GLYPH_TREE_RIGHT: &str = "└─";
 pub const SPECIAL_GLYPH_TREE_BRANCH: &str = "├─";
+
+const PROP_WEIGHT: &str = "weight";
+const PROP_FOREGROUND: &str = "foreground";
 
 pub enum HyperLinkType {
     File,
@@ -92,12 +96,20 @@ impl UnitInfoWriter {
         self.insert_tag(text, Self::create_red_tag, None, HyperLinkType::None);
     }
 
+    pub fn insert_yellow(&mut self, text: &str) {
+        self.insert_tag(text, Self::create_yellow_tag, None, HyperLinkType::None);
+    }
+
     pub fn insert_disable(&mut self, text: &str) {
         self.insert_tag(text, Self::create_disable_tag, None, HyperLinkType::None);
     }
 
     pub fn insert_grey(&mut self, text: &str) {
         self.insert_tag(text, Self::create_grey_tag, None, HyperLinkType::None);
+    }
+
+    pub fn insert_bold(&mut self, text: &str) {
+        self.insert_tag(text, Self::create_bold_tag, None, HyperLinkType::None);
     }
 
     pub fn insert_status(&mut self, text: &str) {
@@ -128,7 +140,7 @@ impl UnitInfoWriter {
         buf.create_tag(
             None,
             &[
-                //  ("foreground", &"blue".to_value()),
+                //  (PROP_FOREGROUND, &"blue".to_value()),
                 (PROP_UNDERLINE, &pango::Underline::SingleLine.to_value()),
             ],
         )
@@ -149,8 +161,29 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                ("foreground", &color.to_value()),
-                ("weight", &pango::Weight::Bold.into_glib().to_value()),
+                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
+            ],
+        )
+    }
+
+    fn create_yellow_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+        let (color, name) = if is_dark {
+            (Palette::Custom("#e5e540").get_color(), TAG_NAME_YELLOW_DARK)
+        } else {
+            (Palette::Yellow5.get_color(), TAG_NAME_YELLOW)
+        };
+
+        let tag_op = buf.tag_table().lookup(name);
+        if tag_op.is_some() {
+            return tag_op;
+        }
+
+        buf.create_tag(
+            Some(name),
+            &[
+                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
     }
@@ -170,8 +203,8 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                ("foreground", &color.to_value()),
-                ("weight", &pango::Weight::Bold.into_glib().to_value()),
+                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
     }
@@ -191,9 +224,23 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                ("foreground", &color.to_value()),
-                ("weight", &pango::Weight::Bold.into_glib().to_value()),
+                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
+        )
+    }
+
+    fn create_bold_tag(buf: &TextBuffer, _is_dark: bool) -> Option<TextTag> {
+        const NAME: &str = "BOLD_SIMPLE";
+
+        let tag_op = buf.tag_table().lookup(NAME);
+        if tag_op.is_some() {
+            return tag_op;
+        }
+
+        buf.create_tag(
+            Some(NAME),
+            &[(PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value())],
         )
     }
 
@@ -209,7 +256,7 @@ impl UnitInfoWriter {
             return tag_op;
         }
 
-        buf.create_tag(Some(name), &[("foreground", &color.to_value())])
+        buf.create_tag(Some(name), &[(PROP_FOREGROUND, &color.to_value())])
     }
 
     fn create_status_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
@@ -227,8 +274,8 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                ("foreground", &color.to_value()),
-                ("weight", &pango::Weight::Bold.into_glib().to_value()),
+                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
     }
@@ -259,5 +306,9 @@ impl UnitInfoWriter {
             let start_iter = self.buf.iter_at_offset(start_offset);
             self.buf.apply_tag(&tag, &start_iter, &self.iter);
         }
+    }
+
+    pub fn char_count(&self) -> i32 {
+        self.buf.char_count()
     }
 }

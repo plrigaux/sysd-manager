@@ -1,8 +1,8 @@
 //mod colorise;
 mod imp;
-mod journal_row;
-pub mod more_colors;
-pub mod palette;
+//mod journal_row;
+//pub mod more_colors;
+//pub mod palette;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 

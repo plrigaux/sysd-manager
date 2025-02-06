@@ -40,7 +40,7 @@ const KEY_PID: &str = "_PID";
 const KEY_COMM: &str = "_COMM";
 
 pub const BOOT_IDX: u8 = 200;
-pub const EVENT_MAX_ID: u8 = 201;
+//pub const EVENT_MAX_ID: u8 = 201;
 
 pub(super) fn get_unit_journal(
     unit: &UnitInfo,

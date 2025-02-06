@@ -116,27 +116,6 @@
                     <property name="vscrollbar-policy">always</property>
                     <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="yes"/>
                     <signal name="edge-reached" handler="scwin_edge_reached" swapped="yes"/>
-                    <child>
-                      <object class="GtkListView" id="journal_events">
-                        <property name="enable-rubberband">True</property>
-                        <property name="factory">
-                          <object class="GtkSignalListItemFactory">
-                            <signal name="setup" handler="event_list_setup" swapped="yes"/>
-                            <signal name="bind" handler="event_list_bind" swapped="yes"/>
-                            <signal name="unbind" handler="event_list_unbind" swapped="yes"/>
-                            <signal name="teardown" handler="event_list_teardown" swapped="yes"/>
-                          </object>
-                        </property>
-                        <property name="hscroll-policy">natural</property>
-                        <property name="model">
-                          <object class="GtkNoSelection">
-                            <property name="model">
-                              <object class="GtkSortListModel" id="list_sort_model"/>
-                            </property>
-                          </object>
-                        </property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

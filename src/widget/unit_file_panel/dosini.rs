@@ -2,8 +2,9 @@
 ///
 use std::{borrow::Cow, fmt::Debug, sync::LazyLock};
 
-use crate::widget::journal::{more_colors::Intensity, palette::Palette};
 use regex::Regex;
+
+use crate::utils::{more_colors::Intensity, palette::Palette};
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     match Regex::new(
@@ -142,10 +143,10 @@ impl Token {
                 }
             }
             Token::Comment => {
-/*                 if dark {
+                /*                 if dark {
                     Style::new(Palette::Dark1, None)
                 } else { */
-                    Style::new(Palette::Dark1, None)
+                Style::new(Palette::Dark1, None)
                 //}
             }
             Token::Section => {
@@ -163,11 +164,11 @@ impl Token {
                 }
             }
             Token::InfoDisable => {
-   /*              if dark {
+                /*              if dark {
                     Style::new(Palette::Yellow3, Some(Intensity::Bold))
                 } else { */
-                    Style::new(Palette::Yellow3, Some(Intensity::Bold))
-               // }
+                Style::new(Palette::Yellow3, Some(Intensity::Bold))
+                // }
             }
         };
         style
