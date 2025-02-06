@@ -1,10 +1,3 @@
-enum JournalAnswers {
-    //Tokens(Vec<colorise::Token>, String),
-    //Text(String),
-    Markup(String),
-    Events(JournalEventChunk),
-}
-
 use gtk::{
     gio, glib,
     prelude::*,
@@ -329,7 +322,7 @@ impl JournalPanelImp {
         glib::spawn_future_local(async move {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
-            let journal_answer = gio::spawn_blocking(move || {
+            let events = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(
                     &unit,
                     Some(duration),
@@ -338,59 +331,39 @@ impl JournalPanelImp {
                     boot_filter,
                     from_time,
                 ) {
-                    Ok(journal_output) => JournalAnswers::Events(journal_output),
+                    Ok(journal_output) => journal_output,
                     Err(error) => {
-                        let text = match error.gui_description() {
-                            Some(s) => s.clone(),
-                            None => String::from(""),
-                        };
-                        JournalAnswers::Markup(text)
+                        warn!("Journal Events Error {:?}", error);
+                        JournalEventChunk::error()
                     }
                 }
             })
             .await
             .expect("Task needs to finish successfully.");
 
-            let panel = match journal_answer {
-                JournalAnswers::Events(events) => {
-                    let size = events.len();
-                    info!("Number of event {}", size);
+            let size = events.len();
 
-                    if from_time.is_none() {
-                        text_buffer.set_text("");
-                    }
+            if from_time.is_none() {
+                text_buffer.set_text("");
+            }
 
-                    let mut i: usize = 0;
-                    let iter = text_buffer.end_iter();
-                    let mut writer = UnitInfoWriter::new(text_buffer, iter, is_dark);
-                    for journal_event in events.iter() {
-                        fill_journal_event(journal_event, &mut writer, journal_color);
-                        writer.newline();
+            let iter = text_buffer.end_iter();
+            let mut writer = UnitInfoWriter::new(text_buffer, iter, is_dark);
+            for journal_event in events.iter() {
+                fill_journal_event(journal_event, &mut writer, journal_color);
+            }
 
-                        //store.append(journal_event);
-                        i += 1;
-                        if i % 100 == 0 {
-                            info!("Added {i} events")
-                        }
-                    }
+            info!("Finish added {size} journal events!");
 
-                    info!("Finish added {i} events!");
+            if let Some(journal_event) = events.last() {
+                let from_time = journal_event.timestamp();
+                journal.set_from_time(Some(from_time));
+            }
 
-                    if let Some(journal_event) = events.last() {
-                        let ft = journal_event.timestamp() as u64;
-                        journal.set_from_time(Some(ft));
-                    }
-
-                    if writer.char_count() <= 0 {
-                        PANEL_EMPTY
-                    } else {
-                        PANEL_JOURNAL
-                    }
-                }
-                JournalAnswers::Markup(_markup_text) => {
-                    warn!("Journal error");
-                    PANEL_EMPTY
-                }
+            let panel = if writer.char_count() <= 0 {
+                PANEL_EMPTY
+            } else {
+                PANEL_JOURNAL
             };
 
             journal_refresh_button.set_sensitive(true);
@@ -542,6 +515,7 @@ fn fill_journal_event(
             warn!("Priority {priority} not handeled")
         }
     };
+    writer.newline();
 }
 
 fn pad_lines(

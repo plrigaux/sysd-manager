@@ -5,6 +5,7 @@ pub enum JournalEventChunkInfo {
     ChunkMaxReached,
     NoEventsAfterWaiting,
     Invalidate,
+    Error,
 }
 
 pub struct JournalEventChunk {
@@ -17,6 +18,13 @@ impl JournalEventChunk {
         let events = Vec::with_capacity(capacity);
 
         let info = JournalEventChunkInfo::NoMore;
+        JournalEventChunk { events, info }
+    }
+
+    pub fn error() -> Self {
+        let events = Vec::with_capacity(0);
+
+        let info = JournalEventChunkInfo::Error;
         JournalEventChunk { events, info }
     }
 
