@@ -57,8 +57,6 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_refresh_button: TemplateChild<gtk::Button>,
 
-    /*     #[template_child]
-    journal_events: TemplateChild<gtk::ListView>, */
     #[template_child]
     panel_stack: TemplateChild<gtk::Stack>,
 
@@ -68,8 +66,6 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_toggle_sort_button: TemplateChild<gtk::Button>,
 
-    /*     #[template_child]
-    list_sort_model: TemplateChild<gtk::SortListModel>, */
     #[template_child]
     journal_boot_current_button: TemplateChild<gtk::Button>,
 
@@ -79,7 +75,6 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_boot_id_entry: TemplateChild<adw::EntryRow>,
 
-    #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
 
     unit_journal_loaded: Cell<bool>,
@@ -437,6 +432,7 @@ impl JournalPanelImp {
                 let text_view = self.journal_text_view.borrow();
                 set_text_view_font(old, new, &text_view);
             }
+            InterPanelAction::SetVisibleOnPage(visible) => self.set_visible_on_page(visible),
             _ => {}
         }
     }

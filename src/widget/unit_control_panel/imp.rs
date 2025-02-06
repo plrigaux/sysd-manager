@@ -443,27 +443,30 @@ impl ObjectImpl for UnitControlPanelImpl {
                         view_stack.visible_child_name()
                     );
 
+                    let visible_false = InterPanelAction::SetVisibleOnPage(false);
+                    let visible_true = InterPanelAction::SetVisibleOnPage(true);
+
                     if let Some(child) = view_stack.visible_child() {
                         if child.downcast_ref::<JournalPanel>().is_some() {
                             debug!("It a journal");
-                            unit_journal_panel.set_visible_on_page(true);
-                            unit_dependencies_panel.set_visible_on_page(false);
-                            unit_file_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_inter_action(&visible_false);
+                            unit_file_panel.set_inter_action(&visible_false);
+                            unit_journal_panel.set_inter_action(&visible_true);
                         } else if child.downcast_ref::<UnitDependenciesPanel>().is_some() {
                             debug!("It's  dependency");
-                            unit_journal_panel.set_visible_on_page(false);
-                            unit_dependencies_panel.set_visible_on_page(true);
-                            unit_file_panel.set_visible_on_page(false);
+                            unit_dependencies_panel.set_inter_action(&visible_true);
+                            unit_file_panel.set_inter_action(&visible_false);
+                            unit_journal_panel.set_inter_action(&visible_false);
                         } else if child.downcast_ref::<UnitFilePanel>().is_some() {
                             debug!("It's file panel");
-                            unit_journal_panel.set_visible_on_page(false);
-                            unit_dependencies_panel.set_visible_on_page(true);
-                            unit_file_panel.set_visible_on_page(true);
+                            unit_dependencies_panel.set_inter_action(&visible_false);
+                            unit_file_panel.set_inter_action(&visible_true);
+                            unit_journal_panel.set_inter_action(&visible_false);
                         } else {
                             //It' the last one InfoPanel
-                            unit_journal_panel.set_visible_on_page(false);
-                            unit_dependencies_panel.set_visible_on_page(false);
-                            unit_file_panel.set_visible_on_page(false);
+                            unit_journal_panel.set_inter_action(&visible_false);
+                            unit_dependencies_panel.set_inter_action(&visible_false);
+                            unit_file_panel.set_inter_action(&visible_false);
                         }
                     }
                 });

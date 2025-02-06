@@ -66,7 +66,7 @@ pub struct UnitDependenciesPanelImp {
     #[template_child]
     controls_box: TemplateChild<gtk::Box>,
 
-    #[property(get, set=Self::set_visible_on_page)]
+    // #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
 
     #[property(get, set=Self::set_unit, nullable)]
@@ -109,9 +109,9 @@ impl UnitDependenciesPanelImp {
         }
     }
 
-    fn set_visible_on_page(&self, value: bool) {
-        debug!("set_visible_on_page val {value}");
-        self.visible_on_page.set(value);
+    fn set_visible_on_page(&self, visible: bool) {
+        debug!("set_visible_on_page val {visible}");
+        self.visible_on_page.set(visible);
 
         if self.visible_on_page.get()
             && !self.unit_dependencies_loaded.get()
@@ -313,6 +313,8 @@ impl UnitDependenciesPanelImp {
                 set_text_view_font(old, new, &self.unit_dependencies_textview)
             }
             InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+
+            InterPanelAction::SetVisibleOnPage(visible) => self.set_visible_on_page(visible),
             _ => {}
         }
     }

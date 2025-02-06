@@ -20,10 +20,6 @@ impl JournalPanel {
         obj
     }
 
-    /*     fn set_boot_id_style(&self) {
-        self.imp().set_boot_id_style();
-    } */
-
     pub fn refresh_panels(&self) {
         self.imp().refresh_panels();
     }

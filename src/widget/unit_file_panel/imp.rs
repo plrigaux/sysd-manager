@@ -43,7 +43,6 @@ pub struct UnitFilePanelImp {
 
     app_window: OnceCell<AppWindow>,
 
-    #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
 
     #[property(get, set=Self::set_unit, nullable)]
@@ -225,6 +224,7 @@ impl UnitFilePanelImp {
                 set_text_view_font(old, new, &self.unit_file_text)
             }
             InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+            InterPanelAction::SetVisibleOnPage(visible) => self.set_visible_on_page(visible),
             _ => {}
         }
     }
