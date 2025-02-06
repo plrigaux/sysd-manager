@@ -531,34 +531,42 @@ fn fill_journal_event(
     };
 
     match priority {
-        0..=3 => {
-            //writer.insert(" ");
-            writer.insert_red(&journal_event.message());
-        }
-        4 => {
-            //writer.insert(" ");
-            writer.insert_yellow(&journal_event.message());
-        }
-        5 => {
-            //writer.insert(" ");
-            writer.insert_bold(&journal_event.message());
-        }
-        6 => {
-            //writer.insert(" ");
-            writer.insert(&journal_event.message());
-        }
-        7 => {
-            //writer.insert(" ");
-            writer.insert_grey(&journal_event.message());
-        }
-        BOOT_IDX => {
-            writer.insert_bold(&journal_event.message());
-        }
+        0..=3 => pad_lines(writer, journal_event, UnitInfoWriter::insert_red),
+        4 => pad_lines(writer, journal_event, UnitInfoWriter::insert_yellow),
+        5 => pad_lines(writer, journal_event, UnitInfoWriter::insert_bold),
+        6 => pad_lines(writer, journal_event, UnitInfoWriter::insert),
+        7 => pad_lines(writer, journal_event, UnitInfoWriter::insert_grey),
+        BOOT_IDX => pad_lines(writer, journal_event, UnitInfoWriter::insert_bold),
 
         _ => {
             warn!("Priority {priority} not handeled")
         }
     };
+}
+
+fn pad_lines(
+    writer: &mut UnitInfoWriter,
+    journal_event: &JournalEvent,
+    inserter: impl Fn(&mut UnitInfoWriter, &str),
+) {
+    let binding = journal_event.message();
+    let mut lines = binding.lines();
+
+    if let Some(line) = lines.next() {
+        inserter(writer, line);
+    }
+
+    let mut space_padding = String::new();
+    while let Some(line) = lines.next() {
+        if space_padding.is_empty() {
+            let bytes = vec![b' '; journal_event.prefix().len()];
+            space_padding = String::from_utf8(bytes).expect("No issues");
+        }
+
+        writer.newline();
+        writer.insert(&space_padding);
+        inserter(writer, line);
+    }
 }
 
 #[cfg(test)]
