@@ -49,7 +49,7 @@ pub(super) fn get_unit_journal(
 ) -> Result<JournalEventChunk, SystemdErrors> {
     let mut journal_reader = create_journal_reader(unit, boot_filter)?;
 
-    let mut out_list = JournalEventChunk::new((range.max + 10) as usize);
+    let mut out_list = JournalEventChunk::new((range.batch_size + 10) as usize);
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
@@ -136,10 +136,10 @@ pub(super) fn get_unit_journal(
         }
 
         //if == 0 no limit
-        if range.max != 0 {
+        if range.batch_size != 0 {
             index += 1;
-            if index >= range.max {
-                warn!("Journal log events reach the {} limit!", range.max);
+            if index >= range.batch_size {
+                warn!("Journal log events reach the {} limit!", range.batch_size);
 
                 if last_time_in_usec != time_in_usec {
                     out_list.set_info(JournalEventChunkInfo::ChunkMaxReached);

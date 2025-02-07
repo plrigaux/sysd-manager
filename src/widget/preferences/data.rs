@@ -17,7 +17,7 @@ pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
 
 const KEY_DBUS_LEVEL: &str = "pref-dbus-level";
 pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
-pub const KEY_PREF_JOURNAL_MAX_EVENTS: &str = "pref-journal-max-events";
+pub const KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE: &str = "pref-journal-events-batch-size";
 pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
@@ -113,7 +113,7 @@ impl From<u32> for EnableUnitFileMode {
 pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
     journal_colors: RwLock<bool>,
-    journal_events: RwLock<u32>,
+    journal_events_batch_size: RwLock<u32>,
     journal_event_max_size: RwLock<u32>,
     unit_file_colors: RwLock<bool>,
     app_first_connection: RwLock<bool>,
@@ -126,7 +126,7 @@ impl Preferences {
     pub fn new_with_setting(settings: Settings) -> Self {
         let level = settings.string(KEY_DBUS_LEVEL).into();
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
-        let journal_events = settings.uint(KEY_PREF_JOURNAL_MAX_EVENTS);
+        let journal_events_batch_size = settings.uint(KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE);
         let journal_event_max_size = settings.uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE);
         let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
@@ -137,7 +137,7 @@ impl Preferences {
         Preferences {
             dbus_level: RwLock::new(level),
             journal_colors: RwLock::new(journal_colors),
-            journal_events: RwLock::new(journal_events),
+            journal_events_batch_size: RwLock::new(journal_events_batch_size),
             journal_event_max_size: RwLock::new(journal_event_max_size),
             unit_file_colors: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
@@ -155,8 +155,8 @@ impl Preferences {
         *self.journal_colors.read().unwrap()
     }
 
-    pub fn journal_max_events(&self) -> u32 {
-        *self.journal_events.read().unwrap()
+    pub fn journal_max_events_batch_size(&self) -> u32 {
+        *self.journal_events_batch_size.read().unwrap()
     }
 
     pub fn journal_event_max_size(&self) -> u32 {
@@ -209,11 +209,14 @@ impl Preferences {
         }
     }
 
-    pub fn set_journal_events(&self, journal_events_new: u32) {
-        info!("set_journal_events: {journal_events_new}");
+    pub fn set_journal_events_batch_size(&self, journal_events_batch_size_new: u32) {
+        info!("set_journal_events: {journal_events_batch_size_new}");
 
-        let mut journal_events = self.journal_events.write().expect("supposed to write");
-        *journal_events = journal_events_new;
+        let mut journal_events_batch_size = self
+            .journal_events_batch_size
+            .write()
+            .expect("supposed to write");
+        *journal_events_batch_size = journal_events_batch_size_new;
     }
 
     pub fn set_journal_event_max_size(&self, journal_event_max_size_new: u32) {

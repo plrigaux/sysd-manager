@@ -307,7 +307,7 @@ impl JournalPanelImp {
         let unit = unit_ref.clone();
         let journal_refresh_button = self.journal_refresh_button.clone();
         let oldest_to_recent = self.older_to_recent.get();
-        let journal_max_events = PREFERENCES.journal_max_events();
+        let journal_max_events_batch_size = PREFERENCES.journal_max_events_batch_size();
         let panel_stack = self.panel_stack.clone();
         let boot_filter = self.boot_filter.borrow().clone();
         let from_time = self.from_time.get();
@@ -329,15 +329,15 @@ impl JournalPanelImp {
             if !oldest_to_recent {
                 EventRange {
                     oldest_first: oldest_to_recent,
-                    max: 0,
+                    batch_size: 0,
                     begin: None,
                     end: most_recent_time,
                 }
             } else {
-                EventRange::basic(oldest_to_recent, journal_max_events, from_time)
+                EventRange::basic(oldest_to_recent, journal_max_events_batch_size, from_time)
             }
         } else {
-            EventRange::basic(oldest_to_recent, journal_max_events, from_time)
+            EventRange::basic(oldest_to_recent, journal_max_events_batch_size, from_time)
         };
 
         debug!("range {:?}", range);

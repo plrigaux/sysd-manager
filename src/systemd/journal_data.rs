@@ -71,7 +71,7 @@ impl Default for JournalEvent {
 pub struct EventRange {
     pub begin: Option<u64>,
     pub end: Option<u64>,
-    pub max: u32,
+    pub batch_size: u32,
     pub oldest_first: bool,
 }
 
@@ -79,7 +79,7 @@ impl EventRange {
     pub fn basic(oldest_first: bool, max: u32, begin: Option<u64>) -> Self {
         EventRange {
             oldest_first,
-            max,
+            batch_size: max,
             begin,
             end: None,
         }

@@ -81,6 +81,11 @@ https://hughsie.github.io/oars/index.html
   <content_rating type="oars-1.1" />
   <releases>
 
+  <release version="1.12.1" date="2025-02-07">
+      <description>
+        Ajust journal preferences batch size       
+      </description>
+  </release>
   <release version="1.12.0" date="2025-02-07">
       <description>
         Redo journal handling and display

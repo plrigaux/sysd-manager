@@ -84,10 +84,10 @@
                             <property name="value">50.0</property>
                           </object>
                         </property>
-                        <property name="subtitle">The maximum of event log event
-&lt;i&gt;0 to no limit&lt;/i&gt;</property>
+                        <property name="subtitle">The maximum events fetch in a batch
+&lt;i&gt;0 means no size limit&lt;/i&gt;</property>
                         <property name="subtitle-lines">2</property>
-                        <property name="title">Journal's events limit</property>
+                        <property name="title">Journal's events batch size</property>
                         <signal name="changed" handler="journal_max_events_changed" swapped="yes"/>
                       </object>
                     </child>

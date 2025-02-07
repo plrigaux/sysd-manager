@@ -15,9 +15,10 @@ use crate::{
 use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
 
 use super::data::{
-    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
-    KEY_PREF_JOURNAL_MAX_EVENTS, KEY_PREF_STYLE_TEXT_FONT_FAMILY, KEY_PREF_STYLE_TEXT_FONT_SIZE,
-    KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_HIGHLIGHTING, PREFERENCES,
+    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE,
+    KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
+    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_HIGHLIGHTING,
+    PREFERENCES,
 };
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -65,7 +66,7 @@ impl PreferencesDialogImpl {
     fn journal_max_events_changed(&self, spin: adw::SpinRow) {
         let value32_parse = Self::get_spin_row_value("journal_events_changed", spin);
 
-        PREFERENCES.set_journal_events(value32_parse);
+        PREFERENCES.set_journal_events_batch_size(value32_parse);
     }
 
     #[template_callback]
@@ -205,7 +206,7 @@ impl PreferencesDialogImpl {
         self.journal_colors.set_state(journal_colors);
         self.journal_colors.set_active(journal_colors);
 
-        let journal_max_events = PREFERENCES.journal_max_events();
+        let journal_max_events = PREFERENCES.journal_max_events_batch_size();
         self.journal_max_events.set_value(journal_max_events as f64);
 
         let journal_event_max_size = PREFERENCES.journal_event_max_size();
@@ -262,8 +263,11 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         let journal_colors = PREFERENCES.journal_colors();
         settings.set_boolean(KEY_PREF_JOURNAL_COLORS, journal_colors)?;
 
-        let journal_events = PREFERENCES.journal_max_events();
-        settings.set_uint(KEY_PREF_JOURNAL_MAX_EVENTS, journal_events)?;
+        let journal_events_batch_size = PREFERENCES.journal_max_events_batch_size();
+        settings.set_uint(
+            KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE,
+            journal_events_batch_size,
+        )?;
 
         let journal_event_max_size = PREFERENCES.journal_event_max_size();
         settings.set_uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE, journal_event_max_size)?;

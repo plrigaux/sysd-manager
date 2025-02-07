@@ -31,9 +31,9 @@
             <default>true</default>
             <summary>To display journal's logs colors</summary>
         </key>
-        <key name="pref-journal-max-events" type="u">
+        <key name="pref-journal-events-batch-size" type="u">
             <default>100</default>
-            <summary>Limits number of events returned by the journal.</summary>
+            <summary>Events number returned by the journal per batch.</summary>
             <description>The 0 value to disable the limit.</description>
         </key>
         <key name="pref-journal-event-max-size" type="u">
