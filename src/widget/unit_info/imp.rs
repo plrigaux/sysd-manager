@@ -143,11 +143,11 @@ impl UnitInfoPanelImp {
 
     pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
         match *action {
-            InterPanelAction::SetFontProvider(old, new) => {
+            InterPanelAction::FontProvider(old, new) => {
                 set_text_view_font(old, new, &self.unit_info_textview);
                 set_font_context(&self.unit_info_textview);
             }
-            InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
+            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
             _ => {}
         }
     }

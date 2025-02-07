@@ -7,7 +7,7 @@ use gtk::{
 };
 use log::{debug, info, warn};
 
-pub static FONT_CONTEXT: LazyLock<FontContext> = LazyLock::new(|| FontContext::default());
+pub static FONT_CONTEXT: LazyLock<FontContext> = LazyLock::new(FontContext::default);
 
 #[derive(Default, Debug)]
 pub struct FontContext {
@@ -69,7 +69,7 @@ pub fn create_provider(font_description: &Option<&FontDescription>) -> Option<gt
         css.push_str(family.as_str());
         css.push_str("\";\n");
     }
-    css.push_str("}");
+    css.push('}');
 
     provider.load_from_string(&css);
 

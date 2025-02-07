@@ -183,7 +183,7 @@ macro_rules! swrite {
 
 const SEC_PER_MONTH: u64 = 2629800;
 const SEC_PER_YEAR: u64 = 31_557_600;
-const USEC_PER_SEC: u64 = 1_000_000;
+pub const USEC_PER_SEC: u64 = 1_000_000;
 const USEC_PER_YEAR: u64 = 31_557_600 * USEC_PER_SEC;
 const SEC_PER_DAY: u64 = 24 * SEC_PER_HOUR;
 const SEC_PER_WEEK: u64 = SEC_PER_DAY * 7;

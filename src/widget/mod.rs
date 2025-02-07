@@ -15,8 +15,8 @@ pub mod unit_info;
 pub mod unit_list;
 
 pub enum InterPanelAction<'a> {
-    SetFont(Option<&'a FontDescription>),
-    SetFontProvider(Option<&'a gtk::CssProvider>, Option<&'a gtk::CssProvider>),
-    SetDark(bool),
-    SetVisibleOnPage(bool),
+    Font(Option<&'a FontDescription>),
+    FontProvider(Option<&'a gtk::CssProvider>, Option<&'a gtk::CssProvider>),
+    IsDark(bool),
+    PanelVisible(bool),
 }

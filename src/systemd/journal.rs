@@ -12,7 +12,7 @@ use sysd::{id128::Id128, journal::OpenOptions, Journal};
 
 use crate::{
     systemd::journal_data::JournalEventChunkInfo,
-    utils::th::TimestampStyle,
+    utils::th::{TimestampStyle, USEC_PER_SEC},
     widget::preferences::data::{DbusLevel, PREFERENCES},
 };
 
@@ -50,61 +50,7 @@ pub(super) fn get_unit_journal(
     boot_filter: BootFilter,
     from_time: Option<u64>,
 ) -> Result<JournalEventChunk, SystemdErrors> {
-    info!("Starting journal-logger");
-
-    // Open the journal
-    let mut journal_reader = OpenOptions::default()
-        .open()
-        .expect("Could not open journal");
-
-    let unit_primary = unit.primary();
-    let unit_name = unit_primary.as_str();
-
-    let level = PREFERENCES.dbus_level();
-
-    info!("JOURNAL UNIT NAME {} level {:?}", unit_name, level);
-
-    match level {
-        DbusLevel::System => {
-            journal_reader.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_COREDUMP_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_OBJECT_SYSTEMD_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_SYSTEMD_SLICE, unit_name)?;
-        }
-        DbusLevel::Session => {
-            journal_reader.match_add(KEY_SYSTEMS_USER_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_USER_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_COREDUMP_USER_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_OBJECT_SYSTEMD_USER_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_SYSTEMD_USER_SLICE, unit_name)?;
-        }
-    };
-
-    match boot_filter {
-        BootFilter::Current => {
-            let boot_id = Id128::from_boot()?;
-            let boot_str = format!("{}", boot_id);
-
-            journal_reader.match_and()?;
-            journal_reader.match_add(KEY_BOOT_ID, boot_str)?;
-        }
-        BootFilter::All => {
-            //No filter
-        }
-        BootFilter::Id(boot_id) => {
-            journal_reader.match_and()?;
-            journal_reader.match_add(KEY_BOOT_ID, boot_id)?;
-        }
-    }
+    let mut journal_reader = create_journal_reader(unit, boot_filter)?;
 
     let mut out_list = JournalEventChunk::new(max_chunk_events as usize);
 
@@ -210,33 +156,62 @@ pub(super) fn get_unit_journal(
         last_time_in_usec = time_in_usec;
     }
 
-    /*   if !out_list.is_empty() {
-        //not empty so need to return
-        break;
-    } */
-
-    /*         warn!("Waiting journal events {:?}", wait_time);
-    match journal_reader.wait(wait_time)? {
-        sysd::JournalWaitResult::Nop => {
-            //no change
-            out_list.set_info(JournalEventChunkInfo::NoEventsAfterWaiting);
-            warn!("Finished Waiting no new");
-            break;
-        }
-        sysd::JournalWaitResult::Append => {
-            //new event, go capture them
-            warn!("Finished Waiting some new events");
-        }
-        sysd::JournalWaitResult::Invalidate => {
-            //Don't know what to do here
-            out_list.set_info(JournalEventChunkInfo::Invalidate);
-            warn!("Finished Waiting Invalidate");
-            break;
-        } */
-    //}
-    //}
-
     Ok(out_list)
+}
+
+fn create_journal_reader(
+    unit: &UnitInfo,
+    boot_filter: BootFilter,
+) -> Result<Journal, SystemdErrors> {
+    info!("Starting journal-logger");
+    let mut journal_reader = OpenOptions::default()
+        .open()
+        .expect("Could not open journal");
+    let unit_primary = unit.primary();
+    let unit_name = unit_primary.as_str();
+    let level = PREFERENCES.dbus_level();
+    info!("JOURNAL UNIT NAME {} level {:?}", unit_name, level);
+    match level {
+        DbusLevel::System => {
+            journal_reader.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_COREDUMP_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_OBJECT_SYSTEMD_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_SYSTEMD_SLICE, unit_name)?;
+        }
+        DbusLevel::Session => {
+            journal_reader.match_add(KEY_SYSTEMS_USER_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_USER_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_COREDUMP_USER_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_OBJECT_SYSTEMD_USER_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_SYSTEMD_USER_SLICE, unit_name)?;
+        }
+    };
+    match boot_filter {
+        BootFilter::Current => {
+            let boot_id = Id128::from_boot()?;
+            let boot_str = format!("{}", boot_id);
+
+            journal_reader.match_and()?;
+            journal_reader.match_add(KEY_BOOT_ID, boot_str)?;
+        }
+        BootFilter::All => {
+            //No filter
+        }
+        BootFilter::Id(boot_id) => {
+            journal_reader.match_and()?;
+            journal_reader.match_add(KEY_BOOT_ID, boot_id)?;
+        }
+    }
+    Ok(journal_reader)
 }
 
 fn next(journal_reader: &mut Journal, oldest_first: bool) -> Result<u64, sysd::Error> {
@@ -329,7 +304,7 @@ fn make_prefix(
             formated_time!(local_result, FMT_USEC)
         }
         TimestampStyle::Unix => {
-            let timestamp = timestamp_usec / 1000_000;
+            let timestamp = timestamp_usec / USEC_PER_SEC;
             format!("@{timestamp}")
         }
         TimestampStyle::UnixUsec => format!("@{timestamp_usec}"),

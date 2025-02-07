@@ -402,7 +402,7 @@ fn fill_error(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
     if status_errno > 0 {
         let mut text = format!("{prefix} {status_errno}");
 
-        if let Some(strerror) = strerror(status_errno as i32) {
+        if let Some(strerror) = strerror(status_errno) {
             swrite!(text, " ({strerror})");
         }
 

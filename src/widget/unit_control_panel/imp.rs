@@ -318,12 +318,12 @@ impl UnitControlPanelImpl {
     }
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
-        if let InterPanelAction::SetFont(font_description) = action {
+        if let InterPanelAction::Font(font_description) = action {
             let provider = create_provider(font_description);
             {
                 let binding = self.old_font_provider.borrow();
                 let old_provider = binding.as_ref();
-                let new_action = InterPanelAction::SetFontProvider(old_provider, provider.as_ref());
+                let new_action = InterPanelAction::FontProvider(old_provider, provider.as_ref());
                 self.set_inter_action2(&new_action);
             }
             self.old_font_provider.replace(provider);
@@ -433,8 +433,8 @@ impl ObjectImpl for UnitControlPanelImpl {
             info!("connect_visible_child_name_notify {:?}", view_stack.visible_child_name());
         }); */
         {
-            const VISIBLE_FALSE: InterPanelAction<'_> = InterPanelAction::SetVisibleOnPage(false);
-            const VISIBLE_TRUE: InterPanelAction<'_> = InterPanelAction::SetVisibleOnPage(true);
+            const VISIBLE_FALSE: InterPanelAction<'_> = InterPanelAction::PanelVisible(false);
+            const VISIBLE_TRUE: InterPanelAction<'_> = InterPanelAction::PanelVisible(true);
 
             let unit_journal_panel = self.unit_journal_panel.clone();
             let unit_dependencies_panel = self.unit_dependencies_panel.clone();
@@ -487,7 +487,7 @@ impl ObjectImpl for UnitControlPanelImpl {
                 font_description.set_size(scaled_size);
             }
 
-            let action = InterPanelAction::SetFont(Some(&font_description));
+            let action = InterPanelAction::Font(Some(&font_description));
 
             self.set_inter_action(&action);
 

@@ -270,7 +270,7 @@ impl Preferences {
 
     pub fn set_font_default(&self) {
         self.set_font_family("");
-        self.set_font_size(0 as u32);
+        self.set_font_size(0);
     }
 }
 

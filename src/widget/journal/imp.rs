@@ -320,7 +320,7 @@ impl JournalPanelImp {
         glib::spawn_future_local(async move {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
-            let events = gio::spawn_blocking(move || {
+            let events: JournalEventChunk = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(
                     &unit,
                     Some(duration),
@@ -398,12 +398,12 @@ impl JournalPanelImp {
 
     pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
         match *action {
-            InterPanelAction::SetDark(is_dark) => self.set_dark(is_dark),
-            InterPanelAction::SetFontProvider(old, new) => {
+            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
+            InterPanelAction::FontProvider(old, new) => {
                 let text_view = self.journal_text_view.borrow();
                 set_text_view_font(old, new, &text_view);
             }
-            InterPanelAction::SetVisibleOnPage(visible) => self.set_visible_on_page(visible),
+            InterPanelAction::PanelVisible(visible) => self.set_visible_on_page(visible),
             _ => {}
         }
     }
@@ -531,7 +531,7 @@ fn pad_lines(
     }
 
     let mut space_padding = String::new();
-    while let Some(line) = lines.next() {
+    for line in lines {
         if space_padding.is_empty() {
             let bytes = vec![b' '; journal_event.prefix().len()];
             space_padding = String::from_utf8(bytes).expect("No issues");

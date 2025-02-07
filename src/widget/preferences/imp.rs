@@ -139,7 +139,7 @@ impl PreferencesDialogImpl {
                     PREFERENCES.set_font(&font_description);
 
                     if let Some(window) = window {
-                        let action = InterPanelAction::SetFont(Some(&font_description));
+                        let action = InterPanelAction::Font(Some(&font_description));
 
                         window.set_inter_action(&action);
                     }
@@ -157,7 +157,7 @@ impl PreferencesDialogImpl {
 
         let window = self.app_window.borrow();
         if let Some(window) = window.as_ref() {
-            let action = crate::widget::InterPanelAction::SetFont(None);
+            let action = crate::widget::InterPanelAction::Font(None);
             window.set_inter_action(&action);
         }
 
