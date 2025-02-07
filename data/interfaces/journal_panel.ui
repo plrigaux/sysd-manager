@@ -32,7 +32,8 @@
               <object class="AdwButtonContent">
                 <property name="halign">baseline-fill</property>
                 <property name="icon-name">view-sort-ascending</property>
-                <property name="label">Sort</property>
+                <property name="label">Ascending</property>
+                <property name="tooltip-text">Change events order</property>
               </object>
             </property>
             <property name="halign">start</property>

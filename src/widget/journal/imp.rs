@@ -83,6 +83,8 @@ pub struct JournalPanelImp {
     from_time: Cell<Option<u64>>,
 
     journal_text_view: RefCell<gtk::TextView>,
+
+    oldest_first: Cell<bool>,
 }
 
 #[gtk::template_callbacks]
@@ -104,14 +106,17 @@ impl JournalPanelImp {
 
         if icon_name == ASCD {
             child.set_icon_name(DESC);
-
-            //create_sorter_desc!(self);
+            child.set_label("Descending");
+            self.oldest_first.set(false);
         } else {
             //     view-sort-descending
             child.set_icon_name(ASCD);
-
-            //create_sorter_ascd!(self);
+            child.set_label("Ascending");
+            self.oldest_first.set(true);
         }
+
+        self.new_text_view();
+        self.update_journal();
     }
 
     #[template_callback]
@@ -282,7 +287,6 @@ impl JournalPanelImp {
         if !self.visible_on_page.get() {
             return;
         }
-        //let journal_text: gtk::TextView = self.journal_text.clone();
 
         let binding = self.unit.borrow();
         let Some(unit_ref) = binding.as_ref() else {
@@ -294,15 +298,9 @@ impl JournalPanelImp {
         self.unit_journal_loaded.set(true); // maybe wait at the full loaded
         let unit = unit_ref.clone();
         let journal_refresh_button = self.journal_refresh_button.clone();
-        let oldest_first = false;
+        let oldest_first = self.oldest_first.get();
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
-
-        /*       let store_ref = self.list_store.borrow();
-        let store = store_ref
-            .as_ref()
-            .expect("Liststore supposed to be set")
-            .clone(); */
 
         let boot_filter = self.boot_filter.borrow().clone();
         //let in_color = PREFERENCES.journal_colors();
@@ -452,6 +450,8 @@ impl ObjectImpl for JournalPanelImp {
         self.parent_constructed();
 
         self.new_text_view();
+
+        self.oldest_first.set(true);
     }
 }
 impl WidgetImpl for JournalPanelImp {}

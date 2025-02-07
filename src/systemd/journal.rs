@@ -44,8 +44,8 @@ pub const BOOT_IDX: u8 = 200;
 
 pub(super) fn get_unit_journal(
     unit: &UnitInfo,
-    wait_time: Option<Duration>,
-    _oldest_first: bool,
+    _wait_time: Option<Duration>,
+    oldest_first: bool,
     max_chunk_events: u32,
     boot_filter: BootFilter,
     from_time: Option<u64>,
@@ -118,6 +118,10 @@ pub(super) fn get_unit_journal(
 
     let timestamp_style = PREFERENCES.timestamp_style();
 
+    if !oldest_first {
+        journal_reader.seek_tail()?;
+    }
+
     if let Some(from_time) = from_time {
         info!("Seek to {from_time}");
         if let Err(err) = journal_reader.seek_realtime_usec(from_time) {
@@ -126,7 +130,7 @@ pub(super) fn get_unit_journal(
 
         //skip the seek event
         loop {
-            if journal_reader.next()? == 0 {
+            if next(&mut journal_reader, oldest_first)? == 0 {
                 out_list.set_info(JournalEventChunkInfo::NoMore);
                 break;
             }
@@ -135,7 +139,7 @@ pub(super) fn get_unit_journal(
 
             //Continue until time change
             if time_in_usec != from_time {
-                journal_reader.previous()?; //go back one event for capture
+                previous(&mut journal_reader, oldest_first)?; //go back one event for capture
                 break;
             }
         }
@@ -144,96 +148,111 @@ pub(super) fn get_unit_journal(
     let mut last_time_in_usec: u64 = 0;
 
     loop {
-        loop {
-            if journal_reader.next()? == 0 {
-                out_list.set_info(JournalEventChunkInfo::NoMore);
-                break;
-            }
-
-            let mut message = get_data(&mut journal_reader, KEY_MESSAGE, &default);
-
-            if message_max_char != 0 && message.len() > message_max_char {
-                warn!(
-                    "MESSAGE LEN {} will truncate to {message_max_char}",
-                    message.len()
-                );
-
-                message = truncate(message, message_max_char);
-            }
-
-            //TODO get the u64 timestamp directly
-            let time_in_usec = get_realtime_usec(&journal_reader)?;
-
-            let pid = get_data(&mut journal_reader, KEY_PID, &default);
-            let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
-            let priority = priority_str.parse::<u8>().map_or(7, |u| u);
-
-            let name = get_data(&mut journal_reader, KEY_COMM, &default);
-
-            let boot_id = get_data(&mut journal_reader, KEY_BOOT_ID, &default);
-
-            let prefix = make_prefix(time_in_usec, name, pid, timestamp_style);
-
-            let journal_event = JournalEvent::new_param(priority, time_in_usec, prefix, message);
-
-            if boot_id != last_boot_id {
-                if !last_boot_id.is_empty() {
-                    let boot_event = JournalEvent::new_param(
-                        BOOT_IDX,
-                        time_in_usec - 1,
-                        String::new(),
-                        format!("-- Boot {boot_id} --"),
-                    );
-                    out_list.push(boot_event);
-                }
-
-                last_boot_id = boot_id;
-            }
-
-            //if == 0 no limit
-            if max_chunk_events != 0 {
-                index += 1;
-                if index >= max_chunk_events {
-                    warn!("Journal log events reach the {max_chunk_events} limit!");
-
-                    if last_time_in_usec != time_in_usec {
-                        out_list.set_info(JournalEventChunkInfo::ChunkMaxReached);
-                        break;
-                    }
-                }
-            }
-            out_list.push(journal_event);
-
-            last_time_in_usec = time_in_usec;
-        }
-
-        if !out_list.is_empty() {
-            //not empty so need to return
+        if next(&mut journal_reader, oldest_first)? == 0 {
+            out_list.set_info(JournalEventChunkInfo::NoMore);
             break;
         }
 
-        warn!("Waiting journal events {:?}", wait_time);
-        match journal_reader.wait(wait_time)? {
-            sysd::JournalWaitResult::Nop => {
-                //no change
-                out_list.set_info(JournalEventChunkInfo::NoEventsAfterWaiting);
-                warn!("Finished Waiting no new");
-                break;
+        let mut message = get_data(&mut journal_reader, KEY_MESSAGE, &default);
+
+        if message_max_char != 0 && message.len() > message_max_char {
+            warn!(
+                "MESSAGE LEN {} will truncate to {message_max_char}",
+                message.len()
+            );
+
+            message = truncate(message, message_max_char);
+        }
+
+        //TODO get the u64 timestamp directly
+        let time_in_usec = get_realtime_usec(&journal_reader)?;
+
+        let pid = get_data(&mut journal_reader, KEY_PID, &default);
+        let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
+        let priority = priority_str.parse::<u8>().map_or(7, |u| u);
+
+        let name = get_data(&mut journal_reader, KEY_COMM, &default);
+
+        let boot_id = get_data(&mut journal_reader, KEY_BOOT_ID, &default);
+
+        let prefix = make_prefix(time_in_usec, name, pid, timestamp_style);
+
+        let journal_event = JournalEvent::new_param(priority, time_in_usec, prefix, message);
+
+        if boot_id != last_boot_id {
+            if !last_boot_id.is_empty() {
+                let boot_event = JournalEvent::new_param(
+                    BOOT_IDX,
+                    time_in_usec - 1,
+                    String::new(),
+                    format!("-- Boot {boot_id} --"),
+                );
+                out_list.push(boot_event);
             }
-            sysd::JournalWaitResult::Append => {
-                //new event, go capture them
-                warn!("Finished Waiting some new events");
-            }
-            sysd::JournalWaitResult::Invalidate => {
-                //Don't know what to do here
-                out_list.set_info(JournalEventChunkInfo::Invalidate);
-                warn!("Finished Waiting Invalidate");
-                break;
+
+            last_boot_id = boot_id;
+        }
+
+        //if == 0 no limit
+        if max_chunk_events != 0 {
+            index += 1;
+            if index >= max_chunk_events {
+                warn!("Journal log events reach the {max_chunk_events} limit!");
+
+                if last_time_in_usec != time_in_usec {
+                    out_list.set_info(JournalEventChunkInfo::ChunkMaxReached);
+                    break;
+                }
             }
         }
+        out_list.push(journal_event);
+
+        last_time_in_usec = time_in_usec;
     }
 
+    /*   if !out_list.is_empty() {
+        //not empty so need to return
+        break;
+    } */
+
+    /*         warn!("Waiting journal events {:?}", wait_time);
+    match journal_reader.wait(wait_time)? {
+        sysd::JournalWaitResult::Nop => {
+            //no change
+            out_list.set_info(JournalEventChunkInfo::NoEventsAfterWaiting);
+            warn!("Finished Waiting no new");
+            break;
+        }
+        sysd::JournalWaitResult::Append => {
+            //new event, go capture them
+            warn!("Finished Waiting some new events");
+        }
+        sysd::JournalWaitResult::Invalidate => {
+            //Don't know what to do here
+            out_list.set_info(JournalEventChunkInfo::Invalidate);
+            warn!("Finished Waiting Invalidate");
+            break;
+        } */
+    //}
+    //}
+
     Ok(out_list)
+}
+
+fn next(journal_reader: &mut Journal, oldest_first: bool) -> Result<u64, sysd::Error> {
+    if oldest_first {
+        journal_reader.next()
+    } else {
+        journal_reader.previous()
+    }
+}
+
+fn previous(journal_reader: &mut Journal, oldest_first: bool) -> Result<u64, sysd::Error> {
+    if oldest_first {
+        journal_reader.previous()
+    } else {
+        journal_reader.next()
+    }
 }
 
 fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {

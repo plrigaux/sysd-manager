@@ -3,8 +3,8 @@ use gtk::glib;
 pub enum JournalEventChunkInfo {
     NoMore,
     ChunkMaxReached,
-    NoEventsAfterWaiting,
-    Invalidate,
+    //NoEventsAfterWaiting,
+    //Invalidate,
     Error,
 }
 
@@ -48,9 +48,9 @@ impl JournalEventChunk {
         self.info = info;
     }
 
-    pub fn is_empty(&self) -> bool {
+    /*     pub fn is_empty(&self) -> bool {
         self.events.is_empty()
-    }
+    } */
 }
 
 glib::wrapper! {
