@@ -4,7 +4,7 @@
 /// https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html#
 /// https://www.freedesktop.org/software/systemd/man/latest/sd_journal_open.html
 ///
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use chrono::{Local, Utc};
 use log::{info, warn};
@@ -18,7 +18,7 @@ use crate::{
 
 use super::{
     data::UnitInfo,
-    journal_data::{JournalEvent, JournalEventChunk},
+    journal_data::{EventRange, JournalEvent, JournalEventChunk},
     BootFilter, SystemdErrors,
 };
 
@@ -44,15 +44,12 @@ pub const BOOT_IDX: u8 = 200;
 
 pub(super) fn get_unit_journal(
     unit: &UnitInfo,
-    _wait_time: Option<Duration>,
-    oldest_first: bool,
-    max_chunk_events: u32,
     boot_filter: BootFilter,
-    from_time: Option<u64>,
+    range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
     let mut journal_reader = create_journal_reader(unit, boot_filter)?;
 
-    let mut out_list = JournalEventChunk::new(max_chunk_events as usize);
+    let mut out_list = JournalEventChunk::new((range.max + 10) as usize);
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
@@ -64,19 +61,18 @@ pub(super) fn get_unit_journal(
 
     let timestamp_style = PREFERENCES.timestamp_style();
 
-    if !oldest_first {
+    //Position the indexer
+    if range.decending() {
         journal_reader.seek_tail()?;
     }
 
-    if let Some(from_time) = from_time {
-        info!("Seek to {from_time}");
-        if let Err(err) = journal_reader.seek_realtime_usec(from_time) {
-            warn!("Seek real time error {:?}", err);
-        };
+    if let Some(begin_from_time) = range.begin {
+        info!("Seek to time {begin_from_time}");
+        journal_reader.seek_realtime_usec(begin_from_time)?;
 
         //skip the seek event
         loop {
-            if next(&mut journal_reader, oldest_first)? == 0 {
+            if next(&mut journal_reader, range.oldest_first)? == 0 {
                 out_list.set_info(JournalEventChunkInfo::NoMore);
                 break;
             }
@@ -84,8 +80,8 @@ pub(super) fn get_unit_journal(
             let time_in_usec = get_realtime_usec(&journal_reader)?;
 
             //Continue until time change
-            if time_in_usec != from_time {
-                previous(&mut journal_reader, oldest_first)?; //go back one event for capture
+            if time_in_usec != begin_from_time {
+                previous(&mut journal_reader, range.oldest_first)?; //go back one event for capture
                 break;
             }
         }
@@ -94,7 +90,7 @@ pub(super) fn get_unit_journal(
     let mut last_time_in_usec: u64 = 0;
 
     loop {
-        if next(&mut journal_reader, oldest_first)? == 0 {
+        if next(&mut journal_reader, range.oldest_first)? == 0 {
             out_list.set_info(JournalEventChunkInfo::NoMore);
             break;
         }
@@ -140,10 +136,10 @@ pub(super) fn get_unit_journal(
         }
 
         //if == 0 no limit
-        if max_chunk_events != 0 {
+        if range.max != 0 {
             index += 1;
-            if index >= max_chunk_events {
-                warn!("Journal log events reach the {max_chunk_events} limit!");
+            if index >= range.max {
+                warn!("Journal log events reach the {} limit!", range.max);
 
                 if last_time_in_usec != time_in_usec {
                     out_list.set_info(JournalEventChunkInfo::ChunkMaxReached);
@@ -151,6 +147,11 @@ pub(super) fn get_unit_journal(
                 }
             }
         }
+
+        if range.has_reached_end(time_in_usec) {
+            break;
+        }
+
         out_list.push(journal_event);
 
         last_time_in_usec = time_in_usec;

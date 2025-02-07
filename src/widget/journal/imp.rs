@@ -12,10 +12,7 @@ use gtk::{
     TemplateChild,
 };
 
-use std::{
-    cell::{Cell, RefCell},
-    time::Duration,
-};
+use std::cell::{Cell, RefCell};
 
 use log::{debug, error, info, warn};
 
@@ -24,7 +21,7 @@ use crate::{
         self,
         data::UnitInfo,
         journal::BOOT_IDX,
-        journal_data::{JournalEvent, JournalEventChunk},
+        journal_data::{EventRange, JournalEvent, JournalEventChunk},
         BootFilter,
     },
     utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
@@ -70,7 +67,7 @@ pub struct JournalPanelImp {
 
     visible_on_page: Cell<bool>,
 
-    unit_journal_loaded: Cell<bool>,
+    //unit_journal_loaded: Cell<bool>,
 
     //list_store: RefCell<Option<gio::ListStore>>,
     #[property(get, set=Self::set_unit, nullable)]
@@ -82,18 +79,20 @@ pub struct JournalPanelImp {
 
     from_time: Cell<Option<u64>>,
 
+    most_recent_time: Cell<Option<u64>>,
+
     journal_text_view: RefCell<gtk::TextView>,
 
-    oldest_first: Cell<bool>,
+    older_to_recent: Cell<bool>,
 }
 
 #[gtk::template_callbacks]
 impl JournalPanelImp {
     #[template_callback]
-    fn refresh_journal_clicked(&self, button: &gtk::Button) {
-        debug!("button {:?}", button);
-
-        self.update_journal();
+    fn refresh_journal_clicked(&self, _button: &gtk::Button) {
+        info!("journal refresh button click");
+        self.new_text_view();
+        self.update_journal(EventGrabbing::Default);
     }
 
     #[template_callback]
@@ -107,16 +106,16 @@ impl JournalPanelImp {
         if icon_name == ASCD {
             child.set_icon_name(DESC);
             child.set_label("Descending");
-            self.oldest_first.set(false);
+            self.older_to_recent.set(false);
         } else {
             //     view-sort-descending
             child.set_icon_name(ASCD);
             child.set_label("Ascending");
-            self.oldest_first.set(true);
+            self.older_to_recent.set(true);
         }
 
         self.new_text_view();
-        self.update_journal();
+        self.update_journal(EventGrabbing::Default);
     }
 
     #[template_callback]
@@ -148,7 +147,7 @@ impl JournalPanelImp {
 
             if replaced != boot_filter {
                 //filter updated
-                self.update_journal();
+                self.update_journal(EventGrabbing::Default);
             }
         }
     }
@@ -219,17 +218,32 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
-    fn scwin_edge_overshot(&self, pos: gtk::PositionType) {
-        info!("scwin_edge_overshot {:?}", pos);
+    fn scwin_edge_overshot(&self, position: gtk::PositionType) {
+        info!("scwin_edge_overshot {:?}", position);
+
+        self.on_position(position);
     }
 
     #[template_callback]
-    fn scwin_edge_reached(&self, pos: gtk::PositionType) {
-        info!("scwin_edge_reached {:?}", pos);
+    fn scwin_edge_reached(&self, position: gtk::PositionType) {
+        info!("scwin_edge_reached {:?}", position);
 
-        if pos == gtk::PositionType::Bottom {
-            // load more
-            self.update_journal();
+        self.on_position(position);
+    }
+
+    fn on_position(&self, position: gtk::PositionType) {
+        match position {
+            gtk::PositionType::Bottom => {
+                info!("call for new {:?}", position);
+                self.update_journal(EventGrabbing::Default)
+            }
+            gtk::PositionType::Top => {
+                if !self.older_to_recent.get() {
+                    let grabber = EventGrabbing::Newer;
+                    self.update_journal(grabber)
+                };
+            }
+            _ => {}
         }
     }
 
@@ -252,12 +266,7 @@ impl JournalPanelImp {
         debug!("set_visible_on_page val {value}");
         self.visible_on_page.set(value);
 
-        if self.visible_on_page.get()
-            && !self.unit_journal_loaded.get()
-            && self.unit.borrow().is_some()
-        {
-            self.update_journal()
-        }
+        self.update_journal(EventGrabbing::Default)
     }
 
     pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
@@ -266,7 +275,8 @@ impl JournalPanelImp {
             None => {
                 self.unit.replace(None);
                 self.new_text_view();
-                self.update_journal(); //to clear the journal
+                self.panel_stack.set_visible_child_name(PANEL_EMPTY);
+                //self.update_journal(); //to clear the journal
                 return;
             }
         };
@@ -277,13 +287,11 @@ impl JournalPanelImp {
             self.new_text_view();
         }
 
-        if self.visible_on_page.get() && !self.unit_journal_loaded.get() {
-            self.update_journal()
-        }
+        self.update_journal(EventGrabbing::Default)
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
-    fn update_journal(&self) {
+    fn update_journal(&self, grabbing: EventGrabbing) {
         if !self.visible_on_page.get() {
             return;
         }
@@ -295,18 +303,16 @@ impl JournalPanelImp {
             return;
         };
 
-        self.unit_journal_loaded.set(true); // maybe wait at the full loaded
+        //self.unit_journal_loaded.set(true); // maybe wait at the full loaded
         let unit = unit_ref.clone();
         let journal_refresh_button = self.journal_refresh_button.clone();
-        let oldest_first = self.oldest_first.get();
+        let oldest_to_recent = self.older_to_recent.get();
         let journal_max_events = PREFERENCES.journal_max_events();
         let panel_stack = self.panel_stack.clone();
-
         let boot_filter = self.boot_filter.borrow().clone();
-        //let in_color = PREFERENCES.journal_colors();
-        let duration = Duration::from_millis(1000); // wait a second
         let from_time = self.from_time.get();
-        let journal = self.obj().clone();
+        let most_recent_time = self.most_recent_time.get();
+        let journal_panel = self.obj().clone();
 
         let text_buffer = {
             let text_view = self.journal_text_view.borrow();
@@ -316,19 +322,31 @@ impl JournalPanelImp {
         let is_dark = self.is_dark.get();
         let journal_color = PREFERENCES.journal_colors();
 
-        info!("Call from time {:?}", from_time);
+        debug!("Call from time {:?}", from_time);
+        debug!("grabbing {:?}", grabbing);
+
+        let range = if grabbing == EventGrabbing::Newer {
+            if !oldest_to_recent {
+                EventRange {
+                    oldest_first: oldest_to_recent,
+                    max: 0,
+                    begin: None,
+                    end: most_recent_time,
+                }
+            } else {
+                EventRange::basic(oldest_to_recent, journal_max_events, from_time)
+            }
+        } else {
+            EventRange::basic(oldest_to_recent, journal_max_events, from_time)
+        };
+
+        debug!("range {:?}", range);
+
         glib::spawn_future_local(async move {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
             let events: JournalEventChunk = gio::spawn_blocking(move || {
-                match systemd::get_unit_journal(
-                    &unit,
-                    Some(duration),
-                    oldest_first,
-                    journal_max_events,
-                    boot_filter,
-                    from_time,
-                ) {
+                match systemd::get_unit_journal(&unit, boot_filter, range) {
                     Ok(journal_output) => journal_output,
                     Err(error) => {
                         warn!("Journal Events Error {:?}", error);
@@ -345,8 +363,20 @@ impl JournalPanelImp {
                 text_buffer.set_text("");
             }
 
-            let iter = text_buffer.end_iter();
-            let mut writer = UnitInfoWriter::new(text_buffer, iter, is_dark);
+            if !oldest_to_recent {
+                if let Some(journal_event) = events.first() {
+                    let time = journal_event.timestamp();
+                    journal_panel.set_most_recent_time(time)
+                }
+            }
+
+            let text_iter = if grabbing == EventGrabbing::Newer && !oldest_to_recent {
+                text_buffer.start_iter()
+            } else {
+                text_buffer.end_iter()
+            };
+
+            let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
             for journal_event in events.iter() {
                 fill_journal_event(journal_event, &mut writer, journal_color);
             }
@@ -355,7 +385,7 @@ impl JournalPanelImp {
 
             if let Some(journal_event) = events.last() {
                 let from_time = journal_event.timestamp();
-                journal.set_from_time(Some(from_time));
+                journal_panel.set_from_time(Some(from_time));
             }
 
             let panel = if writer.char_count() <= 0 {
@@ -393,7 +423,7 @@ impl JournalPanelImp {
     }
 
     pub(super) fn refresh_panels(&self) {
-        self.update_journal()
+        self.update_journal(EventGrabbing::Default)
     }
 
     pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
@@ -413,6 +443,16 @@ impl JournalPanelImp {
         self.from_time.set(from_time);
     }
 
+    pub(super) fn set_oldest(&self, time: u64) {
+        let max_time = if let Some(oldest_time) = self.most_recent_time.get() {
+            oldest_time.max(time)
+        } else {
+            time
+        };
+
+        self.most_recent_time.set(Some(max_time));
+    }
+
     fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
     }
@@ -422,7 +462,7 @@ impl JournalPanelImp {
         self.scrolled_window.set_child(Some(&tv));
         self.journal_text_view.replace(tv);
         self.from_time.set(None);
-        self.unit_journal_loaded.set(false);
+        //self.unit_journal_loaded.set(false);
     }
 }
 
@@ -451,7 +491,7 @@ impl ObjectImpl for JournalPanelImp {
 
         self.new_text_view();
 
-        self.oldest_first.set(true);
+        self.older_to_recent.set(true);
     }
 }
 impl WidgetImpl for JournalPanelImp {}
@@ -541,6 +581,14 @@ fn pad_lines(
         writer.insert(&space_padding);
         inserter(writer, line);
     }
+}
+
+#[derive(PartialEq, Debug)]
+enum EventGrabbing {
+    // Older,
+    Newer,
+    Default,
+    //None,
 }
 
 #[cfg(test)]

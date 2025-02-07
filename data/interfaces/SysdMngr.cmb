@@ -353,6 +353,7 @@
 	(30,22,"AdwStatusPage","icon-name","dialog-question",None,None,None,None,None,None,None,None,None),
 	(30,22,"AdwStatusPage","title","No journal events",None,None,None,None,None,None,None,None,None),
 	(30,32,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
+	(30,32,"GtkWidget","margin-bottom","5",None,None,None,None,None,None,None,None,None),
 	(30,32,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
 	(30,32,"GtkWidget","margin-start","5",None,None,None,None,None,None,None,None,None),
 	(30,33,"GtkButton","child",None,0,None,None,None,34,None,None,None,None),

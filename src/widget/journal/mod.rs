@@ -31,6 +31,10 @@ impl JournalPanel {
     fn set_from_time(&self, from_time: Option<u64>) {
         self.imp().set_from_time(from_time);
     }
+
+    fn set_most_recent_time(&self, time: u64) {
+        self.imp().set_oldest(time);
+    }
 }
 
 impl Default for JournalPanel {

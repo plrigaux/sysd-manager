@@ -48,6 +48,10 @@ impl JournalEventChunk {
         self.info = info;
     }
 
+    pub fn first(&self) -> Option<&JournalEvent> {
+        self.events.first()
+    }
+
     /*     pub fn is_empty(&self) -> bool {
         self.events.is_empty()
     } */
@@ -63,6 +67,40 @@ impl Default for JournalEvent {
     }
 }
 
+#[derive(Default, Debug)]
+pub struct EventRange {
+    pub begin: Option<u64>,
+    pub end: Option<u64>,
+    pub max: u32,
+    pub oldest_first: bool,
+}
+
+impl EventRange {
+    pub fn basic(oldest_first: bool, max: u32, begin: Option<u64>) -> Self {
+        EventRange {
+            oldest_first,
+            max,
+            begin,
+            end: None,
+        }
+    }
+
+    pub fn decending(&self) -> bool {
+        !self.oldest_first
+    }
+
+    pub fn has_reached_end(&self, time: u64) -> bool {
+        if let Some(end) = self.end {
+            if self.oldest_first {
+                time >= end
+            } else {
+                time <= end
+            }
+        } else {
+            false
+        }
+    }
+}
 impl JournalEvent {
     pub fn new_param(priority: u8, time_in_usec: u64, prefix: String, message: String) -> Self {
         let obj: JournalEvent = glib::Object::new();

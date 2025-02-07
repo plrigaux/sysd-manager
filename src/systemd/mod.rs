@@ -8,13 +8,12 @@ mod sysdbus;
 use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::process::{Command, Stdio};
-use std::time::Duration;
 
 use data::{UnitInfo, UnitProcess};
 use enums::{ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
 use errors::SystemdErrors;
 use gtk::glib::GString;
-use journal_data::JournalEventChunk;
+use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 use std::fs::{self, File};
 use std::io::{ErrorKind, Read, Write};
@@ -181,20 +180,10 @@ fn file_open_get_content(file_path: &str) -> Result<String, SystemdErrors> {
 /// Obtains the journal log for the given unit.
 pub fn get_unit_journal(
     unit: &UnitInfo,
-    wait_time: Option<Duration>,
-    oldest_first: bool,
-    max_events: u32,
     boot_filter: BootFilter,
-    from_time: Option<u64>,
+    range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
-    journal::get_unit_journal(
-        unit,
-        wait_time,
-        oldest_first,
-        max_events,
-        boot_filter,
-        from_time,
-    )
+    journal::get_unit_journal(unit, boot_filter, range)
 }
 
 pub fn commander_output(
