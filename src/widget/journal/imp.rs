@@ -365,7 +365,7 @@ impl JournalPanelImp {
 
             if !oldest_to_recent {
                 if let Some(journal_event) = events.first() {
-                    let time = journal_event.timestamp();
+                    let time = journal_event.timestamp;
                     journal_panel.set_most_recent_time(time)
                 }
             }
@@ -384,7 +384,7 @@ impl JournalPanelImp {
             info!("Finish added {size} journal events!");
 
             if let Some(journal_event) = events.last() {
-                let from_time = journal_event.timestamp();
+                let from_time = journal_event.timestamp;
                 journal_panel.set_from_time(Some(from_time));
             }
 
@@ -535,10 +535,10 @@ fn fill_journal_event(
     writer: &mut UnitInfoWriter,
     journal_color: bool,
 ) {
-    writer.insert(&journal_event.prefix());
+    writer.insert(&journal_event.prefix);
 
     let priority = if journal_color {
-        journal_event.priority()
+        journal_event.priority
     } else {
         6
     };
@@ -563,8 +563,7 @@ fn pad_lines(
     journal_event: &JournalEvent,
     inserter: impl Fn(&mut UnitInfoWriter, &str),
 ) {
-    let binding = journal_event.message();
-    let mut lines = binding.lines();
+    let mut lines = journal_event.message.lines();
 
     if let Some(line) = lines.next() {
         inserter(writer, line);
@@ -573,7 +572,7 @@ fn pad_lines(
     let mut space_padding = String::new();
     for line in lines {
         if space_padding.is_empty() {
-            let bytes = vec![b' '; journal_event.prefix().len()];
+            let bytes = vec![b' '; journal_event.prefix.len()];
             space_padding = String::from_utf8(bytes).expect("No issues");
         }
 

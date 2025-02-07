@@ -1,5 +1,3 @@
-use gtk::glib;
-
 pub enum JournalEventChunkInfo {
     NoMore,
     ChunkMaxReached,
@@ -57,16 +55,6 @@ impl JournalEventChunk {
     } */
 }
 
-glib::wrapper! {
-    pub struct JournalEvent(ObjectSubclass<imp::JournalEventImpl>);
-}
-
-impl Default for JournalEvent {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
 #[derive(Default, Debug)]
 pub struct EventRange {
     pub begin: Option<u64>,
@@ -101,49 +89,21 @@ impl EventRange {
         }
     }
 }
-impl JournalEvent {
-    pub fn new_param(priority: u8, time_in_usec: u64, prefix: String, message: String) -> Self {
-        let obj: JournalEvent = glib::Object::new();
-        obj.set_prefix(prefix);
-        obj.set_message(message);
-        obj.set_timestamp(time_in_usec);
-        obj.set_priority(priority);
-        obj
-    }
+
+pub struct JournalEvent {
+    pub prefix: String,
+    pub message: String,
+    pub timestamp: u64,
+    pub priority: u8,
 }
 
-mod imp {
-    use std::sync::RwLock;
-
-    use gtk::{
-        glib::{self, Object},
-        prelude::*,
-        subclass::prelude::*,
-    };
-
-    #[derive(Debug, glib::Properties, Default)]
-    #[properties(wrapper_type = super::JournalEvent)]
-    pub struct JournalEventImpl {
-        #[property(get, set)]
-        pub prefix: RwLock<String>,
-
-        #[property(get, set)]
-        pub message: RwLock<String>,
-
-        #[property(get, set)]
-        pub timestamp: RwLock<u64>,
-
-        #[property(get, set)]
-        pub priority: RwLock<u8>,
+impl JournalEvent {
+    pub fn new_param(priority: u8, timestamp: u64, prefix: String, message: String) -> Self {
+        JournalEvent {
+            prefix,
+            message,
+            timestamp,
+            priority,
+        }
     }
-
-    #[glib::object_subclass]
-    impl ObjectSubclass for JournalEventImpl {
-        const NAME: &'static str = "JournalEvent";
-        type Type = super::JournalEvent;
-        type ParentType = Object;
-    }
-
-    #[glib::derived_properties]
-    impl ObjectImpl for JournalEventImpl {}
 }
