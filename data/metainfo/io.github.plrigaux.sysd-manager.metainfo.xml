@@ -80,7 +80,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="1.12.22" date="2025-02-08"></release>
+    <release version="1.12.3" date="2025-02-08">
+      <description>
+        <h3>Added</h3>
+        <ul>
+          <li>Add a CHANGELOG file</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
+          <li>LICENSE file name</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.12.2" date="2025-02-08">
       <description>
         <h3>Fixed</h3>

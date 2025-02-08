@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager"
-version = "1.12.2"
+version = "1.12.3"
 edition = '2021'
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
@@ -13,7 +13,7 @@ rust-version = "1.80"
 include = [
     "build.rs",
     "/src",
-    "LICENCE",
+    "LICENSE",
     "README.md",
     "/data",
     "!/**/meson.build",

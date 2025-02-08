@@ -12,7 +12,7 @@ If you consider yourself an administator, please refer to `systemctl` and `journ
 Here are __Sysd Manager__ main features :
 * Unit file browser with serach and filtering
 * Enable or disable a unit
-* Activate or desactivate a unit
+* Activate or deactivate a unit
 * View and modify unit file
 * View and navigate unit's dependencies
 * Unit file syntax highlighting 
@@ -23,6 +23,11 @@ Here are __Sysd Manager__ main features :
 
 
 *__Note__ if you need a feature communicate with the author or contribute to the project. If you're stuck take a look at __systemctl__.*
+
+## Changelogs
+
+All notable changes to this project are documented in [CHANGELOG](CHANGELOG.md) .
+
 
 ## Requirement
 
@@ -81,7 +86,7 @@ __SysD Manager__ has a Flathub version. Search it on Gnome software or drirectly
 
 ## Testing
 
-If you want to test **Sysd Manager** without risking to shutdown impotant services, you can do it with **tiny_daemon**. **tiny_daemon** is a service provided with the project as a simple web server that you can safely play with.
+If you want to test **Sysd Manager** without risking to shutdown important services, you can do it with **tiny_daemon**. **tiny_daemon** is a service provided with the project as a simple web server that you can safely play with.
 
 To install **tiny_daemon**, in the project directory, just run this python script.
 
