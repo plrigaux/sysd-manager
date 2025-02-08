@@ -165,13 +165,39 @@ def clean():
         bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
 
 def change_log():
+    #https://keepachangelog.com/en/1.1.0/
     tree = ET.parse('./data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml')
     root = tree.getroot()
     
+    
+    out = """# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+"""
+
     for release in root.iter('release'):
         version = release.get('version')
         date = release.get('date')
-        print(f"## [{version}] {date}")
+        
+        out += f"## [{version}] - {date}\n\n"
+        
+        for description in release.iter('description'):
+            for sub in description.iter('*'):
+                if sub.tag == "h3":
+                    out += f"### {sub.text}\n\n"
+                    
+                if sub.tag == "li":
+                   out += "- " + sub.text + "\n"
+            
+            out += "\n"
+    
+    print (out)        
+    
+    with open("CHANGELOG.md", "w") as f:
+        f.write(out)
 
 
 main()

@@ -80,32 +80,51 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.12.22" date="2025-02-08"></release>
     <release version="1.12.2" date="2025-02-08">
       <description>
-        Fix time_t conversion on 32bit architecture
+        <h3>Fixed</h3>
+        <ul>
+          <li>Fix time_t conversion on 32bit architecture</li>
+        </ul>
       </description>
     </release>
     <release version="1.12.1" date="2025-02-07">
       <description>
-        Ajust journal preferences batch size
+        <h3>Added</h3>
+        <ul>
+          <li>Journal preferences batch size</li>
+        </ul>
+        <h3>Removed</h3>
+        <ul>
+          <li>Journal preferences maximum events</li>
+        </ul>
       </description>
     </release>
     <release version="1.12.0" date="2025-02-07">
-      <description> Redo journal handling and display <ul>
+      <description>
+        <h3>Changed</h3>
+        <ul>
+          <li>Redo journal handling and display</li>
           <li>Lazy acquire journal events</li>
         </ul>
       </description>
     </release>
     <release version="1.11.0" date="2025-01-30">
       <description>
+        <h3>Added</h3>
         <ul>
-          <li>New Feature: select Monospace Font</li>
+          <li>Possibility to select Monospace Font for the different views</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
           <li>Fix unit conversion</li>
         </ul>
       </description>
     </release>
     <release version="1.10.3" date="2025-01-27">
       <description>
+        <h3>Fixed</h3>
         <ul>
           <li>Fix text style</li>
         </ul>
@@ -113,7 +132,7 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.10.0" date="2025-01-22">
       <description>
-        <p>New features</p>
+        <h3>Added</h3>
         <ul>
           <li>Start and stop buttons are highlighted according to the unit state</li>
           <li>You can choose the timestamp style between : Pretty, UTC and Unix</li>
@@ -123,13 +142,17 @@ https://hughsie.github.io/oars/index.html
     <release version="1.9.4" date="2025-01-21">
       <description>
         <p>This release worked on unit information</p>
+        <h3>Added</h3>
         <ul>
           <li>Add "Error" Section</li>
           <li>Add hyperlink on units described by "Trigger"</li>
           <li>Add hyperlink on units described by "TriggeredBy"</li>
           <li>Display active status on units described by "Trigger"</li>
           <li>Display active status on units described by "TriggeredBy"</li>
-          <li>Complete the "Memory" section</li>
+          <li>Complete the "Memory" information section</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
           <li>Fix the "Drop in" section</li>
           <li>Fix the "CPU" section</li>
         </ul>
@@ -179,8 +202,12 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.7" date="2025-01-03">
       <description>
-        New functionnality: Select a unit at program opening by passing a unit name as cli argument
-        (see --help)
+        <h3>Added</h3>
+        <ul>
+          <li>Select a unit at program opening by passing a unit name as cli
+            argument
+            (see --help)</li>
+        </ul>
       </description>
     </release>
     <release version="1.6" date="2024-12-30">
@@ -213,7 +240,7 @@ https://hughsie.github.io/oars/index.html
           <li>Add invocation Id on unit info file</li>
           <li>Add a filter base on "boot id" for journal events</li>
           <li>Add preferences to limit journal events</li>
-          <li>Add Flatpack permission filesystem=/var/log:ro to access journal events</li>
+          <li>Add Flatpak permission filesystem=/var/log:ro to access journal events</li>
           <li>Acquire journal events directly from systemd lib</li>
         </ul>
       </description>
@@ -313,7 +340,7 @@ https://hughsie.github.io/oars/index.html
     <release version="0.1.8" date="2024-10-08">
       <description>
         <ul>
-          <li>Remove the flatpack test at startup</li>
+          <li>Remove the flatpak test at startup</li>
           <li>Migrate some widgets to libadwaita</li>
         </ul>
       </description>
