@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args()
 
     match args.action:
-        case "gen":
+        case "generate":
             gen_pkfile()
         case "sum":
             do_check_sum()
@@ -44,6 +44,8 @@ def main():
             clean()
         case "make":
             make()
+        case "genpush":
+            generate_and_push()
 
 def create_pkgbuild():
     #version
@@ -116,6 +118,23 @@ def gen_pkfile():
     create_pkgbuild()
     do_check_sum()
     generate_sourceinfo()
+
+
+def generate_and_push(): 
+    gen_pkfile()
+
+    push()
+
+def push():
+    tag_name = bc.get_version_tag()
+
+    print(f"Commit {color.BOLD}{color.CYAN}{tag_name}{color.END}")
+
+    bc.cmd_run(["git", "commit", "-a", "-m", f"'{tag_name}'"], cwd=f"{AUR_OUT_DIR}")
+
+    print(f"{color.BOLD}{color.CYAN}Push on AUR{color.END}")
+
+    bc.cmd_run(["git", "push"], cwd=f"{AUR_OUT_DIR}")
 
 
 def make(): 
