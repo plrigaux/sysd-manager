@@ -4,6 +4,8 @@ from  build_aux.build_common import color
 import os
 import re
 import argparse
+import xml.etree.ElementTree as ET
+
 
 AUR_DIR="../aur/sysd-manager"
 PKGBUILD="PKGBUILD"
@@ -26,8 +28,9 @@ def main():
             "pkfile",
             "gen",
             "clean",
-            "make"
-
+            "make",
+            "log",
+            "genpush"
         ],
         help="action to perform",)
 
@@ -46,6 +49,9 @@ def main():
             make()
         case "genpush":
             generate_and_push()
+
+        case "log":
+            change_log()
 
 def create_pkgbuild():
     #version
@@ -157,5 +163,15 @@ def clean():
         print(f"{color.BOLD}Deleting{color.END} {color.YELLOW}{f}{color.END}")
         #x = " ".join(["rm", "-fr", f])
         bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
+
+def change_log():
+    tree = ET.parse('./data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml')
+    root = tree.getroot()
+    
+    for release in root.iter('release'):
+        version = release.get('version')
+        date = release.get('date')
+        print(f"## [{version}] {date}")
+
 
 main()
