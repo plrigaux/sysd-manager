@@ -399,11 +399,7 @@ pub fn format_timespan(mut duration: u64, accuracy: u64) -> String {
 fn localtime_or_gmtime_usec(time_usec: i64, utc: bool) -> libc::tm {
     let layout = std::alloc::Layout::new::<libc::tm>();
 
-    #[cfg(target_pointer_width = "64")]
-    let time_usec_ptr: *const i64 = &time_usec;
-
-    #[cfg(target_pointer_width = "32")]
-    let time_usec_ptr: *const i32 = &time_usec;
+    let time_usec_ptr: *const libc::time_t = &(time_usec as libc::time_t);
 
     unsafe {
         let returned_time_struct = std::alloc::alloc(layout) as *mut libc::tm;
@@ -656,5 +652,14 @@ mod tests {
         let v = TimestampStyle::Pretty.to_value();
 
         println!("{:?}", v);
+    }
+
+    #[test]
+    fn test_casting() {
+        let a: i64 = 0x0000_FFFF_FFFF_FFFF;
+
+        let b: i32 = a as i32;
+
+        println!("a {:#x} b {:#x}", a, b);
     }
 }
