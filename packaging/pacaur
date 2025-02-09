@@ -26,7 +26,7 @@ def main():
         choices=[
             "sum",
             "pkfile",
-            "gen",
+            "generate",
             "clean",
             "make",
             "log",
@@ -88,6 +88,7 @@ def create_pkgbuild():
     #sums
 
     bc.cmd_run(["cp", f"{TEMPLATE_DIR}/{INSTALL_FILE}", f"{AUR_OUT_DIR}"])
+    bc.cmd_run(["cp", f"CHANGELOG.md", f"{AUR_OUT_DIR}"])
 
 
 def do_check_sum():
@@ -136,7 +137,7 @@ def push():
 
     print(f"Commit {color.BOLD}{color.CYAN}{tag_name}{color.END}")
 
-    bc.cmd_run(["git", "commit", "-a", "-m", f"'{tag_name}'"], cwd=f"{AUR_OUT_DIR}")
+    bc.cmd_run(["git", "commit", "-a", "-m", f"\"{tag_name}\""], cwd=f"{AUR_OUT_DIR}")
 
     print(f"{color.BOLD}{color.CYAN}Push on AUR{color.END}")
 
