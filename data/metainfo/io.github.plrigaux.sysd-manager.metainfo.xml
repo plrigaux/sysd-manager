@@ -82,11 +82,11 @@ https://hughsie.github.io/oars/index.html
   <releases>
     <release version="1.12.3" date="2025-02-08">
       <description>
-        <h3>Added</h3>
+        <p>Added</p>
         <ul>
           <li>Add a CHANGELOG file</li>
         </ul>
-        <h3>Fixed</h3>
+        <p>Fixed</p>
         <ul>
           <li>LICENSE file name</li>
         </ul>
@@ -94,7 +94,7 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.12.2" date="2025-02-08">
       <description>
-        <h3>Fixed</h3>
+        <p>Fixed</p>
         <ul>
           <li>Fix time_t conversion on 32bit architecture</li>
         </ul>
@@ -102,11 +102,11 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.12.1" date="2025-02-07">
       <description>
-        <h3>Added</h3>
+        <p>Added</p>
         <ul>
           <li>Journal preferences batch size</li>
         </ul>
-        <h3>Removed</h3>
+        <p>Removed</p>
         <ul>
           <li>Journal preferences maximum events</li>
         </ul>
@@ -114,7 +114,7 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.12.0" date="2025-02-07">
       <description>
-        <h3>Changed</h3>
+        <p>Changed</p>
         <ul>
           <li>Redo journal handling and display</li>
           <li>Lazy acquire journal events</li>
@@ -123,11 +123,11 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.11.0" date="2025-01-30">
       <description>
-        <h3>Added</h3>
+        <p>Added</p>
         <ul>
           <li>Possibility to select Monospace Font for the different views</li>
         </ul>
-        <h3>Fixed</h3>
+        <p>Fixed</p>
         <ul>
           <li>Fix unit conversion</li>
         </ul>
@@ -135,7 +135,7 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.10.3" date="2025-01-27">
       <description>
-        <h3>Fixed</h3>
+        <p>Fixed</p>
         <ul>
           <li>Fix text style</li>
         </ul>
@@ -143,7 +143,7 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.10.0" date="2025-01-22">
       <description>
-        <h3>Added</h3>
+        <p>Added</p>
         <ul>
           <li>Start and stop buttons are highlighted according to the unit state</li>
           <li>You can choose the timestamp style between : Pretty, UTC and Unix</li>
@@ -153,7 +153,7 @@ https://hughsie.github.io/oars/index.html
     <release version="1.9.4" date="2025-01-21">
       <description>
         <p>This release worked on unit information</p>
-        <h3>Added</h3>
+        <p>Added</p>
         <ul>
           <li>Add "Error" Section</li>
           <li>Add hyperlink on units described by "Trigger"</li>
@@ -162,7 +162,7 @@ https://hughsie.github.io/oars/index.html
           <li>Display active status on units described by "TriggeredBy"</li>
           <li>Complete the "Memory" information section</li>
         </ul>
-        <h3>Fixed</h3>
+        <p>Fixed</p>
         <ul>
           <li>Fix the "Drop in" section</li>
           <li>Fix the "CPU" section</li>
@@ -213,7 +213,7 @@ https://hughsie.github.io/oars/index.html
     </release>
     <release version="1.7" date="2025-01-03">
       <description>
-        <h3>Added</h3>
+        <p>Added</p>
         <ul>
           <li>Select a unit at program opening by passing a unit name as cli
             argument

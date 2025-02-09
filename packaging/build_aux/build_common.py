@@ -26,7 +26,7 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True) -
 
     if verbose:
         cmd_str = ""
-        if isinstance(object, list):
+        if isinstance(cmd, list):
             cmd_str = " ".join(cmd)
         else:
             cmd_str = cmd

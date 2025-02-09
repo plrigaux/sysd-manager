@@ -222,7 +222,7 @@ def lint():
             "--command=flatpak-builder-lint",
             "org.flatpak.Builder",
             "manifest",
-            MANIFEST,
+            f"{MANIFEST_LOC}/{MANIFEST}",
         ]
     )
 
@@ -235,7 +235,8 @@ def lint():
             "org.flatpak.Builder",
             "repo",
             "repo",
-        ]
+        ],
+        cwd=FLATPACK_BUILD_DIR
     )
 
 

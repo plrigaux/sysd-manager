@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.9.4] - 2025-01-21
 
+This release worked on unit information
+
 ### Added
 
 - Add "Error" Section
@@ -196,16 +198,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.7] - 2024-10-03
 
+Update the unit information panel
+
 
 ## [0.1.6] - 2024-08-02
+
+Add a proto preference panel
+
+Release attempt on Flathub
 
 
 ## [0.1.3] - 2024-07-15
 
+Make the sub windows modal. i.e. not separated form the main window
+
 
 ## [0.1.2] - 2024-07-07
 
+Allow filtering on unit type
+
 
 ## [0.0.2] - 2024-06-21
+
+First release of Rust Flatpak App
 
 
