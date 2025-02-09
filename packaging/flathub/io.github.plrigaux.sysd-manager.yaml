@@ -31,8 +31,10 @@ modules:
     env:
       CARGO_HOME: /run/build/sysd-manager/cargo
   build-commands:
-  - cargo --offline fetch --manifest-path Cargo.toml --verbose
-  - cargo --offline build --release --verbose --features flatpak
+  #- cargo --offline fetch --manifest-path Cargo.toml --verbose
+  #- cargo --offline build --release --verbose --features flatpak
+  - cargo --offline fetch --manifest-path Cargo.toml
+  - cargo --offline build --release --features flatpak
   - install -Dm755 ./target/release/sysd-manager -t /app/bin/
   - install -Dm644 ./data/applications/io.github.plrigaux.sysd-manager.desktop -t /app/share/applications
   - install -Dm644 ./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg -t /app/share/icons/hicolor/scalable/apps/
