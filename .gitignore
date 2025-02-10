@@ -12,3 +12,4 @@ cargo-sources.json
 __pycache__/
 .vscode
 /tiny_deamon/Cargo.lock
+.cargo
