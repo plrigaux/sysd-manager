@@ -403,7 +403,6 @@ def clean_flathub_dir():
 def deploy(from_git: bool):
     print(f"{color.BOLD}Set files for deployment on {color.CYAN}Flathub{color.END}")
 
-
     generate(FLATHUB_DIR)
     
     bcommon.cmd_run(["git", "config", "pull.rebase", "true"], cwd=FLATHUB_DIR)
@@ -412,11 +411,8 @@ def deploy(from_git: bool):
     set_manifest(True, FLATHUB_DIR)
 
     version = bcommon.get_version_tag()
-
-    try:
-        bcommon.cmd_run(["git", "commit", "-a", "-m", version], cwd=FLATHUB_DIR)
-    except:
-        print("An exception occurred")
+   
+    bcommon.cmd_run(["git", "commit", "-a", "-m", version], cwd=FLATHUB_DIR, on_fail_exit=False)
         
     bcommon.cmd_run(["git", "push"], cwd=FLATHUB_DIR)
 
