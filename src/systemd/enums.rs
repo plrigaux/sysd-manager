@@ -1,6 +1,7 @@
 use gtk::glib::{self, EnumValue};
 use gtk::prelude::*;
 use log::{info, warn};
+use std::cmp::Ordering;
 use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
 use zvariant::OwnedValue;
@@ -110,9 +111,8 @@ impl From<u32> for EnablementStatus {
     }
 }
 
-#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, glib::Enum, EnumIter)]
-#[enum_type(name = "ActiveState")]
-#[enum_dynamic]
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter)]
+#[repr(u8)]
 pub enum ActiveState {
     Unknown = 0,
     Active = 1,
@@ -127,6 +127,13 @@ pub enum ActiveState {
 }
 
 impl ActiveState {
+    pub fn discriminant(&self) -> u8 {
+        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
+        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
+        // field, so we can read the discriminant without offsetting the pointer.
+        unsafe { *<*const _>::from(self).cast::<u8>() }
+    }
+
     pub fn as_str(&self) -> &str {
         match self {
             ActiveState::Unknown => "unknown",
@@ -167,6 +174,20 @@ impl ActiveState {
     }
 }
 
+impl PartialOrd for ActiveState {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ActiveState {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let value = self.discriminant();
+        let other_value = other.discriminant();
+        value.cmp(&other_value)
+    }
+}
+
 impl Display for ActiveState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_str())
@@ -186,6 +207,13 @@ impl From<&str> for ActiveState {
             "refreshing" => ActiveState::Refreshing,
             _ => ActiveState::Unknown,
         }
+    }
+}
+
+impl From<u8> for ActiveState {
+    fn from(value: u8) -> Self {
+        let state: ActiveState = (value as u32).into();
+        state
     }
 }
 
