@@ -58,10 +58,10 @@ impl UnitControlPanel {
         unit: &UnitInfo,
         start_results: Result<String, SystemdErrors>,
         action: UnitContolType,
-        new_active_state: ActiveState,
+        expected_active_state: ActiveState,
         mode: StartStopMode,
     ) {
         self.imp()
-            .start_restart(unit, start_results, action, new_active_state, mode);
+            .start_restart(unit, start_results, action, expected_active_state, mode);
     }
 }
