@@ -26,10 +26,10 @@ use super::{
     Dependency, SystemdErrors, SystemdUnit,
 };
 
-const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
+pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 pub(super) const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
-const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
+pub(crate) const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
 const METHOD_LIST_UNIT: &str = "ListUnits";
 
@@ -43,8 +43,8 @@ const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFiles";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
-const METHOD_RELOAD: &str = "Reload";
-const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
+pub const METHOD_RELOAD: &str = "Reload";
+pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
@@ -376,19 +376,22 @@ where
         match message_res {
             Ok(return_message) => match return_message.message_type() {
                 zbus::message::Type::MethodReturn => {
+                    info!("{method} Response");
                     let result = handler(method, &return_message);
-                    info!("{method} Response {:?}", result);
                     return result;
                 }
                 zbus::message::Type::MethodCall => {
-                    warn!("Not supposed to happen");
+                    warn!("Not supposed to happen: {:?}", return_message);
                     break;
                 }
                 zbus::message::Type::Error => {
                     let error = zbus::Error::from(return_message);
                     return Err(SystemdErrors::from(error));
                 }
-                zbus::message::Type::Signal => continue,
+                zbus::message::Type::Signal => {
+                    info!("Signal: {:?}", return_message);
+                    continue;
+                }
             },
             Err(e) => return Err(SystemdErrors::from(e)),
         };
@@ -418,12 +421,12 @@ fn get_unit_object_path_connection(
 }
 
 pub fn reload_all_units(level: DbusLevel) -> Result<(), SystemdErrors> {
-    fn reload_answer(method: &str, _return_message: &Message) -> Result<(), SystemdErrors> {
+    //let handler_cloned: = handler;
+
+    send_disenable_message(level, METHOD_RELOAD, &(), move |method, _message| {
         info!("{method} SUCCESS");
         Ok(())
-    }
-
-    send_disenable_message(level, METHOD_RELOAD, &(), reload_answer)
+    })
 }
 
 pub(super) fn kill_unit(

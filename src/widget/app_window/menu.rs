@@ -1,5 +1,6 @@
 use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
+use gtk::glib;
 use gtk::prelude::*;
 use gtk::{gio, prelude::ActionMapExtManual};
 use log::error;
@@ -88,17 +89,30 @@ pub fn on_startup(app: &adw::Application) {
 
     let reload_all_units: gio::ActionEntry<adw::Application> =
         gio::ActionEntry::builder("reload_all_units")
-            .activate(|application: &adw::Application, _, _| {
-                match systemd::reload_all_units() {
-                    Ok(_) => {
-                        info!("All units relaoded!");
-                        add_toast(application, "All units relaoded!");
+            .activate(|application: &adw::Application, simple_action, _variant| {
+                let simple_action = simple_action.clone();
+                let application = application.clone();
+
+                glib::spawn_future_local(async move {
+                    simple_action.set_enabled(false);
+
+                    let res = gio::spawn_blocking(systemd::reload_all_units)
+                        .await
+                        .expect("Task needs to finish successfully.");
+
+                    simple_action.set_enabled(true);
+
+                    match res {
+                        Ok(_) => {
+                            info!("All units relaoded!");
+                            add_toast(&application, "All units relaoded!");
+                        }
+                        Err(e) => {
+                            error!("Roload failed {:?}", e);
+                            add_toast(&application, "Roload failed!");
+                        }
                     }
-                    Err(e) => {
-                        error!("Roload failed {:?}", e);
-                        add_toast(application, "Roload failed!");
-                    }
-                };
+                });
             })
             .build();
 

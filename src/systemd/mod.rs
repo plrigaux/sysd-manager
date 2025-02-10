@@ -5,9 +5,13 @@ pub mod journal;
 pub mod journal_data;
 mod sysdbus;
 
-use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::process::{Command, Stdio};
+use std::{
+    borrow::Cow,
+    collections::{BTreeMap, BTreeSet, HashMap},
+    fs::{self, File},
+    io::{ErrorKind, Read, Write},
+    process::{Command, Stdio},
+};
 
 use data::{UnitInfo, UnitProcess};
 use enums::{ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
@@ -15,12 +19,9 @@ use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
-use std::fs::{self, File};
-use std::io::{ErrorKind, Read, Write};
 use zvariant::OwnedValue;
 
-use crate::widget::preferences::data::DbusLevel;
-use crate::widget::preferences::data::PREFERENCES;
+use crate::widget::preferences::data::{DbusLevel, PREFERENCES};
 
 pub mod enums;
 
@@ -500,6 +501,7 @@ pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
 
 pub fn reload_all_units() -> Result<(), SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level();
+
     sysdbus::reload_all_units(level)
 }
 
