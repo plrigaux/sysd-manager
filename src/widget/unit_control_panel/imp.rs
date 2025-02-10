@@ -2,6 +2,7 @@ use std::cell::{OnceCell, RefCell};
 
 use adw::{subclass::prelude::*, Toast};
 use gtk::{
+    gio,
     glib::{self},
     pango::{self, FontDescription},
     prelude::*,
@@ -164,48 +165,18 @@ impl UnitControlPanelImpl {
     }
 
     #[template_callback]
-    fn button_start_clicked(&self, _button: &adw::SplitButton) {
-        let unit = current_unit!(self);
-
-        let mode: StartStopMode = (&self.start_mode).into();
-
-        let start_results: Result<String, SystemdErrors> = systemd::start_unit(&unit, mode);
-
-        self.start_restart(
-            &unit,
-            start_results,
-            UnitContolType::Start,
-            ActiveState::Active,
-            mode,
-        )
+    fn button_start_clicked(&self, button: &adw::SplitButton) {
+        self.start_restart_action(button, systemd::start_unit);
     }
 
     #[template_callback]
-    fn button_stop_clicked(&self, _button: &adw::SplitButton) {
-        let unit = current_unit!(self);
-        let mode: StartStopMode = (&self.stop_mode).into();
-        let stop_results = systemd::stop_unit(&unit, mode);
-        self.start_restart(
-            &unit,
-            stop_results,
-            UnitContolType::Stop,
-            ActiveState::Inactive,
-            mode,
-        )
+    fn button_stop_clicked(&self, button: &adw::SplitButton) {
+        self.start_restart_action(button, systemd::stop_unit);
     }
 
     #[template_callback]
-    fn button_restart_clicked(&self, _button: &adw::SplitButton) {
-        let unit = current_unit!(self);
-        let mode: StartStopMode = (&self.restart_mode).into();
-        let start_results = systemd::restart_unit(&unit, mode);
-        self.start_restart(
-            &unit,
-            start_results,
-            UnitContolType::Restart,
-            ActiveState::Active,
-            mode,
-        )
+    fn button_restart_clicked(&self, button: &adw::SplitButton) {
+        self.start_restart_action(button, systemd::restart_unit);
     }
 
     #[template_callback]
@@ -228,7 +199,39 @@ impl UnitControlPanelImpl {
 
 impl UnitControlPanelImpl {
     //Dry
-    fn start_restart(
+    fn start_restart_action(
+        &self,
+        button: &adw::SplitButton,
+        systemd_method: fn(&UnitInfo, StartStopMode) -> Result<String, SystemdErrors>,
+    ) {
+        let unit = current_unit!(self);
+
+        let start_mode: StartStopMode = (&self.start_mode).into();
+
+        let unit_control_panel = self.obj().clone();
+
+        let button = button.clone();
+        glib::spawn_future_local(async move {
+            button.set_sensitive(false);
+
+            let unit_ = unit.clone();
+            let start_results = gio::spawn_blocking(move || systemd_method(&unit_, start_mode))
+                .await
+                .expect("Task needs to finish successfully.");
+
+            button.set_sensitive(true);
+
+            unit_control_panel.start_restart(
+                &unit,
+                start_results,
+                UnitContolType::Start,
+                ActiveState::Active,
+                start_mode,
+            );
+        });
+    }
+
+    pub(super) fn start_restart(
         &self,
         unit: &UnitInfo,
         start_results: Result<String, SystemdErrors>,

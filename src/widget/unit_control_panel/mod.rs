@@ -1,7 +1,12 @@
+use enums::UnitContolType;
 //use glib::Object;
 use gtk::{glib, subclass::prelude::*};
 
-use crate::systemd::data::UnitInfo;
+use crate::systemd::{
+    data::UnitInfo,
+    enums::{ActiveState, StartStopMode},
+    errors::SystemdErrors,
+};
 
 use super::{app_window::AppWindow, InterPanelAction};
 
@@ -46,5 +51,17 @@ impl UnitControlPanel {
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.imp().set_inter_action(action);
+    }
+
+    fn start_restart(
+        &self,
+        unit: &UnitInfo,
+        start_results: Result<String, SystemdErrors>,
+        action: UnitContolType,
+        new_active_state: ActiveState,
+        mode: StartStopMode,
+    ) {
+        self.imp()
+            .start_restart(unit, start_results, action, new_active_state, mode);
     }
 }
