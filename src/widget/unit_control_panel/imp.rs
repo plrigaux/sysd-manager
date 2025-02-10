@@ -166,17 +166,32 @@ impl UnitControlPanelImpl {
 
     #[template_callback]
     fn button_start_clicked(&self, button: &adw::SplitButton) {
-        self.start_restart_action(button, systemd::start_unit);
+        self.start_restart_action(
+            button,
+            systemd::start_unit,
+            UnitContolType::Start,
+            ActiveState::Active,
+        );
     }
 
     #[template_callback]
     fn button_stop_clicked(&self, button: &adw::SplitButton) {
-        self.start_restart_action(button, systemd::stop_unit);
+        self.start_restart_action(
+            button,
+            systemd::stop_unit,
+            UnitContolType::Stop,
+            ActiveState::Inactive,
+        );
     }
 
     #[template_callback]
     fn button_restart_clicked(&self, button: &adw::SplitButton) {
-        self.start_restart_action(button, systemd::restart_unit);
+        self.start_restart_action(
+            button,
+            systemd::restart_unit,
+            UnitContolType::Restart,
+            ActiveState::Active,
+        );
     }
 
     #[template_callback]
@@ -203,6 +218,8 @@ impl UnitControlPanelImpl {
         &self,
         button: &adw::SplitButton,
         systemd_method: fn(&UnitInfo, StartStopMode) -> Result<String, SystemdErrors>,
+        action: UnitContolType,
+        expected_active_state: ActiveState,
     ) {
         let unit = current_unit!(self);
 
@@ -224,8 +241,8 @@ impl UnitControlPanelImpl {
             unit_control_panel.start_restart(
                 &unit,
                 start_results,
-                UnitContolType::Start,
-                ActiveState::Active,
+                action,
+                expected_active_state,
                 start_mode,
             );
         });
@@ -236,7 +253,7 @@ impl UnitControlPanelImpl {
         unit: &UnitInfo,
         start_results: Result<String, SystemdErrors>,
         action: UnitContolType,
-        new_active_state: ActiveState,
+        expected_active_state: ActiveState,
         mode: StartStopMode,
     ) {
         let job_op = match start_results {
@@ -252,7 +269,7 @@ impl UnitControlPanelImpl {
                 let toast = Toast::new(&info);
                 self.toast_overlay.get().unwrap().add_toast(toast);
 
-                unit.set_active_state(new_active_state as u32);
+                unit.set_active_state(expected_active_state);
                 self.highlight_controls(unit);
 
                 Some(job)
@@ -344,9 +361,7 @@ impl UnitControlPanelImpl {
 
     //TODO bind to the property
     fn highlight_controls(&self, unit: &UnitInfo) {
-        let status: ActiveState = unit.active_state().into();
-
-        match status {
+        match unit.active_state() {
             ActiveState::Active
             | ActiveState::Activating
             | ActiveState::Reloading
