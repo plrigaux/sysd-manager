@@ -19,6 +19,7 @@ use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
+use sysdbus::DisEnAbleUnitFiles;
 use zvariant::OwnedValue;
 
 use crate::widget::preferences::data::{DbusLevel, PREFERENCES};
@@ -100,34 +101,19 @@ pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, Syst
     sysdbus::restart_unit(level, &unit.primary(), mode)
 }
 
-pub fn enable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
+pub fn disenable_unit_file(
+    unit: &UnitInfo,
+    expected_status: EnablementStatus,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level();
-    let msg_return = sysdbus::enable_unit_files(level, &unit.primary())?;
 
-    let msg = if msg_return.vec.is_empty() {
-        let a = &msg_return.vec[0];
-        format!(
-            "Created {} '{}' → '{}'",
-            a.change_type, a.file_name, a.destination
-        )
+    let msg_return = if expected_status == EnablementStatus::Enabled {
+        sysdbus::enable_unit_files(level, &[&unit.primary()])?
     } else {
-        "Success".to_string()
+        sysdbus::disable_unit_files(level, &[&unit.primary()])?
     };
 
-    Ok((EnablementStatus::Enabled, msg))
-}
-
-pub fn disable_unit_files(unit: &UnitInfo) -> Result<(EnablementStatus, String), SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-    let msg_return = sysdbus::disable_unit_files(level, &[&unit.primary()])?;
-
-    let msg = if msg_return.is_empty() {
-        let a = &msg_return[0];
-        format!("{} '{}'", a.change_type, a.file_name,)
-    } else {
-        "Success".to_string()
-    };
-    Ok((EnablementStatus::Disabled, msg))
+    Ok(msg_return)
 }
 
 /// Read the unit file and return it's contents so that we can display it

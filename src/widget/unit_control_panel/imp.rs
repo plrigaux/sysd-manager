@@ -14,7 +14,7 @@ use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::{ActiveState, StartStopMode},
+        enums::{ActiveState, EnablementStatus, StartStopMode},
         errors::SystemdErrors,
     },
     utils::font_management::{self, create_provider, FONT_CONTEXT},
@@ -153,9 +153,15 @@ impl UnitControlPanelImpl {
 
         let unit = current_unit!(self, true);
 
+        let expected_new_status = if switch_new_state {
+            EnablementStatus::Enabled
+        } else {
+            EnablementStatus::Disabled
+        };
+
         controls::switch_ablement_state_set(
             self.toast_overlay.get().unwrap(),
-            switch_new_state,
+            expected_new_status,
             switch,
             &unit,
         );

@@ -200,7 +200,6 @@ impl UnitListPanelImp {
         entry
             .bind_property("active_state_num", &child, "icon-name")
             .transform_to(|_, state: u8| {
-                warn!("bind active_state_num {}", state);
                 let state: ActiveState = state.into();
                 icon_name!(state)
             })

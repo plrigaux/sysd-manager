@@ -297,29 +297,25 @@ pub struct EnableUnitFilesReturn {
 
 pub(super) fn enable_unit_files(
     level: DbusLevel,
-    unit_name: &str,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    let v = vec![unit_name];
-
+    unit_names: &[&str],
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     fn handle_answer(
         _method: &str,
         return_message: &Message,
-    ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
         let body = return_message.body();
-
-        info!("body signature {}", body.signature());
 
         let return_msg: EnableUnitFilesReturn = body.deserialize()?;
 
-        debug!("ret {:?}", return_msg);
+        info!("Enable unit files {:?}", return_msg);
 
-        Ok(return_msg)
+        Ok(return_msg.vec)
     }
 
     send_disenable_message(
         level,
         METHOD_ENABLE_UNIT_FILES,
-        &(v, false, true),
+        &(unit_names, false, true),
         handle_answer,
     )
 }
@@ -336,7 +332,7 @@ pub(super) fn disable_unit_files(
 
         let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
 
-        debug!("ret {:?}", return_msg);
+        info!("Disable unit files {:?}", return_msg);
 
         Ok(return_msg)
     }
@@ -938,7 +934,7 @@ mod tests {
     #[test]
     fn test_enable_unit_files() -> Result<(), SystemdErrors> {
         init();
-        let _res = enable_unit_files(DbusLevel::System, TEST_SERVICE)?;
+        let _res = enable_unit_files(DbusLevel::System, &[TEST_SERVICE])?;
 
         Ok(())
     }

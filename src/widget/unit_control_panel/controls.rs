@@ -1,56 +1,44 @@
 use log::{info, warn};
 
-use crate::systemd::{
-    self,
-    data::UnitInfo,
-    enums::EnablementStatus,
-    errors::SystemdErrors,
-};
+use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus, errors::SystemdErrors};
 
 use crate::gtk::prelude::*;
 
 pub(super) fn switch_ablement_state_set(
     toast_overlay: &adw::ToastOverlay,
-    state: bool,
+    expected_new_status: EnablementStatus,
     switch: &gtk::Switch,
     unit: &UnitInfo,
 ) {
     // handle_switch(&column_view, /*unit_ref,*/ enabled, switch);
 
     info!(
-        "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} new_state {state}", unit.primary(), EnablementStatus::from(unit.enable_status()).as_str(),
+        "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}", unit.primary(), EnablementStatus::from(unit.enable_status()).as_str(),
         switch.is_active(),
         switch.state()
     );
 
-    let enabled_status: EnablementStatus = unit.enable_status().into();
+    let current_enabled_status: EnablementStatus = unit.enable_status().into();
 
-    if state && enabled_status == EnablementStatus::Enabled
-        || !state && enabled_status != EnablementStatus::Enabled
-    {
-        set_switch_tooltip(enabled_status, switch, &unit.primary());
+    if expected_new_status == current_enabled_status {
+        set_switch_tooltip(current_enabled_status, switch, &unit.primary());
         return;
     }
 
-    let enable_result = if state {
-        systemd::enable_unit_files(unit)
-    } else {
-        systemd::disable_unit_files(unit)
-    };
+    let enable_result = systemd::disenable_unit_file(unit, expected_new_status);
 
     match enable_result {
         Ok(enablement_status_ret) => {
-            let toast_info = enablement_status_ret.1;
+            let toast_info = format!("{:?}", enablement_status_ret);
             info!("{toast_info}");
 
             let toast = adw::Toast::new(&toast_info);
 
             toast_overlay.add_toast(toast);
 
-            let action = enablement_status_ret.0;
-            unit.set_enable_status(action as u32);
+            unit.set_enable_status(expected_new_status as u32);
 
-            let enabled_new = action == EnablementStatus::Enabled;
+            let enabled_new = expected_new_status == EnablementStatus::Enabled;
             switch.set_state(enabled_new);
         }
 
@@ -60,15 +48,9 @@ pub(super) fn switch_ablement_state_set(
                 _ => format!("{:?}", error),
             };
 
-            let action = if state {
-                EnablementStatus::Enabled
-            } else {
-                EnablementStatus::Disabled
-            };
-
             let toast_warn = format!(
                 "Action \"{:?}\" on unit \"{}\" FAILED!\n{:?}",
-                action,
+                expected_new_status,
                 unit.primary(),
                 error_message
             );
@@ -77,8 +59,6 @@ pub(super) fn switch_ablement_state_set(
             let toast = adw::Toast::new(&toast_warn);
 
             toast_overlay.add_toast(toast);
-
-            //TODO put a timer to set back the switch
         }
     }
 
