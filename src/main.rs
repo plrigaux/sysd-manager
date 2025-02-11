@@ -14,10 +14,9 @@ mod widget;
 use clap::{command, Parser};
 use gtk::{
     gdk,
-    gio::{self, ResourceLookupFlags},
+    gio::{self},
     glib,
     prelude::*,
-    IconLookupFlags,
 };
 
 use log::{info, warn};
