@@ -146,11 +146,19 @@ impl UnitInfoWriter {
         )
     }
 
+    pub fn green_dark() -> &'static str {
+        Palette::Green3.get_color()
+    }
+
+    pub fn green_light() -> &'static str {
+        Palette::Green3.get_color()
+    }
+
     fn create_active_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Palette::Green3.get_color(), TAG_NAME_ACTIVE_DARK)
+            (Self::green_dark(), TAG_NAME_ACTIVE_DARK)
         } else {
-            (Palette::Green5.get_color(), TAG_NAME_ACTIVE)
+            (Self::green_light(), TAG_NAME_ACTIVE)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -188,11 +196,19 @@ impl UnitInfoWriter {
         )
     }
 
+    pub fn red_dark() -> &'static str {
+        Palette::RedErrorDark.get_color()
+    }
+
+    pub fn red_light() -> &'static str {
+        Palette::Red3.get_color()
+    }
+
     fn create_red_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Palette::Red4.get_color(), TAG_NAME_RED_DARK)
+            (Self::red_dark(), TAG_NAME_RED_DARK)
         } else {
-            (Palette::Red3.get_color(), TAG_NAME_RED)
+            (Self::red_light(), TAG_NAME_RED)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -259,11 +275,19 @@ impl UnitInfoWriter {
         buf.create_tag(Some(name), &[(PROP_FOREGROUND, &color.to_value())])
     }
 
+    pub fn blue_dark() -> &'static str {
+        Palette::Blue2.get_color()
+    }
+
+    pub fn blue_light() -> &'static str {
+        Palette::Blue4.get_color()
+    }
+
     fn create_status_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Palette::Blue2.get_color(), TAG_NAME_STATUS_DARK)
+            (Self::blue_dark(), TAG_NAME_STATUS_DARK)
         } else {
-            (Palette::Blue4.get_color(), TAG_NAME_STATUS)
+            (Self::blue_light(), TAG_NAME_STATUS)
         };
 
         let tag_op = buf.tag_table().lookup(name);

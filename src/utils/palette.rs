@@ -29,6 +29,7 @@ pub enum Palette<'a> {
     Red3,
     Red4,
     Red5,
+    RedErrorDark,
     Purple1,
     Purple2,
     Purple3,
@@ -49,7 +50,6 @@ pub enum Palette<'a> {
     Dark3,
     Dark4,
     Dark5,
-    
 }
 
 impl Palette<'_> {
@@ -81,6 +81,7 @@ impl Palette<'_> {
             Palette::Red3 => "#e01b24",
             Palette::Red4 => "#c01c28",
             Palette::Red5 => "#a51d2d",
+            Palette::RedErrorDark => "#ff888c",
             Palette::Purple1 => "#dc8add",
             Palette::Purple2 => "#c061cb",
             Palette::Purple3 => "#9141ac",
