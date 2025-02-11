@@ -23,6 +23,7 @@ use gtk::{
 
 use log::{debug, error, info, warn};
 
+use crate::icon_name;
 use crate::{
     systemd::{
         self,
@@ -192,10 +193,17 @@ impl UnitListPanelImp {
         let item = downcast_list_item!(item_obj);
         let child = item.child().and_downcast::<gtk::Image>().unwrap();
         let entry = item.item().and_downcast::<UnitInfo>().unwrap();
-        let icon_name = &entry.active_state_icon();
-        child.set_icon_name(icon_name.as_deref());
+        let state = &entry.active_state();
+
+        let icon_name = state.icon_name();
+        child.set_icon_name(icon_name);
         entry
-            .bind_property("active_state_icon", &child, "icon-name")
+            .bind_property("active_state_num", &child, "icon-name")
+            .transform_to(|_, state: u8| {
+                warn!("bind active_state_num {}", state);
+                let state: ActiveState = state.into();
+                icon_name!(state)
+            })
             .build();
     }
 
@@ -530,7 +538,7 @@ fn fill_search_bar(
 
                 let unit_type = unit.unit_type();
                 let enable_status: EnablementStatus = unit.enable_status().into();
-                let active_state: ActiveState = unit.active_state().into();
+                let active_state: ActiveState = unit.active_state();
 
                 filter_button_unit_type.contains_value(Some(&unit_type))
                     && filter_button_status.contains_value(Some(enable_status.as_str()))
@@ -542,10 +550,6 @@ fn fill_search_bar(
                     && filter_button_active.contains_value(Some(active_state.as_str()))
             })
         };
-
-        /*         filter_button_unit_type.set_filter(custom_filter.clone());
-        filter_button_status.set_filter(custom_filter.clone());
-        filter_button_active.set_filter(custom_filter.clone()); */
 
         let on_close = OnClose::new_filter(&custom_filter);
         filter_button_unit_type.set_on_close(on_close);

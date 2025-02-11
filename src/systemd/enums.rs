@@ -126,6 +126,20 @@ pub enum ActiveState {
     Refreshing = 8,
 }
 
+#[macro_export]
+macro_rules! icon_name {
+    ($active_state:expr) => {{
+        match $active_state {
+            ActiveState::Active
+            | ActiveState::Reloading
+            | ActiveState::Refreshing
+            | ActiveState::Activating => Some("object-select-symbolic"),
+            ActiveState::Inactive | ActiveState::Deactivating => Some("window-close-symbolic"),
+            _ => None,
+        }
+    }};
+}
+
 impl ActiveState {
     pub fn discriminant(&self) -> u8 {
         // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
@@ -149,14 +163,7 @@ impl ActiveState {
     }
 
     pub fn icon_name(&self) -> Option<&str> {
-        match self {
-            ActiveState::Active
-            | ActiveState::Reloading
-            | ActiveState::Refreshing
-            | ActiveState::Activating => Some("object-select-symbolic"),
-            ActiveState::Inactive | ActiveState::Deactivating => Some("window-close-symbolic"),
-            _ => None,
-        }
+        icon_name!(self)
     }
 
     pub(crate) fn glyph_str(&self) -> &str {

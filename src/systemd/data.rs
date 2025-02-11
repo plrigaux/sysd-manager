@@ -22,16 +22,23 @@ impl UnitInfo {
         let imp: &imp::UnitInfoImpl = this_object.imp();
 
         imp.set_primary(primary.to_owned());
+        this_object.set_active_state(active_state);
+
         *imp.description.write().unwrap() = description.to_owned();
         *imp.load_state.write().unwrap() = load_state.to_owned();
-        *imp.active_state.write().unwrap() = active_state as u32;
-        let icon_name = active_state.icon_name().map(|s| s.to_string());
-        *imp.active_state_icon.write().unwrap() = icon_name;
         *imp.sub_state.write().unwrap() = sub_state.to_owned();
         *imp.followed_unit.write().unwrap() = followed_unit.to_owned();
         *imp.object_path.write().unwrap() = object_path.map(str::to_owned);
 
         this_object
+    }
+
+    pub fn active_state(&self) -> ActiveState {
+        self.imp().active_state()
+    }
+
+    pub fn set_active_state(&self, state: ActiveState) {
+        self.imp().set_active_state(state)
     }
 }
 
@@ -55,10 +62,9 @@ mod imp {
         pub(super) description: RwLock<String>,
         #[property(get)]
         pub(super) load_state: RwLock<String>,
-        #[property(get, set=Self::set_active_state)]
-        pub(super) active_state: RwLock<u32>,
-        #[property(get)]
-        pub(super) active_state_icon: RwLock<Option<String>>,
+
+        #[property(get, set=Self::set_active_state_num)]
+        pub(super) active_state_num: RwLock<u8>,
         #[property(get)]
         pub(super) sub_state: RwLock<String>,
         #[property(get)]
@@ -71,6 +77,8 @@ mod imp {
         pub(super) file_path: RwLock<Option<String>>,
         #[property(get, set, default = 0)]
         pub(super) enable_status: RwLock<u32>,
+
+        pub(super) active_state: RwLock<ActiveState>,
     }
 
     #[glib::object_subclass]
@@ -104,13 +112,25 @@ mod imp {
             *self.primary.write().expect("set_primary primary") = primary;
         }
 
-        pub fn set_active_state(&self, state: u32) {
-            *self.active_state.write().expect("set_active_state active_state") = state;
+        pub fn set_active_state_num(&self, state: u8) {
+            *self
+                .active_state_num
+                .write()
+                .expect("set_active_state active_state") = state;
+        }
 
-            let state: ActiveState = state.into();
+        pub fn set_active_state(&self, state: ActiveState) {
+            *self
+                .active_state
+                .write()
+                .expect("set_active_state active_state") = state;
 
-            *self.active_state_icon.write().expect("set_active_state active_state_icon") =
-                state.icon_name().map(|s| s.to_owned());
+            //call this way to make binding works
+            self.obj().set_active_state_num(state as u8)
+        }
+
+        pub fn active_state(&self) -> ActiveState {
+            *self.active_state.read().expect("get active_state")
         }
     }
 }
