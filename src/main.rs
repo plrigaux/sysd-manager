@@ -12,7 +12,13 @@ mod utils;
 mod widget;
 
 use clap::{command, Parser};
-use gtk::{gdk, gio, glib, prelude::*};
+use gtk::{
+    gdk,
+    gio::{self, ResourceLookupFlags},
+    glib,
+    prelude::*,
+    IconLookupFlags,
+};
 
 use log::{info, warn};
 

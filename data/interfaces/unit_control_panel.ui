@@ -98,7 +98,7 @@
             <signal name="clicked" handler="button_kill_clicked" swapped="yes"/>
             <child>
               <object class="AdwButtonContent">
-                <property name="icon-name">face-sick-symbolic</property>
+                <property name="icon-name">dock-right-symbolic</property>
                 <property name="label">Kill</property>
               </object>
             </child>

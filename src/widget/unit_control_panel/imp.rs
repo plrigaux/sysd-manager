@@ -7,7 +7,7 @@ use gtk::{
     pango::{self, FontDescription},
     prelude::*,
 };
-use log::{debug, error, info, warn};
+use log::{debug, info, warn};
 
 use crate::{
     consts::{DESTRUCTIVE_ACTION, SUGGESTED_ACTION},
@@ -271,7 +271,7 @@ impl UnitControlPanelImpl {
         let job_op = match start_results {
             Ok(job) => {
                 let is_dark = self.is_dark.get();
-                let blue = if self.is_dark.get() {
+                let blue = if is_dark {
                     UnitInfoWriter::blue_dark()
                 } else {
                     UnitInfoWriter::blue_light()
@@ -280,7 +280,7 @@ impl UnitControlPanelImpl {
                 let red_green = controls::red_green(action != UnitContolType::Stop, is_dark);
 
                 let info = format!(
-                    "Unit <span fgcolor='{blue}' font_family='monospace'>{}</span> has been <span fgcolor='{red_green}'>{}</span> with the mode <span fgcolor='{blue}' font_family='monospace'>{}</span>",
+                    "Unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has been <span fgcolor='{red_green}'>{}</span> with the mode <span fgcolor='{blue}' font_family='monospace'>{}</span>",
                     unit.primary(),
                     action.past_participle(),
                     mode.as_str()
@@ -296,12 +296,25 @@ impl UnitControlPanelImpl {
                 Some(job)
             }
             Err(e) => {
-                error!(
-                    "Can't {} the unit {:?}, because: {:?}",
+                let is_dark = self.is_dark.get();
+                let blue = if is_dark {
+                    UnitInfoWriter::blue_dark()
+                } else {
+                    UnitInfoWriter::blue_light()
+                };
+
+                let info = format!(
+                    "Can't {} the unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span>, because: {:?}",
                     action.as_str(),
                     unit.primary(),
                     e
                 );
+
+                warn!("{info}");
+
+                let toast = Toast::builder().title(&info).use_markup(true).build();
+                self.toast_overlay.get().unwrap().add_toast(toast);
+
                 None
             }
         };
@@ -388,6 +401,7 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
+        self.kill_panel.set_inter_action(action);
     }
 
     //TODO bind to the property
@@ -478,9 +492,6 @@ impl ObjectImpl for UnitControlPanelImpl {
             info!("page notify {:?}", view_stack.visible_child_name());
         });
 
-        /*         self.unit_panel_stack.connect_visible_child_name_notify(|view_stack| {
-            info!("connect_visible_child_name_notify {:?}", view_stack.visible_child_name());
-        }); */
         {
             const VISIBLE_FALSE: InterPanelAction<'_> = InterPanelAction::PanelVisible(false);
             const VISIBLE_TRUE: InterPanelAction<'_> = InterPanelAction::PanelVisible(true);

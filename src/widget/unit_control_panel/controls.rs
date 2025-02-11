@@ -52,7 +52,7 @@ pub(super) fn switch_ablement_state_set(
                 };
 
                 let toast_info = format!(
-                    "Unit <span fgcolor='{blue}' font_family='monospace'>{}</span> has been successfully <span fgcolor='{red_green}'>{}</span>",
+                    "Unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{red_green}'>{}</span>",
                     unit.primary(),
                     expected_new_status,
                 );
@@ -88,7 +88,7 @@ pub(super) fn switch_ablement_state_set(
                     UnitInfoWriter::blue_light()
                 };
 
-                let toast_info = format!("{action_str} unit <span fgcolor='{blue}' font_family='monospace'>{}</span> has failed!", unit.primary());
+                let toast_info = format!("{action_str} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has failed!", unit.primary());
 
                 warn!("{toast_info} : {error_message}");
 

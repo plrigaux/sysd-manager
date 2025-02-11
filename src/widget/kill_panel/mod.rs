@@ -5,6 +5,8 @@ use gtk::{
 
 use crate::systemd::data::UnitInfo;
 
+use super::InterPanelAction;
+
 // ANCHOR: mod
 glib::wrapper! {
     pub struct KillPanel(ObjectSubclass<imp::KillPanelImp>)
@@ -15,6 +17,10 @@ glib::wrapper! {
 impl KillPanel {
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         self.imp().set_unit(unit);
+    }
+
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.imp().set_inter_action(action);
     }
 
     pub fn register(
@@ -28,10 +34,11 @@ impl KillPanel {
 }
 
 mod imp {
-    use std::cell::{OnceCell, RefCell};
+    use std::cell::{Cell, OnceCell, RefCell};
 
     use adw::prelude::*;
     use gtk::{
+        gio,
         glib::{self, property::PropertySet},
         subclass::{
             box_::BoxImpl,
@@ -46,7 +53,11 @@ mod imp {
 
     use log::{debug, info, warn};
 
-    use crate::systemd::{self, data::UnitInfo, enums::KillWho};
+    use crate::{
+        systemd::{self, data::UnitInfo, enums::KillWho},
+        utils::writer::UnitInfoWriter,
+        widget::InterPanelAction,
+    };
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/kill_panel.ui")]
@@ -76,6 +87,8 @@ mod imp {
         toast_overlay: OnceCell<adw::ToastOverlay>,
 
         unit: RefCell<Option<UnitInfo>>,
+
+        is_dark: Cell<bool>,
     }
 
     #[gtk::template_callbacks]
@@ -100,28 +113,59 @@ mod imp {
                 return;
             };
 
-            match systemd::kill_unit(unit, who, signal_id) {
-                Ok(_) => {
-                    let msg = format!(
-                        "Kill signal {} send succesfully to {} at {:?} level",
-                        signal_id,
-                        unit.primary(),
-                        who.as_str()
-                    );
+            let unit = unit.clone();
+            let button = button.clone();
+            let toast_overlay = self
+                .toast_overlay
+                .get()
+                .expect("not supposed to be empty")
+                .clone();
+            let is_dark = self.is_dark.get();
+            glib::spawn_future_local(async move {
+                button.set_sensitive(false);
 
-                    info!("{}", msg);
+                let unit_ = unit.clone();
+                let kill_results =
+                    gio::spawn_blocking(move || systemd::kill_unit(&unit_, who, signal_id))
+                        .await
+                        .expect("Task kill_unit needs to finish successfully.");
 
-                    let toast = adw::Toast::new(&msg);
-                    self.toast_overlay.get().unwrap().add_toast(toast)
+                button.set_sensitive(true);
+
+                match kill_results {
+                    Ok(_) => {
+                        let blue = if is_dark {
+                            UnitInfoWriter::blue_dark()
+                        } else {
+                            UnitInfoWriter::blue_light()
+                        };
+
+                        let msg = format!(
+                            "Kill signal {} send succesfully to <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> at <span fgcolor='{blue}'>{}</span> level",
+                            signal_id,
+                            unit.primary(),
+                            who.as_str()
+                        );
+
+                        info!("{}", msg);
+
+                        let toast = adw::Toast::builder().title(&msg).use_markup(true).build();
+                        toast_overlay.add_toast(toast)
+                    }
+                    Err(e) => {
+                        let msg = format!(
+                            "kill {} signal {} who {:?} response {:?}",
+                            unit.primary(),
+                            signal_id,
+                            who,
+                            e
+                        );
+                        warn!("{msg}");
+                        let toast = adw::Toast::new(&msg);
+                        toast_overlay.add_toast(toast)
+                    }
                 }
-                Err(e) => warn!(
-                    "kill {} signal {} who {:?} response {:?}",
-                    unit.primary(),
-                    signal_id,
-                    who,
-                    e
-                ),
-            }
+            });
         }
 
         #[template_callback]
@@ -183,6 +227,16 @@ mod imp {
             }
 
             self.send_button.set_sensitive(true);
+        }
+
+        pub(crate) fn set_dark(&self, is_dark: bool) {
+            self.is_dark.set(is_dark);
+        }
+
+        pub(crate) fn set_inter_action(&self, action: &InterPanelAction) {
+            if let InterPanelAction::IsDark(is_dark) = *action {
+                self.set_dark(is_dark)
+            }
         }
     }
 

@@ -20,5 +20,6 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">interfaces/shortcuts.ui</file>
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>
     <file compressed="true" alias="style.css">styles/style.css</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/dock-right-symbolic.svg</file>
   </gresource>
 </gresources>

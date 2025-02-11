@@ -80,7 +80,24 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-  <release version="1.12.4" date="2025-02-08">
+      <release version="1.13.0" date="2025-02-11">
+      <description>
+       <p>Added</p>
+        <ul>
+          <li>Different toast messages have color</li>        
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Button start is now non-blocking</li>
+          <li>Button stop is now non-blocking</li>
+          <li>Button restart is now non-blocking</li>
+          <li>Button Reload (in menu) is nownon-blocking</li>
+          <li>Button "send kill" is now non-blocking</li>
+          <li>Button kill has new icon</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.12.4" date="2025-02-08">
       <description>
         <p>Fixed</p>
         <ul>

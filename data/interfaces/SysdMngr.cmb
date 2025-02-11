@@ -467,7 +467,7 @@
 	(49,16,"AdwButtonContent","icon-name","view-refresh",0,None,None,None,None,None,None,None,None),
 	(49,16,"AdwButtonContent","label","Restart",0,None,None,None,None,None,None,None,None),
 	(49,17,"GtkWidget","sensitive","False",0,None,None,None,None,None,None,None,None),
-	(49,18,"AdwButtonContent","icon-name","face-sick-symbolic",0,None,None,None,None,None,None,None,None),
+	(49,18,"AdwButtonContent","icon-name","dock-right-symbolic",0,None,None,None,None,None,None,None,None),
 	(49,18,"AdwButtonContent","label","Kill",0,None,None,None,None,None,None,None,None),
 	(49,19,"AdwOverlaySplitView","collapsed","True",0,None,None,None,None,None,None,None,None),
 	(49,19,"AdwOverlaySplitView","content",None,0,None,None,None,20,None,None,None,None),
