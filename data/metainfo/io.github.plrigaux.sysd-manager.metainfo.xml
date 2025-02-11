@@ -80,11 +80,19 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-      <release version="1.13.1" date="2025-02-11">
+    <release version="1.13.2" date="2025-02-11">
       <description>
-       <p>Added</p>
+        <p>Fixed</p>
         <ul>
-          <li>Different toast messages have color</li>        
+          <li>Change logs</li>
+        </ul>      
+      </description>
+    </release>
+    <release version="1.13.1" date="2025-02-11">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>Different toast messages have color</li>
         </ul>
         <p>Changed</p>
         <ul>

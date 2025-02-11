@@ -4,8 +4,6 @@ from  build_aux.build_common import color
 import os
 import re
 import argparse
-import xml.etree.ElementTree as ET
-
 
 AUR_DIR="../aur/sysd-manager"
 PKGBUILD="PKGBUILD"
@@ -166,43 +164,6 @@ def clean():
         bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
 
 def change_log():
-    #https://keepachangelog.com/en/1.1.0/
-    tree = ET.parse('./data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml')
-    root = tree.getroot()
-    
-    
-    out = """# Changelog
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-"""
-    change_type = set(['Added', 'Changed', 'Deprecated', 'Removed' ,'Fixed' ,'Security'])
-
-    for release in root.iter('release'):
-        version = release.get('version')
-        date = release.get('date')
-        
-        out += f"## [{version}] - {date}\n\n"
-        
-        for description in release.iter('description'):
-            for sub in description.iter('*'):
-                if sub.tag == "p":
-                    if sub.text in change_type:
-                        out += f"### {sub.text}\n\n"
-                    else:
-                        out += sub.text + "\n\n"
-                    
-                if sub.tag == "li":
-                   out += "- " + sub.text + "\n"
-            
-            out += "\n"
-    
-    print (out)        
-    
-    with open("CHANGELOG.md", "w") as f:
-        f.write(out)
-
+    bc.change_log()    
 
 main()

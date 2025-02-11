@@ -1,7 +1,25 @@
 #!/usr/bin/env python3
 import build_aux.build_common as bc
-
+from  build_aux.build_common import color
 import os
 
 os.chdir("..")
+
+def change_log():
+    bc.change_log()
+
+allow_dirty = False
+if bc.is_repo_dirty() and not allow_dirty:
+    print(f"The repo is dirty {color.BOLD}Exit{color.END}")
+    exit()
+
+change_log()
+
+#check git changes
+if (bc.cmd_run("[[ -z \"$(git status -s)\" ]]", shell=True, on_fail_exit=False) != 0):   
+    bc.cmd_run(["git", "add", "CHANGELOG.md"], on_fail_exit=False)
+    tag_name = get_version_tag()
+    bc.cmd_run(["git", "commit", "-m", f"change log {tag_name}"], on_fail_exit=False)
+    bc.cmd_run(["git", "push"], on_fail_exit=False)
+
 bc.version(False, None, False)
