@@ -6,11 +6,19 @@ pub(super) enum UnitContolType {
 }
 
 impl UnitContolType {
-    pub fn as_str(&self) ->&str {
+    pub fn as_str(&self) -> &str {
         match self {
             UnitContolType::Start => "start",
             UnitContolType::Stop => "stop",
             UnitContolType::Restart => "restart",
+        }
+    }
+
+    pub fn past_participle(&self) -> &str {
+        match self {
+            UnitContolType::Start => "started",
+            UnitContolType::Stop => "stopped",
+            UnitContolType::Restart => "restarted",
         }
     }
 }

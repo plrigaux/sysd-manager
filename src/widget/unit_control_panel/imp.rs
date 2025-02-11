@@ -1,4 +1,4 @@
-use std::cell::{OnceCell, RefCell};
+use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{subclass::prelude::*, Toast};
 use gtk::{
@@ -17,7 +17,10 @@ use crate::{
         enums::{ActiveState, EnablementStatus, StartStopMode},
         errors::SystemdErrors,
     },
-    utils::font_management::{self, create_provider, FONT_CONTEXT},
+    utils::{
+        font_management::{self, create_provider, FONT_CONTEXT},
+        writer::UnitInfoWriter,
+    },
     widget::{
         app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel,
         preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
@@ -91,6 +94,8 @@ pub struct UnitControlPanelImpl {
     pub restart_mode: RefCell<String>,
 
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
+
+    is_dark: Cell<bool>,
 }
 
 #[glib::object_subclass]
@@ -164,6 +169,7 @@ impl UnitControlPanelImpl {
             expected_new_status,
             switch,
             &unit,
+            self.is_dark.get(),
         );
 
         self.unit_info_panel.display_unit_info(Some(&unit));
@@ -264,15 +270,24 @@ impl UnitControlPanelImpl {
     ) {
         let job_op = match start_results {
             Ok(job) => {
+                let is_dark = self.is_dark.get();
+                let blue = if self.is_dark.get() {
+                    UnitInfoWriter::blue_dark()
+                } else {
+                    UnitInfoWriter::blue_light()
+                };
+
+                let red_green = controls::red_green(action != UnitContolType::Stop, is_dark);
+
                 let info = format!(
-                    "Unit \"{}\" has been {}ed with mode {:?}!",
+                    "Unit <span fgcolor='{blue}' font_family='monospace'>{}</span> has been <span fgcolor='{red_green}'>{}</span> with the mode <span fgcolor='{blue}' font_family='monospace'>{}</span>",
                     unit.primary(),
-                    action.as_str(),
+                    action.past_participle(),
                     mode.as_str()
                 );
                 info!("{info}");
 
-                let toast = Toast::new(&info);
+                let toast = Toast::builder().title(&info).use_markup(true).build();
                 self.toast_overlay.get().unwrap().add_toast(toast);
 
                 unit.set_active_state(expected_active_state);
@@ -343,22 +358,32 @@ impl UnitControlPanelImpl {
         }
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        if let InterPanelAction::Font(font_description) = action {
-            let provider = create_provider(font_description);
-            {
-                let binding = self.old_font_provider.borrow();
-                let old_provider = binding.as_ref();
-                let new_action = InterPanelAction::FontProvider(old_provider, provider.as_ref());
-                self.set_inter_action2(&new_action);
-            }
-            self.old_font_provider.replace(provider);
-        } else {
-            self.set_inter_action2(action);
-        };
+    pub(crate) fn set_dark(&self, is_dark: bool) {
+        self.is_dark.set(is_dark);
     }
 
-    fn set_inter_action2(&self, action: &InterPanelAction) {
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        match *action {
+            InterPanelAction::Font(font_description) => {
+                let provider = create_provider(&font_description);
+                {
+                    let binding = self.old_font_provider.borrow();
+                    let old_provider = binding.as_ref();
+                    let new_action =
+                        InterPanelAction::FontProvider(old_provider, provider.as_ref());
+                    self.forward_inter_actions(&new_action);
+                }
+                self.old_font_provider.replace(provider);
+            }
+            InterPanelAction::IsDark(is_dark) => {
+                self.set_dark(is_dark);
+                self.forward_inter_actions(action)
+            }
+            _ => self.forward_inter_actions(action),
+        }
+    }
+
+    fn forward_inter_actions(&self, action: &InterPanelAction) {
         self.unit_info_panel.set_inter_action(action);
         self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
