@@ -1488,7 +1488,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager"
-version = "1.13.0"
+version = "1.13.1"
 dependencies = [
  "chrono",
  "clap",
