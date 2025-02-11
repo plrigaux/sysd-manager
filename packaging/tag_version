@@ -18,7 +18,7 @@ change_log()
 #check git changes
 if (bc.cmd_run("[[ -z \"$(git status -s)\" ]]", shell=True, on_fail_exit=False) != 0):   
     bc.cmd_run(["git", "add", "CHANGELOG.md"], on_fail_exit=False)
-    tag_name = get_version_tag()
+    tag_name = bc.get_version_tag()
     bc.cmd_run(["git", "commit", "-m", f"change log {tag_name}"], on_fail_exit=False)
     bc.cmd_run(["git", "push"], on_fail_exit=False)
 
