@@ -86,31 +86,26 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
 
 /// Takes a unit name as input and attempts to start it
 pub fn start_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-    sysdbus::start_unit(level, &unit.primary(), mode)
+    sysdbus::start_unit(unit.dbus_level(), &unit.primary(), mode)
 }
 
 /// Takes a unit name as input and attempts to stop it.
 pub fn stop_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-    sysdbus::stop_unit(level, &unit.primary(), mode)
+    sysdbus::stop_unit(unit.dbus_level(), &unit.primary(), mode)
 }
 
 pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-    sysdbus::restart_unit(level, &unit.primary(), mode)
+    sysdbus::restart_unit(unit.dbus_level(), &unit.primary(), mode)
 }
 
 pub fn disenable_unit_file(
     unit: &UnitInfo,
     expected_status: EnablementStatus,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-
     let msg_return = if expected_status == EnablementStatus::Enabled {
-        sysdbus::enable_unit_files(level, &[&unit.primary()])?
+        sysdbus::enable_unit_files(unit.dbus_level(), &[&unit.primary()])?
     } else {
-        sysdbus::disable_unit_files(level, &[&unit.primary()])?
+        sysdbus::disable_unit_files(unit.dbus_level(), &[&unit.primary()])?
     };
 
     Ok(msg_return)
@@ -454,8 +449,7 @@ pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
 }
 
 pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-    sysdbus::kill_unit(level, &unit.primary(), who, signal)
+    sysdbus::kill_unit(unit.dbus_level(), &unit.primary(), who, signal)
 }
 
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {

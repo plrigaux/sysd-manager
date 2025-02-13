@@ -1,8 +1,11 @@
 use std::cmp::Ordering;
 
 use super::enums::ActiveState;
-use crate::{gtk::subclass::prelude::ObjectSubclassIsExt, widget::preferences::data::DbusLevel};
-use gtk::glib;
+use crate::widget::preferences::data::DbusLevel;
+use gtk::{
+    glib::{self},
+    subclass::prelude::*,
+};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -42,6 +45,10 @@ impl UnitInfo {
 
     pub fn set_active_state(&self, state: ActiveState) {
         self.imp().set_active_state(state)
+    }
+
+    pub fn dbus_level(&self) -> DbusLevel {
+        *self.imp().level.read().unwrap()
     }
 }
 
@@ -83,7 +90,7 @@ mod imp {
 
         pub(super) active_state: RwLock<ActiveState>,
 
-        level: RwLock<DbusLevel>,
+        pub(super) level: RwLock<DbusLevel>,
     }
 
     #[glib::object_subclass]
