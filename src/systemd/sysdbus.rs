@@ -1,7 +1,10 @@
 //! Dbus abstraction
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
 
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::{
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    sync::Arc,
+};
 
 use log::{debug, info, trace, warn};
 
@@ -46,6 +49,213 @@ const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 
+#[derive(Deserialize, Type, PartialEq, Debug)]
+struct LUnitFiles<'a> {
+    primary_unit_name: &'a str,
+    enablement_status: &'a str,
+}
+
+#[derive(Deserialize, Type, PartialEq, Debug)]
+struct LUnit<'a> {
+    primary_unit_name: &'a str,
+    description: &'a str,
+    load_state: &'a str,
+    active_state: &'a str,
+    sub_state: &'a str,
+    followed_unit: &'a str,
+    #[serde(borrow)]
+    unit_object_path: ObjectPath<'a>,
+    ///If there is a job queued for the job unit the numeric job id, 0 otherwise
+    numeric_job_id: u32,
+    job_type: &'a str,
+    job_object_path: ObjectPath<'a>,
+}
+
+fn get_connection(level: DbusLevel) -> Result<Connection, SystemdErrors> {
+    debug!("Level {:?}, id {}", level, level as u32);
+    let connection_builder = match level {
+        DbusLevel::Session => zbus::blocking::connection::Builder::session()?,
+        DbusLevel::System => zbus::blocking::connection::Builder::system()?,
+    };
+
+    let connection = connection_builder
+        .auth_mechanism(zbus::AuthMechanism::External)
+        .build()?;
+
+    //println!("connection {:#?}", connection);
+
+    Ok(connection)
+}
+
+async fn get_connection_async(level: DbusLevel) -> Result<zbus::Connection, SystemdErrors> {
+    debug!("Level {:?}, id {}", level, level as u32);
+    let connection_builder = match level {
+        DbusLevel::Session => zbus::connection::Builder::session()?,
+        DbusLevel::System => zbus::connection::Builder::system()?,
+    };
+
+    let connection = connection_builder
+        .auth_mechanism(zbus::AuthMechanism::External)
+        .build()
+        .await?;
+
+    //println!("connection {:#?}", connection);
+
+    Ok(connection)
+}
+
+async fn list_units_description_async(
+    level: DbusLevel,
+) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let connection = get_connection_async(level).await?;
+
+    list_units_description_conn_async(Arc::new(connection), level).await
+}
+
+async fn list_units_description_conn_async(
+    connection: Arc<zbus::Connection>,
+    dbus_level: DbusLevel,
+) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let message = connection
+        .call_method(
+            Some(DESTINATION_SYSTEMD),
+            PATH_SYSTEMD,
+            Some(INTERFACE_SYSTEMD_MANAGER),
+            METHOD_LIST_UNIT,
+            &(),
+        )
+        .await?;
+
+    let body = message.body();
+
+    let array: Vec<LUnit> = body.deserialize()?;
+
+    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
+
+    for service_struct in array.iter() {
+        let active_state: ActiveState = service_struct.active_state.into();
+
+        let unit = UnitInfo::new(
+            service_struct.primary_unit_name,
+            service_struct.description,
+            service_struct.load_state,
+            active_state,
+            service_struct.sub_state,
+            service_struct.followed_unit,
+            Some(service_struct.unit_object_path.as_str()),
+            dbus_level,
+        );
+
+        map.insert(service_struct.primary_unit_name.to_ascii_lowercase(), unit);
+    }
+
+    Ok(map)
+}
+
+fn list_units_description(
+    connection: &Connection,
+    dbus_level: DbusLevel,
+) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_LIST_UNIT,
+        &(),
+    )?;
+
+    let body = message.body();
+
+    let array: Vec<LUnit> = body.deserialize()?;
+
+    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
+
+    for service_struct in array.iter() {
+        let active_state: ActiveState = service_struct.active_state.into();
+
+        let unit = UnitInfo::new(
+            service_struct.primary_unit_name,
+            service_struct.description,
+            service_struct.load_state,
+            active_state,
+            service_struct.sub_state,
+            service_struct.followed_unit,
+            Some(service_struct.unit_object_path.as_str()),
+            dbus_level,
+        );
+
+        map.insert(service_struct.primary_unit_name.to_ascii_lowercase(), unit);
+    }
+
+    Ok(map)
+}
+
+/// Returns the current enablement status of the unit
+pub fn get_unit_file_state_path(
+    level: DbusLevel,
+    unit_file: &str,
+) -> Result<EnablementStatus, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    let message = connection.call_method(
+        Some(DESTINATION_SYSTEMD),
+        PATH_SYSTEMD,
+        Some(INTERFACE_SYSTEMD_MANAGER),
+        METHOD_GET_UNIT_FILE_STATE,
+        &(unit_file),
+    )?;
+
+    let body = message.body();
+    let enablement_status: &str = body.deserialize()?;
+
+    Ok(EnablementStatus::new(enablement_status))
+}
+
+pub fn list_units_description_and_state(
+    level: DbusLevel,
+) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let connection = get_connection(level)?;
+
+    let mut units_map = list_units_description(&connection, level)?;
+
+    let mut unit_files = list_unit_files(&connection)?;
+
+    for unit_file in unit_files.drain(..) {
+        match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
+            Some(unit_info) => {
+                fill_unit_file(unit_info, &unit_file);
+            }
+            None => {
+                log::debug!(
+                    "Unit \"{}\" status \"{}\" not loaded!",
+                    unit_file.full_name(),
+                    unit_file.status_code.to_string()
+                );
+                let mut unit = UnitInfo::new(
+                    unit_file.full_name(),
+                    "",
+                    "",
+                    ActiveState::Unknown,
+                    "",
+                    "",
+                    None,
+                    level,
+                );
+                fill_unit_file(&mut unit, &unit_file);
+                units_map.insert(unit_file.full_name().to_ascii_lowercase(), unit);
+            }
+        }
+    }
+
+    Ok(units_map)
+}
+
+fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
+    unit_info.set_file_path(Some(unit_file.path.clone()));
+    let status_code: u32 = unit_file.status_code.into();
+    unit_info.set_enable_status(status_code);
+}
+
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
     let message = connection.call_method(
@@ -85,143 +295,47 @@ pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, Syst
     Ok(systemd_units)
 }
 
-#[derive(Deserialize, Type, PartialEq, Debug)]
-struct LUnitFiles<'a> {
-    primary_unit_name: &'a str,
-    enablement_status: &'a str,
-}
-
-#[derive(Deserialize, Type, PartialEq, Debug)]
-struct LUnit<'a> {
-    primary_unit_name: &'a str,
-    description: &'a str,
-    load_state: &'a str,
-    active_state: &'a str,
-    sub_state: &'a str,
-    followed_unit: &'a str,
-    #[serde(borrow)]
-    unit_object_path: ObjectPath<'a>,
-    ///If there is a job queued for the job unit the numeric job id, 0 otherwise
-    numeric_job_id: u32,
-    job_type: &'a str,
-    job_object_path: ObjectPath<'a>,
-}
-
-fn get_connection(level: DbusLevel) -> Result<Connection, SystemdErrors> {
-    debug!("Level {:?}, id {}", level, level as u32);
-    let connection_builder = match level {
-        DbusLevel::Session => zbus::blocking::connection::Builder::session()?,
-        DbusLevel::System => zbus::blocking::connection::Builder::system()?,
-    };
-
-    let connection = connection_builder
-        .auth_mechanism(zbus::AuthMechanism::External)
-        .build()?;
-
-    //println!("connection {:#?}", connection);
-
-    Ok(connection)
-}
-
-fn list_units_description(
-    connection: &Connection,
-) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        METHOD_LIST_UNIT,
-        &(),
-    )?;
+/// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
+pub async fn list_unit_files_async(
+    connection: Arc<zbus::Connection>,
+) -> Result<Vec<SystemdUnit>, SystemdErrors> {
+    let message = connection
+        .call_method(
+            Some(DESTINATION_SYSTEMD),
+            PATH_SYSTEMD,
+            Some(INTERFACE_SYSTEMD_MANAGER),
+            METHOD_LIST_UNIT_FILES,
+            &(),
+        )
+        .await?;
 
     let body = message.body();
 
-    let array: Vec<LUnit> = body.deserialize()?;
+    let array: Vec<LUnitFiles> = body.deserialize()?;
 
-    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
+    let mut systemd_units: Vec<SystemdUnit> = Vec::with_capacity(array.len());
 
-    for service_struct in array.iter() {
-        let active_state: ActiveState = service_struct.active_state.into();
+    for unit_file in array.iter() {
+        let Some((_prefix, name_type)) = unit_file.primary_unit_name.rsplit_once('/') else {
+            return Err(SystemdErrors::Malformed);
+        };
 
-        let unit = UnitInfo::new(
-            service_struct.primary_unit_name,
-            service_struct.description,
-            service_struct.load_state,
-            active_state,
-            service_struct.sub_state,
-            service_struct.followed_unit,
-            Some(service_struct.unit_object_path.as_str()),
-        );
+        let Some((name, system_type)) = name_type.rsplit_once('.') else {
+            return Err(SystemdErrors::Malformed);
+        };
 
-        map.insert(service_struct.primary_unit_name.to_ascii_lowercase(), unit);
+        let status_code = EnablementStatus::new(unit_file.enablement_status);
+        let utype = UnitType::new(system_type);
+
+        systemd_units.push(SystemdUnit {
+            name: name.to_owned(),
+            status_code,
+            utype,
+            path: unit_file.primary_unit_name.to_owned(),
+        });
     }
 
-    Ok(map)
-}
-
-/// Returns the current enablement status of the unit
-pub fn get_unit_file_state_path(
-    level: DbusLevel,
-    unit_file: &str,
-) -> Result<EnablementStatus, SystemdErrors> {
-    let connection = get_connection(level)?;
-
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        METHOD_GET_UNIT_FILE_STATE,
-        &(unit_file),
-    )?;
-
-    let body = message.body();
-    let enablement_status: &str = body.deserialize()?;
-
-    Ok(EnablementStatus::new(enablement_status))
-}
-
-pub fn list_units_description_and_state(
-    level: DbusLevel,
-) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let connection = get_connection(level)?;
-
-    let mut units_map = list_units_description(&connection)?;
-
-    let mut unit_files = list_unit_files(&connection)?;
-
-    for unit_file in unit_files.drain(..) {
-        match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
-            Some(unit_info) => {
-                fill_unit_file(unit_info, &unit_file);
-            }
-            None => {
-                log::debug!(
-                    "Unit \"{}\" status \"{}\" not loaded!",
-                    unit_file.full_name(),
-                    unit_file.status_code.to_string()
-                );
-                let mut unit = UnitInfo::new(
-                    unit_file.full_name(),
-                    "",
-                    "",
-                    ActiveState::Unknown,
-                    "",
-                    "",
-                    None,
-                );
-                fill_unit_file(&mut unit, &unit_file);
-                units_map.insert(unit_file.full_name().to_ascii_lowercase(), unit);
-            }
-        }
-    }
-
-    Ok(units_map)
-}
-
-fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
-    unit_info.set_file_path(Some(unit_file.path.clone()));
-    let status_code: u32 = unit_file.status_code.into();
-    unit_info.set_enable_status(status_code);
+    Ok(systemd_units)
 }
 
 /// Takes a unit name as input and attempts to start it
@@ -365,32 +479,31 @@ where
 
     connection.send(&message)?;
 
-    let stream = MessageIterator::from(connection);
+    let message_it = MessageIterator::from(connection);
 
-    for message_res in stream {
+    for message_res in message_it {
         debug!("Message response {:?}", message_res);
-        match message_res {
-            Ok(return_message) => match return_message.message_type() {
-                zbus::message::Type::MethodReturn => {
-                    info!("{method} Response");
-                    let result = handler(method, &return_message);
-                    return result;
-                }
-                zbus::message::Type::MethodCall => {
-                    warn!("Not supposed to happen: {:?}", return_message);
-                    break;
-                }
-                zbus::message::Type::Error => {
-                    let error = zbus::Error::from(return_message);
-                    return Err(SystemdErrors::from(error));
-                }
-                zbus::message::Type::Signal => {
-                    info!("Signal: {:?}", return_message);
-                    continue;
-                }
-            },
-            Err(e) => return Err(SystemdErrors::from(e)),
-        };
+        let return_message = message_res?;
+
+        match return_message.message_type() {
+            zbus::message::Type::MethodReturn => {
+                info!("{method} Response");
+                let result = handler(method, &return_message);
+                return result;
+            }
+            zbus::message::Type::MethodCall => {
+                warn!("Not supposed to happen: {:?}", return_message);
+                break;
+            }
+            zbus::message::Type::Error => {
+                let error = zbus::Error::from(return_message);
+                return Err(SystemdErrors::from(error));
+            }
+            zbus::message::Type::Signal => {
+                info!("Signal: {:?}", return_message);
+                continue;
+            }
+        }
     }
 
     warn!("{:?} ????, response supposed to be Unreachable", method);
@@ -505,6 +618,8 @@ fn convert_to_string(value: &zvariant::Value) -> String {
 }
 
 pub fn fetch_system_info(level: DbusLevel) -> Result<BTreeMap<String, String>, SystemdErrors> {
+    let res = change_p(level);
+    warn!("res {:?}", res);
     fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager)
 }
 
@@ -526,6 +641,110 @@ pub fn fetch_system_unit_info(
     }
 
     Ok(map)
+}
+
+fn change_p(level: DbusLevel) -> Result<(), SystemdErrors> {
+    let method = "Get";
+
+    let body = ("org.freedesktop.systemd1.Manager", "LogLevel");
+
+    let message = Message::method_call(PATH_SYSTEMD, method)?
+        .destination(DESTINATION_SYSTEMD)?
+        .interface("org.freedesktop.DBus.Properties")?
+        .with_flags(Flags::AllowInteractiveAuth)?
+        .build(&body)?;
+
+    let connection = get_connection(level)?;
+
+    connection.send(&message)?;
+
+    let message_it = MessageIterator::from(connection);
+
+    for message_res in message_it {
+        debug!("Message response {:?}", message_res);
+        let return_message = message_res?;
+
+        match return_message.message_type() {
+            zbus::message::Type::MethodReturn => {
+                info!("{method} Response");
+
+                let body = return_message.body();
+
+                let return_msg: OwnedValue = body.deserialize()?;
+
+                info!("{method} Response {:?}", return_msg);
+
+                //  let result = handler(method, &return_message);
+                return Ok(());
+            }
+            zbus::message::Type::MethodCall => {
+                warn!("Not supposed to happen: {:?}", return_message);
+                break;
+            }
+            zbus::message::Type::Error => {
+                let error = zbus::Error::from(return_message);
+                return Err(SystemdErrors::from(error));
+            }
+            zbus::message::Type::Signal => {
+                info!("Signal: {:?}", return_message);
+                continue;
+            }
+        }
+    }
+
+    warn!("{:?} ????, response supposed to be Unreachable", method);
+    Err(SystemdErrors::Malformed)
+
+    /*     let connection = Connection::system()?;
+
+    let body = ("org.freedesktop.systemd1.Manager", "LogLevel", "debug");
+
+    let message = Message::method_call("/org/freedesktop/systemd1", "Set")?
+        .with_flags(Flags::AllowInteractiveAuth)?
+        .destination("org.freedesktop.systemd1")?
+        .interface("org.freedesktop.DBus.Properties")?
+        .build(&body)?;
+
+    connection.send(&message)?;
+
+    let stream = MessageIterator::from(connection);
+
+    for msg in stream {
+        let msg = msg?;
+        let msg_header = msg.header();
+
+        dbg!(&msg);
+
+        let body = msg.body();
+        println!("Type {:?}", msg_header.message_type());
+
+        let body: zbus::zvariant::Structure = body.deserialize()?;
+        let fields = body.fields();
+        for f in fields {
+            println!("{:?}", f);
+        }
+
+        match msg.message_type() {
+            zbus::message::Type::MethodReturn => {
+                println!("Hello Response");
+            }
+            zbus::message::Type::MethodCall => {
+                println!("Not supposed to happen: {:?}", msg);
+                break;
+            }
+            zbus::message::Type::Error => {
+                let error = zbus::Error::from(msg);
+                println!("Error: {:?}", error);
+                break;
+            }
+            zbus::message::Type::Signal => {
+                println!("Signal: {:?}", msg);
+                continue;
+            }
+        }
+    }
+
+    Ok(()) */
 }
 
 pub fn fetch_system_unit_info_native(
@@ -609,6 +828,7 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
         &sub_state,
         &followed_unit,
         Some(&object_path),
+        level,
     );
 
     let fragment_path = match properties_proxy.get(interface_name, "FragmentPath") {
@@ -834,6 +1054,8 @@ pub fn retreive_unit_processes(
 #[cfg(test)]
 mod tests {
 
+    use std::sync::Arc;
+
     use super::*;
 
     pub const TEST_SERVICE: &str = "tiny_daemon.service";
@@ -876,7 +1098,7 @@ mod tests {
     #[ignore = "need a connection to a service"]
     #[test]
     fn test_list_units() -> Result<(), SystemdErrors> {
-        let units = list_units_description(&get_connection(DbusLevel::System)?)?;
+        let units = list_units_description(&get_connection(DbusLevel::System)?, DbusLevel::System)?;
 
         let serv = units.get(TEST_SERVICE);
         debug!("{:#?}", serv);
@@ -1085,6 +1307,89 @@ mod tests {
 
         println!("state of {TEST_SERVICE} is {:?}", state);
 
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[tokio::test]
+    async fn test_get_list() -> Result<(), SystemdErrors> {
+        let connection = get_connection_async(DbusLevel::System).await?;
+        let conn = Arc::new(connection);
+
+        let connection2 = get_connection_async(DbusLevel::Session).await?;
+        let conn2 = Arc::new(connection2);
+
+        use std::time::Instant;
+        let now = Instant::now();
+        let t1 = tokio::spawn(list_units_description_conn_async(
+            conn.clone(),
+            DbusLevel::System,
+        ));
+        let t2 = tokio::spawn(list_unit_files_async(conn));
+        let t3 = tokio::spawn(list_units_description_conn_async(
+            conn2.clone(),
+            DbusLevel::Session,
+        ));
+        let t4 = tokio::spawn(list_unit_files_async(conn2));
+
+        let _asdf = tokio::join!(t1, t2, t3, t4);
+
+        let elapsed = now.elapsed();
+        println!("Elapsed: {:.2?}", elapsed);
+        /*        let a = asdf.0;
+        let b = asdf.1;
+
+        println!("{:?}", a);
+        println!("{:?}", b); */
+
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[tokio::test]
+    async fn test_get_list2() -> Result<(), SystemdErrors> {
+        let connection = get_connection_async(DbusLevel::System).await?;
+        let conn = Arc::new(connection);
+
+        let connection2 = get_connection_async(DbusLevel::Session).await?;
+        let conn2 = Arc::new(connection2);
+
+        use std::time::Instant;
+        let now = Instant::now();
+        let t1 = list_units_description_conn_async(conn.clone(), DbusLevel::System);
+        let t2 = list_unit_files_async(conn);
+        let t3 = list_units_description_conn_async(conn2.clone(), DbusLevel::Session);
+        let t4 = list_unit_files_async(conn2);
+
+        let _asdf = tokio::join!(t1, t2, t3, t4);
+
+        let elapsed = now.elapsed();
+        println!("Elapsed: {:.2?}", elapsed);
+        /*         let a = asdf.0;
+               let b = asdf.1;
+
+               println!("{:?}", a);
+               println!("{:?}", b);
+        */
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_get_list_block() -> Result<(), SystemdErrors> {
+        use std::time::Instant;
+        let now = Instant::now();
+        let _ = list_units_description_and_state(DbusLevel::System);
+        let _ = list_units_description_and_state(DbusLevel::Session);
+
+        let elapsed = now.elapsed();
+        println!("Elapsed: {:.2?}", elapsed);
+        /*         let a = asdf.0;
+               let b = asdf.1;
+
+               println!("{:?}", a);
+               println!("{:?}", b);
+        */
         Ok(())
     }
 }

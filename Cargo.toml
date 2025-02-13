@@ -44,8 +44,8 @@ env_logger = "0.11"
 dotenv = "0.15"
 strum = { version = "0.26", features = ["derive"] }
 tokio = { version = "1.43", features = ["full"] }
-zbus = "5.2"
-zvariant = "5.2"
+zbus = "5.5"
+zvariant = "5.4"
 serde = "1.0"
 chrono = "0.4.39"
 regex = "1.11"

@@ -8,12 +8,7 @@ os.chdir("..")
 def change_log():
     bc.change_log()
 
-allow_dirty = False
-if bc.is_repo_dirty() and not allow_dirty:
-    print(f"The repo is dirty {color.BOLD}Exit{color.END}")
-    exit()
-
-change_log()
+bc.exit_if_dirty()
 
 #check git changes
 if (bc.cmd_run("[[ -z \"$(git status -s)\" ]]", shell=True, on_fail_exit=False) != 0):   

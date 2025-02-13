@@ -293,6 +293,7 @@ impl UnitListPanelImp {
 
             for value in unit_files {
                 list_store.append(&value);
+                //list_store.find(item)
             }
 
             info!("Unit list refreshed! list size {}", list_store.n_items());

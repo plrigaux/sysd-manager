@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use super::enums::ActiveState;
-use crate::gtk::subclass::prelude::ObjectSubclassIsExt;
+use crate::{gtk::subclass::prelude::ObjectSubclassIsExt, widget::preferences::data::DbusLevel};
 use gtk::glib;
 
 glib::wrapper! {
@@ -9,6 +9,7 @@ glib::wrapper! {
 }
 
 impl UnitInfo {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         primary: &str,
         description: &str,
@@ -17,18 +18,20 @@ impl UnitInfo {
         sub_state: &str,
         followed_unit: &str,
         object_path: Option<&str>,
+        dbus_level: DbusLevel,
     ) -> Self {
         let this_object: Self = glib::Object::new();
         let imp: &imp::UnitInfoImpl = this_object.imp();
-
-        imp.set_primary(primary.to_owned());
-        this_object.set_active_state(active_state);
-
-        *imp.description.write().unwrap() = description.to_owned();
-        *imp.load_state.write().unwrap() = load_state.to_owned();
-        *imp.sub_state.write().unwrap() = sub_state.to_owned();
-        *imp.followed_unit.write().unwrap() = followed_unit.to_owned();
-        *imp.object_path.write().unwrap() = object_path.map(str::to_owned);
+        imp.assign_new(
+            primary,
+            description,
+            load_state,
+            active_state,
+            sub_state,
+            followed_unit,
+            object_path,
+            dbus_level,
+        );
 
         this_object
     }
@@ -47,7 +50,7 @@ mod imp {
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
-    use crate::systemd::enums::ActiveState;
+    use crate::{systemd::enums::ActiveState, widget::preferences::data::DbusLevel};
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitInfo)]
@@ -79,6 +82,8 @@ mod imp {
         pub(super) enable_status: RwLock<u32>,
 
         pub(super) active_state: RwLock<ActiveState>,
+
+        level: RwLock<DbusLevel>,
     }
 
     #[glib::object_subclass]
@@ -95,6 +100,29 @@ mod imp {
     impl ObjectImpl for UnitInfoImpl {}
 
     impl UnitInfoImpl {
+        #[allow(clippy::too_many_arguments)]
+        pub fn assign_new(
+            &self,
+            primary: &str,
+            description: &str,
+            load_state: &str,
+            active_state: ActiveState,
+            sub_state: &str,
+            followed_unit: &str,
+            object_path: Option<&str>,
+            level: DbusLevel,
+        ) {
+            self.set_primary(primary.to_owned());
+            self.set_active_state(active_state);
+
+            *self.description.write().unwrap() = description.to_owned();
+            *self.load_state.write().unwrap() = load_state.to_owned();
+            *self.sub_state.write().unwrap() = sub_state.to_owned();
+            *self.followed_unit.write().unwrap() = followed_unit.to_owned();
+            *self.object_path.write().unwrap() = object_path.map(str::to_owned);
+            *self.level.write().unwrap() = level;
+        }
+
         pub fn set_primary(&self, primary: String) {
             let mut split_char_index = primary.len();
             for (i, c) in primary.chars().enumerate() {

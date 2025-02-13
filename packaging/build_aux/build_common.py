@@ -94,6 +94,10 @@ def clean_gschema():
         ]
     )
 
+def exit_if_dirty(allow_dirty = False):    
+    if is_repo_dirty() and not allow_dirty:
+        print(f"The repo is dirty {color.BOLD}Exit{color.END}")
+        exit(101)
 
 def is_repo_dirty() -> bool:
     repo = git.Repo(".")
@@ -156,17 +160,13 @@ def get_tag_commit(tag_label: Optional[str]) -> Optional[str]:
         print("out2", out2)
         exit(1) """
 
-
-
     return out2
 
 
 def version(allow_dirty: bool, message: str, force: bool):
     print(f"{color.CYAN}Create as git tag and push it{color.END}")
 
-    if is_repo_dirty() and not allow_dirty:
-        print(f"repo dirty {color.BOLD}Exit{color.END}")
-        exit()
+    exit_if_dirty(allow_dirty)
 
     tag_name = get_version_tag()
 
