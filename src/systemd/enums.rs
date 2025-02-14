@@ -28,7 +28,7 @@ pub enum EnablementStatus {
 impl EnablementStatus {
     /// Takes the string containing the state information from the dbus message and converts it
     /// into a UnitType by matching the first character.
-    pub fn new(enablement_status: &str) -> EnablementStatus {
+    pub fn from_str(enablement_status: &str) -> EnablementStatus {
         if enablement_status.is_empty() {
             info!("Empty Enablement Status: \"{}\"", enablement_status);
             return EnablementStatus::Unknown;
@@ -80,20 +80,26 @@ impl Display for EnablementStatus {
 impl From<Option<String>> for EnablementStatus {
     fn from(value: Option<String>) -> Self {
         if let Some(str_val) = value {
-            return EnablementStatus::new(&str_val);
+            return EnablementStatus::from_str(&str_val);
         }
         EnablementStatus::Unknown
     }
 }
 
-impl From<EnablementStatus> for u32 {
-    fn from(value: EnablementStatus) -> Self {
-        value as u32
+impl From<&str> for EnablementStatus {
+    fn from(value: &str) -> Self {
+        EnablementStatus::from_str(value)
     }
 }
 
-impl From<u32> for EnablementStatus {
-    fn from(value: u32) -> Self {
+impl From<EnablementStatus> for u8 {
+    fn from(value: EnablementStatus) -> Self {
+        value as u8
+    }
+}
+
+impl From<u8> for EnablementStatus {
+    fn from(value: u8) -> Self {
         match value {
             0 => Self::Unknown,
             1 => Self::Alias,
@@ -544,10 +550,9 @@ mod tests {
 
     #[test]
     fn test_enablement_status_any_number() {
-        assert_eq!(
-            <u32 as Into<EnablementStatus>>::into(1000),
-            EnablementStatus::Unknown
-        )
+        let num: u32 = 1000;
+        let status: EnablementStatus = (num as u8).into();
+        assert_eq!(status, EnablementStatus::Unknown)
     }
 
     #[test]
@@ -566,7 +571,7 @@ mod tests {
     }
 
     fn assert_num_mapping(status: EnablementStatus) {
-        let val = status as u32;
+        let val = status as u8;
         let convert: EnablementStatus = val.into();
         assert_eq!(convert, status)
     }

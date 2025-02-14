@@ -8,7 +8,7 @@ pub enum SystemdErrors {
     Utf8Error(FromUtf8Error),
     SystemCtlError(String),
     NoSuchUnit(Option<String>),
-    Malformed,
+    Malformed(String, String),
     ZBusError(zbus::Error),
     ZBusFdoError(zbus::fdo::Error),
     ZVariantError(zvariant::Error),

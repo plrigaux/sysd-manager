@@ -26,7 +26,7 @@ use crate::widget::preferences::data::DbusLevel;
 
 use super::{
     enums::{DependencyType, EnablementStatus, KillWho, StartStopMode},
-    Dependency, SystemdErrors, SystemdUnit,
+    Dependency, SystemdErrors, SystemdUnitFile,
 };
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
@@ -56,19 +56,19 @@ struct LUnitFiles<'a> {
 }
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
-struct LUnit<'a> {
-    primary_unit_name: &'a str,
-    description: &'a str,
-    load_state: &'a str,
-    active_state: &'a str,
-    sub_state: &'a str,
-    followed_unit: &'a str,
+pub struct LUnit<'a> {
+    pub primary_unit_name: &'a str,
+    pub description: &'a str,
+    pub load_state: &'a str,
+    pub active_state: &'a str,
+    pub sub_state: &'a str,
+    pub followed_unit: &'a str,
     #[serde(borrow)]
-    unit_object_path: ObjectPath<'a>,
+    pub unit_object_path: ObjectPath<'a>,
     ///If there is a job queued for the job unit the numeric job id, 0 otherwise
-    numeric_job_id: u32,
-    job_type: &'a str,
-    job_object_path: ObjectPath<'a>,
+    pub numeric_job_id: u32,
+    pub job_type: &'a str,
+    pub job_object_path: ObjectPath<'a>,
 }
 
 fn get_connection(level: DbusLevel) -> Result<Connection, SystemdErrors> {
@@ -126,30 +126,7 @@ async fn list_units_description_conn_async(
         )
         .await?;
 
-    let body = message.body();
-
-    let array: Vec<LUnit> = body.deserialize()?;
-
-    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
-
-    for service_struct in array.iter() {
-        let active_state: ActiveState = service_struct.active_state.into();
-
-        let unit = UnitInfo::new(
-            service_struct.primary_unit_name,
-            service_struct.description,
-            service_struct.load_state,
-            active_state,
-            service_struct.sub_state,
-            service_struct.followed_unit,
-            Some(service_struct.unit_object_path.as_str()),
-            dbus_level,
-        );
-
-        map.insert(service_struct.primary_unit_name.to_ascii_lowercase(), unit);
-    }
-
-    Ok(map)
+    fill_list_units_description(dbus_level, message)
 }
 
 fn list_units_description(
@@ -164,27 +141,23 @@ fn list_units_description(
         &(),
     )?;
 
+    fill_list_units_description(dbus_level, message)
+}
+
+fn fill_list_units_description(
+    dbus_level: DbusLevel,
+    message: Message,
+) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
     let body = message.body();
 
     let array: Vec<LUnit> = body.deserialize()?;
 
     let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
 
-    for service_struct in array.iter() {
-        let active_state: ActiveState = service_struct.active_state.into();
+    for listed_unit in array.iter() {
+        let unit = UnitInfo::from_listed_unit(listed_unit, dbus_level);
 
-        let unit = UnitInfo::new(
-            service_struct.primary_unit_name,
-            service_struct.description,
-            service_struct.load_state,
-            active_state,
-            service_struct.sub_state,
-            service_struct.followed_unit,
-            Some(service_struct.unit_object_path.as_str()),
-            dbus_level,
-        );
-
-        map.insert(service_struct.primary_unit_name.to_ascii_lowercase(), unit);
+        map.insert(listed_unit.primary_unit_name.to_ascii_lowercase(), unit);
     }
 
     Ok(map)
@@ -208,7 +181,7 @@ pub fn get_unit_file_state_path(
     let body = message.body();
     let enablement_status: &str = body.deserialize()?;
 
-    Ok(EnablementStatus::new(enablement_status))
+    Ok(EnablementStatus::from_str(enablement_status))
 }
 
 pub fn list_units_description_and_state(
@@ -221,28 +194,20 @@ pub fn list_units_description_and_state(
     let mut unit_files = list_unit_files(&connection)?;
 
     for unit_file in unit_files.drain(..) {
-        match units_map.get_mut(&unit_file.full_name().to_ascii_lowercase()) {
+        match units_map.get_mut(&unit_file.full_name.to_ascii_lowercase()) {
             Some(unit_info) => {
-                fill_unit_file(unit_info, &unit_file);
+                unit_info.update_from_unit_file(unit_file);
             }
             None => {
-                log::debug!(
+                debug!(
                     "Unit \"{}\" status \"{}\" not loaded!",
-                    unit_file.full_name(),
+                    unit_file.full_name,
                     unit_file.status_code.to_string()
                 );
-                let mut unit = UnitInfo::new(
-                    unit_file.full_name(),
-                    "",
-                    "",
-                    ActiveState::Unknown,
-                    "",
-                    "",
-                    None,
-                    level,
-                );
-                fill_unit_file(&mut unit, &unit_file);
-                units_map.insert(unit_file.full_name().to_ascii_lowercase(), unit);
+
+                let unit = UnitInfo::from_unit_file(unit_file, level);
+
+                units_map.insert(unit.primary().to_ascii_lowercase(), unit);
             }
         }
     }
@@ -250,14 +215,14 @@ pub fn list_units_description_and_state(
     Ok(units_map)
 }
 
-fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
+/* fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
     unit_info.set_file_path(Some(unit_file.path.clone()));
-    let status_code: u32 = unit_file.status_code.into();
+    let status_code: u8 = unit_file.status_code.into();
     unit_info.set_enable_status(status_code);
-}
+} */
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
-pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, SystemdErrors> {
+pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
@@ -266,28 +231,38 @@ pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, Syst
         &(),
     )?;
 
+    fill_list_unit_files(message)
+}
+
+fn fill_list_unit_files(message: Message) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let body = message.body();
 
     let array: Vec<LUnitFiles> = body.deserialize()?;
 
-    let mut systemd_units: Vec<SystemdUnit> = Vec::with_capacity(array.len());
+    let mut systemd_units: Vec<SystemdUnitFile> = Vec::with_capacity(array.len());
 
     for unit_file in array.iter() {
-        let Some((_prefix, name_type)) = unit_file.primary_unit_name.rsplit_once('/') else {
-            return Err(SystemdErrors::Malformed);
+        let Some((_prefix, full_name)) = unit_file.primary_unit_name.rsplit_once('/') else {
+            return Err(SystemdErrors::Malformed(
+                "rsplit_once(\"/\")".to_string(),
+                unit_file.primary_unit_name.to_owned(),
+            ));
         };
 
-        let Some((name, system_type)) = name_type.rsplit_once('.') else {
-            return Err(SystemdErrors::Malformed);
-        };
+        /*         let Some((name, system_type)) = full_name.rsplit_once('.') else {
+            return Err(SystemdErrors::Malformed(
+                "rsplit_once('.')".to_owned(),
+                full_name.to_owned(),
+            ));
+        }; */
 
-        let status_code = EnablementStatus::new(unit_file.enablement_status);
-        let utype = UnitType::new(system_type);
+        let status_code = EnablementStatus::from_str(unit_file.enablement_status);
+        //let utype = UnitType::new(system_type);
 
-        systemd_units.push(SystemdUnit {
-            name: name.to_owned(),
+        systemd_units.push(SystemdUnitFile {
+            full_name: full_name.to_owned(),
             status_code,
-            utype,
+            // utype,
             path: unit_file.primary_unit_name.to_owned(),
         });
     }
@@ -298,7 +273,7 @@ pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnit>, Syst
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub async fn list_unit_files_async(
     connection: Arc<zbus::Connection>,
-) -> Result<Vec<SystemdUnit>, SystemdErrors> {
+) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let message = connection
         .call_method(
             Some(DESTINATION_SYSTEMD),
@@ -309,33 +284,7 @@ pub async fn list_unit_files_async(
         )
         .await?;
 
-    let body = message.body();
-
-    let array: Vec<LUnitFiles> = body.deserialize()?;
-
-    let mut systemd_units: Vec<SystemdUnit> = Vec::with_capacity(array.len());
-
-    for unit_file in array.iter() {
-        let Some((_prefix, name_type)) = unit_file.primary_unit_name.rsplit_once('/') else {
-            return Err(SystemdErrors::Malformed);
-        };
-
-        let Some((name, system_type)) = name_type.rsplit_once('.') else {
-            return Err(SystemdErrors::Malformed);
-        };
-
-        let status_code = EnablementStatus::new(unit_file.enablement_status);
-        let utype = UnitType::new(system_type);
-
-        systemd_units.push(SystemdUnit {
-            name: name.to_owned(),
-            status_code,
-            utype,
-            path: unit_file.primary_unit_name.to_owned(),
-        });
-    }
-
-    Ok(systemd_units)
+    fill_list_unit_files(message)
 }
 
 /// Takes a unit name as input and attempts to start it
@@ -506,14 +455,18 @@ where
         }
     }
 
-    warn!("{:?} ????, response supposed to be Unreachable", method);
-    Err(SystemdErrors::Malformed)
+    let msg = format!("{:?} ????, response supposed to be Unreachable", method);
+    warn!("{}", msg);
+    Err(SystemdErrors::Malformed(
+        msg,
+        "sequences of messages".to_owned(),
+    ))
 }
 
 fn get_unit_object_path_connection(
     unit_name: &str,
     connection: &Connection,
-) -> Result<String, SystemdErrors> {
+) -> Result<ObjectPath<'static>, SystemdErrors> {
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
@@ -526,7 +479,7 @@ fn get_unit_object_path_connection(
 
     let object_path: zvariant::ObjectPath = body.deserialize()?;
 
-    Ok(object_path.as_str().to_owned())
+    Ok(object_path.to_owned())
 }
 
 pub fn reload_all_units(level: DbusLevel) -> Result<(), SystemdErrors> {
@@ -692,8 +645,12 @@ fn change_p(level: DbusLevel) -> Result<(), SystemdErrors> {
         }
     }
 
-    warn!("{:?} ????, response supposed to be Unreachable", method);
-    Err(SystemdErrors::Malformed)
+    let msg = format!("{:?} ????, response supposed to be Unreachable", method);
+    warn!("{}", msg);
+    Err(SystemdErrors::Malformed(
+        msg,
+        "sequences of messages".to_owned(),
+    ))
 
     /*     let connection = Connection::system()?;
 
@@ -783,8 +740,7 @@ pub fn fetch_system_unit_info_native(
 pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
     let connection = get_connection(level)?;
 
-    //TODO got get direct object_path
-    let object_path = get_unit_object_path_connection(unit_primary_name, &connection)?;
+    let object_path = unit_dbus_path_from_name(unit_primary_name);
 
     debug!("path {object_path}");
     let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
@@ -811,7 +767,7 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
         .get(interface_name.clone(), "ActiveState")?
         .try_into()?;
 
-    let active_state: ActiveState = active_state_str.as_str().into();
+    //let active_state: ActiveState = active_state_str.as_str().into();
 
     let sub_state: Str<'_> = properties_proxy
         .get(interface_name.clone(), "SubState")?
@@ -820,18 +776,22 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
         .get(interface_name.clone(), "Following")?
         .try_into()?;
 
-    let unit = UnitInfo::new(
-        &primary,
-        &description,
-        &load_state,
-        active_state,
-        &sub_state,
-        &followed_unit,
-        Some(&object_path),
-        level,
-    );
+    let listed_unit = LUnit {
+        primary_unit_name: &primary,
+        description: &description,
+        load_state: &load_state,
+        active_state: &active_state_str,
+        sub_state: &sub_state,
+        followed_unit: &followed_unit,
+        unit_object_path: ObjectPath::from_string_unchecked(object_path),
+        numeric_job_id: 0,
+        job_type: "",
+        job_object_path: ObjectPath::from_static_str_unchecked(""),
+    };
 
-    let fragment_path = match properties_proxy.get(interface_name, "FragmentPath") {
+    let unit = UnitInfo::from_listed_unit(&listed_unit, level);
+
+    let fragment_path = match properties_proxy.get(interface_name.clone(), "FragmentPath") {
         Ok(value) => match <OwnedValue as TryInto<Str<'_>>>::try_into(value) {
             Ok(fp) => Some(fp.to_string()),
             Err(e) => {
@@ -844,8 +804,14 @@ pub fn fetch_unit(level: DbusLevel, unit_primary_name: &str) -> Result<UnitInfo,
             None
         }
     };
-
     unit.set_file_path(fragment_path);
+
+    let unit_file_state: Str<'_> = properties_proxy
+        .get(interface_name.clone(), "UnitFileState")?
+        .try_into()?;
+
+    let status: EnablementStatus = unit_file_state.as_str().into();
+    unit.set_enable_status(status as u8);
 
     Ok(unit)
 }
@@ -1089,7 +1055,7 @@ mod tests {
     fn test_list_unit_files() -> Result<(), SystemdErrors> {
         let units = list_unit_files(&get_connection(DbusLevel::System)?)?;
 
-        let serv = units.iter().find(|ud| ud.full_name() == TEST_SERVICE);
+        let serv = units.iter().find(|ud| ud.full_name == TEST_SERVICE);
 
         debug!("{:#?}", serv);
         Ok(())

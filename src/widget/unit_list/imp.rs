@@ -173,7 +173,7 @@ impl UnitListPanelImp {
 
         entry
             .bind_property("enable_status", &child, "text")
-            .transform_to(|_, status: u32| {
+            .transform_to(|_, status: u8| {
                 let estatus: EnablementStatus = status.into();
                 let str = estatus.to_string();
                 Some(str)

@@ -43,20 +43,23 @@ const IS_FLATPAK_MODE: bool = false;
 
 #[derive(Clone, Debug)]
 #[allow(unused)]
-pub struct SystemdUnit {
-    pub name: String,
+pub struct SystemdUnitFile {
+    pub full_name: String,
     pub status_code: EnablementStatus,
-    pub utype: UnitType,
+    //pub utype: UnitType,
     pub path: String,
 }
 
-impl SystemdUnit {
-    pub fn full_name(&self) -> &str {
+impl SystemdUnitFile {
+    /*     pub fn full_name(&self) -> Result<&str, SystemdErrors> {
         match self.path.rsplit_once("/") {
-            Some((_, end)) => end,
-            None => &self.name,
+            Some((_, end)) => Ok(end),
+            None => Err(SystemdErrors::Malformed(
+                "rsplit_once(\"/\")".to_string(),
+                self.path.clone(),
+            )),
         }
-    }
+    } */
 }
 
 #[derive(Default, Clone, PartialEq)]

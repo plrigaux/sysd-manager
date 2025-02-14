@@ -65,7 +65,7 @@ pub(super) fn switch_ablement_state_set(
 
                 toast_overlay.add_toast(toast);
 
-                unit.set_enable_status(expected_new_status as u32);
+                unit.set_enable_status(expected_new_status as u8);
 
                 let enabled_new = expected_new_status == EnablementStatus::Enabled;
                 switch.set_state(enabled_new);
@@ -139,7 +139,7 @@ pub(super) fn handle_switch_sensivity(
 
             if current_state != unit_file_state {
                 unit_file_state = current_state;
-                unit.set_enable_status(unit_file_state as u32);
+                unit.set_enable_status(unit_file_state as u8);
             }
 
             handle_switch_sensivity_part2(&switch, &unit, unit_file_state);

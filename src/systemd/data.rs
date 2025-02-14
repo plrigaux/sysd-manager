@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use super::enums::ActiveState;
+use super::{enums::ActiveState, sysdbus::LUnit, SystemdUnitFile};
 use crate::widget::preferences::data::DbusLevel;
 use gtk::{
     glib::{self},
@@ -12,31 +12,23 @@ glib::wrapper! {
 }
 
 impl UnitInfo {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        primary: &str,
-        description: &str,
-        load_state: &str,
-        active_state: ActiveState,
-        sub_state: &str,
-        followed_unit: &str,
-        object_path: Option<&str>,
-        dbus_level: DbusLevel,
-    ) -> Self {
+    pub fn from_listed_unit(listed_unit: &LUnit, level: DbusLevel) -> Self {
+        let this_object: Self = glib::Object::new();
+        let imp = this_object.imp();
+        imp.init_from_listed_unit(listed_unit, level);
+        this_object
+    }
+
+    pub fn from_unit_file(unit_file: SystemdUnitFile, level: DbusLevel) -> Self {
         let this_object: Self = glib::Object::new();
         let imp: &imp::UnitInfoImpl = this_object.imp();
-        imp.assign_new(
-            primary,
-            description,
-            load_state,
-            active_state,
-            sub_state,
-            followed_unit,
-            object_path,
-            dbus_level,
-        );
-
+        imp.init_from_unit_file(unit_file, level);
         this_object
+    }
+
+    pub fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
+        let imp: &imp::UnitInfoImpl = self.imp();
+        imp.update_from_unit_file(unit_file);
     }
 
     pub fn active_state(&self) -> ActiveState {
@@ -57,7 +49,10 @@ mod imp {
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
-    use crate::{systemd::enums::ActiveState, widget::preferences::data::DbusLevel};
+    use crate::{
+        systemd::{enums::ActiveState, sysdbus::LUnit, SystemdUnitFile},
+        widget::preferences::data::DbusLevel,
+    };
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitInfo)]
@@ -86,7 +81,7 @@ mod imp {
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RwLock<Option<String>>,
         #[property(get, set, default = 0)]
-        pub(super) enable_status: RwLock<u32>,
+        pub(super) enable_status: RwLock<u8>,
 
         pub(super) active_state: RwLock<ActiveState>,
 
@@ -107,27 +102,31 @@ mod imp {
     impl ObjectImpl for UnitInfoImpl {}
 
     impl UnitInfoImpl {
-        #[allow(clippy::too_many_arguments)]
-        pub fn assign_new(
-            &self,
-            primary: &str,
-            description: &str,
-            load_state: &str,
-            active_state: ActiveState,
-            sub_state: &str,
-            followed_unit: &str,
-            object_path: Option<&str>,
-            level: DbusLevel,
-        ) {
-            self.set_primary(primary.to_owned());
+        pub(super) fn init_from_listed_unit(&self, listed_unit: &LUnit, dbus_level: DbusLevel) {
+            let active_state: ActiveState = listed_unit.active_state.into();
+
+            self.set_primary(listed_unit.primary_unit_name.to_owned());
             self.set_active_state(active_state);
 
-            *self.description.write().unwrap() = description.to_owned();
-            *self.load_state.write().unwrap() = load_state.to_owned();
-            *self.sub_state.write().unwrap() = sub_state.to_owned();
-            *self.followed_unit.write().unwrap() = followed_unit.to_owned();
-            *self.object_path.write().unwrap() = object_path.map(str::to_owned);
+            *self.description.write().unwrap() = listed_unit.description.to_owned();
+            *self.load_state.write().unwrap() = listed_unit.load_state.to_owned();
+            *self.sub_state.write().unwrap() = listed_unit.sub_state.to_owned();
+            *self.followed_unit.write().unwrap() = listed_unit.followed_unit.to_owned();
+            *self.object_path.write().unwrap() = Some(listed_unit.unit_object_path.to_string());
+            *self.level.write().unwrap() = dbus_level;
+        }
+
+        pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile, level: DbusLevel) {
+            self.set_primary(unit_file.full_name);
+            self.set_active_state(ActiveState::Unknown);
             *self.level.write().unwrap() = level;
+            *self.file_path.write().unwrap() = Some(unit_file.path);
+            *self.enable_status.write().unwrap() = unit_file.status_code as u8;
+        }
+
+        pub(super) fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
+            *self.file_path.write().unwrap() = Some(unit_file.path);
+            *self.enable_status.write().unwrap() = unit_file.status_code as u8
         }
 
         pub fn set_primary(&self, primary: String) {
