@@ -126,21 +126,20 @@ fn handle_args() -> Option<UnitInfo> {
 
     let level = PREFERENCES.dbus_level();
 
-    match (args.system, args.user) {
-        (true, _) => PREFERENCES.set_dbus_level(DbusLevel::System),
-        (false, true) => PREFERENCES.set_dbus_level(DbusLevel::Session),
-        (false, false) => {}
-    }
+    if level != DbusLevel::SystemAndSession {
+        match (args.system, args.user) {
+            (true, _) => PREFERENCES.set_dbus_level(DbusLevel::System),
+            (false, true) => PREFERENCES.set_dbus_level(DbusLevel::Session),
+            (false, false) => {}
+        }
 
-    if level != PREFERENCES.dbus_level() {
-        let settings = new_settings();
-        PREFERENCES.save_dbus_level(&settings);
+        if level != PREFERENCES.dbus_level() {
+            let settings = new_settings();
+            PREFERENCES.save_dbus_level(&settings);
+        }
     }
 
     let unit_name = args.unit?;
-    //let Some(unit_name) = args.unit else {
-    //    return None;
-    //};
 
     match systemd::fetch_unit(&unit_name) {
         Ok(unit) => Some(unit),

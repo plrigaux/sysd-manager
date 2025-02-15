@@ -1,8 +1,7 @@
 use std::{
-    cell::{OnceCell, RefCell, RefMut},
+    cell::{Cell, OnceCell, RefCell, RefMut},
     rc::Rc,
-    thread,
-    time::Duration,
+    sync::OnceLock,
 };
 
 use gtk::{
@@ -22,6 +21,7 @@ use gtk::{
 };
 
 use log::{debug, error, info, warn};
+use tokio::runtime::Runtime;
 
 use crate::icon_name;
 use crate::{
@@ -61,11 +61,16 @@ pub struct UnitListPanelImp {
     #[template_child]
     panel_stack: TemplateChild<gtk::Stack>,
 
+    #[template_child]
+    scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
     search_entry: OnceCell<gtk::SearchEntry>,
 
     refresh_unit_list_button: OnceCell<gtk::Button>,
 
     unit: RefCell<Option<UnitInfo>>,
+
+    pub force_selected_index: Cell<Option<u32>>,
 }
 
 macro_rules! factory_setup {
@@ -223,6 +228,11 @@ impl UnitListPanelImp {
     }
 }
 
+fn runtime() -> &'static Runtime {
+    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+    RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
+}
+
 impl UnitListPanelImp {
     pub(super) fn register_selection_change(
         &self,
@@ -278,17 +288,40 @@ impl UnitListPanelImp {
             .expect("Supposed to be set")
             .clone();
 
+        // let sender_c = sender.clone();
+
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
-            let unit_files: Vec<UnitInfo> =
-                gio::spawn_blocking(move || match systemd::list_units_description_and_state() {
+
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+
+            runtime().spawn(async move {
+                let response = systemd::list_units_description_and_state_async().await;
+
+                sender
+                    .send(response)
+                    .expect("The channel needs to be open.");
+                warn!("Pizza")
+            });
+            /*             let unit_files: Vec<UnitInfo> = gio::spawn_blocking(async move || {
+                match systemd::list_units_description_and_state_async().await {
                     Ok(map) => map.into_values().collect(),
                     Err(_e) => vec![],
-                })
-                .await
-                .expect("Task needs to finish successfully.");
+                }
+            })
+            .await
+            .expect("Task needs to finish successfully."); */
 
+            let unit_files = match receiver.await.expect("Tokio receiver works") {
+                Ok(unit_files) => unit_files,
+                Err(err) => {
+                    warn!("Fail fetch list {:?}", err);
+                    return;
+                }
+            };
+
+            let n_items = list_store.n_items();
             list_store.remove_all();
 
             for value in unit_files {
@@ -298,7 +331,6 @@ impl UnitListPanelImp {
 
             info!("Unit list refreshed! list size {}", list_store.n_items());
 
-            refresh_unit_list_button.set_sensitive(true);
             panel_stack.set_visible_child_name("unit_list");
 
             let mut force_selected_index = GTK_INVALID_LIST_POSITION;
@@ -330,30 +362,13 @@ impl UnitListPanelImp {
                 }
             }
 
-            //Add a delay to ask to select the unit because it seems that the columnview and the scroll
-            // window needs a bit of time after the liststore has benn updated
-            glib::spawn_future_local(async move {
-                if force_selected_index == GTK_INVALID_LIST_POSITION {
-                    return;
-                }
+            unit_list.set_force_selected_index(Some(force_selected_index));
+            refresh_unit_list_button.set_sensitive(true);
 
-                gio::spawn_blocking(move || {
-                    let seconds = Duration::from_secs(1);
-                    thread::sleep(seconds);
-                })
-                .await
-                .expect("Task needs to finish successfully.");
-
-                info!("Focus on selected unit list row (index {force_selected_index})");
-
-                //needs a bit of time to generate the list
-                units_browser.scroll_to(
-                    force_selected_index, // to centerish on the selected unit
-                    None,
-                    ListScrollFlags::FOCUS,
-                    None,
-                );
-            });
+            //cause no scrollwindow v adjustment
+            if n_items > 0 {
+                focus_on_row(&unit_list, &units_browser);
+            }
         });
     }
 
@@ -432,6 +447,10 @@ impl UnitListPanelImp {
     pub fn selected_unit(&self) -> Option<UnitInfo> {
         self.unit.borrow().clone()
     }
+
+    pub fn set_force_selected_index(&self, force_selected_index: Option<u32>) {
+        self.force_selected_index.set(force_selected_index)
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -461,9 +480,10 @@ impl ObjectImpl for UnitListPanelImp {
         let list_model: gio::ListModel = self.units_browser.columns();
 
         column_view_column_set_sorter!(list_model, 0, primary);
-        column_view_column_set_sorter!(list_model, 1, unit_type);
-        column_view_column_set_sorter!(list_model, 2, enable_status);
-        column_view_column_set_sorter!(list_model, 3, active_state);
+        column_view_column_set_sorter!(list_model, 1, dbus_level);
+        column_view_column_set_sorter!(list_model, 2, unit_type);
+        column_view_column_set_sorter!(list_model, 3, enable_status);
+        column_view_column_set_sorter!(list_model, 4, active_state);
 
         let sorter = self.units_browser.sorter();
 
@@ -472,7 +492,46 @@ impl ObjectImpl for UnitListPanelImp {
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 
         let _ = self.search_entry.set(search_entry);
+
+        /*       self.units_browser
+            .connect_height_request_notify(|a| log::error!("connect_height_request_notify"));
+
+        self.units_browser
+            .connect_row_factory_notify(|a| log::error!("connect_row_factory_notify"));
+
+        self.scrolled_window
+            .connect_vadjustment_notify(|f| log::error!("connect_vadjustment_notify")); */
+        {
+            let unit_list = self.obj().clone();
+            let units_browser = self.units_browser.clone();
+            self.scrolled_window
+                .vadjustment()
+                .connect_changed(move |_adjustment| {
+                    focus_on_row(&unit_list, &units_browser);
+                });
+        }
     }
+}
+
+fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnView) {
+    let force_selected_index = unit_list.force_selected_index();
+    debug!("vadjustment changed");
+    unit_list.set_force_selected_index(None);
+    let Some(force_selected_index) = force_selected_index else {
+        return;
+    };
+    if force_selected_index == GTK_INVALID_LIST_POSITION {
+        return;
+    }
+    info!("Focus on selected unit list row (index {force_selected_index})");
+
+    //needs a bit of time to generate the list
+    units_browser.scroll_to(
+        force_selected_index, // to centerish on the selected unit
+        None,
+        ListScrollFlags::FOCUS,
+        None,
+    );
 }
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}

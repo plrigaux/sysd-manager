@@ -23,6 +23,7 @@
             <choices>
                 <choice value='session' />
                 <choice value='system' />
+                <choice value='system_session' />                
             </choices>
             <default>'session'</default>
             <summary>The dbus level scope</summary>

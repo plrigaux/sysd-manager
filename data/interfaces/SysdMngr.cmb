@@ -218,7 +218,7 @@
 	(53,5,"GtkStackPage",None,2,None,None,None,1,None,None),
 	(53,6,"GtkBox",None,5,None,None,None,0,None,None),
 	(53,7,"GtkSearchBar","search_bar",6,None,None,None,0,None,None),
-	(53,8,"GtkScrolledWindow",None,6,None,None,None,1,None,None),
+	(53,8,"GtkScrolledWindow","scrolled_window",6,None,None,None,1,None,None),
 	(53,9,"GtkColumnView","units_browser",8,None,None,None,0,None,None),
 	(53,10,"GtkSingleSelection","single_selection",9,None,None,None,0,None,None),
 	(53,11,"GtkFilterListModel","filter_list_model",10,None,None,None,0,None,None),

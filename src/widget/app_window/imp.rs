@@ -222,11 +222,11 @@ impl AppWindowImpl {
     }
 
     #[template_callback]
-    fn refresh_button_clicked(&self, button: &gtk::Button) {
+    fn refresh_button_clicked(&self, _button: &gtk::Button) {
         info!("refresh false");
-        button.set_sensitive(false);
+        //button.set_sensitive(false);
         self.unit_list_panel.fill_store();
-        button.set_sensitive(true);
+        //button.set_sensitive(true);
         info!("refresh true");
     }
 

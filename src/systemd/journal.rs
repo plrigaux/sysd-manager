@@ -11,9 +11,9 @@ use log::{info, warn};
 use sysd::{id128::Id128, journal::OpenOptions, Journal};
 
 use crate::{
-    systemd::journal_data::JournalEventChunkInfo,
+    systemd::{enums::UnitDBusLevel, journal_data::JournalEventChunkInfo},
     utils::th::{TimestampStyle, USEC_PER_SEC},
-    widget::preferences::data::{DbusLevel, PREFERENCES},
+    widget::preferences::data::PREFERENCES,
 };
 
 use super::{
@@ -170,10 +170,10 @@ fn create_journal_reader(
         .expect("Could not open journal");
     let unit_primary = unit.primary();
     let unit_name = unit_primary.as_str();
-    let level = PREFERENCES.dbus_level();
+    let level = unit.dbus_level();
     info!("JOURNAL UNIT NAME {} level {:?}", unit_name, level);
     match level {
-        DbusLevel::System => {
+        UnitDBusLevel::System => {
             journal_reader.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
             journal_reader.match_or()?;
             journal_reader.match_add(KEY_UNIT, unit_name)?;
@@ -184,7 +184,7 @@ fn create_journal_reader(
             journal_reader.match_or()?;
             journal_reader.match_add(KEY_SYSTEMD_SLICE, unit_name)?;
         }
-        DbusLevel::Session => {
+        UnitDBusLevel::UserSession => {
             journal_reader.match_add(KEY_SYSTEMS_USER_UNIT, unit_name)?;
             journal_reader.match_or()?;
             journal_reader.match_add(KEY_USER_UNIT, unit_name)?;

@@ -28,11 +28,13 @@ pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
 #[enum_type(name = "DbusLevel")]
 pub enum DbusLevel {
-    #[enum_value(name = "session", nick = "Session Bus")]
+    #[enum_value(name = "session", nick = "User Session Bus")]
     #[default]
     Session = 0,
     #[enum_value(name = "system", nick = "System Bus")]
     System = 1,
+    #[enum_value(name = "system_session", nick = "System & User Session Bus")]
+    SystemAndSession = 2,
 }
 
 impl DbusLevel {
@@ -51,10 +53,10 @@ impl From<GString> for DbusLevel {
 
 impl From<&str> for DbusLevel {
     fn from(level: &str) -> Self {
-        if "system".eq(&level.to_lowercase()) {
-            DbusLevel::System
-        } else {
-            DbusLevel::Session
+        match level.to_ascii_lowercase().as_str() {
+            "system" => DbusLevel::System,
+            "session" => DbusLevel::Session,
+            _ => DbusLevel::SystemAndSession,
         }
     }
 }
@@ -62,8 +64,9 @@ impl From<&str> for DbusLevel {
 impl From<u32> for DbusLevel {
     fn from(level: u32) -> Self {
         match level {
+            0 => DbusLevel::Session,
             1 => DbusLevel::System,
-            _ => DbusLevel::Session,
+            _ => DbusLevel::SystemAndSession,
         }
     }
 }

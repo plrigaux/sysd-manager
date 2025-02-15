@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 
 use crate::consts::U64MAX;
+use crate::systemd::enums::UnitDBusLevel;
 use crate::utils::th::{self, TimestampStyle};
 use crate::utils::writer::{
     HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
@@ -44,6 +45,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
 
     let timestamp_style = PREFERENCES.timestamp_style();
 
+    let level = unit.dbus_level();
     fill_description(unit_writer, &map, unit);
     fill_follows(unit_writer, &map);
     fill_load_state(unit_writer, &map);
@@ -51,12 +53,12 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_dropin(unit_writer, &map);
     fill_active_state(unit_writer, &map, unit, timestamp_style);
     fill_invocation(unit_writer, &map);
-    fill_triggered_by(unit_writer, &map);
+    fill_triggered_by(unit_writer, &map, level);
     fill_device(unit_writer, &map);
     fill_where(unit_writer, &map);
     fill_what(unit_writer, &map);
     fill_trigger(unit_writer, &map, unit, timestamp_style);
-    fill_triggers(unit_writer, &map);
+    fill_triggers(unit_writer, &map, level);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_status(unit_writer, &map);
@@ -914,7 +916,11 @@ struct TimersMonotonic<'a> {
     elapsation_point: u64,
 }
 
-fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_triggers(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    level: UnitDBusLevel,
+) {
     let value = get_value!(map, "Triggers");
 
     let triggers = get_array_str(value);
@@ -934,7 +940,7 @@ fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
 
         write_key(unit_writer, key_label);
 
-        match systemd::get_unit_active_state(trigger_unit) {
+        match systemd::get_unit_active_state(trigger_unit, level) {
             Ok(state) => {
                 unit_writer.insert_state(state);
             }
@@ -951,7 +957,11 @@ fn fill_triggers(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
 }
 
 //TODO add units states
-fn fill_triggered_by(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_triggered_by(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    level: UnitDBusLevel,
+) {
     let value = get_value!(map, "TriggeredBy");
 
     let triggers = get_array_str(value);
@@ -967,7 +977,7 @@ fn fill_triggered_by(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Own
 
         write_key(unit_writer, key_label);
 
-        match systemd::get_unit_active_state(trigger_unit) {
+        match systemd::get_unit_active_state(trigger_unit, level) {
             Ok(state) => {
                 unit_writer.insert_state(state);
             }

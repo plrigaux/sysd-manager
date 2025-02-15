@@ -541,6 +541,22 @@ impl From<&RefCell<String>> for StartStopMode {
     }
 }
 
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default)]
+pub enum UnitDBusLevel {
+    #[default]
+    System = 0,
+    UserSession = 1,
+}
+
+impl From<u8> for UnitDBusLevel {
+    fn from(level: u8) -> Self {
+        match level {
+            0 => UnitDBusLevel::System,
+            _ => UnitDBusLevel::UserSession,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

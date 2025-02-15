@@ -18,6 +18,7 @@ pub enum SystemdErrors {
     NoFilePathforUnit(String),
     //FlatpakAccess(ErrorKind),
     NotAuthorized,
+    Tokio,
 }
 
 impl SystemdErrors {
@@ -81,5 +82,11 @@ impl From<Box<dyn std::error::Error>> for SystemdErrors {
 impl From<zvariant::Error> for SystemdErrors {
     fn from(value: zvariant::Error) -> Self {
         SystemdErrors::ZVariantError(value)
+    }
+}
+
+impl From<tokio::task::JoinError> for SystemdErrors {
+    fn from(_value: tokio::task::JoinError) -> Self {
+        SystemdErrors::Tokio
     }
 }

@@ -1,7 +1,7 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, fmt::Debug};
 
-use super::{enums::ActiveState, sysdbus::LUnit, SystemdUnitFile};
-use crate::widget::preferences::data::DbusLevel;
+use super::{enums::ActiveState, enums::UnitDBusLevel, sysdbus::LUnit, SystemdUnitFile};
+
 use gtk::{
     glib::{self},
     subclass::prelude::*,
@@ -12,14 +12,14 @@ glib::wrapper! {
 }
 
 impl UnitInfo {
-    pub fn from_listed_unit(listed_unit: &LUnit, level: DbusLevel) -> Self {
+    pub fn from_listed_unit(listed_unit: &LUnit, level: UnitDBusLevel) -> Self {
         let this_object: Self = glib::Object::new();
         let imp = this_object.imp();
         imp.init_from_listed_unit(listed_unit, level);
         this_object
     }
 
-    pub fn from_unit_file(unit_file: SystemdUnitFile, level: DbusLevel) -> Self {
+    pub fn from_unit_file(unit_file: SystemdUnitFile, level: UnitDBusLevel) -> Self {
         let this_object: Self = glib::Object::new();
         let imp: &imp::UnitInfoImpl = this_object.imp();
         imp.init_from_unit_file(unit_file, level);
@@ -39,8 +39,12 @@ impl UnitInfo {
         self.imp().set_active_state(state)
     }
 
-    pub fn dbus_level(&self) -> DbusLevel {
+    pub fn dbus_level(&self) -> UnitDBusLevel {
         *self.imp().level.read().unwrap()
+    }
+
+    pub fn debug(&self) -> String {
+        format!("{:#?}", *self.imp())
     }
 }
 
@@ -49,9 +53,8 @@ mod imp {
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
-    use crate::{
-        systemd::{enums::ActiveState, sysdbus::LUnit, SystemdUnitFile},
-        widget::preferences::data::DbusLevel,
+    use crate::systemd::{
+        enums::ActiveState, enums::UnitDBusLevel, sysdbus::LUnit, SystemdUnitFile,
     };
 
     #[derive(Debug, glib::Properties, Default)]
@@ -85,7 +88,7 @@ mod imp {
 
         pub(super) active_state: RwLock<ActiveState>,
 
-        pub(super) level: RwLock<DbusLevel>,
+        pub(super) level: RwLock<UnitDBusLevel>,
     }
 
     #[glib::object_subclass]
@@ -102,7 +105,7 @@ mod imp {
     impl ObjectImpl for UnitInfoImpl {}
 
     impl UnitInfoImpl {
-        pub(super) fn init_from_listed_unit(&self, listed_unit: &LUnit, dbus_level: DbusLevel) {
+        pub(super) fn init_from_listed_unit(&self, listed_unit: &LUnit, dbus_level: UnitDBusLevel) {
             let active_state: ActiveState = listed_unit.active_state.into();
 
             self.set_primary(listed_unit.primary_unit_name.to_owned());
@@ -116,7 +119,7 @@ mod imp {
             *self.level.write().unwrap() = dbus_level;
         }
 
-        pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile, level: DbusLevel) {
+        pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile, level: UnitDBusLevel) {
             self.set_primary(unit_file.full_name);
             self.set_active_state(ActiveState::Unknown);
             *self.level.write().unwrap() = level;

@@ -14,7 +14,9 @@ use std::{
 };
 
 use data::{UnitInfo, UnitProcess};
-use enums::{ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitType};
+use enums::{
+    ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitDBusLevel, UnitType,
+};
 use errors::SystemdErrors;
 use gtk::glib::GString;
 use journal_data::{EventRange, JournalEventChunk};
@@ -71,12 +73,16 @@ pub enum BootFilter {
 }
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
+    let level = sytemd_unit.dbus_level();
     sysdbus::get_unit_file_state_path(level, &sytemd_unit.primary())
 }
 
-pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
+/* pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+    let level = match PREFERENCES.dbus_level() {
+        DbusLevel::Session => UnitDBusLevel::UserSession,
+        DbusLevel::System => UnitDBusLevel::System,
+        DbusLevel::SystemAndSession => UnitDBusLevel::System,
+    };
 
     match sysdbus::list_units_description_and_state(level) {
         Ok(map) => Ok(map),
@@ -85,6 +91,10 @@ pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, 
             Err(e)
         }
     }
+}
+ */
+pub async fn list_units_description_and_state_async() -> Result<Vec<UnitInfo>, SystemdErrors> {
+    sysdbus::list_all_units().await
 }
 
 /// Takes a unit name as input and attempts to start it
@@ -404,13 +414,12 @@ pub fn generate_file_uri(file_path: &str) -> String {
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-
-    sysdbus::fetch_system_info(level)
+    //TODO chec with Session
+    sysdbus::fetch_system_info(UnitDBusLevel::System)
 }
 
 pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
+    let level = unit.dbus_level();
     let unit_type: UnitType = UnitType::new(&unit.unit_type());
     let object_path = match unit.object_path() {
         Some(s) => s,
@@ -427,7 +436,7 @@ pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String
 pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
+    let level = unit.dbus_level();
     let unit_type: UnitType = UnitType::new(&unit.unit_type());
 
     let object_path = get_unit_path(unit);
@@ -448,7 +457,20 @@ fn get_unit_path(unit: &UnitInfo) -> String {
 
 pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
     let level: DbusLevel = PREFERENCES.dbus_level();
-    sysdbus::fetch_unit(level, unit_primary_name)
+
+    match level {
+        DbusLevel::Session => sysdbus::fetch_unit(UnitDBusLevel::UserSession, unit_primary_name),
+        DbusLevel::System => sysdbus::fetch_unit(UnitDBusLevel::System, unit_primary_name),
+        DbusLevel::SystemAndSession => {
+            let mut result = sysdbus::fetch_unit(UnitDBusLevel::UserSession, unit_primary_name);
+
+            if let Err(e) = result {
+                warn!("Fetch Unit Error {:?}", e);
+                result = sysdbus::fetch_unit(UnitDBusLevel::System, unit_primary_name);
+            }
+            result
+        }
+    }
 }
 
 pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {
@@ -483,9 +505,7 @@ pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
 }
 
 pub fn reload_all_units() -> Result<(), SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-
-    sysdbus::reload_all_units(level)
+    sysdbus::reload_all_units(UnitDBusLevel::System) //I assume system tbd
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -530,16 +550,21 @@ pub fn fetch_unit_dependencies(
     dependency_type: DependencyType,
     plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
-    let level = PREFERENCES.dbus_level();
-
     let object_path = get_unit_path(unit);
 
-    sysdbus::unit_get_dependencies(level, &unit.primary(), &object_path, dependency_type, plain)
+    sysdbus::unit_get_dependencies(
+        unit.dbus_level(),
+        &unit.primary(),
+        &object_path,
+        dependency_type,
+        plain,
+    )
 }
 
-pub fn get_unit_active_state(unit_name: &str) -> Result<ActiveState, SystemdErrors> {
-    let level = PREFERENCES.dbus_level();
-
+pub fn get_unit_active_state(
+    unit_name: &str,
+    level: UnitDBusLevel,
+) -> Result<ActiveState, SystemdErrors> {
     let object_path = sysdbus::unit_dbus_path_from_name(unit_name);
 
     sysdbus::get_unit_active_state(level, &object_path)
@@ -548,7 +573,7 @@ pub fn get_unit_active_state(unit_name: &str) -> Result<ActiveState, SystemdErro
 pub fn retreive_unit_processes(
     unit: &UnitInfo,
 ) -> Result<BTreeMap<String, BTreeSet<UnitProcess>>, SystemdErrors> {
-    let level = PREFERENCES.dbus_level();
+    let level = unit.dbus_level();
 
     let unit_processes = sysdbus::retreive_unit_processes(level, &unit.primary())?;
 

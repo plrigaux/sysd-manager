@@ -28,7 +28,7 @@
                   <object class="GtkSearchBar" id="search_bar"/>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow">
+                  <object class="GtkScrolledWindow" id="scrolled_window">
                     <property name="child">
                       <object class="GtkColumnView" id="units_browser">
                         <property name="model">
