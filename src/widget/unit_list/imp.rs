@@ -1,7 +1,6 @@
 use std::{
     cell::{Cell, OnceCell, RefCell, RefMut},
     rc::Rc,
-    sync::OnceLock,
 };
 
 use gtk::{
@@ -21,9 +20,8 @@ use gtk::{
 };
 
 use log::{debug, error, info, warn};
-use tokio::runtime::Runtime;
 
-use crate::icon_name;
+use crate::{icon_name, systemd::runtime};
 use crate::{
     systemd::{
         self,
@@ -129,15 +127,15 @@ macro_rules! create_column_filter {
 
 macro_rules! column_view_column_set_sorter {
     ($list_item:expr, $col_idx:expr, $sort_func:ident) => {
-        let item = $list_item.item($col_idx);
-
-        let item_out = item.expect("Expect item x to be not None");
-        let downcast_ref = item_out
+        let item_out = $list_item
+            .item($col_idx)
+            .expect("Expect item x to be not None");
+        let column_view = item_out
             .downcast_ref::<gtk::ColumnViewColumn>()
             .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
         let sorter = create_column_filter!($sort_func);
-        downcast_ref.set_sorter(Some(&sorter));
+        column_view.set_sorter(Some(&sorter));
     };
 }
 
@@ -228,11 +226,6 @@ impl UnitListPanelImp {
     }
 }
 
-fn runtime() -> &'static Runtime {
-    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
-    RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
-}
-
 impl UnitListPanelImp {
     pub(super) fn register_selection_change(
         &self,
@@ -293,7 +286,6 @@ impl UnitListPanelImp {
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
-
             let (sender, receiver) = tokio::sync::oneshot::channel();
 
             runtime().spawn(async move {
@@ -302,16 +294,7 @@ impl UnitListPanelImp {
                 sender
                     .send(response)
                     .expect("The channel needs to be open.");
-                warn!("Pizza")
             });
-            /*             let unit_files: Vec<UnitInfo> = gio::spawn_blocking(async move || {
-                match systemd::list_units_description_and_state_async().await {
-                    Ok(map) => map.into_values().collect(),
-                    Err(_e) => vec![],
-                }
-            })
-            .await
-            .expect("Task needs to finish successfully."); */
 
             let unit_files = match receiver.await.expect("Tokio receiver works") {
                 Ok(unit_files) => unit_files,
@@ -320,7 +303,7 @@ impl UnitListPanelImp {
                     return;
                 }
             };
-
+            warn!("After receiver");
             let n_items = list_store.n_items();
             list_store.remove_all();
 
@@ -328,6 +311,10 @@ impl UnitListPanelImp {
                 list_store.append(&value);
                 //list_store.find(item)
             }
+
+            let list_model: gio::ListModel = units_browser.columns();
+
+            //unit_list_sort_list_model.set_incremental(incremental);
 
             info!("Unit list refreshed! list size {}", list_store.n_items());
 
@@ -369,6 +356,14 @@ impl UnitListPanelImp {
             if n_items > 0 {
                 focus_on_row(&unit_list, &units_browser);
             }
+
+            //need to sort after selection
+            let column_object = list_model.item(0).expect("Expect item x to be not None");
+            let column_view = column_object
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+            units_browser.sort_by_column(Some(column_view), gtk::SortType::Ascending);
         });
     }
 

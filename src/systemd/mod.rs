@@ -11,6 +11,7 @@ use std::{
     fs::{self, File},
     io::{ErrorKind, Read, Write},
     process::{Command, Stdio},
+    sync::OnceLock,
 };
 
 use data::{UnitInfo, UnitProcess};
@@ -22,20 +23,19 @@ use gtk::glib::GString;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 use sysdbus::DisEnAbleUnitFiles;
+use tokio::runtime::Runtime;
 use zvariant::OwnedValue;
 
 use crate::widget::preferences::data::{DbusLevel, PREFERENCES};
 
 pub mod enums;
 
-//const SYSDMNG_DIST_MODE: &str = "SYSDMNG_DIST_MODE";
-//const FLATPACK: &str = "flatpak";
 const FLATPAK_SPAWN: &str = "flatpak-spawn";
 
-/* static IS_FLATPAK_MODE: LazyLock<bool> = LazyLock::new(|| match env::var(SYSDMNG_DIST_MODE) {
-    Ok(val) => FLATPACK.eq(&val),
-    Err(_) => false,
-}); */
+pub fn runtime() -> &'static Runtime {
+    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+    RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
+}
 
 #[cfg(feature = "flatpak")]
 const IS_FLATPAK_MODE: bool = true;
