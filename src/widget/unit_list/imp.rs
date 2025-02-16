@@ -322,7 +322,12 @@ impl UnitListPanelImp {
             let sort_func = |o1: &Object, o2: &Object| {
                 let u1 = o1.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
                 let u2 = o2.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
-                u1.primary().cmp(&u2.primary())
+                let ordering = u1.primary().cmp(&u2.primary());
+                if ordering == core::cmp::Ordering::Equal {
+                    u1.dbus_level().cmp(&u2.dbus_level())
+                } else {
+                    ordering
+                }
             };
 
             list_store.sort(sort_func);
