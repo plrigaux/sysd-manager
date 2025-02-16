@@ -109,7 +109,7 @@ async fn get_connection_async(level: UnitDBusLevel) -> Result<zbus::Connection, 
 async fn list_units_description_conn_async(
     connection: Arc<zbus::Connection>,
     dbus_level: UnitDBusLevel,
-) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
     let message = connection
         .call_method(
             Some(DESTINATION_SYSTEMD),
@@ -123,10 +123,10 @@ async fn list_units_description_conn_async(
     fill_list_units_description(dbus_level, message)
 }
 
-fn list_units_description(
+/* fn list_units_description(
     connection: &Connection,
     dbus_level: UnitDBusLevel,
-) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
@@ -137,21 +137,21 @@ fn list_units_description(
 
     fill_list_units_description(dbus_level, message)
 }
-
+ */
 fn fill_list_units_description(
     dbus_level: UnitDBusLevel,
     message: Message,
-) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
+) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
     let body = message.body();
 
     let array: Vec<LUnit> = body.deserialize()?;
 
-    let mut map: BTreeMap<String, UnitInfo> = BTreeMap::new();
+    let mut map: HashMap<String, UnitInfo> = HashMap::new();
 
     for listed_unit in array.iter() {
         let unit = UnitInfo::from_listed_unit(listed_unit, dbus_level);
 
-        map.insert(listed_unit.primary_unit_name.to_ascii_lowercase(), unit);
+        map.insert(unit.primary(), unit);
     }
 
     Ok(map)
@@ -177,7 +177,7 @@ pub fn get_unit_file_state_path(
 
     Ok(EnablementStatus::from_str(enablement_status))
 }
-
+/*
 #[allow(dead_code)]
 pub fn list_units_description_and_state(
     level: UnitDBusLevel,
@@ -209,10 +209,10 @@ pub fn list_units_description_and_state(
 
     Ok(units_map)
 }
-
+ */
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
-) -> Result<Vec<UnitInfo>, SystemdErrors> {
+) -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
     let connection = get_connection_async(level).await?;
     let conn = Arc::new(connection);
     let t1 = tokio::spawn(list_units_description_conn_async(conn.clone(), level));
@@ -220,10 +220,11 @@ pub async fn list_units_description_and_state_async(
 
     let joined = tokio::join!(t1, t2);
 
-    let mut units_map = joined.0??;
-    let mut unit_files = joined.1??;
+    let units_map = joined.0??;
+    let unit_files = joined.1??;
 
-    for unit_file in unit_files.drain(..) {
+    let mut units_from_file = Vec::with_capacity(unit_files.len());
+    for unit_file in unit_files.into_iter() {
         match units_map.get(&unit_file.full_name.to_ascii_lowercase()) {
             Some(unit) => {
                 unit.update_from_unit_file(unit_file);
@@ -237,21 +238,15 @@ pub async fn list_units_description_and_state_async(
 
                 let unit = UnitInfo::from_unit_file(unit_file, level);
 
-                units_map.insert(unit.primary().to_ascii_lowercase(), unit);
+                units_from_file.push(unit);
             }
         };
     }
 
-    let mut out: Vec<UnitInfo> = Vec::with_capacity(units_map.len());
-
-    while let Some((_key, unit)) = units_map.pop_first() {
-        out.push(unit);
-    }
-
-    Ok(out)
+    Ok((units_map, units_from_file))
 }
 
-pub async fn list_all_units() -> Result<Vec<UnitInfo>, SystemdErrors> {
+pub async fn list_all_units() -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
     match PREFERENCES.dbus_level() {
         DbusLevel::Session => {
             list_units_description_and_state_async(UnitDBusLevel::UserSession).await
@@ -260,9 +255,9 @@ pub async fn list_all_units() -> Result<Vec<UnitInfo>, SystemdErrors> {
         DbusLevel::SystemAndSession => {
             let mut vec1 =
                 list_units_description_and_state_async(UnitDBusLevel::UserSession).await?;
-            let vec2: Vec<UnitInfo> =
-                list_units_description_and_state_async(UnitDBusLevel::System).await?;
-            vec1.extend(vec2);
+            let vec2 = list_units_description_and_state_async(UnitDBusLevel::System).await?;
+            vec1.1.extend(vec2.1);
+            vec1.0.extend(vec2.0);
             Ok(vec1)
         }
     }
@@ -1118,7 +1113,7 @@ mod tests {
         debug!("{:#?}", serv);
         Ok(())
     }
-
+    /*
     #[ignore = "need a connection to a service"]
     #[test]
     fn test_list_units() -> Result<(), SystemdErrors> {
@@ -1130,7 +1125,7 @@ mod tests {
         let serv = units.get(TEST_SERVICE);
         debug!("{:#?}", serv);
         Ok(())
-    }
+    } */
 
     #[ignore = "need a connection to a service"]
     #[test]
@@ -1430,7 +1425,7 @@ mod tests {
         Ok(())
     }
 
-    #[ignore = "need a connection to a service"]
+    /*    #[ignore = "need a connection to a service"]
     #[test]
     fn test_get_list_block() -> Result<(), SystemdErrors> {
         use std::time::Instant;
@@ -1447,5 +1442,5 @@ mod tests {
                println!("{:?}", b);
         */
         Ok(())
-    }
+    } */
 }

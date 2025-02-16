@@ -110,18 +110,16 @@ macro_rules! factory_bind {
 
 macro_rules! create_column_filter {
     ($func:ident) => {{
-        let col_sorter = gtk::CustomSorter::new(move |obj1, obj2| {
-            let Some(unit1) = obj1.downcast_ref::<UnitInfo>() else {
-                panic!("some wrong downcast_ref {:?}", obj1);
-            };
-
-            let Some(unit2) = obj2.downcast_ref::<UnitInfo>() else {
-                panic!("some wrong downcast_ref {:?}", obj2);
-            };
+        gtk::CustomSorter::new(move |obj1, obj2| {
+            let unit1 = obj1
+                .downcast_ref::<UnitInfo>()
+                .expect("Needs to be UnitInfo");
+            let unit2 = obj2
+                .downcast_ref::<UnitInfo>()
+                .expect("Needs to be UnitInfo");
 
             unit1.$func().cmp(&unit2.$func()).into()
-        });
-        col_sorter
+        })
     }};
 }
 
@@ -237,7 +235,10 @@ impl UnitListPanelImp {
 
         self.single_selection
             .connect_selected_item_notify(move |single_selection| {
-                info!("connect_selected_notify ");
+                info!(
+                    "connect_selected_notify idx {}",
+                    single_selection.selected()
+                );
                 let Some(object) = single_selection.selected_item() else {
                     warn!("No object selected");
                     return;
@@ -296,29 +297,45 @@ impl UnitListPanelImp {
                     .expect("The channel needs to be open.");
             });
 
-            let unit_files = match receiver.await.expect("Tokio receiver works") {
+            let (unit_desc, unit_from_files) = match receiver.await.expect("Tokio receiver works") {
                 Ok(unit_files) => unit_files,
                 Err(err) => {
                     warn!("Fail fetch list {:?}", err);
                     return;
                 }
             };
-            warn!("After receiver");
+
             let n_items = list_store.n_items();
             list_store.remove_all();
 
-            for value in unit_files {
-                list_store.append(&value);
-                //list_store.find(item)
+            for item in unit_desc.values() {
+                list_store.append(item);
+                //list_store.insert_sorted(item, sort_func);
             }
 
-            let list_model: gio::ListModel = units_browser.columns();
+            for item in unit_from_files.iter() {
+                list_store.append(item);
+                //list_store.insert_sorted(item, sort_func);
+            }
 
-            //unit_list_sort_list_model.set_incremental(incremental);
+            // The sort function needs to be the same of the  first column sorter
+            let sort_func = |o1: &Object, o2: &Object| {
+                let u1 = o1.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
+                let u2 = o2.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
+                u1.primary().cmp(&u2.primary())
+            };
+
+            list_store.sort(sort_func);
+
+            //need to sort after selection
+            /*             let list_model: gio::ListModel = units_browser.columns();
+            let column_object = list_model.item(0).expect("Expect item x to be not None");
+            let column_view = column_object
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+            units_browser.sort_by_column(Some(column_view), gtk::SortType::Ascending); */
 
             info!("Unit list refreshed! list size {}", list_store.n_items());
-
-            panel_stack.set_visible_child_name("unit_list");
 
             let mut force_selected_index = GTK_INVALID_LIST_POSITION;
 
@@ -356,14 +373,7 @@ impl UnitListPanelImp {
             if n_items > 0 {
                 focus_on_row(&unit_list, &units_browser);
             }
-
-            //need to sort after selection
-            let column_object = list_model.item(0).expect("Expect item x to be not None");
-            let column_view = column_object
-                .downcast_ref::<gtk::ColumnViewColumn>()
-                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
-
-            units_browser.sort_by_column(Some(column_view), gtk::SortType::Ascending);
+            panel_stack.set_visible_child_name("unit_list");
         });
     }
 
@@ -488,14 +498,6 @@ impl ObjectImpl for UnitListPanelImp {
 
         let _ = self.search_entry.set(search_entry);
 
-        /*       self.units_browser
-            .connect_height_request_notify(|a| log::error!("connect_height_request_notify"));
-
-        self.units_browser
-            .connect_row_factory_notify(|a| log::error!("connect_row_factory_notify"));
-
-        self.scrolled_window
-            .connect_vadjustment_notify(|f| log::error!("connect_vadjustment_notify")); */
         {
             let unit_list = self.obj().clone();
             let units_browser = self.units_browser.clone();
@@ -512,9 +514,11 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
     let force_selected_index = unit_list.force_selected_index();
     debug!("vadjustment changed");
     unit_list.set_force_selected_index(None);
+
     let Some(force_selected_index) = force_selected_index else {
         return;
     };
+
     if force_selected_index == GTK_INVALID_LIST_POSITION {
         return;
     }

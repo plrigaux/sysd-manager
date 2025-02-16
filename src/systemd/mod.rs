@@ -93,7 +93,8 @@ pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, S
     }
 }
  */
-pub async fn list_units_description_and_state_async() -> Result<Vec<UnitInfo>, SystemdErrors> {
+pub async fn list_units_description_and_state_async(
+) -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
     sysdbus::list_all_units().await
 }
 
