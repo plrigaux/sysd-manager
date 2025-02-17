@@ -74,10 +74,12 @@ For now new features are planned to be added, such as:
 ### Arch
 
 A Arch package has been made for __SysD Manager__. It can be found at  https://aur.archlinux.org/packages/sysd-manager
-
+```
+yay -S sysd-manager
+```
 ### Flathub
 
-__SysD Manager__ has a Flathub version. Search it on Gnome software or drirectly at https://flathub.org/apps/io.github.plrigaux.sysd-manager
+__SysD Manager__ has a Flathub version. Search it on Gnome software or directly at https://flathub.org/apps/io.github.plrigaux.sysd-manager
 
 
 ### APT
