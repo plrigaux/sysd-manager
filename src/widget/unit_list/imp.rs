@@ -108,8 +108,24 @@ macro_rules! factory_bind {
     }};
 }
 
+macro_rules! compare_units {
+    ($unit1:expr, $unit2:expr, $func:ident) => {{
+        $unit1.$func().cmp(&$unit2.$func()).into()
+    }};
+
+    ($unit1:expr, $unit2:expr, $func:ident, $($funcx:ident),+) => {{
+
+        let ordering = $unit1.$func().cmp(&$unit2.$func());
+        if ordering != core::cmp::Ordering::Equal {
+            return ordering.into();
+        }
+
+        compare_units!($unit1, $unit2, $($funcx),+)
+    }};
+}
+
 macro_rules! create_column_filter {
-    ($func:ident) => {{
+    ($($func:ident),+) => {{
         gtk::CustomSorter::new(move |obj1, obj2| {
             let unit1 = obj1
                 .downcast_ref::<UnitInfo>()
@@ -118,13 +134,13 @@ macro_rules! create_column_filter {
                 .downcast_ref::<UnitInfo>()
                 .expect("Needs to be UnitInfo");
 
-            unit1.$func().cmp(&unit2.$func()).into()
+            compare_units!(unit1, unit2, $($func),+)
         })
     }};
 }
 
 macro_rules! column_view_column_set_sorter {
-    ($list_item:expr, $col_idx:expr, $sort_func:ident) => {
+    ($list_item:expr, $col_idx:expr, $($func:ident),+) => {
         let item_out = $list_item
             .item($col_idx)
             .expect("Expect item x to be not None");
@@ -132,7 +148,7 @@ macro_rules! column_view_column_set_sorter {
             .downcast_ref::<gtk::ColumnViewColumn>()
             .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
-        let sorter = create_column_filter!($sort_func);
+        let sorter = create_column_filter!($($func),+);
         column_view.set_sorter(Some(&sorter));
     };
 }
@@ -147,6 +163,16 @@ impl UnitListPanelImp {
     #[template_callback]
     fn col_unit_name_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
         factory_bind!(item_obj, display_name);
+
+        let (child, entry) = factory_bind_pre!(item_obj);
+        let v = entry.display_name();
+        child.set_text(Some(&v));
+
+        let bus = match entry.dbus_level() {
+            systemd::enums::UnitDBusLevel::System => "on system bus",
+            systemd::enums::UnitDBusLevel::UserSession => "on user bus",
+        };
+        child.set_tooltip_text(Some(bus));
     }
 
     #[template_callback]
@@ -322,12 +348,8 @@ impl UnitListPanelImp {
             let sort_func = |o1: &Object, o2: &Object| {
                 let u1 = o1.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
                 let u2 = o2.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
-                let ordering = u1.primary().cmp(&u2.primary());
-                if ordering == core::cmp::Ordering::Equal {
-                    u1.dbus_level().cmp(&u2.dbus_level())
-                } else {
-                    ordering
-                }
+
+                compare_units!(u1, u2, primary, dbus_level)
             };
 
             list_store.sort(sort_func);
@@ -489,11 +511,10 @@ impl ObjectImpl for UnitListPanelImp {
 
         let list_model: gio::ListModel = self.units_browser.columns();
 
-        column_view_column_set_sorter!(list_model, 0, primary);
-        column_view_column_set_sorter!(list_model, 1, dbus_level);
-        column_view_column_set_sorter!(list_model, 2, unit_type);
-        column_view_column_set_sorter!(list_model, 3, enable_status);
-        column_view_column_set_sorter!(list_model, 4, active_state);
+        column_view_column_set_sorter!(list_model, 0, primary, dbus_level);
+        column_view_column_set_sorter!(list_model, 1, unit_type);
+        column_view_column_set_sorter!(list_model, 2, enable_status);
+        column_view_column_set_sorter!(list_model, 3, active_state);
 
         let sorter = self.units_browser.sorter();
 
