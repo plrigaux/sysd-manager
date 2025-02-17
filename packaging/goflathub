@@ -405,8 +405,8 @@ def deploy(from_git: bool):
 
     generate(FLATHUB_DIR)
     
-    bcommon.cmd_run(["git", "config", "pull.rebase", "true"], cwd=FLATHUB_DIR)
-    bcommon.cmd_run(["git", "pull"], cwd=FLATHUB_DIR)
+    bcommon.cmd_run(["git", "config", "pull.rebase", "true"], cwd=FLATHUB_DIR, on_fail_exit=False)
+    bcommon.cmd_run(["git", "pull"], cwd=FLATHUB_DIR, on_fail_exit=False)
 
     set_manifest(True, FLATHUB_DIR)
 

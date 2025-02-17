@@ -10,6 +10,7 @@ def change_log():
 
 bc.exit_if_dirty()
 
+change_log()
 #check git changes
 if (bc.cmd_run("[[ -z \"$(git status -s)\" ]]", shell=True, on_fail_exit=False) != 0):   
     bc.cmd_run(["git", "add", "CHANGELOG.md"], on_fail_exit=False)
