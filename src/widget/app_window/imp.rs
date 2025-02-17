@@ -132,8 +132,6 @@ impl AppWindowImpl {
                 level, level_num, selected
             );
 
-            let app_window = self.obj().clone();
-
             self.system_session_dropdown
                 .connect_selected_item_notify(move |dropdown| {
                     let idx = dropdown.selected();
@@ -148,7 +146,6 @@ impl AppWindowImpl {
                     PREFERENCES.save_dbus_level(&settings);
 
                     unit_list_panel.fill_store();
-                    app_window.set_unit(None);
                 });
         }
     }
