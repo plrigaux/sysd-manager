@@ -336,12 +336,10 @@ impl UnitListPanelImp {
 
             for item in unit_desc.values() {
                 list_store.append(item);
-                //list_store.insert_sorted(item, sort_func);
             }
 
             for item in unit_from_files.iter() {
                 list_store.append(item);
-                //list_store.insert_sorted(item, sort_func);
             }
 
             // The sort function needs to be the same of the  first column sorter
@@ -401,6 +399,15 @@ impl UnitListPanelImp {
                 focus_on_row(&unit_list, &units_browser);
             }
             panel_stack.set_visible_child_name("unit_list");
+
+            glib::spawn_future_local(async move {
+                runtime().spawn(async move {
+                    let response = systemd::complete_unit_information(unit_from_files).await;
+                    if let Err(error) = response {
+                        warn!("Complete Unit Information Error: {:?}", error);
+                    }
+                });
+            });
         });
     }
 

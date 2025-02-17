@@ -98,6 +98,10 @@ pub async fn list_units_description_and_state_async(
     sysdbus::list_all_units().await
 }
 
+pub async fn complete_unit_information(units: Vec<UnitInfo>) -> Result<(), SystemdErrors> {
+    sysdbus::complete_unit_information(units).await
+}
+
 /// Takes a unit name as input and attempts to start it
 pub fn start_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
     sysdbus::start_unit(unit.dbus_level(), &unit.primary(), mode)

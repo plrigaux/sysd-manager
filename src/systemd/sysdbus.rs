@@ -9,11 +9,12 @@ use std::{
 use log::{debug, info, trace, warn};
 
 use serde::Deserialize;
+
 use zbus::{
     blocking::{fdo, Connection, MessageIterator, Proxy},
     message::Flags,
     names::InterfaceName,
-    Message,
+    proxy, Message,
 };
 
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
@@ -50,6 +51,16 @@ const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFiles";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
+
+#[proxy(
+    interface = "org.zbus.MyGreeter1",
+    default_service = "org.zbus.MyGreeter",
+    default_path = "/org/zbus/MyGreeter"
+)]
+trait HollyShit {
+    #[zbus(property)]
+    fn description(&self) -> Result<String, zbus::Error>;
+}
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
 struct LUnitFiles<'a> {
@@ -123,21 +134,6 @@ async fn list_units_description_conn_async(
     fill_list_units_description(dbus_level, message)
 }
 
-/* fn list_units_description(
-    connection: &Connection,
-    dbus_level: UnitDBusLevel,
-) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        METHOD_LIST_UNIT,
-        &(),
-    )?;
-
-    fill_list_units_description(dbus_level, message)
-}
- */
 fn fill_list_units_description(
     dbus_level: UnitDBusLevel,
     message: Message,
@@ -177,39 +173,7 @@ pub fn get_unit_file_state_path(
 
     Ok(EnablementStatus::from_str(enablement_status))
 }
-/*
-#[allow(dead_code)]
-pub fn list_units_description_and_state(
-    level: UnitDBusLevel,
-) -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let connection = get_connection(level)?;
 
-    let mut units_map = list_units_description(&connection, level)?;
-
-    let mut unit_files = list_unit_files(&connection)?;
-
-    for unit_file in unit_files.drain(..) {
-        match units_map.get_mut(&unit_file.full_name.to_ascii_lowercase()) {
-            Some(unit_info) => {
-                unit_info.update_from_unit_file(unit_file);
-            }
-            None => {
-                debug!(
-                    "Unit \"{}\" status \"{}\" not loaded!",
-                    unit_file.full_name,
-                    unit_file.status_code.to_string()
-                );
-
-                let unit = UnitInfo::from_unit_file(unit_file, level);
-
-                units_map.insert(unit.primary().to_ascii_lowercase(), unit);
-            }
-        }
-    }
-
-    Ok(units_map)
-}
- */
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
 ) -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
@@ -263,11 +227,102 @@ pub async fn list_all_units() -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo
     }
 }
 
-/* fn fill_unit_file(unit_info: &mut UnitInfo, unit_file: &SystemdUnit) {
-    unit_info.set_file_path(Some(unit_file.path.clone()));
-    let status_code: u8 = unit_file.status_code.into();
-    unit_info.set_enable_status(status_code);
-} */
+pub async fn complete_unit_information(units: Vec<UnitInfo>) -> Result<(), SystemdErrors> {
+    let mut connection_system = None;
+    let mut connection_session = None;
+    for unit in units {
+        let level = unit.dbus_level();
+
+        let connection = match level {
+            UnitDBusLevel::System => {
+                if let Some(conn) = &connection_system {
+                    conn
+                } else {
+                    let conn = get_connection_async(level).await?;
+                    connection_system.get_or_insert(conn) as &zbus::Connection
+                }
+            }
+            UnitDBusLevel::UserSession => {
+                if let Some(conn) = &connection_session {
+                    conn
+                } else {
+                    let conn = get_connection_async(level).await?;
+                    connection_session.get_or_insert(conn) as &zbus::Connection
+                }
+            }
+        };
+
+        let result = complete_unit_info(&unit, connection).await;
+
+        if let Err(error) = result {
+            warn!("Complette unit \"{}\" error {:?}", unit.primary(), error);
+        }
+    }
+    Ok(())
+}
+
+#[proxy(
+    interface = "org.freedesktop.systemd1.Unit",
+    default_service = "org.freedesktop.systemd1"
+)]
+trait ZUnitInfo {
+    #[zbus(property)]
+    fn id(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn description(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn load_state(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn active_state(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn sub_state(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn following(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn fragment_path(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn unit_file_state(&self) -> Result<String, zbus::Error>;
+}
+
+async fn complete_unit_info(
+    unit: &UnitInfo,
+    connection: &zbus::Connection,
+) -> Result<(), SystemdErrors> {
+    //warn!("Complete unit {}", unit.primary());
+    let object_path = unit.object_path();
+
+    let object_path = match object_path {
+        Some(o) => o,
+        None => {
+            let object_path: String = unit_dbus_path_from_name(&unit.primary());
+            unit.set_object_path(object_path.clone());
+            object_path
+        }
+    };
+
+    let unit_info_proxy = ZUnitInfoProxy::builder(connection)
+        .path(object_path)?
+        .build()
+        .await?;
+
+    if let Ok(description) = unit_info_proxy.description().await {
+        unit.set_description(description);
+    }
+
+    if let Ok(active_state) = unit_info_proxy.active_state().await {
+        let active_state: ActiveState = active_state.as_str().into();
+        unit.set_active_state(active_state);
+    }
+
+    Ok(())
+}
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 #[allow(dead_code)]
@@ -796,38 +851,18 @@ pub fn fetch_unit(
     let object_path = unit_dbus_path_from_name(unit_primary_name);
 
     debug!("path {object_path}");
-    let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
-        fdo::PropertiesProxy::builder(&connection)
-            .destination(DESTINATION_SYSTEMD)?
-            .path(object_path.clone())?
-            .build()?;
 
-    let interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+    let properties_proxy = ZUnitInfoProxyBlocking::builder(&connection)
+        .destination(DESTINATION_SYSTEMD)?
+        .path(object_path.clone())?
+        .build()?;
 
-    let primary = properties_proxy.get(interface_name.clone(), "Id")?;
-    warn!("Id {:?}", primary);
-    let primary: Str<'_> = primary.try_into()?;
-
-    let description: Str<'_> = properties_proxy
-        .get(interface_name.clone(), "Description")?
-        .try_into()?;
-
-    let load_state: Str<'_> = properties_proxy
-        .get(interface_name.clone(), "LoadState")?
-        .try_into()?;
-
-    let active_state_str: Str<'_> = properties_proxy
-        .get(interface_name.clone(), "ActiveState")?
-        .try_into()?;
-
-    //let active_state: ActiveState = active_state_str.as_str().into();
-
-    let sub_state: Str<'_> = properties_proxy
-        .get(interface_name.clone(), "SubState")?
-        .try_into()?;
-    let followed_unit: Str<'_> = properties_proxy
-        .get(interface_name.clone(), "Following")?
-        .try_into()?;
+    let primary = properties_proxy.id()?;
+    let description = properties_proxy.description().unwrap_or_default();
+    let load_state = properties_proxy.load_state().unwrap_or_default();
+    let active_state_str = properties_proxy.active_state().unwrap_or_default();
+    let sub_state = properties_proxy.sub_state().unwrap_or_default();
+    let followed_unit = properties_proxy.following().unwrap_or_default();
 
     let listed_unit = LUnit {
         primary_unit_name: &primary,
@@ -844,24 +879,11 @@ pub fn fetch_unit(
 
     let unit = UnitInfo::from_listed_unit(&listed_unit, level);
 
-    let fragment_path = match properties_proxy.get(interface_name.clone(), "FragmentPath") {
-        Ok(value) => match <OwnedValue as TryInto<Str<'_>>>::try_into(value) {
-            Ok(fp) => Some(fp.to_string()),
-            Err(e) => {
-                warn!("fragment_path {:?}", e);
-                None
-            }
-        },
-        Err(e) => {
-            warn!("fragment_path {:?}", e);
-            None
-        }
-    };
-    unit.set_file_path(fragment_path);
+    if let Ok(fragment_path) = properties_proxy.fragment_path() {
+        unit.set_file_path(Some(fragment_path));
+    }
 
-    let unit_file_state: Str<'_> = properties_proxy
-        .get(interface_name.clone(), "UnitFileState")?
-        .try_into()?;
+    let unit_file_state = properties_proxy.unit_file_state().unwrap_or_default();
 
     let status: EnablementStatus = unit_file_state.as_str().into();
     unit.set_enable_status(status as u8);

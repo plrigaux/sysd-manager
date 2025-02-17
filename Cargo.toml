@@ -42,9 +42,10 @@ log = "0.4"
 libc = "0.2"
 env_logger = "0.11"
 dotenv = "0.15"
-strum = { version = "0.26", features = ["derive"] }
+strum = { version = "0.27", features = ["derive"] }
 tokio = { version = "1.43", features = ["full"] }
 zbus = "5.5"
+zbus_macros =  "5.5" 
 zvariant = "5.4"
 serde = "1.0"
 chrono = "0.4.39"
