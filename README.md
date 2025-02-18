@@ -2,6 +2,11 @@
 
 This application exists to easily allow user to manage their **systemd units** via a GUI. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs. 
 
+## Love SysD Manager?
+Please consider donating to sustain our activities
+[:heart: Sponsor](https://github.com/sponsors/plrigaux)
+![GitHub Sponsors](https://img.shields.io/github/sponsors/plrigaux?style=for-the-badge)
+
 ## Disclaimer
 This application is not intended to a profesional system administrator audience. 
 
