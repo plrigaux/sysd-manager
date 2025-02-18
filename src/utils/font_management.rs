@@ -2,6 +2,7 @@ use std::sync::{LazyLock, RwLock};
 
 use gtk::{
     ffi::GTK_STYLE_PROVIDER_PRIORITY_APPLICATION,
+    gdk,
     pango::{self, FontDescription},
     prelude::WidgetExt,
 };
@@ -81,19 +82,27 @@ pub fn set_text_view_font(
     new_provider: Option<&gtk::CssProvider>,
     text_view: &gtk::TextView,
 ) {
+    set_text_view_font_display(old_provider, new_provider, &text_view.display())
+}
+
+pub fn set_text_view_font_display(
+    old_provider: Option<&gtk::CssProvider>,
+    new_provider: Option<&gtk::CssProvider>,
+    display: &gdk::Display,
+) {
     if let Some(old_provider) = old_provider {
         info!("rem old font provider");
         let provider = gtk::CssProvider::new();
         let css = String::from("textview {}");
         provider.load_from_string(&css);
 
-        gtk::style_context_remove_provider_for_display(&text_view.display(), old_provider);
+        gtk::style_context_remove_provider_for_display(display, old_provider);
     };
 
     if let Some(new_provider) = new_provider {
         info!("add new font provider");
         gtk::style_context_add_provider_for_display(
-            &text_view.display(),
+            display,
             new_provider,
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION as u32,
         );

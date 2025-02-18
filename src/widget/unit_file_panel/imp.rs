@@ -16,15 +16,16 @@ use gtk::{
 };
 
 use log::{debug, info, warn};
+use sourceview5::prelude::*;
 
 use crate::{
     consts::SUGGESTED_ACTION,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
-    utils::font_management::set_text_view_font,
+    utils::font_management::set_text_view_font_display,
     widget::{app_window::AppWindow, preferences::data::PREFERENCES, InterPanelAction},
 };
 
-use super::{dosini, flatpak};
+use super::flatpak;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -33,8 +34,14 @@ pub struct UnitFilePanelImp {
     #[template_child]
     save_button: TemplateChild<gtk::Button>,
 
+    /*    #[template_child]
+    unit_file_text: TemplateChild<gtk::TextView>, */
+    unit_file_text: OnceCell<sourceview5::View>,
+
+    sourceview5_buffer: OnceCell<sourceview5::Buffer>,
+
     #[template_child]
-    unit_file_text: TemplateChild<gtk::TextView>,
+    unit_file_scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
     #[template_child]
     file_link: TemplateChild<gtk::LinkButton>,
@@ -128,7 +135,11 @@ impl UnitFilePanelImp {
             return;
         };
 
-        let buffer = self.unit_file_text.buffer();
+        let buffer = self
+            .unit_file_text
+            .get()
+            .expect("expect sourceview5::View")
+            .buffer();
         let start = buffer.start_iter();
         let end = buffer.end_iter();
         let text = buffer.text(&start, &end, true);
@@ -175,26 +186,31 @@ impl UnitFilePanelImp {
     }
 
     fn set_text(&self, file_content: &str) {
-        let in_color = PREFERENCES.unit_file_colors();
+        let buf = self
+            .unit_file_text
+            .get()
+            .expect("expect sourceview5::View")
+            .buffer();
 
-        let buf = self.unit_file_text.buffer();
-        if in_color {
-            buf.set_text("");
-
-            let is_dark = self.is_dark.get();
-            let mut start_iter = buf.start_iter();
-
-            let text = dosini::convert_to_mackup(file_content, is_dark);
-            buf.insert_markup(&mut start_iter, &text);
-        } else {
-            buf.set_text(file_content);
-        }
+        buf.set_text(""); //To clear current
+        buf.set_text(file_content);
 
         self.save_button.remove_css_class(SUGGESTED_ACTION);
     }
 
     pub(crate) fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
+
+        let scheme_id = if is_dark { "Adwaita-dark" } else { "Adwaita" };
+
+        let Some(buffer) = self.sourceview5_buffer.get() else {
+            warn!("No text view buffer");
+            return;
+        };
+
+        if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
+            buffer.set_style_scheme(Some(scheme));
+        }
     }
 
     pub(crate) fn register(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
@@ -221,7 +237,9 @@ impl UnitFilePanelImp {
     pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
         match *action {
             InterPanelAction::FontProvider(old, new) => {
-                set_text_view_font(old, new, &self.unit_file_text)
+                let view = self.unit_file_text.get().expect("expect sourceview5::View");
+
+                set_text_view_font_display(old, new, &view.display())
             }
             InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
             InterPanelAction::PanelVisible(visible) => self.set_visible_on_page(visible),
@@ -252,13 +270,34 @@ impl ObjectSubclass for UnitFilePanelImp {
 impl ObjectImpl for UnitFilePanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let buffer = sourceview5::Buffer::new(None);
+
+        if PREFERENCES.unit_file_colors() {
+            if let Some(ref language) = sourceview5::LanguageManager::new().language("ini") {
+                buffer.set_language(Some(language));
+            }
+        }
+
+        let view = sourceview5::View::with_buffer(&buffer);
+        view.set_show_line_numbers(true);
+        view.set_highlight_current_line(true);
+        view.set_tab_width(4);
+        view.set_monospace(true);
+        view.set_wrap_mode(gtk::WrapMode::WordChar);
+
+        self.unit_file_scrolled_window.set_child(Some(&view));
         {
-            let buffer = self.unit_file_text.buffer();
+            let buffer = view.buffer();
+
             let save_button = self.save_button.clone();
             buffer.connect_begin_user_action(move |_buf| {
                 save_button.add_css_class(SUGGESTED_ACTION);
             });
         }
+
+        let _ = self.sourceview5_buffer.set(buffer);
+        let _ = self.unit_file_text.set(view);
     }
 }
 impl WidgetImpl for UnitFilePanelImp {}

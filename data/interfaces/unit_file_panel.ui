@@ -8,17 +8,8 @@
   <template class="UnitFilePanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkScrolledWindow">
+      <object class="GtkScrolledWindow" id="unit_file_scrolled_window">
         <property name="vexpand">True</property>
-        <child>
-          <object class="GtkTextView" id="unit_file_text">
-            <property name="hexpand">True</property>
-            <property name="left-margin">5</property>
-            <property name="monospace">True</property>
-            <property name="right-margin">5</property>
-            <property name="wrap-mode">word-char</property>
-          </object>
-        </child>
       </object>
     </child>
     <child>
