@@ -224,6 +224,7 @@ impl UnitListPanelImp {
 
         let icon_name = state.icon_name();
         child.set_icon_name(icon_name);
+        child.set_tooltip_text(Some(state.as_str()));
         entry
             .bind_property("active_state_num", &child, "icon-name")
             .transform_to(|_, state: u8| {
