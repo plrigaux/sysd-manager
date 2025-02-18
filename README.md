@@ -3,7 +3,7 @@
 This application exists to easily allow user to manage their **systemd units** via a GUI. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs. 
 
 ## Disclaimer
-This application is not intended to professional system administrator audience. It has the purpose to expose unit management functionalities to less experimented users.
+This application is not intended to professional system administrator audience. It has the purpose to expose unit management functionalities to less experienced users.
 
 If you consider yourself an administrator, please refer to `systemctl` and `journalctl` documentation.
 
@@ -14,8 +14,8 @@ Please consider donating to sustain our activities
 
 ## Features
 
-Here are __Sysd Manager__ main features :
-* Unit file browser with serach and filtering
+Here are __SysD Manager__ main features:
+* Unit file browser with search and filtering
 * Enable or disable a unit
 * Activate or deactivate a unit
 * View and modify unit file
@@ -27,7 +27,7 @@ Here are __Sysd Manager__ main features :
 * Select a unit at program opening by passing a unit name as cli argument (see --help)
 
 ## Upcoming features
-Here features that may come one day
+Here are features that may come one day:
 * clean unit like `systemctl clean`
 * multi languages
 * ...
@@ -36,7 +36,7 @@ Here features that may come one day
 
 ## Changelogs
 
-All notable changes to this project are documented in [CHANGELOG](CHANGELOG.md) .
+All notable changes to this project are documented in [CHANGELOG](CHANGELOG.md).
 
 
 ## Requirement
@@ -83,7 +83,7 @@ For now new features are planned to be added, such as:
 
 ### Arch
 
-A Arch package has been made for __SysD Manager__. It can be found at  https://aur.archlinux.org/packages/sysd-manager
+A Arch package has been made for __SysD Manager__. It can be found at https://aur.archlinux.org/packages/sysd-manager
 ```
 yay -S sysd-manager
 ```
@@ -93,12 +93,12 @@ __SysD Manager__ has a Flathub version. Search it on Gnome software or directly 
 
 
 ### APT
-*Later waiting for a contributor or when I will reinstall e Debian like distro*
+*Later waiting for a contributor or when I will reinstall a Debian like distro*
 
 
 ## Testing
 
-If you want to test **Sysd Manager** without risking to shutdown important services, you can do it with **tiny_daemon**. **tiny_daemon** is a service provided with the project as a simple web server that you can safely play with.
+If you want to test **SysD Manager** without risking to shutdown important services, you can do it with **tiny_daemon**. **tiny_daemon** is a service provided with the project as a simple web server that you can safely play with.
 
 To install **tiny_daemon**, in the project directory, just run this python script.
 
