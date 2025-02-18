@@ -2,15 +2,15 @@
 
 This application exists to easily allow user to manage their **systemd units** via a GUI. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs. 
 
+## Disclaimer
+This application is not intended to professional system administrator audience. It has the purpose to expose unit management functionalities to less experimented users.
+
+If you consider yourself an administrator, please refer to `systemctl` and `journalctl` documentation.
+
 ## Love SysD Manager?
 Please consider donating to sustain our activities
-[:heart: Sponsor](https://github.com/sponsors/plrigaux)
-![GitHub Sponsors](https://img.shields.io/github/sponsors/plrigaux?style=for-the-badge)
 
-## Disclaimer
-This application is not intended to a profesional system administrator audience. 
-
-If you consider yourself an administator, please refer to `systemctl` and `journalctl` documentation.
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86&style=for-the-badge)](https://github.com/sponsors/plrigaux)
 
 ## Features
 
@@ -26,6 +26,11 @@ Here are __Sysd Manager__ main features :
 * Follow Dark and Light style switching
 * Select a unit at program opening by passing a unit name as cli argument (see --help)
 
+## Upcoming features
+Here features that may come one day
+* clean unit like `systemctl clean`
+* multi languages
+* ...
 
 *__Note__ if you need a feature communicate with the author or contribute to the project. If you're stuck take a look at __systemctl__.*
 
@@ -74,7 +79,7 @@ For now new features are planned to be added, such as:
   * Install libadwaita [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
   * Install systemd development library **libsystemd-dev**
 * Compile and install  ```cargo install sysd-manager```
-* Run ```sysd-manager```
+* Run ```sysd-manager``` and VOILA!
 
 ### Arch
 
