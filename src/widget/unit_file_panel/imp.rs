@@ -32,6 +32,8 @@ use crate::{
 use super::flatpak;
 
 const ADWAITA: &str = "Adwaita";
+const PANEL_EMPTY: &str = "empty";
+const PANEL_FILE: &str = "file_panel";
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -52,6 +54,8 @@ pub struct UnitFilePanelImp {
     #[template_child]
     file_link: TemplateChild<gtk::LinkButton>,
 
+    #[template_child]
+    panel_file_stack: TemplateChild<gtk::Stack>,
     toast_overlay: OnceCell<adw::ToastOverlay>,
 
     app_window: OnceCell<AppWindow>,
@@ -80,69 +84,6 @@ macro_rules! get_buffer {
 
 #[gtk::template_callbacks]
 impl UnitFilePanelImp {
-    fn set_visible_on_page(&self, value: bool) {
-        debug!("set_visible_on_page val {value}");
-        self.visible_on_page.set(value);
-
-        if self.visible_on_page.get()
-            && !self.unit_dependencies_loaded.get()
-            && self.unit.borrow().is_some()
-        {
-            self.set_file_content()
-        }
-    }
-
-    fn set_unit(&self, unit: Option<&UnitInfo>) {
-        let unit = match unit {
-            Some(u) => u,
-            None => {
-                self.unit.replace(None);
-                self.set_file_content();
-                return;
-            }
-        };
-
-        let old_unit = self.unit.replace(Some(unit.clone()));
-        if let Some(old_unit) = old_unit {
-            if old_unit.primary() != unit.primary() {
-                self.unit_dependencies_loaded.set(false)
-            }
-        }
-
-        self.set_file_content()
-    }
-
-    pub fn set_file_content(&self) {
-        if !self.visible_on_page.get() {
-            return;
-        }
-
-        let binding = self.unit.borrow();
-        let Some(unit_ref) = binding.as_ref() else {
-            warn!("No unit file");
-            self.set_text("");
-            return;
-        };
-
-        let file_content = match systemd::get_unit_file_info(unit_ref) {
-            Ok(content) => content,
-            Err(e) => {
-                warn!("get_unit_file_info Error: {:?}", e);
-                "".to_owned()
-            }
-        };
-
-        let file_path = unit_ref.file_path().map_or("".to_owned(), |a| a);
-
-        let uri = generate_file_uri(&file_path);
-
-        self.file_link.set_uri(&uri);
-
-        self.file_link.set_label(&file_path);
-
-        self.set_text(&file_content);
-    }
-
     #[template_callback]
     fn save_file(&self, button: &gtk::Button) {
         info!("button {:?}", button);
@@ -202,6 +143,72 @@ impl UnitFilePanelImp {
             }
         };
     }
+}
+
+impl UnitFilePanelImp {
+    fn set_visible_on_page(&self, value: bool) {
+        debug!("set_visible_on_page val {value}");
+        self.visible_on_page.set(value);
+
+        if self.visible_on_page.get()
+            && !self.unit_dependencies_loaded.get()
+            && self.unit.borrow().is_some()
+        {
+            self.set_file_content()
+        }
+    }
+
+    fn set_unit(&self, unit: Option<&UnitInfo>) {
+        let unit = match unit {
+            Some(u) => u,
+            None => {
+                self.unit.replace(None);
+                self.set_file_content();
+                return;
+            }
+        };
+
+        let old_unit = self.unit.replace(Some(unit.clone()));
+        if let Some(old_unit) = old_unit {
+            if old_unit.primary() != unit.primary() {
+                self.unit_dependencies_loaded.set(false)
+            }
+        }
+
+        self.set_file_content()
+    }
+
+    pub fn set_file_content(&self) {
+        if !self.visible_on_page.get() {
+            return;
+        }
+
+        let binding = self.unit.borrow();
+        let Some(unit_ref) = binding.as_ref() else {
+            warn!("No unit file");
+            self.set_text("");
+
+            return;
+        };
+
+        let file_content = match systemd::get_unit_file_info(unit_ref) {
+            Ok(content) => content,
+            Err(e) => {
+                warn!("get_unit_file_info Error: {:?}", e);
+                "".to_owned()
+            }
+        };
+
+        let file_path = unit_ref.file_path().map_or("".to_owned(), |a| a);
+
+        let uri = generate_file_uri(&file_path);
+
+        self.file_link.set_uri(&uri);
+
+        self.file_link.set_label(&file_path);
+
+        self.set_text(&file_content);
+    }
 
     fn set_text(&self, file_content: &str) {
         let buf = self
@@ -214,6 +221,14 @@ impl UnitFilePanelImp {
         buf.set_text(file_content);
 
         self.save_button.remove_css_class(SUGGESTED_ACTION);
+
+        let panel = if file_content.is_empty() {
+            PANEL_EMPTY
+        } else {
+            PANEL_FILE
+        };
+
+        //  self.panel_file_stack.set_visible_child_name(panel);
     }
 
     pub(crate) fn set_dark(&self, is_dark: bool) {
@@ -262,11 +277,11 @@ impl UnitFilePanelImp {
                         style_schemes_map.keys().collect::<Vec<_>>()
                     );
 
-                    //falback Adwaita
+                    //fallback on style Adwaita
                     if let Some(style_scheme_st) = style_schemes_map.get(ADWAITA) {
                         style_scheme_st
                     } else
-                    //falback first
+                    //fallback on first item
                     if let Some((_, style_scheme_st)) = style_schemes_map.first_key_value() {
                         style_scheme_st
                     } else {
@@ -279,8 +294,7 @@ impl UnitFilePanelImp {
 
             if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
                 let buffer = get_buffer!(self);
-
-                info!("Style Scheme found for id {:?} {:?}", scheme_id, scheme);
+                info!("Style Scheme found for id {:?}", scheme_id);
                 buffer.set_style_scheme(Some(scheme));
             } else {
                 warn!("No Style Scheme found for id {:?}", scheme_id)

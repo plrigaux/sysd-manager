@@ -46,5 +46,29 @@
         </child>
       </object>
     </child>
+    <child>
+      <object class="GtkStack" id="panel_file_stack">
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="GtkLabel">
+                <property name="label">Empty Page</property>
+              </object>
+            </property>
+            <property name="name">empty</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="GtkLabel">
+                <property name="label">Empty Page</property>
+              </object>
+            </property>
+            <property name="name">file_panel</property>
+          </object>
+        </child>
+      </object>
+    </child>
   </template>
 </interface>
