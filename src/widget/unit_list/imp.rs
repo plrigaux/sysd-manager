@@ -550,7 +550,9 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
     debug!("vadjustment changed");
     unit_list.set_force_selected_index(None);
 
-    let mut force_selected_index = force_selected_index.unwrap_or(0);
+    let Some(mut force_selected_index) = force_selected_index else {
+        return;
+    };
 
     if force_selected_index == GTK_INVALID_LIST_POSITION {
         force_selected_index = 0;
