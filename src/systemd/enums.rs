@@ -69,6 +69,25 @@ impl EnablementStatus {
             EnablementStatus::Unknown => "",
         }
     }
+
+    /*  Palette::Blue2 => "#62a0ea",
+     */
+
+    pub fn tooltip_info(&self) -> &str {
+        match self {
+            EnablementStatus::Alias => "The name is an alias (symlink to another unit file).",
+            EnablementStatus::Bad => "The unit file is invalid or another error occurred.",
+            EnablementStatus::Disabled => "The unit file is not enabled, but contains an [Install] section with installation instructions.",
+            EnablementStatus::Enabled => "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).",
+            EnablementStatus::Generated => "The unit file was generated dynamically via a generator tool. See <b>man systemd.generator(7)</b>. Generated unit files may not be enabled, they are enabled implicitly by their generator.",
+            EnablementStatus::Indirect => "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> setting in the [Install] unit file section, listing other unit files that might be enabled, or it has an alias under a different name through a symlink that is not specified in <u>Also=</u>. For template unit files, an instance different than the one specified in <u>DefaultInstance=</u> is enabled.",
+            EnablementStatus::Linked => "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.",
+            EnablementStatus::Masked => "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
+            EnablementStatus::Static => "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section.",
+            EnablementStatus::Trancient => "The unit file has been created dynamically with the runtime API. Transient units may not be enabled.",
+            EnablementStatus::Unknown => "",
+        }
+    }
 }
 
 impl Display for EnablementStatus {

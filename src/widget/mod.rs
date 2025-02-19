@@ -19,4 +19,6 @@ pub enum InterPanelAction<'a> {
     FontProvider(Option<&'a gtk::CssProvider>, Option<&'a gtk::CssProvider>),
     IsDark(bool),
     PanelVisible(bool),
+    NewStyleScheme(Option<&'a str>),
+    FileHighlighting(bool),
 }

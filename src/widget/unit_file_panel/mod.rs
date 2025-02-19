@@ -1,4 +1,3 @@
-pub mod dosini;
 pub mod flatpak;
 mod imp;
 

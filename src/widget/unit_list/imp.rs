@@ -197,6 +197,7 @@ impl UnitListPanelImp {
         let status_code: EnablementStatus = entry.enable_status().into();
 
         child.set_text(Some(status_code.as_str()));
+        child.set_tooltip_markup(Some(status_code.tooltip_info()));
 
         entry
             .bind_property("enable_status", &child, "text")
@@ -549,12 +550,12 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
     debug!("vadjustment changed");
     unit_list.set_force_selected_index(None);
 
-    let Some(force_selected_index) = force_selected_index else {
+    let Some(mut force_selected_index) = force_selected_index else {
         return;
     };
 
     if force_selected_index == GTK_INVALID_LIST_POSITION {
-        return;
+        force_selected_index = 0;
     }
     info!("Focus on selected unit list row (index {force_selected_index})");
 
