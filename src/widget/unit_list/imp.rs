@@ -197,6 +197,7 @@ impl UnitListPanelImp {
         let status_code: EnablementStatus = entry.enable_status().into();
 
         child.set_text(Some(status_code.as_str()));
+        child.set_tooltip_markup(Some(status_code.tooltip_info()));
 
         entry
             .bind_property("enable_status", &child, "text")
