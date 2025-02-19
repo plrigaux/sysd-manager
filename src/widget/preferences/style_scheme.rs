@@ -1,6 +1,7 @@
 use std::{collections::BTreeMap, sync::OnceLock};
 
 use gtk::glib::GString;
+use log::debug;
 
 #[derive(Debug, Default)]
 pub struct StyleSchemes {
@@ -36,14 +37,14 @@ impl StyleSchemes {
         }
     }
 
-    pub fn get_dark(&self) -> String {
+    fn get_dark(&self) -> String {
         match &self.dark {
             Some(s) => s.clone(),
             None => self.name.clone(),
         }
     }
 
-    pub fn get_light(&self) -> String {
+    fn get_light(&self) -> String {
         match &self.light {
             Some(s) => s.clone(),
             None => self.name.clone(),
@@ -57,7 +58,7 @@ pub fn style_schemes() -> &'static BTreeMap<String, StyleSchemes> {
         let mut map: BTreeMap<String, StyleSchemes> = BTreeMap::new();
 
         for scheme in sourceview5::StyleSchemeManager::new().scheme_ids() {
-            println!("{}", scheme);
+            debug!("style scheme: {}", scheme);
             let style = StyleSchemes::create_style(scheme);
             let key = style.name.clone();
             if let Some(stored_style) = map.get_mut(&key) {

@@ -8,51 +8,14 @@
   <template class="UnitFilePanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkScrolledWindow" id="unit_file_scrolled_window">
-        <property name="vexpand">True</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkBox">
-        <property name="margin-bottom">5</property>
-        <property name="margin-end">5</property>
-        <property name="margin-start">5</property>
-        <property name="margin-top">5</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">File path: </property>
-            <property name="xalign">0.0</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLinkButton" id="file_link">
-            <property name="halign">start</property>
-            <property name="hexpand">True</property>
-            <property name="label">link</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="save_button">
-            <property name="child">
-              <object class="AdwButtonContent">
-                <property name="halign">baseline-center</property>
-                <property name="icon-name">document-save</property>
-                <property name="label">Save</property>
-                <property name="valign">baseline-center</property>
-              </object>
-            </property>
-            <signal name="clicked" handler="save_file" swapped="yes"/>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
       <object class="GtkStack" id="panel_file_stack">
         <child>
           <object class="GtkStackPage">
             <property name="child">
-              <object class="GtkLabel">
-                <property name="label">Empty Page</property>
+              <object class="AdwStatusPage">
+                <property name="description">The  unit has no corresponding file</property>
+                <property name="icon-name">unreadable-symbolic</property>
+                <property name="title">No file</property>
               </object>
             </property>
             <property name="name">empty</property>
@@ -61,8 +24,47 @@
         <child>
           <object class="GtkStackPage">
             <property name="child">
-              <object class="GtkLabel">
-                <property name="label">Empty Page</property>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkScrolledWindow" id="unit_file_scrolled_window">
+                    <property name="vexpand">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-top">5</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">File path: </property>
+                        <property name="xalign">0.0</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLinkButton" id="file_link">
+                        <property name="halign">start</property>
+                        <property name="hexpand">True</property>
+                        <property name="label">link</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="save_button">
+                        <property name="child">
+                          <object class="AdwButtonContent">
+                            <property name="halign">baseline-center</property>
+                            <property name="icon-name">document-save</property>
+                            <property name="label">Save</property>
+                            <property name="valign">baseline-center</property>
+                          </object>
+                        </property>
+                        <signal name="clicked" handler="save_file" swapped="yes"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </property>
             <property name="name">file_panel</property>

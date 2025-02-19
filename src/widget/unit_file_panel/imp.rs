@@ -56,6 +56,7 @@ pub struct UnitFilePanelImp {
 
     #[template_child]
     panel_file_stack: TemplateChild<gtk::Stack>,
+
     toast_overlay: OnceCell<adw::ToastOverlay>,
 
     app_window: OnceCell<AppWindow>,
@@ -228,7 +229,7 @@ impl UnitFilePanelImp {
             PANEL_FILE
         };
 
-        //  self.panel_file_stack.set_visible_child_name(panel);
+        self.panel_file_stack.set_visible_child_name(panel);
     }
 
     pub(crate) fn set_dark(&self, is_dark: bool) {
