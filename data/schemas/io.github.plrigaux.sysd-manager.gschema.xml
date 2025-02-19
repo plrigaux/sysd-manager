@@ -47,6 +47,10 @@
             <default>true</default>
             <summary>To display unit file highlighted</summary>
         </key>
+        <key name="pref-unit-file-style-scheme" type="s">   
+            <default>""</default>       
+            <summary>Id of the style scheme used to display unit file</summary>
+        </key>
         <key name="pref-app-first-connection" type="b">
             <default>true</default>
             <summary>Check if the first time that the user open the application</summary>

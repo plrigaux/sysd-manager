@@ -20,6 +20,7 @@ pub const KEY_PREF_JOURNAL_COLORS: &str = "pref-journal-colors";
 pub const KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE: &str = "pref-journal-events-batch-size";
 pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
 pub const KEY_PREF_UNIT_FILE_HIGHLIGHTING: &str = "pref-unit-file-highlighting";
+pub const KEY_PREF_UNIT_FILE_STYLE_SCHEME: &str = "pref-unit-file-style-scheme";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 pub const KEY_PREF_TIMESTAMP_STYLE: &str = "pref-timestamp-style";
 pub const KEY_PREF_STYLE_TEXT_FONT_FAMILY: &str = "pref-style-text-font-family";
@@ -118,7 +119,8 @@ pub struct Preferences {
     journal_colors: RwLock<bool>,
     journal_events_batch_size: RwLock<u32>,
     journal_event_max_size: RwLock<u32>,
-    unit_file_colors: RwLock<bool>,
+    unit_file_highlight: RwLock<bool>,
+    unit_file_style_scheme: RwLock<String>,
     app_first_connection: RwLock<bool>,
     timestamp_style: RwLock<TimestampStyle>,
     font_family: RwLock<String>,
@@ -136,17 +138,19 @@ impl Preferences {
         let timestamp_style = settings.string(KEY_PREF_TIMESTAMP_STYLE).into();
         let font_family = settings.string(KEY_PREF_STYLE_TEXT_FONT_FAMILY);
         let font_size = settings.uint(KEY_PREF_STYLE_TEXT_FONT_SIZE);
+        let unit_file_style_scheme = settings.string(KEY_PREF_UNIT_FILE_STYLE_SCHEME);
 
         Preferences {
             dbus_level: RwLock::new(level),
             journal_colors: RwLock::new(journal_colors),
             journal_events_batch_size: RwLock::new(journal_events_batch_size),
             journal_event_max_size: RwLock::new(journal_event_max_size),
-            unit_file_colors: RwLock::new(unit_file_colors),
+            unit_file_highlight: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
             timestamp_style: RwLock::new(timestamp_style),
             font_family: RwLock::new(font_family.to_string()),
             font_size: RwLock::new(font_size),
+            unit_file_style_scheme: RwLock::new(unit_file_style_scheme.to_string()),
         }
     }
 
@@ -166,8 +170,8 @@ impl Preferences {
         *self.journal_event_max_size.read().unwrap()
     }
 
-    pub fn unit_file_colors(&self) -> bool {
-        *self.unit_file_colors.read().unwrap()
+    pub fn unit_file_highlight(&self) -> bool {
+        *self.unit_file_highlight.read().unwrap()
     }
 
     pub fn is_app_first_connection(&self) -> bool {
@@ -180,6 +184,11 @@ impl Preferences {
 
     pub fn font_family(&self) -> String {
         let read = self.font_family.read().unwrap();
+        read.clone()
+    }
+
+    pub fn unit_file_style_scheme(&self) -> String {
+        let read = self.unit_file_style_scheme.read().unwrap();
         read.clone()
     }
 
@@ -239,10 +248,10 @@ impl Preferences {
         *journal_colors = display;
     }
 
-    pub fn set_unit_file_highlighting(&self, display: bool) {
+    pub fn set_unit_file_highlight(&self, display: bool) {
         info!("set_unit_file_highlighting: {display}");
 
-        let mut unit_file_colors = self.unit_file_colors.write().expect("supposed to write");
+        let mut unit_file_colors = self.unit_file_highlight.write().expect("supposed to write");
         *unit_file_colors = display;
     }
 
@@ -259,6 +268,14 @@ impl Preferences {
     fn set_font_family(&self, font_family: &str) {
         let mut font_family_rw = self.font_family.write().expect("supposed to write");
         *font_family_rw = font_family.to_string();
+    }
+
+    pub fn set_unit_file_style_scheme(&self, style_scheme: &str) {
+        let mut unit_file_style_scheme_rw = self
+            .unit_file_style_scheme
+            .write()
+            .expect("supposed to write");
+        *unit_file_style_scheme_rw = style_scheme.to_string()
     }
 
     fn set_font_size(&self, font_size: u32) {

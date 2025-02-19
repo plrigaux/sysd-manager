@@ -1,5 +1,6 @@
 pub mod data;
 mod imp;
+pub mod style_scheme;
 
 use gtk::{gio, glib, subclass::prelude::*};
 

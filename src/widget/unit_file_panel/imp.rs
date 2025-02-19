@@ -16,16 +16,22 @@ use gtk::{
 };
 
 use log::{debug, info, warn};
-use sourceview5::prelude::*;
+use sourceview5::{prelude::*, Buffer};
 
 use crate::{
     consts::SUGGESTED_ACTION,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     utils::font_management::set_text_view_font_display,
-    widget::{app_window::AppWindow, preferences::data::PREFERENCES, InterPanelAction},
+    widget::{
+        app_window::AppWindow,
+        preferences::{data::PREFERENCES, style_scheme::style_schemes},
+        InterPanelAction,
+    },
 };
 
 use super::flatpak;
+
+const ADWAITA: &str = "Adwaita";
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -58,6 +64,18 @@ pub struct UnitFilePanelImp {
     is_dark: Cell<bool>,
 
     unit_dependencies_loaded: Cell<bool>,
+}
+
+macro_rules! get_buffer {
+    ($self:expr) => {{
+        let buffer = $self
+            .unit_file_text
+            .get()
+            .expect("unit_file_text shall be set")
+            .buffer();
+
+        buffer.downcast::<Buffer>().expect("suppose to be Buffer")
+    }};
 }
 
 #[gtk::template_callbacks]
@@ -201,15 +219,76 @@ impl UnitFilePanelImp {
     pub(crate) fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
 
-        let scheme_id = if is_dark { "Adwaita-dark" } else { "Adwaita" };
+        let style_scheme_id = PREFERENCES.unit_file_style_scheme();
 
-        let Some(buffer) = self.sourceview5_buffer.get() else {
-            warn!("No text view buffer");
-            return;
-        };
+        debug!(
+            "File Unit set_dark {is_dark} style_scheme_id {:?}",
+            style_scheme_id
+        );
 
-        if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
-            buffer.set_style_scheme(Some(scheme));
+        self.set_new_style_scheme(Some(&style_scheme_id));
+    }
+
+    fn set_highlight(&self, highlight: bool) {
+        if highlight {
+            let style_scheme_id = PREFERENCES.unit_file_style_scheme();
+            self.set_new_style_scheme(Some(&style_scheme_id));
+        } else {
+            self.set_new_style_scheme(None);
+        }
+    }
+
+    fn set_new_style_scheme(&self, mut style_scheme_id: Option<&str>) {
+        if !PREFERENCES.unit_file_highlight() {
+            style_scheme_id = None
+        }
+
+        info!("Set new style scheme {:?}", style_scheme_id);
+        if let Some(mut style_scheme_id) = style_scheme_id {
+            let style_schemes_map = style_schemes();
+
+            debug!("{:#?}", style_schemes_map);
+            if style_scheme_id.is_empty() {
+                style_scheme_id = ADWAITA;
+            }
+
+            let style_scheme_st = style_schemes_map.get(style_scheme_id);
+
+            let style_sheme_st = match style_scheme_st {
+                Some(ss) => ss,
+                None => {
+                    warn!(
+                        "style scheme id \"{style_scheme_id}\" not found in {:?}",
+                        style_schemes_map.keys().collect::<Vec<_>>()
+                    );
+
+                    //falback Adwaita
+                    if let Some(style_scheme_st) = style_schemes_map.get(ADWAITA) {
+                        style_scheme_st
+                    } else
+                    //falback first
+                    if let Some((_, style_scheme_st)) = style_schemes_map.first_key_value() {
+                        style_scheme_st
+                    } else {
+                        return;
+                    }
+                }
+            };
+
+            let scheme_id = &style_sheme_st.get_style_scheme_id(self.is_dark.get());
+
+            if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
+                let buffer = get_buffer!(self);
+
+                info!("Style Scheme found for id {:?} {:?}", scheme_id, scheme);
+                buffer.set_style_scheme(Some(scheme));
+            } else {
+                warn!("No Style Scheme found for id {:?}", scheme_id)
+            }
+        } else {
+            let buffer = get_buffer!(self);
+
+            buffer.set_style_scheme(None);
         }
     }
 
@@ -243,6 +322,10 @@ impl UnitFilePanelImp {
             }
             InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
             InterPanelAction::PanelVisible(visible) => self.set_visible_on_page(visible),
+            InterPanelAction::FileHighlighting(highlight) => self.set_highlight(highlight),
+            InterPanelAction::NewStyleScheme(style_scheme) => {
+                self.set_new_style_scheme(style_scheme)
+            }
             _ => {}
         }
     }
@@ -273,7 +356,7 @@ impl ObjectImpl for UnitFilePanelImp {
 
         let buffer = sourceview5::Buffer::new(None);
 
-        if PREFERENCES.unit_file_colors() {
+        if PREFERENCES.unit_file_highlight() {
             if let Some(ref language) = sourceview5::LanguageManager::new().language("ini") {
                 buffer.set_language(Some(language));
             }

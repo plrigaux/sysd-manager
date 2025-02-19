@@ -5,12 +5,15 @@ use gtk::{
     gio,
     glib::{self, BoolError},
     pango::{self, FontFace},
+    StringObject,
 };
 use log::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 
 use crate::{
-    systemd_gui::new_settings, utils::font_management::FONT_CONTEXT, widget::app_window::AppWindow,
+    systemd_gui::new_settings,
+    utils::font_management::FONT_CONTEXT,
+    widget::{app_window::AppWindow, preferences::style_scheme::style_schemes},
 };
 use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
 
@@ -18,19 +21,22 @@ use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE,
     KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
     KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_HIGHLIGHTING,
-    PREFERENCES,
+    KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
 };
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
 pub struct PreferencesDialogImpl {
-    pub settings: OnceCell<Settings>,
+    settings: OnceCell<Settings>,
 
     #[template_child]
-    pub journal_colors: TemplateChild<gtk::Switch>,
+    journal_colors: TemplateChild<gtk::Switch>,
 
     #[template_child]
-    pub unit_file_highlight: TemplateChild<gtk::Switch>,
+    unit_file_highlight: TemplateChild<gtk::Switch>,
+
+    #[template_child]
+    unit_file_style: TemplateChild<adw::ComboRow>,
 
     #[template_child]
     pub preference_banner: TemplateChild<adw::Banner>,
@@ -81,7 +87,15 @@ impl PreferencesDialogImpl {
         info!("unit_file_highlighting_switch {}", state);
 
         self.unit_file_highlight.set_state(state);
-        PREFERENCES.set_unit_file_highlighting(state);
+        PREFERENCES.set_unit_file_highlight(state);
+
+        let parent = self.app_window.borrow();
+        let window = parent.as_ref().map(|w| w.clone());
+
+        if let Some(window) = &window {
+            let action = crate::widget::InterPanelAction::FileHighlighting(state);
+            window.set_inter_action(&action);
+        }
 
         true
     }
@@ -177,9 +191,33 @@ impl PreferencesDialogImpl {
 
 impl PreferencesDialogImpl {
     pub(super) fn set_app_window(&self, app_window: Option<&AppWindow>) {
-        if let Some(app_window) = app_window {
-            self.app_window.replace(Some(app_window.clone()));
-        }
+        let Some(app_window) = app_window else {
+            self.app_window.replace(None);
+            return;
+        };
+
+        self.app_window.replace(Some(app_window.clone()));
+
+        let window = app_window.clone();
+
+        self.unit_file_style
+            .connect_selected_item_notify(move |combo_box| {
+                let selected_item = combo_box.selected_item();
+                let Some(style_scheme) = selected_item else {
+                    return;
+                };
+
+                let style_scheme = style_scheme
+                    .downcast::<StringObject>()
+                    .expect("Needs to be TimestampStyle");
+
+                PREFERENCES.set_unit_file_style_scheme(&style_scheme.string());
+
+                let style_scheme_g = style_scheme.string();
+                let action =
+                    crate::widget::InterPanelAction::NewStyleScheme(Some(style_scheme_g.as_str()));
+                window.set_inter_action(&action);
+            });
     }
 
     fn setup_settings(&self) {
@@ -200,7 +238,7 @@ impl PreferencesDialogImpl {
 
     fn load_preferences_values(&self) {
         let journal_colors = PREFERENCES.journal_colors();
-        let unit_file_colors = PREFERENCES.unit_file_colors();
+        let unit_file_colors = PREFERENCES.unit_file_highlight();
         let is_app_first_connection = PREFERENCES.is_app_first_connection();
 
         self.journal_colors.set_state(journal_colors);
@@ -272,8 +310,11 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         let journal_event_max_size = PREFERENCES.journal_event_max_size();
         settings.set_uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE, journal_event_max_size)?;
 
-        let unit_file_colors = PREFERENCES.unit_file_colors();
+        let unit_file_colors = PREFERENCES.unit_file_highlight();
         settings.set_boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING, unit_file_colors)?;
+
+        let unit_file_style_scheme = PREFERENCES.unit_file_style_scheme();
+        settings.set_string(KEY_PREF_UNIT_FILE_STYLE_SCHEME, &unit_file_style_scheme)?;
 
         let timestamp_style = PREFERENCES.timestamp_style();
         settings.set_string(KEY_PREF_TIMESTAMP_STYLE, &timestamp_style.to_string())?;
@@ -341,6 +382,20 @@ impl ObjectImpl for PreferencesDialogImpl {
                 let tss = TimestampStyle::from(timestamp_style.value());
                 PREFERENCES.set_timestamp_style(tss);
             });
+
+        debug!("All styles {:#?}", style_schemes());
+        let vec: Vec<_> = style_schemes().keys().map(|f| f.as_str()).collect();
+        let model = gtk::StringList::new(&vec);
+        self.unit_file_style.set_model(Some(&model));
+
+        let style_scheme_id = PREFERENCES.unit_file_style_scheme();
+
+        for (position, style_scheme_id_list) in vec.iter().enumerate() {
+            if style_scheme_id == *style_scheme_id_list {
+                self.unit_file_style.set_selected(position as u32);
+                break;
+            }
+        }
 
         // Load latest window state
         self.setup_settings();
