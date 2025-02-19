@@ -80,17 +80,37 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-   <release version="1.14.0" date="2025-02-17">
+
+    <release version="1.15.0" date="2025-02-19">
       <description>
-      <p>Added</p>
-      <ul>
+        <p>Added</p>
+        <ul>
+          <li>Tooltips for enable status</li>
+          <li>Possibility to change unit file highlight style</li>
+          <li>Row number for unit file</li>         
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Display a message if the unit has no unit file on the "unit file" tab</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Some unit files were not displayed</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.14.0" date="2025-02-17">
+      <description>
+        <p>Added</p>
+        <ul>
           <li>Retrieve the description of unloaded units for the list display</li>
-          <li>Provide the possibility to list units from the system bus and from the user session bus at the same time</li>
-        </ul> 
+          <li>Provide the possibility to list units from the system bus and from the user session
+            bus at the same time</li>
+        </ul>
         <p>Changed</p>
         <ul>
           <li>The list of all units is now fetched asynchronously</li>
-        </ul>      
+        </ul>
       </description>
     </release>
     <release version="1.13.2" date="2025-02-11">
@@ -98,7 +118,7 @@ https://hughsie.github.io/oars/index.html
         <p>Fixed</p>
         <ul>
           <li>Change logs</li>
-        </ul>      
+        </ul>
       </description>
     </release>
     <release version="1.13.1" date="2025-02-11">
