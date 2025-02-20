@@ -4,17 +4,16 @@
 /// https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html#
 /// https://www.freedesktop.org/software/systemd/man/latest/sd_journal_open.html
 ///
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use chrono::{Local, Utc};
-use log::{info, warn};
-use sysd::{id128::Id128, journal::OpenOptions, Journal};
-
 use crate::{
     systemd::{enums::UnitDBusLevel, journal_data::JournalEventChunkInfo},
     utils::th::{TimestampStyle, USEC_PER_SEC},
     widget::preferences::data::PREFERENCES,
 };
+use chrono::{Local, Utc};
+use foreign_types_shared::ForeignType;
+use libsysd;
+use log::{info, warn};
+use sysd::{id128::Id128, journal::OpenOptions, Journal};
 
 use super::{
     data::UnitInfo,
@@ -232,12 +231,15 @@ fn previous(journal_reader: &mut Journal, oldest_first: bool) -> Result<u64, sys
 }
 
 fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {
-    let timestamp: SystemTime = journal_reader.timestamp()?;
-    let since_the_epoch = timestamp
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
-    let time_in_usec = since_the_epoch.as_micros() as u64;
-    Ok(time_in_usec)
+    //  libsysd::journal::sd_journal_get_realtime_usec(journal_reader)
+
+    let mut timestamp_us: u64 = 0;
+    sysd::sd_try!(libsysd::journal::sd_journal_get_realtime_usec(
+        journal_reader.as_ptr(),
+        &mut timestamp_us
+    ));
+
+    Ok(timestamp_us)
 }
 
 fn truncate(s: String, max_chars: usize) -> String {
@@ -316,6 +318,10 @@ fn make_prefix(
 
 #[cfg(test)]
 mod tests {
+    use std::{path::Path, time::UNIX_EPOCH};
+
+    use sysd::journal;
+
     use super::*;
 
     #[test]
@@ -334,5 +340,36 @@ mod tests {
         let new_s = truncate(s.clone(), 1);
 
         println!("{s} {new_s}")
+    }
+
+    fn have_journal() -> bool {
+        if !Path::new("/run/systemd/journal/").exists() {
+            println!("missing journal files");
+            false
+        } else {
+            true
+        }
+    }
+
+    #[test]
+    fn test_timestamp() {
+        if !have_journal() {
+            return;
+        }
+
+        let mut journal = journal::OpenOptions::default().open().unwrap();
+        info!("rust-systemd ts entry");
+        journal.seek(journal::JournalSeek::Head).unwrap();
+        journal.next().unwrap();
+        let real_time_system_time = journal.timestamp().unwrap();
+
+        let real_time = get_realtime_usec(&journal).unwrap();
+
+        let since_the_epoch = real_time_system_time
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        let time_in_usec = since_the_epoch.as_micros() as u64;
+
+        assert_eq!(real_time, time_in_usec);
     }
 }
