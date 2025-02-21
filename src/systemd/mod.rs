@@ -16,7 +16,8 @@ use std::{
 
 use data::{UnitInfo, UnitProcess};
 use enums::{
-    ActiveState, DependencyType, EnablementStatus, KillWho, StartStopMode, UnitDBusLevel, UnitType,
+    ActiveState, DependencyType, DisEnableFlags, EnablementStatus, KillWho, StartStopMode,
+    UnitDBusLevel, UnitType,
 };
 use errors::SystemdErrors;
 use gtk::glib::GString;
@@ -74,7 +75,7 @@ pub enum BootFilter {
 
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
     let level = sytemd_unit.dbus_level();
-    sysdbus::get_unit_file_state_path(level, &sytemd_unit.primary())
+    sysdbus::get_unit_file_state(level, &sytemd_unit.primary())
 }
 
 /* pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
@@ -121,9 +122,17 @@ pub fn disenable_unit_file(
     expected_status: EnablementStatus,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     let msg_return = if expected_status == EnablementStatus::Enabled {
-        sysdbus::enable_unit_files(unit.dbus_level(), &[&unit.primary()])?
+        sysdbus::enable_unit_files(
+            unit.dbus_level(),
+            &[&unit.primary()],
+            DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
+        )?
     } else {
-        sysdbus::disable_unit_files(unit.dbus_level(), &[&unit.primary()])?
+        sysdbus::disable_unit_files(
+            unit.dbus_level(),
+            &[&unit.primary()],
+            DisEnableFlags::empty(),
+        )?
     };
 
     Ok(msg_return)

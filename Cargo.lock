@@ -1523,6 +1523,7 @@ dependencies = [
 name = "sysd-manager"
 version = "1.15.0"
 dependencies = [
+ "bitflags",
  "chrono",
  "clap",
  "dotenv",

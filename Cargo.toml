@@ -55,6 +55,7 @@ sourceview5 = "0.9"
 sysd =  { version = "0.10", package = "systemd"} 
 libsysd = { version = "0.9", package = "libsystemd-sys"} 
 foreign-types-shared = "0.3.1"
+bitflags = "2.8.0"
 
 [dev-dependencies]
 

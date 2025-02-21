@@ -1,3 +1,6 @@
+use super::sysdbus::INTERFACE_SYSTEMD_MANAGER;
+use super::sysdbus::INTERFACE_SYSTEMD_UNIT;
+use bitflags::bitflags;
 use gtk::glib::{self, EnumValue};
 use gtk::prelude::*;
 use log::{info, warn};
@@ -5,9 +8,6 @@ use std::cmp::Ordering;
 use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
 use zvariant::OwnedValue;
-
-use super::sysdbus::INTERFACE_SYSTEMD_MANAGER;
-use super::sysdbus::INTERFACE_SYSTEMD_UNIT;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default)]
 pub enum EnablementStatus {
@@ -573,6 +573,21 @@ impl From<u8> for UnitDBusLevel {
             0 => UnitDBusLevel::System,
             _ => UnitDBusLevel::UserSession,
         }
+    }
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    pub struct DisEnableFlags : u8{
+      const SD_SYSTEMD_UNIT_RUNTIME  = 1;
+      const SD_SYSTEMD_UNIT_FORCE    = 1 << 1;
+      const SD_SYSTEMD_UNIT_PORTABLE = 1 << 2;
+    }
+}
+
+impl DisEnableFlags {
+    pub fn as_u64(&self) -> u64 {
+        self.bits() as u64
     }
 }
 

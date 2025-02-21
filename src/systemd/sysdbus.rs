@@ -28,7 +28,9 @@ use crate::{
 };
 
 use super::{
-    enums::{DependencyType, EnablementStatus, KillWho, StartStopMode, UnitDBusLevel},
+    enums::{
+        DependencyType, DisEnableFlags, EnablementStatus, KillWho, StartStopMode, UnitDBusLevel,
+    },
     Dependency, SystemdErrors, SystemdUnitFile,
 };
 
@@ -47,8 +49,8 @@ const METHOD_RESTART_UNIT: &str = "RestartUnit";
 const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_GET_UNIT: &str = "GetUnit";
-const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFiles";
-const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
+const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
+const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlags";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 
@@ -144,7 +146,7 @@ fn fill_list_units_description(
 }
 
 /// Returns the current enablement status of the unit
-pub fn get_unit_file_state_path(
+pub fn get_unit_file_state(
     level: UnitDBusLevel,
     unit_file: &str,
 ) -> Result<EnablementStatus, SystemdErrors> {
@@ -454,7 +456,8 @@ pub struct EnableUnitFilesReturn {
 
 pub(super) fn enable_unit_files(
     level: UnitDBusLevel,
-    unit_names: &[&str],
+    unit_names_or_files: &[&str],
+    flags: DisEnableFlags,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     fn handle_answer(
         _method: &str,
@@ -472,14 +475,15 @@ pub(super) fn enable_unit_files(
     send_disenable_message(
         level,
         METHOD_ENABLE_UNIT_FILES,
-        &(unit_names, false, true),
+        &(unit_names_or_files, flags.as_u64()),
         handle_answer,
     )
 }
 
 pub(super) fn disable_unit_files(
     level: UnitDBusLevel,
-    unit_names: &[&str],
+    unit_names_or_files: &[&str],
+    flags: DisEnableFlags,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     fn handle_answer(
         _method: &str,
@@ -497,7 +501,7 @@ pub(super) fn disable_unit_files(
     send_disenable_message(
         level,
         METHOD_DISABLE_UNIT_FILES,
-        &(unit_names, false),
+        &(unit_names_or_files, flags.as_u64()),
         handle_answer,
     )
 }
@@ -873,10 +877,10 @@ pub fn fetch_unit(
         unit.set_file_path(Some(fragment_path));
     }
 
-    let unit_file_state = properties_proxy.unit_file_state().unwrap_or_default();
-
-    let status: EnablementStatus = unit_file_state.as_str().into();
-    unit.set_enable_status(status as u8);
+    /*     match get_unit_file_state(level, unit_primary_name) {
+        Ok(unit_file_status) => unit.set_enable_status(unit_file_status as u8),
+        Err(err) => warn!("Fail to get unit file state : {:?}", err),
+    } */
 
     Ok(unit)
 }
@@ -1111,7 +1115,7 @@ mod tests {
     fn test_get_unit_file_state() {
         let file1: &str = TEST_SERVICE;
 
-        let status = get_unit_file_state_path(UnitDBusLevel::System, file1);
+        let status = get_unit_file_state(UnitDBusLevel::System, file1);
         debug!("Status: {:?}", status);
     }
 
@@ -1190,7 +1194,11 @@ mod tests {
     #[test]
     fn test_enable_unit_files() -> Result<(), SystemdErrors> {
         init();
-        let _res = enable_unit_files(UnitDBusLevel::System, &[TEST_SERVICE])?;
+        let _res = enable_unit_files(
+            UnitDBusLevel::System,
+            &[TEST_SERVICE],
+            DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
+        )?;
 
         Ok(())
     }
@@ -1199,7 +1207,11 @@ mod tests {
     #[test]
     fn test_disable_unit_files() -> Result<(), SystemdErrors> {
         init();
-        let _res = disable_unit_files(UnitDBusLevel::System, &[TEST_SERVICE])?;
+        let _res = disable_unit_files(
+            UnitDBusLevel::System,
+            &[TEST_SERVICE],
+            DisEnableFlags::empty(),
+        )?;
 
         Ok(())
     }
