@@ -1,5 +1,5 @@
 use gtk::{gio, glib};
-use log::{info, warn};
+use log::{debug, info, warn};
 
 use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus, errors::SystemdErrors};
 
@@ -42,9 +42,6 @@ pub(super) fn switch_ablement_state_set(
 
         match enable_result {
             Ok(enablement_status_ret) => {
-                let red_green =
-                    red_green(expected_new_status == EnablementStatus::Enabled, is_dark);
-
                 let blue = if is_dark {
                     UnitInfoWriter::blue_dark()
                 } else {
@@ -52,11 +49,25 @@ pub(super) fn switch_ablement_state_set(
                 };
 
                 let toast_info = format!(
-                    "Unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{red_green}'>{}</span>",
+                    "Unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{blue}'>{}</span>",
                     unit.primary(),
                     expected_new_status,
                 );
-                info!("{toast_info} {:?}", enablement_status_ret);
+
+                /*                 for disenable_unit_file in enablement_status_ret.iter() {
+                    toast_info += format!(
+                        "<br></br>Type of the change {:?} File name {:?}",
+                        disenable_unit_file.change_type, disenable_unit_file.file_name
+                    )
+                    .as_str();
+
+                    if !disenable_unit_file.destination.is_empty() {
+                        toast_info +=
+                            format!(" Destination {:?}", disenable_unit_file.destination).as_str();
+                    }
+                } */
+
+                debug!("{toast_info} {:?}", enablement_status_ret);
 
                 let toast = adw::Toast::builder()
                     .use_markup(true)
