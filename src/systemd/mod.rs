@@ -27,8 +27,6 @@ use sysdbus::DisEnAbleUnitFiles;
 use tokio::runtime::Runtime;
 use zvariant::OwnedValue;
 
-use crate::widget::preferences::data::{DbusLevel, PREFERENCES};
-
 pub mod enums;
 
 const FLATPAK_SPAWN: &str = "flatpak-spawn";
@@ -469,22 +467,11 @@ fn get_unit_path(unit: &UnitInfo) -> String {
     }
 }
 
-pub fn fetch_unit(unit_primary_name: &str) -> Result<UnitInfo, SystemdErrors> {
-    let level: DbusLevel = PREFERENCES.dbus_level();
-
-    match level {
-        DbusLevel::Session => sysdbus::fetch_unit(UnitDBusLevel::UserSession, unit_primary_name),
-        DbusLevel::System => sysdbus::fetch_unit(UnitDBusLevel::System, unit_primary_name),
-        DbusLevel::SystemAndSession => {
-            let mut result = sysdbus::fetch_unit(UnitDBusLevel::UserSession, unit_primary_name);
-
-            if let Err(e) = result {
-                warn!("Fetch Unit Error {:?}", e);
-                result = sysdbus::fetch_unit(UnitDBusLevel::System, unit_primary_name);
-            }
-            result
-        }
-    }
+pub fn fetch_unit(
+    level: UnitDBusLevel,
+    unit_primary_name: &str,
+) -> Result<UnitInfo, SystemdErrors> {
+    sysdbus::fetch_unit(level, unit_primary_name)
 }
 
 pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {

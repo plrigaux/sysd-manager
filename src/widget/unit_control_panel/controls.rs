@@ -136,12 +136,12 @@ pub(super) fn handle_switch_sensivity(
         let switch = switch.clone();
         let unit = unit.clone();
         glib::spawn_future_local(async move {
-            let unit_ = unit.clone();
+            let unit2 = unit.clone();
             let current_state =
-                gio::spawn_blocking(move || match systemd::get_unit_file_state(&unit_) {
+                gio::spawn_blocking(move || match systemd::get_unit_file_state(&unit2) {
                     Ok(enblement_status) => enblement_status,
-                    Err(_e) => {
-                        info!("Get unit state fail! For {:#?}.", unit_.primary());
+                    Err(err) => {
+                        info!("Get unit state fail! For {:?} : {:?}", unit2.primary(), err);
                         unit_file_state
                     }
                 })

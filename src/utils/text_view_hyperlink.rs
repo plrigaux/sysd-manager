@@ -8,7 +8,10 @@ use gtk::{
 };
 use log::{info, warn};
 
-use crate::{systemd, widget::app_window::AppWindow};
+use crate::{
+    systemd::{self},
+    widget::{app_window::AppWindow, preferences::data::PREFERENCES},
+};
 
 use super::writer::{PROP_UNDERLINE, TAG_DATA_LINK};
 
@@ -52,7 +55,11 @@ impl LinkActivator {
             );
         } else if let Some(unit_name) = link.strip_prefix("unit://") {
             info!("open unit {:?} ", unit_name);
-            let unit = match systemd::fetch_unit(unit_name) {
+
+            //TODO do better
+            let app_level = PREFERENCES.dbus_level();
+            let level = app_level.as_unit_dbus();
+            let unit = match systemd::fetch_unit(level, unit_name) {
                 Ok(unit) => Some(unit),
                 Err(e) => {
                     warn!("Cli unit: {:?}", e);

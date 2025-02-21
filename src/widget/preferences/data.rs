@@ -8,7 +8,7 @@ use log::{info, warn};
 
 use std::sync::{LazyLock, RwLock};
 
-use crate::{systemd_gui::new_settings, utils::th::TimestampStyle};
+use crate::{systemd::enums::UnitDBusLevel, systemd_gui::new_settings, utils::th::TimestampStyle};
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();
@@ -31,7 +31,7 @@ pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
 pub enum DbusLevel {
     #[enum_value(name = "session", nick = "User Session Bus")]
     #[default]
-    Session = 0,
+    UserSession = 0,
     #[enum_value(name = "system", nick = "System Bus")]
     System = 1,
     #[enum_value(name = "system_session", nick = "System & User Session Bus")]
@@ -43,6 +43,14 @@ impl DbusLevel {
         let level_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
 
         level_value.name()
+    }
+
+    pub fn as_unit_dbus(&self) -> UnitDBusLevel {
+        match self {
+            DbusLevel::UserSession => UnitDBusLevel::UserSession,
+            DbusLevel::System => UnitDBusLevel::System,
+            DbusLevel::SystemAndSession => UnitDBusLevel::System,
+        }
     }
 }
 
@@ -56,7 +64,7 @@ impl From<&str> for DbusLevel {
     fn from(level: &str) -> Self {
         match level.to_ascii_lowercase().as_str() {
             "system" => DbusLevel::System,
-            "session" => DbusLevel::Session,
+            "session" => DbusLevel::UserSession,
             _ => DbusLevel::SystemAndSession,
         }
     }
@@ -65,7 +73,7 @@ impl From<&str> for DbusLevel {
 impl From<u32> for DbusLevel {
     fn from(level: u32) -> Self {
         match level {
-            0 => DbusLevel::Session,
+            0 => DbusLevel::UserSession,
             1 => DbusLevel::System,
             _ => DbusLevel::SystemAndSession,
         }
@@ -304,20 +312,20 @@ mod tests {
 
     #[test]
     fn test_dbus_level_any_number() {
-        assert_eq!(<u32 as Into<DbusLevel>>::into(1000), DbusLevel::Session)
+        assert_eq!(<u32 as Into<DbusLevel>>::into(1000), DbusLevel::UserSession)
     }
 
     #[test]
     fn test_dbus_level_int_mapping() {
         //assert_num_mapping(EnablementStatus::Unasigned);
-        assert_num_mapping(DbusLevel::Session);
+        assert_num_mapping(DbusLevel::UserSession);
         assert_num_mapping(DbusLevel::System);
     }
 
     #[test]
     fn test_dbus_level_string_mapping() {
         //assert_num_mapping(EnablementStatus::Unasigned);
-        assert_string_mapping(DbusLevel::Session, "Session");
+        assert_string_mapping(DbusLevel::UserSession, "Session");
         assert_string_mapping(DbusLevel::System, "System");
     }
 

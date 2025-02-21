@@ -22,7 +22,7 @@ use gtk::{
 use log::{info, warn};
 
 use dotenv::dotenv;
-use systemd::data::UnitInfo;
+use systemd::{data::UnitInfo, enums::UnitDBusLevel};
 use systemd_gui::{new_settings, APP_ID};
 use widget::{
     app_window::{menu, AppWindow},
@@ -124,24 +124,23 @@ struct Args {
 fn handle_args() -> Option<UnitInfo> {
     let args = Args::parse();
 
-    let level = PREFERENCES.dbus_level();
+    let current_level = PREFERENCES.dbus_level();
 
-    if level != DbusLevel::SystemAndSession {
-        match (args.system, args.user) {
-            (true, _) => PREFERENCES.set_dbus_level(DbusLevel::System),
-            (false, true) => PREFERENCES.set_dbus_level(DbusLevel::Session),
-            (false, false) => {}
-        }
+    let (app_level, unit_level) = match (args.system, args.user) {
+        (true, _) => (DbusLevel::SystemAndSession, UnitDBusLevel::System),
+        (false, true) => (DbusLevel::UserSession, UnitDBusLevel::UserSession),
+        (false, false) => (DbusLevel::SystemAndSession, UnitDBusLevel::System),
+    };
 
-        if level != PREFERENCES.dbus_level() {
-            let settings = new_settings();
-            PREFERENCES.save_dbus_level(&settings);
-        }
+    if current_level != DbusLevel::SystemAndSession && current_level != app_level {
+        PREFERENCES.set_dbus_level(app_level);
+        let settings = new_settings();
+        PREFERENCES.save_dbus_level(&settings);
     }
 
     let unit_name = args.unit?;
 
-    match systemd::fetch_unit(&unit_name) {
+    match systemd::fetch_unit(unit_level, &unit_name) {
         Ok(unit) => Some(unit),
         Err(e) => {
             warn!("Cli unit: {:?}", e);

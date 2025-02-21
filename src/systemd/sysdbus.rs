@@ -204,7 +204,7 @@ pub async fn list_units_description_and_state_async(
 
 pub async fn list_all_units() -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
     match PREFERENCES.dbus_level() {
-        DbusLevel::Session => {
+        DbusLevel::UserSession => {
             list_units_description_and_state_async(UnitDBusLevel::UserSession).await
         }
         DbusLevel::System => list_units_description_and_state_async(UnitDBusLevel::System).await,
@@ -1247,6 +1247,17 @@ mod tests {
         init();
 
         let unit = fetch_unit(UnitDBusLevel::System, TEST_SERVICE)?;
+
+        info!("{:#?}", unit);
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_fetch_unit_user_session() -> Result<(), SystemdErrors> {
+        init();
+
+        let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE)?;
 
         info!("{:#?}", unit);
         Ok(())
