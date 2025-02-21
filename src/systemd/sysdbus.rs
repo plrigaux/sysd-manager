@@ -52,16 +52,6 @@ const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFiles";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 
-#[proxy(
-    interface = "org.zbus.MyGreeter1",
-    default_service = "org.zbus.MyGreeter",
-    default_path = "/org/zbus/MyGreeter"
-)]
-trait HollyShit {
-    #[zbus(property)]
-    fn description(&self) -> Result<String, zbus::Error>;
-}
-
 #[derive(Deserialize, Type, PartialEq, Debug)]
 struct LUnitFiles<'a> {
     primary_unit_name: &'a str,
@@ -1447,22 +1437,49 @@ mod tests {
         Ok(())
     }
 
-    /*    #[ignore = "need a connection to a service"]
+    #[ignore = "need a connection to a service"]
     #[test]
-    fn test_get_list_block() -> Result<(), SystemdErrors> {
-        use std::time::Instant;
-        let now = Instant::now();
-        let _ = list_units_description_and_state(UnitDBusLevel::System);
-        let _ = list_units_description_and_state(UnitDBusLevel::UserSession);
+    fn test_get_properties() -> Result<(), SystemdErrors> {
+        init();
+        let connection = get_connection(UnitDBusLevel::System)?;
 
-        let elapsed = now.elapsed();
-        println!("Elapsed: {:.2?}", elapsed);
-        /*         let a = asdf.0;
-               let b = asdf.1;
+        let object_path = unit_dbus_path_from_name(TEST_SERVICE);
+        debug!("Unit path: {object_path}");
+        let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
+            fdo::PropertiesProxy::builder(&connection)
+                .destination(DESTINATION_SYSTEMD)?
+                .path(object_path)?
+                // .interface(INTERFACE_SYSTEMD_UNIT)?
+                //  .interface(UnitType::Service.interface())?
+                .build()?;
 
-               println!("{:?}", a);
-               println!("{:?}", b);
-        */
+        let unit_type = UnitType::Service;
+        let unit_interface = unit_type.interface();
+
+        //let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+        let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+
+        let mut unit_properties: HashMap<String, OwnedValue> =
+            properties_proxy.get_all(unit_interface_name)?;
+
+        let interface_name = InterfaceName::try_from(unit_interface).unwrap();
+
+        let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
+
+        info!("Properties size {}", properties.len());
+
+        info!("Unit Properties size {}", unit_properties.len());
+
+        for k in properties.into_keys() {
+            unit_properties.remove(&k);
+        }
+
+        info!("Unit Properties size {}", unit_properties.len());
+
+        /*      for (k, v) in unit_properties {
+            info!("{k} {:?}", v);
+        } */
+
         Ok(())
-    } */
+    }
 }
