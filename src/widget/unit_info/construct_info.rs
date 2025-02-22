@@ -951,7 +951,7 @@ fn fill_triggers(
         };
 
         unit_writer.insert(" ");
-        unit_writer.hyperlink(trigger_unit, trigger_unit, HyperLinkType::Unit);
+        unit_writer.hyperlink(trigger_unit, trigger_unit, HyperLinkType::Unit(level));
         unit_writer.newline();
     }
 }
@@ -988,7 +988,7 @@ fn fill_triggered_by(
         };
 
         unit_writer.insert(" ");
-        unit_writer.hyperlink(trigger_unit, trigger_unit, HyperLinkType::Unit);
+        unit_writer.hyperlink(trigger_unit, trigger_unit, HyperLinkType::Unit(level));
         unit_writer.newline();
     }
 }

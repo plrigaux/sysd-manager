@@ -23,7 +23,7 @@ use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::{DependencyType, UnitType},
+        enums::{DependencyType, UnitDBusLevel, UnitType},
         Dependency,
     },
     utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
@@ -170,7 +170,7 @@ impl UnitDependenciesPanelImp {
         let unit_type_filter = self.unit_type_filter.borrow().clone();
 
         plain = plain || !unit_type_filter.is_empty();
-
+        let level = unit.dbus_level();
         glib::spawn_future_local(async move {
             stack.set_visible_child_name(PANEL_SPINNER);
             let dependencies =
@@ -225,6 +225,7 @@ impl UnitDependenciesPanelImp {
                     &mut info_writer,
                     child,
                     &spacer,
+                    level,
                     it.peek().is_none(),
                 );
             }
@@ -237,6 +238,7 @@ impl UnitDependenciesPanelImp {
         info_writer: &mut UnitInfoWriter,
         dependency: &Dependency,
         spacer: &str,
+        level: UnitDBusLevel,
         last: bool,
     ) {
         info_writer.insert_state(dependency.state);
@@ -254,7 +256,7 @@ impl UnitDependenciesPanelImp {
         info_writer.hyperlink(
             &dependency.unit_name,
             &dependency.unit_name,
-            HyperLinkType::Unit,
+            HyperLinkType::Unit(level),
         );
         info_writer.newline();
 
@@ -267,6 +269,7 @@ impl UnitDependenciesPanelImp {
                 info_writer,
                 child,
                 &child_spacer,
+                level,
                 child_last,
             );
         }

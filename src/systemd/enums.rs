@@ -567,6 +567,23 @@ pub enum UnitDBusLevel {
     UserSession = 1,
 }
 
+impl UnitDBusLevel {
+    pub fn short(&self) -> &str {
+        match self {
+            UnitDBusLevel::System => "s",
+            UnitDBusLevel::UserSession => "u",
+        }
+    }
+
+    pub(crate) fn from_short(suffix: &str) -> Self {
+        match suffix {
+            "s" => UnitDBusLevel::System,
+            "u" => UnitDBusLevel::UserSession,
+            _ => UnitDBusLevel::System,
+        }
+    }
+}
+
 impl From<u8> for UnitDBusLevel {
     fn from(level: u8) -> Self {
         match level {

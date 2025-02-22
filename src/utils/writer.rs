@@ -3,7 +3,11 @@ use std::borrow::Cow;
 use gtk::{glib::translate::IntoGlib, pango, prelude::*, TextBuffer, TextIter, TextTag};
 use log::debug;
 
-use crate::systemd::{self, enums::ActiveState, generate_file_uri};
+use crate::systemd::{
+    self,
+    enums::{ActiveState, UnitDBusLevel},
+    generate_file_uri,
+};
 
 use super::palette::Palette;
 
@@ -40,7 +44,7 @@ const PROP_FOREGROUND: &str = "foreground";
 
 pub enum HyperLinkType {
     File,
-    Unit,
+    Unit(UnitDBusLevel),
     Http,
     Man,
     None,
@@ -56,11 +60,11 @@ impl HyperLinkType {
                     Cow::from(generate_file_uri(link))
                 }
             }
-            HyperLinkType::Unit => {
+            HyperLinkType::Unit(level) => {
                 if link.starts_with("unit://") {
                     Cow::from(link)
                 } else {
-                    Cow::from(format!("unit://{}", link))
+                    Cow::from(format!("unit://{}?{}", link, level.short()))
                 }
             }
             HyperLinkType::Http => Cow::from(link),

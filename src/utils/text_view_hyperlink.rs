@@ -9,8 +9,8 @@ use gtk::{
 use log::{info, warn};
 
 use crate::{
-    systemd::{self},
-    widget::{app_window::AppWindow, preferences::data::PREFERENCES},
+    systemd::{self, enums::UnitDBusLevel},
+    widget::app_window::AppWindow,
 };
 
 use super::writer::{PROP_UNDERLINE, TAG_DATA_LINK};
@@ -54,11 +54,13 @@ impl LinkActivator {
                 },
             );
         } else if let Some(unit_name) = link.strip_prefix("unit://") {
-            info!("open unit {:?} ", unit_name);
+            let (unit_name, level) = match unit_name.split_once("?") {
+                Some((prefix, suffix)) => (prefix, UnitDBusLevel::from_short(suffix)),
+                None => (unit_name, UnitDBusLevel::System),
+            };
 
-            //TODO do better
-            let app_level = PREFERENCES.dbus_level();
-            let level = app_level.as_unit_dbus();
+            info!("open unit {:?} at level {}", unit_name, level.short());
+
             let unit = match systemd::fetch_unit(level, unit_name) {
                 Ok(unit) => Some(unit),
                 Err(e) => {
