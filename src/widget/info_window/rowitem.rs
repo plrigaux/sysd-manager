@@ -11,8 +11,9 @@ impl Default for Metadata {
 }
 
 impl Metadata {
-    pub fn new(col1: String, col2: String) -> Self {
+    pub fn new(col0: u32, col1: String, col2: String) -> Self {
         glib::Object::builder()
+            .property("col0", col0)
             .property("col1", col1)
             .property("col2", col2)
             .build()
@@ -20,13 +21,15 @@ impl Metadata {
 }
 
 mod imp {
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
-    #[derive(Debug, glib::Properties)]
+    #[derive(Debug, Default, glib::Properties)]
     #[properties(wrapper_type = super::Metadata)]
     pub struct Metadata {
+        #[property(get, set)]
+        pub col0: Cell<u32>,
         #[property(get, set)]
         pub col1: RefCell<String>,
         #[property(get, set)]
@@ -37,13 +40,6 @@ mod imp {
     impl ObjectSubclass for Metadata {
         const NAME: &'static str = "Metadata";
         type Type = super::Metadata;
-
-        fn new() -> Self {
-            Self {
-                col1: RefCell::new(String::new()),
-                col2: RefCell::new(String::new()),
-            }
-        }
     }
 
     #[glib::derived_properties]

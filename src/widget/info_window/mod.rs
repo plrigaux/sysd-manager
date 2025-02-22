@@ -75,6 +75,15 @@ impl InfoWindow {
                     .selectable(true)
                     .build();
 
+                let idx = meta.col0().to_string();
+                let l0 = gtk::Label::builder()
+                    .label(idx)
+                    .width_chars(3)
+                    .selectable(false)
+                    .css_classes(["idx"])
+                    .build();
+
+                box_.append(&l0);
                 box_.append(&l1);
                 box_.append(&l2);
 
@@ -94,9 +103,10 @@ impl InfoWindow {
 
             match systemd::fetch_system_unit_info(unit) {
                 Ok(map) => {
-                    for (key, value) in map {
+                    for (idx, (key, value)) in map.into_iter().enumerate() {
                         //println!("{key} :-: {value}");
-                        store.append(&rowitem::Metadata::new(key, value));
+                        let data = rowitem::Metadata::new(idx as u32, key, value);
+                        store.append(&data);
                     }
                 }
                 Err(e) => warn!("Fails to retreive Unit info: {:?}", e),
@@ -118,9 +128,10 @@ impl InfoWindow {
 
             match systemd::fetch_system_info() {
                 Ok(map) => {
-                    for (key, value) in map {
+                    for (idx, (key, value)) in map.into_iter().enumerate() {
                         //println!("{key} :-: {value}");
-                        store.append(&rowitem::Metadata::new(key, value));
+                        let data = rowitem::Metadata::new(idx as u32, key, value);
+                        store.append(&data);
                     }
                 }
                 Err(e) => error!("Fail to retreive Unit info: {:?}", e),

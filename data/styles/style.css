@@ -10,6 +10,10 @@ label.journal_message {
     font-family: 'Droid Sans Mono', 'monospace', monospace;
 }
 
+label.idx {
+    color: #888888;
+}
+
 textview {
     font-family: 'Fira Code', 'Droid Sans Mono', monospace;
     font-size: 16px;
