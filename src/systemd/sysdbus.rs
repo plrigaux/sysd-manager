@@ -680,12 +680,12 @@ pub fn fetch_system_unit_info(
     object_path: &str,
     unit_type: UnitType,
 ) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let mut properties: HashMap<String, OwnedValue> =
+    let properties: HashMap<String, OwnedValue> =
         fetch_system_unit_info_native(level, object_path, unit_type)?;
 
     let mut map = BTreeMap::new();
 
-    for (key, value) in properties.drain() {
+    for (key, value) in properties.into_iter() {
         trace!("{:?} {:?}", key, value);
 
         let str_val = convert_to_string(&value);

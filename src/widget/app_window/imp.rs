@@ -2,7 +2,7 @@ use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
-use log::{debug, info};
+use log::{debug, error, info};
 
 use crate::{
     systemd::data::UnitInfo,
@@ -330,8 +330,9 @@ impl WindowImpl for AppWindowImpl {
     fn close_request(&self) -> glib::Propagation {
         // Save window size
         log::debug!("Close window");
-        self.save_window_size()
-            .expect("Failed to save window state");
+        if let Err(_err) = self.save_window_size() {
+            error!("Failed to save window state");
+        }
 
         self.parent_close_request();
         // Allow to invoke other event handlers

@@ -5,25 +5,37 @@
     <schema id="io.github.plrigaux.sysd-manager" path="/io/github/plrigaux/sysd-manager/">
         <key name="window-width" type="i">
             <default>-1</default>
-            <summary>Default window width</summary>
+            <summary>Default main window width</summary>
         </key>
         <key name="window-height" type="i">
             <default>-1</default>
-            <summary>Default window height</summary>
+            <summary>Default main window height</summary>
         </key>
         <key name="is-maximized" type="b">
             <default>false</default>
-            <summary>Default window maximized behaviour</summary>
+            <summary>Default main window maximized behaviour</summary>
         </key>
         <key name="paned-separator-position" type="i">
             <default>-1</default>
             <summary>The position of the separator in pixels, from the left/top.</summary>
         </key>
+        <key name="info-window-width" type="i">
+            <default>-1</default>
+            <summary>Default info window width</summary>
+        </key>
+        <key name="info-window-height" type="i">
+            <default>-1</default>
+            <summary>Default info window height</summary>
+        </key>
+        <key name="info-is-maximized" type="b">
+            <default>false</default>
+            <summary>Default info window maximized behaviour</summary>
+        </key>
         <key name="pref-dbus-level" type="s">
             <choices>
                 <choice value='session' />
                 <choice value='system' />
-                <choice value='system_session' />                
+                <choice value='system_session' />
             </choices>
             <default>'session'</default>
             <summary>The dbus level scope</summary>
@@ -47,8 +59,8 @@
             <default>true</default>
             <summary>To display unit file highlighted</summary>
         </key>
-        <key name="pref-unit-file-style-scheme" type="s">   
-            <default>""</default>       
+        <key name="pref-unit-file-style-scheme" type="s">
+            <default>""</default>
             <summary>Id of the style scheme used to display unit file</summary>
         </key>
         <key name="pref-app-first-connection" type="b">
@@ -80,12 +92,12 @@
             <summary>Format of the printed timestamps</summary>
         </key>
 
-        <key name="pref-style-text-font-family" type="s"> 
+        <key name="pref-style-text-font-family" type="s">
             <default>''</default>
             <summary>The font family of unit information, dependencies and file</summary>
         </key>
 
-        <key name="pref-style-text-font-size" type="u"> 
+        <key name="pref-style-text-font-size" type="u">
             <default>0</default>
             <summary>The font size of unit information, dependencies and file</summary>
         </key>
