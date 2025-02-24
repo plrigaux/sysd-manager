@@ -430,21 +430,6 @@ pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
     sysdbus::fetch_system_info(UnitDBusLevel::System)
 }
 
-pub fn fetch_system_unit_info(unit: &UnitInfo) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let level = unit.dbus_level();
-    let unit_type: UnitType = UnitType::new(&unit.unit_type());
-    let object_path = match unit.object_path() {
-        Some(s) => s,
-        None => {
-            let object_path = sysdbus::unit_dbus_path_from_name(&unit.primary());
-            unit.set_object_path(object_path.clone());
-            object_path
-        }
-    };
-
-    sysdbus::fetch_system_unit_info(level, &object_path, unit_type)
-}
-
 pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {

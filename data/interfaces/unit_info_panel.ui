@@ -26,7 +26,7 @@
             <property name="child">
               <object class="AdwButtonContent">
                 <property name="icon-name">view-app-grid-symbolic</property>
-                <property name="label" translatable="yes">Show all _information</property>
+                <property name="label" translatable="yes">Show all _properties</property>
                 <property name="use-underline">True</property>
               </object>
             </property>

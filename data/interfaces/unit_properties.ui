@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<interface>
+  <!-- interface-name unit_info.ui -->
+  <requires lib="gtk" version="4.6"/>
+  <template class="InfoWindow" parent="GtkWindow">
+    <property name="default-height">600</property>
+    <property name="default-width">650</property>
+    <property name="title">Unit Info</property>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="headerbar">
+        <child>
+          <object class="GtkButton">
+            <property name="icon-name">edit-copy-symbolic</property>
+            <property name="tooltip-text">Copy all properties to clipboard</property>
+            <signal name="clicked" handler="handle_copy_click" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="filter_toggle">
+            <property name="icon-name">funnel-outline-symbolic</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkSearchBar" id="search_bar">
+            <property name="hexpand">True</property>
+            <property name="show-close-button">True</property>
+            <child>
+              <object class="GtkBox">
+                <property name="halign">start</property>
+                <property name="hexpand">True</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkSearchEntry" id="search_entry">
+                    <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="show_all_check">
+                    <property name="label">Show all</property>
+                    <property name="tooltip-markup">Show empty properties</property>
+                    <signal name="toggled" handler="show_all_toggle" swapped="yes"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkListBox" id="unit_properties">
+                <property name="selection-mode">none</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

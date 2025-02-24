@@ -611,7 +611,7 @@ pub(super) fn kill_unit(
 }
 
 fn convert_to_string(value: &zvariant::Value) -> String {
-    let str_value: String = match value {
+    match value {
         zvariant::Value::U8(i) => i.to_string(),
         zvariant::Value::Bool(b) => b.to_string(),
         zvariant::Value::I16(i) => i.to_string(),
@@ -665,8 +665,7 @@ fn convert_to_string(value: &zvariant::Value) -> String {
         }
         zvariant::Value::Fd(fd) => fd.to_string(),
         //zvariant::Value::Maybe(maybe) => maybe.to_string(),
-    };
-    str_value
+    }
 }
 
 pub fn fetch_system_info(level: UnitDBusLevel) -> Result<BTreeMap<String, String>, SystemdErrors> {

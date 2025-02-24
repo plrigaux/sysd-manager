@@ -1,28 +1,43 @@
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use gtk::{gio, glib};
+use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 use log::{debug, error, warn};
-use std::cell::{OnceCell, RefCell};
+use std::{
+    cell::{OnceCell, RefCell},
+    collections::BTreeMap,
+};
 
+use crate::consts::U64MAX;
 use crate::systemd;
 use crate::systemd::data::UnitInfo;
 use crate::systemd_gui::new_settings;
 
 use super::rowitem;
 
-const WINDOW_WIDTH: &str = "info-window-width";
-const WINDOW_HEIGHT: &str = "info-window-height";
-const IS_MAXIMIZED: &str = "info-is-maximized";
+const WINDOW_WIDTH: &str = "unit-properties-window-width";
+const WINDOW_HEIGHT: &str = "unit-properties-window-height";
+const IS_MAXIMIZED: &str = "unit-properties-is-maximized";
+
+const SEARCH_OPEN: &str = "unit-properties-filter-open";
+const FILTER_SHOW_ALL: &str = "unit-properties-fileter-show-all";
+const FILTER_TEXT: &str = "unit-properties-filter-text";
 
 // ANCHOR: imp
 #[derive(Debug, Default, gtk::CompositeTemplate)]
-#[template(resource = "/io/github/plrigaux/sysd-manager/unit_info.ui")]
+#[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties.ui")]
 pub struct InfoWindowImp {
     #[template_child]
     pub unit_properties: TemplateChild<gtk::ListBox>,
 
     #[template_child]
     search_entry: TemplateChild<gtk::SearchEntry>,
+
+    #[template_child]
+    search_bar: TemplateChild<gtk::SearchBar>,
+
+    #[template_child]
+    filter_toggle: TemplateChild<gtk::ToggleButton>,
+
+    #[template_child]
+    show_all_check: TemplateChild<gtk::CheckButton>,
 
     pub(super) store: RefCell<Option<gio::ListStore>>,
 
@@ -60,7 +75,7 @@ impl InfoWindowImp {
     }
 
     #[template_callback]
-    fn search_changed(&self, search_entry: &gtk::SearchEntry) {
+    fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
         let text = search_entry.text();
 
         debug!("Search text \"{text}\"");
@@ -84,6 +99,21 @@ impl InfoWindowImp {
             custom_filter.changed(change_type);
         }
     }
+
+    #[template_callback]
+    fn show_all_toggle(&self, check: gtk::CheckButton) {
+        let show_all = check.is_active();
+
+        let change_type = if show_all {
+            gtk::FilterChange::LessStrict
+        } else {
+            gtk::FilterChange::MoreStrict
+        };
+
+        if let Some(custom_filter) = self.custom_filter.get() {
+            custom_filter.changed(change_type);
+        }
+    }
 }
 
 impl InfoWindowImp {
@@ -93,11 +123,18 @@ impl InfoWindowImp {
         if let Some(ref mut store) = *unit_prop_store.borrow_mut() {
             store.remove_all();
 
-            match systemd::fetch_system_unit_info(unit) {
+            match systemd::fetch_system_unit_info_native(unit) {
                 Ok(map) => {
-                    for (idx, (key, value)) in map.into_iter().enumerate() {
+                    let mut sorted = BTreeMap::new();
+
+                    for (key, value) in map {
+                        let value = convert_to_string(&value);
+                        sorted.insert(key, value);
+                    }
+
+                    for (idx, (key, (value, empty))) in sorted.into_iter().enumerate() {
                         //println!("{key} :-: {value}");
-                        let data = rowitem::Metadata::new(idx as u32, key, value);
+                        let data = rowitem::Metadata::new(idx as u32, key, value, empty);
                         store.append(&data);
                     }
                 }
@@ -122,7 +159,7 @@ impl InfoWindowImp {
                 Ok(map) => {
                     for (idx, (key, value)) in map.into_iter().enumerate() {
                         //println!("{key} :-: {value}");
-                        let data = rowitem::Metadata::new(idx as u32, key, value);
+                        let data = rowitem::Metadata::new(idx as u32, key, value, false);
                         store.append(&data);
                     }
                 }
@@ -137,6 +174,7 @@ impl InfoWindowImp {
 
     fn create_filter(&self) -> gtk::CustomFilter {
         let search_entry = self.search_entry.clone();
+        let show_all_check = self.show_all_check.clone();
 
         gtk::CustomFilter::new(move |object| {
             let Some(meta) = object.downcast_ref::<rowitem::Metadata>() else {
@@ -144,8 +182,12 @@ impl InfoWindowImp {
                 return false;
             };
 
-            let text = search_entry.text();
+            let show_all = show_all_check.is_active();
+            if !show_all && meta.is_empty() {
+                return false;
+            }
 
+            let text = search_entry.text();
             if text.is_empty() {
                 return true;
             }
@@ -208,6 +250,15 @@ impl InfoWindowImp {
         if is_maximized {
             obj.maximize();
         }
+
+        let search_open = settings.boolean(SEARCH_OPEN);
+        self.filter_toggle.set_active(search_open);
+
+        let show_all = settings.boolean(FILTER_SHOW_ALL);
+        self.show_all_check.set_active(show_all);
+
+        let filter_text = settings.string(FILTER_TEXT);
+        self.search_entry.set_text(&filter_text);
     }
 
     pub fn save_window_size(&self) -> Result<(), glib::BoolError> {
@@ -222,6 +273,14 @@ impl InfoWindowImp {
         settings.set_int(WINDOW_WIDTH, width)?;
         settings.set_int(WINDOW_HEIGHT, height)?;
         settings.set_boolean(IS_MAXIMIZED, obj.is_maximized())?;
+
+        let search_open = self.filter_toggle.is_active();
+        let show_all = self.show_all_check.is_active();
+        let filter_text = self.search_entry.text();
+
+        settings.set_boolean(SEARCH_OPEN, search_open)?;
+        settings.set_boolean(FILTER_SHOW_ALL, show_all)?;
+        settings.set_string(FILTER_TEXT, &filter_text)?;
 
         Ok(())
     }
@@ -243,11 +302,11 @@ impl ObjectSubclass for InfoWindowImp {
     }
 }
 
+const WIDTH_CHAR_SIZE: usize = 36;
 impl ObjectImpl for InfoWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        self.load_window_size();
         let unit_prop_store = gio::ListStore::new::<rowitem::Metadata>();
 
         let no_selection = gtk::NoSelection::new(Some(unit_prop_store.clone()));
@@ -257,6 +316,15 @@ impl ObjectImpl for InfoWindowImp {
         let filtering_model = gtk::FilterListModel::new(Some(no_selection), Some(filter));
 
         self.store.replace(Some(unit_prop_store));
+
+        self.search_bar
+            .bind_property("search-mode-enabled", &self.filter_toggle.clone(), "active")
+            .bidirectional()
+            .build();
+
+        self.search_entry.set_width_chars(WIDTH_CHAR_SIZE as i32);
+
+        self.load_window_size();
 
         self.unit_properties
             .bind_model(Some(&filtering_model), |object| {
@@ -271,14 +339,12 @@ impl ObjectImpl for InfoWindowImp {
 
                 let box_ = gtk::Box::new(gtk::Orientation::Horizontal, 15);
 
-                const SIZE: usize = 36;
-
                 let mut long_text = false;
                 let col1 = meta.col1();
-                let key_label = if col1.chars().count() > SIZE {
+                let key_label = if col1.chars().count() > WIDTH_CHAR_SIZE {
                     long_text = true;
                     let mut tmp = String::new();
-                    tmp.push_str(&col1[..(SIZE - 3)]);
+                    tmp.push_str(&col1[..(WIDTH_CHAR_SIZE - 3)]);
                     tmp.push_str("...");
                     tmp
                 } else {
@@ -287,7 +353,7 @@ impl ObjectImpl for InfoWindowImp {
 
                 let l1 = gtk::Label::builder()
                     .label(key_label)
-                    .width_chars(SIZE as i32)
+                    .width_chars(WIDTH_CHAR_SIZE as i32)
                     .xalign(0.0)
                     .max_width_chars(30)
                     .single_line_mode(true)
@@ -325,7 +391,7 @@ impl WindowImpl for InfoWindowImp {
 
     fn close_request(&self) -> glib::Propagation {
         // Save window size
-        log::debug!("Close window");
+        debug!("Close window");
         if let Err(_err) = self.save_window_size() {
             error!("Failed to save window state");
         }
@@ -337,3 +403,77 @@ impl WindowImpl for InfoWindowImp {
 }
 impl ApplicationWindowImpl for InfoWindowImp {}
 // ANCHOR_END: imp
+
+fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
+    match value {
+        zvariant::Value::U8(i) => (i.to_string(), false),
+        zvariant::Value::Bool(b) => (b.to_string(), false),
+        zvariant::Value::I16(i) => (i.to_string(), false),
+        zvariant::Value::U16(i) => (i.to_string(), *i != u16::MAX),
+        zvariant::Value::I32(i) => (i.to_string(), false),
+        zvariant::Value::U32(i) => (i.to_string(), *i != u32::MAX),
+        zvariant::Value::I64(i) => (i.to_string(), false),
+        zvariant::Value::U64(i) => (i.to_string(), *i != U64MAX),
+        zvariant::Value::F64(i) => (i.to_string(), false),
+        zvariant::Value::Str(s) => {
+            let s = s.to_string();
+            let empty = s.is_empty();
+            (s, empty)
+        }
+        zvariant::Value::Signature(s) => (s.to_string(), false),
+        zvariant::Value::ObjectPath(op) => {
+            let s = op.to_string();
+            let empty = s.is_empty();
+            (s, empty)
+        }
+        zvariant::Value::Value(v) => {
+            let s = v.to_string();
+            let empty = s.is_empty();
+            (s, empty)
+        }
+        zvariant::Value::Array(a) => {
+            if a.is_empty() {
+                ("[]".to_owned(), true)
+            } else {
+                let mut d_str = String::from("[ ");
+
+                let mut it = a.iter().peekable();
+                while let Some(mi) = it.next() {
+                    d_str.push_str(&convert_to_string(mi).0);
+                    if it.peek().is_some() {
+                        d_str.push_str(", ");
+                    }
+                }
+
+                d_str.push_str(" ]");
+                (d_str, false)
+            }
+        }
+        zvariant::Value::Dict(d) => {
+            let mut d_str = String::from("{ ");
+            for (mik, miv) in d.iter() {
+                d_str.push_str(&convert_to_string(mik).0);
+                d_str.push_str(" : ");
+                d_str.push_str(&convert_to_string(miv).0);
+            }
+            d_str.push_str(" }");
+            (d_str, false)
+        }
+        zvariant::Value::Structure(stc) => {
+            let mut d_str = String::from("{ ");
+
+            let mut it = stc.fields().iter().peekable();
+            while let Some(mi) = it.next() {
+                d_str.push_str(&convert_to_string(mi).0);
+                if it.peek().is_some() {
+                    d_str.push_str(", ");
+                }
+            }
+
+            d_str.push_str(" }");
+            (d_str, false)
+        }
+        zvariant::Value::Fd(fd) => (fd.to_string(), false),
+        //zvariant::Value::Maybe(maybe) => maybe.to_string(),
+    }
+}

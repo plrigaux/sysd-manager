@@ -11,11 +11,12 @@ impl Default for Metadata {
 }
 
 impl Metadata {
-    pub fn new(col0: u32, col1: String, col2: String) -> Self {
+    pub fn new(col0: u32, col1: String, col2: String, empty: bool) -> Self {
         glib::Object::builder()
             .property("col0", col0)
             .property("col1", col1)
             .property("col2", col2)
+            .property("is_empty", empty)
             .build()
     }
 }
@@ -34,6 +35,8 @@ mod imp {
         pub col1: RefCell<String>,
         #[property(get, set)]
         pub col2: RefCell<String>,
+        #[property(get, set)]
+        pub is_empty: Cell<bool>,
     }
 
     #[glib::object_subclass]

@@ -19,17 +19,29 @@
             <default>-1</default>
             <summary>The position of the separator in pixels, from the left/top.</summary>
         </key>
-        <key name="info-window-width" type="i">
+        <key name="unit-properties-window-width" type="i">
             <default>-1</default>
-            <summary>Default info window width</summary>
+            <summary>Unit properties window width</summary>
         </key>
-        <key name="info-window-height" type="i">
+        <key name="unit-properties-window-height" type="i">
             <default>-1</default>
-            <summary>Default info window height</summary>
+            <summary>Unit properties window height</summary>
         </key>
-        <key name="info-is-maximized" type="b">
+        <key name="unit-properties-is-maximized" type="b">
             <default>false</default>
-            <summary>Default info window maximized behaviour</summary>
+            <summary>Unit properties window maximized behaviour</summary>
+        </key>
+        <key name="unit-properties-filter-open" type="b">
+            <default>true</default>
+            <summary>Display unit properties filter controls</summary>
+        </key>
+        <key name="unit-properties-fileter-show-all" type="b">
+            <default>true</default>
+            <summary>Show all unit properties (Hide the empty one)</summary>
+        </key>
+        <key name="unit-properties-filter-text" type="s">
+            <default>""</default>
+            <summary>Saved unit properties filter text</summary>
         </key>
         <key name="pref-dbus-level" type="s">
             <choices>
