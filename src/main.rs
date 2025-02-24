@@ -60,6 +60,7 @@ fn main() -> glib::ExitCode {
         build_ui(app, unit.as_ref());
     });
 
+    //to not transfer args to gtk4
     app.run_with_args::<String>(&[])
 }
 
