@@ -80,14 +80,36 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-
+    <release version="1.16.0" date="2025-02-24">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>Preference option to display unit file line number</li>
+          <li>Filtering (search) option on all unit properties</li>
+          <li>Possibility to hide empty unit properties</li>
+          <li>Mnemonics to start and stop an unit</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Faster journal events time processing</li>         
+        </ul>
+        <p>Removed</p>
+        <ul>
+          <li>Independent preference option to highlight unit text file (now in the combo box)</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Unit file enable realtime status</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.15.0" date="2025-02-19">
       <description>
         <p>Added</p>
         <ul>
           <li>Tooltips for enable status</li>
           <li>Possibility to change unit file highlight style</li>
-          <li>Row number for unit file</li>         
+          <li>Row number for unit file</li>
         </ul>
         <p>Changed</p>
         <ul>
