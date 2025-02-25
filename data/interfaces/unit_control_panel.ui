@@ -40,7 +40,8 @@
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">media-playback-start-symbolic</property>
-                <property name="label">Start</property>
+                <property name="label" translatable="yes">_Start</property>
+                <property name="use-underline">True</property>
               </object>
             </child>
           </object>
@@ -63,8 +64,9 @@
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">process-stop</property>
-                <property name="label">Stop</property>
+                <property name="label">S_top</property>
                 <property name="tooltip-text">Stop unit</property>
+                <property name="use-underline">True</property>
               </object>
             </child>
           </object>

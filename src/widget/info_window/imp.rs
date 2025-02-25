@@ -98,6 +98,8 @@ impl InfoWindowImp {
         if let Some(custom_filter) = self.custom_filter.get() {
             custom_filter.changed(change_type);
         }
+
+        self.set_filter_icon()
     }
 
     #[template_callback]
@@ -284,6 +286,16 @@ impl InfoWindowImp {
 
         Ok(())
     }
+
+    fn set_filter_icon(&self) {
+        let icon = if self.search_entry.text().is_empty() {
+            "funnel-outline-symbolic"
+        } else {
+            "funnel-symbolic"
+        };
+
+        self.filter_toggle.set_icon_name(icon);
+    }
 }
 
 #[glib::object_subclass]
@@ -409,11 +421,11 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
         zvariant::Value::U8(i) => (i.to_string(), false),
         zvariant::Value::Bool(b) => (b.to_string(), false),
         zvariant::Value::I16(i) => (i.to_string(), false),
-        zvariant::Value::U16(i) => (i.to_string(), *i != u16::MAX),
+        zvariant::Value::U16(i) => (i.to_string(), *i == u16::MAX),
         zvariant::Value::I32(i) => (i.to_string(), false),
-        zvariant::Value::U32(i) => (i.to_string(), *i != u32::MAX),
+        zvariant::Value::U32(i) => (i.to_string(), *i == u32::MAX),
         zvariant::Value::I64(i) => (i.to_string(), false),
-        zvariant::Value::U64(i) => (i.to_string(), *i != U64MAX),
+        zvariant::Value::U64(i) => (i.to_string(), *i == U64MAX),
         zvariant::Value::F64(i) => (i.to_string(), false),
         zvariant::Value::Str(s) => {
             let s = s.to_string();
@@ -436,21 +448,24 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
                 ("[]".to_owned(), true)
             } else {
                 let mut d_str = String::from("[ ");
-
+                let mut is_empty = false;
                 let mut it = a.iter().peekable();
                 while let Some(mi) = it.next() {
-                    d_str.push_str(&convert_to_string(mi).0);
+                    let (sub_value, sub_empty) = convert_to_string(mi);
+                    is_empty |= sub_empty;
+                    d_str.push_str(&sub_value);
                     if it.peek().is_some() {
                         d_str.push_str(", ");
                     }
                 }
 
                 d_str.push_str(" ]");
-                (d_str, false)
+                (d_str, is_empty)
             }
         }
         zvariant::Value::Dict(d) => {
             let mut d_str = String::from("{ ");
+
             for (mik, miv) in d.iter() {
                 d_str.push_str(&convert_to_string(mik).0);
                 d_str.push_str(" : ");
@@ -463,17 +478,21 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
             let mut d_str = String::from("{ ");
 
             let mut it = stc.fields().iter().peekable();
+            let mut is_empty = false;
             while let Some(mi) = it.next() {
-                d_str.push_str(&convert_to_string(mi).0);
+                let (sub_value, sub_empty) = convert_to_string(mi);
+
+                is_empty |= sub_empty;
+
+                d_str.push_str(&sub_value);
                 if it.peek().is_some() {
                     d_str.push_str(", ");
                 }
             }
 
             d_str.push_str(" }");
-            (d_str, false)
+            (d_str, is_empty)
         }
         zvariant::Value::Fd(fd) => (fd.to_string(), false),
-        //zvariant::Value::Maybe(maybe) => maybe.to_string(),
     }
 }
