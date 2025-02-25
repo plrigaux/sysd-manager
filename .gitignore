@@ -13,3 +13,4 @@ __pycache__/
 .vscode
 /tiny_deamon/Cargo.lock
 .cargo
+data/schemas/gschemas.compiled

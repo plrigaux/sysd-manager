@@ -20,5 +20,5 @@ pub enum InterPanelAction<'a> {
     IsDark(bool),
     PanelVisible(bool),
     NewStyleScheme(Option<&'a str>),
-    FileHighlighting(bool),
+    FileLineNumber(bool),
 }

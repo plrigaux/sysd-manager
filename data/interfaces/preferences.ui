@@ -53,8 +53,8 @@
                     <property name="title">Unit File</property>
                     <child>
                       <object class="AdwActionRow">
-                        <property name="subtitle">Display a nice text highligth for the unit file</property>
-                        <property name="title">Unit file highlighting</property>
+                        <property name="subtitle">Display unit file line number</property>
+                        <property name="title">Line number</property>
                         <child>
                           <object class="GtkSwitch" id="unit_file_highlight">
                             <property name="valign">baseline-center</property>
@@ -66,7 +66,7 @@
                     <child>
                       <object class="AdwComboRow" id="unit_file_style">
                         <property name="subtitle">Unit file highlight style</property>
-                        <property name="title">Text Style</property>
+                        <property name="title">Text Highlight</property>
                       </object>
                     </child>
                   </object>

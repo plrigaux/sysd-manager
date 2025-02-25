@@ -11,6 +11,7 @@ use log::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 
 use crate::{
+    consts::ADWAITA,
     systemd_gui::new_settings,
     utils::font_management::FONT_CONTEXT,
     widget::{app_window::AppWindow, preferences::style_scheme::style_schemes},
@@ -20,7 +21,7 @@ use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE,
     KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
-    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_HIGHLIGHTING,
+    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBER,
     KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
 };
 
@@ -87,13 +88,13 @@ impl PreferencesDialogImpl {
         info!("unit_file_highlighting_switch {}", state);
 
         self.unit_file_highlight.set_state(state);
-        PREFERENCES.set_unit_file_highlight(state);
+        PREFERENCES.set_unit_file_line_number(state);
 
         let parent = self.app_window.borrow();
         let window = parent.as_ref().map(|w| w.clone());
 
         if let Some(window) = &window {
-            let action = crate::widget::InterPanelAction::FileHighlighting(state);
+            let action = crate::widget::InterPanelAction::FileLineNumber(state);
             window.set_inter_action(&action);
         }
 
@@ -187,6 +188,16 @@ impl PreferencesDialogImpl {
             select_font_row.set_subtitle(&font_description.to_string());
         });
     }
+
+    fn select_style_scheme(&self, vec: &Vec<&str>, style_scheme_id: &str) -> bool {
+        for (position, style_scheme_id_list) in vec.iter().enumerate() {
+            if style_scheme_id == *style_scheme_id_list {
+                self.unit_file_style.set_selected(position as u32);
+                return true;
+            }
+        }
+        false
+    }
 }
 
 impl PreferencesDialogImpl {
@@ -214,8 +225,13 @@ impl PreferencesDialogImpl {
                 PREFERENCES.set_unit_file_style_scheme(&style_scheme.string());
 
                 let style_scheme_g = style_scheme.string();
-                let action =
-                    crate::widget::InterPanelAction::NewStyleScheme(Some(style_scheme_g.as_str()));
+                let style_scheme_op = if style_scheme_g == "None" {
+                    None
+                } else {
+                    Some(style_scheme_g.as_str())
+                };
+
+                let action = crate::widget::InterPanelAction::NewStyleScheme(style_scheme_op);
                 window.set_inter_action(&action);
             });
     }
@@ -238,7 +254,7 @@ impl PreferencesDialogImpl {
 
     fn load_preferences_values(&self) {
         let journal_colors = PREFERENCES.journal_colors();
-        let unit_file_colors = PREFERENCES.unit_file_highlight();
+        let unit_file_colors = PREFERENCES.unit_file_line_number();
         let is_app_first_connection = PREFERENCES.is_app_first_connection();
 
         self.journal_colors.set_state(journal_colors);
@@ -310,8 +326,8 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         let journal_event_max_size = PREFERENCES.journal_event_max_size();
         settings.set_uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE, journal_event_max_size)?;
 
-        let unit_file_colors = PREFERENCES.unit_file_highlight();
-        settings.set_boolean(KEY_PREF_UNIT_FILE_HIGHLIGHTING, unit_file_colors)?;
+        let unit_file_colors = PREFERENCES.unit_file_line_number();
+        settings.set_boolean(KEY_PREF_UNIT_FILE_LINE_NUMBER, unit_file_colors)?;
 
         let unit_file_style_scheme = PREFERENCES.unit_file_style_scheme();
         settings.set_string(KEY_PREF_UNIT_FILE_STYLE_SCHEME, &unit_file_style_scheme)?;
@@ -384,17 +400,16 @@ impl ObjectImpl for PreferencesDialogImpl {
             });
 
         debug!("All styles {:#?}", style_schemes());
-        let vec: Vec<_> = style_schemes().keys().map(|f| f.as_str()).collect();
+        let mut vec = vec!["None"];
+        let mut vec_style_schemes: Vec<_> = style_schemes().keys().map(|f| f.as_str()).collect();
+        vec.append(&mut vec_style_schemes);
         let model = gtk::StringList::new(&vec);
         self.unit_file_style.set_model(Some(&model));
 
         let style_scheme_id = PREFERENCES.unit_file_style_scheme();
 
-        for (position, style_scheme_id_list) in vec.iter().enumerate() {
-            if style_scheme_id == *style_scheme_id_list {
-                self.unit_file_style.set_selected(position as u32);
-                break;
-            }
+        if !self.select_style_scheme(&vec, &style_scheme_id) {
+            self.select_style_scheme(&vec, ADWAITA);
         }
 
         // Load latest window state

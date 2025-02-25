@@ -67,12 +67,12 @@
             <description>Sometime a journal event can be huge and need to be limited to preserve the
                 application's operation. The 0 value to disable the limit.</description>
         </key>
-        <key name="pref-unit-file-highlighting" type="b">
+        <key name="pref-unit-file-line-number" type="b">
             <default>true</default>
             <summary>To display unit file highlighted</summary>
         </key>
         <key name="pref-unit-file-style-scheme" type="s">
-            <default>""</default>
+            <default>"Adwaita"</default>
             <summary>Id of the style scheme used to display unit file</summary>
         </key>
         <key name="pref-app-first-connection" type="b">

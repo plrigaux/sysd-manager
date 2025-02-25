@@ -19,7 +19,7 @@ use log::{debug, info, warn};
 use sourceview5::{prelude::*, Buffer};
 
 use crate::{
-    consts::SUGGESTED_ACTION,
+    consts::{ADWAITA, SUGGESTED_ACTION},
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     utils::font_management::set_text_view_font_display,
     widget::{
@@ -31,7 +31,6 @@ use crate::{
 
 use super::flatpak;
 
-const ADWAITA: &str = "Adwaita";
 const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
 
@@ -245,17 +244,14 @@ impl UnitFilePanelImp {
         self.set_new_style_scheme(Some(&style_scheme_id));
     }
 
-    fn set_highlight(&self, highlight: bool) {
-        if highlight {
-            let style_scheme_id = PREFERENCES.unit_file_style_scheme();
-            self.set_new_style_scheme(Some(&style_scheme_id));
-        } else {
-            self.set_new_style_scheme(None);
+    fn set_line_number(&self, line_number: bool) {
+        if let Some(view) = self.unit_file_text.get() {
+            view.set_show_line_numbers(line_number);
         }
     }
 
     fn set_new_style_scheme(&self, mut style_scheme_id: Option<&str>) {
-        if !PREFERENCES.unit_file_highlight() {
+        if !PREFERENCES.unit_file_line_number() {
             style_scheme_id = None
         }
 
@@ -273,7 +269,7 @@ impl UnitFilePanelImp {
             let style_sheme_st = match style_scheme_st {
                 Some(ss) => ss,
                 None => {
-                    warn!(
+                    info!(
                         "style scheme id \"{style_scheme_id}\" not found in {:?}",
                         style_schemes_map.keys().collect::<Vec<_>>()
                     );
@@ -337,7 +333,7 @@ impl UnitFilePanelImp {
             }
             InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
             InterPanelAction::PanelVisible(visible) => self.set_visible_on_page(visible),
-            InterPanelAction::FileHighlighting(highlight) => self.set_highlight(highlight),
+            InterPanelAction::FileLineNumber(line_number) => self.set_line_number(line_number),
             InterPanelAction::NewStyleScheme(style_scheme) => {
                 self.set_new_style_scheme(style_scheme)
             }
@@ -371,10 +367,8 @@ impl ObjectImpl for UnitFilePanelImp {
 
         let buffer = sourceview5::Buffer::new(None);
 
-        if PREFERENCES.unit_file_highlight() {
-            if let Some(ref language) = sourceview5::LanguageManager::new().language("ini") {
-                buffer.set_language(Some(language));
-            }
+        if let Some(ref language) = sourceview5::LanguageManager::new().language("ini") {
+            buffer.set_language(Some(language));
         }
 
         let view = sourceview5::View::with_buffer(&buffer);
