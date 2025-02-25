@@ -65,6 +65,7 @@
                     </child>
                     <child>
                       <object class="AdwComboRow" id="unit_file_style">
+                        <property name="subtitle">Unit file highlight style</property>
                         <property name="title">Text Style</property>
                       </object>
                     </child>

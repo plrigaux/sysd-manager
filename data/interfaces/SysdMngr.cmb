@@ -347,6 +347,7 @@
 	(21,32,"AdwActionRow","subtitle","Display a nice text highligth for the unit file",0,None,None,None,None,None,None,None,None),
 	(21,32,"AdwPreferencesRow","title","Unit file highlighting",0,None,None,None,None,None,None,None,None),
 	(21,33,"GtkWidget","valign","baseline-center",0,None,None,None,None,None,None,None,None),
+	(21,38,"AdwActionRow","subtitle","Unit file highlight style",None,None,None,None,None,None,None,None,None),
 	(21,38,"AdwPreferencesRow","title","Text Style",None,None,None,None,None,None,None,None,None),
 	(29,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(29,2,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),

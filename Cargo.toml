@@ -36,7 +36,7 @@ flatpak = []
 lto = true
 
 [dependencies]
-gtk = { version = "0.9.5", package = "gtk4", features = ["gnome_47"] }
+gtk = { version = "0.9.6", package = "gtk4", features = ["gnome_47"] }
 adw = { version = "0.7.1", package = "libadwaita", features = ["v1_6"] }
 log = "0.4"
 libc = "0.2"
