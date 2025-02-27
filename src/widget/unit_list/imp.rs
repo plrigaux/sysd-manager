@@ -329,6 +329,7 @@ impl UnitListPanelImp {
                 Ok(unit_files) => unit_files,
                 Err(err) => {
                     warn!("Fail fetch list {:?}", err);
+                    panel_stack.set_visible_child_name("empty");
                     return;
                 }
             };

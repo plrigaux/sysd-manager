@@ -22,6 +22,18 @@
         <child>
           <object class="GtkStackPage">
             <property name="child">
+              <object class="AdwStatusPage">
+                <property name="description">No units returned</property>
+                <property name="icon-name">help-about-symbolic</property>
+                <property name="title">Someting went wrong</property>
+              </object>
+            </property>
+            <property name="name">empty</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
               <object class="GtkBox">
                 <property name="orientation">vertical</property>
                 <child>
