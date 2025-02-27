@@ -78,8 +78,13 @@ For now new features are planned to be added, such as:
   * Install GTK 4 and the build essentials. [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html)
   * Install libadwaita [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
   * Install systemd development library **libsystemd-dev**
-* Compile and install  ```cargo install sysd-manager```
+* Download sources ```git clone https://github.com/plrigaux/sysd-manager```
+* Go to the newly created sysd-manager directory ```cd sysd-manager```
+* Compile and install  ```sh install.sh```
 * Run ```sysd-manager``` and VOILA!
+
+
+_Note_ for a clean remove execute ```sh uninstall.sh``
 
 ### Arch
 

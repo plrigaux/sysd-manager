@@ -19,7 +19,7 @@ use gtk::{
     prelude::*,
 };
 
-use log::{info, warn};
+use log::{debug, info, warn};
 
 use dotenv::dotenv;
 use systemd::{data::UnitInfo, enums::UnitDBusLevel};
@@ -37,9 +37,10 @@ fn main() -> glib::ExitCode {
 
     env_logger::init();
 
-    let unit = handle_args();
-
+    //std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
     info!("Program starting up");
+
+    let unit = handle_args();
 
     #[cfg(feature = "flatpak")]
     info!("Flatpak version");
@@ -127,14 +128,18 @@ fn handle_args() -> Option<UnitInfo> {
 
     let current_level = PREFERENCES.dbus_level();
 
+    debug!("Current level: {:?}", current_level);
     let (app_level, unit_level) = match (args.system, args.user) {
-        (true, _) => (DbusLevel::SystemAndSession, UnitDBusLevel::System),
+        (true, _) => (DbusLevel::System, UnitDBusLevel::System),
         (false, true) => (DbusLevel::UserSession, UnitDBusLevel::UserSession),
         (false, false) => (DbusLevel::SystemAndSession, UnitDBusLevel::System),
     };
 
+    PREFERENCES.set_dbus_level(app_level);
+
+    let current_level = PREFERENCES.dbus_level();
+    debug!("Current level: {:?}", current_level);
     if current_level != DbusLevel::SystemAndSession && current_level != app_level {
-        PREFERENCES.set_dbus_level(app_level);
         let settings = new_settings();
         PREFERENCES.save_dbus_level(&settings);
     }

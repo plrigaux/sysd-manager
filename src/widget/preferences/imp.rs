@@ -399,7 +399,7 @@ impl ObjectImpl for PreferencesDialogImpl {
                 PREFERENCES.set_timestamp_style(tss);
             });
 
-        debug!("All styles {:#?}", style_schemes());
+        debug!("All styles {:?}", style_schemes());
         let mut vec = vec!["None"];
         let mut vec_style_schemes: Vec<_> = style_schemes().keys().map(|f| f.as_str()).collect();
         vec.append(&mut vec_style_schemes);
