@@ -57,7 +57,7 @@ pub struct UnitControlPanelImpl {
     stop_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
-    kill_button: TemplateChild<gtk::Button>,
+    show_more_button: TemplateChild<gtk::ToggleButton>,
 
     #[template_child]
     restart_button: TemplateChild<adw::SplitButton>,
@@ -65,9 +65,8 @@ pub struct UnitControlPanelImpl {
     #[template_child]
     side_overlay: TemplateChild<adw::OverlaySplitView>,
 
-    #[template_child]
-    kill_panel: TemplateChild<KillPanel>,
-
+    /*     #[template_child]
+    kill_panel: TemplateChild<KillPanel>, */
     #[template_child]
     start_modes: TemplateChild<gtk::Box>,
 
@@ -134,7 +133,7 @@ macro_rules! current_unit {
 #[gtk::template_callbacks]
 impl UnitControlPanelImpl {
     pub(super) fn set_overlay(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
-        self.kill_panel.register(&self.side_overlay, toast_overlay);
+        //self.kill_panel.register(&self.side_overlay, toast_overlay);
         self.unit_file_panel.register(app_window, toast_overlay);
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
@@ -207,13 +206,22 @@ impl UnitControlPanelImpl {
     }
 
     #[template_callback]
-    fn button_kill_clicked(&self, _button: &gtk::Button) {
-        let unit = current_unit!(self);
+    fn show_more_button_clicked(&self, _button: &gtk::Button) {
+        //let unit = current_unit!(self);
 
-        self.kill_panel.set_unit(Some(&unit));
+        //self.kill_panel.set_unit(Some(&unit));
 
-        let collapsed = self.side_overlay.is_collapsed();
-        self.side_overlay.set_collapsed(!collapsed);
+        /*         let collapsed = self.side_overlay.is_collapsed();
+        self.side_overlay.set_collapsed(!collapsed); */
+    }
+
+    #[template_callback]
+    fn sidebar_close_button_clicked(&self, _button: &gtk::Button) {
+        //let unit = current_unit!(self);
+
+        //self.kill_panel.set_unit(Some(&unit));
+
+        self.side_overlay.set_collapsed(true);
     }
 
     #[template_callback]
@@ -221,6 +229,12 @@ impl UnitControlPanelImpl {
         self.search_bar
             .borrow()
             .set_search_mode(toggle_button.is_active());
+    }
+
+    #[template_callback]
+    fn kill_button_clicked(&self, _button: &gtk::Button) {
+        info!("Click kill");
+        let kp = KillPanel::new();
     }
 }
 
@@ -330,7 +344,7 @@ impl UnitControlPanelImpl {
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_unit(unit);
         self.unit_journal_panel.set_unit(unit);
-        self.kill_panel.set_unit(unit);
+        //self.kill_panel.set_unit(unit);
         self.unit_dependencies_panel.set_unit(unit);
 
         let unit = match unit {
@@ -355,7 +369,7 @@ impl UnitControlPanelImpl {
         self.start_button.set_sensitive(true);
         self.stop_button.set_sensitive(true);
         self.restart_button.set_sensitive(true);
-        self.kill_button.set_sensitive(true);
+        //self.kill_button.set_sensitive(true);
 
         self.highlight_controls(unit);
     }
@@ -401,7 +415,7 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
-        self.kill_panel.set_inter_action(action);
+        //self.kill_panel.set_inter_action(action);
     }
 
     //TODO bind to the property
@@ -553,6 +567,17 @@ impl ObjectImpl for UnitControlPanelImpl {
 
             FONT_CONTEXT.set_font_description(font_description);
         }
+
+        self.show_more_button
+            .bind_property::<adw::OverlaySplitView>(
+                "active",
+                self.side_overlay.as_ref(),
+                "collapsed",
+            )
+            .bidirectional()
+            .transform_to(|_binding, is_active: bool| Some(!is_active))
+            .transform_from(|_binding, is_active: bool| Some(!is_active))
+            .build();
     }
 }
 

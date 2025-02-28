@@ -10,11 +10,20 @@ use super::InterPanelAction;
 // ANCHOR: mod
 glib::wrapper! {
     pub struct KillPanel(ObjectSubclass<imp::KillPanelImp>)
-        @extends gtk::Box, gtk::Widget,
-        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
+        @extends adw::Window, gtk::Widget,
+        //@implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
+
+        @implements gtk::Accessible,  gtk::Buildable,  gtk::ConstraintTarget,
+        gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
 impl KillPanel {
+    pub fn new() -> Self {
+        let obj: KillPanel = glib::Object::new();
+
+        obj
+    }
+
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         self.imp().set_unit(unit);
     }
@@ -33,10 +42,16 @@ impl KillPanel {
     }
 }
 
+impl Default for KillPanel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 mod imp {
     use std::cell::{Cell, OnceCell, RefCell};
 
-    use adw::prelude::*;
+    use adw::{prelude::*, subclass::window::AdwWindowImpl};
     use gtk::{
         gio,
         glib::{self, property::PropertySet},
@@ -82,8 +97,7 @@ mod imp {
 
         /*  #[template_child]
         signals_group_box: TemplateChild<gtk::Box>, */
-        side_overlay: OnceCell<adw::OverlaySplitView>,
-
+        //side_overlay: OnceCell<adw::OverlaySplitView>,
         toast_overlay: OnceCell<adw::ToastOverlay>,
 
         unit: RefCell<Option<UnitInfo>>,
@@ -172,24 +186,15 @@ mod imp {
         fn button_cancel_clicked(&self, _button: &gtk::Button) {
             info!("button_cancel_clicked");
 
-            self.side_overlay
-                .get()
-                .expect("side_overlay registred")
-                .set_collapsed(true);
-
             self.unit.set(None);
             //self.entry_text.set_text("");
         }
 
         pub fn register(
             &self,
-            side_overlay: &adw::OverlaySplitView,
+            _side_overlay: &adw::OverlaySplitView,
             toast_overlay: &adw::ToastOverlay,
         ) {
-            self.side_overlay
-                .set(side_overlay.clone())
-                .expect("side_overlay once");
-
             self.toast_overlay
                 .set(toast_overlay.clone())
                 .expect("toast_overlay once");
@@ -245,7 +250,7 @@ mod imp {
     impl ObjectSubclass for KillPanelImp {
         const NAME: &'static str = "KillPanel";
         type Type = super::KillPanel;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Window;
 
         fn class_init(klass: &mut Self::Class) {
             // The layout manager determines how child widgets are laid out.
@@ -308,7 +313,8 @@ mod imp {
     }
 
     impl WidgetImpl for KillPanelImp {}
-    impl BoxImpl for KillPanelImp {}
+    impl WindowImpl for KillPanelImp {}
+    impl AdwWindowImpl for KillPanelImp {}
 
     fn pattern_not_digit(c: char) -> bool {
         !c.is_ascii_digit()

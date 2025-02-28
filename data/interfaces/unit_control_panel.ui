@@ -100,9 +100,8 @@
             <property name="halign">end</property>
             <property name="hexpand">True</property>
             <child>
-              <object class="GtkButton" id="kill_button">
-                <property name="sensitive">False</property>
-                <signal name="clicked" handler="button_kill_clicked" swapped="yes"/>
+              <object class="GtkToggleButton" id="show_more_button">
+                <signal name="toggled" handler="show_more_button_clicked" swapped="yes"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="can-shrink">True</property>
@@ -178,7 +177,31 @@
         </property>
         <property name="min-sidebar-width">200.0</property>
         <property name="sidebar">
-          <object class="KillPanel" id="kill_panel"/>
+          <object class="GtkBox">
+            <property name="margin-end">5</property>
+            <property name="margin-start">5</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkButton">
+                <property name="css-classes">circular</property>
+                <property name="halign">end</property>
+                <property name="icon-name">window-close-symbolic</property>
+                <signal name="clicked" handler="sidebar_close_button_clicked" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label">Kill</property>
+                <signal name="clicked" handler="kill_button_clicked" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label">Clean</property>
+              </object>
+            </child>
+          </object>
         </property>
         <property name="sidebar-position">end</property>
       </object>
