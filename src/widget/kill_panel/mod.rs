@@ -10,7 +10,7 @@ use super::InterPanelAction;
 // ANCHOR: mod
 glib::wrapper! {
     pub struct KillPanel(ObjectSubclass<imp::KillPanelImp>)
-        @extends adw::Window, gtk::Widget,
+        @extends adw::Window, gtk::Window, gtk::Widget,
         //@implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 
         @implements gtk::Accessible,  gtk::Buildable,  gtk::ConstraintTarget,
@@ -56,7 +56,6 @@ mod imp {
         gio,
         glib::{self, property::PropertySet},
         subclass::{
-            box_::BoxImpl,
             prelude::*,
             widget::{
                 CompositeTemplateCallbacksClass, CompositeTemplateClass,
@@ -90,7 +89,7 @@ mod imp {
         who_to_kill: TemplateChild<adw::ComboRow>,
 
         #[template_child]
-        unit_label: TemplateChild<gtk::Label>,
+        window_title: TemplateChild<adw::WindowTitle>,
 
         #[template_child]
         signals_group: TemplateChild<adw::PreferencesGroup>,
@@ -212,8 +211,8 @@ mod imp {
             self.unit.set(Some(unit.clone()));
 
             let label_text = &unit.primary();
-            self.unit_label.set_label(label_text);
-            self.unit_label.set_tooltip_text(Some(label_text));
+
+            self.window_title.set_subtitle(label_text);
         }
 
         #[template_callback]
@@ -313,7 +312,13 @@ mod imp {
     }
 
     impl WidgetImpl for KillPanelImp {}
-    impl WindowImpl for KillPanelImp {}
+    impl WindowImpl for KillPanelImp {
+        /*         fn close_request(&self) -> glib::Propagation {
+            println!("{:?}", self.obj().default_size());
+
+            glib::Propagation::Proceed
+        } */
+    }
     impl AdwWindowImpl for KillPanelImp {}
 
     fn pattern_not_digit(c: char) -> bool {

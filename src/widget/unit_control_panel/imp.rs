@@ -235,6 +235,10 @@ impl UnitControlPanelImpl {
     fn kill_button_clicked(&self, _button: &gtk::Button) {
         info!("Click kill");
         let kp = KillPanel::new();
+
+        kp.present();
+
+        //println!("{:?}", kp.default_size())
     }
 }
 
