@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.94.1 -->
 <interface>
   <!-- interface-name kill_panel.ui -->
-  <requires lib="gtk" version="4.12"/>
+  <requires lib="gtk" version="4.16"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="KillPanel" parent="AdwWindow">
     <property name="content">
@@ -32,7 +32,7 @@
                 <property name="description">which processes</property>
                 <property name="title">Who to kill</property>
                 <child>
-                  <object class="AdwComboRow" id="who_to_kill"/>
+                  <object class="GtkDropDown" id="who_to_kill"/>
                 </child>
               </object>
             </child>
@@ -74,7 +74,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title">Kill Unit</property>
+                <property name="title">Send Kill Signal to Unit</property>
               </object>
             </property>
           </object>

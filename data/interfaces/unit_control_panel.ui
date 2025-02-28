@@ -192,7 +192,7 @@
             </child>
             <child>
               <object class="GtkButton">
-                <property name="label">Kill</property>
+                <property name="label">Send Kill Signal</property>
                 <signal name="clicked" handler="kill_button_clicked" swapped="yes"/>
               </object>
             </child>

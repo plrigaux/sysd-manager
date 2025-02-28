@@ -94,6 +94,8 @@ pub struct UnitControlPanelImpl {
 
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
 
+    kill_signal_window: RefCell<Option<KillPanel>>,
+
     is_dark: Cell<bool>,
 }
 
@@ -233,12 +235,12 @@ impl UnitControlPanelImpl {
 
     #[template_callback]
     fn kill_button_clicked(&self, _button: &gtk::Button) {
-        info!("Click kill");
-        let kp = KillPanel::new();
+        let binding = self.current_unit.borrow();
+        let kill_signal_window = KillPanel::new(binding.as_ref(), self.is_dark.get());
 
-        kp.present();
+        kill_signal_window.present();
 
-        //println!("{:?}", kp.default_size())
+        self.kill_signal_window.replace(Some(kill_signal_window));
     }
 }
 
@@ -351,6 +353,11 @@ impl UnitControlPanelImpl {
         //self.kill_panel.set_unit(unit);
         self.unit_dependencies_panel.set_unit(unit);
 
+        let kill_signal_window = self.kill_signal_window.borrow();
+        if let Some(kill_signal_window) = kill_signal_window.as_ref() {
+            kill_signal_window.set_unit(unit);
+        }
+
         let unit = match unit {
             Some(u) => u,
             None => {
@@ -420,6 +427,11 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
         //self.kill_panel.set_inter_action(action);
+
+        let kill_signal_window = self.kill_signal_window.borrow();
+        if let Some(kill_signal_window) = kill_signal_window.as_ref() {
+            kill_signal_window.set_inter_action(action);
+        }
     }
 
     //TODO bind to the property

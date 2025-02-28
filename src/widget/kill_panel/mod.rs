@@ -18,9 +18,10 @@ glib::wrapper! {
 }
 
 impl KillPanel {
-    pub fn new() -> Self {
+    pub fn new(unit: Option<&UnitInfo>, is_dark: bool) -> Self {
         let obj: KillPanel = glib::Object::new();
-
+        obj.set_unit(unit);
+        obj.set_inter_action(&InterPanelAction::IsDark(is_dark));
         obj
     }
 
@@ -39,12 +40,6 @@ impl KillPanel {
     ) {
         let obj = self.imp();
         obj.register(side_overlay, toast_overlay);
-    }
-}
-
-impl Default for KillPanel {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -86,7 +81,7 @@ mod imp {
         signal_id_entry: TemplateChild<adw::EntryRow>,
 
         #[template_child]
-        who_to_kill: TemplateChild<adw::ComboRow>,
+        who_to_kill: TemplateChild<gtk::DropDown>,
 
         #[template_child]
         window_title: TemplateChild<adw::WindowTitle>,
@@ -213,6 +208,8 @@ mod imp {
             let label_text = &unit.primary();
 
             self.window_title.set_subtitle(label_text);
+
+            self.set_send_button_sensitivity();
         }
 
         #[template_callback]
@@ -220,17 +217,7 @@ mod imp {
             let text = entry.text();
             debug!("entry_changed {}", text);
 
-            if text.is_empty() {
-                self.send_button.set_sensitive(false);
-                return;
-            }
-
-            if text.contains(pattern_not_digit) {
-                self.send_button.set_sensitive(false);
-                return;
-            }
-
-            self.send_button.set_sensitive(true);
+            self.set_send_button_sensitivity();
         }
 
         pub(crate) fn set_dark(&self, is_dark: bool) {
@@ -240,6 +227,19 @@ mod imp {
         pub(crate) fn set_inter_action(&self, action: &InterPanelAction) {
             if let InterPanelAction::IsDark(is_dark) = *action {
                 self.set_dark(is_dark)
+            }
+        }
+
+        fn set_send_button_sensitivity(&self) {
+            let text = self.signal_id_entry.text();
+
+            match (
+                text.is_empty(),
+                text.contains(pattern_not_digit),
+                self.unit.borrow().is_some(),
+            ) {
+                (false, false, true) => self.send_button.set_sensitive(true),
+                _ => self.send_button.set_sensitive(false),
             }
         }
     }
@@ -266,10 +266,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let model = adw::EnumListModel::new(KillWho::static_type());
-
-            self.who_to_kill.set_model(Some(&model));
-
             let expression = gtk::PropertyExpression::new(
                 adw::EnumListItem::static_type(),
                 None::<gtk::Expression>,
@@ -277,6 +273,10 @@ mod imp {
             );
 
             self.who_to_kill.set_expression(Some(expression));
+
+            let model = adw::EnumListModel::new(KillWho::static_type());
+
+            self.who_to_kill.set_model(Some(&model));
 
             let edit = self.signal_id_entry.delegate().unwrap();
 

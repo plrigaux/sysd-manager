@@ -40,7 +40,7 @@
 	(53,"gio","2.44",None),
 	(53,"gtk","4.14",None),
 	(53,"libadwaita","1.6",None),
-	(55,"gtk","4.12",None),
+	(55,"gtk","4.16",None),
 	(55,"libadwaita","1.6",None)
   </ui_library>
   <object>
@@ -256,7 +256,6 @@
 	(55,2,"AdwToolbarView",None,1,None,None,None,0,None,None),
 	(55,3,"GtkBox",None,2,None,None,None,0,None,None),
 	(55,7,"AdwPreferencesGroup",None,3,None,None,None,1,None,None),
-	(55,8,"AdwComboRow","who_to_kill",7,None,None,None,0,None,None),
 	(55,9,"AdwPreferencesGroup",None,3,None,None,None,0,None,None),
 	(55,10,"AdwEntryRow","signal_id_entry",9,None,None,None,0,None,None),
 	(55,11,"GtkBox",None,3,None,None,None,2,None,None),
@@ -265,7 +264,8 @@
 	(55,14,"GtkScrolledWindow",None,3,None,None,None,3,None,None),
 	(55,15,"AdwPreferencesGroup","signals_group",14,None,None,None,0,None,None),
 	(55,16,"AdwHeaderBar",None,2,None,"top",None,1,None,None),
-	(55,17,"AdwWindowTitle","window_title",16,None,None,None,0,None,None)
+	(55,17,"AdwWindowTitle","window_title",16,None,None,None,0,None,None),
+	(55,19,"GtkDropDown","who_to_kill",7,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -622,6 +622,8 @@
 	(54,20,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
 	(54,21,"GtkLabel","label","plain",None,None,None,None,None,None,None,None,None),
 	(55,1,"AdwWindow","content",None,0,None,None,None,2,None,None,None,None),
+	(55,1,"GtkWidget","height-request","850",None,None,None,None,None,None,None,None,None),
+	(55,1,"GtkWidget","width-request","360",None,None,None,None,None,None,None,None,None),
 	(55,2,"AdwToolbarView","bottom-bar-style","raised",0,None,None,None,None,None,None,None,None),
 	(55,2,"AdwToolbarView","content",None,0,None,None,None,3,None,None,None,None),
 	(55,3,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
