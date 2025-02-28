@@ -42,6 +42,7 @@
           <object class="GtkTextView" id="unit_info_textview">
             <property name="editable">False</property>
             <property name="monospace">True</property>
+            <property name="wrap-mode">word</property>
           </object>
         </child>
       </object>

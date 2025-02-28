@@ -9,6 +9,7 @@
     <property name="spacing">5</property>
     <child>
       <object class="GtkBox">
+        <property name="margin-end">5</property>
         <property name="spacing">5</property>
         <child>
           <object class="GtkLabel">
@@ -95,13 +96,21 @@
           </object>
         </child>
         <child>
-          <object class="GtkButton" id="kill_button">
-            <property name="sensitive">False</property>
-            <signal name="clicked" handler="button_kill_clicked" swapped="yes"/>
+          <object class="GtkBox">
+            <property name="halign">end</property>
+            <property name="hexpand">True</property>
             <child>
-              <object class="AdwButtonContent">
-                <property name="icon-name">dock-right-symbolic</property>
-                <property name="label">Kill</property>
+              <object class="GtkButton" id="kill_button">
+                <property name="sensitive">False</property>
+                <signal name="clicked" handler="button_kill_clicked" swapped="yes"/>
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="can-shrink">True</property>
+                    <property name="icon-name">dock-right-symbolic</property>
+                    <property name="label">_More</property>
+                    <property name="use-underline">True</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
