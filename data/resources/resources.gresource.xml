@@ -25,5 +25,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/unreadable-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/funnel-outline-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/funnel-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/sad-computer-symbolic.svg</file>    
   </gresource>
 </gresources>
