@@ -255,17 +255,17 @@
 	(55,1,"AdwWindow","KillPanel",None,None,None,None,0,None,None),
 	(55,2,"AdwToolbarView",None,1,None,None,None,0,None,None),
 	(55,3,"GtkBox",None,2,None,None,None,0,None,None),
-	(55,7,"AdwPreferencesGroup",None,3,None,None,None,1,None,None),
 	(55,9,"AdwPreferencesGroup",None,3,None,None,None,0,None,None),
 	(55,10,"AdwEntryRow","signal_id_entry",9,None,None,None,0,None,None),
-	(55,11,"GtkBox",None,3,None,None,None,2,None,None),
+	(55,11,"GtkBox",None,3,None,None,None,1,None,None),
 	(55,12,"GtkButton","cancel_button",11,None,None,None,0,None,None),
 	(55,13,"GtkButton","send_button",11,None,None,None,1,None,None),
-	(55,14,"GtkScrolledWindow",None,3,None,None,None,3,None,None),
+	(55,14,"GtkScrolledWindow",None,3,None,None,None,2,None,None),
 	(55,15,"AdwPreferencesGroup","signals_group",14,None,None,None,0,None,None),
 	(55,16,"AdwHeaderBar",None,2,None,"top",None,1,None,None),
 	(55,17,"AdwWindowTitle","window_title",16,None,None,None,0,None,None),
-	(55,19,"GtkDropDown","who_to_kill",7,None,None,None,0,None,None)
+	(55,23,"AdwComboRow","who_to_kill",9,None,None,None,1,None,None),
+	(55,24,"AdwEntryRow","signal_value",9,None,None,None,2,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -513,7 +513,7 @@
 	(49,36,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
 	(49,36,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
 	(49,36,"GtkWidget","margin-start","5",None,None,None,None,None,None,None,None,None),
-	(49,37,"GtkButton","label","Kill",None,None,None,None,None,None,None,None,None),
+	(49,37,"GtkButton","label","Send Kill Signal",None,None,None,None,None,None,None,None,None),
 	(49,38,"GtkButton","label","Clean",None,None,None,None,None,None,None,None,None),
 	(49,39,"GtkButton","icon-name","window-close-symbolic",None,None,None,None,None,None,None,None,None),
 	(49,39,"GtkWidget","css-classes","circular",None,None,None,None,None,None,None,None,None),
@@ -632,10 +632,8 @@
 	(55,3,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
 	(55,3,"GtkWidget","margin-start","5",None,None,None,None,None,None,None,None,None),
 	(55,3,"GtkWidget","margin-top","5",None,None,None,None,None,None,None,None,None),
-	(55,7,"AdwPreferencesGroup","description","which processes",0,None,None,None,None,None,None,None,None),
-	(55,7,"AdwPreferencesGroup","title","Who to kill",0,None,None,None,None,None,None,None,None),
-	(55,9,"AdwPreferencesGroup","title","Signal",0,None,None,None,None,None,None,None,None),
-	(55,10,"AdwPreferencesRow","title","Send signal: ",0,None,None,None,None,None,None,None,None),
+	(55,9,"AdwPreferencesGroup","title","Parameters",0,None,None,None,None,None,None,None,None),
+	(55,10,"AdwPreferencesRow","title","Unix signal",0,None,None,None,None,None,None,None,None),
 	(55,11,"GtkBox","spacing","10",0,None,None,None,None,None,None,None,None),
 	(55,11,"GtkWidget","halign","end",0,None,None,None,None,None,None,None,None),
 	(55,11,"GtkWidget","margin-top","10",0,None,None,None,None,None,None,None,None),
@@ -645,9 +643,12 @@
 	(55,13,"GtkWidget","sensitive","False",0,None,None,None,None,None,None,None,None),
 	(55,14,"GtkWidget","vexpand","True",0,None,None,None,None,None,None,None,None),
 	(55,15,"AdwPreferencesGroup","description","most common linux signals",0,None,None,None,None,None,None,None,None),
-	(55,15,"AdwPreferencesGroup","title","Common signals",0,None,None,None,None,None,None,None,None),
+	(55,15,"AdwPreferencesGroup","title","Common Unix signals",0,None,None,None,None,None,None,None,None),
 	(55,16,"AdwHeaderBar","title-widget",None,None,None,None,None,17,None,None,None,None),
-	(55,17,"AdwWindowTitle","title","Kill Unit",None,None,None,None,None,None,None,None,None)
+	(55,17,"AdwWindowTitle","title","Send Kill Signal to Unit",None,None,None,None,None,None,None,None,None),
+	(55,23,"AdwActionRow","subtitle","Unit related processes",None,None,None,None,None,None,None,None,None),
+	(55,23,"AdwPreferencesRow","title","Who to kill",None,None,None,None,None,None,None,None,None),
+	(55,24,"AdwPreferencesRow","title","Signal Value",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
@@ -696,7 +697,9 @@
 	(196,49,37,"GtkButton","clicked","kill_button_clicked",None,0,1,0,None),
 	(197,55,10,"GtkEditable","changed","kill_signal_text_change",None,None,1,0,None),
 	(198,55,12,"GtkButton","clicked","button_cancel_clicked",None,None,1,0,None),
-	(199,55,13,"GtkButton","clicked","button_send_clicked",None,None,1,0,None)
+	(199,55,13,"GtkButton","clicked","button_send_clicked",None,None,1,0,None),
+	(200,55,23,"GtkListBoxRow","activate","who_to_kill_activate",None,0,1,0,None),
+	(201,55,23,"AdwActionRow","activated","who_to_kill_activated",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

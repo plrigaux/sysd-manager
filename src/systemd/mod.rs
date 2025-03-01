@@ -20,7 +20,7 @@ use enums::{
     UnitDBusLevel, UnitType,
 };
 use errors::SystemdErrors;
-use gtk::glib::GString;
+use gtk::glib::{value, GString};
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 use sysdbus::DisEnAbleUnitFiles;
@@ -461,6 +461,15 @@ pub fn fetch_unit(
 
 pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {
     sysdbus::kill_unit(unit.dbus_level(), &unit.primary(), who, signal)
+}
+
+pub fn queue_signal_unit(
+    unit: &UnitInfo,
+    who: KillWho,
+    signal: i32,
+    value: i32,
+) -> Result<(), SystemdErrors> {
+    sysdbus::queue_signal_unit(unit.dbus_level(), &unit.primary(), who, signal, value)
 }
 
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {

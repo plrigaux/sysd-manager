@@ -48,6 +48,7 @@ const METHOD_STOP_UNIT: &str = "StopUnit";
 const METHOD_RESTART_UNIT: &str = "RestartUnit";
 const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
+const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
 const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlags";
@@ -606,6 +607,27 @@ pub(super) fn kill_unit(
         level,
         METHOD_KILL_UNIT,
         &(unit_name, mode.as_str(), signal),
+        handle_answer,
+    )
+}
+
+pub(super) fn queue_signal_unit(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    mode: KillWho,
+    signal: i32,
+    value: i32,
+) -> Result<(), SystemdErrors> {
+    fn handle_answer(_method: &str, _return_message: &Message) -> Result<(), SystemdErrors> {
+        info!("Queue Signal SUCCESS");
+
+        Ok(())
+    }
+
+    send_disenable_message(
+        level,
+        METHOD_QUEUE_SIGNAL_UNIT,
+        &(unit_name, mode.as_str(), signal, value),
         handle_answer,
     )
 }
