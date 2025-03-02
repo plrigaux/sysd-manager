@@ -192,8 +192,16 @@
             </child>
             <child>
               <object class="GtkButton">
+                <property name="css-classes">flat</property>
                 <property name="label">Send Kill Signal</property>
                 <signal name="clicked" handler="kill_button_clicked" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="css-classes">flat</property>
+                <property name="label">Sends a signal</property>
+                <signal name="clicked" handler="send_signal_button_clicked" swapped="yes"/>
               </object>
             </child>
             <child>

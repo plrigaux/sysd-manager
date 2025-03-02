@@ -19,10 +19,19 @@ glib::wrapper! {
 }
 
 impl KillPanel {
-    pub fn new(unit: Option<&UnitInfo>, is_dark: bool) -> Self {
+    pub fn new_kill_window(unit: Option<&UnitInfo>, is_dark: bool) -> Self {
+        KillPanel::new_window(unit, is_dark, false)
+    }
+
+    pub fn new_signal_window(unit: Option<&UnitInfo>, is_dark: bool) -> Self {
+        KillPanel::new_window(unit, is_dark, true)
+    }
+
+    fn new_window(unit: Option<&UnitInfo>, is_dark: bool, is_signal: bool) -> KillPanel {
         let obj: KillPanel = glib::Object::new();
         obj.set_unit(unit);
         obj.set_inter_action(&InterPanelAction::IsDark(is_dark));
+        obj.imp().set_is_signal(is_signal);
         obj
     }
 

@@ -184,10 +184,11 @@
 	(49,35,"GtkBox",None,2,None,None,None,5,None,None),
 	(49,36,"GtkBox",None,19,None,None,None,1,None,None),
 	(49,37,"GtkButton",None,36,None,None,None,1,None,None),
-	(49,38,"GtkButton",None,36,None,None,None,2,None,None),
+	(49,38,"GtkButton",None,36,None,None,None,3,None,None),
 	(49,39,"GtkButton",None,36,None,None,None,0,None,None),
 	(49,40,"GtkToggleButton","show_more_button",35,None,None,None,0,None,None),
 	(49,41,"AdwButtonContent",None,40,None,None,None,0,None,None),
+	(49,42,"GtkButton",None,36,None,None,None,2,None,None),
 	(50,1,"(menu)","main-menu",None,None,None,None,0,None,None),
 	(50,6,"(item)",None,27,None,None,None,2,None,None),
 	(50,7,"AdwApplicationWindow","SysdMainAppWindow",None,None,None,None,1,None,None),
@@ -514,6 +515,7 @@
 	(49,36,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
 	(49,36,"GtkWidget","margin-start","5",None,None,None,None,None,None,None,None,None),
 	(49,37,"GtkButton","label","Send Kill Signal",None,None,None,None,None,None,None,None,None),
+	(49,37,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
 	(49,38,"GtkButton","label","Clean",None,None,None,None,None,None,None,None,None),
 	(49,39,"GtkButton","icon-name","window-close-symbolic",None,None,None,None,None,None,None,None,None),
 	(49,39,"GtkWidget","css-classes","circular",None,None,None,None,None,None,None,None,None),
@@ -522,6 +524,8 @@
 	(49,41,"AdwButtonContent","icon-name","dock-right-symbolic",0,None,None,None,None,None,None,None,None),
 	(49,41,"AdwButtonContent","label","_More",0,None,None,None,None,None,None,None,None),
 	(49,41,"AdwButtonContent","use-underline","True",0,None,None,None,None,None,None,None,None),
+	(49,42,"GtkButton","label","Sends a signal",0,None,None,None,None,None,None,None,None),
+	(49,42,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
 	(50,6,"(item)","action","app.about",0,None,None,None,None,None,None,None,None),
 	(50,6,"(item)","label","About",1,None,None,None,None,None,None,None,None),
 	(50,7,"GtkWindow","default-height","720",0,None,None,None,None,None,None,None,None),
@@ -699,7 +703,8 @@
 	(198,55,12,"GtkButton","clicked","button_cancel_clicked",None,None,1,0,None),
 	(199,55,13,"GtkButton","clicked","button_send_clicked",None,None,1,0,None),
 	(200,55,23,"GtkListBoxRow","activate","who_to_kill_activate",None,0,1,0,None),
-	(201,55,23,"AdwActionRow","activated","who_to_kill_activated",None,0,1,0,None)
+	(201,55,23,"AdwActionRow","activated","who_to_kill_activated",None,0,1,0,None),
+	(204,49,42,"GtkButton","clicked","send_signal_button_clicked",None,None,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

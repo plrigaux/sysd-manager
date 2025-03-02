@@ -95,6 +95,7 @@ pub struct UnitControlPanelImpl {
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
 
     kill_signal_window: RefCell<Option<KillPanel>>,
+    send_signal_window: RefCell<Option<KillPanel>>,
 
     is_dark: Cell<bool>,
 }
@@ -235,12 +236,49 @@ impl UnitControlPanelImpl {
 
     #[template_callback]
     fn kill_button_clicked(&self, _button: &gtk::Button) {
+        self.new_window(&self.kill_signal_window, KillPanel::new_kill_window);
+    }
+
+    fn new_window(
+        &self,
+        window_cell: &RefCell<Option<KillPanel>>,
+        new_kill_window_fn: fn(Option<&UnitInfo>, bool) -> KillPanel,
+    ) {
         let binding = self.current_unit.borrow();
-        let kill_signal_window = KillPanel::new(binding.as_ref(), self.is_dark.get());
+        let create_new = {
+            let kill_signal_window = window_cell.borrow();
+            if let Some(kill_signal_window) = kill_signal_window.as_ref() {
+                /*             println!(
+                    "{} {} {} {}",
+                    kill_signal_window.is_suspended(),
+                    kill_signal_window.in_destruction(),
+                    kill_signal_window.is_active(),
+                    kill_signal_window.is_visible()
+                ); */
+                if kill_signal_window.is_active() {
+                    //for somme reason it's active when has ben closed
+                    true
+                } else {
+                    kill_signal_window.set_unit(binding.as_ref());
+                    kill_signal_window.present();
+                    false
+                }
+            } else {
+                true
+            }
+        };
 
-        kill_signal_window.present();
+        if create_new {
+            let kill_signal_window = new_kill_window_fn(binding.as_ref(), self.is_dark.get());
+            kill_signal_window.present();
 
-        self.kill_signal_window.replace(Some(kill_signal_window));
+            window_cell.replace(Some(kill_signal_window));
+        }
+    }
+
+    #[template_callback]
+    fn send_signal_button_clicked(&self, _button: &gtk::Button) {
+        self.new_window(&self.send_signal_window, KillPanel::new_signal_window);
     }
 }
 
@@ -358,6 +396,11 @@ impl UnitControlPanelImpl {
             kill_signal_window.set_unit(unit);
         }
 
+        let send_signal_window = self.send_signal_window.borrow();
+        if let Some(send_signal_window) = send_signal_window.as_ref() {
+            send_signal_window.set_unit(unit);
+        }
+
         let unit = match unit {
             Some(u) => u,
             None => {
@@ -426,11 +469,15 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
-        //self.kill_panel.set_inter_action(action);
 
         let kill_signal_window = self.kill_signal_window.borrow();
         if let Some(kill_signal_window) = kill_signal_window.as_ref() {
             kill_signal_window.set_inter_action(action);
+        }
+
+        let send_signal_window = self.send_signal_window.borrow();
+        if let Some(send_signal_window) = send_signal_window.as_ref() {
+            send_signal_window.set_inter_action(action);
         }
     }
 

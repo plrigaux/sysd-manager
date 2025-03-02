@@ -20,7 +20,7 @@ use enums::{
     UnitDBusLevel, UnitType,
 };
 use errors::SystemdErrors;
-use gtk::glib::{value, GString};
+use gtk::glib::GString;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 use sysdbus::DisEnAbleUnitFiles;

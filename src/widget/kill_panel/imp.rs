@@ -54,6 +54,8 @@ pub struct KillPanelImp {
     unit: RefCell<Option<UnitInfo>>,
 
     is_dark: Cell<bool>,
+
+    is_signal: Cell<bool>,
 }
 
 #[gtk::template_callbacks]
@@ -67,6 +69,19 @@ impl KillPanelImp {
         let Ok(signal_id) = text.parse::<i32>() else {
             warn!("Kill signal id not a number");
             return;
+        };
+
+        let is_signal = self.is_signal.get();
+        let signal_value = if is_signal {
+            match self.signal_value.text().parse::<i32>() {
+                Ok(v) => v,
+                Err(err) => {
+                    warn!("Queued Signal value not a number: {:?}", err);
+                    0
+                }
+            }
+        } else {
+            0
         };
 
         let who: KillWho = self.who_to_kill.selected().into();
@@ -86,14 +101,20 @@ impl KillPanelImp {
             .expect("not supposed to be empty")
             .clone();
         let is_dark = self.is_dark.get();
+
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
 
             let unit_ = unit.clone();
-            let kill_results =
-                gio::spawn_blocking(move || systemd::kill_unit(&unit_, who, signal_id))
-                    .await
-                    .expect("Task kill_unit needs to finish successfully.");
+            let kill_results = gio::spawn_blocking(move || {
+                if is_signal {
+                    systemd::queue_signal_unit(&unit_, who, signal_id, signal_value)
+                } else {
+                    systemd::kill_unit(&unit_, who, signal_id)
+                }
+            })
+            .await
+            .expect("Task kill_unit needs to finish successfully.");
 
             button.set_sensitive(true);
 
@@ -189,13 +210,26 @@ impl KillPanelImp {
 }
 
 impl KillPanelImp {
-    pub(crate) fn set_dark(&self, is_dark: bool) {
+    pub(super) fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
     }
 
-    pub(crate) fn set_inter_action(&self, action: &InterPanelAction) {
+    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
         if let InterPanelAction::IsDark(is_dark) = *action {
             self.set_dark(is_dark)
+        }
+    }
+
+    pub(super) fn set_is_signal(&self, is_signal: bool) {
+        self.is_signal.set(is_signal);
+
+        if is_signal {
+            self.window_title
+                .set_title("Queue a Realtime Signal to Unit");
+            self.signal_value.set_visible(true);
+        } else {
+            self.window_title.set_title("Send a Kill Signal to Unit");
+            self.signal_value.set_visible(false);
         }
     }
 
@@ -246,6 +280,22 @@ impl ObjectImpl for KillPanelImp {
         let model = adw::EnumListModel::new(KillWho::static_type());
 
         self.who_to_kill.set_model(Some(&model));
+
+        self.who_to_kill
+            .connect_selected_item_notify(|who_to_kill| {
+                let o = who_to_kill.selected_item();
+                let Some(object) = o else {
+                    return;
+                };
+
+                let item = object
+                    .downcast_ref::<adw::EnumListItem>()
+                    .expect("Suppose to be a EnumListItem");
+
+                let kill_who: KillWho = item.value().into();
+
+                who_to_kill.set_subtitle(kill_who.description());
+            });
 
         let edit = self.signal_id_entry.delegate().unwrap();
 

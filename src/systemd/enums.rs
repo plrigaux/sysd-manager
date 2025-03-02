@@ -424,6 +424,14 @@ impl KillWho {
             Self::All => "all",
         }
     }
+
+    pub(crate) fn description(&self) -> &str {
+        match self {
+            Self::Main => "Only the main unit's process",
+            Self::Control => "Only the unit's controled processes",
+            Self::All => "All unit's processes",
+        }
+    }
 }
 
 impl Display for KillWho {
@@ -440,14 +448,20 @@ impl Display for KillWho {
     }
 }
 
-impl From<u32> for KillWho {
-    fn from(value: u32) -> Self {
+impl From<i32> for KillWho {
+    fn from(value: i32) -> Self {
         match value {
             0 => KillWho::Main,
             1 => KillWho::Control,
             2 => KillWho::All,
             _ => KillWho::Main,
         }
+    }
+}
+
+impl From<u32> for KillWho {
+    fn from(value: u32) -> Self {
+        (value as i32).into()
     }
 }
 
