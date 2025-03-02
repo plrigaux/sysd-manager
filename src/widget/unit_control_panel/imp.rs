@@ -242,7 +242,7 @@ impl UnitControlPanelImpl {
     fn new_window(
         &self,
         window_cell: &RefCell<Option<KillPanel>>,
-        new_kill_window_fn: fn(Option<&UnitInfo>, bool) -> KillPanel,
+        new_kill_window_fn: fn(Option<&UnitInfo>, bool, &UnitControlPanel) -> KillPanel,
     ) {
         let binding = self.current_unit.borrow();
         let create_new = {
@@ -269,7 +269,8 @@ impl UnitControlPanelImpl {
         };
 
         if create_new {
-            let kill_signal_window = new_kill_window_fn(binding.as_ref(), self.is_dark.get());
+            let kill_signal_window =
+                new_kill_window_fn(binding.as_ref(), self.is_dark.get(), &self.obj());
             kill_signal_window.present();
 
             window_cell.replace(Some(kill_signal_window));

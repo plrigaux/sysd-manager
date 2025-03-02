@@ -19,7 +19,7 @@ use log::{debug, info, warn};
 use crate::{
     systemd::{self, data::UnitInfo, enums::KillWho},
     utils::writer::UnitInfoWriter,
-    widget::InterPanelAction,
+    widget::{unit_control_panel::UnitControlPanel, InterPanelAction},
 };
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -56,6 +56,8 @@ pub struct KillPanelImp {
     is_dark: Cell<bool>,
 
     is_signal: Cell<bool>,
+
+    parent: OnceCell<UnitControlPanel>,
 }
 
 #[gtk::template_callbacks]
@@ -245,6 +247,10 @@ impl KillPanelImp {
             _ => self.send_button.set_sensitive(false),
         }
     }
+
+    pub(crate) fn set_parent(&self, parent: &UnitControlPanel) {
+        let _ = self.parent.set(parent.clone());
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -332,11 +338,11 @@ impl ObjectImpl for KillPanelImp {
 
 impl WidgetImpl for KillPanelImp {}
 impl WindowImpl for KillPanelImp {
-    /*         fn close_request(&self) -> glib::Propagation {
-        println!("{:?}", self.obj().default_size());
+    fn close_request(&self) -> glib::Propagation {
+        self.parent_close_request();
 
         glib::Propagation::Proceed
-    } */
+    }
 }
 impl AdwWindowImpl for KillPanelImp {}
 

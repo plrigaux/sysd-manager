@@ -6,7 +6,7 @@ use gtk::{
 
 use crate::systemd::data::UnitInfo;
 
-use super::InterPanelAction;
+use super::{unit_control_panel::UnitControlPanel, InterPanelAction};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -19,19 +19,34 @@ glib::wrapper! {
 }
 
 impl KillPanel {
-    pub fn new_kill_window(unit: Option<&UnitInfo>, is_dark: bool) -> Self {
-        KillPanel::new_window(unit, is_dark, false)
+    pub fn new_kill_window(
+        unit: Option<&UnitInfo>,
+        is_dark: bool,
+        parent: &UnitControlPanel,
+    ) -> Self {
+        KillPanel::new_window(unit, is_dark, false, parent)
     }
 
-    pub fn new_signal_window(unit: Option<&UnitInfo>, is_dark: bool) -> Self {
-        KillPanel::new_window(unit, is_dark, true)
+    pub fn new_signal_window(
+        unit: Option<&UnitInfo>,
+        is_dark: bool,
+        parent: &UnitControlPanel,
+    ) -> Self {
+        KillPanel::new_window(unit, is_dark, true, parent)
     }
 
-    fn new_window(unit: Option<&UnitInfo>, is_dark: bool, is_signal: bool) -> KillPanel {
+    fn new_window(
+        unit: Option<&UnitInfo>,
+        is_dark: bool,
+        is_signal: bool,
+        parent: &UnitControlPanel,
+    ) -> KillPanel {
         let obj: KillPanel = glib::Object::new();
         obj.set_unit(unit);
         obj.set_inter_action(&InterPanelAction::IsDark(is_dark));
-        obj.imp().set_is_signal(is_signal);
+        let imp = obj.imp();
+        imp.set_is_signal(is_signal);
+        imp.set_parent(parent);
         obj
     }
 
