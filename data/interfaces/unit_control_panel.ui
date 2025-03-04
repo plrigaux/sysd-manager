@@ -175,7 +175,8 @@
             </child>
           </object>
         </property>
-        <property name="min-sidebar-width">200.0</property>
+        <property name="max-sidebar-width">180.0</property>
+        <property name="min-sidebar-width">40.0</property>
         <property name="sidebar">
           <object class="GtkBox">
             <property name="margin-end">5</property>
@@ -194,6 +195,7 @@
               <object class="GtkButton">
                 <property name="child">
                   <object class="AdwButtonContent">
+                    <property name="halign">start</property>
                     <property name="icon-name">send-symbolic</property>
                     <property name="label">Send _Kill Signal</property>
                     <property name="tooltip-text">Send a signal to a process or a group of processes</property>
@@ -208,6 +210,7 @@
               <object class="GtkButton">
                 <property name="child">
                   <object class="AdwButtonContent">
+                    <property name="halign">start</property>
                     <property name="icon-name">send-alt-symbolic</property>
                     <property name="label">_Queue Signal </property>
                     <property name="tooltip-text">Queue a signal to a process or a group of processes</property>
@@ -220,7 +223,14 @@
             </child>
             <child>
               <object class="GtkButton">
-                <property name="label">Cleaner</property>
+                <property name="child">
+                  <object class="AdwButtonContent">
+                    <property name="halign">start</property>
+                    <property name="icon-name">empty-trash-bin-symbolic</property>
+                    <property name="label">Clean</property>
+                  </object>
+                </property>
+                <property name="css-classes">flat</property>
               </object>
             </child>
           </object>

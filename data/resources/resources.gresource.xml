@@ -28,5 +28,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/sad-computer-symbolic.svg</file>    
     <file preprocess="xml-stripblanks">icons/scalable/actions/send-symbolic.svg</file>    
     <file preprocess="xml-stripblanks">icons/scalable/actions/send-alt-symbolic.svg</file>    
+    <file preprocess="xml-stripblanks">icons/scalable/actions/empty-trash-bin-symbolic.svg</file>       
   </gresource>
 </gresources>

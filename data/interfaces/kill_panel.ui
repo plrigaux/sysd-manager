@@ -34,8 +34,9 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwEntryRow" id="signal_value">
+                  <object class="AdwEntryRow" id="sigqueue_value">
                     <property name="title">Signal Value</property>
+                    <signal name="changed" handler="sigqueue_value_changed" swapped="yes"/>
                   </object>
                 </child>
               </object>
@@ -45,12 +46,6 @@
                 <property name="halign">end</property>
                 <property name="margin-top">10</property>
                 <property name="spacing">10</property>
-                <child>
-                  <object class="GtkButton" id="cancel_button">
-                    <property name="label">Cancel</property>
-                    <signal name="clicked" handler="button_cancel_clicked" swapped="yes"/>
-                  </object>
-                </child>
                 <child>
                   <object class="GtkButton" id="send_button">
                     <property name="css-classes">suggested-action</property>

@@ -26,9 +26,6 @@ use crate::{
 #[template(resource = "/io/github/plrigaux/sysd-manager/kill_panel.ui")]
 pub struct KillPanelImp {
     #[template_child]
-    cancel_button: TemplateChild<gtk::Button>,
-
-    #[template_child]
     send_button: TemplateChild<gtk::Button>,
 
     #[template_child]
@@ -38,7 +35,7 @@ pub struct KillPanelImp {
     who_to_kill: TemplateChild<adw::ComboRow>,
 
     #[template_child]
-    signal_value: TemplateChild<adw::EntryRow>,
+    sigqueue_value: TemplateChild<adw::EntryRow>,
 
     #[template_child]
     window_title: TemplateChild<adw::WindowTitle>,
@@ -55,7 +52,7 @@ pub struct KillPanelImp {
 
     is_dark: Cell<bool>,
 
-    is_signal: Cell<bool>,
+    is_sigqueue: Cell<bool>,
 
     parent: OnceCell<UnitControlPanel>,
 }
@@ -72,10 +69,9 @@ impl KillPanelImp {
             warn!("Kill signal id not a number");
             return;
         };
-
-        let is_signal = self.is_signal.get();
-        let signal_value = if is_signal {
-            match self.signal_value.text().parse::<i32>() {
+        let is_sigqueue = self.is_sigqueue.get();
+        let queued_signal_value = if is_sigqueue {
+            match self.sigqueue_value.text().parse::<i32>() {
                 Ok(v) => v,
                 Err(err) => {
                     warn!("Queued Signal value not a number: {:?}", err);
@@ -100,7 +96,7 @@ impl KillPanelImp {
         let toast_overlay = self
             .toast_overlay
             .get()
-            .expect("not supposed to be empty")
+            .expect("Toast not supposed to be empty")
             .clone();
         let is_dark = self.is_dark.get();
 
@@ -109,8 +105,8 @@ impl KillPanelImp {
 
             let unit_ = unit.clone();
             let kill_results = gio::spawn_blocking(move || {
-                if is_signal {
-                    systemd::queue_signal_unit(&unit_, who, signal_id, signal_value)
+                if is_sigqueue {
+                    systemd::queue_signal_unit(&unit_, who, signal_id, queued_signal_value)
                 } else {
                     systemd::kill_unit(&unit_, who, signal_id)
                 }
@@ -156,19 +152,7 @@ impl KillPanelImp {
         });
     }
 
-    #[template_callback]
-    fn button_cancel_clicked(&self, _button: &gtk::Button) {
-        info!("button_cancel_clicked");
-
-        self.unit.set(None);
-        //self.entry_text.set_text("");
-    }
-
-    pub fn register(
-        &self,
-        _side_overlay: &adw::OverlaySplitView,
-        toast_overlay: &adw::ToastOverlay,
-    ) {
+    pub fn register(&self, toast_overlay: &adw::ToastOverlay) {
         self.toast_overlay
             .set(toast_overlay.clone())
             .expect("toast_overlay once");
@@ -178,7 +162,9 @@ impl KillPanelImp {
         let unit = match unit {
             Some(u) => u,
             None => {
+                warn!("set unit to None");
                 self.unit.set(None);
+                self.window_title.set_subtitle("No Unit Selected");
                 return;
             }
         };
@@ -193,10 +179,34 @@ impl KillPanelImp {
     }
 
     #[template_callback]
-    fn kill_signal_text_change(&self, entry: &adw::EntryRow) {
-        let text = entry.text();
-        debug!("entry_changed {}", text);
+    fn kill_signal_text_change(&self, _entry: &adw::EntryRow) {
+        self.set_send_button_sensitivity();
 
+        let sigqueue_value = self.signal_id_entry.text();
+        if self.is_sigqueue.get() {
+            const ERROR_CSS: &str = "error";
+            let value = match sigqueue_value.parse::<i32>() {
+                Ok(v) => {
+                    self.signal_id_entry.remove_css_class(ERROR_CSS);
+                    v
+                }
+                Err(_err) => {
+                    self.signal_id_entry.add_css_class(ERROR_CSS);
+                    return;
+                }
+            };
+
+            const WARNING_CSS: &str = "warning";
+            if value >= libc::SIGRTMIN() && value <= libc::SIGRTMAX() {
+                self.signal_id_entry.remove_css_class(WARNING_CSS);
+            } else {
+                self.signal_id_entry.add_css_class(WARNING_CSS);
+            }
+        }
+    }
+
+    #[template_callback]
+    fn sigqueue_value_changed(&self, _entry: &adw::EntryRow) {
         self.set_send_button_sensitivity();
     }
 
@@ -208,6 +218,32 @@ impl KillPanelImp {
     #[template_callback]
     fn who_to_kill_activated(&self, combo_row: &adw::ComboRow) {
         debug!("who_to_kill_activated {}", combo_row.index());
+    }
+
+    fn contruct_signals_description(&self, sg: Signal) {
+        let title = sg.name;
+        let action_row = adw::ActionRow::builder()
+            .title(title)
+            .subtitle(format!(
+                "{}\nDefault Action: {}",
+                sg.comment, sg.default_action
+            ))
+            .subtitle_lines(2)
+            .build();
+
+        let button_label = sg.id.to_string();
+        let action_button = gtk::Button::builder()
+            .label(&button_label)
+            .css_classes(["circular", "raised"])
+            .valign(gtk::Align::BaselineCenter)
+            .build();
+
+        let entry_row = self.signal_id_entry.clone();
+        action_button.connect_clicked(move |_| {
+            entry_row.set_text(&button_label);
+        });
+        action_row.add_suffix(&action_button);
+        self.signals_group.add(&action_row);
     }
 }
 
@@ -223,33 +259,83 @@ impl KillPanelImp {
     }
 
     pub(super) fn set_is_signal(&self, is_signal: bool) {
-        self.is_signal.set(is_signal);
+        self.is_sigqueue.set(is_signal);
 
         if is_signal {
             self.window_title
                 .set_title("Queue a Realtime Signal to Unit");
-            self.signal_value.set_visible(true);
+            self.sigqueue_value.set_visible(true);
+
+            let min = libc::SIGRTMIN();
+            let max = libc::SIGRTMAX();
+            let span = max - min;
+            let span_d2 = span / 2;
+
+            for id in min..=max {
+                let offset = id - min;
+
+                let name = if offset == 0 {
+                    "SIGRTMIN".to_string()
+                } else if offset == span {
+                    "SIGRTMAX".to_string()
+                } else if offset > span_d2 {
+                    format!("SIGRTMAX-{}", span - offset)
+                } else {
+                    format!("SIGRTMIN+{offset}")
+                };
+
+                let signal = Signal {
+                    id: (id as u32),
+                    name: &name,
+                    default_action: "Terminate",
+                    comment: "Real-time signal",
+                };
+                self.contruct_signals_description(signal);
+            }
         } else {
             self.window_title.set_title("Send a Kill Signal to Unit");
-            self.signal_value.set_visible(false);
+            self.sigqueue_value.set_visible(false);
+            for signal in signals() {
+                self.contruct_signals_description(signal);
+            }
         }
     }
 
     fn set_send_button_sensitivity(&self) {
         let text = self.signal_id_entry.text();
 
-        match (
+        let button_sensitive = match (
             text.is_empty(),
             text.contains(pattern_not_digit),
             self.unit.borrow().is_some(),
+            self.is_sigqueue.get(),
         ) {
-            (false, false, true) => self.send_button.set_sensitive(true),
-            _ => self.send_button.set_sensitive(false),
-        }
+            (false, false, true, false) => true,
+            (false, false, true, true) => {
+                let signal_value_text = self.sigqueue_value.text();
+                matches!(
+                    (
+                        signal_value_text.is_empty(),
+                        signal_value_text.contains(pattern_not_digit)
+                    ),
+                    (false, false)
+                )
+            }
+            _a => {
+                debug!("a {:?}", _a);
+                false
+            }
+        };
+
+        self.send_button.set_sensitive(button_sensitive);
     }
 
     pub(crate) fn set_parent(&self, parent: &UnitControlPanel) {
         let _ = self.parent.set(parent.clone());
+
+        if let Some(toast_overlay) = parent.toast_overlay() {
+            let _ = self.toast_overlay.set(toast_overlay.clone());
+        }
     }
 }
 
@@ -311,28 +397,6 @@ impl ObjectImpl for KillPanelImp {
                 entry.insert_text(&text.replace(pattern_not_digit, ""), position);
             }
         });
-
-        for sg in signals() {
-            let title = sg.name;
-            let action_row = adw::ActionRow::builder()
-                .title(title)
-                .subtitle(sg.comment)
-                .build();
-
-            let button_label = sg.id.to_string();
-            let action_button = gtk::Button::builder()
-                .label(&button_label)
-                .css_classes(["circular", "raised"])
-                .valign(gtk::Align::BaselineCenter)
-                .build();
-
-            let entry_row = self.signal_id_entry.clone();
-            action_button.connect_clicked(move |_| {
-                entry_row.set_text(&button_label);
-            });
-            action_row.add_suffix(&action_button);
-            self.signals_group.add(&action_row);
-        }
     }
 }
 
@@ -340,7 +404,10 @@ impl WidgetImpl for KillPanelImp {}
 impl WindowImpl for KillPanelImp {
     fn close_request(&self) -> glib::Propagation {
         self.parent_close_request();
-
+        self.unit.set(None);
+        if let Some(parent) = self.parent.get() {
+            parent.unlink_child(self.is_sigqueue.get());
+        }
         glib::Propagation::Proceed
     }
 }
@@ -350,15 +417,15 @@ fn pattern_not_digit(c: char) -> bool {
     !c.is_ascii_digit()
 }
 
-#[allow(dead_code)]
-struct Signal {
+//#[allow(dead_code)]
+struct Signal<'a> {
     id: u32,
-    name: &'static str,
+    name: &'a str,
     default_action: &'static str,
     comment: &'static str,
 }
 
-fn signals() -> [Signal; 34] {
+fn signals<'a>() -> [Signal<'a>; 34] {
     [
         Signal {
             id: 1,

@@ -42,11 +42,12 @@ impl KillPanel {
         parent: &UnitControlPanel,
     ) -> KillPanel {
         let obj: KillPanel = glib::Object::new();
-        obj.set_unit(unit);
-        obj.set_inter_action(&InterPanelAction::IsDark(is_dark));
         let imp = obj.imp();
+        imp.set_unit(unit);
+        imp.set_inter_action(&InterPanelAction::IsDark(is_dark));
         imp.set_is_signal(is_signal);
         imp.set_parent(parent);
+
         obj
     }
 
@@ -56,14 +57,5 @@ impl KillPanel {
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.imp().set_inter_action(action);
-    }
-
-    pub fn register(
-        &self,
-        side_overlay: &adw::OverlaySplitView,
-        toast_overlay: &adw::ToastOverlay,
-    ) {
-        let obj = self.imp();
-        obj.register(side_overlay, toast_overlay);
     }
 }

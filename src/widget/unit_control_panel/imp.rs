@@ -95,7 +95,7 @@ pub struct UnitControlPanelImpl {
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
 
     kill_signal_window: RefCell<Option<KillPanel>>,
-    send_signal_window: RefCell<Option<KillPanel>>,
+    queue_signal_window: RefCell<Option<KillPanel>>,
 
     is_dark: Cell<bool>,
 }
@@ -236,50 +236,12 @@ impl UnitControlPanelImpl {
 
     #[template_callback]
     fn kill_button_clicked(&self, _button: &gtk::Button) {
-        self.new_window(&self.kill_signal_window, KillPanel::new_kill_window);
-    }
-
-    fn new_window(
-        &self,
-        window_cell: &RefCell<Option<KillPanel>>,
-        new_kill_window_fn: fn(Option<&UnitInfo>, bool, &UnitControlPanel) -> KillPanel,
-    ) {
-        let binding = self.current_unit.borrow();
-        let create_new = {
-            let kill_signal_window = window_cell.borrow();
-            if let Some(kill_signal_window) = kill_signal_window.as_ref() {
-                /*             println!(
-                    "{} {} {} {}",
-                    kill_signal_window.is_suspended(),
-                    kill_signal_window.in_destruction(),
-                    kill_signal_window.is_active(),
-                    kill_signal_window.is_visible()
-                ); */
-                if kill_signal_window.is_active() {
-                    //for somme reason it's active when has ben closed
-                    true
-                } else {
-                    kill_signal_window.set_unit(binding.as_ref());
-                    kill_signal_window.present();
-                    false
-                }
-            } else {
-                true
-            }
-        };
-
-        if create_new {
-            let kill_signal_window =
-                new_kill_window_fn(binding.as_ref(), self.is_dark.get(), &self.obj());
-            kill_signal_window.present();
-
-            window_cell.replace(Some(kill_signal_window));
-        }
+        self.kill_or_queue_new_window(&self.kill_signal_window, KillPanel::new_kill_window);
     }
 
     #[template_callback]
     fn send_signal_button_clicked(&self, _button: &gtk::Button) {
-        self.new_window(&self.send_signal_window, KillPanel::new_signal_window);
+        self.kill_or_queue_new_window(&self.queue_signal_window, KillPanel::new_signal_window);
     }
 }
 
@@ -397,7 +359,7 @@ impl UnitControlPanelImpl {
             kill_signal_window.set_unit(unit);
         }
 
-        let send_signal_window = self.send_signal_window.borrow();
+        let send_signal_window = self.queue_signal_window.borrow();
         if let Some(send_signal_window) = send_signal_window.as_ref() {
             send_signal_window.set_unit(unit);
         }
@@ -476,7 +438,7 @@ impl UnitControlPanelImpl {
             kill_signal_window.set_inter_action(action);
         }
 
-        let send_signal_window = self.send_signal_window.borrow();
+        let send_signal_window = self.queue_signal_window.borrow();
         if let Some(send_signal_window) = send_signal_window.as_ref() {
             send_signal_window.set_inter_action(action);
         }
@@ -542,6 +504,10 @@ impl UnitControlPanelImpl {
         self.unit_panel_stack.set_visible_child_name("info_page");
     }
 
+    pub(super) fn toast_overlay(&self) -> Option<&adw::ToastOverlay> {
+        self.toast_overlay.get()
+    }
+
     pub(super) fn display_dependencies_page(&self) {
         self.unit_panel_stack
             .set_visible_child_name("dependencies_page");
@@ -554,6 +520,41 @@ impl UnitControlPanelImpl {
     pub fn display_definition_file_page(&self) {
         self.unit_panel_stack
             .set_visible_child_name("definition_file_page");
+    }
+
+    fn kill_or_queue_new_window(
+        &self,
+        window_cell: &RefCell<Option<KillPanel>>,
+        new_kill_window_fn: fn(Option<&UnitInfo>, bool, &UnitControlPanel) -> KillPanel,
+    ) {
+        let binding = self.current_unit.borrow();
+        let create_new = {
+            let kill_signal_window = window_cell.borrow();
+            if let Some(kill_signal_window) = kill_signal_window.as_ref() {
+                kill_signal_window.set_unit(binding.as_ref());
+                kill_signal_window.set_inter_action(&InterPanelAction::IsDark(self.is_dark.get()));
+                kill_signal_window.present();
+                false
+            } else {
+                true
+            }
+        };
+
+        if create_new {
+            let kill_signal_window =
+                new_kill_window_fn(binding.as_ref(), self.is_dark.get(), &self.obj());
+            kill_signal_window.present();
+
+            window_cell.replace(Some(kill_signal_window));
+        }
+    }
+
+    pub fn unlink_child(&self, is_signal: bool) {
+        if is_signal {
+            self.queue_signal_window.replace(None);
+        } else {
+            self.kill_signal_window.replace(None);
+        }
     }
 }
 

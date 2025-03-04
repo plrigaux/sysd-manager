@@ -545,6 +545,23 @@ where
             }
             zbus::message::Type::Error => {
                 let error = zbus::Error::from(return_message);
+                {
+                    match error {
+                        zbus::Error::MethodError(
+                            ref owned_error_name,
+                            ref details,
+                            ref message,
+                        ) => {
+                            warn!(
+                                "Method error: {}\nDetails: {}\n{:?}",
+                                owned_error_name.as_str(),
+                                details.as_ref().map(|s| s.as_str()).unwrap_or_default(),
+                                message
+                            )
+                        }
+                        _ => warn!("Bus error: {:?}", error),
+                    }
+                }
                 return Err(SystemdErrors::from(error));
             }
             zbus::message::Type::Signal => {
@@ -1525,5 +1542,27 @@ mod tests {
         } */
 
         Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_kill_unit() -> Result<(), SystemdErrors> {
+        init();
+        let unit_name: &str = TEST_SERVICE;
+
+        kill_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 1)
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_queue_signal_unit() -> Result<(), SystemdErrors> {
+        init();
+        let unit_name: &str = TEST_SERVICE;
+        let val: i32 = libc::SIGRTMIN();
+        let val2 = libc::SIGRTMAX();
+
+        println!("{val} {val2}");
+
+        queue_signal_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 9, 0)
     }
 }

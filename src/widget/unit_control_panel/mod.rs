@@ -29,6 +29,10 @@ impl UnitControlPanel {
         self.imp().set_overlay(app_window, toast_overlay);
     }
 
+    pub fn toast_overlay(&self) -> Option<&adw::ToastOverlay> {
+        self.imp().toast_overlay()
+    }
+
     pub fn display_info_page(&self) {
         self.imp().display_info_page();
     }
@@ -63,5 +67,9 @@ impl UnitControlPanel {
     ) {
         self.imp()
             .start_restart(unit, start_results, action, expected_active_state, mode);
+    }
+
+    pub fn unlink_child(&self, is_signal: bool) {
+        self.imp().unlink_child(is_signal);
     }
 }
