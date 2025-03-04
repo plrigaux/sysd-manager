@@ -192,21 +192,35 @@
             </child>
             <child>
               <object class="GtkButton">
+                <property name="child">
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">send-symbolic</property>
+                    <property name="label">Send _Kill Signal</property>
+                    <property name="tooltip-text">Send a signal to a process or a group of processes</property>
+                    <property name="use-underline">True</property>
+                  </object>
+                </property>
                 <property name="css-classes">flat</property>
-                <property name="label">Send Kill Signal</property>
                 <signal name="clicked" handler="kill_button_clicked" swapped="yes"/>
               </object>
             </child>
             <child>
               <object class="GtkButton">
+                <property name="child">
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">send-alt-symbolic</property>
+                    <property name="label">_Queue Signal </property>
+                    <property name="tooltip-text">Queue a signal to a process or a group of processes</property>
+                    <property name="use-underline">True</property>
+                  </object>
+                </property>
                 <property name="css-classes">flat</property>
-                <property name="label">Sends a signal</property>
                 <signal name="clicked" handler="send_signal_button_clicked" swapped="yes"/>
               </object>
             </child>
             <child>
               <object class="GtkButton">
-                <property name="label">Clean</property>
+                <property name="label">Cleaner</property>
               </object>
             </child>
           </object>
