@@ -21,10 +21,12 @@
               </object>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="clean_button">
                 <property name="css-classes">suggested-action</property>
                 <property name="halign">end</property>
                 <property name="label">Clean</property>
+                <property name="sensitive">False</property>
+                <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
               </object>
             </child>
           </object>
@@ -33,7 +35,7 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
-              <object class="AdwWindowTitle">
+              <object class="AdwWindowTitle" id="window_title">
                 <property name="title">Clean</property>
               </object>
             </property>

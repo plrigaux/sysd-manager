@@ -44,9 +44,6 @@ pub struct KillPanelImp {
     #[template_child]
     signals_group: TemplateChild<adw::PreferencesGroup>,
 
-    /*  #[template_child]
-    signals_group_box: TemplateChild<gtk::Box>, */
-    //side_overlay: OnceCell<adw::OverlaySplitView>,
     toast_overlay: OnceCell<adw::ToastOverlay>,
 
     unit: RefCell<Option<UnitInfo>>,

@@ -5,7 +5,7 @@ use gtk::{
     subclass::prelude::ObjectSubclassIsExt,
 };
 
-use crate::systemd::data::UnitInfo;
+use crate::systemd::{data::UnitInfo, enums::CleanOption};
 
 use super::InterPanelAction;
 
@@ -25,6 +25,10 @@ impl CleanDialog {
         imp.set_inter_action(&InterPanelAction::IsDark(is_dark));
 
         obj
+    }
+
+    fn clean_option_selected(&self, clean_option: &CleanOption, is_active: bool) {
+        self.imp().clean_option_selected(clean_option, is_active)
     }
 
     /*     pub fn set_unit(&self, unit: Option<&UnitInfo>) {

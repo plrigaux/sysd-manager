@@ -5,7 +5,6 @@ use gtk::{
     gio,
     glib::{self},
     pango::{self, FontDescription},
-    prelude::*,
 };
 use log::{debug, info, warn};
 
@@ -80,6 +79,8 @@ pub struct UnitControlPanelImpl {
 
     toast_overlay: OnceCell<adw::ToastOverlay>,
 
+    app_window: OnceCell<AppWindow>,
+
     current_unit: RefCell<Option<UnitInfo>>,
 
     search_bar: RefCell<gtk::SearchBar>,
@@ -139,6 +140,8 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.register(app_window, toast_overlay);
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
+
+        let _ = self.app_window.set(app_window.clone());
 
         if let Err(e) = self.toast_overlay.set(toast_overlay.clone()) {
             warn!("Set Toast Overlay Issue: {:?}", e)
@@ -248,6 +251,9 @@ impl UnitControlPanelImpl {
         let binding = self.current_unit.borrow();
 
         let clean_dialog = CleanDialog::new(binding.as_ref(), self.is_dark.get());
+
+        clean_dialog.set_transient_for(self.app_window.get());
+        //clean_dialog.set_modal(true);
 
         clean_dialog.present();
     }

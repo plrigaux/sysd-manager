@@ -276,9 +276,8 @@
 	(56,16,"AdwToolbarView",None,15,None,None,None,0,None,None),
 	(56,17,"GtkBox",None,16,None,None,None,0,None,None),
 	(56,18,"AdwHeaderBar",None,16,None,"top",None,1,None,None),
-	(56,19,"AdwWindowTitle",None,18,None,None,None,0,None,None),
-	(56,21,"GtkButton",None,17,None,None,None,2,None,None),
-	(56,22,"GtkLabel",None,17,None,None,None,0,None,None),
+	(56,19,"AdwWindowTitle","window_title",18,None,None,None,0,None,None),
+	(56,21,"GtkButton","clean_button",17,None,None,None,2,None,None),
 	(56,30,"GtkBox","check_button_box",17,None,None,None,1,None,None)
   </object>
   <object_property>
@@ -696,7 +695,7 @@
 	(56,21,"GtkButton","label","Clean",None,None,None,None,None,None,None,None,None),
 	(56,21,"GtkWidget","css-classes","suggested-action",None,None,None,None,None,None,None,None,None),
 	(56,21,"GtkWidget","halign","end",None,None,None,None,None,None,None,None,None),
-	(56,22,"GtkLabel","label","test",None,None,None,None,None,None,None,None,None),
+	(56,21,"GtkWidget","sensitive","False",None,None,None,None,None,None,None,None,None),
 	(56,30,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
 	(56,30,"GtkWidget","margin-start","46",None,None,None,None,None,None,None,None,None)
   </object_property>
@@ -751,7 +750,8 @@
 	(201,55,23,"AdwActionRow","activated","who_to_kill_activated",None,0,1,0,None),
 	(204,49,42,"GtkButton","clicked","send_signal_button_clicked",None,None,1,0,None),
 	(205,55,24,"GtkEditable","changed","sigqueue_value_changed",None,0,1,0,None),
-	(206,49,38,"GtkButton","clicked","clean_button_clicked",None,0,1,0,None)
+	(206,49,38,"GtkButton","clicked","clean_button_clicked",None,0,1,0,None),
+	(207,56,21,"GtkButton","clicked","clean_button_clicked",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),
