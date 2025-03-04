@@ -7,7 +7,7 @@ use gtk::{
 
 use crate::systemd::{data::UnitInfo, enums::CleanOption};
 
-use super::InterPanelAction;
+use super::{app_window::AppWindow, InterPanelAction};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -18,9 +18,10 @@ glib::wrapper! {
 }
 
 impl CleanDialog {
-    pub fn new(unit: Option<&UnitInfo>, is_dark: bool) -> Self {
+    pub fn new(unit: Option<&UnitInfo>, is_dark: bool, app_window: Option<&AppWindow>) -> Self {
         let obj: CleanDialog = glib::Object::new();
         let imp = obj.imp();
+        imp.set_app_window(app_window);
         imp.set_unit(unit);
         imp.set_inter_action(&InterPanelAction::IsDark(is_dark));
 

@@ -25,12 +25,12 @@ impl UnitControlPanel {
         self.imp().selection_change(unit);
     }
 
-    pub fn set_overlay(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
-        self.imp().set_overlay(app_window, toast_overlay);
+    pub fn set_app_window(&self, app_window: &AppWindow) {
+        self.imp().set_overlay(app_window);
     }
 
-    pub fn toast_overlay(&self) -> Option<&adw::ToastOverlay> {
-        self.imp().toast_overlay()
+    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
+        self.imp().add_toast_message(message, use_markup);
     }
 
     pub fn display_info_page(&self) {

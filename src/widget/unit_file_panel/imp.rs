@@ -303,11 +303,7 @@ impl UnitFilePanelImp {
         }
     }
 
-    pub(crate) fn register(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
-        self.toast_overlay
-            .set(toast_overlay.clone())
-            .expect("toast_overlay once");
-
+    pub(crate) fn register(&self, app_window: &AppWindow) {
         self.app_window
             .set(app_window.clone())
             .expect("toast_overlay once");
@@ -388,8 +384,12 @@ impl ObjectImpl for UnitFilePanelImp {
             });
         }
 
-        let _ = self.sourceview5_buffer.set(buffer);
-        let _ = self.unit_file_text.set(view);
+        self.sourceview5_buffer
+            .set(buffer)
+            .expect("sourceview5_buffer set once");
+        self.unit_file_text
+            .set(view)
+            .expect("unit_file_text set once");
     }
 }
 impl WidgetImpl for UnitFilePanelImp {}

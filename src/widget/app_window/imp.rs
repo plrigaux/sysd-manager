@@ -82,8 +82,7 @@ impl ObjectImpl for AppWindowImpl {
         self.unit_list_panel
             .register_selection_change(&app_window, &self.refresh_unit_list_button);
 
-        self.unit_control_panel
-            .set_overlay(&app_window, &self.toast_overlay);
+        self.unit_control_panel.set_app_window(&app_window);
 
         self.setup_dropdown();
     }
@@ -320,6 +319,14 @@ impl AppWindowImpl {
     }
 
     pub(super) fn add_toast(&self, toast: adw::Toast) {
+        self.toast_overlay.add_toast(toast)
+    }
+
+    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
+        let toast = adw::Toast::builder()
+            .title(message)
+            .use_markup(use_markup)
+            .build();
         self.toast_overlay.add_toast(toast)
     }
 }

@@ -1,6 +1,6 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
-use adw::{prelude::*, subclass::prelude::*, Toast};
+use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
     gio,
     glib::{self},
@@ -77,8 +77,6 @@ pub struct UnitControlPanelImpl {
     #[template_child]
     unit_panel_stack: TemplateChild<adw::ViewStack>,
 
-    toast_overlay: OnceCell<adw::ToastOverlay>,
-
     app_window: OnceCell<AppWindow>,
 
     current_unit: RefCell<Option<UnitInfo>>,
@@ -135,17 +133,15 @@ macro_rules! current_unit {
 
 #[gtk::template_callbacks]
 impl UnitControlPanelImpl {
-    pub(super) fn set_overlay(&self, app_window: &AppWindow, toast_overlay: &adw::ToastOverlay) {
+    pub(super) fn set_overlay(&self, app_window: &AppWindow) {
         //self.kill_panel.register(&self.side_overlay, toast_overlay);
-        self.unit_file_panel.register(app_window, toast_overlay);
+        self.unit_file_panel.register(app_window);
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
 
-        let _ = self.app_window.set(app_window.clone());
-
-        if let Err(e) = self.toast_overlay.set(toast_overlay.clone()) {
-            warn!("Set Toast Overlay Issue: {:?}", e)
-        }
+        self.app_window
+            .set(app_window.clone())
+            .expect("app_window set once");
     }
 
     #[template_callback]
@@ -169,7 +165,7 @@ impl UnitControlPanelImpl {
         };
 
         controls::switch_ablement_state_set(
-            self.toast_overlay.get().unwrap(),
+            &self.obj(),
             expected_new_status,
             switch,
             &unit,
@@ -250,9 +246,11 @@ impl UnitControlPanelImpl {
     fn clean_button_clicked(&self, _button: &gtk::Button) {
         let binding = self.current_unit.borrow();
 
-        let clean_dialog = CleanDialog::new(binding.as_ref(), self.is_dark.get());
+        let app_window = self.app_window.get();
 
-        clean_dialog.set_transient_for(self.app_window.get());
+        let clean_dialog = CleanDialog::new(binding.as_ref(), self.is_dark.get(), app_window);
+
+        clean_dialog.set_transient_for(app_window);
         //clean_dialog.set_modal(true);
 
         clean_dialog.present();
@@ -322,8 +320,7 @@ impl UnitControlPanelImpl {
                 );
                 info!("{info}");
 
-                let toast = Toast::builder().title(&info).use_markup(true).build();
-                self.toast_overlay.get().unwrap().add_toast(toast);
+                self.add_toast_message(&info, true);
 
                 unit.set_active_state(expected_active_state);
                 self.highlight_controls(unit);
@@ -347,8 +344,7 @@ impl UnitControlPanelImpl {
 
                 warn!("{info}");
 
-                let toast = Toast::builder().title(&info).use_markup(true).build();
-                self.toast_overlay.get().unwrap().add_toast(toast);
+                self.add_toast_message(&info, true);
 
                 None
             }
@@ -517,10 +513,6 @@ impl UnitControlPanelImpl {
         self.unit_panel_stack.set_visible_child_name("info_page");
     }
 
-    pub(super) fn toast_overlay(&self) -> Option<&adw::ToastOverlay> {
-        self.toast_overlay.get()
-    }
-
     pub(super) fn display_dependencies_page(&self) {
         self.unit_panel_stack
             .set_visible_child_name("dependencies_page");
@@ -567,6 +559,12 @@ impl UnitControlPanelImpl {
             self.queue_signal_window.replace(None);
         } else {
             self.kill_signal_window.replace(None);
+        }
+    }
+
+    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
+        if let Some(app_window) = self.app_window.get() {
+            app_window.add_toast_message(message, use_markup);
         }
     }
 }

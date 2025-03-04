@@ -44,8 +44,6 @@ pub struct KillPanelImp {
     #[template_child]
     signals_group: TemplateChild<adw::PreferencesGroup>,
 
-    toast_overlay: OnceCell<adw::ToastOverlay>,
-
     unit: RefCell<Option<UnitInfo>>,
 
     is_dark: Cell<bool>,
@@ -91,10 +89,10 @@ impl KillPanelImp {
 
         let unit = unit.clone();
         let button = button.clone();
-        let toast_overlay = self
-            .toast_overlay
+        let parent = self
+            .parent
             .get()
-            .expect("Toast not supposed to be empty")
+            .expect("Parent not supposed to be empty")
             .clone();
         let is_dark = self.is_dark.get();
 
@@ -131,29 +129,20 @@ impl KillPanelImp {
 
                     info!("{}", msg);
 
-                    let toast = adw::Toast::builder().title(&msg).use_markup(true).build();
-                    toast_overlay.add_toast(toast)
+                    parent.add_toast_message(&msg, true)
                 }
-                Err(e) => {
+                Err(err) => {
                     let msg = format!(
-                        "kill {} signal {} who {:?} response {:?}",
+                        "kill {} signal {} who {:?} response failed",
                         unit.primary(),
                         signal_id,
-                        who,
-                        e
+                        who
                     );
-                    warn!("{msg}");
-                    let toast = adw::Toast::new(&msg);
-                    toast_overlay.add_toast(toast)
+                    warn!("{msg} {:?}", err);
+                    parent.add_toast_message(&msg, true)
                 }
             }
         });
-    }
-
-    pub fn register(&self, toast_overlay: &adw::ToastOverlay) {
-        self.toast_overlay
-            .set(toast_overlay.clone())
-            .expect("toast_overlay once");
     }
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
@@ -344,11 +333,9 @@ impl KillPanelImp {
     }
 
     pub(crate) fn set_parent(&self, parent: &UnitControlPanel) {
-        let _ = self.parent.set(parent.clone());
-
-        if let Some(toast_overlay) = parent.toast_overlay() {
-            let _ = self.toast_overlay.set(toast_overlay.clone());
-        }
+        self.parent
+            .set(parent.clone())
+            .expect("parent should be set once");
     }
 }
 

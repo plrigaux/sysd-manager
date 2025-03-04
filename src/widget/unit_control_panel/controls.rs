@@ -6,8 +6,10 @@ use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus, errors::Syst
 use crate::gtk::prelude::*;
 use crate::utils::writer::UnitInfoWriter;
 
+use super::UnitControlPanel;
+
 pub(super) fn switch_ablement_state_set(
-    toast_overlay: &adw::ToastOverlay,
+    control_panel: &UnitControlPanel,
     expected_new_status: EnablementStatus,
     switch: &gtk::Switch,
     unit: &UnitInfo,
@@ -27,7 +29,7 @@ pub(super) fn switch_ablement_state_set(
     }
 
     let switch = switch.clone();
-    let toast_overlay = toast_overlay.clone();
+    let control_panel = control_panel.clone();
     let unit = unit.clone();
     glib::spawn_future_local(async move {
         switch.set_sensitive(false);
@@ -54,27 +56,9 @@ pub(super) fn switch_ablement_state_set(
                     expected_new_status,
                 );
 
-                /*                 for disenable_unit_file in enablement_status_ret.iter() {
-                    toast_info += format!(
-                        "<br></br>Type of the change {:?} File name {:?}",
-                        disenable_unit_file.change_type, disenable_unit_file.file_name
-                    )
-                    .as_str();
-
-                    if !disenable_unit_file.destination.is_empty() {
-                        toast_info +=
-                            format!(" Destination {:?}", disenable_unit_file.destination).as_str();
-                    }
-                } */
-
                 debug!("{toast_info} {:?}", enablement_status_ret);
 
-                let toast = adw::Toast::builder()
-                    .use_markup(true)
-                    .title(&toast_info)
-                    .build();
-
-                toast_overlay.add_toast(toast);
+                control_panel.add_toast_message(&toast_info, true);
 
                 unit.set_enable_status(expected_new_status as u8);
 
@@ -103,11 +87,7 @@ pub(super) fn switch_ablement_state_set(
 
                 warn!("{toast_info} : {error_message}");
 
-                let toast = adw::Toast::builder()
-                    .use_markup(true)
-                    .title(&toast_info)
-                    .build();
-                toast_overlay.add_toast(toast);
+                control_panel.add_toast_message(&toast_info, true);
             }
         }
 

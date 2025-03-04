@@ -49,6 +49,7 @@ const METHOD_RESTART_UNIT: &str = "RestartUnit";
 const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
+const METHOD_CLEAN_UNIT: &str = "CleanUnit";
 const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlags";
@@ -647,6 +648,20 @@ pub(super) fn queue_signal_unit(
         &(unit_name, mode.as_str(), signal, value),
         handle_answer,
     )
+}
+
+pub(super) fn clean_unit(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    what: &[&str],
+) -> Result<(), SystemdErrors> {
+    let handle_answer = |_method: &str, _return_message: &Message| {
+        info!("Clean Unit {} {:?} SUCCESS", unit_name, what);
+
+        Ok(())
+    };
+
+    send_disenable_message(level, METHOD_CLEAN_UNIT, &(unit_name, what), handle_answer)
 }
 
 fn convert_to_string(value: &zvariant::Value) -> String {

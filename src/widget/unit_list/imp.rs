@@ -532,7 +532,9 @@ impl ObjectImpl for UnitListPanelImp {
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 
-        let _ = self.search_entry.set(search_entry);
+        self.search_entry
+            .set(search_entry)
+            .expect("Search entry set once");
 
         {
             let unit_list = self.obj().clone();

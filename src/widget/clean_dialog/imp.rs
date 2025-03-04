@@ -19,8 +19,9 @@ use strum::IntoEnumIterator;
 use log::{info, warn};
 
 use crate::{
-    systemd::{data::UnitInfo, enums::CleanOption},
-    widget::InterPanelAction,
+    systemd::{self, data::UnitInfo, enums::CleanOption},
+    utils::writer::UnitInfoWriter,
+    widget::{app_window::AppWindow, InterPanelAction},
 };
 
 use super::CleanDialog;
@@ -42,12 +43,68 @@ pub struct CleanDialogImp {
     is_dark: Cell<bool>,
 
     check_buttons: OnceCell<HashMap<String, gtk::CheckButton>>,
+
+    app_window: OnceCell<AppWindow>,
 }
 
 #[gtk::template_callbacks]
 impl CleanDialogImp {
     #[template_callback]
-    fn clean_button_clicked(&self, _button: gtk::Button) {}
+    fn clean_button_clicked(&self, _button: gtk::Button) {
+        let unit_binding = self.unit.borrow();
+        let Some(unit) = unit_binding.as_ref() else {
+            warn!("No unit selected");
+            return;
+        };
+
+        let Some(map) = self.check_buttons.get() else {
+            return;
+        };
+
+        let what: Vec<&str> = map
+            .iter()
+            .filter(|(_, check_button)| check_button.is_active())
+            .map(|(clean_option_code, _)| clean_option_code.as_str())
+            .collect();
+
+        let blue = if self.is_dark.get() {
+            UnitInfoWriter::blue_dark()
+        } else {
+            UnitInfoWriter::blue_light()
+        };
+        let plur = if what.len() == 1 { "" } else { "s" };
+
+        let message = match systemd::clean_unit(unit, &what) {
+            Ok(()) => {
+                format!( "Clean unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> with parameter{} {:?} succeed",
+                    unit.primary(),
+                    plur,
+                    what
+                )
+            }
+            Err(err) => {
+                warn!("Clean Unit {:?} error : {:?}", unit.primary(), err);
+                format!(
+                "Clean unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> with parameter{} {:?} failed",
+                unit.primary(),
+                plur,
+                what
+            )
+            }
+        };
+
+        if let Some(app_window) = self.app_window.get() {
+            app_window.add_toast_message(&message, true);
+        }
+    }
+
+    pub(crate) fn set_app_window(&self, app_window: Option<&AppWindow>) {
+        if let Some(app_window) = app_window {
+            self.app_window
+                .set(app_window.clone())
+                .expect("app_window set once");
+        }
+    }
 
     pub(super) fn set_dark(&self, is_dark: bool) {
         self.is_dark.set(is_dark);
@@ -159,7 +216,9 @@ impl ObjectImpl for CleanDialogImp {
             check_buttons.insert(clean_option.code().to_owned(), check_button);
         }
 
-        let _ = self.check_buttons.set(check_buttons);
+        self.check_buttons
+            .set(check_buttons)
+            .expect("check_buttons set once");
     }
 }
 

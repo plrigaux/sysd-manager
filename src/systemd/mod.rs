@@ -16,8 +16,8 @@ use std::{
 
 use data::{UnitInfo, UnitProcess};
 use enums::{
-    ActiveState, DependencyType, DisEnableFlags, EnablementStatus, KillWho, StartStopMode,
-    UnitDBusLevel, UnitType,
+    ActiveState, CleanOption, DependencyType, DisEnableFlags, EnablementStatus, KillWho,
+    StartStopMode, UnitDBusLevel, UnitType,
 };
 use errors::SystemdErrors;
 use gtk::glib::GString;
@@ -470,6 +470,21 @@ pub fn queue_signal_unit(
     value: i32,
 ) -> Result<(), SystemdErrors> {
     sysdbus::queue_signal_unit(unit.dbus_level(), &unit.primary(), who, signal, value)
+}
+
+pub fn clean_unit(unit: &UnitInfo, what: &[&str]) -> Result<(), SystemdErrors> {
+    //just send all if seleted
+    let mut what_str: Vec<&str> = what
+        .iter()
+        .filter(|cop| **cop != CleanOption::All.code())
+        .copied()
+        .collect();
+
+    if what_str.len() != what.len() {
+        what_str = vec![CleanOption::All.code()]
+    }
+
+    sysdbus::clean_unit(unit.dbus_level(), &unit.primary(), &what_str)
 }
 
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {

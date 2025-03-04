@@ -44,4 +44,8 @@ impl AppWindow {
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.imp().set_inter_action(action);
     }
+
+    pub fn add_toast_message(&self, message: &str, markup: bool) {
+        self.imp().add_toast_message(message, markup);
+    }
 }

@@ -324,7 +324,9 @@ impl ObjectImpl for InfoWindowImp {
         let no_selection = gtk::NoSelection::new(Some(unit_prop_store.clone()));
 
         let filter = self.create_filter();
-        let _ = self.custom_filter.set(filter.clone());
+        self.custom_filter
+            .set(filter.clone())
+            .expect("custom filter set once");
         let filtering_model = gtk::FilterListModel::new(Some(no_selection), Some(filter));
 
         self.store.replace(Some(unit_prop_store));
