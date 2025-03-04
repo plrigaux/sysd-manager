@@ -16,6 +16,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_panel.ui">interfaces/unit_list_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_dependencies_panel.ui">interfaces/unit_dependencies_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="kill_panel.ui">interfaces/kill_panel.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="clean_dialog.ui">interfaces/clean_dialog.ui</file>    
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_control_panel.ui">interfaces/unit_control_panel.ui</file>    
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">interfaces/shortcuts.ui</file>
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>

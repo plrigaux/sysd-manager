@@ -12,8 +12,6 @@ use super::{unit_control_panel::UnitControlPanel, InterPanelAction};
 glib::wrapper! {
     pub struct KillPanel(ObjectSubclass<imp::KillPanelImp>)
         @extends adw::Window, gtk::Window, gtk::Widget,
-        //@implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
-
         @implements gtk::Accessible,  gtk::Buildable,  gtk::ConstraintTarget,
         gtk::Native, gtk::Root, gtk::ShortcutManager;
 }

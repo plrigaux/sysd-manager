@@ -2,6 +2,7 @@ use gtk::pango::FontDescription;
 
 pub mod app_window;
 pub mod button_icon;
+pub mod clean_dialog;
 pub mod grid_cell;
 pub mod info_window;
 pub mod journal;

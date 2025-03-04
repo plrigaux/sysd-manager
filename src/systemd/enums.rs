@@ -622,6 +622,43 @@ impl DisEnableFlags {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, EnumIter)]
+pub enum CleanOption {
+    Runtime,
+    State,
+    Cache,
+    Logs,
+    Configuration,
+    Fdstore,
+    All,
+}
+
+impl CleanOption {
+    pub fn label(&self) -> &str {
+        match &self {
+            CleanOption::Runtime => "_Runtime",
+            CleanOption::State => "_State",
+            CleanOption::Cache => "Cac_he",
+            CleanOption::Logs => "_Logs",
+            CleanOption::Configuration => "_Configuration",
+            CleanOption::Fdstore => "_File Descriptor Store",
+            CleanOption::All => "_All",
+        }
+    }
+
+    pub fn code(&self) -> &str {
+        match &self {
+            CleanOption::Runtime => "runtime",
+            CleanOption::State => "state",
+            CleanOption::Cache => "cache",
+            CleanOption::Logs => "logs",
+            CleanOption::Configuration => "configuration",
+            CleanOption::Fdstore => "fdstore",
+            CleanOption::All => "all",
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

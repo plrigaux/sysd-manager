@@ -1,6 +1,6 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
-use adw::{subclass::prelude::*, Toast};
+use adw::{prelude::*, subclass::prelude::*, Toast};
 use gtk::{
     gio,
     glib::{self},
@@ -22,9 +22,10 @@ use crate::{
         writer::UnitInfoWriter,
     },
     widget::{
-        app_window::AppWindow, journal::JournalPanel, kill_panel::KillPanel,
-        preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
-        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel, InterPanelAction,
+        app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
+        kill_panel::KillPanel, preferences::data::PREFERENCES,
+        unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel,
+        unit_info::UnitInfoPanel, InterPanelAction,
     },
 };
 
@@ -65,8 +66,6 @@ pub struct UnitControlPanelImpl {
     #[template_child]
     side_overlay: TemplateChild<adw::OverlaySplitView>,
 
-    /*     #[template_child]
-    kill_panel: TemplateChild<KillPanel>, */
     #[template_child]
     start_modes: TemplateChild<gtk::Box>,
 
@@ -243,6 +242,15 @@ impl UnitControlPanelImpl {
     fn send_signal_button_clicked(&self, _button: &gtk::Button) {
         self.kill_or_queue_new_window(&self.queue_signal_window, KillPanel::new_signal_window);
     }
+
+    #[template_callback]
+    fn clean_button_clicked(&self, _button: &gtk::Button) {
+        let binding = self.current_unit.borrow();
+
+        let clean_dialog = CleanDialog::new(binding.as_ref(), self.is_dark.get());
+
+        clean_dialog.present();
+    }
 }
 
 impl UnitControlPanelImpl {
@@ -351,7 +359,6 @@ impl UnitControlPanelImpl {
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_unit(unit);
         self.unit_journal_panel.set_unit(unit);
-        //self.kill_panel.set_unit(unit);
         self.unit_dependencies_panel.set_unit(unit);
 
         let kill_signal_window = self.kill_signal_window.borrow();

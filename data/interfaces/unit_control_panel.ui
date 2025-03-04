@@ -227,10 +227,12 @@
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
                     <property name="icon-name">empty-trash-bin-symbolic</property>
-                    <property name="label">Clean</property>
+                    <property name="label">_Clean</property>
+                    <property name="use-underline">True</property>
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
+                <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
               </object>
             </child>
           </object>

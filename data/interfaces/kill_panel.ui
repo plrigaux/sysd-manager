@@ -7,7 +7,6 @@
   <template class="KillPanel" parent="AdwWindow">
     <property name="content">
       <object class="AdwToolbarView">
-        <property name="bottom-bar-style">raised</property>
         <property name="content">
           <object class="GtkBox">
             <property name="margin-bottom">5</property>
@@ -69,6 +68,7 @@
             </child>
           </object>
         </property>
+        <property name="top-bar-style">raised</property>
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
