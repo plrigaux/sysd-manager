@@ -17,6 +17,7 @@ use gtk::{
 use log::{debug, info, warn};
 
 use crate::{
+    consts::{ERROR_CSS, WARNING_CSS},
     systemd::{self, data::UnitInfo, enums::KillWho},
     utils::writer::UnitInfoWriter,
     widget::{unit_control_panel::UnitControlPanel, InterPanelAction},
@@ -179,37 +180,52 @@ impl KillPanelImp {
     }
 
     #[template_callback]
-    fn kill_signal_text_change(&self, _entry: &adw::EntryRow) {
+    fn kill_signal_text_change(&self, entry: &adw::EntryRow) {
         self.set_send_button_sensitivity();
 
-        let sigqueue_value = self.signal_id_entry.text();
-        if self.is_sigqueue.get() {
-            const ERROR_CSS: &str = "error";
-            let value = match sigqueue_value.parse::<i32>() {
-                Ok(v) => {
-                    self.signal_id_entry.remove_css_class(ERROR_CSS);
-                    v
-                }
-                Err(_err) => {
-                    self.signal_id_entry.add_css_class(ERROR_CSS);
-                    return;
-                }
-            };
-
-            const WARNING_CSS: &str = "warning";
-            if value >= libc::SIGRTMIN() && value <= libc::SIGRTMAX() {
-                self.signal_id_entry.remove_css_class(WARNING_CSS);
-            } else {
-                self.signal_id_entry.add_css_class(WARNING_CSS);
-            }
-        }
+        Self::validate_entry(entry, self.is_sigqueue.get(), true)
     }
 
     #[template_callback]
-    fn sigqueue_value_changed(&self, _entry: &adw::EntryRow) {
+    fn sigqueue_value_changed(&self, entry: &adw::EntryRow) {
         self.set_send_button_sensitivity();
+
+        Self::validate_entry(entry, self.is_sigqueue.get(), false)
     }
 
+    fn validate_entry(entry: &adw::EntryRow, is_sigqueue: bool, is_signal_entry: bool) {
+        let value_txt = entry.text();
+
+        if value_txt.is_empty() {
+            entry.remove_css_class(WARNING_CSS);
+            entry.remove_css_class(ERROR_CSS);
+        } else {
+            match value_txt.parse::<i32>() {
+                Ok(value) => {
+                    entry.remove_css_class(ERROR_CSS);
+
+                    if is_signal_entry && is_sigqueue {
+                        if (libc::SIGRTMIN()..=libc::SIGRTMAX()).contains(&value) {
+                            entry.remove_css_class(WARNING_CSS);
+                        } else {
+                            entry.add_css_class(WARNING_CSS);
+                        }
+                    }
+                }
+                Err(parse_int_error) => match parse_int_error.kind() {
+                    std::num::IntErrorKind::PosOverflow | std::num::IntErrorKind::NegOverflow => {
+                        entry.remove_css_class(ERROR_CSS);
+                        entry.add_css_class(WARNING_CSS);
+                    }
+
+                    _ => {
+                        entry.add_css_class(ERROR_CSS);
+                        entry.remove_css_class(WARNING_CSS);
+                    }
+                },
+            }
+        }
+    }
     #[template_callback]
     fn who_to_kill_activate(&self, combo_row: &adw::ComboRow) {
         debug!("who_to_kill_activate {}", combo_row.index());

@@ -5,3 +5,5 @@ pub const SUGGESTED_ACTION: &str = "suggested-action";
 pub const DESTRUCTIVE_ACTION: &str = "destructive-action";
 
 pub const ADWAITA: &str = "Adwaita";
+pub const WARNING_CSS: &str = "warning";
+pub const ERROR_CSS: &str = "error";
