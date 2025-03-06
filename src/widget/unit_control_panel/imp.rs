@@ -16,10 +16,7 @@ use crate::{
         enums::{ActiveState, EnablementStatus, StartStopMode},
         errors::SystemdErrors,
     },
-    utils::{
-        font_management::{self, create_provider, FONT_CONTEXT},
-        writer::UnitInfoWriter,
-    },
+    utils::font_management::{self, create_provider, FONT_CONTEXT},
     widget::{
         app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
         kill_panel::KillPanel, preferences::data::PREFERENCES,
@@ -303,17 +300,14 @@ impl UnitControlPanelImpl {
     ) {
         let job_op = match start_results {
             Ok(job) => {
-                let is_dark = self.is_dark.get();
-                let blue = if is_dark {
-                    UnitInfoWriter::blue_dark()
+                let red_green = if action != UnitContolType::Stop {
+                    "green"
                 } else {
-                    UnitInfoWriter::blue_light()
+                    "red"
                 };
 
-                let red_green = controls::red_green(action != UnitContolType::Stop, is_dark);
-
                 let info = format!(
-                    "Unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has been <span fgcolor='{red_green}'>{}</span> with the mode <span fgcolor='{blue}' font_family='monospace'>{}</span>",
+                    "Unit <unit>{}</unit> has been <{red_green}>{}</{red_green}> with the mode <unit>{}</unit>",
                     unit.primary(),
                     action.past_participle(),
                     mode.as_str()
@@ -327,22 +321,15 @@ impl UnitControlPanelImpl {
 
                 Some(job)
             }
-            Err(e) => {
-                let is_dark = self.is_dark.get();
-                let blue = if is_dark {
-                    UnitInfoWriter::blue_dark()
-                } else {
-                    UnitInfoWriter::blue_light()
-                };
-
+            Err(err) => {
                 let info = format!(
-                    "Can't {} the unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span>, because: {:?}",
+                    "Can't {} the unit <unit>{}</unit>, because: {:?}",
                     action.as_str(),
                     unit.primary(),
-                    e
+                    err.human_error_type()
                 );
 
-                warn!("{info}");
+                warn!("{info} {:?}", err);
 
                 self.add_toast_message(&info, true);
 

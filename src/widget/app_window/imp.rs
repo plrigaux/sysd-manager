@@ -1,12 +1,18 @@
-use std::cell::OnceCell;
+use std::{
+    borrow::Cow,
+    cell::{Cell, OnceCell},
+    sync::OnceLock,
+};
 
 use adw::subclass::prelude::*;
 use gtk::{gio, glib, prelude::*};
 use log::{debug, error, info};
+use regex::Regex;
 
 use crate::{
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
+    utils::writer::UnitInfoWriter,
     widget::{
         preferences::data::{DbusLevel, PREFERENCES},
         unit_control_panel::UnitControlPanel,
@@ -51,6 +57,8 @@ pub struct AppWindowImpl {
 
     #[template_child]
     system_session_dropdown: TemplateChild<gtk::DropDown>,
+
+    is_dark: Cell<bool>,
 }
 
 #[glib::object_subclass]
@@ -225,7 +233,9 @@ impl AppWindowImpl {
         //button.set_sensitive(true);
         info!("refresh true");
     }
+}
 
+impl AppWindowImpl {
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
         if let Some(unit) = unit {
             self.unit_name_label.set_label(&unit.primary());
@@ -247,6 +257,10 @@ impl AppWindowImpl {
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.unit_control_panel.set_inter_action(action);
+
+        if let InterPanelAction::IsDark(is_dark) = *action {
+            self.is_dark.set(is_dark);
+        }
     }
 
     pub(super) fn build_action(&self, application: &adw::Application) {
@@ -318,16 +332,89 @@ impl AppWindowImpl {
         &self.toast_overlay
     }
 
-    pub(super) fn add_toast(&self, toast: adw::Toast) {
-        self.toast_overlay.add_toast(toast)
+    fn blue(&self) -> &str {
+        if self.is_dark.get() {
+            UnitInfoWriter::blue_dark()
+        } else {
+            UnitInfoWriter::blue_light()
+        }
+    }
+
+    fn green(&self) -> &str {
+        if self.is_dark.get() {
+            UnitInfoWriter::green_dark()
+        } else {
+            UnitInfoWriter::green_light()
+        }
+    }
+
+    fn red(&self) -> &str {
+        if self.is_dark.get() {
+            UnitInfoWriter::red_dark()
+        } else {
+            UnitInfoWriter::red_light()
+        }
     }
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
+        let msg = if use_markup {
+            let out = self.replace_tags(message);
+            Cow::from(out)
+        } else {
+            Cow::from(message)
+        };
+
         let toast = adw::Toast::builder()
-            .title(message)
+            .title(msg)
             .use_markup(use_markup)
             .build();
         self.toast_overlay.add_toast(toast)
+    }
+
+    fn replace_tags(&self, message: &str) -> String {
+        debug!("{}", message);
+        let mut out = String::with_capacity(message.len() * 2);
+        let re = toast_regex();
+
+        let mut i: usize = 0;
+        for capture in re.captures_iter(message) {
+            let m = capture.get(0).unwrap();
+            out.push_str(&message[i..m.start()]);
+
+            let tag = &capture[1];
+            match tag {
+                "unit" => {
+                    out.push_str("<span fgcolor='");
+                    out.push_str(self.blue());
+                    out.push_str("' font_family='monospace' size='larger'>");
+                    out.push_str(&capture[2]);
+                    out.push_str("</span>");
+                }
+
+                "red" => {
+                    out.push_str("<span fgcolor='");
+                    out.push_str(self.red());
+                    out.push_str("'>");
+                    out.push_str(&capture[2]);
+                    out.push_str("</span>");
+                }
+
+                "green" => {
+                    out.push_str("<span fgcolor='");
+                    out.push_str(self.green());
+                    out.push_str("'>");
+                    out.push_str(&capture[2]);
+                    out.push_str("</span>");
+                }
+                _ => {
+                    out.push_str(&capture[0]);
+                }
+            }
+            i = m.end();
+        }
+        out.push_str(&message[i..message.len()]);
+        debug!("{}", out);
+        out
     }
 }
 
@@ -336,7 +423,7 @@ impl WindowImpl for AppWindowImpl {
     // Save window state right before the window will be closed
     fn close_request(&self) -> glib::Propagation {
         // Save window size
-        log::debug!("Close window");
+        debug!("Close window");
         if let Err(_err) = self.save_window_size() {
             error!("Failed to save window state");
         }
@@ -348,3 +435,38 @@ impl WindowImpl for AppWindowImpl {
 }
 impl AdwApplicationWindowImpl for AppWindowImpl {}
 impl ApplicationWindowImpl for AppWindowImpl {}
+
+pub fn toast_regex() -> &'static Regex {
+    static TOAST_REGEX: OnceLock<Regex> = OnceLock::new();
+    TOAST_REGEX
+        .get_or_init(|| Regex::new(r"<(\w+).*?>(.*?)</(\w+?)>").expect("Rexgex compile error :"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_reg_ex1() {
+        let r = toast_regex();
+
+        let test_str = "asdf <unit>unit.serv</unit> ok";
+
+        for capt in r.captures_iter(test_str) {
+            println!("capture: {:#?}", capt)
+        }
+    }
+
+    #[test]
+    fn test_reg_ex2() {
+        let r = toast_regex();
+
+        let test_str = ["asdf <unit arg=\"test\">unit.serv</unit> ok", "Clean unit <unit>tiny_daemon.service</unit> with parameters <b>cache</b> and <b>configuration</b> failed"];
+
+        for test in test_str {
+            for capt in r.captures_iter(test) {
+                println!("capture: {:#?}", capt)
+            }
+        }
+    }
+}

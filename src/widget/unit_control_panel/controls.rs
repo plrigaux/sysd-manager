@@ -166,17 +166,3 @@ fn handle_switch_sensivity_part2(
 
     switch.set_sensitive(sensitive);
 }
-
-pub fn red_green(condition: bool, is_dark: bool) -> &'static str {
-    if condition {
-        if is_dark {
-            UnitInfoWriter::green_dark()
-        } else {
-            UnitInfoWriter::green_light()
-        }
-    } else if is_dark {
-        UnitInfoWriter::red_dark()
-    } else {
-        UnitInfoWriter::red_light()
-    }
-}

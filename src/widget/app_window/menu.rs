@@ -109,7 +109,7 @@ pub fn on_startup(app: &adw::Application) {
                         }
                         Err(e) => {
                             error!("Roload failed {:?}", e);
-                            add_toast(&application, "Roload failed!");
+                            add_toast(&application, "Reload failed!");
                         }
                     }
                 });
@@ -132,9 +132,7 @@ fn add_toast(application: &adw::Application, toast_msg: &str) {
         let app_win_op: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
 
         if let Some(app_win) = app_win_op {
-            let toast = adw::Toast::new(toast_msg);
-
-            app_win.add_toast(toast);
+            app_win.add_toast_message(toast_msg, false);
         }
     }
 }

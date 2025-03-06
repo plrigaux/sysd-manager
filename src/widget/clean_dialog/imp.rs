@@ -1,5 +1,5 @@
 use std::{
-    cell::{Cell, OnceCell, RefCell},
+    cell::{OnceCell, RefCell},
     collections::HashMap,
 };
 
@@ -19,8 +19,7 @@ use strum::IntoEnumIterator;
 use log::{info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::CleanOption},
-    utils::writer::UnitInfoWriter,
+    systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
     widget::{app_window::AppWindow, InterPanelAction},
 };
 
@@ -39,8 +38,6 @@ pub struct CleanDialogImp {
     window_title: TemplateChild<adw::WindowTitle>,
 
     unit: RefCell<Option<UnitInfo>>,
-
-    is_dark: Cell<bool>,
 
     check_buttons: OnceCell<HashMap<String, gtk::CheckButton>>,
 
@@ -67,85 +64,52 @@ impl CleanDialogImp {
             .map(|(clean_option_code, _)| clean_option_code.as_str())
             .collect();
 
-        let blue = if self.is_dark.get() {
-            UnitInfoWriter::blue_dark()
-        } else {
-            UnitInfoWriter::blue_light()
-        };
         let plur = if what.len() == 1 { "" } else { "s" };
 
         let message = match systemd::clean_unit(unit, &what) {
             Ok(()) => {
-                format!( "Clean unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> with parameter{} {:?} succeed",
+                format!(
+                    "Clean unit <unit>{}</unit> with parameter{} {} succeed",
                     unit.primary(),
                     plur,
-                    what
+                    Self::what_to_display(&what)
                 )
             }
             Err(err) => {
                 warn!("Clean Unit {:?} error : {:?}", unit.primary(), err);
 
-                let dialog = adw::AlertDialog::builder()
-                    .title("Error")
-                    .can_close(true)
-                    .build();
-
-                let box_ = gtk::Box::builder()
-                    .orientation(gtk::Orientation::Vertical)
-                    .spacing(15)
-                    .margin_start(5)
-                    .margin_end(5)
-                    .margin_top(5)
-                    .margin_bottom(5)
-                    .build();
-
-                box_.append(
-                    &gtk::Label::builder()
-                        .label("SysD-Manager can't complete this action!\n")
-                        .build(),
-                );
-
-                box_.append(
-                    &gtk::Label::builder()
-                        .label("Please try the bellow command line in your terminal\n")
-                        .build(),
-                );
-
-                let mut cmd = "sudo systemctl clean ".to_owned();
-
-                for w in &what {
-                    cmd.push_str("--what=");
-                    cmd.push_str(w);
-                    cmd.push(' ');
-                }
-
-                cmd.push_str(&unit.primary());
-
-                let label_fallback = gtk::Label::builder()
-                    .label(&cmd)
-                    .selectable(true)
-                    .css_classes(["journal_message"])
-                    .build();
-
-                box_.append(&label_fallback);
-                dialog.set_child(Some(&box_));
-
-                if let Some(app_window) = self.app_window.get() {
-                    dialog.present(None::<&gtk::Widget>);
-                }
-
+                self.work_around_dialog(&what, unit, err);
                 format!(
-                "Clean unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> with parameter{} {:?} failed",
-                unit.primary(),
-                plur,
-                what
-            )
+                    "Clean unit <unit>{}</unit> with parameter{} {} failed",
+                    unit.primary(),
+                    plur,
+                    Self::what_to_display(&what)
+                )
             }
         };
 
         if let Some(app_window) = self.app_window.get() {
             app_window.add_toast_message(&message, true);
         }
+    }
+
+    fn what_to_display(what: &[&str]) -> String {
+        let mut out = String::new();
+
+        for (i, w) in what.iter().enumerate() {
+            out.push_str("<unit>");
+            out.push_str(w);
+            out.push_str("</unit>");
+
+            if i + 2 == what.len() {
+                out.push_str(" and ");
+            } else if i + 1 == what.len() {
+                //the last, do nothing
+            } else {
+                out.push_str(", ");
+            }
+        }
+        out
     }
 
     pub(crate) fn set_app_window(&self, app_window: Option<&AppWindow>) {
@@ -156,15 +120,7 @@ impl CleanDialogImp {
         }
     }
 
-    pub(super) fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
-    }
-
-    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
-        if let InterPanelAction::IsDark(is_dark) = *action {
-            self.set_dark(is_dark)
-        }
-    }
+    pub(super) fn set_inter_action(&self, _action: &InterPanelAction) {}
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         let unit = match unit {
@@ -217,6 +173,65 @@ impl CleanDialogImp {
         }
 
         self.clean_button.set_sensitive(at_least_one_checked);
+    }
+
+    fn work_around_dialog(&self, what: &[&str], unit: &UnitInfo, err: SystemdErrors) {
+        let content_box = gtk::Box::builder()
+            .orientation(gtk::Orientation::Vertical)
+            .spacing(15)
+            .margin_start(5)
+            .margin_end(5)
+            .margin_top(5)
+            .margin_bottom(15)
+            .build();
+
+        content_box.append(
+            &gtk::Label::builder()
+                .label("Unfortunately SysD-Manager can't perfom unit clean currently.")
+                .build(),
+        );
+        content_box.append(
+            &gtk::Label::builder()
+                .label("Because the app is in construction. Contact me if you know how to manage polkit ;)")
+                .build(),
+        );
+        content_box.append(
+            &gtk::Label::builder()
+                .label(
+                    "\n\nWhile waiting for an eventual fix, please try the bellow command line in your terminal",
+                )
+                .build(),
+        );
+
+        let mut cmd = "sudo systemctl clean ".to_owned();
+
+        for w in what {
+            cmd.push_str("--what=");
+            cmd.push_str(w);
+            cmd.push(' ');
+        }
+
+        cmd.push_str(&unit.primary());
+
+        let label_fallback = gtk::Label::builder()
+            .label(&cmd)
+            .selectable(true)
+            .wrap(true)
+            .css_classes(["journal_message"])
+            .build();
+
+        content_box.append(&label_fallback);
+
+        let tool_bar = adw::ToolbarView::builder().content(&content_box).build();
+        tool_bar.add_top_bar(&adw::HeaderBar::new());
+
+        let dialog = adw::Window::builder()
+            .title(format!("Error {}", err.human_error_type()))
+            .content(&tool_bar)
+            .transient_for(self.obj().as_ref())
+            .build();
+
+        dialog.present();
     }
 }
 

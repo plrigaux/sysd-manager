@@ -1,4 +1,7 @@
-use std::string::FromUtf8Error;
+use std::{
+    fmt::{self, Display, Formatter},
+    string::FromUtf8Error,
+};
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -36,6 +39,19 @@ impl SystemdErrors {
             }
             _ => None,
         }
+    }
+
+    pub fn human_error_type(&self) -> String {
+        match self {
+            SystemdErrors::ZAccessDenied(_, _) => "Access Denied".to_owned(),
+            _ => self.to_string(),
+        }
+    }
+}
+
+impl Display for SystemdErrors {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 

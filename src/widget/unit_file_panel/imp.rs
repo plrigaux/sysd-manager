@@ -56,8 +56,6 @@ pub struct UnitFilePanelImp {
     #[template_child]
     panel_file_stack: TemplateChild<gtk::Stack>,
 
-    toast_overlay: OnceCell<adw::ToastOverlay>,
-
     app_window: OnceCell<AppWindow>,
 
     visible_on_page: Cell<bool>,
@@ -107,8 +105,7 @@ impl UnitFilePanelImp {
             Ok((file_path, _bytes_written)) => {
                 button.remove_css_class(SUGGESTED_ACTION);
                 let msg = format!("File <u>{file_path}</u> saved succesfully!");
-                let toast = adw::Toast::builder().use_markup(true).title(&msg).build();
-                self.toast_overlay.get().unwrap().add_toast(toast)
+                self.add_toast_message(&msg, true);
             }
             Err(error) => {
                 warn!(
@@ -126,18 +123,13 @@ impl UnitFilePanelImp {
                     }
 
                     SystemdErrors::NotAuthorized => {
-                        let toast = adw::Toast::builder()
-                            .use_markup(true)
-                            .title("Not able to save file, permission not granted!")
-                            .build();
-                        self.toast_overlay.get().unwrap().add_toast(toast);
+                        self.add_toast_message(
+                            "Not able to save file, permission not granted!",
+                            false,
+                        );
                     }
                     _ => {
-                        let toast = adw::Toast::builder()
-                            .use_markup(true)
-                            .title("Not able to save file, an error happened!")
-                            .build();
-                        self.toast_overlay.get().unwrap().add_toast(toast)
+                        self.add_toast_message("Not able to save file, an error happened!", false);
                     }
                 }
             }
@@ -146,6 +138,12 @@ impl UnitFilePanelImp {
 }
 
 impl UnitFilePanelImp {
+    fn add_toast_message(&self, message: &str, markup: bool) {
+        if let Some(app_window) = self.app_window.get() {
+            app_window.add_toast_message(message, markup);
+        }
+    }
+
     fn set_visible_on_page(&self, value: bool) {
         debug!("set_visible_on_page val {value}");
         self.visible_on_page.set(value);

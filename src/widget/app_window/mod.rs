@@ -29,10 +29,6 @@ impl AppWindow {
         self.imp().selection_change(unit);
     }
 
-    pub fn add_toast(&self, toast: adw::Toast) {
-        self.imp().add_toast(toast);
-    }
-
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         self.imp().set_unit(unit);
     }
