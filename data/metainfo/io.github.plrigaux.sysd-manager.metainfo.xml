@@ -74,12 +74,27 @@
   <url type="homepage">https://github.com/plrigaux/sysd-manager</url>
   <url type="bugtracker">https://github.com/plrigaux/sysd-manager/issues</url>
   <url type="contribute">https://github.com/plrigaux/sysd-manager/pulls</url>
+  <url type="donation">https://github.com/sponsors/plrigaux</url>
   <!--
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+  <release version="1.17.0" date="2025-03-06">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>Feature: Queue signal (sigqueue)</li>
+          <li>Feature: Clean unit (access rights not working, but provide workaround)</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Side menu to control unit</li>  
+          <li>Send kill signal interface improved</li>         
+        </ul>               
+      </description>
+    </release>
     <release version="1.16.0" date="2025-02-24">
       <description>
         <p>Added</p>
