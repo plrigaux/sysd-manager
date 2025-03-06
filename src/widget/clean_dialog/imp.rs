@@ -84,6 +84,56 @@ impl CleanDialogImp {
             }
             Err(err) => {
                 warn!("Clean Unit {:?} error : {:?}", unit.primary(), err);
+
+                let dialog = adw::AlertDialog::builder()
+                    .title("Error")
+                    .can_close(true)
+                    .build();
+
+                let box_ = gtk::Box::builder()
+                    .orientation(gtk::Orientation::Vertical)
+                    .spacing(15)
+                    .margin_start(5)
+                    .margin_end(5)
+                    .margin_top(5)
+                    .margin_bottom(5)
+                    .build();
+
+                box_.append(
+                    &gtk::Label::builder()
+                        .label("SysD-Manager can't complete this action!\n")
+                        .build(),
+                );
+
+                box_.append(
+                    &gtk::Label::builder()
+                        .label("Please try the bellow command line in your terminal\n")
+                        .build(),
+                );
+
+                let mut cmd = "sudo systemctl clean ".to_owned();
+
+                for w in &what {
+                    cmd.push_str("--what=");
+                    cmd.push_str(w);
+                    cmd.push(' ');
+                }
+
+                cmd.push_str(&unit.primary());
+
+                let label_fallback = gtk::Label::builder()
+                    .label(&cmd)
+                    .selectable(true)
+                    .css_classes(["journal_message"])
+                    .build();
+
+                box_.append(&label_fallback);
+                dialog.set_child(Some(&box_));
+
+                if let Some(app_window) = self.app_window.get() {
+                    dialog.present(None::<&gtk::Widget>);
+                }
+
                 format!(
                 "Clean unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> with parameter{} {:?} failed",
                 unit.primary(),

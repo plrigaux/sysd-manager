@@ -7,11 +7,8 @@ pub enum SystemdErrors {
     IoError(std::io::Error),
     Utf8Error(FromUtf8Error),
     SystemCtlError(String),
-    NoSuchUnit(Option<String>),
     Malformed(String, String),
-    ZBusError(zbus::Error),
-    ZBusFdoError(zbus::fdo::Error),
-    ZVariantError(zvariant::Error),
+    ZMethodError(String, String, String),
     CmdNoFlatpakSpawn,
     CmdNoFreedesktopFlatpakPermission(Option<String>, Option<String>),
     JournalError(String),
@@ -19,6 +16,11 @@ pub enum SystemdErrors {
     //FlatpakAccess(ErrorKind),
     NotAuthorized,
     Tokio,
+    ZBusError(zbus::Error),
+    ZAccessDenied(String, String),
+    ZNoSuchUnit(String, String),
+    ZVariantError(zvariant::Error),
+    ZBusFdoError(zbus::fdo::Error),
 }
 
 impl SystemdErrors {
@@ -49,20 +51,38 @@ impl From<FromUtf8Error> for SystemdErrors {
     }
 }
 
+impl From<(zbus::Error, &str)> for SystemdErrors {
+    fn from(value: (zbus::Error, &str)) -> Self {
+        let (zb_error, method) = value;
+
+        match zb_error {
+            zbus::Error::MethodError(owned_error_name, ref msg, _message) => {
+                let err_code = zvariant::Str::from(owned_error_name);
+
+                let err_code = err_code.as_str();
+                let message = msg.clone().unwrap_or_default();
+
+                match err_code {
+                    "org.freedesktop.DBus.Error.AccessDenied" => {
+                        SystemdErrors::ZAccessDenied(method.to_owned(), message)
+                    }
+                    "org.freedesktop.systemd1.NoSuchUnit" => {
+                        SystemdErrors::ZNoSuchUnit(method.to_owned(), message)
+                    }
+                    _ => {
+                        SystemdErrors::ZMethodError(method.to_owned(), err_code.to_owned(), message)
+                    }
+                }
+            }
+
+            _ => SystemdErrors::ZBusError(zb_error),
+        }
+    }
+}
+
 impl From<zbus::Error> for SystemdErrors {
     fn from(error: zbus::Error) -> Self {
-        if let zbus::Error::MethodError(owned_error_name, ref msg, ref _message) = error {
-            let err_code = zvariant::Str::from(owned_error_name);
-
-            if err_code.eq("org.freedesktop.systemd1.NoSuchUnit") {
-                SystemdErrors::NoSuchUnit(msg.clone())
-            } else {
-                let msg = format!("MethodError Fail {:?}", err_code);
-                SystemdErrors::Custom(msg)
-            }
-        } else {
-            SystemdErrors::ZBusError(error)
-        }
+        SystemdErrors::from((error, ""))
     }
 }
 

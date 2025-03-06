@@ -545,9 +545,10 @@ where
                 break;
             }
             zbus::message::Type::Error => {
-                let error = zbus::Error::from(return_message);
+                let zb_error = zbus::Error::from(return_message);
+
                 {
-                    match error {
+                    match zb_error {
                         zbus::Error::MethodError(
                             ref owned_error_name,
                             ref details,
@@ -560,10 +561,11 @@ where
                                 message
                             )
                         }
-                        _ => warn!("Bus error: {:?}", error),
+                        _ => warn!("Bus error: {:?}", zb_error),
                     }
                 }
-                return Err(SystemdErrors::from(error));
+                let error = SystemdErrors::from((zb_error, method));
+                return Err(error);
             }
             zbus::message::Type::Signal => {
                 info!("Signal: {:?}", return_message);
@@ -1373,7 +1375,7 @@ mod tests {
             Ok(_) => todo!(),
             Err(e) => {
                 warn!("{:?}", e);
-                if let SystemdErrors::NoSuchUnit(_msg) = e {
+                if let SystemdErrors::ZNoSuchUnit(_method, _message) = e {
                     Ok(())
                 } else {
                     Err(SystemdErrors::Custom("Wrong expected Error".to_owned()))
@@ -1579,5 +1581,98 @@ mod tests {
         println!("{val} {val2}");
 
         queue_signal_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 9, 0)
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    pub(super) fn test_unit_clean() -> Result<(), SystemdErrors> {
+        let handle_answer = |_method: &str, _return_message: &Message| {
+            info!("Clean Unit SUCCESS");
+
+            Ok(())
+        };
+        let path = unit_dbus_path_from_name(TEST_SERVICE);
+        let what = ["logs"];
+
+        send_unit_message(
+            UnitDBusLevel::System,
+            "Clean",
+            &(&what),
+            handle_answer,
+            &path,
+        )
+    }
+
+    fn send_unit_message<T, U>(
+        level: UnitDBusLevel,
+        method: &str,
+        body: &T,
+        handler: impl Fn(&str, &Message) -> Result<U, SystemdErrors>,
+        path: &str,
+    ) -> Result<U, SystemdErrors>
+    where
+        T: serde::ser::Serialize + DynamicType,
+        U: std::fmt::Debug,
+    {
+        let message = Message::method_call(path, method)?
+            .with_flags(Flags::AllowInteractiveAuth)?
+            .destination(DESTINATION_SYSTEMD)?
+            .interface(INTERFACE_SYSTEMD_UNIT)?
+            .build(body)?;
+
+        let connection = get_connection(level)?;
+
+        connection.send(&message)?;
+
+        let message_it = MessageIterator::from(connection);
+
+        for message_res in message_it {
+            debug!("Message response {:?}", message_res);
+            let return_message = message_res?;
+
+            match return_message.message_type() {
+                zbus::message::Type::MethodReturn => {
+                    info!("{method} Response");
+                    let result = handler(method, &return_message);
+                    return result;
+                }
+                zbus::message::Type::MethodCall => {
+                    warn!("Not supposed to happen: {:?}", return_message);
+                    break;
+                }
+                zbus::message::Type::Error => {
+                    let error = zbus::Error::from(return_message);
+                    {
+                        match error {
+                            zbus::Error::MethodError(
+                                ref owned_error_name,
+                                ref details,
+                                ref message,
+                            ) => {
+                                warn!(
+                                    "Method error: {}\nDetails: {}\n{:?}",
+                                    owned_error_name.as_str(),
+                                    details.as_ref().map(|s| s.as_str()).unwrap_or_default(),
+                                    message
+                                )
+                            }
+                            _ => warn!("Bus error: {:?}", error),
+                        }
+                    }
+                    return Err(SystemdErrors::from(error));
+                }
+                zbus::message::Type::Signal => {
+                    info!("Signal: {:?}", return_message);
+                    continue;
+                }
+            }
+        }
+
+        let msg = format!("{:?} ????, response supposed to be Unreachable", method);
+        warn!("{}", msg);
+        Err(SystemdErrors::Malformed(
+            msg,
+            "sequences of messages".to_owned(),
+        ))
     }
 }
