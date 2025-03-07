@@ -23,6 +23,9 @@ pub enum EnablementStatus {
     Masked = 8,
     Static = 9,
     Trancient = 10,
+    EnabledRuntime = 11,
+    LinkedRuntime = 12,
+    MaskedRuntime = 13,
 }
 
 impl EnablementStatus {
@@ -40,10 +43,28 @@ impl EnablementStatus {
             'a' => EnablementStatus::Alias,
             's' => EnablementStatus::Static,
             'd' => EnablementStatus::Disabled,
-            'e' => EnablementStatus::Enabled,
+            'e' => {
+                if enablement_status.len() == "enabled".len() {
+                    EnablementStatus::Enabled
+                } else {
+                    EnablementStatus::EnabledRuntime
+                }
+            }
             'i' => EnablementStatus::Indirect,
-            'l' => EnablementStatus::Linked,
-            'm' => EnablementStatus::Masked,
+            'l' => {
+                if enablement_status.len() == "linked".len() {
+                    EnablementStatus::Linked
+                } else {
+                    EnablementStatus::LinkedRuntime
+                }
+            }
+            'm' => {
+                if enablement_status.len() == "masked".len() {
+                    EnablementStatus::Masked
+                } else {
+                    EnablementStatus::MaskedRuntime
+                }
+            }
             'b' => EnablementStatus::Bad,
             'g' => EnablementStatus::Generated,
             't' => EnablementStatus::Trancient,
@@ -66,6 +87,9 @@ impl EnablementStatus {
             EnablementStatus::Static => "static",
             EnablementStatus::Generated => "generated",
             EnablementStatus::Trancient => "trancient",
+            EnablementStatus::EnabledRuntime => "enabled-runtime",
+            EnablementStatus::LinkedRuntime => "linked-runtime",
+            EnablementStatus::MaskedRuntime => "masked-runtime",
             EnablementStatus::Unknown => "",
         }
     }
@@ -86,6 +110,9 @@ impl EnablementStatus {
             EnablementStatus::Static => "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section.",
             EnablementStatus::Trancient => "The unit file has been created dynamically with the runtime API. Transient units may not be enabled.",
             EnablementStatus::Unknown => "",
+            EnablementStatus::EnabledRuntime => EnablementStatus::Enabled.tooltip_info(),
+            EnablementStatus::LinkedRuntime => EnablementStatus::Linked.tooltip_info(),
+            EnablementStatus::MaskedRuntime => EnablementStatus::Masked.tooltip_info(),
         }
     }
 }
