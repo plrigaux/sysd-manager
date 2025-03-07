@@ -9,6 +9,10 @@ use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
 use zvariant::OwnedValue;
 
+const MASKED: &str = "masked";
+const ENABLED: &str = "enabled";
+const LINKED: &str = "linked";
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default)]
 pub enum EnablementStatus {
     #[default]
@@ -17,15 +21,15 @@ pub enum EnablementStatus {
     Bad = 2,
     Disabled = 3,
     Enabled = 4,
+    EnabledRuntime = 11,
     Generated = 5,
     Indirect = 6,
     Linked = 7,
+    LinkedRuntime = 12,
     Masked = 8,
+    MaskedRuntime = 13,
     Static = 9,
     Trancient = 10,
-    EnabledRuntime = 11,
-    LinkedRuntime = 12,
-    MaskedRuntime = 13,
 }
 
 impl EnablementStatus {
@@ -44,7 +48,7 @@ impl EnablementStatus {
             's' => EnablementStatus::Static,
             'd' => EnablementStatus::Disabled,
             'e' => {
-                if enablement_status.len() == "enabled".len() {
+                if enablement_status.len() == ENABLED.len() {
                     EnablementStatus::Enabled
                 } else {
                     EnablementStatus::EnabledRuntime
@@ -52,14 +56,14 @@ impl EnablementStatus {
             }
             'i' => EnablementStatus::Indirect,
             'l' => {
-                if enablement_status.len() == "linked".len() {
+                if enablement_status.len() == LINKED.len() {
                     EnablementStatus::Linked
                 } else {
                     EnablementStatus::LinkedRuntime
                 }
             }
             'm' => {
-                if enablement_status.len() == "masked".len() {
+                if enablement_status.len() == MASKED.len() {
                     EnablementStatus::Masked
                 } else {
                     EnablementStatus::MaskedRuntime
@@ -80,10 +84,10 @@ impl EnablementStatus {
             EnablementStatus::Alias => "alias",
             EnablementStatus::Bad => "bad",
             EnablementStatus::Disabled => "disabled",
-            EnablementStatus::Enabled => "enabled",
+            EnablementStatus::Enabled => ENABLED,
             EnablementStatus::Indirect => "indirect",
-            EnablementStatus::Linked => "linked",
-            EnablementStatus::Masked => "masked",
+            EnablementStatus::Linked => LINKED,
+            EnablementStatus::Masked => MASKED,
             EnablementStatus::Static => "static",
             EnablementStatus::Generated => "generated",
             EnablementStatus::Trancient => "trancient",
@@ -98,21 +102,25 @@ impl EnablementStatus {
      */
 
     pub fn tooltip_info(&self) -> &str {
+        const ENABLED_TOOLTIP_INFO : &str = "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).";
+        const LINKED_TOOLTIP_INFO : &str = "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.";
+        const MASKED_TOOLTIP_INFO : &str = "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).";
+
         match self {
             EnablementStatus::Alias => "The name is an alias (symlink to another unit file).",
             EnablementStatus::Bad => "The unit file is invalid or another error occurred.",
             EnablementStatus::Disabled => "The unit file is not enabled, but contains an [Install] section with installation instructions.",
-            EnablementStatus::Enabled => "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).",
+            EnablementStatus::Enabled => ENABLED_TOOLTIP_INFO,
             EnablementStatus::Generated => "The unit file was generated dynamically via a generator tool. See <b>man systemd.generator(7)</b>. Generated unit files may not be enabled, they are enabled implicitly by their generator.",
             EnablementStatus::Indirect => "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> setting in the [Install] unit file section, listing other unit files that might be enabled, or it has an alias under a different name through a symlink that is not specified in <u>Also=</u>. For template unit files, an instance different than the one specified in <u>DefaultInstance=</u> is enabled.",
-            EnablementStatus::Linked => "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.",
-            EnablementStatus::Masked => "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
+            EnablementStatus::Linked => LINKED_TOOLTIP_INFO,
+            EnablementStatus::Masked => MASKED_TOOLTIP_INFO,
             EnablementStatus::Static => "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section.",
             EnablementStatus::Trancient => "The unit file has been created dynamically with the runtime API. Transient units may not be enabled.",
             EnablementStatus::Unknown => "",
-            EnablementStatus::EnabledRuntime => EnablementStatus::Enabled.tooltip_info(),
-            EnablementStatus::LinkedRuntime => EnablementStatus::Linked.tooltip_info(),
-            EnablementStatus::MaskedRuntime => EnablementStatus::Masked.tooltip_info(),
+            EnablementStatus::EnabledRuntime => ENABLED_TOOLTIP_INFO,
+            EnablementStatus::LinkedRuntime => LINKED_TOOLTIP_INFO,
+            EnablementStatus::MaskedRuntime => MASKED_TOOLTIP_INFO,
         }
     }
 }
