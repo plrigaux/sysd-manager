@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
+  <!-- interface-name ex_menu_button.ui -->
   <requires lib="gtk" version="4.12"/>
   <template class="ExMenuButton" parent="GtkWidget">
     <property name="layout-manager">
@@ -7,7 +9,6 @@
     </property>
     <child>
       <object class="GtkToggleButton" id="toggle">
-        <signal name="toggled" handler="toggle_toggled" swapped="true"/>
         <property name="child">
           <object class="GtkBox">
             <property name="spacing">6</property>
@@ -26,11 +27,11 @@
             </child>
           </object>
         </property>
+        <signal name="toggled" handler="toggle_toggled" swapped="yes"/>
       </object>
     </child>
     <child>
       <object class="GtkPopover" id="popover">
-        <signal name="closed" handler="popover_closed" swapped="true"/>
         <property name="child">
           <object class="GtkBox" id="pop_content">
             <property name="orientation">vertical</property>
@@ -38,11 +39,12 @@
               <object class="GtkButton">
                 <property name="label">Clear</property>
                 <property name="tooltip-text">Clear filter selection</property>
-                <signal name="clicked" handler="clear_filter_selection" swapped="true"/>
+                <signal name="clicked" handler="clear_filter_selection" swapped="yes"/>
               </object>
-            </child>           
+            </child>
           </object>
         </property>
+        <signal name="closed" handler="popover_closed" swapped="yes"/>
       </object>
     </child>
   </template>
