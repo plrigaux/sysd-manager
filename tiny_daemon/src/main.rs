@@ -2,12 +2,8 @@ use axum::{routing::get, Router};
 use clap::Parser;
 
 use log::{info, warn};
-use signal_hook::{
-    consts::{SIGALRM, SIGHUP, SIGINT, SIGQUIT, SIGTERM},
-    iterator::Signals,
-};
+use tokio::signal::unix::{signal, SignalKind};
 
-use anstyle;
 use std::io::Write;
 
 #[derive(Parser, Debug)]
@@ -20,7 +16,6 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-
     env_logger::builder()
         //.format_target(false)
         //.format_timestamp(None)
@@ -29,7 +24,8 @@ async fn main() -> std::io::Result<()> {
                 .default_level_style(record.level())
                 .effects(anstyle::Effects::BOLD);
             writeln!(buf, "{style}{}{style:#} {}", record.level(), record.args())
-        }).filter_level(log::LevelFilter::Info)
+        })
+        .filter_level(log::LevelFilter::Info)
         .init();
 
     let ret: Result<(), std::io::Error> = setup_server().await;
@@ -47,28 +43,25 @@ async fn setup_server() -> std::io::Result<()> {
     let port = args.port;
     let ip_addr = args.addr;
 
-    let mut signals = Signals::new(&[SIGTERM, SIGQUIT, SIGHUP, SIGINT, SIGALRM])?;
+    let mut signal_terminate = signal(SignalKind::terminate())?;
+    let mut signal_interrupt = signal(SignalKind::interrupt())?;
+    let mut signal_quit = signal(SignalKind::quit())?;
 
-    tokio::spawn({
-        async move {
-            for sig in signals.forever() {
-                info!("Received signal {:?}", sig);
+    let mut signal_alarm = signal(SignalKind::alarm())?;
+    let mut signal_hanghup = signal(SignalKind::hangup())?;
+    let sig_min_1 = libc::SIGRTMIN() + 1;
+    let mut signal_rt1 = signal(SignalKind::from_raw(sig_min_1))?;
+    info!("SIGRTMIN() + 1 = {sig_min_1}");
 
-                match sig {
-                    SIGTERM | SIGQUIT | SIGINT => {
-                        info!("Exiting");
-                        std::process::exit(0);
-                    }
-                    SIGALRM => {
-                        warn!("Alarm");
-                    }
-                    SIGHUP => {
-                        info!("signal hang up");
-                    }
-                    _ => {
-                        warn!("Signal not handled");
-                    }
-                };
+    tokio::spawn(async move {
+        loop {
+            tokio::select! {
+                _ = signal_terminate.recv() => terminate("SIGTERM."),
+                _ = signal_interrupt.recv() => terminate("SIGINT."),
+                _ = signal_quit.recv() => terminate("SIGQUIT."),
+                _ = signal_alarm.recv() => info!("Received SIGALRM."),
+                _ = signal_hanghup.recv() => info!("Received SIGHUP."),
+                _ = signal_rt1.recv() => info!("Received SIGRTMIN + 1."),
             }
         }
     });
@@ -90,6 +83,12 @@ async fn setup_server() -> std::io::Result<()> {
         .await?;
 
     Ok(())
+}
+
+fn terminate(signal: &str) {
+    info!("Received {signal}.");
+    warn!("Exiting");
+    std::process::exit(0);
 }
 
 async fn root() -> &'static str {

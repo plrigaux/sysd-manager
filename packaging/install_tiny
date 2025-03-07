@@ -22,14 +22,16 @@ SERVICE_USER = pwd.getpwuid(os.getuid())[0]
 BASE_NAME = "tiny_daemon"
 SERVICE_NAME = "tiny_daemon.service"
 SERVICE_DIR = f"{os.path.expanduser('~')}/bin"
+LOGS_DIR = f"log/{BASE_NAME}"
 SERVICE_PATH = f"/etc/systemd/system/{SERVICE_NAME}"
 EXEC_FILE = BASE_NAME
 PROG_SOURCE_DIR = BASE_NAME
 
-print(f"{color.CYAN}{color.BOLD}{SERVICE_USER}{color.END}")
-print(f"{color.CYAN}{color.BOLD}{SERVICE_NAME}{color.END}")
-print(f"{color.CYAN}{color.BOLD}{SERVICE_DIR}{color.END}")
-print(f"{color.CYAN}{color.BOLD}{SERVICE_PATH}{color.END}")
+print(f"Service User = {color.CYAN}{color.BOLD}{SERVICE_USER}{color.END}")
+print(f"Service Name = {color.CYAN}{color.BOLD}{SERVICE_NAME}{color.END}")
+print(f"Service Directory = {color.CYAN}{color.BOLD}{SERVICE_DIR}{color.END}")
+print(f"Service Path = {color.CYAN}{color.BOLD}{SERVICE_PATH}{color.END}")
+print(f"Logs Directory = {color.CYAN}{color.BOLD}{LOGS_DIR}{color.END}")
 
 os.path.expanduser("~")
 
@@ -54,13 +56,13 @@ else:
     print(f"Service '{SERVICE_NAME}' is not running")
 
 print(f"Compile binary ...")
-cmd_run(["cargo", "build"], cwd=PROG_SOURCE_DIR)
+cmd_run(["cargo", "build", "--release"], cwd=PROG_SOURCE_DIR)
 
 print(f"Install binary ...")
 # Source path
 cmd_run(["mkdir", "-p", SERVICE_DIR], verbose=False)
 cmd_run(
-    ["cp", f"{PROG_SOURCE_DIR}/target/debug/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
+    ["cp", f"{PROG_SOURCE_DIR}/target/release/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
 )
 
 print(f"Creating Service unit file in '{SERVICE_PATH}' ...")
@@ -79,6 +81,7 @@ Group={SERVICE_USER}
 WorkingDirectory={SERVICE_DIR}
 ExecStart= "{SERVICE_DIR}/{EXEC_FILE}" --port 33001
 TimeoutStopSec=30
+LogsDirectory="{LOGS_DIR}"
 
 [Install]
 WantedBy=multi-user.target"""
@@ -87,7 +90,8 @@ if os.geteuid() == 0:
     print("We're root!")
 else:
     print("We're not root.")
-    cmd_run(["sudo", "python", "packaging/build_aux/write_to_file.py", SERVICE_PATH, unit_file], verbose=False)
+
+cmd_run(["sudo", "python", "packaging/build_aux/write_to_file.py", SERVICE_PATH, unit_file], verbose=False)
     
 print(f"{color.BOLD}Reload the systemd manager configuration ...{color.END}")
 cmd_run(
