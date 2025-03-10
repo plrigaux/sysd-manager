@@ -3,7 +3,7 @@
 <interface>
   <!-- interface-name unit_list_panel.ui -->
   <requires lib="gio" version="2.44"/>
-  <requires lib="gtk" version="4.14"/>
+  <requires lib="gtk" version="4.16"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="UnitListPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
@@ -61,7 +61,7 @@
                         </property>
                         <property name="vexpand">True</property>
                         <child>
-                          <object class="GtkColumnViewColumn" id="col_name">
+                          <object class="GtkColumnViewColumn">
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
                                 <signal name="bind" handler="col_unit_name_factory_setup"/>
@@ -69,6 +69,7 @@
                               </object>
                             </property>
                             <property name="fixed-width">140</property>
+                            <property name="id">unit</property>
                             <property name="resizable">True</property>
                             <property name="title">Unit</property>
                           </object>
@@ -82,6 +83,7 @@
                               </object>
                             </property>
                             <property name="fixed-width">75</property>
+                            <property name="id">type</property>
                             <property name="resizable">True</property>
                             <property name="title">Type</property>
                           </object>
@@ -95,9 +97,23 @@
                               </object>
                             </property>
                             <property name="fixed-width">70</property>
+                            <property name="id">state</property>
                             <property name="resizable">True</property>
-                            <property name="title">Enable
-status</property>
+                            <property name="title">State</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn">
+                            <property name="factory">
+                              <object class="GtkSignalListItemFactory">
+                                <signal name="bind" handler="col_load_factory_bind"/>
+                                <signal name="setup" handler="col_load_factory_setup"/>
+                              </object>
+                            </property>
+                            <property name="fixed-width">80</property>
+                            <property name="id">load</property>
+                            <property name="resizable">True</property>
+                            <property name="title">Load</property>
                           </object>
                         </child>
                         <child>
@@ -108,10 +124,26 @@ status</property>
                                 <signal name="setup" handler="col_active_status_factory_setup"/>
                               </object>
                             </property>
-                            <property name="fixed-width">75</property>
+                            <property name="fixed-width">70</property>
+                            <property name="header-menu">table-menu</property>
+                            <property name="id">active</property>
                             <property name="resizable">True</property>
-                            <property name="title">Active
-status</property>
+                            <property name="title">Active</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn">
+                            <property name="factory">
+                              <object class="GtkSignalListItemFactory">
+                                <signal name="bind" handler="col_sub_factory_bind"/>
+                                <signal name="setup" handler="col_sub_factory_setup"/>
+                              </object>
+                            </property>
+                            <property name="fixed-width">70</property>
+                            <property name="header-menu">table-menu</property>
+                            <property name="id">sub</property>
+                            <property name="resizable">True</property>
+                            <property name="title">Sub</property>
                           </object>
                         </child>
                         <child>
@@ -119,10 +151,12 @@ status</property>
                             <property name="expand">True</property>
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_description_factory_bind"/>
                                 <signal name="setup" handler="col_description_factory_setup"/>
+                                <signal name="bind" handler="col_description_factory_bind"/>
                               </object>
                             </property>
+                            <property name="header-menu">table-menu</property>
+                            <property name="id">description</property>
                             <property name="resizable">True</property>
                             <property name="title">Description</property>
                           </object>
@@ -140,4 +174,11 @@ status</property>
       </object>
     </child>
   </template>
+  <menu id="table-menu">
+    <item>
+      <attribute name="action">test</attribute>
+      <attribute name="label">test</attribute>
+      <attribute name="target">test</attribute>
+    </item>
+  </menu>
 </interface>

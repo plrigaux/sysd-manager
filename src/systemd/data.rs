@@ -68,7 +68,7 @@ mod imp {
         unit_type: RwLock<String>,
         #[property(get, set)]
         pub(super) description: RwLock<String>,
-        #[property(get)]
+        #[property(get, set)]
         pub(super) load_state: RwLock<String>,
 
         #[property(get, set=Self::set_active_state_num)]

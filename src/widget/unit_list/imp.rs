@@ -94,17 +94,17 @@ macro_rules! factory_bind_pre {
     ($item_obj:expr) => {{
         let item = downcast_list_item!($item_obj);
         let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
-        (child, entry)
+        let unit = item.item().and_downcast::<UnitInfo>().unwrap();
+        (child, unit)
     }};
 }
 
 macro_rules! factory_bind {
     ($item_obj:expr, $func:ident) => {{
-        let (child, entry) = factory_bind_pre!($item_obj);
-        let v = entry.$func();
+        let (child, unit) = factory_bind_pre!($item_obj);
+        let v = unit.$func();
         child.set_text(Some(&v));
-        (child, entry)
+        (child, unit)
     }};
 }
 
@@ -144,12 +144,13 @@ macro_rules! column_view_column_set_sorter {
         let item_out = $list_item
             .item($col_idx)
             .expect("Expect item x to be not None");
-        let column_view = item_out
+
+        let column_view_column = item_out
             .downcast_ref::<gtk::ColumnViewColumn>()
             .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
         let sorter = create_column_filter!($($func),+);
-        column_view.set_sorter(Some(&sorter));
+        column_view_column.set_sorter(Some(&sorter));
     };
 }
 
@@ -233,6 +234,30 @@ impl UnitListPanelImp {
                 icon_name!(state)
             })
             .build();
+    }
+
+    #[template_callback]
+    fn col_load_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        factory_setup!(item_obj);
+    }
+
+    #[template_callback]
+    fn col_load_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        let (child, unit) = factory_bind!(item_obj, load_state);
+        unit.bind_property("load_state", &child, "text").build();
+
+        //let (child, unit) = factory_bind!(item_obj, load_state);
+    }
+
+    #[template_callback]
+    fn col_sub_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        factory_setup!(item_obj);
+    }
+
+    #[template_callback]
+    fn col_sub_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+        let (child, unit) = factory_bind!(item_obj, sub_state);
+        unit.bind_property("sub_state", &child, "text").build();
     }
 
     #[template_callback]
@@ -354,14 +379,6 @@ impl UnitListPanelImp {
             };
 
             list_store.sort(sort_func);
-
-            //need to sort after selection
-            /*             let list_model: gio::ListModel = units_browser.columns();
-            let column_object = list_model.item(0).expect("Expect item x to be not None");
-            let column_view = column_object
-                .downcast_ref::<gtk::ColumnViewColumn>()
-                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
-            units_browser.sort_by_column(Some(column_view), gtk::SortType::Ascending); */
 
             info!("Unit list refreshed! list size {}", list_store.n_items());
 
@@ -524,7 +541,9 @@ impl ObjectImpl for UnitListPanelImp {
         column_view_column_set_sorter!(list_model, 0, primary, dbus_level);
         column_view_column_set_sorter!(list_model, 1, unit_type);
         column_view_column_set_sorter!(list_model, 2, enable_status);
-        column_view_column_set_sorter!(list_model, 3, active_state);
+        column_view_column_set_sorter!(list_model, 3, load_state);
+        column_view_column_set_sorter!(list_model, 4, active_state);
+        column_view_column_set_sorter!(list_model, 5, sub_state);
 
         let sorter = self.units_browser.sorter();
 

@@ -48,7 +48,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     let level = unit.dbus_level();
     fill_description(unit_writer, &map, unit);
     fill_follows(unit_writer, &map);
-    fill_load_state(unit_writer, &map);
+    fill_load_state(unit_writer, &map, unit);
     fill_transient(unit_writer, &map);
     fill_dropin(unit_writer, &map);
     fill_active_state(unit_writer, &map, unit, timestamp_style);
@@ -274,17 +274,23 @@ fn fill_description(
     let description = value_to_str(value);
     fill_row(unit_writer, "Description:", description);
 
-    if unit.description().is_empty() && !description.is_empty() {
-        unit.set_description(description);
-    }
+    unit.set_description(description);
 }
 
-fn fill_load_state(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_load_state(
+    unit_writer: &mut UnitInfoWriter,
+    map: &HashMap<String, OwnedValue>,
+    unit: &UnitInfo,
+) {
     let value = get_value!(map, "LoadState");
 
     write_key(unit_writer, "Loaded:");
 
-    unit_writer.insert(value_to_str(value));
+    let load_state = value_to_str(value);
+
+    unit_writer.insert(load_state);
+
+    unit.set_load_state(load_state);
 
     let three_param = [
         map.get("FragmentPath"),
