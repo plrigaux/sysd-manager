@@ -1,16 +1,14 @@
 # SysD Manager
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://raw.githubusercontent.com/plrigaux/sysd-manager/refs/heads/main/LICENSE) [![Love SysD Manager? Please consider donating to sustain our activities](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86&style=flat)](https://github.com/sponsors/plrigaux)
+
+## Description
 This application exists to easily allow user to manage their **systemd units** via a GUI. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs. 
 
-## Disclaimer
+### Disclaimer
 This application is not intended to professional system administrator audience. It has the purpose to expose unit management functionalities to less experienced users.
 
 If you consider yourself an administrator, please refer to `systemctl` and `journalctl` documentation.
-
-## Love SysD Manager?
-Please consider donating to sustain our activities
-
-[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86&style=for-the-badge)](https://github.com/sponsors/plrigaux)
 
 ## Features
 
@@ -69,7 +67,19 @@ For now new features are planned to be added, such as:
 * Always administrator mode
 * Improve UX (continuously)
 
-## Installation Instructions
+## Installation
+
+### Flathub
+
+<a href="https://flathub.org/apps/io.github.plrigaux.sysd-manager"><img width="200" alt="Download on Flathub" src="https://
+flathub.org/api/badge?svg"/></a>
+
+### Arch
+
+A Arch package has been made for __SysD Manager__. It can be found at https://aur.archlinux.org/packages/sysd-manager
+```
+yay -S sysd-manager
+```
 
 ### From your computer
 
@@ -84,17 +94,7 @@ For now new features are planned to be added, such as:
 * Run ```sysd-manager``` and VOILA!
 
 
-_Note_ for a clean remove execute ```sh uninstall.sh``
-
-### Arch
-
-A Arch package has been made for __SysD Manager__. It can be found at https://aur.archlinux.org/packages/sysd-manager
-```
-yay -S sysd-manager
-```
-### Flathub
-
-__SysD Manager__ has a Flathub version. Search it on Gnome software or directly at https://flathub.org/apps/io.github.plrigaux.sysd-manager
+_Note_ for a clean remove, execute the following ```sh uninstall.sh``
 
 
 ### APT
@@ -113,4 +113,4 @@ cd packaging
 python install_tiny 
 ``` 
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
