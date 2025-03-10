@@ -28,6 +28,9 @@ use crate::{
 use super::{controls, enums::UnitContolType, UnitControlPanel};
 use strum::IntoEnumIterator;
 
+const TTT_HIDE: &str = "Hide sidebar";
+const TTT_SHOW: &str = "Show sidebar";
+
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
 #[properties(wrapper_type = super::UnitControlPanel)]
@@ -204,13 +207,14 @@ impl UnitControlPanelImpl {
     }
 
     #[template_callback]
-    fn show_more_button_clicked(&self, _button: &gtk::Button) {
-        //let unit = current_unit!(self);
+    fn show_more_button_clicked(&self, show_more_button: &gtk::ToggleButton) {
+        let tooltip_text = if show_more_button.is_active() {
+            TTT_HIDE
+        } else {
+            TTT_SHOW
+        };
 
-        //self.kill_panel.set_unit(Some(&unit));
-
-        /*         let collapsed = self.side_overlay.is_collapsed();
-        self.side_overlay.set_collapsed(!collapsed); */
+        show_more_button.set_tooltip_text(Some(tooltip_text));
     }
 
     #[template_callback]
@@ -641,6 +645,8 @@ impl ObjectImpl for UnitControlPanelImpl {
             .transform_to(|_binding, is_active: bool| Some(!is_active))
             .transform_from(|_binding, is_active: bool| Some(!is_active))
             .build();
+
+        self.show_more_button.set_tooltip_text(Some(TTT_SHOW));
     }
 }
 
