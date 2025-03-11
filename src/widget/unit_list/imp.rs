@@ -186,12 +186,7 @@ impl UnitListPanelImp {
 
         child.set_tooltip_text(Some(bus));
 
-        if unit.active_state().is_inactive() {
-            let attribute_list = self.grey.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else {
-            child.set_attributes(None);
-        }
+        self.display_inactive(child, &unit);
     }
 
     #[template_callback]
@@ -203,12 +198,7 @@ impl UnitListPanelImp {
     fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let (child, unit) = factory_bind!(item_obj, unit_type);
 
-        if unit.active_state().is_inactive() {
-            let attribute_list = self.grey.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else {
-            child.set_attributes(None);
-        }
+        self.display_inactive(child, &unit);
     }
 
     #[template_callback]
@@ -217,22 +207,23 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn col_enable_status_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        let (child, entry) = factory_bind_pre!(item_obj);
+    fn col_enable_status_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
+        let (child, unit) = factory_bind_pre!(item_obj);
 
-        let status_code: EnablementStatus = entry.enable_status().into();
+        let status_code: EnablementStatus = unit.enable_status().into();
 
         child.set_text(Some(status_code.as_str()));
         child.set_tooltip_markup(Some(status_code.tooltip_info()));
 
-        entry
-            .bind_property("enable_status", &child, "text")
+        unit.bind_property("enable_status", &child, "text")
             .transform_to(|_, status: u8| {
                 let estatus: EnablementStatus = status.into();
                 let str = estatus.to_string();
                 Some(str)
             })
             .build();
+
+        self.display_inactive(child, &unit);
     }
 
     #[template_callback]
@@ -243,21 +234,28 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn col_active_status_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+    fn col_active_status_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let item = downcast_list_item!(item_obj);
-        let child = item.child().and_downcast::<gtk::Image>().unwrap();
+        let icon_image = item.child().and_downcast::<gtk::Image>().unwrap();
         let unit = item.item().and_downcast::<UnitInfo>().unwrap();
         let state = &unit.active_state();
 
         let icon_name = state.icon_name();
-        child.set_icon_name(icon_name);
-        child.set_tooltip_text(Some(state.as_str()));
-        unit.bind_property("active_state_num", &child, "icon-name")
+        icon_image.set_icon_name(icon_name);
+        icon_image.set_tooltip_text(Some(state.as_str()));
+
+        unit.bind_property("active_state_num", &icon_image, "icon-name")
             .transform_to(|_, state: u8| {
                 let state: ActiveState = state.into();
                 icon_name!(state)
             })
             .build();
+
+        if state.is_inactive() {
+            icon_image.add_css_class("grey");
+        } else {
+            icon_image.remove_css_class("grey");
+        }
     }
 
     #[template_callback]
@@ -269,22 +267,24 @@ impl UnitListPanelImp {
     fn col_load_factory_bind(&self, item_obj: &Object, _factory: &gtk::SignalListItemFactory) {
         let (child, unit) = factory_bind_pre!(item_obj);
 
-        let ls = unit.load_state();
-        child.set_text(Some(&ls));
+        let load_state = unit.load_state();
+        child.set_text(Some(&load_state));
         unit.bind_property("load_state", &child, "text").build();
 
-        if ls.starts_with('n')
+        if load_state.starts_with('n')
         //"not-found"
         {
             let attribute_list = self.highlight_yellow.borrow();
             child.set_attributes(Some(&attribute_list));
-        } else if ls.starts_with('b') || ls.starts_with('e') || ls.starts_with('m')
+        } else if load_state.starts_with('b')
+            || load_state.starts_with('e')
+            || load_state.starts_with('m')
         // "bad-setting", "error", "masked"
         {
             let attribute_list = self.highlight_red.borrow();
             child.set_attributes(Some(&attribute_list));
         } else {
-            child.set_attributes(None);
+            self.display_inactive(child, &unit);
         }
 
         //let (child, unit) = factory_bind!(item_obj, load_state);
@@ -299,14 +299,7 @@ impl UnitListPanelImp {
     fn col_sub_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let (child, unit) = factory_bind!(item_obj, sub_state);
         unit.bind_property("sub_state", &child, "text").build();
-
-        let state = &unit.active_state();
-        if state.is_inactive() {
-            let attribute_list = self.grey.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else {
-            child.set_attributes(None);
-        }
+        self.display_inactive(child, &unit);
     }
 
     #[template_callback]
@@ -575,6 +568,16 @@ impl UnitListPanelImp {
             attribute_list.insert(AttrColor::new_foreground(red, green, blue));
 
             self.grey.replace(attribute_list);
+        }
+    }
+
+    fn display_inactive(&self, widget: gtk::Inscription, unit: &UnitInfo) {
+        let state = &unit.active_state();
+        if state.is_inactive() {
+            let attribute_list = self.grey.borrow();
+            widget.set_attributes(Some(&attribute_list));
+        } else {
+            widget.set_attributes(None);
         }
     }
 }

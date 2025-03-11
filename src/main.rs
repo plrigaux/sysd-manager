@@ -67,8 +67,27 @@ fn main() -> glib::ExitCode {
 
 fn load_css() {
     // Load the CSS file and add it to the provider
+
+    let system_manager = adw::StyleManager::default();
+
+    let resource = css_ress(system_manager.is_dark());
+
+    load_css_ress(resource);
+}
+
+fn css_ress(is_dark: bool) -> &'static str {
+    if is_dark {
+        "/io/github/plrigaux/sysd-manager/style_dark.css"
+    } else {
+        "/io/github/plrigaux/sysd-manager/style.css"
+    }
+}
+
+fn load_css_ress(resource: &str) {
+    // Load the CSS file and add it to the provider
+
     let provider = gtk::CssProvider::new();
-    provider.load_from_resource("/io/github/plrigaux/sysd-manager/style.css");
+    provider.load_from_resource(resource);
 
     // Add the provider to the default screen
     gtk::style_context_add_provider_for_display(
@@ -86,9 +105,12 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
         let system_manager = adw::StyleManager::default();
         window.set_inter_action(&widget::InterPanelAction::IsDark(system_manager.is_dark()));
 
-        system_manager.connect_dark_notify(move |a: &adw::StyleManager| {
-            let is_dark = a.is_dark();
+        system_manager.connect_dark_notify(move |style_manager: &adw::StyleManager| {
+            let is_dark = style_manager.is_dark();
             info!("is dark {is_dark}");
+
+            let resource = css_ress(is_dark);
+            load_css_ress(resource);
             window.set_inter_action(&widget::InterPanelAction::IsDark(is_dark));
         });
     }

@@ -73,7 +73,7 @@ mod imp {
 
         #[property(get, set=Self::set_active_state_num)]
         pub(super) active_state_num: RwLock<u8>,
-        #[property(get)]
+        #[property(get, set)]
         pub(super) sub_state: RwLock<String>,
         #[property(get)]
         pub(super) followed_unit: RwLock<String>,

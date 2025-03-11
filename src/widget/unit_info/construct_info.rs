@@ -32,14 +32,14 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
                 unit.primary(),
                 e
             );
-            let mut map = HashMap::new();
-            let value = Value::Str("not loaded".into());
+            //let map = HashMap::new();
+            /*             let value = Value::Str("".into());
 
             let owned_value: OwnedValue = value.try_to_owned().expect(
                 "This method can currently only fail on Unix platforms for Value::Fd variant.",
-            );
-            map.insert("LoadState".to_owned(), owned_value);
-            map
+            ); */
+            //map.insert("LoadState".to_owned(), owned_value);
+            HashMap::new()
         }
     };
 
@@ -183,7 +183,7 @@ fn fill_active_state(
     write_key(unit_writer, "Active:");
 
     let mut state_text = String::from(state);
-    if let Some(substate) = get_substate(map) {
+    if let Some(substate) = get_substate(map, unit) {
         state_text.push_str(" (");
         state_text.push_str(substate);
         state_text.push(')');
@@ -236,9 +236,11 @@ fn fill_duration(
     }
 }
 
-fn get_substate(map: &HashMap<String, OwnedValue>) -> Option<&str> {
+fn get_substate<'a>(map: &'a HashMap<String, OwnedValue>, unit: &UnitInfo) -> Option<&'a str> {
     let value = get_value!(map, "SubState", None);
-    Some(value_to_str(value))
+    let value_str = value_to_str(value);
+    unit.set_sub_state(value_str);
+    Some(value_str)
 }
 
 fn add_since(

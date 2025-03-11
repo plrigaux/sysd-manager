@@ -92,7 +92,7 @@
                           <object class="GtkColumnViewColumn">
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_enable_status_factory_bind"/>
+                                <signal name="bind" handler="col_enable_status_factory_bind" swapped="yes"/>
                                 <signal name="setup" handler="col_enable_status_factory_setup"/>
                               </object>
                             </property>
@@ -120,7 +120,7 @@
                           <object class="GtkColumnViewColumn">
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_active_status_factory_bind"/>
+                                <signal name="bind" handler="col_active_status_factory_bind" swapped="yes"/>
                                 <signal name="setup" handler="col_active_status_factory_setup"/>
                               </object>
                             </property>

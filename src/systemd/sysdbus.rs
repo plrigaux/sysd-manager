@@ -310,6 +310,14 @@ async fn complete_unit_info(
         unit.set_description(description);
     }
 
+    if let Ok(load_state) = unit_info_proxy.load_state().await {
+        unit.set_load_state(load_state);
+    }
+
+    if let Ok(sub_state) = unit_info_proxy.sub_state().await {
+        unit.set_sub_state(sub_state);
+    }
+
     if let Ok(active_state) = unit_info_proxy.active_state().await {
         let active_state: ActiveState = active_state.as_str().into();
         unit.set_active_state(active_state);
