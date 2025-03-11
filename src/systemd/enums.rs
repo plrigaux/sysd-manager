@@ -229,10 +229,7 @@ impl ActiveState {
     }
 
     pub fn is_inactive(&self) -> bool {
-        match self {
-            ActiveState::Inactive | ActiveState::Deactivating => true,
-            _ => false,
-        }
+        matches!(self, ActiveState::Inactive | ActiveState::Deactivating)
     }
 
     pub(crate) fn glyph_str(&self) -> &str {

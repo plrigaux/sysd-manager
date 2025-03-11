@@ -52,10 +52,10 @@ pub enum Palette<'a> {
     Dark5,
 }
 
-impl Palette<'_> {
-    pub fn get_color(&self) -> &str {
+impl<'a> Palette<'a> {
+    pub fn get_color(&self) -> &'a str {
         match *self {
-            Palette::Custom(a) => a,
+            Palette::Custom(cus) => cus,
             Palette::Blue1 => "#99c1f1",
             Palette::Blue2 => "#62a0ea",
             Palette::Blue3 => "#3584e4",
@@ -122,5 +122,29 @@ impl Palette<'_> {
         let g16: u16 = (g as u16) << 8 | g as u16;
         let b16: u16 = (b as u16) << 8 | b as u16;
         (r16, g16, b16)
+    }
+}
+
+pub fn grey(is_dark: bool) -> Palette<'static> {
+    if is_dark {
+        Palette::Light5
+    } else {
+        Palette::Dark1
+    }
+}
+
+pub fn red(is_dark: bool) -> Palette<'static> {
+    if is_dark {
+        Palette::Custom("#ff938c")
+    } else {
+        Palette::Custom("#c30000")
+    }
+}
+
+pub fn yellow(is_dark: bool) -> Palette<'static> {
+    if is_dark {
+        Palette::Custom("#ffc252")
+    } else {
+        Palette::Custom("#905400")
     }
 }

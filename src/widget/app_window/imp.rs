@@ -12,7 +12,7 @@ use regex::Regex;
 use crate::{
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
-    utils::writer::UnitInfoWriter,
+    utils::{palette::red, writer::UnitInfoWriter},
     widget::{
         preferences::data::{DbusLevel, PREFERENCES},
         unit_control_panel::UnitControlPanel,
@@ -350,11 +350,7 @@ impl AppWindowImpl {
     }
 
     fn red(&self) -> &str {
-        if self.is_dark.get() {
-            UnitInfoWriter::red_dark()
-        } else {
-            UnitInfoWriter::red_light()
-        }
+        red(self.is_dark.get()).get_color()
     }
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {

@@ -22,7 +22,12 @@ use gtk::{
 
 use log::{debug, error, info, warn};
 
-use crate::{icon_name, systemd::runtime, utils::palette::Palette, widget::InterPanelAction};
+use crate::{
+    icon_name,
+    systemd::runtime,
+    utils::palette::{grey, red, yellow, Palette},
+    widget::InterPanelAction,
+};
 use crate::{
     systemd::{
         self,
@@ -557,32 +562,16 @@ impl UnitListPanelImp {
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         if let InterPanelAction::IsDark(is_dark) = *action {
-            let yellow = if is_dark {
-                Palette::Custom("#ffc252")
-            } else {
-                Palette::Custom("#905400")
-            };
-            let attribute_list = highlight_attrlist(yellow);
+            let attribute_list = highlight_attrlist(yellow(is_dark));
 
             self.highlight_yellow.replace(attribute_list);
 
-            let red = if is_dark {
-                Palette::Custom("#ff938c")
-            } else {
-                Palette::Custom("#c30000")
-            };
-            let attribute_list = highlight_attrlist(red);
+            let attribute_list = highlight_attrlist(red(is_dark));
 
             self.highlight_red.replace(attribute_list);
 
-            let grey = if is_dark {
-                Palette::Light5
-            } else {
-                Palette::Dark1
-            };
-
             let attribute_list = AttrList::new();
-            let (red, green, blue) = grey.get_rgb_u16();
+            let (red, green, blue) = grey(is_dark).get_rgb_u16();
             attribute_list.insert(AttrColor::new_foreground(red, green, blue));
 
             self.grey.replace(attribute_list);
