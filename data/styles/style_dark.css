@@ -1,31 +1,4 @@
-/*
-https://developer.gnome.org/hig/reference/palette.html
-
-*/
-label.unit_info {
-    font-family: 'Droid Sans Mono', 'monospace', monospace;
-}
-
-label.journal_prefix {
-    font-family: 'Droid Sans Mono', 'monospace', monospace;
-}
-
-label.journal_message {
-    font-family: 'Droid Sans Mono', 'monospace', monospace;
-}
-
-label.idx {
-    color: #888888;
-}
-
-textview {
-    font-family: 'Fira Code', 'Droid Sans Mono', monospace;
-    font-size: 16px;
-}
-
-image.red {
-    color: #FF0000;
-}
+@import "base.css";
 
 image.grey {
     color: var(--light-5);

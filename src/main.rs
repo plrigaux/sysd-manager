@@ -70,12 +70,12 @@ fn load_css() {
 
     let system_manager = adw::StyleManager::default();
 
-    let resource = css_ress(system_manager.is_dark());
+    let resource = css_resource_light_dark(system_manager.is_dark());
 
     load_css_ress(resource);
 }
 
-fn css_ress(is_dark: bool) -> &'static str {
+fn css_resource_light_dark(is_dark: bool) -> &'static str {
     if is_dark {
         "/io/github/plrigaux/sysd-manager/style_dark.css"
     } else {
@@ -109,7 +109,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
             let is_dark = style_manager.is_dark();
             info!("is dark {is_dark}");
 
-            let resource = css_ress(is_dark);
+            let resource = css_resource_light_dark(is_dark);
             load_css_ress(resource);
             window.set_inter_action(&widget::InterPanelAction::IsDark(is_dark));
         });

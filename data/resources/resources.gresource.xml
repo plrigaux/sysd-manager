@@ -22,6 +22,7 @@
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>
     <file compressed="true" alias="style.css">styles/style.css</file>
     <file compressed="true" alias="style_dark.css">styles/style_dark.css</file>
+    <file compressed="true" alias="base.css">styles/base.css</file>
     <!-- custom symbolic icons need to be located in dir icons/scalable/actions to adapt to light and dark theme -->
     <file preprocess="xml-stripblanks">icons/scalable/actions/dock-right-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/unreadable-symbolic.svg</file>
