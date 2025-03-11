@@ -257,6 +257,7 @@ impl AppWindowImpl {
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.unit_control_panel.set_inter_action(action);
+        self.unit_list_panel.set_inter_action(action);
 
         if let InterPanelAction::IsDark(is_dark) = *action {
             self.is_dark.set(is_dark);

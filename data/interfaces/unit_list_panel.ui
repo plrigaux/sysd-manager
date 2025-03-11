@@ -64,8 +64,8 @@
                           <object class="GtkColumnViewColumn">
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_unit_name_factory_setup"/>
-                                <signal name="bind" handler="col_unit_name_factory_bind"/>
+                                <signal name="bind" handler="col_unit_name_factory_bind" swapped="yes"/>
+                                <signal name="setup" handler="col_unit_name_factory_setup"/>
                               </object>
                             </property>
                             <property name="fixed-width">140</property>
@@ -78,7 +78,7 @@
                           <object class="GtkColumnViewColumn">
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_type_factory_bind"/>
+                                <signal name="bind" handler="col_type_factory_bind" swapped="yes"/>
                                 <signal name="setup" handler="col_type_factory_setup"/>
                               </object>
                             </property>
@@ -106,11 +106,11 @@
                           <object class="GtkColumnViewColumn">
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_load_factory_bind"/>
+                                <signal name="bind" handler="col_load_factory_bind" swapped="yes"/>
                                 <signal name="setup" handler="col_load_factory_setup"/>
                               </object>
                             </property>
-                            <property name="fixed-width">80</property>
+                            <property name="fixed-width">82</property>
                             <property name="id">load</property>
                             <property name="resizable">True</property>
                             <property name="title">Load</property>
@@ -135,7 +135,7 @@
                           <object class="GtkColumnViewColumn">
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_sub_factory_bind"/>
+                                <signal name="bind" handler="col_sub_factory_bind" swapped="yes"/>
                                 <signal name="setup" handler="col_sub_factory_setup"/>
                               </object>
                             </property>

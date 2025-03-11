@@ -1,6 +1,7 @@
 use crate::systemd::data::UnitInfo;
 
 use super::app_window::AppWindow;
+use super::InterPanelAction;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 
@@ -52,5 +53,9 @@ impl UnitListPanel {
 
     fn force_selected_index(&self) -> Option<u32> {
         self.imp().force_selected_index.get()
+    }
+
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        self.imp().set_inter_action(action);
     }
 }

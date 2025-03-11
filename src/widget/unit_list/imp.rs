@@ -7,6 +7,7 @@ use gtk::{
     ffi::GTK_INVALID_LIST_POSITION,
     gio::{self},
     glib::{self, BoxedAnyObject, Object},
+    pango::{AttrColor, AttrInt, AttrList, Weight},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -21,7 +22,7 @@ use gtk::{
 
 use log::{debug, error, info, warn};
 
-use crate::{icon_name, systemd::runtime};
+use crate::{icon_name, systemd::runtime, utils::palette::Palette, widget::InterPanelAction};
 use crate::{
     systemd::{
         self,
@@ -69,6 +70,10 @@ pub struct UnitListPanelImp {
     unit: RefCell<Option<UnitInfo>>,
 
     pub force_selected_index: Cell<Option<u32>>,
+
+    highlight_yellow: RefCell<AttrList>,
+    highlight_red: RefCell<AttrList>,
+    grey: RefCell<AttrList>,
 }
 
 macro_rules! factory_setup {
@@ -162,18 +167,26 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn col_unit_name_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+    fn col_unit_name_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         factory_bind!(item_obj, display_name);
 
-        let (child, entry) = factory_bind_pre!(item_obj);
-        let v = entry.display_name();
+        let (child, unit) = factory_bind_pre!(item_obj);
+        let v = unit.display_name();
         child.set_text(Some(&v));
 
-        let bus = match entry.dbus_level() {
+        let bus = match unit.dbus_level() {
             systemd::enums::UnitDBusLevel::System => "on system bus",
             systemd::enums::UnitDBusLevel::UserSession => "on user bus",
         };
+
         child.set_tooltip_text(Some(bus));
+
+        if unit.active_state().is_inactive() {
+            let attribute_list = self.grey.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else {
+            child.set_attributes(None);
+        }
     }
 
     #[template_callback]
@@ -182,8 +195,15 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn col_type_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_bind!(item_obj, unit_type);
+    fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
+        let (child, unit) = factory_bind!(item_obj, unit_type);
+
+        if unit.active_state().is_inactive() {
+            let attribute_list = self.grey.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else {
+            child.set_attributes(None);
+        }
     }
 
     #[template_callback]
@@ -221,14 +241,13 @@ impl UnitListPanelImp {
     fn col_active_status_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
         let item = downcast_list_item!(item_obj);
         let child = item.child().and_downcast::<gtk::Image>().unwrap();
-        let entry = item.item().and_downcast::<UnitInfo>().unwrap();
-        let state = &entry.active_state();
+        let unit = item.item().and_downcast::<UnitInfo>().unwrap();
+        let state = &unit.active_state();
 
         let icon_name = state.icon_name();
         child.set_icon_name(icon_name);
         child.set_tooltip_text(Some(state.as_str()));
-        entry
-            .bind_property("active_state_num", &child, "icon-name")
+        unit.bind_property("active_state_num", &child, "icon-name")
             .transform_to(|_, state: u8| {
                 let state: ActiveState = state.into();
                 icon_name!(state)
@@ -242,9 +261,26 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn col_load_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        let (child, unit) = factory_bind!(item_obj, load_state);
+    fn col_load_factory_bind(&self, item_obj: &Object, _factory: &gtk::SignalListItemFactory) {
+        let (child, unit) = factory_bind_pre!(item_obj);
+
+        let ls = unit.load_state();
+        child.set_text(Some(&ls));
         unit.bind_property("load_state", &child, "text").build();
+
+        if ls.starts_with('n')
+        //"not-found"
+        {
+            let attribute_list = self.highlight_yellow.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else if ls.starts_with('b') || ls.starts_with('e') || ls.starts_with('m')
+        // "bad-setting", "error", "masked"
+        {
+            let attribute_list = self.highlight_red.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else {
+            child.set_attributes(None);
+        }
 
         //let (child, unit) = factory_bind!(item_obj, load_state);
     }
@@ -255,9 +291,17 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn col_sub_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+    fn col_sub_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let (child, unit) = factory_bind!(item_obj, sub_state);
         unit.bind_property("sub_state", &child, "text").build();
+
+        let state = &unit.active_state();
+        if state.is_inactive() {
+            let attribute_list = self.grey.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else {
+            child.set_attributes(None);
+        }
     }
 
     #[template_callback]
@@ -510,6 +554,48 @@ impl UnitListPanelImp {
     pub fn set_force_selected_index(&self, force_selected_index: Option<u32>) {
         self.force_selected_index.set(force_selected_index)
     }
+
+    pub fn set_inter_action(&self, action: &InterPanelAction) {
+        if let InterPanelAction::IsDark(is_dark) = *action {
+            let yellow = if is_dark {
+                Palette::Custom("#ffc252")
+            } else {
+                Palette::Custom("#905400")
+            };
+            let attribute_list = highlight_attrlist(yellow);
+
+            self.highlight_yellow.replace(attribute_list);
+
+            let red = if is_dark {
+                Palette::Custom("#ff938c")
+            } else {
+                Palette::Custom("#c30000")
+            };
+            let attribute_list = highlight_attrlist(red);
+
+            self.highlight_red.replace(attribute_list);
+
+            let grey = if is_dark {
+                Palette::Light5
+            } else {
+                Palette::Dark1
+            };
+
+            let attribute_list = AttrList::new();
+            let (red, green, blue) = grey.get_rgb_u16();
+            attribute_list.insert(AttrColor::new_foreground(red, green, blue));
+
+            self.grey.replace(attribute_list);
+        }
+    }
+}
+
+fn highlight_attrlist(color: Palette<'_>) -> AttrList {
+    let attribute_list = AttrList::new();
+    attribute_list.insert(AttrInt::new_weight(Weight::Bold));
+    let (red, green, blue) = color.get_rgb_u16();
+    attribute_list.insert(AttrColor::new_foreground(red, green, blue));
+    attribute_list
 }
 
 // The central trait for subclassing a GObject

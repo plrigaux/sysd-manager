@@ -195,7 +195,9 @@ macro_rules! icon_name {
             | ActiveState::Refreshing
             | ActiveState::Activating => Some("object-select-symbolic"),
             ActiveState::Inactive | ActiveState::Deactivating => Some("window-close-symbolic"),
-            _ => None,
+            ActiveState::Failed => Some("computer-fail-symbolic"), //not sure of the icon choice
+            ActiveState::Maintenance => Some("emblem-system-symbolic"), //not sure of the icon choice
+            ActiveState::Unknown => None,
         }
     }};
 }
@@ -224,6 +226,13 @@ impl ActiveState {
 
     pub fn icon_name(&self) -> Option<&str> {
         icon_name!(self)
+    }
+
+    pub fn is_inactive(&self) -> bool {
+        match self {
+            ActiveState::Inactive | ActiveState::Deactivating => true,
+            _ => false,
+        }
     }
 
     pub(crate) fn glyph_str(&self) -> &str {

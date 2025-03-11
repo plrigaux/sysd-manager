@@ -104,4 +104,23 @@ impl Palette<'_> {
             Palette::Dark5 => "#000000",
         }
     }
+
+    pub fn get_rgb(&self) -> (u8, u8, u8) {
+        let color = self.get_color();
+
+        let r = u8::from_str_radix(&color[1..=2], 16).unwrap();
+        let g = u8::from_str_radix(&color[3..=4], 16).unwrap();
+        let b = u8::from_str_radix(&color[5..=6], 16).unwrap();
+
+        (r, g, b)
+    }
+
+    pub fn get_rgb_u16(&self) -> (u16, u16, u16) {
+        let (r, g, b) = self.get_rgb();
+
+        let r16: u16 = (r as u16) << 8 | r as u16;
+        let g16: u16 = (g as u16) << 8 | g as u16;
+        let b16: u16 = (b as u16) << 8 | b as u16;
+        (r16, g16, b16)
+    }
 }
