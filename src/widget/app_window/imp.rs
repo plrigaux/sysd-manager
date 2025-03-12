@@ -47,9 +47,6 @@ pub struct AppWindowImpl {
     paned: TemplateChild<gtk::Paned>,
 
     #[template_child]
-    unit_name_label: TemplateChild<gtk::Label>,
-
-    #[template_child]
     search_toggle_button: TemplateChild<gtk::ToggleButton>,
 
     #[template_child]
@@ -57,6 +54,9 @@ pub struct AppWindowImpl {
 
     #[template_child]
     system_session_dropdown: TemplateChild<gtk::DropDown>,
+
+    #[template_child]
+    app_title: TemplateChild<adw::WindowTitle>,
 
     is_dark: Cell<bool>,
 }
@@ -157,7 +157,7 @@ impl AppWindowImpl {
         }
     }
 
-    pub fn save_window_size(&self) -> Result<(), glib::BoolError> {
+    pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
         // Get the size of the window
 
         let obj = self.obj();
@@ -238,9 +238,9 @@ impl AppWindowImpl {
 impl AppWindowImpl {
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
         if let Some(unit) = unit {
-            self.unit_name_label.set_label(&unit.primary());
+            self.app_title.set_subtitle(&unit.primary());
         } else {
-            self.unit_name_label.set_label("");
+            self.app_title.set_subtitle("");
         }
 
         self.unit_control_panel.selection_change(unit);
@@ -421,7 +421,7 @@ impl WindowImpl for AppWindowImpl {
     fn close_request(&self) -> glib::Propagation {
         // Save window size
         debug!("Close window");
-        if let Err(_err) = self.save_window_size() {
+        if let Err(_err) = self.save_window_context() {
             error!("Failed to save window state");
         }
 

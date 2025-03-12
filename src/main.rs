@@ -154,14 +154,14 @@ fn handle_args() -> Option<UnitInfo> {
     let (app_level, unit_level) = match (args.system, args.user) {
         (true, _) => (DbusLevel::System, UnitDBusLevel::System),
         (false, true) => (DbusLevel::UserSession, UnitDBusLevel::UserSession),
-        (false, false) => (DbusLevel::SystemAndSession, UnitDBusLevel::System),
+        (false, false) => (current_level, UnitDBusLevel::System),
     };
 
     PREFERENCES.set_dbus_level(app_level);
 
     let current_level = PREFERENCES.dbus_level();
     debug!("Current level: {:?}", current_level);
-    if current_level != DbusLevel::SystemAndSession && current_level != app_level {
+    if current_level != app_level {
         let settings = new_settings();
         PREFERENCES.save_dbus_level(&settings);
     }

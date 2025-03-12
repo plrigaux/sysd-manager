@@ -323,6 +323,7 @@ mod tests {
         //assert_num_mapping(EnablementStatus::Unasigned);
         assert_num_mapping(DbusLevel::UserSession);
         assert_num_mapping(DbusLevel::System);
+        assert_num_mapping(DbusLevel::SystemAndSession);
     }
 
     #[test]
@@ -330,6 +331,7 @@ mod tests {
         //assert_num_mapping(EnablementStatus::Unasigned);
         assert_string_mapping(DbusLevel::UserSession, "Session");
         assert_string_mapping(DbusLevel::System, "System");
+        assert_string_mapping(DbusLevel::SystemAndSession, "system_session");
     }
 
     fn assert_num_mapping(level: DbusLevel) {

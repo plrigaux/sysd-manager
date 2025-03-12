@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 0.94.1 -->
 <interface>
   <!-- interface-name app_window.ui -->
-  <requires lib="gtk" version="4.14"/>
-  <requires lib="libadwaita" version="1.5"/>
+  <requires lib="gtk" version="4.16"/>
+  <requires lib="libadwaita" version="1.6"/>
   <requires lib="gio" version="2.0"/>
   <menu id="main-menu">
     <section>
@@ -48,7 +48,7 @@
                   <object class="GtkPaned" id="paned">
                     <property name="end-child">
                       <object class="UnitControlPanel" id="unit_control_panel">
-                        <property name="margin-start">10</property>
+                        <property name="margin-start">5</property>
                       </object>
                     </property>
                     <property name="position-set">True</property>
@@ -64,7 +64,7 @@
             <child type="top">
               <object class="AdwHeaderBar" id="header_bar">
                 <property name="title-widget">
-                  <object class="AdwWindowTitle">
+                  <object class="AdwWindowTitle" id="app_title">
                     <property name="title">SysD Manager</property>
                   </object>
                 </property>
@@ -81,9 +81,6 @@
                     <property name="tooltip-text">Refresh unit list</property>
                     <signal name="clicked" handler="refresh_button_clicked" swapped="yes"/>
                   </object>
-                </child>
-                <child type="start">
-                  <object class="GtkLabel" id="unit_name_label"/>
                 </child>
                 <child type="end">
                   <object class="GtkMenuButton">

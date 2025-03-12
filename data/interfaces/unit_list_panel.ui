@@ -176,9 +176,19 @@
   </template>
   <menu id="table-menu">
     <item>
-      <attribute name="action">test</attribute>
-      <attribute name="label">test</attribute>
-      <attribute name="target">test</attribute>
+      <attribute name="action">app.col</attribute>
+      <attribute name="label">test1</attribute>
+      <attribute name="target">test1</attribute>
+    </item>
+    <item>
+      <attribute name="action">app.col</attribute>
+      <attribute name="label">test2</attribute>
+      <attribute name="target">test2</attribute>
+    </item>
+    <item>
+      <attribute name="action">app.col</attribute>
+      <attribute name="label">test3</attribute>
+      <attribute name="target">test3</attribute>
     </item>
   </menu>
 </interface>
