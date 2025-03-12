@@ -150,7 +150,7 @@ macro_rules! create_column_filter {
 }
 
 macro_rules! column_view_column_set_sorter {
-    ($list_item:expr, $col_idx:expr, $($func:ident),+) => {
+    ($list_item:expr, $col_idx:expr, $($func:ident),+) => {{
         let item_out = $list_item
             .item($col_idx)
             .expect("Expect item x to be not None");
@@ -161,7 +161,7 @@ macro_rules! column_view_column_set_sorter {
 
         let sorter = create_column_filter!($($func),+);
         column_view_column.set_sorter(Some(&sorter));
-    };
+    }};
 }
 
 #[gtk::template_callbacks]
@@ -379,6 +379,10 @@ impl UnitListPanelImp {
 
         // let sender_c = sender.clone();
 
+        //Rem sorting before adding lot of items for performance reasons
+        self.unit_list_sort_list_model
+            .set_sorter(None::<&gtk::Sorter>);
+
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
@@ -455,6 +459,7 @@ impl UnitListPanelImp {
 
             unit_list.set_force_selected_index(Some(force_selected_index));
             refresh_unit_list_button.set_sensitive(true);
+            unit_list.set_sorter();
 
             //cause no scrollwindow v adjustment
             if n_items > 0 {
@@ -580,6 +585,26 @@ impl UnitListPanelImp {
             widget.set_attributes(None);
         }
     }
+
+    pub(super) fn set_sorter(&self) {
+        let sorter = self.units_browser.sorter();
+
+        self.unit_list_sort_list_model.set_sorter(sorter.as_ref());
+
+        let item_out = self
+            .units_browser
+            .columns()
+            .item(0)
+            .expect("Expect item x to be not None");
+
+        //Sort on first column
+        let c1 = item_out
+            .downcast_ref::<gtk::ColumnViewColumn>()
+            .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+        self.units_browser
+            .sort_by_column(Some(c1), gtk::SortType::Ascending);
+    }
 }
 
 fn highlight_attrlist(color: Palette<'_>) -> AttrList {
@@ -612,8 +637,6 @@ impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        //self.force_selected_index.set(GTK_INVALID_LIST_POSITION);
-
         let list_model: gio::ListModel = self.units_browser.columns();
 
         column_view_column_set_sorter!(list_model, 0, primary, dbus_level);
@@ -622,10 +645,6 @@ impl ObjectImpl for UnitListPanelImp {
         column_view_column_set_sorter!(list_model, 3, load_state);
         column_view_column_set_sorter!(list_model, 4, active_state);
         column_view_column_set_sorter!(list_model, 5, sub_state);
-
-        let sorter = self.units_browser.sorter();
-
-        self.unit_list_sort_list_model.set_sorter(sorter.as_ref());
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 

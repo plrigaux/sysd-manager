@@ -58,4 +58,8 @@ impl UnitListPanel {
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.imp().set_inter_action(action);
     }
+
+    fn set_sorter(&self) {
+        self.imp().set_sorter();
+    }
 }
