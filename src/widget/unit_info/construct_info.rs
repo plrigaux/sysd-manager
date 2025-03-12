@@ -32,13 +32,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
                 unit.primary(),
                 e
             );
-            //let map = HashMap::new();
-            /*             let value = Value::Str("".into());
 
-            let owned_value: OwnedValue = value.try_to_owned().expect(
-                "This method can currently only fail on Unix platforms for Value::Fd variant.",
-            ); */
-            //map.insert("LoadState".to_owned(), owned_value);
             HashMap::new()
         }
     };
@@ -284,12 +278,12 @@ fn fill_load_state(
     map: &HashMap<String, OwnedValue>,
     unit: &UnitInfo,
 ) {
-    let value = get_value!(map, "LoadState");
+    let load_state = match map.get("LoadState") {
+        Some(value) => value_to_str(value),
+        None => "Not loaded",
+    };
 
     write_key(unit_writer, "Loaded:");
-
-    let load_state = value_to_str(value);
-
     unit_writer.insert(load_state);
 
     unit.set_load_state(load_state);
