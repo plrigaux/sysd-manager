@@ -1,5 +1,6 @@
 use std::{
     cell::{Cell, OnceCell, RefCell, RefMut},
+    collections::HashMap,
     rc::Rc,
 };
 
@@ -362,6 +363,25 @@ impl UnitListPanelImp {
 
         let settings = systemd_gui::new_settings();
 
+        let list_model: gio::ListModel = self.units_browser.columns();
+
+        let mut col_map = HashMap::new();
+        for col_idx in 0..list_model.n_items() {
+            let item_out = list_model
+                .item(col_idx)
+                .expect("Expect item x to be not None");
+
+            let column_view_column = item_out
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+            let id = column_view_column.id();
+
+            if let Some(id) = id {
+                col_map.insert(id, column_view_column.clone());
+            }
+        }
+
         for action_name in [
             "col-show-type",
             "col-show-state",
@@ -372,6 +392,16 @@ impl UnitListPanelImp {
         ] {
             let action = settings.create_action(action_name);
             app_window.add_action(&action);
+
+            let (_, name) = action_name.rsplit_once('-').unwrap();
+
+            if let Some(column_view_column) = col_map.get(name) {
+                settings
+                    .bind(action_name, column_view_column, "visible")
+                    .build();
+            } else {
+                warn!("Can't bind setting ket {action_name} to column {name}")
+            }
         }
     }
 
