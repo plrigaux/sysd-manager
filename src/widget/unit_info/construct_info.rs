@@ -279,14 +279,19 @@ fn fill_load_state(
     unit: &UnitInfo,
 ) {
     let load_state = match map.get("LoadState") {
-        Some(value) => value_to_str(value),
-        None => "Not loaded",
+        Some(value) => {
+            let load_state = value_to_str(value);
+            unit.set_load_state(load_state);
+            load_state
+        }
+        None => {
+            unit.set_load_state("");
+            "Not loaded"
+        }
     };
 
     write_key(unit_writer, "Loaded:");
     unit_writer.insert(load_state);
-
-    unit.set_load_state(load_state);
 
     let three_param = [
         map.get("FragmentPath"),
@@ -325,7 +330,7 @@ fn fill_load_state(
             if pad_left {
                 unit_writer.insert("; ");
             }
-
+            let unit_file_state = value_to_str(unit_file_state);
             write_enabled_state(unit_writer, unit_file_state);
 
             pad_left = true;
@@ -336,6 +341,8 @@ fn fill_load_state(
                 unit_writer.insert("; ");
             }
             unit_writer.insert("preset: ");
+            let unit_file_preset = value_to_str(unit_file_preset);
+            unit.set_preset(unit_file_preset);
             write_enabled_state(unit_writer, unit_file_preset);
         }
 
@@ -345,9 +352,7 @@ fn fill_load_state(
     unit_writer.newline();
 }
 
-fn write_enabled_state(unit_writer: &mut UnitInfoWriter, unit_file_state: &OwnedValue) {
-    let state = value_to_str(unit_file_state);
-
+fn write_enabled_state(unit_writer: &mut UnitInfoWriter, state: &str) {
     match state {
         "enabled" => unit_writer.insert_active(state),
         "disabled" => unit_writer.insert_disable(state),
