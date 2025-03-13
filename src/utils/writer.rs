@@ -9,7 +9,7 @@ use crate::systemd::{
     generate_file_uri,
 };
 
-use super::palette::{grey, red, Palette};
+use super::palette::{green, grey, red, yellow, Palette};
 
 pub struct UnitInfoWriter {
     buf: TextBuffer,
@@ -160,9 +160,9 @@ impl UnitInfoWriter {
 
     fn create_active_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Self::green_dark(), TAG_NAME_ACTIVE_DARK)
+            (green(is_dark), TAG_NAME_ACTIVE_DARK)
         } else {
-            (Self::green_light(), TAG_NAME_ACTIVE)
+            (green(is_dark), TAG_NAME_ACTIVE)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -173,7 +173,7 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_FOREGROUND, &color.get_color().to_value()),
                 (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
@@ -181,9 +181,9 @@ impl UnitInfoWriter {
 
     fn create_yellow_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Palette::Custom("#e5e540").get_color(), TAG_NAME_YELLOW_DARK)
+            (yellow(is_dark), TAG_NAME_YELLOW_DARK)
         } else {
-            (Palette::Yellow5.get_color(), TAG_NAME_YELLOW)
+            (yellow(is_dark), TAG_NAME_YELLOW)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -194,7 +194,7 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_FOREGROUND, &color.get_color().to_value()),
                 (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
