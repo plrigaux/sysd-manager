@@ -124,6 +124,10 @@
             <default>true</default>
             <summary>Displays or hides column</summary>
         </key>
+        <key name="col-show-preset" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
         <key name="col-show-load" type="b">
             <default>true</default>
             <summary>Displays or hides column</summary>
