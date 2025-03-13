@@ -95,14 +95,29 @@
                             <property name="factory">
                               <object class="GtkSignalListItemFactory">
                                 <signal name="bind" handler="col_enable_status_factory_bind" swapped="yes"/>
-                                <signal name="setup" handler="col_enable_status_factory_setup"/>
+                                <signal name="setup" handler="col_enable_status_factory_setup" swapped="yes"/>
                               </object>
                             </property>
-                            <property name="fixed-width">70</property>
+                            <property name="fixed-width">75</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">state</property>
                             <property name="resizable">True</property>
                             <property name="title">State</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn">
+                            <property name="factory">
+                              <object class="GtkSignalListItemFactory">
+                                <signal name="setup" handler="col_preset_factory_setup" swapped="yes"/>
+                                <signal name="bind" handler="col_preset_factory_bind" swapped="yes"/>
+                              </object>
+                            </property>
+                            <property name="fixed-width">70</property>
+                            <property name="header-menu">table-menu</property>
+                            <property name="id">preset</property>
+                            <property name="resizable">True</property>
+                            <property name="title">Preset</property>
                           </object>
                         </child>
                         <child>
@@ -192,6 +207,10 @@
       <attribute name="label">State</attribute>
     </item>
     <item>
+      <attribute name="action">win.col-show-preset</attribute>
+      <attribute name="label">Preset</attribute>
+    </item>
+    <item>
       <attribute name="action">win.col-show-load</attribute>
       <attribute name="label">Load</attribute>
     </item>
@@ -208,4 +227,8 @@
       <attribute name="label">Description</attribute>
     </item>
   </menu>
+  <object class="GtkColumnViewColumn"/>
+  <object class="GtkColumnViewColumn"/>
+  <object class="GtkTreeViewColumn"/>
+  <object class="GtkColumnViewColumn"/>
 </interface>

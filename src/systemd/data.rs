@@ -89,6 +89,9 @@ mod imp {
         pub(super) active_state: RwLock<ActiveState>,
 
         pub(super) level: RwLock<UnitDBusLevel>,
+
+        #[property(get, set)]
+        pub(super) preset: RwLock<String>,
     }
 
     #[glib::object_subclass]

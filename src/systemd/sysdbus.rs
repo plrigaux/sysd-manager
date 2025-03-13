@@ -283,6 +283,9 @@ trait ZUnitInfo {
 
     #[zbus(property)]
     fn unit_file_state(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn unit_file_preset(&self) -> Result<String, zbus::Error>;
 }
 
 async fn complete_unit_info(
@@ -321,6 +324,10 @@ async fn complete_unit_info(
     if let Ok(active_state) = unit_info_proxy.active_state().await {
         let active_state: ActiveState = active_state.as_str().into();
         unit.set_active_state(active_state);
+    }
+
+    if let Ok(preset) = unit_info_proxy.unit_file_preset().await {
+        unit.set_preset(preset);
     }
 
     Ok(())
