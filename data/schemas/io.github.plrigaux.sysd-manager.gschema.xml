@@ -108,10 +108,37 @@
             <default>''</default>
             <summary>The font family of unit information, dependencies and file</summary>
         </key>
-
         <key name="pref-style-text-font-size" type="u">
             <default>0</default>
             <summary>The font size of unit information, dependencies and file</summary>
+        </key>
+        <key name="col-show-unit" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
+        <key name="col-show-type" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
+        <key name="col-show-state" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
+        <key name="col-show-load" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
+        <key name="col-show-active" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
+        <key name="col-show-sub" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
+        <key name="col-show-description" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
         </key>
     </schema>
 </schemalist>

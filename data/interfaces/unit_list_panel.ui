@@ -69,6 +69,7 @@
                               </object>
                             </property>
                             <property name="fixed-width">140</property>
+                            <property name="header-menu">table-menu</property>
                             <property name="id">unit</property>
                             <property name="resizable">True</property>
                             <property name="title">Unit</property>
@@ -83,6 +84,7 @@
                               </object>
                             </property>
                             <property name="fixed-width">75</property>
+                            <property name="header-menu">table-menu</property>
                             <property name="id">type</property>
                             <property name="resizable">True</property>
                             <property name="title">Type</property>
@@ -97,6 +99,7 @@
                               </object>
                             </property>
                             <property name="fixed-width">70</property>
+                            <property name="header-menu">table-menu</property>
                             <property name="id">state</property>
                             <property name="resizable">True</property>
                             <property name="title">State</property>
@@ -111,6 +114,7 @@
                               </object>
                             </property>
                             <property name="fixed-width">82</property>
+                            <property name="header-menu">table-menu</property>
                             <property name="id">load</property>
                             <property name="resizable">True</property>
                             <property name="title">Load</property>
@@ -176,19 +180,32 @@
   </template>
   <menu id="table-menu">
     <item>
-      <attribute name="action">app.col</attribute>
-      <attribute name="label">test1</attribute>
-      <attribute name="target">test1</attribute>
+      <attribute name="action">win.col-show-unit</attribute>
+      <attribute name="label">Unit</attribute>
     </item>
     <item>
-      <attribute name="action">app.col</attribute>
-      <attribute name="label">test2</attribute>
-      <attribute name="target">test2</attribute>
+      <attribute name="action">win.col-show-type</attribute>
+      <attribute name="label">Type</attribute>
     </item>
     <item>
-      <attribute name="action">app.col</attribute>
-      <attribute name="label">test3</attribute>
-      <attribute name="target">test3</attribute>
+      <attribute name="action">win.col-show-state</attribute>
+      <attribute name="label">State</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.col-show-load</attribute>
+      <attribute name="label">Load</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.col-show-active</attribute>
+      <attribute name="label">Active</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.col-show-sub</attribute>
+      <attribute name="label">Sub</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.col-show-description</attribute>
+      <attribute name="label">Description</attribute>
     </item>
   </menu>
 </interface>

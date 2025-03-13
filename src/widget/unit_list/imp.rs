@@ -25,6 +25,7 @@ use log::{debug, error, info, warn};
 use crate::{
     icon_name,
     systemd::runtime,
+    systemd_gui,
     utils::palette::{grey, red, yellow, Palette},
     widget::InterPanelAction,
 };
@@ -325,7 +326,7 @@ impl UnitListPanelImp {
         app_window: &AppWindow,
         refresh_unit_list_button: &gtk::Button,
     ) {
-        let app_window = app_window.clone();
+        let app_window_clone = app_window.clone();
         let list_widjet = self.obj().clone();
 
         self.single_selection
@@ -350,7 +351,7 @@ impl UnitListPanelImp {
                 info!("Selection changed, new unit {}", unit.primary());
 
                 list_widjet.set_unit_internal(&unit);
-                app_window.selection_change(Some(&unit));
+                app_window_clone.selection_change(Some(&unit));
             }); // FOR THE SEARCH
 
         self.refresh_unit_list_button
@@ -358,6 +359,20 @@ impl UnitListPanelImp {
             .expect("refresh_unit_list_button was already set!");
 
         self.fill_store();
+
+        let settings = systemd_gui::new_settings();
+
+        for action_name in [
+            "col-show-type",
+            "col-show-state",
+            "col-show-load",
+            "col-show-active",
+            "col-show-sub",
+            "col-show-description",
+        ] {
+            let action = settings.create_action(action_name);
+            app_window.add_action(&action);
+        }
     }
 
     pub fn search_bar(&self) -> gtk::SearchBar {
@@ -648,6 +663,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 
+        self.obj().action_set_enabled("win.col", true);
         self.search_entry
             .set(search_entry)
             .expect("Search entry set once");
