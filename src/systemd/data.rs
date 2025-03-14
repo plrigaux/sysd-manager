@@ -11,7 +11,18 @@ glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
 }
 
+impl Default for UnitInfo {
+    fn default() -> Self {
+        UnitInfo::new()
+    }
+}
+
 impl UnitInfo {
+    fn new() -> Self {
+        let this_object: Self = glib::Object::new();
+        this_object
+    }
+
     pub fn from_listed_unit(listed_unit: &LUnit, level: UnitDBusLevel) -> Self {
         let this_object: Self = glib::Object::new();
         let imp = this_object.imp();

@@ -6,6 +6,7 @@ use gtk::glib;
 use gtk::subclass::prelude::*;
 
 mod imp;
+mod rowdata;
 
 glib::wrapper! {
     pub struct UnitListPanel(ObjectSubclass<imp::UnitListPanelImp>)
@@ -62,14 +63,4 @@ impl UnitListPanel {
     fn set_sorter(&self) {
         self.imp().set_sorter();
     }
-
-    fn set_attributes(&self, inscription: &gtk::Inscription, attr: ColCellAttribute) {
-        self.imp().set_attributes(inscription, attr)
-    }
-}
-
-enum ColCellAttribute {
-    Red,
-    Yellow,
-    Green,
 }

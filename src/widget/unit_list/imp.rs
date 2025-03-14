@@ -18,7 +18,7 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetImpl,
         },
     },
-    ListScrollFlags, SearchBar, TemplateChild,
+    ListScrollFlags, SearchBar, SignalListItemFactory, TemplateChild,
 };
 
 use log::{debug, error, info, warn};
@@ -28,7 +28,10 @@ use crate::{
     systemd::runtime,
     systemd_gui,
     utils::palette::{green, grey, red, yellow, Palette},
-    widget::InterPanelAction,
+    widget::{
+        unit_list::rowdata::{UnitBinding, BIND_DESCRIPTION_TEXT, BIND_SUB_STATE_TEXT},
+        InterPanelAction,
+    },
 };
 use crate::{
     systemd::{
@@ -42,8 +45,6 @@ use crate::{
     },
 };
 use strum::IntoEnumIterator;
-
-use super::ColCellAttribute;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -112,18 +113,25 @@ macro_rules! downcast_list_item {
 macro_rules! factory_bind_pre {
     ($item_obj:expr) => {{
         let item = downcast_list_item!($item_obj);
-        let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-        let unit = item.item().and_downcast::<UnitInfo>().unwrap();
-        (child, unit)
+        let child = item
+            .child()
+            .and_downcast::<gtk::Inscription>()
+            .expect("item.downcast_ref::<gtk::Inscription>()");
+        let unit_binding = item
+            .item()
+            .and_downcast::<UnitBinding>()
+            .expect("item.downcast_ref::<gtk::UnitBinding>()");
+        (child, unit_binding)
     }};
 }
 
 macro_rules! factory_bind {
     ($item_obj:expr, $func:ident) => {{
-        let (child, unit) = factory_bind_pre!($item_obj);
-        let v = unit.$func();
-        child.set_text(Some(&v));
-        (child, unit)
+        let (child, unit_binding) = factory_bind_pre!($item_obj);
+        let unit = unit_binding.unit();
+        let text = unit.$func();
+        child.set_text(Some(&text));
+        (child, unit, unit_binding)
     }};
 }
 
@@ -147,11 +155,11 @@ macro_rules! create_column_filter {
     ($($func:ident),+) => {{
         gtk::CustomSorter::new(move |obj1, obj2| {
             let unit1 = obj1
-                .downcast_ref::<UnitInfo>()
-                .expect("Needs to be UnitInfo");
+                .downcast_ref::<UnitBinding>()
+                .expect("Needs to be UnitInfo").unit();
             let unit2 = obj2
-                .downcast_ref::<UnitInfo>()
-                .expect("Needs to be UnitInfo");
+                .downcast_ref::<UnitBinding>()
+                .expect("Needs to be UnitInfo").unit();
 
             compare_units!(unit1, unit2, $($func),+)
         })
@@ -182,9 +190,8 @@ impl UnitListPanelImp {
 
     #[template_callback]
     fn col_unit_name_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        factory_bind!(item_obj, display_name);
-
-        let (child, unit) = factory_bind_pre!(item_obj);
+        let (child, unit_binding) = factory_bind_pre!(item_obj);
+        let unit = unit_binding.unit();
         let v = unit.display_name();
         child.set_text(Some(&v));
 
@@ -205,7 +212,7 @@ impl UnitListPanelImp {
 
     #[template_callback]
     fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (child, unit) = factory_bind!(item_obj, unit_type);
+        let (child, unit, _unit_binding) = factory_bind!(item_obj, unit_type);
 
         self.display_inactive(child, &unit);
     }
@@ -216,8 +223,8 @@ impl UnitListPanelImp {
         item_obj: &Object,
         _fac: &gtk::SignalListItemFactory,
     ) {
-        let ins = factory_setup!(item_obj);
-        let unit_list = self.obj().clone();
+        factory_setup!(item_obj);
+        /*  let unit_list = self.obj().clone();
 
         ins.connect_text_notify(move |inscription| {
             if let Some(enable_status) = inscription.text() {
@@ -233,10 +240,10 @@ impl UnitListPanelImp {
                     unit_list.set_attributes(inscription, ColCellAttribute::Green);
                 }
             }
-        });
+        });*/
     }
 
-    pub(super) fn set_attributes(&self, inscription: &gtk::Inscription, attr: ColCellAttribute) {
+    /*     pub(super) fn set_attributes(&self, inscription: &gtk::Inscription, attr: ColCellAttribute) {
         match attr {
             ColCellAttribute::Red => {
                 let a = self.highlight_red.borrow();
@@ -251,11 +258,12 @@ impl UnitListPanelImp {
                 inscription.set_attributes(Some(&a));
             }
         }
-    }
+    } */
 
     #[template_callback]
     fn col_enable_status_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (inscription, unit) = factory_bind_pre!(item_obj);
+        let (inscription, unit_binging) = factory_bind_pre!(item_obj);
+        let unit = unit_binging.unit();
 
         let status_code: EnablementStatus = unit.enable_status().into();
 
@@ -291,8 +299,8 @@ impl UnitListPanelImp {
 
     #[template_callback]
     fn col_preset_factory_setup(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let ins = factory_setup!(item_obj);
-        let unit_list = self.obj().clone();
+        factory_setup!(item_obj);
+        /*  let unit_list = self.obj().clone();
         ins.connect_text_notify(move |inscription| {
             if let Some(preset) = inscription.text() {
                 if preset.starts_with('d')
@@ -311,13 +319,22 @@ impl UnitListPanelImp {
                     //self.display_inactive(child, &unit);
                 }
             }
-        });
+        }); */
     }
 
     #[template_callback]
     fn col_preset_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (child, unit) = factory_bind!(item_obj, preset);
+        let (child, unit, _unit_binding) = factory_bind!(item_obj, preset);
         unit.bind_property("preset", &child, "text").build();
+        /*         unit.bind_property("preset", &child, "attributes")
+        .transform_to_with_values(|_s, _d| {
+            let attribute_list = AttrList::new();
+            attribute_list.insert(AttrInt::new_weight(Weight::Bold));
+            let (red, green, blue) = Palette::Blue1.get_rgb_u16();
+            attribute_list.insert(AttrColor::new_foreground(red, green, blue));
+            Some(attribute_list.to_value())
+        })
+        .build(); */
 
         let preset = unit.preset();
         if preset.starts_with('d')
@@ -351,7 +368,7 @@ impl UnitListPanelImp {
     fn col_active_status_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let item = downcast_list_item!(item_obj);
         let icon_image = item.child().and_downcast::<gtk::Image>().unwrap();
-        let unit = item.item().and_downcast::<UnitInfo>().unwrap();
+        let unit = item.item().and_downcast::<UnitBinding>().unwrap().unit();
         let state = &unit.active_state();
 
         let icon_name = state.icon_name();
@@ -379,8 +396,8 @@ impl UnitListPanelImp {
 
     #[template_callback]
     fn col_load_factory_bind(&self, item_obj: &Object, _factory: &gtk::SignalListItemFactory) {
-        let (child, unit) = factory_bind_pre!(item_obj);
-
+        let (child, unit_binding) = factory_bind_pre!(item_obj);
+        let unit = unit_binding.unit();
         let load_state = unit.load_state();
         child.set_text(Some(&load_state));
         unit.bind_property("load_state", &child, "text").build();
@@ -403,30 +420,20 @@ impl UnitListPanelImp {
 
         //let (child, unit) = factory_bind!(item_obj, load_state);
     }
+    /*
+        #[template_callback]
+        fn col_sub_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
+            factory_setup!(item_obj);
+        }
 
-    #[template_callback]
-    fn col_sub_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_setup!(item_obj);
-    }
+          #[template_callback]
+        fn col_sub_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
+            let (child, unit, _) = factory_bind!(item_obj, sub_state);
+            unit.bind_property("sub_state", &child, "text").build();
 
-    #[template_callback]
-    fn col_sub_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (child, unit) = factory_bind!(item_obj, sub_state);
-        unit.bind_property("sub_state", &child, "text").build();
-        self.display_inactive(child, &unit);
-    }
-
-    #[template_callback]
-    fn col_description_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_setup!(item_obj);
-    }
-
-    #[template_callback]
-    fn col_description_factory_bind(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        let (child, unit) = factory_bind!(item_obj, description);
-        unit.bind_property("description", &child, "text").build();
-    }
-
+            self.display_inactive(child, &unit);
+        }
+    */
     #[template_callback]
     fn sections_changed(&self, position: u32) {
         info!("sections_changed {position}");
@@ -453,7 +460,7 @@ impl UnitListPanelImp {
                     return;
                 };
 
-                let unit = match object.downcast::<UnitInfo>() {
+                let unit_binding = match object.downcast::<UnitBinding>() {
                     Ok(unit) => unit,
                     Err(val) => {
                         error!("Object.downcast::<UnitInfo> Error: {:?}", val);
@@ -461,6 +468,7 @@ impl UnitListPanelImp {
                     }
                 };
 
+                let unit = unit_binding.unit();
                 info!("Selection changed, new unit {}", unit.primary());
 
                 list_widjet.set_unit_internal(&unit);
@@ -475,26 +483,7 @@ impl UnitListPanelImp {
 
         let settings = systemd_gui::new_settings();
 
-        let list_model: gio::ListModel = self.units_browser.columns();
-
-        let mut col_map = HashMap::new();
-        for col_idx in 0..list_model.n_items() {
-            let item_out = list_model
-                .item(col_idx)
-                .expect("Expect item x to be not None");
-
-            let column_view_column = item_out
-                .downcast_ref::<gtk::ColumnViewColumn>()
-                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
-
-            let id = column_view_column.id();
-
-            if let Some(id) = id {
-                col_map.insert(id, column_view_column.clone());
-            } else {
-                warn!("Column {col_idx} has no id.")
-            }
-        }
+        let col_map = self.generate_column_map();
 
         for action_name in [
             "col-show-type",
@@ -518,6 +507,30 @@ impl UnitListPanelImp {
                 warn!("Can't bind setting key {action_name} to column {name}")
             }
         }
+    }
+
+    fn generate_column_map(&self) -> HashMap<glib::GString, gtk::ColumnViewColumn> {
+        let list_model: gio::ListModel = self.units_browser.columns();
+
+        let mut col_map = HashMap::new();
+        for col_idx in 0..list_model.n_items() {
+            let item_out = list_model
+                .item(col_idx)
+                .expect("Expect item x to be not None");
+
+            let column_view_column = item_out
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+            let id = column_view_column.id();
+
+            if let Some(id) = id {
+                col_map.insert(id, column_view_column.clone());
+            } else {
+                warn!("Column {col_idx} has no id.")
+            }
+        }
+        col_map
     }
 
     pub fn search_bar(&self) -> gtk::SearchBar {
@@ -570,19 +583,25 @@ impl UnitListPanelImp {
 
             let mut all_units = Vec::with_capacity(unit_desc.len() + unit_from_files.len());
             for (_key, unit) in unit_desc.into_iter() {
-                list_store.append(&unit);
+                list_store.append(&UnitBinding::new(&unit));
                 all_units.push(unit);
             }
 
             for unit in unit_from_files.into_iter() {
-                list_store.append(&unit);
+                list_store.append(&UnitBinding::new(&unit));
                 all_units.push(unit);
             }
 
             // The sort function needs to be the same of the  first column sorter
             let sort_func = |o1: &Object, o2: &Object| {
-                let u1 = o1.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
-                let u2 = o2.downcast_ref::<UnitInfo>().expect("Needs to be UnitInfo");
+                let u1 = o1
+                    .downcast_ref::<UnitBinding>()
+                    .expect("Needs to be UnitInfo")
+                    .unit();
+                let u2 = o2
+                    .downcast_ref::<UnitBinding>()
+                    .expect("Needs to be UnitInfo")
+                    .unit();
 
                 compare_units!(u1, u2, primary, dbus_level)
             };
@@ -605,10 +624,10 @@ impl UnitListPanelImp {
 
                 if let Some(index) = list_store.find_with_equal_func(|object| {
                     let list_unit = object
-                        .downcast_ref::<UnitInfo>()
-                        .expect("Needs to be UnitInfo");
+                        .downcast_ref::<UnitBinding>()
+                        .expect("Needs to be UnitBinding");
 
-                    list_unit.primary().eq(&selected_unit_name)
+                    list_unit.unit_ref().primary().eq(&selected_unit_name)
                 }) {
                     info!(
                         "Force selection to index {:?} to select unit {:?}",
@@ -696,7 +715,7 @@ impl UnitListPanelImp {
         let finding = self.list_store.find_with_equal_func(|object| {
             let unit_item = object
                 .downcast_ref::<UnitInfo>()
-                .expect("item.downcast_ref::<gtk::ListItem>()");
+                .expect("item.downcast_ref::<gtk::UnitInfo>()");
 
             unit_name == unit_item.primary()
         });
@@ -804,6 +823,61 @@ impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
+        let cmap = self.generate_column_map();
+
+        let fac_sub_state = SignalListItemFactory::new();
+
+        fac_sub_state.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        fac_sub_state.connect_bind(|_factory, object| {
+            let (child, unit, unit_binding) = factory_bind!(object, description);
+            let binding = unit.bind_property("sub_state", &child, "text").build();
+
+            unit_binding.set_binding(BIND_SUB_STATE_TEXT, binding);
+        });
+
+        fac_sub_state.connect_unbind(|_factory, object| {
+            let list_item = downcast_list_item!(object);
+
+            let unit_binding = list_item
+                .item()
+                .and_downcast::<UnitBinding>()
+                .expect("item.downcast_ref::<gtk::UnitBinding>()");
+
+            unit_binding.unset_binding(BIND_SUB_STATE_TEXT);
+        });
+
+        let fac_descrition = SignalListItemFactory::new();
+
+        fac_descrition.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        fac_descrition.connect_bind(|_factory, object| {
+            let (child, unit, unit_binding) = factory_bind!(object, description);
+            let binding = unit.bind_property("description", &child, "text").build();
+
+            unit_binding.set_binding(BIND_DESCRIPTION_TEXT, binding);
+        });
+
+        fac_descrition.connect_unbind(|_factory, object| {
+            let list_item = downcast_list_item!(object);
+
+            let unit_binding = list_item
+                .item()
+                .and_downcast::<UnitBinding>()
+                .expect("item.downcast_ref::<gtk::UnitBinding>()");
+
+            unit_binding.unset_binding(BIND_DESCRIPTION_TEXT);
+        });
+
+        cmap.get("sub").unwrap().set_factory(Some(&fac_sub_state));
+        cmap.get("description")
+            .unwrap()
+            .set_factory(Some(&fac_descrition));
+
         let list_model: gio::ListModel = self.units_browser.columns();
 
         column_view_column_set_sorter!(list_model, 0, primary, dbus_level);
@@ -910,13 +984,13 @@ fn fill_search_bar(
             let filter_button_active = filter_button_active.clone();
 
             gtk::CustomFilter::new(move |object| {
-                let Some(unit) = object.downcast_ref::<UnitInfo>() else {
-                    error!("some wrong downcast_ref {:?}", object);
+                let Some(unit_binding) = object.downcast_ref::<UnitBinding>() else {
+                    error!("some wrong downcast_ref to UnitBinding {:?}", object);
                     return false;
                 };
 
                 let text = entry1.text();
-
+                let unit = unit_binding.unit();
                 let unit_type = unit.unit_type();
                 let enable_status: EnablementStatus = unit.enable_status().into();
                 let active_state: ActiveState = unit.active_state();
