@@ -30,7 +30,8 @@ use crate::{
     utils::palette::{green, grey, red, yellow, Palette},
     widget::{
         unit_list::rowdata::{
-            UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_PRESET_ATTR, BIND_ENABLE_PRESET_TEXT,
+            UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_ACTIVE_ICON, BIND_ENABLE_LOAD_ATTR,
+            BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_PRESET_ATTR, BIND_ENABLE_PRESET_TEXT,
             BIND_ENABLE_STATUS_ATTR, BIND_ENABLE_STATUS_TEXT, BIND_SUB_STATE_TEXT,
         },
         InterPanelAction,
@@ -230,70 +231,6 @@ impl UnitListPanelImp {
     fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let (child, unit, _unit_binding) = factory_bind!(item_obj, unit_type);
         self.display_inactive(child, &unit);
-    }
-
-    #[template_callback]
-    fn col_active_status_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        let item = downcast_list_item!(item_obj);
-        let image = gtk::Image::new();
-        item.set_child(Some(&image));
-    }
-
-    #[template_callback]
-    fn col_active_status_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let item = downcast_list_item!(item_obj);
-        let icon_image = item.child().and_downcast::<gtk::Image>().unwrap();
-        let unit = item.item().and_downcast::<UnitBinding>().unwrap().unit();
-        let state = &unit.active_state();
-
-        let icon_name = state.icon_name();
-        icon_image.set_icon_name(icon_name);
-        icon_image.set_tooltip_text(Some(state.as_str()));
-
-        unit.bind_property("active_state_num", &icon_image, "icon-name")
-            .transform_to(|_, state: u8| {
-                let state: ActiveState = state.into();
-                icon_name!(state)
-            })
-            .build();
-
-        if state.is_inactive() {
-            icon_image.add_css_class("grey");
-        } else {
-            icon_image.remove_css_class("grey");
-        }
-    }
-
-    #[template_callback]
-    fn col_load_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_setup!(item_obj);
-    }
-
-    #[template_callback]
-    fn col_load_factory_bind(&self, item_obj: &Object, _factory: &gtk::SignalListItemFactory) {
-        let (child, unit_binding) = factory_bind_pre!(item_obj);
-        let unit = unit_binding.unit();
-        let load_state = unit.load_state();
-        child.set_text(Some(&load_state));
-        unit.bind_property("load_state", &child, "text").build();
-
-        if load_state.starts_with('n')
-        //"not-found"
-        {
-            let attribute_list = self.highlight_yellow.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else if load_state.starts_with('b')
-            || load_state.starts_with('e')
-            || load_state.starts_with('m')
-        // "bad-setting", "error", "masked"
-        {
-            let attribute_list = self.highlight_red.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else {
-            self.display_inactive(child, &unit);
-        }
-
-        //let (child, unit) = factory_bind!(item_obj, load_state);
     }
 
     #[template_callback]
@@ -860,6 +797,127 @@ impl ObjectImpl for UnitListPanelImp {
             unit_binding.unset_binding(BIND_ENABLE_PRESET_ATTR);
         });
 
+        let fac_load_state = SignalListItemFactory::new();
+
+        fac_load_state.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        {
+            let unit_list = self.obj().clone();
+            fac_load_state.connect_bind(move |_factory, object| {
+                let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
+
+                let binding = unit
+                    .bind_property("load_state", &inscription, "text")
+                    .build();
+                unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
+
+                let is_dark = unit_list.imp().is_dark.get();
+                let binding = unit
+                    .bind_property("preset", &inscription, "attributes")
+                    .transform_to_with_values(move |_s, value| {
+                        let value = match value.get::<String>() {
+                            Ok(v) => v,
+                            Err(err) => {
+                                warn!("The variant needs to be of type `String`. {:?}", err);
+                                return None;
+                            }
+                        };
+
+                        let attribute_list = if let Some(first_char) = value.chars().next() {
+                            match first_char {
+                                'n' => {
+                                    //"not-found"
+                                    let al = highlight_attrlist(yellow(is_dark));
+                                    Some(al)
+                                }
+                                'b' | 'e' | 'm' => {
+                                    // "bad-setting", "error", "masked"
+                                    let al = highlight_attrlist(red(is_dark));
+                                    Some(al)
+                                }
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        };
+
+                        attribute_list.map(|al| al.to_value())
+                    })
+                    .build();
+
+                unit_binding.set_binding(BIND_ENABLE_LOAD_ATTR, binding);
+
+                let load_state = unit.load_state();
+
+                if let Some(first_char) = load_state.chars().next() {
+                    match first_char {
+                        'n' => {
+                            //"not-found"
+                            let attribute_list = unit_list.imp().highlight_yellow.borrow();
+                            inscription.set_attributes(Some(&attribute_list));
+                        }
+                        'b' | 'e' | 'm' => {
+                            // "bad-setting", "error", "masked"
+                            let attribute_list = unit_list.imp().highlight_red.borrow();
+                            inscription.set_attributes(Some(&attribute_list));
+                        }
+                        _ => unit_list.imp().display_inactive(inscription, &unit),
+                    }
+                }
+            });
+        }
+
+        fac_load_state.connect_unbind(|_factory, object| {
+            let unit_binding = downcast_unit_binding!(object);
+            unit_binding.unset_binding(BIND_ENABLE_LOAD_TEXT);
+            unit_binding.unset_binding(BIND_ENABLE_LOAD_ATTR);
+        });
+
+        let fac_active = SignalListItemFactory::new();
+
+        fac_active.connect_setup(|_factory, object| {
+            let item = downcast_list_item!(object);
+            let image = gtk::Image::new();
+            item.set_child(Some(&image));
+        });
+
+        fac_active.connect_bind(|_factory, object| {
+            let list_item: &gtk::ListItem = downcast_list_item!(object);
+            let icon_image = list_item.child().and_downcast::<gtk::Image>().unwrap();
+
+            let unit_binding = list_item.item().and_downcast::<UnitBinding>().unwrap();
+            let unit = unit_binding.unit_ref();
+
+            let state = unit.active_state();
+
+            let icon_name = state.icon_name();
+            icon_image.set_icon_name(icon_name);
+            icon_image.set_tooltip_text(Some(state.as_str()));
+
+            let binding = unit
+                .bind_property("active_state_num", &icon_image, "icon-name")
+                .transform_to(|_, state: u8| {
+                    let state: ActiveState = state.into();
+                    icon_name!(state)
+                })
+                .build();
+
+            unit_binding.set_binding(BIND_ENABLE_ACTIVE_ICON, binding);
+
+            if state.is_inactive() {
+                icon_image.add_css_class("grey");
+            } else {
+                icon_image.remove_css_class("grey");
+            }
+        });
+
+        fac_active.connect_unbind(|_factory, object| {
+            let unit_binding = downcast_unit_binding!(object);
+            unit_binding.unset_binding(BIND_ENABLE_ACTIVE_ICON);
+        });
+
         let fac_sub_state = SignalListItemFactory::new();
 
         fac_sub_state.connect_setup(|_factory, object| {
@@ -900,6 +958,8 @@ impl ObjectImpl for UnitListPanelImp {
             .unwrap()
             .set_factory(Some(&fac_enable_status));
         cmap.get("preset").unwrap().set_factory(Some(&fac_preset));
+        cmap.get("load").unwrap().set_factory(Some(&fac_load_state));
+        cmap.get("active").unwrap().set_factory(Some(&fac_active));
         cmap.get("sub").unwrap().set_factory(Some(&fac_sub_state));
         cmap.get("description")
             .unwrap()

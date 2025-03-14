@@ -307,9 +307,7 @@
 	(60,19,"GtkSignalListItemFactory",None,18,None,None,None,0,None,None),
 	(60,20,"GtkColumnViewColumn",None,11,None,None,None,3,None,None),
 	(60,22,"GtkColumnViewColumn",None,11,None,None,None,5,None,None),
-	(60,23,"GtkSignalListItemFactory",None,22,None,None,None,0,None,None),
 	(60,24,"GtkColumnViewColumn",None,11,None,None,None,6,None,None),
-	(60,25,"GtkSignalListItemFactory",None,24,None,None,None,0,None,None),
 	(60,26,"GtkColumnViewColumn",None,11,None,None,None,7,None,None),
 	(60,28,"GtkColumnViewColumn",None,11,None,None,None,8,None,None),
 	(60,30,"(menu)","table-menu",None,None,None,None,1,None,None),
@@ -784,13 +782,11 @@
 	(60,20,"GtkColumnViewColumn","id","state",0,None,None,None,None,None,None,None,None),
 	(60,20,"GtkColumnViewColumn","resizable","True",0,None,None,None,None,None,None,None,None),
 	(60,20,"GtkColumnViewColumn","title","State",0,None,None,None,None,None,None,None,None),
-	(60,22,"GtkColumnViewColumn","factory",None,0,None,None,None,23,None,None,None,None),
 	(60,22,"GtkColumnViewColumn","fixed-width","82",0,None,None,None,None,None,None,None,None),
 	(60,22,"GtkColumnViewColumn","header-menu","30",0,None,None,None,None,None,None,None,None),
 	(60,22,"GtkColumnViewColumn","id","load",0,None,None,None,None,None,None,None,None),
 	(60,22,"GtkColumnViewColumn","resizable","True",0,None,None,None,None,None,None,None,None),
 	(60,22,"GtkColumnViewColumn","title","Load",0,None,None,None,None,None,None,None,None),
-	(60,24,"GtkColumnViewColumn","factory",None,0,None,None,None,25,None,None,None,None),
 	(60,24,"GtkColumnViewColumn","fixed-width","70",0,None,None,None,None,None,None,None,None),
 	(60,24,"GtkColumnViewColumn","header-menu","30",0,None,None,None,None,None,None,None,None),
 	(60,24,"GtkColumnViewColumn","id","active",0,None,None,None,None,None,None,None,None),
@@ -875,11 +871,7 @@
 	(236,60,17,"GtkSignalListItemFactory","bind","col_unit_name_factory_bind",None,None,1,0,None),
 	(237,60,17,"GtkSignalListItemFactory","setup","col_unit_name_factory_setup",None,None,0,0,None),
 	(238,60,19,"GtkSignalListItemFactory","bind","col_type_factory_bind",None,None,1,0,None),
-	(239,60,19,"GtkSignalListItemFactory","setup","col_type_factory_setup",None,None,0,0,None),
-	(242,60,23,"GtkSignalListItemFactory","bind","col_load_factory_bind",None,None,1,0,None),
-	(243,60,23,"GtkSignalListItemFactory","setup","col_load_factory_setup",None,None,0,0,None),
-	(244,60,25,"GtkSignalListItemFactory","bind","col_active_status_factory_bind",None,None,1,0,None),
-	(245,60,25,"GtkSignalListItemFactory","setup","col_active_status_factory_setup",None,None,0,0,None)
+	(239,60,19,"GtkSignalListItemFactory","setup","col_type_factory_setup",None,None,0,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),
