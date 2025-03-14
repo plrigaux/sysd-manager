@@ -4,7 +4,7 @@ use crate::{gtk::subclass::prelude::*, systemd::data::UnitInfo};
 use gtk::glib::{self, Binding};
 
 pub const BIND_DESCRIPTION_TEXT: u8 = 0;
-pub const BIND_SUB_STATE_TEXT: u8 = 0;
+pub const BIND_SUB_STATE_TEXT: u8 = 1;
 
 glib::wrapper! {
     pub struct UnitBinding(ObjectSubclass<imp::UnitBindingImpl>);

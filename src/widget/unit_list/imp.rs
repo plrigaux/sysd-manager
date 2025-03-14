@@ -156,10 +156,10 @@ macro_rules! create_column_filter {
         gtk::CustomSorter::new(move |obj1, obj2| {
             let unit1 = obj1
                 .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit();
+                .expect("Needs to be UnitInfo").unit_ref();
             let unit2 = obj2
                 .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit();
+                .expect("Needs to be UnitInfo").unit_ref();
 
             compare_units!(unit1, unit2, $($func),+)
         })
@@ -213,7 +213,6 @@ impl UnitListPanelImp {
     #[template_callback]
     fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let (child, unit, _unit_binding) = factory_bind!(item_obj, unit_type);
-
         self.display_inactive(child, &unit);
     }
 
@@ -597,11 +596,11 @@ impl UnitListPanelImp {
                 let u1 = o1
                     .downcast_ref::<UnitBinding>()
                     .expect("Needs to be UnitInfo")
-                    .unit();
+                    .unit_ref();
                 let u2 = o2
                     .downcast_ref::<UnitBinding>()
                     .expect("Needs to be UnitInfo")
-                    .unit();
+                    .unit_ref();
 
                 compare_units!(u1, u2, primary, dbus_level)
             };
@@ -832,9 +831,8 @@ impl ObjectImpl for UnitListPanelImp {
         });
 
         fac_sub_state.connect_bind(|_factory, object| {
-            let (child, unit, unit_binding) = factory_bind!(object, description);
+            let (child, unit, unit_binding) = factory_bind!(object, sub_state);
             let binding = unit.bind_property("sub_state", &child, "text").build();
-
             unit_binding.set_binding(BIND_SUB_STATE_TEXT, binding);
         });
 
@@ -858,7 +856,6 @@ impl ObjectImpl for UnitListPanelImp {
         fac_descrition.connect_bind(|_factory, object| {
             let (child, unit, unit_binding) = factory_bind!(object, description);
             let binding = unit.bind_property("description", &child, "text").build();
-
             unit_binding.set_binding(BIND_DESCRIPTION_TEXT, binding);
         });
 
@@ -984,13 +981,22 @@ fn fill_search_bar(
             let filter_button_active = filter_button_active.clone();
 
             gtk::CustomFilter::new(move |object| {
-                let Some(unit_binding) = object.downcast_ref::<UnitBinding>() else {
-                    error!("some wrong downcast_ref to UnitBinding {:?}", object);
+                let ref_cell_place_holder = RefCell::default();
+
+                let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
+                    unit_binding.unit_ref()
+                } else if let Some(unit) = object.downcast_ref::<UnitInfo>() {
+                    ref_cell_place_holder.replace(unit.clone());
+                    ref_cell_place_holder.borrow()
+                } else {
+                    error!(
+                        "some wrong downcast_ref to UnitBinding of UnitInfo {:?}",
+                        object
+                    );
                     return false;
                 };
 
                 let text = entry1.text();
-                let unit = unit_binding.unit();
                 let unit_type = unit.unit_type();
                 let enable_status: EnablementStatus = unit.enable_status().into();
                 let active_state: ActiveState = unit.active_state();
