@@ -50,6 +50,26 @@
                 </child>
                 <child>
                   <object class="AdwPreferencesGroup">
+                    <property name="title">List</property>
+                    <child>
+                      <object class="AdwExpanderRow" id="unit_list_columns">
+                        <property name="title">Columns</property>
+                        <child>
+                          <object class="AdwSwitchRow">
+                            <property name="title">dessf</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwSwitchRow">
+                            <property name="title">sub</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
                     <property name="title">Unit File</property>
                     <child>
                       <object class="AdwActionRow">

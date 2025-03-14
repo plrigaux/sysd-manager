@@ -62,4 +62,14 @@ impl UnitListPanel {
     fn set_sorter(&self) {
         self.imp().set_sorter();
     }
+
+    fn set_attributes(&self, inscription: &gtk::Inscription, attr: ColCellAttribute) {
+        self.imp().set_attributes(inscription, attr)
+    }
+}
+
+enum ColCellAttribute {
+    Red,
+    Yellow,
+    Green,
 }

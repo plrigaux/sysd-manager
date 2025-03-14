@@ -27,7 +27,7 @@ use crate::{
     icon_name,
     systemd::runtime,
     systemd_gui,
-    utils::palette::{grey, red, yellow, Palette},
+    utils::palette::{green, grey, red, yellow, Palette},
     widget::InterPanelAction,
 };
 use crate::{
@@ -42,6 +42,8 @@ use crate::{
     },
 };
 use strum::IntoEnumIterator;
+
+use super::ColCellAttribute;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -79,6 +81,7 @@ pub struct UnitListPanelImp {
     pub force_selected_index: Cell<Option<u32>>,
 
     highlight_yellow: RefCell<AttrList>,
+    highlight_green: RefCell<AttrList>,
     highlight_red: RefCell<AttrList>,
     grey: RefCell<AttrList>,
 }
@@ -88,8 +91,12 @@ macro_rules! factory_setup {
         let item = $item_obj
             .downcast_ref::<gtk::ListItem>()
             .expect("item.downcast_ref::<gtk::ListItem>()");
-        let row = gtk::Inscription::builder().xalign(0.0).build();
-        item.set_child(Some(&row));
+        let inscription = gtk::Inscription::builder()
+            .xalign(0.0)
+            //   .wrap_mode(gtk::pango::WrapMode::Char)
+            .build();
+        item.set_child(Some(&inscription));
+        inscription
     }};
 }
 
@@ -204,20 +211,58 @@ impl UnitListPanelImp {
     }
 
     #[template_callback]
-    fn col_enable_status_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_setup!(item_obj);
+    fn col_enable_status_factory_setup(
+        &self,
+        item_obj: &Object,
+        _fac: &gtk::SignalListItemFactory,
+    ) {
+        let ins = factory_setup!(item_obj);
+        let unit_list = self.obj().clone();
+
+        ins.connect_text_notify(move |inscription| {
+            if let Some(enable_status) = inscription.text() {
+                if enable_status.starts_with('m')
+                    || enable_status.starts_with('d')
+                    || enable_status.starts_with('b')
+                //"disabled"
+                {
+                    unit_list.set_attributes(inscription, ColCellAttribute::Red);
+                } else if enable_status.starts_with('e') || enable_status.starts_with('a')
+                // "enabled" or "alias"
+                {
+                    unit_list.set_attributes(inscription, ColCellAttribute::Green);
+                }
+            }
+        });
+    }
+
+    pub(super) fn set_attributes(&self, inscription: &gtk::Inscription, attr: ColCellAttribute) {
+        match attr {
+            ColCellAttribute::Red => {
+                let a = self.highlight_red.borrow();
+                inscription.set_attributes(Some(&a));
+            }
+            ColCellAttribute::Yellow => {
+                let a = self.highlight_yellow.borrow();
+                inscription.set_attributes(Some(&a));
+            }
+            ColCellAttribute::Green => {
+                let a = self.highlight_green.borrow();
+                inscription.set_attributes(Some(&a));
+            }
+        }
     }
 
     #[template_callback]
     fn col_enable_status_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (child, unit) = factory_bind_pre!(item_obj);
+        let (inscription, unit) = factory_bind_pre!(item_obj);
 
         let status_code: EnablementStatus = unit.enable_status().into();
 
-        child.set_text(Some(status_code.as_str()));
-        child.set_tooltip_markup(Some(status_code.tooltip_info()));
+        inscription.set_text(Some(status_code.as_str()));
+        inscription.set_tooltip_markup(Some(status_code.tooltip_info()));
 
-        unit.bind_property("enable_status", &child, "text")
+        unit.bind_property("enable_status", &inscription, "text")
             .transform_to(|_, status: u8| {
                 let estatus: EnablementStatus = status.into();
                 let str = estatus.to_string();
@@ -225,7 +270,74 @@ impl UnitListPanelImp {
             })
             .build();
 
-        self.display_inactive(child, &unit);
+        if let Some(enable_status) = inscription.text() {
+            if enable_status.starts_with('m')
+                || enable_status.starts_with('d')
+                || enable_status.starts_with('b')
+            //"disabled"
+            {
+                let attribute_list = self.highlight_red.borrow();
+                inscription.set_attributes(Some(&attribute_list));
+            } else if enable_status.starts_with('e') || enable_status.starts_with('a')
+            // "enabled" or "alias"
+            {
+                let attribute_list = self.highlight_green.borrow();
+                inscription.set_attributes(Some(&attribute_list));
+            } else {
+                self.display_inactive(inscription, &unit);
+            }
+        }
+    }
+
+    #[template_callback]
+    fn col_preset_factory_setup(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
+        let ins = factory_setup!(item_obj);
+        let unit_list = self.obj().clone();
+        ins.connect_text_notify(move |inscription| {
+            if let Some(preset) = inscription.text() {
+                if preset.starts_with('d')
+                //"disabled"
+                {
+                    unit_list.set_attributes(inscription, ColCellAttribute::Red);
+                } else if preset.starts_with('e')
+                // "enabled"
+                {
+                    unit_list.set_attributes(inscription, ColCellAttribute::Green);
+                } else if preset.starts_with('i')
+                // "ignored"
+                {
+                    unit_list.set_attributes(inscription, ColCellAttribute::Yellow);
+                } else {
+                    //self.display_inactive(child, &unit);
+                }
+            }
+        });
+    }
+
+    #[template_callback]
+    fn col_preset_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
+        let (child, unit) = factory_bind!(item_obj, preset);
+        unit.bind_property("preset", &child, "text").build();
+
+        let preset = unit.preset();
+        if preset.starts_with('d')
+        //"disabled"
+        {
+            let attribute_list = self.highlight_red.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else if preset.starts_with('e')
+        // "enabled"
+        {
+            let attribute_list = self.highlight_green.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else if preset.starts_with('i')
+        // "ignored"
+        {
+            let attribute_list = self.highlight_yellow.borrow();
+            child.set_attributes(Some(&attribute_list));
+        } else {
+            self.display_inactive(child, &unit);
+        }
     }
 
     #[template_callback]
@@ -379,12 +491,15 @@ impl UnitListPanelImp {
 
             if let Some(id) = id {
                 col_map.insert(id, column_view_column.clone());
+            } else {
+                warn!("Column {col_idx} has no id.")
             }
         }
 
         for action_name in [
             "col-show-type",
             "col-show-state",
+            "col-show-preset",
             "col-show-load",
             "col-show-active",
             "col-show-sub",
@@ -400,7 +515,7 @@ impl UnitListPanelImp {
                     .bind(action_name, column_view_column, "visible")
                     .build();
             } else {
-                warn!("Can't bind setting ket {action_name} to column {name}")
+                warn!("Can't bind setting key {action_name} to column {name}")
             }
         }
     }
@@ -453,12 +568,15 @@ impl UnitListPanelImp {
             let n_items = list_store.n_items();
             list_store.remove_all();
 
-            for item in unit_desc.values() {
-                list_store.append(item);
+            let mut all_units = Vec::with_capacity(unit_desc.len() + unit_from_files.len());
+            for (_key, unit) in unit_desc.into_iter() {
+                list_store.append(&unit);
+                all_units.push(unit);
             }
 
-            for item in unit_from_files.iter() {
-                list_store.append(item);
+            for unit in unit_from_files.into_iter() {
+                list_store.append(&unit);
+                all_units.push(unit);
             }
 
             // The sort function needs to be the same of the  first column sorter
@@ -514,7 +632,7 @@ impl UnitListPanelImp {
 
             glib::spawn_future_local(async move {
                 runtime().spawn(async move {
-                    let response = systemd::complete_unit_information(unit_from_files).await;
+                    let response = systemd::complete_unit_information(all_units).await;
                     if let Err(error) = response {
                         warn!("Complete Unit Information Error: {:?}", error);
                     }
@@ -613,6 +731,10 @@ impl UnitListPanelImp {
 
             self.highlight_red.replace(attribute_list);
 
+            let attribute_list = highlight_attrlist(green(is_dark));
+
+            self.highlight_green.replace(attribute_list);
+
             let attribute_list = AttrList::new();
             let (red, green, blue) = grey(is_dark).get_rgb_u16();
             attribute_list.insert(AttrColor::new_foreground(red, green, blue));
@@ -687,9 +809,10 @@ impl ObjectImpl for UnitListPanelImp {
         column_view_column_set_sorter!(list_model, 0, primary, dbus_level);
         column_view_column_set_sorter!(list_model, 1, unit_type);
         column_view_column_set_sorter!(list_model, 2, enable_status);
-        column_view_column_set_sorter!(list_model, 3, load_state);
-        column_view_column_set_sorter!(list_model, 4, active_state);
-        column_view_column_set_sorter!(list_model, 5, sub_state);
+        column_view_column_set_sorter!(list_model, 3, preset);
+        column_view_column_set_sorter!(list_model, 4, load_state);
+        column_view_column_set_sorter!(list_model, 5, active_state);
+        column_view_column_set_sorter!(list_model, 6, sub_state);
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 
