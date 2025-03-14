@@ -5,6 +5,8 @@ use gtk::glib::{self, Binding};
 
 pub const BIND_DESCRIPTION_TEXT: u8 = 0;
 pub const BIND_SUB_STATE_TEXT: u8 = 1;
+pub const BIND_ENABLE_STATUS_TEXT: u8 = 2;
+pub const BIND_ENABLE_STATUS_ATTR: u8 = 3;
 
 glib::wrapper! {
     pub struct UnitBinding(ObjectSubclass<imp::UnitBindingImpl>);

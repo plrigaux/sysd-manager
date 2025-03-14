@@ -92,12 +92,6 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="factory">
-                              <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_enable_status_factory_bind" swapped="yes"/>
-                                <signal name="setup" handler="col_enable_status_factory_setup" swapped="yes"/>
-                              </object>
-                            </property>
                             <property name="fixed-width">75</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">state</property>

@@ -29,7 +29,10 @@ use crate::{
     systemd_gui,
     utils::palette::{green, grey, red, yellow, Palette},
     widget::{
-        unit_list::rowdata::{UnitBinding, BIND_DESCRIPTION_TEXT, BIND_SUB_STATE_TEXT},
+        unit_list::rowdata::{
+            UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_STATUS_ATTR, BIND_ENABLE_STATUS_TEXT,
+            BIND_SUB_STATE_TEXT,
+        },
         InterPanelAction,
     },
 };
@@ -85,6 +88,8 @@ pub struct UnitListPanelImp {
     highlight_green: RefCell<AttrList>,
     highlight_red: RefCell<AttrList>,
     grey: RefCell<AttrList>,
+
+    is_dark: Cell<bool>,
 }
 
 macro_rules! factory_setup {
@@ -107,6 +112,17 @@ macro_rules! downcast_list_item {
             .downcast_ref::<gtk::ListItem>()
             .expect("item.downcast_ref::<gtk::ListItem>()");
         item
+    }};
+}
+
+macro_rules! downcast_unit_binding {
+    ($item_obj:expr) => {{
+        let list_item = downcast_list_item!($item_obj);
+
+        list_item
+            .item()
+            .and_downcast::<UnitBinding>()
+            .expect("item.downcast_ref::<gtk::UnitBinding>()")
     }};
 }
 
@@ -214,86 +230,6 @@ impl UnitListPanelImp {
     fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let (child, unit, _unit_binding) = factory_bind!(item_obj, unit_type);
         self.display_inactive(child, &unit);
-    }
-
-    #[template_callback]
-    fn col_enable_status_factory_setup(
-        &self,
-        item_obj: &Object,
-        _fac: &gtk::SignalListItemFactory,
-    ) {
-        factory_setup!(item_obj);
-        /*  let unit_list = self.obj().clone();
-
-        ins.connect_text_notify(move |inscription| {
-            if let Some(enable_status) = inscription.text() {
-                if enable_status.starts_with('m')
-                    || enable_status.starts_with('d')
-                    || enable_status.starts_with('b')
-                //"disabled"
-                {
-                    unit_list.set_attributes(inscription, ColCellAttribute::Red);
-                } else if enable_status.starts_with('e') || enable_status.starts_with('a')
-                // "enabled" or "alias"
-                {
-                    unit_list.set_attributes(inscription, ColCellAttribute::Green);
-                }
-            }
-        });*/
-    }
-
-    /*     pub(super) fn set_attributes(&self, inscription: &gtk::Inscription, attr: ColCellAttribute) {
-        match attr {
-            ColCellAttribute::Red => {
-                let a = self.highlight_red.borrow();
-                inscription.set_attributes(Some(&a));
-            }
-            ColCellAttribute::Yellow => {
-                let a = self.highlight_yellow.borrow();
-                inscription.set_attributes(Some(&a));
-            }
-            ColCellAttribute::Green => {
-                let a = self.highlight_green.borrow();
-                inscription.set_attributes(Some(&a));
-            }
-        }
-    } */
-
-    #[template_callback]
-    fn col_enable_status_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (inscription, unit_binging) = factory_bind_pre!(item_obj);
-        let unit = unit_binging.unit();
-
-        let status_code: EnablementStatus = unit.enable_status().into();
-
-        inscription.set_text(Some(status_code.as_str()));
-        inscription.set_tooltip_markup(Some(status_code.tooltip_info()));
-
-        unit.bind_property("enable_status", &inscription, "text")
-            .transform_to(|_, status: u8| {
-                let estatus: EnablementStatus = status.into();
-                let str = estatus.to_string();
-                Some(str)
-            })
-            .build();
-
-        if let Some(enable_status) = inscription.text() {
-            if enable_status.starts_with('m')
-                || enable_status.starts_with('d')
-                || enable_status.starts_with('b')
-            //"disabled"
-            {
-                let attribute_list = self.highlight_red.borrow();
-                inscription.set_attributes(Some(&attribute_list));
-            } else if enable_status.starts_with('e') || enable_status.starts_with('a')
-            // "enabled" or "alias"
-            {
-                let attribute_list = self.highlight_green.borrow();
-                inscription.set_attributes(Some(&attribute_list));
-            } else {
-                self.display_inactive(inscription, &unit);
-            }
-        }
     }
 
     #[template_callback]
@@ -419,20 +355,7 @@ impl UnitListPanelImp {
 
         //let (child, unit) = factory_bind!(item_obj, load_state);
     }
-    /*
-        #[template_callback]
-        fn col_sub_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-            factory_setup!(item_obj);
-        }
 
-          #[template_callback]
-        fn col_sub_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-            let (child, unit, _) = factory_bind!(item_obj, sub_state);
-            unit.bind_property("sub_state", &child, "text").build();
-
-            self.display_inactive(child, &unit);
-        }
-    */
     #[template_callback]
     fn sections_changed(&self, position: u32) {
         info!("sections_changed {position}");
@@ -446,7 +369,7 @@ impl UnitListPanelImp {
         refresh_unit_list_button: &gtk::Button,
     ) {
         let app_window_clone = app_window.clone();
-        let list_widjet = self.obj().clone();
+        let unit_list = self.obj().clone();
 
         self.single_selection
             .connect_selected_item_notify(move |single_selection| {
@@ -470,7 +393,7 @@ impl UnitListPanelImp {
                 let unit = unit_binding.unit();
                 info!("Selection changed, new unit {}", unit.primary());
 
-                list_widjet.set_unit_internal(&unit);
+                unit_list.set_unit_internal(&unit);
                 app_window_clone.selection_change(Some(&unit));
             }); // FOR THE SEARCH
 
@@ -758,6 +681,8 @@ impl UnitListPanelImp {
             attribute_list.insert(AttrColor::new_foreground(red, green, blue));
 
             self.grey.replace(attribute_list);
+
+            self.is_dark.set(is_dark);
         }
     }
 
@@ -822,7 +747,91 @@ impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let cmap = self.generate_column_map();
+        let fac_enable_status = SignalListItemFactory::new();
+
+        fac_enable_status.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        {
+            let unit_list = self.obj().clone();
+            fac_enable_status.connect_bind(move |_factory, object| {
+                let (inscription, unit, unit_binding) = factory_bind!(object, sub_state);
+
+                let binding = unit
+                    .bind_property("enable_status", &inscription, "text")
+                    .transform_to(|_, status: u8| {
+                        let estatus: EnablementStatus = status.into();
+                        let str = estatus.to_string();
+                        Some(str)
+                    })
+                    .build();
+
+                unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
+
+                let is_dark = unit_list.imp().is_dark.get();
+                let binding = unit
+                    .bind_property("enable_status", &inscription, "attributes")
+                    .transform_to_with_values(move |_s, value| {
+                        let value = value
+                            .get::<String>()
+                            .expect("The variant needs to be of type `String`.");
+
+                        let attribute_list = if let Some(first_char) = value.chars().next() {
+                            match first_char {
+                                'm' | 'd' | 'b' => {
+                                    let al = highlight_attrlist(red(is_dark));
+                                    Some(al)
+                                }
+
+                                'e' | 'a' => {
+                                    let al = highlight_attrlist(green(is_dark));
+                                    Some(al)
+                                }
+
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        };
+
+                        attribute_list.map(|al| al.to_value())
+                    })
+                    .build();
+
+                unit_binding.set_binding(BIND_ENABLE_STATUS_ATTR, binding);
+
+                let status_code: EnablementStatus = unit.enable_status().into();
+                let status_code_str = status_code.as_str();
+
+                inscription.set_text(Some(status_code_str));
+                inscription.set_tooltip_markup(Some(status_code.tooltip_info()));
+
+                if let Some(first_char) = status_code_str.chars().next() {
+                    match first_char {
+                        'm' | 'd' | 'b' => {
+                            //"disabled"
+                            let attribute_list = unit_list.imp().highlight_red.borrow();
+                            inscription.set_attributes(Some(&attribute_list));
+                        }
+
+                        'e' | 'a' => {
+                            //"enabled" or "alias"
+                            let attribute_list = unit_list.imp().highlight_green.borrow();
+                            inscription.set_attributes(Some(&attribute_list));
+                        }
+
+                        _ => unit_list.imp().display_inactive(inscription, &unit),
+                    }
+                }
+            });
+        }
+
+        fac_enable_status.connect_unbind(|_factory, object| {
+            let unit_binding = downcast_unit_binding!(object);
+            unit_binding.unset_binding(BIND_ENABLE_STATUS_TEXT);
+            unit_binding.unset_binding(BIND_ENABLE_STATUS_ATTR);
+        });
 
         let fac_sub_state = SignalListItemFactory::new();
 
@@ -837,13 +846,7 @@ impl ObjectImpl for UnitListPanelImp {
         });
 
         fac_sub_state.connect_unbind(|_factory, object| {
-            let list_item = downcast_list_item!(object);
-
-            let unit_binding = list_item
-                .item()
-                .and_downcast::<UnitBinding>()
-                .expect("item.downcast_ref::<gtk::UnitBinding>()");
-
+            let unit_binding = downcast_unit_binding!(object);
             unit_binding.unset_binding(BIND_SUB_STATE_TEXT);
         });
 
@@ -860,16 +863,15 @@ impl ObjectImpl for UnitListPanelImp {
         });
 
         fac_descrition.connect_unbind(|_factory, object| {
-            let list_item = downcast_list_item!(object);
-
-            let unit_binding = list_item
-                .item()
-                .and_downcast::<UnitBinding>()
-                .expect("item.downcast_ref::<gtk::UnitBinding>()");
-
+            let unit_binding = downcast_unit_binding!(object);
             unit_binding.unset_binding(BIND_DESCRIPTION_TEXT);
         });
 
+        let cmap = self.generate_column_map();
+
+        cmap.get("state")
+            .unwrap()
+            .set_factory(Some(&fac_enable_status));
         cmap.get("sub").unwrap().set_factory(Some(&fac_sub_state));
         cmap.get("description")
             .unwrap()
