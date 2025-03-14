@@ -30,8 +30,8 @@ use crate::{
     utils::palette::{green, grey, red, yellow, Palette},
     widget::{
         unit_list::rowdata::{
-            UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_STATUS_ATTR, BIND_ENABLE_STATUS_TEXT,
-            BIND_SUB_STATE_TEXT,
+            UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_PRESET_ATTR, BIND_ENABLE_PRESET_TEXT,
+            BIND_ENABLE_STATUS_ATTR, BIND_ENABLE_STATUS_TEXT, BIND_SUB_STATE_TEXT,
         },
         InterPanelAction,
     },
@@ -230,66 +230,6 @@ impl UnitListPanelImp {
     fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
         let (child, unit, _unit_binding) = factory_bind!(item_obj, unit_type);
         self.display_inactive(child, &unit);
-    }
-
-    #[template_callback]
-    fn col_preset_factory_setup(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        factory_setup!(item_obj);
-        /*  let unit_list = self.obj().clone();
-        ins.connect_text_notify(move |inscription| {
-            if let Some(preset) = inscription.text() {
-                if preset.starts_with('d')
-                //"disabled"
-                {
-                    unit_list.set_attributes(inscription, ColCellAttribute::Red);
-                } else if preset.starts_with('e')
-                // "enabled"
-                {
-                    unit_list.set_attributes(inscription, ColCellAttribute::Green);
-                } else if preset.starts_with('i')
-                // "ignored"
-                {
-                    unit_list.set_attributes(inscription, ColCellAttribute::Yellow);
-                } else {
-                    //self.display_inactive(child, &unit);
-                }
-            }
-        }); */
-    }
-
-    #[template_callback]
-    fn col_preset_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (child, unit, _unit_binding) = factory_bind!(item_obj, preset);
-        unit.bind_property("preset", &child, "text").build();
-        /*         unit.bind_property("preset", &child, "attributes")
-        .transform_to_with_values(|_s, _d| {
-            let attribute_list = AttrList::new();
-            attribute_list.insert(AttrInt::new_weight(Weight::Bold));
-            let (red, green, blue) = Palette::Blue1.get_rgb_u16();
-            attribute_list.insert(AttrColor::new_foreground(red, green, blue));
-            Some(attribute_list.to_value())
-        })
-        .build(); */
-
-        let preset = unit.preset();
-        if preset.starts_with('d')
-        //"disabled"
-        {
-            let attribute_list = self.highlight_red.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else if preset.starts_with('e')
-        // "enabled"
-        {
-            let attribute_list = self.highlight_green.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else if preset.starts_with('i')
-        // "ignored"
-        {
-            let attribute_list = self.highlight_yellow.borrow();
-            child.set_attributes(Some(&attribute_list));
-        } else {
-            self.display_inactive(child, &unit);
-        }
     }
 
     #[template_callback]
@@ -773,9 +713,13 @@ impl ObjectImpl for UnitListPanelImp {
                 let binding = unit
                     .bind_property("enable_status", &inscription, "attributes")
                     .transform_to_with_values(move |_s, value| {
-                        let value = value
-                            .get::<String>()
-                            .expect("The variant needs to be of type `String`.");
+                        let value = match value.get::<String>() {
+                            Ok(v) => v,
+                            Err(err) => {
+                                warn!("The variant needs to be of type `String`. {:?}", err);
+                                return None;
+                            }
+                        };
 
                         let attribute_list = if let Some(first_char) = value.chars().next() {
                             match first_char {
@@ -833,6 +777,89 @@ impl ObjectImpl for UnitListPanelImp {
             unit_binding.unset_binding(BIND_ENABLE_STATUS_ATTR);
         });
 
+        let fac_preset = SignalListItemFactory::new();
+
+        fac_preset.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        {
+            let unit_list = self.obj().clone();
+            fac_preset.connect_bind(move |_factory, object| {
+                let (inscription, unit, unit_binding) = factory_bind!(object, preset);
+
+                let binding = unit.bind_property("preset", &inscription, "text").build();
+                unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
+
+                let is_dark = unit_list.imp().is_dark.get();
+                let binding = unit
+                    .bind_property("preset", &inscription, "attributes")
+                    .transform_to_with_values(move |_s, value| {
+                        let value = match value.get::<String>() {
+                            Ok(v) => v,
+                            Err(err) => {
+                                warn!("The variant needs to be of type `String`. {:?}", err);
+                                return None;
+                            }
+                        };
+
+                        let attribute_list = if let Some(first_char) = value.chars().next() {
+                            match first_char {
+                                'd' => {
+                                    let al = highlight_attrlist(red(is_dark));
+                                    Some(al)
+                                }
+
+                                'e' => {
+                                    let al = highlight_attrlist(green(is_dark));
+                                    Some(al)
+                                }
+
+                                'i' => {
+                                    let al = highlight_attrlist(yellow(is_dark));
+                                    Some(al)
+                                }
+
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        };
+
+                        attribute_list.map(|al| al.to_value())
+                    })
+                    .build();
+
+                unit_binding.set_binding(BIND_ENABLE_PRESET_ATTR, binding);
+
+                let preset = unit.preset();
+                if preset.starts_with('d')
+                //"disabled"
+                {
+                    let attribute_list = unit_list.imp().highlight_red.borrow();
+                    inscription.set_attributes(Some(&attribute_list));
+                } else if preset.starts_with('e')
+                // "enabled"
+                {
+                    let attribute_list = unit_list.imp().highlight_green.borrow();
+                    inscription.set_attributes(Some(&attribute_list));
+                } else if preset.starts_with('i')
+                // "ignored"
+                {
+                    let attribute_list = unit_list.imp().highlight_yellow.borrow();
+                    inscription.set_attributes(Some(&attribute_list));
+                } else {
+                    unit_list.imp().display_inactive(inscription, &unit);
+                }
+            });
+        }
+
+        fac_preset.connect_unbind(|_factory, object| {
+            let unit_binding = downcast_unit_binding!(object);
+            unit_binding.unset_binding(BIND_ENABLE_PRESET_TEXT);
+            unit_binding.unset_binding(BIND_ENABLE_PRESET_ATTR);
+        });
+
         let fac_sub_state = SignalListItemFactory::new();
 
         fac_sub_state.connect_setup(|_factory, object| {
@@ -872,6 +899,7 @@ impl ObjectImpl for UnitListPanelImp {
         cmap.get("state")
             .unwrap()
             .set_factory(Some(&fac_enable_status));
+        cmap.get("preset").unwrap().set_factory(Some(&fac_preset));
         cmap.get("sub").unwrap().set_factory(Some(&fac_sub_state));
         cmap.get("description")
             .unwrap()

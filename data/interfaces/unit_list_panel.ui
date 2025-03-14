@@ -101,12 +101,6 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="factory">
-                              <object class="GtkSignalListItemFactory">
-                                <signal name="setup" handler="col_preset_factory_setup" swapped="yes"/>
-                                <signal name="bind" handler="col_preset_factory_bind" swapped="yes"/>
-                              </object>
-                            </property>
                             <property name="fixed-width">70</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">preset</property>

@@ -321,7 +321,6 @@
 	(60,36,"(item)",None,30,None,None,None,6,None,None),
 	(60,37,"(item)",None,30,None,None,None,7,None,None),
 	(60,43,"GtkColumnViewColumn",None,11,None,None,None,4,None,None),
-	(60,44,"GtkSignalListItemFactory",None,43,None,None,None,0,None,None),
 	(60,45,"(item)",None,30,None,None,None,3,None,None)
   </object>
   <object_property>
@@ -821,7 +820,6 @@
 	(60,36,"(item)","label","Sub",0,None,None,None,None,None,None,None,None),
 	(60,37,"(item)","action","win.col-show-description",0,None,None,None,None,None,None,None,None),
 	(60,37,"(item)","label","Description",0,None,None,None,None,None,None,None,None),
-	(60,43,"GtkColumnViewColumn","factory",None,0,None,None,None,44,None,None,None,None),
 	(60,43,"GtkColumnViewColumn","fixed-width","70",None,None,None,None,None,None,None,None,None),
 	(60,43,"GtkColumnViewColumn","header-menu","30",0,None,None,None,None,None,None,None,None),
 	(60,43,"GtkColumnViewColumn","id","preset",0,None,None,None,None,None,None,None,None),
@@ -881,9 +879,7 @@
 	(242,60,23,"GtkSignalListItemFactory","bind","col_load_factory_bind",None,None,1,0,None),
 	(243,60,23,"GtkSignalListItemFactory","setup","col_load_factory_setup",None,None,0,0,None),
 	(244,60,25,"GtkSignalListItemFactory","bind","col_active_status_factory_bind",None,None,1,0,None),
-	(245,60,25,"GtkSignalListItemFactory","setup","col_active_status_factory_setup",None,None,0,0,None),
-	(250,60,44,"GtkSignalListItemFactory","setup","col_preset_factory_setup",None,None,1,0,None),
-	(251,60,44,"GtkSignalListItemFactory","bind","col_preset_factory_bind",None,None,1,0,None)
+	(245,60,25,"GtkSignalListItemFactory","setup","col_active_status_factory_setup",None,None,0,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

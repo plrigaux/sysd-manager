@@ -7,6 +7,8 @@ pub const BIND_DESCRIPTION_TEXT: u8 = 0;
 pub const BIND_SUB_STATE_TEXT: u8 = 1;
 pub const BIND_ENABLE_STATUS_TEXT: u8 = 2;
 pub const BIND_ENABLE_STATUS_ATTR: u8 = 3;
+pub const BIND_ENABLE_PRESET_TEXT: u8 = 4;
+pub const BIND_ENABLE_PRESET_ATTR: u8 = 5;
 
 glib::wrapper! {
     pub struct UnitBinding(ObjectSubclass<imp::UnitBindingImpl>);
