@@ -668,13 +668,11 @@ impl ObjectImpl for UnitListPanelImp {
                         let attribute_list = if let Some(first_char) = value.chars().next() {
                             match first_char {
                                 'm' | 'd' | 'b' => {
-                                    let al = UnitListPanelImp::highlight_attrlist(red(is_dark));
-                                    Some(al)
+                                    Some(UnitListPanelImp::highlight_attrlist(red(is_dark)))
                                 }
 
                                 'e' | 'a' => {
-                                    let al = UnitListPanelImp::highlight_attrlist(green(is_dark));
-                                    Some(al)
+                                    Some(UnitListPanelImp::highlight_attrlist(green(is_dark)))
                                 }
 
                                 _ => None,
@@ -695,22 +693,28 @@ impl ObjectImpl for UnitListPanelImp {
                 inscription.set_text(Some(status_code_str));
                 inscription.set_tooltip_markup(Some(status_code.tooltip_info()));
 
-                if let Some(first_char) = status_code_str.chars().next() {
+                let attrs = if let Some(first_char) = status_code_str.chars().next() {
                     match first_char {
                         'm' | 'd' | 'b' => {
                             //"disabled"
-                            let attribute_list = unit_list.imp().highlight_red.borrow();
-                            inscription.set_attributes(Some(&attribute_list));
+                            unit_list.imp().highlight_red.borrow().copy()
                         }
 
                         'e' | 'a' => {
                             //"enabled" or "alias"
-                            let attribute_list = unit_list.imp().highlight_green.borrow();
-                            inscription.set_attributes(Some(&attribute_list));
+                            unit_list.imp().highlight_green.borrow().copy()
                         }
 
-                        _ => unit_list.imp().display_inactive(inscription, &unit),
+                        _ => None,
                     }
+                } else {
+                    None
+                };
+
+                if attrs.is_some() {
+                    inscription.set_attributes(attrs.as_ref());
+                } else {
+                    unit_list.imp().display_inactive(inscription, &unit);
                 }
             });
         }
