@@ -127,6 +127,17 @@ macro_rules! downcast_unit_binding {
     }};
 }
 
+macro_rules! factory_connect_unbind {
+    ($factory:expr, $($bind_id:expr), *) => {
+        $factory.connect_unbind(|_factory, object| {
+            let unit_binding = downcast_unit_binding!(object);
+            $(
+                unit_binding.unset_binding($bind_id);
+            )*
+        });
+    };
+}
+
 macro_rules! factory_bind_pre {
     ($item_obj:expr) => {{
         let item = downcast_list_item!($item_obj);
@@ -719,11 +730,11 @@ impl ObjectImpl for UnitListPanelImp {
             });
         }
 
-        fac_enable_status.connect_unbind(|_factory, object| {
-            let unit_binding = downcast_unit_binding!(object);
-            unit_binding.unset_binding(BIND_ENABLE_STATUS_TEXT);
-            unit_binding.unset_binding(BIND_ENABLE_STATUS_ATTR);
-        });
+        factory_connect_unbind!(
+            fac_enable_status,
+            BIND_ENABLE_STATUS_TEXT,
+            BIND_ENABLE_STATUS_ATTR
+        );
 
         let fac_preset = SignalListItemFactory::new();
 
@@ -793,11 +804,7 @@ impl ObjectImpl for UnitListPanelImp {
             });
         }
 
-        fac_preset.connect_unbind(|_factory, object| {
-            let unit_binding = downcast_unit_binding!(object);
-            unit_binding.unset_binding(BIND_ENABLE_PRESET_TEXT);
-            unit_binding.unset_binding(BIND_ENABLE_PRESET_ATTR);
-        });
+        factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_ATTR);
 
         let fac_load_state = SignalListItemFactory::new();
 
@@ -871,11 +878,7 @@ impl ObjectImpl for UnitListPanelImp {
             });
         }
 
-        fac_load_state.connect_unbind(|_factory, object| {
-            let unit_binding = downcast_unit_binding!(object);
-            unit_binding.unset_binding(BIND_ENABLE_LOAD_TEXT);
-            unit_binding.unset_binding(BIND_ENABLE_LOAD_ATTR);
-        });
+        factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_ATTR);
 
         let fac_active = SignalListItemFactory::new();
 
@@ -915,10 +918,7 @@ impl ObjectImpl for UnitListPanelImp {
             }
         });
 
-        fac_active.connect_unbind(|_factory, object| {
-            let unit_binding = downcast_unit_binding!(object);
-            unit_binding.unset_binding(BIND_ENABLE_ACTIVE_ICON);
-        });
+        factory_connect_unbind!(fac_active, BIND_ENABLE_ACTIVE_ICON);
 
         let fac_sub_state = SignalListItemFactory::new();
 
@@ -932,10 +932,7 @@ impl ObjectImpl for UnitListPanelImp {
             unit_binding.set_binding(BIND_SUB_STATE_TEXT, binding);
         });
 
-        fac_sub_state.connect_unbind(|_factory, object| {
-            let unit_binding = downcast_unit_binding!(object);
-            unit_binding.unset_binding(BIND_SUB_STATE_TEXT);
-        });
+        factory_connect_unbind!(fac_sub_state, BIND_SUB_STATE_TEXT);
 
         let fac_descrition = SignalListItemFactory::new();
 
@@ -953,6 +950,8 @@ impl ObjectImpl for UnitListPanelImp {
             let unit_binding = downcast_unit_binding!(object);
             unit_binding.unset_binding(BIND_DESCRIPTION_TEXT);
         });
+
+        factory_connect_unbind!(fac_descrition, BIND_DESCRIPTION_TEXT);
 
         let cmap = self.generate_column_map();
 
