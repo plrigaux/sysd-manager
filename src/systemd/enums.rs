@@ -633,6 +633,13 @@ impl UnitDBusLevel {
         }
     }
 
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            UnitDBusLevel::System => "system",
+            UnitDBusLevel::UserSession => "user",
+        }
+    }
+
     pub(crate) fn from_short(suffix: &str) -> Self {
         match suffix {
             "s" => UnitDBusLevel::System,

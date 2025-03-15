@@ -100,7 +100,8 @@ macro_rules! factory_setup {
             .expect("item.downcast_ref::<gtk::ListItem>()");
         let inscription = gtk::Inscription::builder()
             .xalign(0.0)
-            //   .wrap_mode(gtk::pango::WrapMode::Char)
+            //.wrap_mode(gtk::pango::WrapMode::None)
+            .wrap_mode(gtk::pango::WrapMode::Char)
             .build();
         item.set_child(Some(&inscription));
         inscription
@@ -195,15 +196,9 @@ macro_rules! create_column_filter {
 }
 
 macro_rules! column_view_column_set_sorter {
-    ($list_item:expr, $col_idx:expr, $($func:ident),+) => {{
-        let item_out = $list_item
-            .item($col_idx)
-            .expect("Expect item x to be not None");
-
-        let column_view_column = item_out
-            .downcast_ref::<gtk::ColumnViewColumn>()
-            .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
-
+    ($map:expr, $col_id:expr, $($func:ident),+) => {{
+        let column_view_column = $map.get($col_id)
+            .expect(&format!("Column with id {:?} not found!", $col_id));
         let sorter = create_column_filter!($($func),+);
         column_view_column.set_sorter(Some(&sorter));
     }};
@@ -211,39 +206,6 @@ macro_rules! column_view_column_set_sorter {
 
 #[gtk::template_callbacks]
 impl UnitListPanelImp {
-    #[template_callback]
-    fn col_unit_name_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_setup!(item_obj);
-    }
-
-    #[template_callback]
-    fn col_unit_name_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (child, unit_binding) = factory_bind_pre!(item_obj);
-        let unit = unit_binding.unit();
-        let v = unit.display_name();
-        child.set_text(Some(&v));
-
-        let bus = match unit.dbus_level() {
-            systemd::enums::UnitDBusLevel::System => "on system bus",
-            systemd::enums::UnitDBusLevel::UserSession => "on user bus",
-        };
-
-        child.set_tooltip_text(Some(bus));
-
-        self.display_inactive(child, &unit);
-    }
-
-    #[template_callback]
-    fn col_type_factory_setup(_fac: &gtk::SignalListItemFactory, item_obj: &Object) {
-        factory_setup!(item_obj);
-    }
-
-    #[template_callback]
-    fn col_type_factory_bind(&self, item_obj: &Object, _fac: &gtk::SignalListItemFactory) {
-        let (child, unit, _unit_binding) = factory_bind!(item_obj, unit_type);
-        self.display_inactive(child, &unit);
-    }
-
     #[template_callback]
     fn sections_changed(&self, position: u32) {
         info!("sections_changed {position}");
@@ -297,6 +259,7 @@ impl UnitListPanelImp {
 
         for action_name in [
             "col-show-type",
+            "col-show-bus",
             "col-show-state",
             "col-show-preset",
             "col-show-load",
@@ -642,6 +605,59 @@ impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
+        let fac_unit_name = SignalListItemFactory::new();
+
+        fac_unit_name.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        {
+            let unit_list = self.obj().clone();
+            fac_unit_name.connect_bind(move |_factory, object| {
+                let (inscription, unit_binding) = factory_bind_pre!(object);
+                let unit = unit_binding.unit();
+                let name = unit.display_name();
+                inscription.set_text(Some(&name));
+
+                /*             let bus = match unit.dbus_level() {
+                    systemd::enums::UnitDBusLevel::System => "on system bus",
+                    systemd::enums::UnitDBusLevel::UserSession => "on user bus",
+                };
+
+                inscription.set_tooltip_text(Some(bus)); */
+
+                unit_list.imp().display_inactive(inscription, &unit);
+            });
+        }
+
+        let fac_unit_type = SignalListItemFactory::new();
+
+        fac_unit_type.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        {
+            let unit_list = self.obj().clone();
+            fac_unit_type.connect_bind(move |_factory, object| {
+                let (inscription, unit, _unit_binding) = factory_bind!(object, unit_type);
+                unit_list.imp().display_inactive(inscription, &unit);
+            });
+        }
+
+        let fac_bus = SignalListItemFactory::new();
+
+        fac_bus.connect_setup(|_factory, object| {
+            factory_setup!(object);
+        });
+
+        {
+            let unit_list = self.obj().clone();
+            fac_bus.connect_bind(move |_factory, object| {
+                let (inscription, unit, _unit_binding) = factory_bind!(object, dbus_level_str);
+                unit_list.imp().display_inactive(inscription, &unit);
+            });
+        }
+
         let fac_enable_status = SignalListItemFactory::new();
 
         fac_enable_status.connect_setup(|_factory, object| {
@@ -953,28 +969,63 @@ impl ObjectImpl for UnitListPanelImp {
 
         factory_connect_unbind!(fac_descrition, BIND_DESCRIPTION_TEXT);
 
-        let cmap = self.generate_column_map();
+        let column_view_column_map = self.generate_column_map();
 
-        cmap.get("state")
+        column_view_column_map
+            .get("unit")
+            .unwrap()
+            .set_factory(Some(&fac_unit_name));
+        column_view_column_map
+            .get("type")
+            .unwrap()
+            .set_factory(Some(&fac_unit_type));
+        column_view_column_map
+            .get("bus")
+            .unwrap()
+            .set_factory(Some(&fac_bus));
+        column_view_column_map
+            .get("state")
             .unwrap()
             .set_factory(Some(&fac_enable_status));
-        cmap.get("preset").unwrap().set_factory(Some(&fac_preset));
-        cmap.get("load").unwrap().set_factory(Some(&fac_load_state));
-        cmap.get("active").unwrap().set_factory(Some(&fac_active));
-        cmap.get("sub").unwrap().set_factory(Some(&fac_sub_state));
-        cmap.get("description")
+        column_view_column_map
+            .get("preset")
+            .unwrap()
+            .set_factory(Some(&fac_preset));
+        column_view_column_map
+            .get("load")
+            .unwrap()
+            .set_factory(Some(&fac_load_state));
+        column_view_column_map
+            .get("active")
+            .unwrap()
+            .set_factory(Some(&fac_active));
+        column_view_column_map
+            .get("sub")
+            .unwrap()
+            .set_factory(Some(&fac_sub_state));
+        column_view_column_map
+            .get("description")
             .unwrap()
             .set_factory(Some(&fac_descrition));
 
-        let list_model: gio::ListModel = self.units_browser.columns();
+        for cv_column in column_view_column_map.values() {
+            cv_column.connect_fixed_width_notify(|cvc| {
+                info!(
+                    "Column width {:?} {}",
+                    cvc.id().unwrap_or_default(),
+                    cvc.fixed_width()
+                )
+            });
+        }
 
-        column_view_column_set_sorter!(list_model, 0, primary, dbus_level);
-        column_view_column_set_sorter!(list_model, 1, unit_type);
-        column_view_column_set_sorter!(list_model, 2, enable_status);
-        column_view_column_set_sorter!(list_model, 3, preset);
-        column_view_column_set_sorter!(list_model, 4, load_state);
-        column_view_column_set_sorter!(list_model, 5, active_state);
-        column_view_column_set_sorter!(list_model, 6, sub_state);
+        column_view_column_set_sorter!(column_view_column_map, "unit", primary, dbus_level);
+        column_view_column_set_sorter!(column_view_column_map, "type", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, "bus", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, "state", enable_status);
+        column_view_column_set_sorter!(column_view_column_map, "preset", preset);
+        column_view_column_set_sorter!(column_view_column_map, "load", load_state);
+        column_view_column_set_sorter!(column_view_column_map, "active", active_state);
+        column_view_column_set_sorter!(column_view_column_map, "sub", sub_state);
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 

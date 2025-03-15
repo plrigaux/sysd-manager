@@ -54,6 +54,10 @@ impl UnitInfo {
         *self.imp().level.read().unwrap()
     }
 
+    pub fn dbus_level_str(&self) -> &'static str {
+        self.dbus_level().as_str()
+    }
+
     pub fn debug(&self) -> String {
         format!("{:#?}", *self.imp())
     }

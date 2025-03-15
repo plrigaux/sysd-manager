@@ -120,6 +120,10 @@
             <default>true</default>
             <summary>Displays or hides column</summary>
         </key>
+        <key name="col-show-bus" type="b">
+            <default>true</default>
+            <summary>Displays or hides column</summary>
+        </key>
         <key name="col-show-state" type="b">
             <default>true</default>
             <summary>Displays or hides column</summary>

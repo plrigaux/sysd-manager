@@ -62,13 +62,7 @@
                         <property name="vexpand">True</property>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="factory">
-                              <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_unit_name_factory_bind" swapped="yes"/>
-                                <signal name="setup" handler="col_unit_name_factory_setup"/>
-                              </object>
-                            </property>
-                            <property name="fixed-width">140</property>
+                            <property name="fixed-width">150</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">unit</property>
                             <property name="resizable">True</property>
@@ -77,13 +71,7 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="factory">
-                              <object class="GtkSignalListItemFactory">
-                                <signal name="bind" handler="col_type_factory_bind" swapped="yes"/>
-                                <signal name="setup" handler="col_type_factory_setup"/>
-                              </object>
-                            </property>
-                            <property name="fixed-width">75</property>
+                            <property name="fixed-width">82</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">type</property>
                             <property name="resizable">True</property>
@@ -92,7 +80,16 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">75</property>
+                            <property name="fixed-width">61</property>
+                            <property name="header-menu">table-menu</property>
+                            <property name="id">bus</property>
+                            <property name="resizable">True</property>
+                            <property name="title">Bus</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn">
+                            <property name="fixed-width">80</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">state</property>
                             <property name="resizable">True</property>
@@ -110,7 +107,7 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">82</property>
+                            <property name="fixed-width">80</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">load</property>
                             <property name="resizable">True</property>
@@ -119,7 +116,7 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">70</property>
+                            <property name="fixed-width">62</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">active</property>
                             <property name="resizable">True</property>
@@ -128,7 +125,7 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">70</property>
+                            <property name="fixed-width">71</property>
                             <property name="header-menu">table-menu</property>
                             <property name="id">sub</property>
                             <property name="resizable">True</property>
@@ -165,6 +162,10 @@
     <item>
       <attribute name="action">win.col-show-type</attribute>
       <attribute name="label">Type</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.col-show-bus</attribute>
+      <attribute name="label">Bus</attribute>
     </item>
     <item>
       <attribute name="action">win.col-show-state</attribute>
