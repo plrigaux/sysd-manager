@@ -270,7 +270,7 @@ impl UnitListPanelImp {
                 let unit = unit_binding.unit();
                 info!("Selection changed, new unit {}", unit.primary());
 
-                unit_list.set_unit_internal(&unit);
+                unit_list.imp().set_unit_internal(&unit);
                 app_window_clone.selection_change(Some(&unit));
             }); // FOR THE SEARCH
 
@@ -438,7 +438,9 @@ impl UnitListPanelImp {
                 }
             }
 
-            unit_list.set_force_selected_index(Some(force_selected_index));
+            unit_list
+                .imp()
+                .set_force_selected_index(Some(force_selected_index));
             refresh_unit_list_button.set_sensitive(true);
             unit_list.set_sorter();
 
@@ -541,26 +543,39 @@ impl UnitListPanelImp {
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         if let InterPanelAction::IsDark(is_dark) = *action {
-            let attribute_list = highlight_attrlist(yellow(is_dark));
+            let attribute_list = Self::highlight_attrlist(yellow(is_dark));
 
             self.highlight_yellow.replace(attribute_list);
 
-            let attribute_list = highlight_attrlist(red(is_dark));
+            let attribute_list = Self::highlight_attrlist(red(is_dark));
 
             self.highlight_red.replace(attribute_list);
 
-            let attribute_list = highlight_attrlist(green(is_dark));
+            let attribute_list = Self::highlight_attrlist(green(is_dark));
 
             self.highlight_green.replace(attribute_list);
 
-            let attribute_list = AttrList::new();
-            let (red, green, blue) = grey(is_dark).get_rgb_u16();
-            attribute_list.insert(AttrColor::new_foreground(red, green, blue));
+            let attribute_list = Self::shadow(is_dark);
 
             self.grey.replace(attribute_list);
 
             self.is_dark.set(is_dark);
         }
+    }
+
+    fn highlight_attrlist(color: Palette<'_>) -> AttrList {
+        let attribute_list = AttrList::new();
+        attribute_list.insert(AttrInt::new_weight(Weight::Bold));
+        let (red, green, blue) = color.get_rgb_u16();
+        attribute_list.insert(AttrColor::new_foreground(red, green, blue));
+        attribute_list
+    }
+
+    fn shadow(is_dark: bool) -> AttrList {
+        let attribute_list = AttrList::new();
+        let (red, green, blue) = grey(is_dark).get_rgb_u16();
+        attribute_list.insert(AttrColor::new_foreground(red, green, blue));
+        attribute_list
     }
 
     fn display_inactive(&self, widget: gtk::Inscription, unit: &UnitInfo) {
@@ -592,14 +607,6 @@ impl UnitListPanelImp {
         self.units_browser
             .sort_by_column(Some(c1), gtk::SortType::Ascending);
     }
-}
-
-fn highlight_attrlist(color: Palette<'_>) -> AttrList {
-    let attribute_list = AttrList::new();
-    attribute_list.insert(AttrInt::new_weight(Weight::Bold));
-    let (red, green, blue) = color.get_rgb_u16();
-    attribute_list.insert(AttrColor::new_foreground(red, green, blue));
-    attribute_list
 }
 
 // The central trait for subclassing a GObject
@@ -661,12 +668,12 @@ impl ObjectImpl for UnitListPanelImp {
                         let attribute_list = if let Some(first_char) = value.chars().next() {
                             match first_char {
                                 'm' | 'd' | 'b' => {
-                                    let al = highlight_attrlist(red(is_dark));
+                                    let al = UnitListPanelImp::highlight_attrlist(red(is_dark));
                                     Some(al)
                                 }
 
                                 'e' | 'a' => {
-                                    let al = highlight_attrlist(green(is_dark));
+                                    let al = UnitListPanelImp::highlight_attrlist(green(is_dark));
                                     Some(al)
                                 }
 
@@ -742,21 +749,12 @@ impl ObjectImpl for UnitListPanelImp {
 
                         let attribute_list = if let Some(first_char) = value.chars().next() {
                             match first_char {
-                                'd' => {
-                                    let al = highlight_attrlist(red(is_dark));
-                                    Some(al)
-                                }
-
-                                'e' => {
-                                    let al = highlight_attrlist(green(is_dark));
-                                    Some(al)
-                                }
-
-                                'i' => {
-                                    let al = highlight_attrlist(yellow(is_dark));
-                                    Some(al)
-                                }
-
+                                //"disabled"
+                                'd' => Some(UnitListPanelImp::highlight_attrlist(red(is_dark))),
+                                // "enabled"
+                                'e' => Some(UnitListPanelImp::highlight_attrlist(green(is_dark))),
+                                // "ignored"
+                                'i' => Some(UnitListPanelImp::highlight_attrlist(yellow(is_dark))),
                                 _ => None,
                             }
                         } else {
@@ -769,22 +767,22 @@ impl ObjectImpl for UnitListPanelImp {
 
                 unit_binding.set_binding(BIND_ENABLE_PRESET_ATTR, binding);
 
-                let preset = unit.preset();
-                if preset.starts_with('d')
-                //"disabled"
-                {
-                    let attribute_list = unit_list.imp().highlight_red.borrow();
-                    inscription.set_attributes(Some(&attribute_list));
-                } else if preset.starts_with('e')
-                // "enabled"
-                {
-                    let attribute_list = unit_list.imp().highlight_green.borrow();
-                    inscription.set_attributes(Some(&attribute_list));
-                } else if preset.starts_with('i')
-                // "ignored"
-                {
-                    let attribute_list = unit_list.imp().highlight_yellow.borrow();
-                    inscription.set_attributes(Some(&attribute_list));
+                let attrs = if let Some(first_char) = unit.preset().chars().next() {
+                    match first_char {
+                        //"disabled"
+                        'd' => unit_list.imp().highlight_red.borrow().copy(),
+                        // "enabled"
+                        'e' => unit_list.imp().highlight_green.borrow().copy(),
+                        // "ignored"
+                        'i' => unit_list.imp().highlight_yellow.borrow().copy(),
+                        _ => None,
+                    }
+                } else {
+                    None
+                };
+
+                if attrs.is_some() {
+                    inscription.set_attributes(attrs.as_ref());
                 } else {
                     unit_list.imp().display_inactive(inscription, &unit);
                 }
@@ -829,12 +827,12 @@ impl ObjectImpl for UnitListPanelImp {
                             match first_char {
                                 'n' => {
                                     //"not-found"
-                                    let al = highlight_attrlist(yellow(is_dark));
+                                    let al = UnitListPanelImp::highlight_attrlist(yellow(is_dark));
                                     Some(al)
                                 }
                                 'b' | 'e' | 'm' => {
                                     // "bad-setting", "error", "masked"
-                                    let al = highlight_attrlist(red(is_dark));
+                                    let al = UnitListPanelImp::highlight_attrlist(red(is_dark));
                                     Some(al)
                                 }
                                 _ => None,
@@ -995,9 +993,9 @@ impl ObjectImpl for UnitListPanelImp {
 }
 
 fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnView) {
-    let force_selected_index = unit_list.force_selected_index();
+    let force_selected_index = unit_list.imp().force_selected_index.get();
     debug!("vadjustment changed");
-    unit_list.set_force_selected_index(None);
+    unit_list.imp().set_force_selected_index(None);
 
     let Some(mut force_selected_index) = force_selected_index else {
         return;
