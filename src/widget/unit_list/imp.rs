@@ -547,10 +547,18 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         let unit_list = self.obj().clone();
-
         let column_view_column_map = self.generate_column_map();
+        factories::setup_factories(&unit_list, &column_view_column_map);
 
-        factories::setup_factories(unit_list, &column_view_column_map);
+        settings.connect_changed(
+            Some(KEY_PREF_UNIT_LIST_DISPLAY_COLORS),
+            move |_settings, _key| {
+                let display_color = unit_list.display_color();
+                info!("change preference setting \"display color\" to {display_color}");
+                let column_view_column_map = unit_list.imp().generate_column_map();
+                factories::setup_factories(&unit_list, &column_view_column_map);
+            },
+        );
 
         column_view_column_set_sorter!(column_view_column_map, "unit", primary, dbus_level);
         column_view_column_set_sorter!(column_view_column_map, "type", unit_type);

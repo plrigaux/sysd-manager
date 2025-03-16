@@ -70,9 +70,10 @@ macro_rules! factory_bind {
 }
 
 pub fn setup_factories(
-    unit_list: UnitListPanel,
+    unit_list: &UnitListPanel,
     column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
 ) {
+    let display_color = unit_list.display_color();
     let fac_unit_name = SignalListItemFactory::new();
 
     fac_unit_name.connect_setup(|_factory, object| {
@@ -115,241 +116,9 @@ pub fn setup_factories(
         });
     }
 
-    let fac_enable_status = SignalListItemFactory::new();
-
-    fac_enable_status.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
-
-    {
-        let unit_list = unit_list.clone();
-        fac_enable_status.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, sub_state);
-
-            let binding = unit
-                .bind_property("enable_status", &inscription, "text")
-                .transform_to(|_, status: u8| {
-                    let estatus: EnablementStatus = status.into();
-                    let str = estatus.to_string();
-                    Some(str)
-                })
-                .build();
-
-            unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
-
-            let is_dark = unit_list.imp().is_dark.get();
-            let binding = unit
-                .bind_property("enable_status", &inscription, "attributes")
-                .transform_to_with_values(move |_s, value| {
-                    let value = match value.get::<String>() {
-                        Ok(v) => v,
-                        Err(err) => {
-                            warn!("The variant needs to be of type `String`. {:?}", err);
-                            return None;
-                        }
-                    };
-
-                    let attribute_list = if let Some(first_char) = value.chars().next() {
-                        match first_char {
-                            'm' | 'd' | 'b' => {
-                                Some(UnitListPanelImp::highlight_attrlist(red(is_dark)))
-                            }
-
-                            'e' | 'a' => Some(UnitListPanelImp::highlight_attrlist(green(is_dark))),
-
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    };
-
-                    attribute_list.map(|al| al.to_value())
-                })
-                .build();
-
-            unit_binding.set_binding(BIND_ENABLE_STATUS_ATTR, binding);
-
-            let status_code: EnablementStatus = unit.enable_status().into();
-            let status_code_str = status_code.as_str();
-
-            inscription.set_text(Some(status_code_str));
-            inscription.set_tooltip_markup(Some(status_code.tooltip_info()));
-
-            let attrs = if let Some(first_char) = status_code_str.chars().next() {
-                match first_char {
-                    'm' | 'd' | 'b' => {
-                        //"disabled"
-                        unit_list.imp().highlight_red.borrow().copy()
-                    }
-
-                    'e' | 'a' => {
-                        //"enabled" or "alias"
-                        unit_list.imp().highlight_green.borrow().copy()
-                    }
-
-                    _ => None,
-                }
-            } else {
-                None
-            };
-
-            if attrs.is_some() {
-                inscription.set_attributes(attrs.as_ref());
-            } else {
-                unit_list.imp().display_inactive(inscription, &unit);
-            }
-        });
-    }
-
-    factory_connect_unbind!(
-        fac_enable_status,
-        BIND_ENABLE_STATUS_TEXT,
-        BIND_ENABLE_STATUS_ATTR
-    );
-
-    let fac_preset = SignalListItemFactory::new();
-
-    fac_preset.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
-
-    {
-        let unit_list = unit_list.clone();
-        fac_preset.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, preset);
-
-            let binding = unit.bind_property("preset", &inscription, "text").build();
-            unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
-
-            let is_dark = unit_list.imp().is_dark.get();
-            let binding = unit
-                .bind_property("preset", &inscription, "attributes")
-                .transform_to_with_values(move |_s, value| {
-                    let value = match value.get::<String>() {
-                        Ok(v) => v,
-                        Err(err) => {
-                            warn!("The variant needs to be of type `String`. {:?}", err);
-                            return None;
-                        }
-                    };
-
-                    let attribute_list = if let Some(first_char) = value.chars().next() {
-                        match first_char {
-                            //"disabled"
-                            'd' => Some(UnitListPanelImp::highlight_attrlist(red(is_dark))),
-                            // "enabled"
-                            'e' => Some(UnitListPanelImp::highlight_attrlist(green(is_dark))),
-                            // "ignored"
-                            'i' => Some(UnitListPanelImp::highlight_attrlist(yellow(is_dark))),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    };
-
-                    attribute_list.map(|al| al.to_value())
-                })
-                .build();
-
-            unit_binding.set_binding(BIND_ENABLE_PRESET_ATTR, binding);
-
-            let attrs = if let Some(first_char) = unit.preset().chars().next() {
-                match first_char {
-                    //"disabled"
-                    'd' => unit_list.imp().highlight_red.borrow().copy(),
-                    // "enabled"
-                    'e' => unit_list.imp().highlight_green.borrow().copy(),
-                    // "ignored"
-                    'i' => unit_list.imp().highlight_yellow.borrow().copy(),
-                    _ => None,
-                }
-            } else {
-                None
-            };
-
-            if attrs.is_some() {
-                inscription.set_attributes(attrs.as_ref());
-            } else {
-                unit_list.imp().display_inactive(inscription, &unit);
-            }
-        });
-    }
-
-    factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_ATTR);
-
-    let fac_load_state = SignalListItemFactory::new();
-
-    fac_load_state.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
-
-    {
-        let unit_list = unit_list.clone();
-        fac_load_state.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
-
-            let binding = unit
-                .bind_property("load_state", &inscription, "text")
-                .build();
-            unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
-
-            let is_dark = unit_list.imp().is_dark.get();
-            let binding = unit
-                .bind_property("preset", &inscription, "attributes")
-                .transform_to_with_values(move |_s, value| {
-                    let value = match value.get::<String>() {
-                        Ok(v) => v,
-                        Err(err) => {
-                            warn!("The variant needs to be of type `String`. {:?}", err);
-                            return None;
-                        }
-                    };
-
-                    let attribute_list = if let Some(first_char) = value.chars().next() {
-                        match first_char {
-                            'n' => {
-                                //"not-found"
-                                let al = UnitListPanelImp::highlight_attrlist(yellow(is_dark));
-                                Some(al)
-                            }
-                            'b' | 'e' | 'm' => {
-                                // "bad-setting", "error", "masked"
-                                let al = UnitListPanelImp::highlight_attrlist(red(is_dark));
-                                Some(al)
-                            }
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    };
-
-                    attribute_list.map(|al| al.to_value())
-                })
-                .build();
-
-            unit_binding.set_binding(BIND_ENABLE_LOAD_ATTR, binding);
-
-            let load_state = unit.load_state();
-
-            if let Some(first_char) = load_state.chars().next() {
-                match first_char {
-                    'n' => {
-                        //"not-found"
-                        let attribute_list = unit_list.imp().highlight_yellow.borrow();
-                        inscription.set_attributes(Some(&attribute_list));
-                    }
-                    'b' | 'e' | 'm' => {
-                        // "bad-setting", "error", "masked"
-                        let attribute_list = unit_list.imp().highlight_red.borrow();
-                        inscription.set_attributes(Some(&attribute_list));
-                    }
-                    _ => unit_list.imp().display_inactive(inscription, &unit),
-                }
-            }
-        });
-    }
-
-    factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_ATTR);
+    let fac_enable_status = fac_enable_status(unit_list, display_color);
+    let fac_preset = fac_preset(unit_list, display_color);
+    let fac_load_state = fac_load_state(unit_list, display_color);
 
     let fac_active = SignalListItemFactory::new();
 
@@ -470,4 +239,287 @@ pub fn setup_factories(
             )
         });
     }
+}
+
+fn fac_load_state(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemFactory {
+    let fac_load_state = SignalListItemFactory::new();
+
+    fac_load_state.connect_setup(|_factory, object| {
+        factory_setup!(object);
+    });
+
+    if display_color {
+        let unit_list = unit_list.clone();
+        fac_load_state.connect_bind(move |_factory, object| {
+            let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
+
+            let binding = unit
+                .bind_property("load_state", &inscription, "text")
+                .build();
+            unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
+
+            let is_dark = unit_list.imp().is_dark.get();
+            let binding = unit
+                .bind_property("preset", &inscription, "attributes")
+                .transform_to_with_values(move |_s, value| {
+                    let value = match value.get::<String>() {
+                        Ok(v) => v,
+                        Err(err) => {
+                            warn!("The variant needs to be of type `String`. {:?}", err);
+                            return None;
+                        }
+                    };
+
+                    let attribute_list = if let Some(first_char) = value.chars().next() {
+                        match first_char {
+                            'n' => {
+                                //"not-found"
+                                let al = UnitListPanelImp::highlight_attrlist(yellow(is_dark));
+                                Some(al)
+                            }
+                            'b' | 'e' | 'm' => {
+                                // "bad-setting", "error", "masked"
+                                let al = UnitListPanelImp::highlight_attrlist(red(is_dark));
+                                Some(al)
+                            }
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    };
+
+                    attribute_list.map(|al| al.to_value())
+                })
+                .build();
+
+            unit_binding.set_binding(BIND_ENABLE_LOAD_ATTR, binding);
+
+            let load_state = unit.load_state();
+
+            if let Some(first_char) = load_state.chars().next() {
+                match first_char {
+                    'n' => {
+                        //"not-found"
+                        let attribute_list = unit_list.imp().highlight_yellow.borrow();
+                        inscription.set_attributes(Some(&attribute_list));
+                    }
+                    'b' | 'e' | 'm' => {
+                        // "bad-setting", "error", "masked"
+                        let attribute_list = unit_list.imp().highlight_red.borrow();
+                        inscription.set_attributes(Some(&attribute_list));
+                    }
+                    _ => unit_list.imp().display_inactive(inscription, &unit),
+                }
+            }
+        });
+        factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_ATTR);
+    } else {
+        fac_load_state.connect_bind(move |_factory, object| {
+            let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
+
+            let binding = unit
+                .bind_property("load_state", &inscription, "text")
+                .build();
+            unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
+        });
+
+        factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT);
+    }
+
+    fac_load_state
+}
+
+fn fac_enable_status(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemFactory {
+    let fac_enable_status = SignalListItemFactory::new();
+
+    fac_enable_status.connect_setup(|_factory, object| {
+        factory_setup!(object);
+    });
+
+    if display_color {
+        let unit_list = unit_list.clone();
+        fac_enable_status.connect_bind(move |_factory, object| {
+            let (inscription, unit_binding) = factory_bind_pre!(object);
+
+            let unit = unit_binding.unit_ref();
+            let status_code: EnablementStatus = unit.enable_status().into();
+            inscription.set_text(Some(status_code.as_str()));
+            inscription.set_tooltip_markup(Some(status_code.tooltip_info()));
+
+            let binding = unit
+                .bind_property("enable_status", &inscription, "text")
+                .transform_to(|_, status: u8| {
+                    let estatus: EnablementStatus = status.into();
+                    let str = estatus.to_string();
+                    Some(str)
+                })
+                .build();
+
+            unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
+
+            let is_dark = unit_list.imp().is_dark.get();
+            let binding = unit
+                .bind_property("enable_status", &inscription, "attributes")
+                .transform_to_with_values(move |_s, value| {
+                    let value = match value.get::<u8>() {
+                        Ok(v) => v,
+                        Err(err) => {
+                            warn!("The variant needs to be of type `u8`. {:?}", err);
+                            return None;
+                        }
+                    };
+
+                    let enablement_status: EnablementStatus = value.into();
+
+                    let attribute_list = match enablement_status {
+                        EnablementStatus::Bad
+                        | EnablementStatus::Disabled
+                        | EnablementStatus::Masked
+                        | EnablementStatus::MaskedRuntime => {
+                            Some(UnitListPanelImp::highlight_attrlist(red(is_dark)))
+                        }
+
+                        EnablementStatus::Alias
+                        | EnablementStatus::Enabled
+                        | EnablementStatus::EnabledRuntime => {
+                            Some(UnitListPanelImp::highlight_attrlist(green(is_dark)))
+                        }
+
+                        _ => None,
+                    };
+
+                    attribute_list.map(|al| al.to_value())
+                })
+                .build();
+
+            unit_binding.set_binding(BIND_ENABLE_STATUS_ATTR, binding);
+
+            let attrs = match status_code {
+                EnablementStatus::Bad
+                | EnablementStatus::Disabled
+                | EnablementStatus::Masked
+                | EnablementStatus::MaskedRuntime => unit_list.imp().highlight_red.borrow().copy(),
+
+                EnablementStatus::Alias
+                | EnablementStatus::Enabled
+                | EnablementStatus::EnabledRuntime => {
+                    unit_list.imp().highlight_green.borrow().copy()
+                }
+
+                _ => None,
+            };
+
+            if attrs.is_some() {
+                inscription.set_attributes(attrs.as_ref());
+            } else {
+                unit_list.imp().display_inactive(inscription, &unit);
+            }
+        });
+
+        factory_connect_unbind!(
+            fac_enable_status,
+            BIND_ENABLE_STATUS_TEXT,
+            BIND_ENABLE_STATUS_ATTR
+        );
+    } else {
+        fac_enable_status.connect_bind(move |_factory, object| {
+            let (inscription, unit, unit_binding) = factory_bind!(object, enable_status_str);
+
+            let binding = unit
+                .bind_property("enable_status", &inscription, "text")
+                .transform_to(|_, status: u8| {
+                    let estatus: EnablementStatus = status.into();
+                    let str = estatus.to_string();
+                    Some(str)
+                })
+                .build();
+
+            unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
+        });
+
+        factory_connect_unbind!(fac_enable_status, BIND_ENABLE_STATUS_TEXT);
+    }
+    fac_enable_status
+}
+
+fn fac_preset(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemFactory {
+    let fac_preset = SignalListItemFactory::new();
+
+    fac_preset.connect_setup(|_factory, object| {
+        factory_setup!(object);
+    });
+
+    if display_color {
+        let unit_list = unit_list.clone();
+        fac_preset.connect_bind(move |_factory, object| {
+            let (inscription, unit, unit_binding) = factory_bind!(object, preset);
+
+            let binding = unit.bind_property("preset", &inscription, "text").build();
+            unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
+
+            let is_dark = unit_list.imp().is_dark.get();
+            let binding = unit
+                .bind_property("preset", &inscription, "attributes")
+                .transform_to_with_values(move |_s, value| {
+                    let value = match value.get::<String>() {
+                        Ok(v) => v,
+                        Err(err) => {
+                            warn!("The variant needs to be of type `String`. {:?}", err);
+                            return None;
+                        }
+                    };
+
+                    let attribute_list = if let Some(first_char) = value.chars().next() {
+                        match first_char {
+                            //"disabled"
+                            'd' => Some(UnitListPanelImp::highlight_attrlist(red(is_dark))),
+                            // "enabled"
+                            'e' => Some(UnitListPanelImp::highlight_attrlist(green(is_dark))),
+                            // "ignored"
+                            'i' => Some(UnitListPanelImp::highlight_attrlist(yellow(is_dark))),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    };
+
+                    attribute_list.map(|al| al.to_value())
+                })
+                .build();
+
+            unit_binding.set_binding(BIND_ENABLE_PRESET_ATTR, binding);
+
+            let attrs = if let Some(first_char) = unit.preset().chars().next() {
+                match first_char {
+                    //"disabled"
+                    'd' => unit_list.imp().highlight_red.borrow().copy(),
+                    // "enabled"
+                    'e' => unit_list.imp().highlight_green.borrow().copy(),
+                    // "ignored"
+                    'i' => unit_list.imp().highlight_yellow.borrow().copy(),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+
+            if attrs.is_some() {
+                inscription.set_attributes(attrs.as_ref());
+            } else {
+                unit_list.imp().display_inactive(inscription, &unit);
+            }
+        });
+
+        factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_ATTR);
+    } else {
+        fac_preset.connect_bind(move |_factory, object| {
+            let (inscription, unit, unit_binding) = factory_bind!(object, preset);
+
+            let binding = unit.bind_property("preset", &inscription, "text").build();
+            unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
+        });
+
+        factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT);
+    }
+    fac_preset
 }

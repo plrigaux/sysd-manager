@@ -1,6 +1,10 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use super::{enums::ActiveState, enums::UnitDBusLevel, sysdbus::LUnit, SystemdUnitFile};
+use super::{
+    enums::{ActiveState, EnablementStatus, UnitDBusLevel},
+    sysdbus::LUnit,
+    SystemdUnitFile,
+};
 
 use gtk::{
     glib::{self},
@@ -56,6 +60,11 @@ impl UnitInfo {
 
     pub fn dbus_level_str(&self) -> &'static str {
         self.dbus_level().as_str()
+    }
+
+    pub fn enable_status_str(&self) -> &'static str {
+        let es: EnablementStatus = self.enable_status().into();
+        es.as_str()
     }
 
     pub fn debug(&self) -> String {
