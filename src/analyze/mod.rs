@@ -12,11 +12,11 @@ use crate::{
 };
 
 use gtk::{
+    Orientation, TextView, Window,
     gio::{self},
-    glib::{self, object::Cast, BoxedAnyObject},
+    glib::{self, BoxedAnyObject, object::Cast},
     pango::{AttrInt, AttrList, Weight},
     prelude::*,
-    Orientation, TextView, Window,
 };
 use log::{info, warn};
 
@@ -41,10 +41,10 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
         .orientation(Orientation::Vertical)
         .build();
 
-    unit_analyse_box.append({
+    unit_analyse_box.append(&{
         let attribute_list = AttrList::new();
         attribute_list.insert(AttrInt::new_weight(Weight::Medium));
-        &gtk::Label::builder()
+        gtk::Label::builder()
             .label("Total Time:")
             .attributes(&attribute_list)
             .build()

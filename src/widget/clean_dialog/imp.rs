@@ -20,7 +20,7 @@ use log::{info, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
-    widget::{app_window::AppWindow, InterPanelAction},
+    widget::{InterPanelAction, app_window::AppWindow},
 };
 
 use super::CleanDialog;
@@ -48,8 +48,8 @@ pub struct CleanDialogImp {
 impl CleanDialogImp {
     #[template_callback]
     fn clean_button_clicked(&self, _button: gtk::Button) {
-        let unit_binding = self.unit.borrow();
-        let Some(unit) = unit_binding.as_ref() else {
+        let binding = self.unit.borrow();
+        let Some(unit) = binding.as_ref() else {
             warn!("No unit selected");
             return;
         };

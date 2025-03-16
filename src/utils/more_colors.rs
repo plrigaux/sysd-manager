@@ -132,9 +132,9 @@ impl TermColor {
     pub fn get_rgb_u16(&self) -> (u16, u16, u16) {
         match *self {
             TermColor::Vga(r, g, b) => {
-                let r16: u16 = (r as u16) << 8 | r as u16;
-                let g16: u16 = (g as u16) << 8 | g as u16;
-                let b16: u16 = (b as u16) << 8 | b as u16;
+                let r16: u16 = ((r as u16) << 8) | r as u16;
+                let g16: u16 = ((g as u16) << 8) | g as u16;
+                let b16: u16 = ((b as u16) << 8) | b as u16;
                 (r16, g16, b16)
             }
             _ => {
