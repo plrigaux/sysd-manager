@@ -91,6 +91,11 @@
                 workaround solution is invoke the subprocesses *systemctl* enable or disable unit
                 files. </description>
         </key>
+        <key name="pref-unit-list-display-colors" type="b">
+            <default>true</default>
+            <summary>Display colors on unit list table cells, according to their content</summary>
+            <description>Currently displaying color as preformance issue i.e. core dumps</description>
+        </key>
         <key name="pref-timestamp-style" type="s">
             <choices>
                 <choice value='Pretty' />

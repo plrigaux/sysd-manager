@@ -7,7 +7,7 @@ use std::{
 use gtk::{
     ffi::GTK_INVALID_LIST_POSITION,
     gio::{self},
-    glib::{self, BoxedAnyObject, Object},
+    glib::{self, BoxedAnyObject, Object, Properties},
     pango::{AttrColor, AttrInt, AttrList, Weight},
     prelude::*,
     subclass::{
@@ -29,7 +29,7 @@ use crate::{
     systemd_gui,
     utils::palette::{green, grey, red, yellow, Palette},
     widget::{
-        preferences::data::UNIT_LIST_COLUMNS,
+        preferences::data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS},
         unit_list::rowdata::{
             UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_ACTIVE_ICON, BIND_ENABLE_LOAD_ATTR,
             BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_PRESET_ATTR, BIND_ENABLE_PRESET_TEXT,
@@ -49,10 +49,12 @@ use crate::{
         menu_button::{ExMenuButton, OnClose},
     },
 };
+
 use strum::IntoEnumIterator;
 
-#[derive(Default, gtk::CompositeTemplate)]
+#[derive(Default, gtk::CompositeTemplate, Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
+#[properties(wrapper_type = super::UnitListPanel)]
 pub struct UnitListPanelImp {
     #[template_child]
     list_store: TemplateChild<gio::ListStore>,
@@ -92,6 +94,9 @@ pub struct UnitListPanelImp {
     grey: RefCell<AttrList>,
 
     is_dark: Cell<bool>,
+
+    #[property(name = "display-color", get, set)]
+    pub display_color: Cell<bool>,
 }
 
 macro_rules! factory_setup {
@@ -219,6 +224,8 @@ impl UnitListPanelImp {
         app_window: &AppWindow,
         refresh_unit_list_button: &gtk::Button,
     ) {
+        let settings = systemd_gui::new_settings();
+
         let app_window_clone = app_window.clone();
         let unit_list = self.obj().clone();
 
@@ -253,8 +260,6 @@ impl UnitListPanelImp {
             .expect("refresh_unit_list_button was already set!");
 
         self.fill_store();
-
-        let settings = systemd_gui::new_settings();
 
         let col_map = self.generate_column_map();
 
@@ -593,9 +598,22 @@ impl ObjectSubclass for UnitListPanelImp {
     }
 }
 
+#[glib::derived_properties]
 impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let settings = systemd_gui::new_settings();
+
+        let unit_list = self.obj().clone();
+
+        settings
+            .bind(
+                KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+                &unit_list,
+                "display-color",
+            )
+            .build();
 
         let fac_unit_name = SignalListItemFactory::new();
 
@@ -606,18 +624,7 @@ impl ObjectImpl for UnitListPanelImp {
         {
             let unit_list = self.obj().clone();
             fac_unit_name.connect_bind(move |_factory, object| {
-                let (inscription, unit_binding) = factory_bind_pre!(object);
-                let unit = unit_binding.unit();
-                let name = unit.display_name();
-                inscription.set_text(Some(&name));
-
-                /*             let bus = match unit.dbus_level() {
-                    systemd::enums::UnitDBusLevel::System => "on system bus",
-                    systemd::enums::UnitDBusLevel::UserSession => "on user bus",
-                };
-
-                inscription.set_tooltip_text(Some(bus)); */
-
+                let (inscription, unit, _unit_binding) = factory_bind!(object, display_name);
                 unit_list.imp().display_inactive(inscription, &unit);
             });
         }

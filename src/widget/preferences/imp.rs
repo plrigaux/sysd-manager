@@ -16,7 +16,10 @@ use crate::{
     utils::font_management::FONT_CONTEXT,
     widget::{
         app_window::AppWindow,
-        preferences::{data::UNIT_LIST_COLUMNS, style_scheme::style_schemes},
+        preferences::{
+            data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS},
+            style_scheme::style_schemes,
+        },
     },
 };
 use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
@@ -59,6 +62,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     unit_list_columns: TemplateChild<adw::ExpanderRow>,
+
+    #[template_child]
+    unit_list_colors: TemplateChild<adw::SwitchRow>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -433,6 +439,14 @@ impl ObjectImpl for PreferencesDialogImpl {
             settings.bind(action_name, &switch, "active").build();
             self.unit_list_columns.add_row(&switch);
         }
+
+        settings
+            .bind(
+                KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+                &self.unit_list_colors.get(),
+                "active",
+            )
+            .build();
     }
 }
 impl WidgetImpl for PreferencesDialogImpl {}

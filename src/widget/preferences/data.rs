@@ -25,6 +25,7 @@ pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 pub const KEY_PREF_TIMESTAMP_STYLE: &str = "pref-timestamp-style";
 pub const KEY_PREF_STYLE_TEXT_FONT_FAMILY: &str = "pref-style-text-font-family";
 pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
+pub const KEY_PREF_UNIT_LIST_DISPLAY_COLORS: &str = "pref-unit-list-display-colors";
 
 pub const UNIT_LIST_COLUMNS: [(&str, &str); 8] = [
     ("Type", "col-show-type"),
