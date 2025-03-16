@@ -2,34 +2,30 @@ use crate::widget::unit_list::UnitListPanel;
 
 use super::*;
 
-macro_rules! factory_setup {
-    ($item_obj:expr) => {{
-        let item = $item_obj
+macro_rules! downcast_list_item {
+    ($list_item_object:expr) => {{
+        $list_item_object
             .downcast_ref::<gtk::ListItem>()
-            .expect("item.downcast_ref::<gtk::ListItem>()");
+            .expect("item.downcast_ref::<gtk::ListItem>()")
+    }};
+}
+
+macro_rules! factory_setup {
+    ($list_item_object:expr) => {{
+        let list_item = downcast_list_item!($list_item_object);
         let inscription = gtk::Inscription::builder()
             .xalign(0.0)
             //.wrap_mode(gtk::pango::WrapMode::None)
             .wrap_mode(gtk::pango::WrapMode::Char)
             .build();
-        item.set_child(Some(&inscription));
+        list_item.set_child(Some(&inscription));
         inscription
     }};
 }
 
-macro_rules! downcast_list_item {
-    ($item_obj:expr) => {{
-        let item = $item_obj
-            .downcast_ref::<gtk::ListItem>()
-            .expect("item.downcast_ref::<gtk::ListItem>()");
-        item
-    }};
-}
-
 macro_rules! downcast_unit_binding {
-    ($item_obj:expr) => {{
-        let list_item = downcast_list_item!($item_obj);
-
+    ($list_item_object:expr) => {{
+        let list_item = downcast_list_item!($list_item_object);
         list_item
             .item()
             .and_downcast::<UnitBinding>()
@@ -49,27 +45,27 @@ macro_rules! factory_connect_unbind {
 }
 
 macro_rules! factory_bind_pre {
-    ($item_obj:expr) => {{
-        let item = downcast_list_item!($item_obj);
-        let child = item
+    ($list_item_object:expr) => {{
+        let list_item = downcast_list_item!($list_item_object);
+        let inscription = list_item
             .child()
             .and_downcast::<gtk::Inscription>()
             .expect("item.downcast_ref::<gtk::Inscription>()");
-        let unit_binding = item
+        let unit_binding = list_item
             .item()
             .and_downcast::<UnitBinding>()
             .expect("item.downcast_ref::<gtk::UnitBinding>()");
-        (child, unit_binding)
+        (inscription, unit_binding)
     }};
 }
 
 macro_rules! factory_bind {
     ($item_obj:expr, $func:ident) => {{
-        let (child, unit_binding) = factory_bind_pre!($item_obj);
+        let (inscription, unit_binding) = factory_bind_pre!($item_obj);
         let unit = unit_binding.unit();
         let text = unit.$func();
-        child.set_text(Some(&text));
-        (child, unit, unit_binding)
+        inscription.set_text(Some(&text));
+        (inscription, unit, unit_binding)
     }};
 }
 
