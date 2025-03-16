@@ -12,9 +12,12 @@ use std::cell::{OnceCell, RefCell};
 
 use crate::{
     consts::ADWAITA,
-    systemd_gui::new_settings,
+    systemd_gui::{self, new_settings},
     utils::font_management::FONT_CONTEXT,
-    widget::{app_window::AppWindow, preferences::style_scheme::style_schemes},
+    widget::{
+        app_window::AppWindow,
+        preferences::{data::UNIT_LIST_COLUMNS, style_scheme::style_schemes},
+    },
 };
 use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
 
@@ -53,6 +56,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     select_font_row: TemplateChild<adw::ActionRow>,
+
+    #[template_child]
+    unit_list_columns: TemplateChild<adw::ExpanderRow>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -415,6 +421,18 @@ impl ObjectImpl for PreferencesDialogImpl {
         // Load latest window state
         self.setup_settings();
         self.load_preferences_values();
+
+        let settings = systemd_gui::new_settings();
+
+        for (title, action_name) in UNIT_LIST_COLUMNS {
+            let switch = adw::SwitchRow::builder()
+                .title(format!("Column {}", title))
+                .subtitle("Hide or display unit list column")
+                .build();
+
+            settings.bind(action_name, &switch, "active").build();
+            self.unit_list_columns.add_row(&switch);
+        }
     }
 }
 impl WidgetImpl for PreferencesDialogImpl {}

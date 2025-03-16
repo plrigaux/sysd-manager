@@ -29,6 +29,7 @@ use crate::{
     systemd_gui,
     utils::palette::{green, grey, red, yellow, Palette},
     widget::{
+        preferences::data::UNIT_LIST_COLUMNS,
         unit_list::rowdata::{
             UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_ACTIVE_ICON, BIND_ENABLE_LOAD_ATTR,
             BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_PRESET_ATTR, BIND_ENABLE_PRESET_TEXT,
@@ -257,16 +258,7 @@ impl UnitListPanelImp {
 
         let col_map = self.generate_column_map();
 
-        for action_name in [
-            "col-show-type",
-            "col-show-bus",
-            "col-show-state",
-            "col-show-preset",
-            "col-show-load",
-            "col-show-active",
-            "col-show-sub",
-            "col-show-description",
-        ] {
+        for (_, action_name) in UNIT_LIST_COLUMNS {
             let action = settings.create_action(action_name);
             app_window.add_action(&action);
 
