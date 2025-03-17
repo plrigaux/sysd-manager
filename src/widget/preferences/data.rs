@@ -39,7 +39,7 @@ pub const UNIT_LIST_COLUMNS: [(&str, &str, u8); 9] = [
     ("Load", "load", FLAG_SHOW | FLAG_WIDTH),
     ("Active", "active", FLAG_SHOW | FLAG_WIDTH),
     ("Sub", "sub", FLAG_SHOW | FLAG_WIDTH),
-    ("Description", "description", FLAG_SHOW), //Because column "descrition" is expandable
+    ("Description", "description", FLAG_SHOW), //Because column "description" is expandable
 ];
 
 pub const COL_SHOW_PREFIX: &str = "col-show-";
