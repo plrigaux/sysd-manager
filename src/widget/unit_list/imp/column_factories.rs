@@ -278,7 +278,9 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
 
     if display_color {
         fac_load_state.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
+            let (inscription, unit_binding) = factory_bind_pre!(object);
+
+            let unit = unit_binding.unit_ref();
 
             let binding = unit
                 .bind_property("load_state", &inscription, "text")
@@ -286,7 +288,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
 
             let binding = unit
-                .bind_property("preset", &inscription, "css-classes")
+                .bind_property("load_state", &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
                     let load_state_value = match value.get::<String>() {
                         Ok(v) => v,
@@ -304,6 +306,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             unit_binding.set_binding(BIND_ENABLE_LOAD_CSS, binding);
 
             let load_state = unit.load_state();
+            inscription.set_text(Some(&load_state));
 
             let css_classes = load_state_css_classes(&load_state);
             if let Some(css) = css_classes {
