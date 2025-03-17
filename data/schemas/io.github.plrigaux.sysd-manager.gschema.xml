@@ -153,5 +153,38 @@
             <default>true</default>
             <summary>Displays or hides column</summary>
         </key>
+        <key name="col-width-unit" type="i">
+            <default>150</default>
+            <summary>Set the default width</summary>
+        </key>
+        <key name="col-width-type" type="i">
+            <default>82</default>
+            <summary>Set the default width</summary>
+        </key>
+        <key name="col-width-bus" type="i">
+            <default>61</default>
+            <summary>Set the default width</summary>
+        </key>
+        <key name="col-width-state" type="i">
+            <default>80</default>
+            <summary>Set the default width</summary>
+        </key>
+        <key name="col-width-preset" type="i">
+            <default>70</default>
+            <summary>Set the default width</summary>
+        </key>
+        <key name="col-width-load" type="i">
+            <default>80</default>
+            <summary>Set the default width</summary>
+        </key>
+        <key name="col-width-active" type="i">
+            <default>62</default>
+            <summary>Set the default width</summary>
+        </key>
+        <key name="col-width-sub" type="i">
+            <default>71</default>
+            <summary>Set the default width</summary>
+        </key>
+
     </schema>
 </schemalist>

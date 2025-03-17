@@ -1,11 +1,10 @@
 use gio::Settings;
 
-use adw::{prelude::*, subclass::prelude::*, EnumListItem};
+use adw::{EnumListItem, prelude::*, subclass::prelude::*};
 use gtk::{
-    gio,
+    StringObject, gio,
     glib::{self, BoolError},
     pango::{self, FontFace},
-    StringObject,
 };
 use log::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
@@ -17,7 +16,10 @@ use crate::{
     widget::{
         app_window::AppWindow,
         preferences::{
-            data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS},
+            data::{
+                COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+                UNIT_LIST_COLUMNS,
+            },
             style_scheme::style_schemes,
         },
     },
@@ -25,10 +27,10 @@ use crate::{
 use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
 
 use super::data::{
-    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE,
-    KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
-    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBER,
-    KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
+    COL_WIDTH_PREFIX, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS,
+    KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE,
+    KEY_PREF_STYLE_TEXT_FONT_FAMILY, KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE,
+    KEY_PREF_UNIT_FILE_LINE_NUMBER, KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
 };
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -144,14 +146,6 @@ impl PreferencesDialogImpl {
             font_description.family(),
             font_description.size() / pango::SCALE
         );
-
-        /*         if let Some(family) = font_description.family() {
-            for sub_family in family.split(",") {
-                info!("set sub {sub_family}");
-                font_description.set_family(sub_family);
-                break;
-            }
-        } */
 
         warn!("FD {} ", font_description.to_str(),);
 
@@ -430,14 +424,43 @@ impl ObjectImpl for PreferencesDialogImpl {
 
         let settings = systemd_gui::new_settings();
 
-        for (title, action_name) in UNIT_LIST_COLUMNS {
-            let switch = adw::SwitchRow::builder()
-                .title(format!("Column {}", title))
-                .subtitle("Hide or display unit list column")
+        for (title, key, flags) in UNIT_LIST_COLUMNS {
+            let group = adw::PreferencesGroup::builder()
+                .margin_start(8)
+                .margin_end(8)
+                .margin_bottom(8)
+                .title(format!("Column {title}"))
                 .build();
 
-            settings.bind(action_name, &switch, "active").build();
-            self.unit_list_columns.add_row(&switch);
+            let switch = adw::SwitchRow::builder()
+                .title("Show")
+                .subtitle(format!("Hide or display unit list column {title}"))
+                .build();
+
+            if flags & FLAG_SHOW != 0 {
+                let setting_key = format!("{COL_SHOW_PREFIX}{key}");
+                settings.bind(&setting_key, &switch, "active").build();
+            } else {
+                switch.set_sensitive(false);
+                switch.set_active(true);
+            }
+
+            group.add(&switch);
+
+            if flags & FLAG_WIDTH != 0 {
+                let spin_row = adw::SpinRow::builder()
+                    .title("Width")
+                    .subtitle(format!("Set width of column {title}"))
+                    .update_policy(gtk::SpinButtonUpdatePolicy::IfValid)
+                    .adjustment(&gtk::Adjustment::new(0.0, -1.0, 5000.0, 1.0, 10.0, 0.0))
+                    .build();
+
+                let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
+                settings.bind(&setting_key, &spin_row, "value").build();
+                group.add(&spin_row);
+            }
+
+            self.unit_list_columns.add_row(&group);
         }
 
         settings

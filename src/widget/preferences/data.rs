@@ -27,16 +27,23 @@ pub const KEY_PREF_STYLE_TEXT_FONT_FAMILY: &str = "pref-style-text-font-family";
 pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_COLORS: &str = "pref-unit-list-display-colors";
 
-pub const UNIT_LIST_COLUMNS: [(&str, &str); 8] = [
-    ("Type", "col-show-type"),
-    ("Bus", "col-show-bus"),
-    ("State", "col-show-state"),
-    ("Preset", "col-show-preset"),
-    ("Load", "col-show-load"),
-    ("Active", "col-show-active"),
-    ("Sub", "col-show-sub"),
-    ("Description", "col-show-description"),
+pub const FLAG_SHOW: u8 = 1;
+pub const FLAG_WIDTH: u8 = 2;
+
+pub const UNIT_LIST_COLUMNS: [(&str, &str, u8); 9] = [
+    ("Unit", "unit", FLAG_WIDTH),
+    ("Type", "type", FLAG_SHOW | FLAG_WIDTH),
+    ("Bus", "bus", FLAG_SHOW | FLAG_WIDTH),
+    ("State", "state", FLAG_SHOW | FLAG_WIDTH),
+    ("Preset", "preset", FLAG_SHOW | FLAG_WIDTH),
+    ("Load", "load", FLAG_SHOW | FLAG_WIDTH),
+    ("Active", "active", FLAG_SHOW | FLAG_WIDTH),
+    ("Sub", "sub", FLAG_SHOW | FLAG_WIDTH),
+    ("Description", "description", FLAG_SHOW), //Because column "descrition" is expandable
 ];
+
+pub const COL_SHOW_PREFIX: &str = "col-show-";
+pub const COL_WIDTH_PREFIX: &str = "col-width-";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
 #[enum_type(name = "DbusLevel")]

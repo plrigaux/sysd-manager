@@ -32,7 +32,10 @@ use crate::{
     utils::palette::{Palette, green, grey, red, yellow},
     widget::{
         InterPanelAction,
-        preferences::data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS},
+        preferences::data::{
+            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
+            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
+        },
     },
 };
 use crate::{
@@ -191,18 +194,27 @@ impl UnitListPanelImp {
 
         let col_map = self.generate_column_map();
 
-        for (_, action_name) in UNIT_LIST_COLUMNS {
-            let action = settings.create_action(action_name);
-            app_window.add_action(&action);
+        for (_, key, flags) in UNIT_LIST_COLUMNS {
+            let Some(column_view_column) = col_map.get(key) else {
+                warn!("Can't bind setting key {key} to column {key}");
+                continue;
+            };
 
-            let (_, name) = action_name.rsplit_once('-').unwrap();
+            if flags & FLAG_SHOW != 0 {
+                let setting_key = format!("{COL_SHOW_PREFIX}{key}");
+                let action = settings.create_action(&setting_key);
+                app_window.add_action(&action);
 
-            if let Some(column_view_column) = col_map.get(name) {
                 settings
-                    .bind(action_name, column_view_column, "visible")
+                    .bind(&setting_key, column_view_column, "visible")
                     .build();
-            } else {
-                warn!("Can't bind setting key {action_name} to column {name}")
+            }
+
+            if flags & FLAG_WIDTH != 0 {
+                let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
+                settings
+                    .bind(&setting_key, column_view_column, "fixed-width")
+                    .build();
             }
         }
     }
