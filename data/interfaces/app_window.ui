@@ -2,9 +2,9 @@
 <!-- Created with Cambalache 0.94.1 -->
 <interface>
   <!-- interface-name app_window.ui -->
+  <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.16"/>
   <requires lib="libadwaita" version="1.6"/>
-  <requires lib="gio" version="2.0"/>
   <menu id="main-menu">
     <section>
       <item>
@@ -88,7 +88,7 @@
                     <property name="menu-model">main-menu</property>
                   </object>
                 </child>
-                <child type="end">
+                <child type="start">
                   <object class="GtkDropDown" id="system_session_dropdown"/>
                 </child>
               </object>
