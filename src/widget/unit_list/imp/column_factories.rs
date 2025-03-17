@@ -1,22 +1,21 @@
 use std::collections::HashMap;
 
-use adw::subclass::prelude::*;
-use gtk::{SignalListItemFactory, glib, prelude::*};
+use gtk::{glib, prelude::*};
 use log::{info, warn};
 
+use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::EnablementStatus;
-use crate::utils::palette::{green, red, yellow};
-use crate::widget::unit_list::imp::{UnitListPanelImp, rowdata::UnitBinding};
+use crate::widget::unit_list::imp::rowdata::UnitBinding;
 use crate::{systemd::enums::ActiveState, widget::unit_list::UnitListPanel};
 
 pub const BIND_DESCRIPTION_TEXT: u8 = 0;
 pub const BIND_SUB_STATE_TEXT: u8 = 1;
 pub const BIND_ENABLE_STATUS_TEXT: u8 = 2;
-pub const BIND_ENABLE_STATUS_ATTR: u8 = 3;
+pub const BIND_ENABLE_STATUS_CSS: u8 = 3;
 pub const BIND_ENABLE_PRESET_TEXT: u8 = 4;
-pub const BIND_ENABLE_PRESET_ATTR: u8 = 5;
+pub const BIND_ENABLE_PRESET_CSS: u8 = 5;
 pub const BIND_ENABLE_LOAD_TEXT: u8 = 6;
-pub const BIND_ENABLE_LOAD_ATTR: u8 = 7;
+pub const BIND_ENABLE_LOAD_CSS: u8 = 7;
 pub const BIND_ENABLE_ACTIVE_ICON: u8 = 8;
 
 macro_rules! downcast_list_item {
@@ -32,9 +31,11 @@ macro_rules! factory_setup {
         let list_item = downcast_list_item!($list_item_object);
         let inscription = gtk::Inscription::builder()
             .xalign(0.0)
-            //.wrap_mode(gtk::pango::WrapMode::None)
+            // .wrap_mode(gtk::pango::WrapMode::None) INVESTIGATE
             .wrap_mode(gtk::pango::WrapMode::Char)
             .build();
+
+        //println!("tree {}", inscription.css_name());
         list_item.set_child(Some(&inscription));
         inscription
     }};
@@ -91,53 +92,53 @@ pub fn setup_factories(
     column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
 ) {
     let display_color = unit_list.display_color();
-    let fac_unit_name = SignalListItemFactory::new();
+    let fac_unit_name = gtk::SignalListItemFactory::new();
 
     fac_unit_name.connect_setup(|_factory, object| {
         factory_setup!(object);
     });
 
     {
-        let unit_list = unit_list.clone();
+        //let unit_list = unit_list.clone();
         fac_unit_name.connect_bind(move |_factory, object| {
             let (inscription, unit, _unit_binding) = factory_bind!(object, display_name);
-            unit_list.imp().display_inactive(inscription, &unit);
+            display_inactive(inscription, &unit);
         });
     }
 
-    let fac_unit_type = SignalListItemFactory::new();
+    let fac_unit_type = gtk::SignalListItemFactory::new();
 
     fac_unit_type.connect_setup(|_factory, object| {
         factory_setup!(object);
     });
 
     {
-        let unit_list = unit_list.clone();
+        //let unit_list = unit_list.clone();
         fac_unit_type.connect_bind(move |_factory, object| {
             let (inscription, unit, _unit_binding) = factory_bind!(object, unit_type);
-            unit_list.imp().display_inactive(inscription, &unit);
+            display_inactive(inscription, &unit);
         });
     }
 
-    let fac_bus = SignalListItemFactory::new();
+    let fac_bus = gtk::SignalListItemFactory::new();
 
     fac_bus.connect_setup(|_factory, object| {
         factory_setup!(object);
     });
 
     {
-        let unit_list = unit_list.clone();
+        // let unit_list = unit_list.clone();
         fac_bus.connect_bind(move |_factory, object| {
             let (inscription, unit, _unit_binding) = factory_bind!(object, dbus_level_str);
-            unit_list.imp().display_inactive(inscription, &unit);
+            display_inactive(inscription, &unit);
         });
     }
 
-    let fac_enable_status = fac_enable_status(unit_list, display_color);
-    let fac_preset = fac_preset(unit_list, display_color);
-    let fac_load_state = fac_load_state(unit_list, display_color);
+    let fac_enable_status = fac_enable_status(display_color);
+    let fac_preset = fac_preset(display_color);
+    let fac_load_state = fac_load_state(display_color);
 
-    let fac_active = SignalListItemFactory::new();
+    let fac_active = gtk::SignalListItemFactory::new();
 
     fac_active.connect_setup(|_factory, object| {
         let item = downcast_list_item!(object);
@@ -178,7 +179,7 @@ pub fn setup_factories(
 
     factory_connect_unbind!(fac_active, BIND_ENABLE_ACTIVE_ICON);
 
-    let fac_sub_state = SignalListItemFactory::new();
+    let fac_sub_state = gtk::SignalListItemFactory::new();
 
     fac_sub_state.connect_setup(|_factory, object| {
         factory_setup!(object);
@@ -192,7 +193,7 @@ pub fn setup_factories(
 
     factory_connect_unbind!(fac_sub_state, BIND_SUB_STATE_TEXT);
 
-    let fac_descrition = SignalListItemFactory::new();
+    let fac_descrition = gtk::SignalListItemFactory::new();
 
     fac_descrition.connect_setup(|_factory, object| {
         factory_setup!(object);
@@ -259,15 +260,23 @@ pub fn setup_factories(
     }
 }
 
-fn fac_load_state(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemFactory {
-    let fac_load_state = SignalListItemFactory::new();
+fn display_inactive(widget: gtk::Inscription, unit: &UnitInfo) {
+    let state = &unit.active_state();
+    if state.is_inactive() {
+        widget.set_css_classes(&["grey"]);
+    } else {
+        widget.set_css_classes(&[]);
+    }
+}
+
+fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
+    let fac_load_state = gtk::SignalListItemFactory::new();
 
     fac_load_state.connect_setup(|_factory, object| {
         factory_setup!(object);
     });
 
     if display_color {
-        let unit_list = unit_list.clone();
         fac_load_state.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
 
@@ -276,11 +285,10 @@ fn fac_load_state(unit_list: &UnitListPanel, display_color: bool) -> SignalListI
                 .build();
             unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
 
-            let is_dark = unit_list.imp().is_dark.get();
             let binding = unit
-                .bind_property("preset", &inscription, "attributes")
+                .bind_property("preset", &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
-                    let value = match value.get::<String>() {
+                    let load_state_value = match value.get::<String>() {
                         Ok(v) => v,
                         Err(err) => {
                             warn!("The variant needs to be of type `String`. {:?}", err);
@@ -288,49 +296,23 @@ fn fac_load_state(unit_list: &UnitListPanel, display_color: bool) -> SignalListI
                         }
                     };
 
-                    let attribute_list = if let Some(first_char) = value.chars().next() {
-                        match first_char {
-                            'n' => {
-                                //"not-found"
-                                let al = UnitListPanelImp::highlight_attrlist(yellow(is_dark));
-                                Some(al)
-                            }
-                            'b' | 'e' | 'm' => {
-                                // "bad-setting", "error", "masked"
-                                let al = UnitListPanelImp::highlight_attrlist(red(is_dark));
-                                Some(al)
-                            }
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    };
-
-                    attribute_list.map(|al| glib::value::ToValue::to_value(&al))
+                    let css_classes = load_state_css_classes(&load_state_value);
+                    css_classes.map(|css| css.to_value())
                 })
                 .build();
 
-            unit_binding.set_binding(BIND_ENABLE_LOAD_ATTR, binding);
+            unit_binding.set_binding(BIND_ENABLE_LOAD_CSS, binding);
 
             let load_state = unit.load_state();
 
-            if let Some(first_char) = load_state.chars().next() {
-                match first_char {
-                    'n' => {
-                        //"not-found"
-                        let attribute_list = unit_list.imp().highlight_yellow.borrow();
-                        inscription.set_attributes(Some(&attribute_list));
-                    }
-                    'b' | 'e' | 'm' => {
-                        // "bad-setting", "error", "masked"
-                        let attribute_list = unit_list.imp().highlight_red.borrow();
-                        inscription.set_attributes(Some(&attribute_list));
-                    }
-                    _ => unit_list.imp().display_inactive(inscription, &unit),
-                }
+            let css_classes = load_state_css_classes(&load_state);
+            if let Some(css) = css_classes {
+                inscription.set_css_classes(&css);
+            } else {
+                display_inactive(inscription, &unit);
             }
         });
-        factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_ATTR);
+        factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_CSS);
     } else {
         fac_load_state.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
@@ -347,15 +329,28 @@ fn fac_load_state(unit_list: &UnitListPanel, display_color: bool) -> SignalListI
     fac_load_state
 }
 
-fn fac_enable_status(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemFactory {
-    let fac_enable_status = SignalListItemFactory::new();
+fn load_state_css_classes<'a>(load_state: &str) -> Option<[&'a str; 2]> {
+    if let Some(first_char) = load_state.chars().next() {
+        match first_char {
+            //"not-found"
+            'n' => Some(["yellow", "bold"]),
+            // "bad-setting", "error", "masked"
+            'b' | 'e' | 'm' => Some(["red", "bold"]),
+            _ => None,
+        }
+    } else {
+        None
+    }
+}
+
+fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
+    let fac_enable_status = gtk::SignalListItemFactory::new();
 
     fac_enable_status.connect_setup(|_factory, object| {
         factory_setup!(object);
     });
 
     if display_color {
-        let unit_list = unit_list.clone();
         fac_enable_status.connect_bind(move |_factory, object| {
             let (inscription, unit_binding) = factory_bind_pre!(object);
 
@@ -367,17 +362,16 @@ fn fac_enable_status(unit_list: &UnitListPanel, display_color: bool) -> SignalLi
             let binding = unit
                 .bind_property("enable_status", &inscription, "text")
                 .transform_to(|_, status: u8| {
-                    let estatus: EnablementStatus = status.into();
-                    let str = estatus.to_string();
+                    let enablement_status: EnablementStatus = status.into();
+                    let str = enablement_status.to_string();
                     Some(str)
                 })
                 .build();
 
             unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
 
-            let is_dark = unit_list.imp().is_dark.get();
             let binding = unit
-                .bind_property("enable_status", &inscription, "attributes")
+                .bind_property("enable_status", &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
                     let value = match value.get::<u8>() {
                         Ok(v) => v,
@@ -389,55 +383,26 @@ fn fac_enable_status(unit_list: &UnitListPanel, display_color: bool) -> SignalLi
 
                     let enablement_status: EnablementStatus = value.into();
 
-                    let attribute_list = match enablement_status {
-                        EnablementStatus::Bad
-                        | EnablementStatus::Disabled
-                        | EnablementStatus::Masked
-                        | EnablementStatus::MaskedRuntime => {
-                            Some(UnitListPanelImp::highlight_attrlist(red(is_dark)))
-                        }
-
-                        EnablementStatus::Alias
-                        | EnablementStatus::Enabled
-                        | EnablementStatus::EnabledRuntime => {
-                            Some(UnitListPanelImp::highlight_attrlist(green(is_dark)))
-                        }
-
-                        _ => None,
-                    };
-
-                    attribute_list.map(|al| glib::value::ToValue::to_value(&al))
+                    let css_classes = enablement_css_classes(enablement_status);
+                    css_classes.map(|css| css.to_value())
                 })
                 .build();
 
-            unit_binding.set_binding(BIND_ENABLE_STATUS_ATTR, binding);
+            unit_binding.set_binding(BIND_ENABLE_STATUS_CSS, binding);
 
-            let attrs = match status_code {
-                EnablementStatus::Bad
-                | EnablementStatus::Disabled
-                | EnablementStatus::Masked
-                | EnablementStatus::MaskedRuntime => unit_list.imp().highlight_red.borrow().copy(),
+            let css_classes = enablement_css_classes(status_code);
 
-                EnablementStatus::Alias
-                | EnablementStatus::Enabled
-                | EnablementStatus::EnabledRuntime => {
-                    unit_list.imp().highlight_green.borrow().copy()
-                }
-
-                _ => None,
-            };
-
-            if attrs.is_some() {
-                inscription.set_attributes(attrs.as_ref());
+            if let Some(css) = css_classes {
+                inscription.set_css_classes(&css);
             } else {
-                unit_list.imp().display_inactive(inscription, &unit);
+                display_inactive(inscription, &unit);
             }
         });
 
         factory_connect_unbind!(
             fac_enable_status,
             BIND_ENABLE_STATUS_TEXT,
-            BIND_ENABLE_STATUS_ATTR
+            BIND_ENABLE_STATUS_CSS
         );
     } else {
         fac_enable_status.connect_bind(move |_factory, object| {
@@ -460,26 +425,39 @@ fn fac_enable_status(unit_list: &UnitListPanel, display_color: bool) -> SignalLi
     fac_enable_status
 }
 
-fn fac_preset(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemFactory {
-    let fac_preset = SignalListItemFactory::new();
+fn enablement_css_classes<'a>(enablement_status: EnablementStatus) -> Option<[&'a str; 2]> {
+    match enablement_status {
+        EnablementStatus::Bad
+        | EnablementStatus::Disabled
+        | EnablementStatus::Masked
+        | EnablementStatus::MaskedRuntime => Some(["red", "bold"]),
+
+        EnablementStatus::Alias | EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => {
+            Some(["green", "bold"])
+        }
+
+        _ => None,
+    }
+}
+
+fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
+    let fac_preset = gtk::SignalListItemFactory::new();
 
     fac_preset.connect_setup(|_factory, object| {
         factory_setup!(object);
     });
 
     if display_color {
-        let unit_list = unit_list.clone();
         fac_preset.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind!(object, preset);
 
             let binding = unit.bind_property("preset", &inscription, "text").build();
             unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
 
-            let is_dark = unit_list.imp().is_dark.get();
             let binding = unit
-                .bind_property("preset", &inscription, "attributes")
+                .bind_property("preset", &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
-                    let value = match value.get::<String>() {
+                    let preset_value = match value.get::<String>() {
                         Ok(v) => v,
                         Err(err) => {
                             warn!("The variant needs to be of type `String`. {:?}", err);
@@ -487,48 +465,24 @@ fn fac_preset(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemF
                         }
                     };
 
-                    let attribute_list = if let Some(first_char) = value.chars().next() {
-                        match first_char {
-                            //"disabled"
-                            'd' => Some(UnitListPanelImp::highlight_attrlist(red(is_dark))),
-                            // "enabled"
-                            'e' => Some(UnitListPanelImp::highlight_attrlist(green(is_dark))),
-                            // "ignored"
-                            'i' => Some(UnitListPanelImp::highlight_attrlist(yellow(is_dark))),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    };
-
-                    attribute_list.map(|al| glib::value::ToValue::to_value(&al))
+                    let css_classes = preset_css_classes(&preset_value);
+                    css_classes.map(|css| css.to_value())
                 })
                 .build();
 
-            unit_binding.set_binding(BIND_ENABLE_PRESET_ATTR, binding);
+            unit_binding.set_binding(BIND_ENABLE_PRESET_CSS, binding);
 
-            let attrs = if let Some(first_char) = unit.preset().chars().next() {
-                match first_char {
-                    //"disabled"
-                    'd' => unit_list.imp().highlight_red.borrow().copy(),
-                    // "enabled"
-                    'e' => unit_list.imp().highlight_green.borrow().copy(),
-                    // "ignored"
-                    'i' => unit_list.imp().highlight_yellow.borrow().copy(),
-                    _ => None,
-                }
-            } else {
-                None
-            };
+            let preset_value = unit.preset();
+            let css_classes = preset_css_classes(&preset_value);
 
-            if attrs.is_some() {
-                inscription.set_attributes(attrs.as_ref());
+            if let Some(css) = css_classes {
+                inscription.set_css_classes(&css);
             } else {
-                unit_list.imp().display_inactive(inscription, &unit);
+                display_inactive(inscription, &unit);
             }
         });
 
-        factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_ATTR);
+        factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_CSS);
     } else {
         fac_preset.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind!(object, preset);
@@ -540,4 +494,20 @@ fn fac_preset(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemF
         factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT);
     }
     fac_preset
+}
+
+fn preset_css_classes(preset_value: &str) -> Option<[&str; 2]> {
+    if let Some(first_char) = preset_value.chars().next() {
+        match first_char {
+            //"disabled"
+            'd' => Some(["red", "bold"]),
+            // "enabled"
+            'e' => Some(["green", "bold"]),
+            // "ignored"
+            'i' => Some(["yellow", "bold"]),
+            _ => None,
+        }
+    } else {
+        None
+    }
 }

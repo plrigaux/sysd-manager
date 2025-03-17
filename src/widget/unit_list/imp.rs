@@ -477,16 +477,6 @@ impl UnitListPanelImp {
         attribute_list
     }
 
-    fn display_inactive(&self, widget: gtk::Inscription, unit: &UnitInfo) {
-        let state = &unit.active_state();
-        if state.is_inactive() {
-            let attribute_list = self.grey.borrow();
-            widget.set_attributes(Some(&attribute_list));
-        } else {
-            widget.set_attributes(None);
-        }
-    }
-
     pub(super) fn set_sorter(&self) {
         let sorter = self.units_browser.sorter();
 

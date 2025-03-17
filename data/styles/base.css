@@ -22,3 +22,7 @@ textview {
     font-family: 'Fira Code', 'Droid Sans Mono', monospace;
     font-size: 16px;
 }
+
+.bold {
+    font-weight: bold;
+}

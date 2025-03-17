@@ -1,5 +1,17 @@
 @import "base.css";
 
-image.grey {
+.grey {
     color: var(--dark-1);
+}
+
+.red {
+    color: #c30000;
+}
+
+.yellow {
+    color: #905400;
+}
+
+.green {
+    color: #007c3d;
 }
