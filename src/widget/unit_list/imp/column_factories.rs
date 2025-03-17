@@ -1,6 +1,23 @@
-use crate::widget::unit_list::UnitListPanel;
+use std::collections::HashMap;
 
-use super::*;
+use adw::subclass::prelude::*;
+use gtk::{SignalListItemFactory, glib, prelude::*};
+use log::{info, warn};
+
+use crate::systemd::enums::EnablementStatus;
+use crate::utils::palette::{green, red, yellow};
+use crate::widget::unit_list::imp::{UnitListPanelImp, rowdata::UnitBinding};
+use crate::{systemd::enums::ActiveState, widget::unit_list::UnitListPanel};
+
+pub const BIND_DESCRIPTION_TEXT: u8 = 0;
+pub const BIND_SUB_STATE_TEXT: u8 = 1;
+pub const BIND_ENABLE_STATUS_TEXT: u8 = 2;
+pub const BIND_ENABLE_STATUS_ATTR: u8 = 3;
+pub const BIND_ENABLE_PRESET_TEXT: u8 = 4;
+pub const BIND_ENABLE_PRESET_ATTR: u8 = 5;
+pub const BIND_ENABLE_LOAD_TEXT: u8 = 6;
+pub const BIND_ENABLE_LOAD_ATTR: u8 = 7;
+pub const BIND_ENABLE_ACTIVE_ICON: u8 = 8;
 
 macro_rules! downcast_list_item {
     ($list_item_object:expr) => {{
@@ -145,7 +162,8 @@ pub fn setup_factories(
             .bind_property("active_state_num", &icon_image, "icon-name")
             .transform_to(|_, state: u8| {
                 let state: ActiveState = state.into();
-                icon_name!(state)
+                state.icon_name()
+                //icon_name!(state)
             })
             .build();
 
@@ -288,7 +306,7 @@ fn fac_load_state(unit_list: &UnitListPanel, display_color: bool) -> SignalListI
                         None
                     };
 
-                    attribute_list.map(|al| al.to_value())
+                    attribute_list.map(|al| glib::value::ToValue::to_value(&al))
                 })
                 .build();
 
@@ -388,7 +406,7 @@ fn fac_enable_status(unit_list: &UnitListPanel, display_color: bool) -> SignalLi
                         _ => None,
                     };
 
-                    attribute_list.map(|al| al.to_value())
+                    attribute_list.map(|al| glib::value::ToValue::to_value(&al))
                 })
                 .build();
 
@@ -483,7 +501,7 @@ fn fac_preset(unit_list: &UnitListPanel, display_color: bool) -> SignalListItemF
                         None
                     };
 
-                    attribute_list.map(|al| al.to_value())
+                    attribute_list.map(|al| glib::value::ToValue::to_value(&al))
                 })
                 .build();
 

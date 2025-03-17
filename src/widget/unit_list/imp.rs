@@ -1,3 +1,6 @@
+mod column_factories;
+mod rowdata;
+
 use std::{
     cell::{Cell, OnceCell, RefCell, RefMut},
     collections::HashMap,
@@ -5,6 +8,7 @@ use std::{
 };
 
 use gtk::{
+    ListScrollFlags, SearchBar, TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
     gio::{self},
     glib::{self, BoxedAnyObject, Object, Properties},
@@ -18,24 +22,17 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetImpl,
         },
     },
-    ListScrollFlags, SearchBar, SignalListItemFactory, TemplateChild,
 };
 
 use log::{debug, error, info, warn};
 
 use crate::{
-    icon_name,
     systemd::runtime,
     systemd_gui,
-    utils::palette::{green, grey, red, yellow, Palette},
+    utils::palette::{Palette, green, grey, red, yellow},
     widget::{
-        preferences::data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS},
-        unit_list::rowdata::{
-            UnitBinding, BIND_DESCRIPTION_TEXT, BIND_ENABLE_ACTIVE_ICON, BIND_ENABLE_LOAD_ATTR,
-            BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_PRESET_ATTR, BIND_ENABLE_PRESET_TEXT,
-            BIND_ENABLE_STATUS_ATTR, BIND_ENABLE_STATUS_TEXT, BIND_SUB_STATE_TEXT,
-        },
         InterPanelAction,
+        preferences::data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS},
     },
 };
 use crate::{
@@ -52,7 +49,7 @@ use crate::{
 
 use strum::IntoEnumIterator;
 
-mod factories;
+use crate::widget::unit_list::imp::rowdata::UnitBinding;
 
 #[derive(Default, gtk::CompositeTemplate, Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -548,7 +545,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         let unit_list = self.obj().clone();
         let column_view_column_map = self.generate_column_map();
-        factories::setup_factories(&unit_list, &column_view_column_map);
+        column_factories::setup_factories(&unit_list, &column_view_column_map);
 
         settings.connect_changed(
             Some(KEY_PREF_UNIT_LIST_DISPLAY_COLORS),
@@ -556,7 +553,7 @@ impl ObjectImpl for UnitListPanelImp {
                 let display_color = unit_list.display_color();
                 info!("change preference setting \"display color\" to {display_color}");
                 let column_view_column_map = unit_list.imp().generate_column_map();
-                factories::setup_factories(&unit_list, &column_view_column_map);
+                column_factories::setup_factories(&unit_list, &column_view_column_map);
             },
         );
 

@@ -102,21 +102,31 @@ impl EnablementStatus {
      */
 
     pub fn tooltip_info(&self) -> &str {
-        const ENABLED_TOOLTIP_INFO : &str = "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).";
-        const LINKED_TOOLTIP_INFO : &str = "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.";
-        const MASKED_TOOLTIP_INFO : &str = "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).";
+        const ENABLED_TOOLTIP_INFO: &str = "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).";
+        const LINKED_TOOLTIP_INFO: &str = "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.";
+        const MASKED_TOOLTIP_INFO: &str = "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).";
 
         match self {
             EnablementStatus::Alias => "The name is an alias (symlink to another unit file).",
             EnablementStatus::Bad => "The unit file is invalid or another error occurred.",
-            EnablementStatus::Disabled => "The unit file is not enabled, but contains an [Install] section with installation instructions.",
+            EnablementStatus::Disabled => {
+                "The unit file is not enabled, but contains an [Install] section with installation instructions."
+            }
             EnablementStatus::Enabled => ENABLED_TOOLTIP_INFO,
-            EnablementStatus::Generated => "The unit file was generated dynamically via a generator tool. See <b>man systemd.generator(7)</b>. Generated unit files may not be enabled, they are enabled implicitly by their generator.",
-            EnablementStatus::Indirect => "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> setting in the [Install] unit file section, listing other unit files that might be enabled, or it has an alias under a different name through a symlink that is not specified in <u>Also=</u>. For template unit files, an instance different than the one specified in <u>DefaultInstance=</u> is enabled.",
+            EnablementStatus::Generated => {
+                "The unit file was generated dynamically via a generator tool. See <b>man systemd.generator(7)</b>. Generated unit files may not be enabled, they are enabled implicitly by their generator."
+            }
+            EnablementStatus::Indirect => {
+                "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> setting in the [Install] unit file section, listing other unit files that might be enabled, or it has an alias under a different name through a symlink that is not specified in <u>Also=</u>. For template unit files, an instance different than the one specified in <u>DefaultInstance=</u> is enabled."
+            }
             EnablementStatus::Linked => LINKED_TOOLTIP_INFO,
             EnablementStatus::Masked => MASKED_TOOLTIP_INFO,
-            EnablementStatus::Static => "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section.",
-            EnablementStatus::Trancient => "The unit file has been created dynamically with the runtime API. Transient units may not be enabled.",
+            EnablementStatus::Static => {
+                "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section."
+            }
+            EnablementStatus::Trancient => {
+                "The unit file has been created dynamically with the runtime API. Transient units may not be enabled."
+            }
             EnablementStatus::Unknown => "",
             EnablementStatus::EnabledRuntime => ENABLED_TOOLTIP_INFO,
             EnablementStatus::LinkedRuntime => LINKED_TOOLTIP_INFO,
@@ -186,22 +196,6 @@ pub enum ActiveState {
     Refreshing = 8,
 }
 
-#[macro_export]
-macro_rules! icon_name {
-    ($active_state:expr) => {{
-        match $active_state {
-            ActiveState::Active
-            | ActiveState::Reloading
-            | ActiveState::Refreshing
-            | ActiveState::Activating => Some("object-select-symbolic"),
-            ActiveState::Inactive | ActiveState::Deactivating => Some("window-close-symbolic"),
-            ActiveState::Failed => Some("computer-fail-symbolic"), //not sure of the icon choice
-            ActiveState::Maintenance => Some("emblem-system-symbolic"), //not sure of the icon choice
-            ActiveState::Unknown => None,
-        }
-    }};
-}
-
 impl ActiveState {
     pub fn discriminant(&self) -> u8 {
         // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
@@ -224,8 +218,17 @@ impl ActiveState {
         }
     }
 
-    pub fn icon_name(&self) -> Option<&str> {
-        icon_name!(self)
+    pub fn icon_name(&self) -> Option<&'static str> {
+        match self {
+            ActiveState::Active
+            | ActiveState::Reloading
+            | ActiveState::Refreshing
+            | ActiveState::Activating => Some("object-select-symbolic"),
+            ActiveState::Inactive | ActiveState::Deactivating => Some("window-close-symbolic"),
+            ActiveState::Failed => Some("computer-fail-symbolic"), //not sure of the icon choice
+            ActiveState::Maintenance => Some("emblem-system-symbolic"), //not sure of the icon choice
+            ActiveState::Unknown => None,
+        }
     }
 
     pub fn is_inactive(&self) -> bool {

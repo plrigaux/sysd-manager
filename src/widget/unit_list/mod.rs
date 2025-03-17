@@ -1,12 +1,11 @@
 use crate::systemd::data::UnitInfo;
 
-use super::app_window::AppWindow;
 use super::InterPanelAction;
+use super::app_window::AppWindow;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 
 mod imp;
-mod rowdata;
 
 glib::wrapper! {
     pub struct UnitListPanel(ObjectSubclass<imp::UnitListPanelImp>)
