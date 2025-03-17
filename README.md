@@ -13,21 +13,19 @@ If you consider yourself an administrator, please refer to `systemctl` and `jour
 ## Features
 
 Here are __SysD Manager__ main features:
-* Unit file browser with search and filtering
-* Enable or disable a unit
-* Activate or deactivate a unit
-* View and modify unit file
-* View and navigate unit's dependencies
-* Unit file syntax highlighting 
-* Journal file syntax highlighting 
-* List of all running units, ordered by the time they took to initialize __systemd-analyze blame__
-* Follow Dark and Light style switching
-* Select a unit at program opening by passing a unit name as cli argument (see --help)
-
-## Upcoming features
-Here are features that may come one day:
-* clean unit like `systemctl clean`
-* multi languages
+* [x] Unit file browser with search and filtering
+* [x] Enable or disable a unit
+* [ ] Enable or disable a unit in runtime
+* [x] Activate or deactivate a unit
+* [x] View and modify unit file
+* [x] View and navigate unit's dependencies
+* [x] Unit file syntax highlighting 
+* [x] Journal file syntax highlighting 
+* [x] List of all running units, ordered by the time they took to initialize __systemd-analyze blame__
+* [x] Follow Dark and Light style switching
+* [x] Select a unit at program opening by passing a unit name as cli argument (see --help)
+* [ ] Clean unit like `systemctl clean`
+* [ ] Multi languages
 * ...
 
 *__Note__ if you need a feature communicate with the author or contribute to the project. If you're stuck take a look at __systemctl__.*

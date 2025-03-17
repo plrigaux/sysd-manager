@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use gtk::{glib::translate::IntoGlib, pango, prelude::*, TextBuffer, TextIter, TextTag};
+use gtk::{TextBuffer, TextIter, TextTag, glib::translate::IntoGlib, pango, prelude::*};
 use log::debug;
 
 use crate::systemd::{
@@ -9,7 +9,7 @@ use crate::systemd::{
     generate_file_uri,
 };
 
-use super::palette::{green, grey, red, yellow, Palette};
+use super::palette::{Palette, green, grey, red, yellow};
 
 pub struct UnitInfoWriter {
     buf: TextBuffer,
@@ -231,9 +231,9 @@ impl UnitInfoWriter {
 
     fn create_disable_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Palette::Yellow3.get_color(), TAG_NAME_DISABLE_DARK)
+            (yellow(is_dark), TAG_NAME_DISABLE_DARK)
         } else {
-            (Palette::Yellow4.get_color(), TAG_NAME_DISABLE)
+            (yellow(is_dark), TAG_NAME_DISABLE)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -244,7 +244,7 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_FOREGROUND, &color.get_color().to_value()),
                 (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
