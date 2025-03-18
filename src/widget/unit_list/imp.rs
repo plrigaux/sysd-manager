@@ -415,7 +415,8 @@ impl UnitListPanelImp {
 
         //Don't  select and focus if filter out
         if let Some(filter) = self.filter_list_model.filter() {
-            if !filter.match_(unit) {
+            let unit_binding = UnitBinding::new(unit);
+            if !filter.match_(&unit_binding) {
                 //Unselect
                 self.single_selection
                     .set_selected(GTK_INVALID_LIST_POSITION);
@@ -655,84 +656,70 @@ fn fill_search_bar(
 
     search_bar.set_child(Some(&search_box));
 
-    {
+    let custom_filter = {
         let entry1 = search_entry.clone();
+        let filter_button_unit_type = filter_button_unit_type.clone();
+        let filter_button_status = filter_button_status.clone();
+        let filter_button_active = filter_button_active.clone();
 
-        let custom_filter = {
-            let filter_button_unit_type = filter_button_unit_type.clone();
-            let filter_button_status = filter_button_status.clone();
-            let filter_button_active = filter_button_active.clone();
-
-            gtk::CustomFilter::new(move |object| {
-                let ref_cell_place_holder = RefCell::default();
-
-                let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
-                    unit_binding.unit_ref()
-                } else if let Some(unit) = object.downcast_ref::<UnitInfo>() {
-                    ref_cell_place_holder.replace(unit.clone());
-                    ref_cell_place_holder.borrow()
-                } else {
-                    error!(
-                        "some wrong downcast_ref to UnitBinding of UnitInfo {:?}",
-                        object
-                    );
-                    return false;
-                };
-
-                let text = entry1.text();
-                let unit_type = unit.unit_type();
-                let enable_status: EnablementStatus = unit.enable_status().into();
-                let active_state: ActiveState = unit.active_state();
-
-                filter_button_unit_type.contains_value(Some(&unit_type))
-                    && filter_button_status.contains_value(Some(enable_status.as_str()))
-                    && if text.is_empty() {
-                        true
-                    } else {
-                        unit.display_name().contains(text.as_str())
-                    }
-                    && filter_button_active.contains_value(Some(active_state.as_str()))
-            })
-        };
-
-        let on_close = OnClose::new_filter(&custom_filter);
-        filter_button_unit_type.set_on_close(on_close);
-
-        let on_close = OnClose::new_filter(&custom_filter);
-        filter_button_status.set_on_close(on_close);
-
-        let on_close = OnClose::new_filter(&custom_filter);
-        filter_button_active.set_on_close(on_close);
-
-        filter_list_model.set_filter(Some(&custom_filter));
-
-        let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
-
-        search_entry.connect_search_changed(move |entry| {
-            let text = entry.text();
-
-            debug!("Search text \"{text}\"");
-
-            let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
-
-            let change_type = if text.is_empty() {
-                gtk::FilterChange::LessStrict
-            } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
-                gtk::FilterChange::MoreStrict
-            } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
-                gtk::FilterChange::LessStrict
+        gtk::CustomFilter::new(move |object| {
+            let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
+                unit_binding.unit_ref()
             } else {
-                gtk::FilterChange::Different
+                error!("some wrong downcast_ref to UnitBinding  {:?}", object);
+                return false;
             };
 
-            debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
-            last_filter.replace_range(.., text.as_str());
-            custom_filter.changed(change_type);
+            let text = entry1.text();
+            let unit_type = unit.unit_type();
+            let enable_status: EnablementStatus = unit.enable_status().into();
+            let active_state: ActiveState = unit.active_state();
 
-            //FIXME when the filter become empty the colunm view display nothing until you click on it
-            //unit_col_view_scrolled_window.queue_draw(); //TODO investigate the need
-        });
+            filter_button_unit_type.contains_value(Some(&unit_type))
+                && filter_button_status.contains_value(Some(enable_status.as_str()))
+                && if text.is_empty() {
+                    true
+                } else {
+                    unit.display_name().contains(text.as_str())
+                }
+                && filter_button_active.contains_value(Some(active_state.as_str()))
+        })
+    };
 
-        search_entry
-    }
+    let on_close = OnClose::new_filter(&custom_filter);
+    filter_button_unit_type.set_on_close(on_close);
+
+    let on_close = OnClose::new_filter(&custom_filter);
+    filter_button_status.set_on_close(on_close);
+
+    let on_close = OnClose::new_filter(&custom_filter);
+    filter_button_active.set_on_close(on_close);
+
+    filter_list_model.set_filter(Some(&custom_filter));
+
+    let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
+
+    search_entry.connect_search_changed(move |entry| {
+        let text = entry.text();
+
+        debug!("Search text \"{text}\"");
+
+        let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
+
+        let change_type = if text.is_empty() {
+            gtk::FilterChange::LessStrict
+        } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
+            gtk::FilterChange::MoreStrict
+        } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
+            gtk::FilterChange::LessStrict
+        } else {
+            gtk::FilterChange::Different
+        };
+
+        debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
+        last_filter.replace_range(.., text.as_str());
+        custom_filter.changed(change_type);
+    });
+
+    search_entry
 }
