@@ -105,6 +105,7 @@ impl<'a> Palette<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_rgb(&self) -> (u8, u8, u8) {
         let color = self.get_color();
 
@@ -115,6 +116,7 @@ impl<'a> Palette<'a> {
         (r, g, b)
     }
 
+    #[allow(dead_code)]
     pub fn get_rgb_u16(&self) -> (u16, u16, u16) {
         let (r, g, b) = self.get_rgb();
 

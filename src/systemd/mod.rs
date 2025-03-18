@@ -71,6 +71,7 @@ pub enum BootFilter {
     Id(String),
 }
 
+#[derive(Debug)]
 pub struct UpdatedUnitInfo {
     pub primary: String,
     pub object_path: String,
@@ -79,6 +80,7 @@ pub struct UpdatedUnitInfo {
     pub sub_state: Option<String>,
     pub active_state: Option<ActiveState>,
     pub unit_file_preset: Option<String>,
+    pub valid_unit_name: bool,
 }
 
 impl UpdatedUnitInfo {
@@ -91,6 +93,7 @@ impl UpdatedUnitInfo {
             sub_state: None,
             active_state: None,
             unit_file_preset: None,
+            valid_unit_name: false,
         }
     }
 }
@@ -122,7 +125,7 @@ pub async fn list_units_description_and_state_async()
 }
 
 pub async fn complete_unit_information(
-    units: Vec<UnitInfo>,
+    units: &Vec<(String, UnitDBusLevel, Option<String>)>,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     sysdbus::complete_unit_information(units).await
 }

@@ -1522,7 +1522,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager"
-version = "1.18.0"
+version = "1.18.1"
 dependencies = [
  "bitflags",
  "chrono",

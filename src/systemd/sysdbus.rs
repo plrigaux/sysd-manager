@@ -223,21 +223,19 @@ pub async fn list_all_units() -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo
 }
 
 pub async fn complete_unit_information(
-    units: Vec<UnitInfo>,
+    units: &Vec<(String, UnitDBusLevel, Option<String>)>,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     let mut connection_system = None;
     let mut connection_session = None;
 
     let mut ouput = Vec::with_capacity(units.len());
-    for unit in units {
-        let level = unit.dbus_level();
-
-        let connection = match level {
+    for (unit_primary, dbus_level, object_path) in units {
+        let connection = match dbus_level {
             UnitDBusLevel::System => {
                 if let Some(conn) = &connection_system {
                     conn
                 } else {
-                    let conn = get_connection_async(level).await?;
+                    let conn = get_connection_async(*dbus_level).await?;
                     connection_system.get_or_insert(conn) as &zbus::Connection
                 }
             }
@@ -245,15 +243,15 @@ pub async fn complete_unit_information(
                 if let Some(conn) = &connection_session {
                     conn
                 } else {
-                    let conn = get_connection_async(level).await?;
+                    let conn = get_connection_async(*dbus_level).await?;
                     connection_session.get_or_insert(conn) as &zbus::Connection
                 }
             }
         };
 
-        match complete_unit_info(&unit, connection).await {
+        match complete_unit_info(unit_primary, object_path, connection).await {
             Ok(updated_unit_info) => ouput.push(updated_unit_info),
-            Err(error) => warn!("Complete unit \"{}\" error {:?}", unit.primary(), error),
+            Err(error) => warn!("Complete unit \"{}\" error {:?}", unit_primary, error),
         }
     }
     Ok(ouput)
@@ -300,26 +298,21 @@ macro_rules! fill_completing_info {
             }
             Err(err) => {
                 let err: SystemdErrors = err.into();
-                warn!("Complete info Error: {:?}", err);
-                //return Err(err);
+                //warn!("Complete info Error: {:?}", err);
+                return Err(err);
             }
         }
     };
 }
 
 async fn complete_unit_info(
-    unit: &UnitInfo,
+    unit_primary: &str,
+    object_path: &Option<String>,
     connection: &zbus::Connection,
 ) -> Result<UpdatedUnitInfo, SystemdErrors> {
-    let object_path = unit.object_path();
-
     let object_path = match object_path {
-        Some(o) => o,
-        None => {
-            let object_path: String = unit_dbus_path_from_name(&unit.primary());
-            unit.set_object_path(object_path.clone());
-            object_path
-        }
+        Some(o) => o.clone(),
+        None => unit_dbus_path_from_name(unit_primary),
     };
 
     let unit_info_proxy = ZUnitInfoProxy::builder(connection)
@@ -327,18 +320,29 @@ async fn complete_unit_info(
         .build()
         .await?;
 
-    let mut update = UpdatedUnitInfo::new(unit.primary(), object_path);
+    let mut update = UpdatedUnitInfo::new(unit_primary.to_owned(), object_path);
 
+    if let Err(error) = fill_update(unit_info_proxy, &mut update).await {
+        debug!("Complete info Error: {:?}", error);
+    }
+
+    Ok(update)
+}
+
+async fn fill_update(
+    unit_info_proxy: ZUnitInfoProxy<'_>,
+    update: &mut UpdatedUnitInfo,
+) -> Result<(), SystemdErrors> {
     let active_state = unit_info_proxy.active_state().await?;
     let active_state: ActiveState = active_state.as_str().into();
     update.active_state = Some(active_state);
-
     fill_completing_info!(update, unit_info_proxy, description);
     fill_completing_info!(update, unit_info_proxy, load_state);
     fill_completing_info!(update, unit_info_proxy, sub_state);
     fill_completing_info!(update, unit_info_proxy, unit_file_preset);
+    update.valid_unit_name = true;
 
-    Ok(update)
+    Ok(())
 }
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.

@@ -12,7 +12,6 @@ use gtk::{
     ffi::GTK_INVALID_LIST_POSITION,
     gio::{self},
     glib::{self, BoxedAnyObject, Object, Properties},
-    pango::{AttrColor, AttrInt, AttrList, Weight},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -29,7 +28,6 @@ use log::{debug, error, info, warn};
 use crate::{
     systemd::runtime,
     systemd_gui,
-    utils::palette::{Palette, green, grey, red, yellow},
     widget::{
         InterPanelAction,
         preferences::data::{
@@ -89,13 +87,6 @@ pub struct UnitListPanelImp {
     unit: RefCell<Option<UnitInfo>>,
 
     pub force_selected_index: Cell<Option<u32>>,
-
-    highlight_yellow: RefCell<AttrList>,
-    highlight_green: RefCell<AttrList>,
-    highlight_red: RefCell<AttrList>,
-    grey: RefCell<AttrList>,
-
-    is_dark: Cell<bool>,
 
     #[property(name = "display-color", get, set)]
     pub display_color: Cell<bool>,
@@ -291,15 +282,15 @@ impl UnitListPanelImp {
             let n_items = list_store.n_items();
             list_store.remove_all();
 
-            let mut all_units = Vec::with_capacity(unit_desc.len() + unit_from_files.len());
+            let mut all_units = HashMap::with_capacity(unit_desc.len() + unit_from_files.len());
             for (_key, unit) in unit_desc.into_iter() {
                 list_store.append(&UnitBinding::new(&unit));
-                all_units.push(unit);
+                all_units.insert(unit.primary(), unit);
             }
 
             for unit in unit_from_files.into_iter() {
                 list_store.append(&UnitBinding::new(&unit));
-                all_units.push(unit);
+                all_units.insert(unit.primary(), unit);
             }
 
             // The sort function needs to be the same of the  first column sorter
@@ -362,15 +353,62 @@ impl UnitListPanelImp {
             panel_stack.set_visible_child_name("unit_list");
 
             glib::spawn_future_local(async move {
-                runtime().spawn(async move {
-                    let updates = match systemd::complete_unit_information(all_units).await {
-                        Ok(updates) => updates,
-                        Err(error) => {
-                            warn!("Complete Unit Information Error: {:?}", error);
-                            vec![]
+                //let (sender, receiver) = tokio::sync::oneshot::channel();
+                let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
+                {
+                    let all_units = all_units.clone();
+
+                    runtime().spawn(async move {
+                        const BATCH_SIZE: usize = 5;
+                        let mut batch = Vec::with_capacity(BATCH_SIZE);
+                        for (idx, unit) in all_units.values().enumerate() {
+                            batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
+
+                            if idx % BATCH_SIZE == 0 {
+                                let updates = match systemd::complete_unit_information(&batch).await
+                                {
+                                    Ok(updates) => updates,
+                                    Err(error) => {
+                                        warn!("Complete Unit Information Error: {:?}", error);
+                                        vec![]
+                                    }
+                                };
+
+                                sender
+                                    .send(updates)
+                                    .await
+                                    .expect("The channel needs to be open.");
+
+                                batch.clear();
+                            }
                         }
-                    };
-                });
+                    });
+                }
+
+                while let Some(updates) = receiver.recv().await {
+                    for update in updates {
+                        let Some(unit) = all_units.get(&update.primary) else {
+                            continue;
+                        };
+
+                        unit.set_object_path(update.object_path);
+                        if let Some(description) = update.description {
+                            unit.set_description(description);
+                        }
+
+                        if let Some(sub_state) = update.sub_state {
+                            unit.set_sub_state(sub_state);
+                        }
+
+                        if let Some(active_state) = update.active_state {
+                            unit.set_active_state(active_state);
+                        }
+
+                        if let Some(unit_file_preset) = update.unit_file_preset {
+                            unit.set_preset(unit_file_preset);
+                        }
+                    }
+                }
             });
         });
     }
@@ -456,42 +494,7 @@ impl UnitListPanelImp {
         self.force_selected_index.set(force_selected_index)
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        if let InterPanelAction::IsDark(is_dark) = *action {
-            let attribute_list = Self::highlight_attrlist(yellow(is_dark));
-
-            self.highlight_yellow.replace(attribute_list);
-
-            let attribute_list = Self::highlight_attrlist(red(is_dark));
-
-            self.highlight_red.replace(attribute_list);
-
-            let attribute_list = Self::highlight_attrlist(green(is_dark));
-
-            self.highlight_green.replace(attribute_list);
-
-            let attribute_list = Self::shadow(is_dark);
-
-            self.grey.replace(attribute_list);
-
-            self.is_dark.set(is_dark);
-        }
-    }
-
-    fn highlight_attrlist(color: Palette<'_>) -> AttrList {
-        let attribute_list = AttrList::new();
-        attribute_list.insert(AttrInt::new_weight(Weight::Bold));
-        let (red, green, blue) = color.get_rgb_u16();
-        attribute_list.insert(AttrColor::new_foreground(red, green, blue));
-        attribute_list
-    }
-
-    fn shadow(is_dark: bool) -> AttrList {
-        let attribute_list = AttrList::new();
-        let (red, green, blue) = grey(is_dark).get_rgb_u16();
-        attribute_list.insert(AttrColor::new_foreground(red, green, blue));
-        attribute_list
-    }
+    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
 
     pub(super) fn set_sorter(&self) {
         let sorter = self.units_browser.sorter();
