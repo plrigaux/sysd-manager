@@ -71,6 +71,30 @@ pub enum BootFilter {
     Id(String),
 }
 
+pub struct UpdatedUnitInfo {
+    pub primary: String,
+    pub object_path: String,
+    pub description: Option<String>,
+    pub load_state: Option<String>,
+    pub sub_state: Option<String>,
+    pub active_state: Option<ActiveState>,
+    pub unit_file_preset: Option<String>,
+}
+
+impl UpdatedUnitInfo {
+    fn new(primary: String, object_path: String) -> Self {
+        Self {
+            primary,
+            object_path,
+            description: None,
+            load_state: None,
+            sub_state: None,
+            active_state: None,
+            unit_file_preset: None,
+        }
+    }
+}
+
 pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
     let level = sytemd_unit.dbus_level();
     sysdbus::get_unit_file_state(level, &sytemd_unit.primary())
@@ -92,12 +116,14 @@ pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, S
     }
 }
  */
-pub async fn list_units_description_and_state_async(
-) -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
+pub async fn list_units_description_and_state_async()
+-> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
     sysdbus::list_all_units().await
 }
 
-pub async fn complete_unit_information(units: Vec<UnitInfo>) -> Result<(), SystemdErrors> {
+pub async fn complete_unit_information(
+    units: Vec<UnitInfo>,
+) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     sysdbus::complete_unit_information(units).await
 }
 

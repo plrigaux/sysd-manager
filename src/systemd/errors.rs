@@ -22,6 +22,7 @@ pub enum SystemdErrors {
     ZBusError(zbus::Error),
     ZAccessDenied(String, String),
     ZNoSuchUnit(String, String),
+    ZNoSuchUnitProxy(String),
     ZVariantError(zvariant::Error),
     ZBusFdoError(zbus::fdo::Error),
 }
@@ -84,6 +85,9 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
                     }
                     "org.freedesktop.systemd1.NoSuchUnit" => {
                         SystemdErrors::ZNoSuchUnit(method.to_owned(), message)
+                    }
+                    "org.freedesktop.DBus.Error.InvalidArgs" => {
+                        SystemdErrors::ZNoSuchUnitProxy(message)
                     }
                     _ => {
                         SystemdErrors::ZMethodError(method.to_owned(), err_code.to_owned(), message)

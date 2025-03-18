@@ -11,10 +11,11 @@ use log::{debug, info, trace, warn};
 use serde::Deserialize;
 
 use zbus::{
-    blocking::{fdo, Connection, MessageIterator, Proxy},
+    Message,
+    blocking::{Connection, MessageIterator, Proxy, fdo},
     message::Flags,
     names::InterfaceName,
-    proxy, Message,
+    proxy,
 };
 
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
@@ -28,10 +29,10 @@ use crate::{
 };
 
 use super::{
+    Dependency, SystemdErrors, SystemdUnitFile, UpdatedUnitInfo,
     enums::{
         DependencyType, DisEnableFlags, EnablementStatus, KillWho, StartStopMode, UnitDBusLevel,
     },
-    Dependency, SystemdErrors, SystemdUnitFile,
 };
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
@@ -221,9 +222,13 @@ pub async fn list_all_units() -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo
     }
 }
 
-pub async fn complete_unit_information(units: Vec<UnitInfo>) -> Result<(), SystemdErrors> {
+pub async fn complete_unit_information(
+    units: Vec<UnitInfo>,
+) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     let mut connection_system = None;
     let mut connection_session = None;
+
+    let mut ouput = Vec::with_capacity(units.len());
     for unit in units {
         let level = unit.dbus_level();
 
@@ -246,13 +251,12 @@ pub async fn complete_unit_information(units: Vec<UnitInfo>) -> Result<(), Syste
             }
         };
 
-        let result = complete_unit_info(&unit, connection).await;
-
-        if let Err(error) = result {
-            warn!("Complette unit \"{}\" error {:?}", unit.primary(), error);
+        match complete_unit_info(&unit, connection).await {
+            Ok(updated_unit_info) => ouput.push(updated_unit_info),
+            Err(error) => warn!("Complete unit \"{}\" error {:?}", unit.primary(), error),
         }
     }
-    Ok(())
+    Ok(ouput)
 }
 
 #[proxy(
@@ -288,11 +292,25 @@ trait ZUnitInfo {
     fn unit_file_preset(&self) -> Result<String, zbus::Error>;
 }
 
+macro_rules! fill_completing_info {
+    ($update:expr, $unit_info_proxy:expr, $f:ident) => {
+        match $unit_info_proxy.$f().await {
+            Ok(s) => {
+                $update.$f = Some(s);
+            }
+            Err(err) => {
+                let err: SystemdErrors = err.into();
+                warn!("Complete info Error: {:?}", err);
+                //return Err(err);
+            }
+        }
+    };
+}
+
 async fn complete_unit_info(
     unit: &UnitInfo,
     connection: &zbus::Connection,
-) -> Result<(), SystemdErrors> {
-    //warn!("Complete unit {}", unit.primary());
+) -> Result<UpdatedUnitInfo, SystemdErrors> {
     let object_path = unit.object_path();
 
     let object_path = match object_path {
@@ -305,32 +323,22 @@ async fn complete_unit_info(
     };
 
     let unit_info_proxy = ZUnitInfoProxy::builder(connection)
-        .path(object_path)?
+        .path(object_path.clone())?
         .build()
         .await?;
 
-    if let Ok(description) = unit_info_proxy.description().await {
-        unit.set_description(description);
-    }
+    let mut update = UpdatedUnitInfo::new(unit.primary(), object_path);
 
-    if let Ok(load_state) = unit_info_proxy.load_state().await {
-        unit.set_load_state(load_state);
-    }
+    let active_state = unit_info_proxy.active_state().await?;
+    let active_state: ActiveState = active_state.as_str().into();
+    update.active_state = Some(active_state);
 
-    if let Ok(sub_state) = unit_info_proxy.sub_state().await {
-        unit.set_sub_state(sub_state);
-    }
+    fill_completing_info!(update, unit_info_proxy, description);
+    fill_completing_info!(update, unit_info_proxy, load_state);
+    fill_completing_info!(update, unit_info_proxy, sub_state);
+    fill_completing_info!(update, unit_info_proxy, unit_file_preset);
 
-    if let Ok(active_state) = unit_info_proxy.active_state().await {
-        let active_state: ActiveState = active_state.as_str().into();
-        unit.set_active_state(active_state);
-    }
-
-    if let Ok(preset) = unit_info_proxy.unit_file_preset().await {
-        unit.set_preset(preset);
-    }
-
-    Ok(())
+    Ok(update)
 }
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
@@ -820,57 +828,6 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
         msg,
         "sequences of messages".to_owned(),
     ))
-
-    /*     let connection = Connection::system()?;
-
-    let body = ("org.freedesktop.systemd1.Manager", "LogLevel", "debug");
-
-    let message = Message::method_call("/org/freedesktop/systemd1", "Set")?
-        .with_flags(Flags::AllowInteractiveAuth)?
-        .destination("org.freedesktop.systemd1")?
-        .interface("org.freedesktop.DBus.Properties")?
-        .build(&body)?;
-
-    connection.send(&message)?;
-
-    let stream = MessageIterator::from(connection);
-
-    for msg in stream {
-        let msg = msg?;
-        let msg_header = msg.header();
-
-        dbg!(&msg);
-
-        let body = msg.body();
-        println!("Type {:?}", msg_header.message_type());
-
-        let body: zbus::zvariant::Structure = body.deserialize()?;
-        let fields = body.fields();
-        for f in fields {
-            println!("{:?}", f);
-        }
-
-        match msg.message_type() {
-            zbus::message::Type::MethodReturn => {
-                println!("Hello Response");
-            }
-            zbus::message::Type::MethodCall => {
-                println!("Not supposed to happen: {:?}", msg);
-                break;
-            }
-            zbus::message::Type::Error => {
-                let error = zbus::Error::from(msg);
-                println!("Error: {:?}", error);
-                break;
-            }
-            zbus::message::Type::Signal => {
-                println!("Signal: {:?}", msg);
-                continue;
-            }
-        }
-    }
-
-    Ok(()) */
 }
 
 pub fn fetch_system_unit_info_native(

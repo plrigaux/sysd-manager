@@ -363,10 +363,13 @@ impl UnitListPanelImp {
 
             glib::spawn_future_local(async move {
                 runtime().spawn(async move {
-                    let response = systemd::complete_unit_information(all_units).await;
-                    if let Err(error) = response {
-                        warn!("Complete Unit Information Error: {:?}", error);
-                    }
+                    let updates = match systemd::complete_unit_information(all_units).await {
+                        Ok(updates) => updates,
+                        Err(error) => {
+                            warn!("Complete Unit Information Error: {:?}", error);
+                            vec![]
+                        }
+                    };
                 });
             });
         });
