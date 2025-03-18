@@ -26,6 +26,7 @@ Here are __SysD Manager__ main features:
 * [x] Select a unit at program opening by passing a unit name as cli argument (see --help)
 * [ ] Clean unit like `systemctl clean`
 * [ ] Multi languages
+* [ ] Journal events updated automaticaly at realtime
 * ...
 
 *__Note__ if you need a feature communicate with the author or contribute to the project. If you're stuck take a look at __systemctl__.*
