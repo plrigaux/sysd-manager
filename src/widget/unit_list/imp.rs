@@ -283,12 +283,18 @@ impl UnitListPanelImp {
             list_store.remove_all();
 
             let mut all_units = HashMap::with_capacity(unit_desc.len() + unit_from_files.len());
-            for (_key, unit) in unit_desc.into_iter() {
-                list_store.append(&UnitBinding::new(&unit));
-                all_units.insert(unit.primary(), unit);
+
+            for system_unit_file in unit_from_files.into_iter() {
+                if let Some(loaded_unit) = unit_desc.get(&system_unit_file.full_name) {
+                    loaded_unit.update_from_unit_file(system_unit_file);
+                } else {
+                    let unit = UnitInfo::from_unit_file(system_unit_file);
+                    list_store.append(&UnitBinding::new(&unit));
+                    all_units.insert(unit.primary(), unit);
+                }
             }
 
-            for unit in unit_from_files.into_iter() {
+            for (_key, unit) in unit_desc.into_iter() {
                 list_store.append(&UnitBinding::new(&unit));
                 all_units.insert(unit.primary(), unit);
             }
@@ -358,30 +364,38 @@ impl UnitListPanelImp {
                 {
                     let all_units = all_units.clone();
 
+                    async fn call_complete_unit(
+                        sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
+                        batch: &Vec<(String, systemd::enums::UnitDBusLevel, Option<String>)>,
+                    ) {
+                        let updates = match systemd::complete_unit_information(batch).await {
+                            Ok(updates) => updates,
+                            Err(error) => {
+                                warn!("Complete Unit Information Error: {:?}", error);
+                                vec![]
+                            }
+                        };
+
+                        sender
+                            .send(updates)
+                            .await
+                            .expect("The channel needs to be open.");
+                    }
+
                     runtime().spawn(async move {
                         const BATCH_SIZE: usize = 5;
                         let mut batch = Vec::with_capacity(BATCH_SIZE);
-                        for (idx, unit) in all_units.values().enumerate() {
+                        for (idx, unit) in (1..).zip(all_units.values()) {
                             batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
 
                             if idx % BATCH_SIZE == 0 {
-                                let updates = match systemd::complete_unit_information(&batch).await
-                                {
-                                    Ok(updates) => updates,
-                                    Err(error) => {
-                                        warn!("Complete Unit Information Error: {:?}", error);
-                                        vec![]
-                                    }
-                                };
-
-                                sender
-                                    .send(updates)
-                                    .await
-                                    .expect("The channel needs to be open.");
+                                call_complete_unit(&sender, &batch).await;
 
                                 batch.clear();
                             }
                         }
+
+                        call_complete_unit(&sender, &batch).await;
                     });
                 }
 
@@ -391,22 +405,7 @@ impl UnitListPanelImp {
                             continue;
                         };
 
-                        unit.set_object_path(update.object_path);
-                        if let Some(description) = update.description {
-                            unit.set_description(description);
-                        }
-
-                        if let Some(sub_state) = update.sub_state {
-                            unit.set_sub_state(sub_state);
-                        }
-
-                        if let Some(active_state) = update.active_state {
-                            unit.set_active_state(active_state);
-                        }
-
-                        if let Some(unit_file_preset) = update.unit_file_preset {
-                            unit.set_preset(unit_file_preset);
-                        }
+                        unit.update_from_unit_info(update);
                     }
                 }
             });

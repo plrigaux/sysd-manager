@@ -1,9 +1,9 @@
 use std::{cmp::Ordering, fmt::Debug};
 
 use super::{
+    SystemdUnitFile, UpdatedUnitInfo,
     enums::{ActiveState, EnablementStatus, UnitDBusLevel},
     sysdbus::LUnit,
-    SystemdUnitFile,
 };
 
 use gtk::{
@@ -34,16 +34,38 @@ impl UnitInfo {
         this_object
     }
 
-    pub fn from_unit_file(unit_file: SystemdUnitFile, level: UnitDBusLevel) -> Self {
+    pub fn from_unit_file(unit_file: SystemdUnitFile) -> Self {
         let this_object: Self = glib::Object::new();
-        let imp: &imp::UnitInfoImpl = this_object.imp();
-        imp.init_from_unit_file(unit_file, level);
+        this_object.imp().init_from_unit_file(unit_file);
         this_object
     }
 
+    pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
+        self.set_object_path(update.object_path);
+
+        if let Some(description) = update.description {
+            self.set_description(description);
+        }
+
+        if let Some(sub_state) = update.sub_state {
+            self.set_sub_state(sub_state);
+        }
+
+        if let Some(active_state) = update.active_state {
+            self.set_active_state(active_state);
+        }
+
+        if let Some(unit_file_preset) = update.unit_file_preset {
+            self.set_preset(unit_file_preset);
+        }
+
+        if let Some(load_state) = update.load_state {
+            self.set_load_state(load_state);
+        }
+    }
+
     pub fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
-        let imp: &imp::UnitInfoImpl = self.imp();
-        imp.update_from_unit_file(unit_file);
+        self.imp().update_from_unit_file(unit_file);
     }
 
     pub fn active_state(&self) -> ActiveState {
@@ -78,7 +100,9 @@ mod imp {
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
     use crate::systemd::{
-        enums::ActiveState, enums::UnitDBusLevel, sysdbus::LUnit, SystemdUnitFile,
+        SystemdUnitFile,
+        enums::{ActiveState, UnitDBusLevel},
+        sysdbus::LUnit,
     };
 
     #[derive(Debug, glib::Properties, Default)]
@@ -146,10 +170,10 @@ mod imp {
             *self.level.write().unwrap() = dbus_level;
         }
 
-        pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile, level: UnitDBusLevel) {
+        pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile) {
             self.set_primary(unit_file.full_name);
             self.set_active_state(ActiveState::Unknown);
-            *self.level.write().unwrap() = level;
+            *self.level.write().unwrap() = unit_file.level;
             *self.file_path.write().unwrap() = Some(unit_file.path);
             *self.enable_status.write().unwrap() = unit_file.status_code as u8;
         }

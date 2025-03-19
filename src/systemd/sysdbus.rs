@@ -171,19 +171,19 @@ pub fn get_unit_file_state(
 
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
-) -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
+) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
     let connection = get_connection_async(level).await?;
     let conn = Arc::new(connection);
     let t1 = tokio::spawn(list_units_description_conn_async(conn.clone(), level));
-    let t2 = tokio::spawn(list_unit_files_async(conn));
+    let t2 = tokio::spawn(list_unit_files_async(conn, level));
 
     let joined = tokio::join!(t1, t2);
 
     let units_map = joined.0??;
     let unit_files = joined.1??;
-
+    /*
     let mut units_from_file = Vec::with_capacity(unit_files.len());
-    for unit_file in unit_files.into_iter() {
+       for unit_file in unit_files.into_iter() {
         match units_map.get(&unit_file.full_name.to_ascii_lowercase()) {
             Some(unit) => {
                 unit.update_from_unit_file(unit_file);
@@ -200,12 +200,13 @@ pub async fn list_units_description_and_state_async(
                 units_from_file.push(unit);
             }
         };
-    }
+    } */
 
-    Ok((units_map, units_from_file))
+    Ok((units_map, unit_files))
 }
 
-pub async fn list_all_units() -> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
+pub async fn list_all_units()
+-> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
     match PREFERENCES.dbus_level() {
         DbusLevel::UserSession => {
             list_units_description_and_state_async(UnitDBusLevel::UserSession).await
@@ -347,7 +348,10 @@ async fn fill_update(
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 #[allow(dead_code)]
-pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
+pub fn list_unit_files(
+    connection: &Connection,
+    level: UnitDBusLevel,
+) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
         PATH_SYSTEMD,
@@ -356,10 +360,13 @@ pub fn list_unit_files(connection: &Connection) -> Result<Vec<SystemdUnitFile>, 
         &(),
     )?;
 
-    fill_list_unit_files(message)
+    fill_list_unit_files(message, level)
 }
 
-fn fill_list_unit_files(message: Message) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
+fn fill_list_unit_files(
+    message: Message,
+    level: UnitDBusLevel,
+) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let body = message.body();
 
     let array: Vec<LUnitFiles> = body.deserialize()?;
@@ -387,7 +394,7 @@ fn fill_list_unit_files(message: Message) -> Result<Vec<SystemdUnitFile>, System
         systemd_units.push(SystemdUnitFile {
             full_name: full_name.to_owned(),
             status_code,
-            // utype,
+            level,
             path: unit_file.primary_unit_name.to_owned(),
         });
     }
@@ -398,6 +405,7 @@ fn fill_list_unit_files(message: Message) -> Result<Vec<SystemdUnitFile>, System
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub async fn list_unit_files_async(
     connection: Arc<zbus::Connection>,
+    level: UnitDBusLevel,
 ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let message = connection
         .call_method(
@@ -409,7 +417,7 @@ pub async fn list_unit_files_async(
         )
         .await?;
 
-    fill_list_unit_files(message)
+    fill_list_unit_files(message, level)
 }
 
 /// Takes a unit name as input and attempts to start it
@@ -1153,7 +1161,10 @@ mod tests {
     #[ignore = "need a connection to a service"]
     #[test]
     fn test_list_unit_files() -> Result<(), SystemdErrors> {
-        let units = list_unit_files(&get_connection(UnitDBusLevel::System)?)?;
+        let units = list_unit_files(
+            &get_connection(UnitDBusLevel::System)?,
+            UnitDBusLevel::System,
+        )?;
 
         let serv = units.iter().find(|ud| ud.full_name == TEST_SERVICE);
 
@@ -1424,12 +1435,12 @@ mod tests {
             conn.clone(),
             UnitDBusLevel::System,
         ));
-        let t2 = tokio::spawn(list_unit_files_async(conn));
+        let t2 = tokio::spawn(list_unit_files_async(conn, UnitDBusLevel::System));
         let t3 = tokio::spawn(list_units_description_conn_async(
             conn2.clone(),
             UnitDBusLevel::UserSession,
         ));
-        let t4 = tokio::spawn(list_unit_files_async(conn2));
+        let t4 = tokio::spawn(list_unit_files_async(conn2, UnitDBusLevel::UserSession));
 
         let _asdf = tokio::join!(t1, t2, t3, t4);
 
@@ -1456,9 +1467,9 @@ mod tests {
         use std::time::Instant;
         let now = Instant::now();
         let t1 = list_units_description_conn_async(conn.clone(), UnitDBusLevel::System);
-        let t2 = list_unit_files_async(conn);
+        let t2 = list_unit_files_async(conn, UnitDBusLevel::System);
         let t3 = list_units_description_conn_async(conn2.clone(), UnitDBusLevel::UserSession);
-        let t4 = list_unit_files_async(conn2);
+        let t4 = list_unit_files_async(conn2, UnitDBusLevel::UserSession);
 
         let joined_result = tokio::join!(t1, t2, t3, t4);
 

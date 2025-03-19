@@ -47,7 +47,7 @@ const IS_FLATPAK_MODE: bool = false;
 pub struct SystemdUnitFile {
     pub full_name: String,
     pub status_code: EnablementStatus,
-    //pub utype: UnitType,
+    pub level: UnitDBusLevel,
     pub path: String,
 }
 
@@ -120,7 +120,7 @@ pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, S
 }
  */
 pub async fn list_units_description_and_state_async()
--> Result<(HashMap<String, UnitInfo>, Vec<UnitInfo>), SystemdErrors> {
+-> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
     sysdbus::list_all_units().await
 }
 
