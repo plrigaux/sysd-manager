@@ -66,6 +66,11 @@ impl UnitInfo {
         if let Some(fragment_path) = update.fragment_path {
             self.set_file_path(Some(fragment_path));
         }
+
+        if let Some(enablement_status) = update.enablement_status {
+            let enablement_status: u8 = enablement_status.into();
+            self.set_enable_status(enablement_status);
+        }
     }
 
     pub fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {

@@ -169,6 +169,26 @@ pub fn get_unit_file_state(
     Ok(EnablementStatus::from_str(enablement_status))
 }
 
+pub async fn get_unit_file_state_async(
+    connection: &zbus::Connection,
+    unit_file: &str,
+) -> Result<EnablementStatus, SystemdErrors> {
+    let message = connection
+        .call_method(
+            Some(DESTINATION_SYSTEMD),
+            PATH_SYSTEMD,
+            Some(INTERFACE_SYSTEMD_MANAGER),
+            METHOD_GET_UNIT_FILE_STATE,
+            &(unit_file),
+        )
+        .await?;
+
+    let body = message.body();
+    let enablement_status: &str = body.deserialize()?;
+
+    Ok(EnablementStatus::from_str(enablement_status))
+}
+
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
 ) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
@@ -181,26 +201,6 @@ pub async fn list_units_description_and_state_async(
 
     let units_map = joined.0??;
     let unit_files = joined.1??;
-    /*
-    let mut units_from_file = Vec::with_capacity(unit_files.len());
-       for unit_file in unit_files.into_iter() {
-        match units_map.get(&unit_file.full_name.to_ascii_lowercase()) {
-            Some(unit) => {
-                unit.update_from_unit_file(unit_file);
-            }
-            None => {
-                debug!(
-                    "Unit \"{}\" status \"{}\" not loaded!",
-                    unit_file.full_name,
-                    unit_file.status_code.to_string()
-                );
-
-                let unit = UnitInfo::from_unit_file(unit_file, level);
-
-                units_from_file.push(unit);
-            }
-        };
-    } */
 
     Ok((units_map, unit_files))
 }
@@ -250,8 +250,16 @@ pub async fn complete_unit_information(
             }
         };
 
-        match complete_unit_info(unit_primary, object_path, connection).await {
-            Ok(updated_unit_info) => ouput.push(updated_unit_info),
+        let f1 = complete_unit_info(unit_primary, object_path, connection);
+        let f2 = get_unit_file_state_async(connection, unit_primary);
+
+        let (r1, r2) = tokio::join!(f1, f2);
+
+        match r1 {
+            Ok(mut updated_unit_info) => {
+                updated_unit_info.enablement_status = r2.ok();
+                ouput.push(updated_unit_info)
+            }
             Err(error) => warn!("Complete unit \"{}\" error {:?}", unit_primary, error),
         }
     }
@@ -1153,6 +1161,7 @@ mod tests {
     #[ignore = "need a connection to a service"]
     #[test]
     fn test_get_unit_file_state() {
+        init();
         let file1: &str = TEST_SERVICE;
 
         let status = get_unit_file_state(UnitDBusLevel::System, file1);

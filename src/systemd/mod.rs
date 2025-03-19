@@ -71,7 +71,7 @@ pub enum BootFilter {
     Id(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct UpdatedUnitInfo {
     pub primary: String,
     pub object_path: String,
@@ -82,6 +82,7 @@ pub struct UpdatedUnitInfo {
     pub unit_file_preset: Option<String>,
     pub valid_unit_name: bool,
     pub fragment_path: Option<String>,
+    pub enablement_status: Option<EnablementStatus>,
 }
 
 impl UpdatedUnitInfo {
@@ -89,13 +90,7 @@ impl UpdatedUnitInfo {
         Self {
             primary,
             object_path,
-            description: None,
-            load_state: None,
-            sub_state: None,
-            active_state: None,
-            unit_file_preset: None,
-            valid_unit_name: false,
-            fragment_path: None,
+            ..Default::default()
         }
     }
 }
