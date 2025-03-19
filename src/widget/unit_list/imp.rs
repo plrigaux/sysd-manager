@@ -573,6 +573,7 @@ impl ObjectImpl for UnitListPanelImp {
         column_view_column_set_sorter!(column_view_column_map, "load", load_state);
         column_view_column_set_sorter!(column_view_column_map, "active", active_state);
         column_view_column_set_sorter!(column_view_column_map, "sub", sub_state);
+        column_view_column_set_sorter!(column_view_column_map, "description", description);
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 
