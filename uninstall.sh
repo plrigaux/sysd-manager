@@ -18,4 +18,5 @@ sudo rm "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop"
 sudo rm "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg"
 sudo rm "/usr/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml" 
 echo ""
-echo -e Uninstallation of $PROGRAM completed. I wish we had more time together.
+echo -e Uninstallation of $PROGRAM completed.
+echo -e We wish we had more time together.

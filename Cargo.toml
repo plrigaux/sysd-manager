@@ -1,12 +1,12 @@
 [package]
 name = "sysd-manager"
-version = "1.18.1"
+version = "1.18.2"
 edition = '2024'
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
 readme = "README.md"
-authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
-description = "A GUI to manage systemd units"
+authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
+description = "Application to empower user to manage their <b>systemd units</b> via Graphical User Interface. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs."
 keywords = ["gtk4", "linux", "systemd"]
 rust-version = "1.85"
 

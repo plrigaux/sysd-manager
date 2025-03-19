@@ -144,6 +144,22 @@ fn create_about() -> adw::AboutDialog {
 
     let authors: Vec<&str> = CARGO_PKG_AUTHORS.split(',').collect();
 
+    let release_notes = "<p>Added</p>
+        <ul>
+          <li>The possibility to sort the Description column</li>
+          <li>Add acknowledgements section in About Dialog</li>
+          <li>Add artist in credits section</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>New application icon</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Remove duplicates in the unit list</li>
+          <li>Fix failing to retrieve file path for some units</li>
+        </ul>";
+
     let about = adw::AboutDialog::builder()
         .developers(authors.clone())
         .designers(authors)
@@ -156,6 +172,8 @@ fn create_about() -> adw::AboutDialog {
         .website("https://github.com/plrigaux/sysd-manager")
         .issue_url("https://github.com/plrigaux/sysd-manager/issues")
         .artists(["4nyNoob"])
+        .release_notes_version(VERSION)
+        .release_notes(release_notes)
         .build();
 
     about.add_acknowledgement_section(

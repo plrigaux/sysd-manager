@@ -86,6 +86,8 @@ https://hughsie.github.io/oars/index.html
         <p>Added</p>
         <ul>
           <li>The possibility to sort the Description column</li>
+          <li>Add acknowledgements section in About Dialog</li>
+          <li>Add artist in credits section</li>
         </ul>
         <p>Changed</p>
         <ul>
