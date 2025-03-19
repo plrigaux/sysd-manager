@@ -1,4 +1,4 @@
-<img src="data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg" alt="SysD Manager Icon" style="width:128pt;"/>
+<img src="data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg" alt="SysD Manager Icon" width="128" height="128"/>
 
 # SysD Manager
 
