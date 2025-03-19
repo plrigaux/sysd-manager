@@ -144,8 +144,9 @@ fn create_about() -> adw::AboutDialog {
 
     let authors: Vec<&str> = CARGO_PKG_AUTHORS.split(',').collect();
 
-    adw::AboutDialog::builder()
-        .developers(authors)
+    let about = adw::AboutDialog::builder()
+        .developers(authors.clone())
+        .designers(authors)
         .name("About")
         .application_name(APP_TITLE)
         .application_icon(APP_ID)
@@ -154,5 +155,13 @@ fn create_about() -> adw::AboutDialog {
         .comments(CARGO_PKG_DESCRIPTION)
         .website("https://github.com/plrigaux/sysd-manager")
         .issue_url("https://github.com/plrigaux/sysd-manager/issues")
-        .build()
+        .artists(["4nyNoob"])
+        .build();
+
+    about.add_acknowledgement_section(
+        Some("Thank you for your support"),
+        &["AsciiWolf", "Justin Searle"],
+    );
+
+    about
 }
