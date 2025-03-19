@@ -62,6 +62,10 @@ impl UnitInfo {
         if let Some(load_state) = update.load_state {
             self.set_load_state(load_state);
         }
+
+        if let Some(fragment_path) = update.fragment_path {
+            self.set_file_path(Some(fragment_path));
+        }
     }
 
     pub fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {

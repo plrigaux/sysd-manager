@@ -81,6 +81,7 @@ pub struct UpdatedUnitInfo {
     pub active_state: Option<ActiveState>,
     pub unit_file_preset: Option<String>,
     pub valid_unit_name: bool,
+    pub fragment_path: Option<String>,
 }
 
 impl UpdatedUnitInfo {
@@ -94,6 +95,7 @@ impl UpdatedUnitInfo {
             active_state: None,
             unit_file_preset: None,
             valid_unit_name: false,
+            fragment_path: None,
         }
     }
 }

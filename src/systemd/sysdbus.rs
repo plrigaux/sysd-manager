@@ -341,6 +341,7 @@ async fn fill_update(
     fill_completing_info!(update, unit_info_proxy, load_state);
     fill_completing_info!(update, unit_info_proxy, sub_state);
     fill_completing_info!(update, unit_info_proxy, unit_file_preset);
+    fill_completing_info!(update, unit_info_proxy, fragment_path);
     update.valid_unit_name = true;
 
     Ok(())
