@@ -81,15 +81,32 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-  <release version="1.18.1" date="2025-03-18">
-      <description>  
+    <release version="1.18.2" date="2025-03-19">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>The possibility to sort the Description column</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>New application icon</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Remove duplicates in the unit list</li>
+          <li>Fix failing to retrieve file path for some units</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.18.1" date="2025-03-18">
+      <description>
         <p>Fixed</p>
         <ul>
           <li>Possible application crashes</li>
-        </ul>            
+        </ul>
       </description>
     </release>
-  <release version="1.18.0" date="2025-03-17">
+    <release version="1.18.0" date="2025-03-17">
       <description>
         <p>Added</p>
         <ul>
@@ -101,17 +118,17 @@ https://hughsie.github.io/oars/index.html
         </ul>
         <p>Changed</p>
         <ul>
-          <li>Side menu to control unit</li>  
-          <li>Send kill signal interface improved</li>         
-        </ul>   
+          <li>Side menu to control unit</li>
+          <li>Send kill signal interface improved</li>
+        </ul>
         <p>Fixed</p>
         <ul>
           <li>Unit list value realtime update</li>
           <li>Saving bus level context</li>
-        </ul>            
+        </ul>
       </description>
     </release>
-  <release version="1.17.0" date="2025-03-06">
+    <release version="1.17.0" date="2025-03-06">
       <description>
         <p>Added</p>
         <ul>
@@ -120,9 +137,9 @@ https://hughsie.github.io/oars/index.html
         </ul>
         <p>Changed</p>
         <ul>
-          <li>Side menu to control unit</li>  
-          <li>Send kill signal interface improved</li>         
-        </ul>               
+          <li>Side menu to control unit</li>
+          <li>Send kill signal interface improved</li>
+        </ul>
       </description>
     </release>
     <release version="1.16.0" date="2025-02-24">
@@ -136,7 +153,7 @@ https://hughsie.github.io/oars/index.html
         </ul>
         <p>Changed</p>
         <ul>
-          <li>Faster journal events time processing</li>         
+          <li>Faster journal events time processing</li>
         </ul>
         <p>Removed</p>
         <ul>
