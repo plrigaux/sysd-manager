@@ -18,6 +18,8 @@ fn main() {
     );
 
     compile_schema();
+
+    generate_notes();
 }
 
 // BELOW CODE is COPY of glib-build-tools = "0.19.0"
@@ -154,5 +156,148 @@ fn compile_schema() {
             "Compile Schema stderr {}",
             String::from_utf8_lossy(&output.stderr)
         );
+    }
+}
+
+fn generate_notes() {
+    const METAINFO: &str = "data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml";
+    println!("cargo:rerun-if-changed={METAINFO}");
+
+    let release_notes = match get_release_notes(METAINFO) {
+        Ok(list) => list,
+        Err(error) => {
+            script_error!("Error parsing metainfo: {:?}", error);
+            return;
+        }
+    };
+
+    let (version, description) = if let Some(first) = release_notes.first() {
+        (Some(first.version.clone()), Some(first.description.clone()))
+    } else {
+        (None, None)
+    };
+
+    let out_dir = env::var_os("OUT_DIR").unwrap();
+    let dest_path = Path::new(&out_dir).join("release_notes.rs");
+    script_warning!("dest_path {:?}", dest_path);
+
+    let version_out = version.map_or("None".to_owned(), |s| format!("Some(\"{s}\")"));
+    let version_line = format!("pub const NOTE_VERSION : Option<&str> = {};", version_out);
+    fs::write(&dest_path, version_line).unwrap();
+}
+
+use std::io::BufRead;
+
+use quick_xml::{
+    Reader, Writer,
+    events::{BytesStart, Event},
+};
+
+#[derive(Debug, Default, Clone)]
+struct Release {
+    version: String,
+    date: String,
+    description: String,
+}
+
+fn get_release_notes(metainfo: &str) -> Result<Vec<Release>, quick_xml::Error> {
+    let mut reader = Reader::from_file(metainfo)?;
+    reader.config_mut().trim_text(true);
+
+    let mut buf = Vec::new();
+    let mut junk_buf: Vec<u8> = Vec::new();
+
+    let mut release = Release::default();
+    let mut in_release = false;
+    let mut release_notes = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Err(e) => panic!("Error at position {}: {:?}", reader.error_position(), e),
+            // exits the loop when reaching end of file
+            Ok(Event::Start(e)) => match e.name().as_ref() {
+                b"release" => {
+                    in_release = true;
+                    release = Release::default();
+
+                    for attr in e.attributes() {
+                        let attr = attr.unwrap();
+
+                        match attr.key.local_name().as_ref() {
+                            b"version" => {
+                                release.version = String::from_utf8_lossy(&attr.value).to_string()
+                            }
+                            b"date" => {
+                                release.date = String::from_utf8_lossy(&attr.value).to_string()
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+                b"description" => {
+                    if !in_release {
+                        continue;
+                    }
+
+                    let release_bytes =
+                        read_to_end_into_buffer_inner(&mut reader, e, &mut junk_buf).unwrap();
+
+                    let s = String::from_utf8_lossy(&release_bytes);
+
+                    release.description = s.to_string();
+
+                    println!("Release: {:?}", release);
+                }
+
+                _ => (),
+            },
+            Ok(Event::End(e)) if e.name().as_ref() == b"release" => {
+                release_notes.push(release.clone());
+                in_release = false
+            }
+            Ok(Event::Eof) => break,
+            _ => (),
+        }
+    }
+    Ok(release_notes)
+}
+
+fn read_to_end_into_buffer_inner<R: BufRead>(
+    reader: &mut Reader<R>,
+    start_tag: BytesStart,
+    junk_buf: &mut Vec<u8>,
+) -> Result<Vec<u8>, quick_xml::Error> {
+    let mut depth = 0;
+    let mut output_buf: Vec<u8> = Vec::new();
+    let mut w = Writer::new(&mut output_buf);
+    let tag_name = start_tag.name();
+
+    loop {
+        junk_buf.clear();
+        let event = reader.read_event_into(junk_buf)?;
+        match event {
+            Event::Start(ref e) => {
+                if e.name() == tag_name {
+                    depth += 1
+                }
+                w.write_event(event.borrow())?;
+            }
+            Event::End(ref e) => {
+                if e.name() == tag_name {
+                    if depth == 0 {
+                        return Ok(output_buf);
+                    }
+                    depth -= 1;
+                } else {
+                    w.write_event(event.borrow())?;
+                }
+            }
+            Event::Text(ref _e) => {
+                w.write_event(event)?;
+            }
+            Event::Eof => {
+                panic!("oh no")
+            }
+            _ => {}
+        }
     }
 }

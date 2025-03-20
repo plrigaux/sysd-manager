@@ -11,7 +11,7 @@ mod systemd_gui;
 mod utils;
 mod widget;
 
-use clap::{command, Parser};
+use clap::{Parser, command};
 use gtk::{
     gdk,
     gio::{self},
@@ -23,16 +23,19 @@ use log::{debug, info, warn};
 
 use dotenv::dotenv;
 use systemd::{data::UnitInfo, enums::UnitDBusLevel};
-use systemd_gui::{new_settings, APP_ID};
+use systemd_gui::{APP_ID, new_settings};
 use widget::{
-    app_window::{menu, AppWindow},
+    app_window::{AppWindow, menu},
     preferences::{
-        data::{DbusLevel, PREFERENCES},
         PreferencesDialog,
+        data::{DbusLevel, PREFERENCES},
     },
 };
 
+include!(concat!(env!("OUT_DIR"), "/release_notes.rs"));
+
 fn main() -> glib::ExitCode {
+    println!("NOTE_VERSION {:?}", NOTE_VERSION);
     dotenv().ok();
 
     env_logger::init();
