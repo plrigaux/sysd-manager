@@ -1,3 +1,15 @@
+macro_rules! script_warning {
+    ($($tokens: tt)*) => {
+        println!("cargo:warning={}", format!($($tokens)*))
+    }
+}
+
+macro_rules! script_error {
+    ($($tokens: tt)*) => {
+        println!("cargo::error={}", format!($($tokens)*))
+    }
+}
+
 fn main() {
     compile_resources(
         &["data"],
@@ -120,21 +132,27 @@ fn compile_schema() {
     );
     println!("Install Schema status {}", output.status);
 
-    let mut command = Command::new("glib-compile-schemas");
-    let output = command.arg(&out_dir).output().unwrap();
+    const GLIB_COMPILE_SCHEMAS: &str = "glib-compile-schemas";
+    let mut command = Command::new(GLIB_COMPILE_SCHEMAS);
+    let output = command.arg("--strict").arg(&out_dir).output().unwrap();
 
     if output.status.success() {
-        println!("Compile Schema Done on '{:?}'", out_dir);
+        println!("Compile Schema Succeed on {:?}", out_dir);
     } else {
-        println!("Compile Schema Failed on '{:?}'", out_dir);
-        println!(
+        script_error!(
+            "Compile Schema with {GLIB_COMPILE_SCHEMAS} Failed (status {}),  directory {:?}",
+            output.status,
+            out_dir
+        );
+
+        script_warning!(
             "Compile Schema stdout {}",
             String::from_utf8_lossy(&output.stdout)
         );
-        println!(
+
+        script_error!(
             "Compile Schema stderr {}",
             String::from_utf8_lossy(&output.stderr)
         );
-        println!("Compile Schema status {}", output.status);
     }
 }
