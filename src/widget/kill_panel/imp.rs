@@ -19,7 +19,7 @@ use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
     systemd::{self, data::UnitInfo, enums::KillWho},
     utils::writer::UnitInfoWriter,
-    widget::{InterPanelAction, unit_control_panel::UnitControlPanel},
+    widget::{InterPanelAction, unit_control_panel::side_control_panel::SideControlPanel},
 };
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -41,7 +41,7 @@ pub struct KillPanelImp {
     window_title: TemplateChild<adw::WindowTitle>,
 
     #[template_child]
-    signals_group: TemplateChild<adw::PreferencesGroup>,
+    signals_box: TemplateChild<gtk::Box>,
 
     unit: RefCell<Option<UnitInfo>>,
 
@@ -49,7 +49,7 @@ pub struct KillPanelImp {
 
     is_sigqueue: Cell<bool>,
 
-    parent: OnceCell<UnitControlPanel>,
+    parent: OnceCell<SideControlPanel>,
 }
 
 #[gtk::template_callbacks]
@@ -230,6 +230,8 @@ impl KillPanelImp {
                 sg.comment, sg.default_action
             ))
             .subtitle_lines(2)
+            .margin_end(5)
+            .margin_start(5)
             .build();
 
         let button_label = sg.id.to_string();
@@ -244,7 +246,7 @@ impl KillPanelImp {
             entry_row.set_text(&button_label);
         });
         action_row.add_suffix(&action_button);
-        self.signals_group.add(&action_row);
+        self.signals_box.append(&action_row);
     }
 }
 
@@ -333,7 +335,7 @@ impl KillPanelImp {
         self.send_button.set_sensitive(button_sensitive);
     }
 
-    pub(crate) fn set_parent(&self, parent: &UnitControlPanel) {
+    pub(crate) fn set_parent(&self, parent: &SideControlPanel) {
         self.parent
             .set(parent.clone())
             .expect("parent should be set once");

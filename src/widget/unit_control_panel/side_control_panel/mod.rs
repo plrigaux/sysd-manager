@@ -30,4 +30,8 @@ impl SideControlPanel {
     pub fn set_inter_action(&self, action: &InterPanelAction) {
         self.imp().set_inter_action(action);
     }
+
+    pub fn add_toast_message(&self, message: &str, use_markup: bool) {
+        self.imp().add_toast_message(message, use_markup);
+    }
 }

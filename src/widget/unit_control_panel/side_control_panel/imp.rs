@@ -12,6 +12,8 @@ use crate::{
     },
 };
 
+use super::SideControlPanel;
+
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/side_control_panel.ui")]
 #[properties(wrapper_type = super::SideControlPanel)]
@@ -117,7 +119,7 @@ impl SideControlPanelImpl {
     fn kill_or_queue_new_window(
         &self,
         window_cell: &RefCell<Option<KillPanel>>,
-        new_kill_window_fn: fn(Option<&UnitInfo>, bool, &UnitControlPanel) -> KillPanel,
+        new_kill_window_fn: fn(Option<&UnitInfo>, bool, &SideControlPanel) -> KillPanel,
     ) {
         let binding = self.current_unit.borrow();
         let create_new = {
@@ -143,15 +145,11 @@ impl SideControlPanelImpl {
         };
 
         if create_new {
-            if let Some(parent) = self.parent.get() {
-                let kill_signal_window =
-                    new_kill_window_fn(binding.as_ref(), self.is_dark.get(), parent);
-                kill_signal_window.present();
+            let kill_signal_window =
+                new_kill_window_fn(binding.as_ref(), self.is_dark.get(), &self.obj());
+            kill_signal_window.present();
 
-                window_cell.replace(Some(kill_signal_window));
-            } else {
-                warn!("No parent panel link, ask dev");
-            }
+            window_cell.replace(Some(kill_signal_window));
         }
     }
 
@@ -165,6 +163,13 @@ impl SideControlPanelImpl {
 
     pub(super) fn set_parent(&self, parent: &UnitControlPanel) {
         let _ = self.parent.set(parent.clone());
+    }
+
+    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
+        self.parent
+            .get()
+            .expect("parent not None")
+            .add_toast_message(message, use_markup);
     }
 }
 

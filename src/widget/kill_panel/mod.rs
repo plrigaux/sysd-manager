@@ -6,7 +6,7 @@ use gtk::{
 
 use crate::systemd::data::UnitInfo;
 
-use super::{InterPanelAction, unit_control_panel::UnitControlPanel};
+use super::{InterPanelAction, unit_control_panel::side_control_panel::SideControlPanel};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -20,7 +20,7 @@ impl KillPanel {
     pub fn new_kill_window(
         unit: Option<&UnitInfo>,
         is_dark: bool,
-        parent: &UnitControlPanel,
+        parent: &SideControlPanel,
     ) -> Self {
         KillPanel::new_window(unit, is_dark, false, parent)
     }
@@ -28,7 +28,7 @@ impl KillPanel {
     pub fn new_signal_window(
         unit: Option<&UnitInfo>,
         is_dark: bool,
-        parent: &UnitControlPanel,
+        parent: &SideControlPanel,
     ) -> Self {
         KillPanel::new_window(unit, is_dark, true, parent)
     }
@@ -37,7 +37,7 @@ impl KillPanel {
         unit: Option<&UnitInfo>,
         is_dark: bool,
         is_signal: bool,
-        parent: &UnitControlPanel,
+        parent: &SideControlPanel,
     ) -> KillPanel {
         let obj: KillPanel = glib::Object::new();
         let imp = obj.imp();

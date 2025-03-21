@@ -56,12 +56,20 @@
               </object>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
-                <property name="vexpand">True</property>
+              <object class="AdwPreferencesGroup">
+                <property name="description">most common linux signals</property>
+                <property name="margin-end">5</property>
+                <property name="title">Common Unix signals</property>
                 <child>
-                  <object class="AdwPreferencesGroup" id="signals_group">
-                    <property name="description">most common linux signals</property>
-                    <property name="title">Common Unix signals</property>
+                  <object class="GtkScrolledWindow">
+                    <property name="halign">baseline-fill</property>
+                    <property name="vexpand">True</property>
+                    <child>
+                      <object class="GtkBox" id="signals_box">
+                        <property name="margin-end">10</property>
+                        <property name="orientation">vertical</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
