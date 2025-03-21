@@ -19,7 +19,9 @@ fn main() {
 
     compile_schema();
 
-    generate_notes();
+    if let Err(error) = generate_notes() {
+        script_error!("Generate release notes error : {:?}", error);
+    }
 }
 
 // BELOW CODE is COPY of glib-build-tools = "0.19.0"
@@ -159,7 +161,19 @@ fn compile_schema() {
     }
 }
 
-fn generate_notes() {
+#[derive(Debug)]
+pub enum ScriptError {
+    FtmError(std::fmt::Error),
+    IoError(std::io::Error),
+}
+
+impl From<std::io::Error> for ScriptError {
+    fn from(error: std::io::Error) -> Self {
+        ScriptError::IoError(error)
+    }
+}
+
+fn generate_notes() -> Result<(), ScriptError> {
     const METAINFO: &str = "data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml";
     println!("cargo:rerun-if-changed={METAINFO}");
 
@@ -167,23 +181,36 @@ fn generate_notes() {
         Ok(list) => list,
         Err(error) => {
             script_error!("Error parsing metainfo: {:?}", error);
-            return;
+            return Ok(());
         }
     };
 
     let (version, description) = if let Some(first) = release_notes.first() {
-        (Some(first.version.clone()), Some(first.description.clone()))
+        (
+            format!("Some(\"{}\")", first.version),
+            format!("Some(\"{}\")", first.description),
+        )
     } else {
-        (None, None)
+        ("None".to_owned(), "None".to_owned())
     };
 
-    let out_dir = env::var_os("OUT_DIR").unwrap();
-    let dest_path = Path::new(&out_dir).join("release_notes.rs");
-    script_warning!("dest_path {:?}", dest_path);
+    let Some(out_dir) = env::var_os("OUT_DIR") else {
+        script_error!("No OUT_DIR");
+        return Ok(());
+    };
 
-    let version_out = version.map_or("None".to_owned(), |s| format!("Some(\"{s}\")"));
-    let version_line = format!("pub const NOTE_VERSION : Option<&str> = {};", version_out);
-    fs::write(&dest_path, version_line).unwrap();
+    let dest_path = Path::new(&out_dir).join("release_notes.rs");
+    println!("dest_path {:?}", dest_path);
+
+    let version_line = format!(
+        "pub const RELEASE_NOTES_VERSION : Option<&str> = {};",
+        version
+    );
+    let description_line = format!("pub const RELEASE_NOTES : Option<&str> = {};", description);
+
+    fs::write(&dest_path, format!("{version_line}\n{description_line}"))?;
+
+    Ok(())
 }
 
 use std::io::BufRead;

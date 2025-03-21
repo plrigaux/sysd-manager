@@ -15,6 +15,8 @@ use crate::widget::preferences::PreferencesDialog;
 
 pub const APP_TITLE: &str = "SysD Manager";
 
+include!(concat!(env!("OUT_DIR"), "/release_notes.rs"));
+
 pub fn on_startup(app: &adw::Application) {
     let about = gio::ActionEntry::builder("about")
         .activate(|application: &adw::Application, _, _| {
@@ -180,6 +182,14 @@ fn create_about() -> adw::AboutDialog {
         Some("Thank you for your support"),
         &["AsciiWolf", "Justin Searle"],
     );
+
+    if let Some(rn_version) = RELEASE_NOTES_VERSION {
+        about.set_release_notes_version(rn_version);
+    }
+
+    if let Some(release_notes) = RELEASE_NOTES {
+        about.set_release_notes(release_notes);
+    }
 
     about
 }

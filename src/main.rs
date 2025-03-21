@@ -35,7 +35,8 @@ use widget::{
 include!(concat!(env!("OUT_DIR"), "/release_notes.rs"));
 
 fn main() -> glib::ExitCode {
-    println!("NOTE_VERSION {:?}", NOTE_VERSION);
+    println!("NOTE_VERSION {:?}", RELEASE_NOTES_VERSION);
+    println!("RELEASE_NOTE {:?}", RELEASE_NOTES);
     dotenv().ok();
 
     env_logger::init();
