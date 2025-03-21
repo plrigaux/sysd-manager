@@ -177,66 +177,6 @@
         </property>
         <property name="max-sidebar-width">180.0</property>
         <property name="min-sidebar-width">40.0</property>
-        <property name="sidebar">
-          <object class="GtkBox">
-            <property name="margin-end">5</property>
-            <property name="margin-start">5</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkButton">
-                <property name="css-classes">circular</property>
-                <property name="halign">end</property>
-                <property name="icon-name">window-close-symbolic</property>
-                <signal name="clicked" handler="sidebar_close_button_clicked" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="child">
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">send-symbolic</property>
-                    <property name="label">Send _Kill Signal</property>
-                    <property name="tooltip-text">Send a signal to a process or a group of processes</property>
-                    <property name="use-underline">True</property>
-                  </object>
-                </property>
-                <property name="css-classes">flat</property>
-                <signal name="clicked" handler="kill_button_clicked" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="child">
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">send-alt-symbolic</property>
-                    <property name="label">_Queue Signal </property>
-                    <property name="tooltip-text">Queue a signal to a process or a group of processes</property>
-                    <property name="use-underline">True</property>
-                  </object>
-                </property>
-                <property name="css-classes">flat</property>
-                <signal name="clicked" handler="send_signal_button_clicked" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="child">
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">empty-trash-bin-symbolic</property>
-                    <property name="label">_Clean</property>
-                    <property name="use-underline">True</property>
-                  </object>
-                </property>
-                <property name="css-classes">flat</property>
-                <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
-              </object>
-            </child>
-          </object>
-        </property>
         <property name="sidebar-position">end</property>
       </object>
     </child>

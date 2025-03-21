@@ -6,7 +6,7 @@ use gtk::{
 
 use crate::systemd::data::UnitInfo;
 
-use super::{unit_control_panel::UnitControlPanel, InterPanelAction};
+use super::{InterPanelAction, unit_control_panel::UnitControlPanel};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -47,10 +47,6 @@ impl KillPanel {
         imp.set_parent(parent);
 
         obj
-    }
-
-    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
-        self.imp().set_unit(unit);
     }
 
     pub fn set_inter_action(&self, action: &InterPanelAction) {

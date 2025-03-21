@@ -8,11 +8,12 @@ use crate::systemd::{
     errors::SystemdErrors,
 };
 
-use super::{app_window::AppWindow, InterPanelAction};
+use super::{InterPanelAction, app_window::AppWindow};
 
 mod controls;
 mod enums;
 mod imp;
+mod side_control_panel;
 
 glib::wrapper! {
     pub struct UnitControlPanel(ObjectSubclass<imp::UnitControlPanelImpl>)

@@ -16,16 +16,17 @@ use crate::{
         enums::{ActiveState, EnablementStatus, StartStopMode},
         errors::SystemdErrors,
     },
-    utils::font_management::{self, create_provider, FONT_CONTEXT},
+    utils::font_management::{self, FONT_CONTEXT, create_provider},
     widget::{
-        app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
-        kill_panel::KillPanel, preferences::data::PREFERENCES,
-        unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel,
-        unit_info::UnitInfoPanel, InterPanelAction,
+        InterPanelAction, app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
+        preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
+        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
 };
 
-use super::{controls, enums::UnitContolType, UnitControlPanel};
+use super::{
+    UnitControlPanel, controls, enums::UnitContolType, side_control_panel::SideControlPanel,
+};
 use strum::IntoEnumIterator;
 
 const TTT_HIDE: &str = "Hide sidebar";
@@ -78,6 +79,7 @@ pub struct UnitControlPanelImpl {
     unit_panel_stack: TemplateChild<adw::ViewStack>,
 
     app_window: OnceCell<AppWindow>,
+    side_panel: OnceCell<SideControlPanel>,
 
     current_unit: RefCell<Option<UnitInfo>>,
 
@@ -91,9 +93,6 @@ pub struct UnitControlPanelImpl {
     pub restart_mode: RefCell<String>,
 
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
-
-    kill_signal_window: RefCell<Option<KillPanel>>,
-    queue_signal_window: RefCell<Option<KillPanel>>,
 
     is_dark: Cell<bool>,
 }
@@ -116,9 +115,7 @@ impl ObjectSubclass for UnitControlPanelImpl {
 }
 
 macro_rules! current_unit {
-    ($app:expr) => {{
-        current_unit!($app, ())
-    }};
+    ($app:expr) => {{ current_unit!($app, ()) }};
 
     ($app:expr, $opt:expr) => {{
         let unit_op = $app.current_unit.borrow();
@@ -138,6 +135,10 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.register(app_window);
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
+        self.side_panel
+            .get()
+            .expect("side_panel not None")
+            .set_app_window(app_window);
 
         self.app_window
             .set(app_window.clone())
@@ -218,29 +219,10 @@ impl UnitControlPanelImpl {
     }
 
     #[template_callback]
-    fn sidebar_close_button_clicked(&self, _button: &gtk::Button) {
-        //let unit = current_unit!(self);
-
-        //self.kill_panel.set_unit(Some(&unit));
-
-        self.side_overlay.set_collapsed(true);
-    }
-
-    #[template_callback]
     fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
         self.search_bar
             .borrow()
             .set_search_mode(toggle_button.is_active());
-    }
-
-    #[template_callback]
-    fn kill_button_clicked(&self, _button: &gtk::Button) {
-        self.kill_or_queue_new_window(&self.kill_signal_window, KillPanel::new_kill_window);
-    }
-
-    #[template_callback]
-    fn send_signal_button_clicked(&self, _button: &gtk::Button) {
-        self.kill_or_queue_new_window(&self.queue_signal_window, KillPanel::new_signal_window);
     }
 
     #[template_callback]
@@ -349,20 +331,12 @@ impl UnitControlPanelImpl {
     }
 
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
+        let action = InterPanelAction::UnitChange(unit);
+        self.set_inter_action(&action);
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_unit(unit);
         self.unit_journal_panel.set_unit(unit);
         self.unit_dependencies_panel.set_unit(unit);
-
-        let kill_signal_window = self.kill_signal_window.borrow();
-        if let Some(kill_signal_window) = kill_signal_window.as_ref() {
-            kill_signal_window.set_unit(unit);
-        }
-
-        let send_signal_window = self.queue_signal_window.borrow();
-        if let Some(send_signal_window) = send_signal_window.as_ref() {
-            send_signal_window.set_unit(unit);
-        }
 
         let unit = match unit {
             Some(u) => u,
@@ -432,16 +406,10 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.set_inter_action(action);
         self.unit_file_panel.set_inter_action(action);
         self.unit_journal_panel.set_inter_action(action);
-
-        let kill_signal_window = self.kill_signal_window.borrow();
-        if let Some(kill_signal_window) = kill_signal_window.as_ref() {
-            kill_signal_window.set_inter_action(action);
-        }
-
-        let send_signal_window = self.queue_signal_window.borrow();
-        if let Some(send_signal_window) = send_signal_window.as_ref() {
-            send_signal_window.set_inter_action(action);
-        }
+        self.side_panel
+            .get()
+            .expect("Should not be None")
+            .set_inter_action(action);
     }
 
     //TODO bind to the property
@@ -518,39 +486,11 @@ impl UnitControlPanelImpl {
             .set_visible_child_name("definition_file_page");
     }
 
-    fn kill_or_queue_new_window(
-        &self,
-        window_cell: &RefCell<Option<KillPanel>>,
-        new_kill_window_fn: fn(Option<&UnitInfo>, bool, &UnitControlPanel) -> KillPanel,
-    ) {
-        let binding = self.current_unit.borrow();
-        let create_new = {
-            let kill_signal_window = window_cell.borrow();
-            if let Some(kill_signal_window) = kill_signal_window.as_ref() {
-                kill_signal_window.set_unit(binding.as_ref());
-                kill_signal_window.set_inter_action(&InterPanelAction::IsDark(self.is_dark.get()));
-                kill_signal_window.present();
-                false
-            } else {
-                true
-            }
-        };
-
-        if create_new {
-            let kill_signal_window =
-                new_kill_window_fn(binding.as_ref(), self.is_dark.get(), &self.obj());
-            kill_signal_window.present();
-
-            window_cell.replace(Some(kill_signal_window));
-        }
-    }
-
     pub fn unlink_child(&self, is_signal: bool) {
-        if is_signal {
-            self.queue_signal_window.replace(None);
-        } else {
-            self.kill_signal_window.replace(None);
-        }
+        self.side_panel
+            .get()
+            .expect("Should not be None")
+            .unlink_child(is_signal);
     }
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
@@ -635,6 +575,11 @@ impl ObjectImpl for UnitControlPanelImpl {
             FONT_CONTEXT.set_font_description(font_description);
         }
 
+        let sidebar = SideControlPanel::new(&self.obj());
+
+        self.side_overlay.set_sidebar(Some(&sidebar));
+        let _ = self.side_panel.set(sidebar);
+
         self.show_more_button
             .bind_property::<adw::OverlaySplitView>(
                 "active",
@@ -642,8 +587,7 @@ impl ObjectImpl for UnitControlPanelImpl {
                 "collapsed",
             )
             .bidirectional()
-            .transform_to(|_binding, is_active: bool| Some(!is_active))
-            .transform_from(|_binding, is_active: bool| Some(!is_active))
+            .invert_boolean()
             .build();
 
         self.show_more_button.set_tooltip_text(Some(TTT_SHOW));

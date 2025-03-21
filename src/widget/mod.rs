@@ -1,5 +1,7 @@
 use gtk::pango::FontDescription;
 
+use crate::systemd::data::UnitInfo;
+
 pub mod app_window;
 pub mod button_icon;
 pub mod clean_dialog;
@@ -22,4 +24,5 @@ pub enum InterPanelAction<'a> {
     PanelVisible(bool),
     NewStyleScheme(Option<&'a str>),
     FileLineNumber(bool),
+    UnitChange(Option<&'a UnitInfo>),
 }

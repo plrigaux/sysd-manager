@@ -2,7 +2,7 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use gtk::{
-    gio,
+    TemplateChild, gio,
     glib::{self, property::PropertySet},
     subclass::{
         prelude::*,
@@ -11,7 +11,6 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    TemplateChild,
 };
 
 use log::{debug, info, warn};
@@ -20,7 +19,7 @@ use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
     systemd::{self, data::UnitInfo, enums::KillWho},
     utils::writer::UnitInfoWriter,
-    widget::{unit_control_panel::UnitControlPanel, InterPanelAction},
+    widget::{InterPanelAction, unit_control_panel::UnitControlPanel},
 };
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -255,8 +254,10 @@ impl KillPanelImp {
     }
 
     pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
-        if let InterPanelAction::IsDark(is_dark) = *action {
-            self.set_dark(is_dark)
+        match *action {
+            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
+            InterPanelAction::UnitChange(unit) => self.set_unit(unit),
+            _ => (),
         }
     }
 
