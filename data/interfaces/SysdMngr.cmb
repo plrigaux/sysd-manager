@@ -323,11 +323,11 @@
 	(62,6,"AdwButtonContent",None,5,None,None,None,0,None,None),
 	(62,7,"GtkButton",None,1,None,None,None,3,None,None),
 	(62,8,"AdwButtonContent",None,7,None,None,None,0,None,None),
-	(62,9,"GtkButton",None,1,None,None,None,4,None,None),
+	(62,9,"GtkButton","freeze_button",1,None,None,None,4,None,None),
 	(62,10,"AdwButtonContent",None,9,None,None,None,0,None,None),
-	(62,11,"GtkButton",None,1,None,None,None,5,None,None),
+	(62,11,"GtkButton","thaw_unit_button",1,None,None,None,5,None,None),
 	(62,12,"AdwButtonContent",None,11,None,None,None,0,None,None),
-	(62,13,"GtkButton",None,1,None,None,None,6,None,None),
+	(62,13,"GtkButton","reload_unit_button",1,None,None,None,6,None,None),
 	(62,14,"AdwButtonContent",None,13,None,None,None,0,None,None)
   </object>
   <object_property>
@@ -891,7 +891,10 @@
 	(213,62,2,"GtkButton","clicked","sidebar_close_button_clicked",None,None,1,0,None),
 	(214,62,3,"GtkButton","clicked","kill_button_clicked",None,None,1,0,None),
 	(215,62,5,"GtkButton","clicked","send_signal_button_clicked",None,None,1,0,None),
-	(216,62,7,"GtkButton","clicked","clean_button_clicked",None,None,1,0,None)
+	(216,62,7,"GtkButton","clicked","clean_button_clicked",None,None,1,0,None),
+	(217,62,9,"GtkButton","clicked","freeze_button_clicked",None,0,1,0,None),
+	(219,62,11,"GtkButton","clicked","thaw_button_clicked",None,0,1,0,None),
+	(220,62,13,"GtkButton","clicked","reload_unit_button_clicked",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

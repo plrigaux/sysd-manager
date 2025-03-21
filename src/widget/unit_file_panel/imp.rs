@@ -2,7 +2,7 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::prelude::AdwDialogExt;
 use gtk::{
-    glib,
+    TemplateChild, glib,
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -12,20 +12,19 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    TemplateChild,
 };
 
 use log::{debug, info, warn};
-use sourceview5::{prelude::*, Buffer};
+use sourceview5::{Buffer, prelude::*};
 
 use crate::{
     consts::{ADWAITA, SUGGESTED_ACTION},
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     utils::font_management::set_text_view_font_display,
     widget::{
+        InterPanelAction,
         app_window::AppWindow,
         preferences::{data::PREFERENCES, style_scheme::style_schemes},
-        InterPanelAction,
     },
 };
 
@@ -104,7 +103,7 @@ impl UnitFilePanelImp {
         match systemd::save_text_to_file(unit, &text) {
             Ok((file_path, _bytes_written)) => {
                 button.remove_css_class(SUGGESTED_ACTION);
-                let msg = format!("File <u>{file_path}</u> saved succesfully!");
+                let msg = format!("File <u>{file_path}</u> saved successfully!");
                 self.add_toast_message(&msg, true);
             }
             Err(error) => {

@@ -56,6 +56,9 @@ const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlags";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
+pub const METHOD_FREEZE_UNIT: &str = "FreezeUnit";
+pub const METHOD_THAW_UNIT: &str = "ThawUnit";
+pub const METHOD_RELOAD_UNIT: &str = "ReloadUnit";
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
 struct LUnitFiles<'a> {
@@ -661,18 +664,47 @@ pub(super) fn kill_unit(
     mode: KillWho,
     signal: i32,
 ) -> Result<(), SystemdErrors> {
-    fn handle_answer(_method: &str, _return_message: &Message) -> Result<(), SystemdErrors> {
-        info!("Kill SUCCESS");
-
+    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
+        info!(
+            "Kill Unit {} mode {} signal {} SUCCESS",
+            unit_name, mode, signal
+        );
         Ok(())
-    }
+    };
 
     send_disenable_message(
         level,
         METHOD_KILL_UNIT,
         &(unit_name, mode.as_str(), signal),
-        handle_answer,
+        handler,
     )
+}
+
+pub(super) fn freeze_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
+        info!("Freeze Unit {} SUCCESS", unit_name);
+        Ok(())
+    };
+
+    send_disenable_message(level, METHOD_FREEZE_UNIT, &(unit_name), handler)
+}
+
+pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
+        info!("Thaw Unit {} SUCCESS", unit_name);
+        Ok(())
+    };
+
+    send_disenable_message(level, METHOD_THAW_UNIT, &(unit_name), handler)
+}
+
+pub(super) fn reload_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
+        info!("Reload Unit SUCCESS");
+        Ok(())
+    };
+
+    send_disenable_message(level, METHOD_RELOAD_UNIT, &(unit_name), handler)
 }
 
 pub(super) fn queue_signal_unit(

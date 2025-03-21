@@ -1,11 +1,15 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
-use gtk::glib::{self};
+use gtk::{
+    gio,
+    glib::{self},
+};
 use log::warn;
 
 use crate::{
-    systemd::data::UnitInfo,
+    systemd::{self, data::UnitInfo, errors::SystemdErrors},
+    utils::writer::UnitInfoWriter,
     widget::{
         InterPanelAction, app_window::AppWindow, clean_dialog::CleanDialog, kill_panel::KillPanel,
         unit_control_panel::UnitControlPanel,
@@ -72,6 +76,21 @@ impl SideControlPanelImpl {
     }
 
     #[template_callback]
+    fn freeze_button_clicked(&self, button: &gtk::Button) {
+        self.call_method("Freeze", button, systemd::freeze_unit)
+    }
+
+    #[template_callback]
+    fn thaw_button_clicked(&self, button: &gtk::Button) {
+        self.call_method("Thaw", button, systemd::thaw_unit)
+    }
+
+    #[template_callback]
+    fn reload_unit_button_clicked(&self, button: &gtk::Button) {
+        self.call_method("Reload", button, systemd::reload_unit)
+    }
+
+    #[template_callback]
     fn clean_button_clicked(&self, _button: &gtk::Button) {
         let binding = self.current_unit.borrow();
 
@@ -87,6 +106,10 @@ impl SideControlPanelImpl {
 }
 
 impl SideControlPanelImpl {
+    pub(super) fn parent(&self) -> &UnitControlPanel {
+        self.parent.get().expect("Parent not supposed to be None")
+    }
+
     pub(super) fn set_app_window(&self, app_window: &AppWindow) {
         self.app_window
             .set(app_window.clone())
@@ -165,11 +188,58 @@ impl SideControlPanelImpl {
         let _ = self.parent.set(parent.clone());
     }
 
-    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
-        self.parent
-            .get()
-            .expect("parent not None")
-            .add_toast_message(message, use_markup);
+    fn call_method(
+        &self,
+        method_name: &str,
+        button: &gtk::Button,
+        systemd_method: fn(&UnitInfo) -> Result<(), SystemdErrors>,
+    ) {
+        let binding = self.current_unit.borrow();
+        let Some(unit) = binding.as_ref() else {
+            warn!("No Unit");
+            return;
+        };
+
+        let blue = if self.is_dark.get() {
+            UnitInfoWriter::blue_dark()
+        } else {
+            UnitInfoWriter::blue_light()
+        };
+
+        let parent = self.parent().clone();
+        let unit = unit.clone();
+        let button = button.clone();
+        let method_name = method_name.to_owned();
+
+        glib::spawn_future_local(async move {
+            button.set_sensitive(false);
+
+            let unit2 = unit.clone();
+            let results = gio::spawn_blocking(move || systemd_method(&unit2))
+                .await
+                .expect("Call needs to finish successfully.");
+
+            button.set_sensitive(true);
+
+            match results {
+                Ok(_) => {
+                    let msg = format!(
+                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> successful",
+                        unit.primary(),
+                    );
+                    parent.add_toast_message(&msg, true)
+                }
+                Err(err) => {
+                    let msg = format!(
+                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> failed",
+                        unit.primary(),
+                    );
+
+                    warn!("{msg} {:?}", err);
+                    parent.add_toast_message(&msg, true)
+                }
+            }
+        });
     }
 }
 

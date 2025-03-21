@@ -120,7 +120,7 @@ impl KillPanelImp {
                     };
 
                     let msg = format!(
-                        "Kill signal {} send succesfully to <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> at <span fgcolor='{blue}'>{}</span> level",
+                        "Kill signal {} send successfully to <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> at <span fgcolor='{blue}'>{}</span> level",
                         signal_id,
                         unit.primary(),
                         who.as_str()

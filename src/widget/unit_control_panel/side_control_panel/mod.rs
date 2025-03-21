@@ -32,6 +32,6 @@ impl SideControlPanel {
     }
 
     pub fn add_toast_message(&self, message: &str, use_markup: bool) {
-        self.imp().add_toast_message(message, use_markup);
+        self.imp().parent().add_toast_message(message, use_markup);
     }
 }
