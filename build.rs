@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+use std::io::Write;
+
 macro_rules! script_warning {
     ($($tokens: tt)*) => {
         println!("cargo:warning={}", format!($($tokens)*))
@@ -165,11 +168,18 @@ fn compile_schema() {
 pub enum ScriptError {
     FtmError(std::fmt::Error),
     IoError(std::io::Error),
+    XmlError(quick_xml::Error),
 }
 
 impl From<std::io::Error> for ScriptError {
     fn from(error: std::io::Error) -> Self {
         ScriptError::IoError(error)
+    }
+}
+
+impl From<quick_xml::Error> for ScriptError {
+    fn from(error: quick_xml::Error) -> Self {
+        ScriptError::XmlError(error)
     }
 }
 
@@ -185,6 +195,98 @@ fn generate_notes() -> Result<(), ScriptError> {
         }
     };
 
+    generate_release_notes_rs(&release_notes)?;
+    generate_changelog_md(&release_notes)?;
+
+    Ok(())
+}
+
+fn generate_changelog_md(release_notes: &Vec<Release>) -> Result<(), ScriptError> {
+    let Some(out_dir) = env::var_os("OUT_DIR") else {
+        script_error!("No OUT_DIR");
+        return Ok(());
+    };
+
+    const CHANGELOG: &str = "CHANGELOG.md";
+
+    let dest_path = Path::new(&out_dir).join(CHANGELOG);
+    println!("dest_path {:?}", dest_path);
+
+    let mut w = Vec::new();
+
+    writeln!(
+        &mut w,
+        r#"# Changelog
+All notable changes to this project will be documented in this file.
+    
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."#
+    )?;
+
+    let change_type = HashSet::from([
+        "Added",
+        "Changed",
+        "Deprecated",
+        "Removed",
+        "Fixed",
+        "Security",
+    ]);
+
+    let mut junk_buf: Vec<u8> = Vec::new();
+
+    for release in release_notes {
+        writeln!(&mut w, "\n## [{}] - {}", release.version, release.date)?;
+
+        let mut reader = Reader::from_str(&release.description);
+
+        loop {
+            match reader.read_event() {
+                Err(e) => panic!("Error at position {}: {:?}", reader.error_position(), e),
+                // exits the loop when reaching end of file
+                Ok(Event::Start(e)) => match e.name().as_ref() {
+                    b"p" => {
+                        let content = read_to_end_into_buffer_inner(&mut reader, e, &mut junk_buf)?;
+                        if change_type.contains(content.as_str()) {
+                            writeln!(&mut w, "\n### {}", content)?;
+                        } else {
+                            writeln!(&mut w, "{}\n", content)?;
+                        }
+                    }
+                    b"li" => {
+                        let content = read_to_end_into_buffer_inner(&mut reader, e, &mut junk_buf)?;
+                        writeln!(&mut w, "- {}", content)?;
+                    }
+
+                    _ => (),
+                },
+
+                Ok(Event::Eof) => break,
+                _ => (),
+            }
+        }
+    }
+
+    fs::write(&dest_path, w)?;
+
+    let mut command = Command::new("cp");
+    let output = command.arg("-v").arg(dest_path).arg(CHANGELOG).output()?;
+
+    println!(
+        "Copying {CHANGELOG} done {}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+
+    Ok(())
+}
+
+use std::io::BufRead;
+
+use quick_xml::{
+    Reader, Writer,
+    events::{BytesStart, Event},
+};
+
+fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
     let (version, description) = if let Some(first) = release_notes.first() {
         (
             format!("Some(\"{}\")", first.version),
@@ -202,23 +304,23 @@ fn generate_notes() -> Result<(), ScriptError> {
     let dest_path = Path::new(&out_dir).join("release_notes.rs");
     println!("dest_path {:?}", dest_path);
 
-    let version_line = format!(
+    let mut w = Vec::new();
+    writeln!(
+        &mut w,
         "pub const RELEASE_NOTES_VERSION : Option<&str> = {};",
         version
-    );
-    let description_line = format!("pub const RELEASE_NOTES : Option<&str> = {};", description);
+    )?;
 
-    fs::write(&dest_path, format!("{version_line}\n{description_line}"))?;
+    writeln!(
+        &mut w,
+        "pub const RELEASE_NOTES : Option<&str> = {};",
+        description
+    )?;
+
+    fs::write(&dest_path, w)?;
 
     Ok(())
 }
-
-use std::io::BufRead;
-
-use quick_xml::{
-    Reader, Writer,
-    events::{BytesStart, Event},
-};
 
 #[derive(Debug, Default, Clone)]
 struct Release {
@@ -265,12 +367,10 @@ fn get_release_notes(metainfo: &str) -> Result<Vec<Release>, quick_xml::Error> {
                         continue;
                     }
 
-                    let release_bytes =
+                    let content =
                         read_to_end_into_buffer_inner(&mut reader, e, &mut junk_buf).unwrap();
 
-                    let s = String::from_utf8_lossy(&release_bytes);
-
-                    release.description = s.to_string();
+                    release.description = content;
 
                     println!("Release: {:?}", release);
                 }
@@ -292,7 +392,7 @@ fn read_to_end_into_buffer_inner<R: BufRead>(
     reader: &mut Reader<R>,
     start_tag: BytesStart,
     junk_buf: &mut Vec<u8>,
-) -> Result<Vec<u8>, quick_xml::Error> {
+) -> Result<String, quick_xml::Error> {
     let mut depth = 0;
     let mut output_buf: Vec<u8> = Vec::new();
     let mut w = Writer::new(&mut output_buf);
@@ -311,7 +411,7 @@ fn read_to_end_into_buffer_inner<R: BufRead>(
             Event::End(ref e) => {
                 if e.name() == tag_name {
                     if depth == 0 {
-                        return Ok(output_buf);
+                        break;
                     }
                     depth -= 1;
                 } else {
@@ -327,4 +427,7 @@ fn read_to_end_into_buffer_inner<R: BufRead>(
             _ => {}
         }
     }
+
+    let s = String::from_utf8_lossy(&output_buf);
+    Ok(s.to_string())
 }

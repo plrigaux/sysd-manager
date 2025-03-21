@@ -27,7 +27,6 @@ def main():
             "generate",
             "clean",
             "make",
-            "log",
             "genpush"
         ],
         help="action to perform",)
@@ -48,8 +47,6 @@ def main():
         case "genpush":
             generate_and_push()
 
-        case "log":
-            change_log()
 
 def create_pkgbuild():
     #version
@@ -163,7 +160,5 @@ def clean():
         #x = " ".join(["rm", "-fr", f])
         bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
 
-def change_log():
-    bc.change_log()    
 
 main()
