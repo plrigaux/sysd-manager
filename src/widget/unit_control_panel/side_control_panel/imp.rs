@@ -1,14 +1,15 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
+use const_format::concatcp;
 use gtk::{
-    gio::{self},
-    glib::{self},
+    gio::{self, MENU_ATTRIBUTE_TARGET},
+    glib::{self, Variant, VariantTy},
 };
-use log::warn;
+use log::{info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, errors::SystemdErrors},
+    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     utils::writer::UnitInfoWriter,
     widget::{
         InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, kill_panel::KillPanel,
@@ -17,6 +18,10 @@ use crate::{
 };
 
 use super::SideControlPanel;
+use strum::IntoEnumIterator;
+
+const MENU_ACTION: &str = "unit-reload";
+const WIN_MENU_ACTION: &str = concatcp!("win.", MENU_ACTION);
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/side_control_panel.ui")]
@@ -90,6 +95,15 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn reload_unit_button_clicked(&self, button: &adw::SplitButton) {
+        let Some(app_window) = self.app_window.get() else {
+            warn!("no app window");
+            return;
+        };
+
+        let value = app_window.action_state(MENU_ACTION);
+
+        info!("state {:?}", value);
+
         self.call_method("Reload", button, systemd::reload_unit)
     }
 
@@ -117,6 +131,24 @@ impl SideControlPanelImpl {
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
+
+        let default_state: glib::Variant = StartStopMode::Fail.as_str().into();
+
+        let reload_params_action_entry: gio::ActionEntry<AppWindow> =
+            gio::ActionEntry::builder(MENU_ACTION)
+                .activate(|_app_window: &AppWindow, action, value| {
+                    let Some(value) = value else {
+                        warn!("{WIN_MENU_ACTION} has no value");
+                        return;
+                    };
+
+                    action.set_state(value);
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .state(default_state)
+                .build();
+
+        app_window.add_action_entries([reload_params_action_entry]);
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
@@ -253,8 +285,12 @@ impl ObjectImpl for SideControlPanelImpl {
         self.parent_constructed();
 
         let menu = gio::Menu::new();
-        menu.append(Some("test1"), Some("test"));
-        menu.append(Some("test1"), Some("test"));
+        for mode in StartStopMode::iter() {
+            let item = gio::MenuItem::new(Some(mode.as_str()), Some(WIN_MENU_ACTION));
+            let target_value: Variant = mode.as_str().into();
+            item.set_attribute_value(MENU_ATTRIBUTE_TARGET, Some(&target_value));
+            menu.append_item(&item);
+        }
 
         let popover = gtk::PopoverMenu::from_model(Some(&menu));
 
