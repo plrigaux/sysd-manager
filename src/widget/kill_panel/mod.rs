@@ -6,7 +6,7 @@ use gtk::{
 
 use crate::systemd::data::UnitInfo;
 
-use super::{InterPanelAction, unit_control_panel::side_control_panel::SideControlPanel};
+use super::{InterPanelMessage, unit_control_panel::side_control_panel::SideControlPanel};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -42,14 +42,14 @@ impl KillPanel {
         let obj: KillPanel = glib::Object::new();
         let imp = obj.imp();
         imp.set_unit(unit);
-        imp.set_inter_action(&InterPanelAction::IsDark(is_dark));
+        imp.set_inter_message(&InterPanelMessage::IsDark(is_dark));
         imp.set_is_signal(is_signal);
         imp.set_parent(parent);
 
         obj
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.imp().set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.imp().set_inter_message(action);
     }
 }

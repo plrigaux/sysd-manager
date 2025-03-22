@@ -1,6 +1,6 @@
 use gtk::{glib, subclass::prelude::*};
 
-use crate::widget::{InterPanelAction, app_window::AppWindow};
+use crate::widget::{InterPanelMessage, app_window::AppWindow};
 
 use super::UnitControlPanel;
 
@@ -27,8 +27,8 @@ impl SideControlPanel {
         self.imp().unlink_child(is_signal);
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.imp().set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.imp().set_inter_message(action);
     }
 
     pub fn add_toast_message(&self, message: &str, use_markup: bool) {

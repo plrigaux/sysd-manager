@@ -8,7 +8,7 @@ use crate::systemd::{
     errors::SystemdErrors,
 };
 
-use super::{InterPanelAction, app_window::AppWindow};
+use super::{InterPanelMessage, app_window::AppWindow};
 
 mod controls;
 mod enums;
@@ -54,8 +54,8 @@ impl UnitControlPanel {
         self.imp().refresh_panels();
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.imp().set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.imp().set_inter_message(action);
     }
 
     fn start_restart(

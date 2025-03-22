@@ -4,6 +4,7 @@ use std::{
 };
 
 use gtk::{
+    TemplateChild,
     glib::{self},
     prelude::*,
     subclass::{
@@ -14,7 +15,6 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    TemplateChild,
 };
 
 use log::{info, warn};
@@ -26,7 +26,7 @@ use crate::{
         text_view_hyperlink::{self, LinkActivator},
         writer::UnitInfoWriter,
     },
-    widget::{app_window::AppWindow, info_window::InfoWindow, InterPanelAction},
+    widget::{InterPanelMessage, app_window::AppWindow, info_window::InfoWindow},
 };
 
 use super::construct_info::fill_all_info;
@@ -141,13 +141,13 @@ impl UnitInfoPanelImp {
         self.update_unit_info(unit)
     }
 
-    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+    pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
-            InterPanelAction::FontProvider(old, new) => {
+            InterPanelMessage::FontProvider(old, new) => {
                 set_text_view_font(old, new, &self.unit_info_textview);
                 set_font_context(&self.unit_info_textview);
             }
-            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
+            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
             _ => {}
         }
     }

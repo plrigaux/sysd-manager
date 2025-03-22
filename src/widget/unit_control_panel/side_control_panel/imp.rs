@@ -2,7 +2,7 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
-    gio,
+    gio::{self},
     glib::{self},
 };
 use log::warn;
@@ -11,7 +11,7 @@ use crate::{
     systemd::{self, data::UnitInfo, errors::SystemdErrors},
     utils::writer::UnitInfoWriter,
     widget::{
-        InterPanelAction, app_window::AppWindow, clean_dialog::CleanDialog, kill_panel::KillPanel,
+        InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, kill_panel::KillPanel,
         unit_control_panel::UnitControlPanel,
     },
 };
@@ -32,6 +32,9 @@ pub struct SideControlPanelImpl {
     pub stop_mode: RefCell<String>,
     #[property(get, set)]
     pub restart_mode: RefCell<String>,
+
+    #[template_child]
+    reload_unit_button: TemplateChild<adw::SplitButton>,
 
     kill_signal_window: RefCell<Option<KillPanel>>,
     queue_signal_window: RefCell<Option<KillPanel>>,
@@ -86,12 +89,12 @@ impl SideControlPanelImpl {
     }
 
     #[template_callback]
-    fn reload_unit_button_clicked(&self, button: &gtk::Button) {
+    fn reload_unit_button_clicked(&self, button: &adw::SplitButton) {
         self.call_method("Reload", button, systemd::reload_unit)
     }
 
     #[template_callback]
-    fn clean_button_clicked(&self, _button: &gtk::Button) {
+    fn clean_button_clicked(&self, _button: &gtk::Widget) {
         let binding = self.current_unit.borrow();
 
         let app_window = self.app_window.get();
@@ -116,13 +119,13 @@ impl SideControlPanelImpl {
             .expect("app_window set once");
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
-            InterPanelAction::UnitChange(unit) => {
+            InterPanelMessage::UnitChange(unit) => {
                 #[allow(clippy::map_clone)]
                 self.current_unit.replace(unit.map(|u| u.clone()));
             }
-            InterPanelAction::IsDark(is_dark) => {
+            InterPanelMessage::IsDark(is_dark) => {
                 self.is_dark.set(is_dark);
             }
             _ => (),
@@ -130,12 +133,12 @@ impl SideControlPanelImpl {
 
         let kill_signal_window = self.kill_signal_window.borrow();
         if let Some(kill_signal_window) = kill_signal_window.as_ref() {
-            kill_signal_window.set_inter_action(action);
+            kill_signal_window.set_inter_message(action);
         }
 
         let send_signal_window = self.queue_signal_window.borrow();
         if let Some(send_signal_window) = send_signal_window.as_ref() {
-            send_signal_window.set_inter_action(action);
+            send_signal_window.set_inter_message(action);
         }
     }
 
@@ -149,8 +152,9 @@ impl SideControlPanelImpl {
             let kill_signal_window = window_cell.borrow();
             if let Some(kill_signal_window) = kill_signal_window.as_ref() {
                 kill_signal_window
-                    .set_inter_action(&InterPanelAction::UnitChange(binding.as_ref()));
-                kill_signal_window.set_inter_action(&InterPanelAction::IsDark(self.is_dark.get()));
+                    .set_inter_message(&InterPanelMessage::UnitChange(binding.as_ref()));
+                kill_signal_window
+                    .set_inter_message(&InterPanelMessage::IsDark(self.is_dark.get()));
 
                 if let Some(app_window) = self.app_window.get() {
                     //kill_signal_window.set_application(app_window.application().as_ref());
@@ -191,7 +195,7 @@ impl SideControlPanelImpl {
     fn call_method(
         &self,
         method_name: &str,
-        button: &gtk::Button,
+        button: &impl IsA<gtk::Widget>,
         systemd_method: fn(&UnitInfo) -> Result<(), SystemdErrors>,
     ) {
         let binding = self.current_unit.borrow();
@@ -247,6 +251,14 @@ impl SideControlPanelImpl {
 impl ObjectImpl for SideControlPanelImpl {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let menu = gio::Menu::new();
+        menu.append(Some("test1"), Some("test"));
+        menu.append(Some("test1"), Some("test"));
+
+        let popover = gtk::PopoverMenu::from_model(Some(&menu));
+
+        self.reload_unit_button.set_popover(Some(&popover));
     }
 }
 

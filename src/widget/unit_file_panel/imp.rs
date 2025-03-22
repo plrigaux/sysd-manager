@@ -22,7 +22,7 @@ use crate::{
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     utils::font_management::set_text_view_font_display,
     widget::{
-        InterPanelAction,
+        InterPanelMessage,
         app_window::AppWindow,
         preferences::{data::PREFERENCES, style_scheme::style_schemes},
     },
@@ -317,17 +317,17 @@ impl UnitFilePanelImp {
         }
     }
 
-    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+    pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
-            InterPanelAction::FontProvider(old, new) => {
+            InterPanelMessage::FontProvider(old, new) => {
                 let view = self.unit_file_text.get().expect("expect sourceview5::View");
 
                 set_text_view_font_display(old, new, &view.display())
             }
-            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
-            InterPanelAction::PanelVisible(visible) => self.set_visible_on_page(visible),
-            InterPanelAction::FileLineNumber(line_number) => self.set_line_number(line_number),
-            InterPanelAction::NewStyleScheme(style_scheme) => {
+            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
+            InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
+            InterPanelMessage::FileLineNumber(line_number) => self.set_line_number(line_number),
+            InterPanelMessage::NewStyleScheme(style_scheme) => {
                 self.set_new_style_scheme(style_scheme)
             }
             _ => {}

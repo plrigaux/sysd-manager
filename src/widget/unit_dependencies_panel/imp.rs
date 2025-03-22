@@ -1,5 +1,5 @@
 use gtk::{
-    gio,
+    TemplateChild, gio,
     glib::{self},
     prelude::*,
     subclass::{
@@ -10,7 +10,6 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetImpl,
         },
     },
-    TemplateChild,
 };
 
 use std::{
@@ -21,10 +20,9 @@ use std::{
 
 use crate::{
     systemd::{
-        self,
+        self, Dependency,
         data::UnitInfo,
         enums::{DependencyType, UnitDBusLevel, UnitType},
-        Dependency,
     },
     utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
     widget::{
@@ -37,11 +35,11 @@ use crate::{
     utils::{
         text_view_hyperlink,
         writer::{
-            HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-            SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+            HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+            SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
         },
     },
-    widget::InterPanelAction,
+    widget::InterPanelMessage,
 };
 use log::{debug, info, warn};
 use strum::IntoEnumIterator;
@@ -310,14 +308,14 @@ impl UnitDependenciesPanelImp {
         }
     }
 
-    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+    pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
-            InterPanelAction::FontProvider(old, new) => {
+            InterPanelMessage::FontProvider(old, new) => {
                 set_text_view_font(old, new, &self.unit_dependencies_textview)
             }
-            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
+            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
 
-            InterPanelAction::PanelVisible(visible) => self.set_visible_on_page(visible),
+            InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
             _ => {}
         }
     }

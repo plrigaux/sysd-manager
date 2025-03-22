@@ -6,7 +6,7 @@ mod imp;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
-use super::InterPanelAction;
+use super::InterPanelMessage;
 
 glib::wrapper! {
     pub struct JournalPanel(ObjectSubclass<imp::JournalPanelImp>)
@@ -24,8 +24,8 @@ impl JournalPanel {
         self.imp().refresh_panels();
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.imp().set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.imp().set_inter_message(action);
     }
 
     fn set_from_time(&self, from_time: Option<u64>) {

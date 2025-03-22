@@ -1,6 +1,6 @@
 use crate::systemd::data::UnitInfo;
 
-use super::InterPanelAction;
+use super::InterPanelMessage;
 use super::app_window::AppWindow;
 use gtk::glib;
 use gtk::subclass::prelude::*;
@@ -43,8 +43,8 @@ impl UnitListPanel {
         self.imp().selected_unit()
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.imp().set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.imp().set_inter_message(action);
     }
 
     fn set_sorter(&self) {

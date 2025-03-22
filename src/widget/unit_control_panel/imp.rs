@@ -18,7 +18,7 @@ use crate::{
     },
     utils::font_management::{self, FONT_CONTEXT, create_provider},
     widget::{
-        InterPanelAction, app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
+        InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
         preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
         unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
@@ -331,8 +331,8 @@ impl UnitControlPanelImpl {
     }
 
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
-        let action = InterPanelAction::UnitChange(unit);
-        self.set_inter_action(&action);
+        let action = InterPanelMessage::UnitChange(unit);
+        self.set_inter_message(&action);
         self.unit_info_panel.display_unit_info(unit);
         self.unit_file_panel.set_unit(unit);
         self.unit_journal_panel.set_unit(unit);
@@ -380,20 +380,20 @@ impl UnitControlPanelImpl {
         self.is_dark.set(is_dark);
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
-            InterPanelAction::Font(font_description) => {
+            InterPanelMessage::Font(font_description) => {
                 let provider = create_provider(&font_description);
                 {
                     let binding = self.old_font_provider.borrow();
                     let old_provider = binding.as_ref();
                     let new_action =
-                        InterPanelAction::FontProvider(old_provider, provider.as_ref());
+                        InterPanelMessage::FontProvider(old_provider, provider.as_ref());
                     self.forward_inter_actions(&new_action);
                 }
                 self.old_font_provider.replace(provider);
             }
-            InterPanelAction::IsDark(is_dark) => {
+            InterPanelMessage::IsDark(is_dark) => {
                 self.set_dark(is_dark);
                 self.forward_inter_actions(action)
             }
@@ -401,15 +401,15 @@ impl UnitControlPanelImpl {
         }
     }
 
-    fn forward_inter_actions(&self, action: &InterPanelAction) {
-        self.unit_info_panel.set_inter_action(action);
-        self.unit_dependencies_panel.set_inter_action(action);
-        self.unit_file_panel.set_inter_action(action);
-        self.unit_journal_panel.set_inter_action(action);
+    fn forward_inter_actions(&self, action: &InterPanelMessage) {
+        self.unit_info_panel.set_inter_message(action);
+        self.unit_dependencies_panel.set_inter_message(action);
+        self.unit_file_panel.set_inter_message(action);
+        self.unit_journal_panel.set_inter_message(action);
         self.side_panel
             .get()
             .expect("Should not be None")
-            .set_inter_action(action);
+            .set_inter_message(action);
     }
 
     //TODO bind to the property
@@ -514,8 +514,8 @@ impl ObjectImpl for UnitControlPanelImpl {
         });
 
         {
-            const VISIBLE_FALSE: InterPanelAction<'_> = InterPanelAction::PanelVisible(false);
-            const VISIBLE_TRUE: InterPanelAction<'_> = InterPanelAction::PanelVisible(true);
+            const VISIBLE_FALSE: InterPanelMessage<'_> = InterPanelMessage::PanelVisible(false);
+            const VISIBLE_TRUE: InterPanelMessage<'_> = InterPanelMessage::PanelVisible(true);
 
             let unit_journal_panel = self.unit_journal_panel.clone();
             let unit_dependencies_panel = self.unit_dependencies_panel.clone();
@@ -530,24 +530,24 @@ impl ObjectImpl for UnitControlPanelImpl {
                     if let Some(child) = view_stack.visible_child() {
                         if child.downcast_ref::<JournalPanel>().is_some() {
                             debug!("It a journal");
-                            unit_dependencies_panel.set_inter_action(&VISIBLE_FALSE);
-                            unit_file_panel.set_inter_action(&VISIBLE_FALSE);
-                            unit_journal_panel.set_inter_action(&VISIBLE_TRUE);
+                            unit_dependencies_panel.set_inter_message(&VISIBLE_FALSE);
+                            unit_file_panel.set_inter_message(&VISIBLE_FALSE);
+                            unit_journal_panel.set_inter_message(&VISIBLE_TRUE);
                         } else if child.downcast_ref::<UnitDependenciesPanel>().is_some() {
                             debug!("It's  dependency");
-                            unit_dependencies_panel.set_inter_action(&VISIBLE_TRUE);
-                            unit_file_panel.set_inter_action(&VISIBLE_FALSE);
-                            unit_journal_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_dependencies_panel.set_inter_message(&VISIBLE_TRUE);
+                            unit_file_panel.set_inter_message(&VISIBLE_FALSE);
+                            unit_journal_panel.set_inter_message(&VISIBLE_FALSE);
                         } else if child.downcast_ref::<UnitFilePanel>().is_some() {
                             debug!("It's file panel");
-                            unit_dependencies_panel.set_inter_action(&VISIBLE_FALSE);
-                            unit_file_panel.set_inter_action(&VISIBLE_TRUE);
-                            unit_journal_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_dependencies_panel.set_inter_message(&VISIBLE_FALSE);
+                            unit_file_panel.set_inter_message(&VISIBLE_TRUE);
+                            unit_journal_panel.set_inter_message(&VISIBLE_FALSE);
                         } else {
                             //It' the last one InfoPanel
-                            unit_journal_panel.set_inter_action(&VISIBLE_FALSE);
-                            unit_dependencies_panel.set_inter_action(&VISIBLE_FALSE);
-                            unit_file_panel.set_inter_action(&VISIBLE_FALSE);
+                            unit_journal_panel.set_inter_message(&VISIBLE_FALSE);
+                            unit_dependencies_panel.set_inter_message(&VISIBLE_FALSE);
+                            unit_file_panel.set_inter_message(&VISIBLE_FALSE);
                         }
                     }
                 });
@@ -568,9 +568,9 @@ impl ObjectImpl for UnitControlPanelImpl {
                 font_description.set_size(scaled_size);
             }
 
-            let action = InterPanelAction::Font(Some(&font_description));
+            let action = InterPanelMessage::Font(Some(&font_description));
 
-            self.set_inter_action(&action);
+            self.set_inter_message(&action);
 
             FONT_CONTEXT.set_font_description(font_description);
         }

@@ -20,7 +20,7 @@ use log::{info, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
-    widget::{InterPanelAction, app_window::AppWindow},
+    widget::{InterPanelMessage, app_window::AppWindow},
 };
 
 use super::CleanDialog;
@@ -120,7 +120,7 @@ impl CleanDialogImp {
         }
     }
 
-    pub(super) fn set_inter_action(&self, _action: &InterPanelAction) {}
+    pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         let unit = match unit {

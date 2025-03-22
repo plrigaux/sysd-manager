@@ -19,7 +19,7 @@ use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
     systemd::{self, data::UnitInfo, enums::KillWho},
     utils::writer::UnitInfoWriter,
-    widget::{InterPanelAction, unit_control_panel::side_control_panel::SideControlPanel},
+    widget::{InterPanelMessage, unit_control_panel::side_control_panel::SideControlPanel},
 };
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -255,10 +255,10 @@ impl KillPanelImp {
         self.is_dark.set(is_dark);
     }
 
-    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+    pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
-            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
-            InterPanelAction::UnitChange(unit) => self.set_unit(unit),
+            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
+            InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             _ => (),
         }
     }

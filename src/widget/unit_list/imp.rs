@@ -29,7 +29,7 @@ use crate::{
     systemd::runtime,
     systemd_gui,
     widget::{
-        InterPanelAction,
+        InterPanelMessage,
         preferences::data::{
             COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
             KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
@@ -493,7 +493,7 @@ impl UnitListPanelImp {
         self.force_selected_index.set(force_selected_index)
     }
 
-    pub fn set_inter_action(&self, _action: &InterPanelAction) {}
+    pub fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     pub(super) fn set_sorter(&self) {
         let sorter = self.units_browser.sorter();

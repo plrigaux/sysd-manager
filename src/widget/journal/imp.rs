@@ -1,5 +1,5 @@
 use gtk::{
-    gio, glib,
+    TemplateChild, gio, glib,
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -9,7 +9,6 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    TemplateChild,
 };
 
 use std::cell::{Cell, RefCell};
@@ -18,14 +17,13 @@ use log::{debug, error, info, warn};
 
 use crate::{
     systemd::{
-        self,
+        self, BootFilter,
         data::UnitInfo,
         journal::BOOT_IDX,
         journal_data::{EventRange, JournalEvent, JournalEventChunk},
-        BootFilter,
     },
     utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
-    widget::{preferences::data::PREFERENCES, InterPanelAction},
+    widget::{InterPanelMessage, preferences::data::PREFERENCES},
 };
 
 const PANEL_EMPTY: &str = "empty";
@@ -426,14 +424,14 @@ impl JournalPanelImp {
         self.update_journal(EventGrabbing::Default)
     }
 
-    pub(super) fn set_inter_action(&self, action: &InterPanelAction) {
+    pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
-            InterPanelAction::IsDark(is_dark) => self.set_dark(is_dark),
-            InterPanelAction::FontProvider(old, new) => {
+            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
+            InterPanelMessage::FontProvider(old, new) => {
                 let text_view = self.journal_text_view.borrow();
                 set_text_view_font(old, new, &text_view);
             }
-            InterPanelAction::PanelVisible(visible) => self.set_visible_on_page(visible),
+            InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
             _ => {}
         }
     }

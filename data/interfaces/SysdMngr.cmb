@@ -327,8 +327,8 @@
 	(62,10,"AdwButtonContent",None,9,None,None,None,0,None,None),
 	(62,11,"GtkButton","thaw_unit_button",1,None,None,None,5,None,None),
 	(62,12,"AdwButtonContent",None,11,None,None,None,0,None,None),
-	(62,13,"GtkButton","reload_unit_button",1,None,None,None,6,None,None),
-	(62,14,"AdwButtonContent",None,13,None,None,None,0,None,None)
+	(62,15,"AdwSplitButton","reload_unit_button",1,None,None,None,6,None,None),
+	(62,16,"AdwButtonContent",None,15,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWindow","child",None,None,None,None,None,2,None,None,None,None),
@@ -845,8 +845,9 @@
 	(62,10,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
 	(62,12,"AdwButtonContent","label","Thaw",0,None,None,None,None,None,None,None,None),
 	(62,12,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
-	(62,14,"AdwButtonContent","label","Reload Unit",0,None,None,None,None,None,None,None,None),
-	(62,14,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None)
+	(62,16,"AdwButtonContent","icon-name","view-refresh-symbolic",None,None,None,None,None,None,None,None,None),
+	(62,16,"AdwButtonContent","label","Reload Unit",None,None,None,None,None,None,None,None,None),
+	(62,16,"GtkWidget","halign","start",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),
@@ -894,7 +895,7 @@
 	(216,62,7,"GtkButton","clicked","clean_button_clicked",None,None,1,0,None),
 	(217,62,9,"GtkButton","clicked","freeze_button_clicked",None,0,1,0,None),
 	(219,62,11,"GtkButton","clicked","thaw_button_clicked",None,0,1,0,None),
-	(220,62,13,"GtkButton","clicked","reload_unit_button_clicked",None,0,1,0,None)
+	(221,62,15,"AdwSplitButton","clicked","reload_unit_button_clicked",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

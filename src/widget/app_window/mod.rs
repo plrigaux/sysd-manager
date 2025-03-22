@@ -3,7 +3,7 @@ use gtk::{gio, glib, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
 
-use super::InterPanelAction;
+use super::InterPanelMessage;
 
 mod imp;
 pub mod menu;
@@ -37,8 +37,8 @@ impl AppWindow {
         self.imp().refresh_panels();
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.imp().set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.imp().set_inter_message(action);
     }
 
     pub fn add_toast_message(&self, message: &str, markup: bool) {

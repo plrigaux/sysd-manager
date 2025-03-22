@@ -83,11 +83,12 @@
       </object>
     </child>
     <child>
-      <object class="GtkButton" id="reload_unit_button">
+      <object class="AdwSplitButton" id="reload_unit_button">
         <signal name="clicked" handler="reload_unit_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
+            <property name="icon-name">view-refresh-symbolic</property>
             <property name="label">Reload Unit</property>
           </object>
         </child>

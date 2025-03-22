@@ -24,7 +24,7 @@ use crate::{
         },
     },
 };
-use crate::{utils::th::TimestampStyle, widget::InterPanelAction};
+use crate::{utils::th::TimestampStyle, widget::InterPanelMessage};
 
 use super::data::{
     COL_WIDTH_PREFIX, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS,
@@ -108,8 +108,8 @@ impl PreferencesDialogImpl {
         let window = parent.as_ref().map(|w| w.clone());
 
         if let Some(window) = &window {
-            let action = crate::widget::InterPanelAction::FileLineNumber(state);
-            window.set_inter_action(&action);
+            let action = crate::widget::InterPanelMessage::FileLineNumber(state);
+            window.set_inter_message(&action);
         }
 
         true
@@ -161,9 +161,9 @@ impl PreferencesDialogImpl {
                     PREFERENCES.set_font(&font_description);
 
                     if let Some(window) = window {
-                        let action = InterPanelAction::Font(Some(&font_description));
+                        let action = InterPanelMessage::Font(Some(&font_description));
 
-                        window.set_inter_action(&action);
+                        window.set_inter_message(&action);
                     }
 
                     select_font_row.set_subtitle(&font_name);
@@ -179,8 +179,8 @@ impl PreferencesDialogImpl {
 
         let window = self.app_window.borrow();
         if let Some(window) = window.as_ref() {
-            let action = crate::widget::InterPanelAction::Font(None);
-            window.set_inter_action(&action);
+            let action = crate::widget::InterPanelMessage::Font(None);
+            window.set_inter_message(&action);
         }
 
         let select_font_row = self.select_font_row.clone();
@@ -237,8 +237,8 @@ impl PreferencesDialogImpl {
                     Some(style_scheme_g.as_str())
                 };
 
-                let action = crate::widget::InterPanelAction::NewStyleScheme(style_scheme_op);
-                window.set_inter_action(&action);
+                let action = crate::widget::InterPanelMessage::NewStyleScheme(style_scheme_op);
+                window.set_inter_message(&action);
             });
     }
 

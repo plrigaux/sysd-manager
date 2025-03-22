@@ -17,7 +17,7 @@ pub mod unit_file_panel;
 pub mod unit_info;
 pub mod unit_list;
 
-pub enum InterPanelAction<'a> {
+pub enum InterPanelMessage<'a> {
     Font(Option<&'a FontDescription>),
     FontProvider(Option<&'a gtk::CssProvider>, Option<&'a gtk::CssProvider>),
     IsDark(bool),

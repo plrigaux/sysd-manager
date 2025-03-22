@@ -103,7 +103,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
     {
         let window = window.clone();
         let system_manager = adw::StyleManager::default();
-        window.set_inter_action(&widget::InterPanelAction::IsDark(system_manager.is_dark()));
+        window.set_inter_message(&widget::InterPanelMessage::IsDark(system_manager.is_dark()));
 
         system_manager.connect_dark_notify(move |style_manager: &adw::StyleManager| {
             let is_dark = style_manager.is_dark();
@@ -111,7 +111,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
 
             let resource = css_resource_light_dark(is_dark);
             load_css_ress(resource);
-            window.set_inter_action(&widget::InterPanelAction::IsDark(is_dark));
+            window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
         });
     }
 

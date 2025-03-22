@@ -14,10 +14,10 @@ use crate::{
     systemd_gui::new_settings,
     utils::{palette::red, writer::UnitInfoWriter},
     widget::{
+        InterPanelMessage,
         preferences::data::{DbusLevel, PREFERENCES},
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
-        InterPanelAction,
     },
 };
 
@@ -255,11 +255,11 @@ impl AppWindowImpl {
         self.unit_control_panel.refresh_panels()
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.unit_control_panel.set_inter_action(action);
-        self.unit_list_panel.set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.unit_control_panel.set_inter_message(action);
+        self.unit_list_panel.set_inter_message(action);
 
-        if let InterPanelAction::IsDark(is_dark) = *action {
+        if let InterPanelMessage::IsDark(is_dark) = *action {
             self.is_dark.set(is_dark);
         }
     }
@@ -458,7 +458,10 @@ mod tests {
     fn test_reg_ex2() {
         let r = toast_regex();
 
-        let test_str = ["asdf <unit arg=\"test\">unit.serv</unit> ok", "Clean unit <unit>tiny_daemon.service</unit> with parameters <b>cache</b> and <b>configuration</b> failed"];
+        let test_str = [
+            "asdf <unit arg=\"test\">unit.serv</unit> ok",
+            "Clean unit <unit>tiny_daemon.service</unit> with parameters <b>cache</b> and <b>configuration</b> failed",
+        ];
 
         for test in test_str {
             for capt in r.captures_iter(test) {

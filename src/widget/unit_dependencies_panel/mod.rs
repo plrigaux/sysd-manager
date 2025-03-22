@@ -6,7 +6,7 @@ use gtk::{glib, subclass::prelude::*};
 
 use crate::systemd::enums::DependencyType;
 
-use super::{app_window::AppWindow, InterPanelAction};
+use super::{InterPanelMessage, app_window::AppWindow};
 
 glib::wrapper! {
     pub struct UnitDependenciesPanel(ObjectSubclass<imp::UnitDependenciesPanelImp>)
@@ -36,8 +36,8 @@ impl UnitDependenciesPanel {
         self.imp().register(app_window);
     }
 
-    pub fn set_inter_action(&self, action: &InterPanelAction) {
-        self.imp().set_inter_action(action);
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        self.imp().set_inter_message(action);
     }
 }
 
