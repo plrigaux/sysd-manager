@@ -841,12 +841,18 @@
 	(62,8,"AdwButtonContent","label","_Clean",0,None,None,None,None,None,None,None,None),
 	(62,8,"AdwButtonContent","use-underline","True",0,None,None,None,None,None,None,None,None),
 	(62,8,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
+	(62,9,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
+	(62,10,"AdwButtonContent","icon-name","snow-symbolic",None,None,None,None,None,None,None,None,None),
 	(62,10,"AdwButtonContent","label","Freeze",0,None,None,None,None,None,None,None,None),
 	(62,10,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
+	(62,11,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
+	(62,12,"AdwButtonContent","icon-name","rain-outline-symbolic",None,None,None,None,None,None,None,None,None),
 	(62,12,"AdwButtonContent","label","Thaw",0,None,None,None,None,None,None,None,None),
 	(62,12,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
+	(62,15,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
 	(62,16,"AdwButtonContent","icon-name","view-refresh-symbolic",None,None,None,None,None,None,None,None,None),
 	(62,16,"AdwButtonContent","label","Reload Unit",None,None,None,None,None,None,None,None,None),
+	(62,16,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
 	(62,16,"GtkWidget","halign","start",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>

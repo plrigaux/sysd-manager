@@ -24,14 +24,17 @@
     <file compressed="true" alias="style.css">styles/style.css</file>
     <file compressed="true" alias="style_dark.css">styles/style_dark.css</file>
     <file compressed="true" alias="base.css">styles/base.css</file>
-    <!-- custom symbolic icons need to be located in dir icons/scalable/actions to adapt to light and dark theme -->
+    <!-- custom symbolic icons need to be located in dir icons/scalable/actions to adapt to light
+    and dark theme -->
     <file preprocess="xml-stripblanks">icons/scalable/actions/dock-right-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/unreadable-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/funnel-outline-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/funnel-symbolic.svg</file>
-    <file preprocess="xml-stripblanks">icons/scalable/actions/sad-computer-symbolic.svg</file>    
-    <file preprocess="xml-stripblanks">icons/scalable/actions/send-symbolic.svg</file>    
-    <file preprocess="xml-stripblanks">icons/scalable/actions/send-alt-symbolic.svg</file>    
-    <file preprocess="xml-stripblanks">icons/scalable/actions/empty-trash-bin-symbolic.svg</file>       
+    <file preprocess="xml-stripblanks">icons/scalable/actions/sad-computer-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/send-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/send-alt-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/empty-trash-bin-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/rain-outline-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/snow-symbolic.svg</file>
   </gresource>
 </gresources>

@@ -62,10 +62,12 @@
     </child>
     <child>
       <object class="GtkButton" id="freeze_button">
+        <property name="css-classes">flat</property>
         <signal name="clicked" handler="freeze_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
+            <property name="icon-name">snow-symbolic</property>
             <property name="label">Freeze</property>
           </object>
         </child>
@@ -73,10 +75,12 @@
     </child>
     <child>
       <object class="GtkButton" id="thaw_unit_button">
+        <property name="css-classes">flat</property>
         <signal name="clicked" handler="thaw_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
+            <property name="icon-name">rain-outline-symbolic</property>
             <property name="label">Thaw</property>
           </object>
         </child>
@@ -84,9 +88,11 @@
     </child>
     <child>
       <object class="AdwSplitButton" id="reload_unit_button">
+        <property name="css-classes">flat</property>
         <signal name="clicked" handler="reload_unit_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
+            <property name="css-classes">flat</property>
             <property name="halign">start</property>
             <property name="icon-name">view-refresh-symbolic</property>
             <property name="label">Reload Unit</property>
