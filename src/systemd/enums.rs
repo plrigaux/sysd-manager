@@ -625,14 +625,20 @@ impl From<&str> for StartStopMode {
     }
 }
 
-impl From<glib::Variant> for StartStopMode {
-    fn from(value: glib::Variant) -> Self {
+impl From<&glib::Variant> for StartStopMode {
+    fn from(value: &glib::Variant) -> Self {
         let Some(value) = value.get::<String>() else {
             warn!("Variant not String");
             return StartStopMode::Fail;
         };
 
         StartStopMode::from(value.as_str())
+    }
+}
+
+impl From<glib::Variant> for StartStopMode {
+    fn from(value: glib::Variant) -> Self {
+        StartStopMode::from(&value)
     }
 }
 

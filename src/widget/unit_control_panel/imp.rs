@@ -16,7 +16,10 @@ use crate::{
         enums::{ActiveState, EnablementStatus, StartStopMode},
         errors::SystemdErrors,
     },
-    utils::font_management::{self, FONT_CONTEXT, create_provider},
+    utils::{
+        font_management::{self, FONT_CONTEXT, create_provider},
+        palette::{blue, red},
+    },
     widget::{
         InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
         preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
@@ -497,6 +500,59 @@ impl UnitControlPanelImpl {
         if let Some(app_window) = self.app_window.get() {
             app_window.add_toast_message(message, use_markup);
         }
+    }
+
+    pub(super) fn call_method(
+        &self,
+        method_name: &str,
+        button: &impl IsA<gtk::Widget>,
+        systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
+    ) {
+        let binding = self.current_unit.borrow();
+        let Some(unit) = binding.as_ref() else {
+            warn!("No Unit");
+            return;
+        };
+
+        let blue = blue(self.is_dark.get()).get_color();
+
+        let control_panel = self.obj().clone();
+        let unit = unit.clone();
+        let button = button.clone();
+        let method_name = method_name.to_owned();
+
+        //   let systemd_method = systemd_method.clone();
+        glib::spawn_future_local(async move {
+            button.set_sensitive(false);
+
+            let unit2 = unit.clone();
+            let results = gio::spawn_blocking(move || systemd_method(&unit2))
+                .await
+                .expect("Call needs to finish successfully.");
+
+            button.set_sensitive(true);
+
+            match results {
+                Ok(_) => {
+                    let msg = format!(
+                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> successful.",
+                        unit.primary(),
+                    );
+                    control_panel.add_toast_message(&msg, true)
+                }
+                Err(error) => {
+                    let red = red(true).get_color();
+                    let msg = format!(
+                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{red}'>{}</span>.",
+                        unit.primary(),
+                        error.human_error_type()
+                    );
+
+                    warn!("{msg} {:?}", error);
+                    control_panel.add_toast_message(&msg, true)
+                }
+            }
+        });
     }
 }
 

@@ -2,7 +2,7 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use gtk::{
-    TemplateChild, gio,
+    TemplateChild,
     glib::{self, property::PropertySet},
     subclass::{
         prelude::*,
@@ -13,12 +13,11 @@ use gtk::{
     },
 };
 
-use log::{debug, info, warn};
+use log::{debug, warn};
 
 use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
     systemd::{self, data::UnitInfo, enums::KillWho},
-    utils::writer::UnitInfoWriter,
     widget::{InterPanelMessage, unit_control_panel::side_control_panel::SideControlPanel},
 };
 
@@ -56,92 +55,40 @@ pub struct KillPanelImp {
 impl KillPanelImp {
     #[template_callback]
     fn button_send_clicked(&self, button: &gtk::Button) {
-        info!("button_send_clicked {:?}", button);
-
         let text = self.signal_id_entry.text();
 
         let Ok(signal_id) = text.parse::<i32>() else {
-            warn!("Kill signal id not a number");
+            warn!("Kill/Queued signal id not a number");
             return;
         };
-        let is_sigqueue = self.is_sigqueue.get();
-        let queued_signal_value = if is_sigqueue {
-            match self.sigqueue_value.text().parse::<i32>() {
+
+        let who: KillWho = self.who_to_kill.selected().into();
+
+        if self.is_sigqueue.get() {
+            let sigqueue_value = match self.sigqueue_value.text().parse::<i32>() {
                 Ok(v) => v,
                 Err(err) => {
                     warn!("Queued Signal value not a number: {:?}", err);
                     0
                 }
-            }
+            };
+            let prefix = format!(
+                "Queued signal {} with value {} to",
+                signal_id, sigqueue_value
+            );
+            let lambda = move |unit: &UnitInfo| {
+                systemd::queue_signal_unit(unit, who, signal_id, sigqueue_value)
+            };
+            self.parent().call_method(&prefix, button, lambda);
         } else {
-            0
-        };
+            let prefix = format!("Kill signal {} to", signal_id);
+            let lambda = move |unit: &UnitInfo| systemd::kill_unit(unit, who, signal_id);
+            self.parent().call_method(&prefix, button, lambda);
+        }
+    }
 
-        let who: KillWho = self.who_to_kill.selected().into();
-
-        let unit_borrow = self.unit.borrow();
-
-        let Some(unit) = unit_borrow.as_ref() else {
-            warn!("No unit ");
-            return;
-        };
-
-        let unit = unit.clone();
-        let button = button.clone();
-        let parent = self
-            .parent
-            .get()
-            .expect("Parent not supposed to be empty")
-            .clone();
-        let is_dark = self.is_dark.get();
-
-        glib::spawn_future_local(async move {
-            button.set_sensitive(false);
-
-            let unit_ = unit.clone();
-            let kill_results = gio::spawn_blocking(move || {
-                if is_sigqueue {
-                    systemd::queue_signal_unit(&unit_, who, signal_id, queued_signal_value)
-                } else {
-                    systemd::kill_unit(&unit_, who, signal_id)
-                }
-            })
-            .await
-            .expect("Task kill_unit needs to finish successfully.");
-
-            button.set_sensitive(true);
-
-            match kill_results {
-                Ok(_) => {
-                    let blue = if is_dark {
-                        UnitInfoWriter::blue_dark()
-                    } else {
-                        UnitInfoWriter::blue_light()
-                    };
-
-                    let msg = format!(
-                        "Kill signal {} send successfully to <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> at <span fgcolor='{blue}'>{}</span> level",
-                        signal_id,
-                        unit.primary(),
-                        who.as_str()
-                    );
-
-                    info!("{}", msg);
-
-                    parent.add_toast_message(&msg, true)
-                }
-                Err(err) => {
-                    let msg = format!(
-                        "kill {} signal {} who {:?} response failed",
-                        unit.primary(),
-                        signal_id,
-                        who
-                    );
-                    warn!("{msg} {:?}", err);
-                    parent.add_toast_message(&msg, true)
-                }
-            }
-        });
+    pub(super) fn parent(&self) -> &SideControlPanel {
+        self.parent.get().expect("Parent not supposed to be None")
     }
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {

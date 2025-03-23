@@ -9,8 +9,7 @@ use gtk::{
 use log::warn;
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
-    utils::writer::UnitInfoWriter,
+    systemd::{self, data::UnitInfo, enums::StartStopMode},
     widget::{
         InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, kill_panel::KillPanel,
         unit_control_panel::UnitControlPanel,
@@ -85,12 +84,14 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn freeze_button_clicked(&self, button: &gtk::Button) {
-        self.call_method("Freeze", button, systemd::freeze_unit)
+        self.parent()
+            .call_method("Freeze", button, systemd::freeze_unit)
     }
 
     #[template_callback]
     fn thaw_button_clicked(&self, button: &gtk::Button) {
-        self.call_method("Thaw", button, systemd::thaw_unit)
+        self.parent()
+            .call_method("Thaw", button, systemd::thaw_unit)
     }
 
     #[template_callback]
@@ -109,7 +110,7 @@ impl SideControlPanelImpl {
 
         let lambda = move |unit: &UnitInfo| systemd::reload_unit(unit, mode);
 
-        self.call_method("Reload", button, lambda)
+        self.parent().call_method("Reload", button, lambda)
     }
 
     #[template_callback]
@@ -132,20 +133,32 @@ impl SideControlPanelImpl {
         self.parent.get().expect("Parent not supposed to be None")
     }
 
+    pub(super) fn reload_unit_mode_changed(&self, mode: StartStopMode) {
+        self.reload_unit_button
+            .set_tooltip_text(Some(&format!("Reload mode {}", mode.as_str())));
+    }
+
     pub(super) fn set_app_window(&self, app_window: &AppWindow) {
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
 
-        let default_state: glib::Variant = StartStopMode::Fail.as_str().into();
+        let default_mode = StartStopMode::default();
+        self.reload_unit_mode_changed(default_mode);
 
+        let default_state = default_mode.as_str().to_variant();
+
+        let side_control = self.obj().clone();
         let reload_params_action_entry: gio::ActionEntry<AppWindow> =
             gio::ActionEntry::builder(MENU_ACTION)
-                .activate(|_app_window: &AppWindow, action, value| {
+                .activate(move |_app_window: &AppWindow, action, value| {
                     let Some(value) = value else {
                         warn!("{WIN_MENU_ACTION} has no value");
                         return;
                     };
+
+                    let mode: StartStopMode = value.into();
+                    side_control.imp().reload_unit_mode_changed(mode);
 
                     action.set_state(value);
                 })
@@ -227,61 +240,6 @@ impl SideControlPanelImpl {
 
     pub(super) fn set_parent(&self, parent: &UnitControlPanel) {
         let _ = self.parent.set(parent.clone());
-    }
-
-    fn call_method(
-        &self,
-        method_name: &str,
-        button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-    ) {
-        let binding = self.current_unit.borrow();
-        let Some(unit) = binding.as_ref() else {
-            warn!("No Unit");
-            return;
-        };
-
-        let blue = if self.is_dark.get() {
-            UnitInfoWriter::blue_dark()
-        } else {
-            UnitInfoWriter::blue_light()
-        };
-
-        let parent = self.parent().clone();
-        let unit = unit.clone();
-        let button = button.clone();
-        let method_name = method_name.to_owned();
-
-        //   let systemd_method = systemd_method.clone();
-        glib::spawn_future_local(async move {
-            button.set_sensitive(false);
-
-            let unit2 = unit.clone();
-            let results = gio::spawn_blocking(move || systemd_method(&unit2))
-                .await
-                .expect("Call needs to finish successfully.");
-
-            button.set_sensitive(true);
-
-            match results {
-                Ok(_) => {
-                    let msg = format!(
-                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> successful",
-                        unit.primary(),
-                    );
-                    parent.add_toast_message(&msg, true)
-                }
-                Err(err) => {
-                    let msg = format!(
-                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> failed",
-                        unit.primary(),
-                    );
-
-                    warn!("{msg} {:?}", err);
-                    parent.add_toast_message(&msg, true)
-                }
-            }
-        });
     }
 }
 

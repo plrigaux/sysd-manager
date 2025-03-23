@@ -12,7 +12,7 @@ use regex::Regex;
 use crate::{
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
-    utils::{palette::red, writer::UnitInfoWriter},
+    utils::palette::{blue, green, red},
     widget::{
         InterPanelMessage,
         preferences::data::{DbusLevel, PREFERENCES},
@@ -334,19 +334,11 @@ impl AppWindowImpl {
     }
 
     fn blue(&self) -> &str {
-        if self.is_dark.get() {
-            UnitInfoWriter::blue_dark()
-        } else {
-            UnitInfoWriter::blue_light()
-        }
+        blue(self.is_dark.get()).get_color()
     }
 
     fn green(&self) -> &str {
-        if self.is_dark.get() {
-            UnitInfoWriter::green_dark()
-        } else {
-            UnitInfoWriter::green_light()
-        }
+        green(self.is_dark.get()).get_color()
     }
 
     fn red(&self) -> &str {

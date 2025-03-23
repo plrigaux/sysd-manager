@@ -22,7 +22,8 @@ pub enum SystemdErrors {
     ZBusError(zbus::Error),
     ZAccessDenied(String, String),
     ZNoSuchUnit(String, String),
-    ZNoSuchUnitProxy(String),
+    ZNoSuchUnitProxy(String, String),
+    ZJobTypeNotApplicable(String, String),
     ZVariantError(zvariant::Error),
     ZBusFdoError(zbus::fdo::Error),
 }
@@ -44,7 +45,10 @@ impl SystemdErrors {
 
     pub fn human_error_type(&self) -> String {
         match self {
-            SystemdErrors::ZAccessDenied(_, _) => "Access Denied".to_owned(),
+            SystemdErrors::ZAccessDenied(_, detail) => detail.clone(),
+            SystemdErrors::ZJobTypeNotApplicable(_, detail) => detail.clone(),
+            SystemdErrors::ZNoSuchUnit(_, detail) => detail.clone(),
+            SystemdErrors::ZNoSuchUnitProxy(_, detail) => detail.clone(),
             _ => self.to_string(),
         }
     }
@@ -87,7 +91,10 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
                         SystemdErrors::ZNoSuchUnit(method.to_owned(), message)
                     }
                     "org.freedesktop.DBus.Error.InvalidArgs" => {
-                        SystemdErrors::ZNoSuchUnitProxy(message)
+                        SystemdErrors::ZNoSuchUnitProxy(method.to_owned(), message)
+                    }
+                    "org.freedesktop.systemd1.JobTypeNotApplicable" => {
+                        SystemdErrors::ZJobTypeNotApplicable(method.to_owned(), message)
                     }
                     _ => {
                         SystemdErrors::ZMethodError(method.to_owned(), err_code.to_owned(), message)

@@ -3,10 +3,9 @@ use log::{debug, info, warn};
 
 use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus, errors::SystemdErrors};
 
-use crate::gtk::prelude::*;
-use crate::utils::writer::UnitInfoWriter;
-
 use super::UnitControlPanel;
+use crate::gtk::prelude::*;
+use crate::utils::palette::blue;
 
 pub(super) fn switch_ablement_state_set(
     control_panel: &UnitControlPanel,
@@ -16,7 +15,9 @@ pub(super) fn switch_ablement_state_set(
     is_dark: bool,
 ) {
     info!(
-        "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}", unit.primary(), EnablementStatus::from(unit.enable_status()).as_str(),
+        "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}",
+        unit.primary(),
+        EnablementStatus::from(unit.enable_status()).as_str(),
         switch.is_active(),
         switch.state()
     );
@@ -44,11 +45,7 @@ pub(super) fn switch_ablement_state_set(
 
         match enable_result {
             Ok(enablement_status_ret) => {
-                let blue = if is_dark {
-                    UnitInfoWriter::blue_dark()
-                } else {
-                    UnitInfoWriter::blue_light()
-                };
+                let blue = blue(true).get_color();
 
                 let toast_info = format!(
                     "Unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{blue}'>{}</span>",
@@ -77,13 +74,12 @@ pub(super) fn switch_ablement_state_set(
                     _ => "???",
                 };
 
-                let blue = if is_dark {
-                    UnitInfoWriter::blue_dark()
-                } else {
-                    UnitInfoWriter::blue_light()
-                };
+                let blue = blue(is_dark).get_color();
 
-                let toast_info = format!("{action_str} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has failed!", unit.primary());
+                let toast_info = format!(
+                    "{action_str} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has failed!",
+                    unit.primary()
+                );
 
                 warn!("{toast_info} : {error_message}");
 

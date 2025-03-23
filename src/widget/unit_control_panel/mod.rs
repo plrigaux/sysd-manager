@@ -1,6 +1,5 @@
 use enums::UnitContolType;
-//use glib::Object;
-use gtk::{glib, subclass::prelude::*};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::systemd::{
     data::UnitInfo,
@@ -72,5 +71,14 @@ impl UnitControlPanel {
 
     pub fn unlink_child(&self, is_signal: bool) {
         self.imp().unlink_child(is_signal);
+    }
+
+    pub(super) fn call_method(
+        &self,
+        method_name: &str,
+        button: &impl IsA<gtk::Widget>,
+        systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
+    ) {
+        self.imp().call_method(method_name, button, systemd_method);
     }
 }

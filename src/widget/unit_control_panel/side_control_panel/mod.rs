@@ -1,6 +1,9 @@
-use gtk::{glib, subclass::prelude::*};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
-use crate::widget::{InterPanelMessage, app_window::AppWindow};
+use crate::{
+    systemd::{data::UnitInfo, errors::SystemdErrors},
+    widget::{InterPanelMessage, app_window::AppWindow},
+};
 
 use super::UnitControlPanel;
 
@@ -33,5 +36,16 @@ impl SideControlPanel {
 
     pub fn add_toast_message(&self, message: &str, use_markup: bool) {
         self.imp().parent().add_toast_message(message, use_markup);
+    }
+
+    pub fn call_method(
+        &self,
+        method_name: &str,
+        button: &impl IsA<gtk::Widget>,
+        systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
+    ) {
+        self.imp()
+            .parent()
+            .call_method(method_name, button, systemd_method);
     }
 }

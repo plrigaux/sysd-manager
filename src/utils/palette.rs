@@ -158,3 +158,11 @@ pub fn green(is_dark: bool) -> Palette<'static> {
         Palette::Custom("#007c3d")
     }
 }
+
+pub fn blue(is_dark: bool) -> Palette<'static> {
+    if is_dark {
+        Palette::Blue2
+    } else {
+        Palette::Blue4
+    }
+}

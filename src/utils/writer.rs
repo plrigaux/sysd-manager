@@ -9,7 +9,7 @@ use crate::systemd::{
     generate_file_uri,
 };
 
-use super::palette::{Palette, green, grey, red, yellow};
+use super::palette::{blue, green, grey, red, yellow};
 
 pub struct UnitInfoWriter {
     buf: TextBuffer,
@@ -150,14 +150,6 @@ impl UnitInfoWriter {
         )
     }
 
-    pub fn green_dark() -> &'static str {
-        Palette::Green3.get_color()
-    }
-
-    pub fn green_light() -> &'static str {
-        Palette::Green3.get_color()
-    }
-
     fn create_active_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
             (green(is_dark), TAG_NAME_ACTIVE_DARK)
@@ -282,19 +274,11 @@ impl UnitInfoWriter {
         )
     }
 
-    pub fn blue_dark() -> &'static str {
-        Palette::Blue2.get_color()
-    }
-
-    pub fn blue_light() -> &'static str {
-        Palette::Blue4.get_color()
-    }
-
     fn create_status_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
         let (color, name) = if is_dark {
-            (Self::blue_dark(), TAG_NAME_STATUS_DARK)
+            (blue(is_dark), TAG_NAME_STATUS_DARK)
         } else {
-            (Self::blue_light(), TAG_NAME_STATUS)
+            (blue(is_dark), TAG_NAME_STATUS)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -305,7 +289,7 @@ impl UnitInfoWriter {
         buf.create_tag(
             Some(name),
             &[
-                (PROP_FOREGROUND, &color.to_value()),
+                (PROP_FOREGROUND, &color.get_color().to_value()),
                 (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
