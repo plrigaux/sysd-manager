@@ -6,7 +6,7 @@ use gtk::{
     gio::{self, MENU_ATTRIBUTE_TARGET},
     glib::{self, Variant, VariantTy},
 };
-use log::{info, warn};
+use log::warn;
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
@@ -100,11 +100,16 @@ impl SideControlPanelImpl {
             return;
         };
 
-        let value = app_window.action_state(MENU_ACTION);
+        let Some(value) = app_window.action_state(MENU_ACTION) else {
+            warn!("Reload unit has no mode");
+            return;
+        };
 
-        info!("state {:?}", value);
+        let mode: StartStopMode = value.into();
 
-        self.call_method("Reload", button, systemd::reload_unit)
+        let lambda = move |unit: &UnitInfo| systemd::reload_unit(unit, mode);
+
+        self.call_method("Reload", button, lambda)
     }
 
     #[template_callback]
@@ -228,7 +233,7 @@ impl SideControlPanelImpl {
         &self,
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: fn(&UnitInfo) -> Result<(), SystemdErrors>,
+        systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
     ) {
         let binding = self.current_unit.borrow();
         let Some(unit) = binding.as_ref() else {
@@ -247,6 +252,7 @@ impl SideControlPanelImpl {
         let button = button.clone();
         let method_name = method_name.to_owned();
 
+        //   let systemd_method = systemd_method.clone();
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
 

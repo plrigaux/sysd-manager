@@ -497,8 +497,8 @@ pub fn thaw_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
     sysdbus::thaw_unit(unit.dbus_level(), &unit.primary())
 }
 
-pub fn reload_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
-    sysdbus::reload_unit(unit.dbus_level(), &unit.primary())
+pub fn reload_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<(), SystemdErrors> {
+    sysdbus::reload_unit(unit.dbus_level(), &unit.primary(), mode.as_str())
 }
 
 pub fn queue_signal_unit(

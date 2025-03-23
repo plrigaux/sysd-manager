@@ -603,9 +603,14 @@ impl StartStopMode {
 
 impl From<&RefCell<String>> for StartStopMode {
     fn from(value: &RefCell<String>) -> Self {
-        let s = value.borrow();
+        let borrowed = value.borrow();
+        StartStopMode::from(borrowed.as_str())
+    }
+}
 
-        let mode = match s.as_str() {
+impl From<&str> for StartStopMode {
+    fn from(value: &str) -> Self {
+        match value {
             "fail" => StartStopMode::Fail,
             "replace" => StartStopMode::Replace,
             "isolate" => StartStopMode::Isolate,
@@ -616,8 +621,18 @@ impl From<&RefCell<String>> for StartStopMode {
                 warn!("unknown  mode {:?}", unknown);
                 StartStopMode::Fail
             }
+        }
+    }
+}
+
+impl From<glib::Variant> for StartStopMode {
+    fn from(value: glib::Variant) -> Self {
+        let Some(value) = value.get::<String>() else {
+            warn!("Variant not String");
+            return StartStopMode::Fail;
         };
-        mode
+
+        StartStopMode::from(value.as_str())
     }
 }
 

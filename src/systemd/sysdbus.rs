@@ -698,13 +698,17 @@ pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), Sys
     send_disenable_message(level, METHOD_THAW_UNIT, &(unit_name), handler)
 }
 
-pub(super) fn reload_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+pub(super) fn reload_unit(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    mode: &str,
+) -> Result<(), SystemdErrors> {
     let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
         info!("Reload Unit SUCCESS");
         Ok(())
     };
 
-    send_disenable_message(level, METHOD_RELOAD_UNIT, &(unit_name), handler)
+    send_disenable_message(level, METHOD_RELOAD_UNIT, &(unit_name, mode), handler)
 }
 
 pub(super) fn queue_signal_unit(
