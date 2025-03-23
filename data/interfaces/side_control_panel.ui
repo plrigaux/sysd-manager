@@ -10,14 +10,6 @@
     <property name="spacing">5</property>
     <child>
       <object class="GtkButton">
-        <property name="css-classes">circular</property>
-        <property name="halign">end</property>
-        <property name="icon-name">window-close-symbolic</property>
-        <signal name="clicked" handler="sidebar_close_button_clicked" swapped="yes"/>
-      </object>
-    </child>
-    <child>
-      <object class="GtkButton">
         <property name="child">
           <object class="AdwButtonContent">
             <property name="halign">start</property>

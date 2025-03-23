@@ -32,14 +32,17 @@ flatpak = []
 lto = true
 
 [dependencies]
-adw = { version = "0.7.1", package = "libadwaita", features = ["v1_6"] }
+adw = { version = "0.7.2", package = "libadwaita", features = ["v1_7"] }
+gio = { version = "*", package = "gio", features = ["v2_84"] }
+gtk = { version = "0.9.6", package = "gtk4", features = ["v4_18"] }
+
+
 bitflags = "2.8.0"
 chrono = "0.4.40"
 clap = { version = "4.5", features = ["derive"] }
 dotenv = "0.15"
 env_logger = "0.11"
 foreign-types-shared = "0.3.1"
-gtk = { version = "0.9.6", package = "gtk4", features = ["gnome_47"] }
 log = "0.4"
 libc = "0.2"
 libsysd = { version = "0.9", package = "libsystemd-sys"} 
