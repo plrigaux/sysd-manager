@@ -106,7 +106,7 @@
                   <object class="AdwButtonContent">
                     <property name="can-shrink">True</property>
                     <property name="icon-name">dock-right-symbolic</property>
-                    <property name="label">_More</property>
+                    <property name="label">_More ...</property>
                     <property name="use-underline">True</property>
                   </object>
                 </child>
@@ -125,6 +125,7 @@
             <child>
               <object class="AdwViewSwitcher">
                 <property name="margin-bottom">5</property>
+                <property name="margin-end">5</property>
                 <property name="policy">wide</property>
                 <property name="stack">unit_panel_stack</property>
               </object>

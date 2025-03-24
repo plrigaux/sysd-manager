@@ -185,9 +185,12 @@ pub fn setup_factories(
     });
 
     fac_sub_state.connect_bind(|_factory, object| {
-        let (child, unit, unit_binding) = factory_bind!(object, sub_state);
-        let binding = unit.bind_property("sub_state", &child, "text").build();
+        let (inscription, unit, unit_binding) = factory_bind!(object, sub_state);
+        let binding = unit
+            .bind_property("sub_state", &inscription, "text")
+            .build();
         unit_binding.set_binding(BIND_SUB_STATE_TEXT, binding);
+        display_inactive(inscription, &unit);
     });
 
     factory_connect_unbind!(fac_sub_state, BIND_SUB_STATE_TEXT);
@@ -199,9 +202,12 @@ pub fn setup_factories(
     });
 
     fac_descrition.connect_bind(|_factory, object| {
-        let (child, unit, unit_binding) = factory_bind!(object, description);
-        let binding = unit.bind_property("description", &child, "text").build();
+        let (inscription, unit, unit_binding) = factory_bind!(object, description);
+        let binding = unit
+            .bind_property("description", &inscription, "text")
+            .build();
         unit_binding.set_binding(BIND_DESCRIPTION_TEXT, binding);
+        display_inactive(inscription, &unit);
     });
 
     fac_descrition.connect_unbind(|_factory, object| {
@@ -323,6 +329,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
                 .bind_property("load_state", &inscription, "text")
                 .build();
             unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
+            display_inactive(inscription, &unit);
         });
 
         factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT);
@@ -420,6 +427,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
                 .build();
 
             unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
+            display_inactive(inscription, &unit);
         });
 
         factory_connect_unbind!(fac_enable_status, BIND_ENABLE_STATUS_TEXT);
@@ -491,6 +499,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
 
             let binding = unit.bind_property("preset", &inscription, "text").build();
             unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
+            display_inactive(inscription, &unit);
         });
 
         factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT);
