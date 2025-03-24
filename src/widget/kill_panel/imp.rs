@@ -17,7 +17,7 @@ use log::{debug, warn};
 
 use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
-    systemd::{self, data::UnitInfo, enums::KillWho},
+    systemd::{self, data::UnitInfo, enums::KillWho, errors::SystemdErrors},
     widget::{InterPanelMessage, unit_control_panel::side_control_panel::SideControlPanel},
 };
 
@@ -55,36 +55,7 @@ pub struct KillPanelImp {
 impl KillPanelImp {
     #[template_callback]
     fn button_send_clicked(&self, button: &gtk::Button) {
-        let text = self.signal_id_entry.text();
-
-        let Ok(signal_id) = text.parse::<i32>() else {
-            warn!("Kill/Queued signal id not a number");
-            return;
-        };
-
-        let who: KillWho = self.who_to_kill.selected().into();
-
-        if self.is_sigqueue.get() {
-            let sigqueue_value = match self.sigqueue_value.text().parse::<i32>() {
-                Ok(v) => v,
-                Err(err) => {
-                    warn!("Queued Signal value not a number: {:?}", err);
-                    0
-                }
-            };
-            let prefix = format!(
-                "Queued signal {} with value {} to",
-                signal_id, sigqueue_value
-            );
-            let lambda = move |unit: &UnitInfo| {
-                systemd::queue_signal_unit(unit, who, signal_id, sigqueue_value)
-            };
-            self.parent().call_method(&prefix, button, lambda);
-        } else {
-            let prefix = format!("Kill signal {} to", signal_id);
-            let lambda = move |unit: &UnitInfo| systemd::kill_unit(unit, who, signal_id);
-            self.parent().call_method(&prefix, button, lambda);
-        }
+        self.button_send_clicked2(button);
     }
 
     pub(super) fn parent(&self) -> &SideControlPanel {
@@ -286,6 +257,43 @@ impl KillPanelImp {
         self.parent
             .set(parent.clone())
             .expect("parent should be set once");
+    }
+
+    fn button_send_clicked2(&self, button: &gtk::Button) {
+        let text = self.signal_id_entry.text();
+
+        let Ok(signal_id) = text.parse::<i32>() else {
+            warn!("Kill/Queued signal id not a number");
+            return;
+        };
+
+        let who: KillWho = self.who_to_kill.selected().into();
+
+        let lambda_out = move |_unit: &UnitInfo, _res: Result<(), SystemdErrors>| {};
+
+        if self.is_sigqueue.get() {
+            let sigqueue_value = match self.sigqueue_value.text().parse::<i32>() {
+                Ok(v) => v,
+                Err(err) => {
+                    warn!("Queued Signal value not a number: {:?}", err);
+                    0
+                }
+            };
+            let prefix = format!(
+                "Queued signal {} with value {} to",
+                signal_id, sigqueue_value
+            );
+            let lambda = move |unit: &UnitInfo| {
+                systemd::queue_signal_unit(unit, who, signal_id, sigqueue_value)
+            };
+            self.parent()
+                .call_method(&prefix, button, lambda, lambda_out);
+        } else {
+            let prefix = format!("Kill signal {} to", signal_id);
+            let lambda = move |unit: &UnitInfo| systemd::kill_unit(unit, who, signal_id);
+            self.parent()
+                .call_method(&prefix, button, lambda, lambda_out);
+        }
     }
 }
 

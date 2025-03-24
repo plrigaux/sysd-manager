@@ -20,7 +20,7 @@ use log::{info, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
-    widget::{InterPanelMessage, app_window::AppWindow},
+    widget::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitControlPanel},
 };
 
 use super::CleanDialog;
@@ -42,28 +42,41 @@ pub struct CleanDialogImp {
     check_buttons: OnceCell<HashMap<String, gtk::CheckButton>>,
 
     app_window: OnceCell<AppWindow>,
+
+    unit_control: OnceCell<UnitControlPanel>,
 }
 
 #[gtk::template_callbacks]
 impl CleanDialogImp {
     #[template_callback]
-    fn clean_button_clicked(&self, _button: gtk::Button) {
-        let binding = self.unit.borrow();
-        let Some(unit) = binding.as_ref() else {
-            warn!("No unit selected");
-            return;
-        };
-
+    fn clean_button_clicked(&self, button: gtk::Button) {
         let Some(map) = self.check_buttons.get() else {
             return;
         };
 
-        let what: Vec<&str> = map
+        let what: Vec<String> = map
             .iter()
             .filter(|(_, check_button)| check_button.is_active())
-            .map(|(clean_option_code, _)| clean_option_code.as_str())
+            .map(|(clean_option_code, _)| clean_option_code.clone())
             .collect();
 
+        let lambda_out = {
+            let what = what.clone();
+            let this = self.obj().clone();
+            move |unit: &UnitInfo, result: Result<(), SystemdErrors>| {
+                if let Err(error) = result {
+                    this.imp().work_around_dialog(&what, unit, error);
+                }
+            }
+        };
+
+        let lambda = move |unit: &UnitInfo| systemd::clean_unit(unit, &what);
+
+        self.unit_control
+            .get()
+            .expect("unit_control not None")
+            .call_method("Clean", &button, lambda, lambda_out);
+        /*
         let plur = if what.len() == 1 { "" } else { "s" };
 
         let message = match systemd::clean_unit(unit, &what) {
@@ -90,10 +103,10 @@ impl CleanDialogImp {
 
         if let Some(app_window) = self.app_window.get() {
             app_window.add_toast_message(&message, true);
-        }
+        } */
     }
 
-    fn what_to_display(what: &[&str]) -> String {
+    /*     fn what_to_display(what: &[&str]) -> String {
         let mut out = String::new();
 
         for (i, w) in what.iter().enumerate() {
@@ -110,14 +123,20 @@ impl CleanDialogImp {
             }
         }
         out
-    }
+    } */
 
-    pub(crate) fn set_app_window(&self, app_window: Option<&AppWindow>) {
+    pub(crate) fn set_app_window(
+        &self,
+        app_window: Option<&AppWindow>,
+        unit_control: &UnitControlPanel,
+    ) {
         if let Some(app_window) = app_window {
             self.app_window
                 .set(app_window.clone())
                 .expect("app_window set once");
         }
+
+        let _ = self.unit_control.set(unit_control.clone());
     }
 
     pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
@@ -175,12 +194,12 @@ impl CleanDialogImp {
         self.clean_button.set_sensitive(at_least_one_checked);
     }
 
-    fn work_around_dialog(&self, what: &[&str], unit: &UnitInfo, err: SystemdErrors) {
+    fn work_around_dialog(&self, what: &[String], unit: &UnitInfo, err: SystemdErrors) {
         let content_box = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
             .spacing(15)
-            .margin_start(5)
-            .margin_end(5)
+            .margin_start(10)
+            .margin_end(10)
             .margin_top(5)
             .margin_bottom(15)
             .build();

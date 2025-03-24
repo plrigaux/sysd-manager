@@ -510,16 +510,16 @@ pub fn queue_signal_unit(
     sysdbus::queue_signal_unit(unit.dbus_level(), &unit.primary(), who, signal, value)
 }
 
-pub fn clean_unit(unit: &UnitInfo, what: &[&str]) -> Result<(), SystemdErrors> {
+pub fn clean_unit(unit: &UnitInfo, what: &[String]) -> Result<(), SystemdErrors> {
     //just send all if seleted
-    let mut what_str: Vec<&str> = what
+    let mut what_str: Vec<String> = what
         .iter()
         .filter(|cop| **cop != CleanOption::All.code())
-        .copied()
+        .cloned()
         .collect();
 
     if what_str.len() != what.len() {
-        what_str = vec![CleanOption::All.code()]
+        what_str = vec![CleanOption::All.code().to_owned()]
     }
 
     sysdbus::clean_unit(unit.dbus_level(), &unit.primary(), &what_str)

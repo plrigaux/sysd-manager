@@ -735,7 +735,7 @@ pub(super) fn queue_signal_unit(
 pub(super) fn clean_unit(
     level: UnitDBusLevel,
     unit_name: &str,
-    what: &[&str],
+    what: &[String],
 ) -> Result<(), SystemdErrors> {
     let handle_answer = |_method: &str, _return_message: &Message| {
         info!("Clean Unit {} {:?} SUCCESS", unit_name, what);

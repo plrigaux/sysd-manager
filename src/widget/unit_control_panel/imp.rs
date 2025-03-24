@@ -21,7 +21,7 @@ use crate::{
         palette::{blue, red},
     },
     widget::{
-        InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, journal::JournalPanel,
+        InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
         preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
         unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
@@ -226,20 +226,6 @@ impl UnitControlPanelImpl {
         self.search_bar
             .borrow()
             .set_search_mode(toggle_button.is_active());
-    }
-
-    #[template_callback]
-    fn clean_button_clicked(&self, _button: &gtk::Button) {
-        let binding = self.current_unit.borrow();
-
-        let app_window = self.app_window.get();
-
-        let clean_dialog = CleanDialog::new(binding.as_ref(), self.is_dark.get(), app_window);
-
-        clean_dialog.set_transient_for(app_window);
-        //clean_dialog.set_modal(true);
-
-        clean_dialog.present();
     }
 }
 
@@ -507,6 +493,7 @@ impl UnitControlPanelImpl {
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
         systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
+        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>) + 'static,
     ) {
         let binding = self.current_unit.borrow();
         let Some(unit) = binding.as_ref() else {
@@ -514,7 +501,8 @@ impl UnitControlPanelImpl {
             return;
         };
 
-        let blue = blue(self.is_dark.get()).get_color();
+        let is_dark = true; //self.is_dark.get();
+        let blue = blue(is_dark).get_color();
 
         let control_panel = self.obj().clone();
         let unit = unit.clone();
@@ -526,13 +514,13 @@ impl UnitControlPanelImpl {
             button.set_sensitive(false);
 
             let unit2 = unit.clone();
-            let results = gio::spawn_blocking(move || systemd_method(&unit2))
+            let result = gio::spawn_blocking(move || systemd_method(&unit2))
                 .await
                 .expect("Call needs to finish successfully.");
 
             button.set_sensitive(true);
 
-            match results {
+            match result {
                 Ok(_) => {
                     let msg = format!(
                         "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> successful.",
@@ -540,8 +528,8 @@ impl UnitControlPanelImpl {
                     );
                     control_panel.add_toast_message(&msg, true)
                 }
-                Err(error) => {
-                    let red = red(true).get_color();
+                Err(ref error) => {
+                    let red = red(is_dark).get_color();
                     let msg = format!(
                         "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{red}'>{}</span>.",
                         unit.primary(),
@@ -552,6 +540,8 @@ impl UnitControlPanelImpl {
                     control_panel.add_toast_message(&msg, true)
                 }
             }
+
+            return_handle(&unit, result);
         });
     }
 }

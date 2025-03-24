@@ -9,7 +9,7 @@ use gtk::{
 use log::warn;
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::StartStopMode},
+    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     widget::{
         InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, kill_panel::KillPanel,
         unit_control_panel::UnitControlPanel,
@@ -82,16 +82,18 @@ impl SideControlPanelImpl {
         self.kill_or_queue_new_window(&self.queue_signal_window, KillPanel::new_signal_window);
     }
 
+    fn lambda_out(_unit: &UnitInfo, _res: Result<(), SystemdErrors>) {}
+
     #[template_callback]
     fn freeze_button_clicked(&self, button: &gtk::Button) {
         self.parent()
-            .call_method("Freeze", button, systemd::freeze_unit)
+            .call_method("Freeze", button, systemd::freeze_unit, Self::lambda_out)
     }
 
     #[template_callback]
     fn thaw_button_clicked(&self, button: &gtk::Button) {
         self.parent()
-            .call_method("Thaw", button, systemd::thaw_unit)
+            .call_method("Thaw", button, systemd::thaw_unit, Self::lambda_out)
     }
 
     #[template_callback]
@@ -110,7 +112,8 @@ impl SideControlPanelImpl {
 
         let lambda = move |unit: &UnitInfo| systemd::reload_unit(unit, mode);
 
-        self.parent().call_method("Reload", button, lambda)
+        self.parent()
+            .call_method("Reload", button, lambda, Self::lambda_out)
     }
 
     #[template_callback]
@@ -118,8 +121,10 @@ impl SideControlPanelImpl {
         let binding = self.current_unit.borrow();
 
         let app_window = self.app_window.get();
+        let parent = self.parent();
 
-        let clean_dialog = CleanDialog::new(binding.as_ref(), self.is_dark.get(), app_window);
+        let clean_dialog =
+            CleanDialog::new(binding.as_ref(), self.is_dark.get(), app_window, parent);
 
         clean_dialog.set_transient_for(app_window);
         //clean_dialog.set_modal(true);
