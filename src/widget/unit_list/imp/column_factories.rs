@@ -31,8 +31,7 @@ macro_rules! factory_setup {
         let list_item = downcast_list_item!($list_item_object);
         let inscription = gtk::Inscription::builder()
             .xalign(0.0)
-            // .wrap_mode(gtk::pango::WrapMode::None) INVESTIGATE
-            .wrap_mode(gtk::pango::WrapMode::Char)
+            .wrap_mode(gtk::pango::WrapMode::None)
             .build();
 
         //println!("tree {}", inscription.css_name());

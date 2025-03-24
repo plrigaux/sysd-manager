@@ -1566,6 +1566,7 @@ dependencies = [
  "libc",
  "libsystemd-sys",
  "log",
+ "pango",
  "quick-xml",
  "regex",
  "serde",

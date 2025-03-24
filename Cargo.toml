@@ -32,6 +32,7 @@ flatpak = []
 lto = true
 
 [dependencies]
+pango = { version = "*", package = "pango", features = ["v1_56"] }
 adw = { version = "0.7.2", package = "libadwaita", features = ["v1_7"] }
 gio = { version = "*", package = "gio", features = ["v2_84"] }
 gtk = { version = "0.9.6", package = "gtk4", features = ["v4_18"] }
