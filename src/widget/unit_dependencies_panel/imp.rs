@@ -53,7 +53,7 @@ const PANEL_SPINNER: &str = "spinner";
 #[properties(wrapper_type = super::UnitDependenciesPanel)]
 pub struct UnitDependenciesPanelImp {
     #[template_child]
-    unit_dependencies_panel_stack: TemplateChild<gtk::Stack>,
+    unit_dependencies_panel_stack: TemplateChild<adw::ViewStack>,
 
     #[template_child]
     unit_dependencies_textview: TemplateChild<gtk::TextView>,

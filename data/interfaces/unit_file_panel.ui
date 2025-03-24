@@ -8,9 +8,9 @@
   <template class="UnitFilePanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkStack" id="panel_file_stack">
+      <object class="AdwViewStack" id="panel_file_stack">
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
                 <property name="description">The  unit has no file associated</property>
@@ -22,7 +22,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="GtkBox">
                 <property name="orientation">vertical</property>

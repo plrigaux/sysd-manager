@@ -84,9 +84,9 @@
       </object>
     </child>
     <child>
-      <object class="GtkStack" id="panel_stack">
+      <object class="AdwViewStack" id="panel_stack">
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
                 <property name="description">No events can be a good thing</property>
@@ -98,7 +98,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwSpinner"/>
             </property>
@@ -106,7 +106,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="GtkBox">
                 <property name="orientation">vertical</property>

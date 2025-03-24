@@ -28,9 +28,9 @@
       </object>
     </child>
     <child>
-      <object class="GtkStack" id="unit_dependencies_panel_stack">
+      <object class="AdwViewStack" id="unit_dependencies_panel_stack">
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
                 <property name="title">No dependencies events</property>
@@ -40,7 +40,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwSpinner"/>
             </property>
@@ -48,7 +48,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="GtkScrolledWindow">
                 <property name="child">

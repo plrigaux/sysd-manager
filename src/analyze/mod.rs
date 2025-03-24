@@ -66,7 +66,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
         .child(&analyze_tree)
         .build();
 
-    let stack = gtk::Stack::new();
+    let stack = adw::ViewStack::new();
 
     let spinner = adw::Spinner::new();
 
@@ -81,7 +81,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
     Ok(unit_analyse_box)
 }
 
-/// Use `systemd-analyze blame` to fill out the information for the Analyze `gtk::Stack`.
+/// Use `systemd-analyze blame` to fill out the information for the Analyze `adw::ViewStack`.
 fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), SystemdErrors> {
     let store = gio::ListStore::new::<BoxedAnyObject>();
 
@@ -140,7 +140,7 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
     Ok((analyze_tree, store))
 }
 
-fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack: &gtk::Stack) {
+fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack: &adw::ViewStack) {
     {
         let list_store = list_store.clone();
         let total_time_label = total_time_label.clone();

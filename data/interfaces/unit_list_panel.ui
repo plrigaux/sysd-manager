@@ -10,9 +10,9 @@
     <property name="vexpand">True</property>
     <property name="width-request">150</property>
     <child>
-      <object class="GtkStack" id="panel_stack">
+      <object class="AdwViewStack" id="panel_stack">
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwSpinner"/>
             </property>
@@ -20,7 +20,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
                 <property name="description">No units returned, set environmental variable &lt;b&gt;RUST_LOG=info&lt;/b&gt; to see what happend.</property>
@@ -32,7 +32,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStackPage">
+          <object class="AdwViewStackPage">
             <property name="child">
               <object class="GtkBox">
                 <property name="orientation">vertical</property>

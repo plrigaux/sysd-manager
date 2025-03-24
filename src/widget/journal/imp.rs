@@ -46,7 +46,7 @@ pub struct JournalPanelImp {
     journal_refresh_button: TemplateChild<gtk::Button>,
 
     #[template_child]
-    panel_stack: TemplateChild<gtk::Stack>,
+    panel_stack: TemplateChild<adw::ViewStack>,
 
     #[template_child]
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,

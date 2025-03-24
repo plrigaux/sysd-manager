@@ -53,7 +53,7 @@ pub struct UnitFilePanelImp {
     file_link: TemplateChild<gtk::LinkButton>,
 
     #[template_child]
-    panel_file_stack: TemplateChild<gtk::Stack>,
+    panel_file_stack: TemplateChild<adw::ViewStack>,
 
     app_window: OnceCell<AppWindow>,
 

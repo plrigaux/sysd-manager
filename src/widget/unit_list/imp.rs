@@ -75,7 +75,7 @@ pub struct UnitListPanelImp {
     filter_list_model: TemplateChild<gtk::FilterListModel>,
 
     #[template_child]
-    panel_stack: TemplateChild<gtk::Stack>,
+    panel_stack: TemplateChild<adw::ViewStack>,
 
     #[template_child]
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,
