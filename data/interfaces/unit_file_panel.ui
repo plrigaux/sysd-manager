@@ -3,8 +3,8 @@
 <interface>
   <!-- interface-name unit_file_panel.ui -->
   <!-- interface-description Unit file panel -->
-  <requires lib="gtk" version="4.12"/>
-  <requires lib="libadwaita" version="1.4"/>
+  <requires lib="gtk" version="4.16"/>
+  <requires lib="libadwaita" version="1.6"/>
   <template class="UnitFilePanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
