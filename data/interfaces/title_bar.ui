@@ -8,7 +8,7 @@
     <property name="title-widget">
       <object class="GtkLabel">
         <property name="ellipsize">end</property>
-        <property name="label">Sysd Manager</property>
+        <property name="label">SysD Manager</property>
         <property name="single-line-mode">True</property>
         <property name="width-chars">5</property>
         <style>
