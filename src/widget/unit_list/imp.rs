@@ -5,6 +5,7 @@ use std::{
     cell::{Cell, OnceCell, RefCell, RefMut},
     collections::HashMap,
     rc::Rc,
+    time::Duration,
 };
 
 use gtk::{
@@ -26,31 +27,26 @@ use gtk::{
 use log::{debug, error, info, warn};
 
 use crate::{
-    systemd::runtime,
-    systemd_gui,
-    widget::{
-        InterPanelMessage,
-        preferences::data::{
-            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
-            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
-        },
-    },
-};
-use crate::{
     systemd::{
         self,
         data::UnitInfo,
         enums::{ActiveState, EnablementStatus, UnitType},
+        runtime,
     },
+    systemd_gui,
     widget::{
+        InterPanelMessage,
         app_window::AppWindow,
         menu_button::{ExMenuButton, OnClose},
+        preferences::data::{
+            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
+            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
+        },
+        unit_list::imp::rowdata::UnitBinding,
     },
 };
 
 use strum::IntoEnumIterator;
-
-use crate::widget::unit_list::imp::rowdata::UnitBinding;
 
 #[derive(Default, gtk::CompositeTemplate, Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -348,7 +344,8 @@ impl UnitListPanelImp {
 
             unit_list
                 .imp()
-                .set_force_selected_index(Some(force_selected_index));
+                .force_selected_index
+                .set(Some(force_selected_index));
             refresh_unit_list_button.set_sensitive(true);
             unit_list.set_sorter();
 
@@ -489,10 +486,6 @@ impl UnitListPanelImp {
         self.unit.borrow().clone()
     }
 
-    pub fn set_force_selected_index(&self, force_selected_index: Option<u32>) {
-        self.force_selected_index.set(force_selected_index)
-    }
-
     pub fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     pub(super) fn set_sorter(&self) {
@@ -595,27 +588,40 @@ impl ObjectImpl for UnitListPanelImp {
 }
 
 fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnView) {
-    let force_selected_index = unit_list.imp().force_selected_index.get();
-    debug!("vadjustment changed");
-    unit_list.imp().set_force_selected_index(None);
-
-    let Some(mut force_selected_index) = force_selected_index else {
+    let Some(mut force_selected_index) = unit_list.imp().force_selected_index.get() else {
         return;
     };
+
+    unit_list.imp().force_selected_index.set(None);
 
     if force_selected_index == GTK_INVALID_LIST_POSITION {
         force_selected_index = 0;
     }
+
     info!("Focus on selected unit list row (index {force_selected_index})");
 
-    //needs a bit of time to generate the list
-    units_browser.scroll_to(
-        force_selected_index, // to centerish on the selected unit
-        None,
-        ListScrollFlags::FOCUS,
-        None,
-    );
+    let units_browser = units_browser.clone();
+    //needs a bit of time to rendering  the list, then I found this hack
+    glib::spawn_future_local(async move {
+        // Deactivate the button until the operation is done
+        gio::spawn_blocking(move || {
+            let sleep_duration = Duration::from_millis(100);
+            std::thread::sleep(sleep_duration);
+        })
+        .await
+        .expect("Task needs to finish successfully.");
+
+        // Set sensitivity of button to `enable_button`
+
+        units_browser.scroll_to(
+            force_selected_index, // to centerish on the selected unit
+            None,
+            ListScrollFlags::FOCUS,
+            None,
+        );
+    });
 }
+
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
 
