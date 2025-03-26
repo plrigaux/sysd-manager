@@ -48,7 +48,7 @@ log = "0.4"
 libc = "0.2"
 libsysd = { version = "0.9", package = "libsystemd-sys"} 
 strum = { version = "0.27", features = ["derive"] }
-tokio = { version = "1.43", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
 regex = "1.11"
 serde = "1.0"
 sourceview5 = "0.9"
