@@ -5,7 +5,6 @@ use std::{
 };
 
 use adw::subclass::prelude::*;
-use gio::glib::translate::FromGlib;
 use gtk::{gio, glib, prelude::*};
 use log::{debug, error, info};
 use regex::Regex;
@@ -16,7 +15,7 @@ use crate::{
     utils::palette::{blue, green, red},
     widget::{
         InterPanelMessage,
-        preferences::data::{DbusLevel, KEY_PREF_PREFERED_COLOR_SCHEME, PREFERENCES},
+        preferences::data::{DbusLevel, PREFERENCES},
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
     },
