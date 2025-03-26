@@ -269,7 +269,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     fs::write(&dest_path, w)?;
 
     let profile = std::env::var("PROFILE");
-    println!("PROFILE= {:?}", profile);
+    script_warning!("PROFILE= {:?}", profile);
     match profile {
         Ok(profile) => {
             if profile != "release" {
