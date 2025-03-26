@@ -377,14 +377,13 @@ impl ObjectImpl for PreferencesDialogImpl {
 
         let model = adw::EnumListModel::new(TimestampStyle::static_type());
 
-        self.timestamp_style.set_model(Some(&model));
-
         let expression = gtk::PropertyExpression::new(
             adw::EnumListItem::static_type(),
             None::<gtk::Expression>,
             "name",
         );
 
+        self.timestamp_style.set_model(Some(&model));
         self.timestamp_style.set_expression(Some(expression));
 
         let cur_style = PREFERENCES.timestamp_style();
@@ -409,7 +408,6 @@ impl ObjectImpl for PreferencesDialogImpl {
             });
 
         let model = adw::EnumListModel::new(PreferedColorScheme::static_type());
-        self.timestamp_style.set_model(Some(&model));
         self.prefered_color_scheme.set_model(Some(&model));
 
         let expression = gtk::PropertyExpression::new(
