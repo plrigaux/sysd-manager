@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0] - 2025-03-26
+
+### Added
+- New button Freeze
+- New button Thaw
+- New button reload unit
+- Preference to change the color scheme
+
+### Changed
+- Move to Gnome 48 dependencies
+
+### Fixed
+- Unit list scroll focus
+- Unit list grey out line if unit is inactive
+
 ## [1.18.2] - 2025-03-19
 
 ### Added

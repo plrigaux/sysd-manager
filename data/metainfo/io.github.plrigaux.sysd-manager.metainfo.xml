@@ -81,6 +81,26 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+   <release version="1.19.0" date="2025-03-26">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>New button Freeze</li>
+          <li>New button Thaw</li>
+          <li>New button reload unit</li>
+          <li>Preference to change the color scheme</li>         
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Move to Gnome 48 dependencies</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Unit list scroll focus</li>          
+          <li>Unit list grey out line if unit is inactive</li>          
+        </ul>
+      </description>
+    </release>
     <release version="1.18.2" date="2025-03-19">
       <description>
         <p>Added</p>
