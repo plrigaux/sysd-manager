@@ -23,6 +23,7 @@ fn main() {
 
     compile_schema();
 
+    #[cfg(not(feature = "flatpak"))]
     if let Err(error) = generate_notes() {
         script_error!("Generate release notes error : {:?}", error);
     }
@@ -269,9 +270,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     fs::write(&dest_path, w)?;
 
-    let cur_dir = env::var("PWD").unwrap();
+    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let mut changelog_file = Path::new(&dir).join(CHANGELOG);
+    println!("CARGO_MANIFEST_DIR {:?} ", dir);
 
-    let changelog_file = Path::new(&cur_dir).join(CHANGELOG);
+    if !changelog_file.exists() {
+        println!("File {:?} doesn't exist", changelog_file);
+        let (dir, _) = dir.split_once("/target/").unwrap();
+        changelog_file = Path::new(dir).join(CHANGELOG);
+        if !changelog_file.exists() {
+            println!("File {:?} doesn't exist", changelog_file);
+            let cur_dir = env::var("PWD").unwrap();
+            changelog_file = Path::new(&cur_dir).join(CHANGELOG);
+        }
+    }
 
     if !compare_files(dest_path.as_path(), changelog_file.as_path()) {
         let mut command = Command::new("cp");
@@ -288,7 +300,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 use std::io::Read;
 fn compare_files(file1_path: &Path, file2_path: &Path) -> bool {
-    script_warning!("compare_files {:?} with {:?}", file1_path, file2_path);
+    println!("compare_files {:?} with {:?}", file1_path, file2_path);
     let mut file1 = match OpenOptions::new().read(true).write(false).open(file1_path) {
         Ok(n) => n,
         Err(e) => {
