@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fs::OpenOptions;
 use std::io::Write;
 
 macro_rules! script_warning {
@@ -268,27 +269,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     fs::write(&dest_path, w)?;
 
-    let profile = std::env::var("PROFILE");
-    script_warning!("PROFILE= {:?}", profile);
-    match profile {
-        Ok(profile) => {
-            if profile != "release" {
-                let mut command = Command::new("cp");
-                let output = command.arg("-v").arg(dest_path).arg(CHANGELOG).output()?;
+    let cur_dir = env::var("PWD").unwrap();
 
-                println!(
-                    "Copying {CHANGELOG} done {}",
-                    String::from_utf8_lossy(&output.stdout)
-                );
-            } else {
-                println!("No copy {CHANGELOG} file in release profile mode");
-            }
-        }
+    let changelog_file = Path::new(&cur_dir).join(CHANGELOG);
 
-        Err(e) => script_error!("Can't get profile: {:?}", e),
+    if !compare_files(dest_path.as_path(), changelog_file.as_path()) {
+        let mut command = Command::new("cp");
+        let output = command.arg("-v").arg(dest_path).arg(CHANGELOG).output()?;
+
+        println!(
+            "Copying {CHANGELOG} done {}",
+            String::from_utf8_lossy(&output.stdout)
+        );
     }
 
     Ok(())
+}
+
+use std::io::Read;
+fn compare_files(file1_path: &Path, file2_path: &Path) -> bool {
+    script_warning!("compare_files {:?} with {:?}", file1_path, file2_path);
+    let mut file1 = match OpenOptions::new().read(true).write(false).open(file1_path) {
+        Ok(n) => n,
+        Err(e) => {
+            script_warning!("Could not read file {:?}! {:?}", file1_path, e);
+            return false;
+        }
+    };
+
+    let mut file2 = match OpenOptions::new().read(true).write(false).open(file2_path) {
+        Ok(n) => n,
+        Err(e) => {
+            script_warning!("Could not read file {:?}! {:?}", file2_path, e);
+            return false;
+        }
+    };
+
+    let Ok(meta1) = file1.metadata() else {
+        script_warning!("compare_files meta data error");
+        return false;
+    };
+
+    let Ok(meta2) = file2.metadata() else {
+        script_warning!("compare_files meta data error");
+        return false;
+    };
+
+    if meta1.len() != meta2.len() {
+        return false;
+    }
+
+    let mut buffer1 = Vec::new();
+    let _ = file1.read_to_end(&mut buffer1);
+
+    let mut buffer2 = Vec::new();
+    let _ = file2.read_to_end(&mut buffer2);
+
+    buffer1 == buffer2
 }
 
 use std::io::BufRead;
