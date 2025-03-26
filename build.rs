@@ -268,13 +268,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     fs::write(&dest_path, w)?;
 
-    let mut command = Command::new("cp");
-    let output = command.arg("-v").arg(dest_path).arg(CHANGELOG).output()?;
+    let profile = std::env::var("PROFILE");
+    println!("PROFILE= {:?}", profile);
+    match profile {
+        Ok(profile) => {
+            if profile != "release" {
+                let mut command = Command::new("cp");
+                let output = command.arg("-v").arg(dest_path).arg(CHANGELOG).output()?;
 
-    println!(
-        "Copying {CHANGELOG} done {}",
-        String::from_utf8_lossy(&output.stdout)
-    );
+                println!(
+                    "Copying {CHANGELOG} done {}",
+                    String::from_utf8_lossy(&output.stdout)
+                );
+            } else {
+                println!("No copy {CHANGELOG} file in release profile mode");
+            }
+        }
+
+        Err(e) => script_error!("Can't get profile: {:?}", e),
+    }
 
     Ok(())
 }
