@@ -46,6 +46,11 @@
                         </child>
                       </object>
                     </child>
+                    <child>
+                      <object class="AdwComboRow" id="prefered_color_scheme">
+                        <property name="title">Prefered Color Scheme</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>

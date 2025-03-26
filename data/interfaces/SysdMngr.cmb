@@ -113,6 +113,7 @@
 	(21,39,"AdwPreferencesGroup",None,7,None,None,None,1,None,None),
 	(21,40,"AdwExpanderRow","unit_list_columns",39,None,None,None,1,None,None),
 	(21,41,"AdwSwitchRow","unit_list_colors",39,None,None,None,0,None,None),
+	(21,42,"AdwComboRow","prefered_color_scheme",8,None,None,None,2,None,None),
 	(29,1,"GtkBox","UnitInfoPanel",None,None,None,None,0,None,None),
 	(29,2,"GtkBox",None,1,None,None,None,0,None,None),
 	(29,3,"GtkButton","refresh_button",2,None,None,None,0,None,None),
@@ -424,6 +425,7 @@
 	(21,40,"AdwPreferencesRow","title","Columns Display Parameters",None,None,None,None,None,None,None,None,None),
 	(21,41,"AdwActionRow","subtitle","Display colors on unit list table cells, according to their content.",None,None,None,None,None,None,None,None,None),
 	(21,41,"AdwPreferencesRow","title","Display colors",None,None,None,None,None,None,None,None,None),
+	(21,42,"AdwPreferencesRow","title","Prefered Color Scheme",None,None,None,None,None,None,None,None,None),
 	(29,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(29,2,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
 	(29,3,"GtkButton","child",None,0,None,None,None,4,None,None,None,None),
@@ -839,7 +841,9 @@
 	(62,8,"AdwButtonContent","label","_Clean",0,None,None,None,None,None,None,None,None),
 	(62,8,"AdwButtonContent","use-underline","True",0,None,None,None,None,None,None,None,None),
 	(62,8,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
+	(62,8,"GtkWidget","tooltip-text","Remove the configuration, state, cache, logs or runtime data of the specified units.",None,None,None,None,None,None,None,None,None),
 	(62,9,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
+	(62,9,"GtkWidget","tooltip-text"," Freeze the specified unit using cgroup freezer\n",None,None,None,None,None,None,None,None,None),
 	(62,10,"AdwButtonContent","icon-name","snow-symbolic",None,None,None,None,None,None,None,None,None),
 	(62,10,"AdwButtonContent","label","Freeze",0,None,None,None,None,None,None,None,None),
 	(62,10,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
@@ -847,11 +851,13 @@
 	(62,12,"AdwButtonContent","icon-name","rain-outline-symbolic",None,None,None,None,None,None,None,None,None),
 	(62,12,"AdwButtonContent","label","Thaw",0,None,None,None,None,None,None,None,None),
 	(62,12,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
+	(62,12,"GtkWidget","tooltip-text"," Thaw (unfreeze) the specified unit",None,None,None,None,None,None,None,None,None),
 	(62,15,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
 	(62,16,"AdwButtonContent","icon-name","view-refresh-symbolic",None,None,None,None,None,None,None,None,None),
 	(62,16,"AdwButtonContent","label","Reload Unit",None,None,None,None,None,None,None,None,None),
 	(62,16,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
-	(62,16,"GtkWidget","halign","start",None,None,None,None,None,None,None,None,None)
+	(62,16,"GtkWidget","halign","start",None,None,None,None,None,None,None,None,None),
+	(62,16,"GtkWidget","tooltip-text","Asks the specified unit line to reload its configuration",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),

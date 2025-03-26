@@ -11,7 +11,9 @@ mod systemd_gui;
 mod utils;
 mod widget;
 
+use adw::prelude::AdwApplicationExt;
 use clap::{Parser, command};
+use gio::glib::translate::FromGlib;
 use gtk::{
     gdk,
     gio::{self},
@@ -28,7 +30,7 @@ use widget::{
     app_window::{AppWindow, menu},
     preferences::{
         PreferencesDialog,
-        data::{DbusLevel, PREFERENCES},
+        data::{DbusLevel, KEY_PREF_PREFERED_COLOR_SCHEME, PREFERENCES},
     },
 };
 
@@ -52,27 +54,38 @@ fn main() -> glib::ExitCode {
 
     // Create a new application
     let app = adw::Application::builder().application_id(APP_ID).build();
-    app.connect_startup(|app| {
-        load_css();
-        menu::on_startup(app)
+
+    app.connect_startup(|application| {
+        let style_manager = load_css(application);
+        menu::on_startup(application);
+
+        let settings = new_settings();
+
+        let prefered_color_scheme = settings.get::<i32>(KEY_PREF_PREFERED_COLOR_SCHEME);
+        let prefered_color_scheme: adw::ColorScheme =
+            unsafe { adw::ColorScheme::from_glib(prefered_color_scheme) };
+
+        style_manager.set_color_scheme(prefered_color_scheme);
     });
 
-    app.connect_activate(move |app| {
-        build_ui(app, unit.as_ref());
+    app.connect_activate(move |application| {
+        build_ui(application, unit.as_ref());
     });
 
     //to not transfer args to gtk4
     app.run_with_args::<String>(&[])
 }
 
-fn load_css() {
+fn load_css(application: &adw::Application) -> adw::StyleManager {
     // Load the CSS file and add it to the provider
 
-    let system_manager = adw::StyleManager::default();
+    let style_manager = application.style_manager();
 
-    let resource = css_resource_light_dark(system_manager.is_dark());
+    let resource = css_resource_light_dark(style_manager.is_dark());
 
     load_css_ress(resource);
+
+    style_manager
 }
 
 fn css_resource_light_dark(is_dark: bool) -> &'static str {
@@ -100,12 +113,17 @@ fn load_css_ress(resource: &str) {
 fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
     let window = AppWindow::new(application);
 
+    let style_manager = application.style_manager();
+
     {
         let window = window.clone();
-        let system_manager = adw::StyleManager::default();
-        window.set_inter_message(&widget::InterPanelMessage::IsDark(system_manager.is_dark()));
 
-        system_manager.connect_dark_notify(move |style_manager: &adw::StyleManager| {
+        let is_dark = style_manager.is_dark();
+        info!("is dark {is_dark}");
+
+        window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
+
+        style_manager.connect_dark_notify(move |style_manager: &adw::StyleManager| {
             let is_dark = style_manager.is_dark();
             info!("is dark {is_dark}");
 

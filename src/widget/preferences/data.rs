@@ -1,3 +1,5 @@
+use crate::gtk::glib::translate::IntoGlib;
+use gio::glib::translate::FromGlib;
 use gtk::{
     gio::Settings,
     glib::{self, GString},
@@ -26,6 +28,7 @@ pub const KEY_PREF_TIMESTAMP_STYLE: &str = "pref-timestamp-style";
 pub const KEY_PREF_STYLE_TEXT_FONT_FAMILY: &str = "pref-style-text-font-family";
 pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_COLORS: &str = "pref-unit-list-display-colors";
+pub const KEY_PREF_PREFERED_COLOR_SCHEME: &str = "pref-prefered-color-scheme";
 
 pub const FLAG_SHOW: u8 = 1;
 pub const FLAG_WIDTH: u8 = 2;
@@ -138,6 +141,54 @@ impl From<u32> for EnableUnitFileMode {
             1 => EnableUnitFileMode::DBus,
             _ => EnableUnitFileMode::Command,
         }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
+#[enum_type(name = "PreferedColorScheme")]
+pub enum PreferedColorScheme {
+    #[enum_value(name = "no_preference", nick = "No Preference")]
+    #[default]
+    Default = adw::ffi::ADW_COLOR_SCHEME_DEFAULT as isize,
+    #[enum_value(name = "force_light", nick = "Force Light")]
+    ForceLight = adw::ffi::ADW_COLOR_SCHEME_FORCE_LIGHT as isize,
+    #[enum_value(name = "prefer_light", nick = "Prefer Light")]
+    PreferLight = adw::ffi::ADW_COLOR_SCHEME_PREFER_LIGHT as isize,
+    #[enum_value(name = "prefer_dark", nick = "Prefer Dark")]
+    PreferDark = adw::ffi::ADW_COLOR_SCHEME_PREFER_DARK as isize,
+    #[enum_value(name = "force_dark", nick = "Force Dark")]
+    ForceDark = adw::ffi::ADW_COLOR_SCHEME_FORCE_DARK as isize,
+}
+
+impl PreferedColorScheme {}
+
+impl From<PreferedColorScheme> for adw::ColorScheme {
+    fn from(value: PreferedColorScheme) -> Self {
+        match value {
+            PreferedColorScheme::Default => adw::ColorScheme::Default,
+            PreferedColorScheme::PreferLight => adw::ColorScheme::PreferLight,
+            PreferedColorScheme::ForceDark => adw::ColorScheme::ForceDark,
+            PreferedColorScheme::ForceLight => adw::ColorScheme::ForceLight,
+            PreferedColorScheme::PreferDark => adw::ColorScheme::PreferDark,
+        }
+    }
+}
+
+impl From<PreferedColorScheme> for i32 {
+    fn from(value: PreferedColorScheme) -> Self {
+        value.into_glib()
+    }
+}
+
+impl From<i32> for PreferedColorScheme {
+    fn from(value: i32) -> Self {
+        unsafe { PreferedColorScheme::from_glib(value) }
+    }
+}
+
+impl From<adw::EnumListItem> for PreferedColorScheme {
+    fn from(value: adw::EnumListItem) -> Self {
+        value.value().into()
     }
 }
 
@@ -362,5 +413,28 @@ mod tests {
     fn assert_string_mapping(level: DbusLevel, key: &str) {
         let convert: DbusLevel = key.into();
         assert_eq!(convert, level)
+    }
+
+    #[test]
+    fn test_prefered_color_sheme() {
+        let list = [
+            PreferedColorScheme::Default,
+            PreferedColorScheme::PreferDark,
+            PreferedColorScheme::PreferLight,
+            PreferedColorScheme::ForceDark,
+            PreferedColorScheme::ForceLight,
+        ];
+
+        for p_color in list {
+            let v = p_color.to_value();
+            let v2 = p_color.value_type();
+            println!("value {:?} type {:?}", v, v2);
+
+            let p_into_glib = p_color.into_glib();
+            println!(" into_glib {:?} ", p_into_glib);
+            let a_color: adw::ColorScheme = p_color.into();
+
+            assert_eq!(p_into_glib, a_color.into_glib());
+        }
     }
 }

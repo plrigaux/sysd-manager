@@ -17,8 +17,8 @@ use crate::{
         app_window::AppWindow,
         preferences::{
             data::{
-                COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
-                UNIT_LIST_COLUMNS,
+                COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_PREFERED_COLOR_SCHEME,
+                KEY_PREF_UNIT_LIST_DISPLAY_COLORS, PreferedColorScheme, UNIT_LIST_COLUMNS,
             },
             style_scheme::style_schemes,
         },
@@ -67,6 +67,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     unit_list_colors: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    prefered_color_scheme: TemplateChild<adw::ComboRow>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -405,6 +408,46 @@ impl ObjectImpl for PreferencesDialogImpl {
                 PREFERENCES.set_timestamp_style(tss);
             });
 
+        let model = adw::EnumListModel::new(PreferedColorScheme::static_type());
+        self.timestamp_style.set_model(Some(&model));
+        self.prefered_color_scheme.set_model(Some(&model));
+
+        let expression = gtk::PropertyExpression::new(
+            adw::EnumListItem::static_type(),
+            None::<gtk::Expression>,
+            "nick",
+        );
+
+        self.prefered_color_scheme.set_expression(Some(expression));
+
+        self.prefered_color_scheme
+            .connect_selected_item_notify(|combo_box| {
+                let selected_item = combo_box.selected_item();
+
+                let Some(color_scheme) = selected_item else {
+                    return;
+                };
+
+                let color_scheme: PreferedColorScheme = color_scheme
+                    .downcast::<EnumListItem>()
+                    .expect("Needs to be PreferedColorScheme")
+                    .into();
+
+                let manager = adw::StyleManager::default();
+
+                manager.set_color_scheme(color_scheme.into());
+            });
+
+        let settings = systemd_gui::new_settings();
+
+        settings
+            .bind(
+                KEY_PREF_PREFERED_COLOR_SCHEME,
+                &self.prefered_color_scheme.get(),
+                "selected",
+            )
+            .build();
+
         debug!("All styles {:?}", style_schemes());
         let mut vec = vec!["None"];
         let mut vec_style_schemes: Vec<_> = style_schemes().keys().map(|f| f.as_str()).collect();
@@ -421,8 +464,6 @@ impl ObjectImpl for PreferencesDialogImpl {
         // Load latest window state
         self.setup_settings();
         self.load_preferences_values();
-
-        let settings = systemd_gui::new_settings();
 
         for (title, key, flags) in UNIT_LIST_COLUMNS {
             let group = adw::PreferencesGroup::builder()

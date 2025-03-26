@@ -45,6 +45,7 @@
             <property name="halign">start</property>
             <property name="icon-name">empty-trash-bin-symbolic</property>
             <property name="label">_Clean</property>
+            <property name="tooltip-text">Remove the configuration, state, cache, logs or runtime data of the specified units.</property>
             <property name="use-underline">True</property>
           </object>
         </property>
@@ -55,6 +56,8 @@
     <child>
       <object class="GtkButton" id="freeze_button">
         <property name="css-classes">flat</property>
+        <property name="tooltip-text"> Freeze the specified unit using cgroup freezer
+</property>
         <signal name="clicked" handler="freeze_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
@@ -74,6 +77,7 @@
             <property name="halign">start</property>
             <property name="icon-name">rain-outline-symbolic</property>
             <property name="label">Thaw</property>
+            <property name="tooltip-text"> Thaw (unfreeze) the specified unit</property>
           </object>
         </child>
       </object>
@@ -88,6 +92,7 @@
             <property name="halign">start</property>
             <property name="icon-name">view-refresh-symbolic</property>
             <property name="label">Reload Unit</property>
+            <property name="tooltip-text">Asks the specified unit line to reload its configuration</property>
           </object>
         </child>
       </object>
