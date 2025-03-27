@@ -4,11 +4,11 @@
 <schemalist>
     <schema id="io.github.plrigaux.sysd-manager" path="/io/github/plrigaux/sysd-manager/">
         <key name="window-width" type="i">
-            <default>-1</default>
+            <default>1280</default>
             <summary>Default main window width</summary>
         </key>
         <key name="window-height" type="i">
-            <default>-1</default>
+            <default>720</default>
             <summary>Default main window height</summary>
         </key>
         <key name="is-maximized" type="b">

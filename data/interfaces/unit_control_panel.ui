@@ -105,7 +105,7 @@
                 <child>
                   <object class="AdwButtonContent">
                     <property name="can-shrink">True</property>
-                    <property name="icon-name">dock-right-symbolic</property>
+                    <property name="icon-name">panel-right-symbolic</property>
                     <property name="label">_More ...</property>
                     <property name="use-underline">True</property>
                   </object>

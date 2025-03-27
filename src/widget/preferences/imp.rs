@@ -71,6 +71,9 @@ pub struct PreferencesDialogImpl {
     #[template_child]
     prefered_color_scheme: TemplateChild<adw::ComboRow>,
 
+    #[template_child]
+    app_orientation: TemplateChild<adw::ComboRow>,
+
     app_window: RefCell<Option<AppWindow>>,
 }
 

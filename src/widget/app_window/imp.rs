@@ -58,6 +58,9 @@ pub struct AppWindowImpl {
     #[template_child]
     app_title: TemplateChild<adw::WindowTitle>,
 
+    #[template_child]
+    breakpoint: TemplateChild<adw::Breakpoint>,
+
     is_dark: Cell<bool>,
 }
 
@@ -93,6 +96,25 @@ impl ObjectImpl for AppWindowImpl {
         self.unit_control_panel.set_app_window(&app_window);
 
         self.setup_dropdown();
+
+        let condition = adw::BreakpointCondition::new_ratio(
+            adw::BreakpointConditionRatioType::MinAspectRatio,
+            100,
+            100,
+        );
+        self.breakpoint.set_condition(Some(&condition));
+
+        self.breakpoint.connect_condition_notify(|_breakpoint| {
+            println!("connect_condition_notify");
+        });
+
+        self.breakpoint.connect_apply(|_breakpoint| {
+            println!("connect_apply");
+        });
+
+        self.breakpoint.connect_unapply(|_breakpoint| {
+            println!("connect_unapply");
+        });
     }
 }
 

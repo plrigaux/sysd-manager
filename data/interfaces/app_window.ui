@@ -39,6 +39,9 @@
     <property name="default-height">720</property>
     <property name="default-width">1280</property>
     <child>
+      <object class="AdwBreakpoint" id="breakpoint"/>
+    </child>
+    <child>
       <object class="AdwToastOverlay" id="toast_overlay">
         <child>
           <object class="AdwToolbarView">
