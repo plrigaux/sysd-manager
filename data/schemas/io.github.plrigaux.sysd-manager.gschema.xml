@@ -11,6 +11,14 @@
             <default>720</default>
             <summary>Default main window height</summary>
         </key>
+        <key name="window-panes-orientation" type="s">           
+            <choices>
+                <choice value='horizontal' />
+                <choice value='vertical' />             
+            </choices>
+            <default>'horizontal'</default>
+            <summary>Orientation of the two window panes</summary>
+        </key>
         <key name="is-maximized" type="b">
             <default>false</default>
             <summary>Default main window maximized behaviour</summary>

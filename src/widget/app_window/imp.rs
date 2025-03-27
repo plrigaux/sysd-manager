@@ -24,7 +24,9 @@ use crate::{
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
 const PANED_SEPARATOR_POSITION: &str = "paned-separator-position";
+const WINDOW_PANES_ORIENTATION: &str = "window-panes-orientation";
 const IS_MAXIMIZED: &str = "is-maximized";
+const HORIZONTAL: &str = "horizontal";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/app_window.ui")]
@@ -97,24 +99,43 @@ impl ObjectImpl for AppWindowImpl {
 
         self.setup_dropdown();
 
-        let condition = adw::BreakpointCondition::new_ratio(
+        let condition_1 = adw::BreakpointCondition::new_ratio(
             adw::BreakpointConditionRatioType::MinAspectRatio,
-            100,
-            100,
+            4,
+            3,
         );
+
+        let condition_2 = adw::BreakpointCondition::new_ratio(
+            adw::BreakpointConditionRatioType::MaxAspectRatio,
+            16,
+            9,
+        );
+
+        let condition = adw::BreakpointCondition::new_and(condition_1, condition_2);
+
         self.breakpoint.set_condition(Some(&condition));
 
-        self.breakpoint.connect_condition_notify(|_breakpoint| {
-            println!("connect_condition_notify");
-        });
+        let (def_width, def_height) = self.obj().default_size();
 
-        self.breakpoint.connect_apply(|_breakpoint| {
-            println!("connect_apply");
-        });
+        //Enforce the rules
+        if def_height / def_width <= 4 / 3 {
+            self.paned.set_orientation(gtk::Orientation::Horizontal)
+        } else if def_height / def_width >= 16 / 9 {
+            self.paned.set_orientation(gtk::Orientation::Vertical)
+        }
 
-        self.breakpoint.connect_unapply(|_breakpoint| {
-            println!("connect_unapply");
-        });
+        {
+            let paned = self.paned.clone();
+            self.breakpoint.connect_unapply(move |_breakpoint| {
+                debug!("connect_unapply");
+                let orientation = if paned.orientation() == gtk::Orientation::Vertical {
+                    gtk::Orientation::Horizontal
+                } else {
+                    gtk::Orientation::Vertical
+                };
+                paned.set_orientation(orientation);
+            });
+        }
     }
 }
 
@@ -195,6 +216,14 @@ impl AppWindowImpl {
         let separator_position = self.paned.position();
         settings.set_int(PANED_SEPARATOR_POSITION, separator_position)?;
 
+        let window_panes_orientation = if self.paned.orientation() == gtk::Orientation::Horizontal {
+            HORIZONTAL
+        } else {
+            "vertical"
+        };
+
+        settings.set_string(WINDOW_PANES_ORIENTATION, window_panes_orientation)?;
+
         Ok(())
     }
 
@@ -206,6 +235,7 @@ impl AppWindowImpl {
         let mut height = settings.int(WINDOW_HEIGHT);
         let is_maximized = settings.boolean(IS_MAXIMIZED);
         let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
+        let window_panes_orientation = settings.string(WINDOW_PANES_ORIENTATION);
 
         info!("Window settings: width {width}, height {height}, is-maximized {is_maximized}");
 
@@ -239,6 +269,14 @@ impl AppWindowImpl {
         }
 
         self.paned.set_position(separator_position);
+
+        let orientation = if window_panes_orientation == HORIZONTAL {
+            gtk::Orientation::Horizontal
+        } else {
+            gtk::Orientation::Vertical
+        };
+
+        self.paned.set_orientation(orientation);
     }
 
     #[template_callback]
