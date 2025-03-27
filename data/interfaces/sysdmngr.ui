@@ -28,7 +28,7 @@
     </property>
     <property name="default-height">900</property>
     <property name="default-width">1600</property>
-    <property name="title">Sysd Manager</property>
+    <property name="title">SysD Manager</property>
     <property name="titlebar">
       <object class="GtkHeaderBar"/>
     </property>
