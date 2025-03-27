@@ -23,7 +23,6 @@ fn main() {
 
     compile_schema();
 
-    #[cfg(not(feature = "flatpak"))]
     if let Err(error) = generate_notes() {
         script_error!("Generate release notes error : {:?}", error);
     }
@@ -198,6 +197,8 @@ fn generate_notes() -> Result<(), ScriptError> {
     };
 
     generate_release_notes_rs(&release_notes)?;
+
+    #[cfg(not(feature = "flatpak"))]
     generate_changelog_md(&release_notes)?;
 
     Ok(())
