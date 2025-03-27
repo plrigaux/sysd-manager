@@ -7,7 +7,7 @@ import os
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Sysd Manager build tools",
+        description="SysD Manager build tools",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
