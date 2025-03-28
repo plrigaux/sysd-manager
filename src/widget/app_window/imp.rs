@@ -117,13 +117,6 @@ impl ObjectImpl for AppWindowImpl {
 
         let (def_width, def_height) = self.obj().default_size();
 
-        //Enforce the rules
-        if def_height / def_width <= 4 / 3 {
-            self.paned.set_orientation(gtk::Orientation::Horizontal)
-        } else if def_height / def_width >= 16 / 9 {
-            self.paned.set_orientation(gtk::Orientation::Vertical)
-        }
-
         {
             let paned = self.paned.clone();
             self.breakpoint.connect_unapply(move |_breakpoint| {
@@ -227,6 +220,7 @@ impl AppWindowImpl {
         Ok(())
     }
 
+    #[allow(clippy::if_same_then_else)]
     fn load_window_size(&self) {
         // Get the window state from `settings`
         let settings = self.settings();
@@ -237,7 +231,9 @@ impl AppWindowImpl {
         let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
         let window_panes_orientation = settings.string(WINDOW_PANES_ORIENTATION);
 
-        info!("Window settings: width {width}, height {height}, is-maximized {is_maximized}");
+        info!(
+            "Window settings: width {width}, height {height}, is-maximized {is_maximized}, panes orientation {window_panes_orientation}"
+        );
 
         let obj = self.obj();
         let (def_width, def_height) = obj.default_size();
@@ -270,7 +266,17 @@ impl AppWindowImpl {
 
         self.paned.set_position(separator_position);
 
-        let orientation = if window_panes_orientation == HORIZONTAL {
+        
+
+        let ratio  = height as f32 / width as f32;
+
+        let orientation = 
+        //Enforce the rules
+        if ratio >= 3.0 / 4.0 {
+            gtk::Orientation::Vertical
+        } else if ratio <= 9.0 / 16.0 {
+           gtk::Orientation::Horizontal
+        } else if window_panes_orientation == HORIZONTAL {
             gtk::Orientation::Horizontal
         } else {
             gtk::Orientation::Vertical

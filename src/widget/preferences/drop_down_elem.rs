@@ -55,11 +55,6 @@ mod imp {
     impl ObjectImpl for DropDownItemImpl {}
 }
 
-struct Author {
-    name: String,
-    subscribers: usize,
-}
-
 pub(super) fn build_pane_orientation_selector(app_orientation: &adw::ComboRow) {
     let store = gio::ListStore::new::<glib::BoxedAnyObject>();
 
@@ -70,7 +65,7 @@ pub(super) fn build_pane_orientation_selector(app_orientation: &adw::ComboRow) {
 
     app_orientation.set_model(Some(&store)); */
 
-    let boxed = glib::BoxedAnyObject::new(Author {
+    /*     let boxed = glib::BoxedAnyObject::new(Author {
         name: String::from("GLibAuthor"),
         subscribers: 1000,
     });
@@ -82,7 +77,7 @@ pub(super) fn build_pane_orientation_selector(app_orientation: &adw::ComboRow) {
         subscribers: 2,
     });
 
-    store.append(&boxed);
+    store.append(&boxed); */
 
     app_orientation.set_model(Some(&store));
     /*
@@ -91,7 +86,7 @@ pub(super) fn build_pane_orientation_selector(app_orientation: &adw::ComboRow) {
 
     let expression = gtk::ConstantExpression::new("Pizza"); */
 
-    let closure = glib::RustClosure::new(|values| {
+    /*     let closure = glib::RustClosure::new(|values| {
         let x = values[0].get::<glib::BoxedAnyObject>().unwrap();
         let x: std::cell::Ref<'_, Author> = x.borrow();
         let x = &x.name;
@@ -99,9 +94,9 @@ pub(super) fn build_pane_orientation_selector(app_orientation: &adw::ComboRow) {
     });
 
     let v: Vec<gtk::Expression> = Vec::new();
-    let expression = gtk::ClosureExpression::new::<String>(v, closure);
+    let expression = gtk::ClosureExpression::new::<String>(v, closure); */
 
-    app_orientation.set_expression(Some(&expression));
+    //app_orientation.set_expression(Some(&expression));
 }
 
 pub(super) fn build_prefered_color_scheme(
@@ -117,14 +112,14 @@ pub(super) fn build_prefered_color_scheme(
 
     prefered_color_scheme.set_model(Some(&model));
 
-    let closure = glib::RustClosure::new(|values| {
-        let boxed = values[0].get::<glib::BoxedAnyObject>().unwrap();
-        let color_ref: Ref<'_, PreferedColorScheme> = boxed.borrow();
-        Some(color_ref.text().to_value())
-    });
-
-    let v: Vec<gtk::Expression> = Vec::new();
-    let expression = gtk::ClosureExpression::new::<String>(v, closure);
+    let expression = gtk::ClosureExpression::new::<String>(
+        Vec::<gtk::Expression>::new(),
+        glib::RustClosure::new(|values| {
+            let boxed = values[0].get::<glib::BoxedAnyObject>().unwrap();
+            let color_ref: Ref<'_, PreferedColorScheme> = boxed.borrow();
+            Some(color_ref.text().to_value())
+        }),
+    );
 
     prefered_color_scheme.set_expression(Some(expression));
 
