@@ -56,16 +56,20 @@ fn main() -> glib::ExitCode {
     let app = adw::Application::builder().application_id(APP_ID).build();
 
     app.connect_startup(|application| {
-        let style_manager = load_css(application);
+        let style_manager = application.style_manager();
         menu::on_startup(application);
 
         let settings = new_settings();
-
-        let prefered_color_scheme = settings.get::<i32>(KEY_PREF_PREFERED_COLOR_SCHEME);
+        let prefered_color_scheme_id = settings.get::<i32>(KEY_PREF_PREFERED_COLOR_SCHEME);
         let prefered_color_scheme: adw::ColorScheme =
-            unsafe { adw::ColorScheme::from_glib(prefered_color_scheme) };
+            unsafe { adw::ColorScheme::from_glib(prefered_color_scheme_id) };
 
+        println!(
+            "id {:?} color {:?}",
+            prefered_color_scheme_id, prefered_color_scheme
+        );
         style_manager.set_color_scheme(prefered_color_scheme);
+        load_css(&style_manager);
     });
 
     app.connect_activate(move |application| {
@@ -76,16 +80,11 @@ fn main() -> glib::ExitCode {
     app.run_with_args::<String>(&[])
 }
 
-fn load_css(application: &adw::Application) -> adw::StyleManager {
-    // Load the CSS file and add it to the provider
-
-    let style_manager = application.style_manager();
-
+/// Load the CSS file and add it to the provider
+fn load_css(style_manager: &adw::StyleManager) {
     let resource = css_resource_light_dark(style_manager.is_dark());
 
     load_css_ress(resource);
-
-    style_manager
 }
 
 fn css_resource_light_dark(is_dark: bool) -> &'static str {

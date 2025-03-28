@@ -1,5 +1,3 @@
-use crate::gtk::glib::translate::IntoGlib;
-use gio::glib::translate::FromGlib;
 use gtk::{
     gio::Settings,
     glib::{self, GString},
@@ -7,6 +5,7 @@ use gtk::{
     prelude::{SettingsExt, ToValue},
 };
 use log::{info, warn};
+use strum::EnumIter;
 
 use std::sync::{LazyLock, RwLock};
 
@@ -144,27 +143,30 @@ impl From<u32> for EnableUnitFileMode {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
-#[enum_type(name = "PreferedColorScheme")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
+
 pub enum PreferedColorScheme {
-    #[enum_value(name = "no_preference", nick = "No Preference")]
     #[default]
-    Default = adw::ffi::ADW_COLOR_SCHEME_DEFAULT as isize,
-    #[enum_value(name = "force_light", nick = "Force Light")]
-    ForceLight = adw::ffi::ADW_COLOR_SCHEME_FORCE_LIGHT as isize,
-    #[enum_value(name = "prefer_light", nick = "Prefer Light")]
-    PreferLight = adw::ffi::ADW_COLOR_SCHEME_PREFER_LIGHT as isize,
-    #[enum_value(name = "prefer_dark", nick = "Prefer Dark")]
-    PreferDark = adw::ffi::ADW_COLOR_SCHEME_PREFER_DARK as isize,
-    #[enum_value(name = "force_dark", nick = "Force Dark")]
-    ForceDark = adw::ffi::ADW_COLOR_SCHEME_FORCE_DARK as isize,
+    Default,
+    PreferDark,
+    PreferLight,
+    ForceDark,
+    ForceLight,
 }
 
-impl PreferedColorScheme {}
+impl PreferedColorScheme {
+    pub fn text(&self) -> &str {
+        match self {
+            PreferedColorScheme::Default => "No Preference",
+            PreferedColorScheme::PreferDark => "Prefer Dark",
+            PreferedColorScheme::PreferLight => "Prefer Light",
+            PreferedColorScheme::ForceDark => "Force Dark",
+            PreferedColorScheme::ForceLight => "Force Light",
+        }
+    }
 
-impl From<PreferedColorScheme> for adw::ColorScheme {
-    fn from(value: PreferedColorScheme) -> Self {
-        match value {
+    pub fn color_scheme(&self) -> adw::ColorScheme {
+        match self {
             PreferedColorScheme::Default => adw::ColorScheme::Default,
             PreferedColorScheme::PreferLight => adw::ColorScheme::PreferLight,
             PreferedColorScheme::ForceDark => adw::ColorScheme::ForceDark,
@@ -174,7 +176,26 @@ impl From<PreferedColorScheme> for adw::ColorScheme {
     }
 }
 
-impl From<PreferedColorScheme> for i32 {
+impl From<PreferedColorScheme> for adw::ColorScheme {
+    fn from(value: PreferedColorScheme) -> Self {
+        value.color_scheme()
+    }
+}
+
+impl From<i32> for PreferedColorScheme {
+    fn from(value: i32) -> Self {
+        match value {
+            adw::ffi::ADW_COLOR_SCHEME_DEFAULT => PreferedColorScheme::Default,
+            adw::ffi::ADW_COLOR_SCHEME_FORCE_LIGHT => PreferedColorScheme::ForceLight,
+            adw::ffi::ADW_COLOR_SCHEME_PREFER_LIGHT => PreferedColorScheme::PreferLight,
+            adw::ffi::ADW_COLOR_SCHEME_PREFER_DARK => PreferedColorScheme::PreferDark,
+            adw::ffi::ADW_COLOR_SCHEME_FORCE_DARK => PreferedColorScheme::ForceDark,
+            _ => PreferedColorScheme::Default,
+        }
+    }
+}
+
+/* impl From<PreferedColorScheme> for i32 {
     fn from(value: PreferedColorScheme) -> Self {
         value.into_glib()
     }
@@ -191,7 +212,7 @@ impl From<adw::EnumListItem> for PreferedColorScheme {
         value.value().into()
     }
 }
-
+ */
 pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
     journal_colors: RwLock<bool>,
@@ -382,6 +403,7 @@ impl Preferences {
 mod tests {
 
     use super::*;
+    use crate::gtk::glib::translate::IntoGlib;
 
     #[test]
     fn test_dbus_level_any_number() {
@@ -419,22 +441,20 @@ mod tests {
     fn test_prefered_color_sheme() {
         let list = [
             PreferedColorScheme::Default,
+            PreferedColorScheme::ForceLight,
             PreferedColorScheme::PreferDark,
             PreferedColorScheme::PreferLight,
             PreferedColorScheme::ForceDark,
-            PreferedColorScheme::ForceLight,
         ];
 
         for p_color in list {
-            let v = p_color.to_value();
-            let v2 = p_color.value_type();
-            println!("value {:?} type {:?}", v, v2);
-
-            let p_into_glib = p_color.into_glib();
-            println!(" into_glib {:?} ", p_into_glib);
             let a_color: adw::ColorScheme = p_color.into();
 
-            assert_eq!(p_into_glib, a_color.into_glib());
+            let i = a_color.into_glib();
+
+            let b_color: PreferedColorScheme = i.into();
+
+            assert_eq!(p_color, b_color);
         }
     }
 }

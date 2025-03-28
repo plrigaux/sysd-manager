@@ -11,15 +11,16 @@ use std::cell::{OnceCell, RefCell};
 
 use crate::{
     consts::ADWAITA,
-    systemd_gui::{self, new_settings},
+    systemd_gui::new_settings,
     utils::font_management::FONT_CONTEXT,
     widget::{
         app_window::AppWindow,
         preferences::{
             data::{
-                COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_PREFERED_COLOR_SCHEME,
-                KEY_PREF_UNIT_LIST_DISPLAY_COLORS, PreferedColorScheme, UNIT_LIST_COLUMNS,
+                COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+                UNIT_LIST_COLUMNS,
             },
+            drop_down_elem::{build_pane_orientation_selector, build_prefered_color_scheme},
             style_scheme::style_schemes,
         },
     },
@@ -377,6 +378,7 @@ impl ObjectSubclass for PreferencesDialogImpl {
 impl ObjectImpl for PreferencesDialogImpl {
     fn constructed(&self) {
         self.parent_constructed();
+        self.setup_settings();
 
         let model = adw::EnumListModel::new(TimestampStyle::static_type());
 
@@ -409,45 +411,10 @@ impl ObjectImpl for PreferencesDialogImpl {
                 let tss = TimestampStyle::from(timestamp_style.value());
                 PREFERENCES.set_timestamp_style(tss);
             });
+        let settings = self.settings();
+        build_prefered_color_scheme(&self.prefered_color_scheme, settings);
 
-        let model = adw::EnumListModel::new(PreferedColorScheme::static_type());
-        self.prefered_color_scheme.set_model(Some(&model));
-
-        let expression = gtk::PropertyExpression::new(
-            adw::EnumListItem::static_type(),
-            None::<gtk::Expression>,
-            "nick",
-        );
-
-        self.prefered_color_scheme.set_expression(Some(expression));
-
-        self.prefered_color_scheme
-            .connect_selected_item_notify(|combo_box| {
-                let selected_item = combo_box.selected_item();
-
-                let Some(color_scheme) = selected_item else {
-                    return;
-                };
-
-                let color_scheme: PreferedColorScheme = color_scheme
-                    .downcast::<EnumListItem>()
-                    .expect("Needs to be PreferedColorScheme")
-                    .into();
-
-                let manager = adw::StyleManager::default();
-
-                manager.set_color_scheme(color_scheme.into());
-            });
-
-        let settings = systemd_gui::new_settings();
-
-        settings
-            .bind(
-                KEY_PREF_PREFERED_COLOR_SCHEME,
-                &self.prefered_color_scheme.get(),
-                "selected",
-            )
-            .build();
+        build_pane_orientation_selector(&self.app_orientation);
 
         debug!("All styles {:?}", style_schemes());
         let mut vec = vec!["None"];
@@ -463,7 +430,6 @@ impl ObjectImpl for PreferencesDialogImpl {
         }
 
         // Load latest window state
-        self.setup_settings();
         self.load_preferences_values();
 
         for (title, key, flags) in UNIT_LIST_COLUMNS {
