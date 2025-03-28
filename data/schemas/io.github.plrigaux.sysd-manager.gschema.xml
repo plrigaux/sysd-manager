@@ -18,6 +18,9 @@
             </choices>
             <default>'horizontal'</default>
             <summary>Orientation of the two window panes</summary>
+            <description>
+             valid only for the ration between  9.0 / 16.0 and 3.0 / 4.0 
+            </description>
         </key>
         <key name="is-maximized" type="b">
             <default>false</default>
