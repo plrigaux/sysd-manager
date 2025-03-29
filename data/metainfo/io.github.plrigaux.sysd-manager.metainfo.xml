@@ -89,6 +89,18 @@ https://hughsie.github.io/oars/index.html
         </ul>
       </description>
     </release>
+    <release version="1.20.0" date="2025-03-29">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>Adaptive panes orientation</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Default height an width values</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.19.0" date="2025-03-26">
       <description>
         <p>Added</p>

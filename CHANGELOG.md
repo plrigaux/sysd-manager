@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Application title capitalization
 
+## [1.20.0] - 2025-03-29
+
+### Added
+- Adaptive panes orientation
+
+### Changed
+- Default height an width values
+
 ## [1.19.0] - 2025-03-26
 
 ### Added
