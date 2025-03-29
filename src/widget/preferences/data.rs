@@ -28,6 +28,7 @@ pub const KEY_PREF_STYLE_TEXT_FONT_FAMILY: &str = "pref-style-text-font-family";
 pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_COLORS: &str = "pref-unit-list-display-colors";
 pub const KEY_PREF_PREFERED_COLOR_SCHEME: &str = "pref-prefered-color-scheme";
+pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 
 pub const FLAG_SHOW: u8 = 1;
 pub const FLAG_WIDTH: u8 = 2;
@@ -144,7 +145,6 @@ impl From<u32> for EnableUnitFileMode {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
-
 pub enum PreferedColorScheme {
     #[default]
     Default,

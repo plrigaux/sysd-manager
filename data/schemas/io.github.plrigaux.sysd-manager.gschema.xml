@@ -11,16 +11,14 @@
             <default>720</default>
             <summary>Default main window height</summary>
         </key>
-        <key name="window-panes-orientation" type="s">           
+        <key name="window-panes-orientation" type="s">
             <choices>
                 <choice value='horizontal' />
-                <choice value='vertical' />             
+                <choice value='vertical' />
             </choices>
             <default>'horizontal'</default>
             <summary>Orientation of the two window panes</summary>
-            <description>
-             valid only for the ration between  9.0 / 16.0 and 3.0 / 4.0 
-            </description>
+            <description> valid only for the ration between 9.0 / 16.0 and 3.0 / 4.0 </description>
         </key>
         <key name="is-maximized" type="b">
             <default>false</default>
@@ -200,7 +198,14 @@
             <default>0</default>
             <summary>Application Prefered Color Scheme</summary>
         </key>
-
-
+        <key name="pref-window-orientaion-mode" type="s">
+            <choices>
+                <choice value='auto' />
+                <choice value='side-by-side' />
+                <choice value='top-down' />
+            </choices>
+            <default>'auto'</default>
+            <summary>Application panes orientation</summary>
+        </key>
     </schema>
 </schemalist>

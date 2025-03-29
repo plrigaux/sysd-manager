@@ -115,7 +115,6 @@ impl ObjectImpl for AppWindowImpl {
 
         self.breakpoint.set_condition(Some(&condition));
 
-        let (def_width, def_height) = self.obj().default_size();
 
         {
             let paned = self.paned.clone();

@@ -1,10 +1,10 @@
 use std::cell::Ref;
 
-use super::data::{KEY_PREF_PREFERED_COLOR_SCHEME, PreferedColorScheme};
+use super::data::{KEY_PREF_ORIENTATION_MODE, KEY_PREF_PREFERED_COLOR_SCHEME, PreferedColorScheme};
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::glib::{self, translate::IntoGlib};
 use sourceview5::prelude::ToValue;
-use strum::IntoEnumIterator;
+use strum::{EnumIter, IntoEnumIterator};
 
 glib::wrapper! {
     pub struct DropDownItem(ObjectSubclass<imp::DropDownItemImpl>);
@@ -55,48 +55,153 @@ mod imp {
     impl ObjectImpl for DropDownItemImpl {}
 }
 
-pub(super) fn build_pane_orientation_selector(app_orientation: &adw::ComboRow) {
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
+enum OrientationMode {
+    #[default]
+    Automatic,
+    ForceHorizontal,
+    ForceVertical,
+}
+
+impl OrientationMode {
+    fn label(&self) -> &str {
+        match self {
+            OrientationMode::Automatic => "Auto",
+            OrientationMode::ForceHorizontal => "Side by Side",
+            OrientationMode::ForceVertical => "Top Bottom",
+        }
+    }
+
+    fn icon_name(&self) -> Option<&str> {
+        match self {
+            OrientationMode::Automatic => None,
+            OrientationMode::ForceHorizontal => Some("panel-right"),
+            OrientationMode::ForceVertical => Some("panel-bottom"),
+        }
+    }
+
+    fn key(&self) -> &str {
+        match self {
+            OrientationMode::Automatic => "auto",
+            OrientationMode::ForceHorizontal => "side-by-side",
+            OrientationMode::ForceVertical => "top-down",
+        }
+    }
+
+    fn from_key(key: &str) -> Self {
+        match key {
+            "side-by-side" => OrientationMode::ForceHorizontal,
+            "top-down" => OrientationMode::ForceVertical,
+            _ => OrientationMode::Automatic,
+        }
+    }
+}
+
+impl From<u32> for OrientationMode {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => OrientationMode::Automatic,
+            1 => OrientationMode::ForceHorizontal,
+            2 => OrientationMode::ForceVertical,
+            _ => OrientationMode::Automatic,
+        }
+    }
+}
+
+pub(super) fn build_pane_orientation_selector(
+    app_orientation: &adw::ComboRow,
+    settings: &gio::Settings,
+) {
     let store = gio::ListStore::new::<glib::BoxedAnyObject>();
 
-    /*     store.append(&DropDownItem::new("3", "text"));
-    store.append(&DropDownItem::new("sdfgs", "text1"));
-    store.append(&DropDownItem::new("sdf", "text2"));
-    store.append(&DropDownItem::new("sdgf", "text3"));
-
-    app_orientation.set_model(Some(&store)); */
-
-    /*     let boxed = glib::BoxedAnyObject::new(Author {
-        name: String::from("GLibAuthor"),
-        subscribers: 1000,
-    });
-
-    store.append(&boxed);
-
-    let boxed = glib::BoxedAnyObject::new(Author {
-        name: String::from("Test"),
-        subscribers: 2,
-    });
-
-    store.append(&boxed); */
+    for color_scheme in OrientationMode::iter() {
+        let boxed = glib::BoxedAnyObject::new(color_scheme);
+        store.append(&boxed);
+    }
 
     app_orientation.set_model(Some(&store));
-    /*
-    let expression =
-        gtk::PropertyExpression::new(DropDownItem::static_type(), None::<gtk::Expression>, "text");
 
-    let expression = gtk::ConstantExpression::new("Pizza"); */
+    let factory = gtk::SignalListItemFactory::new();
+    factory.connect_setup(|_, object| {
+        let list_item = object
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
 
-    /*     let closure = glib::RustClosure::new(|values| {
-        let x = values[0].get::<glib::BoxedAnyObject>().unwrap();
-        let x: std::cell::Ref<'_, Author> = x.borrow();
-        let x = &x.name;
-        Some(format!("{x} du coup").to_value())
+        let img = gtk::Image::new();
+        let label = gtk::Label::builder()
+            .xalign(0.0)
+            .wrap_mode(gtk::pango::WrapMode::None)
+            .build();
+
+        let gbox = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+
+        gbox.append(&img);
+        gbox.append(&label);
+        //println!("tree {}", inscription.css_name());
+        list_item.set_child(Some(&gbox));
+    });
+    factory.connect_bind(|_, object| {
+        let list_item = object
+            .downcast_ref::<gtk::ListItem>()
+            .expect("item.downcast_ref::<gtk::ListItem>()");
+
+        let gbox = list_item.child().and_downcast::<gtk::Box>().unwrap();
+
+        let img = gbox
+            .first_child()
+            .expect("need a first_child")
+            .downcast::<gtk::Image>()
+            .expect("supposed to be gtk::Image");
+
+        let label = gbox
+            .last_child()
+            .expect("need alast child")
+            .downcast::<gtk::Label>()
+            .expect("supposed to be gtk::Label");
+
+        let boxed = list_item
+            .item()
+            .and_downcast::<glib::BoxedAnyObject>()
+            .unwrap();
+
+        let mode: Ref<'_, OrientationMode> = boxed.borrow();
+
+        img.set_icon_name(mode.icon_name());
+        label.set_label(mode.label());
     });
 
-    let v: Vec<gtk::Expression> = Vec::new();
-    let expression = gtk::ClosureExpression::new::<String>(v, closure); */
+    app_orientation.set_factory(Some(&factory));
 
-    //app_orientation.set_expression(Some(&expression));
+    app_orientation.connect_selected_item_notify(|combo_box| {
+        let selected_item = combo_box.selected_item();
+
+        let Some(orientation) = selected_item else {
+            return;
+        };
+
+        let binding = orientation
+            .downcast::<glib::BoxedAnyObject>()
+            .expect("Needs to be BoxedAnyObject");
+        let orientation: Ref<'_, OrientationMode> = binding.borrow();
+    });
+
+    settings
+        .bind(KEY_PREF_ORIENTATION_MODE, app_orientation, "selected")
+        .mapping(|variant, _| {
+            let orientation_mode_key = variant.get::<String>().unwrap();
+
+            let orientation_mode = OrientationMode::from_key(&orientation_mode_key);
+
+            let value = (orientation_mode as u32).to_value();
+            Some(value)
+        })
+        .set_mapping(|value, _| {
+            let drop_own_index = value.get::<u32>().unwrap();
+            let orientation_mode: OrientationMode = drop_own_index.into();
+            let variant = orientation_mode.key().to_variant();
+            Some(variant)
+        })
+        .build();
 }
 
 pub(super) fn build_prefered_color_scheme(

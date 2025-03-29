@@ -414,7 +414,7 @@ impl ObjectImpl for PreferencesDialogImpl {
         let settings = self.settings();
         build_prefered_color_scheme(&self.prefered_color_scheme, settings);
 
-        build_pane_orientation_selector(&self.app_orientation);
+        build_pane_orientation_selector(&self.app_orientation, settings);
 
         debug!("All styles {:?}", style_schemes());
         let mut vec = vec!["None"];
