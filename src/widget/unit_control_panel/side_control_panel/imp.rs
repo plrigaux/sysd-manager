@@ -139,8 +139,10 @@ impl SideControlPanelImpl {
     }
 
     pub(super) fn reload_unit_mode_changed(&self, mode: StartStopMode) {
-        self.reload_unit_button
-            .set_tooltip_text(Some(&format!("Reload mode {}", mode.as_str())));
+        self.reload_unit_button.set_tooltip_text(Some(&format!(
+            "Asks the specified unit to reload its configuration, mode: {}",
+            mode.as_str()
+        )));
     }
 
     pub(super) fn set_app_window(&self, app_window: &AppWindow) {
@@ -164,7 +166,7 @@ impl SideControlPanelImpl {
 
                     let mode: StartStopMode = value.into();
                     side_control.imp().reload_unit_mode_changed(mode);
-
+                    println!("asdfasdfasdf asdfas dfasd");
                     action.set_state(value);
                 })
                 .parameter_type(Some(VariantTy::STRING))

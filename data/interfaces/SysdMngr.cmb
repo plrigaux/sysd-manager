@@ -839,11 +839,11 @@
 	(62,12,"GtkWidget","halign","start",0,None,None,None,None,None,None,None,None),
 	(62,12,"GtkWidget","tooltip-text"," Thaw (unfreeze) the specified unit",None,None,None,None,None,None,None,None,None),
 	(62,15,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
+	(62,15,"GtkWidget","tooltip-text","Asks the specified unit line to reload its configuration",None,None,None,None,None,None,None,None,None),
 	(62,16,"AdwButtonContent","icon-name","view-refresh-symbolic",None,None,None,None,None,None,None,None,None),
 	(62,16,"AdwButtonContent","label","Reload Unit",None,None,None,None,None,None,None,None,None),
 	(62,16,"GtkWidget","css-classes","flat",None,None,None,None,None,None,None,None,None),
-	(62,16,"GtkWidget","halign","start",None,None,None,None,None,None,None,None,None),
-	(62,16,"GtkWidget","tooltip-text","Asks the specified unit line to reload its configuration",None,None,None,None,None,None,None,None,None)
+	(62,16,"GtkWidget","halign","start",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(7,17,5,"GtkButton","clicked","handle_copy_click",None,None,1,None,None),

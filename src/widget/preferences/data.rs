@@ -195,24 +195,59 @@ impl From<i32> for PreferedColorScheme {
     }
 }
 
-/* impl From<PreferedColorScheme> for i32 {
-    fn from(value: PreferedColorScheme) -> Self {
-        value.into_glib()
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
+pub enum OrientationMode {
+    #[default]
+    Automatic,
+    ForceHorizontal,
+    ForceVertical,
+}
+
+impl OrientationMode {
+    pub fn label(&self) -> &str {
+        match self {
+            OrientationMode::Automatic => "Auto",
+            OrientationMode::ForceHorizontal => "Side by Side",
+            OrientationMode::ForceVertical => "Top Bottom",
+        }
+    }
+
+    pub fn icon_name(&self) -> Option<&str> {
+        match self {
+            OrientationMode::Automatic => None,
+            OrientationMode::ForceHorizontal => Some("panel-right"),
+            OrientationMode::ForceVertical => Some("panel-bottom"),
+        }
+    }
+
+    pub fn key(&self) -> &str {
+        match self {
+            OrientationMode::Automatic => "auto",
+            OrientationMode::ForceHorizontal => "side-by-side",
+            OrientationMode::ForceVertical => "top-down",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Self {
+        match key {
+            "side-by-side" => OrientationMode::ForceHorizontal,
+            "top-down" => OrientationMode::ForceVertical,
+            _ => OrientationMode::Automatic,
+        }
     }
 }
 
-impl From<i32> for PreferedColorScheme {
-    fn from(value: i32) -> Self {
-        unsafe { PreferedColorScheme::from_glib(value) }
+impl From<u32> for OrientationMode {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => OrientationMode::Automatic,
+            1 => OrientationMode::ForceHorizontal,
+            2 => OrientationMode::ForceVertical,
+            _ => OrientationMode::Automatic,
+        }
     }
 }
 
-impl From<adw::EnumListItem> for PreferedColorScheme {
-    fn from(value: adw::EnumListItem) -> Self {
-        value.value().into()
-    }
-}
- */
 pub struct Preferences {
     dbus_level: RwLock<DbusLevel>,
     journal_colors: RwLock<bool>,

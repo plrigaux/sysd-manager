@@ -1,10 +1,13 @@
 use std::cell::Ref;
 
-use super::data::{KEY_PREF_ORIENTATION_MODE, KEY_PREF_PREFERED_COLOR_SCHEME, PreferedColorScheme};
+use super::data::{
+    KEY_PREF_ORIENTATION_MODE, KEY_PREF_PREFERED_COLOR_SCHEME, OrientationMode, PreferedColorScheme,
+};
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::glib::{self, translate::IntoGlib};
+use log::warn;
 use sourceview5::prelude::ToValue;
-use strum::{EnumIter, IntoEnumIterator};
+use strum::IntoEnumIterator;
 
 glib::wrapper! {
     pub struct DropDownItem(ObjectSubclass<imp::DropDownItemImpl>);
@@ -53,59 +56,6 @@ mod imp {
 
     #[glib::derived_properties]
     impl ObjectImpl for DropDownItemImpl {}
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
-enum OrientationMode {
-    #[default]
-    Automatic,
-    ForceHorizontal,
-    ForceVertical,
-}
-
-impl OrientationMode {
-    fn label(&self) -> &str {
-        match self {
-            OrientationMode::Automatic => "Auto",
-            OrientationMode::ForceHorizontal => "Side by Side",
-            OrientationMode::ForceVertical => "Top Bottom",
-        }
-    }
-
-    fn icon_name(&self) -> Option<&str> {
-        match self {
-            OrientationMode::Automatic => None,
-            OrientationMode::ForceHorizontal => Some("panel-right"),
-            OrientationMode::ForceVertical => Some("panel-bottom"),
-        }
-    }
-
-    fn key(&self) -> &str {
-        match self {
-            OrientationMode::Automatic => "auto",
-            OrientationMode::ForceHorizontal => "side-by-side",
-            OrientationMode::ForceVertical => "top-down",
-        }
-    }
-
-    fn from_key(key: &str) -> Self {
-        match key {
-            "side-by-side" => OrientationMode::ForceHorizontal,
-            "top-down" => OrientationMode::ForceVertical,
-            _ => OrientationMode::Automatic,
-        }
-    }
-}
-
-impl From<u32> for OrientationMode {
-    fn from(value: u32) -> Self {
-        match value {
-            0 => OrientationMode::Automatic,
-            1 => OrientationMode::ForceHorizontal,
-            2 => OrientationMode::ForceVertical,
-            _ => OrientationMode::Automatic,
-        }
-    }
 }
 
 pub(super) fn build_pane_orientation_selector(
@@ -172,19 +122,6 @@ pub(super) fn build_pane_orientation_selector(
 
     app_orientation.set_factory(Some(&factory));
 
-    app_orientation.connect_selected_item_notify(|combo_box| {
-        let selected_item = combo_box.selected_item();
-
-        let Some(orientation) = selected_item else {
-            return;
-        };
-
-        let binding = orientation
-            .downcast::<glib::BoxedAnyObject>()
-            .expect("Needs to be BoxedAnyObject");
-        let orientation: Ref<'_, OrientationMode> = binding.borrow();
-    });
-
     settings
         .bind(KEY_PREF_ORIENTATION_MODE, app_orientation, "selected")
         .mapping(|variant, _| {
@@ -193,12 +130,15 @@ pub(super) fn build_pane_orientation_selector(
             let orientation_mode = OrientationMode::from_key(&orientation_mode_key);
 
             let value = (orientation_mode as u32).to_value();
+            warn!("value {:?} ", value);
             Some(value)
         })
         .set_mapping(|value, _| {
             let drop_own_index = value.get::<u32>().unwrap();
             let orientation_mode: OrientationMode = drop_own_index.into();
             let variant = orientation_mode.key().to_variant();
+
+            warn!("variant {:?} ", variant);
             Some(variant)
         })
         .build();

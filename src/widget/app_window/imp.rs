@@ -5,8 +5,9 @@ use std::{
 };
 
 use adw::subclass::prelude::*;
+use gio::glib::VariantTy;
 use gtk::{gio, glib, prelude::*};
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use regex::Regex;
 
 use crate::{
@@ -15,7 +16,7 @@ use crate::{
     utils::palette::{blue, green, red},
     widget::{
         InterPanelMessage,
-        preferences::data::{DbusLevel, PREFERENCES},
+        preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
     },
@@ -64,6 +65,8 @@ pub struct AppWindowImpl {
     breakpoint: TemplateChild<adw::Breakpoint>,
 
     is_dark: Cell<bool>,
+
+    orientation_mode: Cell<OrientationMode>,
 }
 
 #[glib::object_subclass]
@@ -88,8 +91,18 @@ impl ObjectImpl for AppWindowImpl {
         self.parent_constructed();
 
         // Load latest window state
-        self.setup_settings();
-
+        let settings = self.setup_settings();
+        {
+            let app_window = self.obj().clone();
+            let paned = self.paned.clone();
+            settings.connect_changed(Some(KEY_PREF_ORIENTATION_MODE), move |settings, _key| {
+                let value = settings.string(KEY_PREF_ORIENTATION_MODE);
+                let orientation_mode = OrientationMode::from_key(&value);
+                app_window.imp().orientation_mode.set(orientation_mode);
+                let window_panes_orientation = paned.orientation();
+                app_window.imp().set_orientation(window_panes_orientation);
+            });
+        }
         self.load_window_size();
         let app_window = self.obj();
         self.unit_list_panel
@@ -115,17 +128,14 @@ impl ObjectImpl for AppWindowImpl {
 
         self.breakpoint.set_condition(Some(&condition));
 
-
         {
             let paned = self.paned.clone();
+            let app_window = self.obj().clone();
             self.breakpoint.connect_unapply(move |_breakpoint| {
                 debug!("connect_unapply");
-                let orientation = if paned.orientation() == gtk::Orientation::Vertical {
-                    gtk::Orientation::Horizontal
-                } else {
-                    gtk::Orientation::Vertical
-                };
-                paned.set_orientation(orientation);
+
+                let window_panes_orientation = paned.orientation();
+                app_window.imp().set_orientation(window_panes_orientation);
             });
         }
     }
@@ -133,12 +143,14 @@ impl ObjectImpl for AppWindowImpl {
 
 #[gtk::template_callbacks]
 impl AppWindowImpl {
-    fn setup_settings(&self) {
+    fn setup_settings(&self) -> &gio::Settings {
         let settings: gio::Settings = new_settings();
 
         self.settings
             .set(settings)
             .expect("`settings` should not be set before calling `setup_settings`.");
+
+        self.settings()
     }
 
     fn settings(&self) -> &gio::Settings {
@@ -219,7 +231,23 @@ impl AppWindowImpl {
         Ok(())
     }
 
-    #[allow(clippy::if_same_then_else)]
+    #[template_callback]
+    fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
+        self.unit_list_panel
+            .button_search_toggled(toggle_button.is_active());
+    }
+
+    #[template_callback]
+    fn refresh_button_clicked(&self, _button: &gtk::Button) {
+        info!("refresh false");
+        //button.set_sensitive(false);
+        self.unit_list_panel.fill_store();
+        //button.set_sensitive(true);
+        info!("refresh true");
+    }
+}
+
+impl AppWindowImpl {
     fn load_window_size(&self) {
         // Get the window state from `settings`
         let settings = self.settings();
@@ -229,6 +257,7 @@ impl AppWindowImpl {
         let is_maximized = settings.boolean(IS_MAXIMIZED);
         let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
         let window_panes_orientation = settings.string(WINDOW_PANES_ORIENTATION);
+        let pref_orientation_mode = settings.string(KEY_PREF_ORIENTATION_MODE);
 
         info!(
             "Window settings: width {width}, height {height}, is-maximized {is_maximized}, panes orientation {window_panes_orientation}"
@@ -265,42 +294,42 @@ impl AppWindowImpl {
 
         self.paned.set_position(separator_position);
 
-        
-
-        let ratio  = height as f32 / width as f32;
-
-        let orientation = 
-        //Enforce the rules
-        if ratio >= 3.0 / 4.0 {
-            gtk::Orientation::Vertical
-        } else if ratio <= 9.0 / 16.0 {
-           gtk::Orientation::Horizontal
-        } else if window_panes_orientation == HORIZONTAL {
+        let orientation_mode = OrientationMode::from_key(&pref_orientation_mode);
+        self.orientation_mode.set(orientation_mode);
+        let window_panes_orientation = if window_panes_orientation == HORIZONTAL {
             gtk::Orientation::Horizontal
         } else {
             gtk::Orientation::Vertical
+        };
+        self.set_orientation(window_panes_orientation);
+    }
+
+    #[allow(clippy::if_same_then_else)]
+    fn set_orientation(&self, window_panes_orientation: gtk::Orientation) {
+        let orientation_mode = self.orientation_mode.get();
+
+        let orientation = match orientation_mode {
+            OrientationMode::Automatic => {
+                let (width, height) = self.obj().default_size();
+
+                let ratio = height as f32 / width as f32;
+
+                //Enforce the rules
+                if ratio >= 3.0 / 4.0 {
+                    gtk::Orientation::Vertical
+                } else if ratio <= 9.0 / 16.0 {
+                    gtk::Orientation::Horizontal
+                } else {
+                    window_panes_orientation
+                }
+            }
+            OrientationMode::ForceHorizontal => gtk::Orientation::Horizontal,
+            OrientationMode::ForceVertical => gtk::Orientation::Vertical,
         };
 
         self.paned.set_orientation(orientation);
     }
 
-    #[template_callback]
-    fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
-        self.unit_list_panel
-            .button_search_toggled(toggle_button.is_active());
-    }
-
-    #[template_callback]
-    fn refresh_button_clicked(&self, _button: &gtk::Button) {
-        info!("refresh false");
-        //button.set_sensitive(false);
-        self.unit_list_panel.fill_store();
-        //button.set_sensitive(true);
-        info!("refresh true");
-    }
-}
-
-impl AppWindowImpl {
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
         if let Some(unit) = unit {
             self.app_title.set_subtitle(&unit.primary());
@@ -379,12 +408,26 @@ impl AppWindowImpl {
                 .build()
         };
 
+        let default_state = "auto".to_variant();
+        let orientation_mode: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder(
+            KEY_PREF_ORIENTATION_MODE,
+        )
+        .activate(move |_win: &adw::Application, action, variant| {
+            warn!("action {:?} variant {:?}", action, variant);
+
+            println!("asdfasdfasdfasd asdfasdfdfddddddddddddddddddddddddddddddddddddddddddddddddd");
+        })
+        .parameter_type(Some(VariantTy::STRING))
+        .state(default_state)
+        .build();
+
         application.add_action_entries([
             search_units,
             open_info,
             open_dependencies,
             open_journal,
             open_file,
+            orientation_mode,
         ]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
@@ -487,6 +530,7 @@ impl WindowImpl for AppWindowImpl {
         glib::Propagation::Proceed
     }
 }
+
 impl AdwApplicationWindowImpl for AppWindowImpl {}
 impl ApplicationWindowImpl for AppWindowImpl {}
 

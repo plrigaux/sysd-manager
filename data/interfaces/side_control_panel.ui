@@ -85,6 +85,7 @@
     <child>
       <object class="AdwSplitButton" id="reload_unit_button">
         <property name="css-classes">flat</property>
+        <property name="tooltip-text">Asks the specified unit line to reload its configuration</property>
         <signal name="clicked" handler="reload_unit_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
@@ -92,7 +93,6 @@
             <property name="halign">start</property>
             <property name="icon-name">view-refresh-symbolic</property>
             <property name="label">Reload Unit</property>
-            <property name="tooltip-text">Asks the specified unit line to reload its configuration</property>
           </object>
         </child>
       </object>
