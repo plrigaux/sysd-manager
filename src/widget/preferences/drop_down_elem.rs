@@ -5,7 +5,7 @@ use super::data::{
 };
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::glib::{self, translate::IntoGlib};
-use log::warn;
+
 use sourceview5::prelude::ToValue;
 use strum::IntoEnumIterator;
 
@@ -130,7 +130,7 @@ pub(super) fn build_pane_orientation_selector(
             let orientation_mode = OrientationMode::from_key(&orientation_mode_key);
 
             let value = (orientation_mode as u32).to_value();
-            warn!("value {:?} ", value);
+
             Some(value)
         })
         .set_mapping(|value, _| {
@@ -138,7 +138,6 @@ pub(super) fn build_pane_orientation_selector(
             let orientation_mode: OrientationMode = drop_own_index.into();
             let variant = orientation_mode.key().to_variant();
 
-            warn!("variant {:?} ", variant);
             Some(variant)
         })
         .build();
