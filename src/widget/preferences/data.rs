@@ -215,8 +215,8 @@ impl OrientationMode {
     pub fn icon_name(&self) -> Option<&str> {
         match self {
             OrientationMode::Automatic => None,
-            OrientationMode::ForceHorizontal => Some("panel-right"),
-            OrientationMode::ForceVertical => Some("panel-bottom"),
+            OrientationMode::ForceHorizontal => Some("side-by-side"),
+            OrientationMode::ForceVertical => Some("top-down"),
         }
     }
 

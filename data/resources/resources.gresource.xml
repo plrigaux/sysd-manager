@@ -3,7 +3,6 @@
   <gresource prefix="/io/github/plrigaux/sysd-manager/">
     <file compressed="true" alias="io.github.plrigaux.sysd-manager.svg">icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="grid_cell.ui">interfaces/grid_cell.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks">interfaces/title_bar.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="ex_menu_button.ui">interfaces/ex_menu_button.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="button_icon.ui">interfaces/button_icon.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties.ui">interfaces/unit_properties.ui</file>
@@ -26,7 +25,6 @@
     <file compressed="true" alias="base.css">styles/base.css</file>
     <!-- custom symbolic icons need to be located in dir icons/scalable/actions to adapt to light
     and dark theme -->
-    <file preprocess="xml-stripblanks">icons/scalable/actions/dock-right-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/unreadable-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/funnel-outline-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/funnel-symbolic.svg</file>
@@ -36,5 +34,7 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/empty-trash-bin-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/rain-outline-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/snow-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/side-by-side-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/top-down-symbolic.svg</file>    
   </gresource>
 </gresources>

@@ -5,10 +5,17 @@ use std::{
 };
 
 use adw::subclass::prelude::*;
-use gio::glib::VariantTy;
-use gtk::{gio, glib, prelude::*};
+use gio::{
+    glib::VariantTy,
+    prelude::{ActionMapExtManual, SettingsExt},
+};
+use gtk::{
+    gio, glib,
+    prelude::{GtkApplicationExt, GtkWindowExt, OrientableExt, ToggleButtonExt, WidgetExt},
+};
 use log::{debug, error, info, warn};
 use regex::Regex;
+use sourceview5::prelude::StaticType;
 
 use crate::{
     systemd::data::UnitInfo,
@@ -408,7 +415,7 @@ impl AppWindowImpl {
                 .build()
         };
 
-        let default_state = "auto".to_variant();
+        let default_state = glib::variant::ToVariant::to_variant(&"auto");
         let orientation_mode: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder(
             KEY_PREF_ORIENTATION_MODE,
         )

@@ -1,4 +1,4 @@
-<img src="data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg" alt="SysD Manager Icon" width="128" height="128"/>
+![SysD Manager Icon](data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg "App Icon")
 
 # SysD Manager
 
@@ -27,6 +27,8 @@ Here are __SysD Manager__ main features:
 * [x] Follow Dark and Light style switching
 * [x] Select a unit at program opening by passing a unit name as cli argument (see --help)
 * [ ] Clean unit like `systemctl clean`
+* [ ] Freeze unit like `systemctl freeze`
+* [ ] Thaw unit like `systemctl thaw`
 * [ ] Multi languages
 * [ ] Journal events updated automaticaly at realtime
 * ...
