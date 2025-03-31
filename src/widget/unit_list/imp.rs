@@ -120,11 +120,12 @@ macro_rules! create_column_filter {
 }
 
 macro_rules! column_view_column_set_sorter {
-    ($map:expr, $col_id:expr, $($func:ident),+) => {{
+    ($map:expr, $menu:expr, $col_id:expr, $($func:ident),+) => {{
         let column_view_column = $map.get($col_id)
             .expect(&format!("Column with id {:?} not found!", $col_id));
         let sorter = create_column_filter!($($func),+);
         column_view_column.set_sorter(Some(&sorter));
+        column_view_column.set_header_menu(Some(&$menu));
     }};
 }
 
@@ -558,15 +559,32 @@ impl ObjectImpl for UnitListPanelImp {
             },
         );
 
-        column_view_column_set_sorter!(column_view_column_map, "unit", primary, dbus_level);
-        column_view_column_set_sorter!(column_view_column_map, "type", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "bus", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "state", enable_status);
-        column_view_column_set_sorter!(column_view_column_map, "preset", preset);
-        column_view_column_set_sorter!(column_view_column_map, "load", load_state);
-        column_view_column_set_sorter!(column_view_column_map, "active", active_state);
-        column_view_column_set_sorter!(column_view_column_map, "sub", sub_state);
-        column_view_column_set_sorter!(column_view_column_map, "description", description);
+        let builder_menu = gtk::Builder::from_resource("/io/github/plrigaux/sysd-manager/menu.ui");
+
+        let column_menu: gio::MenuModel = builder_menu
+            .object("column_menu")
+            .expect("object column_menu should exists");
+
+        column_view_column_set_sorter!(
+            column_view_column_map,
+            column_menu,
+            "unit",
+            primary,
+            dbus_level
+        );
+        column_view_column_set_sorter!(column_view_column_map, column_menu, "type", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, column_menu, "bus", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, column_menu, "state", enable_status);
+        column_view_column_set_sorter!(column_view_column_map, column_menu, "preset", preset);
+        column_view_column_set_sorter!(column_view_column_map, column_menu, "load", load_state);
+        column_view_column_set_sorter!(column_view_column_map, column_menu, "active", active_state);
+        column_view_column_set_sorter!(column_view_column_map, column_menu, "sub", sub_state);
+        column_view_column_set_sorter!(
+            column_view_column_map,
+            column_menu,
+            "description",
+            description
+        );
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 

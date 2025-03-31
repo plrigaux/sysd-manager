@@ -19,6 +19,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_control_panel.ui">interfaces/unit_control_panel.ui</file>    
     <file compressed="true" preprocess="xml-stripblanks" alias="side_control_panel.ui">interfaces/side_control_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">interfaces/shortcuts.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="menu.ui">interfaces/menu.ui</file>
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>
     <file compressed="true" alias="style.css">styles/style.css</file>
     <file compressed="true" alias="style_dark.css">styles/style_dark.css</file>

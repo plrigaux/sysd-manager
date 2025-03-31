@@ -191,5 +191,17 @@
       <attribute name="action">win.col-show-description</attribute>
       <attribute name="label">Description</attribute>
     </item>
+    <submenu>
+      <attribute name="label">Sub</attribute>
+      <item>
+        <attribute name="label">asdfa</attribute>
+      </item>
+      <item>
+        <attribute name="label">dsdf</attribute>
+      </item>
+      <item>
+        <attribute name="label">asfsadf</attribute>
+      </item>
+    </submenu>
   </menu>
 </interface>
