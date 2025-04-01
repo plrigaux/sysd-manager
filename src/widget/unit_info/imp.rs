@@ -67,11 +67,9 @@ impl UnitInfoPanelImp {
             return;
         };
 
-        let info_window = InfoWindow::new();
+        let info_window = InfoWindow::new(Some(unit));
 
         info!("show_all_clicked {:?}", unit.primary());
-
-        info_window.fill_data(unit);
 
         info_window.present();
     }

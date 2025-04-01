@@ -7,31 +7,25 @@ mod rowitem;
 
 glib::wrapper! {
     pub struct InfoWindow(ObjectSubclass<imp::InfoWindowImp>)
-        @extends gtk::Window, gtk::Widget,
+        @extends adw::Window, gtk::Window, gtk::Widget,
         @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
                     gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
 impl InfoWindow {
-    pub fn new() -> Self {
+    pub fn new(unit: Option<&UnitInfo>) -> Self {
         // Create new window
         //let zelf = Object::builder().build();
         let obj: InfoWindow = glib::Object::new();
-
+        obj.imp().fill_data(unit);
         obj
     }
 
-    pub fn fill_data(&self, unit: &UnitInfo) {
+    pub fn fill_data(&self, unit: Option<&UnitInfo>) {
         self.imp().fill_data(unit);
     }
 
     pub fn fill_systemd_info(&self) {
         self.imp().fill_systemd_info();
-    }
-}
-
-impl Default for InfoWindow {
-    fn default() -> Self {
-        Self::new()
     }
 }

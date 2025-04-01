@@ -63,7 +63,7 @@ pub fn on_startup(app: &adw::Application) {
 
     let systemd_info = gio::ActionEntry::builder("systemd_info")
         .activate(|application: &adw::Application, _, _| {
-            let systemd_info_window = info_window::InfoWindow::new();
+            let systemd_info_window = info_window::InfoWindow::new(None);
             systemd_info_window.fill_systemd_info();
 
             if let Some(first_window) = application.windows().first() {

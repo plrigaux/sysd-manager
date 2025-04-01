@@ -1,3 +1,4 @@
+use adw::subclass::window::AdwWindowImpl;
 use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 use log::{debug, error, warn};
 use std::{
@@ -38,6 +39,9 @@ pub struct InfoWindowImp {
 
     #[template_child]
     show_all_check: TemplateChild<gtk::CheckButton>,
+
+    #[template_child]
+    window_title: TemplateChild<adw::WindowTitle>,
 
     pub(super) store: RefCell<Option<gio::ListStore>>,
 
@@ -119,7 +123,11 @@ impl InfoWindowImp {
 }
 
 impl InfoWindowImp {
-    pub fn fill_data(&self, unit: &UnitInfo) {
+    pub fn fill_data(&self, unit: Option<&UnitInfo>) {
+        let Some(unit) = unit else {
+            return;
+        };
+
         let unit_prop_store = &self.store;
 
         if let Some(ref mut store) = *unit_prop_store.borrow_mut() {
@@ -146,9 +154,7 @@ impl InfoWindowImp {
             warn!("Store not supposed to be None");
         };
 
-        let mut title = String::from("Unit Info - ");
-        title.push_str(&unit.primary());
-        self.obj().set_title(Some(&title));
+        self.window_title.set_subtitle(&unit.primary());
     }
 
     pub fn fill_systemd_info(&self) {
@@ -300,9 +306,9 @@ impl InfoWindowImp {
 
 #[glib::object_subclass]
 impl ObjectSubclass for InfoWindowImp {
-    const NAME: &'static str = "InfoWindow";
+    const NAME: &'static str = "UNIT_PROPERTIES_DIALOG";
     type Type = super::InfoWindow;
-    type ParentType = gtk::Window;
+    type ParentType = adw::Window;
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();
@@ -415,7 +421,8 @@ impl WindowImpl for InfoWindowImp {
         glib::Propagation::Proceed
     }
 }
-impl ApplicationWindowImpl for InfoWindowImp {}
+
+impl AdwWindowImpl for InfoWindowImp {}
 // ANCHOR_END: imp
 
 fn convert_to_string(value: &zvariant::Value) -> (String, bool) {

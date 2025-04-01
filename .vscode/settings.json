@@ -6,7 +6,8 @@
         "builddir"
     ],
     "[rust]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
     "[css]": {
         "editor.formatOnSave": true
