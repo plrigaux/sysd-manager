@@ -91,6 +91,7 @@ yay -S sysd-manager
   * Install GTK 4 and the build essentials. [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html)
   * Install libadwaita [how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
   * Install systemd development library **libsystemd-dev**
+  * Install gtksourceview5 development library 
 * Download sources ```git clone https://github.com/plrigaux/sysd-manager```
 * Go to the newly created sysd-manager directory ```cd sysd-manager```
 * Compile and install  ```sh install.sh```
