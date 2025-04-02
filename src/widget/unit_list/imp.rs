@@ -1,4 +1,5 @@
 mod column_factories;
+mod menus;
 mod rowdata;
 
 use std::{
@@ -8,6 +9,7 @@ use std::{
     time::Duration,
 };
 
+use gio::glib::VariantTy;
 use gtk::{
     ListScrollFlags, SearchBar, TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
@@ -25,6 +27,7 @@ use gtk::{
 };
 
 use log::{debug, error, info, warn};
+use menus::create_col_menu;
 
 use crate::{
     systemd::{
@@ -42,7 +45,7 @@ use crate::{
             COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
             KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
         },
-        unit_list::imp::rowdata::UnitBinding,
+        unit_list::{filter::UnitListFilterWindow, imp::rowdata::UnitBinding},
     },
 };
 
@@ -120,12 +123,13 @@ macro_rules! create_column_filter {
 }
 
 macro_rules! column_view_column_set_sorter {
-    ($map:expr, $menu:expr, $col_id:expr, $($func:ident),+) => {{
+    ($map:expr, $col_id:expr, $($func:ident),+) => {{
         let column_view_column = $map.get($col_id)
             .expect(&format!("Column with id {:?} not found!", $col_id));
         let sorter = create_column_filter!($($func),+);
         column_view_column.set_sorter(Some(&sorter));
-        column_view_column.set_header_menu(Some(&$menu));
+        let column_menu = create_col_menu($col_id);
+        column_view_column.set_header_menu(Some(&column_menu));
     }};
 }
 
@@ -205,6 +209,55 @@ impl UnitListPanelImp {
                     .build();
             }
         }
+
+        let action_entry = {
+            let settings = settings.clone();
+            gio::ActionEntry::builder("hide_unit_col")
+                .activate(move |_application: &AppWindow, _b, target_value| {
+                    if let Some(value) = target_value {
+                        let key = value.get::<String>().expect("variant always be String");
+                        if let Err(error) = settings.set_boolean(&key, false) {
+                            warn!("Setting error, key {key}, {:?}", error);
+                        }
+                    }
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .build()
+        };
+
+        let list_filter_action_entry = {
+            //  let settings = settings.clone();
+            gio::ActionEntry::builder("unit_list_filter")
+                .activate(move |_application: &AppWindow, _b, target_value| {
+                    let column_id = target_value
+                        .map(|var| var.get::<String>().expect("variant always be String"));
+                    println!("Filter list, col {:?}", column_id);
+
+                    let filter_win = UnitListFilterWindow::new(column_id);
+                    filter_win.present();
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .build()
+        };
+
+        let list_filter_clear_action_entry = {
+            //  let settings = settings.clone();
+            gio::ActionEntry::builder("unit_list_filter_clear")
+                .activate(move |_application: &AppWindow, _b, target_value| {
+                    let column_id = target_value
+                        .map(|var| var.get::<String>().expect("variant always be String"));
+
+                    println!("Clean filter, col {:?}", column_id);
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .build()
+        };
+
+        app_window.add_action_entries([
+            action_entry,
+            list_filter_clear_action_entry,
+            list_filter_action_entry,
+        ]);
     }
 
     fn generate_column_map(&self) -> HashMap<glib::GString, gtk::ColumnViewColumn> {
@@ -559,32 +612,15 @@ impl ObjectImpl for UnitListPanelImp {
             },
         );
 
-        let builder_menu = gtk::Builder::from_resource("/io/github/plrigaux/sysd-manager/menu.ui");
-
-        let column_menu: gio::MenuModel = builder_menu
-            .object("column_menu")
-            .expect("object column_menu should exists");
-
-        column_view_column_set_sorter!(
-            column_view_column_map,
-            column_menu,
-            "unit",
-            primary,
-            dbus_level
-        );
-        column_view_column_set_sorter!(column_view_column_map, column_menu, "type", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, column_menu, "bus", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, column_menu, "state", enable_status);
-        column_view_column_set_sorter!(column_view_column_map, column_menu, "preset", preset);
-        column_view_column_set_sorter!(column_view_column_map, column_menu, "load", load_state);
-        column_view_column_set_sorter!(column_view_column_map, column_menu, "active", active_state);
-        column_view_column_set_sorter!(column_view_column_map, column_menu, "sub", sub_state);
-        column_view_column_set_sorter!(
-            column_view_column_map,
-            column_menu,
-            "description",
-            description
-        );
+        column_view_column_set_sorter!(column_view_column_map, "unit", primary, dbus_level);
+        column_view_column_set_sorter!(column_view_column_map, "type", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, "bus", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, "state", enable_status);
+        column_view_column_set_sorter!(column_view_column_map, "preset", preset);
+        column_view_column_set_sorter!(column_view_column_map, "load", load_state);
+        column_view_column_set_sorter!(column_view_column_map, "active", active_state);
+        column_view_column_set_sorter!(column_view_column_map, "sub", sub_state);
+        column_view_column_set_sorter!(column_view_column_map, "description", description);
 
         let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
 

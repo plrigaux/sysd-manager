@@ -5,6 +5,7 @@ use super::app_window::AppWindow;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 
+mod filter;
 mod imp;
 
 glib::wrapper! {

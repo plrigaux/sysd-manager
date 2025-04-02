@@ -11,20 +11,20 @@ use super::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitCo
 
 // ANCHOR: mod
 glib::wrapper! {
-    pub struct CleanDialog(ObjectSubclass<imp::CleanDialogImp>)
+    pub struct CleanUnitDialog(ObjectSubclass<imp::CleanDialogImp>)
     @extends adw::Window, gtk::Window, gtk::Widget,
     @implements gtk::Accessible,  gtk::Buildable,  gtk::ConstraintTarget,
     gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
-impl CleanDialog {
+impl CleanUnitDialog {
     pub fn new(
         unit: Option<&UnitInfo>,
         is_dark: bool,
         app_window: Option<&AppWindow>,
         unit_control: &UnitControlPanel,
     ) -> Self {
-        let obj: CleanDialog = glib::Object::new();
+        let obj: CleanUnitDialog = glib::Object::new();
         let imp = obj.imp();
         imp.set_app_window(app_window, unit_control);
 

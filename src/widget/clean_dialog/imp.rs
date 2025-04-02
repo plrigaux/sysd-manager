@@ -23,7 +23,7 @@ use crate::{
     widget::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitControlPanel},
 };
 
-use super::CleanDialog;
+use super::CleanUnitDialog;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/clean_dialog.ui")]
@@ -258,7 +258,7 @@ impl CleanDialogImp {
 #[glib::object_subclass]
 impl ObjectSubclass for CleanDialogImp {
     const NAME: &'static str = "CLEAN_DIALOG";
-    type Type = CleanDialog;
+    type Type = CleanUnitDialog;
     type ParentType = adw::Window;
 
     fn class_init(klass: &mut Self::Class) {

@@ -11,8 +11,8 @@ use log::warn;
 use crate::{
     systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     widget::{
-        InterPanelMessage, app_window::AppWindow, clean_dialog::CleanDialog, kill_panel::KillPanel,
-        unit_control_panel::UnitControlPanel,
+        InterPanelMessage, app_window::AppWindow, clean_dialog::CleanUnitDialog,
+        kill_panel::KillPanel, unit_control_panel::UnitControlPanel,
     },
 };
 
@@ -124,7 +124,7 @@ impl SideControlPanelImpl {
         let parent = self.parent();
 
         let clean_dialog =
-            CleanDialog::new(binding.as_ref(), self.is_dark.get(), app_window, parent);
+            CleanUnitDialog::new(binding.as_ref(), self.is_dark.get(), app_window, parent);
 
         clean_dialog.set_transient_for(app_window);
         //clean_dialog.set_modal(true);

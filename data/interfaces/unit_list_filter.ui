@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<!--
+-->
+<interface>
+  <!-- interface-name unit_list_filter.ui -->
+  <requires lib="gtk" version="4.16"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <template class="UNIT_LIST_FILTER" parent="AdwWindow">
+    <property name="content">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="AdwNavigationSplitView">
+            <property name="content">
+              <object class="AdwNavigationPage">
+                <property name="child">
+                  <object class="GtkStack" id="filter_stack">
+                    <property name="hhomogeneous">False</property>
+                  </object>
+                </property>
+                <property name="title">Content</property>
+              </object>
+            </property>
+            <property name="sidebar">
+              <object class="AdwNavigationPage">
+                <property name="child">
+                  <object class="GtkStackSidebar">
+                    <property name="stack">filter_stack</property>
+                  </object>
+                </property>
+                <property name="title">Side</property>
+              </object>
+            </property>
+          </object>
+        </property>
+        <child type="top">
+          <object class="AdwHeaderBar"/>
+        </child>
+      </object>
+    </property>
+    <property name="default-height">400</property>
+    <property name="title">Filter</property>
+  </template>
+</interface>
