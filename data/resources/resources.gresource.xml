@@ -37,5 +37,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/snow-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/side-by-side-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/top-down-symbolic.svg</file>    
+    <file preprocess="xml-stripblanks">icons/scalable/actions/empty-icon.svg</file>       
   </gresource>
 </gresources>

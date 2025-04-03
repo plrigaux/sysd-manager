@@ -78,7 +78,7 @@ impl ObjectImpl for UnitListFilterWindowImp {
             let _stack_page = self.filter_stack.add_titled(&widget, Some(key), name);
 
             let button_content = adw::ButtonContent::builder()
-                .icon_name("funnel-outline-symbolic")
+                .icon_name("empty-icon")
                 .label(name)
                 .halign(gtk::Align::Start)
                 .css_classes(["nav"])
