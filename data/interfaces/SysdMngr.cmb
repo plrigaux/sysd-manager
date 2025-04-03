@@ -19,7 +19,8 @@
 	(61,10,"app_window.ui","app_window.ui",None,None,None,None,None,None,None),
 	(62,1,None,"side_control_panel.ui",None,None,None,None,None,None,None),
 	(63,1,"unit_info.ui","unit_properties.ui",None,None,None,None,None,None,None),
-	(67,1,"unit_list_filter.ui","unit_list_filter.ui",None,None,None,None,None,"\n",None)
+	(67,1,"unit_list_filter.ui","unit_list_filter.ui",None,None,None,None,None,"\n",None),
+	(68,None,None,"test.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(4,"gtk","4.12",None),
@@ -294,10 +295,12 @@
 	(67,2,"AdwToolbarView",None,1,None,None,None,0,None,None),
 	(67,3,"AdwNavigationSplitView",None,2,None,None,None,0,None,None),
 	(67,4,"AdwNavigationPage",None,3,None,None,None,0,None,None),
-	(67,5,"GtkStack","filter_stack",4,None,None,None,0,None,None),
 	(67,8,"AdwNavigationPage",None,3,None,None,None,1,None,None),
-	(67,9,"GtkStackSidebar",None,8,None,None,None,0,None,None),
-	(67,10,"AdwHeaderBar",None,2,None,"top",None,1,None,None)
+	(67,10,"AdwHeaderBar",None,2,None,"top",None,1,None,None),
+	(67,13,"GtkBox","filter_navigation_container",8,None,None,None,0,None,None),
+	(67,14,"AdwViewStack","filter_stack",4,None,None,None,0,None,None),
+	(68,1,"GtkButton",None,None,None,None,None,0,None,None),
+	(68,2,"AdwButtonContent",None,1,None,None,None,0,None,None)
   </object>
   <object_property>
 	(4,2,"GtkButton","icon-name","system-search-symbolic",None,None,None,None,None,None,None,None,None),
@@ -773,12 +776,21 @@
 	(67,2,"AdwToolbarView","content",None,0,None,None,None,3,None,None,None,None),
 	(67,3,"AdwNavigationSplitView","content",None,0,None,None,None,4,None,None,None,None),
 	(67,3,"AdwNavigationSplitView","sidebar",None,0,None,None,None,8,None,None,None,None),
-	(67,4,"AdwNavigationPage","child",None,0,None,None,None,5,None,None,None,None),
+	(67,4,"AdwNavigationPage","child",None,None,None,None,None,14,None,None,None,None),
 	(67,4,"AdwNavigationPage","title","Content",None,None,None,None,None,None,None,None,None),
-	(67,5,"GtkStack","hhomogeneous","False",0,None,None,None,None,None,None,None,None),
-	(67,8,"AdwNavigationPage","child",None,0,None,None,None,9,None,None,None,None),
+	(67,8,"AdwNavigationPage","child",None,None,None,None,None,13,None,None,None,None),
 	(67,8,"AdwNavigationPage","title","Side",None,None,None,None,None,None,None,None,None),
-	(67,9,"GtkStackSidebar","stack","5",0,None,None,None,None,None,None,None,None)
+	(67,13,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
+	(67,13,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(67,13,"GtkWidget","margin-bottom","5",None,None,None,None,None,None,None,None,None),
+	(67,13,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
+	(67,13,"GtkWidget","margin-start","5",None,None,None,None,None,None,None,None,None),
+	(67,13,"GtkWidget","margin-top","5",None,None,None,None,None,None,None,None,None),
+	(68,1,"GtkButton","child",None,0,None,None,None,2,None,None,None,None),
+	(68,1,"GtkWidget","halign","baseline",None,None,None,None,None,None,None,None,None),
+	(68,2,"AdwButtonContent","icon-name","application-x-executable",None,None,None,None,None,None,None,None,None),
+	(68,2,"AdwButtonContent","label","test",None,None,None,None,None,None,None,None,None),
+	(68,2,"GtkWidget","halign","baseline",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(20,29,3,"GtkButton","clicked","refresh_info_clicked",None,None,1,0,None),

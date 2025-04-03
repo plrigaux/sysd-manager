@@ -14,9 +14,7 @@
             <property name="content">
               <object class="AdwNavigationPage">
                 <property name="child">
-                  <object class="GtkStack" id="filter_stack">
-                    <property name="hhomogeneous">False</property>
-                  </object>
+                  <object class="AdwViewStack" id="filter_stack"/>
                 </property>
                 <property name="title">Content</property>
               </object>
@@ -24,8 +22,13 @@
             <property name="sidebar">
               <object class="AdwNavigationPage">
                 <property name="child">
-                  <object class="GtkStackSidebar">
-                    <property name="stack">filter_stack</property>
+                  <object class="GtkBox" id="filter_navigation_container">
+                    <property name="margin-bottom">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-top">5</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
                   </object>
                 </property>
                 <property name="title">Side</property>

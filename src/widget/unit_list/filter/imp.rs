@@ -26,7 +26,10 @@ use super::UnitListFilterWindow;
 #[properties(wrapper_type = super::UnitListFilterWindow)]
 pub struct UnitListFilterWindowImp {
     #[template_child]
-    filter_stack: TemplateChild<gtk::Stack>,
+    filter_stack: TemplateChild<adw::ViewStack>,
+
+    #[template_child]
+    filter_navigation_container: TemplateChild<gtk::Box>,
 
     #[property(get, set, nullable, default = None)]
     selected: RefCell<Option<String>>,
@@ -72,11 +75,30 @@ impl ObjectImpl for UnitListFilterWindowImp {
                 _ => gtk::Label::new(Some(name)).into(),
             };
 
-            self.filter_stack.add_titled(&widget, Some(key), name);
+            let _stack_page = self.filter_stack.add_titled(&widget, Some(key), name);
+
+            let button_content = adw::ButtonContent::builder()
+                .icon_name("funnel-outline-symbolic")
+                .label(name)
+                .halign(gtk::Align::Start)
+                .css_classes(["nav"])
+                .build();
+            let button = gtk::Button::builder()
+                .child(&button_content)
+                .css_classes(["flat"])
+                .build();
+
+            {
+                let filter_stack = self.filter_stack.clone();
+                button.connect_clicked(move |_| {
+                    filter_stack.set_visible_child_name(key);
+                });
+            }
+            self.filter_navigation_container.append(&button);
         }
 
         self.obj()
-            .bind_property::<gtk::Stack>(
+            .bind_property::<adw::ViewStack>(
                 "selected",
                 self.filter_stack.as_ref(),
                 "visible-child-name",
