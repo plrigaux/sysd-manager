@@ -231,7 +231,7 @@ impl UnitListPanelImp {
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     let column_id = target_value
                         .map(|var| var.get::<String>().expect("variant always be String"));
-                    println!("Filter list, col {:?}", column_id);
+                    debug!("Filter list, col {:?}", column_id);
 
                     let filter_win = UnitListFilterWindow::new(column_id);
                     filter_win.present();
@@ -247,7 +247,7 @@ impl UnitListPanelImp {
                     let column_id = target_value
                         .map(|var| var.get::<String>().expect("variant always be String"));
 
-                    println!("Clean filter, col {:?}", column_id);
+                    debug!("Clean filter, col {:?}", column_id);
                 })
                 .parameter_type(Some(VariantTy::STRING))
                 .build()

@@ -25,9 +25,7 @@ impl ExMenuButton {
     }
 
     pub fn add_item(&mut self, label: &str) {
-        let binding = self.imp();
-
-        binding.add_item(label);
+        self.imp().add_item(label);
     }
 
     pub fn contains_value(&self, value: Option<&str>) -> bool {
@@ -36,8 +34,7 @@ impl ExMenuButton {
     }
 
     pub fn set_on_close(&self, closure: OnClose) {
-        let imp: &imp::ExMenuButtonImpl = self.imp();
-        imp.set_on_close(closure)
+        self.imp().set_on_close(closure)
     }
 }
 

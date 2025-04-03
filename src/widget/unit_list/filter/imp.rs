@@ -1,8 +1,9 @@
 use std::cell::RefCell;
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+
 use gtk::{
-    glib::{self, property::PropertySet},
+    glib::{self},
     subclass::{
         prelude::*,
         widget::{
@@ -13,9 +14,10 @@ use gtk::{
 };
 use strum::IntoEnumIterator;
 
-use log::{info, warn};
-
-use crate::widget::preferences::data::UNIT_LIST_COLUMNS;
+use crate::{
+    systemd::enums::{ActiveState, EnablementStatus, UnitType},
+    widget::preferences::data::UNIT_LIST_COLUMNS,
+};
 
 use super::UnitListFilterWindow;
 
@@ -62,8 +64,15 @@ impl ObjectImpl for UnitListFilterWindowImp {
         self.parent_constructed();
 
         for (name, key, _) in UNIT_LIST_COLUMNS {
-            self.filter_stack
-                .add_titled(&gtk::Label::new(Some(name)), Some(key), name);
+            let widget: gtk::Widget = match key {
+                "type" => build_type_filter().into(),
+                "state" => build_enablement_filter().into(),
+                "active" => build_active_state_filter().into(),
+
+                _ => gtk::Label::new(Some(name)).into(),
+            };
+
+            self.filter_stack.add_titled(&widget, Some(key), name);
         }
 
         self.obj()
@@ -80,3 +89,93 @@ impl ObjectImpl for UnitListFilterWindowImp {
 impl WidgetImpl for UnitListFilterWindowImp {}
 impl WindowImpl for UnitListFilterWindowImp {}
 impl AdwWindowImpl for UnitListFilterWindowImp {}
+
+fn build_type_filter() -> gtk::Box {
+    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
+        let check = gtk::CheckButton::builder()
+            .label(unit_type.to_str())
+            //.action_target(&unit_type.to_str().to_variant())
+            .build();
+
+        check.connect_toggled(move |check_button| {
+            println!("t {} {:?}", check_button.is_active(), unit_type.to_str());
+        });
+
+        container.append(&check);
+    }
+
+    build_controls(&container);
+
+    container
+}
+
+fn build_controls(container: &gtk::Box) {
+    let controls = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .css_classes(["linked"])
+        .build();
+
+    let clear_button = gtk::Button::builder().label("Clear").build();
+    {
+        let container = container.clone();
+        clear_button.connect_clicked(move |_| {
+            let mut some_widget = container.first_child();
+            while let Some(w) = some_widget.as_ref() {
+                let maybe_checkbutton = w.downcast_ref::<gtk::CheckButton>();
+                if let Some(check) = maybe_checkbutton {
+                    check.set_active(false);
+                }
+
+                some_widget = w.next_sibling();
+            }
+        });
+    }
+
+    let inv_button = gtk::Button::builder().label("Inv").build();
+    {
+        let container = container.clone();
+        inv_button.connect_clicked(move |_| {
+            let mut some_widget = container.first_child();
+
+            while let Some(w) = some_widget.as_ref() {
+                let maybe_checkbutton = w.downcast_ref::<gtk::CheckButton>();
+                if let Some(check) = maybe_checkbutton {
+                    check.set_active(!check.is_active());
+                }
+
+                some_widget = w.next_sibling();
+            }
+        });
+    }
+    controls.append(&clear_button);
+    controls.append(&inv_button);
+
+    container.append(&controls);
+}
+
+fn build_enablement_filter() -> gtk::Box {
+    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+
+    for status in EnablementStatus::iter().filter(|x| match *x {
+        EnablementStatus::Unknown => false,
+        //EnablementStatus::Unasigned => false,
+        _ => true,
+    }) {
+        let check = gtk::CheckButton::with_label(status.as_str());
+        container.append(&check);
+    }
+    build_controls(&container);
+    container
+}
+
+fn build_active_state_filter() -> gtk::Box {
+    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+
+    for status in ActiveState::iter() {
+        let check = gtk::CheckButton::with_label(status.as_str());
+        container.append(&check);
+    }
+    build_controls(&container);
+    container
+}
