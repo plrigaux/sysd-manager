@@ -1,4 +1,8 @@
-use std::cell::RefCell;
+use std::{
+    cell::{OnceCell, RefCell},
+    collections::HashMap,
+    rc::Rc,
+};
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 
@@ -12,15 +16,22 @@ use gtk::{
         },
     },
 };
+
 use strum::IntoEnumIterator;
 
 use crate::{
-    systemd::enums::{ActiveState, EnablementStatus, UnitType},
-    widget::preferences::data::UNIT_LIST_COLUMNS,
+    systemd::{
+        data::UnitInfo,
+        enums::{ActiveState, EnablementStatus, UnitType},
+    },
+    widget::{preferences::data::UNIT_LIST_COLUMNS, unit_list::UnitListPanel},
 };
 
-use super::UnitListFilterWindow;
-
+use super::{
+    FilterElem, FilterText, UnitListFilterWindow, filter_active_state, filter_enable_status,
+    filter_unit_description, filter_unit_name, filter_unit_type,
+};
+use crate::widget::unit_list::filter::UnitPropertyFilter;
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_filter.ui")]
 #[properties(wrapper_type = super::UnitListFilterWindow)]
@@ -33,14 +44,80 @@ pub struct UnitListFilterWindowImp {
 
     #[property(get, set, nullable, default = None)]
     selected: RefCell<Option<String>>,
+
+    pub(super) unit_list_panel: OnceCell<UnitListPanel>,
+
+    pub(super) all_filters: OnceCell<HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>,
 }
 
 #[gtk::template_callbacks]
 impl UnitListFilterWindowImp {
-    /*     #[template_callback]
-    fn notify_visible_child_cb(&self, _stack: Param) {
-        println!("notify_visible_child_cb");
-    } */
+    pub(super) fn get_filter(&self, unit_list_panel: &UnitListPanel) {
+        let mut map: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> = HashMap::new();
+
+        for (name, key, num_id, _) in UNIT_LIST_COLUMNS {
+            let widget: gtk::Widget = match key {
+                "unit" => build_unit_name_filter(num_id, &mut map).into(),
+                "type" => build_type_filter(num_id, &mut map).into(),
+                "state" => build_enablement_filter(num_id, &mut map).into(),
+                "active" => build_active_state_filter(num_id, &mut map).into(),
+                "description" => build_unit_description_filter(num_id, &mut map).into(),
+
+                _ => gtk::Label::new(Some(name)).into(),
+            };
+
+            let _stack_page = self.filter_stack.add_titled(&widget, Some(key), name);
+
+            let button_content = adw::ButtonContent::builder()
+                .icon_name("empty-icon")
+                .label(name)
+                .halign(gtk::Align::Start)
+                .css_classes(["nav"])
+                .build();
+
+            if let Some(filter_container) = map.get(&num_id) {
+                let mut filter_container_binding = filter_container.as_ref().borrow_mut();
+
+                {
+                    let button_content = button_content.clone();
+                    let lambda = move |is_empty: bool| {
+                        let icon_name = if is_empty {
+                            "empty-icon"
+                        } else {
+                            "funnel-symbolic"
+                        };
+                        button_content.set_icon_name(icon_name);
+                    };
+
+                    filter_container_binding.set_on_change(Box::new(lambda));
+                }
+            }
+
+            let button = gtk::Button::builder()
+                .child(&button_content)
+                .css_classes(["flat"])
+                .build();
+
+            {
+                let filter_stack = self.filter_stack.clone();
+                button.connect_clicked(move |_| {
+                    filter_stack.set_visible_child_name(key);
+                });
+            }
+            self.filter_navigation_container.append(&button);
+        }
+
+        //  let _ = self.all_filters.set(map);
+
+        self.obj()
+            .bind_property::<adw::ViewStack>(
+                "selected",
+                self.filter_stack.as_ref(),
+                "visible-child-name",
+            )
+            .bidirectional()
+            .build();
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -65,46 +142,6 @@ impl ObjectSubclass for UnitListFilterWindowImp {
 impl ObjectImpl for UnitListFilterWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
-
-        for (name, key, _) in UNIT_LIST_COLUMNS {
-            let widget: gtk::Widget = match key {
-                "type" => build_type_filter().into(),
-                "state" => build_enablement_filter().into(),
-                "active" => build_active_state_filter().into(),
-
-                _ => gtk::Label::new(Some(name)).into(),
-            };
-
-            let _stack_page = self.filter_stack.add_titled(&widget, Some(key), name);
-
-            let button_content = adw::ButtonContent::builder()
-                .icon_name("empty-icon")
-                .label(name)
-                .halign(gtk::Align::Start)
-                .css_classes(["nav"])
-                .build();
-            let button = gtk::Button::builder()
-                .child(&button_content)
-                .css_classes(["flat"])
-                .build();
-
-            {
-                let filter_stack = self.filter_stack.clone();
-                button.connect_clicked(move |_| {
-                    filter_stack.set_visible_child_name(key);
-                });
-            }
-            self.filter_navigation_container.append(&button);
-        }
-
-        self.obj()
-            .bind_property::<adw::ViewStack>(
-                "selected",
-                self.filter_stack.as_ref(),
-                "visible-child-name",
-            )
-            .bidirectional()
-            .build();
     }
 }
 
@@ -112,16 +149,75 @@ impl WidgetImpl for UnitListFilterWindowImp {}
 impl WindowImpl for UnitListFilterWindowImp {}
 impl AdwWindowImpl for UnitListFilterWindowImp {}
 
-fn build_type_filter() -> gtk::Box {
+fn build_unit_name_filter(
+    num_id: u8,
+    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+) -> gtk::Box {
+    common_text_filter(num_id, map, filter_unit_name)
+}
+
+fn build_unit_description_filter(
+    num_id: u8,
+    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+) -> gtk::Box {
+    common_text_filter(num_id, map, filter_unit_description)
+}
+
+fn common_text_filter(
+    num_id: u8,
+    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+    filter_unit: fn(&UnitInfo, &str) -> bool,
+) -> gtk::Box {
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+
+    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> =
+        Rc::new(RefCell::new(Box::new(FilterText::new(num_id, filter_unit))));
+
+    map.insert(num_id, filter_container.clone());
+
+    let entry = gtk::SearchEntry::builder().build();
+    container.append(&entry);
+
+    entry.connect_search_changed(move |entry| {
+        let text = entry.text();
+
+        let mut binding = filter_container.as_ref().borrow_mut();
+
+        let filter_text = binding
+            .as_any_mut()
+            .downcast_mut::<FilterText>()
+            .expect("downcast_mut to FilterText");
+        filter_text.set_filter_elem(&text, true);
+    });
+
+    container
+}
+
+fn build_type_filter(
+    num_id: u8,
+    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+) -> gtk::Box {
+    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> = Rc::new(RefCell::new(
+        Box::new(FilterElem::new(num_id, filter_unit_type)),
+    ));
+    map.insert(num_id, filter_container.clone());
+
+    //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
     for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
         let check = gtk::CheckButton::builder()
             .label(unit_type.to_str())
             //.action_target(&unit_type.to_str().to_variant())
             .build();
 
+        let filter_elem = filter_container.clone();
         check.connect_toggled(move |check_button| {
             println!("t {} {:?}", check_button.is_active(), unit_type.to_str());
+
+            filter_elem
+                .as_ref()
+                .borrow_mut()
+                .set_filter_elem(unit_type.to_str(), check_button.is_active());
         });
 
         container.append(&check);
@@ -176,26 +272,59 @@ fn build_controls(container: &gtk::Box) {
     container.append(&controls);
 }
 
-fn build_enablement_filter() -> gtk::Box {
+fn build_enablement_filter(
+    num_id: u8,
+    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+) -> gtk::Box {
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> = Rc::new(RefCell::new(
+        Box::new(FilterElem::new(num_id, filter_enable_status)),
+    ));
 
+    map.insert(num_id, filter_container.clone());
     for status in EnablementStatus::iter().filter(|x| match *x {
         EnablementStatus::Unknown => false,
         //EnablementStatus::Unasigned => false,
         _ => true,
     }) {
         let check = gtk::CheckButton::with_label(status.as_str());
+
+        let filter_elem = filter_container.clone();
+        check.connect_toggled(move |check_button| {
+            filter_elem
+                .as_ref()
+                .borrow_mut()
+                .set_filter_elem(status.as_str(), check_button.is_active());
+        });
+
         container.append(&check);
     }
     build_controls(&container);
     container
 }
 
-fn build_active_state_filter() -> gtk::Box {
+fn build_active_state_filter(
+    num_id: u8,
+    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+) -> gtk::Box {
+    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> = Rc::new(RefCell::new(
+        Box::new(FilterElem::new(num_id, filter_active_state)),
+    ));
+
+    map.insert(num_id, filter_container.clone());
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
 
     for status in ActiveState::iter() {
         let check = gtk::CheckButton::with_label(status.as_str());
+
+        let filter_elem = filter_container.clone();
+        check.connect_toggled(move |check_button| {
+            filter_elem
+                .as_ref()
+                .borrow_mut()
+                .set_filter_elem(status.as_str(), check_button.is_active());
+        });
+
         container.append(&check);
     }
     build_controls(&container);

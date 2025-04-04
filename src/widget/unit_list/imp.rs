@@ -51,6 +51,8 @@ use crate::{
 
 use strum::IntoEnumIterator;
 
+use super::filter::UnitPropertyFilter;
+
 #[derive(Default, gtk::CompositeTemplate, Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
 #[properties(wrapper_type = super::UnitListPanel)]
@@ -89,6 +91,8 @@ pub struct UnitListPanelImp {
 
     #[property(name = "display-color", get, set)]
     pub display_color: Cell<bool>,
+
+    filter_map: OnceCell<HashMap<String, Box<dyn UnitPropertyFilter>>>,
 }
 
 macro_rules! compare_units {
@@ -186,7 +190,7 @@ impl UnitListPanelImp {
 
         let col_map = self.generate_column_map();
 
-        for (_, key, flags) in UNIT_LIST_COLUMNS {
+        for (_, key, _, flags) in UNIT_LIST_COLUMNS {
             let Some(column_view_column) = col_map.get(key) else {
                 warn!("Can't bind setting key {key} to column {key}");
                 continue;
@@ -227,13 +231,15 @@ impl UnitListPanelImp {
 
         let list_filter_action_entry = {
             //  let settings = settings.clone();
+            let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder("unit_list_filter")
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     let column_id = target_value
                         .map(|var| var.get::<String>().expect("variant always be String"));
                     debug!("Filter list, col {:?}", column_id);
 
-                    let filter_win = UnitListFilterWindow::new(column_id);
+                    let filter_win = UnitListFilterWindow::new(column_id, &unit_list_panel);
+                    filter_win.get_filter(&unit_list_panel);
                     filter_win.present();
                 })
                 .parameter_type(Some(VariantTy::STRING))
@@ -585,6 +591,10 @@ impl ObjectSubclass for UnitListPanelImp {
 impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let _ = self
+            .filter_map
+            .set(HashMap::with_capacity(UNIT_LIST_COLUMNS.len()));
 
         let settings = systemd_gui::new_settings();
 

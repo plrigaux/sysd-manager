@@ -432,7 +432,7 @@ impl ObjectImpl for PreferencesDialogImpl {
         // Load latest window state
         self.load_preferences_values();
 
-        for (title, key, flags) in UNIT_LIST_COLUMNS {
+        for (title, key, num_id, flags) in UNIT_LIST_COLUMNS {
             let group = adw::PreferencesGroup::builder()
                 .margin_start(8)
                 .margin_end(8)

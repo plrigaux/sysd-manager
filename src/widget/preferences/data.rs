@@ -33,16 +33,16 @@ pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 pub const FLAG_SHOW: u8 = 1;
 pub const FLAG_WIDTH: u8 = 2;
 
-pub const UNIT_LIST_COLUMNS: [(&str, &str, u8); 9] = [
-    ("Unit", "unit", FLAG_WIDTH),
-    ("Type", "type", FLAG_SHOW | FLAG_WIDTH),
-    ("Bus", "bus", FLAG_SHOW | FLAG_WIDTH),
-    ("State", "state", FLAG_SHOW | FLAG_WIDTH),
-    ("Preset", "preset", FLAG_SHOW | FLAG_WIDTH),
-    ("Load", "load", FLAG_SHOW | FLAG_WIDTH),
-    ("Active", "active", FLAG_SHOW | FLAG_WIDTH),
-    ("Sub", "sub", FLAG_SHOW | FLAG_WIDTH),
-    ("Description", "description", FLAG_SHOW), //Because column "description" is expandable
+pub const UNIT_LIST_COLUMNS: [(&str, &str, u8, u8); 9] = [
+    ("Unit", "unit", 0, FLAG_WIDTH),
+    ("Type", "type", 1, FLAG_SHOW | FLAG_WIDTH),
+    ("Bus", "bus", 2, FLAG_SHOW | FLAG_WIDTH),
+    ("State", "state", 3, FLAG_SHOW | FLAG_WIDTH),
+    ("Preset", "preset", 4, FLAG_SHOW | FLAG_WIDTH),
+    ("Load", "load", 5, FLAG_SHOW | FLAG_WIDTH),
+    ("Active", "active", 6, FLAG_SHOW | FLAG_WIDTH),
+    ("Sub", "sub", 7, FLAG_SHOW | FLAG_WIDTH),
+    ("Description", "description", 8, FLAG_SHOW), //Because column "description" is expandable
 ];
 
 pub const COL_SHOW_PREFIX: &str = "col-show-";
