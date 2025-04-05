@@ -416,17 +416,14 @@ impl AppWindowImpl {
         };
 
         let default_state = glib::variant::ToVariant::to_variant(&"auto");
-        let orientation_mode: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder(
-            KEY_PREF_ORIENTATION_MODE,
-        )
-        .activate(move |_win: &adw::Application, action, variant| {
-            warn!("action {:?} variant {:?}", action, variant);
-
-            println!("asdfasdfasdfasd asdfasdfdfddddddddddddddddddddddddddddddddddddddddddddddddd");
-        })
-        .parameter_type(Some(VariantTy::STRING))
-        .state(default_state)
-        .build();
+        let orientation_mode: gio::ActionEntry<adw::Application> =
+            gio::ActionEntry::builder(KEY_PREF_ORIENTATION_MODE)
+                .activate(move |_win: &adw::Application, action, variant| {
+                    warn!("action {:?} variant {:?}", action, variant);
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .state(default_state)
+                .build();
 
         application.add_action_entries([
             search_units,
@@ -442,6 +439,7 @@ impl AppWindowImpl {
         application.set_accels_for_action("app.open_dependencies", &["<Ctrl>d"]);
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
         application.set_accels_for_action("app.open_file", &["<Ctrl>u"]);
+        application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Shift>f"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {

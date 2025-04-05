@@ -33,8 +33,10 @@ pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 pub const FLAG_SHOW: u8 = 1;
 pub const FLAG_WIDTH: u8 = 2;
 
+pub const UNIT_LIST_COLUMNS_UNIT: u8 = 0;
+
 pub const UNIT_LIST_COLUMNS: [(&str, &str, u8, u8); 9] = [
-    ("Unit", "unit", 0, FLAG_WIDTH),
+    ("Unit", "unit", UNIT_LIST_COLUMNS_UNIT, FLAG_WIDTH),
     ("Type", "type", 1, FLAG_SHOW | FLAG_WIDTH),
     ("Bus", "bus", 2, FLAG_SHOW | FLAG_WIDTH),
     ("State", "state", 3, FLAG_SHOW | FLAG_WIDTH),

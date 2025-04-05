@@ -30,20 +30,14 @@ use log::{debug, error, info, warn};
 use menus::create_col_menu;
 
 use crate::{
-    systemd::{
-        self,
-        data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, UnitType},
-        runtime,
-    },
+    systemd::{self, data::UnitInfo, runtime},
     systemd_gui,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        menu_button::ExMenuButton,
         preferences::data::{
             COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
-            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
+            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS, UNIT_LIST_COLUMNS_UNIT,
         },
         unit_list::{
             filter::{
@@ -54,8 +48,6 @@ use crate::{
         },
     },
 };
-
-use strum::IntoEnumIterator;
 
 use super::filter::{UnitPropertyAssessor, UnitPropertyFilter};
 
@@ -88,6 +80,7 @@ pub struct UnitListPanelImp {
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
     search_entry: OnceCell<gtk::SearchEntry>,
+    signal_handler_text_changed: OnceCell<glib::SignalHandlerId>,
 
     refresh_unit_list_button: OnceCell<gtk::Button>,
 
@@ -254,6 +247,18 @@ impl UnitListPanelImp {
                 .build()
         };
 
+        let list_filter_action_entry_blank = {
+            //  let settings = settings.clone();
+            let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder("unit_list_filter_blank")
+                .activate(move |_application: &AppWindow, _b, _target_value| {
+                    let filter_win = UnitListFilterWindow::new(None, &unit_list_panel);
+                    filter_win.construct_filter_dialog();
+                    filter_win.present();
+                })
+                .build()
+        };
+
         let list_filter_clear_action_entry = {
             //  let settings = settings.clone();
             let unit_list_panel = self.obj().clone();
@@ -271,8 +276,9 @@ impl UnitListPanelImp {
 
         app_window.add_action_entries([
             action_entry,
-            list_filter_clear_action_entry,
             list_filter_action_entry,
+            list_filter_action_entry_blank,
+            list_filter_clear_action_entry,
         ]);
     }
 
@@ -592,6 +598,10 @@ impl UnitListPanelImp {
         if let Some(new_assessor) = new_assessor {
             //add
 
+            if id == UNIT_LIST_COLUMNS_UNIT {
+                self.search_entry_set_text(new_assessor.text());
+            }
+
             let mut vect = applied_assessors.borrow_mut();
 
             if let Some(index) = vect.iter().position(|x| x.id() == id) {
@@ -602,6 +612,10 @@ impl UnitListPanelImp {
         } else {
             //remove
             applied_assessors.borrow_mut().retain(|x| x.id() != id);
+
+            if id == UNIT_LIST_COLUMNS_UNIT {
+                self.search_entry_set_text("");
+            }
         }
 
         if let Some(change_type) = change_type {
@@ -629,8 +643,30 @@ impl UnitListPanelImp {
 
         self.filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
 
+        self.search_entry_set_text("");
+
         /*             let custom_filter = unit_list_panel.imp().create_custom_filter();
         filter_list_model.set_filter(Some(&custom_filter)); */
+    }
+
+    fn search_entry_set_text(&self, text: &str) {
+        let search_entry = self.search_entry.get().expect("Not Null");
+        let signal_handler_id = self.signal_handler_text_changed.get().expect("Not Null");
+
+        search_entry.block_signal(signal_handler_id);
+        search_entry.set_text(text);
+        search_entry.unblock_signal(signal_handler_id);
+    }
+
+    fn update_unit_name_search(&self, text: &str) {
+        debug!("update_unit_name_search {text}");
+        let filter = self
+            .filter_assessors
+            .get()
+            .expect("Not None")
+            .get(&UNIT_LIST_COLUMNS_UNIT)
+            .expect("Always unit");
+        filter.borrow_mut().set_filter_elem(text, true);
     }
 
     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
@@ -643,39 +679,12 @@ impl UnitListPanelImp {
         let search_entry = gtk::SearchEntry::new();
         search_entry.set_hexpand(true);
 
-        let mut filter_button_unit_type = ExMenuButton::new("Type");
-        let mut filter_button_status = ExMenuButton::new("Enablement");
-        let mut filter_button_active = ExMenuButton::new("Active");
-
-        filter_button_unit_type.set_tooltip_text(Some("Filter by types"));
-        filter_button_status.set_tooltip_text(Some("Filter by enablement status"));
-        filter_button_active.set_tooltip_text(Some("Filter by active state"));
-
         let search_box = gtk::Box::builder()
             .orientation(gtk::Orientation::Horizontal)
             .spacing(5)
             .build();
 
-        for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
-            filter_button_unit_type.add_item(unit_type.as_str());
-        }
-
-        for status in EnablementStatus::iter().filter(|x| match *x {
-            EnablementStatus::Unknown => false,
-            //EnablementStatus::Unasigned => false,
-            _ => true,
-        }) {
-            filter_button_status.add_item(status.as_str());
-        }
-
-        for status in ActiveState::iter() {
-            filter_button_active.add_item(status.as_str());
-        }
-
         search_box.append(&search_entry);
-        /*         search_box.append(&filter_button_unit_type);
-        search_box.append(&filter_button_status);
-        search_box.append(&filter_button_active); */
 
         self.search_bar.set_child(Some(&search_box));
 
@@ -685,27 +694,15 @@ impl UnitListPanelImp {
 
         //let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
 
-        search_entry.connect_search_changed(move |entry| {
-            let _text = entry.text();
-
-            /*  debug!("Search text \"{text}\"");
-
-            let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
-
-            let change_type = if text.is_empty() {
-                gtk::FilterChange::LessStrict
-            } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
-                gtk::FilterChange::MoreStrict
-            } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
-                gtk::FilterChange::LessStrict
-            } else {
-                gtk::FilterChange::Different
-            };
-
-            debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
-            last_filter.replace_range(.., text.as_str());
-            custom_filter.changed(change_type); */
+        let unit_list_panel = self.obj().clone();
+        let signal_handler_id = search_entry.connect_changed(move |entry| {
+            let text = entry.text();
+            unit_list_panel.imp().update_unit_name_search(text.as_str());
         });
+
+        self.signal_handler_text_changed
+            .set(signal_handler_id)
+            .expect("Search entry handler set once");
 
         search_entry
     }
@@ -835,11 +832,11 @@ impl ObjectImpl for UnitListPanelImp {
             .set(Rc::new(RefCell::new(Vec::new())));
 
         let search_entry = self.fill_search_bar();
-
-        self.obj().action_set_enabled("win.col", true);
         self.search_entry
             .set(search_entry)
             .expect("Search entry set once");
+
+        self.obj().action_set_enabled("win.col", true);
 
         {
             let unit_list = self.obj().clone();

@@ -14,8 +14,14 @@
             <property name="content">
               <object class="AdwNavigationPage">
                 <property name="child">
-                  <object class="AdwViewStack" id="filter_stack"/>
+                  <object class="AdwViewStack" id="filter_stack">
+                    <property name="width-request">200</property>
+                  </object>
                 </property>
+                <property name="margin-bottom">7</property>
+                <property name="margin-end">7</property>
+                <property name="margin-start">7</property>
+                <property name="margin-top">7</property>
                 <property name="title">Content</property>
               </object>
             </property>
@@ -23,10 +29,10 @@
               <object class="AdwNavigationPage">
                 <property name="child">
                   <object class="GtkBox" id="filter_navigation_container">
-                    <property name="margin-bottom">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">7</property>
+                    <property name="margin-end">7</property>
+                    <property name="margin-start">7</property>
+                    <property name="margin-top">7</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">5</property>
                   </object>
@@ -37,7 +43,13 @@
           </object>
         </property>
         <child type="top">
-          <object class="AdwHeaderBar"/>
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle">
+                <property name="title">Unit Property Filter</property>
+              </object>
+            </property>
+          </object>
         </child>
       </object>
     </property>

@@ -24,6 +24,13 @@
                 <property name="title" translatable="yes" context="shortcut window">Open search</property>
               </object>
             </child>
+
+             <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">win.unit_list_filter_blank</property>
+                <property name="title" translatable="yes" context="shortcut window">Open Unit Property Filter</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -32,25 +39,25 @@
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.open_info</property>
-                <property name="title" translatable="yes" context="shortcut window">Display unit information</property>
+                <property name="title" translatable="yes" context="shortcut window">Display Unit Information</property>
               </object>
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.open_dependencies</property>
-                <property name="title" translatable="yes" context="shortcut window">Display unit dependencies</property>
+                <property name="title" translatable="yes" context="shortcut window">Display Unit Dependencies</property>
               </object>
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.open_file</property>
-                <property name="title" translatable="yes" context="shortcut window">Display unit definition file</property>
+                <property name="title" translatable="yes" context="shortcut window">Display Unit Definition File</property>
               </object>
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.open_journal</property>
-                <property name="title" translatable="yes" context="shortcut window">Display unit journal events</property>
+                <property name="title" translatable="yes" context="shortcut window">Display Unit Journal Events</property>
               </object>
             </child>
           </object>

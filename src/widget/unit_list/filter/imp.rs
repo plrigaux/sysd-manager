@@ -49,6 +49,9 @@ impl UnitListFilterWindowImp {
             .get()
             .expect("unit_list_panel in filter dialog not None");
 
+        let binding = self.selected.borrow();
+        let selected = binding.as_ref();
+
         for (name, key, num_id, _) in UNIT_LIST_COLUMNS {
             let filter_assessor = unit_list_panel.try_get_filter_assessor(num_id);
 
@@ -79,15 +82,12 @@ impl UnitListFilterWindowImp {
 
             if let Some(filter_container) = filter_assessor {
                 let mut filter_container_binding = filter_container.as_ref().borrow_mut();
-
+                let is_empty = filter_container_binding.is_empty();
+                button_content.set_icon_name(icon_name(is_empty));
                 {
                     let button_content = button_content.clone();
                     let lambda = move |is_empty: bool| {
-                        let icon_name = if is_empty {
-                            "empty-icon"
-                        } else {
-                            "funnel-symbolic"
-                        };
+                        let icon_name = icon_name(is_empty);
                         button_content.set_icon_name(icon_name);
                     };
 
@@ -100,16 +100,30 @@ impl UnitListFilterWindowImp {
                 .css_classes(["flat"])
                 .build();
 
+            if selected.map_or(false, |s| s == key) {
+                button.remove_css_class("flat");
+            }
+
             {
                 let filter_stack = self.filter_stack.clone();
-                button.connect_clicked(move |_| {
+                button.connect_clicked(move |button| {
                     filter_stack.set_visible_child_name(key);
+
+                    if let Some(parent) = button.parent() {
+                        let mut child_o = parent.first_child();
+
+                        while let Some(child) = child_o {
+                            child.add_css_class("flat");
+                            child_o = child.next_sibling();
+                        }
+                    }
+                    button.remove_css_class("flat");
                 });
             }
             self.filter_navigation_container.append(&button);
         }
 
-        if let Some(selected) = self.selected.borrow().as_ref() {
+        if let Some(selected) = selected {
             self.filter_stack.set_visible_child_name(selected);
         }
 
@@ -121,6 +135,14 @@ impl UnitListFilterWindowImp {
             )
             .bidirectional()
             .build();
+    }
+}
+
+fn icon_name(is_empty: bool) -> &'static str {
+    if is_empty {
+        "empty-icon"
+    } else {
+        "funnel-symbolic"
     }
 }
 
@@ -166,16 +188,19 @@ impl WindowImpl for UnitListFilterWindowImp {
 impl AdwWindowImpl for UnitListFilterWindowImp {}
 
 fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
-    let container = gtk::Box::builder()
-        .orientation(gtk::Orientation::Vertical)
-        .spacing(5)
-        .margin_start(5)
-        .margin_top(5)
-        .margin_end(5)
-        .build();
+    let container = create_content_box();
 
-    let entry = gtk::SearchEntry::builder().build();
-    container.append(&entry);
+    let merge_box = gtk::Box::builder()
+        .css_classes(["linked"])
+        .halign(gtk::Align::BaselineFill)
+        .build();
+    let entry = gtk::Entry::builder().hexpand(true).build();
+    let button_clear_entry = gtk::Button::builder()
+        .icon_name("edit-clear-symbolic")
+        .build();
+    merge_box.append(&entry);
+    merge_box.append(&button_clear_entry);
+    container.append(&merge_box);
 
     let filter_container = filter_container.clone();
 
@@ -183,7 +208,7 @@ fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>
         let filter_container = filter_container.borrow();
         entry.set_text(filter_container.text());
     }
-    entry.connect_search_changed(move |entry| {
+    entry.connect_changed(move |entry| {
         let text = entry.text();
 
         let mut binding = filter_container.as_ref().borrow_mut();
@@ -195,11 +220,15 @@ fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>
         filter_text.set_filter_elem(&text, true);
     });
 
+    button_clear_entry.connect_clicked(move |_| {
+        entry.set_text("");
+    });
+
     container
 }
 
 fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
-    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    let container = create_content_box();
 
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
     for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
@@ -227,6 +256,18 @@ fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
 
     build_controls(&container);
 
+    container
+}
+
+fn create_content_box() -> gtk::Box {
+    let container = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .width_request(300)
+        .spacing(5)
+        .margin_start(5)
+        .margin_top(5)
+        .margin_end(5)
+        .build();
     container
 }
 
@@ -277,7 +318,7 @@ fn build_controls(container: &gtk::Box) {
 fn build_enablement_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> gtk::Box {
-    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    let container = create_content_box();
 
     for status in EnablementStatus::iter().filter(|x| match *x {
         EnablementStatus::Unknown => false,
@@ -310,7 +351,7 @@ fn build_enablement_filter(
 fn build_active_state_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> gtk::Box {
-    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    let container = create_content_box();
 
     for status in ActiveState::iter() {
         let check = {

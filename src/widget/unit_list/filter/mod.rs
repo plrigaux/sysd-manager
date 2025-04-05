@@ -6,7 +6,6 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{
     FilterChange,
     glib::{self},
-    prelude::GtkWindowExt,
 };
 
 use crate::systemd::{data::UnitInfo, enums::EnablementStatus};
@@ -26,7 +25,7 @@ impl UnitListFilterWindow {
         let obj: UnitListFilterWindow = glib::Object::builder()
             .property("selected", selected_filter)
             .build();
-        obj.set_default_width(300);
+        //   obj.set_default_width(300);
         let _ = obj.imp().unit_list_panel.set(unit_list_panel.clone());
 
         obj
@@ -53,11 +52,15 @@ pub trait UnitPropertyFilter {
     fn contains(&self, _value: &str) -> bool {
         false
     }
+    fn is_empty(&self) -> bool;
 }
 
 pub trait UnitPropertyAssessor: core::fmt::Debug {
     fn filter_unit(&self, unit: &UnitInfo) -> bool;
     fn id(&self) -> u8;
+    fn text(&self) -> &str {
+        ""
+    }
 }
 
 pub struct FilterElem {
@@ -74,12 +77,6 @@ pub struct FilterElementAssessor {
     filter_unit_func: fn(&UnitInfo, &HashSet<String>) -> bool,
     id: u8,
 }
-
-/* impl core::fmt::Debug for dyn UnitPropertyAssessor {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "Series{{{}}}", self.len())
-    }
-} */
 
 impl UnitPropertyAssessor for FilterElementAssessor {
     fn filter_unit(&self, unit: &UnitInfo) -> bool {
@@ -167,6 +164,10 @@ impl UnitPropertyFilter for FilterElem {
     fn clear_filter(&mut self) {
         self.filter_elements.clear();
     }
+
+    fn is_empty(&self) -> bool {
+        self.filter_elements.is_empty()
+    }
 }
 
 pub struct FilterText {
@@ -191,6 +192,10 @@ impl UnitPropertyAssessor for FilterTextAssessor {
 
     fn id(&self) -> u8 {
         self.id
+    }
+
+    fn text(&self) -> &str {
+        &self.filter_text
     }
 }
 
@@ -269,6 +274,10 @@ impl UnitPropertyFilter for FilterText {
     fn clear_filter(&mut self) {
         self.filter_text.clear();
     }
+
+    fn is_empty(&self) -> bool {
+        self.filter_text.is_empty()
+    }
 }
 
 pub fn filter_active_state(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
@@ -287,9 +296,7 @@ pub fn filter_enable_status(unit: &UnitInfo, filter_elements: &HashSet<String>) 
 }
 
 pub fn filter_unit_name(unit: &UnitInfo, filter_text: &str) -> bool {
-    let name = unit.display_name();
-
-    if name.is_empty() {
+    if filter_text.is_empty() {
         true
     } else {
         unit.display_name().contains(filter_text)
@@ -297,11 +304,9 @@ pub fn filter_unit_name(unit: &UnitInfo, filter_text: &str) -> bool {
 }
 
 pub fn filter_unit_description(unit: &UnitInfo, filter_text: &str) -> bool {
-    let name = unit.description();
-
-    if name.is_empty() {
+    if filter_text.is_empty() {
         true
     } else {
-        unit.display_name().contains(filter_text)
+        unit.description().contains(filter_text)
     }
 }
