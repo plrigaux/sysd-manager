@@ -256,12 +256,14 @@ impl UnitListPanelImp {
 
         let list_filter_clear_action_entry = {
             //  let settings = settings.clone();
+            let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder("unit_list_filter_clear")
-                .activate(move |_application: &AppWindow, _b, target_value| {
-                    let column_id = target_value
-                        .map(|var| var.get::<String>().expect("variant always be String"));
-
-                    debug!("Clean filter, col {:?}", column_id);
+                .activate(move |_application: &AppWindow, _b, _target_value| {
+                    /*   let column_id = target_value
+                                           .map(|var| var.get::<String>().expect("variant always be String"));
+                    */
+                    //   debug!("Clean filter, col {:?}", column_id);
+                    unit_list_panel.imp().clear_filter();
                 })
                 .parameter_type(Some(VariantTy::STRING))
                 .build()
@@ -603,9 +605,33 @@ impl UnitListPanelImp {
         }
 
         if let Some(change_type) = change_type {
-            let filter = self.filter_list_model.filter().expect("filter not none");
-            filter.changed(change_type);
+            if let Some(filter) = self.filter_list_model.filter() {
+                filter.changed(change_type);
+            } else {
+                let custom_filter = self.create_custom_filter();
+                self.filter_list_model.set_filter(Some(&custom_filter));
+            }
         }
+    }
+
+    fn clear_filter(&self) {
+        let applied_assessors = self
+            .applied_assessors
+            .get()
+            .expect("applied_assessors not null");
+
+        let filter_list_model = self.filter_list_model.clone();
+        let applied_assessors = applied_assessors.clone();
+        // let unit_list_panel = self.obj().clone();
+
+        let mut vect = applied_assessors.borrow_mut();
+
+        vect.clear();
+
+        filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
+
+        /*             let custom_filter = unit_list_panel.imp().create_custom_filter();
+        filter_list_model.set_filter(Some(&custom_filter)); */
     }
 
     fn fill_search_bar(&self) -> gtk::SearchEntry {
@@ -648,63 +674,7 @@ impl UnitListPanelImp {
 
         self.search_bar.set_child(Some(&search_box));
 
-        let custom_filter = {
-            let applied_assessors = self.applied_assessors.get().expect("not none").clone();
-            gtk::CustomFilter::new(move |object| {
-                let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
-                    unit_binding.unit_ref()
-                } else {
-                    error!("some wrong downcast_ref to UnitBinding  {:?}", object);
-                    return false;
-                };
-
-                for asserror in applied_assessors.borrow().iter() {
-                    if !asserror.filter_unit(&unit) {
-                        return false;
-                    }
-                }
-                true
-            })
-        };
-
-        /*  let custom_filter = {
-                    let entry1 = search_entry.clone();
-                    let filter_button_unit_type = filter_button_unit_type.clone();
-                    let filter_button_status = filter_button_status.clone();
-                    let filter_button_active = filter_button_active.clone();
-
-                    gtk::CustomFilter::new(move |object| {
-                        let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
-                            unit_binding.unit_ref()
-                        } else {
-                            error!("some wrong downcast_ref to UnitBinding  {:?}", object);
-                            return false;
-                        };
-
-                        let text = entry1.text();
-                        let unit_type = unit.unit_type();
-                        let enable_status: EnablementStatus = unit.enable_status().into();
-                        let active_state: ActiveState = unit.active_state();
-
-                        filter_button_unit_type.contains_value(Some(&unit_type))
-                            && filter_button_status.contains_value(Some(enable_status.as_str()))
-                            && if text.is_empty() {
-                                true
-                            } else {
-                                unit.display_name().contains(text.as_str())
-                            }
-                            && filter_button_active.contains_value(Some(active_state.as_str()))
-                    })
-                };
-                let on_close = OnClose::new_filter(&custom_filter);
-                filter_button_unit_type.set_on_close(on_close);
-
-                let on_close = OnClose::new_filter(&custom_filter);
-                filter_button_status.set_on_close(on_close);
-
-                let on_close = OnClose::new_filter(&custom_filter);
-                filter_button_active.set_on_close(on_close);
-        */
+        let custom_filter = self.create_custom_filter();
 
         self.filter_list_model.set_filter(Some(&custom_filter));
 
@@ -733,6 +703,25 @@ impl UnitListPanelImp {
         });
 
         search_entry
+    }
+
+    fn create_custom_filter(&self) -> gtk::CustomFilter {
+        let applied_assessors = self.applied_assessors.get().expect("not none").clone();
+        gtk::CustomFilter::new(move |object| {
+            let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
+                unit_binding.unit_ref()
+            } else {
+                error!("some wrong downcast_ref to UnitBinding  {:?}", object);
+                return false;
+            };
+
+            for asserror in applied_assessors.borrow().iter() {
+                if !asserror.filter_unit(&unit) {
+                    return false;
+                }
+            }
+            true
+        })
     }
 }
 

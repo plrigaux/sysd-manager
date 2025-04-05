@@ -102,7 +102,9 @@ impl UnitListFilterWindowImp {
             self.filter_navigation_container.append(&button);
         }
 
-        //  let _ = self.all_filters.set(map);
+        if let Some(selected) = self.selected.borrow().as_ref() {
+            self.filter_stack.set_visible_child_name(selected);
+        }
 
         self.obj()
             .bind_property::<adw::ViewStack>(
