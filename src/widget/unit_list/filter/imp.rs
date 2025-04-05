@@ -55,15 +55,54 @@ impl UnitListFilterWindowImp {
     pub(super) fn get_filter(&self, unit_list_panel: &UnitListPanel) {
         let mut map: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> = HashMap::new();
 
-        for (name, key, num_id, _) in UNIT_LIST_COLUMNS {
-            let widget: gtk::Widget = match key {
-                "unit" => build_unit_name_filter(num_id, &mut map).into(),
-                "type" => build_type_filter(num_id, &mut map).into(),
-                "state" => build_enablement_filter(num_id, &mut map).into(),
-                "active" => build_active_state_filter(num_id, &mut map).into(),
-                "description" => build_unit_description_filter(num_id, &mut map).into(),
+        for (_, key, num_id, _) in UNIT_LIST_COLUMNS {
+            let filter: Option<Box<dyn UnitPropertyFilter>> = match key {
+                "unit" => Some(Box::new(FilterText::new(
+                    num_id,
+                    filter_unit_name,
+                    unit_list_panel,
+                ))),
+                "type" => Some(Box::new(FilterElem::new(
+                    num_id,
+                    filter_unit_type,
+                    unit_list_panel,
+                ))),
+                "state" => Some(Box::new(FilterElem::new(
+                    num_id,
+                    filter_enable_status,
+                    unit_list_panel,
+                ))),
+                "active" => Some(Box::new(FilterElem::new(
+                    num_id,
+                    filter_active_state,
+                    unit_list_panel,
+                ))),
+                "description" => Some(Box::new(FilterText::new(
+                    num_id,
+                    filter_unit_description,
+                    unit_list_panel,
+                ))),
+                _ => None,
+            };
 
-                _ => gtk::Label::new(Some(name)).into(),
+            if let Some(filter) = filter {
+                map.insert(num_id, Rc::new(RefCell::new(filter)));
+            }
+        }
+
+        for (name, key, num_id, _) in UNIT_LIST_COLUMNS {
+            let widget: gtk::Widget = if let Some(filter) = map.get(&num_id) {
+                match key {
+                    "unit" => common_text_filter(filter).into(),
+                    "type" => build_type_filter(filter).into(),
+                    "state" => build_enablement_filter(filter).into(),
+                    "active" => build_active_state_filter(filter).into(),
+                    "description" => common_text_filter(filter).into(),
+
+                    _ => unreachable!("unreachable"),
+                }
+            } else {
+                gtk::Label::new(Some(name)).into()
             };
 
             let _stack_page = self.filter_stack.add_titled(&widget, Some(key), name);
@@ -149,34 +188,13 @@ impl WidgetImpl for UnitListFilterWindowImp {}
 impl WindowImpl for UnitListFilterWindowImp {}
 impl AdwWindowImpl for UnitListFilterWindowImp {}
 
-fn build_unit_name_filter(
-    num_id: u8,
-    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
-) -> gtk::Box {
-    common_text_filter(num_id, map, filter_unit_name)
-}
-
-fn build_unit_description_filter(
-    num_id: u8,
-    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
-) -> gtk::Box {
-    common_text_filter(num_id, map, filter_unit_description)
-}
-
-fn common_text_filter(
-    num_id: u8,
-    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
-    filter_unit: fn(&UnitInfo, &str) -> bool,
-) -> gtk::Box {
+fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
-
-    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> =
-        Rc::new(RefCell::new(Box::new(FilterText::new(num_id, filter_unit))));
-
-    map.insert(num_id, filter_container.clone());
 
     let entry = gtk::SearchEntry::builder().build();
     container.append(&entry);
+
+    let filter_container = filter_container.clone();
 
     entry.connect_search_changed(move |entry| {
         let text = entry.text();
@@ -193,15 +211,8 @@ fn common_text_filter(
     container
 }
 
-fn build_type_filter(
-    num_id: u8,
-    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
-) -> gtk::Box {
+fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> = Rc::new(RefCell::new(
-        Box::new(FilterElem::new(num_id, filter_unit_type)),
-    ));
-    map.insert(num_id, filter_container.clone());
 
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
     for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
@@ -273,15 +284,10 @@ fn build_controls(container: &gtk::Box) {
 }
 
 fn build_enablement_filter(
-    num_id: u8,
-    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> gtk::Box {
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> = Rc::new(RefCell::new(
-        Box::new(FilterElem::new(num_id, filter_enable_status)),
-    ));
 
-    map.insert(num_id, filter_container.clone());
     for status in EnablementStatus::iter().filter(|x| match *x {
         EnablementStatus::Unknown => false,
         //EnablementStatus::Unasigned => false,
@@ -304,14 +310,8 @@ fn build_enablement_filter(
 }
 
 fn build_active_state_filter(
-    num_id: u8,
-    map: &mut HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>,
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> gtk::Box {
-    let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter>>> = Rc::new(RefCell::new(
-        Box::new(FilterElem::new(num_id, filter_active_state)),
-    ));
-
-    map.insert(num_id, filter_container.clone());
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
 
     for status in ActiveState::iter() {

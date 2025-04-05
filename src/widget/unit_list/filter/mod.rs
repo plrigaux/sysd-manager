@@ -52,6 +52,7 @@ pub struct FilterElem {
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func: fn(&UnitInfo, &HashSet<String>) -> bool,
     id: u8,
+    unit_list_panel: UnitListPanel,
 }
 
 fn filter_unit_func_default(_: &UnitInfo, _: &FilterElem) -> bool {
@@ -59,12 +60,17 @@ fn filter_unit_func_default(_: &UnitInfo, _: &FilterElem) -> bool {
 }
 
 impl FilterElem {
-    fn new(id: u8, filter_unit_func: fn(&UnitInfo, &HashSet<String>) -> bool) -> Self {
+    fn new(
+        id: u8,
+        filter_unit_func: fn(&UnitInfo, &HashSet<String>) -> bool,
+        unit_list_panel: &UnitListPanel,
+    ) -> Self {
         Self {
             filter_elements: Default::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
             id,
+            unit_list_panel: unit_list_panel.clone(),
         }
     }
 
@@ -123,15 +129,21 @@ pub struct FilterText {
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func: fn(unit: &UnitInfo, filter_text: &str) -> bool,
     id: u8,
+    unit_list_panel: UnitListPanel,
 }
 
 impl FilterText {
-    fn new(id: u8, filter_unit_func: fn(unit: &UnitInfo, filter_text: &str) -> bool) -> Self {
+    fn new(
+        id: u8,
+        filter_unit_func: fn(&UnitInfo, &str) -> bool,
+        unit_list_panel: &UnitListPanel,
+    ) -> Self {
         Self {
             filter_text: Default::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
             id,
+            unit_list_panel: unit_list_panel.clone(),
         }
     }
 
