@@ -76,4 +76,8 @@ impl UnitListPanel {
     ) {
         self.imp().filter_assessor_change(id, empty, change_type);
     }
+
+    fn clear_unit_list_filter_window_dependancy(&self) {
+        self.imp().clear_unit_list_filter_window_dependancy();
+    }
 }

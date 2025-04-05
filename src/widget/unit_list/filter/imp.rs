@@ -43,7 +43,12 @@ pub struct UnitListFilterWindowImp {
 
 #[gtk::template_callbacks]
 impl UnitListFilterWindowImp {
-    pub(super) fn get_filter(&self, unit_list_panel: &UnitListPanel) {
+    pub(super) fn get_filter(&self) {
+        let unit_list_panel = self
+            .unit_list_panel
+            .get()
+            .expect("unit_list_panel in filter dialog not None");
+
         for (name, key, num_id, _) in UNIT_LIST_COLUMNS {
             let filter_assessor = unit_list_panel.try_get_filter_assessor(num_id);
 
@@ -57,6 +62,8 @@ impl UnitListFilterWindowImp {
 
                     _ => unreachable!("unreachable"),
                 }
+
+                //TODO fill the filter
             } else {
                 gtk::Label::new(Some(name)).into()
             };
@@ -143,17 +150,39 @@ impl ObjectImpl for UnitListFilterWindowImp {
 }
 
 impl WidgetImpl for UnitListFilterWindowImp {}
-impl WindowImpl for UnitListFilterWindowImp {}
+impl WindowImpl for UnitListFilterWindowImp {
+    // Save window state right before the window will be closed
+    fn close_request(&self) -> glib::Propagation {
+        self.unit_list_panel
+            .get()
+            .expect("Not None")
+            .clear_unit_list_filter_window_dependancy();
+
+        self.parent_close_request();
+        // Allow to invoke other event handlers
+        glib::Propagation::Proceed
+    }
+}
 impl AdwWindowImpl for UnitListFilterWindowImp {}
 
 fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
-    let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    let container = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(5)
+        .margin_start(5)
+        .margin_top(5)
+        .margin_end(5)
+        .build();
 
     let entry = gtk::SearchEntry::builder().build();
     container.append(&entry);
 
     let filter_container = filter_container.clone();
 
+    {
+        let filter_container = filter_container.borrow();
+        entry.set_text(filter_container.text());
+    }
     entry.connect_search_changed(move |entry| {
         let text = entry.text();
 
@@ -174,19 +203,23 @@ fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
 
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
     for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
-        let check = gtk::CheckButton::builder()
-            .label(unit_type.to_str())
-            //.action_target(&unit_type.to_str().to_variant())
-            .build();
+        let check = {
+            let active = filter_container.borrow().contains(unit_type.as_str());
+
+            gtk::CheckButton::builder()
+                .label(unit_type.as_str())
+                .active(active)
+                .build()
+        };
 
         let filter_elem = filter_container.clone();
         check.connect_toggled(move |check_button| {
-            println!("t {} {:?}", check_button.is_active(), unit_type.to_str());
+            println!("t {} {:?}", check_button.is_active(), unit_type.as_str());
 
             filter_elem
                 .as_ref()
                 .borrow_mut()
-                .set_filter_elem(unit_type.to_str(), check_button.is_active());
+                .set_filter_elem(unit_type.as_str(), check_button.is_active());
         });
 
         container.append(&check);
@@ -251,7 +284,14 @@ fn build_enablement_filter(
         //EnablementStatus::Unasigned => false,
         _ => true,
     }) {
-        let check = gtk::CheckButton::with_label(status.as_str());
+        let check = {
+            let active = filter_container.borrow().contains(status.as_str());
+
+            gtk::CheckButton::builder()
+                .label(status.as_str())
+                .active(active)
+                .build()
+        };
 
         let filter_elem = filter_container.clone();
         check.connect_toggled(move |check_button| {
@@ -273,7 +313,14 @@ fn build_active_state_filter(
     let container = gtk::Box::new(gtk::Orientation::Vertical, 5);
 
     for status in ActiveState::iter() {
-        let check = gtk::CheckButton::with_label(status.as_str());
+        let check = {
+            let active = filter_container.borrow().contains(status.as_str());
+
+            gtk::CheckButton::builder()
+                .label(status.as_str())
+                .active(active)
+                .build()
+        };
 
         let filter_elem = filter_container.clone();
         check.connect_toggled(move |check_button| {

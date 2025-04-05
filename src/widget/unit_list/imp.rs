@@ -247,7 +247,7 @@ impl UnitListPanelImp {
                     debug!("Filter list, col {:?}", column_id);
 
                     let filter_win = UnitListFilterWindow::new(column_id, &unit_list_panel);
-                    filter_win.get_filter(&unit_list_panel);
+                    filter_win.construct_filter_dialog();
                     filter_win.present();
                 })
                 .parameter_type(Some(VariantTy::STRING))
@@ -620,18 +620,23 @@ impl UnitListPanelImp {
             .get()
             .expect("applied_assessors not null");
 
-        let filter_list_model = self.filter_list_model.clone();
-        let applied_assessors = applied_assessors.clone();
-        // let unit_list_panel = self.obj().clone();
+        let mut applied_assessors = applied_assessors.borrow_mut();
+        applied_assessors.clear();
 
-        let mut vect = applied_assessors.borrow_mut();
+        for property_filter in self.filter_assessors.get().expect("Not None").values() {
+            property_filter.borrow_mut().clear_filter();
+        }
 
-        vect.clear();
-
-        filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
+        self.filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
 
         /*             let custom_filter = unit_list_panel.imp().create_custom_filter();
         filter_list_model.set_filter(Some(&custom_filter)); */
+    }
+
+    pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
+        for property_filter in self.filter_assessors.get().expect("Not None").values() {
+            property_filter.borrow_mut().clear_widget_dependancy();
+        }
     }
 
     fn fill_search_bar(&self) -> gtk::SearchEntry {
@@ -652,7 +657,7 @@ impl UnitListPanelImp {
             .build();
 
         for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
-            filter_button_unit_type.add_item(unit_type.to_str());
+            filter_button_unit_type.add_item(unit_type.as_str());
         }
 
         for status in EnablementStatus::iter().filter(|x| match *x {

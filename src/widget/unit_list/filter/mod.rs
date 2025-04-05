@@ -6,6 +6,7 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{
     FilterChange,
     glib::{self},
+    prelude::GtkWindowExt,
 };
 
 use crate::systemd::{data::UnitInfo, enums::EnablementStatus};
@@ -25,14 +26,14 @@ impl UnitListFilterWindow {
         let obj: UnitListFilterWindow = glib::Object::builder()
             .property("selected", selected_filter)
             .build();
-
+        obj.set_default_width(300);
         let _ = obj.imp().unit_list_panel.set(unit_list_panel.clone());
 
         obj
     }
 
-    pub fn get_filter(&self, unit_list_panel: &UnitListPanel) {
-        self.imp().get_filter(unit_list_panel)
+    pub fn construct_filter_dialog(&self) {
+        self.imp().get_filter()
     }
 }
 
@@ -41,6 +42,17 @@ pub trait UnitPropertyFilter {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn set_filter_elem(&mut self, f_element: &str, set_element: bool);
+    fn text(&self) -> &str {
+        ""
+    }
+    fn clear_filter(&mut self);
+    fn clear_widget_dependancy(&mut self) {
+        let lambda = |_: bool| {};
+        self.set_on_change(Box::new(lambda));
+    }
+    fn contains(&self, _value: &str) -> bool {
+        false
+    }
 }
 
 pub trait UnitPropertyAssessor: core::fmt::Debug {
@@ -147,6 +159,14 @@ impl UnitPropertyFilter for FilterElem {
         self.unit_list_panel
             .filter_assessor_change(self.id, assessor, change_type);
     }
+
+    fn contains(&self, value: &str) -> bool {
+        self.filter_elements.contains(value)
+    }
+
+    fn clear_filter(&mut self) {
+        self.filter_elements.clear();
+    }
 }
 
 pub struct FilterText {
@@ -240,6 +260,14 @@ impl UnitPropertyFilter for FilterText {
 
         self.unit_list_panel
             .filter_assessor_change(self.id, assessor, Some(change_type));
+    }
+
+    fn text(&self) -> &str {
+        &self.filter_text
+    }
+
+    fn clear_filter(&mut self) {
+        self.filter_text.clear();
     }
 }
 

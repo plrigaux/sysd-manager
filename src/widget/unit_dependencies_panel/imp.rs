@@ -357,7 +357,7 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         filter_button_unit_type.set_tooltip_text(Some("Filter dependencies by types"));
 
         for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
-            filter_button_unit_type.add_item(unit_type.to_str());
+            filter_button_unit_type.add_item(unit_type.as_str());
         }
 
         self.controls_box.prepend(&filter_button_unit_type);

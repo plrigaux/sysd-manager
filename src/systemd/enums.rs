@@ -368,7 +368,7 @@ impl UnitType {
         }
     }
 
-    pub fn to_str(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         match self {
             Self::Automount => "automount",
             Self::Busname => "busname",
