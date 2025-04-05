@@ -1,7 +1,11 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::systemd::data::UnitInfo;
 
 use super::InterPanelMessage;
 use super::app_window::AppWindow;
+use filter::UnitPropertyFilter;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 
@@ -50,5 +54,21 @@ impl UnitListPanel {
 
     fn set_sorter(&self) {
         self.imp().set_sorter();
+    }
+
+    fn try_get_filter_assessor(
+        &self,
+        num_id: u8,
+    ) -> Option<&Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
+        self.imp()
+            .filter_assessors
+            .get()
+            .expect("not None")
+            .get(&num_id)
+        //  .map(|a| a.clone())
+    }
+
+    fn filter_assessor_change(&self, id: u8, empty: bool, change_type: Option<gtk::FilterChange>) {
+        self.imp().filter_assessor_change(id, empty, change_type);
     }
 }

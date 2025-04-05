@@ -55,12 +55,8 @@ pub struct FilterElem {
     unit_list_panel: UnitListPanel,
 }
 
-fn filter_unit_func_default(_: &UnitInfo, _: &FilterElem) -> bool {
-    true
-}
-
 impl FilterElem {
-    fn new(
+    pub fn new(
         id: u8,
         filter_unit_func: fn(&UnitInfo, &HashSet<String>) -> bool,
         unit_list_panel: &UnitListPanel,
@@ -109,18 +105,15 @@ impl UnitPropertyFilter for FilterElem {
             self.filter_elements.remove(f_element)
         };
 
-        let _ = FilterElem::change_type(has_changed, set_element);
+        let change_type = FilterElem::change_type(has_changed, set_element);
 
         let new_is_empty = self.filter_elements.is_empty();
         if old_is_empty != new_is_empty {
             (self.lambda)(new_is_empty);
         }
 
-        if new_is_empty {
-            //rem
-        } else if old_is_empty {
-            //add
-        }
+        self.unit_list_panel
+            .filter_assessor_change(self.id, new_is_empty, change_type);
     }
 }
 
@@ -133,7 +126,7 @@ pub struct FilterText {
 }
 
 impl FilterText {
-    fn new(
+    pub fn new(
         id: u8,
         filter_unit_func: fn(&UnitInfo, &str) -> bool,
         unit_list_panel: &UnitListPanel,
@@ -145,18 +138,6 @@ impl FilterText {
             id,
             unit_list_panel: unit_list_panel.clone(),
         }
-    }
-
-    fn change_type(has_changed: bool, set_element: bool) -> Option<FilterChange> {
-        match (has_changed, set_element) {
-            (true, true) => Some(FilterChange::MoreStrict),
-            (true, false) => Some(FilterChange::LessStrict),
-            (false, _) => None,
-        }
-    }
-
-    fn set_on_change(&mut self, lambda: impl Fn(bool) + 'static) {
-        self.lambda = Box::new(lambda)
     }
 }
 
@@ -183,31 +164,46 @@ impl UnitPropertyFilter for FilterText {
         }
 
         let old_is_empty = self.filter_text.is_empty();
+        let new_is_empty = f_element.is_empty();
+
+        let change_type = if new_is_empty {
+            gtk::FilterChange::LessStrict
+        } else if f_element.len() > self.filter_text.len() && f_element.contains(&self.filter_text)
+        {
+            gtk::FilterChange::MoreStrict
+        } else if f_element.len() < self.filter_text.len() && self.filter_text.contains(f_element) {
+            gtk::FilterChange::LessStrict
+        } else {
+            gtk::FilterChange::Different
+        };
+
         self.filter_text.replace_range(.., f_element);
 
-        let new_is_empty = self.filter_text.is_empty();
         if old_is_empty != new_is_empty {
             (self.lambda)(new_is_empty);
         }
+
+        self.unit_list_panel
+            .filter_assessor_change(self.id, new_is_empty, Some(change_type));
     }
 }
 
-fn filter_active_state(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
+pub fn filter_active_state(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
     let active_state = unit.active_state();
     filter_elements.contains(active_state.as_str())
 }
 
-fn filter_unit_type(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
+pub fn filter_unit_type(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
     let unit_type = unit.unit_type();
     filter_elements.contains(unit_type.as_str())
 }
 
-fn filter_enable_status(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
+pub fn filter_enable_status(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
     let enable_status: EnablementStatus = unit.enable_status().into();
     filter_elements.contains(enable_status.as_str())
 }
 
-fn filter_unit_name(unit: &UnitInfo, filter_text: &str) -> bool {
+pub fn filter_unit_name(unit: &UnitInfo, filter_text: &str) -> bool {
     let name = unit.display_name();
 
     if name.is_empty() {
@@ -217,7 +213,7 @@ fn filter_unit_name(unit: &UnitInfo, filter_text: &str) -> bool {
     }
 }
 
-fn filter_unit_description(unit: &UnitInfo, filter_text: &str) -> bool {
+pub fn filter_unit_description(unit: &UnitInfo, filter_text: &str) -> bool {
     let name = unit.description();
 
     if name.is_empty() {

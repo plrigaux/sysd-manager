@@ -4,7 +4,7 @@ mod rowdata;
 
 use std::{
     cell::{Cell, OnceCell, RefCell, RefMut},
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     rc::Rc,
     time::Duration,
 };
@@ -45,7 +45,13 @@ use crate::{
             COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
             KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
         },
-        unit_list::{filter::UnitListFilterWindow, imp::rowdata::UnitBinding},
+        unit_list::{
+            filter::{
+                FilterElem, FilterText, UnitListFilterWindow, filter_active_state,
+                filter_enable_status, filter_unit_description, filter_unit_name, filter_unit_type,
+            },
+            imp::rowdata::UnitBinding,
+        },
     },
 };
 
@@ -92,7 +98,10 @@ pub struct UnitListPanelImp {
     #[property(name = "display-color", get, set)]
     pub display_color: Cell<bool>,
 
-    filter_map: OnceCell<HashMap<String, Box<dyn UnitPropertyFilter>>>,
+    pub filter_assessors: OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>,
+
+    pub applied_assessors:
+        OnceCell<Rc<RefCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>>>,
 }
 
 macro_rules! compare_units {
@@ -567,6 +576,165 @@ impl UnitListPanelImp {
         self.units_browser
             .sort_by_column(Some(c1), gtk::SortType::Ascending);
     }
+
+    pub(super) fn filter_assessor_change(
+        &self,
+        id: u8,
+        empty: bool,
+        change_type: Option<gtk::FilterChange>,
+    ) {
+        let applied_assessors = self
+            .applied_assessors
+            .get()
+            .expect("applied_assessors not null");
+        if empty {
+            //remove
+            applied_assessors.borrow_mut().remove(&id);
+        } else {
+            //add
+            let assessor = self
+                .filter_assessors
+                .get()
+                .expect("not None")
+                .get(&id)
+                .expect(&format!("exists id: {id}"));
+            {
+                applied_assessors.borrow_mut().insert(id, assessor.clone());
+            }
+        }
+
+        if let Some(change_type) = change_type {
+            let filter = self.filter_list_model.filter().expect("filter not none");
+            filter.changed(change_type);
+        }
+    }
+
+    fn fill_search_bar(&self) -> gtk::SearchEntry {
+        let search_entry = gtk::SearchEntry::new();
+        search_entry.set_hexpand(true);
+
+        let mut filter_button_unit_type = ExMenuButton::new("Type");
+        let mut filter_button_status = ExMenuButton::new("Enablement");
+        let mut filter_button_active = ExMenuButton::new("Active");
+
+        filter_button_unit_type.set_tooltip_text(Some("Filter by types"));
+        filter_button_status.set_tooltip_text(Some("Filter by enablement status"));
+        filter_button_active.set_tooltip_text(Some("Filter by active state"));
+
+        let search_box = gtk::Box::builder()
+            .orientation(gtk::Orientation::Horizontal)
+            .spacing(5)
+            .build();
+
+        for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
+            filter_button_unit_type.add_item(unit_type.to_str());
+        }
+
+        for status in EnablementStatus::iter().filter(|x| match *x {
+            EnablementStatus::Unknown => false,
+            //EnablementStatus::Unasigned => false,
+            _ => true,
+        }) {
+            filter_button_status.add_item(status.as_str());
+        }
+
+        for status in ActiveState::iter() {
+            filter_button_active.add_item(status.as_str());
+        }
+
+        search_box.append(&search_entry);
+        /*         search_box.append(&filter_button_unit_type);
+        search_box.append(&filter_button_status);
+        search_box.append(&filter_button_active); */
+
+        self.search_bar.set_child(Some(&search_box));
+
+        let custom_filter = {
+            let applied_assessors = self.applied_assessors.get().expect("not none").clone();
+            gtk::CustomFilter::new(move |object| {
+                let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
+                    unit_binding.unit_ref()
+                } else {
+                    error!("some wrong downcast_ref to UnitBinding  {:?}", object);
+                    return false;
+                };
+
+                for asserror in applied_assessors.borrow().values() {
+                    if !asserror.borrow().filter_unit(&unit) {
+                        return false;
+                    }
+                }
+                true
+            })
+        };
+
+        /*  let custom_filter = {
+                    let entry1 = search_entry.clone();
+                    let filter_button_unit_type = filter_button_unit_type.clone();
+                    let filter_button_status = filter_button_status.clone();
+                    let filter_button_active = filter_button_active.clone();
+
+                    gtk::CustomFilter::new(move |object| {
+                        let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
+                            unit_binding.unit_ref()
+                        } else {
+                            error!("some wrong downcast_ref to UnitBinding  {:?}", object);
+                            return false;
+                        };
+
+                        let text = entry1.text();
+                        let unit_type = unit.unit_type();
+                        let enable_status: EnablementStatus = unit.enable_status().into();
+                        let active_state: ActiveState = unit.active_state();
+
+                        filter_button_unit_type.contains_value(Some(&unit_type))
+                            && filter_button_status.contains_value(Some(enable_status.as_str()))
+                            && if text.is_empty() {
+                                true
+                            } else {
+                                unit.display_name().contains(text.as_str())
+                            }
+                            && filter_button_active.contains_value(Some(active_state.as_str()))
+                    })
+                };
+                let on_close = OnClose::new_filter(&custom_filter);
+                filter_button_unit_type.set_on_close(on_close);
+
+                let on_close = OnClose::new_filter(&custom_filter);
+                filter_button_status.set_on_close(on_close);
+
+                let on_close = OnClose::new_filter(&custom_filter);
+                filter_button_active.set_on_close(on_close);
+        */
+
+        self.filter_list_model.set_filter(Some(&custom_filter));
+
+        //let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
+
+        search_entry.connect_search_changed(move |entry| {
+            let text = entry.text();
+
+            /*  debug!("Search text \"{text}\"");
+
+            let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
+
+            let change_type = if text.is_empty() {
+                gtk::FilterChange::LessStrict
+            } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
+                gtk::FilterChange::MoreStrict
+            } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
+                gtk::FilterChange::LessStrict
+            } else {
+                gtk::FilterChange::Different
+            };
+
+            debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
+            last_filter.replace_range(.., text.as_str());
+            custom_filter.changed(change_type); */
+        });
+
+        search_entry
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -591,10 +759,6 @@ impl ObjectSubclass for UnitListPanelImp {
 impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
-
-        let _ = self
-            .filter_map
-            .set(HashMap::with_capacity(UNIT_LIST_COLUMNS.len()));
 
         let settings = systemd_gui::new_settings();
 
@@ -632,7 +796,52 @@ impl ObjectImpl for UnitListPanelImp {
         column_view_column_set_sorter!(column_view_column_map, "sub", sub_state);
         column_view_column_set_sorter!(column_view_column_map, "description", description);
 
-        let search_entry = fill_search_bar(&self.search_bar, &self.filter_list_model);
+        let mut filter_assessors: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
+            HashMap::with_capacity(UNIT_LIST_COLUMNS.len());
+
+        let unit_list_panel = self.obj();
+        for (_, key, num_id, _) in UNIT_LIST_COLUMNS {
+            let filter: Option<Box<dyn UnitPropertyFilter>> = match key {
+                "unit" => Some(Box::new(FilterText::new(
+                    num_id,
+                    filter_unit_name,
+                    &unit_list_panel,
+                ))),
+                "type" => Some(Box::new(FilterElem::new(
+                    num_id,
+                    filter_unit_type,
+                    &unit_list_panel,
+                ))),
+                "state" => Some(Box::new(FilterElem::new(
+                    num_id,
+                    filter_enable_status,
+                    &unit_list_panel,
+                ))),
+                "active" => Some(Box::new(FilterElem::new(
+                    num_id,
+                    filter_active_state,
+                    &unit_list_panel,
+                ))),
+                "description" => Some(Box::new(FilterText::new(
+                    num_id,
+                    filter_unit_description,
+                    &unit_list_panel,
+                ))),
+                _ => None,
+            };
+
+            if let Some(filter) = filter {
+                filter_assessors.insert(num_id, Rc::new(RefCell::new(filter)));
+            }
+        }
+
+        let _ = self.filter_assessors.set(filter_assessors);
+
+        let _ = self
+            .applied_assessors
+            .set(Rc::new(RefCell::new(HashMap::new())));
+
+        let search_entry = self.fill_search_bar();
 
         self.obj().action_set_enabled("win.col", true);
         self.search_entry
@@ -688,114 +897,3 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
 
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
-
-fn fill_search_bar(
-    search_bar: &SearchBar,
-    filter_list_model: &gtk::FilterListModel,
-) -> gtk::SearchEntry {
-    let search_entry = gtk::SearchEntry::new();
-    search_entry.set_hexpand(true);
-
-    let mut filter_button_unit_type = ExMenuButton::new("Type");
-    let mut filter_button_status = ExMenuButton::new("Enablement");
-    let mut filter_button_active = ExMenuButton::new("Active");
-
-    filter_button_unit_type.set_tooltip_text(Some("Filter by types"));
-    filter_button_status.set_tooltip_text(Some("Filter by enablement status"));
-    filter_button_active.set_tooltip_text(Some("Filter by active state"));
-
-    let search_box = gtk::Box::builder()
-        .orientation(gtk::Orientation::Horizontal)
-        .spacing(5)
-        .build();
-
-    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
-        filter_button_unit_type.add_item(unit_type.to_str());
-    }
-
-    for status in EnablementStatus::iter().filter(|x| match *x {
-        EnablementStatus::Unknown => false,
-        //EnablementStatus::Unasigned => false,
-        _ => true,
-    }) {
-        filter_button_status.add_item(status.as_str());
-    }
-
-    for status in ActiveState::iter() {
-        filter_button_active.add_item(status.as_str());
-    }
-
-    search_box.append(&search_entry);
-    search_box.append(&filter_button_unit_type);
-    search_box.append(&filter_button_status);
-    search_box.append(&filter_button_active);
-
-    search_bar.set_child(Some(&search_box));
-
-    let custom_filter = {
-        let entry1 = search_entry.clone();
-        let filter_button_unit_type = filter_button_unit_type.clone();
-        let filter_button_status = filter_button_status.clone();
-        let filter_button_active = filter_button_active.clone();
-
-        gtk::CustomFilter::new(move |object| {
-            let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
-                unit_binding.unit_ref()
-            } else {
-                error!("some wrong downcast_ref to UnitBinding  {:?}", object);
-                return false;
-            };
-
-            let text = entry1.text();
-            let unit_type = unit.unit_type();
-            let enable_status: EnablementStatus = unit.enable_status().into();
-            let active_state: ActiveState = unit.active_state();
-
-            filter_button_unit_type.contains_value(Some(&unit_type))
-                && filter_button_status.contains_value(Some(enable_status.as_str()))
-                && if text.is_empty() {
-                    true
-                } else {
-                    unit.display_name().contains(text.as_str())
-                }
-                && filter_button_active.contains_value(Some(active_state.as_str()))
-        })
-    };
-
-    let on_close = OnClose::new_filter(&custom_filter);
-    filter_button_unit_type.set_on_close(on_close);
-
-    let on_close = OnClose::new_filter(&custom_filter);
-    filter_button_status.set_on_close(on_close);
-
-    let on_close = OnClose::new_filter(&custom_filter);
-    filter_button_active.set_on_close(on_close);
-
-    filter_list_model.set_filter(Some(&custom_filter));
-
-    let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
-
-    search_entry.connect_search_changed(move |entry| {
-        let text = entry.text();
-
-        debug!("Search text \"{text}\"");
-
-        let mut last_filter: RefMut<String> = last_filter_string.borrow_mut();
-
-        let change_type = if text.is_empty() {
-            gtk::FilterChange::LessStrict
-        } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
-            gtk::FilterChange::MoreStrict
-        } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
-            gtk::FilterChange::LessStrict
-        } else {
-            gtk::FilterChange::Different
-        };
-
-        debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
-        last_filter.replace_range(.., text.as_str());
-        custom_filter.changed(change_type);
-    });
-
-    search_entry
-}

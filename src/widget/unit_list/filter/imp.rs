@@ -20,17 +20,11 @@ use gtk::{
 use strum::IntoEnumIterator;
 
 use crate::{
-    systemd::{
-        data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, UnitType},
-    },
+    systemd::enums::{ActiveState, EnablementStatus, UnitType},
     widget::{preferences::data::UNIT_LIST_COLUMNS, unit_list::UnitListPanel},
 };
 
-use super::{
-    FilterElem, FilterText, UnitListFilterWindow, filter_active_state, filter_enable_status,
-    filter_unit_description, filter_unit_name, filter_unit_type,
-};
+use super::{FilterText, UnitListFilterWindow};
 use crate::widget::unit_list::filter::UnitPropertyFilter;
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_filter.ui")]
@@ -53,45 +47,10 @@ pub struct UnitListFilterWindowImp {
 #[gtk::template_callbacks]
 impl UnitListFilterWindowImp {
     pub(super) fn get_filter(&self, unit_list_panel: &UnitListPanel) {
-        let mut map: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> = HashMap::new();
-
-        for (_, key, num_id, _) in UNIT_LIST_COLUMNS {
-            let filter: Option<Box<dyn UnitPropertyFilter>> = match key {
-                "unit" => Some(Box::new(FilterText::new(
-                    num_id,
-                    filter_unit_name,
-                    unit_list_panel,
-                ))),
-                "type" => Some(Box::new(FilterElem::new(
-                    num_id,
-                    filter_unit_type,
-                    unit_list_panel,
-                ))),
-                "state" => Some(Box::new(FilterElem::new(
-                    num_id,
-                    filter_enable_status,
-                    unit_list_panel,
-                ))),
-                "active" => Some(Box::new(FilterElem::new(
-                    num_id,
-                    filter_active_state,
-                    unit_list_panel,
-                ))),
-                "description" => Some(Box::new(FilterText::new(
-                    num_id,
-                    filter_unit_description,
-                    unit_list_panel,
-                ))),
-                _ => None,
-            };
-
-            if let Some(filter) = filter {
-                map.insert(num_id, Rc::new(RefCell::new(filter)));
-            }
-        }
-
         for (name, key, num_id, _) in UNIT_LIST_COLUMNS {
-            let widget: gtk::Widget = if let Some(filter) = map.get(&num_id) {
+            let filter_assessor = unit_list_panel.try_get_filter_assessor(num_id);
+
+            let widget: gtk::Widget = if let Some(filter) = filter_assessor {
                 match key {
                     "unit" => common_text_filter(filter).into(),
                     "type" => build_type_filter(filter).into(),
@@ -114,7 +73,7 @@ impl UnitListFilterWindowImp {
                 .css_classes(["nav"])
                 .build();
 
-            if let Some(filter_container) = map.get(&num_id) {
+            if let Some(filter_container) = filter_assessor {
                 let mut filter_container_binding = filter_container.as_ref().borrow_mut();
 
                 {
