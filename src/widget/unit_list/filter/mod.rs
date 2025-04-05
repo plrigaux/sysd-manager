@@ -8,10 +8,7 @@ use gtk::{
     glib::{self},
 };
 
-use crate::systemd::{
-    data::UnitInfo,
-    enums::{EnablementStatus, StartStopMode},
-};
+use crate::systemd::{data::UnitInfo, enums::EnablementStatus};
 
 use super::UnitListPanel;
 
@@ -29,7 +26,7 @@ impl UnitListFilterWindow {
             .property("selected", selected_filter)
             .build();
 
-        obj.imp().unit_list_panel.set(unit_list_panel.clone());
+        let _ = obj.imp().unit_list_panel.set(unit_list_panel.clone());
 
         obj
     }
@@ -40,11 +37,15 @@ impl UnitListFilterWindow {
 }
 
 pub trait UnitPropertyFilter {
-    fn filter_unit(&self, unit: &UnitInfo) -> bool;
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>);
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn set_filter_elem(&mut self, f_element: &str, set_element: bool);
+}
+
+pub trait UnitPropertyAssessor: core::fmt::Debug {
+    fn filter_unit(&self, unit: &UnitInfo) -> bool;
+    fn id(&self) -> u8;
 }
 
 pub struct FilterElem {
@@ -53,6 +54,29 @@ pub struct FilterElem {
     filter_unit_func: fn(&UnitInfo, &HashSet<String>) -> bool,
     id: u8,
     unit_list_panel: UnitListPanel,
+}
+
+#[derive(Debug)]
+pub struct FilterElementAssessor {
+    filter_elements: HashSet<String>,
+    filter_unit_func: fn(&UnitInfo, &HashSet<String>) -> bool,
+    id: u8,
+}
+
+/* impl core::fmt::Debug for dyn UnitPropertyAssessor {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "Series{{{}}}", self.len())
+    }
+} */
+
+impl UnitPropertyAssessor for FilterElementAssessor {
+    fn filter_unit(&self, unit: &UnitInfo) -> bool {
+        (self.filter_unit_func)(unit, &self.filter_elements)
+    }
+
+    fn id(&self) -> u8 {
+        self.id
+    }
 }
 
 impl FilterElem {
@@ -69,21 +93,9 @@ impl FilterElem {
             unit_list_panel: unit_list_panel.clone(),
         }
     }
-
-    fn change_type(has_changed: bool, set_element: bool) -> Option<FilterChange> {
-        match (has_changed, set_element) {
-            (true, true) => Some(FilterChange::MoreStrict),
-            (true, false) => Some(FilterChange::LessStrict),
-            (false, _) => None,
-        }
-    }
 }
 
 impl UnitPropertyFilter for FilterElem {
-    fn filter_unit(&self, unit: &UnitInfo) -> bool {
-        (self.filter_unit_func)(unit, &self.filter_elements)
-    }
-
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
         self.lambda = lambda
     }
@@ -105,15 +117,35 @@ impl UnitPropertyFilter for FilterElem {
             self.filter_elements.remove(f_element)
         };
 
-        let change_type = FilterElem::change_type(has_changed, set_element);
+        if !has_changed {
+            return;
+        }
 
         let new_is_empty = self.filter_elements.is_empty();
+
+        let change_type = match (set_element, old_is_empty, new_is_empty) {
+            (true, true, _) => Some(FilterChange::MoreStrict),
+            (true, false, _) => Some(FilterChange::LessStrict),
+            (false, _, false) => Some(FilterChange::MoreStrict),
+            (false, _, true) => Some(FilterChange::LessStrict),
+        };
+
         if old_is_empty != new_is_empty {
             (self.lambda)(new_is_empty);
         }
 
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_empty {
+            None
+        } else {
+            Some(Box::new(FilterElementAssessor {
+                filter_elements: self.filter_elements.clone(),
+                filter_unit_func: self.filter_unit_func,
+                id: self.id,
+            }))
+        };
+
         self.unit_list_panel
-            .filter_assessor_change(self.id, new_is_empty, change_type);
+            .filter_assessor_change(self.id, assessor, change_type);
     }
 }
 
@@ -123,6 +155,23 @@ pub struct FilterText {
     filter_unit_func: fn(unit: &UnitInfo, filter_text: &str) -> bool,
     id: u8,
     unit_list_panel: UnitListPanel,
+}
+
+#[derive(Debug)]
+pub struct FilterTextAssessor {
+    filter_text: String,
+    filter_unit_func: fn(unit: &UnitInfo, filter_text: &str) -> bool,
+    id: u8,
+}
+
+impl UnitPropertyAssessor for FilterTextAssessor {
+    fn filter_unit(&self, unit: &UnitInfo) -> bool {
+        (self.filter_unit_func)(unit, &self.filter_text)
+    }
+
+    fn id(&self) -> u8 {
+        self.id
+    }
 }
 
 impl FilterText {
@@ -142,10 +191,6 @@ impl FilterText {
 }
 
 impl UnitPropertyFilter for FilterText {
-    fn filter_unit(&self, unit: &UnitInfo) -> bool {
-        (self.filter_unit_func)(unit, &self.filter_text)
-    }
-
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
         self.lambda = lambda
     }
@@ -183,8 +228,18 @@ impl UnitPropertyFilter for FilterText {
             (self.lambda)(new_is_empty);
         }
 
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_empty {
+            None
+        } else {
+            Some(Box::new(FilterTextAssessor {
+                filter_text: self.filter_text.clone(),
+                filter_unit_func: self.filter_unit_func,
+                id: self.id,
+            }))
+        };
+
         self.unit_list_panel
-            .filter_assessor_change(self.id, new_is_empty, Some(change_type));
+            .filter_assessor_change(self.id, assessor, Some(change_type));
     }
 }
 

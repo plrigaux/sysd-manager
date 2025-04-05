@@ -1,6 +1,5 @@
 use std::{
     cell::{OnceCell, RefCell},
-    collections::HashMap,
     rc::Rc,
 };
 
@@ -40,8 +39,6 @@ pub struct UnitListFilterWindowImp {
     selected: RefCell<Option<String>>,
 
     pub(super) unit_list_panel: OnceCell<UnitListPanel>,
-
-    pub(super) all_filters: OnceCell<HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>,
 }
 
 #[gtk::template_callbacks]

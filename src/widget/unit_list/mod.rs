@@ -5,7 +5,7 @@ use crate::systemd::data::UnitInfo;
 
 use super::InterPanelMessage;
 use super::app_window::AppWindow;
-use filter::UnitPropertyFilter;
+use filter::{UnitPropertyAssessor, UnitPropertyFilter};
 use gtk::glib;
 use gtk::subclass::prelude::*;
 
@@ -68,7 +68,12 @@ impl UnitListPanel {
         //  .map(|a| a.clone())
     }
 
-    fn filter_assessor_change(&self, id: u8, empty: bool, change_type: Option<gtk::FilterChange>) {
+    fn filter_assessor_change(
+        &self,
+        id: u8,
+        empty: Option<Box<dyn UnitPropertyAssessor>>,
+        change_type: Option<gtk::FilterChange>,
+    ) {
         self.imp().filter_assessor_change(id, empty, change_type);
     }
 }

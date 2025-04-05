@@ -3,18 +3,18 @@ mod menus;
 mod rowdata;
 
 use std::{
-    cell::{Cell, OnceCell, RefCell, RefMut},
-    collections::{HashMap, HashSet},
+    cell::{Cell, OnceCell, RefCell},
+    collections::HashMap,
     rc::Rc,
     time::Duration,
 };
 
 use gio::glib::VariantTy;
 use gtk::{
-    ListScrollFlags, SearchBar, TemplateChild,
+    ListScrollFlags, TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
     gio::{self},
-    glib::{self, BoxedAnyObject, Object, Properties},
+    glib::{self, Object, Properties},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -40,7 +40,7 @@ use crate::{
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        menu_button::{ExMenuButton, OnClose},
+        menu_button::ExMenuButton,
         preferences::data::{
             COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
             KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS,
@@ -57,7 +57,7 @@ use crate::{
 
 use strum::IntoEnumIterator;
 
-use super::filter::UnitPropertyFilter;
+use super::filter::{UnitPropertyAssessor, UnitPropertyFilter};
 
 #[derive(Default, gtk::CompositeTemplate, Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -100,8 +100,7 @@ pub struct UnitListPanelImp {
 
     pub filter_assessors: OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>,
 
-    pub applied_assessors:
-        OnceCell<Rc<RefCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>>>,
+    pub applied_assessors: OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>,
 }
 
 macro_rules! compare_units {
@@ -580,27 +579,27 @@ impl UnitListPanelImp {
     pub(super) fn filter_assessor_change(
         &self,
         id: u8,
-        empty: bool,
+        new_assessor: Option<Box<dyn UnitPropertyAssessor>>,
         change_type: Option<gtk::FilterChange>,
     ) {
+        info!("Assessor Change {:?} {:?}", new_assessor, change_type);
         let applied_assessors = self
             .applied_assessors
             .get()
             .expect("applied_assessors not null");
-        if empty {
-            //remove
-            applied_assessors.borrow_mut().remove(&id);
-        } else {
+        if let Some(new_assessor) = new_assessor {
             //add
-            let assessor = self
-                .filter_assessors
-                .get()
-                .expect("not None")
-                .get(&id)
-                .expect(&format!("exists id: {id}"));
-            {
-                applied_assessors.borrow_mut().insert(id, assessor.clone());
+
+            let mut vect = applied_assessors.borrow_mut();
+
+            if let Some(index) = vect.iter().position(|x| x.id() == id) {
+                vect[index] = new_assessor;
+            } else {
+                vect.push(new_assessor);
             }
+        } else {
+            //remove
+            applied_assessors.borrow_mut().retain(|x| x.id() != id);
         }
 
         if let Some(change_type) = change_type {
@@ -659,8 +658,8 @@ impl UnitListPanelImp {
                     return false;
                 };
 
-                for asserror in applied_assessors.borrow().values() {
-                    if !asserror.borrow().filter_unit(&unit) {
+                for asserror in applied_assessors.borrow().iter() {
+                    if !asserror.filter_unit(&unit) {
                         return false;
                     }
                 }
@@ -712,7 +711,7 @@ impl UnitListPanelImp {
         //let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
 
         search_entry.connect_search_changed(move |entry| {
-            let text = entry.text();
+            let _text = entry.text();
 
             /*  debug!("Search text \"{text}\"");
 
@@ -839,7 +838,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         let _ = self
             .applied_assessors
-            .set(Rc::new(RefCell::new(HashMap::new())));
+            .set(Rc::new(RefCell::new(Vec::new())));
 
         let search_entry = self.fill_search_bar();
 
