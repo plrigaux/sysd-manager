@@ -19,7 +19,7 @@ use gtk::{
 use strum::IntoEnumIterator;
 
 use crate::{
-    systemd::enums::{ActiveState, EnablementStatus, UnitType},
+    systemd::enums::{ActiveState, EnablementStatus, LoadState, UnitType},
     widget::{preferences::data::UNIT_LIST_COLUMNS, unit_list::UnitListPanel},
 };
 
@@ -60,6 +60,7 @@ impl UnitListFilterWindowImp {
                     "unit" => common_text_filter(filter).into(),
                     "type" => build_type_filter(filter).into(),
                     "state" => build_enablement_filter(filter).into(),
+                    "load" => build_load_filter(filter).into(),
                     "active" => build_active_state_filter(filter).into(),
                     "description" => common_text_filter(filter).into(),
 
@@ -100,7 +101,7 @@ impl UnitListFilterWindowImp {
                 .css_classes(["flat"])
                 .build();
 
-            if selected.map_or(false, |s| s == key) {
+            if selected.is_some_and(|s| s == key) {
                 button.remove_css_class("flat");
             }
 
@@ -260,21 +261,21 @@ fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
 }
 
 fn create_content_box() -> gtk::Box {
-    let container = gtk::Box::builder()
+    gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .width_request(300)
         .spacing(5)
         .margin_start(5)
         .margin_top(5)
         .margin_end(5)
-        .build();
-    container
+        .build()
 }
 
 fn build_controls(container: &gtk::Box) {
     let controls = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .css_classes(["linked"])
+        .halign(gtk::Align::Center)
         .build();
 
     let clear_button = gtk::Button::builder().label("Clear").build();
@@ -293,7 +294,7 @@ fn build_controls(container: &gtk::Box) {
         });
     }
 
-    let inv_button = gtk::Button::builder().label("Inv").build();
+    let inv_button = gtk::Button::builder().label("Invert").build();
     {
         let container = container.clone();
         inv_button.connect_clicked(move |_| {
@@ -340,6 +341,33 @@ fn build_enablement_filter(
                 .as_ref()
                 .borrow_mut()
                 .set_filter_elem(status.as_str(), check_button.is_active());
+        });
+
+        container.append(&check);
+    }
+    build_controls(&container);
+    container
+}
+
+fn build_load_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+    let container = create_content_box();
+
+    for state in LoadState::iter() {
+        let check = {
+            let active = filter_container.borrow().contains(state.as_str());
+
+            gtk::CheckButton::builder()
+                .label(state.as_str())
+                .active(active)
+                .build()
+        };
+
+        let filter_elem = filter_container.clone();
+        check.connect_toggled(move |check_button| {
+            filter_elem
+                .as_ref()
+                .borrow_mut()
+                .set_filter_elem(state.as_str(), check_button.is_active());
         });
 
         container.append(&check);

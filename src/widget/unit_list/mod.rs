@@ -61,7 +61,7 @@ impl UnitListPanel {
         num_id: u8,
     ) -> Option<&Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
         self.imp()
-            .filter_assessors
+            .unit_property_filters
             .get()
             .expect("not None")
             .get(&num_id)

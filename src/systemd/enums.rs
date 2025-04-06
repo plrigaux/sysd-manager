@@ -734,6 +734,27 @@ impl CleanOption {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
+pub enum LoadState {
+    Loaded,
+    NotFound,
+    BadSetting,
+    Error,
+    Masked,
+}
+
+impl LoadState {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            LoadState::Loaded => "loaded",
+            LoadState::NotFound => "not-found",
+            LoadState::BadSetting => "bad-setting",
+            LoadState::Error => "error",
+            LoadState::Masked => "masked",
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

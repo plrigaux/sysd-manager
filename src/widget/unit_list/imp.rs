@@ -42,7 +42,8 @@ use crate::{
         unit_list::{
             filter::{
                 FilterElem, FilterText, UnitListFilterWindow, filter_active_state,
-                filter_enable_status, filter_unit_description, filter_unit_name, filter_unit_type,
+                filter_enable_status, filter_load_state, filter_unit_description, filter_unit_name,
+                filter_unit_type,
             },
             imp::rowdata::UnitBinding,
         },
@@ -50,6 +51,9 @@ use crate::{
 };
 
 use super::filter::{UnitPropertyAssessor, UnitPropertyFilter};
+
+type UnitPropertyFiltersContainer = OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
+type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>;
 
 #[derive(Default, gtk::CompositeTemplate, Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
@@ -91,9 +95,9 @@ pub struct UnitListPanelImp {
     #[property(name = "display-color", get, set)]
     pub display_color: Cell<bool>,
 
-    pub filter_assessors: OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>,
+    pub unit_property_filters: UnitPropertyFiltersContainer,
 
-    pub applied_assessors: OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>,
+    pub applied_unit_property_filters: AppliedUnitPropertyFilters,
 }
 
 macro_rules! compare_units {
@@ -592,7 +596,7 @@ impl UnitListPanelImp {
     ) {
         info!("Assessor Change {:?} {:?}", new_assessor, change_type);
         let applied_assessors = self
-            .applied_assessors
+            .applied_unit_property_filters
             .get()
             .expect("applied_assessors not null");
         if let Some(new_assessor) = new_assessor {
@@ -630,14 +634,14 @@ impl UnitListPanelImp {
 
     fn clear_filter(&self) {
         let applied_assessors = self
-            .applied_assessors
+            .applied_unit_property_filters
             .get()
             .expect("applied_assessors not null");
 
         let mut applied_assessors = applied_assessors.borrow_mut();
         applied_assessors.clear();
 
-        for property_filter in self.filter_assessors.get().expect("Not None").values() {
+        for property_filter in self.unit_property_filters.get().expect("Not None").values() {
             property_filter.borrow_mut().clear_filter();
         }
 
@@ -661,7 +665,7 @@ impl UnitListPanelImp {
     fn update_unit_name_search(&self, text: &str) {
         debug!("update_unit_name_search {text}");
         let filter = self
-            .filter_assessors
+            .unit_property_filters
             .get()
             .expect("Not None")
             .get(&UNIT_LIST_COLUMNS_UNIT)
@@ -670,7 +674,7 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
-        for property_filter in self.filter_assessors.get().expect("Not None").values() {
+        for property_filter in self.unit_property_filters.get().expect("Not None").values() {
             property_filter.borrow_mut().clear_widget_dependancy();
         }
     }
@@ -708,7 +712,11 @@ impl UnitListPanelImp {
     }
 
     fn create_custom_filter(&self) -> gtk::CustomFilter {
-        let applied_assessors = self.applied_assessors.get().expect("not none").clone();
+        let applied_assessors = self
+            .applied_unit_property_filters
+            .get()
+            .expect("not none")
+            .clone();
         gtk::CustomFilter::new(move |object| {
             let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
                 unit_binding.unit_ref()
@@ -807,6 +815,11 @@ impl ObjectImpl for UnitListPanelImp {
                     filter_enable_status,
                     &unit_list_panel,
                 ))),
+                "load" => Some(Box::new(FilterElem::new(
+                    num_id,
+                    filter_load_state,
+                    &unit_list_panel,
+                ))),
                 "active" => Some(Box::new(FilterElem::new(
                     num_id,
                     filter_active_state,
@@ -825,10 +838,10 @@ impl ObjectImpl for UnitListPanelImp {
             }
         }
 
-        let _ = self.filter_assessors.set(filter_assessors);
+        let _ = self.unit_property_filters.set(filter_assessors);
 
         let _ = self
-            .applied_assessors
+            .applied_unit_property_filters
             .set(Rc::new(RefCell::new(Vec::new())));
 
         let search_entry = self.fill_search_bar();

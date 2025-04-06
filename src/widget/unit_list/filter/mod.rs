@@ -280,6 +280,11 @@ impl UnitPropertyFilter for FilterText {
     }
 }
 
+pub fn filter_load_state(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
+    let load_state = unit.load_state();
+    filter_elements.contains(load_state.as_str())
+}
+
 pub fn filter_active_state(unit: &UnitInfo, filter_elements: &HashSet<String>) -> bool {
     let active_state = unit.active_state();
     filter_elements.contains(active_state.as_str())
