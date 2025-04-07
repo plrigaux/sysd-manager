@@ -58,7 +58,7 @@ pub trait UnitPropertyFilter {
 pub struct FilterElem {
     filter_elements: HashSet<String>,
     lambda: Box<dyn Fn(bool)>,
-    filter_unit_func: fn(&dyn UnitPropertyAssessor, &UnitInfo) -> bool,
+    filter_unit_func: fn(&FilterElementAssessor, &UnitInfo) -> bool,
     id: u8,
     unit_list_panel: UnitListPanel,
 }
@@ -66,7 +66,7 @@ pub struct FilterElem {
 impl FilterElem {
     pub fn new(
         id: u8,
-        filter_unit_func: fn(&dyn UnitPropertyAssessor, &UnitInfo) -> bool,
+        filter_unit_func: fn(&FilterElementAssessor, &UnitInfo) -> bool,
         unit_list_panel: &UnitListPanel,
     ) -> Self {
         Self {
@@ -148,7 +148,7 @@ impl UnitPropertyFilter for FilterElem {
 pub struct FilterText {
     filter_text: String,
     lambda: Box<dyn Fn(bool)>,
-    filter_unit_func: fn(property_assessor: &dyn UnitPropertyAssessor, unit: &UnitInfo) -> bool,
+    filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
     id: u8,
     unit_list_panel: UnitListPanel,
 }
@@ -156,7 +156,7 @@ pub struct FilterText {
 impl FilterText {
     pub fn new(
         id: u8,
-        filter_unit_func: fn(property_assessor: &dyn UnitPropertyAssessor, unit: &UnitInfo) -> bool,
+        filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
         unit_list_panel: &UnitListPanel,
     ) -> Self {
         Self {
@@ -236,7 +236,7 @@ impl UnitPropertyFilter for FilterText {
 
 pub trait UnitPropertyAssessor: core::fmt::Debug {
     fn filter_unit(&self, unit: &UnitInfo) -> bool;
-    fn filter_unit_value(&self, unit_value: &str) -> bool;
+    //  fn filter_unit_value(&self, unit_value: &str) -> bool;
     fn id(&self) -> u8;
     fn text(&self) -> &str {
         ""
@@ -246,8 +246,14 @@ pub trait UnitPropertyAssessor: core::fmt::Debug {
 #[derive(Debug)]
 pub struct FilterElementAssessor {
     filter_elements: HashSet<String>,
-    filter_unit_func: fn(&dyn UnitPropertyAssessor, &UnitInfo) -> bool,
+    filter_unit_func: fn(&FilterElementAssessor, &UnitInfo) -> bool,
     id: u8,
+}
+
+impl FilterElementAssessor {
+    fn filter_unit_value(&self, unit_value: &str) -> bool {
+        self.filter_elements.contains(unit_value)
+    }
 }
 
 impl UnitPropertyAssessor for FilterElementAssessor {
@@ -258,17 +264,23 @@ impl UnitPropertyAssessor for FilterElementAssessor {
     fn id(&self) -> u8 {
         self.id
     }
-
-    fn filter_unit_value(&self, unit_value: &str) -> bool {
-        self.filter_elements.contains(unit_value)
-    }
 }
 
 #[derive(Debug)]
 pub struct FilterTextAssessor {
     filter_text: String,
-    filter_unit_func: fn(&dyn UnitPropertyAssessor, &UnitInfo) -> bool,
+    filter_unit_func: fn(&FilterTextAssessor, &UnitInfo) -> bool,
     id: u8,
+}
+
+impl FilterTextAssessor {
+    fn filter_unit_value(&self, unit_value: &str) -> bool {
+        if self.filter_text.is_empty() {
+            true
+        } else {
+            unit_value.contains(&self.filter_text)
+        }
+    }
 }
 
 impl UnitPropertyAssessor for FilterTextAssessor {
@@ -283,43 +295,32 @@ impl UnitPropertyAssessor for FilterTextAssessor {
     fn text(&self) -> &str {
         &self.filter_text
     }
-
-    fn filter_unit_value(&self, unit_value: &str) -> bool {
-        if self.filter_text.is_empty() {
-            true
-        } else {
-            unit_value.contains(&self.filter_text)
-        }
-    }
 }
 
-pub fn filter_load_state(property_assessor: &dyn UnitPropertyAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_load_state(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
     property_assessor.filter_unit_value(&unit.load_state())
 }
 
-pub fn filter_active_state(property_assessor: &dyn UnitPropertyAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_active_state(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
     let active_state = unit.active_state();
     property_assessor.filter_unit_value(active_state.as_str())
 }
 
-pub fn filter_unit_type(property_assessor: &dyn UnitPropertyAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_unit_type(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
     property_assessor.filter_unit_value(&unit.unit_type())
 }
 
-pub fn filter_enable_status(property_assessor: &dyn UnitPropertyAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_enable_status(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
     let enable_status: EnablementStatus = unit.enable_status().into();
     property_assessor.filter_unit_value(enable_status.as_str())
 }
 
-pub fn filter_unit_name(property_assessor: &dyn UnitPropertyAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_unit_name(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
     let name = unit.display_name();
     property_assessor.filter_unit_value(&name)
 }
 
-pub fn filter_unit_description(
-    property_assessor: &dyn UnitPropertyAssessor,
-    unit: &UnitInfo,
-) -> bool {
+pub fn filter_unit_description(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
     let description = unit.description();
     property_assessor.filter_unit_value(&description)
 }
