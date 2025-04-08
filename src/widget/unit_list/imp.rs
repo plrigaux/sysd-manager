@@ -41,7 +41,7 @@ use crate::{
         },
         unit_list::{
             filter::{
-                FilterElem, FilterText, UnitListFilterWindow, filter_active_state,
+                FilterElement, FilterText, UnitListFilterWindow, filter_active_state,
                 filter_enable_status, filter_load_state, filter_unit_description, filter_unit_name,
                 filter_unit_type,
             },
@@ -664,13 +664,20 @@ impl UnitListPanelImp {
 
     fn update_unit_name_search(&self, text: &str) {
         debug!("update_unit_name_search {text}");
-        let filter = self
+        let mut filter = self
             .unit_property_filters
             .get()
             .expect("Not None")
             .get(&UNIT_LIST_COLUMNS_UNIT)
-            .expect("Always unit");
-        filter.borrow_mut().set_filter_elem(text, true);
+            .expect("Always unit")
+            .borrow_mut();
+
+        let filter = filter
+            .as_any_mut()
+            .downcast_mut::<FilterText>()
+            .expect("downcast to FilterText");
+
+        filter.set_filter_elem(text);
     }
 
     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
@@ -805,22 +812,22 @@ impl ObjectImpl for UnitListPanelImp {
                     filter_unit_name,
                     &unit_list_panel,
                 ))),
-                "type" => Some(Box::new(FilterElem::new(
+                "type" => Some(Box::new(FilterElement::new(
                     num_id,
                     filter_unit_type,
                     &unit_list_panel,
                 ))),
-                "state" => Some(Box::new(FilterElem::new(
+                "state" => Some(Box::new(FilterElement::new(
                     num_id,
                     filter_enable_status,
                     &unit_list_panel,
                 ))),
-                "load" => Some(Box::new(FilterElem::new(
+                "load" => Some(Box::new(FilterElement::new(
                     num_id,
                     filter_load_state,
                     &unit_list_panel,
                 ))),
-                "active" => Some(Box::new(FilterElem::new(
+                "active" => Some(Box::new(FilterElement::new(
                     num_id,
                     filter_active_state,
                     &unit_list_panel,

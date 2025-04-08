@@ -13,7 +13,7 @@ const MASKED: &str = "masked";
 const ENABLED: &str = "enabled";
 const LINKED: &str = "linked";
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash)]
 pub enum EnablementStatus {
     #[default]
     Unknown = 0,
@@ -181,7 +181,7 @@ impl From<u8> for EnablementStatus {
     }
 }
 
-#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash)]
 #[repr(u8)]
 pub enum ActiveState {
     Unknown = 0,

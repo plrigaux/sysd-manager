@@ -1,6 +1,5 @@
 mod imp;
-
-use std::{any::Any, collections::HashSet};
+use std::{any::Any, collections::HashSet, hash::Hash};
 
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{
@@ -8,9 +7,12 @@ use gtk::{
     glib::{self},
 };
 
-use crate::systemd::{data::UnitInfo, enums::EnablementStatus};
-
 use super::UnitListPanel;
+use crate::systemd::{
+    data::UnitInfo,
+    enums::{ActiveState, EnablementStatus},
+};
+use std::fmt::Debug;
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -40,7 +42,7 @@ pub trait UnitPropertyFilter {
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>);
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
-    fn set_filter_elem(&mut self, f_element: &str, set_element: bool);
+
     fn text(&self) -> &str {
         ""
     }
@@ -49,24 +51,62 @@ pub trait UnitPropertyFilter {
         let lambda = |_: bool| {};
         self.set_on_change(Box::new(lambda));
     }
-    fn contains(&self, _value: &str) -> bool {
-        false
-    }
+
     fn is_empty(&self) -> bool;
 }
 
-pub struct FilterElem {
-    filter_elements: HashSet<String>,
+/* pub fn get_filter_text(prop_filter: &dyn UnitPropertyFilter) -> &FilterText {
+    prop_filter
+        .as_any()
+        .downcast_ref::<FilterText>()
+        .expect("downcast_mut to FilterText")
+}
+
+pub fn get_filter_text_mut(prop_filter: &mut dyn UnitPropertyFilter) -> &mut FilterText {
+    prop_filter
+        .as_any_mut()
+        .downcast_mut::<FilterText>()
+        .expect("downcast_mut to FilterText")
+}
+ */
+pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterElement<T>
+where
+    T: Eq + Hash + Debug + 'static,
+{
+    prop_filter
+        .as_any()
+        .downcast_ref::<FilterElement<T>>()
+        .expect("downcast_mut to FilterElement")
+}
+
+pub fn get_filter_element_mut<T>(prop_filter: &mut dyn UnitPropertyFilter) -> &mut FilterElement<T>
+where
+    T: Eq + Hash + Debug + 'static,
+{
+    prop_filter
+        .as_any_mut()
+        .downcast_mut::<FilterElement<T>>()
+        .expect("downcast_mut to FilterElement")
+}
+
+pub struct FilterElement<T>
+where
+    T: Eq + Hash + Debug,
+{
+    filter_elements: HashSet<T>,
     lambda: Box<dyn Fn(bool)>,
-    filter_unit_func: fn(&FilterElementAssessor, &UnitInfo) -> bool,
+    filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
     id: u8,
     unit_list_panel: UnitListPanel,
 }
 
-impl FilterElem {
+impl<T> FilterElement<T>
+where
+    T: Eq + Hash + Debug + Clone + 'static,
+{
     pub fn new(
         id: u8,
-        filter_unit_func: fn(&FilterElementAssessor, &UnitInfo) -> bool,
+        filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
         unit_list_panel: &UnitListPanel,
     ) -> Self {
         Self {
@@ -77,28 +117,18 @@ impl FilterElem {
             unit_list_panel: unit_list_panel.clone(),
         }
     }
-}
 
-impl UnitPropertyFilter for FilterElem {
-    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
-        self.lambda = lambda
+    fn contains(&self, value: &T) -> bool {
+        self.filter_elements.contains(value)
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-
-    fn set_filter_elem(&mut self, f_element: &str, set_element: bool) {
+    fn set_filter_elem(&mut self, f_element: T, set_element: bool) {
         let old_is_empty = self.filter_elements.is_empty();
 
         let has_changed = if set_element {
-            self.filter_elements.insert(f_element.to_owned())
+            self.filter_elements.insert(f_element)
         } else {
-            self.filter_elements.remove(f_element)
+            self.filter_elements.remove(&f_element)
         };
 
         if !has_changed {
@@ -131,9 +161,22 @@ impl UnitPropertyFilter for FilterElem {
         self.unit_list_panel
             .filter_assessor_change(self.id, assessor, change_type);
     }
+}
 
-    fn contains(&self, value: &str) -> bool {
-        self.filter_elements.contains(value)
+impl<T> UnitPropertyFilter for FilterElement<T>
+where
+    T: Eq + Hash + Debug + 'static,
+{
+    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
+        self.lambda = lambda
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 
     fn clear_filter(&mut self) {
@@ -167,22 +210,8 @@ impl FilterText {
             unit_list_panel: unit_list_panel.clone(),
         }
     }
-}
 
-impl UnitPropertyFilter for FilterText {
-    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
-        self.lambda = lambda
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-
-    fn set_filter_elem(&mut self, f_element: &str, _: bool) {
+    pub fn set_filter_elem(&mut self, f_element: &str) {
         if f_element == self.filter_text {
             return;
         }
@@ -220,6 +249,20 @@ impl UnitPropertyFilter for FilterText {
         self.unit_list_panel
             .filter_assessor_change(self.id, assessor, Some(change_type));
     }
+}
+
+impl UnitPropertyFilter for FilterText {
+    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
+        self.lambda = lambda
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 
     fn text(&self) -> &str {
         &self.filter_text
@@ -244,19 +287,28 @@ pub trait UnitPropertyAssessor: core::fmt::Debug {
 }
 
 #[derive(Debug)]
-pub struct FilterElementAssessor {
-    filter_elements: HashSet<String>,
-    filter_unit_func: fn(&FilterElementAssessor, &UnitInfo) -> bool,
+pub struct FilterElementAssessor<T>
+where
+    T: Eq + Hash + Debug,
+{
+    filter_elements: HashSet<T>,
+    filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
     id: u8,
 }
 
-impl FilterElementAssessor {
-    fn filter_unit_value(&self, unit_value: &str) -> bool {
+impl<T> FilterElementAssessor<T>
+where
+    T: Eq + Hash + Debug,
+{
+    fn filter_unit_value(&self, unit_value: &T) -> bool {
         self.filter_elements.contains(unit_value)
     }
 }
 
-impl UnitPropertyAssessor for FilterElementAssessor {
+impl<T> UnitPropertyAssessor for FilterElementAssessor<T>
+where
+    T: Eq + Hash + Debug,
+{
     fn filter_unit(&self, unit: &UnitInfo) -> bool {
         (self.filter_unit_func)(self, unit)
     }
@@ -297,22 +349,34 @@ impl UnitPropertyAssessor for FilterTextAssessor {
     }
 }
 
-pub fn filter_load_state(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_load_state(
+    property_assessor: &FilterElementAssessor<String>,
+    unit: &UnitInfo,
+) -> bool {
     property_assessor.filter_unit_value(&unit.load_state())
 }
 
-pub fn filter_active_state(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_active_state(
+    property_assessor: &FilterElementAssessor<ActiveState>,
+    unit: &UnitInfo,
+) -> bool {
     let active_state = unit.active_state();
-    property_assessor.filter_unit_value(active_state.as_str())
+    property_assessor.filter_unit_value(&active_state)
 }
 
-pub fn filter_unit_type(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_unit_type(
+    property_assessor: &FilterElementAssessor<String>,
+    unit: &UnitInfo,
+) -> bool {
     property_assessor.filter_unit_value(&unit.unit_type())
 }
 
-pub fn filter_enable_status(property_assessor: &FilterElementAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_enable_status(
+    property_assessor: &FilterElementAssessor<EnablementStatus>,
+    unit: &UnitInfo,
+) -> bool {
     let enable_status: EnablementStatus = unit.enable_status().into();
-    property_assessor.filter_unit_value(enable_status.as_str())
+    property_assessor.filter_unit_value(&enable_status)
 }
 
 pub fn filter_unit_name(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {

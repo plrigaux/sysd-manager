@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use gtk::{glib, prelude::*};
-use log::{info, warn};
+use log::{debug, warn};
 
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::EnablementStatus;
@@ -256,7 +256,7 @@ pub fn setup_factories(
 
     for cv_column in column_view_column_map.values() {
         cv_column.connect_fixed_width_notify(|cvc| {
-            info!(
+            debug!(
                 "Column width {:?} {}",
                 cvc.id().unwrap_or_default(),
                 cvc.fixed_width()
