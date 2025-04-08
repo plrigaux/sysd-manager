@@ -367,6 +367,10 @@ pub fn filter_unit_type(
     property_assessor.filter_unit_value(&unit.unit_type())
 }
 
+pub fn filter_preset(property_assessor: &FilterElementAssessor<String>, unit: &UnitInfo) -> bool {
+    property_assessor.filter_unit_value(&unit.preset())
+}
+
 pub fn filter_enable_status(
     property_assessor: &FilterElementAssessor<EnablementStatus>,
     unit: &UnitInfo,
@@ -390,7 +394,10 @@ pub fn filter_active_state(
     property_assessor.filter_unit_value(&active_state)
 }
 
+pub fn filter_sub_state(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
+    property_assessor.filter_unit_value(&unit.sub_state())
+}
+
 pub fn filter_unit_description(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
-    let description = unit.description();
-    property_assessor.filter_unit_value(&description)
+    property_assessor.filter_unit_value(&unit.description())
 }

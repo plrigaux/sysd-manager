@@ -14,6 +14,32 @@ const ENABLED: &str = "enabled";
 const LINKED: &str = "linked";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash)]
+pub enum Preset {
+    Disabled,
+    Enabled,
+    #[default]
+    Ignore,
+}
+
+impl Preset {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Preset::Ignore => "",
+            Preset::Disabled => "disabled",
+            Preset::Enabled => ENABLED,
+        }
+    }
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            Preset::Ignore => "<i>empty</i>",
+            Preset::Disabled => "disabled",
+            Preset::Enabled => ENABLED,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash)]
 pub enum EnablementStatus {
     #[default]
     Unknown = 0,
@@ -98,15 +124,19 @@ impl EnablementStatus {
         }
     }
 
-    /*  Palette::Blue2 => "#62a0ea",
-     */
+    pub fn label(&self) -> &'static str {
+        match self {
+            EnablementStatus::Unknown => "<i>unset</i>",
+            _ => self.as_str(),
+        }
+    }
 
-    pub fn tooltip_info(&self) -> &str {
+    pub fn tooltip_info(&self) -> Option<&str> {
         const ENABLED_TOOLTIP_INFO: &str = "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).";
         const LINKED_TOOLTIP_INFO: &str = "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.";
         const MASKED_TOOLTIP_INFO: &str = "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).";
 
-        match self {
+        let value = match self {
             EnablementStatus::Alias => "The name is an alias (symlink to another unit file).",
             EnablementStatus::Bad => "The unit file is invalid or another error occurred.",
             EnablementStatus::Disabled => {
@@ -131,7 +161,8 @@ impl EnablementStatus {
             EnablementStatus::EnabledRuntime => ENABLED_TOOLTIP_INFO,
             EnablementStatus::LinkedRuntime => LINKED_TOOLTIP_INFO,
             EnablementStatus::MaskedRuntime => MASKED_TOOLTIP_INFO,
-        }
+        };
+        Some(value)
     }
 }
 
@@ -218,6 +249,13 @@ impl ActiveState {
         }
     }
 
+    pub fn label(&self) -> &str {
+        match self {
+            ActiveState::Unknown => "<i>unset</i>",
+            _ => self.as_str(),
+        }
+    }
+
     pub fn icon_name(&self) -> Option<&'static str> {
         match self {
             ActiveState::Active
@@ -250,6 +288,32 @@ impl ActiveState {
             ActiveState::Refreshing => "↻",
             _ => " ",
         }
+    }
+
+    pub fn tooltip_info(&self) -> Option<&str> {
+        let value = match self {
+            ActiveState::Active => "Started, bound, plugged in, ..., depending on the unit type.",
+            ActiveState::Reloading => {
+                "Unit is <b>active</b> and it is reloading its configuration."
+            }
+            ActiveState::Inactive => {
+                "Stopped, unbound, unplugged, ..., depending on the unit type."
+            }
+            ActiveState::Failed => {
+                "Similar to inactive, but the unit failed in some way (process returned error code on exit, crashed, an operation timed out, or after too many restarts)."
+            }
+            ActiveState::Activating => "Changing from <b>inactive</b> to <b>active</b>. ",
+            ActiveState::Deactivating => "Changing from <b>active</b> to <b>inactive</b>. ",
+            ActiveState::Maintenance => {
+                "Unit is inactive and a maintenance operation is in progress."
+            }
+            ActiveState::Refreshing => {
+                "Unit is active and a new mount is being activated in its namespace."
+            }
+            _ => "",
+        };
+
+        Some(value)
     }
 }
 
@@ -664,12 +728,20 @@ impl UnitDBusLevel {
         }
     }
 
+    pub fn label(&self) -> &'static str {
+        self.as_str()
+    }
+
     pub(crate) fn from_short(suffix: &str) -> Self {
         match suffix {
             "s" => UnitDBusLevel::System,
             "u" => UnitDBusLevel::UserSession,
             _ => UnitDBusLevel::System,
         }
+    }
+
+    pub fn tooltip_info(&self) -> Option<&str> {
+        None
     }
 }
 

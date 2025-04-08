@@ -42,8 +42,8 @@ use crate::{
         unit_list::{
             filter::{
                 FilterElement, FilterText, UnitListFilterWindow, filter_active_state,
-                filter_bus_level, filter_enable_status, filter_load_state, filter_unit_description,
-                filter_unit_name, filter_unit_type,
+                filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
+                filter_sub_state, filter_unit_description, filter_unit_name, filter_unit_type,
             },
             imp::rowdata::UnitBinding,
         },
@@ -697,6 +697,16 @@ impl UnitListPanelImp {
 
         search_box.append(&search_entry);
 
+        let filter_button = gtk::Button::builder().label("Filters").build();
+
+        filter_button.connect_clicked(|button| {
+            button
+                .activate_action("win.unit_list_filter_blank", None)
+                .expect("The action does not exist.");
+        });
+
+        search_box.append(&filter_button);
+
         self.search_bar.set_child(Some(&search_box));
 
         let custom_filter = self.create_custom_filter();
@@ -828,6 +838,11 @@ impl ObjectImpl for UnitListPanelImp {
                     filter_enable_status,
                     &unit_list_panel,
                 ))),
+                "preset" => Some(Box::new(FilterElement::new(
+                    num_id,
+                    filter_preset,
+                    &unit_list_panel,
+                ))),
                 "load" => Some(Box::new(FilterElement::new(
                     num_id,
                     filter_load_state,
@@ -836,6 +851,11 @@ impl ObjectImpl for UnitListPanelImp {
                 "active" => Some(Box::new(FilterElement::new(
                     num_id,
                     filter_active_state,
+                    &unit_list_panel,
+                ))),
+                "sub" => Some(Box::new(FilterText::new(
+                    num_id,
+                    filter_sub_state,
                     &unit_list_panel,
                 ))),
                 "description" => Some(Box::new(FilterText::new(

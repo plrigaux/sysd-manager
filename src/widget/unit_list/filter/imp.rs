@@ -19,7 +19,7 @@ use gtk::{
 use strum::IntoEnumIterator;
 
 use crate::{
-    systemd::enums::{ActiveState, EnablementStatus, LoadState, UnitDBusLevel, UnitType},
+    systemd::enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
         unit_list::{UnitListPanel, filter::get_filter_element_mut},
@@ -64,8 +64,10 @@ impl UnitListFilterWindowImp {
                     "bus" => build_bus_level_filter(filter).into(),
                     "type" => build_type_filter(filter).into(),
                     "state" => build_enablement_filter(filter).into(),
+                    "preset" => build_preset_filter(filter).into(),
                     "load" => build_load_filter(filter).into(),
                     "active" => build_active_state_filter(filter).into(),
+                    "sub" => common_text_filter(filter).into(),
                     "description" => common_text_filter(filter).into(),
 
                     _ => unreachable!("unreachable"),
@@ -264,6 +266,43 @@ fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
     container
 }
 
+fn build_preset_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+    let container = create_content_box();
+
+    //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
+    for unit_type in Preset::iter() {
+        let check = {
+            let binding = filter_container.borrow();
+            let active = get_filter_element::<String>(binding.as_ref())
+                .contains(&unit_type.as_str().to_owned());
+
+            gtk::CheckButton::builder()
+                .child(
+                    &gtk::Label::builder()
+                        .label(unit_type.label())
+                        .use_markup(true)
+                        .build(),
+                )
+                .active(active)
+                .build()
+        };
+
+        let filter_elem = filter_container.clone();
+        check.connect_toggled(move |check_button| {
+            //println!("t {} {:?}", check_button.is_active(), unit_type.as_str());
+            let mut filter_elem = filter_elem.borrow_mut();
+            let filter_element = get_filter_element_mut::<String>(filter_elem.as_mut());
+            filter_element.set_filter_elem(unit_type.as_str().to_owned(), check_button.is_active());
+        });
+
+        container.append(&check);
+    }
+
+    build_controls(&container);
+
+    container
+}
+
 macro_rules! build_elem_filter {
     ($filter_container:expr, $iter:expr,$value_type:ty) => {{
         let container = create_content_box();
@@ -274,11 +313,19 @@ macro_rules! build_elem_filter {
                 let binding = $filter_container.borrow();
                 let active = get_filter_element::<$value_type>(binding.as_ref()).contains(&value);
 
+                let label = gtk::Label::builder()
+                    .label(value.label())
+                    .use_markup(true)
+                    .build();
+
                 gtk::CheckButton::builder()
-                    .label(value.as_str())
+                    .child(&label)
                     .active(active)
+                    .tooltip_text("asdf")
                     .build()
             };
+
+            check.set_tooltip_markup(value.tooltip_info());
 
             let filter_elem = $filter_container.clone();
             check.connect_toggled(move |check_button| {
