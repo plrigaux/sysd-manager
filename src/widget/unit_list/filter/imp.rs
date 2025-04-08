@@ -19,7 +19,7 @@ use gtk::{
 use strum::IntoEnumIterator;
 
 use crate::{
-    systemd::enums::{ActiveState, EnablementStatus, LoadState, UnitType},
+    systemd::enums::{ActiveState, EnablementStatus, LoadState, UnitDBusLevel, UnitType},
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
         unit_list::{UnitListPanel, filter::get_filter_element_mut},
@@ -61,6 +61,7 @@ impl UnitListFilterWindowImp {
             let widget: gtk::Widget = if let Some(filter) = filter_assessor {
                 match key {
                     "unit" => common_text_filter(filter).into(),
+                    "bus" => build_bus_level_filter(filter).into(),
                     "type" => build_type_filter(filter).into(),
                     "state" => build_enablement_filter(filter).into(),
                     "load" => build_load_filter(filter).into(),
@@ -263,6 +264,42 @@ fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
     container
 }
 
+macro_rules! build_elem_filter {
+    ($filter_container:expr, $iter:expr,$value_type:ty) => {{
+        let container = create_content_box();
+
+        //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
+        for value in $iter {
+            let check = {
+                let binding = $filter_container.borrow();
+                let active = get_filter_element::<$value_type>(binding.as_ref()).contains(&value);
+
+                gtk::CheckButton::builder()
+                    .label(value.as_str())
+                    .active(active)
+                    .build()
+            };
+
+            let filter_elem = $filter_container.clone();
+            check.connect_toggled(move |check_button| {
+                let mut filter_elem = filter_elem.borrow_mut();
+                let filter_element = get_filter_element_mut::<$value_type>(filter_elem.as_mut());
+                filter_element.set_filter_elem(value, check_button.is_active());
+            });
+
+            container.append(&check);
+        }
+
+        build_controls(&container);
+
+        container
+    }};
+}
+
+fn build_bus_level_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+    build_elem_filter!(filter_container, UnitDBusLevel::iter(), UnitDBusLevel)
+}
+
 fn create_content_box() -> gtk::Box {
     gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
@@ -322,34 +359,7 @@ fn build_controls(container: &gtk::Box) {
 fn build_enablement_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> gtk::Box {
-    let container = create_content_box();
-
-    for status in EnablementStatus::iter().filter(|x| match *x {
-        EnablementStatus::Unknown => false,
-        //EnablementStatus::Unasigned => false,
-        _ => true,
-    }) {
-        let check = {
-            let binding = filter_container.borrow();
-            let active = get_filter_element::<EnablementStatus>(binding.as_ref()).contains(&status);
-
-            gtk::CheckButton::builder()
-                .label(status.as_str())
-                .active(active)
-                .build()
-        };
-
-        let filter_elem = filter_container.clone();
-        check.connect_toggled(move |check_button| {
-            let mut filter_elem = filter_elem.borrow_mut();
-            let filter_element = get_filter_element_mut::<EnablementStatus>(filter_elem.as_mut());
-            filter_element.set_filter_elem(status, check_button.is_active());
-        });
-
-        container.append(&check);
-    }
-    build_controls(&container);
-    container
+    build_elem_filter!(filter_container, EnablementStatus::iter(), EnablementStatus)
 }
 
 fn build_load_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
@@ -383,28 +393,5 @@ fn build_load_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
 fn build_active_state_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> gtk::Box {
-    let container = create_content_box();
-
-    for state in ActiveState::iter() {
-        let check = {
-            let binding = filter_container.borrow();
-            let active = get_filter_element::<ActiveState>(binding.as_ref()).contains(&state);
-
-            gtk::CheckButton::builder()
-                .label(state.as_str())
-                .active(active)
-                .build()
-        };
-
-        let filter_elem = filter_container.clone();
-        check.connect_toggled(move |check_button| {
-            let mut filter_elem = filter_elem.borrow_mut();
-            let filter_element = get_filter_element_mut::<ActiveState>(filter_elem.as_mut());
-            filter_element.set_filter_elem(state, check_button.is_active());
-        });
-
-        container.append(&check);
-    }
-    build_controls(&container);
-    container
+    build_elem_filter!(filter_container, ActiveState::iter(), ActiveState)
 }

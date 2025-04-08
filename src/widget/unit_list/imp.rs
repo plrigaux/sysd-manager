@@ -42,8 +42,8 @@ use crate::{
         unit_list::{
             filter::{
                 FilterElement, FilterText, UnitListFilterWindow, filter_active_state,
-                filter_enable_status, filter_load_state, filter_unit_description, filter_unit_name,
-                filter_unit_type,
+                filter_bus_level, filter_enable_status, filter_load_state, filter_unit_description,
+                filter_unit_name, filter_unit_type,
             },
             imp::rowdata::UnitBinding,
         },
@@ -804,12 +804,18 @@ impl ObjectImpl for UnitListPanelImp {
         let mut filter_assessors: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
             HashMap::with_capacity(UNIT_LIST_COLUMNS.len());
 
-        let unit_list_panel = self.obj();
+        let unit_list_panel: glib::BorrowedObject<'_, crate::widget::unit_list::UnitListPanel> =
+            self.obj();
         for (_, key, num_id, _) in UNIT_LIST_COLUMNS {
             let filter: Option<Box<dyn UnitPropertyFilter>> = match key {
                 "unit" => Some(Box::new(FilterText::new(
                     num_id,
                     filter_unit_name,
+                    &unit_list_panel,
+                ))),
+                "bus" => Some(Box::new(FilterElement::new(
+                    num_id,
+                    filter_bus_level,
                     &unit_list_panel,
                 ))),
                 "type" => Some(Box::new(FilterElement::new(

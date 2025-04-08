@@ -10,7 +10,7 @@ use gtk::{
 use super::UnitListPanel;
 use crate::systemd::{
     data::UnitInfo,
-    enums::{ActiveState, EnablementStatus},
+    enums::{ActiveState, EnablementStatus, UnitDBusLevel},
 };
 use std::fmt::Debug;
 
@@ -348,20 +348,16 @@ impl UnitPropertyAssessor for FilterTextAssessor {
         &self.filter_text
     }
 }
-
-pub fn filter_load_state(
-    property_assessor: &FilterElementAssessor<String>,
-    unit: &UnitInfo,
-) -> bool {
-    property_assessor.filter_unit_value(&unit.load_state())
+pub fn filter_unit_name(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
+    let name = unit.display_name();
+    property_assessor.filter_unit_value(&name)
 }
 
-pub fn filter_active_state(
-    property_assessor: &FilterElementAssessor<ActiveState>,
+pub fn filter_bus_level(
+    property_assessor: &FilterElementAssessor<UnitDBusLevel>,
     unit: &UnitInfo,
 ) -> bool {
-    let active_state = unit.active_state();
-    property_assessor.filter_unit_value(&active_state)
+    property_assessor.filter_unit_value(&unit.dbus_level())
 }
 
 pub fn filter_unit_type(
@@ -379,9 +375,19 @@ pub fn filter_enable_status(
     property_assessor.filter_unit_value(&enable_status)
 }
 
-pub fn filter_unit_name(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
-    let name = unit.display_name();
-    property_assessor.filter_unit_value(&name)
+pub fn filter_load_state(
+    property_assessor: &FilterElementAssessor<String>,
+    unit: &UnitInfo,
+) -> bool {
+    property_assessor.filter_unit_value(&unit.load_state())
+}
+
+pub fn filter_active_state(
+    property_assessor: &FilterElementAssessor<ActiveState>,
+    unit: &UnitInfo,
+) -> bool {
+    let active_state = unit.active_state();
+    property_assessor.filter_unit_value(&active_state)
 }
 
 pub fn filter_unit_description(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {

@@ -642,7 +642,7 @@ impl From<glib::Variant> for StartStopMode {
     }
 }
 
-#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default, Hash, EnumIter)]
 pub enum UnitDBusLevel {
     #[default]
     System = 0,
