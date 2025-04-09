@@ -24,10 +24,16 @@ glib::wrapper! {
 
 impl UnitListFilterWindow {
     pub fn new(selected_filter: Option<String>, unit_list_panel: &UnitListPanel) -> Self {
+        let selected_filter = if selected_filter.is_none() {
+            Some("unit".to_owned())
+        } else {
+            selected_filter
+        };
+
         let obj: UnitListFilterWindow = glib::Object::builder()
             .property("selected", selected_filter)
             .build();
-        //   obj.set_default_width(300);
+
         let _ = obj.imp().unit_list_panel.set(unit_list_panel.clone());
 
         obj
@@ -55,20 +61,6 @@ pub trait UnitPropertyFilter {
     fn is_empty(&self) -> bool;
 }
 
-/* pub fn get_filter_text(prop_filter: &dyn UnitPropertyFilter) -> &FilterText {
-    prop_filter
-        .as_any()
-        .downcast_ref::<FilterText>()
-        .expect("downcast_mut to FilterText")
-}
-
-pub fn get_filter_text_mut(prop_filter: &mut dyn UnitPropertyFilter) -> &mut FilterText {
-    prop_filter
-        .as_any_mut()
-        .downcast_mut::<FilterText>()
-        .expect("downcast_mut to FilterText")
-}
- */
 pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterElement<T>
 where
     T: Eq + Hash + Debug + 'static,
