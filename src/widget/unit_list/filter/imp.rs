@@ -111,6 +111,16 @@ impl UnitListFilterWindowImp {
                 button.remove_css_class("flat");
             }
 
+            let tooltip_text = match key {
+                "load" => Some("Reflects whether the unit definition was properly loaded."),
+                "active" => {
+                    Some("The high-level unit activation state, i.e. generalization of <b>Sub</b>.")
+                }
+                "sub" => Some("The low-level unit activation state, values depend on unit type."),
+                _ => None,
+            };
+
+            button.set_tooltip_markup(tooltip_text);
             {
                 let filter_stack = self.filter_stack.clone();
                 button.connect_clicked(move |button| {
