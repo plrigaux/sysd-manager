@@ -46,6 +46,7 @@ use crate::{
                 filter_sub_state, filter_unit_description, filter_unit_name, filter_unit_type,
             },
             imp::rowdata::UnitBinding,
+            search_controls::UnitListSearchControls,
         },
     },
 };
@@ -83,8 +84,7 @@ pub struct UnitListPanelImp {
     #[template_child]
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
-    search_entry: OnceCell<gtk::SearchEntry>,
-    signal_handler_text_changed: OnceCell<glib::SignalHandlerId>,
+    search_controls: OnceCell<UnitListSearchControls>,
 
     refresh_unit_list_button: OnceCell<gtk::Button>,
 
@@ -497,9 +497,9 @@ impl UnitListPanelImp {
         self.search_bar.set_search_mode(toggle_button_is_active);
 
         if toggle_button_is_active {
-            let se = self.search_entry.get().unwrap();
+            let s_controls = self.search_controls.get().unwrap();
 
-            se.grab_focus();
+            s_controls.grab_focus();
         }
     }
 
@@ -632,6 +632,11 @@ impl UnitListPanelImp {
                 self.filter_list_model.set_filter(Some(&custom_filter));
             }
         }
+
+        let search_controls = self.search_controls.get().expect("Not Null");
+        search_controls
+            .imp()
+            .set_filter_is_set(!applied_assessors.borrow().is_empty());
     }
 
     fn clear_filter(&self) {
@@ -649,22 +654,17 @@ impl UnitListPanelImp {
 
         self.filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
 
-        self.search_entry_set_text("");
-
-        /*             let custom_filter = unit_list_panel.imp().create_custom_filter();
-        filter_list_model.set_filter(Some(&custom_filter)); */
+        let search_controls = self.search_controls.get().expect("Not Null");
+        search_controls.imp().clear();
     }
 
     fn search_entry_set_text(&self, text: &str) {
-        let search_entry = self.search_entry.get().expect("Not Null");
-        let signal_handler_id = self.signal_handler_text_changed.get().expect("Not Null");
+        let search_controls = self.search_controls.get().expect("Not Null");
 
-        search_entry.block_signal(signal_handler_id);
-        search_entry.set_text(text);
-        search_entry.unblock_signal(signal_handler_id);
+        search_controls.imp().set_search_entry_text(text);
     }
 
-    fn update_unit_name_search(&self, text: &str, update_widget: bool) {
+    pub(super) fn update_unit_name_search(&self, text: &str, update_widget: bool) {
         debug!("update_unit_name_search {text}");
         let mut filter = self
             .unit_property_filters
@@ -686,60 +686,6 @@ impl UnitListPanelImp {
         for property_filter in self.unit_property_filters.get().expect("Not None").values() {
             property_filter.borrow_mut().clear_widget_dependancy();
         }
-    }
-
-    fn fill_search_bar(&self) -> gtk::SearchEntry {
-        let search_entry = gtk::SearchEntry::new();
-        search_entry.set_hexpand(true);
-
-        let search_box = gtk::Box::builder()
-            .orientation(gtk::Orientation::Horizontal)
-            .spacing(5)
-            .build();
-
-        search_box.append(&search_entry);
-
-        let filter_button = gtk::Button::builder().label("Filters").build();
-
-        filter_button.connect_clicked(|button| {
-            button
-                .activate_action("win.unit_list_filter_blank", None)
-                .expect("The action \"list filter\" does not exist.");
-        });
-
-        search_box.append(&filter_button);
-
-        let clear_filter_button = gtk::Button::builder().label("Clear Filters").build();
-
-        clear_filter_button.connect_clicked(|button| {
-            button
-                .activate_action("win.unit_list_filter_clear", None)
-                .expect("The action \"clear filter\" does not exist.");
-        });
-
-        search_box.append(&clear_filter_button);
-
-        self.search_bar.set_child(Some(&search_box));
-
-        let custom_filter = self.create_custom_filter();
-
-        self.filter_list_model.set_filter(Some(&custom_filter));
-
-        //let last_filter_string = Rc::new(BoxedAnyObject::new(String::new()));
-
-        let unit_list_panel = self.obj().clone();
-        let signal_handler_id = search_entry.connect_changed(move |entry| {
-            let text = entry.text();
-            unit_list_panel
-                .imp()
-                .update_unit_name_search(text.as_str(), false);
-        });
-
-        self.signal_handler_text_changed
-            .set(signal_handler_id)
-            .expect("Search entry handler set once");
-
-        search_entry
     }
 
     fn create_custom_filter(&self) -> gtk::CustomFilter {
@@ -891,9 +837,16 @@ impl ObjectImpl for UnitListPanelImp {
             .applied_unit_property_filters
             .set(Rc::new(RefCell::new(Vec::new())));
 
-        let search_entry = self.fill_search_bar();
-        self.search_entry
-            .set(search_entry)
+        // let search_entry = self.fill_search_bar();
+
+        let custom_filter = self.create_custom_filter();
+        self.filter_list_model.set_filter(Some(&custom_filter));
+
+        let search_controls = UnitListSearchControls::new(&self.obj());
+        self.search_bar.set_child(Some(&search_controls));
+
+        self.search_controls
+            .set(search_controls)
             .expect("Search entry set once");
 
         self.obj().action_set_enabled("win.col", true);

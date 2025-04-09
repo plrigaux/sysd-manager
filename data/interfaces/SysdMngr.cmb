@@ -19,7 +19,9 @@
 	(61,10,"app_window.ui","app_window.ui",None,None,None,None,None,None,None),
 	(62,1,None,"side_control_panel.ui",None,None,None,None,None,None,None),
 	(63,1,"unit_info.ui","unit_properties.ui",None,None,None,None,None,None,None),
-	(67,1,"unit_list_filter.ui","unit_list_filter.ui",None,None,None,None,None,"\n",None)
+	(67,1,"unit_list_filter.ui","unit_list_filter.ui",None,None,None,None,None,"\n",None),
+	(68,1,None,"unit_list_legend.ui",None,None,None,None,None,None,None),
+	(69,7,None,"unit_list_search.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(4,"gtk","4.12",None),
@@ -47,7 +49,8 @@
 	(61,"libadwaita","1.6",None),
 	(63,"gtk","4.6",None),
 	(67,"gtk","4.16",None),
-	(67,"libadwaita","1.6",None)
+	(67,"libadwaita","1.6",None),
+	(69,"gtk","4.16",None)
   </ui_library>
   <object>
 	(4,1,"GtkHeaderBar",None,None,None,None,None,0,None,None),
@@ -298,7 +301,12 @@
 	(67,10,"AdwHeaderBar",None,2,None,"top",None,1,None,None),
 	(67,13,"GtkBox","filter_navigation_container",8,None,None,None,0,None,None),
 	(67,14,"AdwViewStack","filter_stack",4,None,None,None,0,None,None),
-	(67,15,"AdwWindowTitle",None,10,None,None,None,0,None,None)
+	(67,15,"AdwWindowTitle",None,10,None,None,None,0,None,None),
+	(68,1,"GtkBox","dfsgd",None,None,None,None,0,None,None),
+	(69,3,"GtkSearchEntry","search_entry",7,None,None,None,0,None,None),
+	(69,4,"GtkButton","show_filter_button",7,None,None,None,1,None,None),
+	(69,5,"GtkButton","clear_filters_button",7,None,None,None,2,None,None),
+	(69,7,"GtkBox","SEARCH_CONTROLS",None,None,None,None,1,None,None)
   </object>
   <object_property>
 	(4,2,"GtkButton","icon-name","system-search-symbolic",None,None,None,None,None,None,None,None,None),
@@ -790,7 +798,12 @@
 	(67,13,"GtkWidget","margin-start","7",None,None,None,None,None,None,None,None,None),
 	(67,13,"GtkWidget","margin-top","7",None,None,None,None,None,None,None,None,None),
 	(67,14,"GtkWidget","width-request","200",None,None,None,None,None,None,None,None,None),
-	(67,15,"AdwWindowTitle","title","Unit Property Filter",None,None,None,None,None,None,None,None,None)
+	(67,15,"AdwWindowTitle","title","Unit Property Filter",None,None,None,None,None,None,None,None,None),
+	(69,3,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(69,4,"GtkButton","label","Filters",None,None,None,None,None,None,None,None,None),
+	(69,5,"GtkButton","label","Clear Filters",None,None,None,None,None,None,None,None,None),
+	(69,7,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
+	(69,7,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(20,29,3,"GtkButton","clicked","refresh_info_clicked",None,None,1,0,None),
@@ -837,7 +850,9 @@
 	(221,62,15,"AdwSplitButton","clicked","reload_unit_button_clicked",None,0,1,0,None),
 	(222,63,6,"GtkSearchEntry","search-changed","search_entry_changed",None,None,1,0,None),
 	(223,63,7,"GtkCheckButton","toggled","show_all_toggle",None,None,1,0,None),
-	(224,63,12,"GtkButton","clicked","handle_copy_click",None,None,1,0,None)
+	(224,63,12,"GtkButton","clicked","handle_copy_click",None,None,1,0,None),
+	(225,69,5,"GtkButton","clicked","clear_filter_clicked",None,0,0,0,None),
+	(226,69,4,"GtkButton","clicked","show_filters_clicked",None,0,0,0,None)
   </object_signal>
   <object_data>
 	(5,13,"GtkWidget",1,1,None,None,None,None,None,None),

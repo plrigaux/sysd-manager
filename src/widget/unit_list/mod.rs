@@ -11,6 +11,7 @@ use gtk::subclass::prelude::*;
 
 mod filter;
 mod imp;
+mod search_controls;
 
 glib::wrapper! {
     pub struct UnitListPanel(ObjectSubclass<imp::UnitListPanelImp>)

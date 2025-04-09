@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<interface>
+  <requires lib="gtk" version="4.16"/>
+  <template class="SEARCH_CONTROLS" parent="GtkBox">
+    <property name="hexpand">True</property>
+    <property name="spacing">5</property>
+    <child>
+      <object class="GtkSearchEntry" id="search_entry">
+        <property name="hexpand">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="show_filter_button">
+        <property name="label">Filters</property>
+        <signal name="clicked" handler="show_filters_clicked"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="clear_filters_button">
+        <property name="label">Clear Filters</property>
+        <signal name="clicked" handler="clear_filter_clicked"/>
+      </object>
+    </child>
+  </template>
+</interface>

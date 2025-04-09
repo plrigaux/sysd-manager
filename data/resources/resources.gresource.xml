@@ -13,10 +13,11 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="journal_row.ui">interfaces/journal_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="app_window.ui">interfaces/app_window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_panel.ui">interfaces/unit_list_panel.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_filter.ui">interfaces/unit_list_filter.ui</file>        
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_search.ui">interfaces/unit_list_search.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_dependencies_panel.ui">interfaces/unit_dependencies_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="kill_panel.ui">interfaces/kill_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="clean_dialog.ui">interfaces/clean_dialog.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_filter.ui">interfaces/unit_list_filter.ui</file>        
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_control_panel.ui">interfaces/unit_control_panel.ui</file>    
     <file compressed="true" preprocess="xml-stripblanks" alias="side_control_panel.ui">interfaces/side_control_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">interfaces/shortcuts.ui</file>
