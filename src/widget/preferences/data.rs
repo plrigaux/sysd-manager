@@ -444,7 +444,10 @@ mod tests {
 
     #[test]
     fn test_dbus_level_any_number() {
-        assert_eq!(<u32 as Into<DbusLevel>>::into(1000), DbusLevel::UserSession)
+        assert_eq!(
+            <u32 as Into<DbusLevel>>::into(1000),
+            DbusLevel::SystemAndSession
+        )
     }
 
     #[test]
