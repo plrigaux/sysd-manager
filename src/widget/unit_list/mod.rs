@@ -73,8 +73,10 @@ impl UnitListPanel {
         id: u8,
         empty: Option<Box<dyn UnitPropertyAssessor>>,
         change_type: Option<gtk::FilterChange>,
+        update_widget: bool,
     ) {
-        self.imp().filter_assessor_change(id, empty, change_type);
+        self.imp()
+            .filter_assessor_change(id, empty, change_type, update_widget);
     }
 
     fn clear_unit_list_filter_window_dependancy(&self) {

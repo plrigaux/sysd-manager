@@ -224,7 +224,7 @@ fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>
             .as_any_mut()
             .downcast_mut::<FilterText>()
             .expect("downcast_mut to FilterText");
-        filter_text.set_filter_elem(&text);
+        filter_text.set_filter_elem(&text, true);
     });
 
     button_clear_entry.connect_clicked(move |_| {

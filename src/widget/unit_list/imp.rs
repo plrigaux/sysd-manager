@@ -142,6 +142,14 @@ macro_rules! column_view_column_set_sorter {
     }};
 }
 
+macro_rules! update_search_entry {
+    ($self:expr, $id:expr, $update_widget:expr, $text:expr) => {{
+        if $update_widget && $id == UNIT_LIST_COLUMNS_UNIT {
+            $self.search_entry_set_text($text);
+        }
+    }};
+}
+
 #[gtk::template_callbacks]
 impl UnitListPanelImp {
     #[template_callback]
@@ -268,13 +276,9 @@ impl UnitListPanelImp {
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder("unit_list_filter_clear")
                 .activate(move |_application: &AppWindow, _b, _target_value| {
-                    /*   let column_id = target_value
-                                           .map(|var| var.get::<String>().expect("variant always be String"));
-                    */
-                    //   debug!("Clean filter, col {:?}", column_id);
                     unit_list_panel.imp().clear_filter();
                 })
-                .parameter_type(Some(VariantTy::STRING))
+                //     .parameter_type(Some(VariantTy::STRING))
                 .build()
         };
 
@@ -593,18 +597,18 @@ impl UnitListPanelImp {
         id: u8,
         new_assessor: Option<Box<dyn UnitPropertyAssessor>>,
         change_type: Option<gtk::FilterChange>,
+        update_widget: bool,
     ) {
-        info!("Assessor Change {:?} {:?}", new_assessor, change_type);
+        debug!("Assessor Change {:?} {:?}", new_assessor, change_type);
         let applied_assessors = self
             .applied_unit_property_filters
             .get()
             .expect("applied_assessors not null");
+
         if let Some(new_assessor) = new_assessor {
             //add
 
-            if id == UNIT_LIST_COLUMNS_UNIT {
-                self.search_entry_set_text(new_assessor.text());
-            }
+            update_search_entry!(self, id, update_widget, new_assessor.text());
 
             let mut vect = applied_assessors.borrow_mut();
 
@@ -617,9 +621,7 @@ impl UnitListPanelImp {
             //remove
             applied_assessors.borrow_mut().retain(|x| x.id() != id);
 
-            if id == UNIT_LIST_COLUMNS_UNIT {
-                self.search_entry_set_text("");
-            }
+            update_search_entry!(self, id, update_widget, "");
         }
 
         if let Some(change_type) = change_type {
@@ -662,7 +664,7 @@ impl UnitListPanelImp {
         search_entry.unblock_signal(signal_handler_id);
     }
 
-    fn update_unit_name_search(&self, text: &str) {
+    fn update_unit_name_search(&self, text: &str, update_widget: bool) {
         debug!("update_unit_name_search {text}");
         let mut filter = self
             .unit_property_filters
@@ -677,7 +679,7 @@ impl UnitListPanelImp {
             .downcast_mut::<FilterText>()
             .expect("downcast to FilterText");
 
-        filter.set_filter_elem(text);
+        filter.set_filter_elem(text, update_widget);
     }
 
     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
@@ -702,10 +704,20 @@ impl UnitListPanelImp {
         filter_button.connect_clicked(|button| {
             button
                 .activate_action("win.unit_list_filter_blank", None)
-                .expect("The action does not exist.");
+                .expect("The action \"list filter\" does not exist.");
         });
 
         search_box.append(&filter_button);
+
+        let clear_filter_button = gtk::Button::builder().label("Clear Filters").build();
+
+        clear_filter_button.connect_clicked(|button| {
+            button
+                .activate_action("win.unit_list_filter_clear", None)
+                .expect("The action \"clear filter\" does not exist.");
+        });
+
+        search_box.append(&clear_filter_button);
 
         self.search_bar.set_child(Some(&search_box));
 
@@ -718,7 +730,9 @@ impl UnitListPanelImp {
         let unit_list_panel = self.obj().clone();
         let signal_handler_id = search_entry.connect_changed(move |entry| {
             let text = entry.text();
-            unit_list_panel.imp().update_unit_name_search(text.as_str());
+            unit_list_panel
+                .imp()
+                .update_unit_name_search(text.as_str(), false);
         });
 
         self.signal_handler_text_changed

@@ -162,7 +162,7 @@ where
         };
 
         self.unit_list_panel
-            .filter_assessor_change(self.id, assessor, change_type);
+            .filter_assessor_change(self.id, assessor, change_type, false);
     }
 }
 
@@ -214,7 +214,7 @@ impl FilterText {
         }
     }
 
-    pub fn set_filter_elem(&mut self, f_element: &str) {
+    pub fn set_filter_elem(&mut self, f_element: &str, update_widget: bool) {
         if f_element == self.filter_text {
             return;
         }
@@ -249,8 +249,12 @@ impl FilterText {
             }))
         };
 
-        self.unit_list_panel
-            .filter_assessor_change(self.id, assessor, Some(change_type));
+        self.unit_list_panel.filter_assessor_change(
+            self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        );
     }
 }
 
