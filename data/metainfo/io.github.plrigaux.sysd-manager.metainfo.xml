@@ -81,6 +81,22 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+   <release version="1.21.1" date="2025-04-09">
+      <description>
+        <p>Fixed</p>
+        <ul>
+          <li>Unit search entry input</li>
+        </ul>
+         <p>Added</p>
+        <ul>
+          <li>Clear filter button</li>
+        </ul>
+         <p>Changed</p>
+        <ul>
+          <li>Some unit list optimizations</li>
+        </ul>
+      </description>
+    </release>
    <release version="1.21.0" date="2025-04-08">
       <description>
         <p>Added</p>
