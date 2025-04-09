@@ -113,7 +113,7 @@ pub fn set_font_context(text_view: &gtk::TextView) {
     let context = text_view.pango_context();
     let font_description = context.font_description();
     if let Some(font_description) = font_description {
-        info!("Font description {}", font_description.to_string());
+        info!("Font description {}", font_description);
         FONT_CONTEXT.set_font_description(font_description);
     } else {
         warn!("NO FONT Description")

@@ -10,7 +10,7 @@ use gtk::{
 use super::UnitListPanel;
 use crate::systemd::{
     data::UnitInfo,
-    enums::{ActiveState, EnablementStatus, UnitDBusLevel},
+    enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
 };
 use std::fmt::Debug;
 
@@ -73,10 +73,13 @@ pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterEle
 where
     T: Eq + Hash + Debug + 'static,
 {
-    prop_filter
-        .as_any()
-        .downcast_ref::<FilterElement<T>>()
-        .expect("downcast_mut to FilterElement")
+    match prop_filter.as_any().downcast_ref::<FilterElement<T>>() {
+        Some(a) => a,
+        None => {
+            panic!("Type of prop_filter");
+        }
+    }
+    //.expect("downcast_mut to FilterElement")
 }
 
 pub fn get_filter_element_mut<T>(prop_filter: &mut dyn UnitPropertyFilter) -> &mut FilterElement<T>
@@ -367,7 +370,7 @@ pub fn filter_unit_type(
     property_assessor.filter_unit_value(&unit.unit_type())
 }
 
-pub fn filter_preset(property_assessor: &FilterElementAssessor<String>, unit: &UnitInfo) -> bool {
+pub fn filter_preset(property_assessor: &FilterElementAssessor<Preset>, unit: &UnitInfo) -> bool {
     property_assessor.filter_unit_value(&unit.preset())
 }
 
@@ -380,7 +383,7 @@ pub fn filter_enable_status(
 }
 
 pub fn filter_load_state(
-    property_assessor: &FilterElementAssessor<String>,
+    property_assessor: &FilterElementAssessor<LoadState>,
     unit: &UnitInfo,
 ) -> bool {
     property_assessor.filter_unit_value(&unit.load_state())

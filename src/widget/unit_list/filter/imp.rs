@@ -266,43 +266,6 @@ fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
     container
 }
 
-fn build_preset_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
-    let container = create_content_box();
-
-    //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
-    for unit_type in Preset::iter() {
-        let check = {
-            let binding = filter_container.borrow();
-            let active = get_filter_element::<String>(binding.as_ref())
-                .contains(&unit_type.as_str().to_owned());
-
-            gtk::CheckButton::builder()
-                .child(
-                    &gtk::Label::builder()
-                        .label(unit_type.label())
-                        .use_markup(true)
-                        .build(),
-                )
-                .active(active)
-                .build()
-        };
-
-        let filter_elem = filter_container.clone();
-        check.connect_toggled(move |check_button| {
-            //println!("t {} {:?}", check_button.is_active(), unit_type.as_str());
-            let mut filter_elem = filter_elem.borrow_mut();
-            let filter_element = get_filter_element_mut::<String>(filter_elem.as_mut());
-            filter_element.set_filter_elem(unit_type.as_str().to_owned(), check_button.is_active());
-        });
-
-        container.append(&check);
-    }
-
-    build_controls(&container);
-
-    container
-}
-
 macro_rules! build_elem_filter {
     ($filter_container:expr, $iter:expr,$value_type:ty) => {{
         let container = create_content_box();
@@ -341,6 +304,10 @@ macro_rules! build_elem_filter {
 
         container
     }};
+}
+
+fn build_preset_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+    build_elem_filter!(filter_container, Preset::iter(), Preset)
 }
 
 fn build_bus_level_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
@@ -410,31 +377,7 @@ fn build_enablement_filter(
 }
 
 fn build_load_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
-    let container = create_content_box();
-
-    for state in LoadState::iter() {
-        let check = {
-            let binding = filter_container.borrow();
-            let active =
-                get_filter_element::<String>(binding.as_ref()).contains(&state.as_str().to_owned());
-
-            gtk::CheckButton::builder()
-                .label(state.as_str())
-                .active(active)
-                .build()
-        };
-
-        let filter_elem = filter_container.clone();
-        check.connect_toggled(move |check_button| {
-            let mut filter_elem = filter_elem.borrow_mut();
-            let filter_element = get_filter_element_mut::<String>(filter_elem.as_mut());
-            filter_element.set_filter_elem(state.as_str().to_owned(), check_button.is_active());
-        });
-
-        container.append(&check);
-    }
-    build_controls(&container);
-    container
+    build_elem_filter!(filter_container, LoadState::iter(), LoadState)
 }
 
 fn build_active_state_filter(

@@ -4,7 +4,7 @@ use gtk::{glib, prelude::*};
 use log::{debug, warn};
 
 use crate::systemd::data::UnitInfo;
-use crate::systemd::enums::EnablementStatus;
+use crate::systemd::enums::{EnablementStatus, LoadState, Preset};
 use crate::widget::unit_list::imp::rowdata::UnitBinding;
 use crate::{systemd::enums::ActiveState, widget::unit_list::UnitListPanel};
 
@@ -288,15 +288,15 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             let unit = unit_binding.unit_ref();
 
             let binding = unit
-                .bind_property("load_state", &inscription, "text")
+                .bind_property("load_state_num", &inscription, "text")
                 .build();
             unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
 
             let binding = unit
-                .bind_property("load_state", &inscription, "css-classes")
+                .bind_property("load_state_num", &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
-                    let load_state_value = match value.get::<String>() {
-                        Ok(v) => v,
+                    let load_state_value = match value.get::<u8>() {
+                        Ok(v) => LoadState::from(v),
                         Err(err) => {
                             warn!("The variant needs to be of type `String`. {:?}", err);
                             return None;
@@ -311,7 +311,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             unit_binding.set_binding(BIND_ENABLE_LOAD_CSS, binding);
 
             let load_state = unit.load_state();
-            inscription.set_text(Some(&load_state));
+            inscription.set_text(Some(load_state.as_str()));
 
             let css_classes = load_state_css_classes(&load_state);
             if let Some(css) = css_classes {
@@ -323,7 +323,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
         factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_CSS);
     } else {
         fac_load_state.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
+            let (inscription, unit, unit_binding) = factory_bind!(object, load_state_str);
 
             let binding = unit
                 .bind_property("load_state", &inscription, "text")
@@ -338,17 +338,11 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     fac_load_state
 }
 
-fn load_state_css_classes<'a>(load_state: &str) -> Option<[&'a str; 2]> {
-    if let Some(first_char) = load_state.chars().next() {
-        match first_char {
-            //"not-found"
-            'n' => Some(["yellow", "bold"]),
-            // "bad-setting", "error", "masked"
-            'b' | 'e' | 'm' => Some(["red", "bold"]),
-            _ => None,
-        }
-    } else {
-        None
+fn load_state_css_classes<'a>(load_state: &LoadState) -> Option<[&'a str; 2]> {
+    match load_state {
+        LoadState::NotFound => Some(["yellow", "bold"]),
+        LoadState::BadSetting | LoadState::Error | LoadState::Masked => Some(["red", "bold"]),
+        _ => None,
     }
 }
 
@@ -459,23 +453,25 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
 
     if display_color {
         fac_preset.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, preset);
+            let (inscription, unit, unit_binding) = factory_bind!(object, preset_str);
 
-            let binding = unit.bind_property("preset", &inscription, "text").build();
+            let binding = unit
+                .bind_property("preset_num", &inscription, "text")
+                .build();
             unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
 
             let binding = unit
-                .bind_property("preset", &inscription, "css-classes")
+                .bind_property("preset_num", &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
-                    let preset_value = match value.get::<String>() {
+                    let preset_value = match value.get::<u8>() {
                         Ok(v) => v,
                         Err(err) => {
                             warn!("The variant needs to be of type `String`. {:?}", err);
                             return None;
                         }
                     };
-
-                    let css_classes = preset_css_classes(&preset_value);
+                    let preset_value: Preset = preset_value.into();
+                    let css_classes = preset_css_classes(preset_value);
                     css_classes.map(|css| css.to_value())
                 })
                 .build();
@@ -483,7 +479,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
             unit_binding.set_binding(BIND_ENABLE_PRESET_CSS, binding);
 
             let preset_value = unit.preset();
-            let css_classes = preset_css_classes(&preset_value);
+            let css_classes = preset_css_classes(preset_value);
 
             if let Some(css) = css_classes {
                 inscription.set_css_classes(&css);
@@ -495,7 +491,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
         factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_CSS);
     } else {
         fac_preset.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, preset);
+            let (inscription, unit, unit_binding) = factory_bind!(object, preset_str);
 
             let binding = unit.bind_property("preset", &inscription, "text").build();
             unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
@@ -507,18 +503,11 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
     fac_preset
 }
 
-fn preset_css_classes(preset_value: &str) -> Option<[&str; 2]> {
-    if let Some(first_char) = preset_value.chars().next() {
-        match first_char {
-            //"disabled"
-            'd' => Some(["red", "bold"]),
-            // "enabled"
-            'e' => Some(["green", "bold"]),
-            // "ignored"
-            'i' => Some(["yellow", "bold"]),
-            _ => None,
-        }
-    } else {
-        None
+fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
+    match preset_value {
+        Preset::Disabled => Some(["red", "bold"]),
+        Preset::Enabled => Some(["green", "bold"]),
+        Preset::Ignore => Some(["yellow", "bold"]),
+        _ => None,
     }
 }

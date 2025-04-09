@@ -2,7 +2,7 @@ use std::{cmp::Ordering, fmt::Debug};
 
 use super::{
     SystemdUnitFile, UpdatedUnitInfo,
-    enums::{ActiveState, EnablementStatus, UnitDBusLevel},
+    enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
     sysdbus::LUnit,
 };
 
@@ -56,11 +56,11 @@ impl UnitInfo {
         }
 
         if let Some(unit_file_preset) = update.unit_file_preset {
-            self.set_preset(unit_file_preset);
+            self.set_preset(&unit_file_preset);
         }
 
         if let Some(load_state) = update.load_state {
-            self.set_load_state(load_state);
+            self.set_load_state(&load_state);
         }
 
         if let Some(fragment_path) = update.fragment_path {
@@ -85,6 +85,18 @@ impl UnitInfo {
         self.imp().set_active_state(state)
     }
 
+    pub fn preset(&self) -> Preset {
+        self.imp().preset()
+    }
+
+    pub fn preset_str(&self) -> &'static str {
+        self.imp().preset().as_str()
+    }
+
+    pub fn set_preset(&self, preset: &str) {
+        self.imp().set_preset(preset)
+    }
+
     pub fn dbus_level(&self) -> UnitDBusLevel {
         *self.imp().level.read().unwrap()
     }
@@ -96,6 +108,17 @@ impl UnitInfo {
     pub fn enable_status_str(&self) -> &'static str {
         let es: EnablementStatus = self.enable_status().into();
         es.as_str()
+    }
+
+    pub fn load_state(&self) -> LoadState {
+        self.imp().load_state()
+    }
+    pub fn load_state_str(&self) -> &'static str {
+        self.load_state().as_str()
+    }
+
+    pub fn set_load_state(&self, value: &str) {
+        self.imp().set_load_state(value);
     }
 
     pub fn debug(&self) -> String {
@@ -110,7 +133,7 @@ mod imp {
 
     use crate::systemd::{
         SystemdUnitFile,
-        enums::{ActiveState, UnitDBusLevel},
+        enums::{ActiveState, LoadState, Preset, UnitDBusLevel},
         sysdbus::LUnit,
     };
 
@@ -125,11 +148,14 @@ mod imp {
         unit_type: RwLock<String>,
         #[property(get, set)]
         pub(super) description: RwLock<String>,
-        #[property(get, set)]
-        pub(super) load_state: RwLock<String>,
+
+        #[property(get=Self::load_state_num, name="load-state-num", type = u8)]
+        pub(super) load_state: RwLock<LoadState>,
 
         #[property(get, set=Self::set_active_state_num)]
         pub(super) active_state_num: RwLock<u8>,
+        pub(super) active_state: RwLock<ActiveState>,
+
         #[property(get, set)]
         pub(super) sub_state: RwLock<String>,
         #[property(get)]
@@ -143,12 +169,10 @@ mod imp {
         #[property(get, set, default = 0)]
         pub(super) enable_status: RwLock<u8>,
 
-        pub(super) active_state: RwLock<ActiveState>,
-
         pub(super) level: RwLock<UnitDBusLevel>,
 
-        #[property(get, set)]
-        pub(super) preset: RwLock<String>,
+        #[property(get=Self::preset_num, name="preset-num", type = u8)]
+        pub(super) preset: RwLock<Preset>,
     }
 
     #[glib::object_subclass]
@@ -172,7 +196,7 @@ mod imp {
             self.set_active_state(active_state);
 
             *self.description.write().unwrap() = listed_unit.description.to_owned();
-            *self.load_state.write().unwrap() = listed_unit.load_state.to_owned();
+            self.set_load_state(listed_unit.load_state);
             *self.sub_state.write().unwrap() = listed_unit.sub_state.to_owned();
             *self.followed_unit.write().unwrap() = listed_unit.followed_unit.to_owned();
             *self.object_path.write().unwrap() = Some(listed_unit.unit_object_path.to_string());
@@ -228,6 +252,32 @@ mod imp {
 
         pub fn active_state(&self) -> ActiveState {
             *self.active_state.read().expect("get active_state")
+        }
+
+        pub fn preset(&self) -> Preset {
+            *self.preset.read().expect("get preset")
+        }
+
+        pub fn set_preset(&self, preset: &str) {
+            let preset = preset.into();
+
+            *self.preset.write().expect("set_preset preset") = preset;
+        }
+
+        pub fn preset_num(&self) -> u8 {
+            self.preset().discriminant()
+        }
+
+        pub fn load_state_num(&self) -> u8 {
+            self.load_state().discriminant()
+        }
+
+        pub fn load_state(&self) -> LoadState {
+            *self.load_state.read().expect("get load_state")
+        }
+
+        pub fn set_load_state(&self, value: &str) {
+            *self.load_state.write().expect("set_load_state") = value.into();
         }
     }
 }

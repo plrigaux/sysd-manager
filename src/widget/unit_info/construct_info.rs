@@ -5,8 +5,8 @@ use crate::consts::U64MAX;
 use crate::systemd::enums::UnitDBusLevel;
 use crate::utils::th::{self, TimestampStyle};
 use crate::utils::writer::{
-    HyperLinkType, UnitInfoWriter, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-    SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL,
+    HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE,
+    SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
 };
 use crate::widget::preferences::data::PREFERENCES;
 use crate::{
@@ -448,11 +448,7 @@ fn strerror(err_no: i32) -> Option<String> {
             .unwrap_or(ERRNO_BUF_LEN);
 
         str_error.truncate(nul_range_end);
-        if let Ok(str_error) = String::from_utf8(str_error) {
-            Some(str_error)
-        } else {
-            None
-        }
+        String::from_utf8(str_error).ok()
     }
 }
 

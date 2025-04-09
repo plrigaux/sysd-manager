@@ -15,16 +15,18 @@ const LINKED: &str = "linked";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash)]
 pub enum Preset {
-    Disabled,
-    Enabled,
     #[default]
-    Ignore,
+    UnSet = 0,
+    Enabled = 1,
+    Disabled = 2,
+    Ignore = 3,
 }
 
 impl Preset {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Preset::Ignore => "",
+            Preset::UnSet => "",
+            Preset::Ignore => "ignored",
             Preset::Disabled => "disabled",
             Preset::Enabled => ENABLED,
         }
@@ -32,10 +34,57 @@ impl Preset {
 
     pub fn label(&self) -> &'static str {
         match self {
-            Preset::Ignore => "<i>empty</i>",
-            Preset::Disabled => "disabled",
-            Preset::Enabled => ENABLED,
+            Preset::UnSet => "<i>not set</i>",
+            _ => self.as_str(),
         }
+    }
+
+    pub fn discriminant(&self) -> u8 {
+        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
+        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
+        // field, so we can read the discriminant without offsetting the pointer.
+        unsafe { *<*const _>::from(self).cast::<u8>() }
+    }
+
+    pub fn tooltip_info(&self) -> Option<&str> {
+        None
+    }
+}
+
+impl From<&str> for Preset {
+    fn from(value: &str) -> Self {
+        match value {
+            ENABLED => Preset::Enabled,
+            "disabled" => Preset::Disabled,
+            "ignored" => Preset::Ignore,
+            _ => Preset::UnSet,
+        }
+    }
+}
+
+impl From<u8> for Preset {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => Preset::UnSet,
+            1 => Preset::Disabled,
+            2 => Preset::Enabled,
+            3 => Preset::Ignore,
+            _ => Preset::UnSet,
+        }
+    }
+}
+
+impl PartialOrd for Preset {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Preset {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let value = self.discriminant();
+        let other_value = other.discriminant();
+        value.cmp(&other_value)
     }
 }
 
@@ -806,23 +855,70 @@ impl CleanOption {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Hash, Default, Ord, PartialOrd)]
 pub enum LoadState {
-    Loaded,
-    NotFound,
-    BadSetting,
-    Error,
-    Masked,
+    #[default]
+    Unknown = 0,
+    Loaded = 1,
+    NotFound = 2,
+    BadSetting = 3,
+    Error = 4,
+    Masked = 5,
 }
 
 impl LoadState {
     pub fn as_str(&self) -> &'static str {
         match self {
+            LoadState::Unknown => "",
             LoadState::Loaded => "loaded",
             LoadState::NotFound => "not-found",
             LoadState::BadSetting => "bad-setting",
             LoadState::Error => "error",
             LoadState::Masked => "masked",
+        }
+    }
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            LoadState::Unknown => "<i>not set</i>",
+            _ => self.as_str(),
+        }
+    }
+
+    pub fn discriminant(&self) -> u8 {
+        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
+        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
+        // field, so we can read the discriminant without offsetting the pointer.
+        unsafe { *<*const _>::from(self).cast::<u8>() }
+    }
+
+    pub fn tooltip_info(&self) -> Option<&str> {
+        None
+    }
+}
+
+impl From<&str> for LoadState {
+    fn from(value: &str) -> Self {
+        match value {
+            "loaded" => LoadState::Loaded,
+            "not-found" => LoadState::NotFound,
+            "bad-setting" => LoadState::BadSetting,
+            "error" => LoadState::Error,
+            "masked" => LoadState::Masked,
+            _ => LoadState::Unknown,
+        }
+    }
+}
+
+impl From<u8> for LoadState {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => LoadState::Loaded,
+            2 => LoadState::NotFound,
+            3 => LoadState::BadSetting,
+            4 => LoadState::Error,
+            5 => LoadState::Masked,
+            _ => LoadState::Unknown,
         }
     }
 }
@@ -893,5 +989,13 @@ mod tests {
 
     fn assert_kill(kill: KillWho) {
         assert_eq!(kill.as_str(), kill.to_string())
+    }
+
+    #[test]
+    fn test_preset() {
+        assert_eq!(Preset::UnSet.discriminant(), 0);
+        assert_eq!(Preset::Enabled.discriminant(), 1);
+        assert_eq!(Preset::Disabled.discriminant(), 2);
+        assert_eq!(Preset::Ignore.discriminant(), 3);
     }
 }
