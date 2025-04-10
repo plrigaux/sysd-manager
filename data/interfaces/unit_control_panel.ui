@@ -124,6 +124,7 @@
             <property name="orientation">vertical</property>
             <child>
               <object class="AdwViewSwitcher">
+                <property name="css-classes">separator</property>
                 <property name="margin-bottom">5</property>
                 <property name="margin-end">5</property>
                 <property name="policy">wide</property>

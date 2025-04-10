@@ -35,3 +35,22 @@ buttoncontent.nav box label {
     background-color: var(--sidebar-backdrop-color);
     color: var(--sidebar-fg-color);
 }
+
+/*Hack to have a separator between navigator button */
+.separator button:not(:first-child) {
+    border-left: 1px solid var(--border-color);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.separator button:checked {
+    border-left: none;
+    border-top-left-radius: 9px;
+    border-bottom-left-radius: 9px;
+}
+
+.separator button:checked+button {
+    border-left: none;
+    border-top-left-radius: 9px;
+    border-bottom-left-radius: 9px;
+}
