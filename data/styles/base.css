@@ -30,3 +30,8 @@ textview {
 buttoncontent.nav box label {
     font-weight: normal;
 }
+
+.bottom_sidebar {
+    background-color: var(--sidebar-backdrop-color);
+    color: var(--sidebar-fg-color);
+}

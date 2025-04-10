@@ -84,6 +84,18 @@ pub struct UnitListPanelImp {
     #[template_child]
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
+    #[template_child]
+    legend: TemplateChild<gtk::Box>,
+
+    #[template_child]
+    unit_files_number: TemplateChild<gtk::Label>,
+
+    #[template_child]
+    loaded_units_listed: TemplateChild<gtk::Label>,
+
+    #[template_child]
+    unit_filtered_count: TemplateChild<gtk::Label>,
+
     search_controls: OnceCell<UnitListSearchControls>,
 
     refresh_unit_list_button: OnceCell<gtk::Button>,
@@ -155,6 +167,11 @@ impl UnitListPanelImp {
     #[template_callback]
     fn sections_changed(&self, position: u32) {
         info!("sections_changed {position}");
+    }
+
+    #[template_callback]
+    fn legend_button_clicked(&self, _button: gtk::Button) {
+        self.legend.set_visible(false);
     }
 }
 
@@ -358,6 +375,15 @@ impl UnitListPanelImp {
                     return;
                 }
             };
+
+            unit_list
+                .imp()
+                .loaded_units_listed
+                .set_label(&unit_desc.len().to_string());
+            unit_list
+                .imp()
+                .unit_files_number
+                .set_label(&unit_from_files.len().to_string());
 
             let n_items = list_store.n_items();
             list_store.remove_all();
@@ -841,6 +867,10 @@ impl ObjectImpl for UnitListPanelImp {
 
         let custom_filter = self.create_custom_filter();
         self.filter_list_model.set_filter(Some(&custom_filter));
+
+        self.filter_list_model
+            .bind_property::<gtk::Label>("n-items", self.unit_filtered_count.as_ref(), "label")
+            .build();
 
         let search_controls = UnitListSearchControls::new(&self.obj());
         self.search_bar.set_child(Some(&search_controls));

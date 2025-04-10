@@ -14,26 +14,6 @@
         <child>
           <object class="AdwViewStackPage">
             <property name="child">
-              <object class="AdwSpinner"/>
-            </property>
-            <property name="name">spinner</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwViewStackPage">
-            <property name="child">
-              <object class="AdwStatusPage">
-                <property name="description">No units returned, set environmental variable &lt;b&gt;RUST_LOG=info&lt;/b&gt; to see what happend.</property>
-                <property name="icon-name">sad-computer-symbolic</property>
-                <property name="title">Something went wrong</property>
-              </object>
-            </property>
-            <property name="name">error</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwViewStackPage">
-            <property name="child">
               <object class="GtkBox">
                 <property name="orientation">vertical</property>
                 <child>
@@ -63,7 +43,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">150</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">unit</property>
                             <property name="resizable">True</property>
                             <property name="title">Unit</property>
@@ -72,7 +51,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">82</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">type</property>
                             <property name="resizable">True</property>
                             <property name="title">Type</property>
@@ -81,7 +59,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">61</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">bus</property>
                             <property name="resizable">True</property>
                             <property name="title">Bus</property>
@@ -90,7 +67,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">80</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">state</property>
                             <property name="resizable">True</property>
                             <property name="title">State</property>
@@ -99,7 +75,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">70</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">preset</property>
                             <property name="resizable">True</property>
                             <property name="title">Preset</property>
@@ -108,7 +83,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">80</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">load</property>
                             <property name="resizable">True</property>
                             <property name="title">Load</property>
@@ -117,7 +91,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">62</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">active</property>
                             <property name="resizable">True</property>
                             <property name="title">Active</property>
@@ -126,7 +99,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">71</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">sub</property>
                             <property name="resizable">True</property>
                             <property name="title">Sub</property>
@@ -135,7 +107,6 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="expand">True</property>
-                            <property name="header-menu">table-menu</property>
                             <property name="id">description</property>
                             <property name="resizable">True</property>
                             <property name="title">Description</property>
@@ -146,62 +117,86 @@
                     <property name="vexpand">True</property>
                   </object>
                 </child>
+                <child>
+                  <object class="GtkBox" id="legend">
+                    <property name="css-classes">bottom_sidebar</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                        <property name="margin-start">5</property>
+                        <child>
+                          <object class="GtkLabel" id="loaded_units_listed"/>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label"> loaded units retrieved</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="GtkLabel" id="unit_files_number"/>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label"> unit files retrieved</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="GtkLabel" id="unit_filtered_count"/>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label"> units displayed</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="css-classes">circular</property>
+                        <property name="halign">end</property>
+                        <property name="icon-name">window-close-symbolic</property>
+                        <signal name="clicked" handler="legend_button_clicked" swapped="yes"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </property>
             <property name="name">unit_list</property>
           </object>
         </child>
+        <child>
+          <object class="AdwViewStackPage">
+            <property name="child">
+              <object class="AdwSpinner"/>
+            </property>
+            <property name="name">spinner</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwViewStackPage">
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="description">No units returned, set environmental variable &lt;b&gt;RUST_LOG=info&lt;/b&gt; to see what happend.</property>
+                <property name="icon-name">sad-computer-symbolic</property>
+                <property name="title">Something went wrong</property>
+              </object>
+            </property>
+            <property name="name">error</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>
-  <menu id="table-menu">
-    <item>
-      <attribute name="action">win.col-show-unit</attribute>
-      <attribute name="label">Unit</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-type</attribute>
-      <attribute name="label">Type</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-bus</attribute>
-      <attribute name="label">Bus</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-state</attribute>
-      <attribute name="label">State</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-preset</attribute>
-      <attribute name="label">Preset</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-load</attribute>
-      <attribute name="label">Load</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-active</attribute>
-      <attribute name="label">Active</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-sub</attribute>
-      <attribute name="label">Sub</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.col-show-description</attribute>
-      <attribute name="label">Description</attribute>
-    </item>
-    <submenu>
-      <attribute name="label">Sub</attribute>
-      <item>
-        <attribute name="label">asdfa</attribute>
-      </item>
-      <item>
-        <attribute name="label">dsdf</attribute>
-      </item>
-      <item>
-        <attribute name="label">asfsadf</attribute>
-      </item>
-    </submenu>
-  </menu>
 </interface>
