@@ -164,7 +164,7 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="unit_filtered_count_info">
-                                <property name="label"> Units displayed</property>
+                                <property name="label"> Units Displayed</property>
                               </object>
                             </child>
                           </object>

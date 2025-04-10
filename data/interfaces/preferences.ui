@@ -65,14 +65,14 @@
                     <property name="title">Unit List</property>
                     <child>
                       <object class="AdwSwitchRow" id="unit_list_colors">
-                        <property name="subtitle">Display colors on unit list table cells, according to their content.</property>
-                        <property name="title">Display colors</property>
+                        <property name="subtitle">Display Colors on unit list table cells, according to their content.</property>
+                        <property name="title">Display Colors</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwSwitchRow" id="unit_list_summay">
                         <property name="subtitle">Display different totals regarding retreived units</property>
-                        <property name="title">Display summay</property>
+                        <property name="title">Display Summay</property>
                       </object>
                     </child>
                     <child>
