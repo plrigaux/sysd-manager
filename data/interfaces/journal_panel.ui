@@ -89,7 +89,7 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description">No events can be a good thing</property>
+                <property name="description">No journal events! It can be a good thing. 😉</property>
                 <property name="icon-name">dialog-question</property>
                 <property name="title">No journal events</property>
               </object>
