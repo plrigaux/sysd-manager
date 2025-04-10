@@ -92,7 +92,7 @@ pub struct UnitListPanelImp {
     unit_files_number: TemplateChild<gtk::Label>,
 
     #[template_child]
-    loaded_units_listed: TemplateChild<gtk::Label>,
+    loaded_units_count: TemplateChild<gtk::Label>,
 
     #[template_child]
     unit_filtered_count: TemplateChild<gtk::Label>,
@@ -379,7 +379,7 @@ impl UnitListPanelImp {
 
             unit_list
                 .imp()
-                .loaded_units_listed
+                .loaded_units_count
                 .set_label(&unit_desc.len().to_string());
             unit_list
                 .imp()

@@ -118,55 +118,85 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox" id="summary">
-                    <property name="css-classes">bottom_sidebar</property>
-                    <property name="spacing">10</property>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="hexpand">True</property>
-                        <property name="margin-start">5</property>
+                  <object class="AdwBreakpointBin">
+                    <property name="child">
+                      <object class="GtkBox" id="summary">
+                        <property name="css-classes">bottom_sidebar</property>
+                        <property name="spacing">10</property>
                         <child>
-                          <object class="GtkLabel" id="loaded_units_listed"/>
+                          <object class="GtkBox">
+                            <property name="hexpand">True</property>
+                            <property name="margin-start">5</property>
+                            <child>
+                              <object class="GtkLabel" id="loaded_units_count">
+                                <property name="tooltip-text">Loaded Units Retrieved</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="loaded_units_count_info">
+                                <property name="label"> Loaded Units Retrieved</property>
+                              </object>
+                            </child>
+                          </object>
                         </child>
                         <child>
-                          <object class="GtkLabel">
-                            <property name="label"> loaded units retrieved</property>
+                          <object class="GtkBox">
+                            <property name="hexpand">True</property>
+                            <child>
+                              <object class="GtkLabel" id="unit_files_number">
+                                <property name="tooltip-text">Unit Files Retrieved</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="unit_files_number_info">
+                                <property name="label"> Unit Files Retrieved</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="hexpand">True</property>
+                            <child>
+                              <object class="GtkLabel" id="unit_filtered_count">
+                                <property name="tooltip-text">Units displayed</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="unit_filtered_count_info">
+                                <property name="label"> Units displayed</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="css-classes">circular</property>
+                            <property name="halign">end</property>
+                            <property name="icon-name">window-close-symbolic</property>
+                            <signal name="clicked" handler="legend_button_clicked" swapped="yes"/>
                           </object>
                         </child>
                       </object>
-                    </child>
+                    </property>
+                    <property name="height-request">10</property>
+                    <property name="width-request">150</property>
                     <child>
-                      <object class="GtkBox">
-                        <property name="hexpand">True</property>
-                        <child>
-                          <object class="GtkLabel" id="unit_files_number"/>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label"> unit files retrieved</property>
-                          </object>
-                        </child>
+                      <object class="AdwBreakpoint">
+                        <!-- Custom object fragments -->
+                        <condition>max-width: 570px</condition>
+                        <setter object="loaded_units_count_info" property="label"> Loaded</setter>
+                        <setter object="unit_files_number_info" property="label"> Files</setter>
+                        <setter object="unit_filtered_count_info" property="label"> Units</setter>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkBox">
-                        <property name="hexpand">True</property>
-                        <child>
-                          <object class="GtkLabel" id="unit_filtered_count"/>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label"> units displayed</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="css-classes">circular</property>
-                        <property name="halign">end</property>
-                        <property name="icon-name">window-close-symbolic</property>
-                        <signal name="clicked" handler="legend_button_clicked" swapped="yes"/>
+                      <object class="AdwBreakpoint">
+                        <!-- Custom object fragments -->
+                        <condition>max-width: 290px</condition>
+                        <setter object="loaded_units_count_info" property="label"/>
+                        <setter object="unit_files_number_info" property="label"/>
+                        <setter object="unit_filtered_count_info" property="label"/>
                       </object>
                     </child>
                   </object>
