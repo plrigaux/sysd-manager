@@ -118,7 +118,7 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox" id="legend">
+                  <object class="GtkBox" id="summary">
                     <property name="css-classes">bottom_sidebar</property>
                     <property name="spacing">10</property>
                     <child>

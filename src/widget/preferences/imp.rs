@@ -18,7 +18,7 @@ use crate::{
         preferences::{
             data::{
                 COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
-                UNIT_LIST_COLUMNS,
+                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_LIST_COLUMNS,
             },
             drop_down_elem::{build_pane_orientation_selector, build_prefered_color_scheme},
             style_scheme::style_schemes,
@@ -74,6 +74,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     app_orientation: TemplateChild<adw::ComboRow>,
+
+    #[template_child]
+    unit_list_summay: TemplateChild<adw::SwitchRow>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -475,6 +478,14 @@ impl ObjectImpl for PreferencesDialogImpl {
             .bind(
                 KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
                 &self.unit_list_colors.get(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind(
+                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+                &self.unit_list_summay.get(),
                 "active",
             )
             .build();

@@ -70,6 +70,12 @@
                       </object>
                     </child>
                     <child>
+                      <object class="AdwSwitchRow" id="unit_list_summay">
+                        <property name="subtitle">Display different totals regarding retreived units</property>
+                        <property name="title">Display summay</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="AdwExpanderRow" id="unit_list_columns">
                         <property name="title">Columns Display Parameters</property>
                       </object>

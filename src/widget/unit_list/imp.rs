@@ -37,7 +37,8 @@ use crate::{
         app_window::AppWindow,
         preferences::data::{
             COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
-            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, UNIT_LIST_COLUMNS, UNIT_LIST_COLUMNS_UNIT,
+            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+            UNIT_LIST_COLUMNS, UNIT_LIST_COLUMNS_UNIT,
         },
         unit_list::{
             filter::{
@@ -85,7 +86,7 @@ pub struct UnitListPanelImp {
     scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
     #[template_child]
-    legend: TemplateChild<gtk::Box>,
+    summary: TemplateChild<gtk::Box>,
 
     #[template_child]
     unit_files_number: TemplateChild<gtk::Label>,
@@ -171,7 +172,7 @@ impl UnitListPanelImp {
 
     #[template_callback]
     fn legend_button_clicked(&self, _button: gtk::Button) {
-        self.legend.set_visible(false);
+        self.summary.set_visible(false);
     }
 }
 
@@ -890,6 +891,14 @@ impl ObjectImpl for UnitListPanelImp {
                     focus_on_row(&unit_list, &units_browser);
                 });
         }
+
+        settings
+            .bind(
+                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+                &self.summary.get(),
+                "visible",
+            )
+            .build();
     }
 }
 
