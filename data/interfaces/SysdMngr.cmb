@@ -8,7 +8,6 @@
 	(29,1,"unit_info_panel.ui","unit_info_panel.ui",None,None,None,None,None,None,None),
 	(30,1,"journal_panel.ui","journal_panel.ui","Unit file panel",None,None,None,None,None,None),
 	(32,1,"unit_file_panel.ui","unit_file_panel.ui","Unit file panel",None,None,None,None,None,None),
-	(48,None,"shortcuts.ui","shortcuts.ui",None,None,None,None,None,None,None),
 	(49,1,"unit_control_panel.ui","unit_control_panel.ui",None,None,None,None,None,None,None),
 	(51,1,None,"journal_row.ui",None,None,None,None,None,None,None),
 	(54,1,None,"unit_dependencies_panel.ui",None,None,None,None,None,None,None),
@@ -20,7 +19,8 @@
 	(63,1,"unit_info.ui","unit_properties.ui",None,None,None,None,None,None,None),
 	(67,1,"unit_list_filter.ui","unit_list_filter.ui",None,None,None,None,None,"\n",None),
 	(69,7,None,"unit_list_search.ui",None,None,None,None,None,None,None),
-	(73,10,"app_window.ui","app_window.ui",None,None,None,None,None,None,None)
+	(73,10,"app_window.ui","app_window.ui",None,None,None,None,None,None,None),
+	(74,None,"shortcuts.ui","shortcuts.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(4,"gtk","4.12",None),
@@ -49,7 +49,8 @@
 	(69,"gtk","4.16",None),
 	(73,"gio","2.0",None),
 	(73,"gtk","4.16",None),
-	(73,"libadwaita","1.6",None)
+	(73,"libadwaita","1.6",None),
+	(74,"gtk","4.6",None)
   </ui_library>
   <object>
 	(4,1,"GtkHeaderBar",None,None,None,None,None,0,None,None),
@@ -139,11 +140,6 @@
 	(32,11,"AdwViewStackPage",None,9,None,None,None,1,None,None),
 	(32,13,"GtkBox",None,11,None,None,None,0,None,None),
 	(32,14,"AdwStatusPage",None,10,None,None,None,0,None,None),
-	(48,1,"GtkShortcutsWindow","help_overlay",None,None,None,None,0,None,None),
-	(48,2,"GtkShortcutsSection",None,1,None,None,None,0,None,None),
-	(48,3,"GtkShortcutsGroup",None,2,None,None,None,0,None,None),
-	(48,4,"GtkShortcutsShortcut",None,3,None,None,None,0,None,None),
-	(48,5,"GtkShortcutsShortcut",None,3,None,None,None,1,None,None),
 	(49,1,"GtkBox","UnitControlPanel",None,None,None,None,0,None,None),
 	(49,2,"GtkBox",None,1,None,None,None,0,None,None),
 	(49,3,"GtkLabel",None,2,None,None,None,0,None,None),
@@ -320,7 +316,18 @@
 	(73,20,"GtkToggleButton","search_toggle_button",18,None,None,None,1,None,None),
 	(73,21,"GtkButton","refresh_unit_list_button",18,None,"start",None,2,None,None),
 	(73,22,"GtkMenuButton",None,18,None,"end",None,3,None,None),
-	(73,23,"GtkDropDown","system_session_dropdown",18,None,"start",None,4,None,None)
+	(73,23,"GtkDropDown","system_session_dropdown",18,None,"start",None,4,None,None),
+	(74,1,"GtkShortcutsWindow","help_overlay",None,None,None,None,0,None,None),
+	(74,2,"GtkShortcutsSection",None,1,None,None,None,0,None,None),
+	(74,3,"GtkShortcutsGroup",None,2,None,None,None,0,None,None),
+	(74,4,"GtkShortcutsShortcut",None,3,None,None,None,0,None,None),
+	(74,5,"GtkShortcutsShortcut",None,3,None,None,None,1,None,None),
+	(74,6,"GtkShortcutsShortcut",None,3,None,None,None,2,None,None),
+	(74,7,"GtkShortcutsGroup",None,2,None,None,None,1,None,None),
+	(74,8,"GtkShortcutsShortcut",None,7,None,None,None,0,None,None),
+	(74,9,"GtkShortcutsShortcut",None,7,None,None,None,1,None,None),
+	(74,10,"GtkShortcutsShortcut",None,7,None,None,None,2,None,None),
+	(74,11,"GtkShortcutsShortcut",None,7,None,None,None,3,None,None)
   </object>
   <object_property>
 	(4,2,"GtkButton","icon-name","system-search-symbolic",None,None,None,None,None,None,None,None,None),
@@ -478,14 +485,6 @@
 	(32,14,"AdwStatusPage","description","The  unit has no file associated",None,None,None,None,None,None,None,None,None),
 	(32,14,"AdwStatusPage","icon-name","unreadable-symbolic",None,None,None,None,None,None,None,None,None),
 	(32,14,"AdwStatusPage","title","No unit file",None,None,None,None,None,None,None,None,None),
-	(48,1,"GtkWindow","modal","True",0,None,None,None,None,None,None,None,None),
-	(48,2,"GtkShortcutsSection","max-height","10",0,None,None,None,None,None,None,None,None),
-	(48,2,"GtkShortcutsSection","section-name","shortcuts",0,None,None,None,None,None,None,None,None),
-	(48,3,"GtkShortcutsGroup","title","General",1,None,"shortcut window",None,None,None,None,None,None),
-	(48,4,"GtkShortcutsShortcut","action-name","app.preferences",0,None,None,None,None,None,None,None,None),
-	(48,4,"GtkShortcutsShortcut","title","Show preferences",1,None,"shortcut window",None,None,None,None,None,None),
-	(48,5,"GtkShortcutsShortcut","action-name","app.search_units",0,None,None,None,None,None,None,None,None),
-	(48,5,"GtkShortcutsShortcut","title","Open search",1,None,"shortcut window",None,None,None,None,None,None),
 	(49,1,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
 	(49,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(49,2,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
@@ -837,7 +836,26 @@
 	(73,21,"GtkButton","icon-name","view-refresh",0,None,None,None,None,None,None,None,None),
 	(73,21,"GtkWidget","tooltip-text","Refresh unit list",0,None,None,None,None,None,None,None,None),
 	(73,22,"GtkMenuButton","icon-name","open-menu-symbolic",0,None,None,None,None,None,None,None,None),
-	(73,22,"GtkMenuButton","menu-model","1",0,None,None,None,None,None,None,None,None)
+	(73,22,"GtkMenuButton","menu-model","1",0,None,None,None,None,None,None,None,None),
+	(74,1,"GtkWindow","modal","True",0,None,None,None,None,None,None,None,None),
+	(74,2,"GtkShortcutsSection","max-height","10",0,None,None,None,None,None,None,None,None),
+	(74,2,"GtkShortcutsSection","section-name","shortcuts",0,None,None,None,None,None,None,None,None),
+	(74,3,"GtkShortcutsGroup","title","General",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,4,"GtkShortcutsShortcut","action-name","app.preferences",0,None,None,None,None,None,None,None,None),
+	(74,4,"GtkShortcutsShortcut","title","Show preferences",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,5,"GtkShortcutsShortcut","action-name","app.search_units",0,None,None,None,None,None,None,None,None),
+	(74,5,"GtkShortcutsShortcut","title","Open search",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,6,"GtkShortcutsShortcut","action-name","win.unit_list_filter_blank",0,None,None,None,None,None,None,None,None),
+	(74,6,"GtkShortcutsShortcut","title","Open Unit Property Filter",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,7,"GtkShortcutsGroup","title","Pages",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,8,"GtkShortcutsShortcut","action-name","app.open_info",0,None,None,None,None,None,None,None,None),
+	(74,8,"GtkShortcutsShortcut","title","Display Unit Information",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,9,"GtkShortcutsShortcut","action-name","app.open_dependencies",0,None,None,None,None,None,None,None,None),
+	(74,9,"GtkShortcutsShortcut","title","Display Unit Dependencies",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,10,"GtkShortcutsShortcut","action-name","app.open_file",0,None,None,None,None,None,None,None,None),
+	(74,10,"GtkShortcutsShortcut","title","Display Unit Definition File",1,None,"shortcut window",None,None,None,None,None,None),
+	(74,11,"GtkShortcutsShortcut","action-name","app.open_journal",0,None,None,None,None,None,None,None,None),
+	(74,11,"GtkShortcutsShortcut","title","Display Unit Journal Events",1,None,"shortcut window",None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(20,29,3,"GtkButton","clicked","refresh_info_clicked",None,None,1,0,None),
