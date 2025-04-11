@@ -332,10 +332,6 @@ impl UnitListPanelImp {
         col_map
     }
 
-    pub fn search_bar(&self) -> gtk::SearchBar {
-        self.search_bar.clone()
-    }
-
     pub(super) fn fill_store(&self) {
         let list_store = self.list_store.clone();
         let panel_stack = self.panel_stack.clone();
@@ -525,8 +521,7 @@ impl UnitListPanelImp {
 
         if toggle_button_is_active {
             let s_controls = self.search_controls.get().unwrap();
-
-            s_controls.grab_focus();
+            s_controls.grab_focus_on_search_entry();
         }
     }
 

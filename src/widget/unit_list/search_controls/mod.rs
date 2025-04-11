@@ -1,5 +1,5 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::glib;
+use gtk::{glib, prelude::WidgetExt};
 
 use super::UnitListPanel;
 
@@ -19,6 +19,10 @@ impl UnitListSearchControls {
         obj.imp().set_filter_is_set(false);
         obj
     }
+
+    pub fn grab_focus_on_search_entry(&self) {
+        self.imp().search_entry.grab_focus();
+    }
 }
 
 mod imp {
@@ -34,7 +38,7 @@ mod imp {
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_search.ui")]
     pub struct UnitListSearchControlsImp {
         #[template_child]
-        search_entry: TemplateChild<gtk::SearchEntry>,
+        pub(super) search_entry: TemplateChild<gtk::SearchEntry>,
 
         #[template_child]
         show_filter_button: TemplateChild<gtk::Button>,

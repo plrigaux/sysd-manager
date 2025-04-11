@@ -29,10 +29,6 @@ impl UnitListPanel {
         obj.register_selection_change(app_window, refresh_unit_list_button);
     }
 
-    pub fn search_bar(&self) -> gtk::SearchBar {
-        self.imp().search_bar()
-    }
-
     pub fn fill_store(&self) {
         self.imp().fill_store()
     }
