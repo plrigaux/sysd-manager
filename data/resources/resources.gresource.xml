@@ -4,7 +4,6 @@
     <file compressed="true" alias="io.github.plrigaux.sysd-manager.svg">icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="grid_cell.ui">interfaces/grid_cell.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="ex_menu_button.ui">interfaces/ex_menu_button.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="button_icon.ui">interfaces/button_icon.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties.ui">interfaces/unit_properties.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="preferences.ui">interfaces/preferences.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_info_panel.ui">interfaces/unit_info_panel.ui</file>
