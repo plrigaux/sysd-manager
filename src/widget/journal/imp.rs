@@ -364,7 +364,7 @@ impl JournalPanelImp {
             if !oldest_to_recent {
                 if let Some(journal_event) = events.first() {
                     let time = journal_event.timestamp;
-                    journal_panel.set_most_recent_time(time)
+                    journal_panel.imp().set_oldest(time)
                 }
             }
 
@@ -383,7 +383,7 @@ impl JournalPanelImp {
 
             if let Some(journal_event) = events.last() {
                 let from_time = journal_event.timestamp;
-                journal_panel.set_from_time(Some(from_time));
+                journal_panel.imp().set_from_time(Some(from_time));
             }
 
             let panel = if writer.char_count() <= 0 {
