@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 /// Call systemd journal
 ///
 /// Fields
@@ -11,14 +13,14 @@ use crate::{
 };
 use chrono::{Local, Utc};
 use foreign_types_shared::ForeignType;
-use libsysd;
+use libsysd::{self};
 use log::{info, warn};
-use sysd::{id128::Id128, journal::OpenOptions, Journal};
+use sysd::{Journal, id128::Id128, journal::OpenOptions};
 
 use super::{
+    BootFilter, SystemdErrors,
     data::UnitInfo,
     journal_data::{EventRange, JournalEvent, JournalEventChunk},
-    BootFilter, SystemdErrors,
 };
 
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
@@ -105,7 +107,6 @@ pub(super) fn get_unit_journal(
             message = truncate(message, message_max_char);
         }
 
-        //TODO get the u64 timestamp directly
         let time_in_usec = get_realtime_usec(&journal_reader)?;
 
         let pid = get_data(&mut journal_reader, KEY_PID, &default);
@@ -157,6 +158,69 @@ pub(super) fn get_unit_journal(
     }
 
     Ok(out_list)
+}
+
+pub struct Boot {
+    boot_id: String,
+    firt: u64,
+    last: u64,
+}
+
+pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
+    info!("Starting journal-logger list boot");
+    let mut journal_reader = OpenOptions::default()
+        .open()
+        .expect("Could not open journal");
+
+    let mut last_boot_id = Id128::default();
+
+    let mut set = HashSet::with_capacity(100);
+    let mut list: Vec<Boot> = Vec::with_capacity(100);
+    loop {
+        if journal_reader.next()? == 0 {
+            break;
+        }
+
+        let (_, boot_id) = journal_reader.monotonic_timestamp()?;
+
+        if last_boot_id == boot_id {
+            continue;
+        }
+        last_boot_id = boot_id;
+
+        let boot_id = boot_id.to_string();
+
+        if !set.insert(boot_id.clone()) {
+            continue;
+        }
+
+        if !list.is_empty() {
+            if journal_reader.previous()? == 0 {
+                break;
+            }
+
+            let previous = get_realtime_usec(&journal_reader)?;
+
+            if journal_reader.next()? == 0 {
+                break;
+            }
+
+            if let Some(prev) = list.last_mut() {
+                prev.last = previous
+            }
+        }
+        //if == 0 no limit
+        //println!("{idx} boot_id {boot_id} time {time_in_usec}");
+
+        let time_in_usec = get_realtime_usec(&journal_reader)?;
+        list.push(Boot {
+            boot_id,
+            firt: time_in_usec,
+            last: 0,
+        });
+    }
+
+    Ok(list)
 }
 
 fn create_journal_reader(
@@ -322,6 +386,8 @@ mod tests {
 
     use sysd::journal;
 
+    use crate::utils::th::{get_since_and_passed_time, get_since_time};
+
     use super::*;
 
     #[test]
@@ -371,5 +437,18 @@ mod tests {
         let time_in_usec = since_the_epoch.as_micros() as u64;
 
         assert_eq!(real_time, time_in_usec);
+    }
+
+    #[test]
+    fn test_get_boot() -> Result<(), SystemdErrors> {
+        for (idx, boot) in list_boots()?.iter().enumerate() {
+            let time = get_since_time(boot.firt, TimestampStyle::Pretty);
+
+            let time2 = get_since_time(boot.last, TimestampStyle::Pretty);
+
+            println!("{idx} {} {} {}", boot.boot_id, time, time2);
+        }
+
+        Ok(())
     }
 }

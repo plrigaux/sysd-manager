@@ -82,6 +82,12 @@ pub fn get_since_and_passed_time(
     timestamp_usec: u64,
     timestamp_style: TimestampStyle,
 ) -> (String, String) {
+    let since = get_since_time(timestamp_usec, timestamp_style);
+
+    (since, format_timestamp_relative_full(timestamp_usec))
+}
+
+pub fn get_since_time(timestamp_usec: u64, timestamp_style: TimestampStyle) -> String {
     let since = match timestamp_style {
         TimestampStyle::Pretty => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S"),
         TimestampStyle::PrettyUsec => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S%.6f"),
@@ -103,8 +109,7 @@ pub fn get_since_and_passed_time(
             format!("@{timestamp_usec}")
         }
     };
-
-    (since, format_timestamp_relative_full(timestamp_usec))
+    since
 }
 
 fn pretty(timestamp_usec: u64, format: &str) -> String {
@@ -135,37 +140,23 @@ fn get_date_utc(timestamp_usec: u64) -> DateTime<Utc> {
 }
 
 macro_rules! plur {
-    ($num:expr, $single:expr, $plur:expr) => {{
-        if $num > 1 {
-            $plur
-        } else {
-            $single
-        }
-    }};
+    ($num:expr, $single:expr, $plur:expr) => {{ if $num > 1 { $plur } else { $single } }};
 }
 
 macro_rules! plur_year {
-    ($num:expr) => {{
-        plur!($num, "year", "years")
-    }};
+    ($num:expr) => {{ plur!($num, "year", "years") }};
 }
 
 macro_rules! plur_month {
-    ($num:expr) => {{
-        plur!($num, "month", "months")
-    }};
+    ($num:expr) => {{ plur!($num, "month", "months") }};
 }
 
 macro_rules! plur_week {
-    ($num:expr) => {{
-        plur!($num, "week", "weeks")
-    }};
+    ($num:expr) => {{ plur!($num, "week", "weeks") }};
 }
 
 macro_rules! plur_day {
-    ($num:expr) => {{
-        plur!($num, "day", "days")
-    }};
+    ($num:expr) => {{ plur!($num, "day", "days") }};
 }
 
 #[macro_export]
