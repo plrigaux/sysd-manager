@@ -220,6 +220,12 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
         });
     }
 
+    let previous = get_realtime_usec(&journal_reader)?;
+
+    if let Some(prev) = list.last_mut() {
+        prev.last = previous
+    }
+
     Ok(list)
 }
 
