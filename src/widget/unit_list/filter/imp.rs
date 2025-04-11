@@ -72,8 +72,6 @@ impl UnitListFilterWindowImp {
 
                     _ => unreachable!("unreachable"),
                 }
-
-                //TODO fill the filter
             } else {
                 gtk::Label::new(Some(name)).into()
             };
@@ -124,7 +122,7 @@ impl UnitListFilterWindowImp {
             {
                 let filter_stack = self.filter_stack.clone();
                 button.connect_clicked(move |button| {
-                    filter_stack.set_visible_child_name(key);
+                    set_visible_child_name(&filter_stack, key);
 
                     if let Some(parent) = button.parent() {
                         let mut child_o = parent.first_child();
@@ -141,7 +139,7 @@ impl UnitListFilterWindowImp {
         }
 
         if let Some(selected) = selected {
-            self.filter_stack.set_visible_child_name(selected);
+            set_visible_child_name(&self.filter_stack, selected);
         }
 
         self.obj()
@@ -153,6 +151,29 @@ impl UnitListFilterWindowImp {
             .bidirectional()
             .build();
     }
+}
+
+fn set_visible_child_name(filter_stack: &adw::ViewStack, name: &str) {
+    filter_stack.set_visible_child_name(name);
+    let widget = filter_stack.child_by_name(name);
+    if let Some(widget) = widget {
+        grab_focus_on_child_entry(widget.first_child().as_ref());
+    }
+}
+
+fn grab_focus_on_child_entry(widget: Option<&gtk::Widget>) {
+    let Some(widget) = widget else {
+        return;
+    };
+
+    if let Some(entry) = widget.downcast_ref::<gtk::Entry>() {
+        entry.grab_focus();
+        return;
+    }
+
+    grab_focus_on_child_entry(widget.first_child().as_ref());
+
+    grab_focus_on_child_entry(widget.next_sibling().as_ref());
 }
 
 fn icon_name(is_empty: bool) -> &'static str {
