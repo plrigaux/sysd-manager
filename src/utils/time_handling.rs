@@ -197,13 +197,30 @@ fn format_timestamp_relative_full(timestamp_usec: u64) -> String {
 
     let delta = now.signed_duration_since(since_time);
 
-    format_timestamp_relative_full_delta(delta)
+    format_timestamp_relative_full_delta(delta, true)
+}
+
+pub fn format_timestamp_relative_duration(
+    begin_timestamp_usec: u64,
+    finish_timestamp_usec: u64,
+) -> String {
+    let since_time = get_date_local(begin_timestamp_usec);
+
+    let to_time = get_date_local(finish_timestamp_usec);
+
+    let delta = to_time.signed_duration_since(since_time);
+
+    format_timestamp_relative_full_delta(delta, false)
 }
 
 ///from systemd
-fn format_timestamp_relative_full_delta(delta: TimeDelta) -> String {
+fn format_timestamp_relative_full_delta(delta: TimeDelta, show_suffix: bool) -> String {
     let is_ago = delta.num_seconds() >= 0;
-    let suffix = if is_ago { "ago" } else { "left" };
+    let suffix = if show_suffix {
+        if is_ago { "ago" } else { "left" }
+    } else {
+        ""
+    };
 
     let delta = delta.abs();
 
@@ -266,7 +283,7 @@ fn format_timestamp_relative_full_delta(delta: TimeDelta) -> String {
     } else if d >= SEC_PER_MINUTE {
         let mins = d / SEC_PER_MINUTE;
         let sec = d % SEC_PER_MINUTE;
-        swrite!(out, "{mins}min {suffix} {sec}s");
+        swrite!(out, "{mins}min {sec}s {suffix}");
     } else if d > 0 {
         swrite!(out, "{d}s {suffix}");
     } else if let Some(d_us) = delta.num_microseconds() {
@@ -467,26 +484,29 @@ mod tests {
             duration.to_std().unwrap()
         );
 
-        println!("{} ago", format_timestamp_relative_full_delta(duration))
+        println!(
+            "{} ago",
+            format_timestamp_relative_full_delta(duration, true)
+        )
     }
 
     #[test]
     fn most_significant_duration_test() {
         let a = TimeDelta::minutes(1) + TimeDelta::seconds(30);
         println!("{:?}", a);
-        println!("{:?}", format_timestamp_relative_full_delta(a));
+        println!("{:?}", format_timestamp_relative_full_delta(a, true));
 
         let b = TimeDelta::minutes(2);
         println!("{:?}", b);
-        println!("{:?}", format_timestamp_relative_full_delta(b));
+        println!("{:?}", format_timestamp_relative_full_delta(b, true));
 
         let a = TimeDelta::minutes(10) + TimeDelta::seconds(30);
         println!("{:?}", a);
-        println!("{:?}", format_timestamp_relative_full_delta(a));
+        println!("{:?}", format_timestamp_relative_full_delta(a, true));
 
         let a = TimeDelta::minutes(9) + TimeDelta::seconds(30);
         println!("{:?}", a);
-        println!("{:?}", format_timestamp_relative_full_delta(a));
+        println!("{:?}", format_timestamp_relative_full_delta(a, true));
     }
 
     #[test]
@@ -500,7 +520,11 @@ mod tests {
         let exit = get_date_local(1727501504134907);
 
         let d = exit.signed_duration_since(enter);
-        println!("{:?} {:?}", format_timestamp_relative_full_delta(d), d);
+        println!(
+            "{:?} {:?}",
+            format_timestamp_relative_full_delta(d, true),
+            d
+        );
     }
 
     #[test]
@@ -559,7 +583,7 @@ mod tests {
             )
             .expect("Time delta not supposed to have bondary issues");
 
-            let value = format_timestamp_relative_full_delta(delta);
+            let value = format_timestamp_relative_full_delta(delta, true);
             assert_eq!(value, time_output);
         }
     }

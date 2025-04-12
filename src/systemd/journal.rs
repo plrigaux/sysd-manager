@@ -161,10 +161,13 @@ pub(super) fn get_unit_journal(
 }
 
 pub struct Boot {
-    boot_id: String,
-    firt: u64,
-    last: u64,
+    pub index: i32,
+    pub boot_id: String,
+    pub first: u64,
+    pub last: u64,
 }
+
+impl Boot {}
 
 pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
     info!("Starting journal-logger list boot");
@@ -176,6 +179,7 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
 
     let mut set = HashSet::with_capacity(100);
     let mut list: Vec<Boot> = Vec::with_capacity(100);
+    let mut index = 0;
     loop {
         if journal_reader.next()? == 0 {
             break;
@@ -214,10 +218,12 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
 
         let time_in_usec = get_realtime_usec(&journal_reader)?;
         list.push(Boot {
+            index,
             boot_id,
-            firt: time_in_usec,
+            first: time_in_usec,
             last: 0,
         });
+        index += 1;
     }
 
     let previous = get_realtime_usec(&journal_reader)?;
@@ -392,7 +398,7 @@ mod tests {
 
     use sysd::journal;
 
-    use crate::utils::th::{get_since_and_passed_time, get_since_time};
+    use crate::utils::th::get_since_time;
 
     use super::*;
 
@@ -448,7 +454,7 @@ mod tests {
     #[test]
     fn test_get_boot() -> Result<(), SystemdErrors> {
         for (idx, boot) in list_boots()?.iter().enumerate() {
-            let time = get_since_time(boot.firt, TimestampStyle::Pretty);
+            let time = get_since_time(boot.first, TimestampStyle::Pretty);
 
             let time2 = get_since_time(boot.last, TimestampStyle::Pretty);
 

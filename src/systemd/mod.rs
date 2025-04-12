@@ -21,6 +21,7 @@ use enums::{
 };
 use errors::SystemdErrors;
 use gtk::glib::GString;
+use journal::Boot;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 use sysdbus::DisEnAbleUnitFiles;
@@ -217,6 +218,10 @@ pub fn get_unit_journal(
     range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
     journal::get_unit_journal(unit, boot_filter, range)
+}
+
+pub fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
+    journal::list_boots()
 }
 
 pub fn commander_output(

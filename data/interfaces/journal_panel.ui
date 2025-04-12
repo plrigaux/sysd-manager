@@ -43,6 +43,18 @@
           </object>
         </child>
         <child>
+          <object class="GtkButton">
+            <property name="tooltip-text"> Show a tabular list of boot</property>
+            <signal name="clicked" handler="list_boots_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="icon-name">list-symbolic</property>
+                <property name="label">List Boots</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="GtkMenuButton">
             <property name="label">Boot</property>
             <property name="popover">

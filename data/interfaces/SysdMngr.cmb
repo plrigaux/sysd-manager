@@ -18,7 +18,8 @@
 	(67,1,"unit_list_filter.ui","unit_list_filter.ui",None,None,None,None,None,"\n",None),
 	(69,7,None,"unit_list_search.ui",None,None,None,None,None,None,None),
 	(73,10,"app_window.ui","app_window.ui",None,None,None,None,None,None,None),
-	(74,None,"shortcuts.ui","shortcuts.ui",None,None,None,None,None,None,None)
+	(74,None,"shortcuts.ui","shortcuts.ui",None,None,None,None,None,None,None),
+	(75,1,None,"list_boots.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(4,"gtk","4.12",None),
@@ -46,7 +47,9 @@
 	(73,"gio","2.0",None),
 	(73,"gtk","4.16",None),
 	(73,"libadwaita","1.6",None),
-	(74,"gtk","4.6",None)
+	(74,"gtk","4.6",None),
+	(75,"gtk","4.16",None),
+	(75,"libadwaita","1.6",None)
   </ui_library>
   <object>
 	(4,1,"GtkHeaderBar",None,None,None,None,None,0,None,None),
@@ -104,12 +107,14 @@
 	(30,34,"AdwButtonContent",None,33,None,None,None,0,None,None),
 	(30,35,"GtkButton","journal_toggle_sort_button",32,None,None,None,1,None,None),
 	(30,36,"AdwButtonContent",None,35,None,None,None,0,None,None),
-	(30,37,"GtkMenuButton",None,32,None,None,None,2,None,None),
+	(30,37,"GtkMenuButton",None,32,None,None,None,3,None,None),
 	(30,46,"GtkPopover",None,37,None,None,None,0,None,None),
 	(30,47,"GtkButton","journal_boot_all_button",50,None,None,None,1,None,None),
 	(30,48,"GtkButton","journal_boot_current_button",50,None,None,None,0,None,None),
 	(30,49,"AdwEntryRow","journal_boot_id_entry",50,None,None,None,2,None,None),
 	(30,50,"GtkBox",None,46,None,None,None,0,None,None),
+	(30,51,"GtkButton",None,32,None,None,None,2,None,None),
+	(30,52,"AdwButtonContent",None,51,None,None,None,0,None,None),
 	(32,1,"GtkBox","UnitFilePanel",None,None,None,None,0,None,None),
 	(32,2,"GtkScrolledWindow","unit_file_scrolled_window",13,None,None,None,0,None,None),
 	(32,4,"GtkBox",None,13,None,None,None,1,None,None),
@@ -309,7 +314,25 @@
 	(74,8,"GtkShortcutsShortcut",None,7,None,None,None,0,None,None),
 	(74,9,"GtkShortcutsShortcut",None,7,None,None,None,1,None,None),
 	(74,10,"GtkShortcutsShortcut",None,7,None,None,None,2,None,None),
-	(74,11,"GtkShortcutsShortcut",None,7,None,None,None,3,None,None)
+	(74,11,"GtkShortcutsShortcut",None,7,None,None,None,3,None,None),
+	(75,1,"AdwWindow","ListBoots",None,None,None,None,0,None,None),
+	(75,2,"AdwToolbarView",None,1,None,None,None,0,None,None),
+	(75,6,"AdwHeaderBar",None,2,None,"top",None,0,None,None),
+	(75,7,"AdwWindowTitle","window_title",6,None,None,None,0,None,None),
+	(75,8,"AdwViewStack","stack",2,None,None,None,1,None,None),
+	(75,9,"AdwViewStackPage",None,8,None,None,None,1,None,None),
+	(75,10,"AdwSpinner",None,9,None,None,None,0,None,None),
+	(75,11,"AdwViewStackPage",None,8,None,None,None,0,None,None),
+	(75,12,"GtkScrolledWindow",None,11,None,None,None,0,None,None),
+	(75,13,"GtkColumnView","boots_browser",12,None,None,None,0,None,None),
+	(75,14,"GtkColumnViewColumn",None,13,None,None,None,0,None,None),
+	(75,15,"GtkColumnViewColumn",None,13,None,None,None,1,None,None),
+	(75,16,"GtkColumnViewColumn",None,13,None,None,None,2,None,None),
+	(75,17,"GtkColumnViewColumn",None,13,None,None,None,3,None,None),
+	(75,18,"GtkColumnViewColumn",None,13,None,None,None,4,None,None),
+	(75,22,"GtkSortListModel",None,24,None,None,None,0,None,None),
+	(75,23,"GListStore","list_store",22,None,None,None,0,None,None),
+	(75,24,"GtkNoSelection",None,13,None,None,None,5,None,None)
   </object>
   <object_property>
 	(4,2,"GtkButton","icon-name","system-search-symbolic",None,None,None,None,None,None,None,None,None),
@@ -421,6 +444,9 @@
 	(30,49,"GtkWidget","css-classes",".monospace",None,None,None,None,None,None,None,None,None),
 	(30,50,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
 	(30,50,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(30,51,"GtkWidget","tooltip-text"," Show a tabular list of boot",None,None,None,None,None,None,None,None,None),
+	(30,52,"AdwButtonContent","icon-name","list-symbolic",None,None,None,None,None,None,None,None,None),
+	(30,52,"AdwButtonContent","label","List Boots",None,None,None,None,None,None,None,None,None),
 	(32,1,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
 	(32,2,"GtkWidget","vexpand","True",0,None,None,None,None,None,None,None,None),
 	(32,4,"GtkWidget","margin-bottom","5",None,None,None,None,None,None,None,None,None),
@@ -816,7 +842,41 @@
 	(74,10,"GtkShortcutsShortcut","action-name","app.open_file",0,None,None,None,None,None,None,None,None),
 	(74,10,"GtkShortcutsShortcut","title","Display Unit Definition File",1,None,"shortcut window",None,None,None,None,None,None),
 	(74,11,"GtkShortcutsShortcut","action-name","app.open_journal",0,None,None,None,None,None,None,None,None),
-	(74,11,"GtkShortcutsShortcut","title","Display Unit Journal Events",1,None,"shortcut window",None,None,None,None,None,None)
+	(74,11,"GtkShortcutsShortcut","title","Display Unit Journal Events",1,None,"shortcut window",None,None,None,None,None,None),
+	(75,1,"AdwWindow","content",None,0,None,None,None,2,None,None,None,None),
+	(75,1,"GtkWindow","default-width","800",None,None,None,None,None,None,None,None,None),
+	(75,1,"GtkWindow","modal","True",0,None,None,None,None,None,None,None,None),
+	(75,2,"AdwToolbarView","content",None,None,None,None,None,8,None,None,None,None),
+	(75,2,"AdwToolbarView","top-bar-style","raised",0,None,None,None,None,None,None,None,None),
+	(75,6,"AdwHeaderBar","title-widget",None,0,None,None,None,7,None,None,None,None),
+	(75,7,"AdwWindowTitle","title","List Boots",0,None,None,None,None,None,None,None,None),
+	(75,9,"AdwViewStackPage","child",None,None,None,None,None,10,None,None,None,None),
+	(75,9,"AdwViewStackPage","name","spinner",None,None,None,None,None,None,None,None,None),
+	(75,11,"AdwViewStackPage","child",None,0,None,None,None,12,None,None,None,None),
+	(75,11,"AdwViewStackPage","name","list_boots",0,None,None,None,None,None,None,None,None),
+	(75,12,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(75,13,"GtkColumnView","model",None,None,None,None,None,24,None,None,None,None),
+	(75,13,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(75,14,"GtkColumnViewColumn","id","index",0,None,None,None,None,None,None,None,None),
+	(75,15,"GtkColumnViewColumn","expand","True",None,None,None,None,None,None,None,None,None),
+	(75,15,"GtkColumnViewColumn","fixed-width","0",None,None,None,None,None,None,None,None,None),
+	(75,15,"GtkColumnViewColumn","id","boot_id",0,None,None,None,None,None,None,None,None),
+	(75,15,"GtkColumnViewColumn","resizable","True",None,None,None,None,None,None,None,None,None),
+	(75,15,"GtkColumnViewColumn","title","Boot Id",None,None,None,None,None,None,None,None,None),
+	(75,16,"GtkColumnViewColumn","expand","True",None,None,None,None,None,None,None,None,None),
+	(75,16,"GtkColumnViewColumn","fixed-width","0",None,None,None,None,None,None,None,None,None),
+	(75,16,"GtkColumnViewColumn","id","firstlog",0,None,None,None,None,None,None,None,None),
+	(75,16,"GtkColumnViewColumn","resizable","True",None,None,None,None,None,None,None,None,None),
+	(75,16,"GtkColumnViewColumn","title","First Entry",None,None,None,None,None,None,None,None,None),
+	(75,17,"GtkColumnViewColumn","expand","True",None,None,None,None,None,None,None,None,None),
+	(75,17,"GtkColumnViewColumn","id","lastlog",0,None,None,None,None,None,None,None,None),
+	(75,17,"GtkColumnViewColumn","resizable","True",None,None,None,None,None,None,None,None,None),
+	(75,17,"GtkColumnViewColumn","title","Last Entry",None,None,None,None,None,None,None,None,None),
+	(75,18,"GtkColumnViewColumn","expand","True",None,None,None,None,None,None,None,None,None),
+	(75,18,"GtkColumnViewColumn","id","duration",0,None,None,None,None,None,None,None,None),
+	(75,18,"GtkColumnViewColumn","title","Duration",None,None,None,None,None,None,None,None,None),
+	(75,22,"GtkSortListModel","model",None,None,None,None,None,23,None,None,None,None),
+	(75,24,"GtkNoSelection","model","22",None,None,None,None,22,None,None,None,None)
   </object_property>
   <object_signal>
 	(20,29,3,"GtkButton","clicked","refresh_info_clicked",None,None,1,0,None),
@@ -866,7 +926,8 @@
 	(226,69,4,"GtkButton","clicked","show_filters_clicked",None,0,0,0,None),
 	(227,60,56,"GtkButton","clicked","legend_button_clicked",None,0,1,0,None),
 	(228,73,20,"GtkToggleButton","toggled","button_search_toggled",None,None,1,0,None),
-	(229,73,21,"GtkButton","clicked","refresh_button_clicked",None,None,1,0,None)
+	(229,73,21,"GtkButton","clicked","refresh_button_clicked",None,None,1,0,None),
+	(230,30,51,"GtkButton","clicked","list_boots_clicked",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(57,5,"GtkWidget",1,1,None,None,None,None,None,None),
