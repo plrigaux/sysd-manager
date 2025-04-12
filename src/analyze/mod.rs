@@ -5,10 +5,7 @@ use crate::{
         analyze::{self, Analyze},
         errors::SystemdErrors,
     },
-    widget::{
-        grid_cell::{Entry, GridCell},
-        unit_file_panel::flatpak,
-    },
+    widget::unit_file_panel::flatpak,
 };
 
 use gtk::{
@@ -98,36 +95,32 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
 
     col1factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = GridCell::default();
+        let row = gtk::Inscription::default();
         item.set_child(Some(&row));
     });
 
     col1factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<GridCell>().unwrap();
+        let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let r: Ref<Analyze> = entry.borrow();
-        let ent = Entry {
-            name: r.time.to_string(),
-        };
-        child.set_entry(&ent);
+
+        child.set_text(Some(r.time.to_string().as_str()));
     });
 
     col2factory.connect_setup(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let row = GridCell::default();
+        let row = gtk::Inscription::default();
         item.set_child(Some(&row));
     });
 
     col2factory.connect_bind(move |_factory, item| {
         let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-        let child = item.child().and_downcast::<GridCell>().unwrap();
+        let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
         let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
         let r: Ref<Analyze> = entry.borrow();
-        let ent = Entry {
-            name: r.service.to_string(),
-        };
-        child.set_entry(&ent);
+
+        child.set_text(Some(r.service.to_string().as_str()));
     });
 
     let col1_time = gtk::ColumnViewColumn::new(Some("Init time (ms)"), Some(col1factory));

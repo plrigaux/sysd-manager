@@ -844,6 +844,7 @@
 	(74,11,"GtkShortcutsShortcut","action-name","app.open_journal",0,None,None,None,None,None,None,None,None),
 	(74,11,"GtkShortcutsShortcut","title","Display Unit Journal Events",1,None,"shortcut window",None,None,None,None,None,None),
 	(75,1,"AdwWindow","content",None,0,None,None,None,2,None,None,None,None),
+	(75,1,"GtkWindow","default-height","800",None,None,None,None,None,None,None,None,None),
 	(75,1,"GtkWindow","default-width","800",None,None,None,None,None,None,None,None,None),
 	(75,1,"GtkWindow","modal","True",0,None,None,None,None,None,None,None,None),
 	(75,2,"AdwToolbarView","content",None,None,None,None,None,8,None,None,None,None),
