@@ -1,6 +1,8 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};
 
+use crate::widget::app_window::AppWindow;
+
 // ANCHOR: mod
 glib::wrapper! {
 
@@ -11,22 +13,20 @@ glib::wrapper! {
 }
 
 impl ListBootsWindow {
-    pub fn new() -> Self {
+    pub fn new(app_window: &AppWindow) -> Self {
         let obj: ListBootsWindow = glib::Object::new();
+        let _ = obj.imp().app_window.set(app_window.clone());
         obj.imp().fill_store();
         obj
     }
 }
 
-impl Default for ListBootsWindow {
-    fn default() -> Self {
-        ListBootsWindow::new()
-    }
-}
-
 mod imp {
 
-    use std::{cell::Ref, collections::HashMap};
+    use std::{
+        cell::{OnceCell, Ref},
+        collections::HashMap,
+    };
 
     use adw::subclass::window::AdwWindowImpl;
     use gio::{glib::BoxedAnyObject, prelude::ListModelExt};
@@ -39,10 +39,12 @@ mod imp {
         },
     };
     use log::warn;
+    use std::sync::Arc;
 
     use crate::{
         systemd::{self, journal::Boot},
         utils::th::{TimestampStyle, format_timestamp_relative_duration, get_since_time},
+        widget::app_window::AppWindow,
     };
 
     use super::ListBootsWindow;
@@ -58,6 +60,8 @@ mod imp {
 
         #[template_child]
         stack: TemplateChild<adw::ViewStack>,
+
+        pub app_window: OnceCell<AppWindow>,
     }
 
     //#[gtk::template_callbacks]
@@ -65,27 +69,38 @@ mod imp {
         pub(super) fn fill_store(&self) {
             let stack = self.stack.clone();
             let list_store = self.list_store.clone();
+            let app_window = self.app_window.get().unwrap().clone();
 
             glib::spawn_future_local(async move {
                 stack.set_visible_child_name("spinner");
                 list_store.remove_all();
 
-                let boots = gio::spawn_blocking(move || match systemd::list_boots() {
-                    Ok(boots) => Ok(boots),
-                    Err(error) => {
-                        warn!("List boots Error {:?}", error);
-                        Err(error)
-                    }
-                })
-                .await
-                .expect("Task needs to finish successfully.");
+                if app_window.imp().cached_list_boots().as_ref().is_none() {
+                    let boots = gio::spawn_blocking(move || match systemd::list_boots() {
+                        Ok(boots) => Ok(boots),
+                        Err(error) => {
+                            warn!("List boots Error {:?}", error);
+                            Err(error)
+                        }
+                    })
+                    .await
+                    .expect("Task needs to finish successfully.");
 
-                let Ok(boots) = boots else {
+                    let Ok(boots) = boots else {
+                        return;
+                    };
+
+                    app_window.imp().update_list_boots(boots);
+                } //TODO find the last log
+
+                let binding = app_window.imp().cached_list_boots();
+                let Some(boots) = binding.as_ref() else {
+                    warn!("Something wrong");
                     return;
                 };
 
-                for boot in boots {
-                    let bx = BoxedAnyObject::new(boot);
+                for boot in boots.iter() {
+                    let bx = BoxedAnyObject::new(boot.clone());
                     list_store.append(&bx);
                 }
 
@@ -145,111 +160,68 @@ mod imp {
         }
     }
 
+    fn setup(
+        column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
+        key: &str,
+    ) -> gtk::SignalListItemFactory {
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(move |_factory, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+            let row = gtk::Inscription::default();
+            item.set_child(Some(&row));
+        });
+
+        column_view_column_map
+            .get(key)
+            .unwrap()
+            .set_factory(Some(&factory));
+
+        factory
+    }
+
+    macro_rules! bind {
+        ($factory:expr, $body:expr) => {{
+            $factory.connect_bind(move |_factory, item| {
+                let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
+                let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+                let boot: Ref<Arc<Boot>> = entry.borrow();
+
+                ($body)(child, boot)
+            });
+        }};
+    }
+
     fn set_up_factories(column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>) {
-        let col1factory = gtk::SignalListItemFactory::new();
-        let col2factory = gtk::SignalListItemFactory::new();
-        let col3factory = gtk::SignalListItemFactory::new();
-        let col4factory = gtk::SignalListItemFactory::new();
-        let col5factory = gtk::SignalListItemFactory::new();
+        let col1factory = setup(column_view_column_map, "index");
+        let col2factory = setup(column_view_column_map, "boot_id");
+        let col3factory = setup(column_view_column_map, "firstlog");
+        let col4factory = setup(column_view_column_map, "lastlog");
+        let col5factory = setup(column_view_column_map, "duration");
 
-        col1factory.connect_setup(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Inscription::default();
-            item.set_child(Some(&row));
-        });
-
-        col2factory.connect_setup(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Inscription::default();
-            item.set_child(Some(&row));
-        });
-
-        col3factory.connect_setup(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Inscription::default();
-            item.set_child(Some(&row));
-        });
-
-        col4factory.connect_setup(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Inscription::default();
-            item.set_child(Some(&row));
-        });
-
-        col5factory.connect_setup(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Inscription::default();
-            item.set_child(Some(&row));
-        });
-
-        col1factory.connect_bind(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-            let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-            let boot: Ref<Boot> = entry.borrow();
-
-            child.set_text(Some(&boot.index.to_string()));
-        });
-
-        col2factory.connect_bind(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-            let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-            let boot: Ref<Boot> = entry.borrow();
-
-            child.set_text(Some(&boot.boot_id));
-        });
-
-        col3factory.connect_bind(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-            let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-            let boot: Ref<Boot> = entry.borrow();
-
+        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
+            child.set_text(Some(&boot.index.to_string()))
+        };
+        bind!(col1factory, bada);
+        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
+            child.set_text(Some(&boot.boot_id.to_string()))
+        };
+        bind!(col2factory, bada);
+        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
             let time = get_since_time(boot.first, TimestampStyle::Pretty);
             child.set_text(Some(&time));
-        });
-
-        col4factory.connect_bind(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-            let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-            let boot: Ref<Boot> = entry.borrow();
-
+        };
+        bind!(col3factory, bada);
+        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
             let time = get_since_time(boot.last, TimestampStyle::Pretty);
             child.set_text(Some(&time));
-        });
-
-        col5factory.connect_bind(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
-            let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-            let boot: Ref<Boot> = entry.borrow();
-
+        };
+        bind!(col4factory, bada);
+        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
             let duration = format_timestamp_relative_duration(boot.first, boot.last);
             child.set_text(Some(&duration));
-        });
-
-        column_view_column_map
-            .get("index")
-            .unwrap()
-            .set_factory(Some(&col1factory));
-        column_view_column_map
-            .get("boot_id")
-            .unwrap()
-            .set_factory(Some(&col2factory));
-        column_view_column_map
-            .get("firstlog")
-            .unwrap()
-            .set_factory(Some(&col3factory));
-        column_view_column_map
-            .get("lastlog")
-            .unwrap()
-            .set_factory(Some(&col4factory));
-        column_view_column_map
-            .get("duration")
-            .unwrap()
-            .set_factory(Some(&col5factory));
+        };
+        bind!(col5factory, bada);
     }
 
     impl WidgetImpl for ListBootsWindowImp {}

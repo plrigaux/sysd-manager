@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, ops::DerefMut, sync::Arc};
 
 /// Call systemd journal
 ///
@@ -169,7 +169,7 @@ pub struct Boot {
 
 impl Boot {}
 
-pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
+pub(super) fn list_boots() -> Result<Vec<Arc<Boot>>, SystemdErrors> {
     info!("Starting journal-logger list boot");
     let mut journal_reader = OpenOptions::default()
         .open()
@@ -228,11 +228,23 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
 
     let previous = get_realtime_usec(&journal_reader)?;
 
-    if let Some(prev) = list.last_mut() {
-        prev.last = previous
+    if let Some(mut prev) = list.last_mut() {
+        let m = prev.deref_mut();
+        m.last = previous
     }
 
-    Ok(list)
+    let val: i32 = -((list.len() as i32) - 1);
+
+    let ref_list = list
+        .into_iter()
+        .enumerate()
+        .map(|(idx, mut boot)| {
+            boot.index = val + idx as i32;
+            Arc::new(boot)
+        })
+        .collect();
+
+    Ok(ref_list)
 }
 
 fn create_journal_reader(

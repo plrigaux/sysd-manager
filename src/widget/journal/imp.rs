@@ -26,8 +26,6 @@ use crate::{
     widget::{InterPanelMessage, preferences::data::PREFERENCES},
 };
 
-use super::list_boots::ListBootsWindow;
-
 const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
 const PANEL_SPINNER: &str = "spinner";
@@ -232,9 +230,10 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
-    fn list_boots_clicked(&self, _button: gtk::Button) {
-        let list_boots = ListBootsWindow::new();
-        list_boots.present();
+    fn list_boots_clicked(&self, button: gtk::Button) {
+        if let Err(e) = button.activate_action("app.list_boots", None) {
+            warn!("Send action Error : {:?}", e);
+        }
     }
 
     fn on_position(&self, position: gtk::PositionType) {

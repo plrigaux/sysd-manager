@@ -19,6 +19,10 @@
         <attribute name="action">app.systemd_info</attribute>
         <attribute name="label">Systemd Info</attribute>
       </item>
+      <item>
+        <attribute name="action">app.list_boots</attribute>
+        <attribute name="label">List Boots</attribute>
+      </item>
     </section>
     <section>
       <item>

@@ -11,7 +11,7 @@ use std::{
     fs::{self, File},
     io::{ErrorKind, Read, Write},
     process::{Command, Stdio},
-    sync::OnceLock,
+    sync::{Arc, OnceLock},
 };
 
 use data::{UnitInfo, UnitProcess};
@@ -220,7 +220,7 @@ pub fn get_unit_journal(
     journal::get_unit_journal(unit, boot_filter, range)
 }
 
-pub fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
+pub fn list_boots() -> Result<Vec<Arc<Boot>>, SystemdErrors> {
     journal::list_boots()
 }
 

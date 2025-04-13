@@ -1,7 +1,7 @@
 use std::{
     borrow::Cow,
-    cell::{Cell, OnceCell},
-    sync::OnceLock,
+    cell::{Cell, OnceCell, Ref, RefCell},
+    sync::{Arc, OnceLock},
 };
 
 use adw::subclass::prelude::*;
@@ -18,11 +18,12 @@ use regex::Regex;
 use sourceview5::prelude::StaticType;
 
 use crate::{
-    systemd::data::UnitInfo,
+    systemd::{data::UnitInfo, journal::Boot},
     systemd_gui::new_settings,
     utils::palette::{blue, green, red},
     widget::{
         InterPanelMessage,
+        journal::list_boots::ListBootsWindow,
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
@@ -74,6 +75,8 @@ pub struct AppWindowImpl {
     is_dark: Cell<bool>,
 
     orientation_mode: Cell<OrientationMode>,
+
+    list_boots: RefCell<Option<Vec<Arc<Boot>>>>,
 }
 
 #[glib::object_subclass]
@@ -425,6 +428,17 @@ impl AppWindowImpl {
                 .state(default_state)
                 .build();
 
+        let list_boots = {
+            let app_window = self.obj().clone();
+
+            gio::ActionEntry::builder("list_boots")
+                .activate(move |_win: &adw::Application, _action, _variant| {
+                    let list_boots_window = ListBootsWindow::new(&app_window);
+                    list_boots_window.present();
+                })
+                .build()
+        };
+
         application.add_action_entries([
             search_units,
             open_info,
@@ -432,6 +446,7 @@ impl AppWindowImpl {
             open_journal,
             open_file,
             orientation_mode,
+            list_boots,
         ]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
@@ -440,6 +455,7 @@ impl AppWindowImpl {
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
         application.set_accels_for_action("app.open_file", &["<Ctrl>u"]);
         application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Shift>f"]);
+        application.set_accels_for_action("app.list_boots", &["<Ctrl>b"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {
@@ -471,6 +487,14 @@ impl AppWindowImpl {
             .use_markup(use_markup)
             .build();
         self.toast_overlay.add_toast(toast)
+    }
+
+    pub fn update_list_boots(&self, boots: Vec<Arc<Boot>>) {
+        self.list_boots.replace(Some(boots));
+    }
+
+    pub fn cached_list_boots(&self) -> Ref<'_, Option<Vec<Arc<Boot>>>> {
+        self.list_boots.borrow()
     }
 
     fn replace_tags(&self, message: &str) -> String {
