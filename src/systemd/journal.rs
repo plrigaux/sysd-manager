@@ -1,4 +1,4 @@
-use std::{collections::HashSet, ops::DerefMut, sync::Arc};
+use std::{collections::HashSet, ops::DerefMut};
 
 /// Call systemd journal
 ///
@@ -165,11 +165,12 @@ pub struct Boot {
     pub boot_id: String,
     pub first: u64,
     pub last: u64,
+    pub total: i32,
 }
 
 impl Boot {}
 
-pub(super) fn list_boots() -> Result<Vec<Arc<Boot>>, SystemdErrors> {
+pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
     info!("Starting journal-logger list boot");
     let mut journal_reader = OpenOptions::default()
         .open()
@@ -178,7 +179,7 @@ pub(super) fn list_boots() -> Result<Vec<Arc<Boot>>, SystemdErrors> {
     let mut last_boot_id = Id128::default();
 
     let mut set = HashSet::with_capacity(100);
-    let mut list: Vec<Boot> = Vec::with_capacity(100);
+    let mut boots: Vec<Boot> = Vec::with_capacity(100);
     let mut index = 0;
     loop {
         if journal_reader.next()? == 0 {
@@ -198,7 +199,7 @@ pub(super) fn list_boots() -> Result<Vec<Arc<Boot>>, SystemdErrors> {
             continue;
         }
 
-        if !list.is_empty() {
+        if !boots.is_empty() {
             if journal_reader.previous()? == 0 {
                 break;
             }
@@ -209,7 +210,7 @@ pub(super) fn list_boots() -> Result<Vec<Arc<Boot>>, SystemdErrors> {
                 break;
             }
 
-            if let Some(prev) = list.last_mut() {
+            if let Some(prev) = boots.last_mut() {
                 prev.last = previous
             }
         }
@@ -217,34 +218,44 @@ pub(super) fn list_boots() -> Result<Vec<Arc<Boot>>, SystemdErrors> {
         //println!("{idx} boot_id {boot_id} time {time_in_usec}");
 
         let time_in_usec = get_realtime_usec(&journal_reader)?;
-        list.push(Boot {
+        boots.push(Boot {
             index,
             boot_id,
             first: time_in_usec,
             last: 0,
+            total: 0,
         });
         index += 1;
     }
 
     let previous = get_realtime_usec(&journal_reader)?;
 
-    if let Some(mut prev) = list.last_mut() {
+    if let Some(mut prev) = boots.last_mut() {
         let m = prev.deref_mut();
         m.last = previous
     }
 
-    let val: i32 = -((list.len() as i32) - 1);
+    let total: i32 = boots.len() as i32;
 
-    let ref_list = list
-        .into_iter()
-        .enumerate()
-        .map(|(idx, mut boot)| {
-            boot.index = val + idx as i32;
-            Arc::new(boot)
-        })
-        .collect();
+    for boot in boots.iter_mut() {
+        boot.total = total;
+    }
 
-    Ok(ref_list)
+    Ok(boots)
+}
+
+pub(super) fn fetch_last_time() -> Result<u64, SystemdErrors> {
+    info!("Starting journal-logger list boot");
+    let mut journal_reader = OpenOptions::default()
+        .open()
+        .expect("Could not open journal");
+
+    journal_reader.seek_tail()?;
+    journal_reader.previous()?;
+
+    let last_time = get_realtime_usec(&journal_reader)?;
+
+    Ok(last_time)
 }
 
 fn create_journal_reader(

@@ -55,6 +55,7 @@ zbus = "5.5"
 zbus_macros =  "5.5" 
 zvariant = "5.4"
 const_format = "0.2.34"
+constcat = "0.6"
 
 [dev-dependencies]
 

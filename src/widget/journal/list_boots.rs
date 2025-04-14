@@ -1,7 +1,6 @@
+use crate::widget::app_window::AppWindow;
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};
-
-use crate::widget::app_window::AppWindow;
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -26,6 +25,8 @@ mod imp {
     use std::{
         cell::{OnceCell, Ref},
         collections::HashMap,
+        ops::DerefMut,
+        rc::Rc,
     };
 
     use adw::subclass::window::AdwWindowImpl;
@@ -39,15 +40,13 @@ mod imp {
         },
     };
     use log::warn;
-    use std::sync::Arc;
-
-    use crate::{
-        systemd::{self, journal::Boot},
-        utils::th::{TimestampStyle, format_timestamp_relative_duration, get_since_time},
-        widget::app_window::AppWindow,
-    };
 
     use super::ListBootsWindow;
+    use crate::{
+        systemd::{self, journal::Boot},
+        utils::th::{format_timestamp_relative_duration, get_since_time},
+        widget::{app_window::AppWindow, preferences::data::PREFERENCES},
+    };
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/list_boots.ui")]
@@ -76,22 +75,50 @@ mod imp {
                 list_store.remove_all();
 
                 if app_window.imp().cached_list_boots().as_ref().is_none() {
-                    let boots = gio::spawn_blocking(move || match systemd::list_boots() {
-                        Ok(boots) => Ok(boots),
+                    let boots = gio::spawn_blocking(systemd::list_boots)
+                        .await
+                        .expect("Task needs to finish successfully.");
+
+                    let boots = match boots {
+                        Ok(boots) => {
+                            let boots: Vec<Rc<Boot>> = boots.into_iter().map(Rc::new).collect();
+                            boots
+                        }
                         Err(error) => {
                             warn!("List boots Error {:?}", error);
-                            Err(error)
+                            return;
                         }
-                    })
-                    .await
-                    .expect("Task needs to finish successfully.");
-
-                    let Ok(boots) = boots else {
-                        return;
                     };
 
                     app_window.imp().update_list_boots(boots);
-                } //TODO find the last log
+                } else {
+                    //TODO find the last log
+
+                    let last_time = gio::spawn_blocking(systemd::fetch_last_time)
+                        .await
+                        .expect("Task needs to finish successfully.");
+
+                    let last_time = match last_time {
+                        Ok(last_time) => last_time,
+                        Err(error) => {
+                            warn!("Fetch_last_time  Error {:?}", error);
+                            return;
+                        }
+                    };
+
+                    let mut binding = app_window.imp().cached_list_boots_mut();
+                    if let Some(boots) = binding.deref_mut() {
+                        if let Some(boot) = boots.pop() {
+                            let new_boot = Boot {
+                                boot_id: boot.boot_id.clone(),
+                                last: last_time,
+                                ..*boot.as_ref()
+                            };
+
+                            boots.push(Rc::new(new_boot));
+                        }
+                    }
+                }
 
                 let binding = app_window.imp().cached_list_boots();
                 let Some(boots) = binding.as_ref() else {
@@ -167,7 +194,7 @@ mod imp {
         let factory = gtk::SignalListItemFactory::new();
         factory.connect_setup(move |_factory, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Inscription::default();
+            let row = gtk::Inscription::builder().css_classes(["mono"]).build();
             item.set_child(Some(&row));
         });
 
@@ -185,7 +212,7 @@ mod imp {
                 let item = item.downcast_ref::<gtk::ListItem>().unwrap();
                 let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
                 let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
-                let boot: Ref<Arc<Boot>> = entry.borrow();
+                let boot: Ref<Rc<Boot>> = entry.borrow();
 
                 ($body)(child, boot)
             });
@@ -199,25 +226,29 @@ mod imp {
         let col4factory = setup(column_view_column_map, "lastlog");
         let col5factory = setup(column_view_column_map, "duration");
 
-        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
+        let bada = |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
             child.set_text(Some(&boot.index.to_string()))
         };
         bind!(col1factory, bada);
-        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
+        let bada = |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
             child.set_text(Some(&boot.boot_id.to_string()))
         };
         bind!(col2factory, bada);
-        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
-            let time = get_since_time(boot.first, TimestampStyle::Pretty);
+
+        let timestamp_style = PREFERENCES.timestamp_style();
+        let bada = move |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
+            let time = get_since_time(boot.first, timestamp_style);
             child.set_text(Some(&time));
         };
         bind!(col3factory, bada);
-        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
-            let time = get_since_time(boot.last, TimestampStyle::Pretty);
+
+        let bada = move |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
+            let time = get_since_time(boot.last, timestamp_style);
             child.set_text(Some(&time));
         };
+
         bind!(col4factory, bada);
-        let bada = |child: gtk::Inscription, boot: Ref<Arc<Boot>>| {
+        let bada = |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
             let duration = format_timestamp_relative_duration(boot.first, boot.last);
             child.set_text(Some(&duration));
         };

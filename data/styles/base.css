@@ -14,6 +14,10 @@ label.journal_message {
     font-family: 'Droid Sans Mono', 'monospace', monospace;
 }
 
+.mono {
+    font-family: monospace;
+}
+
 label.idx {
     color: #888888;
 }

@@ -16,6 +16,7 @@ use std::cell::{Cell, RefCell};
 use log::{debug, error, info, warn};
 
 use crate::{
+    consts::APP_ACTION_LIST_BOOT,
     systemd::{
         self, BootFilter,
         data::UnitInfo,
@@ -231,7 +232,7 @@ impl JournalPanelImp {
 
     #[template_callback]
     fn list_boots_clicked(&self, button: gtk::Button) {
-        if let Err(e) = button.activate_action("app.list_boots", None) {
+        if let Err(e) = button.activate_action(APP_ACTION_LIST_BOOT, None) {
             warn!("Send action Error : {:?}", e);
         }
     }

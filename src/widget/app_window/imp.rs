@@ -1,7 +1,8 @@
 use std::{
     borrow::Cow,
-    cell::{Cell, OnceCell, Ref, RefCell},
-    sync::{Arc, OnceLock},
+    cell::{Cell, OnceCell, Ref, RefCell, RefMut},
+    rc::Rc,
+    sync::OnceLock,
 };
 
 use adw::subclass::prelude::*;
@@ -18,6 +19,7 @@ use regex::Regex;
 use sourceview5::prelude::StaticType;
 
 use crate::{
+    consts::{ACTION_LIST_BOOT, APP_ACTION_LIST_BOOT},
     systemd::{data::UnitInfo, journal::Boot},
     systemd_gui::new_settings,
     utils::palette::{blue, green, red},
@@ -76,7 +78,7 @@ pub struct AppWindowImpl {
 
     orientation_mode: Cell<OrientationMode>,
 
-    list_boots: RefCell<Option<Vec<Arc<Boot>>>>,
+    list_boots: RefCell<Option<Vec<Rc<Boot>>>>,
 }
 
 #[glib::object_subclass]
@@ -431,9 +433,10 @@ impl AppWindowImpl {
         let list_boots = {
             let app_window = self.obj().clone();
 
-            gio::ActionEntry::builder("list_boots")
+            gio::ActionEntry::builder(ACTION_LIST_BOOT)
                 .activate(move |_win: &adw::Application, _action, _variant| {
                     let list_boots_window = ListBootsWindow::new(&app_window);
+                    list_boots_window.set_transient_for(Some(&app_window));
                     list_boots_window.present();
                 })
                 .build()
@@ -455,7 +458,7 @@ impl AppWindowImpl {
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
         application.set_accels_for_action("app.open_file", &["<Ctrl>u"]);
         application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Shift>f"]);
-        application.set_accels_for_action("app.list_boots", &["<Ctrl>b"]);
+        application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {
@@ -489,12 +492,16 @@ impl AppWindowImpl {
         self.toast_overlay.add_toast(toast)
     }
 
-    pub fn update_list_boots(&self, boots: Vec<Arc<Boot>>) {
+    pub fn update_list_boots(&self, boots: Vec<Rc<Boot>>) {
         self.list_boots.replace(Some(boots));
     }
 
-    pub fn cached_list_boots(&self) -> Ref<'_, Option<Vec<Arc<Boot>>>> {
+    pub fn cached_list_boots(&self) -> Ref<'_, Option<Vec<Rc<Boot>>>> {
         self.list_boots.borrow()
+    }
+
+    pub fn cached_list_boots_mut(&self) -> RefMut<'_, Option<Vec<Rc<Boot>>>> {
+        self.list_boots.borrow_mut()
     }
 
     fn replace_tags(&self, message: &str) -> String {
