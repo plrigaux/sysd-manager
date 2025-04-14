@@ -79,6 +79,8 @@ pub struct AppWindowImpl {
     orientation_mode: Cell<OrientationMode>,
 
     list_boots: RefCell<Option<Vec<Rc<Boot>>>>,
+
+    pub(super) selected_unit: RefCell<Option<UnitInfo>>,
 }
 
 #[glib::object_subclass]
@@ -348,6 +350,8 @@ impl AppWindowImpl {
         } else {
             self.app_title.set_subtitle("");
         }
+
+        self.selected_unit.replace(unit.cloned());
 
         self.unit_control_panel.selection_change(unit);
     }

@@ -44,4 +44,9 @@ impl AppWindow {
     pub fn add_toast_message(&self, message: &str, markup: bool) {
         self.imp().add_toast_message(message, markup);
     }
+
+    pub fn selected_unit(&self) -> Option<UnitInfo> {
+        let unit = self.imp().selected_unit.borrow();
+        unit.clone()
+    }
 }

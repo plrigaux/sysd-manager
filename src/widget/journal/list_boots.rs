@@ -40,11 +40,11 @@ mod imp {
             widget::{CompositeTemplateClass, CompositeTemplateInitializingExt, WidgetImpl},
         },
     };
-    use log::{debug, error, warn};
+    use log::{debug, error, info, warn};
 
     use super::ListBootsWindow;
     use crate::{
-        systemd::{self, journal::Boot},
+        systemd::{self, data::UnitInfo, journal::Boot},
         systemd_gui::new_settings,
         utils::th::{format_timestamp_relative_duration, get_since_time},
         widget::{app_window::AppWindow, preferences::data::PREFERENCES},
@@ -93,7 +93,8 @@ mod imp {
 
             let map = self.generate_column_map();
 
-            set_up_factories(&map);
+            let list_boots_windows = self.obj();
+            set_up_factories(&map, &list_boots_windows);
         }
     }
 
@@ -263,6 +264,11 @@ mod imp {
             self.boots_browser
                 .sort_by_column(Some(c1), gtk::SortType::Descending);
         }
+
+        fn selected_unit(&self) -> Option<UnitInfo> {
+            let app_window = self.app_window.get()?;
+            app_window.selected_unit()
+        }
     }
 
     macro_rules! compare_boots {
@@ -323,6 +329,43 @@ mod imp {
         (factory, col)
     }
 
+    fn setup_action(
+        column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
+        list_boots_windows: &ListBootsWindow,
+    ) {
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(move |_factory, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+            let row = gtk::Button::builder().label("Journal Event").build();
+            item.set_child(Some(&row));
+        });
+
+        let col = column_view_column_map.get("action").unwrap();
+        col.set_factory(Some(&factory));
+
+        let list_boots_windows = list_boots_windows.clone();
+        factory.connect_bind(move |_factory, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+            let child = item.child().and_downcast::<gtk::Button>().unwrap();
+            let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
+            let boot: Ref<Rc<Boot>> = entry.borrow();
+
+            {
+                let boot_id: String = boot.boot_id.clone();
+
+                child.connect_clicked(move |_| {
+                    info!("boot {}", boot_id);
+                });
+            }
+
+            if let Some(_unit) = list_boots_windows.imp().selected_unit() {
+                child.set_sensitive(true);
+            } else {
+                child.set_sensitive(false);
+            }
+        });
+    }
+
     macro_rules! bind {
         ($factory:expr, $body:expr) => {{
             $factory.connect_bind(move |_factory, item| {
@@ -336,7 +379,10 @@ mod imp {
         }};
     }
 
-    fn set_up_factories(column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>) {
+    fn set_up_factories(
+        column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
+        list_boots_windows: &ListBootsWindow,
+    ) {
         let (col1factory, col1) = setup(column_view_column_map, "pos_offset");
         column_view_column_set_sorter!(col1, index);
         let (col1bfactory, col1b) = setup(column_view_column_map, "neg_offset");
@@ -345,6 +391,7 @@ mod imp {
         let (col3factory, _) = setup(column_view_column_map, "firstlog");
         let (col4factory, _) = setup(column_view_column_map, "lastlog");
         let (col5factory, col5) = setup(column_view_column_map, "duration");
+        setup_action(column_view_column_map, list_boots_windows);
         column_view_column_set_sorter!(col5, duration);
 
         let bada = |child: gtk::Label, boot: Ref<Rc<Boot>>| child.set_text(&boot.index.to_string());

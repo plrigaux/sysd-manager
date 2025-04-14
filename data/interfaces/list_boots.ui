@@ -73,6 +73,11 @@
                             <property name="title">Duration</property>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkColumnViewColumn">
+                            <property name="id">action</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
