@@ -4,7 +4,7 @@
   <ui>
 	(21,1,"preferences.ui","preferences.ui",None,None,None,None,None,None,None),
 	(29,1,"unit_info_panel.ui","unit_info_panel.ui",None,None,None,None,None,None,None),
-	(30,1,"journal_panel.ui","journal_panel.ui","Unit file panel",None,None,None,None,None,None),
+	(30,1,"journal_panel.ui","journal_panel.ui","Unit journal panel",None,None,None,None,None,None),
 	(32,1,"unit_file_panel.ui","unit_file_panel.ui","Unit file panel",None,None,None,None,None,None),
 	(49,1,"unit_control_panel.ui","unit_control_panel.ui",None,None,None,None,None,None,None),
 	(51,1,None,"journal_row.ui",None,None,None,None,None,None,None),
@@ -415,7 +415,7 @@
 	(30,13,"GtkWidget","vexpand","True",0,None,None,None,None,None,None,None,None),
 	(30,20,"AdwViewStackPage","child",None,None,None,None,None,22,None,None,None,None),
 	(30,20,"AdwViewStackPage","name","empty",None,None,None,None,None,None,None,None,None),
-	(30,22,"AdwStatusPage","description","No journal events! It can be a good thing. 😉",None,None,None,None,None,None,None,None,None),
+	(30,22,"AdwStatusPage","description","No journal events!\nIt can be a good thing. 😉",None,None,None,None,None,None,None,None,None),
 	(30,22,"AdwStatusPage","icon-name","dialog-question",None,None,None,None,None,None,None,None,None),
 	(30,22,"AdwStatusPage","title","No journal events",None,None,None,None,None,None,None,None,None),
 	(30,32,"GtkBox","spacing","5",0,None,None,None,None,None,None,None,None),
@@ -935,7 +935,8 @@
 	(227,60,56,"GtkButton","clicked","legend_button_clicked",None,0,1,0,None),
 	(228,73,20,"GtkToggleButton","toggled","button_search_toggled",None,None,1,0,None),
 	(229,73,21,"GtkButton","clicked","refresh_button_clicked",None,None,1,0,None),
-	(230,30,51,"GtkButton","clicked","list_boots_clicked",None,0,1,0,None)
+	(230,30,51,"GtkButton","clicked","list_boots_clicked",None,0,1,0,None),
+	(232,30,49,"AdwEntryRow","entry-activated","journal_boot_id_entry_activated",None,0,1,0,None)
   </object_signal>
   <object_data>
 	(57,5,"GtkWidget",1,1,None,None,None,None,None,None),

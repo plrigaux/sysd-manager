@@ -64,7 +64,7 @@ impl SystemdUnitFile {
     } */
 }
 
-#[derive(Default, Clone, PartialEq)]
+#[derive(Default, Clone, PartialEq, Debug)]
 pub enum BootFilter {
     #[default]
     Current,

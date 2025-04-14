@@ -90,8 +90,7 @@ impl JournalPanelImp {
     #[template_callback]
     fn refresh_journal_clicked(&self, _button: &gtk::Button) {
         info!("journal refresh button click");
-        self.new_text_view();
-        self.update_journal(EventGrabbing::Default);
+        self.clean_refresh();
     }
 
     #[template_callback]
@@ -113,8 +112,7 @@ impl JournalPanelImp {
             self.older_to_recent.set(true);
         }
 
-        self.new_text_view();
-        self.update_journal(EventGrabbing::Default);
+        self.clean_refresh();
     }
 
     #[template_callback]
@@ -127,7 +125,7 @@ impl JournalPanelImp {
     fn journal_menu_popover_closed(&self) {
         info!("journal_menu_popover_closed");
 
-        let boot_filter_op = if self.journal_boot_all_button.has_css_class(CLASS_SUCCESS) {
+        /*        let boot_filter_op = if self.journal_boot_all_button.has_css_class(CLASS_SUCCESS) {
             Some(BootFilter::All)
         } else if self.journal_boot_id_entry.has_css_class(CLASS_SUCCESS) {
             let boot_id = self.journal_boot_id_entry.text();
@@ -139,16 +137,16 @@ impl JournalPanelImp {
             Some(BootFilter::Current)
         } else {
             None
-        };
+        }; */
 
-        if let Some(boot_filter) = boot_filter_op {
+        /*  if let Some(boot_filter) = boot_filter_op {
             let replaced = self.boot_filter.replace(boot_filter.clone());
 
             if replaced != boot_filter {
                 //filter updated
                 self.update_journal(EventGrabbing::Default);
             }
-        }
+        } */
     }
 
     #[template_callback]
@@ -162,15 +160,15 @@ impl JournalPanelImp {
 
         self.clear_boot_id();
 
-        let boot_filter_ref: &BootFilter = &self.boot_filter.borrow();
+        let boot_filter = { self.boot_filter.borrow().clone() };
 
-        match boot_filter_ref {
+        match boot_filter {
             BootFilter::Current => self
                 .journal_boot_current_button
                 .add_css_class(CLASS_SUCCESS),
             BootFilter::All => self.journal_boot_all_button.add_css_class(CLASS_SUCCESS),
             BootFilter::Id(boot_id) => {
-                self.journal_boot_id_entry.set_text(boot_id);
+                self.journal_boot_id_entry.set_text(&boot_id);
                 self.journal_boot_id_entry.add_css_class(CLASS_SUCCESS);
             }
         }
@@ -181,6 +179,8 @@ impl JournalPanelImp {
         info!("journal_boot_all_button_clicked");
         self.clear_boot_id();
         self.journal_boot_all_button.add_css_class(CLASS_SUCCESS);
+        self.update_boot_filter(BootFilter::All);
+        self.clean_refresh();
     }
 
     #[template_callback]
@@ -189,6 +189,9 @@ impl JournalPanelImp {
         self.clear_boot_id();
         self.journal_boot_current_button
             .add_css_class(CLASS_SUCCESS);
+
+        self.update_boot_filter(BootFilter::Current);
+        self.clean_refresh();
     }
 
     #[template_callback]
@@ -265,6 +268,18 @@ impl JournalPanelImp {
     fn journal_boot_id_entry_change(&self) {
         self.set_boot_id_style();
     }
+
+    #[template_callback]
+    fn journal_boot_id_entry_activated(&self, _entry: adw::EntryRow) {
+        info!("journal_boot_id_entry_activated");
+        self.set_boot_id_style();
+    }
+
+    /*     #[template_callback]
+    fn journal_boot_id_entry_apply(&self, _entry: adw::EntryRow) {
+        info!("journal_boot_id_entry_apply");
+        self.set_boot_id_style();
+    } */
 }
 
 impl JournalPanelImp {
@@ -348,6 +363,8 @@ impl JournalPanelImp {
 
         debug!("range {:?}", range);
 
+        info!("boot filter {:?}", boot_filter);
+
         glib::spawn_future_local(async move {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
@@ -419,6 +436,8 @@ impl JournalPanelImp {
             BootIdValidation::Valid => {
                 self.clear_boot_id();
                 self.journal_boot_id_entry.add_css_class(CLASS_SUCCESS);
+                let boot_filter = BootFilter::Id(boot_id_text.to_string());
+                self.update_boot_filter(boot_filter);
             }
             BootIdValidation::Over => {
                 self.journal_boot_id_entry.remove_css_class(CLASS_SUCCESS);
@@ -464,11 +483,26 @@ impl JournalPanelImp {
     }
 
     fn new_text_view(&self) {
+        info!("new_text_view");
         let tv: gtk::TextView = gtk::TextView::builder().build();
         self.scrolled_window.set_child(Some(&tv));
         self.journal_text_view.replace(tv);
         self.from_time.set(None);
         //self.unit_journal_loaded.set(false);
+    }
+
+    fn clean_refresh(&self) {
+        self.new_text_view();
+        self.update_journal(EventGrabbing::Default);
+    }
+
+    fn update_boot_filter(&self, boot_filter: BootFilter) {
+        let replaced = self.boot_filter.replace(boot_filter.clone());
+
+        if replaced != boot_filter {
+            //filter updated
+            self.clean_refresh();
+        }
     }
 }
 

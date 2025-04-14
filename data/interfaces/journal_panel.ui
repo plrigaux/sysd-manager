@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.94.1 -->
 <interface>
   <!-- interface-name journal_panel.ui -->
-  <!-- interface-description Unit file panel -->
+  <!-- interface-description Unit journal panel -->
   <requires lib="gtk" version="4.12"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="JournalPanel" parent="GtkBox">
@@ -85,6 +85,7 @@
                         <property name="title">Boot id</property>
                         <property name="use-underline">True</property>
                         <signal name="changed" handler="journal_boot_id_entry_change" swapped="yes"/>
+                        <signal name="entry-activated" handler="journal_boot_id_entry_activated" swapped="yes"/>
                       </object>
                     </child>
                   </object>
@@ -101,7 +102,8 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description">No journal events! It can be a good thing. 😉</property>
+                <property name="description">No journal events!
+It can be a good thing. 😉</property>
                 <property name="icon-name">dialog-question</property>
                 <property name="title">No journal events</property>
               </object>
