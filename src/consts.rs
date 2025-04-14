@@ -11,3 +11,6 @@ pub const ERROR_CSS: &str = "error";
 
 pub const ACTION_LIST_BOOT: &str = "list_boots";
 pub const APP_ACTION_LIST_BOOT: &str = concat!("app.", ACTION_LIST_BOOT);
+
+pub const ACTION_JOURNAL_FILTER_BOOT: &str = "journal-filter-boot";
+pub const APP_ACTION_JOURNAL_FILTER_BOOT: &str = concat!("app.", ACTION_JOURNAL_FILTER_BOOT);

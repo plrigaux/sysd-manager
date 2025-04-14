@@ -31,6 +31,7 @@ mod imp {
     };
 
     use adw::subclass::window::AdwWindowImpl;
+    use clap::error;
     use gio::{glib::BoxedAnyObject, prelude::ListModelExt};
     use gtk::{
         glib::{self},
@@ -44,6 +45,7 @@ mod imp {
 
     use super::ListBootsWindow;
     use crate::{
+        consts::APP_ACTION_JOURNAL_FILTER_BOOT,
         systemd::{self, data::UnitInfo, journal::Boot},
         systemd_gui::new_settings,
         utils::th::{format_timestamp_relative_duration, get_since_time},
@@ -353,8 +355,16 @@ mod imp {
             {
                 let boot_id: String = boot.boot_id.clone();
 
-                child.connect_clicked(move |_| {
+                child.connect_clicked(move |button| {
                     info!("boot {}", boot_id);
+                    let var = boot_id.to_variant();
+                    match button.activate_action(APP_ACTION_JOURNAL_FILTER_BOOT, Some(&var)) {
+                        Ok(()) => {}
+                        Err(error) => warn!(
+                            "Action {:?} error {:?}",
+                            APP_ACTION_JOURNAL_FILTER_BOOT, error
+                        ),
+                    }
                 });
             }
 

@@ -19,7 +19,7 @@ use regex::Regex;
 use sourceview5::prelude::StaticType;
 
 use crate::{
-    consts::{ACTION_LIST_BOOT, APP_ACTION_LIST_BOOT},
+    consts::{ACTION_JOURNAL_FILTER_BOOT, ACTION_LIST_BOOT, APP_ACTION_LIST_BOOT},
     systemd::{data::UnitInfo, journal::Boot},
     systemd_gui::new_settings,
     utils::palette::{blue, green, red},
@@ -447,6 +447,17 @@ impl AppWindowImpl {
                 .build()
         };
 
+        let journal_filter = {
+            let app_window = self.obj().clone();
+
+            let default_state = glib::variant::ToVariant::to_variant(&"");
+            gio::ActionEntry::builder(ACTION_JOURNAL_FILTER_BOOT)
+                .activate(move |_, _action, _variant| info!("{:?} {:?}", _action, _variant))
+                .parameter_type(Some(VariantTy::STRING))
+                .state(default_state)
+                .build()
+        };
+
         application.add_action_entries([
             search_units,
             open_info,
@@ -455,6 +466,7 @@ impl AppWindowImpl {
             open_file,
             orientation_mode,
             list_boots,
+            journal_filter,
         ]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
