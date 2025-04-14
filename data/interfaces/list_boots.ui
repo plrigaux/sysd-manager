@@ -20,7 +20,7 @@
                         <property name="model">
                           <object class="GtkNoSelection">
                             <property name="model">
-                              <object class="GtkSortListModel">
+                              <object class="GtkSortListModel" id="list_boots_sort_list_model">
                                 <property name="model">
                                   <object class="GListStore" id="list_store"/>
                                 </property>
@@ -30,13 +30,21 @@
                         </property>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="id">index</property>
+                            <property name="id">pos_offset</property>
+                            <property name="resizable">True</property>
+                            <property name="title">Index</property>
                           </object>
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="expand">True</property>
-                            <property name="fixed-width">0</property>
+                            <property name="id">neg_offset</property>
+                            <property name="resizable">True</property>
+                            <property name="title">Offset</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn">
+                            <property name="fixed-width">308</property>
                             <property name="id">boot_id</property>
                             <property name="resizable">True</property>
                             <property name="title">Boot Id</property>
@@ -44,8 +52,7 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="expand">True</property>
-                            <property name="fixed-width">0</property>
+                            <property name="fixed-width">270</property>
                             <property name="id">firstlog</property>
                             <property name="resizable">True</property>
                             <property name="title">First Entry</property>
@@ -53,7 +60,7 @@
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
-                            <property name="expand">True</property>
+                            <property name="fixed-width">270</property>
                             <property name="id">lastlog</property>
                             <property name="resizable">True</property>
                             <property name="title">Last Entry</property>

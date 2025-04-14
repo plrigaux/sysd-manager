@@ -266,10 +266,10 @@ fn format_timestamp_relative_full_delta(delta: TimeDelta, show_suffix: bool) -> 
         );
     } else if d >= 2 * SEC_PER_DAY {
         let days = d / SEC_PER_DAY;
-        swrite!(out, "{days} days {suffix}");
+        swrite!(out, "{days} {} {suffix}", plur_day!(days));
     } else if d >= 25 * SEC_PER_HOUR {
         let hours = (d - SEC_PER_DAY) / SEC_PER_HOUR;
-        swrite!(out, "1 days {hours}h {suffix}");
+        swrite!(out, "1 {} {hours}h {suffix}", plur_day!(1));
     } else if d >= 6 * SEC_PER_HOUR {
         let hours = d / SEC_PER_HOUR;
         swrite!(out, "{hours}h {suffix}");

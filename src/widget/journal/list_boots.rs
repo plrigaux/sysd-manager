@@ -2,7 +2,6 @@ use crate::widget::app_window::AppWindow;
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};
 
-// ANCHOR: mod
 glib::wrapper! {
 
     pub struct ListBootsWindow(ObjectSubclass<imp::ListBootsWindowImp>)
@@ -22,6 +21,8 @@ impl ListBootsWindow {
 
 mod imp {
 
+    const WINDOW_HEIGHT: &str = "list-boots-window-height";
+    const WINDOW_WIDTH: &str = "list-boots-window-width";
     use std::{
         cell::{OnceCell, Ref},
         collections::HashMap,
@@ -39,11 +40,12 @@ mod imp {
             widget::{CompositeTemplateClass, CompositeTemplateInitializingExt, WidgetImpl},
         },
     };
-    use log::warn;
+    use log::{debug, error, warn};
 
     use super::ListBootsWindow;
     use crate::{
         systemd::{self, journal::Boot},
+        systemd_gui::new_settings,
         utils::th::{format_timestamp_relative_duration, get_since_time},
         widget::{app_window::AppWindow, preferences::data::PREFERENCES},
     };
@@ -60,7 +62,39 @@ mod imp {
         #[template_child]
         stack: TemplateChild<adw::ViewStack>,
 
+        #[template_child]
+        list_boots_sort_list_model: TemplateChild<gtk::SortListModel>,
+
         pub app_window: OnceCell<AppWindow>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for ListBootsWindowImp {
+        const NAME: &'static str = "ListBoots";
+        type Type = ListBootsWindow;
+        type ParentType = adw::Window;
+
+        fn class_init(klass: &mut Self::Class) {
+            // The layout manager determines how child widgets are laid out.
+            klass.bind_template();
+            //klass.bind_template_callbacks();
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for ListBootsWindowImp {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            self.load_window_size();
+
+            let map = self.generate_column_map();
+
+            set_up_factories(&map);
+        }
     }
 
     //#[gtk::template_callbacks]
@@ -69,6 +103,7 @@ mod imp {
             let stack = self.stack.clone();
             let list_store = self.list_store.clone();
             let app_window = self.app_window.get().unwrap().clone();
+            let window = self.obj().clone();
 
             glib::spawn_future_local(async move {
                 stack.set_visible_child_name("spinner");
@@ -131,6 +166,8 @@ mod imp {
                     list_store.append(&bx);
                 }
 
+                window.imp().set_sorter();
+
                 stack.set_visible_child_name("list_boots");
             });
         }
@@ -150,6 +187,10 @@ mod imp {
 
                 let id = column_view_column.id();
 
+                column_view_column.connect_fixed_width_notify(|column| {
+                    println!("{:?} {}", column.id(), column.fixed_width())
+                });
+
                 if let Some(id) = id {
                     col_map.insert(id, column_view_column.clone());
                 } else {
@@ -158,59 +199,135 @@ mod imp {
             }
             col_map
         }
-    }
 
-    #[glib::object_subclass]
-    impl ObjectSubclass for ListBootsWindowImp {
-        const NAME: &'static str = "ListBoots";
-        type Type = ListBootsWindow;
-        type ParentType = adw::Window;
+        pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
+            // Get the size of the window
 
-        fn class_init(klass: &mut Self::Class) {
-            // The layout manager determines how child widgets are laid out.
-            klass.bind_template();
-            //klass.bind_template_callbacks();
+            let obj = self.obj();
+            let (width, height) = obj.default_size();
+
+            // Set the window state in `settings`
+            let settings = crate::systemd_gui::new_settings();
+
+            settings.set_int(WINDOW_WIDTH, width)?;
+
+            settings.set_int(WINDOW_HEIGHT, height)?;
+
+            Ok(())
         }
 
-        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
-            obj.init_template();
+        fn load_window_size(&self) {
+            // Get the window state from `settings`
+            let settings = new_settings();
+
+            let mut width = settings.int(WINDOW_WIDTH);
+            let mut height = settings.int(WINDOW_HEIGHT);
+
+            let obj = self.obj();
+            let (def_width, def_height) = obj.default_size();
+
+            if width < 0 {
+                width = def_width;
+                if width < 0 {
+                    width = 1280;
+                }
+            }
+
+            if height < 0 {
+                height = def_height;
+                if height < 0 {
+                    height = 720;
+                }
+            }
+
+            // Set the size of the window
+            obj.set_default_size(width, height);
+        }
+
+        fn set_sorter(&self) {
+            let sorter = self.boots_browser.sorter();
+
+            self.list_boots_sort_list_model.set_sorter(sorter.as_ref());
+
+            let item_out = self
+                .boots_browser
+                .columns()
+                .item(0)
+                .expect("Expect item x to be not None");
+
+            //Sort on first column
+            let c1 = item_out
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+            self.boots_browser
+                .sort_by_column(Some(c1), gtk::SortType::Descending);
         }
     }
 
-    impl ObjectImpl for ListBootsWindowImp {
-        fn constructed(&self) {
-            self.parent_constructed();
+    macro_rules! compare_boots {
+        ($boot1:expr, $boot2:expr, $func:ident) => {{
+            $boot1.$func().cmp(&$boot2.$func()).into()
+        }};
 
-            let map = self.generate_column_map();
+        ($boot1:expr, $boot2:expr, $func:ident, $($funcx:ident),+) => {{
 
-            set_up_factories(&map);
-        }
+            let ordering = $boot1.$func().cmp(&$boot2.$func());
+            if ordering != core::cmp::Ordering::Equal {
+                return ordering.into();
+            }
+
+            compare_boots!($boot1, $boot2, $($funcx),+)
+        }};
     }
 
-    fn setup(
-        column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
+    macro_rules! create_column_filter {
+        ($($func:ident),+) => {{
+            gtk::CustomSorter::new(move |obj1, obj2| {
+                let boxed = obj1.downcast_ref::<BoxedAnyObject>().unwrap();
+                let boot1: Ref<Rc<Boot>> = boxed.borrow();
+
+                let boxed = obj2.downcast_ref::<BoxedAnyObject>().unwrap();
+                let boot2: Ref<Rc<Boot>> = boxed.borrow();
+
+                compare_boots!(boot2, boot1, $($func),+)
+            })
+        }};
+    }
+
+    macro_rules! column_view_column_set_sorter {
+        ($column_view_column:expr, $($func:ident),+) => {{
+            let sorter = create_column_filter!($($func),+);
+            $column_view_column.set_sorter(Some(&sorter));
+        }};
+    }
+
+    fn setup<'a>(
+        column_view_column_map: &'a HashMap<glib::GString, gtk::ColumnViewColumn>,
         key: &str,
-    ) -> gtk::SignalListItemFactory {
+    ) -> (gtk::SignalListItemFactory, &'a gtk::ColumnViewColumn) {
         let factory = gtk::SignalListItemFactory::new();
         factory.connect_setup(move |_factory, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Inscription::builder().css_classes(["mono"]).build();
+            let row = gtk::Label::builder()
+                .selectable(true)
+                .xalign(0.0)
+                //.css_classes(["mono"])
+                .build();
             item.set_child(Some(&row));
         });
 
-        column_view_column_map
-            .get(key)
-            .unwrap()
-            .set_factory(Some(&factory));
+        let col = column_view_column_map.get(key).unwrap();
+        col.set_factory(Some(&factory));
 
-        factory
+        (factory, col)
     }
 
     macro_rules! bind {
         ($factory:expr, $body:expr) => {{
             $factory.connect_bind(move |_factory, item| {
                 let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-                let child = item.child().and_downcast::<gtk::Inscription>().unwrap();
+                let child = item.child().and_downcast::<gtk::Label>().unwrap();
                 let entry = item.item().and_downcast::<BoxedAnyObject>().unwrap();
                 let boot: Ref<Rc<Boot>> = entry.borrow();
 
@@ -220,42 +337,63 @@ mod imp {
     }
 
     fn set_up_factories(column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>) {
-        let col1factory = setup(column_view_column_map, "index");
-        let col2factory = setup(column_view_column_map, "boot_id");
-        let col3factory = setup(column_view_column_map, "firstlog");
-        let col4factory = setup(column_view_column_map, "lastlog");
-        let col5factory = setup(column_view_column_map, "duration");
+        let (col1factory, col1) = setup(column_view_column_map, "pos_offset");
+        column_view_column_set_sorter!(col1, index);
+        let (col1bfactory, col1b) = setup(column_view_column_map, "neg_offset");
+        column_view_column_set_sorter!(col1b, neg_offset);
+        let (col2factory, _) = setup(column_view_column_map, "boot_id");
+        let (col3factory, _) = setup(column_view_column_map, "firstlog");
+        let (col4factory, _) = setup(column_view_column_map, "lastlog");
+        let (col5factory, col5) = setup(column_view_column_map, "duration");
+        column_view_column_set_sorter!(col5, duration);
 
-        let bada = |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
-            child.set_text(Some(&boot.index.to_string()))
-        };
+        let bada = |child: gtk::Label, boot: Ref<Rc<Boot>>| child.set_text(&boot.index.to_string());
         bind!(col1factory, bada);
-        let bada = |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
-            child.set_text(Some(&boot.boot_id.to_string()))
-        };
+
+        let bada =
+            |child: gtk::Label, boot: Ref<Rc<Boot>>| child.set_text(&boot.neg_offset().to_string());
+        bind!(col1bfactory, bada);
+        let bada =
+            |child: gtk::Label, boot: Ref<Rc<Boot>>| child.set_text(&boot.boot_id.to_string());
+
         bind!(col2factory, bada);
 
         let timestamp_style = PREFERENCES.timestamp_style();
-        let bada = move |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
+        let bada = move |child: gtk::Label, boot: Ref<Rc<Boot>>| {
             let time = get_since_time(boot.first, timestamp_style);
-            child.set_text(Some(&time));
+            child.set_text(&time);
         };
         bind!(col3factory, bada);
 
-        let bada = move |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
+        let bada = move |child: gtk::Label, boot: Ref<Rc<Boot>>| {
             let time = get_since_time(boot.last, timestamp_style);
-            child.set_text(Some(&time));
+            child.set_text(&time);
         };
 
         bind!(col4factory, bada);
-        let bada = |child: gtk::Inscription, boot: Ref<Rc<Boot>>| {
+        let bada = |child: gtk::Label, boot: Ref<Rc<Boot>>| {
             let duration = format_timestamp_relative_duration(boot.first, boot.last);
-            child.set_text(Some(&duration));
+            child.set_text(&duration);
         };
         bind!(col5factory, bada);
     }
 
     impl WidgetImpl for ListBootsWindowImp {}
-    impl WindowImpl for ListBootsWindowImp {}
+
+    impl WindowImpl for ListBootsWindowImp {
+        // Save window state right before the window will be closed
+        fn close_request(&self) -> glib::Propagation {
+            // Save window size
+            debug!("Close window");
+            if let Err(_err) = self.save_window_context() {
+                error!("Failed to save window state");
+            }
+
+            self.parent_close_request();
+            // Allow to invoke other event handlers
+            glib::Propagation::Proceed
+        }
+    }
+
     impl AdwWindowImpl for ListBootsWindowImp {}
 }

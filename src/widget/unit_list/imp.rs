@@ -454,7 +454,7 @@ impl UnitListPanelImp {
                 .force_selected_index
                 .set(Some(force_selected_index));
             refresh_unit_list_button.set_sensitive(true);
-            unit_list.set_sorter();
+            unit_list.imp().set_sorter();
 
             //cause no scrollwindow v adjustment
             if n_items > 0 {
@@ -594,7 +594,7 @@ impl UnitListPanelImp {
 
     pub fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
-    pub(super) fn set_sorter(&self) {
+    fn set_sorter(&self) {
         let sorter = self.units_browser.sorter();
 
         self.unit_list_sort_list_model.set_sorter(sorter.as_ref());

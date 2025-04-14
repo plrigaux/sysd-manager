@@ -49,10 +49,6 @@ impl UnitListPanel {
         self.imp().set_inter_message(action);
     }
 
-    fn set_sorter(&self) {
-        self.imp().set_sorter();
-    }
-
     fn try_get_filter_assessor(
         &self,
         num_id: u8,

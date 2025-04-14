@@ -168,7 +168,19 @@ pub struct Boot {
     pub total: i32,
 }
 
-impl Boot {}
+impl Boot {
+    pub fn neg_offset(&self) -> i32 {
+        -(self.total - self.index)
+    }
+
+    pub fn index(&self) -> i32 {
+        self.index
+    }
+
+    pub fn duration(&self) -> u64 {
+        self.last - self.first
+    }
+}
 
 pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
     info!("Starting journal-logger list boot");
@@ -180,7 +192,7 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
 
     let mut set = HashSet::with_capacity(100);
     let mut boots: Vec<Boot> = Vec::with_capacity(100);
-    let mut index = 0;
+    let mut index = 1;
     loop {
         if journal_reader.next()? == 0 {
             break;

@@ -436,7 +436,8 @@ impl AppWindowImpl {
             gio::ActionEntry::builder(ACTION_LIST_BOOT)
                 .activate(move |_win: &adw::Application, _action, _variant| {
                     let list_boots_window = ListBootsWindow::new(&app_window);
-                    list_boots_window.set_transient_for(Some(&app_window));
+                    //list_boots_window.set_transient_for(Some(&app_window));
+                    list_boots_window.set_modal(true);
                     list_boots_window.present();
                 })
                 .build()

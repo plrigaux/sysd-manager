@@ -211,5 +211,13 @@
             <default>true</default>
             <summary>Display the unit list summary</summary>
         </key>
+        <key name="list-boots-window-height" type="i">
+            <default>800</default>
+            <summary>List Boots Window Height</summary>
+        </key>
+        <key name="list-boots-window-width" type="i">
+            <default>1100</default>
+            <summary>List Boots Window Width</summary>
+        </key>
     </schema>
 </schemalist>
