@@ -452,13 +452,16 @@ impl JournalPanelImp {
     }
 
     pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
-        match *action {
-            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
+        match action {
+            InterPanelMessage::IsDark(is_dark) => self.set_dark(*is_dark),
             InterPanelMessage::FontProvider(old, new) => {
                 let text_view = self.journal_text_view.borrow();
-                set_text_view_font(old, new, &text_view);
+                set_text_view_font(*old, *new, &text_view);
             }
-            InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
+            InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(*visible),
+            InterPanelMessage::JournalFilterBoot(boot_filter) => {
+                self.update_boot_filter(boot_filter.clone());
+            }
             _ => {}
         }
     }

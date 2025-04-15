@@ -1,6 +1,6 @@
 use gtk::pango::FontDescription;
 
-use crate::systemd::data::UnitInfo;
+use crate::systemd::{BootFilter, data::UnitInfo};
 
 pub mod app_window;
 pub mod clean_dialog;
@@ -24,4 +24,5 @@ pub enum InterPanelMessage<'a> {
     NewStyleScheme(Option<&'a str>),
     FileLineNumber(bool),
     UnitChange(Option<&'a UnitInfo>),
+    JournalFilterBoot(BootFilter),
 }

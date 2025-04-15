@@ -386,6 +386,10 @@ impl UnitControlPanelImpl {
                 self.set_dark(is_dark);
                 self.forward_inter_actions(action)
             }
+            InterPanelMessage::JournalFilterBoot(_) => {
+                self.display_journal_page();
+                self.forward_inter_actions(action)
+            }
             _ => self.forward_inter_actions(action),
         }
     }

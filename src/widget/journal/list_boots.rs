@@ -31,7 +31,6 @@ mod imp {
     };
 
     use adw::subclass::window::AdwWindowImpl;
-    use clap::error;
     use gio::{glib::BoxedAnyObject, prelude::ListModelExt};
     use gtk::{
         glib::{self},
@@ -45,11 +44,10 @@ mod imp {
 
     use super::ListBootsWindow;
     use crate::{
-        consts::APP_ACTION_JOURNAL_FILTER_BOOT,
-        systemd::{self, data::UnitInfo, journal::Boot},
+        systemd::{self, BootFilter, data::UnitInfo, journal::Boot},
         systemd_gui::new_settings,
         utils::th::{format_timestamp_relative_duration, get_since_time},
-        widget::{app_window::AppWindow, preferences::data::PREFERENCES},
+        widget::{InterPanelMessage, app_window::AppWindow, preferences::data::PREFERENCES},
     };
 
     #[derive(Default, gtk::CompositeTemplate)]
@@ -338,7 +336,12 @@ mod imp {
         let factory = gtk::SignalListItemFactory::new();
         factory.connect_setup(move |_factory, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = gtk::Button::builder().label("Journal Event").build();
+            let row = gtk::Button::builder()
+                .icon_name("funnel-symbolic")
+                .tooltip_text("Filter Journal Events")
+                .css_classes(["suggested-action", "circular"])
+                .margin_end(10)
+                .build();
             item.set_child(Some(&row));
         });
 
@@ -354,17 +357,18 @@ mod imp {
 
             {
                 let boot_id: String = boot.boot_id.clone();
-
-                child.connect_clicked(move |button| {
+                let list_boots_windows = list_boots_windows.clone();
+                child.connect_clicked(move |_button| {
                     info!("boot {}", boot_id);
-                    let var = boot_id.to_variant();
-                    match button.activate_action(APP_ACTION_JOURNAL_FILTER_BOOT, Some(&var)) {
-                        Ok(()) => {}
-                        Err(error) => warn!(
-                            "Action {:?} error {:?}",
-                            APP_ACTION_JOURNAL_FILTER_BOOT, error
-                        ),
-                    }
+
+                    let Some(app_window) = list_boots_windows.imp().app_window.get() else {
+                        warn!("No app window");
+                        return;
+                    };
+
+                    app_window.set_inter_message(&InterPanelMessage::JournalFilterBoot(
+                        BootFilter::Id(boot_id.clone()),
+                    ));
                 });
             }
 
