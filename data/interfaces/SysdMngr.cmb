@@ -333,8 +333,9 @@
 	(75,18,"GtkColumnViewColumn",None,13,None,None,None,5,None,None),
 	(75,22,"GtkSortListModel","list_boots_sort_list_model",24,None,None,None,0,None,None),
 	(75,23,"GListStore","list_store",22,None,None,None,0,None,None),
-	(75,24,"GtkNoSelection",None,13,None,None,None,6,None,None),
-	(75,25,"GtkColumnViewColumn",None,13,None,None,None,0,None,None)
+	(75,24,"GtkNoSelection",None,13,None,None,None,7,None,None),
+	(75,25,"GtkColumnViewColumn",None,13,None,None,None,0,None,None),
+	(75,26,"GtkColumnViewColumn",None,13,None,None,None,6,None,None)
   </object>
   <object_property>
 	(4,2,"GtkButton","icon-name","system-search-symbolic",None,None,None,None,None,None,None,None,None),
@@ -884,7 +885,8 @@
 	(75,24,"GtkNoSelection","model","22",None,None,None,None,22,None,None,None,None),
 	(75,25,"GtkColumnViewColumn","id","pos_offset",0,None,None,None,None,None,None,None,None),
 	(75,25,"GtkColumnViewColumn","resizable","True",None,None,None,None,None,None,None,None,None),
-	(75,25,"GtkColumnViewColumn","title","Index",None,None,None,None,None,None,None,None,None)
+	(75,25,"GtkColumnViewColumn","title","Index",None,None,None,None,None,None,None,None,None),
+	(75,26,"GtkColumnViewColumn","id","action",0,None,None,None,None,None,None,None,None)
   </object_property>
   <object_signal>
 	(20,29,3,"GtkButton","clicked","refresh_info_clicked",None,None,1,0,None),
