@@ -81,6 +81,23 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.23.0" date="2025-04-14">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>List the Journal Boots</li>
+        </ul>  
+        <p>Changed</p>
+        <ul>
+          <li>UX Journal Entries Filtered on Boot Direct Selection</li>
+        </ul>
+          <p>Fixed</p>
+        <ul>
+          <li>Clear Filters Menu option</li>
+          <li>UX Unit search entry got focus when appearing</li>
+        </ul>         
+      </description>
+    </release>
     <release version="1.22.4" date="2025-04-11">
       <description>
           <p>Fixed</p>
