@@ -1,6 +1,6 @@
 use gtk::glib::variant::ToVariant;
 
-use crate::widget::preferences::data::COL_SHOW_PREFIX;
+use crate::{consts::NS_ACTION_UNIT_LIST_FILTER_CLEAR, widget::preferences::data::COL_SHOW_PREFIX};
 
 pub(super) fn create_col_menu(key: &str) -> gio::MenuModel {
     let menu = gio::Menu::new();
@@ -27,7 +27,12 @@ pub(super) fn create_col_menu(key: &str) -> gio::MenuModel {
     let sub_menu = gio::Menu::new();
 
     append_item_variant(&sub_menu, "Filter", "win.unit_list_filter", key);
-    append_item_variant(&sub_menu, "Clear Filter", "win.unit_list_filter_clear", key);
+    append_item_variant(
+        &sub_menu,
+        "Clear Filters",
+        NS_ACTION_UNIT_LIST_FILTER_CLEAR,
+        key,
+    );
 
     menu.append_section(Some("Filterring"), &sub_menu);
     menu.freeze();

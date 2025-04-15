@@ -30,6 +30,7 @@ use log::{debug, error, info, warn};
 use menus::create_col_menu;
 
 use crate::{
+    consts::ACTION_UNIT_LIST_FILTER_CLEAR,
     systemd::{self, data::UnitInfo, runtime},
     systemd_gui,
     widget::{
@@ -292,11 +293,11 @@ impl UnitListPanelImp {
         let list_filter_clear_action_entry = {
             //  let settings = settings.clone();
             let unit_list_panel = self.obj().clone();
-            gio::ActionEntry::builder("unit_list_filter_clear")
+            gio::ActionEntry::builder(ACTION_UNIT_LIST_FILTER_CLEAR)
                 .activate(move |_application: &AppWindow, _b, _target_value| {
                     unit_list_panel.imp().clear_filter();
                 })
-                //     .parameter_type(Some(VariantTy::STRING))
+                .parameter_type(Some(VariantTy::STRING))
                 .build()
         };
 
