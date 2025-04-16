@@ -63,7 +63,9 @@ impl CleanDialogImp {
         let lambda_out = {
             let what = what.clone();
             let this = self.obj().clone();
-            move |unit: &UnitInfo, result: Result<(), SystemdErrors>| {
+            move |unit: &UnitInfo,
+                  result: Result<(), SystemdErrors>,
+                  _control: &UnitControlPanel| {
                 if let Err(error) = result {
                     this.imp().work_around_dialog(&what, unit, error);
                 }

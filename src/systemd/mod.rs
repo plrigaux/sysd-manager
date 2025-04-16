@@ -128,6 +128,13 @@ pub async fn complete_unit_information(
     sysdbus::complete_unit_information(units).await
 }
 
+pub async fn complete_unit_information2(
+    unit: &UnitInfo,
+) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
+    let units = vec![(unit.primary(), unit.dbus_level(), unit.object_path())];
+    sysdbus::complete_unit_information(&units).await
+}
+
 /// Takes a unit name as input and attempts to start it
 pub fn start_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
     sysdbus::start_unit(unit.dbus_level(), &unit.primary(), mode)

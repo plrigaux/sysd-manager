@@ -78,7 +78,7 @@ impl UnitControlPanel {
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
         systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>) + 'static,
+        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel) + 'static,
     ) {
         self.imp()
             .call_method(method_name, button, systemd_method, return_handle);

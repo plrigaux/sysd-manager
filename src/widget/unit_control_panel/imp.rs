@@ -497,7 +497,7 @@ impl UnitControlPanelImpl {
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
         systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>) + 'static,
+        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel) + 'static,
     ) {
         let binding = self.current_unit.borrow();
         let Some(unit) = binding.as_ref() else {
@@ -545,7 +545,7 @@ impl UnitControlPanelImpl {
                 }
             }
 
-            return_handle(&unit, result);
+            return_handle(&unit, result, &control_panel)
         });
     }
 }

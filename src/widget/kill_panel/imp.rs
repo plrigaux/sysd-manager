@@ -18,7 +18,10 @@ use log::{debug, warn};
 use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
     systemd::{self, data::UnitInfo, enums::KillWho, errors::SystemdErrors},
-    widget::{InterPanelMessage, unit_control_panel::side_control_panel::SideControlPanel},
+    widget::{
+        InterPanelMessage,
+        unit_control_panel::{UnitControlPanel, side_control_panel::SideControlPanel},
+    },
 };
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -269,7 +272,9 @@ impl KillPanelImp {
 
         let who: KillWho = self.who_to_kill.selected().into();
 
-        let lambda_out = move |_unit: &UnitInfo, _res: Result<(), SystemdErrors>| {};
+        let lambda_out = move |_unit: &UnitInfo,
+                               _res: Result<(), SystemdErrors>,
+                               _control: &UnitControlPanel| {};
 
         if self.is_sigqueue.get() {
             let sigqueue_value = match self.sigqueue_value.text().parse::<i32>() {

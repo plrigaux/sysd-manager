@@ -9,7 +9,7 @@ use gtk::{
 use log::warn;
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
+    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors, runtime},
     widget::{
         InterPanelMessage, app_window::AppWindow, clean_dialog::CleanUnitDialog,
         kill_panel::KillPanel, unit_control_panel::UnitControlPanel,
@@ -82,7 +82,12 @@ impl SideControlPanelImpl {
         self.kill_or_queue_new_window(&self.queue_signal_window, KillPanel::new_signal_window);
     }
 
-    fn lambda_out(_unit: &UnitInfo, _res: Result<(), SystemdErrors>) {}
+    fn lambda_out(
+        _unit: &UnitInfo,
+        _res: Result<(), SystemdErrors>,
+        _control_panel: &UnitControlPanel,
+    ) {
+    }
 
     #[template_callback]
     fn freeze_button_clicked(&self, button: &gtk::Button) {
@@ -132,6 +137,43 @@ impl SideControlPanelImpl {
         clean_dialog.present();
     }
 
+    fn after_mask(unit: &UnitInfo, result: Result<(), SystemdErrors>, control: &UnitControlPanel) {
+        if result.is_err() {
+            return;
+        }
+
+        let unit = unit.clone();
+        let control = control.clone();
+        glib::spawn_future_local(async move {
+            let unit2 = unit.clone();
+
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+
+            runtime().spawn(async move {
+                let response = systemd::complete_unit_information2(&unit2).await;
+
+                sender
+                    .send(response)
+                    .expect("The channel needs to be open.");
+            });
+
+            let vec_unit_info = match receiver.await.expect("Tokio receiver works") {
+                Ok(unit_files) => unit_files,
+                Err(err) => {
+                    warn!("Fail to update Unit info {:?}", err);
+                    return Err(err);
+                }
+            };
+
+            if let Some(update) = vec_unit_info.into_iter().next() {
+                unit.update_from_unit_info(update);
+            }
+
+            control.refresh_panels();
+            Ok::<(), SystemdErrors>(())
+        });
+    }
+
     #[template_callback]
     fn mask_button_clicked(&self, button: &gtk::Widget) {
         let lambda = |unit: &UnitInfo| -> Result<(), SystemdErrors> {
@@ -139,7 +181,7 @@ impl SideControlPanelImpl {
             Ok(())
         };
         self.parent()
-            .call_method("Mask", button, lambda, Self::lambda_out)
+            .call_method("Mask", button, lambda, Self::after_mask)
     }
 
     #[template_callback]
@@ -150,7 +192,7 @@ impl SideControlPanelImpl {
         };
 
         self.parent()
-            .call_method("Unmask", button, lambda, Self::lambda_out)
+            .call_method("Unmask", button, lambda, Self::after_mask);
     }
 }
 
