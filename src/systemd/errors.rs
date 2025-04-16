@@ -24,6 +24,7 @@ pub enum SystemdErrors {
     ZNoSuchUnit(String, String),
     ZNoSuchUnitProxy(String, String),
     ZJobTypeNotApplicable(String, String),
+    ZUnitMasked(String, String),
     ZVariantError(zvariant::Error),
     ZBusFdoError(zbus::fdo::Error),
 }
@@ -49,6 +50,7 @@ impl SystemdErrors {
             SystemdErrors::ZJobTypeNotApplicable(_, detail) => detail.clone(),
             SystemdErrors::ZNoSuchUnit(_, detail) => detail.clone(),
             SystemdErrors::ZNoSuchUnitProxy(_, detail) => detail.clone(),
+            SystemdErrors::ZUnitMasked(_, detail) => detail.clone(),
             _ => self.to_string(),
         }
     }
@@ -95,6 +97,9 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
                     }
                     "org.freedesktop.systemd1.JobTypeNotApplicable" => {
                         SystemdErrors::ZJobTypeNotApplicable(method.to_owned(), message)
+                    }
+                    "org.freedesktop.systemd1.UnitMasked" => {
+                        SystemdErrors::ZUnitMasked(method.to_owned(), message)
                     }
                     _ => {
                         SystemdErrors::ZMethodError(method.to_owned(), err_code.to_owned(), message)

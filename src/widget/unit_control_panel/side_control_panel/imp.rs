@@ -131,6 +131,27 @@ impl SideControlPanelImpl {
 
         clean_dialog.present();
     }
+
+    #[template_callback]
+    fn mask_button_clicked(&self, button: &gtk::Widget) {
+        let lambda = |unit: &UnitInfo| -> Result<(), SystemdErrors> {
+            systemd::mask_unit_files(unit, false, false)?;
+            Ok(())
+        };
+        self.parent()
+            .call_method("Mask", button, lambda, Self::lambda_out)
+    }
+
+    #[template_callback]
+    fn unmask_button_clicked(&self, button: &gtk::Widget) {
+        let lambda = |unit: &UnitInfo| -> Result<(), SystemdErrors> {
+            systemd::unmask_unit_files(unit, false)?;
+            Ok(())
+        };
+
+        self.parent()
+            .call_method("Unmask", button, lambda, Self::lambda_out)
+    }
 }
 
 impl SideControlPanelImpl {

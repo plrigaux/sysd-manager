@@ -298,7 +298,7 @@ impl UnitControlPanelImpl {
             }
             Err(err) => {
                 let info = format!(
-                    "Can't {} the unit <unit>{}</unit>, because: {:?}",
+                    "Can't {} the unit <unit>{}</unit>, because: {}",
                     action.as_str(),
                     unit.primary(),
                     err.human_error_type()

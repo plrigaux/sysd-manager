@@ -534,6 +534,21 @@ pub fn clean_unit(unit: &UnitInfo, what: &[String]) -> Result<(), SystemdErrors>
     sysdbus::clean_unit(unit.dbus_level(), &unit.primary(), &what_str)
 }
 
+pub fn mask_unit_files(
+    unit: &UnitInfo,
+    runtime: bool,
+    force: bool,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    sysdbus::mask_unit_files(unit.dbus_level(), &[&unit.primary()], runtime, force)
+}
+
+pub fn unmask_unit_files(
+    unit: &UnitInfo,
+    runtime: bool,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    sysdbus::unmask_unit_files(unit.dbus_level(), &[&unit.primary()], runtime)
+}
+
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
     if !IS_FLATPAK_MODE {
         return Ok(());

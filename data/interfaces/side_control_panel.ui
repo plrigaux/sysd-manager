@@ -97,5 +97,32 @@
         </child>
       </object>
     </child>
+    <child>
+      <object class="GtkButton" id="mask_button">
+        <property name="css-classes">flat</property>
+        <signal name="clicked" handler="mask_button_clicked" swapped="yes"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="halign">start</property>
+            <property name="icon-name">icons8-mask-symbolic</property>
+            <property name="label">Mask</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="unmask_button">
+        <property name="css-classes">flat</property>
+        <property name="label">Unmask</property>
+        <signal name="clicked" handler="unmask_button_clicked" swapped="yes"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="halign">start</property>
+            <property name="icon-name">icons8-anonymous-mask-symbolic</property>
+            <property name="label">UnMask</property>
+          </object>
+        </child>
+      </object>
+    </child>
   </template>
 </interface>

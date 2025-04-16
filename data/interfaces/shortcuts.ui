@@ -15,19 +15,25 @@
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.preferences</property>
-                <property name="title" translatable="yes" context="shortcut window">Show preferences</property>
+                <property name="title" translatable="yes" context="shortcut window">Show Preferences</property>
               </object>
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.search_units</property>
-                <property name="title" translatable="yes" context="shortcut window">Open search</property>
+                <property name="title" translatable="yes" context="shortcut window">Open Search Unit</property>
               </object>
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">win.unit_list_filter_blank</property>
                 <property name="title" translatable="yes" context="shortcut window">Open Unit Property Filter</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">app.list_boots</property>
+                <property name="title" translatable="yes" context="shortcut window">Open List Boots</property>
               </object>
             </child>
           </object>

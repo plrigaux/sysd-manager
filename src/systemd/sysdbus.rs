@@ -51,6 +51,8 @@ const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
 const METHOD_CLEAN_UNIT: &str = "CleanUnit";
+const METHOD_MASK_UNIT_FILES: &str = "MaskUnitFiles";
+const METHOD_UNMASK_UNIT_FILES: &str = "UnmaskUnitFiles";
 const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
 const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlags";
@@ -744,6 +746,67 @@ pub(super) fn clean_unit(
     };
 
     send_disenable_message(level, METHOD_CLEAN_UNIT, &(unit_name, what), handle_answer)
+}
+
+pub(super) fn mask_unit_files(
+    level: UnitDBusLevel,
+    files: &[&str],
+    runtime: bool,
+    force: bool,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    let handle_answer = |_method: &str,
+                         return_message: &Message|
+     -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+        info!(
+            "Mask Unit File {:?} runtime {:?} force {:?} SUCCESS",
+            files, runtime, force
+        );
+
+        let body = return_message.body();
+
+        let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
+
+        info!("Mask Unit File {:?}", return_msg);
+
+        Ok(return_msg)
+    };
+
+    send_disenable_message(
+        level,
+        METHOD_MASK_UNIT_FILES,
+        &(files, runtime, force),
+        handle_answer,
+    )
+}
+
+pub(super) fn unmask_unit_files(
+    level: UnitDBusLevel,
+    files: &[&str],
+    runtime: bool,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    let handle_answer = |_method: &str,
+                         return_message: &Message|
+     -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+        info!(
+            "UnMask Unit File {:?} runtime {:?}  SUCCESS",
+            files, runtime
+        );
+
+        let body = return_message.body();
+
+        let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
+
+        info!("UnMask Unit File {:?}", return_msg);
+
+        Ok(return_msg)
+    };
+
+    send_disenable_message(
+        level,
+        METHOD_UNMASK_UNIT_FILES,
+        &(files, runtime),
+        handle_answer,
+    )
 }
 
 fn convert_to_string(value: &zvariant::Value) -> String {
@@ -1707,5 +1770,38 @@ mod tests {
             msg,
             "sequences of messages".to_owned(),
         ))
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_mask_unit_file() -> Result<(), SystemdErrors> {
+        init();
+        let unit_name: &str = TEST_SERVICE;
+
+        mask_unit_files(UnitDBusLevel::System, &[unit_name], false, false)?;
+
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_mask_unit_file2() -> Result<(), SystemdErrors> {
+        init();
+        let unit_file_name: &str = "/etc/systemd/system/tiny_daemon.service";
+
+        mask_unit_files(UnitDBusLevel::System, &[unit_file_name], false, false)?;
+
+        Ok(())
+    }
+
+    #[ignore = "need a connection to a service"]
+    #[test]
+    fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
+        init();
+        let unit_name: &str = TEST_SERVICE;
+
+        unmask_unit_files(UnitDBusLevel::System, &[unit_name], false)?;
+
+        Ok(())
     }
 }

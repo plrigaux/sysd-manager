@@ -164,7 +164,7 @@ fn create_about() -> adw::AboutDialog {
         Some("Thank you for your support"),
         &["AsciiWolf", "Justin Searle"],
     );
-
+    //<a target="_blank" href="https://icons8.com/icon/37724/anonymous-mask">Anonymous Mask</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
     if let Some(rn_version) = RELEASE_NOTES_VERSION {
         about.set_release_notes_version(rn_version);
     }
@@ -172,6 +172,8 @@ fn create_about() -> adw::AboutDialog {
     if let Some(release_notes) = RELEASE_NOTES {
         about.set_release_notes(release_notes);
     }
+
+    about.add_legal_section("icons8", Some(r#"<a href="https://icons8.com/icon/37724/anonymous-mask">Anonymous Mask</a> icon by <a  href="https://icons8.com">Icons8</a>"#), gtk::License::Unknown, Some("license"));
 
     about
 }
