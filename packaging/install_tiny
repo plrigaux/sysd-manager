@@ -23,7 +23,7 @@ BASE_NAME = "tiny_daemon"
 SERVICE_NAME = "tiny_daemon.service"
 SERVICE_DIR = f"{os.path.expanduser('~')}/bin"
 LOGS_DIR = f"log/{BASE_NAME}"
-SERVICE_PATH = f"/etc/systemd/system/{SERVICE_NAME}"
+SERVICE_PATH = f"/usr/lib/systemd/system/{SERVICE_NAME}"
 EXEC_FILE = BASE_NAME
 PROG_SOURCE_DIR = BASE_NAME
 

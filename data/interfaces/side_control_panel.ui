@@ -83,28 +83,13 @@
       </object>
     </child>
     <child>
-      <object class="AdwSplitButton" id="reload_unit_button">
-        <property name="css-classes">flat</property>
-        <property name="tooltip-text">Asks the specified unit line to reload its configuration</property>
-        <signal name="clicked" handler="reload_unit_button_clicked" swapped="yes"/>
-        <child>
-          <object class="AdwButtonContent">
-            <property name="css-classes">flat</property>
-            <property name="halign">start</property>
-            <property name="icon-name">view-refresh-symbolic</property>
-            <property name="label">Reload Unit</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
       <object class="GtkButton" id="mask_button">
         <property name="css-classes">flat</property>
         <signal name="clicked" handler="mask_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
-            <property name="icon-name">icons8-mask-symbolic</property>
+            <property name="icon-name">venetian-mask-symbolic</property>
             <property name="label">Mask</property>
           </object>
         </child>
@@ -118,8 +103,23 @@
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
-            <property name="icon-name">icons8-anonymous-mask-symbolic</property>
+            <property name="icon-name">empty-icon</property>
             <property name="label">UnMask</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwSplitButton" id="reload_unit_button">
+        <property name="css-classes">flat</property>
+        <property name="tooltip-text">Asks the specified unit line to reload its configuration</property>
+        <signal name="clicked" handler="reload_unit_button_clicked" swapped="yes"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="css-classes">flat</property>
+            <property name="halign">start</property>
+            <property name="icon-name">view-refresh-symbolic</property>
+            <property name="label">Reload Unit</property>
           </object>
         </child>
       </object>

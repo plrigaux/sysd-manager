@@ -40,7 +40,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/top-down-symbolic.svg</file>    
     <file preprocess="xml-stripblanks">icons/scalable/actions/empty-icon.svg</file>       
     <file preprocess="xml-stripblanks">icons/scalable/actions/list-symbolic.svg</file>   
-    <file preprocess="xml-stripblanks">icons/scalable/actions/icons8-anonymous-mask-symbolic.svg</file>   
-    <file preprocess="xml-stripblanks">icons/scalable/actions/icons8-mask-symbolic.svg</file>       
+    <file preprocess="xml-stripblanks">icons/scalable/actions/venetian-mask-symbolic.svg</file>      
   </gresource>
 </gresources>
