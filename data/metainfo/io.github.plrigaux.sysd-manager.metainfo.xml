@@ -81,6 +81,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.24.0" date="2025-04-18">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>Mask and Unmask a Unit functionnality</li>
+        </ul>         
+      </description>
+    </release>
     <release version="1.23.0" date="2025-04-14">
       <description>
         <p>Added</p>
