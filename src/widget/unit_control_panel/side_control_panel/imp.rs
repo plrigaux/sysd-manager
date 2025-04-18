@@ -169,7 +169,7 @@ impl SideControlPanelImpl {
                 unit.update_from_unit_info(update);
             }
 
-            control.refresh_panels();
+            control.selection_change(Some(&unit));
             Ok::<(), SystemdErrors>(())
         });
     }

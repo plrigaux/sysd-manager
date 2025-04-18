@@ -255,7 +255,7 @@ impl UnitControlPanelImpl {
 
             button.set_sensitive(true);
 
-            unit_control_panel.start_restart(
+            unit_control_panel.imp().start_restart(
                 &unit,
                 start_results,
                 action,
@@ -339,8 +339,8 @@ impl UnitControlPanelImpl {
         if let Some(old_unit) = old_unit {
             if old_unit.primary() == unit.primary() {
                 info! {"Same unit {}", unit.primary() };
-                self.highlight_controls(unit);
-                return;
+                /*                 self.highlight_controls(unit);
+                return; */
             }
         }
 

@@ -85,12 +85,16 @@
     <child>
       <object class="GtkButton" id="mask_button">
         <property name="css-classes">flat</property>
+        <property name="tooltip-markup" translatable="yes">Mask the selected unit.  This will link these unit files to &lt;u&gt;/dev/null&lt;/u&gt;, making it impossible to start them. 
+This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all kinds of activation of the unit, including enablement and manual activation. 
+&lt;b&gt;Use this option with care.&lt;/b&gt;</property>
         <signal name="clicked" handler="mask_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">venetian-mask-symbolic</property>
-            <property name="label">Mask</property>
+            <property name="label">M_ask</property>
+            <property name="use-underline">True</property>
           </object>
         </child>
       </object>
@@ -99,12 +103,14 @@
       <object class="GtkButton" id="unmask_button">
         <property name="css-classes">flat</property>
         <property name="label">Unmask</property>
+        <property name="tooltip-markup">Unmask the selected unit files. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;. </property>
         <signal name="clicked" handler="unmask_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
-            <property name="icon-name">empty-icon</property>
-            <property name="label">UnMask</property>
+            <property name="icon-name">venetian-unmask-symbolic</property>
+            <property name="label">_UnMask</property>
+            <property name="use-underline">True</property>
           </object>
         </child>
       </object>

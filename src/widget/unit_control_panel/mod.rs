@@ -1,11 +1,6 @@
-use enums::UnitContolType;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
-use crate::systemd::{
-    data::UnitInfo,
-    enums::{ActiveState, StartStopMode},
-    errors::SystemdErrors,
-};
+use crate::systemd::{data::UnitInfo, errors::SystemdErrors};
 
 use super::{InterPanelMessage, app_window::AppWindow};
 
@@ -55,18 +50,6 @@ impl UnitControlPanel {
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.imp().set_inter_message(action);
-    }
-
-    fn start_restart(
-        &self,
-        unit: &UnitInfo,
-        start_results: Result<String, SystemdErrors>,
-        action: UnitContolType,
-        expected_active_state: ActiveState,
-        mode: StartStopMode,
-    ) {
-        self.imp()
-            .start_restart(unit, start_results, action, expected_active_state, mode);
     }
 
     pub fn unlink_child(&self, is_signal: bool) {
