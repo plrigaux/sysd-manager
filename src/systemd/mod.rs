@@ -528,17 +528,18 @@ pub fn queue_signal_unit(
 
 pub fn clean_unit(unit: &UnitInfo, what: &[String]) -> Result<(), SystemdErrors> {
     //just send all if seleted
-    let mut what_str: Vec<String> = what
+    let mut what_peekable = what
         .iter()
-        .filter(|cop| **cop != CleanOption::All.code())
-        .cloned()
-        .collect();
+        .filter(|c_op| *c_op == CleanOption::All.code())
+        .peekable();
 
-    if what_str.len() != what.len() {
-        what_str = vec![CleanOption::All.code().to_owned()]
-    }
+    let clean_what: Vec<&str> = if what_peekable.peek().is_some() {
+        vec![CleanOption::All.code()]
+    } else {
+        what.iter().map(|s| s.as_str()).collect()
+    };
 
-    sysdbus::clean_unit(unit.dbus_level(), &unit.primary(), &what_str)
+    sysdbus::clean_unit(unit.dbus_level(), &unit.primary(), &clean_what)
 }
 
 pub fn mask_unit_files(
