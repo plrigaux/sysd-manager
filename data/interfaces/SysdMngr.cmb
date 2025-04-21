@@ -814,6 +814,7 @@
 	(69,3,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(69,4,"GtkButton","label","Filters",None,None,None,None,None,None,None,None,None),
 	(69,5,"GtkButton","label","Clear Filters",None,None,None,None,None,None,None,None,None),
+	(69,5,"GtkWidget","css-classes","destructive-action",None,None,None,None,None,None,None,None,None),
 	(69,7,"GtkBox","spacing","5",None,None,None,None,None,None,None,None,None),
 	(69,7,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(73,3,"(item)","action","app.analyze_blame",0,None,None,None,None,None,None,None,None),

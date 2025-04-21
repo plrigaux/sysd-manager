@@ -16,6 +16,7 @@ use gtk::{
     },
 };
 
+use log::warn;
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -137,6 +138,65 @@ impl UnitListFilterWindowImp {
             }
             self.filter_navigation_container.append(&button);
         }
+
+        let box_pad = gtk::Box::builder().vexpand(true).build();
+
+        let clear_filter_button = gtk::Button::builder()
+            .label("Clear Filters")
+            .css_classes(["destructive-action"])
+            .valign(gtk::Align::End)
+            .hexpand(true)
+            .build();
+        {
+            let unit_list_panel = unit_list_panel.clone();
+            let filter_stack = self.filter_stack.clone();
+            clear_filter_button.connect_clicked(move |_b| {
+                for (_, _, num_id, _) in UNIT_LIST_COLUMNS {
+                    unit_list_panel.filter_assessor_change(
+                        num_id,
+                        None,
+                        Some(gtk::FilterChange::LessStrict),
+                        true,
+                    );
+                }
+
+                let sel = filter_stack.pages();
+                let list: gio::ListModel = sel.into();
+
+                let nb = list.n_items();
+                for position in 0..nb {
+                    let Some(object) = list.item(position) else {
+                        warn!("No item at position {position}");
+                        continue;
+                    };
+
+                    let Ok(page) = object.downcast::<adw::ViewStackPage>() else {
+                        warn!("Not a view stack page");
+                        continue;
+                    };
+
+                    let container = page.child();
+
+                    fn clear(mut some_widget: Option<gtk::Widget>) {
+                        while let Some(w) = some_widget.as_ref() {
+                            if let Some(check) = w.downcast_ref::<gtk::CheckButton>() {
+                                check.set_active(false);
+                            } else if let Some(entry) = w.downcast_ref::<gtk::Entry>() {
+                                entry.set_text("");
+                            }
+
+                            clear(w.first_child());
+                            some_widget = w.next_sibling();
+                        }
+                    }
+
+                    clear(container.first_child())
+                }
+            });
+        }
+
+        box_pad.append(&clear_filter_button);
+        self.filter_navigation_container.append(&box_pad);
 
         if let Some(selected) = selected {
             set_visible_child_name(&self.filter_stack, selected);
@@ -315,7 +375,6 @@ macro_rules! build_elem_filter {
                 gtk::CheckButton::builder()
                     .child(&label)
                     .active(active)
-                    .tooltip_text("asdf")
                     .build()
             };
 

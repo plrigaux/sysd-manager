@@ -58,7 +58,6 @@ impl UnitListPanel {
             .get()
             .expect("not None")
             .get(&num_id)
-        //  .map(|a| a.clone())
     }
 
     fn filter_assessor_change(

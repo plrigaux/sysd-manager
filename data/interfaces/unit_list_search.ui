@@ -18,6 +18,7 @@
     </child>
     <child>
       <object class="GtkButton" id="clear_filters_button">
+        <property name="css-classes">destructive-action</property>
         <property name="label">Clear Filters</property>
         <signal name="clicked" handler="clear_filter_clicked"/>
       </object>

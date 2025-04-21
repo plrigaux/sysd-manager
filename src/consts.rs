@@ -12,5 +12,5 @@ pub const ERROR_CSS: &str = "error";
 pub const ACTION_LIST_BOOT: &str = "list_boots";
 pub const APP_ACTION_LIST_BOOT: &str = concat!("app.", ACTION_LIST_BOOT);
 
-pub const ACTION_UNIT_LIST_FILTER_CLEAR: &str = "win.unit_list_filter_clear";
+pub const ACTION_UNIT_LIST_FILTER_CLEAR: &str = "unit_list_filter_clear";
 pub const NS_ACTION_UNIT_LIST_FILTER_CLEAR: &str = concat!("win.", ACTION_UNIT_LIST_FILTER_CLEAR);
