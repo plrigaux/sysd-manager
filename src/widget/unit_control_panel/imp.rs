@@ -138,10 +138,12 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.register(app_window);
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
-        self.side_panel
-            .get()
-            .expect("side_panel not None")
-            .set_app_window(app_window);
+
+        if let Some(side_panel) = self.side_panel.get() {
+            side_panel.set_app_window(app_window);
+        } else {
+            warn!("Side Panel Should not be None");
+        }
 
         self.app_window
             .set(app_window.clone())
@@ -399,10 +401,13 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.set_inter_message(action);
         self.unit_file_panel.set_inter_message(action);
         self.unit_journal_panel.set_inter_message(action);
-        self.side_panel
-            .get()
-            .expect("Should not be None")
-            .set_inter_message(action);
+
+        let Some(side_panel) = self.side_panel.get() else {
+            warn!("Side Panel Should not be None");
+            return;
+        };
+
+        side_panel.set_inter_message(action);
     }
 
     //TODO bind to the property
@@ -480,10 +485,11 @@ impl UnitControlPanelImpl {
     }
 
     pub fn unlink_child(&self, is_signal: bool) {
-        self.side_panel
-            .get()
-            .expect("Should not be None")
-            .unlink_child(is_signal);
+        let Some(side_panel) = self.side_panel.get() else {
+            warn!("Side Panel Should not be None");
+            return;
+        };
+        side_panel.unlink_child(is_signal);
     }
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {

@@ -81,6 +81,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.24.1" date="2025-04-28">
+      <description>
+        <p>Added</p>
+        <ul>
+          <li>A clear all filters button on the filter panel</li>
+        </ul>   
+        <p>Fixed</p>
+        <ul>
+          <li>A possible starting crash</li>
+        </ul>           
+      </description>
+    </release>
     <release version="1.24.0" date="2025-04-18">
       <description>
         <p>Added</p>
