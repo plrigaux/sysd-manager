@@ -159,7 +159,85 @@ pub(super) fn get_unit_journal(
 
     Ok(out_list)
 }
+/*
+pub(super) fn get_unit_journal_continuous(
+    unit: &UnitInfo,
+) -> Result<JournalEventChunk, SystemdErrors> {
+    let mut journal_reader = create_journal_reader(unit, BootFilter::All)?;
 
+    let mut out_list = JournalEventChunk::new(50);
+
+    let default = "NONE".to_string();
+    let default_priority = "7".to_string();
+
+    let mut index = 0;
+    let mut last_boot_id = String::new();
+
+    let message_max_char = PREFERENCES.journal_event_max_size() as usize;
+
+    let timestamp_style = PREFERENCES.timestamp_style();
+
+    //Position the indexer
+
+    journal_reader.seek_tail()?;
+
+    let mut last_time_in_usec: u64 = 0;
+
+    loop {
+        if next(&mut journal_reader, true)? == 0 {
+            out_list.set_info(JournalEventChunkInfo::NoMore);
+
+            let asdf = journal_reader.wait(Some(std::time::Duration::from_secs(1)))?;
+            /*
+            match journal_reader.wait(Some(std::time::Duration::from_secs(1))) {
+                Ok(wait_result) => match wait_result {
+                    sysd::JournalWaitResult::Nop => todo!(),
+                    sysd::JournalWaitResult::Append => todo!(),
+                    sysd::JournalWaitResult::Invalidate => todo!(),
+                },
+                Err(e) => return e.into(),
+            } */
+        }
+
+        let mut message = get_data(&mut journal_reader, KEY_MESSAGE, &default);
+
+        if message_max_char != 0 && message.len() > message_max_char {
+            warn!(
+                "MESSAGE LEN {} will truncate to {message_max_char}",
+                message.len()
+            );
+
+            message = truncate(message, message_max_char);
+        }
+
+        let time_in_usec = get_realtime_usec(&journal_reader)?;
+
+        let pid = get_data(&mut journal_reader, KEY_PID, &default);
+        let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
+        let priority = priority_str.parse::<u8>().map_or(7, |u| u);
+
+        let name = get_data(&mut journal_reader, KEY_COMM, &default);
+
+        let boot_id = get_data(&mut journal_reader, KEY_BOOT_ID, &default);
+
+        let prefix = make_prefix(time_in_usec, name, pid, timestamp_style);
+
+        let journal_event = JournalEvent::new_param(priority, time_in_usec, prefix, message);
+
+        //if == 0 no limit
+
+        /*  if range.has_reached_end(time_in_usec) {
+            break;
+        } */
+
+        out_list.push(journal_event);
+
+        last_time_in_usec = time_in_usec;
+    }
+
+    Ok(out_list)
+}
+*/
 pub struct Boot {
     pub index: i32,
     pub boot_id: String,
