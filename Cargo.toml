@@ -37,23 +37,23 @@ adw = { version = "0.7.2", package = "libadwaita", features = ["v1_7"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
 gtk = { version = "0.9.6", package = "gtk4", features = ["v4_18"] }
 bitflags = "2.9"
-chrono = "0.4.40"
+chrono = "0.4"
 clap = { version = "4.5", features = ["derive"] }
 dotenv = "0.15"
 env_logger = "0.11"
 foreign-types-shared = "0.3.1"
 log = "0.4"
 libc = "0.2"
-libsysd = { version = "0.9", package = "libsystemd-sys"} 
 strum = { version = "0.27", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 regex = "1.11"
 serde = "1.0"
 sourceview5 = "0.9"
+libsysd = { version = "0.9", package = "libsystemd-sys"} 
 sysd =  { version = "0.10", package = "systemd"} 
-zbus = "5.5"
-zbus_macros =  "5.5" 
-zvariant = "5.4"
+zbus = "5.6"
+zbus_macros =  "5.6" 
+zvariant = "5.5"
 const_format = "0.2.34"
 constcat = "0.6"
 

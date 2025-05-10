@@ -274,6 +274,7 @@ fn display_inactive(widget: gtk::Inscription, unit: &UnitInfo) {
     }
 }
 
+const LOAD_STATE_NUM: &str = "load_state_num";
 fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_load_state = gtk::SignalListItemFactory::new();
 
@@ -284,16 +285,12 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     if display_color {
         fac_load_state.connect_bind(move |_factory, object| {
             let (inscription, unit_binding) = factory_bind_pre!(object);
-
             let unit = unit_binding.unit_ref();
 
-            let binding = unit
-                .bind_property("load_state_num", &inscription, "text")
-                .build();
-            unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
+            load_state_text_binding(&inscription, &unit_binding, &unit);
 
             let binding = unit
-                .bind_property("load_state_num", &inscription, "css-classes")
+                .bind_property(LOAD_STATE_NUM, &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
                     let load_state_value = match value.get::<u8>() {
                         Ok(v) => LoadState::from(v),
@@ -325,10 +322,8 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
         fac_load_state.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind!(object, load_state_str);
 
-            let binding = unit
-                .bind_property("load_state", &inscription, "text")
-                .build();
-            unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
+            load_state_text_binding(&inscription, &unit_binding, &unit);
+
             display_inactive(inscription, &unit);
         });
 
@@ -336,6 +331,17 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     }
 
     fac_load_state
+}
+
+fn load_state_text_binding(
+    inscription: &gtk::Inscription,
+    unit_binding: &UnitBinding,
+    unit: &UnitInfo,
+) {
+    let binding = unit
+        .bind_property(LOAD_STATE_NUM, inscription, "text")
+        .build();
+    unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
 }
 
 fn load_state_css_classes<'a>(load_state: &LoadState) -> Option<[&'a str; 2]> {
@@ -444,6 +450,8 @@ fn enablement_css_classes<'a>(enablement_status: EnablementStatus) -> Option<[&'
     }
 }
 
+const PRESET_NUM: &str = "preset-num";
+
 fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_preset = gtk::SignalListItemFactory::new();
 
@@ -455,18 +463,15 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
         fac_preset.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind!(object, preset_str);
 
-            let binding = unit
-                .bind_property("preset_num", &inscription, "text")
-                .build();
-            unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
+            preset_text_binding(&inscription, &unit, &unit_binding);
 
             let binding = unit
-                .bind_property("preset_num", &inscription, "css-classes")
+                .bind_property(PRESET_NUM, &inscription, "css-classes")
                 .transform_to_with_values(move |_s, value| {
                     let preset_value = match value.get::<u8>() {
                         Ok(v) => v,
                         Err(err) => {
-                            warn!("The variant needs to be of type `String`. {:?}", err);
+                            warn!("The variant needs to be of type `u8`. {:?}", err);
                             return None;
                         }
                     };
@@ -493,14 +498,36 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
         fac_preset.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind!(object, preset_str);
 
-            let binding = unit.bind_property("preset", &inscription, "text").build();
-            unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
+            preset_text_binding(&inscription, &unit, &unit_binding);
             display_inactive(inscription, &unit);
         });
 
         factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT);
     }
     fac_preset
+}
+
+fn preset_text_binding(
+    inscription: &gtk::Inscription,
+    unit: &UnitInfo,
+    unit_binding: &UnitBinding,
+) {
+    let binding = unit
+        .bind_property(PRESET_NUM, inscription, "text")
+        .transform_to_with_values(move |_s, value| {
+            let preset_value = match value.get::<u8>() {
+                Ok(v) => v,
+                Err(err) => {
+                    warn!("The variant needs to be of type `u8`. {:?}", err);
+                    return None;
+                }
+            };
+            let preset: Preset = preset_value.into();
+            let preset_str = preset.as_str();
+            Some(preset_str.to_value())
+        })
+        .build();
+    unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
 }
 
 fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
