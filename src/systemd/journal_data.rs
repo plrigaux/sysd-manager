@@ -1,3 +1,4 @@
+#[derive(Clone, Copy, Debug)]
 pub enum JournalEventChunkInfo {
     NoMore,
     ChunkMaxReached,
@@ -34,6 +35,10 @@ impl JournalEventChunk {
         self.events.len()
     }
 
+    pub fn len32(&self) -> u32 {
+        self.events.len() as u32
+    }
+
     pub fn iter(&self) -> core::slice::Iter<'_, JournalEvent> {
         self.events.iter()
     }
@@ -44,6 +49,10 @@ impl JournalEventChunk {
 
     pub fn set_info(&mut self, info: JournalEventChunkInfo) {
         self.info = info;
+    }
+
+    pub fn info(&self) -> JournalEventChunkInfo {
+        self.info
     }
 
     pub fn first(&self) -> Option<&JournalEvent> {

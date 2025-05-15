@@ -21,7 +21,7 @@ use crate::{
         self, BootFilter,
         data::UnitInfo,
         journal::BOOT_IDX,
-        journal_data::{EventRange, JournalEvent, JournalEventChunk},
+        journal_data::{EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo},
     },
     utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
     widget::{InterPanelMessage, preferences::data::PREFERENCES},
@@ -63,6 +63,9 @@ pub struct JournalPanelImp {
 
     #[template_child]
     journal_boot_id_entry: TemplateChild<adw::EntryRow>,
+
+    #[template_child]
+    continuous_switch: TemplateChild<gtk::Switch>,
 
     visible_on_page: Cell<bool>,
 
@@ -182,6 +185,9 @@ impl JournalPanelImp {
         self.update_boot_filter(BootFilter::All);
         self.clean_refresh();
     }
+
+    #[template_callback]
+    fn continuous_switch_activate(&self) {}
 
     #[template_callback]
     fn journal_boot_current_button_clicked(&self) {
@@ -368,7 +374,7 @@ impl JournalPanelImp {
         glib::spawn_future_local(async move {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
-            let events: JournalEventChunk = gio::spawn_blocking(move || {
+            let journal_events: JournalEventChunk = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(&unit, boot_filter, range) {
                     Ok(journal_output) => journal_output,
                     Err(error) => {
@@ -380,14 +386,14 @@ impl JournalPanelImp {
             .await
             .expect("Task needs to finish successfully.");
 
-            let size = events.len();
+            let size = journal_events.len();
 
             if from_time.is_none() {
                 text_buffer.set_text("");
             }
 
             if !oldest_to_recent {
-                if let Some(journal_event) = events.first() {
+                if let Some(journal_event) = journal_events.first() {
                     let time = journal_event.timestamp;
                     journal_panel.imp().set_oldest(time)
                 }
@@ -400,13 +406,13 @@ impl JournalPanelImp {
             };
 
             let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
-            for journal_event in events.iter() {
+            for journal_event in journal_events.iter() {
                 fill_journal_event(journal_event, &mut writer, journal_color);
             }
 
             info!("Finish added {size} journal events!");
 
-            if let Some(journal_event) = events.last() {
+            if let Some(journal_event) = journal_events.last() {
                 let from_time = journal_event.timestamp;
                 journal_panel.imp().set_from_time(Some(from_time));
             }
@@ -420,6 +426,16 @@ impl JournalPanelImp {
             journal_refresh_button.set_sensitive(true);
 
             panel_stack.set_visible_child_name(panel);
+
+            match journal_events.info() {
+                JournalEventChunkInfo::NoMore => {
+                    journal_panel.imp().continuous_switch.set_state(true)
+                }
+                JournalEventChunkInfo::ChunkMaxReached => {
+                    journal_panel.imp().continuous_switch.set_state(false)
+                }
+                JournalEventChunkInfo::Error => {}
+            };
         });
     }
 

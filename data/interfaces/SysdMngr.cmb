@@ -4,7 +4,7 @@
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
   <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="dcd16ef498a5313a83fbf666b65147e5037a8ba3946dc3a7947815142b113fe8"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="b029537d3057ae078777d632b020d996685fe18df1af240a8aceff4b8592df72"/>
-  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="d0970e96a67a4a6ea0d5db426ad478419ca7efd363ef398a4d55ec05486a45d2"/>
+  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="55d7a7b5adf26b860a0f35fd2f0890a1ec9fd8de42f54f65ffc326802ed08bfe"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="c5d4d914a0065c684fd6063dd41a2235a1351e753f2ddaa90a140d67ec26fcc0"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7fb3678c9d5691d5605cc6636a3926c1a9241c6b17f2f9dcd5ad44298c3b3902">
     <requires>UnitInfoPanel</requires>

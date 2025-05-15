@@ -55,7 +55,7 @@ pub(super) fn get_unit_journal(
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
 
-    let mut index = 0;
+    //let mut index = 0;
     let mut last_boot_id = String::new();
 
     let message_max_char = PREFERENCES.journal_event_max_size() as usize;
@@ -96,6 +96,23 @@ pub(super) fn get_unit_journal(
             break;
         }
 
+        let time_in_usec = get_realtime_usec(&journal_reader)?;
+
+        //if == 0 no limit
+        if range.batch_size != 0 && out_list.len32() >= range.batch_size {
+            info!(
+                "Journal log events  count ({}) reached the {} limit!",
+                out_list.len(),
+                range.batch_size
+            );
+
+            //Ensure the time to be different
+            if last_time_in_usec != time_in_usec {
+                out_list.set_info(JournalEventChunkInfo::ChunkMaxReached);
+                break;
+            }
+        }
+
         let mut message = get_data(&mut journal_reader, KEY_MESSAGE, &default);
 
         if message_max_char != 0 && message.len() > message_max_char {
@@ -106,8 +123,6 @@ pub(super) fn get_unit_journal(
 
             message = truncate(message, message_max_char);
         }
-
-        let time_in_usec = get_realtime_usec(&journal_reader)?;
 
         let pid = get_data(&mut journal_reader, KEY_PID, &default);
         let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
@@ -133,19 +148,6 @@ pub(super) fn get_unit_journal(
             }
 
             last_boot_id = boot_id;
-        }
-
-        //if == 0 no limit
-        if range.batch_size != 0 {
-            index += 1;
-            if index >= range.batch_size {
-                warn!("Journal log events reach the {} limit!", range.batch_size);
-
-                if last_time_in_usec != time_in_usec {
-                    out_list.set_info(JournalEventChunkInfo::ChunkMaxReached);
-                    break;
-                }
-            }
         }
 
         if range.has_reached_end(time_in_usec) {
