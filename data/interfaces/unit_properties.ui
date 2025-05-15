@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.94.1 -->
+<!-- Created with Cambalache 0.96.0 -->
 <interface>
   <!-- interface-name unit_info.ui -->
   <requires lib="gtk" version="4.6"/>
-  <requires lib="libadwaita" version="1.4"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="UNIT_PROPERTIES_DIALOG" parent="AdwWindow">
     <property name="content">
       <object class="AdwToolbarView">
