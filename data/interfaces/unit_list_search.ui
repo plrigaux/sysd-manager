@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.0 -->
+<!-- Created with Cambalache 0.96.1 -->
 <interface>
+  <!-- interface-name unit_list_search.ui -->
   <requires lib="gtk" version="4.16"/>
   <template class="SEARCH_CONTROLS" parent="GtkBox">
     <property name="hexpand">True</property>

@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.0 -->
+<!-- Created with Cambalache 0.96.1 -->
 <interface>
+  <!-- interface-name clean_dialog.ui -->
   <requires lib="gtk" version="4.16"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="CLEAN_DIALOG" parent="AdwWindow">

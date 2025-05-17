@@ -1,9 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.0 -->
+<!-- Created with Cambalache 0.96.1 -->
 <interface>
+  <!-- interface-name list_boots.ui -->
+  <requires lib="gio" version="2.44"/>
   <requires lib="gtk" version="4.16"/>
   <requires lib="libadwaita" version="1.6"/>
-  <requires lib="gio" version="2.44"/>
   <template class="ListBoots" parent="AdwWindow">
     <property name="content">
       <object class="AdwToolbarView">

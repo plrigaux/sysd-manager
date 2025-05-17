@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.0 -->
+<!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit journal panel -->
@@ -29,7 +29,6 @@
         </child>
         <child>
           <object class="GtkSwitch" id="continuous_switch">
-            <property name="sensitive">False</property>
             <property name="tooltip-text">Show only the most recContinuously display new entries as they are appended to the journal</property>
             <property name="valign">baseline-center</property>
             <signal name="activate" handler="continuous_switch_activate" swapped="yes"/>
