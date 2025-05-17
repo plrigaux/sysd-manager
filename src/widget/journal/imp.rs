@@ -10,6 +10,7 @@ use gtk::{
         },
     },
 };
+use tokio::sync::oneshot::{self, Sender};
 
 use std::cell::{Cell, RefCell};
 
@@ -26,6 +27,8 @@ use crate::{
     utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
     widget::{InterPanelMessage, preferences::data::PREFERENCES},
 };
+
+use super::JournalPanel;
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -86,6 +89,8 @@ pub struct JournalPanelImp {
     journal_text_view: RefCell<gtk::TextView>,
 
     older_to_recent: Cell<bool>,
+
+    cancel_continuous_sender: RefCell<Option<Sender<()>>>,
 }
 
 #[gtk::template_callbacks]
@@ -312,6 +317,8 @@ impl JournalPanelImp {
 
         if unit.primary() != old_unit.map_or(String::new(), |o_unit| o_unit.primary()) {
             self.new_text_view();
+
+            JournalPanelImp::send_cancelling(&self.cancel_continuous_sender, None);
         }
 
         self.update_journal(EventGrabbing::Default)
@@ -334,7 +341,8 @@ impl JournalPanelImp {
         let unit = unit_ref.clone();
         let journal_refresh_button = self.journal_refresh_button.clone();
         let oldest_to_recent = self.older_to_recent.get();
-        let journal_max_events_batch_size = PREFERENCES.journal_max_events_batch_size();
+        let journal_max_events_batch_size: usize =
+            PREFERENCES.journal_max_events_batch_size() as usize;
         let panel_stack = self.panel_stack.clone();
         let boot_filter = self.boot_filter.borrow().clone();
         let from_time = self.from_time.get();
@@ -374,6 +382,7 @@ impl JournalPanelImp {
         glib::spawn_future_local(async move {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
+            let boot_filter2 = boot_filter.clone();
             let journal_events: JournalEventChunk = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(&unit, boot_filter, range) {
                     Ok(journal_output) => journal_output,
@@ -424,19 +433,55 @@ impl JournalPanelImp {
             };
 
             journal_refresh_button.set_sensitive(true);
+            journal_refresh_button.set_sensitive(true);
+            journal_refresh_button.set_sensitive(true);
 
             panel_stack.set_visible_child_name(panel);
 
             match journal_events.info() {
-                JournalEventChunkInfo::NoMore => {
-                    journal_panel.imp().continuous_switch.set_state(true)
-                }
-                JournalEventChunkInfo::ChunkMaxReached => {
-                    journal_panel.imp().continuous_switch.set_state(false)
+                JournalEventChunkInfo::NoMore if boot_filter2 == BootFilter::Current => {
+                    journal_panel.imp().continuous_switch.set_state(true);
+                    if journal_panel.imp().continuous_switch.is_active() {
+                        // call thread
+                        JournalPanelImp::continuous_entry(&journal_panel)
+                    }
                 }
                 JournalEventChunkInfo::Error => {}
+                _ => journal_panel.imp().continuous_switch.set_state(false),
             };
         });
+    }
+
+    fn continuous_entry(journal_panel: &JournalPanel) {
+        let (journal_continuous_sender, journal_continuous_receiver) = oneshot::channel();
+
+        JournalPanelImp::send_cancelling(
+            &journal_panel.imp().cancel_continuous_sender,
+            Some(journal_continuous_sender),
+        );
+
+        glib::spawn_future_local(async move {
+            tokio::select! {
+                _ = journal_continuous_receiver => {
+                    warn!("Task is cancelling...");
+                }
+                _ = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
+                    println!("Task completed normally");
+                }
+            }
+            println!("Task is cleaning up");
+        });
+    }
+
+    fn send_cancelling(
+        cancel_continuous_sender: &RefCell<Option<Sender<()>>>,
+        cancell_sender: Option<Sender<()>>,
+    ) {
+        if let Some(cancel_continuous_sender) = cancel_continuous_sender.replace(cancell_sender) {
+            if cancel_continuous_sender.send(()).is_err() {
+                warn!("Error close thtread sender")
+            }
+        }
     }
 
     pub(super) fn set_boot_id_style(&self) {

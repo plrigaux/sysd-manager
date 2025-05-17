@@ -35,10 +35,6 @@ impl JournalEventChunk {
         self.events.len()
     }
 
-    pub fn len32(&self) -> u32 {
-        self.events.len() as u32
-    }
-
     pub fn iter(&self) -> core::slice::Iter<'_, JournalEvent> {
         self.events.iter()
     }
@@ -68,12 +64,12 @@ impl JournalEventChunk {
 pub struct EventRange {
     pub begin: Option<u64>,
     pub end: Option<u64>,
-    pub batch_size: u32,
+    pub batch_size: usize,
     pub oldest_first: bool,
 }
 
 impl EventRange {
-    pub fn basic(oldest_first: bool, max: u32, begin: Option<u64>) -> Self {
+    pub fn basic(oldest_first: bool, max: usize, begin: Option<u64>) -> Self {
         EventRange {
             oldest_first,
             batch_size: max,
