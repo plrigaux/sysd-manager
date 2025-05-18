@@ -31,7 +31,7 @@
           <object class="GtkSwitch" id="continuous_switch">
             <property name="tooltip-text">Show only the most recContinuously display new entries as they are appended to the journal</property>
             <property name="valign">baseline-center</property>
-            <signal name="activate" handler="continuous_switch_activate" swapped="yes"/>
+            <signal name="state-set" handler="continuous_switch_state_set" swapped="yes"/>
           </object>
         </child>
         <child>

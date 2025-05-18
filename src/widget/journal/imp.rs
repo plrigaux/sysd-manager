@@ -23,12 +23,11 @@ use crate::{
         data::UnitInfo,
         journal::BOOT_IDX,
         journal_data::{EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo},
+        runtime,
     },
     utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
     widget::{InterPanelMessage, preferences::data::PREFERENCES},
 };
-
-use super::JournalPanel;
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -192,7 +191,17 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
-    fn continuous_switch_activate(&self) {}
+    fn continuous_switch_state_set(&self, state: bool) -> bool {
+        info!("continuous switch state {}", state);
+
+        if !state {
+            self.continuous_entry()
+        } else {
+            JournalPanelImp::send_cancelling(self, None);
+        }
+
+        true //TRUE to stop the signal emission.
+    }
 
     #[template_callback]
     fn journal_boot_current_button_clicked(&self) {
@@ -318,7 +327,7 @@ impl JournalPanelImp {
         if unit.primary() != old_unit.map_or(String::new(), |o_unit| o_unit.primary()) {
             self.new_text_view();
 
-            JournalPanelImp::send_cancelling(&self.cancel_continuous_sender, None);
+            JournalPanelImp::send_cancelling(self, None);
         }
 
         self.update_journal(EventGrabbing::Default)
@@ -440,10 +449,11 @@ impl JournalPanelImp {
 
             match journal_events.info() {
                 JournalEventChunkInfo::NoMore if boot_filter2 == BootFilter::Current => {
-                    journal_panel.imp().continuous_switch.set_state(true);
-                    if journal_panel.imp().continuous_switch.is_active() {
+                    let journal_panel_imp = journal_panel.imp();
+                    journal_panel_imp.continuous_switch.set_state(true);
+                    if journal_panel_imp.continuous_switch.is_active() {
                         // call thread
-                        JournalPanelImp::continuous_entry(&journal_panel)
+                        journal_panel_imp.continuous_entry();
                     }
                 }
                 JournalEventChunkInfo::Error => {}
@@ -452,15 +462,12 @@ impl JournalPanelImp {
         });
     }
 
-    fn continuous_entry(journal_panel: &JournalPanel) {
+    fn continuous_entry(&self) {
         let (journal_continuous_sender, journal_continuous_receiver) = oneshot::channel();
 
-        JournalPanelImp::send_cancelling(
-            &journal_panel.imp().cancel_continuous_sender,
-            Some(journal_continuous_sender),
-        );
+        self.send_cancelling(Some(journal_continuous_sender));
 
-        glib::spawn_future_local(async move {
+        runtime().spawn(async move {
             tokio::select! {
                 _ = journal_continuous_receiver => {
                     warn!("Task is cancelling...");
@@ -468,17 +475,17 @@ impl JournalPanelImp {
                 _ = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
                     println!("Task completed normally");
                 }
+
             }
             println!("Task is cleaning up");
         });
     }
 
-    fn send_cancelling(
-        cancel_continuous_sender: &RefCell<Option<Sender<()>>>,
-        cancell_sender: Option<Sender<()>>,
-    ) {
-        if let Some(cancel_continuous_sender) = cancel_continuous_sender.replace(cancell_sender) {
-            if cancel_continuous_sender.send(()).is_err() {
+    fn send_cancelling(&self, cancel_sender: Option<Sender<()>>) {
+        let sender_op = self.cancel_continuous_sender.replace(cancel_sender);
+        if let Some(cancel_continuous_sender) = sender_op {
+            let res = cancel_continuous_sender.send(());
+            if res.is_err() {
                 warn!("Error close thtread sender")
             }
         }
