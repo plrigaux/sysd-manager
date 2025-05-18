@@ -194,7 +194,7 @@ impl JournalPanelImp {
     fn continuous_switch_state_set(&self, state: bool) -> bool {
         info!("continuous switch state {}", state);
 
-        if !state {
+        if state {
             self.continuous_entry()
         } else {
             JournalPanelImp::send_cancelling(self, None);
@@ -466,7 +466,6 @@ impl JournalPanelImp {
         let (journal_continuous_sender, journal_continuous_receiver) = oneshot::channel();
 
         self.send_cancelling(Some(journal_continuous_sender));
-
         runtime().spawn(async move {
             tokio::select! {
                 _ = journal_continuous_receiver => {
@@ -475,7 +474,6 @@ impl JournalPanelImp {
                 _ = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
                     println!("Task completed normally");
                 }
-
             }
             println!("Task is cleaning up");
         });
