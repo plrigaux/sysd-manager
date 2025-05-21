@@ -168,7 +168,7 @@ pub fn get_unit_journal_continuous(
     journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
 ) -> Result<(), SystemdErrors> {
-    let mut journal_reader = create_journal_reader(unit_name, level, BootFilter::All)?;
+    let mut journal_reader = create_journal_reader(unit_name, level, BootFilter::Current)?;
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
@@ -384,7 +384,10 @@ fn create_journal_reader(
         .open()
         .expect("Could not open journal");
     let unit_name = unit_name.as_str();
-    info!("JOURNAL UNIT NAME {} level {:?}", unit_name, level);
+    info!(
+        "JOURNAL UNIT NAME {:?} BUS_LEVEL {:?} BOOT {:?}",
+        unit_name, level, boot_filter
+    );
     match level {
         UnitDBusLevel::System => {
             journal_reader.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
@@ -409,6 +412,7 @@ fn create_journal_reader(
             journal_reader.match_add(KEY_SYSTEMD_USER_SLICE, unit_name)?;
         }
     };
+
     match boot_filter {
         BootFilter::Current => {
             let boot_id = Id128::from_boot()?;
