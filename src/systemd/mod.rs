@@ -6,6 +6,7 @@ pub mod journal_data;
 mod sysdbus;
 
 use std::{
+    any::Any,
     borrow::Cow,
     collections::{BTreeMap, BTreeSet, HashMap},
     fs::{self, File},
@@ -225,6 +226,30 @@ pub fn get_unit_journal(
     range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
     journal::get_unit_journal(unit, boot_filter, range)
+}
+
+pub fn get_unit_journal_continuous(
+    unit_name: String,
+    level: UnitDBusLevel,
+    range: EventRange,
+    journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
+    sender: std::sync::mpsc::Sender<JournalEventChunk>,
+) {
+    if let Err(err) = journal::get_unit_journal_continuous(
+        unit_name,
+        level,
+        range,
+        journal_continuous_receiver,
+        sender,
+    ) {
+        warn!(
+            "Journal TailError type: {:?}  Error: {:?}",
+            err.type_id(),
+            err
+        );
+    } else {
+        warn!("Ok journal tail thread finished");
+    }
 }
 
 pub fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {

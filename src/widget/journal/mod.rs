@@ -5,7 +5,11 @@ pub mod list_boots;
 //pub mod more_colors;
 //pub mod palette;
 
+use std::cell::RefCell;
+
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+
+use crate::systemd::journal_data::JournalEventChunk;
 
 use super::InterPanelMessage;
 
@@ -34,4 +38,32 @@ impl Default for JournalPanel {
     fn default() -> Self {
         JournalPanel::new()
     }
+}
+
+// global variable to store  the ui and an input channel
+// on the main thread only
+thread_local!(
+    static GLOBAL: RefCell<Option<(JournalPanel, std::sync::mpsc::Receiver<JournalEventChunk>)>> =  const {RefCell::new(None)}
+);
+
+pub fn check_for_new_journal_entry() {
+    GLOBAL.with(
+        |global: &RefCell<Option<(JournalPanel, std::sync::mpsc::Receiver<JournalEventChunk>)>>| {
+            if let Some((journal_panel, rx)) = &*global.borrow() {
+                match rx.recv() {
+                    Ok(journal_events) => {
+                        log::info!(
+                            "New journal_events info: {:?} len {:?}",
+                            journal_events.info(),
+                            journal_events.len()
+                        );
+                        journal_panel.imp().append_journal_event(journal_events);
+                    }
+                    Err(error) => {
+                        log::warn!("Journal recv Error: {}", error);
+                    }
+                }
+            }
+        },
+    );
 }

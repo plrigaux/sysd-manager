@@ -4,9 +4,11 @@ pub enum JournalEventChunkInfo {
     ChunkMaxReached,
     //NoEventsAfterWaiting,
     //Invalidate,
+    Tail,
     Error,
 }
 
+#[derive(Debug)]
 pub struct JournalEventChunk {
     events: Vec<JournalEvent>,
     info: JournalEventChunkInfo,
@@ -14,9 +16,12 @@ pub struct JournalEventChunk {
 
 impl JournalEventChunk {
     pub fn new(capacity: usize) -> Self {
+        Self::new_info(capacity, JournalEventChunkInfo::NoMore)
+    }
+
+    pub fn new_info(capacity: usize, info: JournalEventChunkInfo) -> Self {
         let events = Vec::with_capacity(capacity);
 
-        let info = JournalEventChunkInfo::NoMore;
         JournalEventChunk { events, info }
     }
 
@@ -33,6 +38,10 @@ impl JournalEventChunk {
 
     pub fn len(&self) -> usize {
         self.events.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.events.is_empty()
     }
 
     pub fn iter(&self) -> core::slice::Iter<'_, JournalEvent> {
@@ -95,6 +104,7 @@ impl EventRange {
     }
 }
 
+#[derive(Debug)]
 pub struct JournalEvent {
     pub prefix: String,
     pub message: String,

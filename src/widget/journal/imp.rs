@@ -10,9 +10,11 @@ use gtk::{
         },
     },
 };
-use tokio::sync::oneshot::{self, Sender};
 
-use std::cell::{Cell, RefCell};
+use std::{
+    cell::{Cell, RefCell},
+    thread,
+};
 
 use log::{debug, error, info, warn};
 
@@ -23,7 +25,6 @@ use crate::{
         data::UnitInfo,
         journal::BOOT_IDX,
         journal_data::{EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo},
-        runtime,
     },
     utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
     widget::{InterPanelMessage, preferences::data::PREFERENCES},
@@ -87,9 +88,9 @@ pub struct JournalPanelImp {
 
     journal_text_view: RefCell<gtk::TextView>,
 
-    older_to_recent: Cell<bool>,
+    old_to_recent_order: Cell<bool>,
 
-    cancel_continuous_sender: RefCell<Option<Sender<()>>>,
+    cancel_continuous_sender: RefCell<Option<std::sync::mpsc::Sender<()>>>,
 }
 
 #[gtk::template_callbacks]
@@ -111,12 +112,12 @@ impl JournalPanelImp {
         if icon_name == ASCD {
             child.set_icon_name(DESC);
             child.set_label("Descending");
-            self.older_to_recent.set(false);
+            self.old_to_recent_order.set(false);
         } else {
             //     view-sort-descending
             child.set_icon_name(ASCD);
             child.set_label("Ascending");
-            self.older_to_recent.set(true);
+            self.old_to_recent_order.set(true);
         }
 
         self.clean_refresh();
@@ -197,7 +198,7 @@ impl JournalPanelImp {
         if state {
             self.continuous_entry()
         } else {
-            JournalPanelImp::send_cancelling(self, None);
+            JournalPanelImp::set_or_send_cancelling(self, None);
         }
 
         true //TRUE to stop the signal emission.
@@ -267,7 +268,7 @@ impl JournalPanelImp {
                 self.update_journal(EventGrabbing::Default)
             }
             gtk::PositionType::Top => {
-                if !self.older_to_recent.get() {
+                if !self.old_to_recent_order.get() {
                     let grabber = EventGrabbing::Newer;
                     self.update_journal(grabber)
                 };
@@ -327,7 +328,7 @@ impl JournalPanelImp {
         if unit.primary() != old_unit.map_or(String::new(), |o_unit| o_unit.primary()) {
             self.new_text_view();
 
-            JournalPanelImp::send_cancelling(self, None);
+            JournalPanelImp::set_or_send_cancelling(self, None);
         }
 
         self.update_journal(EventGrabbing::Default)
@@ -336,6 +337,13 @@ impl JournalPanelImp {
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
     fn update_journal(&self, grabbing: EventGrabbing) {
         if !self.visible_on_page.get() {
+            info!("not visible --> quit");
+            return;
+        }
+
+        let sender_op = self.cancel_continuous_sender.borrow();
+        if sender_op.is_some() {
+            info!("under tail management --> quit");
             return;
         }
 
@@ -349,7 +357,7 @@ impl JournalPanelImp {
         //self.unit_journal_loaded.set(true); // maybe wait at the full loaded
         let unit = unit_ref.clone();
         let journal_refresh_button = self.journal_refresh_button.clone();
-        let oldest_to_recent = self.older_to_recent.get();
+        let oldest_to_recent = self.old_to_recent_order.get();
         let journal_max_events_batch_size: usize =
             PREFERENCES.journal_max_events_batch_size() as usize;
         let panel_stack = self.panel_stack.clone();
@@ -357,14 +365,6 @@ impl JournalPanelImp {
         let from_time = self.from_time.get();
         let most_recent_time = self.most_recent_time.get();
         let journal_panel = self.obj().clone();
-
-        let text_buffer = {
-            let text_view = self.journal_text_view.borrow();
-            text_view.buffer()
-        };
-
-        let is_dark = self.is_dark.get();
-        let journal_color = PREFERENCES.journal_colors();
 
         debug!("Call from time {:?}", from_time);
         debug!("grabbing {:?}", grabbing);
@@ -404,48 +404,13 @@ impl JournalPanelImp {
             .await
             .expect("Task needs to finish successfully.");
 
-            let size = journal_events.len();
-
-            if from_time.is_none() {
-                text_buffer.set_text("");
-            }
-
-            if !oldest_to_recent {
-                if let Some(journal_event) = journal_events.first() {
-                    let time = journal_event.timestamp;
-                    journal_panel.imp().set_oldest(time)
-                }
-            }
-
-            let text_iter = if grabbing == EventGrabbing::Newer && !oldest_to_recent {
-                text_buffer.start_iter()
-            } else {
-                text_buffer.end_iter()
-            };
-
-            let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
-            for journal_event in journal_events.iter() {
-                fill_journal_event(journal_event, &mut writer, journal_color);
-            }
-
-            info!("Finish added {size} journal events!");
-
-            if let Some(journal_event) = journal_events.last() {
-                let from_time = journal_event.timestamp;
-                journal_panel.imp().set_from_time(Some(from_time));
-            }
-
-            let panel = if writer.char_count() <= 0 {
-                PANEL_EMPTY
-            } else {
-                PANEL_JOURNAL
-            };
-
-            journal_refresh_button.set_sensitive(true);
-            journal_refresh_button.set_sensitive(true);
-            journal_refresh_button.set_sensitive(true);
-
-            panel_stack.set_visible_child_name(panel);
+            journal_panel.imp().handle_journal_events(
+                grabbing,
+                oldest_to_recent,
+                panel_stack,
+                from_time,
+                &journal_events,
+            );
 
             match journal_events.info() {
                 JournalEventChunkInfo::NoMore if boot_filter2 == BootFilter::Current => {
@@ -462,30 +427,133 @@ impl JournalPanelImp {
         });
     }
 
-    fn continuous_entry(&self) {
-        let (journal_continuous_sender, journal_continuous_receiver) = oneshot::channel();
+    pub fn append_journal_event(&self, journal_event: JournalEventChunk) {
+        let oldest_to_recent = self.old_to_recent_order.get();
+        let panel_stack = self.panel_stack.clone();
+        let from_time = self.from_time.get();
 
-        self.send_cancelling(Some(journal_continuous_sender));
-        runtime().spawn(async move {
-            tokio::select! {
-                _ = journal_continuous_receiver => {
-                    warn!("Task is cancelling...");
-                }
-                _ = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
-                    println!("Task completed normally");
-                }
+        let grabbing = if !self.old_to_recent_order.get() {
+            EventGrabbing::Newer
+        } else {
+            EventGrabbing::Default
+        };
+
+        self.handle_journal_events(
+            grabbing,
+            oldest_to_recent,
+            panel_stack,
+            from_time,
+            &journal_event,
+        );
+    }
+
+    fn handle_journal_events(
+        &self,
+        grabbing: EventGrabbing,
+        oldest_to_recent: bool,
+        panel_stack: adw::ViewStack,
+        from_time: Option<u64>,
+        journal_events: &JournalEventChunk,
+    ) {
+        let size = journal_events.len();
+
+        let text_buffer = {
+            let text_view = self.journal_text_view.borrow();
+            text_view.buffer()
+        };
+
+        if from_time.is_none() {
+            text_buffer.set_text("");
+        }
+
+        if !oldest_to_recent {
+            if let Some(journal_event) = journal_events.first() {
+                let time = journal_event.timestamp;
+                self.set_oldest(time)
             }
-            println!("Task is cleaning up");
+        }
+
+        let text_iter = if grabbing == EventGrabbing::Newer && !oldest_to_recent {
+            text_buffer.start_iter()
+        } else {
+            text_buffer.end_iter()
+        };
+
+        let is_dark = self.is_dark.get();
+        let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
+        let journal_color = PREFERENCES.journal_colors();
+        for journal_event in journal_events.iter() {
+            fill_journal_event(journal_event, &mut writer, journal_color);
+        }
+
+        info!("Finish added {size} journal events!");
+
+        if let Some(journal_event) = journal_events.last() {
+            let from_time = journal_event.timestamp;
+            self.set_from_time(Some(from_time));
+        }
+
+        let panel = if writer.char_count() <= 0 {
+            PANEL_EMPTY
+        } else {
+            PANEL_JOURNAL
+        };
+
+        self.journal_refresh_button.set_sensitive(true);
+        panel_stack.set_visible_child_name(panel);
+    }
+
+    fn continuous_entry(&self) {
+        let from_time = self.from_time.get();
+
+        let binding = self.unit.borrow();
+        let Some(unit_ref) = binding.as_ref() else {
+            info!("No unit file");
+            return;
+        };
+
+        //self.unit_journal_loaded.set(true); // maybe wait at the full loaded
+        let unit = unit_ref.clone();
+
+        let oldest_to_recent = self.old_to_recent_order.get();
+        let journal_max_events_batch_size: usize =
+            PREFERENCES.journal_max_events_batch_size() as usize;
+
+        let range = EventRange::basic(oldest_to_recent, journal_max_events_batch_size, from_time);
+
+        let (journal_continuous_sender, journal_continuous_receiver) = std::sync::mpsc::channel();
+
+        let (sender, receiver) = std::sync::mpsc::channel();
+
+        //let (sender1, receiver1) = glib::MainContext::channel();
+        let journal_panel = self.obj().clone();
+        super::GLOBAL.with(|global| {
+            *global.borrow_mut() = Some((journal_panel, receiver));
+        });
+
+        self.set_or_send_cancelling(Some(journal_continuous_sender));
+
+        thread::spawn(move || {
+            let unit_name = unit.primary();
+            let level = unit.dbus_level();
+            systemd::get_unit_journal_continuous(
+                unit_name,
+                level,
+                range,
+                journal_continuous_receiver,
+                sender,
+            )
         });
     }
 
-    fn send_cancelling(&self, cancel_sender: Option<Sender<()>>) {
+    fn set_or_send_cancelling(&self, cancel_sender: Option<std::sync::mpsc::Sender<()>>) {
         let sender_op = self.cancel_continuous_sender.replace(cancel_sender);
         if let Some(cancel_continuous_sender) = sender_op {
             let res = cancel_continuous_sender.send(());
             if res.is_err() {
                 warn!("Error close thtread sender")
             }
+            info!("Cancel journal trail")
         }
     }
 
@@ -562,6 +630,7 @@ impl JournalPanelImp {
 
     fn clean_refresh(&self) {
         self.new_text_view();
+        self.set_or_send_cancelling(None);
         self.update_journal(EventGrabbing::Default);
     }
 
@@ -600,7 +669,7 @@ impl ObjectImpl for JournalPanelImp {
 
         self.new_text_view();
 
-        self.older_to_recent.set(true);
+        self.old_to_recent_order.set(true);
     }
 }
 impl WidgetImpl for JournalPanelImp {}
