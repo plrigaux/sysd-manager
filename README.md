@@ -38,10 +38,9 @@ A user-friendly GUI to manage systemd units
 | Dark and Light style switching | ✅ |
 | Select a unit at program opening via CLI | ✅ |
 | Clean unit like `systemctl clean` | 🚧 |
-| Freeze unit like `systemctl freeze` | 🚧 |
-| Thaw unit like `systemctl thaw` | 🚧 |
+| Freeze & Thaw unit like `systemctl freeze` and `systemctl thaw`  | ✅ |
 | Multi-language support | 🚧 |
-| Real-time journal events update | 🚧 |
+| Real-time journal events update | ✅ |
 | Retrieve list of boot IDs | ✅ |
 
 *Need a feature? Contact the author or contribute to the project! If you're stuck, take a look at `systemctl`.*
