@@ -24,12 +24,18 @@
               </object>
             </property>
             <property name="halign">start</property>
+            <property name="tooltip-text" translatable="yes">Clear journal events and refetch them</property>
             <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
           </object>
         </child>
         <child>
+          <object class="GtkLabel">
+            <property name="label">Follow</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkSwitch" id="continuous_switch">
-            <property name="tooltip-text">Show only the most recContinuously display new entries as they are appended to the journal</property>
+            <property name="tooltip-text" translatable="yes">Enable new entries continuous print as they are appended to the journal</property>
             <property name="valign">baseline-center</property>
             <signal name="state-set" handler="continuous_switch_state_set" swapped="yes"/>
           </object>
@@ -41,17 +47,17 @@
                 <property name="halign">baseline-fill</property>
                 <property name="icon-name">view-sort-ascending</property>
                 <property name="label">Ascending</property>
-                <property name="tooltip-text">Change events order</property>
               </object>
             </property>
             <property name="halign">start</property>
             <property name="hexpand">True</property>
+            <property name="tooltip-text">Toggle events display order</property>
             <signal name="clicked" handler="toggle_sort_clicked" swapped="yes"/>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="tooltip-text"> Show a tabular list of boot</property>
+            <property name="tooltip-text" translatable="yes">List the boots of the system</property>
             <signal name="clicked" handler="list_boots_clicked" swapped="yes"/>
             <child>
               <object class="AdwButtonContent">

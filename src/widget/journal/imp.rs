@@ -219,11 +219,13 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
-    fn continuous_switch_state_set(&self, state: bool) -> bool {
-        info!("continuous switch state {}", state);
+    fn continuous_switch_state_set(&self, active: bool, continuous_switch: &gtk::Switch) -> bool {
+        info!("continuous switch state {}", active);
 
-        if state {
-            self.continuous_entry()
+        if active {
+            if continuous_switch.state() {
+                self.continuous_entry()
+            }
         } else {
             JournalPanelImp::set_or_send_cancelling(self, None);
         }
@@ -443,7 +445,9 @@ impl JournalPanelImp {
             journal_panel.imp().handle_journal_events(&journal_events);
 
             match journal_events.info() {
-                JournalEventChunkInfo::NoMore if boot_filter2 == BootFilter::Current => {
+                JournalEventChunkInfo::NoMore
+                    if boot_filter2 != BootFilter::Current || boot_filter2 == BootFilter::All =>
+                {
                     let journal_panel_imp = journal_panel.imp();
                     journal_panel_imp.continuous_switch.set_state(true);
                     if journal_panel_imp.continuous_switch.is_active() {
@@ -451,7 +455,9 @@ impl JournalPanelImp {
                         journal_panel_imp.continuous_entry();
                     }
                 }
-                JournalEventChunkInfo::Error => {}
+                JournalEventChunkInfo::Error => {
+                    warn!("Journal Events Chunk {:?}", journal_events.what_grab)
+                }
                 _ => journal_panel.imp().continuous_switch.set_state(false),
             };
         });

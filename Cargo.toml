@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager"
-version = "1.24.2"
+version = "1.25.0"
 edition = '2024'
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"

@@ -30,7 +30,7 @@ Here are __SysD Manager__ main features:
 * [ ] Freeze unit like `systemctl freeze`
 * [ ] Thaw unit like `systemctl thaw`
 * [ ] Multi languages
-* [ ] Journal events updated automaticaly at realtime
+* [x] Journal events updated automaticaly at realtime
 * [x] Retreive list of boot ids 
 * ...
 
