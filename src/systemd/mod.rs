@@ -225,7 +225,7 @@ pub fn get_unit_journal(
     boot_filter: BootFilter,
     range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
-    journal::get_unit_journal(unit, boot_filter, range)
+    journal::get_unit_journal_events(unit, boot_filter, range)
 }
 
 pub fn get_unit_journal_continuous(
@@ -235,7 +235,7 @@ pub fn get_unit_journal_continuous(
     journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
 ) {
-    if let Err(err) = journal::get_unit_journal_continuous(
+    if let Err(err) = journal::get_unit_journal_events_continuous(
         unit_name,
         level,
         range,

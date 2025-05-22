@@ -20,7 +20,7 @@ use sysd::{Journal, id128::Id128, journal::OpenOptions};
 use super::{
     BootFilter, SystemdErrors,
     data::UnitInfo,
-    journal_data::{EventRange, JournalEvent, JournalEventChunk},
+    journal_data::{EventRange, JournalEvent, JournalEventChunk, WhatGrab},
 };
 
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
@@ -33,7 +33,6 @@ const KEY_OBJECT_SYSTEMD_UNIT: &str = "OBJECT_SYSTEMD_UNIT";
 const KEY_OBJECT_SYSTEMD_USER_UNIT: &str = "OBJECT_SYSTEMD_USER_UNIT";
 const KEY_SYSTEMD_SLICE: &str = "_SYSTEMD_SLICE";
 const KEY_SYSTEMD_USER_SLICE: &str = "_SYSTEMD_USER_SLICE";
-
 const KEY_BOOT_ID: &str = "_BOOT_ID";
 const KEY_MESSAGE: &str = "MESSAGE";
 const KEY_PRIORITY: &str = "PRIORITY";
@@ -43,12 +42,12 @@ const KEY_COMM: &str = "_COMM";
 pub const BOOT_IDX: u8 = 200;
 //pub const EVENT_MAX_ID: u8 = 201;
 
-pub(super) fn get_unit_journal(
+pub(super) fn get_unit_journal_events(
     unit: &UnitInfo,
     boot_filter: BootFilter,
     range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
-    let mut out_list = JournalEventChunk::new(range.batch_size + 10);
+    let mut out_list = JournalEventChunk::new(range.batch_size + 10, range.what_grab);
 
     let mut journal_reader = create_journal_reader(unit.primary(), unit.dbus_level(), boot_filter)?;
 
@@ -59,38 +58,15 @@ pub(super) fn get_unit_journal(
     let mut last_boot_id = String::new();
 
     let message_max_char = PREFERENCES.journal_event_max_size() as usize;
-
     let timestamp_style = PREFERENCES.timestamp_style();
 
     //Position the indexer
-
-    if let Some(begin_from_time) = range.begin {
-        info!("Seek to time {begin_from_time}");
-        journal_reader.seek_realtime_usec(begin_from_time)?;
-
-        //skip the seek event
-        loop {
-            if next(&mut journal_reader, range.oldest_first)? == 0 {
-                out_list.set_info(JournalEventChunkInfo::NoMore);
-                break;
-            }
-
-            let time_in_usec = get_realtime_usec(&journal_reader)?;
-
-            //Continue until time change
-            if time_in_usec != begin_from_time {
-                previous(&mut journal_reader, range.oldest_first)?;
-                break;
-            }
-        }
-    } else if range.decending() {
-        journal_reader.seek_tail()?;
-    } // else assume is at begin
+    position_crawler(&mut journal_reader, &range)?;
 
     let mut last_time_in_usec: u64 = 0;
 
     loop {
-        if next(&mut journal_reader, range.oldest_first)? == 0 {
+        if next(&mut journal_reader, range.what_grab)? == 0 {
             out_list.set_info(JournalEventChunkInfo::NoMore);
             break;
         }
@@ -149,10 +125,6 @@ pub(super) fn get_unit_journal(
             last_boot_id = boot_id;
         }
 
-        if range.has_reached_end(time_in_usec) {
-            break;
-        }
-
         out_list.push(journal_event);
 
         last_time_in_usec = time_in_usec;
@@ -161,34 +133,47 @@ pub(super) fn get_unit_journal(
     Ok(out_list)
 }
 
-pub fn get_unit_journal_continuous(
+fn position_crawler(journal_reader: &mut Journal, range: &EventRange) -> Result<(), SystemdErrors> {
+    match range.what_grab {
+        WhatGrab::Newer => {
+            if let Some(newest_events_time) = range.newest_events_time {
+                journal_reader.seek_realtime_usec(newest_events_time + 1)?;
+            } else {
+                //start from head (default)
+            }
+        }
+        WhatGrab::Older => {
+            if let Some(oldest_events_time) = range.oldest_events_time {
+                journal_reader.seek_realtime_usec(oldest_events_time - 1)?;
+            } else {
+                journal_reader.seek_tail()?;
+            }
+        }
+    };
+    Ok(())
+}
+
+pub fn get_unit_journal_events_continuous(
     unit_name: String,
-    level: UnitDBusLevel,
+    bus_level: UnitDBusLevel,
     range: EventRange,
     journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
 ) -> Result<(), SystemdErrors> {
-    let mut journal_reader = create_journal_reader(unit_name, level, BootFilter::Current)?;
+    let mut journal_reader = create_journal_reader(unit_name, bus_level, BootFilter::Current)?;
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
 
     let message_max_char = PREFERENCES.journal_event_max_size() as usize;
-
     let timestamp_style = PREFERENCES.timestamp_style();
 
     //Position the indexer
-
-    if range.begin.is_none() {
-        journal_reader.seek_tail()?;
-    }
-
-    journal_reader.seek_tail()?;
-    journal_reader.previous()?; //go back one event for capture
+    position_crawler(&mut journal_reader, &range)?;
 
     info!("get_unit_journal_continuous");
 
-    let mut out_list = JournalEventChunk::new_info(8, JournalEventChunkInfo::Tail);
+    let mut out_list = JournalEventChunk::new_info(8, JournalEventChunkInfo::Tail, range.what_grab);
 
     loop {
         let mut idx = 0;
@@ -201,7 +186,7 @@ pub fn get_unit_journal_continuous(
                 Err(TryRecvError::Empty) => {}
             }
 
-            if next(&mut journal_reader, range.oldest_first)? == 0 {
+            if next(&mut journal_reader, range.what_grab)? == 0 {
                 if !out_list.is_empty() {
                     if let Err(send_error) = sender.send(out_list) {
                         warn!("Send Error: {:?}", send_error)
@@ -211,7 +196,11 @@ pub fn get_unit_journal_continuous(
                         crate::widget::journal::check_for_new_journal_entry();
                         gtk::glib::ControlFlow::Break
                     });
-                    out_list = JournalEventChunk::new_info(8, JournalEventChunkInfo::Tail);
+                    out_list = JournalEventChunk::new_info(
+                        8,
+                        JournalEventChunkInfo::Tail,
+                        range.what_grab,
+                    );
                 }
 
                 match journal_reader.wait(Some(std::time::Duration::from_secs(1)))? {
@@ -260,8 +249,6 @@ pub fn get_unit_journal_continuous(
         out_list.push(journal_event);
     }
     // Unreachable
-
-    //Ok(())
 }
 
 pub struct Boot {
@@ -432,22 +419,20 @@ fn create_journal_reader(
     Ok(journal_reader)
 }
 
-fn next(journal_reader: &mut Journal, oldest_first: bool) -> Result<u64, sysd::Error> {
-    if oldest_first {
-        journal_reader.next()
-    } else {
-        journal_reader.previous()
+fn next(journal_reader: &mut Journal, grab_direction: WhatGrab) -> Result<u64, sysd::Error> {
+    match grab_direction {
+        WhatGrab::Newer => journal_reader.next(),
+        WhatGrab::Older => journal_reader.previous(),
     }
 }
 
-fn previous(journal_reader: &mut Journal, oldest_first: bool) -> Result<u64, sysd::Error> {
-    if oldest_first {
-        journal_reader.previous()
-    } else {
-        journal_reader.next()
+/* fn previous(journal_reader: &mut Journal, grab_direction: WhatGrab) -> Result<u64, sysd::Error> {
+    match grab_direction {
+        WhatGrab::Newer => journal_reader.previous(),
+        WhatGrab::Older => journal_reader.next(),
     }
 }
-
+ */
 fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {
     //  libsysd::journal::sd_journal_get_realtime_usec(journal_reader)
 
