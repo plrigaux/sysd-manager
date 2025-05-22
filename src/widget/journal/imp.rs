@@ -53,7 +53,7 @@ const CLASS_ERROR: &str = "error";
 const KEY_ASCENDING: &str = "Ascending";
 const KEY_DESCENDING: &str = "Descending";
 
-#[derive(Default, Clone, Copy, Debug)]
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
 enum JournalDisplayOrder {
     /// Bottom oldests -  Top most recent events  
     Ascending, // 1 2 3 4
@@ -463,24 +463,36 @@ impl JournalPanelImp {
             .expect("Task needs to finish successfully.");
 
             journal_panel.imp().handle_journal_events(&journal_events);
+            let journal_panel_imp = journal_panel.imp();
 
+            //TODO better check all cases
             match journal_events.info() {
                 JournalEventChunkInfo::NoMore
                     if boot_filter2 == BootFilter::Current || boot_filter2 == BootFilter::All =>
                 {
-                    let journal_panel_imp = journal_panel.imp();
-                    journal_panel_imp.continuous_switch.set_state(true);
-                    if journal_panel_imp.continuous_switch.is_active() {
-                        // call thread
-                        journal_panel_imp.continuous_entry();
-                    }
+                    journal_panel_imp.set_continuous_marker();
+                }
+                JournalEventChunkInfo::ChunkMaxReached
+                    if journal_panel_imp.display_order.get() == JournalDisplayOrder::Ascending
+                        && (boot_filter2 == BootFilter::Current
+                            || boot_filter2 == BootFilter::All) =>
+                {
+                    journal_panel_imp.set_continuous_marker();
                 }
                 JournalEventChunkInfo::Error => {
                     warn!("Journal Events Chunk {:?}", journal_events.what_grab)
                 }
-                _ => journal_panel.imp().continuous_switch.set_state(false),
+                _ => journal_panel_imp.continuous_switch.set_state(false),
             };
         });
+    }
+
+    fn set_continuous_marker(&self) {
+        self.continuous_switch.set_state(true);
+        if self.continuous_switch.is_active() {
+            // call thread
+            self.continuous_entry();
+        }
     }
 
     pub fn append_journal_event(&self, journal_event: JournalEventChunk) {
