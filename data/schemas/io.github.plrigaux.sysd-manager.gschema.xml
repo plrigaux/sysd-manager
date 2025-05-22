@@ -76,6 +76,18 @@
             <description>Sometime a journal event can be huge and need to be limited to preserve the
                 application's operation. The 0 value to disable the limit.</description>
         </key>
+        <key name="pref-journal-display-order" type="s">
+            <choices>
+                <choice value='Ascending' />
+                <choice value='Descending' />               
+            </choices>
+            <default>'Descending'</default>           
+            <summary>Journal events display order</summary>            
+        </key>
+        <key name="pref-journal-display-follow" type="b">    
+            <default>false</default>           
+            <summary>Continuously print new entries as they are appended to the journal</summary>            
+        </key>
         <key name="pref-unit-file-line-number" type="b">
             <default>true</default>
             <summary>To display unit file highlighted</summary>

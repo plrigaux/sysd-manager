@@ -12,7 +12,7 @@ use gtk::{
 };
 
 use std::{
-    cell::{Cell, RefCell},
+    cell::{Cell, OnceCell, RefCell},
     thread,
 };
 
@@ -28,8 +28,14 @@ use crate::{
             EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo, WhatGrab,
         },
     },
+    systemd_gui,
     utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
-    widget::{InterPanelMessage, preferences::data::PREFERENCES},
+    widget::{
+        InterPanelMessage,
+        preferences::data::{
+            KEY_PREF_JOURNAL_DISPLAY_FOLLOW, KEY_PREF_JOURNAL_DISPLAY_ORDER, PREFERENCES,
+        },
+    },
 };
 
 const PANEL_EMPTY: &str = "empty";
@@ -43,6 +49,9 @@ const CLASS_SUCCESS: &str = "success";
 //const CLASS_ACCENT: &str = "accent";
 const CLASS_WARNING: &str = "warning";
 const CLASS_ERROR: &str = "error";
+
+const KEY_ASCENDING: &str = "Ascending";
+const KEY_DESCENDING: &str = "Descending";
 
 #[derive(Default, Clone, Copy, Debug)]
 enum JournalDisplayOrder {
@@ -59,6 +68,24 @@ impl JournalDisplayOrder {
         match self {
             JournalDisplayOrder::Ascending => ("Ascending", ASCD),
             JournalDisplayOrder::Descending => ("Descending", DESC),
+        }
+    }
+
+    pub fn key(&self) -> &str {
+        match self {
+            JournalDisplayOrder::Ascending => KEY_ASCENDING,
+            JournalDisplayOrder::Descending => KEY_DESCENDING,
+        }
+    }
+
+    pub fn from_key(key: &str) -> Self {
+        match key {
+            KEY_ASCENDING => JournalDisplayOrder::Ascending,
+            KEY_DESCENDING => JournalDisplayOrder::Descending,
+            _ => {
+                warn!("Journal Display Order key {:?} not found", key);
+                JournalDisplayOrder::default()
+            }
         }
     }
 }
@@ -110,6 +137,8 @@ pub struct JournalPanelImp {
     //old_to_recent_order: Cell<bool>,
     display_order: Cell<JournalDisplayOrder>,
     cancel_continuous_sender: RefCell<Option<std::sync::mpsc::Sender<()>>>,
+
+    settings: OnceCell<gio::Settings>,
 }
 
 #[gtk::template_callbacks]
@@ -139,6 +168,20 @@ impl JournalPanelImp {
         child.set_label(label);
         self.display_order.set(display);
 
+        if let Err(e) = self
+            .settings
+            .get()
+            .expect("settings not none")
+            .set_string(KEY_PREF_JOURNAL_DISPLAY_ORDER, display.key())
+        {
+            warn!(
+                "Can't set setting key {:?} value {:?} error {:}",
+                KEY_PREF_JOURNAL_DISPLAY_ORDER,
+                display.key(),
+                e
+            )
+        }
+
         self.clean_refresh();
     }
 
@@ -151,29 +194,6 @@ impl JournalPanelImp {
     #[template_callback]
     fn journal_menu_popover_closed(&self) {
         info!("journal_menu_popover_closed");
-
-        /*        let boot_filter_op = if self.journal_boot_all_button.has_css_class(CLASS_SUCCESS) {
-            Some(BootFilter::All)
-        } else if self.journal_boot_id_entry.has_css_class(CLASS_SUCCESS) {
-            let boot_id = self.journal_boot_id_entry.text();
-            Some(BootFilter::Id(boot_id.to_string()))
-        } else if self
-            .journal_boot_current_button
-            .has_css_class(CLASS_SUCCESS)
-        {
-            Some(BootFilter::Current)
-        } else {
-            None
-        }; */
-
-        /*  if let Some(boot_filter) = boot_filter_op {
-            let replaced = self.boot_filter.replace(boot_filter.clone());
-
-            if replaced != boot_filter {
-                //filter updated
-                self.update_journal(EventGrabbing::Default);
-            }
-        } */
     }
 
     #[template_callback]
@@ -356,7 +376,7 @@ impl JournalPanelImp {
         if unit.primary() != old_unit.map_or(String::new(), |o_unit| o_unit.primary()) {
             self.new_text_view();
 
-            JournalPanelImp::set_or_send_cancelling(self, None);
+            self.set_or_send_cancelling(None);
         }
 
         self.update_journal_according_to_display_order();
@@ -446,7 +466,7 @@ impl JournalPanelImp {
 
             match journal_events.info() {
                 JournalEventChunkInfo::NoMore
-                    if boot_filter2 != BootFilter::Current || boot_filter2 == BootFilter::All =>
+                    if boot_filter2 == BootFilter::Current || boot_filter2 == BootFilter::All =>
                 {
                     let journal_panel_imp = journal_panel.imp();
                     journal_panel_imp.continuous_switch.set_state(true);
@@ -639,7 +659,7 @@ impl JournalPanelImp {
         self.scrolled_window.set_child(Some(&tv));
         self.journal_text_view.replace(tv);
         self.time_old_new.set(None);
-        //self.unit_journal_loaded.set(false);
+        self.continuous_switch.set_state(false);
     }
 
     fn clean_refresh(&self) {
@@ -683,14 +703,30 @@ impl ObjectImpl for JournalPanelImp {
 
         self.new_text_view();
 
+        let settings = systemd_gui::new_settings();
+        self.settings
+            .set(settings.clone())
+            .expect("Settineg set once only");
+
+        settings
+            .bind(
+                KEY_PREF_JOURNAL_DISPLAY_FOLLOW,
+                &self.continuous_switch.clone(),
+                "active",
+            )
+            .build();
+
+        let display_order = settings.string(KEY_PREF_JOURNAL_DISPLAY_ORDER);
+        let display_order = JournalDisplayOrder::from_key(&display_order);
+
         let sort_toggle_button_content = self
             .journal_toggle_sort_button
             .child()
             .and_downcast::<adw::ButtonContent>()
             .unwrap();
 
-        let display = self.display_order.get();
-        let (label, icon) = display.label_icon();
+        self.display_order.set(display_order);
+        let (label, icon) = display_order.label_icon();
         sort_toggle_button_content.set_icon_name(icon);
         sort_toggle_button_content.set_label(label);
     }
