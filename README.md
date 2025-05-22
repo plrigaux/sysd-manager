@@ -14,8 +14,6 @@ A user-friendly GUI to manage systemd units
 
 ## 📋 Description
 
-SysD Manager provides an intuitive graphical interface to manage **systemd units** easily. With this application, you can:
-
 - Change the enablement and running status of systemd units
 - View and modify unit files with syntax highlighting
 - Check journal logs with syntax highlighting

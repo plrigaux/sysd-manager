@@ -11,8 +11,11 @@ use log::warn;
 use crate::{
     systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors, runtime},
     widget::{
-        InterPanelMessage, app_window::AppWindow, clean_dialog::CleanUnitDialog,
-        kill_panel::KillPanel, unit_control_panel::UnitControlPanel,
+        InterPanelMessage,
+        app_window::AppWindow,
+        clean_dialog::CleanUnitDialog,
+        kill_panel::KillPanel,
+        unit_control_panel::{UnitControlPanel, work_around_dialog},
     },
 };
 
@@ -83,10 +86,23 @@ impl SideControlPanelImpl {
     }
 
     fn lambda_out(
-        _unit: &UnitInfo,
-        _res: Result<(), SystemdErrors>,
-        _control_panel: &UnitControlPanel,
+        method_name: &str,
+        unit: &UnitInfo,
+        result: Result<(), SystemdErrors>,
+        control_panel: &UnitControlPanel,
     ) {
+        if let Err(error) = result {
+            if let SystemdErrors::ZAccessDenied(_, _) = error {
+                let cmd = format!(
+                    "sudo systemctl {} -u {}",
+                    method_name.to_ascii_lowercase(),
+                    unit.primary()
+                );
+
+                let window = control_panel.parent_window();
+                work_around_dialog(&cmd, &error, method_name, &window)
+            }
+        }
     }
 
     #[template_callback]
@@ -137,7 +153,12 @@ impl SideControlPanelImpl {
         clean_dialog.present();
     }
 
-    fn after_mask(unit: &UnitInfo, result: Result<(), SystemdErrors>, control: &UnitControlPanel) {
+    fn after_mask(
+        _method_name: &str,
+        unit: &UnitInfo,
+        result: Result<(), SystemdErrors>,
+        control: &UnitControlPanel,
+    ) {
         if result.is_err() {
             return;
         }

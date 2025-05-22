@@ -272,7 +272,8 @@ impl KillPanelImp {
 
         let who: KillWho = self.who_to_kill.selected().into();
 
-        let lambda_out = move |_unit: &UnitInfo,
+        let lambda_out = move |_method_name: &str,
+                               _unit: &UnitInfo,
                                _res: Result<(), SystemdErrors>,
                                _control: &UnitControlPanel| {};
 

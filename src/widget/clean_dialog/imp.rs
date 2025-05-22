@@ -20,7 +20,11 @@ use log::{info, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
-    widget::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitControlPanel},
+    widget::{
+        InterPanelMessage,
+        app_window::AppWindow,
+        unit_control_panel::{UnitControlPanel, work_around_dialog},
+    },
 };
 
 use super::CleanUnitDialog;
@@ -63,11 +67,23 @@ impl CleanDialogImp {
         let lambda_out = {
             let what = what.clone();
             let this = self.obj().clone();
-            move |unit: &UnitInfo,
+            move |method: &str,
+                  unit: &UnitInfo,
                   result: Result<(), SystemdErrors>,
                   _control: &UnitControlPanel| {
                 if let Err(error) = result {
-                    this.imp().work_around_dialog(&what, unit, error);
+                    if let SystemdErrors::ZAccessDenied(_, _) = error {
+                        let mut cmd = "sudo systemctl clean ".to_owned();
+
+                        for w in what {
+                            cmd.push_str("--what=");
+                            cmd.push_str(&w);
+                            cmd.push(' ');
+                        }
+
+                        cmd.push_str(&unit.primary());
+                        work_around_dialog(&cmd, &error, method, &this.into())
+                    }
                 }
             }
         };
@@ -194,65 +210,6 @@ impl CleanDialogImp {
         }
 
         self.clean_button.set_sensitive(at_least_one_checked);
-    }
-
-    fn work_around_dialog(&self, what: &[String], unit: &UnitInfo, err: SystemdErrors) {
-        let content_box = gtk::Box::builder()
-            .orientation(gtk::Orientation::Vertical)
-            .spacing(15)
-            .margin_start(10)
-            .margin_end(10)
-            .margin_top(5)
-            .margin_bottom(15)
-            .build();
-
-        content_box.append(
-            &gtk::Label::builder()
-                .label("Unfortunately SysD-Manager can't perfom unit clean currently.")
-                .build(),
-        );
-        content_box.append(
-            &gtk::Label::builder()
-                .label("Because the app is in construction. Contact me if you know how to manage polkit ;)")
-                .build(),
-        );
-        content_box.append(
-            &gtk::Label::builder()
-                .label(
-                    "\n\nWhile waiting for an eventual fix, please try the bellow command line in your terminal",
-                )
-                .build(),
-        );
-
-        let mut cmd = "sudo systemctl clean ".to_owned();
-
-        for w in what {
-            cmd.push_str("--what=");
-            cmd.push_str(w);
-            cmd.push(' ');
-        }
-
-        cmd.push_str(&unit.primary());
-
-        let label_fallback = gtk::Label::builder()
-            .label(&cmd)
-            .selectable(true)
-            .wrap(true)
-            .css_classes(["journal_message"])
-            .build();
-
-        content_box.append(&label_fallback);
-
-        let tool_bar = adw::ToolbarView::builder().content(&content_box).build();
-        tool_bar.add_top_bar(&adw::HeaderBar::new());
-
-        let dialog = adw::Window::builder()
-            .title(format!("Error {}", err.human_error_type()))
-            .content(&tool_bar)
-            .transient_for(self.obj().as_ref())
-            .build();
-
-        dialog.present();
     }
 }
 

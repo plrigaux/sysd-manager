@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager"
-version = "1.24.2"
+version = "1.25.1"
 edition = '2024'
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
@@ -51,8 +51,8 @@ serde = "1.0"
 sourceview5 = "0.9"
 libsysd = { version = "0.9", package = "libsystemd-sys"} 
 sysd =  { version = "0.10", package = "systemd"} 
-zbus = "5.6"
-zbus_macros =  "5.6" 
+zbus = "5.7"
+zbus_macros =  "5.7" 
 zvariant = "5.5"
 const_format = "0.2.34"
 constcat = "0.6"
