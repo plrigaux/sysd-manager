@@ -54,6 +54,15 @@ enum JournalDisplayOrder {
     Descending, // 4 3 2 1
 }
 
+impl JournalDisplayOrder {
+    pub fn label_icon(&self) -> (&str, &str) {
+        match self {
+            JournalDisplayOrder::Ascending => ("Ascending", ASCD),
+            JournalDisplayOrder::Descending => ("Descending", DESC),
+        }
+    }
+}
+
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
 #[properties(wrapper_type = super::JournalPanel)]
@@ -119,16 +128,16 @@ impl JournalPanelImp {
 
         let icon_name = child.icon_name();
 
-        if icon_name == ASCD {
-            child.set_icon_name(DESC);
-            child.set_label("Descending");
-            self.display_order.set(JournalDisplayOrder::Descending);
+        let display = if icon_name == ASCD {
+            JournalDisplayOrder::Descending
         } else {
-            //     view-sort-descending
-            child.set_icon_name(ASCD);
-            child.set_label("Ascending");
-            self.display_order.set(JournalDisplayOrder::Ascending);
-        }
+            JournalDisplayOrder::Ascending
+        };
+
+        let (label, icon) = display.label_icon();
+        child.set_icon_name(icon);
+        child.set_label(label);
+        self.display_order.set(display);
 
         self.clean_refresh();
     }
@@ -667,6 +676,17 @@ impl ObjectImpl for JournalPanelImp {
         self.parent_constructed();
 
         self.new_text_view();
+
+        let sort_toggle_button_content = self
+            .journal_toggle_sort_button
+            .child()
+            .and_downcast::<adw::ButtonContent>()
+            .unwrap();
+
+        let display = self.display_order.get();
+        let (label, icon) = display.label_icon();
+        sort_toggle_button_content.set_icon_name(icon);
+        sort_toggle_button_content.set_label(label);
     }
 }
 impl WidgetImpl for JournalPanelImp {}
