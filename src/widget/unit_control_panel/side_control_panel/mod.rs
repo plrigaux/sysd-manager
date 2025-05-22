@@ -43,7 +43,7 @@ impl SideControlPanel {
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
         systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel) + 'static,
+        return_handle: impl Fn(&str, &UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel) + 'static,
     ) {
         self.imp()
             .parent()

@@ -498,12 +498,19 @@ impl UnitControlPanelImpl {
         }
     }
 
+    pub fn window(&self) -> gtk::Window {
+        let w: gtk::Window = self.app_window.get().expect("window set").clone().into();
+
+        w
+    }
+
     pub(super) fn call_method(
         &self,
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
         systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel) + 'static,
+        return_handle: impl FnOnce(&str, &UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel)
+        + 'static,
     ) {
         let binding = self.current_unit.borrow();
         let Some(unit) = binding.as_ref() else {
@@ -547,11 +554,11 @@ impl UnitControlPanelImpl {
                     );
 
                     warn!("{msg} {:?}", error);
-                    control_panel.add_toast_message(&msg, true)
+                    control_panel.add_toast_message(&msg, true);
                 }
             }
 
-            return_handle(&unit, result, &control_panel)
+            return_handle(&method_name, &unit, result, &control_panel)
         });
     }
 }

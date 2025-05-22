@@ -61,9 +61,74 @@ impl UnitControlPanel {
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
         systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl Fn(&UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel) + 'static,
+        return_handle: impl FnOnce(&str, &UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel)
+        + 'static,
     ) {
         self.imp()
             .call_method(method_name, button, systemd_method, return_handle);
     }
+
+    pub fn window(&self) -> gtk::Window {
+        self.imp().window()
+    }
+}
+
+pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: &gtk::Window) {
+    let content_box = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(15)
+        .margin_start(10)
+        .margin_end(10)
+        .margin_top(5)
+        .margin_bottom(15)
+        .build();
+
+    content_box.append(
+        &gtk::Label::builder()
+            .label(format!(
+                "Unfortunately <b>SysD-Manager</b> can't perfom <b>{}</b> action.",
+                method
+            ))
+            .use_markup(true)
+            .build(),
+    );
+    content_box.append(
+        &gtk::Label::builder()
+            .label("The authorisation can be configured in the following file :")
+            .build(),
+    );
+
+    let file_path = "/usr/share/dbus-1/system.d/org.freedesktop.systemd1.conf";
+    content_box.append(
+        &gtk::LinkButton::builder()
+            .label(file_path)
+            .uri(format!("file://{}", file_path))
+            .build(),
+    );
+
+    content_box.append(
+        &gtk::Label::builder()
+            .label("\n\nOtherwise, you can try the bellow command line in your terminal")
+            .build(),
+    );
+
+    let label_fallback = gtk::Label::builder()
+        .label(cmd)
+        .selectable(true)
+        .wrap(true)
+        .css_classes(["journal_message"])
+        .build();
+
+    content_box.append(&label_fallback);
+
+    let tool_bar = adw::ToolbarView::builder().content(&content_box).build();
+    tool_bar.add_top_bar(&adw::HeaderBar::new());
+
+    let dialog = adw::Window::builder()
+        .title(format!("Error {}", err.human_error_type()))
+        .content(&tool_bar)
+        .transient_for(window)
+        .build();
+
+    dialog.present();
 }
