@@ -498,9 +498,8 @@ impl UnitControlPanelImpl {
         }
     }
 
-    pub fn window(&self) -> gtk::Window {
+    pub fn parent_window(&self) -> gtk::Window {
         let w: gtk::Window = self.app_window.get().expect("window set").clone().into();
-
         w
     }
 

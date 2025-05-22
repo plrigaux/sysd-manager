@@ -26,9 +26,8 @@ Here are __SysD Manager__ main features:
 * [x] List of all running units, ordered by the time they took to initialize __systemd-analyze blame__
 * [x] Follow Dark and Light style switching
 * [x] Select a unit at program opening by passing a unit name as cli argument (see --help)
-* [ ] Clean unit like `systemctl clean`
-* [ ] Freeze unit like `systemctl freeze`
-* [ ] Thaw unit like `systemctl thaw`
+* [x] Clean unit like `systemctl clean`
+* [x] Freeze & Thaw unit like `systemctl freeze` & `systemctl thaw`
 * [ ] Multi languages
 * [x] Journal events updated automaticaly at realtime
 * [x] Retreive list of boot ids 

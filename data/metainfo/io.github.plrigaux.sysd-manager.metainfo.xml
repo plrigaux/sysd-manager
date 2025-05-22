@@ -86,7 +86,11 @@ https://hughsie.github.io/oars/index.html
         <p>Added</p>
         <ul>
           <li>Feature to enable new journal entries continuous print as they are appended to the journal</li>
-        </ul>           
+        </ul> 
+         <p>Changed</p>
+        <ul>
+          <li>UX Better error dialog message on not authorized for actions: clean, freese and thaw</li>
+        </ul>          
       </description>
     </release>
       <release version="1.24.2" date="2025-05-10">

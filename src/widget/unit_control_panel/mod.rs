@@ -68,8 +68,8 @@ impl UnitControlPanel {
             .call_method(method_name, button, systemd_method, return_handle);
     }
 
-    pub fn window(&self) -> gtk::Window {
-        self.imp().window()
+    pub fn parent_window(&self) -> gtk::Window {
+        self.imp().parent_window()
     }
 }
 
@@ -128,6 +128,7 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
         .title(format!("Error {}", err.human_error_type()))
         .content(&tool_bar)
         .transient_for(window)
+        .modal(true)
         .build();
 
     dialog.present();

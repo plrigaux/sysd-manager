@@ -99,7 +99,7 @@ impl SideControlPanelImpl {
                     unit.primary()
                 );
 
-                let window = control_panel.window();
+                let window = control_panel.parent_window();
                 work_around_dialog(&cmd, &error, method_name, &window)
             }
         }
