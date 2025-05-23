@@ -162,7 +162,7 @@ fn create_about() -> adw::AboutDialog {
 
     about.add_acknowledgement_section(
         Some("Thank you for your support"),
-        &["AsciiWolf", "Justin Searle"],
+        &["AsciiWolf", "Justin Searle", "Damglador"],
     );
 
     if let Some(rn_version) = RELEASE_NOTES_VERSION {
