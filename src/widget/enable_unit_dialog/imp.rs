@@ -153,6 +153,16 @@ impl EnableUnitDialogImp {
         let _ = self.unit_control.set(unit_control.clone());
     }
 
+    #[template_callback]
+    fn file_bowser_clicked(&self, _button: gtk::Button) {
+        let fd = gtk::FileDialog::new();
+
+        let w: gtk::Window = self.obj().clone().into();
+        fd.open(Some(&w), None::<&gio::Cancellable>, |result| {
+            info!("File {:?}", result);
+        });
+    }
+
     pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     fn set_send_button_sensitivity(&self) {
