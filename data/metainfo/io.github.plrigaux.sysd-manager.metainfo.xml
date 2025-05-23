@@ -90,6 +90,7 @@ https://hughsie.github.io/oars/index.html
          <p>Changed</p>
         <ul>
           <li>UX Better error dialog message on not authorized for actions: clean, freese and thaw</li>
+          <li>Named Damglador in the Acknowledgements section</li>
         </ul>          
       </description>
     </release>
