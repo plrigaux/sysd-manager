@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - UX Better error dialog message on not authorized for actions: clean, freese and thaw
+- Named Damglador in the Acknowledgements section
 
 ## [1.24.2] - 2025-05-10
 

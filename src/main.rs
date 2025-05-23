@@ -64,7 +64,7 @@ fn main() -> glib::ExitCode {
         let prefered_color_scheme: adw::ColorScheme =
             unsafe { adw::ColorScheme::from_glib(prefered_color_scheme_id) };
 
-        println!(
+        info!(
             "id {:?} color {:?}",
             prefered_color_scheme_id, prefered_color_scheme
         );
