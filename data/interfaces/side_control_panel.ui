@@ -14,6 +14,21 @@
         <property name="child">
           <object class="AdwButtonContent">
             <property name="halign">start</property>
+            <property name="icon-name">weather-tornado-symbolic</property>
+            <property name="label">Enable Unit</property>
+            <property name="tooltip-text">Send a signal to a process or a group of processes</property>
+            <property name="use-underline">True</property>
+          </object>
+        </property>
+        <property name="css-classes">flat</property>
+        <signal name="clicked" handler="enable_unit_button_clicked" swapped="yes"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton">
+        <property name="child">
+          <object class="AdwButtonContent">
+            <property name="halign">start</property>
             <property name="icon-name">send-symbolic</property>
             <property name="label">Send _Kill Signal</property>
             <property name="tooltip-text">Send a signal to a process or a group of processes</property>

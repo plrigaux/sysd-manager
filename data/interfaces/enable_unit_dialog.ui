@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.96.1 -->
+<interface>
+  <!-- interface-name clean_dialog.ui -->
+  <requires lib="gtk" version="4.16"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <template class="ENABLE_UNIT_DIALOG" parent="AdwWindow">
+    <property name="content">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="GtkBox">
+            <property name="margin-bottom">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-start">5</property>
+            <property name="margin-top">5</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <child>
+                  <object class="AdwEntryRow" id="unit_file_entry">
+                    <property name="title">Unit file</property>
+                    <signal name="changed" handler="unit_file_changed" swapped="yes"/>
+                    <signal name="apply" handler="unit_file_apply" swapped="yes"/>
+                    <signal name="entry-activated" handler="unit_file_entry_activated" swapped="yes"/>
+                    <signal name="delete-text" handler="unit_file_delete_text" swapped="yes"/>
+                    <signal name="insert-text" handler="unit_file_insert_text" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="runtime_switch">
+                    <property name="subtitle">Whether the unit shall be enabled for runtime only </property>
+                    <property name="title">Runtime</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="force_switch">
+                    <property name="subtitle">controls whether symlinks pointing to other units shall be replaced if necessary</property>
+                    <property name="title">Force</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="halign">end</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label">Reset</property>
+                    <signal name="clicked" handler="reset_button_clicked" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="enable_button">
+                    <property name="css-classes">suggested-action</property>
+                    <property name="halign">end</property>
+                    <property name="label">Enable</property>
+                    <property name="sensitive">False</property>
+                    <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </property>
+        <property name="top-bar-style">raised</property>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle" id="window_title">
+                <property name="title" translatable="yes">Enable Unit</property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </property>
+    <property name="modal">True</property>
+  </template>
+</interface>

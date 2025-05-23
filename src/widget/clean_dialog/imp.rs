@@ -251,7 +251,9 @@ impl ObjectImpl for CleanDialogImp {
                     check_button.is_active()
                 );
 
-                clean_dialog.clean_option_selected(&clean_option, check_button.is_active());
+                clean_dialog
+                    .imp()
+                    .clean_option_selected(&clean_option, check_button.is_active());
             });
 
             self.check_button_box.append(&check_button);
