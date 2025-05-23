@@ -72,6 +72,10 @@ A user-friendly GUI to manage systemd units
 <a href="https://flathub.org/apps/io.github.plrigaux.sysd-manager"><img width="200" alt="Download on Flathub" src="https://flathub.org/api/badge?svg"/></a>
 
 ### Arch Linux
+
+<a href="https://aur.archlinux.org/packages/sysd-manager"><img width="200" alt="Download on Flathub" src="https://aur.archlinux.org/static/css/archnavbar/aurlogo.png"/></a>
+
+
 ```bash
 yay -S sysd-manager
 ```
