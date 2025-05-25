@@ -11,7 +11,7 @@ use gtk::{
         },
     },
 };
-use log::info;
+use log::{info, warn};
 
 use crate::{
     systemd::{self, data::UnitInfo, errors::SystemdErrors},
@@ -38,6 +38,9 @@ pub struct EnableUnitDialogImp {
 
     #[template_child]
     force_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    portable_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     window_title: TemplateChild<adw::WindowTitle>,
@@ -155,12 +158,30 @@ impl EnableUnitDialogImp {
 
     #[template_callback]
     fn file_bowser_clicked(&self, _button: gtk::Button) {
-        let fd = gtk::FileDialog::new();
+        let file_dialog = gtk::FileDialog::builder()
+            .title("Select a unit file")
+            .accept_label("Select")
+            .build();
 
-        let w: gtk::Window = self.obj().clone().into();
-        fd.open(Some(&w), None::<&gio::Cancellable>, |result| {
-            info!("File {:?}", result);
-        });
+        let enable_unit_dialog = self.obj().clone();
+        let window: gtk::Window = enable_unit_dialog.clone().into();
+
+        file_dialog.open(
+            Some(&window),
+            None::<&gio::Cancellable>,
+            move |result| match result {
+                Ok(file) => {
+                    if let Some(path) = file.path() {
+                        let file_path_str = path.display().to_string();
+                        enable_unit_dialog
+                            .imp()
+                            .unit_file_entry
+                            .set_text(&file_path_str);
+                    }
+                }
+                Err(e) => warn!("Unit File Selection Error {:?}", e),
+            },
+        );
     }
 
     pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}

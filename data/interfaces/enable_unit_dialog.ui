@@ -19,12 +19,20 @@
               <object class="AdwPreferencesGroup">
                 <child>
                   <object class="AdwEntryRow" id="unit_file_entry">
+                    <property name="input-hints">lowercase | no-spellcheck | private | uppercase-sentences | vertical-writing | word-completion</property>
                     <property name="title">Unit file</property>
                     <signal name="changed" handler="unit_file_changed" swapped="yes"/>
                     <signal name="apply" handler="unit_file_apply" swapped="yes"/>
                     <signal name="entry-activated" handler="unit_file_entry_activated" swapped="yes"/>
                     <signal name="delete-text" handler="unit_file_delete_text" swapped="yes"/>
                     <signal name="insert-text" handler="unit_file_insert_text" swapped="yes"/>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="css-classes">flat</property>
+                        <property name="icon-name">edit-find-symbolic</property>
+                        <signal name="clicked" handler="file_bowser_clicked" swapped="yes"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -37,6 +45,12 @@
                   <object class="AdwSwitchRow" id="force_switch">
                     <property name="subtitle">controls whether symlinks pointing to other units shall be replaced if necessary</property>
                     <property name="title">Force</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="portable_switch">
+                    <property name="subtitle">will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.</property>
+                    <property name="title">Portable</property>
                   </object>
                 </child>
               </object>
@@ -58,12 +72,6 @@
                     <property name="label">Enable</property>
                     <property name="sensitive">False</property>
                     <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="label">test</property>
-                    <signal name="clicked" handler="file_bowser_clicked" swapped="yes"/>
                   </object>
                 </child>
               </object>
