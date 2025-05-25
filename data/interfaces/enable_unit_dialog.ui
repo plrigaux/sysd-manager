@@ -17,9 +17,11 @@
             <property name="spacing">5</property>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="margin-bottom">5</property>
+                <property name="margin-top">5</property>
                 <child>
                   <object class="AdwEntryRow" id="unit_file_entry">
-                    <property name="input-hints">lowercase | no-spellcheck | private | uppercase-sentences | vertical-writing | word-completion</property>
+                    <property name="input-hints">lowercase|no-spellcheck|private|uppercase-sentences|vertical-writing|word-completion</property>
                     <property name="title">Unit file</property>
                     <signal name="changed" handler="unit_file_changed" swapped="yes"/>
                     <signal name="apply" handler="unit_file_apply" swapped="yes"/>
@@ -71,7 +73,7 @@
                     <property name="halign">end</property>
                     <property name="label">Enable</property>
                     <property name="sensitive">False</property>
-                    <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
+                    <signal name="clicked" handler="enable_unit_file_button_clicked" swapped="yes"/>
                   </object>
                 </child>
               </object>
@@ -83,7 +85,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title" translatable="yes">Enable Unit</property>
+                <property name="title" translatable="yes">Enable Unit File</property>
               </object>
             </property>
           </object>

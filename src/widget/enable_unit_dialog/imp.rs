@@ -1,4 +1,4 @@
-use std::{cell::OnceCell, collections::HashMap};
+use std::cell::OnceCell;
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use gtk::{
@@ -14,7 +14,12 @@ use gtk::{
 use log::{info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, errors::SystemdErrors},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{DisEnableFlags, UnitDBusLevel},
+        errors::SystemdErrors,
+    },
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -45,8 +50,6 @@ pub struct EnableUnitDialogImp {
     #[template_child]
     window_title: TemplateChild<adw::WindowTitle>,
 
-    check_buttons: OnceCell<HashMap<String, gtk::CheckButton>>,
-
     app_window: OnceCell<AppWindow>,
 
     unit_control: OnceCell<UnitControlPanel>,
@@ -55,19 +58,8 @@ pub struct EnableUnitDialogImp {
 #[gtk::template_callbacks]
 impl EnableUnitDialogImp {
     #[template_callback]
-    fn clean_button_clicked(&self, button: gtk::Button) {
-        let Some(map) = self.check_buttons.get() else {
-            return;
-        };
-
-        let what: Vec<String> = map
-            .iter()
-            .filter(|(_, check_button)| check_button.is_active())
-            .map(|(clean_option_code, _)| clean_option_code.clone())
-            .collect();
-
+    fn enable_unit_file_button_clicked(&self, button: gtk::Button) {
         let lambda_out = {
-            let what = what.clone();
             let this = self.obj().clone();
             move |method: &str,
                   unit: &UnitInfo,
@@ -77,12 +69,6 @@ impl EnableUnitDialogImp {
                     if let SystemdErrors::ZAccessDenied(_, _) = error {
                         let mut cmd = "sudo systemctl clean ".to_owned();
 
-                        for w in what {
-                            cmd.push_str("--what=");
-                            cmd.push_str(&w);
-                            cmd.push(' ');
-                        }
-
                         cmd.push_str(&unit.primary());
                         work_around_dialog(&cmd, &error, method, &this.into())
                     }
@@ -90,12 +76,38 @@ impl EnableUnitDialogImp {
             }
         };
 
-        let lambda = move |unit: &UnitInfo| systemd::clean_unit(unit, &what);
+        let unit_file = self.unit_file_entry.text();
+
+        let mut flags = DisEnableFlags::empty();
+
+        if self.force_switch.is_active() {
+            flags |= DisEnableFlags::SD_SYSTEMD_UNIT_FORCE
+        }
+
+        if self.portable_switch.is_active() {
+            flags |= DisEnableFlags::SD_SYSTEMD_UNIT_PORTABLE
+        }
+
+        if self.runtime_switch.is_active() {
+            flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
+        }
+
+        let lambda = move |_unit: &UnitInfo| match systemd::enable_unit_file(
+            unit_file.as_str(),
+            UnitDBusLevel::System,
+            flags,
+        ) {
+            Ok(a) => {
+                info!("Enable Response {:?}", a);
+                Ok(())
+            }
+            Err(e) => Err(e),
+        };
 
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Clean", &button, lambda, lambda_out);
+            .call_method("Enable Unit File", &button, lambda, lambda_out);
     }
 
     #[template_callback]
@@ -191,7 +203,7 @@ impl EnableUnitDialogImp {
 
         //  let enable_button = if unit_file.is_empty() { false } else { true };
 
-        self.enable_button.set_sensitive(unit_file.is_empty());
+        self.enable_button.set_sensitive(!unit_file.is_empty());
     }
 }
 

@@ -94,54 +94,7 @@ impl CleanDialogImp {
             .get()
             .expect("unit_control not None")
             .call_method("Clean", &button, lambda, lambda_out);
-        /*
-        let plur = if what.len() == 1 { "" } else { "s" };
-
-        let message = match systemd::clean_unit(unit, &what) {
-            Ok(()) => {
-                format!(
-                    "Clean unit <unit>{}</unit> with parameter{} {} succeed",
-                    unit.primary(),
-                    plur,
-                    Self::what_to_display(&what)
-                )
-            }
-            Err(err) => {
-                warn!("Clean Unit {:?} error : {:?}", unit.primary(), err);
-
-                self.work_around_dialog(&what, unit, err);
-                format!(
-                    "Clean unit <unit>{}</unit> with parameter{} {} failed",
-                    unit.primary(),
-                    plur,
-                    Self::what_to_display(&what)
-                )
-            }
-        };
-
-        if let Some(app_window) = self.app_window.get() {
-            app_window.add_toast_message(&message, true);
-        } */
     }
-
-    /*     fn what_to_display(what: &[&str]) -> String {
-        let mut out = String::new();
-
-        for (i, w) in what.iter().enumerate() {
-            out.push_str("<unit>");
-            out.push_str(w);
-            out.push_str("</unit>");
-
-            if i + 2 == what.len() {
-                out.push_str(" and ");
-            } else if i + 1 == what.len() {
-                //the last, do nothing
-            } else {
-                out.push_str(", ");
-            }
-        }
-        out
-    } */
 
     pub(crate) fn set_app_window(
         &self,

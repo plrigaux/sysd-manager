@@ -171,6 +171,14 @@ pub fn disenable_unit_file(
     Ok(msg_return)
 }
 
+pub fn enable_unit_file(
+    unit_file: &str,
+    level: UnitDBusLevel,
+    flags: DisEnableFlags,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    sysdbus::enable_unit_files(level, &[unit_file], flags)
+}
+
 /// Read the unit file and return it's contents so that we can display it
 pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     let Some(file_path) = &unit.file_path() else {
