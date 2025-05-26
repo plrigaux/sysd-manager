@@ -143,7 +143,7 @@ impl UnitListFilterWindowImp {
 
         let clear_filter_button = gtk::Button::builder()
             .label("Clear Filters")
-            .css_classes(["destructive-action"])
+            // .css_classes(["destructive-action"])
             .valign(gtk::Align::End)
             .hexpand(true)
             .build();
