@@ -718,7 +718,7 @@ impl ObjectImpl for JournalPanelImp {
         let settings = systemd_gui::new_settings();
         self.settings
             .set(settings.clone())
-            .expect("Settineg set once only");
+            .expect("Settings set once only");
 
         settings
             .bind(

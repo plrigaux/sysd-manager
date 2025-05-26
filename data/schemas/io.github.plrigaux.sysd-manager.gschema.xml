@@ -231,5 +231,24 @@
             <default>1100</default>
             <summary>List Boots Window Width</summary>
         </key>
+        <key name="save-context-enable-unit-force" type="b">
+             <default>false</default>
+        </key>
+        <key name="save-context-enable-unit-run-now" type="b">
+             <default>false</default>
+        </key>
+        <key name="save-context-enable-unit-runtime" type="b">
+            <default>false</default>
+        </key>
+        <key name="save-context-enable-unit-start-mode" type="s">
+            <choices>
+                <choice value='fail' />
+                <choice value='replace' />
+                <choice value='isolate' />
+                <choice value='ignore-dependencies' />
+                <choice value='ignore-requirements' />
+            </choices>
+            <default>'fail'</default>
+        </key>
     </schema>
 </schemalist>

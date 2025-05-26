@@ -20,6 +20,7 @@ use crate::{
         enums::{DisEnableFlags, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
+    systemd_gui,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -28,6 +29,11 @@ use crate::{
 };
 
 use super::EnableUnitDialog;
+
+const SAVE_CONTEXT_ENABLE_UNIT_RUNTIME: &str = "save-context-enable-unit-force";
+const SAVE_CONTEXT_ENABLE_UNIT_FORCE: &str = "save-context-enable-unit-run-now";
+const SAVE_CONTEXT_ENABLE_UNIT_RUN_NOW: &str = "save-context-enable-unit-runtime";
+const SAVE_CONTEXT_ENABLE_UNIT_START_MODE: &str = "save-context-enable-unit-start-mode";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/enable_unit_dialog.ui")]
@@ -56,6 +62,8 @@ pub struct EnableUnitDialogImp {
     app_window: OnceCell<AppWindow>,
 
     unit_control: OnceCell<UnitControlPanel>,
+
+    settings: OnceCell<gio::Settings>,
 }
 
 #[gtk::template_callbacks]
@@ -152,9 +160,23 @@ impl EnableUnitDialogImp {
     #[template_callback]
     fn reset_button_clicked(&self, _button: gtk::Button) {
         info!("reset_button_clicked");
+
+        let settings = self.settings.get().expect("setting nor None");
+
         self.unit_file_entry.set_text("");
-        self.runtime_switch.set_active(false);
-        self.force_switch.set_active(false);
+
+        let runtime = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_RUNTIME);
+        let force = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_FORCE);
+        let run_now = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_RUN_NOW);
+        let start_mode = settings.string(SAVE_CONTEXT_ENABLE_UNIT_START_MODE);
+
+        self.runtime_switch.set_active(runtime);
+        self.force_switch.set_active(force);
+        self.run_now_switch.set_active(run_now);
+
+        let start_mode: StartStopMode = start_mode.as_str().into();
+        let position = start_mode.discriminant();
+        self.run_mode_combo.set_selected(position);
     }
 
     pub(crate) fn set_app_window(
@@ -231,6 +253,11 @@ impl ObjectSubclass for EnableUnitDialogImp {
 impl ObjectImpl for EnableUnitDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let settings = systemd_gui::new_settings();
+        self.settings
+            .set(settings.clone())
+            .expect("Settings set once only");
 
         let model = adw::EnumListModel::new(StartStopMode::static_type());
 

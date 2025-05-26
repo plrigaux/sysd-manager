@@ -709,12 +709,20 @@ pub enum StartStopMode {
 impl StartStopMode {
     pub fn as_str(&self) -> &'static str {
         match self {
-            StartStopMode::Fail => "fail",
             StartStopMode::Replace => "replace",
+            StartStopMode::Fail => "fail",
             StartStopMode::Isolate => "isolate",
             StartStopMode::IgnoreDependencies => "ignore-dependencies",
             StartStopMode::IgnoreRequirements => "ignore-requirements",
         }
+    }
+
+    pub fn discriminant(&self) -> u32 {
+        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
+        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
+        // field, so we can read the discriminant without offsetting the pointer.
+        let d = unsafe { *<*const _>::from(self).cast::<u8>() };
+        d as u32
     }
 }
 
