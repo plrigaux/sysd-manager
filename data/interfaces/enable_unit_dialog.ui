@@ -18,7 +18,10 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <property name="margin-bottom">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-start">5</property>
                 <property name="margin-top">5</property>
+                <property name="title">Enable</property>
                 <child>
                   <object class="AdwEntryRow" id="unit_file_entry">
                     <property name="input-hints">lowercase|no-spellcheck|private|uppercase-sentences|vertical-writing|word-completion</property>
@@ -31,7 +34,7 @@
                     <child>
                       <object class="GtkButton">
                         <property name="css-classes">flat</property>
-                        <property name="icon-name">edit-find-symbolic</property>
+                        <property name="icon-name">file-cabinet-symbolic</property>
                         <signal name="clicked" handler="file_bowser_clicked" swapped="yes"/>
                       </object>
                     </child>
@@ -51,8 +54,30 @@
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="portable_switch">
-                    <property name="subtitle">will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.</property>
+                    <property name="subtitle">Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.</property>
+                    <property name="subtitle-lines">2</property>
                     <property name="title">Portable</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="margin-bottom">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-start">5</property>
+                <property name="margin-top">5</property>
+                <property name="title">Start</property>
+                <child>
+                  <object class="AdwSwitchRow" id="run_now_switch">
+                    <property name="subtitle" translatable="yes">Stats Unit just after being enabled</property>
+                    <property name="title">Run now</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="run_mode_combo">
+                    <property name="subtitle">Run argument for the starting mode</property>
+                    <property name="title">Run mode</property>
                   </object>
                 </child>
               </object>
@@ -63,6 +88,7 @@
                 <property name="spacing">5</property>
                 <child>
                   <object class="GtkButton">
+                    <property name="css-classes">flat</property>
                     <property name="label">Reset</property>
                     <signal name="clicked" handler="reset_button_clicked" swapped="yes"/>
                   </object>
@@ -84,7 +110,7 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
-              <object class="AdwWindowTitle" id="window_title">
+              <object class="AdwWindowTitle">
                 <property name="title" translatable="yes">Enable Unit File</property>
               </object>
             </property>

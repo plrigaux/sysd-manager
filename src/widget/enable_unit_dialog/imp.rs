@@ -17,7 +17,7 @@ use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::{DisEnableFlags, UnitDBusLevel},
+        enums::{DisEnableFlags, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
     widget::{
@@ -48,7 +48,10 @@ pub struct EnableUnitDialogImp {
     portable_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
-    window_title: TemplateChild<adw::WindowTitle>,
+    run_now_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    run_mode_combo: TemplateChild<adw::ComboRow>,
 
     app_window: OnceCell<AppWindow>,
 
@@ -228,6 +231,17 @@ impl ObjectSubclass for EnableUnitDialogImp {
 impl ObjectImpl for EnableUnitDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let model = adw::EnumListModel::new(StartStopMode::static_type());
+
+        let expression = gtk::PropertyExpression::new(
+            adw::EnumListItem::static_type(),
+            None::<gtk::Expression>,
+            "name",
+        );
+
+        self.run_mode_combo.set_expression(Some(expression));
+        self.run_mode_combo.set_model(Some(&model));
     }
 }
 

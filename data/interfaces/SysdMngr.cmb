@@ -12,13 +12,13 @@
   <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="304ac9cef24c36ce336796ec04802e078370e50fb1d337c87bb3d26024dac106"/>
   <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="12cd563a3db1cc09efa53e415aa04eca09728fc267e2b5c04d2b9f2291195b8f"/>
   <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="48514449526eaf910f0c01f6e3ddf1006343a3163fe8b90b921c7c62808d0a1b"/>
-  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="62b407401b31c3c81ec90ea71754f803a03e31d92507f4d0aa20101db5cde873"/>
+  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="7882eebe393764bbbf076b19c5a7549007916f3ca26d783fc508d93f82034517"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="b3b0001f67ee6c113df9547bc7a863ae25c8b3564dee5811d2f246ef8dcbe4d6"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="f5036f942d90775b6a8d5f0999cdd901b5e748c6e172096e83012fee4c3511cf"/>
-  <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="a667ef3a206142d3c14a32e6b1fa5636b9db81b42942a0f9ab3ca4c74eac6c5a"/>
+  <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="24fad31a2046da2b8d154c7696a96867197ef14cb1cedc2974d86cf990456d11"/>
   <ui filename="shortcuts.ui" sha256="f5e390e30098937bf1b253e9a0305d46551e42ff69fb2807e9bf29dcfc9045ce"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="44ca84ba8813223a5e9c82857809aa57fc7493f2838226b6f2f0f487c370bd1f"/>
-  <ui template-class="ENABLE_UNIT_DIALOG" filename="enable_unit_dialog.ui" sha256="e3fe8bdfc2d6481afb6fdff43912ced65283bca3e74616a037a449bccf712e50"/>
+  <ui template-class="ENABLE_UNIT_DIALOG" filename="enable_unit_dialog.ui" sha256="803d480c4ae6239b9cd1e5e7d11fc0786e2c7fbf0282416c32bfb680592c7043"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7fb3678c9d5691d5605cc6636a3926c1a9241c6b17f2f9dcd5ad44298c3b3902">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
