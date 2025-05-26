@@ -141,7 +141,9 @@ fn handle_switch_sensivity_part2(
     unit: &UnitInfo,
     unit_file_state: EnablementStatus,
 ) {
-    if unit_file_state == EnablementStatus::Enabled {
+    if unit_file_state == EnablementStatus::Enabled
+        || unit_file_state == EnablementStatus::EnabledRuntime
+    {
         switch.set_state(true);
         switch.set_active(true);
     } else {
@@ -149,15 +151,17 @@ fn handle_switch_sensivity_part2(
         switch.set_active(false);
     }
 
-    let sensitive = if unit_file_state == EnablementStatus::Enabled
-        || unit_file_state == EnablementStatus::Disabled
-    {
-        set_switch_tooltip(unit_file_state, switch, &unit.primary());
-
-        true
-    } else {
-        switch.set_tooltip_text(None);
-        false
+    let sensitive = match unit_file_state {
+        EnablementStatus::Enabled
+        | EnablementStatus::EnabledRuntime
+        | EnablementStatus::Disabled => {
+            set_switch_tooltip(unit_file_state, switch, &unit.primary());
+            true
+        }
+        _ => {
+            switch.set_tooltip_text(None);
+            false
+        }
     };
 
     switch.set_sensitive(sensitive);

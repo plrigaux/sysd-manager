@@ -16,7 +16,7 @@ log = "0.4"
 env_logger = "0.11"
 clap = { version = "4.5", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
-signal-hook = "0.3.17"
+signal-hook = "0.3"
 anstyle = "1"
 axum = "0.8"
 libc = "0.2"

@@ -256,6 +256,10 @@ impl From<u8> for EnablementStatus {
             8 => Self::Masked,
             9 => Self::Static,
             10 => Self::Trancient,
+            11 => Self::EnabledRuntime,
+            12 => Self::LinkedRuntime,
+            13 => Self::MaskedRuntime,
+
             _ => Self::Unknown,
         }
     }
@@ -939,21 +943,13 @@ mod tests {
 
     #[test]
     fn test_enablement_status_mapping() {
-        //assert_num_mapping(EnablementStatus::Unasigned);
-        assert_num_mapping(EnablementStatus::Bad);
-        assert_num_mapping(EnablementStatus::Enabled);
-        assert_num_mapping(EnablementStatus::Disabled);
-        assert_num_mapping(EnablementStatus::Linked);
-        assert_num_mapping(EnablementStatus::Masked);
-        assert_num_mapping(EnablementStatus::Static);
-        assert_num_mapping(EnablementStatus::Alias);
-        assert_num_mapping(EnablementStatus::Generated);
-        assert_num_mapping(EnablementStatus::Trancient);
-        assert_num_mapping(EnablementStatus::Unknown);
+        for status in EnablementStatus::iter() {
+            assert_num_mapping_enablement_status(status);
+        }
     }
 
-    fn assert_num_mapping(status: EnablementStatus) {
-        let val = status as u8;
+    fn assert_num_mapping_enablement_status(status: EnablementStatus) {
+        let val: u8 = status.into();
         let convert: EnablementStatus = val.into();
         assert_eq!(convert, status)
     }

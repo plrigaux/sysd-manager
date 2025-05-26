@@ -154,18 +154,17 @@ pub fn disenable_unit_file(
     unit: &UnitInfo,
     expected_status: EnablementStatus,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    let msg_return = if expected_status == EnablementStatus::Enabled {
-        sysdbus::enable_unit_files(
+    let msg_return = match expected_status {
+        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => sysdbus::enable_unit_files(
             unit.dbus_level(),
             &[&unit.primary()],
             DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
-        )?
-    } else {
-        sysdbus::disable_unit_files(
+        )?,
+        _ => sysdbus::disable_unit_files(
             unit.dbus_level(),
             &[&unit.primary()],
             DisEnableFlags::empty(),
-        )?
+        )?,
     };
 
     Ok(msg_return)
