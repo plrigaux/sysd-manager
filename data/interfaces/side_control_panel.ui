@@ -14,8 +14,8 @@
         <property name="child">
           <object class="AdwButtonContent">
             <property name="halign">start</property>
-            <property name="icon-name">weather-tornado-symbolic</property>
-            <property name="label">Enable Unit File</property>
+            <property name="icon-name">check-round-outline2-symbolic</property>
+            <property name="label">Enable Unit File ➚</property>
             <property name="tooltip-text">Send a signal to a process or a group of processes</property>
             <property name="use-underline">True</property>
           </object>
@@ -30,7 +30,7 @@
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">send-symbolic</property>
-            <property name="label">Send _Kill Signal</property>
+            <property name="label">Send _Kill Signal ➚</property>
             <property name="tooltip-text">Send a signal to a process or a group of processes</property>
             <property name="use-underline">True</property>
           </object>
@@ -60,7 +60,7 @@
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">empty-trash-bin-symbolic</property>
-            <property name="label">_Clean</property>
+            <property name="label">_Clean ➚</property>
             <property name="tooltip-text">Remove the configuration, state, cache, logs or runtime data of the specified units.</property>
             <property name="use-underline">True</property>
           </object>
