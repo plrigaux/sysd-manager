@@ -212,9 +212,15 @@ impl SideControlPanelImpl {
     #[template_callback]
     fn mask_button_clicked(&self, button: &gtk::Widget) {
         let lambda = |unit: &UnitInfo| -> Result<(), SystemdErrors> {
+            //FIXME temporary behavior
+            /*             let enable_status: EnablementStatus = unit.enable_status().into();
+            let runtime = enable_status == EnablementStatus::EnabledRuntime; */
+
             systemd::mask_unit_files(unit, false, false)?;
+
             Ok(())
         };
+
         self.parent()
             .call_method("Mask", button, lambda, Self::after_mask)
     }
