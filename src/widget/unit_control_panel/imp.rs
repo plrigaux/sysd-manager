@@ -503,14 +503,16 @@ impl UnitControlPanelImpl {
         w
     }
 
-    pub(super) fn call_method(
+    pub(super) fn call_method<T>(
         &self,
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl FnOnce(&str, &UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel)
+        systemd_method: impl Fn(&UnitInfo) -> Result<T, SystemdErrors> + std::marker::Send + 'static,
+        return_handle: impl FnOnce(&str, &UnitInfo, Result<T, SystemdErrors>, &UnitControlPanel)
         + 'static,
-    ) {
+    ) where
+        T: Send + 'static,
+    {
         let binding = self.current_unit.borrow();
         let Some(unit) = binding.as_ref() else {
             warn!("No Unit");

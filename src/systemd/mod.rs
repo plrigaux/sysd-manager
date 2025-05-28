@@ -15,7 +15,7 @@ use std::{
     sync::OnceLock,
 };
 
-use data::{UnitInfo, UnitProcess};
+use data::{DisEnAbleUnitFiles, UnitInfo, UnitProcess};
 use enums::{
     ActiveState, CleanOption, DependencyType, DisEnableFlags, EnablementStatus, KillWho,
     StartStopMode, UnitDBusLevel, UnitType,
@@ -25,7 +25,6 @@ use gtk::glib::GString;
 use journal::Boot;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
-use sysdbus::DisEnAbleUnitFiles;
 use tokio::runtime::Runtime;
 use zvariant::OwnedValue;
 

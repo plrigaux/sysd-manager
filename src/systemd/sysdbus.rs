@@ -30,6 +30,7 @@ use crate::{
 
 use super::{
     Dependency, SystemdErrors, SystemdUnitFile, UpdatedUnitInfo,
+    data::DisEnAbleUnitFiles,
     enums::{
         DependencyType, DisEnableFlags, EnablementStatus, KillWho, StartStopMode, UnitDBusLevel,
     },
@@ -488,14 +489,6 @@ pub(super) fn restart_unit(
         &(unit, mode.as_str()),
         handle_start_stop_answer,
     )
-}
-
-#[derive(Debug, Type, Deserialize)]
-#[allow(unused)]
-pub struct DisEnAbleUnitFiles {
-    pub change_type: String,
-    pub file_name: String,
-    pub destination: String,
 }
 
 #[derive(Debug, Type, Deserialize)]

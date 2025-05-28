@@ -1,6 +1,7 @@
 use std::cell::OnceCell;
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use gio::glib::BoolError;
 use gtk::{
     glib::{self},
     subclass::{
@@ -16,7 +17,7 @@ use log::{info, warn};
 use crate::{
     systemd::{
         self,
-        data::UnitInfo,
+        data::{DisEnAbleUnitFiles, UnitInfo},
         enums::{DisEnableFlags, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
@@ -70,18 +71,33 @@ pub struct EnableUnitDialogImp {
 impl EnableUnitDialogImp {
     #[template_callback]
     fn enable_unit_file_button_clicked(&self, button: gtk::Button) {
+        let dialog = self.obj().clone();
         let lambda_out = {
             let this = self.obj().clone();
             move |method: &str,
                   unit: &UnitInfo,
-                  result: Result<(), SystemdErrors>,
+                  result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
                   _control: &UnitControlPanel| {
-                if let Err(error) = result {
-                    if let SystemdErrors::ZAccessDenied(_, _) = error {
-                        let mut cmd = "sudo systemctl clean ".to_owned();
+                match result {
+                    Ok(vec) => {
+                        info!("Enable UnitUnitUnitUnitUnit1 {:?}", unit.primary());
+                        if dialog.imp().run_now_switch.is_active() {
+                            let mode = dialog.imp().run_mode_combo.selected_item();
+                            let _mode: StartStopMode = mode.into();
+                            info!("Enable UnitUnitUnitUnitUnit2 {:?}", unit.primary());
+                            for i in vec {
+                                info!("Enable Unit {:?}", i);
+                                // systemd::start_unit(unit, mode);
+                            }
+                        }
+                    }
+                    Err(error) => {
+                        if let SystemdErrors::ZAccessDenied(_, _) = error {
+                            let mut cmd = "sudo systemctl clean ".to_owned();
 
-                        cmd.push_str(&unit.primary());
-                        work_around_dialog(&cmd, &error, method, &this.into())
+                            cmd.push_str(&unit.primary());
+                            work_around_dialog(&cmd, &error, method, &this.into())
+                        }
                     }
                 }
             }
@@ -103,16 +119,8 @@ impl EnableUnitDialogImp {
             flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
         }
 
-        let lambda = move |_unit: &UnitInfo| match systemd::enable_unit_file(
-            unit_file.as_str(),
-            UnitDBusLevel::System,
-            flags,
-        ) {
-            Ok(a) => {
-                info!("Enable Response {:?}", a);
-                Ok(())
-            }
-            Err(e) => Err(e),
+        let lambda = move |_unit: &UnitInfo| {
+            systemd::enable_unit_file(unit_file.as_str(), UnitDBusLevel::System, flags)
         };
 
         self.unit_control
@@ -158,7 +166,7 @@ impl EnableUnitDialogImp {
     }
 
     #[template_callback]
-    fn reset_button_clicked(&self, _button: gtk::Button) {
+    fn reset_button_clicked(&self) {
         info!("reset_button_clicked");
 
         let settings = self.settings.get().expect("setting nor None");
@@ -227,7 +235,6 @@ impl EnableUnitDialogImp {
         let unit_file = self.unit_file_entry.text();
 
         //  let enable_button = if unit_file.is_empty() { false } else { true };
-
         self.enable_button.set_sensitive(!unit_file.is_empty());
     }
 }
@@ -269,9 +276,45 @@ impl ObjectImpl for EnableUnitDialogImp {
 
         self.run_mode_combo.set_expression(Some(expression));
         self.run_mode_combo.set_model(Some(&model));
+
+        self.reset_button_clicked();
     }
 }
 
 impl WidgetImpl for EnableUnitDialogImp {}
-impl WindowImpl for EnableUnitDialogImp {}
+impl WindowImpl for EnableUnitDialogImp {
+    fn close_request(&self) -> glib::Propagation {
+        // Save window size
+        info!("Close window");
+
+        let runtime = self.runtime_switch.is_active();
+        let force = self.force_switch.is_active();
+        let run_now = self.run_now_switch.is_active();
+        let start_mode = self.run_mode_combo.selected_item();
+        let start_mode: StartStopMode = start_mode.into();
+
+        let settings = self.settings.get().expect("Settings not None");
+
+        fn settings_error(e: BoolError) {
+            log::error!("Setting error {:?}", e);
+        }
+
+        let _ = settings
+            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_RUNTIME, runtime)
+            .map_err(settings_error);
+        let _ = settings
+            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_FORCE, force)
+            .map_err(settings_error);
+        let _ = settings
+            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_RUN_NOW, run_now)
+            .map_err(settings_error);
+        let _ = settings
+            .set_string(SAVE_CONTEXT_ENABLE_UNIT_START_MODE, start_mode.as_str())
+            .map_err(settings_error);
+
+        self.parent_close_request();
+        // Allow to invoke other event handlers
+        glib::Propagation::Proceed
+    }
+}
 impl AdwWindowImpl for EnableUnitDialogImp {}

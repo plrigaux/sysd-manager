@@ -744,7 +744,7 @@ impl From<&str> for StartStopMode {
 
             unknown => {
                 warn!("unknown  mode {:?}", unknown);
-                StartStopMode::Fail
+                StartStopMode::default()
             }
         }
     }
@@ -767,6 +767,32 @@ impl From<glib::Variant> for StartStopMode {
     }
 }
 
+impl From<Option<glib::Object>> for StartStopMode {
+    fn from(value: Option<glib::Object>) -> Self {
+        let Some(object) = value else {
+            return StartStopMode::default();
+        };
+
+        let enum_list_item = object
+            .downcast::<adw::EnumListItem>()
+            .expect("Needs to be EnumListItem");
+
+        StartStopMode::from(enum_list_item.name().as_str())
+    }
+}
+
+/*  let selected_item = combo_box.selected_item();
+
+       let Some(color_scheme) = selected_item else {
+           return;
+       };
+
+       let binding = color_scheme
+           .downcast::<glib::BoxedAnyObject>()
+           .expect("Needs to be BoxedAnyObject");
+       let color_scheme: Ref<'_, PreferedColorScheme> = binding.borrow();
+
+*/
 #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default, Hash, EnumIter)]
 pub enum UnitDBusLevel {
     #[default]

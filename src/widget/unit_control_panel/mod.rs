@@ -56,14 +56,16 @@ impl UnitControlPanel {
         self.imp().unlink_child(is_signal);
     }
 
-    pub(super) fn call_method(
+    pub(super) fn call_method<T>(
         &self,
         method_name: &str,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(&UnitInfo) -> Result<(), SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl FnOnce(&str, &UnitInfo, Result<(), SystemdErrors>, &UnitControlPanel)
+        systemd_method: impl Fn(&UnitInfo) -> Result<T, SystemdErrors> + std::marker::Send + 'static,
+        return_handle: impl FnOnce(&str, &UnitInfo, Result<T, SystemdErrors>, &UnitControlPanel)
         + 'static,
-    ) {
+    ) where
+        T: Send + 'static,
+    {
         self.imp()
             .call_method(method_name, button, systemd_method, return_handle);
     }
