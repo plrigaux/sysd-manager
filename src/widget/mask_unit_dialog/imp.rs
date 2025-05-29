@@ -15,7 +15,7 @@ use gtk::{
 use log::{info, warn};
 
 use super::MaskUnitDialog;
-use crate::gtk::glib::property::PropertySet;
+use crate::{gtk::glib::property::PropertySet, widget::mask_unit_dialog::after_mask};
 use crate::{
     systemd::{
         self,
@@ -74,14 +74,17 @@ impl MaskUnitDialogImp {
             move |_method: &str,
                   unit: &UnitInfo,
                   result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
-                  _control: &UnitControlPanel| {
+                  control: &UnitControlPanel| {
                 match result {
-                    Ok(vec) => {
+                    Ok(ref vec) => {
                         info!("Unit Masked {:?}", vec);
                         if stop_now {
                             info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
                             let _ = systemd::stop_unit(unit, mode); //TODO handle response
                         }
+
+                        let result = result.map(|_arg| ());
+                        after_mask("Mask", unit, result, control);
                     }
                     Err(_error) => {}
                 }

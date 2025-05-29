@@ -14,7 +14,6 @@ use crate::{
         data::UnitInfo,
         enums::{EnablementStatus, StartStopMode},
         errors::SystemdErrors,
-        runtime,
     },
     widget::{
         InterPanelMessage,
@@ -177,48 +176,6 @@ impl SideControlPanelImpl {
         enable_unit_dialog.present();
     }
 
-    fn after_mask(
-        _method_name: &str,
-        unit: &UnitInfo,
-        result: Result<(), SystemdErrors>,
-        control: &UnitControlPanel,
-    ) {
-        if result.is_err() {
-            return;
-        }
-
-        let unit = unit.clone();
-        let control = control.clone();
-        glib::spawn_future_local(async move {
-            let unit2 = unit.clone();
-
-            let (sender, receiver) = tokio::sync::oneshot::channel();
-
-            runtime().spawn(async move {
-                let response = systemd::complete_unit_information2(&unit2).await;
-
-                sender
-                    .send(response)
-                    .expect("The channel needs to be open.");
-            });
-
-            let vec_unit_info = match receiver.await.expect("Tokio receiver works") {
-                Ok(unit_files) => unit_files,
-                Err(err) => {
-                    warn!("Fail to update Unit info {:?}", err);
-                    return Err(err);
-                }
-            };
-
-            if let Some(update) = vec_unit_info.into_iter().next() {
-                unit.update_from_unit_info(update);
-            }
-
-            control.selection_change(Some(&unit));
-            Ok::<(), SystemdErrors>(())
-        });
-    }
-
     #[template_callback]
     fn mask_button_clicked(&self, _button: &gtk::Widget) {
         let unit_binding = self.current_unit.borrow();
@@ -246,8 +203,12 @@ impl SideControlPanelImpl {
             Ok(())
         };
 
-        self.parent()
-            .call_method("Unmask", button, lambda, Self::after_mask);
+        self.parent().call_method(
+            "Unmask",
+            button,
+            lambda,
+            crate::widget::mask_unit_dialog::after_mask,
+        );
     }
 }
 
