@@ -258,5 +258,26 @@
             </choices>
             <default>'system'</default>
         </key>
+
+        <key name="save-context-mask-unit-force" type="b">
+             <default>false</default>
+        </key>
+        <key name="save-context-mask-unit-stop-now" type="b">
+             <default>false</default>
+        </key>
+        <key name="save-context-mask-unit-runtime" type="b">
+            <default>false</default>
+        </key>
+        <key name="save-context-mask-unit-stop-mode" type="s">
+            <choices>
+                <choice value='fail' />
+                <choice value='replace' />
+                <choice value='isolate' />
+                <choice value='ignore-dependencies' />
+                <choice value='ignore-requirements' />
+            </choices>
+            <default>'fail'</default>
+        </key>
+
     </schema>
 </schemalist>

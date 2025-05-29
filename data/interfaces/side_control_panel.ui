@@ -109,7 +109,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">venetian-mask-symbolic</property>
-            <property name="label">M_ask</property>
+            <property name="label">M_ask ➚</property>
             <property name="use-underline">True</property>
           </object>
         </child>

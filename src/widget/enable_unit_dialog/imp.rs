@@ -27,9 +27,9 @@ use crate::{
 
 use super::EnableUnitDialog;
 
-const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUNTIME: &str = "save-context-enable-unit-file-force";
-const SAVE_CONTEXT_ENABLE_UNIT_FILE_FORCE: &str = "save-context-enable-unit-file-run-now";
-const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUN_NOW: &str = "save-context-enable-unit-file-runtime";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUNTIME: &str = "save-context-enable-unit-file-runtime";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_FORCE: &str = "save-context-enable-unit-file-force";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUN_NOW: &str = "save-context-enable-unit-file-run-now";
 const SAVE_CONTEXT_ENABLE_UNIT_FILE_START_MODE: &str = "save-context-enable-unit-file-start-mode";
 const SAVE_CONTEXT_ENABLE_UNIT_FILE_DBUS_LEVEL: &str = "save-context-enable-unit-file-dbus-level";
 

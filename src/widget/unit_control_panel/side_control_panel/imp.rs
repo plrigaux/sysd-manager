@@ -9,13 +9,20 @@ use gtk::{
 use log::warn;
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors, runtime},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{EnablementStatus, StartStopMode},
+        errors::SystemdErrors,
+        runtime,
+    },
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
         clean_dialog::CleanUnitDialog,
         enable_unit_dialog::EnableUnitDialog,
         kill_panel::KillPanel,
+        mask_unit_dialog::MaskUnitDialog,
         unit_control_panel::{UnitControlPanel, work_around_dialog},
     },
 };
@@ -140,13 +147,16 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn clean_button_clicked(&self, _button: &gtk::Widget) {
-        let binding = self.current_unit.borrow();
-
+        let unit_binding = self.current_unit.borrow();
         let app_window = self.app_window.get();
         let parent = self.parent();
 
-        let clean_dialog =
-            CleanUnitDialog::new(binding.as_ref(), self.is_dark.get(), app_window, parent);
+        let clean_dialog = CleanUnitDialog::new(
+            unit_binding.as_ref(),
+            self.is_dark.get(),
+            app_window,
+            parent,
+        );
 
         clean_dialog.set_transient_for(app_window);
         //clean_dialog.set_modal(true);
@@ -210,25 +220,29 @@ impl SideControlPanelImpl {
     }
 
     #[template_callback]
-    fn mask_button_clicked(&self, button: &gtk::Widget) {
-        let lambda = |unit: &UnitInfo| -> Result<(), SystemdErrors> {
-            //FIXME temporary behavior
-            /*             let enable_status: EnablementStatus = unit.enable_status().into();
-            let runtime = enable_status == EnablementStatus::EnabledRuntime; */
+    fn mask_button_clicked(&self, _button: &gtk::Widget) {
+        let unit_binding = self.current_unit.borrow();
+        let app_window = self.app_window.get();
+        let parent = self.parent();
 
-            systemd::mask_unit_files(unit, false, false)?;
+        let mask_unit_dialog = MaskUnitDialog::new(
+            unit_binding.as_ref(),
+            self.is_dark.get(),
+            app_window,
+            parent,
+        );
 
-            Ok(())
-        };
+        mask_unit_dialog.set_transient_for(app_window);
 
-        self.parent()
-            .call_method("Mask", button, lambda, Self::after_mask)
+        mask_unit_dialog.present();
     }
 
     #[template_callback]
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
         let lambda = |unit: &UnitInfo| -> Result<(), SystemdErrors> {
-            systemd::unmask_unit_files(unit, false)?;
+            let enable_status: EnablementStatus = unit.enable_status().into();
+            let runtime = EnablementStatus::MaskedRuntime == enable_status;
+            systemd::unmask_unit_files(unit, runtime)?;
             Ok(())
         };
 
