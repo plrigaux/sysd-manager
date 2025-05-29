@@ -50,7 +50,7 @@
                 <child>
                   <object class="AdwComboRow" id="stop_mode_combo">
                     <property name="subtitle">Argument for the stoping mode</property>
-                    <property name="title">Stop mode</property>
+                    <property name="title">Stop mode</property>         
                   </object>
                 </child>
               </object>

@@ -28,7 +28,7 @@ A user-friendly GUI to manage systemd units
 |---------|--------|
 | Unit file browser with search and filtering | ✅ |
 | Enable or disable a unit | ✅ |
-| Enable or disable a unit in runtime | 🚧 |
+| Enable a unit in runtime | ✅ |
 | Activate or deactivate a unit | ✅ |
 | View and modify unit file | ✅ |
 | View and navigate unit's dependencies | ✅ |
@@ -37,7 +37,7 @@ A user-friendly GUI to manage systemd units
 | List of all running units (systemd-analyze blame) | ✅ |
 | Dark and Light style switching | ✅ |
 | Select a unit at program opening via CLI | ✅ |
-| Clean unit like `systemctl clean` | 🚧 |
+| Clean unit like `systemctl clean` | ✅ |
 | Freeze & Thaw unit like `systemctl freeze` and `systemctl thaw`  | ✅ |
 | Multi-language support | 🚧 |
 | Real-time journal events update | ✅ |

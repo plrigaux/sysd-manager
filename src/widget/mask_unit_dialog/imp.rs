@@ -103,25 +103,8 @@ impl MaskUnitDialogImp {
     }
 
     #[template_callback]
-    fn unit_file_changed(&self, _entry: adw::EntryRow) {
-        info!("unit_file_changed");
-
-        self.set_send_button_sensitivity()
-    }
-
-    #[template_callback]
     fn unit_file_apply(&self, _entry: adw::EntryRow) {
         info!("unit_file_apply");
-    }
-
-    #[template_callback]
-    fn unit_file_entry_activated(&self, _entry: adw::EntryRow) {
-        info!("unit_file_entry_activated");
-    }
-
-    #[template_callback]
-    fn unit_file_delete_text(&self, a: i32, b: i32, _entry: adw::EntryRow) {
-        info!("unit_file_delete_text {a} {b}");
     }
 
     #[template_callback]
@@ -147,14 +130,14 @@ impl MaskUnitDialogImp {
         let runtime = settings.boolean(SAVE_CONTEXT_MASK_UNIT_RUNTIME);
         let force = settings.boolean(SAVE_CONTEXT_MASK_UNIT_FORCE);
         let stop_now = settings.boolean(SAVE_CONTEXT_MASK_UNIT_STOP_NOW);
-        let start_mode = settings.string(SAVE_CONTEXT_MASK_UNIT_STOP_MODE);
+        let stop_mode = settings.string(SAVE_CONTEXT_MASK_UNIT_STOP_MODE);
 
         self.runtime_switch.set_active(runtime);
         self.force_switch.set_active(force);
         self.stop_now_switch.set_active(stop_now);
 
-        let start_mode: StartStopMode = start_mode.as_str().into();
-        let position = start_mode.discriminant();
+        let stop_mode: StartStopMode = stop_mode.as_str().into();
+        let position = stop_mode.discriminant();
         self.stop_mode_combo.set_selected(position);
     }
 
@@ -175,9 +158,14 @@ impl MaskUnitDialogImp {
     pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     fn set_send_button_sensitivity(&self) {
-        let unit_set = self.unit.borrow().is_some();
+        let mut sensitive = self.unit.borrow().is_some();
 
-        self.mask_button.set_sensitive(unit_set);
+        let stop_mode = self.stop_mode_combo.selected_item();
+        let stop_mode: StartStopMode = stop_mode.into();
+
+        sensitive &= StartStopMode::Isolate != stop_mode;
+
+        self.mask_button.set_sensitive(sensitive);
     }
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
@@ -239,6 +227,21 @@ impl ObjectImpl for MaskUnitDialogImp {
         self.stop_mode_combo.set_expression(Some(expression));
         self.stop_mode_combo.set_model(Some(&model));
 
+        let dialog = self.obj().clone();
+        self.stop_mode_combo
+            .connect_selected_item_notify(move |combo_row| {
+                let stop_mode = combo_row.selected_item();
+                let stop_mode: StartStopMode = stop_mode.into();
+
+                if StartStopMode::Isolate == stop_mode {
+                    combo_row.add_css_class("warning");
+                } else {
+                    combo_row.remove_css_class("warning");
+                }
+
+                dialog.imp().set_send_button_sensitivity();
+            });
+
         self.reset_button_clicked();
     }
 }
@@ -252,8 +255,8 @@ impl WindowImpl for MaskUnitDialogImp {
         let runtime = self.runtime_switch.is_active();
         let force = self.force_switch.is_active();
         let run_now = self.stop_now_switch.is_active();
-        let start_mode = self.stop_mode_combo.selected_item();
-        let start_mode: StartStopMode = start_mode.into();
+        let stop_mode = self.stop_mode_combo.selected_item();
+        let stop_mode: StartStopMode = stop_mode.into();
 
         let settings = self.settings.get().expect("Settings not None");
 
@@ -271,7 +274,7 @@ impl WindowImpl for MaskUnitDialogImp {
             .set_boolean(SAVE_CONTEXT_MASK_UNIT_STOP_NOW, run_now)
             .map_err(settings_error);
         let _ = settings
-            .set_string(SAVE_CONTEXT_MASK_UNIT_STOP_MODE, start_mode.as_str())
+            .set_string(SAVE_CONTEXT_MASK_UNIT_STOP_MODE, stop_mode.as_str())
             .map_err(settings_error);
 
         self.parent_close_request();

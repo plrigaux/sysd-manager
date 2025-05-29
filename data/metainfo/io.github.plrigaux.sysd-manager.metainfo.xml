@@ -81,6 +81,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+     <release version="1.27.0" date="2025-05-29">
+      <description>  
+        <p>Added</p>
+        <ul>
+          <li>Add Mask unit more options</li>
+        </ul> 
+         <p>Fixed</p>
+        <ul>
+          <li>Enable unit file Dialog save context mixed up</li>
+        </ul>          
+      </description>
+    </release>
      <release version="1.26.0" date="2025-05-28">
       <description>  
         <p>Added</p>
