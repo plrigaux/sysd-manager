@@ -687,42 +687,39 @@ impl From<u32> for DependencyType {
 pub enum StartStopMode {
     ///If "replace" the call will start the unit and its dependencies,
     /// possibly replacing already queued jobs that conflict with this.
+    #[enum_value(name = "replace")]
     Replace,
 
     ///If "fail" the call will start the unit and its dependencies, but will fail if this
     ///would change an already queued job.
     #[default]
+    #[enum_value(name = "fail")]
     Fail,
 
     ///If "isolate" the call will start the unit in
     ///question and terminate all units that aren't dependencies of it.
     ///Note that "isolate" mode is invalid for method **StopUnit**.
+    #[enum_value(name = "isolate")]
     Isolate,
 
     ///If "ignore-dependencies" it will start a unit but ignore all its dependencies.
+    #[enum_value(name = "ignore-dependencies")]
     IgnoreDependencies,
 
     ///If "ignore-requirements" it will start a unit but only ignore the requirement dependencies.
+    #[enum_value(name = "ignore-requirements")]
     IgnoreRequirements,
 }
 
 impl StartStopMode {
     pub fn as_str(&self) -> &'static str {
-        match self {
-            StartStopMode::Replace => "replace",
-            StartStopMode::Fail => "fail",
-            StartStopMode::Isolate => "isolate",
-            StartStopMode::IgnoreDependencies => "ignore-dependencies",
-            StartStopMode::IgnoreRequirements => "ignore-requirements",
-        }
+        let enum_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
+        enum_value.name()
     }
 
     pub fn discriminant(&self) -> u32 {
-        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
-        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
-        // field, so we can read the discriminant without offsetting the pointer.
-        let d = unsafe { *<*const _>::from(self).cast::<u8>() };
-        d as u32
+        let enum_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
+        enum_value.value() as u32
     }
 }
 
@@ -735,7 +732,7 @@ impl From<&RefCell<String>> for StartStopMode {
 
 impl From<&str> for StartStopMode {
     fn from(value: &str) -> Self {
-        match value {
+        match value.to_ascii_lowercase().as_str() {
             "fail" => StartStopMode::Fail,
             "replace" => StartStopMode::Replace,
             "isolate" => StartStopMode::Isolate,
@@ -743,7 +740,7 @@ impl From<&str> for StartStopMode {
             "ignore-requirements" => StartStopMode::IgnoreRequirements,
 
             unknown => {
-                warn!("unknown  mode {:?}", unknown);
+                warn!("unknown start mode {:?}", unknown);
                 StartStopMode::default()
             }
         }
@@ -781,22 +778,15 @@ impl From<Option<glib::Object>> for StartStopMode {
     }
 }
 
-/*  let selected_item = combo_box.selected_item();
-
-       let Some(color_scheme) = selected_item else {
-           return;
-       };
-
-       let binding = color_scheme
-           .downcast::<glib::BoxedAnyObject>()
-           .expect("Needs to be BoxedAnyObject");
-       let color_scheme: Ref<'_, PreferedColorScheme> = binding.borrow();
-
-*/
-#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default, Hash, EnumIter)]
+#[derive(
+    Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default, Hash, EnumIter, glib::Enum,
+)]
+#[enum_type(name = "UnitDBusLevel")]
 pub enum UnitDBusLevel {
     #[default]
+    #[enum_value(name = "system", nick = "System")]
     System = 0,
+    #[enum_value(name = "user", nick = "User Session")]
     UserSession = 1,
 }
 
@@ -809,12 +799,11 @@ impl UnitDBusLevel {
     }
 
     pub fn as_str(&self) -> &'static str {
-        match self {
-            UnitDBusLevel::System => "system",
-            UnitDBusLevel::UserSession => "user",
-        }
+        let level_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
+        level_value.name()
     }
 
+    //used in browser table
     pub fn label(&self) -> &'static str {
         self.as_str()
     }
@@ -830,6 +819,11 @@ impl UnitDBusLevel {
     pub fn tooltip_info(&self) -> Option<&str> {
         None
     }
+
+    pub fn value(&self) -> i32 {
+        let level_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
+        level_value.value()
+    }
 }
 
 impl From<u8> for UnitDBusLevel {
@@ -838,6 +832,33 @@ impl From<u8> for UnitDBusLevel {
             0 => UnitDBusLevel::System,
             _ => UnitDBusLevel::UserSession,
         }
+    }
+}
+
+impl From<&str> for UnitDBusLevel {
+    fn from(level: &str) -> Self {
+        match level {
+            "user" => UnitDBusLevel::UserSession,
+            "system" => UnitDBusLevel::System,
+            _ => {
+                warn!("Unit dbus Level not found {:?}", level);
+                UnitDBusLevel::default()
+            }
+        }
+    }
+}
+
+impl From<Option<glib::Object>> for UnitDBusLevel {
+    fn from(value: Option<glib::Object>) -> Self {
+        let Some(object) = value else {
+            return UnitDBusLevel::default();
+        };
+
+        let enum_list_item = object
+            .downcast::<adw::EnumListItem>()
+            .expect("Needs to be EnumListItem");
+
+        UnitDBusLevel::from(enum_list_item.name().as_str())
     }
 }
 
@@ -1027,5 +1048,20 @@ mod tests {
         assert_eq!(Preset::Enabled.discriminant(), 1);
         assert_eq!(Preset::Disabled.discriminant(), 2);
         assert_eq!(Preset::Ignore.discriminant(), 3);
+    }
+
+    #[test]
+    fn test_unit_level() {
+        fn test(ul: UnitDBusLevel) {
+            let num_val = ul.value();
+            let ul2: UnitDBusLevel = (num_val as u8).into();
+            assert_eq!(ul, ul2);
+
+            let str_val = ul.as_str();
+            let ul3: UnitDBusLevel = str_val.into();
+            assert_eq!(ul, ul3);
+        }
+        test(UnitDBusLevel::System);
+        test(UnitDBusLevel::UserSession);
     }
 }

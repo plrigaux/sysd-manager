@@ -22,19 +22,16 @@ use crate::{
         errors::SystemdErrors,
     },
     systemd_gui,
-    widget::{
-        InterPanelMessage,
-        app_window::AppWindow,
-        unit_control_panel::{UnitControlPanel, work_around_dialog},
-    },
+    widget::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitControlPanel},
 };
 
 use super::EnableUnitDialog;
 
-const SAVE_CONTEXT_ENABLE_UNIT_RUNTIME: &str = "save-context-enable-unit-force";
-const SAVE_CONTEXT_ENABLE_UNIT_FORCE: &str = "save-context-enable-unit-run-now";
-const SAVE_CONTEXT_ENABLE_UNIT_RUN_NOW: &str = "save-context-enable-unit-runtime";
-const SAVE_CONTEXT_ENABLE_UNIT_START_MODE: &str = "save-context-enable-unit-start-mode";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUNTIME: &str = "save-context-enable-unit-file-force";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_FORCE: &str = "save-context-enable-unit-file-run-now";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUN_NOW: &str = "save-context-enable-unit-file-runtime";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_START_MODE: &str = "save-context-enable-unit-file-start-mode";
+const SAVE_CONTEXT_ENABLE_UNIT_FILE_DBUS_LEVEL: &str = "save-context-enable-unit-file-dbus-level";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/enable_unit_dialog.ui")]
@@ -60,6 +57,9 @@ pub struct EnableUnitDialogImp {
     #[template_child]
     run_mode_combo: TemplateChild<adw::ComboRow>,
 
+    #[template_child]
+    dbus_level_combo: TemplateChild<adw::ComboRow>,
+
     app_window: OnceCell<AppWindow>,
 
     unit_control: OnceCell<UnitControlPanel>,
@@ -71,17 +71,15 @@ pub struct EnableUnitDialogImp {
 impl EnableUnitDialogImp {
     #[template_callback]
     fn enable_unit_file_button_clicked(&self, button: gtk::Button) {
-        let dialog = self.obj().clone();
         let lambda_out = {
-            let this = self.obj().clone();
-            move |method: &str,
+            move |_method: &str,
                   unit: &UnitInfo,
                   result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
                   _control: &UnitControlPanel| {
                 match result {
-                    Ok(vec) => {
+                    Ok(_vec) => {
                         info!("Enable UnitUnitUnitUnitUnit1 {:?}", unit.primary());
-                        if dialog.imp().run_now_switch.is_active() {
+                        /*   if dialog.imp().run_now_switch.is_active() {
                             let mode = dialog.imp().run_mode_combo.selected_item();
                             let _mode: StartStopMode = mode.into();
                             info!("Enable UnitUnitUnitUnitUnit2 {:?}", unit.primary());
@@ -89,16 +87,9 @@ impl EnableUnitDialogImp {
                                 info!("Enable Unit {:?}", i);
                                 // systemd::start_unit(unit, mode);
                             }
-                        }
+                        } */
                     }
-                    Err(error) => {
-                        if let SystemdErrors::ZAccessDenied(_, _) = error {
-                            let mut cmd = "sudo systemctl clean ".to_owned();
-
-                            cmd.push_str(&unit.primary());
-                            work_around_dialog(&cmd, &error, method, &this.into())
-                        }
-                    }
+                    Err(_error) => {}
                 }
             }
         };
@@ -119,8 +110,11 @@ impl EnableUnitDialogImp {
             flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
         }
 
+        let dbus_level = self.dbus_level_combo.selected_item();
+        let dbus_level: UnitDBusLevel = dbus_level.into();
+
         let lambda = move |_unit: &UnitInfo| {
-            systemd::enable_unit_file(unit_file.as_str(), UnitDBusLevel::System, flags)
+            systemd::enable_unit_file(unit_file.as_str(), dbus_level, flags)
         };
 
         self.unit_control
@@ -173,10 +167,15 @@ impl EnableUnitDialogImp {
 
         self.unit_file_entry.set_text("");
 
-        let runtime = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_RUNTIME);
-        let force = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_FORCE);
-        let run_now = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_RUN_NOW);
-        let start_mode = settings.string(SAVE_CONTEXT_ENABLE_UNIT_START_MODE);
+        let dbus_level = settings.string(SAVE_CONTEXT_ENABLE_UNIT_FILE_DBUS_LEVEL);
+        let runtime = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_FILE_RUNTIME);
+        let force = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_FILE_FORCE);
+        let run_now = settings.boolean(SAVE_CONTEXT_ENABLE_UNIT_FILE_RUN_NOW);
+        let start_mode = settings.string(SAVE_CONTEXT_ENABLE_UNIT_FILE_START_MODE);
+
+        let dbus_level: UnitDBusLevel = dbus_level.as_str().into();
+        let position = dbus_level.value() as u32;
+        self.dbus_level_combo.set_selected(position);
 
         self.runtime_switch.set_active(runtime);
         self.force_switch.set_active(force);
@@ -271,11 +270,22 @@ impl ObjectImpl for EnableUnitDialogImp {
         let expression = gtk::PropertyExpression::new(
             adw::EnumListItem::static_type(),
             None::<gtk::Expression>,
-            "name",
+            "nick",
         );
 
         self.run_mode_combo.set_expression(Some(expression));
         self.run_mode_combo.set_model(Some(&model));
+
+        let model = adw::EnumListModel::new(UnitDBusLevel::static_type());
+
+        let expression = gtk::PropertyExpression::new(
+            adw::EnumListItem::static_type(),
+            None::<gtk::Expression>,
+            "nick",
+        );
+
+        self.dbus_level_combo.set_expression(Some(expression));
+        self.dbus_level_combo.set_model(Some(&model));
 
         self.reset_button_clicked();
     }
@@ -287,6 +297,8 @@ impl WindowImpl for EnableUnitDialogImp {
         // Save window size
         info!("Close window");
 
+        let dbus_level = self.dbus_level_combo.selected_item();
+        let dbus_level: UnitDBusLevel = dbus_level.into();
         let runtime = self.runtime_switch.is_active();
         let force = self.force_switch.is_active();
         let run_now = self.run_now_switch.is_active();
@@ -300,16 +312,25 @@ impl WindowImpl for EnableUnitDialogImp {
         }
 
         let _ = settings
-            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_RUNTIME, runtime)
+            .set_string(
+                SAVE_CONTEXT_ENABLE_UNIT_FILE_DBUS_LEVEL,
+                dbus_level.as_str(),
+            )
             .map_err(settings_error);
         let _ = settings
-            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_FORCE, force)
+            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_FILE_RUNTIME, runtime)
             .map_err(settings_error);
         let _ = settings
-            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_RUN_NOW, run_now)
+            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_FILE_FORCE, force)
             .map_err(settings_error);
         let _ = settings
-            .set_string(SAVE_CONTEXT_ENABLE_UNIT_START_MODE, start_mode.as_str())
+            .set_boolean(SAVE_CONTEXT_ENABLE_UNIT_FILE_RUN_NOW, run_now)
+            .map_err(settings_error);
+        let _ = settings
+            .set_string(
+                SAVE_CONTEXT_ENABLE_UNIT_FILE_START_MODE,
+                start_mode.as_str(),
+            )
             .map_err(settings_error);
 
         self.parent_close_request();

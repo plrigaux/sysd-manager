@@ -231,16 +231,16 @@
             <default>1100</default>
             <summary>List Boots Window Width</summary>
         </key>
-        <key name="save-context-enable-unit-force" type="b">
+        <key name="save-context-enable-unit-file-force" type="b">
              <default>false</default>
         </key>
-        <key name="save-context-enable-unit-run-now" type="b">
+        <key name="save-context-enable-unit-file-run-now" type="b">
              <default>false</default>
         </key>
-        <key name="save-context-enable-unit-runtime" type="b">
+        <key name="save-context-enable-unit-file-runtime" type="b">
             <default>false</default>
         </key>
-        <key name="save-context-enable-unit-start-mode" type="s">
+        <key name="save-context-enable-unit-file-start-mode" type="s">
             <choices>
                 <choice value='fail' />
                 <choice value='replace' />
@@ -249,6 +249,14 @@
                 <choice value='ignore-requirements' />
             </choices>
             <default>'fail'</default>
+        </key>
+
+         <key name="save-context-enable-unit-file-dbus-level" type="s">
+            <choices>
+                <choice value='system' />
+                <choice value='user' />
+            </choices>
+            <default>'system'</default>
         </key>
     </schema>
 </schemalist>

@@ -41,6 +41,11 @@
                   </object>
                 </child>
                 <child>
+                  <object class="AdwComboRow" id="dbus_level_combo">
+                    <property name="title">DBus Level</property>
+                  </object>
+                </child>
+                <child>
                   <object class="AdwSwitchRow" id="runtime_switch">
                     <property name="subtitle">Whether the unit shall be enabled for runtime only </property>
                     <property name="title">Runtime</property>
@@ -68,6 +73,7 @@
                 <property name="margin-start">5</property>
                 <property name="margin-top">5</property>
                 <property name="title">Start</property>
+                <property name="visible">False</property>
                 <child>
                   <object class="AdwSwitchRow" id="run_now_switch">
                     <property name="subtitle" translatable="yes">Stats Unit just after being enabled</property>

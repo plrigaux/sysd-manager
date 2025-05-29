@@ -18,7 +18,7 @@
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="24fad31a2046da2b8d154c7696a96867197ef14cb1cedc2974d86cf990456d11"/>
   <ui filename="shortcuts.ui" sha256="f5e390e30098937bf1b253e9a0305d46551e42ff69fb2807e9bf29dcfc9045ce"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="44ca84ba8813223a5e9c82857809aa57fc7493f2838226b6f2f0f487c370bd1f"/>
-  <ui template-class="ENABLE_UNIT_DIALOG" filename="enable_unit_dialog.ui" sha256="803d480c4ae6239b9cd1e5e7d11fc0786e2c7fbf0282416c32bfb680592c7043"/>
+  <ui template-class="ENABLE_UNIT_DIALOG" filename="enable_unit_dialog.ui" sha256="edcd6d16a756142a6dc5e07fe9b557658dbfb9279525279fa7296435b081a620"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7fb3678c9d5691d5605cc6636a3926c1a9241c6b17f2f9dcd5ad44298c3b3902">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
