@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+import build_aux.build_common as bc
+from  build_aux.build_common import color
+import argparse
+import os
+
+bc.cmd_run(["tag_version"], shell=True)
+bc.cmd_run(["pacaur", "genpush"], shell=True)
+bc.cmd_run(["goflathub", "deploy"], shell=True)

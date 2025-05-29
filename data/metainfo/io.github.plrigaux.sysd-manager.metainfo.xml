@@ -90,6 +90,9 @@ https://hughsie.github.io/oars/index.html
          <p>Fixed</p>
         <ul>
           <li>Enable unit file Dialog save context mixed up</li>
+        </ul>   
+        <ul>
+          <li>1.27.1 Mask unit dialog behaviour</li>
         </ul>          
       </description>
     </release>

@@ -163,7 +163,13 @@ impl MaskUnitDialogImp {
         let stop_mode = self.stop_mode_combo.selected_item();
         let stop_mode: StartStopMode = stop_mode.into();
 
-        sensitive &= StartStopMode::Isolate != stop_mode;
+        let stop_switch_active = self.stop_now_switch.is_active();
+
+        self.stop_mode_combo.set_sensitive(stop_switch_active);
+
+        if stop_switch_active {
+            sensitive &= StartStopMode::Isolate != stop_mode;
+        }
 
         self.mask_button.set_sensitive(sensitive);
     }
@@ -239,6 +245,12 @@ impl ObjectImpl for MaskUnitDialogImp {
                     combo_row.remove_css_class("warning");
                 }
 
+                dialog.imp().set_send_button_sensitivity();
+            });
+
+        let dialog = self.obj().clone();
+        self.stop_now_switch
+            .connect_active_notify(move |_switch_row| {
                 dialog.imp().set_send_button_sensitivity();
             });
 

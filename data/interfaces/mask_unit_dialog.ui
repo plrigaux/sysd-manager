@@ -21,9 +21,10 @@
                 <property name="margin-end">5</property>
                 <property name="margin-start">5</property>
                 <property name="margin-top">5</property>
+                <property name="title" translatable="yes">Mask</property>
                 <child>
                   <object class="AdwSwitchRow" id="runtime_switch">
-                    <property name="subtitle">Whether the unit shall be enabled for runtime only </property>
+                    <property name="subtitle">To mask temporarily until the next system reboot</property>
                     <property name="title">Runtime</property>
                   </object>
                 </child>
@@ -41,16 +42,17 @@
                 <property name="margin-end">5</property>
                 <property name="margin-start">5</property>
                 <property name="margin-top">5</property>
+                <property name="title">Stop</property>
                 <child>
                   <object class="AdwSwitchRow" id="stop_now_switch">
-                    <property name="subtitle">Ensure that the unit are also stopped</property>
+                    <property name="subtitle">Ensure that the unit will be also stopped</property>
                     <property name="title">Stop Now</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwComboRow" id="stop_mode_combo">
                     <property name="subtitle">Argument for the stoping mode</property>
-                    <property name="title">Stop mode</property>         
+                    <property name="title">Stop mode</property>
                   </object>
                 </child>
               </object>
