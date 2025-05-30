@@ -1,6 +1,6 @@
 //! Dbus abstraction
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
-
+pub(super) mod watcher;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     sync::Arc,

@@ -1603,6 +1603,7 @@ dependencies = [
  "dotenv",
  "env_logger",
  "foreign-types-shared",
+ "futures-util",
  "gio",
  "gtk4",
  "libadwaita",

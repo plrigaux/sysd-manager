@@ -76,6 +76,8 @@ fn main() -> glib::ExitCode {
         build_ui(application, unit.as_ref());
     });
 
+    //runtime().spawn(watch_systemd_jobs());
+
     //to not transfer args to gtk4
     app.run_with_args::<String>(&[])
 }

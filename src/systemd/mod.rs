@@ -719,3 +719,12 @@ pub fn retreive_unit_processes(
 
     Ok(unit_processes_map)
 }
+
+#[allow(dead_code)]
+pub async fn watch_systemd_jobs() {
+    let result = sysdbus::watcher::watch_systemd_jobs().await;
+
+    if let Err(err) = result {
+        log::error!("Error listening to jobs {:?}", err);
+    }
+}
