@@ -29,6 +29,10 @@ impl UnitBinding {
     pub fn unset_binding(&self, id: u8) {
         self.imp().unset_binding(id);
     }
+
+    pub fn primary(&self) -> String {
+        self.imp().unit.borrow().primary()
+    }
 }
 
 mod imp {
