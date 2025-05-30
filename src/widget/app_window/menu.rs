@@ -5,6 +5,7 @@ use gtk::prelude::*;
 use gtk::{gio, prelude::ActionMapExtManual};
 use log::error;
 use log::info;
+use log::warn;
 
 use crate::analyze::build_analyze_window;
 use crate::systemd;
@@ -12,6 +13,7 @@ use crate::systemd_gui::APP_ID;
 use crate::widget::app_window::AppWindow;
 use crate::widget::info_window;
 use crate::widget::preferences::PreferencesDialog;
+use crate::widget::signals_dialog::SignalsWindow;
 
 pub const APP_TITLE: &str = "SysD Manager";
 
@@ -58,6 +60,21 @@ pub fn on_startup(app: &adw::Application) {
                     }
                 }
             };
+        })
+        .build();
+
+    let signals = gio::ActionEntry::builder("signals")
+        .activate(|application: &adw::Application, _, _| {
+            let Some(win) = application.active_window() else {
+                warn!("No window");
+                return;
+            };
+
+            let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+
+            let signals_window = SignalsWindow::new(app_window);
+
+            signals_window.present();
         })
         .build();
 
@@ -126,6 +143,7 @@ pub fn on_startup(app: &adw::Application) {
         systemd_info,
         preferences,
         reload_all_units,
+        signals,
     ]);
 }
 
