@@ -571,8 +571,8 @@ impl UnitListPanelImp {
 
         let finding = self.list_store.find_with_equal_func(|object| {
             let unit_item = object
-                .downcast_ref::<UnitInfo>()
-                .expect("item.downcast_ref::<gtk::UnitInfo>()");
+                .downcast_ref::<UnitBinding>()
+                .expect("item.downcast_ref::<UnitBinding>()");
 
             unit_name == unit_item.primary()
         });
