@@ -37,13 +37,18 @@ impl MaskUnitDialog {
 
 pub fn after_mask(
     _method_name: &str,
-    unit: &UnitInfo,
+    unit: Option<&UnitInfo>,
     result: Result<(), SystemdErrors>,
     control: &UnitControlPanel,
 ) {
     if result.is_err() {
         return;
     }
+
+    let Some(unit) = unit else {
+        warn!("Unit None");
+        return;
+    };
 
     let unit = unit.clone();
     let control = control.clone();

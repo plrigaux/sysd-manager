@@ -506,15 +506,20 @@ impl UnitControlPanelImpl {
     pub(super) fn call_method<T>(
         &self,
         method_name: &str,
+        need_selected_unit: bool,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(&UnitInfo) -> Result<T, SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl FnOnce(&str, &UnitInfo, Result<T, SystemdErrors>, &UnitControlPanel)
+        systemd_method: impl Fn(Option<&UnitInfo>) -> Result<T, SystemdErrors>
+        + std::marker::Send
+        + 'static,
+        return_handle: impl FnOnce(&str, Option<&UnitInfo>, Result<T, SystemdErrors>, &UnitControlPanel)
         + 'static,
     ) where
         T: Send + 'static,
     {
         let binding = self.current_unit.borrow();
-        let Some(unit) = binding.as_ref() else {
+        let unit_option = binding.as_ref();
+
+        if need_selected_unit && unit_option.is_none() {
             warn!("No Unit");
             return;
         };
@@ -522,17 +527,18 @@ impl UnitControlPanelImpl {
         let is_dark = true; //self.is_dark.get();
         let blue = blue(is_dark).get_color();
 
-        let control_panel = self.obj().clone();
-        let unit = unit.clone();
+        let control_panel: UnitControlPanel = self.obj().clone();
         let button = button.clone();
         let method_name = method_name.to_owned();
+
+        let unit_op = unit_option.cloned();
 
         //   let systemd_method = systemd_method.clone();
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
 
-            let unit2 = unit.clone();
-            let result = gio::spawn_blocking(move || systemd_method(&unit2))
+            let unit2 = unit_op.clone();
+            let result = gio::spawn_blocking(move || systemd_method(unit2.as_ref()))
                 .await
                 .expect("Call needs to finish successfully.");
 
@@ -540,26 +546,38 @@ impl UnitControlPanelImpl {
 
             match result {
                 Ok(_) => {
-                    let msg = format!(
-                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> successful.",
-                        unit.primary(),
-                    );
+                    let msg = if let Some(ref unit) = unit_op {
+                        format!(
+                            "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> successful.",
+                            unit.primary(),
+                        )
+                    } else {
+                        format!("{method_name} successful.",)
+                    };
                     control_panel.add_toast_message(&msg, true)
                 }
                 Err(ref error) => {
                     let red = red(is_dark).get_color();
-                    let msg = format!(
-                        "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{red}'>{}</span>.",
-                        unit.primary(),
-                        error.human_error_type()
-                    );
+
+                    let msg = if let Some(ref unit) = unit_op {
+                        format!(
+                            "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{red}'>{}</span>.",
+                            unit.primary(),
+                            error.human_error_type()
+                        )
+                    } else {
+                        format!(
+                            "{method_name} failed. Reason: <span fgcolor='{red}'>{}</span>.",
+                            error.human_error_type()
+                        )
+                    };
 
                     warn!("{msg} {:?}", error);
                     control_panel.add_toast_message(&msg, true);
                 }
             }
 
-            return_handle(&method_name, &unit, result, &control_panel)
+            return_handle(&method_name, unit_op.as_ref(), result, &control_panel)
         });
     }
 }

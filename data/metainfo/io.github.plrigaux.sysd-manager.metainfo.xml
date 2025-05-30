@@ -81,6 +81,15 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+         <release version="1.27.2" date="2025-05-30">
+      <description>  
+        <p>Fixed</p>
+        <ul>
+          <li>Unit dependencies navigation crash</li>
+          <li>Action result message</li>
+        </ul>               
+      </description>
+    </release>
      <release version="1.27.0" date="2025-05-29">
       <description>  
         <p>Added</p>
@@ -92,7 +101,7 @@ https://hughsie.github.io/oars/index.html
           <li>Enable unit file Dialog save context mixed up</li>
         </ul>   
         <ul>
-          <li>1.27.1 Mask unit dialog behaviour</li>
+          <li>1.27.1 Mask unit dialog behaviour malfunction</li>
         </ul>          
       </description>
     </release>

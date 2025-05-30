@@ -72,15 +72,18 @@ impl MaskUnitDialogImp {
 
         let lambda_out = {
             move |_method: &str,
-                  unit: &UnitInfo,
+                  unit: Option<&UnitInfo>,
                   result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
                   control: &UnitControlPanel| {
                 match result {
                     Ok(ref vec) => {
                         info!("Unit Masked {:?}", vec);
-                        if stop_now {
-                            info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
-                            let _ = systemd::stop_unit(unit, mode); //TODO handle response
+
+                        if let Some(unit) = unit {
+                            if stop_now {
+                                info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
+                                let _ = systemd::stop_unit(unit, mode); //TODO handle response
+                            }
                         }
 
                         let result = result.map(|_arg| ());
@@ -94,12 +97,14 @@ impl MaskUnitDialogImp {
         let runtime = self.runtime_switch.is_active();
         let force = self.force_switch.is_active();
 
-        let lambda = move |unit: &UnitInfo| systemd::mask_unit_files(unit, runtime, force);
+        let lambda = move |unit: Option<&UnitInfo>| {
+            systemd::mask_unit_files(unit.expect("Unit not None"), runtime, force)
+        };
 
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Mask Unit File", &button, lambda, lambda_out);
+            .call_method("Mask Unit File", true, &button, lambda, lambda_out);
     }
 
     #[template_callback]

@@ -536,12 +536,18 @@ pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), Syste
     sysdbus::kill_unit(unit.dbus_level(), &unit.primary(), who, signal)
 }
 
-pub fn freeze_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
-    sysdbus::freeze_unit(unit.dbus_level(), &unit.primary())
+pub fn freeze_unit(unit: Option<&UnitInfo>) -> Result<(), SystemdErrors> {
+    sysdbus::freeze_unit(
+        unit.expect("unit not None").dbus_level(),
+        &unit.expect("unit not None").primary(),
+    )
 }
 
-pub fn thaw_unit(unit: &UnitInfo) -> Result<(), SystemdErrors> {
-    sysdbus::thaw_unit(unit.dbus_level(), &unit.primary())
+pub fn thaw_unit(unit: Option<&UnitInfo>) -> Result<(), SystemdErrors> {
+    sysdbus::thaw_unit(
+        unit.expect("unit not None").dbus_level(),
+        &unit.expect("unit not None").primary(),
+    )
 }
 
 pub fn reload_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<(), SystemdErrors> {

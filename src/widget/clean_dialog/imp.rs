@@ -68,7 +68,7 @@ impl CleanDialogImp {
             let what = what.clone();
             let this = self.obj().clone();
             move |method: &str,
-                  unit: &UnitInfo,
+                  unit: Option<&UnitInfo>,
                   result: Result<(), SystemdErrors>,
                   _control: &UnitControlPanel| {
                 if let Err(error) = result {
@@ -81,19 +81,20 @@ impl CleanDialogImp {
                             cmd.push(' ');
                         }
 
-                        cmd.push_str(&unit.primary());
+                        cmd.push_str(&unit.expect("Unit not None").primary());
                         work_around_dialog(&cmd, &error, method, &this.into())
                     }
                 }
             }
         };
 
-        let lambda = move |unit: &UnitInfo| systemd::clean_unit(unit, &what);
+        let lambda =
+            move |unit: Option<&UnitInfo>| systemd::clean_unit(unit.expect("Unit not None"), &what);
 
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Clean", &button, lambda, lambda_out);
+            .call_method("Clean", true, &button, lambda, lambda_out);
     }
 
     pub(crate) fn set_app_window(

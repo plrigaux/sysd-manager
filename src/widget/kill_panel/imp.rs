@@ -273,7 +273,7 @@ impl KillPanelImp {
         let who: KillWho = self.who_to_kill.selected().into();
 
         let lambda_out = move |_method_name: &str,
-                               _unit: &UnitInfo,
+                               _unit: Option<&UnitInfo>,
                                _res: Result<(), SystemdErrors>,
                                _control: &UnitControlPanel| {};
 
@@ -289,16 +289,23 @@ impl KillPanelImp {
                 "Queued signal {} with value {} to",
                 signal_id, sigqueue_value
             );
-            let lambda = move |unit: &UnitInfo| {
-                systemd::queue_signal_unit(unit, who, signal_id, sigqueue_value)
+            let lambda = move |unit: Option<&UnitInfo>| {
+                systemd::queue_signal_unit(
+                    unit.expect("Unit not None"),
+                    who,
+                    signal_id,
+                    sigqueue_value,
+                )
             };
             self.parent()
-                .call_method(&prefix, button, lambda, lambda_out);
+                .call_method(&prefix, true, button, lambda, lambda_out);
         } else {
             let prefix = format!("Kill signal {} to", signal_id);
-            let lambda = move |unit: &UnitInfo| systemd::kill_unit(unit, who, signal_id);
+            let lambda = move |unit: Option<&UnitInfo>| {
+                systemd::kill_unit(unit.expect("Unit not None"), who, signal_id)
+            };
             self.parent()
-                .call_method(&prefix, button, lambda, lambda_out);
+                .call_method(&prefix, true, button, lambda, lambda_out);
         }
     }
 }

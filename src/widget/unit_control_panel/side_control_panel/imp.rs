@@ -94,7 +94,7 @@ impl SideControlPanelImpl {
 
     fn lambda_out(
         method_name: &str,
-        unit: &UnitInfo,
+        unit: Option<&UnitInfo>,
         result: Result<(), SystemdErrors>,
         control_panel: &UnitControlPanel,
     ) {
@@ -103,7 +103,7 @@ impl SideControlPanelImpl {
                 let cmd = format!(
                     "sudo systemctl {} -u {}",
                     method_name.to_ascii_lowercase(),
-                    unit.primary()
+                    unit.expect("Unit not None").primary()
                 );
 
                 let window = control_panel.parent_window();
@@ -114,14 +114,19 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn freeze_button_clicked(&self, button: &gtk::Button) {
-        self.parent()
-            .call_method("Freeze", button, systemd::freeze_unit, Self::lambda_out)
+        self.parent().call_method(
+            "Freeze",
+            true,
+            button,
+            systemd::freeze_unit,
+            Self::lambda_out,
+        )
     }
 
     #[template_callback]
     fn thaw_button_clicked(&self, button: &gtk::Button) {
         self.parent()
-            .call_method("Thaw", button, systemd::thaw_unit, Self::lambda_out)
+            .call_method("Thaw", true, button, systemd::thaw_unit, Self::lambda_out)
     }
 
     #[template_callback]
@@ -138,10 +143,11 @@ impl SideControlPanelImpl {
 
         let mode: StartStopMode = value.into();
 
-        let lambda = move |unit: &UnitInfo| systemd::reload_unit(unit, mode);
+        let lambda =
+            move |unit: Option<&UnitInfo>| systemd::reload_unit(unit.expect("Unit not None"), mode);
 
         self.parent()
-            .call_method("Reload", button, lambda, Self::lambda_out)
+            .call_method("Reload", true, button, lambda, Self::lambda_out)
     }
 
     #[template_callback]
@@ -196,15 +202,18 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
-        let lambda = |unit: &UnitInfo| -> Result<(), SystemdErrors> {
-            let enable_status: EnablementStatus = unit.enable_status().into();
-            let runtime = EnablementStatus::MaskedRuntime == enable_status;
-            systemd::unmask_unit_files(unit, runtime)?;
+        let lambda = |unit: Option<&UnitInfo>| -> Result<(), SystemdErrors> {
+            if let Some(unit) = unit {
+                let enable_status: EnablementStatus = unit.enable_status().into();
+                let runtime = EnablementStatus::MaskedRuntime == enable_status;
+                systemd::unmask_unit_files(unit, runtime)?;
+            }
             Ok(())
         };
 
         self.parent().call_method(
             "Unmask",
+            true,
             button,
             lambda,
             crate::widget::mask_unit_dialog::after_mask,

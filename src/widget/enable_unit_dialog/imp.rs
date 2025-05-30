@@ -73,12 +73,12 @@ impl EnableUnitDialogImp {
     fn enable_unit_file_button_clicked(&self, button: gtk::Button) {
         let lambda_out = {
             move |_method: &str,
-                  unit: &UnitInfo,
+                 _unit : Option<&UnitInfo>,
                   result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
                   _control: &UnitControlPanel| {
                 match result {
-                    Ok(_vec) => {
-                        info!("Enable UnitUnitUnitUnitUnit1 {:?}", unit.primary());
+                    Ok(vec) => {
+                        info!("Enable Unit File Result: {:?}", vec); //TODO enable start
                         /*   if dialog.imp().run_now_switch.is_active() {
                             let mode = dialog.imp().run_mode_combo.selected_item();
                             let _mode: StartStopMode = mode.into();
@@ -113,14 +113,14 @@ impl EnableUnitDialogImp {
         let dbus_level = self.dbus_level_combo.selected_item();
         let dbus_level: UnitDBusLevel = dbus_level.into();
 
-        let lambda = move |_unit: &UnitInfo| {
+        let lambda = move |_unit: Option<&UnitInfo>| {
             systemd::enable_unit_file(unit_file.as_str(), dbus_level, flags)
         };
 
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Enable Unit File", &button, lambda, lambda_out);
+            .call_method("Enable Unit File",false, &button, lambda, lambda_out);
     }
 
     #[template_callback]

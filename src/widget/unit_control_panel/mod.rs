@@ -59,15 +59,23 @@ impl UnitControlPanel {
     pub(super) fn call_method<T>(
         &self,
         method_name: &str,
+        need_selected_unit: bool,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(&UnitInfo) -> Result<T, SystemdErrors> + std::marker::Send + 'static,
-        return_handle: impl FnOnce(&str, &UnitInfo, Result<T, SystemdErrors>, &UnitControlPanel)
+        systemd_method: impl Fn(Option<&UnitInfo>) -> Result<T, SystemdErrors>
+        + std::marker::Send
+        + 'static,
+        return_handle: impl FnOnce(&str, Option<&UnitInfo>, Result<T, SystemdErrors>, &UnitControlPanel)
         + 'static,
     ) where
         T: Send + 'static,
     {
-        self.imp()
-            .call_method(method_name, button, systemd_method, return_handle);
+        self.imp().call_method(
+            method_name,
+            need_selected_unit,
+            button,
+            systemd_method,
+            return_handle,
+        );
     }
 
     pub fn parent_window(&self) -> gtk::Window {
