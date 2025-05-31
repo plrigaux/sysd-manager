@@ -16,7 +16,7 @@ glib::wrapper! {
 }
 
 impl SignalsWindow {
-    pub fn new(app_window: Option<&AppWindow>) -> Self {
+    pub fn new(app_window: &AppWindow) -> Self {
         let obj: SignalsWindow = glib::Object::new();
         let imp = obj.imp();
         imp.set_app_window(app_window);

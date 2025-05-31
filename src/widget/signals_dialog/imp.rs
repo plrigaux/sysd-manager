@@ -13,7 +13,10 @@ use gtk::{
 };
 use log::info;
 
-use crate::widget::app_window::AppWindow;
+use crate::{
+    systemd::{runtime, watch_systemd_jobs},
+    widget::app_window::AppWindow,
+};
 
 use super::SignalsWindow;
 
@@ -24,16 +27,16 @@ pub struct SignalsWindowImp {
     list_box: TemplateChild<gtk::ListBox>,
 
     app_window: OnceCell<AppWindow>,
+
+    token: OnceCell<tokio_util::sync::CancellationToken>,
 }
 
 #[gtk::template_callbacks]
 impl SignalsWindowImp {
-    pub(crate) fn set_app_window(&self, app_window: Option<&AppWindow>) {
-        if let Some(app_window) = app_window {
-            self.app_window
-                .set(app_window.clone())
-                .expect("app_window set once");
-        }
+    pub(crate) fn set_app_window(&self, app_window: &AppWindow) {
+        self.app_window
+            .set(app_window.clone())
+            .expect("app_window set once");
     }
 }
 // The central trait for subclassing a GObject
@@ -57,6 +60,11 @@ impl ObjectSubclass for SignalsWindowImp {
 impl ObjectImpl for SignalsWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let token = tokio_util::sync::CancellationToken::new();
+        runtime().spawn(watch_systemd_jobs(token.clone()));
+
+        let _ = self.token.set(token);
     }
 }
 
@@ -64,9 +72,19 @@ impl WidgetImpl for SignalsWindowImp {}
 impl WindowImpl for SignalsWindowImp {
     fn close_request(&self) -> glib::Propagation {
         // Save window size
-        info!("Close window");
+        info!("Close window signals");
+
+        if let Some(token) = self.token.get() {
+            token.cancel();
+        }
+
+        self.app_window
+            .get()
+            .expect("Window not None")
+            .set_signal_window(None);
 
         self.parent_close_request();
+
         // Allow to invoke other event handlers
         glib::Propagation::Proceed
     }

@@ -3,7 +3,7 @@ use gtk::{gio, glib, subclass::prelude::*};
 
 use crate::systemd::data::UnitInfo;
 
-use super::InterPanelMessage;
+use super::{InterPanelMessage, signals_dialog::SignalsWindow};
 
 mod imp;
 pub mod menu;
@@ -48,5 +48,13 @@ impl AppWindow {
     pub fn selected_unit(&self) -> Option<UnitInfo> {
         let unit = self.imp().selected_unit.borrow();
         unit.clone()
+    }
+
+    pub fn signals_window(&self) -> Option<SignalsWindow> {
+        self.imp().signals_window.borrow().as_ref().cloned()
+    }
+
+    pub fn set_signal_window(&self, signals_window: Option<&SignalsWindow>) {
+        self.imp().signals_window.replace(signals_window.cloned());
     }
 }

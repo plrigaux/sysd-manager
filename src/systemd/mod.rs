@@ -727,8 +727,8 @@ pub fn retreive_unit_processes(
 }
 
 #[allow(dead_code)]
-pub async fn watch_systemd_jobs() {
-    let result = sysdbus::watcher::watch_systemd_jobs().await;
+pub async fn watch_systemd_jobs(token: tokio_util::sync::CancellationToken) {
+    let result = sysdbus::watcher::watch_systemd_jobs(token).await;
 
     if let Err(err) = result {
         log::error!("Error listening to jobs {:?}", err);

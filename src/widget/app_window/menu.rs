@@ -65,14 +65,24 @@ pub fn on_startup(app: &adw::Application) {
 
     let signals = gio::ActionEntry::builder("signals")
         .activate(|application: &adw::Application, _, _| {
-            let Some(win) = application.active_window() else {
+            let Some(window) = application.active_window() else {
                 warn!("No window");
                 return;
             };
 
-            let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+            let Some(app_window) = window.downcast_ref::<AppWindow>() else {
+                warn!("No app window");
+                return;
+            };
 
-            let signals_window = SignalsWindow::new(app_window);
+            let signals_window = if let Some(signals_window) = app_window.signals_window() {
+                signals_window
+            } else {
+                let signals_window = SignalsWindow::new(app_window);
+                app_window.set_signal_window(Some(&signals_window));
+                //signals_window.set_transient_for(Some(&window));
+                signals_window
+            };
 
             signals_window.present();
         })

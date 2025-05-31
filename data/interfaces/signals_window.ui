@@ -37,6 +37,5 @@
         </child>
       </object>
     </property>
-    <property name="modal">True</property>
   </template>
 </interface>

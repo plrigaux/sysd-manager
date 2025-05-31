@@ -1,3 +1,4 @@
+use log::info;
 use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
@@ -48,7 +49,9 @@ trait Systemd1Manager {
     fn reloading(&self, active: bool) -> zbus::Result<()>;
 }
 
-pub async fn watch_systemd_jobs() -> Result<(), SystemdErrors> {
+pub async fn watch_systemd_jobs(
+    token: tokio_util::sync::CancellationToken,
+) -> Result<(), SystemdErrors> {
     let connection = get_connection_async(UnitDBusLevel::System).await?;
 
     // `Systemd1ManagerProxy` is generated from `Systemd1Manager` trait
@@ -67,6 +70,10 @@ pub async fn watch_systemd_jobs() -> Result<(), SystemdErrors> {
             _ = fn_unit_new(&mut unit_new_stream) => {},
             _ = unit_removed(&mut unit_removed_stream) => {},
             _ = reloading(&mut reloading_stream) => {},
+            _ = token.cancelled() => {
+                info!("Watch Systemd Signals Close");
+                return Ok(());
+            }
         );
     }
 

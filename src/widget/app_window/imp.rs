@@ -27,6 +27,7 @@ use crate::{
         InterPanelMessage,
         journal::list_boots::ListBootsWindow,
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
+        signals_dialog::SignalsWindow,
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
     },
@@ -81,6 +82,8 @@ pub struct AppWindowImpl {
     list_boots: RefCell<Option<Vec<Rc<Boot>>>>,
 
     pub(super) selected_unit: RefCell<Option<UnitInfo>>,
+
+    pub signals_window: RefCell<Option<SignalsWindow>>,
 }
 
 #[glib::object_subclass]
