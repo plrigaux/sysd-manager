@@ -26,7 +26,8 @@ use journal::Boot;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 use tokio::runtime::Runtime;
-use zvariant::OwnedValue;
+use tokio::sync::mpsc;
+use zvariant::{OwnedObjectPath, OwnedValue};
 
 pub mod enums;
 
@@ -726,9 +727,57 @@ pub fn retreive_unit_processes(
     Ok(unit_processes_map)
 }
 
-#[allow(dead_code)]
-pub async fn watch_systemd_jobs(token: tokio_util::sync::CancellationToken) {
-    let result = sysdbus::watcher::watch_systemd_jobs(token).await;
+pub enum SystemdSignal {
+    UnitNew(String, OwnedObjectPath),
+    UnitRemoved(String, OwnedObjectPath),
+    JobNew(u32, OwnedObjectPath, String),
+    JobRemoved(u32, OwnedObjectPath, String, String),
+    StartupFinished(u64, u64, u64, u64, u64, u64),
+    UnitFilesChanged,
+    Reloading(bool),
+}
+
+impl SystemdSignal {
+    pub fn type_text(&self) -> &str {
+        match self {
+            SystemdSignal::UnitNew(_, _) => "UnitNew",
+            SystemdSignal::UnitRemoved(_, _) => "UnitRemoved",
+            SystemdSignal::JobNew(_, _, _) => "JobNew",
+            SystemdSignal::JobRemoved(_, _, _, _) => "JobRemoved",
+            SystemdSignal::StartupFinished(_, _, _, _, _, _) => "StartupFinished",
+            SystemdSignal::UnitFilesChanged => "UnitFilesChanged",
+            SystemdSignal::Reloading(_) => "Reloading",
+        }
+    }
+
+    pub fn details(&self) -> String {
+        match self {
+            SystemdSignal::UnitNew(id, unit) => format!("{id} {unit}"),
+            SystemdSignal::UnitRemoved(id, unit) => format!("{id} {unit}"),
+            SystemdSignal::JobNew(id, job, unit) => {
+                format!("unit={} id={} path={}", unit, id, job)
+            }
+            SystemdSignal::JobRemoved(id, job, unit, result) => {
+                format!("unit={} id={} path={} result={}", unit, id, job, result)
+            }
+            SystemdSignal::StartupFinished(firmware, loader, kernel, initrd, userspace, total) => {
+                format!(
+                    "firmware={} loader={} kernel={} initrd={} userspace={} total={}",
+                    firmware, loader, kernel, initrd, userspace, total,
+                )
+            }
+            SystemdSignal::UnitFilesChanged => String::new(),
+            SystemdSignal::Reloading(active) => format!("firmware={active}"),
+        }
+    }
+}
+
+pub async fn watch_systemd_signals(
+    systemd_signal_sender: mpsc::Sender<SystemdSignal>,
+    cancellation_token: tokio_util::sync::CancellationToken,
+) {
+    let result: Result<(), SystemdErrors> =
+        sysdbus::watcher::watch_systemd_signals(systemd_signal_sender, cancellation_token).await;
 
     if let Err(err) = result {
         log::error!("Error listening to jobs {:?}", err);

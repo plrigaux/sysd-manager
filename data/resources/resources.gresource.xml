@@ -23,6 +23,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="mask_unit_dialog.ui">interfaces/mask_unit_dialog.ui</file>    
     <file compressed="true" preprocess="xml-stripblanks" alias="list_boots.ui">interfaces/list_boots.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="signals_window.ui">interfaces/signals_window.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="signal_row.ui">interfaces/signal_row.ui</file>    
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">interfaces/shortcuts.ui</file>
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>
     <file compressed="true" alias="style.css">styles/style.css</file>

@@ -19,7 +19,7 @@
               <object class="GtkScrolledWindow">
                 <property name="vexpand">True</property>
                 <child>
-                  <object class="GtkListBox" id="list_box"/>
+                  <object class="GtkListView" id="signals_list"/>
                 </child>
               </object>
             </child>

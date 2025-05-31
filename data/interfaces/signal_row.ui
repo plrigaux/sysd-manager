@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.96.1 -->
+<!--ste-->
+<interface>
+  <!-- interface-description test -->
+  <!-- interface-copyright test -->
+  <!-- interface-authors test -->
+  <requires lib="gtk" version="4.12"/>
+  <object class="GtkBox">
+    <property name="spacing">5</property>
+    <child>
+      <object class="GtkLabel" id="signal_type"/>
+    </child>
+    <child>
+      <object class="GtkLabel" id="signal_details"/>
+    </child>
+  </object>
+</interface>

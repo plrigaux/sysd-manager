@@ -1,4 +1,5 @@
 mod imp;
+mod signal_row;
 
 use gtk::{
     glib::{self},

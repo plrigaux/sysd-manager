@@ -1,8 +1,10 @@
-use std::cell::OnceCell;
+use std::cell::{OnceCell, Ref, RefCell};
 
 use adw::subclass::window::AdwWindowImpl;
+use gio::glib::BoxedAnyObject;
 use gtk::{
     glib::{self},
+    prelude::*,
     subclass::{
         prelude::*,
         widget::{
@@ -12,19 +14,22 @@ use gtk::{
     },
 };
 use log::info;
+use tokio::sync::mpsc;
 
 use crate::{
-    systemd::{runtime, watch_systemd_jobs},
+    systemd::{SystemdSignal, runtime, watch_systemd_signals},
     widget::app_window::AppWindow,
 };
 
-use super::SignalsWindow;
+use super::{SignalsWindow, signal_row::SignalRow};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/signals_window.ui")]
 pub struct SignalsWindowImp {
     #[template_child]
-    list_box: TemplateChild<gtk::ListBox>,
+    signals_list: TemplateChild<gtk::ListView>,
+
+    signals: RefCell<Option<gio::ListStore>>,
 
     app_window: OnceCell<AppWindow>,
 
@@ -37,6 +42,49 @@ impl SignalsWindowImp {
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
+    }
+
+    fn setup_factory(&self) -> gtk::SignalListItemFactory {
+        let factory = gtk::SignalListItemFactory::new();
+
+        // Create an empty `TaskRow` during setup
+        factory.connect_setup(move |_, list_item| {
+            // Create `TaskRow`
+            let signal_row = SignalRow::new();
+
+            list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem")
+                .set_child(Some(&signal_row));
+        });
+
+        // Tell factory how to bind `TaskRow` to a `TaskObject`
+        factory.connect_bind(move |_, list_item| {
+            let list_item = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem");
+
+            let task_object = list_item
+                .item()
+                .and_downcast::<glib::BoxedAnyObject>()
+                .expect("The item has to be an `TaskObject`.");
+
+            // Get `TaskRow` from `ListItem`
+            let signal_row = list_item
+                .child()
+                .and_downcast::<SignalRow>()
+                .expect("The child has to be a `SignalRow`.");
+
+            let r: Ref<SystemdSignal> = task_object.borrow();
+            signal_row.set_type_text(r.type_text());
+
+            signal_row.set_details_text(&r.details());
+        });
+
+        // Tell factory how to unbind `TaskRow` from `TaskObject`
+        factory.connect_unbind(move |_, _list_item| {});
+
+        factory
     }
 }
 // The central trait for subclassing a GObject
@@ -60,11 +108,31 @@ impl ObjectSubclass for SignalsWindowImp {
 impl ObjectImpl for SignalsWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
+        let model = gio::ListStore::new::<glib::BoxedAnyObject>();
+        self.signals.replace(Some(model.clone()));
+        let selection_model = gtk::NoSelection::new(Some(model.clone()));
+        self.signals_list.set_model(Some(&selection_model));
 
-        let token = tokio_util::sync::CancellationToken::new();
-        runtime().spawn(watch_systemd_jobs(token.clone()));
+        let factory = self.setup_factory();
+        self.signals_list.set_factory(Some(&factory));
 
-        let _ = self.token.set(token);
+        let (systemd_signal_sender, mut systemd_signal_receiver) = mpsc::channel(100);
+
+        glib::spawn_future_local(async move {
+            while let Some(signal) = systemd_signal_receiver.recv().await {
+                let boxed = BoxedAnyObject::new(signal);
+                model.append(&boxed);
+            }
+        });
+
+        let cancellation_token = tokio_util::sync::CancellationToken::new();
+
+        let _ = self.token.set(cancellation_token.clone());
+
+        runtime().spawn(watch_systemd_signals(
+            systemd_signal_sender,
+            cancellation_token,
+        ));
     }
 }
 
