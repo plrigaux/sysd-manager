@@ -727,6 +727,7 @@ pub fn retreive_unit_processes(
     Ok(unit_processes_map)
 }
 
+#[derive(Debug)]
 pub enum SystemdSignal {
     UnitNew(String, OwnedObjectPath),
     UnitRemoved(String, OwnedObjectPath),

@@ -39,5 +39,5 @@
     <content><![CDATA[<interface/>
 ]]></content>
   </ui>
-  <ui filename="signal_row.ui" sha256="81098ac08928802a1d88129d633cd4234509eebde2e188ce2176e10117be04e3"/>
+  <ui template-class="SIGNAL_ROW" filename="signal_row.ui" sha256="e30d99e18d234db9770a9b47c0ee10ffe215616dd37e66835362c07c53440525"/>
 </cambalache-project>

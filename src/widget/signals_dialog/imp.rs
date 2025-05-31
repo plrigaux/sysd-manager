@@ -13,7 +13,7 @@ use gtk::{
         },
     },
 };
-use log::info;
+use log::{debug, info};
 use tokio::sync::mpsc;
 
 use crate::{
@@ -120,6 +120,7 @@ impl ObjectImpl for SignalsWindowImp {
 
         glib::spawn_future_local(async move {
             while let Some(signal) = systemd_signal_receiver.recv().await {
+                debug!("Recieve {:?}", signal);
                 let boxed = BoxedAnyObject::new(signal);
                 model.append(&boxed);
             }
