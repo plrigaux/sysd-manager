@@ -18,10 +18,14 @@ use tokio::sync::mpsc;
 
 use crate::{
     systemd::{SystemdSignal, runtime, watch_systemd_signals},
+    systemd_gui::new_settings,
     widget::app_window::AppWindow,
 };
 
 use super::{SignalsWindow, signal_row::SignalRow};
+
+const SIGNAL_WINDOW_WIDTH: &str = "signal-window-width";
+const SIGNAL_WINDOW_HEIGHT: &str = "signal-window-height";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/signals_window.ui")]
@@ -134,6 +138,13 @@ impl ObjectImpl for SignalsWindowImp {
             systemd_signal_sender,
             cancellation_token,
         ));
+
+        let settings = new_settings();
+
+        let width = settings.int(SIGNAL_WINDOW_WIDTH);
+        let height = settings.int(SIGNAL_WINDOW_HEIGHT);
+
+        self.obj().set_default_size(width, height);
     }
 }
 
@@ -151,6 +162,13 @@ impl WindowImpl for SignalsWindowImp {
             .get()
             .expect("Window not None")
             .set_signal_window(None);
+
+        let (width, height) = self.obj().default_size();
+
+        let settings = new_settings();
+
+        let _ = settings.set_int(SIGNAL_WINDOW_WIDTH, width);
+        let _ = settings.set_int(SIGNAL_WINDOW_HEIGHT, height);
 
         self.parent_close_request();
 
