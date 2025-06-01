@@ -42,6 +42,7 @@ A user-friendly GUI to manage systemd units
 | Multi-language support | 🚧 |
 | Real-time journal events update | ✅ |
 | Retrieve list of boot IDs | ✅ |
+| Ability to watch _systemd_ signals | ✅ |
 
 *Need a feature? Contact the author or contribute to the project! If you're stuck, take a look at `systemctl`.*
 
