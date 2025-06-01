@@ -13,6 +13,7 @@ use std::{
     io::{ErrorKind, Read, Write},
     process::{Command, Stdio},
     sync::OnceLock,
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 use data::{DisEnAbleUnitFiles, UnitInfo, UnitProcess};
@@ -728,6 +729,32 @@ pub fn retreive_unit_processes(
 }
 
 #[derive(Debug)]
+pub struct SystemdSignalRow {
+    time_stamp: u64,
+    signal: SystemdSignal,
+}
+
+impl SystemdSignalRow {
+    pub fn new(signal: SystemdSignal) -> Self {
+        let current_system_time = SystemTime::now();
+        let since_the_epoch = current_system_time
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        let time_stamp =
+            since_the_epoch.as_secs() * 1000 + since_the_epoch.subsec_nanos() as u64 / 1_000_000;
+        SystemdSignalRow { time_stamp, signal }
+    }
+
+    pub fn type_text(&self) -> String {
+        format!("{} {}", self.time_stamp, self.signal.type_text())
+    }
+
+    pub fn details(&self) -> String {
+        self.signal.details()
+    }
+}
+
+#[derive(Debug)]
 pub enum SystemdSignal {
     UnitNew(String, OwnedObjectPath),
     UnitRemoved(String, OwnedObjectPath),
@@ -774,7 +801,7 @@ impl SystemdSignal {
 }
 
 pub async fn watch_systemd_signals(
-    systemd_signal_sender: mpsc::Sender<SystemdSignal>,
+    systemd_signal_sender: mpsc::Sender<SystemdSignalRow>,
     cancellation_token: tokio_util::sync::CancellationToken,
 ) {
     let result: Result<(), SystemdErrors> =

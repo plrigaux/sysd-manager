@@ -1,7 +1,7 @@
 use std::cell::{OnceCell, Ref, RefCell};
 
 use adw::subclass::window::AdwWindowImpl;
-use gio::glib::BoxedAnyObject;
+use gio::{ListStore, glib::BoxedAnyObject};
 use gtk::{
     glib::{self},
     prelude::*,
@@ -17,7 +17,7 @@ use log::{debug, info};
 use tokio::sync::mpsc;
 
 use crate::{
-    systemd::{SystemdSignal, runtime, watch_systemd_signals},
+    systemd::{SystemdSignalRow, runtime, watch_systemd_signals},
     systemd_gui::new_settings,
     widget::app_window::AppWindow,
 };
@@ -82,8 +82,8 @@ impl SignalsWindowImp {
                 .and_downcast::<SignalRow>()
                 .expect("The child has to be a `SignalRow`.");
 
-            let r: Ref<SystemdSignal> = task_object.borrow();
-            signal_row.set_type_text(r.type_text());
+            let r: Ref<SystemdSignalRow> = task_object.borrow();
+            signal_row.set_type_text(&r.type_text());
 
             signal_row.set_details_text(&r.details());
         });
@@ -131,18 +131,19 @@ impl ObjectImpl for SignalsWindowImp {
         let (systemd_signal_sender, mut systemd_signal_receiver) = mpsc::channel(100);
 
         glib::spawn_future_local(async move {
-            if let Some(signal) = systemd_signal_receiver.recv().await {
+            fn append(signal: SystemdSignalRow, model: &ListStore) {
                 debug!("Recieve {:?}", signal);
                 let boxed = BoxedAnyObject::new(signal);
                 model.append(&boxed);
+            }
 
+            if let Some(signal) = systemd_signal_receiver.recv().await {
+                append(signal, &model);
                 signal_dialog.imp().display_signals();
             }
 
             while let Some(signal) = systemd_signal_receiver.recv().await {
-                debug!("Recieve {:?}", signal);
-                let boxed = BoxedAnyObject::new(signal);
-                model.append(&boxed);
+                append(signal, &model);
             }
         });
 

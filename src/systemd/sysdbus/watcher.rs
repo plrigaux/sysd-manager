@@ -4,7 +4,8 @@ use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
 use crate::systemd::{
-    SystemdSignal, enums::UnitDBusLevel, errors::SystemdErrors, sysdbus::get_connection_async,
+    SystemdSignal, SystemdSignalRow, enums::UnitDBusLevel, errors::SystemdErrors,
+    sysdbus::get_connection_async,
 };
 use futures_util::stream::StreamExt;
 
@@ -53,7 +54,7 @@ trait Systemd1Manager {
 }
 
 pub async fn watch_systemd_signals(
-    systemd_signal_sender: mpsc::Sender<SystemdSignal>,
+    systemd_signal_sender: mpsc::Sender<SystemdSignalRow>,
     cancellation_token: tokio_util::sync::CancellationToken,
 ) -> Result<(), SystemdErrors> {
     let connection = get_connection_async(UnitDBusLevel::System).await?;
@@ -85,7 +86,9 @@ pub async fn watch_systemd_signals(
         );
 
         if let Some(signal) = msg {
-            if let Err(error) = systemd_signal_sender.send(signal).await {
+            let signal_row = SystemdSignalRow::new(signal);
+
+            if let Err(error) = systemd_signal_sender.send(signal_row).await {
                 warn!("Send signal Error {:?}", error)
             };
         }
