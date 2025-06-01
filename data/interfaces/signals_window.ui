@@ -16,10 +16,32 @@
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
-              <object class="GtkScrolledWindow">
-                <property name="vexpand">True</property>
+              <object class="AdwViewStack" id="panel_stack">
                 <child>
-                  <object class="GtkListView" id="signals_list"/>
+                  <object class="AdwViewStackPage">
+                    <property name="child">
+                      <object class="AdwStatusPage">
+                        <property name="description" translatable="yes">No systemd signals
+Start or Stop a Unit to see some appearing</property>
+                        <property name="icon-name">dialog-question</property>
+                        <property name="title">No signals</property>
+                      </object>
+                    </property>
+                    <property name="name">empty</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwViewStackPage">
+                    <property name="child">
+                      <object class="GtkScrolledWindow">
+                        <property name="vexpand">True</property>
+                        <child>
+                          <object class="GtkListView" id="signals_list"/>
+                        </child>
+                      </object>
+                    </property>
+                    <property name="name">signals</property>
+                  </object>
                 </child>
               </object>
             </child>

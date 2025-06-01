@@ -20,7 +20,16 @@
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="44ca84ba8813223a5e9c82857809aa57fc7493f2838226b6f2f0f487c370bd1f"/>
   <ui template-class="ENABLE_UNIT_DIALOG" filename="enable_unit_dialog.ui" sha256="edcd6d16a756142a6dc5e07fe9b557658dbfb9279525279fa7296435b081a620"/>
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="8089fc0cab5c11bd72a92e7c5aa1b5b2cad149a15ee029f4a5081d791993c010"/>
-  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="89301774a34d372f746c9d76c91733306fb6e9db89ea87da44324692d1020e63"/>
+  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="e6c21f03a5d928a6f4af37d8d32b820d2cfc680307b4adf5512df16a8cab0476"/>
+  <ui>
+    <content><![CDATA[<interface/>
+]]></content>
+  </ui>
+  <ui>
+    <content><![CDATA[<interface/>
+]]></content>
+  </ui>
+  <ui template-class="SIGNAL_ROW" filename="signal_row.ui" sha256="e58659bbcdc913eef7853837cba07f021070a8fd1f8fa2f1e7e1e2a7cce47e1e"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7fb3678c9d5691d5605cc6636a3926c1a9241c6b17f2f9dcd5ad44298c3b3902">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
@@ -31,13 +40,4 @@
     <requires>UnitControlPanel</requires>
     <requires>UnitListPanel</requires>
   </ui>
-  <ui>
-    <content><![CDATA[<interface/>
-]]></content>
-  </ui>
-  <ui>
-    <content><![CDATA[<interface/>
-]]></content>
-  </ui>
-  <ui template-class="SIGNAL_ROW" filename="signal_row.ui" sha256="e30d99e18d234db9770a9b47c0ee10ffe215616dd37e66835362c07c53440525"/>
 </cambalache-project>

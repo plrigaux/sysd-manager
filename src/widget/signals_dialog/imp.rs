@@ -33,6 +33,9 @@ pub struct SignalsWindowImp {
     #[template_child]
     signals_list: TemplateChild<gtk::ListView>,
 
+    #[template_child]
+    panel_stack: TemplateChild<adw::ViewStack>,
+
     signals: RefCell<Option<gio::ListStore>>,
 
     app_window: OnceCell<AppWindow>,
@@ -90,6 +93,10 @@ impl SignalsWindowImp {
 
         factory
     }
+
+    fn display_signals(&self) {
+        self.panel_stack.set_visible_child_name("signals");
+    }
 }
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
@@ -120,9 +127,18 @@ impl ObjectImpl for SignalsWindowImp {
         let factory = self.setup_factory();
         self.signals_list.set_factory(Some(&factory));
 
+        let signal_dialog = self.obj().clone();
         let (systemd_signal_sender, mut systemd_signal_receiver) = mpsc::channel(100);
 
         glib::spawn_future_local(async move {
+            if let Some(signal) = systemd_signal_receiver.recv().await {
+                debug!("Recieve {:?}", signal);
+                let boxed = BoxedAnyObject::new(signal);
+                model.append(&boxed);
+
+                signal_dialog.imp().display_signals();
+            }
+
             while let Some(signal) = systemd_signal_receiver.recv().await {
                 debug!("Recieve {:?}", signal);
                 let boxed = BoxedAnyObject::new(signal);

@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
+  <!-- interface-name signal_row.ui -->
   <requires lib="gtk" version="4.18"/>
   <template class="SIGNAL_ROW" parent="GtkBox">
     <property name="height-request">12</property>
