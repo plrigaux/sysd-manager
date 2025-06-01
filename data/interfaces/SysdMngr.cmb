@@ -11,7 +11,7 @@
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="a43d4e9514f75f026ba7cb1bb6aafe7d4f78931a27d966dbe03f911667c585c8"/>
   <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="304ac9cef24c36ce336796ec04802e078370e50fb1d337c87bb3d26024dac106"/>
   <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="12cd563a3db1cc09efa53e415aa04eca09728fc267e2b5c04d2b9f2291195b8f"/>
-  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="48514449526eaf910f0c01f6e3ddf1006343a3163fe8b90b921c7c62808d0a1b"/>
+  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="a54377c43ce7377e8cdbeffcd2533bda86afd95ea2ee322ec0de1f03249ce685"/>
   <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="b411b1f9e131a0e0c51ab3e09f74a38eef0b0f56a03313ac7d26ab11cbc9c0c9"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="b3b0001f67ee6c113df9547bc7a863ae25c8b3564dee5811d2f246ef8dcbe4d6"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="f5036f942d90775b6a8d5f0999cdd901b5e748c6e172096e83012fee4c3511cf"/>
@@ -20,7 +20,7 @@
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="44ca84ba8813223a5e9c82857809aa57fc7493f2838226b6f2f0f487c370bd1f"/>
   <ui template-class="ENABLE_UNIT_DIALOG" filename="enable_unit_dialog.ui" sha256="edcd6d16a756142a6dc5e07fe9b557658dbfb9279525279fa7296435b081a620"/>
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="8089fc0cab5c11bd72a92e7c5aa1b5b2cad149a15ee029f4a5081d791993c010"/>
-  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="e6c21f03a5d928a6f4af37d8d32b820d2cfc680307b4adf5512df16a8cab0476"/>
+  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="9cd3d342a5001472515d16695d5271f90947de8230f27d8b5c9679601a74756c"/>
   <ui>
     <content><![CDATA[<interface/>
 ]]></content>
@@ -29,14 +29,13 @@
     <content><![CDATA[<interface/>
 ]]></content>
   </ui>
-  <ui template-class="SIGNAL_ROW" filename="signal_row.ui" sha256="e58659bbcdc913eef7853837cba07f021070a8fd1f8fa2f1e7e1e2a7cce47e1e"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7fb3678c9d5691d5605cc6636a3926c1a9241c6b17f2f9dcd5ad44298c3b3902">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="bcbb74ae3799883d1dae1119fb2799b41f8649fbbbf07c71ac4cdc7cca78b59a">
+  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="5f25af4fd0712f0b3f22acf6e42901ce88982b70d1b6fb06e6d0b38e965703b1">
     <requires>UnitControlPanel</requires>
     <requires>UnitListPanel</requires>
   </ui>

@@ -30,7 +30,31 @@ pub enum TimestampStyle {
     UnixUsec,
 }
 
-impl TimestampStyle {}
+impl TimestampStyle {
+    pub fn usec_formated(&self, timestamp_usec: u64) -> String {
+        match self {
+            TimestampStyle::Pretty => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S"),
+            TimestampStyle::PrettyUsec => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S%.6f"),
+            TimestampStyle::Utc => {
+                let since_local = get_date_utc(timestamp_usec);
+                since_local.format("%a, %d %b %Y %H:%M:%S %Z").to_string()
+            }
+            TimestampStyle::UtcUsec => {
+                let since_local = get_date_utc(timestamp_usec);
+                since_local
+                    .format("%a, %d %b %Y %H:%M:%S%.6f %Z")
+                    .to_string()
+            }
+            TimestampStyle::Unix => {
+                let timestamp_sec = timestamp_usec / USEC_PER_SEC;
+                format!("@{timestamp_sec}")
+            }
+            TimestampStyle::UnixUsec => {
+                format!("@{timestamp_usec}")
+            }
+        }
+    }
+}
 
 impl Display for TimestampStyle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -88,28 +112,7 @@ pub fn get_since_and_passed_time(
 }
 
 pub fn get_since_time(timestamp_usec: u64, timestamp_style: TimestampStyle) -> String {
-    let since = match timestamp_style {
-        TimestampStyle::Pretty => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S"),
-        TimestampStyle::PrettyUsec => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S%.6f"),
-        TimestampStyle::Utc => {
-            let since_local = get_date_utc(timestamp_usec);
-            since_local.format("%a, %d %b %Y %H:%M:%S %Z").to_string()
-        }
-        TimestampStyle::UtcUsec => {
-            let since_local = get_date_utc(timestamp_usec);
-            since_local
-                .format("%a, %d %b %Y %H:%M:%S%.6f %Z")
-                .to_string()
-        }
-        TimestampStyle::Unix => {
-            let timestamp_sec = timestamp_usec / USEC_PER_SEC;
-            format!("@{timestamp_sec}")
-        }
-        TimestampStyle::UnixUsec => {
-            format!("@{timestamp_usec}")
-        }
-    };
-    since
+    timestamp_style.usec_formated(timestamp_usec)
 }
 
 fn pretty(timestamp_usec: u64, format: &str) -> String {

@@ -730,8 +730,8 @@ pub fn retreive_unit_processes(
 
 #[derive(Debug)]
 pub struct SystemdSignalRow {
-    time_stamp: u64,
-    signal: SystemdSignal,
+    pub time_stamp: u64,
+    pub signal: SystemdSignal,
 }
 
 impl SystemdSignalRow {
@@ -741,12 +741,12 @@ impl SystemdSignalRow {
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
         let time_stamp =
-            since_the_epoch.as_secs() * 1000 + since_the_epoch.subsec_nanos() as u64 / 1_000_000;
+            since_the_epoch.as_secs() * 1_000_000 + since_the_epoch.subsec_nanos() as u64 / 1_000;
         SystemdSignalRow { time_stamp, signal }
     }
 
-    pub fn type_text(&self) -> String {
-        format!("{} {}", self.time_stamp, self.signal.type_text())
+    pub fn type_text(&self) -> &str {
+        self.signal.type_text()
     }
 
     pub fn details(&self) -> String {

@@ -19,10 +19,10 @@ use tokio::sync::mpsc;
 use crate::{
     systemd::{SystemdSignalRow, runtime, watch_systemd_signals},
     systemd_gui::new_settings,
-    widget::app_window::AppWindow,
+    widget::{app_window::AppWindow, preferences::data::PREFERENCES},
 };
 
-use super::{SignalsWindow, signal_row::SignalRow};
+use super::SignalsWindow;
 
 const SIGNAL_WINDOW_WIDTH: &str = "signal-window-width";
 const SIGNAL_WINDOW_HEIGHT: &str = "signal-window-height";
@@ -31,10 +31,22 @@ const SIGNAL_WINDOW_HEIGHT: &str = "signal-window-height";
 #[template(resource = "/io/github/plrigaux/sysd-manager/signals_window.ui")]
 pub struct SignalsWindowImp {
     #[template_child]
-    signals_list: TemplateChild<gtk::ListView>,
+    signals_column: TemplateChild<gtk::ColumnView>,
 
     #[template_child]
     panel_stack: TemplateChild<adw::ViewStack>,
+
+    #[template_child]
+    sort_list_model: TemplateChild<gtk::SortListModel>,
+
+    #[template_child]
+    time_column: TemplateChild<gtk::ColumnViewColumn>,
+
+    #[template_child]
+    type_column: TemplateChild<gtk::ColumnViewColumn>,
+
+    #[template_child]
+    details_column: TemplateChild<gtk::ColumnViewColumn>,
 
     signals: RefCell<Option<gio::ListStore>>,
 
@@ -51,18 +63,18 @@ impl SignalsWindowImp {
             .expect("app_window set once");
     }
 
-    fn setup_factory(&self) -> gtk::SignalListItemFactory {
+    fn setup_factory(&self) {
         let factory = gtk::SignalListItemFactory::new();
 
         // Create an empty `TaskRow` during setup
         factory.connect_setup(move |_, list_item| {
             // Create `TaskRow`
-            let signal_row = SignalRow::new();
+            let time_cell = gtk::Inscription::builder().build();
 
             list_item
                 .downcast_ref::<gtk::ListItem>()
                 .expect("Needs to be ListItem")
-                .set_child(Some(&signal_row));
+                .set_child(Some(&time_cell));
         });
 
         // Tell factory how to bind `TaskRow` to a `TaskObject`
@@ -76,22 +88,85 @@ impl SignalsWindowImp {
                 .and_downcast::<glib::BoxedAnyObject>()
                 .expect("The item has to be an `TaskObject`.");
 
-            // Get `TaskRow` from `ListItem`
-            let signal_row = list_item
+            let time_cell = list_item
                 .child()
-                .and_downcast::<SignalRow>()
+                .and_downcast::<gtk::Inscription>()
                 .expect("The child has to be a `SignalRow`.");
 
-            let r: Ref<SystemdSignalRow> = task_object.borrow();
-            signal_row.set_type_text(&r.type_text());
+            let signal_row: Ref<SystemdSignalRow> = task_object.borrow();
 
-            signal_row.set_details_text(&r.details());
+            let timestamp_style = PREFERENCES.timestamp_style();
+
+            let formated_time = timestamp_style.usec_formated(signal_row.time_stamp);
+            time_cell.set_text(Some(&formated_time));
         });
 
-        // Tell factory how to unbind `TaskRow` from `TaskObject`
-        factory.connect_unbind(move |_, _list_item| {});
+        self.time_column.set_factory(Some(&factory));
 
-        factory
+        let factory = gtk::SignalListItemFactory::new();
+
+        factory.connect_setup(move |_, list_item| {
+            // Create `TaskRow`
+            let time_cell = gtk::Inscription::builder().build();
+
+            list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem")
+                .set_child(Some(&time_cell));
+        });
+
+        factory.connect_bind(move |_, list_item| {
+            let list_item = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem");
+
+            let task_object = list_item
+                .item()
+                .and_downcast::<glib::BoxedAnyObject>()
+                .expect("The item has to be an `TaskObject`.");
+
+            let time_cell = list_item
+                .child()
+                .and_downcast::<gtk::Inscription>()
+                .expect("The child has to be a `SignalRow`.");
+
+            let signal_row: Ref<SystemdSignalRow> = task_object.borrow();
+            time_cell.set_text(Some(signal_row.type_text()));
+        });
+
+        self.type_column.set_factory(Some(&factory));
+
+        let factory = gtk::SignalListItemFactory::new();
+
+        factory.connect_setup(move |_, list_item| {
+            let time_cell = gtk::Inscription::builder().build();
+
+            list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem")
+                .set_child(Some(&time_cell));
+        });
+
+        factory.connect_bind(move |_, list_item| {
+            let list_item = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem");
+
+            let task_object = list_item
+                .item()
+                .and_downcast::<glib::BoxedAnyObject>()
+                .expect("The item has to be an `TaskObject`.");
+
+            let time_cell = list_item
+                .child()
+                .and_downcast::<gtk::Inscription>()
+                .expect("The child has to be a `SignalRow`.");
+
+            let signal_row: Ref<SystemdSignalRow> = task_object.borrow();
+            time_cell.set_text(Some(&signal_row.details()));
+        });
+
+        self.details_column.set_factory(Some(&factory));
     }
 
     fn display_signals(&self) {
@@ -121,11 +196,10 @@ impl ObjectImpl for SignalsWindowImp {
         self.parent_constructed();
         let model = gio::ListStore::new::<glib::BoxedAnyObject>();
         self.signals.replace(Some(model.clone()));
-        let selection_model = gtk::NoSelection::new(Some(model.clone()));
-        self.signals_list.set_model(Some(&selection_model));
 
-        let factory = self.setup_factory();
-        self.signals_list.set_factory(Some(&factory));
+        self.sort_list_model.set_model(Some(&model.clone()));
+
+        self.setup_factory();
 
         let signal_dialog = self.obj().clone();
         let (systemd_signal_sender, mut systemd_signal_receiver) = mpsc::channel(100);

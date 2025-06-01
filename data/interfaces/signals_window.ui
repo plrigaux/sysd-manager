@@ -36,7 +36,39 @@ Start or Stop a Unit to see some appearing</property>
                       <object class="GtkScrolledWindow">
                         <property name="vexpand">True</property>
                         <child>
-                          <object class="GtkListView" id="signals_list"/>
+                          <object class="GtkColumnView" id="signals_column">
+                            <property name="model">
+                              <object class="GtkNoSelection">
+                                <property name="model">
+                                  <object class="GtkFilterListModel">
+                                    <property name="model">
+                                      <object class="GtkSortListModel" id="sort_list_model"/>
+                                    </property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                            <child>
+                              <object class="GtkColumnViewColumn" id="time_column">
+                                <property name="fixed-width">150</property>
+                                <property name="resizable">True</property>
+                                <property name="title">Time</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkColumnViewColumn" id="type_column">
+                                <property name="fixed-width">150</property>
+                                <property name="resizable">True</property>
+                                <property name="title">Type</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkColumnViewColumn" id="details_column">
+                                <property name="expand">True</property>
+                                <property name="title">Details</property>
+                              </object>
+                            </child>
+                          </object>
                         </child>
                       </object>
                     </property>
@@ -52,7 +84,7 @@ Start or Stop a Unit to see some appearing</property>
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title">Signals</property>
+                <property name="title">Watch Signals</property>
               </object>
             </property>
           </object>
