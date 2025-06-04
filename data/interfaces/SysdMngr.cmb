@@ -35,7 +35,7 @@
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="5f25af4fd0712f0b3f22acf6e42901ce88982b70d1b6fb06e6d0b38e965703b1">
+  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="2cfee71e42324d17a209cd55c39767d0bdea8c7e8f94d32654ddf2cbb2475aec">
     <requires>UnitControlPanel</requires>
     <requires>UnitListPanel</requires>
   </ui>

@@ -95,7 +95,7 @@
                 <child>
                   <object class="GtkButton">
                     <property name="css-classes">flat</property>
-                    <property name="label">Reset</property>
+                    <property name="label" translatable="yes" context="menu">Reset</property>
                     <signal name="clicked" handler="reset_button_clicked" swapped="yes"/>
                   </object>
                 </child>
@@ -103,7 +103,7 @@
                   <object class="GtkButton" id="enable_button">
                     <property name="css-classes">suggested-action</property>
                     <property name="halign">end</property>
-                    <property name="label">Enable</property>
+                    <property name="label" translatable="yes" context="menu">Enable</property>
                     <property name="sensitive">False</property>
                     <signal name="clicked" handler="enable_unit_file_button_clicked" swapped="yes"/>
                   </object>

@@ -43,7 +43,7 @@
                         <property name="valign">baseline</property>
                         <child>
                           <object class="GtkButton">
-                            <property name="label">Default</property>
+                            <property name="label" translatable="yes" context="button">Default</property>
                             <property name="valign">baseline-center</property>
                             <signal name="clicked" handler="select_font_default" swapped="yes"/>
                           </object>
@@ -51,7 +51,7 @@
                         <child>
                           <object class="GtkButton">
                             <property name="css-classes">suggested-action</property>
-                            <property name="label">Select Font</property>
+                            <property name="label" translatable="yes" context="button">Select Font</property>
                             <property name="valign">baseline-center</property>
                             <signal name="clicked" handler="select_font_clicked" swapped="yes"/>
                           </object>

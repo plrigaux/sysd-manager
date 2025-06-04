@@ -9,37 +9,37 @@
     <section>
       <item>
         <attribute name="action">app.analyze_blame</attribute>
-        <attribute name="label">Analyze Blame</attribute>
+        <attribute name="label" translatable="yes" context="menu">Analyze Blame</attribute>
       </item>
       <item>
         <attribute name="action">app.reload_all_units</attribute>
-        <attribute name="label">Reload All Units</attribute>
+        <attribute name="label" translatable="yes" context="menu">Reload All Units</attribute>
       </item>
       <item>
         <attribute name="action">app.systemd_info</attribute>
-        <attribute name="label">Systemd Info</attribute>
+        <attribute name="label" translatable="yes" context="menu">Systemd Info</attribute>
       </item>
       <item>
         <attribute name="action">app.list_boots</attribute>
-        <attribute name="label">List Boots</attribute>
+        <attribute name="label" translatable="yes" context="menu">List Boots</attribute>
       </item>
       <item>
         <attribute name="action">app.signals</attribute>
-        <attribute name="label">Watch Signals</attribute>
+        <attribute name="label" translatable="yes" context="menu">Watch Signals</attribute>
       </item>
     </section>
     <section>
       <item>
         <attribute name="action">app.preferences</attribute>
-        <attribute name="label" translatable="yes">Preferences</attribute>
+        <attribute name="label" translatable="yes" context="menu">Preferences</attribute>
       </item>
       <item>
         <attribute name="action">win.show-help-overlay</attribute>
-        <attribute name="label">Keyboard Shortcuts</attribute>
+        <attribute name="label" translatable="yes" context="menu">Keyboard Shortcuts</attribute>
       </item>
       <item>
         <attribute name="action">app.about</attribute>
-        <attribute name="label" translatable="yes">About</attribute>
+        <attribute name="label" translatable="yes" context="menu">About</attribute>
       </item>
     </section>
   </menu>

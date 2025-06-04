@@ -58,6 +58,7 @@ const_format = "0.2.34"
 constcat = "0.6"
 futures-util = "0.3"
 tokio-util = "0.7"
+gettext-rs = "0.7.2"
 
 [dev-dependencies]
 

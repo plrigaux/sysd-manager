@@ -14,3 +14,4 @@ __pycache__/
 /tiny_daemon/Cargo.lock
 .cargo
 data/schemas/gschemas.compiled
+/po/*.mo
