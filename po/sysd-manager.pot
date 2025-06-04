@@ -1,0 +1,140 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-03 22:05-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: data/interfaces/app_window.ui:34 data/interfaces/preferences.ui:165
+msgid "Preferences"
+msgstr ""
+
+#: data/interfaces/app_window.ui:42
+msgid "About"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:79
+msgid "Stats Unit just after being enabled"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:120
+msgid "Enable Unit File"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:27
+msgid "Clear journal events and refetch them"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:38
+msgid "Enable new entries continuous print as they are appended to the journal"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:60
+msgid "List the boots of the system"
+msgstr ""
+
+#: data/interfaces/mask_unit_dialog.ui:24
+#: data/interfaces/mask_unit_dialog.ui:75
+msgid "Mask"
+msgstr ""
+
+#: data/interfaces/mask_unit_dialog.ui:89
+msgid "Mask Unit"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:14
+msgctxt "shortcut window"
+msgid "General"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:18
+msgctxt "shortcut window"
+msgid "Show Preferences"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:24
+msgctxt "shortcut window"
+msgid "Open Search Unit"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:30
+msgctxt "shortcut window"
+msgid "Open Unit Property Filter"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:36
+msgctxt "shortcut window"
+msgid "Open List Boots"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:43
+msgctxt "shortcut window"
+msgid "Pages"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:47
+msgctxt "shortcut window"
+msgid "Display Unit Information"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:53
+msgctxt "shortcut window"
+msgid "Display Unit Dependencies"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:59
+msgctxt "shortcut window"
+msgid "Display Unit Definition File"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:65
+msgctxt "shortcut window"
+msgid "Display Unit Journal Events"
+msgstr ""
+
+#: data/interfaces/side_control_panel.ui:104
+msgid ""
+"Mask the selected unit.  This will link these unit files to <u>/dev/null</"
+"u>, making it impossible to start them. \n"
+"This is a stronger version of <b>disable</b>, since it prohibits all kinds "
+"of activation of the unit, including enablement and manual activation. \n"
+"<b>Use this option with care.</b>"
+msgstr ""
+
+#: data/interfaces/signals_window.ui:24
+msgid ""
+"No systemd signals\n"
+"Start or Stop a Unit to see some appearing"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:16
+msgctxt "info"
+msgid "Enabled:"
+msgstr ""
+
+#. The start button
+#: data/interfaces/unit_control_panel.ui:44
+msgctxt "controls"
+msgid "_Start"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:93
+msgctxt "controls"
+msgid "Restart"
+msgstr ""
+
+#: data/interfaces/unit_info_panel.ui:29
+msgid "Show all _Properties"
+msgstr ""

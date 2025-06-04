@@ -24,10 +24,10 @@ cargo build $BUILD_ARG || exit 1
 echo ""
 echo Installing files
 echo ""
-sudo install -Dm755 "target/${TARGET}/sysd-manager" -t "/usr/bin"
-sudo install -Dm644 "data/applications/io.github.plrigaux.sysd-manager.desktop" -t "/usr/share/applications"
-sudo install -Dm644 "data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg" -t "/usr/share/icons/hicolor/scalable/apps/"
-sudo install -Dm644 "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml" -t "/usr/share/glib-2.0/schemas"
+sudo install -Dm755 "../target/${TARGET}/sysd-manager" -t "/usr/bin"
+sudo install -Dm644 "../data/applications/io.github.plrigaux.sysd-manager.desktop" -t "/usr/share/applications"
+sudo install -Dm644 "../data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg" -t "/usr/share/icons/hicolor/scalable/apps/"
+sudo install -Dm644 "../data/schemas/io.github.plrigaux.sysd-manager.gschema.xml" -t "/usr/share/glib-2.0/schemas"
 #sudo install -Dm644 "data/applications/org.freedesktop.policykit.sysd-manager.policy" -t "/usr/share/polkit-1/actions/"
 
 echo Compiling Schemas

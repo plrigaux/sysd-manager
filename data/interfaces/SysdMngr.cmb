@@ -29,7 +29,7 @@
     <content><![CDATA[<interface/>
 ]]></content>
   </ui>
-  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7fb3678c9d5691d5605cc6636a3926c1a9241c6b17f2f9dcd5ad44298c3b3902">
+  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="9f4e871ff3ac40acacf1425de490415ba8ed397dff06b155bb8b978c7a63750b">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>
