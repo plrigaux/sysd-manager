@@ -13,6 +13,7 @@ mod widget;
 
 use adw::prelude::AdwApplicationExt;
 use clap::{Parser, command};
+use gettextrs::*;
 use gio::glib::translate::FromGlib;
 use gtk::{
     gdk,
@@ -34,13 +35,24 @@ use widget::{
     },
 };
 
+const DOMAIN_NAME: &str = "sysd-manager";
 fn main() -> glib::ExitCode {
+    // Specify the name of the .mo file to use.
+    if let Err(error) = textdomain(DOMAIN_NAME) {
+        log::error!("textdomain Error: {:?}", error);
+    };
+
+    // Ask gettext for UTF-8 strings. THIS CRATE CAN'T HANDLE NON-UTF-8 DATA!
+    if let Err(error) = bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
+        log::error!("bind_textdomain_codeset Error: {:?}", error);
+    };
+
     dotenv().ok();
 
     env_logger::init();
 
     //std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
-    info!("Program starting up");
+    info!("{}", gettext("Program starting up"));
 
     let unit = handle_args();
 

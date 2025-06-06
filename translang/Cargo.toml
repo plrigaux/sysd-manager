@@ -1,0 +1,11 @@
+[package]
+name = "translang"
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+translating = { path = "../translating" }
+clap.workspace = true

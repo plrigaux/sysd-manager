@@ -1,14 +1,24 @@
+[workspace]
+members = ["translang", "translating"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
+license = "GPL-3.0-or-later"
+#members = ["translang", "translating"]
+
 [package]
 name = "sysd-manager"
 version = "1.28.0"
-edition = '2024'
-license = "GPL-3.0-or-later"
+edition = { workspace = true }
+license = { workspace = true }
 repository = "https://github.com/plrigaux/sysd-manager"
 readme = "README.md"
-authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
+authors = { workspace = true }
 description = "Application to empower user to manage their <b>systemd units</b> via Graphical User Interface. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs."
 keywords = ["gtk4", "linux", "systemd"]
-rust-version = "1.85"
+rust-version = { workspace = true }
 
 include = [
     "build.rs",
@@ -31,6 +41,9 @@ flatpak = []
 [profile.release]
 lto = true
 
+[workspace.dependencies]
+clap = { version = "4.5", features = ["derive"] }
+
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
 adw = { version = "0.7.2", package = "libadwaita", features = ["v1_7"] }
@@ -38,27 +51,29 @@ gio = { version = "0", package = "gio", features = ["v2_84"] }
 gtk = { version = "0.9.6", package = "gtk4", features = ["v4_18"] }
 bitflags = "2.9"
 chrono = "0.4"
-clap = { version = "4.5", features = ["derive"] }
+clap.workspace = true
+constcat = "0.6"
+const_format = "0.2.34"
 dotenv = "0.15"
 env_logger = "0.11"
 foreign-types-shared = "0.3.1"
-log = "0.4"
+futures-util = "0.3"
+gettext-rs = { version = "0.7", features = ["gettext-system"] }
 libc = "0.2"
-strum = { version = "0.27", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
+libsysd = { version = "0.9", package = "libsystemd-sys"} 
+log = "0.4"
 regex = "1.11"
 serde = "1.0"
 sourceview5 = "0.9"
-libsysd = { version = "0.9", package = "libsystemd-sys"} 
+strum = { version = "0.27", features = ["derive"] }
 sysd =  { version = "0.10", package = "systemd"} 
+tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7"
 zbus = "5.7"
 zbus_macros =  "5.7" 
 zvariant = "5.5"
-const_format = "0.2.34"
-constcat = "0.6"
-futures-util = "0.3"
-tokio-util = "0.7"
-gettext-rs = "0.7.2"
+
+
 
 [dev-dependencies]
 

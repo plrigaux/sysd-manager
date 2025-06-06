@@ -4,7 +4,7 @@ use std::io::Write;
 
 macro_rules! script_warning {
     ($($tokens: tt)*) => {
-        println!("cargo:warning={}", format!($($tokens)*))
+        println!("cargo::warning={}", format!($($tokens)*))
     }
 }
 
@@ -79,7 +79,7 @@ pub fn compile_resources<P: AsRef<Path>>(source_dirs: &[P], gresource: &str, tar
         String::from_utf8_lossy(&output.stderr)
     );
 
-    println!("cargo:rerun-if-changed={gresource}");
+    println!("cargo::rerun-if-changed={gresource}");
     let mut command = Command::new("glib-compile-resources");
 
     for source_dir in source_dirs {
@@ -93,8 +93,9 @@ pub fn compile_resources<P: AsRef<Path>>(source_dirs: &[P], gresource: &str, tar
         .unwrap()
         .stdout;
     let output = String::from_utf8(output).unwrap();
+
     for dep in output.split_whitespace() {
-        println!("cargo:rerun-if-changed={dep}");
+        println!("cargo::rerun-if-changed={dep}");
     }
 }
 
@@ -118,7 +119,7 @@ fn compile_schema() {
 
     println!("print out_dir {:?}", out_dir);
 
-    println!("cargo:rerun-if-changed={GLIB_SCHEMAS_FILE}");
+    println!("cargo::rerun-if-changed={GLIB_SCHEMAS_FILE}");
     let mut command = Command::new("install");
     let output = command
         .arg("-v")
@@ -186,7 +187,7 @@ impl From<quick_xml::Error> for ScriptError {
 
 fn generate_notes() -> Result<(), ScriptError> {
     const METAINFO: &str = "data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml";
-    println!("cargo:rerun-if-changed={METAINFO}");
+    println!("cargo::rerun-if-changed={METAINFO}");
 
     let release_notes = match get_release_notes(METAINFO) {
         Ok(list) => list,

@@ -200,3 +200,8 @@ msgstr ""
 #: data/interfaces/unit_info_panel.ui:29
 msgid "Show all _Properties"
 msgstr ""
+
+#: src/main.rs:55
+msgid "Program starting up"
+msgstr "Le Programe démarre"
+nnowsdf
