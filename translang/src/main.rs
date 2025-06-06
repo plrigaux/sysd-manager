@@ -1,14 +1,16 @@
 extern crate translating;
 
+use clap::Parser;
+//use std::error::Error;
+use std::fs;
 use std::io::BufRead;
+use std::io::Write;
 use std::path::PathBuf;
 use std::{fs::File, io, path::Path};
 
-use clap::Parser;
-
 /// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command()]
 struct Args {
     /// Action to perform
     #[arg()]
@@ -16,6 +18,8 @@ struct Args {
 }
 
 const ACTION_GENERATE: &str = "generate";
+const ACTION_POTFILE: &str = "potfiles";
+
 fn main() {
     println!("Hello, world!");
 
@@ -25,8 +29,11 @@ fn main() {
         Some(s) if s == ACTION_GENERATE => {
             let _r = generate_missing_po();
         }
+        Some(s) if s == ACTION_POTFILE => {
+            let _r = generate_pot_files();
+        }
         Some(s) => println!("unknown action {:?}", s),
-        None => println!("choose action: {ACTION_GENERATE}"),
+        None => println!("choose action: {}, {}", ACTION_GENERATE, ACTION_POTFILE),
     }
 }
 
@@ -94,4 +101,56 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+fn generate_pot_files() -> Result<(), Box<dyn std::error::Error>> {
+    //TODO filter on gettext only
+    let mut potfiles_entries = list_files("src", "rs")?;
+    let mut interc = list_files("data/interfaces", "ui")?;
+
+    // The order in which `read_dir` returns entries is not guaranteed. If reproducible
+    // ordering is required the entries should be explicitly sorted.
+
+    potfiles_entries.append(&mut interc);
+    potfiles_entries.sort();
+
+    println!("{:#?}", potfiles_entries);
+
+    let mut potfiles_path = PathBuf::from(PO_DIR);
+    potfiles_path.push("POTFILES");
+
+    let mut potfiles_file = File::create(potfiles_path)?;
+
+    writeln!(potfiles_file, "#File generated")?;
+
+    for file_path in potfiles_entries {
+        let file = file_path
+            .into_os_string()
+            .into_string()
+            .expect("get path to string");
+
+        writeln!(potfiles_file, "{}", file)?;
+    }
+
+    Ok(())
+}
+
+fn list_files<T: Into<PathBuf>>(path: T, ext: &str) -> io::Result<Vec<PathBuf>> {
+    let mut files = Vec::new();
+    let path = path.into();
+    list_files_recurse(&mut files, path, ext)?;
+    Ok(files)
+}
+
+fn list_files_recurse(files: &mut Vec<PathBuf>, path: PathBuf, ext: &str) -> io::Result<()> {
+    if path.is_dir() {
+        let paths = fs::read_dir(&path)?;
+        for path_result in paths {
+            let full_path = path_result?.path();
+            list_files_recurse(files, full_path, ext)?;
+        }
+    } else if path.extension().is_some_and(|this_ext| this_ext == ext) {
+        files.push(path);
+    }
+    Ok(())
 }
