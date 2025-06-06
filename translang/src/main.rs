@@ -1,12 +1,16 @@
+extern crate log;
 extern crate translating;
 
+mod error;
 use clap::Parser;
-//use std::error::Error;
+
 use std::fs;
 use std::io::BufRead;
 use std::io::Write;
 use std::path::PathBuf;
 use std::{fs::File, io, path::Path};
+
+use crate::error::TransError;
 
 /// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
@@ -19,27 +23,50 @@ struct Args {
 
 const ACTION_GENERATE: &str = "generate";
 const ACTION_POTFILE: &str = "potfiles";
+const ACTION_XGETTEXT: &str = "xgettext";
+const ACTION_MO: &str = "mo";
 
 fn main() {
     println!("Hello, world!");
 
     let args = Args::parse();
 
-    match args.action {
-        Some(s) if s == ACTION_GENERATE => {
-            let _r = generate_missing_po();
+    let result = match args.action {
+        Some(s) if s == ACTION_GENERATE => generate_missing_po(),
+        Some(s) if s == ACTION_POTFILE => generate_potfiles(),
+        Some(s) if s == ACTION_XGETTEXT => generate_po_template(),
+        Some(s) if s == ACTION_MO => generate_mo(),
+        Some(s) => {
+            display_hint(Some(&s));
+            Ok(())
         }
-        Some(s) if s == ACTION_POTFILE => {
-            let _r = generate_pot_files();
+        None => {
+            display_hint(None);
+            Ok(())
         }
-        Some(s) => println!("unknown action {:?}", s),
-        None => println!("choose action: {}, {}", ACTION_GENERATE, ACTION_POTFILE),
+    };
+
+    if let Err(err) = result {
+        log::error!("Error {:?}", err);
     }
+}
+
+fn display_hint(unknown_action: Option<&str>) {
+    if let Some(unknown_action) = unknown_action {
+        println!("Unknown action {:?}", unknown_action)
+    }
+
+    let mut actions = [ACTION_GENERATE, ACTION_POTFILE, ACTION_XGETTEXT];
+    actions.sort();
+
+    let actions = actions.join(", ");
+
+    println!("Choose following actions: {actions}");
 }
 
 const PO_DIR: &str = "./po";
 
-fn generate_missing_po() -> io::Result<()> {
+fn generate_missing_po() -> Result<(), TransError> {
     //open file LINGUA
 
     let po_dir = PathBuf::from(PO_DIR);
@@ -103,13 +130,11 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn generate_pot_files() -> Result<(), Box<dyn std::error::Error>> {
+const POTFILES: &str = "POTFILES";
+fn generate_potfiles() -> Result<(), TransError> {
     //TODO filter on gettext only
     let mut potfiles_entries = list_files("src", "rs")?;
     let mut interc = list_files("data/interfaces", "ui")?;
-
-    // The order in which `read_dir` returns entries is not guaranteed. If reproducible
-    // ordering is required the entries should be explicitly sorted.
 
     potfiles_entries.append(&mut interc);
     potfiles_entries.sort();
@@ -117,7 +142,7 @@ fn generate_pot_files() -> Result<(), Box<dyn std::error::Error>> {
     println!("{:#?}", potfiles_entries);
 
     let mut potfiles_path = PathBuf::from(PO_DIR);
-    potfiles_path.push("POTFILES");
+    potfiles_path.push(POTFILES);
 
     let mut potfiles_file = File::create(potfiles_path)?;
 
@@ -151,6 +176,35 @@ fn list_files_recurse(files: &mut Vec<PathBuf>, path: PathBuf, ext: &str) -> io:
         }
     } else if path.extension().is_some_and(|this_ext| this_ext == ext) {
         files.push(path);
+    }
+    Ok(())
+}
+
+const MAIN_PROG: &str = "sysd-manager";
+fn generate_po_template() -> Result<(), TransError> {
+    let output_pot_file = format!("{PO_DIR}/{MAIN_PROG}.pot");
+
+    let potfiles_file_path = format!("{PO_DIR}/{POTFILES}");
+
+    translating::xgettext(&potfiles_file_path, &output_pot_file);
+
+    Ok(())
+}
+
+fn generate_mo() -> Result<(), TransError> {
+    let paths = fs::read_dir(PO_DIR)?;
+
+    for path_result in paths {
+        let path = path_result?.path();
+        if path.extension().is_some_and(|this_ext| this_ext == "po") {
+            println!("PO file {:?} lang {:?}", path, path.file_stem());
+
+            if let Some(po_file) = path.to_str() {
+                if let Some(lang) = path.file_stem().and_then(|s| s.to_str()) {
+                    translating::msgfmt(po_file, lang, MAIN_PROG)?;
+                }
+            }
+        }
     }
     Ok(())
 }

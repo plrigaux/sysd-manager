@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-04 11:25-0400\n"
+"POT-Creation-Date: 2025-06-06 13:32-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -200,6 +200,12 @@ msgstr ""
 msgid "Show all _Properties"
 msgstr ""
 
-#: src/main.rs:55
+#. std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
+#: src/main.rs:55 src/main.rs:57
 msgid "Program starting up"
+msgstr ""
+
+#: src/main.rs:63
+msgctxt "flatpack"
+msgid "Flatpak version"
 msgstr ""

@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{fs, io, process::Command};
 
 pub fn translating() {
     println!("test LIB");
@@ -18,12 +18,9 @@ pub fn translating() {
     // pt_BR.1po: 2 translated messages.
 }
 
-const MAIN_PROG: &str = "sysd-manager";
-const PO_DIR: &str = "./po";
-
 /// Making the PO Template File
 /// https://www.gnu.org/software/gettext/manual/html_node/xgettext-Invocation.html
-pub fn xgettext() {
+pub fn xgettext(potfiles_file_path: &str, output_pot_file: &str) {
     let mut command = Command::new("xgettext");
 
     for preset in glib_preset() {
@@ -31,13 +28,21 @@ pub fn xgettext() {
     }
 
     let output = command
-        .arg(format!("--files-from={PO_DIR}/POTFILES"))
-        .arg(format!("--output={PO_DIR}/{MAIN_PROG}.pot"))
+        .arg(format!("--files-from={potfiles_file_path}"))
+        .arg(format!("--output={output_pot_file}"))
         .arg("--verbose")
         .output()
         .unwrap();
 
-    println!("xgettext Output {:?}", output)
+    display_output("XGETTEXT", output);
+}
+
+fn display_output(id: &str, output: std::process::Output) {
+    println!("{id}: {:?}", output.status);
+    println!("{id}: {}", String::from_utf8_lossy(&output.stdout));
+    if !output.status.success() {
+        eprintln!("{id}: {}", String::from_utf8_lossy(&output.stderr));
+    }
 }
 
 /// Creating a New PO File
@@ -52,10 +57,7 @@ pub fn msginit(input_pot_file: &str, output_file: &str) {
         .output()
         .expect("command msginit ok");
 
-    println!("MSGINIT: {}", String::from_utf8_lossy(&output.stdout));
-    if !output.status.success() {
-        eprintln!("MSGINIT: {}", String::from_utf8_lossy(&output.stderr));
-    }
+    display_output("MSGINIT", output);
 }
 
 /// https://www.gnu.org/software/gettext/manual/html_node/msgmerge-Invocation.html
@@ -73,7 +75,32 @@ pub fn msgmerge() {
         .output()
         .unwrap();
 
-    println!("xgettext Output {:?}", output)
+    display_output("MSGMERGE", output);
+}
+
+// /usr/bin/msgfmt -c --statistics --verbose -o pt_BR.gmo pt_BR.1po && rm -f pt_BR.1po
+/// Generates a binary message catalog from a textual translation description.
+/// https://www.gnu.org/software/gettext/manual/html_node/msgfmt-Invocation.html
+pub fn msgfmt(po_file: &str, lang: &str, domain_name: &str) -> io::Result<()> {
+    let mut command = Command::new("msgfmt");
+
+    let out_dir = format!("target/locale/{lang}/LC_MESSAGES");
+
+    fs::create_dir_all(&out_dir)?;
+
+    let output = command
+        .arg("--check")
+        .arg("--statistics")
+        .arg("--verbose")
+        .arg("-o")
+        .arg(format!("{out_dir}/{domain_name}.mo"))
+        .arg(po_file)
+        .output()
+        .unwrap();
+
+    display_output("MSGFMT", output);
+
+    Ok(())
 }
 
 fn glib_preset() -> Vec<&'static str> {

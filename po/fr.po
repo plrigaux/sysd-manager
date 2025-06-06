@@ -204,4 +204,3 @@ msgstr ""
 #: src/main.rs:55
 msgid "Program starting up"
 msgstr "Le Programe démarre"
-nnowsdf

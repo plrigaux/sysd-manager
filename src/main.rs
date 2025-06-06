@@ -54,10 +54,13 @@ fn main() -> glib::ExitCode {
     //std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
     info!("{}", gettext("Program starting up"));
 
+    info!("{}", gettext("Program starting up"));
+
     let unit = handle_args();
 
     #[cfg(feature = "flatpak")]
     info!("Flatpak version");
+    info!("{}", pgettext("flatpack", "Flatpak version"));
 
     match gio::resources_register_include!("sysd-manager.gresource") {
         Ok(_) => (),

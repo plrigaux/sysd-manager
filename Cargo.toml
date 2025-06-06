@@ -43,6 +43,7 @@ lto = true
 
 [workspace.dependencies]
 clap = { version = "4.5", features = ["derive"] }
+log = "0.4"
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
@@ -61,7 +62,7 @@ futures-util = "0.3"
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 libc = "0.2"
 libsysd = { version = "0.9", package = "libsystemd-sys"} 
-log = "0.4"
+log.workspace = true
 regex = "1.11"
 serde = "1.0"
 sourceview5 = "0.9"

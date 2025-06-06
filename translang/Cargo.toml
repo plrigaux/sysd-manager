@@ -9,3 +9,4 @@ license.workspace = true
 [dependencies]
 translating = { path = "../translating" }
 clap.workspace = true
+log.workspace = true
