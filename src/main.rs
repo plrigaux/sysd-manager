@@ -11,6 +11,8 @@ mod systemd_gui;
 mod utils;
 mod widget;
 
+use std::env;
+
 use adw::prelude::AdwApplicationExt;
 use clap::{Parser, command};
 use gettextrs::*;
@@ -37,19 +39,37 @@ use widget::{
 
 const DOMAIN_NAME: &str = "sysd-manager";
 fn main() -> glib::ExitCode {
-    // Specify the name of the .mo file to use.
-    if let Err(error) = textdomain(DOMAIN_NAME) {
-        log::error!("textdomain Error: {:?}", error);
+    dotenv().ok();
+    env_logger::init();
+
+    println!("LANGUAGE {:?}", env::var("LANGUAGE"));
+    let local_dir = if let Ok(val) = env::var("TEXTDOMAINDIR") {
+        val
+    } else {
+        "/usr/local/share/locale".to_owned()
     };
+
+    // Set up gettext translations
+    let path = bindtextdomain(DOMAIN_NAME, local_dir).expect("Unable to bind the text domain");
+    println!("bindtextdomain path {:?}", path);
+
+    match bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
+        Ok(v) => log::info!("bind_textdomain_codeset {:?}", v),
+        Err(error) => log::error!("Unable to set the text domain encoding Error: {:?}", error),
+    }
+
+    // Specify the name of the .mo file to use.
+    match textdomain(DOMAIN_NAME) {
+        Ok(v) => log::info!("textdomain {:?}", String::from_utf8_lossy(&v)),
+        Err(error) => log::error!("Unable to switch to the text domain Error: {:?}", error),
+    }
 
     // Ask gettext for UTF-8 strings. THIS CRATE CAN'T HANDLE NON-UTF-8 DATA!
     if let Err(error) = bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
         log::error!("bind_textdomain_codeset Error: {:?}", error);
     };
 
-    dotenv().ok();
-
-    env_logger::init();
+    println!("bindtextdomain {:?}", path);
 
     //std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
     info!("{}", gettext("Program starting up"));
@@ -59,8 +79,10 @@ fn main() -> glib::ExitCode {
     let unit = handle_args();
 
     #[cfg(feature = "flatpak")]
-    info!("Flatpak version");
-    info!("{}", pgettext("flatpack", "Flatpak version"));
+    {
+        info!("Flatpak version");
+        info!("{}", pgettext("flatpack", "Flatpak version"));
+    }
 
     match gio::resources_register_include!("sysd-manager.gresource") {
         Ok(_) => (),

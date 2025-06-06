@@ -65,8 +65,8 @@
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">process-stop</property>
-                <property name="label">S_top</property>
-                <property name="tooltip-text">Stop unit</property>
+                <property name="label" translatable="yes" context="controls" >S_top</property>
+                <property name="tooltip-text" translatable="yes" context="controls tooltip">Stop unit</property>
                 <property name="use-underline">True</property>
               </object>
             </child>
@@ -85,7 +85,7 @@
               </object>
             </property>
             <property name="sensitive">False</property>
-            <property name="tooltip-text">Restart unit</property>
+            <property name="tooltip-text" translatable="yes" context="controls tooltip">Restart unit</property>
             <signal name="clicked" handler="button_restart_clicked" swapped="yes"/>
             <child>
               <object class="AdwButtonContent">

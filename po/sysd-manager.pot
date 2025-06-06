@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-06 13:32-0400\n"
+"POT-Creation-Date: 2025-06-06 16:22-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -191,6 +191,21 @@ msgctxt "controls"
 msgid "_Start"
 msgstr ""
 
+#: data/interfaces/unit_control_panel.ui:68
+msgctxt "controls"
+msgid "S_top"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:69
+msgctxt "controls tooltip"
+msgid "Stop unit"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:88
+msgctxt "controls tooltip"
+msgid "Restart unit"
+msgstr ""
+
 #: data/interfaces/unit_control_panel.ui:93
 msgctxt "controls"
 msgid "Restart"
@@ -201,11 +216,11 @@ msgid "Show all _Properties"
 msgstr ""
 
 #. std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
-#: src/main.rs:55 src/main.rs:57
+#: src/main.rs:75 src/main.rs:77
 msgid "Program starting up"
 msgstr ""
 
-#: src/main.rs:63
+#: src/main.rs:84
 msgctxt "flatpack"
 msgid "Flatpak version"
 msgstr ""

@@ -104,16 +104,13 @@ fn generate_missing_po() -> Result<(), TransError> {
             lang_po_path.exists()
         );
 
+        let output_file = format!("{PO_DIR}/{lang_po}");
+        let input_pot_file = format!("{PO_DIR}/sysd-manager.pot");
+
         if !lang_po_path.exists() {
-            let mut input_pot_file = po_dir.clone();
-            input_pot_file.push("sysd-manager.pot");
-
-            let input_pot_file = input_pot_file
-                .into_os_string()
-                .into_string()
-                .expect("get path to string");
-
-            translating::msginit(&input_pot_file, &format!("{PO_DIR}/{lang_po}"));
+            translating::msginit(&input_pot_file, &output_file, &lang);
+        } else {
+            translating::msgmerge(&input_pot_file, &format!("{PO_DIR}/{lang_po}"));
         }
     }
 

@@ -12,10 +12,6 @@ pub fn translating() {
     //msgfmt
 
     //msgmerge
-
-    //   /usr/bin/msgmerge --update --quiet  --lang=pt_BR --previous pt_BR.po hello-rust.pot
-    // rm -f pt_BR.gmo && /usr/bin/msgmerge --for-msgfmt -o pt_BR.1po pt_BR.po hello-rust.pot && /usr/bin/msgfmt -c --statistics --verbose -o pt_BR.gmo pt_BR.1po && rm -f pt_BR.1po
-    // pt_BR.1po: 2 translated messages.
 }
 
 /// Making the PO Template File
@@ -47,30 +43,32 @@ fn display_output(id: &str, output: std::process::Output) {
 
 /// Creating a New PO File
 /// https://www.gnu.org/software/gettext/manual/html_node/msginit-Invocation.html
-pub fn msginit(input_pot_file: &str, output_file: &str) {
+pub fn msginit(input_pot_file: &str, output_file: &str, lang: &str) {
     let mut command = Command::new("msginit");
 
     let output = command
         .arg(format!("--input={input_pot_file}"))
         .arg(format!("--output-file={output_file}"))
-        //  .arg("--verbose")
+        .arg(format!("--locale={lang}"))
         .output()
         .expect("command msginit ok");
 
     display_output("MSGINIT", output);
 }
 
+//   /usr/bin/msgmerge --update --quiet  --lang=pt_BR --previous pt_BR.po hello-rust.pot
+// rm -f pt_BR.gmo && /usr/bin/msgmerge --for-msgfmt -o pt_BR.1po pt_BR.po hello-rust.pot && /usr/bin/msgfmt -c --statistics --verbose -o pt_BR.gmo pt_BR.1po && rm -f pt_BR.1po
+// pt_BR.1po: 2 translated messages.
+
 /// https://www.gnu.org/software/gettext/manual/html_node/msgmerge-Invocation.html
-pub fn msgmerge() {
+pub fn msgmerge(input_pot_file: &str, output_file: &str) {
     let mut command = Command::new("msgmerge");
 
-    for preset in glib_preset() {
-        command.arg(preset);
-    }
-
     let output = command
-        .arg("--files-from=./po/POTFILES ")
-        .arg("--output=./po/sysd-manager.pot")
+        .arg("-o")
+        .arg(output_file)
+        .arg(output_file)
+        .arg(input_pot_file)
         .arg("--verbose")
         .output()
         .unwrap();

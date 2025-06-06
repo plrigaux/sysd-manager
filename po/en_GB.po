@@ -1,170 +1,170 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# English translations for PACKAGE package.
+# Copyright (C) 2025 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#  <plr@archdell>, 2025.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-06 16:22-0400\n"
-"PO-Revision-Date: 2025-06-03 23:33-0400\n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"Language: fr\n"
+"PO-Revision-Date: 2025-06-06 16:50-0400\n"
+"Last-Translator:  <plr@archdell>\n"
+"Language-Team: English (British) <(nothing)>\n"
+"Language: en_GB\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=ASCII\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
 msgid "Analyze Blame"
-msgstr ""
+msgstr "Analyze Blame"
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Reload All Units"
-msgstr ""
+msgstr "Reload All Units"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
 msgid "Systemd Info"
-msgstr ""
+msgstr "Systemd Info"
 
 #: data/interfaces/app_window.ui:24
 msgctxt "menu"
 msgid "List Boots"
-msgstr ""
+msgstr "List Boots"
 
 #: data/interfaces/app_window.ui:28
 msgctxt "menu"
 msgid "Watch Signals"
-msgstr ""
+msgstr "Watch Signals"
 
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
 msgid "Preferences"
-msgstr "Préferences"
+msgstr "Preferences"
 
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "Keyboard Shortcuts"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
 msgid "About"
-msgstr "Du coup"
+msgstr "About"
 
 #: data/interfaces/clean_dialog.ui:28
 msgctxt "button"
 msgid "Clean"
-msgstr ""
+msgstr "Clean"
 
 #: data/interfaces/enable_unit_dialog.ui:79
 msgid "Stats Unit just after being enabled"
-msgstr ""
+msgstr "Stats Unit just after being enabled"
 
 #: data/interfaces/enable_unit_dialog.ui:98
 msgctxt "menu"
 msgid "Reset"
-msgstr ""
+msgstr "Reset"
 
 #: data/interfaces/enable_unit_dialog.ui:106
 msgctxt "menu"
 msgid "Enable"
-msgstr ""
+msgstr "Enable"
 
 #: data/interfaces/enable_unit_dialog.ui:120
 msgid "Enable Unit File"
-msgstr ""
+msgstr "Enable Unit File"
 
 #: data/interfaces/journal_panel.ui:27
 msgid "Clear journal events and refetch them"
-msgstr ""
+msgstr "Clear journal events and refetch them"
 
 #: data/interfaces/journal_panel.ui:38
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
+"Enable new entries continuous print as they are appended to the journal"
 
 #: data/interfaces/journal_panel.ui:60
 msgid "List the boots of the system"
-msgstr ""
+msgstr "List the boots of the system"
 
 #: data/interfaces/mask_unit_dialog.ui:24
 #: data/interfaces/mask_unit_dialog.ui:75
 msgid "Mask"
-msgstr ""
+msgstr "Mask"
 
 #: data/interfaces/mask_unit_dialog.ui:89
 msgid "Mask Unit"
-msgstr ""
+msgstr "Mask Unit"
 
 #: data/interfaces/preferences.ui:46
 msgctxt "button"
 msgid "Default"
-msgstr ""
+msgstr "Default"
 
 #: data/interfaces/preferences.ui:54
 msgctxt "button"
 msgid "Select Font"
-msgstr ""
+msgstr "Select Font"
 
 #: data/interfaces/preferences.ui:165
 msgid "Preferences"
-msgstr ""
+msgstr "Preferences"
 
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "General"
-msgstr ""
+msgstr "General"
 
 #: data/interfaces/shortcuts.ui:18
 msgctxt "shortcut window"
 msgid "Show Preferences"
-msgstr ""
+msgstr "Show Preferences"
 
 #: data/interfaces/shortcuts.ui:24
 msgctxt "shortcut window"
 msgid "Open Search Unit"
-msgstr ""
+msgstr "Open Search Unit"
 
 #: data/interfaces/shortcuts.ui:30
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
-msgstr ""
+msgstr "Open Unit Property Filter"
 
 #: data/interfaces/shortcuts.ui:36
 msgctxt "shortcut window"
 msgid "Open List Boots"
-msgstr ""
+msgstr "Open List Boots"
 
 #: data/interfaces/shortcuts.ui:43
 msgctxt "shortcut window"
 msgid "Pages"
-msgstr ""
+msgstr "Pages"
 
 #: data/interfaces/shortcuts.ui:47
 msgctxt "shortcut window"
 msgid "Display Unit Information"
-msgstr ""
+msgstr "Display Unit Information"
 
 #: data/interfaces/shortcuts.ui:53
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
-msgstr ""
+msgstr "Display Unit Dependencies"
 
 #: data/interfaces/shortcuts.ui:59
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
-msgstr ""
+msgstr "Display Unit Definition File"
 
 #: data/interfaces/shortcuts.ui:65
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
-msgstr ""
+msgstr "Display Unit Journal Events"
 
 #: data/interfaces/side_control_panel.ui:104
 msgid ""
@@ -174,28 +174,35 @@ msgid ""
 "of activation of the unit, including enablement and manual activation. \n"
 "<b>Use this option with care.</b>"
 msgstr ""
+"Mask the selected unit.  This will link these unit files to <u>/dev/null</"
+"u>, making it impossible to start them. \n"
+"This is a stronger version of <b>disable</b>, since it prohibits all kinds "
+"of activation of the unit, including enablement and manual activation. \n"
+"<b>Use this option with care.</b>"
 
 #: data/interfaces/signals_window.ui:24
 msgid ""
 "No systemd signals\n"
 "Start or Stop a Unit to see some appearing"
 msgstr ""
+"No systemd signals\n"
+"Start or Stop a Unit to see some appearing"
 
 #: data/interfaces/unit_control_panel.ui:16
 msgctxt "info"
 msgid "Enabled:"
-msgstr ""
+msgstr "Enabled:"
 
 #. The start button
 #: data/interfaces/unit_control_panel.ui:44
 msgctxt "controls"
 msgid "_Start"
-msgstr "Démarer"
+msgstr "_Start"
 
 #: data/interfaces/unit_control_panel.ui:68
 msgctxt "controls"
 msgid "S_top"
-msgstr "Arrê_ter"
+msgstr ""
 
 #: data/interfaces/unit_control_panel.ui:69
 msgctxt "controls tooltip"
@@ -206,23 +213,23 @@ msgstr ""
 #, fuzzy
 msgctxt "controls tooltip"
 msgid "Restart unit"
-msgstr "Redémarer"
+msgstr "Restart"
 
 #: data/interfaces/unit_control_panel.ui:93
 msgctxt "controls"
 msgid "Restart"
-msgstr "Redémarer"
+msgstr "Restart"
 
 #: data/interfaces/unit_info_panel.ui:29
 msgid "Show all _Properties"
-msgstr ""
+msgstr "Show all _Properties"
 
 #. std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
 #: src/main.rs:75 src/main.rs:77
 msgid "Program starting up"
-msgstr "Le Programe démarre"
+msgstr "Program starting up"
 
 #: src/main.rs:84
 msgctxt "flatpack"
 msgid "Flatpak version"
-msgstr ""
+msgstr "Flatpak version"
