@@ -1,16 +1,16 @@
 extern crate log;
 extern crate translating;
 
-mod error;
 use clap::Parser;
+use translating::MAIN_PROG;
+use translating::PO_DIR;
+use translating::error::TransError;
 
 use std::fs;
 use std::io::BufRead;
 use std::io::Write;
 use std::path::PathBuf;
 use std::{fs::File, io, path::Path};
-
-use crate::error::TransError;
 
 /// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
@@ -63,8 +63,6 @@ fn display_hint(unknown_action: Option<&str>) {
 
     println!("Choose following actions: {actions}");
 }
-
-const PO_DIR: &str = "./po";
 
 fn generate_missing_po() -> Result<(), TransError> {
     //open file LINGUA
@@ -177,9 +175,8 @@ fn list_files_recurse(files: &mut Vec<PathBuf>, path: PathBuf, ext: &str) -> io:
     Ok(())
 }
 
-const MAIN_PROG: &str = "sysd-manager";
 fn generate_po_template() -> Result<(), TransError> {
-    let output_pot_file = format!("{PO_DIR}/{MAIN_PROG}.pot");
+    let output_pot_file = format!("{PO_DIR}/{}.pot", MAIN_PROG);
 
     let potfiles_file_path = format!("{PO_DIR}/{POTFILES}");
 

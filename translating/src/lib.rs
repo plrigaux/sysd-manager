@@ -1,18 +1,8 @@
 use std::{fs, io, process::Command};
+pub mod error;
 
-pub fn translating() {
-    println!("test LIB");
-
-    //POFILE identification
-
-    //xgettext
-
-    //msginit
-
-    //msgfmt
-
-    //msgmerge
-}
+pub const MAIN_PROG: &str = "sysd-manager";
+pub const PO_DIR: &str = "./po";
 
 /// Making the PO Template File
 /// https://www.gnu.org/software/gettext/manual/html_node/xgettext-Invocation.html

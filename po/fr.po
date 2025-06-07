@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-06 16:22-0400\n"
-"PO-Revision-Date: 2025-06-03 23:33-0400\n"
+"PO-Revision-Date: 2025-06-06 23:50-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -21,12 +21,12 @@ msgstr ""
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
 msgid "Analyze Blame"
-msgstr ""
+msgstr "Blame"
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Reload All Units"
-msgstr ""
+msgstr "Recharger toutes les unités"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -46,7 +46,7 @@ msgstr ""
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
 msgid "Preferences"
-msgstr "Préferences"
+msgstr "Préférences"
 
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
@@ -56,7 +56,7 @@ msgstr ""
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
 msgid "About"
-msgstr "Du coup"
+msgstr "À propos"
 
 #: data/interfaces/clean_dialog.ui:28
 msgctxt "button"
@@ -114,7 +114,7 @@ msgstr ""
 
 #: data/interfaces/preferences.ui:165
 msgid "Preferences"
-msgstr ""
+msgstr "Préférences"
 
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
@@ -190,7 +190,7 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:44
 msgctxt "controls"
 msgid "_Start"
-msgstr "Démarer"
+msgstr "Démarrer"
 
 #: data/interfaces/unit_control_panel.ui:68
 msgctxt "controls"
@@ -200,18 +200,18 @@ msgstr "Arrê_ter"
 #: data/interfaces/unit_control_panel.ui:69
 msgctxt "controls tooltip"
 msgid "Stop unit"
-msgstr ""
+msgstr "Arrêter l'unité"
 
 #: data/interfaces/unit_control_panel.ui:88
 #, fuzzy
 msgctxt "controls tooltip"
 msgid "Restart unit"
-msgstr "Redémarer"
+msgstr "Redémarrer l'unité"
 
 #: data/interfaces/unit_control_panel.ui:93
 msgctxt "controls"
 msgid "Restart"
-msgstr "Redémarer"
+msgstr "Redémarrer"
 
 #: data/interfaces/unit_info_panel.ui:29
 msgid "Show all _Properties"
@@ -220,7 +220,7 @@ msgstr ""
 #. std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
 #: src/main.rs:75 src/main.rs:77
 msgid "Program starting up"
-msgstr "Le Programe démarre"
+msgstr "Le Programme démarre"
 
 #: src/main.rs:84
 msgctxt "flatpack"

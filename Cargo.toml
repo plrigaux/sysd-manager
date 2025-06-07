@@ -1,5 +1,5 @@
 [workspace]
-members = ["translang", "translating"]
+members = ["translang", "translating", "tiny_daemon"]
 
 [workspace.package]
 edition = "2024"
@@ -44,6 +44,7 @@ lto = true
 [workspace.dependencies]
 clap = { version = "4.5", features = ["derive"] }
 log = "0.4"
+tokio = { version = "1", features = ["full"] }
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
@@ -59,7 +60,7 @@ dotenv = "0.15"
 env_logger = "0.11"
 foreign-types-shared = "0.3.1"
 futures-util = "0.3"
-gettext-rs = { version = "0.7", features = ["gettext-system"] }
+gettext-rs = "0.7.2"
 libc = "0.2"
 libsysd = { version = "0.9", package = "libsystemd-sys"} 
 log.workspace = true
@@ -68,13 +69,11 @@ serde = "1.0"
 sourceview5 = "0.9"
 strum = { version = "0.27", features = ["derive"] }
 sysd =  { version = "0.10", package = "systemd"} 
-tokio = { version = "1", features = ["full"] }
+tokio.workspace = true
 tokio-util = "0.7"
 zbus = "5.7"
 zbus_macros =  "5.7" 
 zvariant = "5.5"
-
-
 
 [dev-dependencies]
 
@@ -82,7 +81,7 @@ zvariant = "5.5"
 #glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
 quick-xml =  "0.37"
-
+translating = { path = "./translating" }
 
 [package.metadata.generate-rpm]
 summary = "A systemd units manager"

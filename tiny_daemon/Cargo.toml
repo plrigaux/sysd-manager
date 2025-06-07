@@ -1,22 +1,22 @@
 [package]
 name = "tiny_daemon"
 version = "0.1.6"
-edition = '2024'
-license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
 readme = "README.md"
-authors = ["Pierre-Luc Rigaux <plrigaux@gmail.com>"]
 description = "A Test service"
 keywords = ["linux", "systemd"]
-rust-version = "1.85"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
 
 
 [dependencies]
-log = "0.4"
-env_logger = "0.11"
-clap = { version = "4.5", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
-signal-hook = "0.3"
 anstyle = "1"
 axum = "0.8"
+clap.workspace = true
+env_logger = "0.11"
+log.workspace = true
 libc = "0.2"
+signal-hook = "0.3"
+tokio.workspace = true

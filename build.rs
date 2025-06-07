@@ -26,6 +26,31 @@ fn main() {
     if let Err(error) = generate_notes() {
         script_error!("Generate release notes error : {:?}", error);
     }
+
+    if let Err(error) = generate_mo() {
+        script_error!("Generate release notes error : {:?}", error);
+    }
+}
+
+fn generate_mo() -> Result<(), TransError> {
+    script_warning!("generate_mo");
+    println!("cargo::rerun-if-changed={PO_DIR}");
+
+    let paths = fs::read_dir(PO_DIR)?;
+
+    for path_result in paths {
+        let path = path_result?.path();
+        if path.extension().is_some_and(|this_ext| this_ext == "po") {
+            println!("PO file {:?} lang {:?}", path, path.file_stem());
+
+            if let Some(po_file) = path.to_str() {
+                if let Some(lang) = path.file_stem().and_then(|s| s.to_str()) {
+                    translating::msgfmt(po_file, lang, MAIN_PROG)?;
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 // BELOW CODE is COPY of glib-build-tools = "0.19.0"
@@ -348,6 +373,8 @@ use quick_xml::{
     Reader, Writer,
     events::{BytesStart, Event},
 };
+use translating::error::TransError;
+use translating::{MAIN_PROG, PO_DIR};
 
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
     let (version, description) = if let Some(first) = release_notes.first() {

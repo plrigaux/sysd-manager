@@ -15,7 +15,7 @@ use std::env;
 
 use adw::prelude::AdwApplicationExt;
 use clap::{Parser, command};
-use gettextrs::*;
+
 use gio::glib::translate::FromGlib;
 use gtk::{
     gdk,
@@ -50,31 +50,33 @@ fn main() -> glib::ExitCode {
     };
 
     // Set up gettext translations
-    let path = bindtextdomain(DOMAIN_NAME, local_dir).expect("Unable to bind the text domain");
+    let path =
+        gettextrs::bindtextdomain(DOMAIN_NAME, local_dir).expect("Unable to bind the text domain");
     println!("bindtextdomain path {:?}", path);
 
-    match bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
+    match gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
         Ok(v) => log::info!("bind_textdomain_codeset {:?}", v),
         Err(error) => log::error!("Unable to set the text domain encoding Error: {:?}", error),
     }
 
     // Specify the name of the .mo file to use.
-    match textdomain(DOMAIN_NAME) {
+    match gettextrs::textdomain(DOMAIN_NAME) {
         Ok(v) => log::info!("textdomain {:?}", String::from_utf8_lossy(&v)),
         Err(error) => log::error!("Unable to switch to the text domain Error: {:?}", error),
     }
 
     // Ask gettext for UTF-8 strings. THIS CRATE CAN'T HANDLE NON-UTF-8 DATA!
-    if let Err(error) = bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
+    if let Err(error) = gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
         log::error!("bind_textdomain_codeset Error: {:?}", error);
     };
 
     println!("bindtextdomain {:?}", path);
 
     //std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
-    info!("{}", gettext("Program starting up"));
-
-    info!("{}", gettext("Program starting up"));
+    let s = gettextrs::gettext("Program starting up");
+    info!("{}", s);
+    let s = gettextrs::pgettext("controls", "_Start");
+    info!("{}", s);
 
     let unit = handle_args();
 
