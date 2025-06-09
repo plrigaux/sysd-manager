@@ -39,7 +39,7 @@ A user-friendly GUI to manage systemd units
 | Select a unit at program opening via CLI | ✅ |
 | Clean unit like `systemctl clean` | ✅ |
 | Freeze & Thaw unit like `systemctl freeze` and `systemctl thaw`  | ✅ |
-| Multi-language support | 🚧 |
+| Multi-language support | ✅ 🚧 |
 | Real-time journal events update | ✅ |
 | Retrieve list of boot IDs | ✅ |
 | Ability to watch _systemd_ signals | ✅ |
@@ -127,6 +127,23 @@ All notable changes are documented in the [CHANGELOG](CHANGELOG.md).
 ## 🤝 Contributing
 
 Interested in contributing? Contact the project maintainer on [GitHub](https://github.com/plrigaux/sysd-manager).
+
+## 🌐 Internationalization
+
+__SysD Manager__ interface can be displayed in different languages.
+
+### Translators
+
+I made some tools to help translation
+
+### Generate POTFILES
+
+To generate the POTFILES file that contains the list of input files to look for to exrtact translatable strings. 
+```
+cargo run -p transtools -- potfiles
+```
+
+_Normally a translator don't have to use this command_
 
 ## 💡 Credits
 

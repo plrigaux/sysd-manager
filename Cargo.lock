@@ -2149,17 +2149,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "translang"
+name = "translating"
+version = "0.0.0"
+
+[[package]]
+name = "transtools"
 version = "0.0.0"
 dependencies = [
  "clap",
  "log",
  "translating",
 ]
-
-[[package]]
-name = "translating"
-version = "0.0.0"
 
 [[package]]
 name = "uds_windows"
