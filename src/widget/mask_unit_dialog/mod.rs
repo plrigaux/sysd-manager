@@ -58,7 +58,7 @@ pub fn after_mask(
         let (sender, receiver) = tokio::sync::oneshot::channel();
 
         crate::systemd::runtime().spawn(async move {
-            let response = systemd::complete_unit_information2(&unit2).await;
+            let response = systemd::complete_single_unit_information(&unit2).await;
 
             sender
                 .send(response)

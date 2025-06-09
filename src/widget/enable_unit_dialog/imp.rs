@@ -24,6 +24,7 @@ use crate::{
     systemd_gui,
     widget::{
         app_window::AppWindow,
+        mask_unit_dialog::after_mask,
         unit_control_panel::{UnitControlPanel, enums::UnitContolType},
     },
 };
@@ -120,13 +121,8 @@ impl EnableUnitDialogImp {
 
                         match systemd::fetch_unit(dbus_level, unit_name) {
                             Ok(unit) => {
-                                if let Some(returned_unit) = app_window.set_unit(Some(&unit)) {
-                                    //update some info
-                                    returned_unit.set_active_state(unit.active_state());
-                                    returned_unit.set_load_state(unit.load_state_str());
-                                    returned_unit.set_description(unit.description());
-                                    returned_unit.set_sub_state(unit.sub_state());
-                                }
+                                let returned_unit = app_window.set_unit(Some(&unit));
+                                after_mask("", returned_unit.as_ref(), Ok(()), control);
                             }
                             Err(e) => {
                                 warn!(

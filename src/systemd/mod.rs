@@ -130,7 +130,7 @@ pub async fn complete_unit_information(
     sysdbus::complete_unit_information(units).await
 }
 
-pub async fn complete_unit_information2(
+pub async fn complete_single_unit_information(
     unit: &UnitInfo,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     let units = vec![(unit.primary(), unit.dbus_level(), unit.object_path())];
