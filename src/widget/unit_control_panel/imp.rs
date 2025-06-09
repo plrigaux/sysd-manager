@@ -178,7 +178,8 @@ impl UnitControlPanelImpl {
             self.is_dark.get(),
         );
 
-        self.unit_info_panel.display_unit_info(Some(&unit));
+        self.unit_info_panel
+            .set_inter_message(&InterPanelMessage::UnitChange(Some(&unit)));
         true // to stop the signal emission
     }
 
@@ -322,13 +323,15 @@ impl UnitControlPanelImpl {
             return;
         };
 
-        self.unit_info_panel.display_unit_info(unit_op);
+        self.unit_info_panel
+            .set_inter_message(&InterPanelMessage::UnitChange(unit_op));
     }
 
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
         let action = InterPanelMessage::UnitChange(unit);
         self.set_inter_message(&action);
-        self.unit_info_panel.display_unit_info(unit);
+        self.unit_info_panel
+            .set_inter_message(&InterPanelMessage::UnitChange(unit));
         self.unit_file_panel.set_unit(unit);
         self.unit_journal_panel.set_unit(unit);
         self.unit_dependencies_panel.set_unit(unit);

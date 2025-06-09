@@ -1,5 +1,3 @@
-use crate::systemd::data::UnitInfo;
-
 mod construct_info;
 mod imp;
 
@@ -14,21 +12,11 @@ glib::wrapper! {
 }
 
 impl UnitInfoPanel {
-    pub fn new(is_dark: bool) -> Self {
+    pub fn new() -> Self {
         // Create new window
         let obj: UnitInfoPanel = glib::Object::new();
 
-        obj.set_dark(is_dark);
-
         obj
-    }
-
-    pub fn display_unit_info(&self, unit: Option<&UnitInfo>) {
-        self.imp().display_unit_info(unit);
-    }
-
-    pub fn set_dark(&self, is_dark: bool) {
-        self.imp().set_dark(is_dark)
     }
 
     pub fn register(&self, app_window: &AppWindow) {
@@ -41,5 +29,11 @@ impl UnitInfoPanel {
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.imp().set_inter_message(action);
+    }
+}
+
+impl Default for UnitInfoPanel {
+    fn default() -> Self {
+        Self::new()
     }
 }

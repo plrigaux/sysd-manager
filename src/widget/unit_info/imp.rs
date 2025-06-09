@@ -76,7 +76,7 @@ impl UnitInfoPanelImp {
 }
 
 impl UnitInfoPanelImp {
-    pub(crate) fn display_unit_info(&self, unit: Option<&UnitInfo>) {
+    pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
         match unit {
             Some(unit) => {
                 let _old = self.unit.replace(Some(unit.clone()));
@@ -88,6 +88,18 @@ impl UnitInfoPanelImp {
                 self.clear();
             }
         };
+
+        self.set_sensitivity();
+    }
+
+    fn set_sensitivity(&self) {
+        if self.unit.borrow().is_some() {
+            self.show_all_button.set_sensitive(true);
+            self.refresh_button.set_sensitive(true);
+        } else {
+            self.show_all_button.set_sensitive(false);
+            self.refresh_button.set_sensitive(false);
+        }
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
@@ -146,6 +158,8 @@ impl UnitInfoPanelImp {
                 set_font_context(&self.unit_info_textview);
             }
             InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
+
+            InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             _ => {}
         }
     }
@@ -172,6 +186,8 @@ impl ObjectSubclass for UnitInfoPanelImp {
 impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        self.set_sensitivity();
 
         set_font_context(&self.unit_info_textview);
     }
