@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum UnitContolType {
+pub enum UnitContolType {
     Start,
     Stop,
     Restart,

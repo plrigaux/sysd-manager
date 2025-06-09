@@ -258,7 +258,8 @@ impl UnitControlPanelImpl {
             button.set_sensitive(true);
 
             unit_control_panel.imp().start_restart(
-                &unit,
+                &unit.primary(),
+                Some(&unit),
                 start_results,
                 action,
                 expected_active_state,
@@ -269,7 +270,8 @@ impl UnitControlPanelImpl {
 
     pub(super) fn start_restart(
         &self,
-        unit: &UnitInfo,
+        unit_name: &str,
+        unit_op: Option<&UnitInfo>,
         start_results: Result<String, SystemdErrors>,
         action: UnitContolType,
         expected_active_state: ActiveState,
@@ -285,7 +287,7 @@ impl UnitControlPanelImpl {
 
                 let info = format!(
                     "Unit <unit>{}</unit> has been <{red_green}>{}</{red_green}> with the mode <unit>{}</unit>",
-                    unit.primary(),
+                    unit_name,
                     action.past_participle(),
                     mode.as_str()
                 );
@@ -293,8 +295,10 @@ impl UnitControlPanelImpl {
 
                 self.add_toast_message(&info, true);
 
-                unit.set_active_state(expected_active_state);
-                self.highlight_controls(unit);
+                if let Some(unit) = unit_op {
+                    unit.set_active_state(expected_active_state);
+                    self.highlight_controls(unit);
+                }
 
                 Some(job)
             }
@@ -302,7 +306,7 @@ impl UnitControlPanelImpl {
                 let info = format!(
                     "Can't {} the unit <unit>{}</unit>, because: {}",
                     action.as_str(),
-                    unit.primary(),
+                    unit_name,
                     err.human_error_type()
                 );
 
@@ -318,7 +322,7 @@ impl UnitControlPanelImpl {
             return;
         };
 
-        self.unit_info_panel.display_unit_info(Some(unit));
+        self.unit_info_panel.display_unit_info(unit_op);
     }
 
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {

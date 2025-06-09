@@ -18,11 +18,15 @@ use crate::{
     systemd::{
         self,
         data::{DisEnAbleUnitFiles, UnitInfo},
-        enums::{DisEnableFlags, StartStopMode, UnitDBusLevel},
+        enums::{ActiveState, DisEnableFlags, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
     systemd_gui,
-    widget::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitControlPanel},
+    widget::{
+        InterPanelMessage,
+        app_window::AppWindow,
+        unit_control_panel::{UnitControlPanel, enums::UnitContolType},
+    },
 };
 
 use super::EnableUnitDialog;
@@ -71,30 +75,65 @@ pub struct EnableUnitDialogImp {
 impl EnableUnitDialogImp {
     #[template_callback]
     fn enable_unit_file_button_clicked(&self, button: gtk::Button) {
+        let unit_file = self.unit_file_entry.text();
+        let unit_file2 = unit_file.clone();
+
+        let dbus_level = self.dbus_level_combo.selected_item();
+        let dbus_level: UnitDBusLevel = dbus_level.into();
+        let dialog = self.obj().clone();
+
+        let app_window = self.app_window.get().expect("Need window set").clone();
         let lambda_out = {
             move |_method: &str,
-                 _unit : Option<&UnitInfo>,
+                  _unit: Option<&UnitInfo>,
                   result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
-                  _control: &UnitControlPanel| {
+                  control: &UnitControlPanel| {
                 match result {
                     Ok(vec) => {
                         info!("Enable Unit File Result: {:?}", vec); //TODO enable start
-                        /*   if dialog.imp().run_now_switch.is_active() {
+                        let unit_name = unit_file.as_str();
+                        if dialog.imp().run_now_switch.is_active() {
+                            //TODO Check if Reload Units needed
                             let mode = dialog.imp().run_mode_combo.selected_item();
-                            let _mode: StartStopMode = mode.into();
-                            info!("Enable UnitUnitUnitUnitUnit2 {:?}", unit.primary());
-                            for i in vec {
-                                info!("Enable Unit {:?}", i);
-                                // systemd::start_unit(unit, mode);
+                            let start_mode: StartStopMode = mode.into();
+                            info!(
+                                "Try to start {:?} level: {:?} mode: {:?}",
+                                unit_name, dbus_level, start_mode
+                            );
+
+                            let start_results =
+                                systemd::start_unit_name(dbus_level, unit_name, start_mode);
+
+                            control.start_restart(
+                                unit_name,
+                                None,
+                                start_results,
+                                UnitContolType::Start,
+                                ActiveState::Active,
+                                start_mode,
+                            );
+                        }
+
+                        let unit = match systemd::fetch_unit(dbus_level, unit_name) {
+                            Ok(unit) => {
+                                warn!("Active state {}", unit.active_state());
+                                Some(unit)
                             }
-                        } */
+                            Err(e) => {
+                                warn!(
+                                    "Enable unit fetch {:?} level {:?} Error: {:?}",
+                                    unit_name, dbus_level, e
+                                );
+                                None
+                            }
+                        };
+
+                        app_window.set_unit(unit.as_ref());
                     }
                     Err(_error) => {}
                 }
             }
         };
-
-        let unit_file = self.unit_file_entry.text();
 
         let mut flags = DisEnableFlags::empty();
 
@@ -110,17 +149,14 @@ impl EnableUnitDialogImp {
             flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
         }
 
-        let dbus_level = self.dbus_level_combo.selected_item();
-        let dbus_level: UnitDBusLevel = dbus_level.into();
-
         let lambda = move |_unit: Option<&UnitInfo>| {
-            systemd::enable_unit_file(unit_file.as_str(), dbus_level, flags)
+            systemd::enable_unit_file(unit_file2.as_str(), dbus_level, flags)
         };
 
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Enable Unit File",false, &button, lambda, lambda_out);
+            .call_method("Enable Unit File", false, &button, lambda, lambda_out);
     }
 
     #[template_callback]
@@ -227,6 +263,9 @@ impl EnableUnitDialogImp {
             },
         );
     }
+
+    #[template_callback]
+    fn unit_bowser_clicked(&self, _button: gtk::Button) {}
 
     pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
 

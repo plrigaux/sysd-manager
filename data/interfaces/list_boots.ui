@@ -34,14 +34,14 @@
                           <object class="GtkColumnViewColumn">
                             <property name="id">pos_offset</property>
                             <property name="resizable">True</property>
-                            <property name="title">Index</property>
+                            <property name="title" translatable="yes" context="boot list column">Index</property>
                           </object>
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="id">neg_offset</property>
                             <property name="resizable">True</property>
-                            <property name="title">Offset</property>
+                            <property name="title" translatable="yes" context="boot list column">Offset</property>
                           </object>
                         </child>
                         <child>
@@ -49,7 +49,7 @@
                             <property name="fixed-width">308</property>
                             <property name="id">boot_id</property>
                             <property name="resizable">True</property>
-                            <property name="title">Boot Id</property>
+                            <property name="title" translatable="yes" context="boot list column">Boot Id</property>
                           </object>
                         </child>
                         <child>
@@ -57,7 +57,7 @@
                             <property name="fixed-width">270</property>
                             <property name="id">firstlog</property>
                             <property name="resizable">True</property>
-                            <property name="title">First Entry</property>
+                            <property name="title" translatable="yes" context="boot list column">First Entry</property>
                           </object>
                         </child>
                         <child>
@@ -65,14 +65,14 @@
                             <property name="fixed-width">270</property>
                             <property name="id">lastlog</property>
                             <property name="resizable">True</property>
-                            <property name="title">Last Entry</property>
+                            <property name="title" translatable="yes" context="boot list column">Last Entry</property>
                           </object>
                         </child>
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="expand">True</property>
                             <property name="id">duration</property>
-                            <property name="title">Duration</property>
+                            <property name="title" translatable="yes" context="boot list column">Duration</property>
                           </object>
                         </child>
                         <child>
@@ -102,7 +102,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title">List Boots</property>
+                <property name="title" translatable="yes" context="boot list dialog">List Boots</property>
               </object>
             </property>
           </object>

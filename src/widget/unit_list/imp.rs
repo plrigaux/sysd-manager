@@ -31,7 +31,7 @@ use menus::create_col_menu;
 
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
-    systemd::{self, data::UnitInfo, runtime},
+    systemd::{self, data::UnitInfo, enums::LoadState, runtime},
     systemd_gui,
     widget::{
         InterPanelMessage,
@@ -557,7 +557,30 @@ impl UnitListPanelImp {
             self.unit_list_sort_list_model.n_items()
         );
 
-        //Don't  select and focus if filter out
+        let finding = self.list_store.find_with_equal_func(|object| {
+            let unit_item = object
+                .downcast_ref::<UnitBinding>()
+                .expect("item.downcast_ref::<UnitBinding>()");
+
+            unit_name == unit_item.primary()
+        });
+
+        if let Some(position) = finding {
+            //TODO move where needed i.e. enable unit dialog
+            if let Some(item) = self.list_store.item(position) {
+                let unit_item = item
+                    .downcast_ref::<UnitBinding>()
+                    .expect("item.downcast_ref::<UnitBinding>()");
+
+                unit_item.unit_ref().set_active_state(unit.active_state());
+            }
+        } else {
+            info!("Unit not found {:?} try to Add", unit_name);
+
+            self.add_one_unit(unit);
+        }
+
+        //Don't select and focus if filter out
         if let Some(filter) = self.filter_list_model.filter() {
             let unit_binding = UnitBinding::new(unit);
             if !filter.match_(&unit_binding) {
@@ -569,14 +592,6 @@ impl UnitListPanelImp {
             }
         }
 
-        let finding = self.list_store.find_with_equal_func(|object| {
-            let unit_item = object
-                .downcast_ref::<UnitBinding>()
-                .expect("item.downcast_ref::<UnitBinding>()");
-
-            unit_name == unit_item.primary()
-        });
-
         if let Some(row) = finding {
             info!("Scroll to row {}", row);
 
@@ -586,6 +601,22 @@ impl UnitListPanelImp {
                 ListScrollFlags::FOCUS | ListScrollFlags::SELECT,
                 None,
             );
+        }
+    }
+
+    fn add_one_unit(&self, unit: &UnitInfo) {
+        self.list_store.append(&UnitBinding::new(unit));
+
+        if LoadState::Loaded == unit.load_state() {
+            if let Ok(my_int) = self.loaded_units_count.label().parse::<i32>() {
+                self.loaded_units_count.set_label(&(my_int + 1).to_string());
+            }
+        }
+
+        if unit.file_path().is_some() {
+            if let Ok(my_int) = self.unit_files_number.label().parse::<i32>() {
+                self.unit_files_number.set_label(&(my_int + 1).to_string());
+            }
         }
     }
 

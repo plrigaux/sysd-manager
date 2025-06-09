@@ -1,11 +1,18 @@
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
-use crate::systemd::{data::UnitInfo, errors::SystemdErrors};
+use crate::{
+    systemd::{
+        data::UnitInfo,
+        enums::{ActiveState, StartStopMode},
+        errors::SystemdErrors,
+    },
+    widget::unit_control_panel::enums::UnitContolType,
+};
 
 use super::{InterPanelMessage, app_window::AppWindow};
 
 mod controls;
-mod enums;
+pub mod enums;
 mod imp;
 pub mod side_control_panel;
 
@@ -80,6 +87,25 @@ impl UnitControlPanel {
 
     pub fn parent_window(&self) -> gtk::Window {
         self.imp().parent_window()
+    }
+
+    pub fn start_restart(
+        &self,
+        unit_name: &str,
+        unit_op: Option<&UnitInfo>,
+        start_results: Result<String, SystemdErrors>,
+        action: UnitContolType,
+        expected_active_state: ActiveState,
+        mode: StartStopMode,
+    ) {
+        self.imp().start_restart(
+            unit_name,
+            unit_op,
+            start_results,
+            action,
+            expected_active_state,
+            mode,
+        )
     }
 }
 

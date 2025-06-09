@@ -138,8 +138,21 @@ pub async fn complete_unit_information2(
 }
 
 /// Takes a unit name as input and attempts to start it
+/// # returns
+/// job_path
 pub fn start_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    sysdbus::start_unit(unit.dbus_level(), &unit.primary(), mode)
+    start_unit_name(unit.dbus_level(), &unit.primary(), mode)
+}
+
+/// Takes a unit name as input and attempts to start it
+/// # returns
+/// job_path
+pub fn start_unit_name(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
+    sysdbus::start_unit(level, unit_name, mode)
 }
 
 /// Takes a unit name as input and attempts to stop it.

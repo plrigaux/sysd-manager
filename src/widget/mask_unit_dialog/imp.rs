@@ -15,7 +15,11 @@ use gtk::{
 use log::{info, warn};
 
 use super::MaskUnitDialog;
-use crate::{gtk::glib::property::PropertySet, widget::mask_unit_dialog::after_mask};
+use crate::{
+    gtk::glib::property::PropertySet,
+    systemd::enums::ActiveState,
+    widget::{mask_unit_dialog::after_mask, unit_control_panel::enums::UnitContolType},
+};
 use crate::{
     systemd::{
         self,
@@ -82,7 +86,16 @@ impl MaskUnitDialogImp {
                         if let Some(unit) = unit {
                             if stop_now {
                                 info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
-                                let _ = systemd::stop_unit(unit, mode); //TODO handle response
+                                let stop_results = systemd::stop_unit(unit, mode);
+
+                                control.start_restart(
+                                    &unit.primary(),
+                                    Some(unit),
+                                    stop_results,
+                                    UnitContolType::Stop,
+                                    ActiveState::Inactive,
+                                    mode,
+                                );
                             }
                         }
 

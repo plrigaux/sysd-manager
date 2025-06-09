@@ -34,7 +34,16 @@
                     <child>
                       <object class="GtkButton">
                         <property name="css-classes">flat</property>
+                        <property name="icon-name">view-list-bullet-symbolic</property>
+                        <property name="tooltip-text" translatable="yes" context="tooltip&#10;">Browse for Unit</property>
+                        <signal name="clicked" handler="unit_bowser_clicked" swapped="yes"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="css-classes">flat</property>
                         <property name="icon-name">file-cabinet-symbolic</property>
+                        <property name="tooltip-text" translatable="yes" context="tooltip">Browse for Unit file</property>
                         <signal name="clicked" handler="file_bowser_clicked" swapped="yes"/>
                       </object>
                     </child>
@@ -73,7 +82,6 @@
                 <property name="margin-start">5</property>
                 <property name="margin-top">5</property>
                 <property name="title">Start</property>
-                <property name="visible">False</property>
                 <child>
                   <object class="AdwSwitchRow" id="run_now_switch">
                     <property name="subtitle" translatable="yes">Stats Unit just after being enabled</property>
