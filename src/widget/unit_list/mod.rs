@@ -37,8 +37,8 @@ impl UnitListPanel {
         self.imp().button_search_toggled(toggle_button_is_active);
     }
 
-    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
-        self.imp().set_unit(unit);
+    pub fn set_unit(&self, unit: Option<&UnitInfo>) -> Option<UnitInfo> {
+        self.imp().set_unit(unit)
     }
 
     pub fn selected_unit(&self) -> Option<UnitInfo> {

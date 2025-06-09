@@ -23,7 +23,6 @@ use crate::{
     },
     systemd_gui,
     widget::{
-        InterPanelMessage,
         app_window::AppWindow,
         unit_control_panel::{UnitControlPanel, enums::UnitContolType},
     },
@@ -88,7 +87,7 @@ impl EnableUnitDialogImp {
         let dialog = self.obj().clone();
 
         let app_window = self.app_window.get().expect("Need window set").clone();
-        let lambda_out = {
+        let handling_response_callback = {
             move |_method: &str,
                   _unit: Option<&UnitInfo>,
                   result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
@@ -119,23 +118,27 @@ impl EnableUnitDialogImp {
                             );
                         }
 
-                        let unit = match systemd::fetch_unit(dbus_level, unit_name) {
+                        match systemd::fetch_unit(dbus_level, unit_name) {
                             Ok(unit) => {
-                                warn!("Active state {}", unit.active_state());
-                                Some(unit)
+                                if let Some(returned_unit) = app_window.set_unit(Some(&unit)) {
+                                    //update some info
+                                    returned_unit.set_active_state(unit.active_state());
+                                    returned_unit.set_load_state(unit.load_state_str());
+                                    returned_unit.set_description(unit.description());
+                                    returned_unit.set_sub_state(unit.sub_state());
+                                }
                             }
                             Err(e) => {
                                 warn!(
                                     "Enable unit fetch {:?} level {:?} Error: {:?}",
                                     unit_name, dbus_level, e
                                 );
-                                None
                             }
-                        };
-
-                        app_window.set_unit(unit.as_ref());
+                        }
                     }
-                    Err(_error) => {}
+                    Err(_error) => {
+                        //handle by caller function
+                    }
                 }
             }
         };
@@ -161,7 +164,13 @@ impl EnableUnitDialogImp {
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Enable Unit File", false, &button, lambda, lambda_out);
+            .call_method(
+                "Enable Unit File",
+                false,
+                &button,
+                lambda,
+                handling_response_callback,
+            );
     }
 
     #[template_callback]
@@ -275,8 +284,6 @@ impl EnableUnitDialogImp {
             self.unit_file_entry.set_text(&selected_unit.primary());
         }
     }
-
-    pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     fn set_send_button_sensitivity(&self) {
         let unit_file = self.unit_file_entry.text();

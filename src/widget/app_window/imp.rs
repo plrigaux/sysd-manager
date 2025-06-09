@@ -359,9 +359,9 @@ impl AppWindowImpl {
         self.unit_control_panel.selection_change(unit);
     }
 
-    pub(super) fn set_unit(&self, unit: Option<&UnitInfo>) {
+    pub(super) fn set_unit(&self, unit: Option<&UnitInfo>) -> Option<UnitInfo> {
         self.selection_change(unit);
-        self.unit_list_panel.set_unit(unit);
+        self.unit_list_panel.set_unit(unit)
     }
 
     pub(super) fn refresh_panels(&self) {

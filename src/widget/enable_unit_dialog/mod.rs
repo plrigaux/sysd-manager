@@ -7,7 +7,7 @@ use gtk::{
 
 use crate::systemd::data::UnitInfo;
 
-use super::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitControlPanel};
+use super::{app_window::AppWindow, unit_control_panel::UnitControlPanel};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -20,15 +20,12 @@ glib::wrapper! {
 impl EnableUnitDialog {
     pub fn new(
         unit: Option<&UnitInfo>,
-        is_dark: bool,
         app_window: Option<&AppWindow>,
         unit_control: &UnitControlPanel,
     ) -> Self {
         let obj: EnableUnitDialog = glib::Object::new();
         let imp = obj.imp();
         imp.set_app_window(app_window, unit_control);
-
-        imp.set_inter_message(&InterPanelMessage::IsDark(is_dark));
 
         imp.set_unit(unit);
 

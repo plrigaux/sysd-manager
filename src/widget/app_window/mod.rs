@@ -29,8 +29,8 @@ impl AppWindow {
         self.imp().selection_change(unit);
     }
 
-    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
-        self.imp().set_unit(unit);
+    pub fn set_unit(&self, unit: Option<&UnitInfo>) -> Option<UnitInfo> {
+        self.imp().set_unit(unit)
     }
 
     pub fn refresh_panels(&self) {

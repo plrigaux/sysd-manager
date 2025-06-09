@@ -175,12 +175,7 @@ impl SideControlPanelImpl {
         let parent = self.parent();
         let unit_binding = self.current_unit.borrow();
 
-        let enable_unit_dialog = EnableUnitDialog::new(
-            unit_binding.as_ref(),
-            self.is_dark.get(),
-            app_window,
-            parent,
-        );
+        let enable_unit_dialog = EnableUnitDialog::new(unit_binding.as_ref(), app_window, parent);
 
         enable_unit_dialog.set_transient_for(app_window);
         //clean_dialog.set_modal(true);

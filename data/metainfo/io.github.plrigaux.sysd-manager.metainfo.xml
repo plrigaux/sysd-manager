@@ -81,6 +81,17 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.29.0" date="2025-06-09">
+      <description>  
+        <p>Added</p>
+        <ul>
+          <li>Ability to start unit after enabling it</li>          
+        </ul>    
+         <ul>
+          <li>French translation</li>          
+        </ul>               
+    </description>
+    </release>
     <release version="1.28.0" date="2025-06-01">
       <description>  
         <p>Added</p>

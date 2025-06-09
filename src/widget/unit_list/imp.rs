@@ -530,12 +530,12 @@ impl UnitListPanelImp {
         let _ = self.unit.replace(Some(unit.clone()));
     }
 
-    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
+    pub fn set_unit(&self, unit: Option<&UnitInfo>) -> Option<UnitInfo> {
         let unit = match unit {
             Some(u) => u,
             None => {
                 self.unit.replace(None);
-                return;
+                return None;
             }
         };
 
@@ -543,7 +543,7 @@ impl UnitListPanelImp {
         if let Some(old) = old {
             if old.primary() == unit.primary() {
                 info!("List {} == {}", old.primary(), unit.primary());
-                return;
+                return Some(old);
             }
         }
 
@@ -571,8 +571,8 @@ impl UnitListPanelImp {
                 let unit_item = item
                     .downcast_ref::<UnitBinding>()
                     .expect("item.downcast_ref::<UnitBinding>()");
-
-                unit_item.unit_ref().set_active_state(unit.active_state());
+                //for constitency ensure that is the unit from the list
+                self.unit.replace(Some(unit_item.unit_ref().clone()));
             }
         } else {
             info!("Unit not found {:?} try to Add", unit_name);
@@ -588,7 +588,7 @@ impl UnitListPanelImp {
                 self.single_selection
                     .set_selected(GTK_INVALID_LIST_POSITION);
                 info!("Unit {} no Match", unit_name);
-                return;
+                return Some(unit.clone());
             }
         }
 
@@ -602,6 +602,8 @@ impl UnitListPanelImp {
                 None,
             );
         }
+
+        Some(unit.clone())
     }
 
     fn add_one_unit(&self, unit: &UnitInfo) {
