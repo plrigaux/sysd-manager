@@ -47,5 +47,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/venetian-unmask-symbolic.svg</file>     
     <file preprocess="xml-stripblanks">icons/scalable/actions/check-round-outline2-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/file-cabinet-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/hand-point-horizontal-symbolic.svg</file>
   </gresource>
 </gresources>

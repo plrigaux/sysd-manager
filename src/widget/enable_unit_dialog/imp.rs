@@ -64,6 +64,11 @@ pub struct EnableUnitDialogImp {
     #[template_child]
     dbus_level_combo: TemplateChild<adw::ComboRow>,
 
+    #[template_child]
+    use_selected_unit_button: TemplateChild<gtk::Button>,
+
+    unit: OnceCell<Option<UnitInfo>>,
+
     app_window: OnceCell<AppWindow>,
 
     unit_control: OnceCell<UnitControlPanel>,
@@ -265,7 +270,11 @@ impl EnableUnitDialogImp {
     }
 
     #[template_callback]
-    fn unit_bowser_clicked(&self, _button: gtk::Button) {}
+    fn use_selected_unit_clicked(&self, _button: gtk::Button) {
+        if let Some(Some(selected_unit)) = self.unit.get() {
+            self.unit_file_entry.set_text(&selected_unit.primary());
+        }
+    }
 
     pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
@@ -274,6 +283,12 @@ impl EnableUnitDialogImp {
 
         //  let enable_button = if unit_file.is_empty() { false } else { true };
         self.enable_button.set_sensitive(!unit_file.is_empty());
+    }
+
+    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
+        self.unit.set(unit.cloned()).expect("Unit set Once Only");
+
+        self.use_selected_unit_button.set_sensitive(unit.is_some());
     }
 }
 

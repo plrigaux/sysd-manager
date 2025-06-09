@@ -173,8 +173,14 @@ impl SideControlPanelImpl {
     fn enable_unit_button_clicked(&self, _button: &gtk::Widget) {
         let app_window = self.app_window.get();
         let parent = self.parent();
+        let unit_binding = self.current_unit.borrow();
 
-        let enable_unit_dialog = EnableUnitDialog::new(self.is_dark.get(), app_window, parent);
+        let enable_unit_dialog = EnableUnitDialog::new(
+            unit_binding.as_ref(),
+            self.is_dark.get(),
+            app_window,
+            parent,
+        );
 
         enable_unit_dialog.set_transient_for(app_window);
         //clean_dialog.set_modal(true);

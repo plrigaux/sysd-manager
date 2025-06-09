@@ -32,11 +32,11 @@
                     <signal name="delete-text" handler="unit_file_delete_text" swapped="yes"/>
                     <signal name="insert-text" handler="unit_file_insert_text" swapped="yes"/>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="use_selected_unit_button">
                         <property name="css-classes">flat</property>
-                        <property name="icon-name">view-list-bullet-symbolic</property>
-                        <property name="tooltip-text" translatable="yes" context="tooltip&#10;">Browse for Unit</property>
-                        <signal name="clicked" handler="unit_bowser_clicked" swapped="yes"/>
+                        <property name="icon-name">hand-point-horizontal-symbolic</property>
+                        <property name="tooltip-text" translatable="yes" context="tooltip&#10;">Use Selected Unit</property>
+                        <signal name="clicked" handler="use_selected_unit_clicked" swapped="yes"/>
                       </object>
                     </child>
                     <child>
