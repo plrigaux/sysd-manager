@@ -32,9 +32,9 @@ fn main() {
     let args = Args::parse();
 
     let result = match args.action {
-        Some(s) if s == ACTION_GENERATE => generate_missing_po(),
         Some(s) if s == ACTION_POTFILE => generate_potfiles(),
         Some(s) if s == ACTION_XGETTEXT => generate_po_template(),
+        Some(s) if s == ACTION_GENERATE => generate_missing_po(),
         Some(s) if s == ACTION_MO => generate_mo(),
         Some(s) => {
             display_hint(Some(&s));

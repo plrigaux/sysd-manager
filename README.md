@@ -143,7 +143,18 @@ To generate the POTFILES file that contains the list of input files to look for 
 cargo run -p transtools -- potfiles
 ```
 
-_Normally a translator don't have to use this command_
+_Normally a translator don't have to use this command. Use it only after you created or removed new source files_
+
+
+### Generate Templated
+
+To generate the language template. 
+The xgettext program extracts translatable strings from given input files.
+```
+cargo run -p transtools -- xgettext
+```
+
+_Normally a translator don't have to use this command. Use it only after you created or removed new source files_
 
 ## 💡 Credits
 

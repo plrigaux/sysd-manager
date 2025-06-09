@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-06 16:22-0400\n"
+"POT-Creation-Date: 2025-06-09 17:09-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,22 +62,37 @@ msgctxt "button"
 msgid "Clean"
 msgstr ""
 
-#: data/interfaces/enable_unit_dialog.ui:79
-msgid "Stats Unit just after being enabled"
+#: data/interfaces/enable_unit_dialog.ui:38
+msgctxt "tooltip\n"
+msgid "Use Selected Unit"
 msgstr ""
 
-#: data/interfaces/enable_unit_dialog.ui:98
-msgctxt "menu"
-msgid "Reset"
+#: data/interfaces/enable_unit_dialog.ui:46
+msgctxt "tooltip"
+msgid "Browse for Unit file"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:87
+msgid "Stats Unit just after being enabled"
 msgstr ""
 
 #: data/interfaces/enable_unit_dialog.ui:106
 msgctxt "menu"
+msgid "Reset"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:114
+msgctxt "menu"
 msgid "Enable"
 msgstr ""
 
-#: data/interfaces/enable_unit_dialog.ui:120
+#: data/interfaces/enable_unit_dialog.ui:128
 msgid "Enable Unit File"
+msgstr ""
+
+#: data/interfaces/ex_menu_button.ui:40
+msgctxt "extented menu button"
+msgid "Clear"
 msgstr ""
 
 #: data/interfaces/journal_panel.ui:27
@@ -90,6 +105,41 @@ msgstr ""
 
 #: data/interfaces/journal_panel.ui:60
 msgid "List the boots of the system"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:37
+msgctxt "boot list column"
+msgid "Index"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:44
+msgctxt "boot list column"
+msgid "Offset"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:52
+msgctxt "boot list column"
+msgid "Boot Id"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:60
+msgctxt "boot list column"
+msgid "First Entry"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:68
+msgctxt "boot list column"
+msgid "Last Entry"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:75
+msgctxt "boot list column"
+msgid "Duration"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:105
+msgctxt "boot list dialog"
+msgid "List Boots"
 msgstr ""
 
 #: data/interfaces/mask_unit_dialog.ui:24
@@ -181,14 +231,29 @@ msgid ""
 msgstr ""
 
 #: data/interfaces/unit_control_panel.ui:16
-msgctxt "info"
-msgid "Enabled:"
+msgctxt "control info"
+msgid "Enabled"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:39
+msgctxt "control tooltip"
+msgid "Start unit"
 msgstr ""
 
 #. The start button
 #: data/interfaces/unit_control_panel.ui:44
 msgctxt "controls"
 msgid "_Start"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:52
+msgctxt "control tooltip"
+msgid "Stop Modes"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:63
+msgctxt "control tooltip"
+msgid "Stop unit"
 msgstr ""
 
 #: data/interfaces/unit_control_panel.ui:68
@@ -201,6 +266,11 @@ msgctxt "controls tooltip"
 msgid "Stop unit"
 msgstr ""
 
+#: data/interfaces/unit_control_panel.ui:77
+msgctxt "control tooltip"
+msgid "Restart Modes"
+msgstr ""
+
 #: data/interfaces/unit_control_panel.ui:88
 msgctxt "controls tooltip"
 msgid "Restart unit"
@@ -211,16 +281,128 @@ msgctxt "controls"
 msgid "Restart"
 msgstr ""
 
+#: data/interfaces/unit_control_panel.ui:109
+msgctxt "controls menu"
+msgid "_More ..."
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:143
+msgctxt "controls tab"
+msgid "Unit Info"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:153
+msgctxt "controls tab"
+msgid "Dependencies"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:163
+msgctxt "controls tab"
+msgid "File"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:173
+msgctxt "controls tab"
+msgid "Journal"
+msgstr ""
+
 #: data/interfaces/unit_info_panel.ui:29
 msgid "Show all _Properties"
 msgstr ""
 
-#. std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
-#: src/main.rs:75 src/main.rs:77
-msgid "Program starting up"
+#: data/interfaces/unit_list_panel.ui:48
+msgctxt "list column"
+msgid "Unit"
 msgstr ""
 
-#: src/main.rs:84
+#: data/interfaces/unit_list_panel.ui:56
+msgctxt "list column"
+msgid "Type"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:64
+msgctxt "list column"
+msgid "Bus"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:72
+msgctxt "list column"
+msgid "State"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:80
+msgctxt "list column"
+msgid "Preset"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:88
+msgctxt "list column"
+msgid "Load"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:96
+msgctxt "list column"
+msgid "Active"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:104
+msgctxt "list column"
+msgid "Sub"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:112
+msgctxt "list column"
+msgid "Description"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:133
+msgctxt "list tooltip"
+msgid "Loaded Units Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:138
+msgctxt "list info"
+msgid "Loaded Units Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:149
+msgctxt "list tooltip"
+msgid "Unit Files Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:154
+msgctxt "list info"
+msgid "Unit Files Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:165
+msgctxt "list tooltip"
+msgid "Units displayed"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:170
+msgctxt "list info"
+msgid "Units Displayed"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:180
+msgctxt "list info tooltip"
+msgid "Hide bottom bar"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:225
+msgctxt "list page description"
+msgid ""
+"No units returned, set environmental variable <b>RUST_LOG=info</b> to see "
+"what happend."
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:227
+msgctxt "list page title"
+msgid "Something went wrong"
+msgstr ""
+
+#: src/main.rs:82
 msgctxt "flatpack"
 msgid "Flatpak version"
 msgstr ""
