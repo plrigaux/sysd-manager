@@ -10,8 +10,8 @@
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="a43d4e9514f75f026ba7cb1bb6aafe7d4f78931a27d966dbe03f911667c585c8"/>
   <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="40a3cc4c1a8894fefbb573bcc04a9413cf8c10b79ac080a87188b04ccb483348"/>
-  <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="12cd563a3db1cc09efa53e415aa04eca09728fc267e2b5c04d2b9f2291195b8f"/>
-  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="a54377c43ce7377e8cdbeffcd2533bda86afd95ea2ee322ec0de1f03249ce685"/>
+  <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="4a993bd68b2994e7209b10c397491e743f78620804c4ea34225168697e8e64d3"/>
+  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="8b41b50b15bb70e154193dc75b730666953bc1259d6bbf4f9b3bfcd46b239256"/>
   <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="b411b1f9e131a0e0c51ab3e09f74a38eef0b0f56a03313ac7d26ab11cbc9c0c9"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="b3b0001f67ee6c113df9547bc7a863ae25c8b3564dee5811d2f246ef8dcbe4d6"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="f5036f942d90775b6a8d5f0999cdd901b5e748c6e172096e83012fee4c3511cf"/>
@@ -21,7 +21,7 @@
   <ui template-class="ENABLE_UNIT_DIALOG" filename="enable_unit_dialog.ui" sha256="f9fb3a4ace28e8ddce95d3b9f552d2296dd9aaab311f270934ae580ed80408dd"/>
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="8089fc0cab5c11bd72a92e7c5aa1b5b2cad149a15ee029f4a5081d791993c010"/>
   <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="9cd3d342a5001472515d16695d5271f90947de8230f27d8b5c9679601a74756c"/>
-  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7af81bee1f3d82931114dcaa9eaafa8ebe80fd6dde87c66fbe5299ce5c7e6681">
+  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="f6fab2bddd560a7d574db01cf077e79b93085a6c395e959e916ee2d5778ee63b">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>

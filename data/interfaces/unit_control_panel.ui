@@ -13,7 +13,7 @@
         <property name="spacing">5</property>
         <child>
           <object class="GtkLabel">
-            <property name="label" translatable="yes" context="info">Enabled:</property>
+            <property name="label" translatable="yes" context="control info">Enabled</property>
           </object>
         </child>
         <child>
@@ -25,7 +25,7 @@
         </child>
         <child>
           <object class="AdwSplitButton" id="start_button">
-            <property name="dropdown-tooltip">Modes</property>
+            <property name="dropdown-tooltip">Start Modes</property>
             <property name="popover">
               <object class="GtkPopover">
                 <child>
@@ -36,7 +36,7 @@
               </object>
             </property>
             <property name="sensitive">False</property>
-            <property name="tooltip-text">Start unit</property>
+            <property name="tooltip-text" translatable="yes" context="control tooltip">Start unit</property>
             <signal name="clicked" handler="button_start_clicked" swapped="yes"/>
             <child>
               <object class="AdwButtonContent">
@@ -49,7 +49,7 @@
         </child>
         <child>
           <object class="AdwSplitButton" id="stop_button">
-            <property name="dropdown-tooltip">Modes</property>
+            <property name="dropdown-tooltip" translatable="yes" context="control tooltip">Stop Modes</property>
             <property name="popover">
               <object class="GtkPopover">
                 <child>
@@ -60,7 +60,7 @@
               </object>
             </property>
             <property name="sensitive">False</property>
-            <property name="tooltip-text">Stop unit</property>
+            <property name="tooltip-text" translatable="yes" context="control tooltip">Stop unit</property>
             <signal name="clicked" handler="button_stop_clicked" swapped="yes"/>
             <child>
               <object class="AdwButtonContent">
@@ -74,7 +74,7 @@
         </child>
         <child>
           <object class="AdwSplitButton" id="restart_button">
-            <property name="dropdown-tooltip">Modes</property>
+            <property name="dropdown-tooltip" translatable="yes" context="control tooltip">Restart Modes</property>
             <property name="popover">
               <object class="GtkPopover">
                 <child>
@@ -106,7 +106,7 @@
                   <object class="AdwButtonContent">
                     <property name="can-shrink">True</property>
                     <property name="icon-name">panel-right-symbolic</property>
-                    <property name="label">_More ...</property>
+                    <property name="label" translatable="yes" context="controls menu">_More ...</property>
                     <property name="use-underline">True</property>
                   </object>
                 </child>
@@ -140,7 +140,7 @@
                     </property>
                     <property name="icon-name">emblem-documents-symbolic</property>
                     <property name="name">info_page</property>
-                    <property name="title">Unit Info</property>
+                    <property name="title" translatable="yes" context="controls tab">Unit Info</property>
                   </object>
                 </child>
                 <child>
@@ -150,7 +150,7 @@
                     </property>
                     <property name="icon-name">view-list-symbolic</property>
                     <property name="name">dependencies_page</property>
-                    <property name="title">Dependencies</property>
+                    <property name="title" translatable="yes" context="controls tab">Dependencies</property>
                   </object>
                 </child>
                 <child>
@@ -160,7 +160,7 @@
                     </property>
                     <property name="icon-name">text-x-generic-symbolic</property>
                     <property name="name">definition_file_page</property>
-                    <property name="title">File</property>
+                    <property name="title" translatable="yes" context="controls tab">File</property>
                   </object>
                 </child>
                 <child>
@@ -170,7 +170,7 @@
                     </property>
                     <property name="icon-name">format-justify-fill</property>
                     <property name="name">journal_page</property>
-                    <property name="title">Journal</property>
+                    <property name="title" translatable="yes" context="controls tab">Journal</property>
                   </object>
                 </child>
               </object>

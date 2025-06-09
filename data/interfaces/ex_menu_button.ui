@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.0 -->
+<!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name ex_menu_button.ui -->
   <requires lib="gtk" version="4.12"/>
@@ -37,7 +37,7 @@
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkButton">
-                <property name="label">Clear</property>
+                <property name="label" translatable="yes" context="extented menu button">Clear</property>
                 <property name="tooltip-text">Clear filter selection</property>
                 <signal name="clicked" handler="clear_filter_selection" swapped="yes"/>
               </object>
