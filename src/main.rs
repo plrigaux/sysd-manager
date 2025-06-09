@@ -42,17 +42,19 @@ fn main() -> glib::ExitCode {
     dotenv().ok();
     env_logger::init();
 
-    println!("LANGUAGE {:?}", env::var("LANGUAGE"));
-    let local_dir = if let Ok(val) = env::var("TEXTDOMAINDIR") {
+    info!("LANGUAGE {:?}", env::var("LANGUAGE"));
+    let textdomain_dir = env::var("TEXTDOMAINDIR");
+    info!("TEXTDOMAINDIR {:?}", textdomain_dir);
+    let local_dir = if let Ok(val) = textdomain_dir {
         val
     } else {
-        "/usr/local/share/locale".to_owned()
+        "/usr/share/locale".to_owned()
     };
 
     // Set up gettext translations
     let path =
         gettextrs::bindtextdomain(DOMAIN_NAME, local_dir).expect("Unable to bind the text domain");
-    println!("bindtextdomain path {:?}", path);
+    info!("bindtextdomain path {:?}", path);
 
     match gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
         Ok(v) => log::info!("bind_textdomain_codeset {:?}", v),
@@ -70,13 +72,7 @@ fn main() -> glib::ExitCode {
         log::error!("bind_textdomain_codeset Error: {:?}", error);
     };
 
-    println!("bindtextdomain {:?}", path);
-
-    //std::env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
-    let s = gettextrs::gettext("Program starting up");
-    info!("{}", s);
-    let s = gettextrs::pgettext("controls", "_Start");
-    info!("{}", s);
+    info!("Program starting up");
 
     let unit = handle_args();
 
