@@ -1,0 +1,617 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: sysd-manager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-10 09:23-0400\n"
+"PO-Revision-Date: 2025-06-10 13:36\n"
+"Last-Translator:  <plr@archdell>\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: sysd-manager\n"
+"X-Crowdin-Project-ID: 798364\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-File: /development/po/pt_BR.po\n"
+"X-Crowdin-File-ID: 9\n"
+
+#: data/interfaces/app_window.ui:12
+msgctxt "menu"
+msgid "Analyze Blame"
+msgstr ""
+
+#: data/interfaces/app_window.ui:16
+msgctxt "menu"
+msgid "Reload All Units"
+msgstr ""
+
+#: data/interfaces/app_window.ui:20
+msgctxt "menu"
+msgid "Systemd Info"
+msgstr ""
+
+#: data/interfaces/app_window.ui:24
+msgctxt "menu"
+msgid "List Boots"
+msgstr ""
+
+#: data/interfaces/app_window.ui:28
+msgctxt "menu"
+msgid "Watch Signals"
+msgstr ""
+
+#: data/interfaces/app_window.ui:34
+msgctxt "menu"
+msgid "Preferences"
+msgstr ""
+
+#: data/interfaces/app_window.ui:38
+msgctxt "menu"
+msgid "Keyboard Shortcuts"
+msgstr ""
+
+#: data/interfaces/app_window.ui:42
+msgctxt "menu"
+msgid "About"
+msgstr ""
+
+#: data/interfaces/app_window.ui:79
+msgctxt "title"
+msgid "SysD Manager"
+msgstr ""
+
+#: data/interfaces/app_window.ui:85
+msgctxt "top button tooltip"
+msgid "Open Search Bar"
+msgstr ""
+
+#: data/interfaces/app_window.ui:92
+msgctxt "top button tooltip"
+msgid "Refresh Unit List"
+msgstr ""
+
+#: data/interfaces/clean_dialog.ui:28
+msgctxt "button"
+msgid "Clean"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:38
+msgctxt "tooltip\n"
+msgid "Use Selected Unit"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:46
+msgctxt "tooltip"
+msgid "Browse for Unit file"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:87
+msgid "Stats Unit just after being enabled"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:106
+msgctxt "menu"
+msgid "Reset"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:114
+msgctxt "menu"
+msgid "Enable"
+msgstr ""
+
+#: data/interfaces/enable_unit_dialog.ui:128
+msgid "Enable Unit File"
+msgstr ""
+
+#: data/interfaces/ex_menu_button.ui:40
+msgctxt "extented menu button"
+msgid "Clear"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:27
+msgid "Clear journal events and refetch them"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:38
+msgid "Enable new entries continuous print as they are appended to the journal"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:60
+msgid "List the boots of the system"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:37
+msgctxt "boot list column"
+msgid "Index"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:44
+msgctxt "boot list column"
+msgid "Offset"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:52
+msgctxt "boot list column"
+msgid "Boot Id"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:60
+msgctxt "boot list column"
+msgid "First Entry"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:68
+msgctxt "boot list column"
+msgid "Last Entry"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:75
+msgctxt "boot list column"
+msgid "Duration"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:105
+msgctxt "boot list dialog"
+msgid "List Boots"
+msgstr ""
+
+#: data/interfaces/mask_unit_dialog.ui:24
+#: data/interfaces/mask_unit_dialog.ui:75
+msgid "Mask"
+msgstr ""
+
+#: data/interfaces/mask_unit_dialog.ui:89
+msgid "Mask Unit"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:21
+msgctxt "preference"
+msgid "General"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:24
+msgctxt "preference"
+msgid "Preferred Color Scheme"
+msgstr ""
+
+#. row subtitle
+#: data/interfaces/preferences.ui:29
+msgctxt "preference"
+msgid "Application division orientation mode"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:30
+msgctxt "preference"
+msgid "Orientation"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:35
+msgctxt "preference"
+msgid " Change the format of printed timestamps"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:36
+msgctxt "preference"
+msgid "Timestamp style"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:41
+msgctxt "preference"
+msgid "The Monospace Font"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:42
+msgctxt "preference"
+msgid "Text font"
+msgstr ""
+
+#: data/interfaces/preferences.ui:46
+msgctxt "preference"
+msgid "Default"
+msgstr ""
+
+#. button
+#: data/interfaces/preferences.ui:54
+msgctxt "preference"
+msgid "Select Font"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:65
+msgctxt "preference"
+msgid "Unit List"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:68
+msgctxt "preference"
+msgid "Display Colors on unit list table cells, according to their content."
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:69
+msgctxt "preference"
+msgid "Display Colors"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:74
+msgctxt "preference"
+msgid "Display different totals regarding retrieved units"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:75
+msgctxt "preference"
+msgid "Display Summay"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:80
+msgctxt "preference"
+msgid "Columns Display Parameters"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:87
+msgctxt "preference"
+msgid "Unit File"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:90
+msgctxt "preference"
+msgid "Display unit file line number"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:91
+msgctxt "preference"
+msgid "Line number"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:102
+msgctxt "preference"
+msgid "Unit file highlight style"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:103
+msgctxt "preference"
+msgid "Text Highlight"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:113
+msgctxt "preference"
+msgid "To see the logs in color"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:114
+msgctxt "preference"
+msgid "Journal colors"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:135
+msgctxt "preference"
+msgid "Journal's events batch size"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:148
+msgctxt "preference"
+msgid "The journal event maximum characters\n"
+"<i>0 to no limit</i>"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:151
+msgctxt "preference"
+msgid "Journal's event max size"
+msgstr ""
+
+#. dialog
+#: data/interfaces/preferences.ui:165
+msgctxt "preference"
+msgid "Preferences"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:14
+msgctxt "shortcut window"
+msgid "General"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:18
+msgctxt "shortcut window"
+msgid "Show Preferences"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:24
+msgctxt "shortcut window"
+msgid "Open Search Unit"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:30
+msgctxt "shortcut window"
+msgid "Open Unit Property Filter"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:36
+msgctxt "shortcut window"
+msgid "Open List Boots"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:43
+msgctxt "shortcut window"
+msgid "Pages"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:47
+msgctxt "shortcut window"
+msgid "Display Unit Information"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:53
+msgctxt "shortcut window"
+msgid "Display Unit Dependencies"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:59
+msgctxt "shortcut window"
+msgid "Display Unit Definition File"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:65
+msgctxt "shortcut window"
+msgid "Display Unit Journal Events"
+msgstr ""
+
+#: data/interfaces/side_control_panel.ui:104
+msgid "Mask the selected unit.  This will link these unit files to <u>/dev/null</u>, making it impossible to start them. \n"
+"This is a stronger version of <b>disable</b>, since it prohibits all kinds of activation of the unit, including enablement and manual activation. \n"
+"<b>Use this option with care.</b>"
+msgstr ""
+
+#: data/interfaces/signals_window.ui:24
+msgid "No systemd signals\n"
+"Start or Stop a Unit to see some appearing"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:16
+msgctxt "control info"
+msgid "Enabled"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:39
+msgctxt "control tooltip"
+msgid "Start unit"
+msgstr ""
+
+#. The start button
+#: data/interfaces/unit_control_panel.ui:44
+msgctxt "controls"
+msgid "_Start"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:52
+msgctxt "control tooltip"
+msgid "Stop Modes"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:63
+msgctxt "control tooltip"
+msgid "Stop unit"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:68
+msgctxt "controls"
+msgid "S_top"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:69
+msgctxt "controls tooltip"
+msgid "Stop unit"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:77
+msgctxt "control tooltip"
+msgid "Restart Modes"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:88
+msgctxt "controls tooltip"
+msgid "Restart unit"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:93
+msgctxt "controls"
+msgid "Restart"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:109
+msgctxt "controls menu"
+msgid "_More ..."
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:143
+msgctxt "controls tab"
+msgid "Unit Info"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:153
+msgctxt "controls tab"
+msgid "Dependencies"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:163
+msgctxt "controls tab"
+msgid "File"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:173
+msgctxt "controls tab"
+msgid "Journal"
+msgstr ""
+
+#. button
+#: data/interfaces/unit_info_panel.ui:17
+msgctxt "unit info"
+msgid "_Refresh"
+msgstr ""
+
+#. button
+#: data/interfaces/unit_info_panel.ui:29
+msgctxt "unit info"
+msgid "Show all _Properties"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:48
+msgctxt "list column"
+msgid "Unit"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:56
+msgctxt "list column"
+msgid "Type"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:64
+msgctxt "list column"
+msgid "Bus"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:72
+msgctxt "list column"
+msgid "State"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:80
+msgctxt "list column"
+msgid "Preset"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:88
+msgctxt "list column"
+msgid "Load"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:96
+msgctxt "list column"
+msgid "Active"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:104
+msgctxt "list column"
+msgid "Sub"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:112
+msgctxt "list column"
+msgid "Description"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:133
+msgctxt "list tooltip"
+msgid "Loaded Units Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:138
+msgctxt "list info"
+msgid "Loaded Units Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:149
+msgctxt "list tooltip"
+msgid "Unit Files Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:154
+msgctxt "list info"
+msgid "Unit Files Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:165
+msgctxt "list tooltip"
+msgid "Units displayed"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:170
+msgctxt "list info"
+msgid "Units Displayed"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:180
+msgctxt "list info tooltip"
+msgid "Hide Total Summary"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:225
+msgctxt "list page description"
+msgid "No units returned, set environmental variable <b>RUST_LOG=info</b> to see what happend."
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:227
+msgctxt "list page title"
+msgid "Something went wrong"
+msgstr ""
+
+#: src/analyze/mod.rs:27
+msgctxt "analyse blame"
+msgid "Analyse Blame"
+msgstr ""
+
+#: src/analyze/mod.rs:46
+msgctxt "analyse blame"
+msgid "Total Time:"
+msgstr ""
+
+#: src/analyze/mod.rs:54
+msgctxt "analyse blame"
+msgid "seconds ..."
+msgstr ""
+
+#: src/analyze/mod.rs:128
+msgctxt "analyse blame"
+msgid "Init time (ms)"
+msgstr ""
+
+#: src/analyze/mod.rs:132
+msgctxt "analyse blame"
+msgid "Running units"
+msgstr ""
+
+#: src/analyze/mod.rs:174
+#, rust-format
+msgid "{} seconds"
+msgstr ""
+
+#: src/main.rs:79
+msgid "Program starting up"
+msgstr ""
+
+#: src/widget/app_window/menu.rs:193
+msgid "Thank you for your support"
+msgstr ""
+
+#: src/widget/preferences/data.rs:84 src/widget/preferences/data.rs:85
+msgctxt "dbus"
+msgid "User Session Bus"
+msgstr ""
+
+#: src/widget/preferences/data.rs:86
+msgctxt "dbus"
+msgid "System & User Session Bus"
+msgstr ""
+
