@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sysd-manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-10 09:23-0400\n"
-"PO-Revision-Date: 2025-06-10 13:36\n"
+"POT-Creation-Date: 2025-06-10 09:44-0400\n"
+"PO-Revision-Date: 2025-06-10 21:34\n"
 "Last-Translator:  <plr@archdell>\n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -181,7 +181,7 @@ msgstr ""
 #. row subtitle
 #: data/interfaces/preferences.ui:29
 msgctxt "preference"
-msgid "Application division orientation mode"
+msgid "Application's division orientation mode"
 msgstr ""
 
 #. row
@@ -193,7 +193,7 @@ msgstr ""
 #. row
 #: data/interfaces/preferences.ui:35
 msgctxt "preference"
-msgid " Change the format of printed timestamps"
+msgid "Change the format of printed timestamps"
 msgstr ""
 
 #. row
@@ -252,7 +252,7 @@ msgstr ""
 #. title
 #: data/interfaces/preferences.ui:75
 msgctxt "preference"
-msgid "Display Summay"
+msgid "Display Totals Summary"
 msgstr ""
 
 #. title
@@ -594,6 +594,7 @@ msgstr ""
 
 #: src/analyze/mod.rs:174
 #, rust-format
+msgctxt "analyse blame"
 msgid "{} seconds"
 msgstr ""
 
