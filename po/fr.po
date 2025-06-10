@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-09 17:09-0400\n"
-"PO-Revision-Date: 2025-06-09 17:56-0400\n"
+"POT-Creation-Date: 2025-06-09 21:56-0400\n"
+"PO-Revision-Date: 2025-06-09 22:22-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -403,10 +403,36 @@ msgctxt "list page title"
 msgid "Something went wrong"
 msgstr "Quelque chose s'est mal passé"
 
-#: src/main.rs:82
-msgctxt "flatpack"
-msgid "Flatpak version"
+#: src/analyze/mod.rs:27
+msgctxt "analyse blame"
+msgid "Analyse Blame"
+msgstr "Temps d'initialisation des unité"
+
+#: src/analyze/mod.rs:46
+msgctxt "analyse blame"
+msgid "Total Time:"
+msgstr "Temps total:"
+
+#: src/analyze/mod.rs:54
+msgctxt "analyse blame"
+msgid "seconds ..."
+msgstr "seconds ..."
+
+#: src/analyze/mod.rs:128
+msgctxt "analyse blame"
+msgid "Init time (ms)"
+msgstr "temps (ms)"
+
+#: src/analyze/mod.rs:132
+msgctxt "analyse blame"
+msgid "Running units"
+msgstr "Unités en service"
+
+#: src/analyze/mod.rs:174
+#, rust-format
+msgid "{} seconds"
 msgstr ""
 
+#: src/main.rs:79
 msgid "Program starting up"
 msgstr "Le Programme démarre"

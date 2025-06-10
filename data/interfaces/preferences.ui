@@ -18,32 +18,32 @@
               <object class="AdwPreferencesPage">
                 <child>
                   <object class="AdwPreferencesGroup">
-                    <property name="title">General</property>
+                    <property name="title" translatable="yes" context="preference" comments="group">General</property>
                     <child>
                       <object class="AdwComboRow" id="prefered_color_scheme">
-                        <property name="title">Prefered Color Scheme</property>
+                        <property name="title" translatable="yes" context="preference" comments="row"  >Prefered Color Scheme</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwComboRow" id="app_orientation">
-                        <property name="subtitle">Application division orientation mode</property>
-                        <property name="title">Orientation</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="row subtitle" >Application division orientation mode</property>
+                        <property name="title" translatable="yes" context="preference" comments="row" >Orientation</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwComboRow" id="timestamp_style">
-                        <property name="subtitle"> Change the format of printed timestamps</property>
-                        <property name="title">Timestamp style</property>
+                        <property name="subtitle"  translatable="yes" context="preference" comments="row"> Change the format of printed timestamps</property>
+                        <property name="title" translatable="yes" context="preference" comments="row">Timestamp style</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwActionRow" id="select_font_row">
-                        <property name="subtitle">The Monospace Font</property>
-                        <property name="title">Text font</property>
+                        <property name="subtitle"  translatable="yes" context="preference" comments="row">The Monospace Font</property>
+                        <property name="title" translatable="yes" context="preference" comments="row">Text font</property>
                         <property name="valign">baseline</property>
                         <child>
                           <object class="GtkButton">
-                            <property name="label" translatable="yes" context="button">Default</property>
+                            <property name="label" translatable="yes" context="preference">Default</property>
                             <property name="valign">baseline-center</property>
                             <signal name="clicked" handler="select_font_default" swapped="yes"/>
                           </object>
@@ -51,7 +51,7 @@
                         <child>
                           <object class="GtkButton">
                             <property name="css-classes">suggested-action</property>
-                            <property name="label" translatable="yes" context="button">Select Font</property>
+                            <property name="label" translatable="yes" context="preference" comments="button">Select Font</property>
                             <property name="valign">baseline-center</property>
                             <signal name="clicked" handler="select_font_clicked" swapped="yes"/>
                           </object>
@@ -62,33 +62,33 @@
                 </child>
                 <child>
                   <object class="AdwPreferencesGroup">
-                    <property name="title">Unit List</property>
+                    <property name="title" translatable="yes" context="preference" comments="group">Unit List</property>
                     <child>
                       <object class="AdwSwitchRow" id="unit_list_colors">
-                        <property name="subtitle">Display Colors on unit list table cells, according to their content.</property>
-                        <property name="title">Display Colors</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display Colors on unit list table cells, according to their content.</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Display Colors</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwSwitchRow" id="unit_list_summay">
-                        <property name="subtitle">Display different totals regarding retreived units</property>
-                        <property name="title">Display Summay</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display different totals regarding retreived units</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Display Summay</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwExpanderRow" id="unit_list_columns">
-                        <property name="title">Columns Display Parameters</property>
+                        <property name="title"  translatable="yes" context="preference" comments="title">Columns Display Parameters</property>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
                   <object class="AdwPreferencesGroup">
-                    <property name="title">Unit File</property>
+                    <property name="title" translatable="yes" context="preference" comments="group">Unit File</property>
                     <child>
                       <object class="AdwActionRow">
-                        <property name="subtitle">Display unit file line number</property>
-                        <property name="title">Line number</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display unit file line number</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Line number</property>
                         <child>
                           <object class="GtkSwitch" id="unit_file_highlight">
                             <property name="valign">baseline-center</property>
@@ -99,8 +99,8 @@
                     </child>
                     <child>
                       <object class="AdwComboRow" id="unit_file_style">
-                        <property name="subtitle">Unit file highlight style</property>
-                        <property name="title">Text Highlight</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Unit file highlight style</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Text Highlight</property>
                       </object>
                     </child>
                   </object>
@@ -110,8 +110,8 @@
                     <property name="title">Journal</property>
                     <child>
                       <object class="AdwActionRow">
-                        <property name="subtitle">To see the logs in color</property>
-                        <property name="title">Journal colors</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">To see the logs in color</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Journal colors</property>
                         <child>
                           <object class="GtkSwitch" id="journal_colors">
                             <property name="valign">baseline-center</property>
@@ -132,7 +132,7 @@
                         <property name="subtitle">The maximum events fetch in a batch
 &lt;i&gt;0 means no size limit&lt;/i&gt;</property>
                         <property name="subtitle-lines">2</property>
-                        <property name="title">Journal's events batch size</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Journal's events batch size</property>
                         <signal name="changed" handler="journal_max_events_changed" swapped="yes"/>
                       </object>
                     </child>
@@ -145,10 +145,10 @@
                             <property name="value">50.0</property>
                           </object>
                         </property>
-                        <property name="subtitle">The journal event maximum characters
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">The journal event maximum characters
 &lt;i&gt;0 to no limit&lt;/i&gt;</property>
                         <property name="subtitle-lines">2</property>
-                        <property name="title">Journal's event max size</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Journal's event max size</property>
                         <signal name="changed" handler="journal_event_max_size_changed" swapped="yes"/>
                       </object>
                     </child>
@@ -162,7 +162,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle">
-                <property name="title" translatable="yes">Preferences</property>
+                <property name="title"  translatable="yes" context="preference" comments="dialog">Preferences</property>
               </object>
             </property>
           </object>

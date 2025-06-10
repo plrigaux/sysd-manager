@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-09 17:09-0400\n"
+"POT-Creation-Date: 2025-06-09 21:56-0400\n"
 "PO-Revision-Date: 2025-06-06 16:50-0400\n"
 "Last-Translator:  <plr@archdell>\n"
 "Language-Team: English (British) <(nothing)>\n"
@@ -420,10 +420,41 @@ msgctxt "list page title"
 msgid "Something went wrong"
 msgstr ""
 
-#: src/main.rs:82
-msgctxt "flatpack"
-msgid "Flatpak version"
-msgstr "Flatpak version"
+#: src/analyze/mod.rs:27
+#, fuzzy
+msgctxt "analyse blame"
+msgid "Analyse Blame"
+msgstr "Analyze Blame"
 
-#~ msgid "Program starting up"
-#~ msgstr "Program starting up"
+#: src/analyze/mod.rs:46
+msgctxt "analyse blame"
+msgid "Total Time:"
+msgstr ""
+
+#: src/analyze/mod.rs:54
+msgctxt "analyse blame"
+msgid "seconds ..."
+msgstr ""
+
+#: src/analyze/mod.rs:128
+msgctxt "analyse blame"
+msgid "Init time (ms)"
+msgstr ""
+
+#: src/analyze/mod.rs:132
+msgctxt "analyse blame"
+msgid "Running units"
+msgstr ""
+
+#: src/analyze/mod.rs:174
+#, rust-format
+msgid "{} seconds"
+msgstr ""
+
+#: src/main.rs:79
+msgid "Program starting up"
+msgstr "Program starting up"
+
+#~ msgctxt "flatpack"
+#~ msgid "Flatpak version"
+#~ msgstr "Flatpak version"
