@@ -1,5 +1,6 @@
 use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
+use gettextrs::gettext;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{gio, prelude::ActionMapExtManual};
@@ -189,7 +190,7 @@ fn create_about() -> adw::AboutDialog {
         .build();
 
     about.add_acknowledgement_section(
-        Some("Thank you for your support"),
+        Some(&gettext("Thank you for your support")),
         &["AsciiWolf", "Justin Searle", "Damglador"],
     );
 

@@ -1,15 +1,16 @@
+use gettextrs::pgettext;
 use gtk::{
     gio::Settings,
     glib::{self, GString},
     pango::{self, FontDescription},
-    prelude::{SettingsExt, ToValue},
+    prelude::SettingsExt,
 };
 use log::{info, warn};
 use strum::EnumIter;
 
 use std::sync::{LazyLock, RwLock};
 
-use crate::{systemd::enums::UnitDBusLevel, systemd_gui::new_settings, utils::th::TimestampStyle};
+use crate::{systemd_gui::new_settings, utils::th::TimestampStyle};
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();
@@ -53,30 +54,36 @@ pub const UNIT_LIST_COLUMNS: [(&str, &str, u8, u8); 9] = [
 pub const COL_SHOW_PREFIX: &str = "col-show-";
 pub const COL_WIDTH_PREFIX: &str = "col-width-";
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
-#[enum_type(name = "DbusLevel")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
 pub enum DbusLevel {
-    #[enum_value(name = "session", nick = "User Session Bus")]
     #[default]
     UserSession = 0,
-    #[enum_value(name = "system", nick = "System Bus")]
     System = 1,
-    #[enum_value(name = "system_session", nick = "System & User Session Bus")]
     SystemAndSession = 2,
 }
 
 impl DbusLevel {
     pub fn as_str(&self) -> &str {
-        let level_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
-
-        level_value.name()
+        match self {
+            DbusLevel::UserSession => "session",
+            DbusLevel::System => "system",
+            DbusLevel::SystemAndSession => "system_session",
+        }
     }
 
-    pub fn as_unit_dbus(&self) -> UnitDBusLevel {
+    /*     pub fn as_unit_dbus(&self) -> UnitDBusLevel {
+           match self {
+               DbusLevel::UserSession => UnitDBusLevel::UserSession,
+               DbusLevel::System => UnitDBusLevel::System,
+               DbusLevel::SystemAndSession => UnitDBusLevel::System,
+           }
+       }
+    */
+    pub fn label(&self) -> String {
         match self {
-            DbusLevel::UserSession => UnitDBusLevel::UserSession,
-            DbusLevel::System => UnitDBusLevel::System,
-            DbusLevel::SystemAndSession => UnitDBusLevel::System,
+            DbusLevel::UserSession => pgettext("dbus", "User Session Bus"),
+            DbusLevel::System => pgettext("dbus", "User Session Bus"),
+            DbusLevel::SystemAndSession => pgettext("dbus", "System & User Session Bus"),
         }
     }
 }

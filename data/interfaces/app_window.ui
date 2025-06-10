@@ -76,20 +76,20 @@
               <object class="AdwHeaderBar" id="header_bar">
                 <property name="title-widget">
                   <object class="AdwWindowTitle" id="app_title">
-                    <property name="title">SysD Manager</property>
+                    <property name="title" translatable="yes" context="title">SysD Manager</property>
                   </object>
                 </property>
                 <child>
                   <object class="GtkToggleButton" id="search_toggle_button">
                     <property name="icon-name">system-search-symbolic</property>
-                    <property name="tooltip-text">Open search bar</property>
+                    <property name="tooltip-text" translatable="yes" context="top button tooltip">Open Search Bar</property>
                     <signal name="toggled" handler="button_search_toggled" swapped="yes"/>
                   </object>
                 </child>
                 <child type="start">
                   <object class="GtkButton" id="refresh_unit_list_button">
                     <property name="icon-name">view-refresh</property>
-                    <property name="tooltip-text">Refresh unit list</property>
+                    <property name="tooltip-text" translatable="yes" context="top button tooltip">Refresh Unit List</property>
                     <signal name="clicked" handler="refresh_button_clicked" swapped="yes"/>
                   </object>
                 </child>

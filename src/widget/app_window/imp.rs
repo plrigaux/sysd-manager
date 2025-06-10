@@ -5,19 +5,6 @@ use std::{
     sync::OnceLock,
 };
 
-use adw::subclass::prelude::*;
-use gio::{
-    glib::VariantTy,
-    prelude::{ActionMapExtManual, SettingsExt},
-};
-use gtk::{
-    gio, glib,
-    prelude::{GtkApplicationExt, GtkWindowExt, OrientableExt, ToggleButtonExt, WidgetExt},
-};
-use log::{debug, error, info, warn};
-use regex::Regex;
-use sourceview5::prelude::StaticType;
-
 use crate::{
     consts::{ACTION_LIST_BOOT, APP_ACTION_LIST_BOOT},
     systemd::{data::UnitInfo, journal::Boot},
@@ -32,6 +19,19 @@ use crate::{
         unit_list::UnitListPanel,
     },
 };
+use adw::subclass::prelude::*;
+use gio::{
+    glib::VariantTy,
+    prelude::{ActionMapExtManual, SettingsExt},
+};
+use gtk::{
+    gio, glib,
+    prelude::{GtkApplicationExt, GtkWindowExt, OrientableExt, ToggleButtonExt, WidgetExt},
+};
+use log::{debug, error, info, warn};
+use regex::Regex;
+
+use strum::IntoEnumIterator;
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -177,18 +177,14 @@ impl AppWindowImpl {
     }
 
     fn setup_dropdown(&self) {
-        let expression = gtk::PropertyExpression::new(
-            adw::EnumListItem::static_type(),
-            None::<gtk::Expression>,
-            "nick",
-        );
+        let mut levels_string = Vec::new();
+        for a in DbusLevel::iter() {
+            levels_string.push(a.label());
+        }
 
-        self.system_session_dropdown
-            .set_expression(Some(expression));
-
-        let model = adw::EnumListModel::new(DbusLevel::static_type());
-
-        self.system_session_dropdown.set_model(Some(&model));
+        let level_str: Vec<&str> = levels_string.iter().map(|x| &**x).collect();
+        let string_list = gtk::StringList::new(&level_str);
+        self.system_session_dropdown.set_model(Some(&string_list));
 
         {
             let settings = self.settings().clone();

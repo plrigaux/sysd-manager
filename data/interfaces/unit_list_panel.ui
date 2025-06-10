@@ -177,7 +177,7 @@
                             <property name="css-classes">circular</property>
                             <property name="halign">end</property>
                             <property name="icon-name">window-close-symbolic</property>
-                            <property name="tooltip-text" translatable="yes" context="list info tooltip">Hide bottom bar</property>
+                            <property name="tooltip-text" translatable="yes" context="list info tooltip">Hide Total Summary</property>
                             <signal name="clicked" handler="legend_button_clicked" swapped="yes"/>
                           </object>
                         </child>
