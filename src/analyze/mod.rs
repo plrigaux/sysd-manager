@@ -1,5 +1,3 @@
-use std::cell::Ref;
-
 use crate::{
     systemd::{
         analyze::{self, Analyze},
@@ -7,7 +5,10 @@ use crate::{
     },
     widget::unit_file_panel::flatpak,
 };
+use formatx::formatx;
+use std::cell::Ref;
 
+use gettextrs::{gettext, pgettext};
 use gtk::{
     Orientation, TextView, Window,
     gio::{self},
@@ -15,7 +16,7 @@ use gtk::{
     pango::{AttrInt, AttrList, Weight},
     prelude::*,
 };
-use log::{info, warn};
+use log::{error, info, warn};
 
 const PAGE_BLAME: &str = "blame";
 
@@ -23,7 +24,7 @@ pub fn build_analyze_window() -> Result<Window, SystemdErrors> {
     let analyse_box = build_analyze()?;
 
     let window = Window::builder()
-        .title("Analyse Blame")
+        .title(pgettext("analyse blame", "Analyse Blame"))
         .default_height(600)
         .default_width(600)
         .child(&analyse_box)
@@ -42,7 +43,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
         let attribute_list = AttrList::new();
         attribute_list.insert(AttrInt::new_weight(Weight::Medium));
         gtk::Label::builder()
-            .label("Total Time:")
+            .label(pgettext("analyse blame", "Total Time:"))
             .attributes(&attribute_list)
             .build()
     });
@@ -50,7 +51,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
     let attribute_list = AttrList::new();
     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
     let total_time_label = gtk::Label::builder()
-        .label("seconds ...")
+        .label(pgettext("analyse blame", "seconds ..."))
         .attributes(&attribute_list)
         .build();
 
@@ -123,8 +124,14 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
         child.set_text(Some(r.service.to_string().as_str()));
     });
 
-    let col1_time = gtk::ColumnViewColumn::new(Some("Init time (ms)"), Some(col1factory));
-    let col2_unit = gtk::ColumnViewColumn::new(Some("Running units"), Some(col2factory));
+    let col1_time = gtk::ColumnViewColumn::new(
+        Some(&pgettext("analyse blame", "Init time (ms)")),
+        Some(col1factory),
+    );
+    let col2_unit = gtk::ColumnViewColumn::new(
+        Some(&pgettext("analyse blame", "Running units")),
+        Some(col2factory),
+    );
     col2_unit.set_expand(true);
 
     analyze_tree.append_column(&col1_time);
@@ -163,6 +170,16 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
                     info!("Unit list refreshed! list size {}", list_store.n_items());
 
                     let time = (time_full as f32) / 1000f32;
+
+                    match formatx!(gettext("{} seconds"), time) {
+                        Ok(total_time_label_str) => {
+                            total_time_label.set_label(&total_time_label_str)
+                        }
+                        Err(error) => {
+                            error!("Translation error: {:?}", error);
+                            total_time_label.set_label(&time.to_string())
+                        }
+                    }
                     total_time_label.set_label(format!("{} seconds", time).as_str());
                     stack.set_visible_child_name(PAGE_BLAME);
                 }

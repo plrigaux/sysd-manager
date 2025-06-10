@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-09 17:09-0400\n"
-"PO-Revision-Date: 2025-06-06 23:50-0400\n"
+"PO-Revision-Date: 2025-06-09 17:56-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -31,17 +31,17 @@ msgstr "Recharger toutes les unités"
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
 msgid "Systemd Info"
-msgstr ""
+msgstr "Systemd information"
 
 #: data/interfaces/app_window.ui:24
 msgctxt "menu"
 msgid "List Boots"
-msgstr ""
+msgstr "Lister les boots"
 
 #: data/interfaces/app_window.ui:28
 msgctxt "menu"
 msgid "Watch Signals"
-msgstr ""
+msgstr "Monitorer les signaux"
 
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
@@ -51,7 +51,7 @@ msgstr "Préférences"
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "Raccourcis clavier"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
@@ -61,7 +61,7 @@ msgstr "À propos"
 #: data/interfaces/clean_dialog.ui:28
 msgctxt "button"
 msgid "Clean"
-msgstr ""
+msgstr "Nettoyer"
 
 #: data/interfaces/enable_unit_dialog.ui:38
 msgctxt "tooltip\n"
@@ -111,37 +111,37 @@ msgstr ""
 #: data/interfaces/list_boots.ui:37
 msgctxt "boot list column"
 msgid "Index"
-msgstr ""
+msgstr "Index"
 
 #: data/interfaces/list_boots.ui:44
 msgctxt "boot list column"
 msgid "Offset"
-msgstr ""
+msgstr "Offset"
 
 #: data/interfaces/list_boots.ui:52
 msgctxt "boot list column"
 msgid "Boot Id"
-msgstr ""
+msgstr "Id du boot"
 
 #: data/interfaces/list_boots.ui:60
 msgctxt "boot list column"
 msgid "First Entry"
-msgstr ""
+msgstr "Première entrée"
 
 #: data/interfaces/list_boots.ui:68
 msgctxt "boot list column"
 msgid "Last Entry"
-msgstr ""
+msgstr "Dernière entrée"
 
 #: data/interfaces/list_boots.ui:75
 msgctxt "boot list column"
 msgid "Duration"
-msgstr ""
+msgstr "Durée"
 
 #: data/interfaces/list_boots.ui:105
 msgctxt "boot list dialog"
 msgid "List Boots"
-msgstr ""
+msgstr "Liste des boots"
 
 #: data/interfaces/mask_unit_dialog.ui:24
 #: data/interfaces/mask_unit_dialog.ui:75
@@ -155,12 +155,12 @@ msgstr ""
 #: data/interfaces/preferences.ui:46
 msgctxt "button"
 msgid "Default"
-msgstr ""
+msgstr "Défaut"
 
 #: data/interfaces/preferences.ui:54
 msgctxt "button"
 msgid "Select Font"
-msgstr ""
+msgstr "Choisir la font"
 
 #: data/interfaces/preferences.ui:165
 msgid "Preferences"
@@ -169,12 +169,12 @@ msgstr "Préférences"
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "General"
-msgstr ""
+msgstr "Général"
 
 #: data/interfaces/shortcuts.ui:18
 msgctxt "shortcut window"
 msgid "Show Preferences"
-msgstr ""
+msgstr "Afficher les préférences"
 
 #: data/interfaces/shortcuts.ui:24
 msgctxt "shortcut window"
@@ -194,7 +194,7 @@ msgstr ""
 #: data/interfaces/shortcuts.ui:43
 msgctxt "shortcut window"
 msgid "Pages"
-msgstr ""
+msgstr "Pages"
 
 #: data/interfaces/shortcuts.ui:47
 msgctxt "shortcut window"
@@ -209,12 +209,12 @@ msgstr ""
 #: data/interfaces/shortcuts.ui:59
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
-msgstr ""
+msgstr "Afficher le fichier de définition de l'unité"
 
 #: data/interfaces/shortcuts.ui:65
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
-msgstr ""
+msgstr "Afficher le Journal Événements de l'unité"
 
 #: data/interfaces/side_control_panel.ui:104
 msgid ""
@@ -234,10 +234,9 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:16
 msgctxt "control info"
 msgid "Enabled"
-msgstr ""
+msgstr "Activé"
 
 #: data/interfaces/unit_control_panel.ui:39
-#, fuzzy
 msgctxt "control tooltip"
 msgid "Start unit"
 msgstr "Redémarrer l'unité"
@@ -246,15 +245,14 @@ msgstr "Redémarrer l'unité"
 #: data/interfaces/unit_control_panel.ui:44
 msgctxt "controls"
 msgid "_Start"
-msgstr "Démarrer"
+msgstr "_Démarrer"
 
 #: data/interfaces/unit_control_panel.ui:52
 msgctxt "control tooltip"
 msgid "Stop Modes"
-msgstr ""
+msgstr "Modes d'arrêt"
 
 #: data/interfaces/unit_control_panel.ui:63
-#, fuzzy
 msgctxt "control tooltip"
 msgid "Stop unit"
 msgstr "Arrêter l'unité"
@@ -270,13 +268,11 @@ msgid "Stop unit"
 msgstr "Arrêter l'unité"
 
 #: data/interfaces/unit_control_panel.ui:77
-#, fuzzy
 msgctxt "control tooltip"
 msgid "Restart Modes"
 msgstr "Redémarrer"
 
 #: data/interfaces/unit_control_panel.ui:88
-#, fuzzy
 msgctxt "controls tooltip"
 msgid "Restart unit"
 msgstr "Redémarrer l'unité"
@@ -289,27 +285,27 @@ msgstr "Redémarrer"
 #: data/interfaces/unit_control_panel.ui:109
 msgctxt "controls menu"
 msgid "_More ..."
-msgstr ""
+msgstr "_Plus ..."
 
 #: data/interfaces/unit_control_panel.ui:143
 msgctxt "controls tab"
 msgid "Unit Info"
-msgstr ""
+msgstr "Information"
 
 #: data/interfaces/unit_control_panel.ui:153
 msgctxt "controls tab"
 msgid "Dependencies"
-msgstr ""
+msgstr "Dépendances"
 
 #: data/interfaces/unit_control_panel.ui:163
 msgctxt "controls tab"
 msgid "File"
-msgstr ""
+msgstr "Fichier"
 
 #: data/interfaces/unit_control_panel.ui:173
 msgctxt "controls tab"
 msgid "Journal"
-msgstr ""
+msgstr "Journal"
 
 #: data/interfaces/unit_info_panel.ui:29
 msgid "Show all _Properties"
@@ -318,22 +314,22 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:48
 msgctxt "list column"
 msgid "Unit"
-msgstr ""
+msgstr "Unité"
 
 #: data/interfaces/unit_list_panel.ui:56
 msgctxt "list column"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: data/interfaces/unit_list_panel.ui:64
 msgctxt "list column"
 msgid "Bus"
-msgstr ""
+msgstr "Bus"
 
 #: data/interfaces/unit_list_panel.ui:72
 msgctxt "list column"
 msgid "State"
-msgstr ""
+msgstr "État"
 
 #: data/interfaces/unit_list_panel.ui:80
 msgctxt "list column"
@@ -363,7 +359,7 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:133
 msgctxt "list tooltip"
 msgid "Loaded Units Retrieved"
-msgstr ""
+msgstr "Unités chargées récupérées"
 
 #: data/interfaces/unit_list_panel.ui:138
 msgctxt "list info"
@@ -373,7 +369,7 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:149
 msgctxt "list tooltip"
 msgid "Unit Files Retrieved"
-msgstr ""
+msgstr "Fichiers d'unité récupérés"
 
 #: data/interfaces/unit_list_panel.ui:154
 msgctxt "list info"
@@ -383,7 +379,7 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:165
 msgctxt "list tooltip"
 msgid "Units displayed"
-msgstr ""
+msgstr "Unités affichées"
 
 #: data/interfaces/unit_list_panel.ui:170
 msgctxt "list info"
@@ -405,12 +401,12 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:227
 msgctxt "list page title"
 msgid "Something went wrong"
-msgstr ""
+msgstr "Quelque chose s'est mal passé"
 
 #: src/main.rs:82
 msgctxt "flatpack"
 msgid "Flatpak version"
 msgstr ""
 
-#~ msgid "Program starting up"
-#~ msgstr "Le Programme démarre"
+msgid "Program starting up"
+msgstr "Le Programme démarre"

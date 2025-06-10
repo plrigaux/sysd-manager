@@ -33,7 +33,7 @@ fn main() {
 }
 
 fn generate_mo() -> Result<(), TransError> {
-    script_warning!("generate_mo");
+    println!("generate_mo");
     println!("cargo::rerun-if-changed={PO_DIR}");
 
     let paths = fs::read_dir(PO_DIR)?;

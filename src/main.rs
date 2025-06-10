@@ -16,6 +16,7 @@ use std::env;
 use adw::prelude::AdwApplicationExt;
 use clap::{Parser, command};
 
+use gettextrs::gettext;
 use gio::glib::translate::FromGlib;
 use gtk::{
     gdk,
@@ -51,6 +52,8 @@ fn main() -> glib::ExitCode {
         "/usr/share/locale".to_owned()
     };
 
+    gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
+
     // Set up gettext translations
     let path =
         gettextrs::bindtextdomain(DOMAIN_NAME, local_dir).expect("Unable to bind the text domain");
@@ -73,13 +76,13 @@ fn main() -> glib::ExitCode {
     };
 
     info!("Program starting up");
+    info!("{}", gettext("Program starting up"));
 
     let unit = handle_args();
 
     #[cfg(feature = "flatpak")]
     {
         info!("Flatpak version");
-        info!("{}", pgettext("flatpack", "Flatpak version"));
     }
 
     match gio::resources_register_include!("sysd-manager.gresource") {
