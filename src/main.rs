@@ -76,6 +76,7 @@ fn main() -> glib::ExitCode {
     };
 
     info!("Program starting up");
+    // Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
     info!("{}", gettext("Program starting up"));
 
     let unit = handle_args();

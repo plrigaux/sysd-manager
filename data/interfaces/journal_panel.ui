@@ -19,12 +19,12 @@
               <object class="AdwButtonContent">
                 <property name="halign">baseline</property>
                 <property name="icon-name">view-refresh</property>
-                <property name="label">Refresh</property>
+                <property name="label" translatable="yes" context="journal" comments="button">Refresh</property>
                 <property name="valign">baseline</property>
               </object>
             </property>
             <property name="halign">start</property>
-            <property name="tooltip-text" translatable="yes">Clear journal events and refetch them</property>
+            <property name="tooltip-text" translatable="yes" context="journal">Clear journal events and refetch them</property>
             <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
           </object>
         </child>
@@ -35,7 +35,7 @@
         </child>
         <child>
           <object class="GtkSwitch" id="continuous_switch">
-            <property name="tooltip-text" translatable="yes">Enable new entries continuous print as they are appended to the journal</property>
+            <property name="tooltip-text" translatable="yes" context="journal" comments="tooltip">Enable new entries continuous print as they are appended to the journal</property>
             <property name="valign">baseline-center</property>
             <signal name="state-set" handler="continuous_switch_state_set" swapped="yes"/>
           </object>
@@ -51,18 +51,18 @@
             </property>
             <property name="halign">start</property>
             <property name="hexpand">True</property>
-            <property name="tooltip-text">Toggle events display order</property>
+            <property name="tooltip-text" translatable="yes" context="journal" comments="tooltip">Toggle events display order</property>
             <signal name="clicked" handler="toggle_sort_clicked" swapped="yes"/>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="tooltip-text" translatable="yes">List the boots of the system</property>
+            <property name="tooltip-text"  translatable="yes" context="journal" comments="tooltip">List the boots of the system</property>
             <signal name="clicked" handler="list_boots_clicked" swapped="yes"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">list-symbolic</property>
-                <property name="label">List Boots</property>
+                <property name="label"  translatable="yes" context="journal" comments="button">List Boots</property>
               </object>
             </child>
           </object>
@@ -82,20 +82,20 @@
                     <property name="spacing">5</property>
                     <child>
                       <object class="GtkButton" id="journal_boot_current_button">
-                        <property name="label">Current boot</property>
+                        <property name="label" translatable="yes" context="journal" comments="button">Current boot</property>
                         <signal name="clicked" handler="journal_boot_current_button_clicked" swapped="yes"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkButton" id="journal_boot_all_button">
-                        <property name="label">All events</property>
+                        <property name="label"  translatable="yes" context="journal" comments="button">All events</property>
                         <signal name="clicked" handler="journal_boot_all_button_clicked" swapped="yes"/>
                       </object>
                     </child>
                     <child>
                       <object class="AdwEntryRow" id="journal_boot_id_entry">
                         <property name="css-classes">.monospace</property>
-                        <property name="title">Boot id</property>
+                        <property name="title" translatable="yes" context="journal" comments="title">Boot id</property>
                         <property name="use-underline">True</property>
                         <signal name="changed" handler="journal_boot_id_entry_change" swapped="yes"/>
                         <signal name="entry-activated" handler="journal_boot_id_entry_activated" swapped="yes"/>
@@ -115,10 +115,10 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description">No journal events!
+                <property name="description"  translatable="yes" context="journal" comments="description">No journal events!
 It can be a good thing. 😉</property>
                 <property name="icon-name">dialog-question</property>
-                <property name="title">No journal events</property>
+                <property name="title" translatable="yes" context="journal" comments="title">No journal events</property>
               </object>
             </property>
             <property name="name">empty</property>

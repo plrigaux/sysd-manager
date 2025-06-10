@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name clean_dialog.ui -->
-  <requires lib="gtk" version="4.16"/>
-  <requires lib="libadwaita" version="1.6"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="ENABLE_UNIT_DIALOG" parent="AdwWindow">
     <property name="content">
       <object class="AdwToolbarView">
@@ -25,7 +25,7 @@
                 <child>
                   <object class="AdwEntryRow" id="unit_file_entry">
                     <property name="input-hints">lowercase|no-spellcheck|private|uppercase-sentences|vertical-writing|word-completion</property>
-                    <property name="title">Unit file</property>
+                    <property name="title" translatable="yes" context="enable unit file" comments="entry title">Unit file</property>
                     <signal name="changed" handler="unit_file_changed" swapped="yes"/>
                     <signal name="apply" handler="unit_file_apply" swapped="yes"/>
                     <signal name="entry-activated" handler="unit_file_entry_activated" swapped="yes"/>
@@ -35,7 +35,7 @@
                       <object class="GtkButton" id="use_selected_unit_button">
                         <property name="css-classes">flat</property>
                         <property name="icon-name">hand-point-horizontal-symbolic</property>
-                        <property name="tooltip-text" translatable="yes" context="tooltip&#10;">Use Selected Unit</property>
+                        <property name="tooltip-text" translatable="yes" context="enable unit file" comments="tooltip">Use Selected Unit</property>
                         <signal name="clicked" handler="use_selected_unit_clicked" swapped="yes"/>
                       </object>
                     </child>
@@ -43,7 +43,7 @@
                       <object class="GtkButton">
                         <property name="css-classes">flat</property>
                         <property name="icon-name">file-cabinet-symbolic</property>
-                        <property name="tooltip-text" translatable="yes" context="tooltip">Browse for Unit file</property>
+                        <property name="tooltip-text" translatable="yes" context="enable unit file" comments="tooltip">Browse for Unit file</property>
                         <signal name="clicked" handler="file_bowser_clicked" swapped="yes"/>
                       </object>
                     </child>
@@ -51,26 +51,26 @@
                 </child>
                 <child>
                   <object class="AdwComboRow" id="dbus_level_combo">
-                    <property name="title">DBus Level</property>
+                    <property name="title" translatable="yes" context="enable unit file" comments="title">DBus Level</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="runtime_switch">
-                    <property name="subtitle">Whether the unit shall be enabled for runtime only </property>
-                    <property name="title">Runtime</property>
+                    <property name="subtitle" translatable="yes" context="enable unit file" comments="subtitle">Whether the unit shall be enabled for runtime only</property>
+                    <property name="title" translatable="yes" context="enable unit file" comments="title">Runtime</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="force_switch">
-                    <property name="subtitle">controls whether symlinks pointing to other units shall be replaced if necessary</property>
-                    <property name="title">Force</property>
+                    <property name="subtitle" translatable="yes" context="enable unit file" comments="subtitle">Control whether symlinks pointing to other units shall be replaced if necessary</property>
+                    <property name="title" translatable="yes" context="enable unit file" comments="title">Force</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="portable_switch">
-                    <property name="subtitle">Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.</property>
+                    <property name="subtitle" translatable="yes" context="enable unit file" comments="subtitle">Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached</property>
                     <property name="subtitle-lines">2</property>
-                    <property name="title">Portable</property>
+                    <property name="title" translatable="yes" context="enable unit file" comments="title">Portable</property>
                   </object>
                 </child>
               </object>
@@ -84,14 +84,14 @@
                 <property name="title">Start</property>
                 <child>
                   <object class="AdwSwitchRow" id="run_now_switch">
-                    <property name="subtitle" translatable="yes">Stats Unit just after being enabled</property>
-                    <property name="title">Run now</property>
+                    <property name="subtitle" translatable="yes" context="enable unit file" comments="subtitle">Start Unit just after being enabled</property>
+                    <property name="title" translatable="yes" context="enable unit file" comments="title">Run now</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwComboRow" id="run_mode_combo">
-                    <property name="subtitle">Run argument for the starting mode</property>
-                    <property name="title">Run mode</property>
+                    <property name="subtitle" translatable="yes" context="enable unit file" comments="title">Starting mode options</property>
+                    <property name="title" translatable="yes" context="enable unit file" comments="title">Run mode</property>
                   </object>
                 </child>
               </object>
@@ -103,7 +103,7 @@
                 <child>
                   <object class="GtkButton">
                     <property name="css-classes">flat</property>
-                    <property name="label" translatable="yes" context="menu">Reset</property>
+                    <property name="label" translatable="yes" context="enable unit file" comments="button">Reset</property>
                     <signal name="clicked" handler="reset_button_clicked" swapped="yes"/>
                   </object>
                 </child>
@@ -111,7 +111,7 @@
                   <object class="GtkButton" id="enable_button">
                     <property name="css-classes">suggested-action</property>
                     <property name="halign">end</property>
-                    <property name="label" translatable="yes" context="menu">Enable</property>
+                    <property name="label" translatable="yes" context="enable unit file" comments="button">Enable</property>
                     <property name="sensitive">False</property>
                     <signal name="clicked" handler="enable_unit_file_button_clicked" swapped="yes"/>
                   </object>
@@ -125,7 +125,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle">
-                <property name="title" translatable="yes">Enable Unit File</property>
+                <property name="title" translatable="yes" context="enable unit file" comments="dialog title">Enable Unit File</property>
               </object>
             </property>
           </object>

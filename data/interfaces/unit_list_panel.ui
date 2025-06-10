@@ -189,9 +189,9 @@
                       <object class="AdwBreakpoint">
                         <!-- Custom object fragments -->
                         <condition>max-width: 570px</condition>
-                        <setter object="loaded_units_count_info" property="label"> Loaded</setter>
-                        <setter object="unit_files_number_info" property="label"> Files</setter>
-                        <setter object="unit_filtered_count_info" property="label"> Units</setter>
+                        <setter object="loaded_units_count_info" property="label" translatable="yes" context="list info" comments="short version">Loaded</setter>
+                        <setter object="unit_files_number_info" property="label" translatable="yes" context="list info" comments="short version">Files</setter>
+                        <setter object="unit_filtered_count_info" property="label" translatable="yes" context="list info" comments="short version">Units</setter>
                       </object>
                     </child>
                     <child>
@@ -222,7 +222,7 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description" translatable="yes" context="list page description">No units returned, set environmental variable &lt;b&gt;RUST_LOG=info&lt;/b&gt; to see what happend.</property>
+                <property name="description" translatable="yes" context="list page description">No units returned, set environment variable &lt;b&gt;RUST_LOG=info&lt;/b&gt; to see what happened.</property>
                 <property name="icon-name">sad-computer-symbolic</property>
                 <property name="title" translatable="yes" context="list page title">Something went wrong</property>
               </object>

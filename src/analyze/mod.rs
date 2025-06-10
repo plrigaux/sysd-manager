@@ -8,7 +8,7 @@ use crate::{
 use formatx::formatx;
 use std::cell::Ref;
 
-use gettextrs::{gettext, pgettext};
+use gettextrs::pgettext;
 use gtk::{
     Orientation, TextView, Window,
     gio::{self},
@@ -171,7 +171,7 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
 
                     let time = (time_full as f32) / 1000f32;
 
-                    match formatx!(gettext("{} seconds"), time) {
+                    match formatx!(pgettext("analyse blame", "{} seconds"), time) {
                         Ok(total_time_label_str) => {
                             total_time_label.set_label(&total_time_label_str)
                         }
@@ -180,7 +180,7 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
                             total_time_label.set_label(&time.to_string())
                         }
                     }
-                    total_time_label.set_label(format!("{} seconds", time).as_str());
+
                     stack.set_visible_child_name(PAGE_BLAME);
                 }
                 Err(error) => {

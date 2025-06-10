@@ -15,7 +15,7 @@
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">check-round-outline2-symbolic</property>
-            <property name="label">Enable Unit File ➚</property>
+            <property name="label" translatable="yes" context="control" comments="button">Enable Unit File ➚</property>
             <property name="tooltip-text">Send a signal to a process or a group of processes</property>
             <property name="use-underline">True</property>
           </object>
@@ -30,8 +30,8 @@
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">send-symbolic</property>
-            <property name="label">Send _Kill Signal ➚</property>
-            <property name="tooltip-text">Send a signal to a process or a group of processes</property>
+            <property name="label" translatable="yes" context="control" comments="button">Send _Kill Signal ➚</property>
+            <property name="tooltip-text" translatable="yes" context="control" comments="tooltip">Send a signal to a process or a group of processes</property>
             <property name="use-underline">True</property>
           </object>
         </property>
@@ -45,8 +45,8 @@
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">send-alt-symbolic</property>
-            <property name="label">_Queue Signal </property>
-            <property name="tooltip-text">Queue a signal to a process or a group of processes</property>
+            <property name="label" translatable="yes" context="control" comments="button">_Queue Signal ➚</property>
+            <property name="tooltip-text" translatable="yes" context="control" comments="tooltip">Queue a signal to a process or a group of processes</property>
             <property name="use-underline">True</property>
           </object>
         </property>
@@ -60,8 +60,8 @@
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">empty-trash-bin-symbolic</property>
-            <property name="label">_Clean ➚</property>
-            <property name="tooltip-text">Remove the configuration, state, cache, logs or runtime data of the specified units.</property>
+            <property name="label" translatable="yes" context="control" comments="button">_Clean ➚</property>
+            <property name="tooltip-text" translatable="yes" context="control" comments="tooltip">Remove the configuration, state, cache, logs or runtime data of the specified unit</property>
             <property name="use-underline">True</property>
           </object>
         </property>
@@ -72,14 +72,13 @@
     <child>
       <object class="GtkButton" id="freeze_button">
         <property name="css-classes">flat</property>
-        <property name="tooltip-text"> Freeze the specified unit using cgroup freezer
-</property>
         <signal name="clicked" handler="freeze_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">snow-symbolic</property>
             <property name="label">Freeze</property>
+            <property name="tooltip-text" translatable="yes" context="control" comments="button">Freeze the specified unit using cgroup freezer</property>
           </object>
         </child>
       </object>
@@ -92,8 +91,8 @@
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">rain-outline-symbolic</property>
-            <property name="label">Thaw</property>
-            <property name="tooltip-text"> Thaw (unfreeze) the specified unit</property>
+            <property name="label" translatable="yes" context="control" comments="button">Thaw</property>
+            <property name="tooltip-text" translatable="yes" context="control" comments="button">Thaw (unfreeze) the specified unit</property>
           </object>
         </child>
       </object>
@@ -101,15 +100,15 @@
     <child>
       <object class="GtkButton" id="mask_button">
         <property name="css-classes">flat</property>
-        <property name="tooltip-markup" translatable="yes">Mask the selected unit.  This will link these unit files to &lt;u&gt;/dev/null&lt;/u&gt;, making it impossible to start them. 
-This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all kinds of activation of the unit, including enablement and manual activation. 
-&lt;b&gt;Use this option with care.&lt;/b&gt;</property>
         <signal name="clicked" handler="mask_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">venetian-mask-symbolic</property>
-            <property name="label">M_ask ➚</property>
+            <property name="label" translatable="yes" context="control" comments="button">M_ask ➚</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Mask the selected unit. This will link these unit files to &lt;u&gt;/dev/null&lt;/u&gt;, making it impossible to start them. 
+This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all kinds of activation of the unit, including enablement and manual activation. 
+&lt;b&gt;Use this option with care.&lt;/b&gt;</property>
             <property name="use-underline">True</property>
           </object>
         </child>
@@ -117,15 +116,14 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
     </child>
     <child>
       <object class="GtkButton" id="unmask_button">
-        <property name="css-classes">flat</property>
-        <property name="label">Unmask</property>
-        <property name="tooltip-markup">Unmask the selected unit files. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;. </property>
+        <property name="css-classes">flat</property>     
         <signal name="clicked" handler="unmask_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="halign">start</property>
             <property name="icon-name">venetian-unmask-symbolic</property>
-            <property name="label">_UnMask</property>
+            <property name="label" translatable="yes" context="control" comments="button">_UnMask</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
             <property name="use-underline">True</property>
           </object>
         </child>
@@ -134,14 +132,14 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
     <child>
       <object class="AdwSplitButton" id="reload_unit_button">
         <property name="css-classes">flat</property>
-        <property name="tooltip-text">Asks the specified unit line to reload its configuration</property>
         <signal name="clicked" handler="reload_unit_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
             <property name="css-classes">flat</property>
             <property name="halign">start</property>
             <property name="icon-name">view-refresh-symbolic</property>
-            <property name="label">Reload Unit</property>
+            <property name="label" translatable="yes" context="control" comments="button">Reload Unit</property>
+            <property name="tooltip-text" translatable="yes" context="control" comments="button">Ask the specified unit to reload its configuration</property>
           </object>
         </child>
       </object>

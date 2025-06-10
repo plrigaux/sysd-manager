@@ -39,18 +39,54 @@ pub const FLAG_WIDTH: u8 = 2;
 
 pub const UNIT_LIST_COLUMNS_UNIT: u8 = 0;
 
-pub const UNIT_LIST_COLUMNS: [(&str, &str, u8, u8); 9] = [
-    ("Unit", "unit", UNIT_LIST_COLUMNS_UNIT, FLAG_WIDTH),
-    ("Type", "type", 1, FLAG_SHOW | FLAG_WIDTH),
-    ("Bus", "bus", 2, FLAG_SHOW | FLAG_WIDTH),
-    ("State", "state", 3, FLAG_SHOW | FLAG_WIDTH),
-    ("Preset", "preset", 4, FLAG_SHOW | FLAG_WIDTH),
-    ("Load", "load", 5, FLAG_SHOW | FLAG_WIDTH),
-    ("Active", "active", 6, FLAG_SHOW | FLAG_WIDTH),
-    ("Sub", "sub", 7, FLAG_SHOW | FLAG_WIDTH),
-    ("Description", "description", 8, FLAG_SHOW), //Because column "description" is expandable
-];
-
+pub static UNIT_LIST_COLUMNS: LazyLock<[(String, &str, u8, u8); 9]> = LazyLock::new(|| {
+    [
+        (
+            pgettext("filter", "Unit"),
+            "unit",
+            UNIT_LIST_COLUMNS_UNIT,
+            FLAG_WIDTH,
+        ),
+        (
+            pgettext("filter", "Type"),
+            "type",
+            1,
+            FLAG_SHOW | FLAG_WIDTH,
+        ),
+        (pgettext("filter", "Bus"), "bus", 2, FLAG_SHOW | FLAG_WIDTH),
+        (
+            pgettext("filter", "State"),
+            "state",
+            3,
+            FLAG_SHOW | FLAG_WIDTH,
+        ),
+        (
+            pgettext("filter", "Preset"),
+            "preset",
+            4,
+            FLAG_SHOW | FLAG_WIDTH,
+        ),
+        (
+            pgettext("filter", "Load"),
+            "load",
+            5,
+            FLAG_SHOW | FLAG_WIDTH,
+        ),
+        (
+            pgettext("filter", "Active"),
+            "active",
+            6,
+            FLAG_SHOW | FLAG_WIDTH,
+        ),
+        (pgettext("filter", "Sub"), "sub", 7, FLAG_SHOW | FLAG_WIDTH),
+        (
+            pgettext("filter", "Description"),
+            "description",
+            8,
+            FLAG_SHOW,
+        ), //Because column "description" is expandable
+    ]
+});
 pub const COL_SHOW_PREFIX: &str = "col-show-";
 pub const COL_WIDTH_PREFIX: &str = "col-width-";
 

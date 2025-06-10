@@ -1,0 +1,53 @@
+<!-- Root element -->
+<!ELEMENT cambalache-project (ui*,
+                              css*,
+                              gresources*)>
+
+<!-- Required project attrs -->
+<!ATTLIST cambalache-project
+	version CDATA #REQUIRED
+	target_tk CDATA #REQUIRED
+>
+
+<!-- Optional child tags -->
+
+<!-- UI -->
+<!ELEMENT ui (requires*, css-provider*, property*, signal*, content?)>
+<!ATTLIST ui
+	template-class CDATA  #IMPLIED
+	filename CDATA  #IMPLIED
+	sha256 CDATA #IMPLIED
+>
+
+<!ELEMENT requires (#PCDATA)>
+<!ELEMENT css-provider (#PCDATA)>
+<!ELEMENT content (#PCDATA)>
+<!ELEMENT property EMPTY>
+<!ELEMENT signal EMPTY>
+
+<!ATTLIST property
+	id CDATA #REQUIRED
+	type-id CDATA #IMPLIED
+	disable-inline-object CDATA #IMPLIED
+	required CDATA #IMPLIED
+	disabled CDATA #IMPLIED
+>
+
+<!ATTLIST signal
+	id CDATA #REQUIRED
+>
+
+<!-- CSS -->
+<!ELEMENT css EMPTY>
+<!ATTLIST css
+	filename CDATA #IMPLIED
+	priority CDATA #IMPLIED
+	is_global CDATA #IMPLIED
+>
+
+<!-- GRESOURCES -->
+<!ELEMENT gresources (content)?>
+<!ATTLIST gresources
+	filename CDATA #IMPLIED
+	sha256 CDATA #IMPLIED
+>

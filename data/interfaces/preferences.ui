@@ -26,13 +26,13 @@
                     </child>
                     <child>
                       <object class="AdwComboRow" id="app_orientation">
-                        <property name="subtitle" translatable="yes" context="preference" comments="row subtitle">Application division orientation mode</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="row subtitle">Application's division orientation mode</property>
                         <property name="title" translatable="yes" context="preference" comments="row">Orientation</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwComboRow" id="timestamp_style">
-                        <property name="subtitle" translatable="yes" context="preference" comments="row"> Change the format of printed timestamps</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="row">Change the format of printed timestamps</property>
                         <property name="title" translatable="yes" context="preference" comments="row">Timestamp style</property>
                       </object>
                     </child>
@@ -72,7 +72,7 @@
                     <child>
                       <object class="AdwSwitchRow" id="unit_list_summay">
                         <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display different totals regarding retrieved units</property>
-                        <property name="title" translatable="yes" context="preference" comments="title">Display Summay</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Display Totals Summary</property>
                       </object>
                     </child>
                     <child>
@@ -145,7 +145,7 @@
                             <property name="value">50.0</property>
                           </object>
                         </property>
-                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">The journal event maximum characters
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Journal's event maximum characters
 &lt;i&gt;0 to no limit&lt;/i&gt;</property>
                         <property name="subtitle-lines">2</property>
                         <property name="title" translatable="yes" context="preference" comments="title">Journal's event max size</property>

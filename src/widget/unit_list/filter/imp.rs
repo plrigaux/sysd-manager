@@ -56,11 +56,11 @@ impl UnitListFilterWindowImp {
         let binding = self.selected.borrow();
         let selected = binding.as_ref();
 
-        for (name, key, num_id, _) in UNIT_LIST_COLUMNS {
-            let filter_assessor = unit_list_panel.try_get_filter_assessor(num_id);
+        for (name, key, num_id, _) in &*UNIT_LIST_COLUMNS {
+            let filter_assessor = unit_list_panel.try_get_filter_assessor(*num_id);
 
             let widget: gtk::Widget = if let Some(filter) = filter_assessor {
-                match key {
+                match *key {
                     "unit" => common_text_filter(filter).into(),
                     "bus" => build_bus_level_filter(filter).into(),
                     "type" => build_type_filter(filter).into(),
@@ -110,7 +110,7 @@ impl UnitListFilterWindowImp {
                 button.remove_css_class("flat");
             }
 
-            let tooltip_text = match key {
+            let tooltip_text = match *key {
                 "load" => Some("Reflects whether the unit definition was properly loaded."),
                 "active" => {
                     Some("The high-level unit activation state, i.e. generalization of <b>Sub</b>.")
@@ -151,9 +151,9 @@ impl UnitListFilterWindowImp {
             let unit_list_panel = unit_list_panel.clone();
             let filter_stack = self.filter_stack.clone();
             clear_filter_button.connect_clicked(move |_b| {
-                for (_, _, num_id, _) in UNIT_LIST_COLUMNS {
+                for (_, _, num_id, _) in &*UNIT_LIST_COLUMNS {
                     unit_list_panel.filter_assessor_change(
-                        num_id,
+                        *num_id,
                         None,
                         Some(gtk::FilterChange::LessStrict),
                         true,

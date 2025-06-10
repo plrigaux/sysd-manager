@@ -19,11 +19,16 @@ struct Args {
     /// Action to perform
     #[arg()]
     action: Option<String>,
+
+    //Language used to generate po file
+    #[arg(short, long)]
+    lang: Option<String>,
 }
 
-const ACTION_GENERATE: &str = "generate";
-const ACTION_POTFILE: &str = "potfiles";
-const ACTION_XGETTEXT: &str = "xgettext";
+const ACTION_GENERATE: &str = "genpo";
+const ACTION_POTFILE: &str = "gen_potfiles";
+const ACTION_XGETTEXT: &str = "extract";
+const ACTION_XNGEN: &str = "xngen";
 const ACTION_MO: &str = "mo";
 
 fn main() {
@@ -33,8 +38,16 @@ fn main() {
 
     let result = match args.action {
         Some(s) if s == ACTION_POTFILE => generate_potfiles(),
-        Some(s) if s == ACTION_XGETTEXT => generate_po_template(),
-        Some(s) if s == ACTION_GENERATE => generate_missing_po(),
+        Some(s) if s == ACTION_XGETTEXT => extract_and_generate_po_template(),
+        Some(s) if s == ACTION_GENERATE => generate_missing_po_or_update(args.lang),
+        Some(s) if s == ACTION_XNGEN => {
+            let res = extract_and_generate_po_template();
+            if res.is_ok() {
+                generate_missing_po_or_update(args.lang)
+            } else {
+                res
+            }
+        }
         Some(s) if s == ACTION_MO => generate_mo(),
         Some(s) => {
             display_hint(Some(&s));
@@ -64,8 +77,13 @@ fn display_hint(unknown_action: Option<&str>) {
     println!("Choose following actions: {actions}");
 }
 
-fn generate_missing_po() -> Result<(), TransError> {
+fn generate_missing_po_or_update(lang: Option<String>) -> Result<(), TransError> {
     //open file LINGUA
+
+    let Some(lang) = lang else {
+        eprintln!("Need to set a language or \"all\"");
+        return Err(TransError::LanguageNotSet);
+    };
 
     let po_dir = PathBuf::from(PO_DIR);
 
@@ -80,7 +98,7 @@ fn generate_missing_po() -> Result<(), TransError> {
 
         let line = line.trim();
 
-        if !line.starts_with('#') {
+        if !line.starts_with('#') && (line == lang || lang.eq_ignore_ascii_case("all")) {
             linguas.push(line.to_owned());
         }
     }
@@ -175,7 +193,7 @@ fn list_files_recurse(files: &mut Vec<PathBuf>, path: PathBuf, ext: &str) -> io:
     Ok(())
 }
 
-fn generate_po_template() -> Result<(), TransError> {
+fn extract_and_generate_po_template() -> Result<(), TransError> {
     let output_pot_file = format!("{PO_DIR}/{}.pot", MAIN_PROG);
 
     let potfiles_file_path = format!("{PO_DIR}/{POTFILES}");

@@ -3,6 +3,7 @@
 pub enum TransError {
     IoError(std::io::Error),
     BoxError(Box<dyn std::error::Error>),
+    LanguageNotSet,
 }
 
 impl From<Box<dyn std::error::Error>> for TransError {

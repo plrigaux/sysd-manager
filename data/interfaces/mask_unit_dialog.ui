@@ -21,17 +21,17 @@
                 <property name="margin-end">5</property>
                 <property name="margin-start">5</property>
                 <property name="margin-top">5</property>
-                <property name="title" translatable="yes">Mask</property>
+                <property name="title" translatable="yes" context="mask" comments="group">Mask</property>
                 <child>
                   <object class="AdwSwitchRow" id="runtime_switch">
-                    <property name="subtitle">To mask temporarily until the next system reboot</property>
-                    <property name="title">Runtime</property>
+                    <property name="subtitle" translatable="yes" context="mask" comments="subtitle">To mask temporarily until the next system reboot</property>
+                    <property name="title" translatable="yes" context="mask" comments="title">Runtime</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="force_switch">
-                    <property name="subtitle">Controls whether symlinks pointing to other units shall be replaced if necessary</property>
-                    <property name="title">Force</property>
+                    <property name="subtitle" translatable="yes" context="mask" comments="subtitle">Controls whether symlinks pointing to other units shall be replaced if necessary</property>
+                    <property name="title" translatable="yes" context="mask" comments="title">Force</property>
                   </object>
                 </child>
               </object>
@@ -45,14 +45,14 @@
                 <property name="title">Stop</property>
                 <child>
                   <object class="AdwSwitchRow" id="stop_now_switch">
-                    <property name="subtitle">Ensure that the unit will be also stopped</property>
-                    <property name="title">Stop Now</property>
+                    <property name="subtitle" translatable="yes" context="mask" comments="subtitle">Ensure that the unit will be also stopped</property>
+                    <property name="title" translatable="yes" context="mask" comments="title">Stop Now</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwComboRow" id="stop_mode_combo">
-                    <property name="subtitle">Argument for the stoping mode</property>
-                    <property name="title">Stop mode</property>
+                    <property name="subtitle" translatable="yes" context="mask" comments="subtitle">Argument for the stoping mode</property>
+                    <property name="title" translatable="yes" context="mask" comments="title">Stop mode</property>
                   </object>
                 </child>
               </object>
@@ -64,7 +64,7 @@
                 <child>
                   <object class="GtkButton">
                     <property name="css-classes">flat</property>
-                    <property name="label">Reset</property>
+                    <property name="label" translatable="yes" context="mask" comments="button">Reset</property>
                     <signal name="clicked" handler="reset_button_clicked" swapped="yes"/>
                   </object>
                 </child>
@@ -72,7 +72,7 @@
                   <object class="GtkButton" id="mask_button">
                     <property name="css-classes">suggested-action</property>
                     <property name="halign">end</property>
-                    <property name="label" translatable="yes">Mask</property>
+                    <property name="label" translatable="yes" context="mask" comments="button">Mask</property>
                     <property name="sensitive">False</property>
                     <signal name="clicked" handler="mask_unit_button_clicked" swapped="yes"/>
                   </object>
@@ -86,7 +86,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="mask_unit_dialog_title">
-                <property name="title" translatable="yes">Mask Unit</property>
+                <property name="title" translatable="yes" context="mask" comments="dialog title">Mask Unit</property>
               </object>
             </property>
           </object>

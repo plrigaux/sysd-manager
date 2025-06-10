@@ -222,8 +222,8 @@ impl UnitListPanelImp {
 
         let col_map = self.generate_column_map();
 
-        for (_, key, _, flags) in UNIT_LIST_COLUMNS {
-            let Some(column_view_column) = col_map.get(key) else {
+        for (_, key, _, flags) in &*UNIT_LIST_COLUMNS {
+            let Some(column_view_column) = col_map.get(*key) else {
                 warn!("Can't bind setting key {key} to column {key}");
                 continue;
             };
@@ -832,50 +832,50 @@ impl ObjectImpl for UnitListPanelImp {
 
         let unit_list_panel: glib::BorrowedObject<'_, crate::widget::unit_list::UnitListPanel> =
             self.obj();
-        for (_, key, num_id, _) in UNIT_LIST_COLUMNS {
-            let filter: Option<Box<dyn UnitPropertyFilter>> = match key {
+        for (_, key, num_id, _) in &*UNIT_LIST_COLUMNS {
+            let filter: Option<Box<dyn UnitPropertyFilter>> = match *key {
                 "unit" => Some(Box::new(FilterText::new(
-                    num_id,
+                    *num_id,
                     filter_unit_name,
                     &unit_list_panel,
                 ))),
                 "bus" => Some(Box::new(FilterElement::new(
-                    num_id,
+                    *num_id,
                     filter_bus_level,
                     &unit_list_panel,
                 ))),
                 "type" => Some(Box::new(FilterElement::new(
-                    num_id,
+                    *num_id,
                     filter_unit_type,
                     &unit_list_panel,
                 ))),
                 "state" => Some(Box::new(FilterElement::new(
-                    num_id,
+                    *num_id,
                     filter_enable_status,
                     &unit_list_panel,
                 ))),
                 "preset" => Some(Box::new(FilterElement::new(
-                    num_id,
+                    *num_id,
                     filter_preset,
                     &unit_list_panel,
                 ))),
                 "load" => Some(Box::new(FilterElement::new(
-                    num_id,
+                    *num_id,
                     filter_load_state,
                     &unit_list_panel,
                 ))),
                 "active" => Some(Box::new(FilterElement::new(
-                    num_id,
+                    *num_id,
                     filter_active_state,
                     &unit_list_panel,
                 ))),
                 "sub" => Some(Box::new(FilterText::new(
-                    num_id,
+                    *num_id,
                     filter_sub_state,
                     &unit_list_panel,
                 ))),
                 "description" => Some(Box::new(FilterText::new(
-                    num_id,
+                    *num_id,
                     filter_unit_description,
                     &unit_list_panel,
                 ))),
@@ -883,7 +883,7 @@ impl ObjectImpl for UnitListPanelImp {
             };
 
             if let Some(filter) = filter {
-                filter_assessors.insert(num_id, Rc::new(RefCell::new(filter)));
+                filter_assessors.insert(*num_id, Rc::new(RefCell::new(filter)));
             }
         }
 
