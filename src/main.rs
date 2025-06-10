@@ -34,7 +34,7 @@ use widget::{
     app_window::{AppWindow, menu},
     preferences::{
         PreferencesDialog,
-        data::{DbusLevel, KEY_PREF_PREFERED_COLOR_SCHEME, PREFERENCES},
+        data::{DbusLevel, KEY_PREF_PREFERRED_COLOR_SCHEME, PREFERENCES},
     },
 };
 
@@ -98,15 +98,15 @@ fn main() -> glib::ExitCode {
         menu::on_startup(application);
 
         let settings = new_settings();
-        let prefered_color_scheme_id = settings.get::<i32>(KEY_PREF_PREFERED_COLOR_SCHEME);
-        let prefered_color_scheme: adw::ColorScheme =
-            unsafe { adw::ColorScheme::from_glib(prefered_color_scheme_id) };
+        let preferred_color_scheme_id = settings.get::<i32>(KEY_PREF_PREFERRED_COLOR_SCHEME);
+        let preferred_color_scheme: adw::ColorScheme =
+            unsafe { adw::ColorScheme::from_glib(preferred_color_scheme_id) };
 
         info!(
             "id {:?} color {:?}",
-            prefered_color_scheme_id, prefered_color_scheme
+            preferred_color_scheme_id, preferred_color_scheme
         );
-        style_manager.set_color_scheme(prefered_color_scheme);
+        style_manager.set_color_scheme(preferred_color_scheme);
         load_css(&style_manager);
     });
 

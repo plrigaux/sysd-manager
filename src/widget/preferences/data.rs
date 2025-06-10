@@ -31,7 +31,7 @@ pub const KEY_PREF_STYLE_TEXT_FONT_FAMILY: &str = "pref-style-text-font-family";
 pub const KEY_PREF_STYLE_TEXT_FONT_SIZE: &str = "pref-style-text-font-size";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_COLORS: &str = "pref-unit-list-display-colors";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "pref-unit-list-display-summary";
-pub const KEY_PREF_PREFERED_COLOR_SCHEME: &str = "pref-prefered-color-scheme";
+pub const KEY_PREF_PREFERRED_COLOR_SCHEME: &str = "pref-preferred-color-scheme";
 pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 
 pub const FLAG_SHOW: u8 = 1;
@@ -157,7 +157,7 @@ impl From<u32> for EnableUnitFileMode {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
-pub enum PreferedColorScheme {
+pub enum PreferredColorScheme {
     #[default]
     Default,
     PreferDark,
@@ -166,43 +166,43 @@ pub enum PreferedColorScheme {
     ForceLight,
 }
 
-impl PreferedColorScheme {
+impl PreferredColorScheme {
     pub fn text(&self) -> &str {
         match self {
-            PreferedColorScheme::Default => "No Preference",
-            PreferedColorScheme::PreferDark => "Prefer Dark",
-            PreferedColorScheme::PreferLight => "Prefer Light",
-            PreferedColorScheme::ForceDark => "Force Dark",
-            PreferedColorScheme::ForceLight => "Force Light",
+            PreferredColorScheme::Default => "No Preference",
+            PreferredColorScheme::PreferDark => "Prefer Dark",
+            PreferredColorScheme::PreferLight => "Prefer Light",
+            PreferredColorScheme::ForceDark => "Force Dark",
+            PreferredColorScheme::ForceLight => "Force Light",
         }
     }
 
     pub fn color_scheme(&self) -> adw::ColorScheme {
         match self {
-            PreferedColorScheme::Default => adw::ColorScheme::Default,
-            PreferedColorScheme::PreferLight => adw::ColorScheme::PreferLight,
-            PreferedColorScheme::ForceDark => adw::ColorScheme::ForceDark,
-            PreferedColorScheme::ForceLight => adw::ColorScheme::ForceLight,
-            PreferedColorScheme::PreferDark => adw::ColorScheme::PreferDark,
+            PreferredColorScheme::Default => adw::ColorScheme::Default,
+            PreferredColorScheme::PreferLight => adw::ColorScheme::PreferLight,
+            PreferredColorScheme::ForceDark => adw::ColorScheme::ForceDark,
+            PreferredColorScheme::ForceLight => adw::ColorScheme::ForceLight,
+            PreferredColorScheme::PreferDark => adw::ColorScheme::PreferDark,
         }
     }
 }
 
-impl From<PreferedColorScheme> for adw::ColorScheme {
-    fn from(value: PreferedColorScheme) -> Self {
+impl From<PreferredColorScheme> for adw::ColorScheme {
+    fn from(value: PreferredColorScheme) -> Self {
         value.color_scheme()
     }
 }
 
-impl From<i32> for PreferedColorScheme {
+impl From<i32> for PreferredColorScheme {
     fn from(value: i32) -> Self {
         match value {
-            adw::ffi::ADW_COLOR_SCHEME_DEFAULT => PreferedColorScheme::Default,
-            adw::ffi::ADW_COLOR_SCHEME_FORCE_LIGHT => PreferedColorScheme::ForceLight,
-            adw::ffi::ADW_COLOR_SCHEME_PREFER_LIGHT => PreferedColorScheme::PreferLight,
-            adw::ffi::ADW_COLOR_SCHEME_PREFER_DARK => PreferedColorScheme::PreferDark,
-            adw::ffi::ADW_COLOR_SCHEME_FORCE_DARK => PreferedColorScheme::ForceDark,
-            _ => PreferedColorScheme::Default,
+            adw::ffi::ADW_COLOR_SCHEME_DEFAULT => PreferredColorScheme::Default,
+            adw::ffi::ADW_COLOR_SCHEME_FORCE_LIGHT => PreferredColorScheme::ForceLight,
+            adw::ffi::ADW_COLOR_SCHEME_PREFER_LIGHT => PreferredColorScheme::PreferLight,
+            adw::ffi::ADW_COLOR_SCHEME_PREFER_DARK => PreferredColorScheme::PreferDark,
+            adw::ffi::ADW_COLOR_SCHEME_FORCE_DARK => PreferredColorScheme::ForceDark,
+            _ => PreferredColorScheme::Default,
         }
     }
 }
@@ -488,13 +488,13 @@ mod tests {
     }
 
     #[test]
-    fn test_prefered_color_sheme() {
+    fn test_preferred_color_sheme() {
         let list = [
-            PreferedColorScheme::Default,
-            PreferedColorScheme::ForceLight,
-            PreferedColorScheme::PreferDark,
-            PreferedColorScheme::PreferLight,
-            PreferedColorScheme::ForceDark,
+            PreferredColorScheme::Default,
+            PreferredColorScheme::ForceLight,
+            PreferredColorScheme::PreferDark,
+            PreferredColorScheme::PreferLight,
+            PreferredColorScheme::ForceDark,
         ];
 
         for p_color in list {
@@ -502,7 +502,7 @@ mod tests {
 
             let i = a_color.into_glib();
 
-            let b_color: PreferedColorScheme = i.into();
+            let b_color: PreferredColorScheme = i.into();
 
             assert_eq!(p_color, b_color);
         }

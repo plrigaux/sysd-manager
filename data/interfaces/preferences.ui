@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name preferences.ui -->
-  <requires lib="gtk" version="4.16"/>
-  <requires lib="libadwaita" version="1.6"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="PreferencesWindow" parent="AdwPreferencesDialog">
     <child>
       <object class="AdwToolbarView">
@@ -20,25 +20,25 @@
                   <object class="AdwPreferencesGroup">
                     <property name="title" translatable="yes" context="preference" comments="group">General</property>
                     <child>
-                      <object class="AdwComboRow" id="prefered_color_scheme">
-                        <property name="title" translatable="yes" context="preference" comments="row"  >Prefered Color Scheme</property>
+                      <object class="AdwComboRow" id="preferred_color_scheme">
+                        <property name="title" translatable="yes" context="preference" comments="row">Preferred Color Scheme</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwComboRow" id="app_orientation">
-                        <property name="subtitle" translatable="yes" context="preference" comments="row subtitle" >Application division orientation mode</property>
-                        <property name="title" translatable="yes" context="preference" comments="row" >Orientation</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="row subtitle">Application division orientation mode</property>
+                        <property name="title" translatable="yes" context="preference" comments="row">Orientation</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwComboRow" id="timestamp_style">
-                        <property name="subtitle"  translatable="yes" context="preference" comments="row"> Change the format of printed timestamps</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="row"> Change the format of printed timestamps</property>
                         <property name="title" translatable="yes" context="preference" comments="row">Timestamp style</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwActionRow" id="select_font_row">
-                        <property name="subtitle"  translatable="yes" context="preference" comments="row">The Monospace Font</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="row">The Monospace Font</property>
                         <property name="title" translatable="yes" context="preference" comments="row">Text font</property>
                         <property name="valign">baseline</property>
                         <child>
@@ -71,13 +71,13 @@
                     </child>
                     <child>
                       <object class="AdwSwitchRow" id="unit_list_summay">
-                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display different totals regarding retreived units</property>
+                        <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display different totals regarding retrieved units</property>
                         <property name="title" translatable="yes" context="preference" comments="title">Display Summay</property>
                       </object>
                     </child>
                     <child>
                       <object class="AdwExpanderRow" id="unit_list_columns">
-                        <property name="title"  translatable="yes" context="preference" comments="title">Columns Display Parameters</property>
+                        <property name="title" translatable="yes" context="preference" comments="title">Columns Display Parameters</property>
                       </object>
                     </child>
                   </object>
@@ -162,7 +162,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle">
-                <property name="title"  translatable="yes" context="preference" comments="dialog">Preferences</property>
+                <property name="title" translatable="yes" context="preference" comments="dialog">Preferences</property>
               </object>
             </property>
           </object>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-09 21:56-0400\n"
+"POT-Creation-Date: 2025-06-10 09:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,6 +55,21 @@ msgstr ""
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
 msgid "About"
+msgstr ""
+
+#: data/interfaces/app_window.ui:79
+msgctxt "title"
+msgid "SysD Manager"
+msgstr ""
+
+#: data/interfaces/app_window.ui:85
+msgctxt "top button tooltip"
+msgid "Open Search Bar"
+msgstr ""
+
+#: data/interfaces/app_window.ui:92
+msgctxt "top button tooltip"
+msgid "Refresh Unit List"
 msgstr ""
 
 #: data/interfaces/clean_dialog.ui:28
@@ -151,17 +166,166 @@ msgstr ""
 msgid "Mask Unit"
 msgstr ""
 
+#. group
+#: data/interfaces/preferences.ui:21
+msgctxt "preference"
+msgid "General"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:24
+msgctxt "preference"
+msgid "Preferred Color Scheme"
+msgstr ""
+
+#. row subtitle
+#: data/interfaces/preferences.ui:29
+msgctxt "preference"
+msgid "Application division orientation mode"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:30
+msgctxt "preference"
+msgid "Orientation"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:35
+msgctxt "preference"
+msgid " Change the format of printed timestamps"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:36
+msgctxt "preference"
+msgid "Timestamp style"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:41
+msgctxt "preference"
+msgid "The Monospace Font"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:42
+msgctxt "preference"
+msgid "Text font"
+msgstr ""
+
 #: data/interfaces/preferences.ui:46
-msgctxt "button"
+msgctxt "preference"
 msgid "Default"
 msgstr ""
 
+#. button
 #: data/interfaces/preferences.ui:54
-msgctxt "button"
+msgctxt "preference"
 msgid "Select Font"
 msgstr ""
 
+#. group
+#: data/interfaces/preferences.ui:65
+msgctxt "preference"
+msgid "Unit List"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:68
+msgctxt "preference"
+msgid "Display Colors on unit list table cells, according to their content."
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:69
+msgctxt "preference"
+msgid "Display Colors"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:74
+msgctxt "preference"
+msgid "Display different totals regarding retrieved units"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:75
+msgctxt "preference"
+msgid "Display Summay"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:80
+msgctxt "preference"
+msgid "Columns Display Parameters"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:87
+msgctxt "preference"
+msgid "Unit File"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:90
+msgctxt "preference"
+msgid "Display unit file line number"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:91
+msgctxt "preference"
+msgid "Line number"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:102
+msgctxt "preference"
+msgid "Unit file highlight style"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:103
+msgctxt "preference"
+msgid "Text Highlight"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:113
+msgctxt "preference"
+msgid "To see the logs in color"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:114
+msgctxt "preference"
+msgid "Journal colors"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:135
+msgctxt "preference"
+msgid "Journal's events batch size"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:148
+msgctxt "preference"
+msgid ""
+"The journal event maximum characters\n"
+"<i>0 to no limit</i>"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:151
+msgctxt "preference"
+msgid "Journal's event max size"
+msgstr ""
+
+#. dialog
 #: data/interfaces/preferences.ui:165
+msgctxt "preference"
 msgid "Preferences"
 msgstr ""
 
@@ -306,7 +470,15 @@ msgctxt "controls tab"
 msgid "Journal"
 msgstr ""
 
+#. button
+#: data/interfaces/unit_info_panel.ui:17
+msgctxt "unit info"
+msgid "_Refresh"
+msgstr ""
+
+#. button
 #: data/interfaces/unit_info_panel.ui:29
+msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr ""
 
@@ -387,7 +559,7 @@ msgstr ""
 
 #: data/interfaces/unit_list_panel.ui:180
 msgctxt "list info tooltip"
-msgid "Hide bottom bar"
+msgid "Hide Total Summary"
 msgstr ""
 
 #: data/interfaces/unit_list_panel.ui:225
@@ -434,4 +606,18 @@ msgstr ""
 
 #: src/main.rs:79
 msgid "Program starting up"
+msgstr ""
+
+#: src/widget/app_window/menu.rs:193
+msgid "Thank you for your support"
+msgstr ""
+
+#: src/widget/preferences/data.rs:84 src/widget/preferences/data.rs:85
+msgctxt "dbus"
+msgid "User Session Bus"
+msgstr ""
+
+#: src/widget/preferences/data.rs:86
+msgctxt "dbus"
+msgid "System & User Session Bus"
 msgstr ""

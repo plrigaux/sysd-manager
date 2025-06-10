@@ -20,7 +20,7 @@ use crate::{
                 COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
                 KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_LIST_COLUMNS,
             },
-            drop_down_elem::{build_pane_orientation_selector, build_prefered_color_scheme},
+            drop_down_elem::{build_pane_orientation_selector, build_preferred_color_scheme},
             style_scheme::style_schemes,
         },
     },
@@ -70,7 +70,7 @@ pub struct PreferencesDialogImpl {
     unit_list_colors: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
-    prefered_color_scheme: TemplateChild<adw::ComboRow>,
+    preferred_color_scheme: TemplateChild<adw::ComboRow>,
 
     #[template_child]
     app_orientation: TemplateChild<adw::ComboRow>,
@@ -415,7 +415,7 @@ impl ObjectImpl for PreferencesDialogImpl {
                 PREFERENCES.set_timestamp_style(tss);
             });
         let settings = self.settings();
-        build_prefered_color_scheme(&self.prefered_color_scheme, settings);
+        build_preferred_color_scheme(&self.preferred_color_scheme, settings);
 
         build_pane_orientation_selector(&self.app_orientation, settings);
 

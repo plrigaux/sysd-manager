@@ -1,7 +1,8 @@
 use std::cell::Ref;
 
 use super::data::{
-    KEY_PREF_ORIENTATION_MODE, KEY_PREF_PREFERED_COLOR_SCHEME, OrientationMode, PreferedColorScheme,
+    KEY_PREF_ORIENTATION_MODE, KEY_PREF_PREFERRED_COLOR_SCHEME, OrientationMode,
+    PreferredColorScheme,
 };
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::glib::{self, translate::IntoGlib};
@@ -143,31 +144,31 @@ pub(super) fn build_pane_orientation_selector(
         .build();
 }
 
-pub(super) fn build_prefered_color_scheme(
-    prefered_color_scheme: &adw::ComboRow,
+pub(super) fn build_preferred_color_scheme(
+    preferred_color_scheme: &adw::ComboRow,
     settings: &gio::Settings,
 ) {
     let model = gio::ListStore::new::<glib::BoxedAnyObject>();
 
-    for color_scheme in PreferedColorScheme::iter() {
+    for color_scheme in PreferredColorScheme::iter() {
         let boxed = glib::BoxedAnyObject::new(color_scheme);
         model.append(&boxed);
     }
 
-    prefered_color_scheme.set_model(Some(&model));
+    preferred_color_scheme.set_model(Some(&model));
 
     let expression = gtk::ClosureExpression::new::<String>(
         Vec::<gtk::Expression>::new(),
         glib::RustClosure::new(|values| {
             let boxed = values[0].get::<glib::BoxedAnyObject>().unwrap();
-            let color_ref: Ref<'_, PreferedColorScheme> = boxed.borrow();
+            let color_ref: Ref<'_, PreferredColorScheme> = boxed.borrow();
             Some(color_ref.text().to_value())
         }),
     );
 
-    prefered_color_scheme.set_expression(Some(expression));
+    preferred_color_scheme.set_expression(Some(expression));
 
-    prefered_color_scheme.connect_selected_item_notify(|combo_box| {
+    preferred_color_scheme.connect_selected_item_notify(|combo_box| {
         let selected_item = combo_box.selected_item();
 
         let Some(color_scheme) = selected_item else {
@@ -177,7 +178,7 @@ pub(super) fn build_prefered_color_scheme(
         let binding = color_scheme
             .downcast::<glib::BoxedAnyObject>()
             .expect("Needs to be BoxedAnyObject");
-        let color_scheme: Ref<'_, PreferedColorScheme> = binding.borrow();
+        let color_scheme: Ref<'_, PreferredColorScheme> = binding.borrow();
 
         let manager = adw::StyleManager::default();
         manager.set_color_scheme(color_scheme.color_scheme());
@@ -185,14 +186,14 @@ pub(super) fn build_prefered_color_scheme(
 
     settings
         .bind(
-            KEY_PREF_PREFERED_COLOR_SCHEME,
-            prefered_color_scheme,
+            KEY_PREF_PREFERRED_COLOR_SCHEME,
+            preferred_color_scheme,
             "selected",
         )
         .mapping(|a, _| {
             let v = a.get::<i32>().unwrap();
 
-            let drop_own_index = if let Some((drop_own_index, _)) = PreferedColorScheme::iter()
+            let drop_own_index = if let Some((drop_own_index, _)) = PreferredColorScheme::iter()
                 .enumerate()
                 .find(|(_idx, color_scheme)| v == color_scheme.color_scheme().into_glib())
             {
@@ -206,8 +207,8 @@ pub(super) fn build_prefered_color_scheme(
         })
         .set_mapping(|value, _| {
             let drop_own_index = value.get::<u32>().unwrap();
-            let mut color_scheme_selected = PreferedColorScheme::Default;
-            for (idx, color_scheme) in PreferedColorScheme::iter().enumerate() {
+            let mut color_scheme_selected = PreferredColorScheme::Default;
+            for (idx, color_scheme) in PreferredColorScheme::iter().enumerate() {
                 color_scheme_selected = color_scheme;
                 if drop_own_index == idx as u32 {
                     break;

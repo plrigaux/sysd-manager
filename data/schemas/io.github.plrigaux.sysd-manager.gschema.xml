@@ -206,9 +206,9 @@
             <default>71</default>
             <summary>Set the default width</summary>
         </key>
-        <key name="pref-prefered-color-scheme" type="i">
+        <key name="pref-preferred-color-scheme" type="i">
             <default>0</default>
-            <summary>Application Prefered Color Scheme</summary>
+            <summary>Application Preferred Color Scheme</summary>
         </key>
         <key name="pref-window-orientaion-mode" type="s">
             <choices>
