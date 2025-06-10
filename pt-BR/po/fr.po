@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sysd-manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-10 09:23-0400\n"
-"PO-Revision-Date: 2025-06-10 13:36\n"
+"POT-Creation-Date: 2025-06-10 17:29-0400\n"
+"PO-Revision-Date: 2025-06-10 21:34\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt\n"
@@ -78,31 +78,105 @@ msgctxt "button"
 msgid "Clean"
 msgstr ""
 
+#. entry title
+#: data/interfaces/enable_unit_dialog.ui:28
+msgctxt "enable unit file"
+msgid "Unit file"
+msgstr ""
+
+#. tooltip
 #: data/interfaces/enable_unit_dialog.ui:38
-msgctxt "tooltip\n"
+msgctxt "enable unit file"
 msgid "Use Selected Unit"
 msgstr ""
 
+#. tooltip
 #: data/interfaces/enable_unit_dialog.ui:46
-msgctxt "tooltip"
+msgctxt "enable unit file"
 msgid "Browse for Unit file"
 msgstr ""
 
-#: data/interfaces/enable_unit_dialog.ui:87
-msgid "Stats Unit just after being enabled"
+#. title
+#: data/interfaces/enable_unit_dialog.ui:54
+msgctxt "enable unit file"
+msgid "DBus Level"
 msgstr ""
 
+#. subtitle
+#: data/interfaces/enable_unit_dialog.ui:59
+msgctxt "enable unit file"
+msgid "Whether the unit shall be enabled for runtime only"
+msgstr ""
+
+#. title
+#: data/interfaces/enable_unit_dialog.ui:60
+msgctxt "enable unit file"
+msgid "Runtime"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/enable_unit_dialog.ui:65
+msgctxt "enable unit file"
+msgid "Control whether symlinks pointing to other units shall be replaced if necessary"
+msgstr ""
+
+#. title
+#: data/interfaces/enable_unit_dialog.ui:66
+msgctxt "enable unit file"
+msgid "Force"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/enable_unit_dialog.ui:71
+msgctxt "enable unit file"
+msgid "Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached"
+msgstr ""
+
+#. title
+#: data/interfaces/enable_unit_dialog.ui:73
+msgctxt "enable unit file"
+msgid "Portable"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/enable_unit_dialog.ui:87
+msgctxt "enable unit file"
+msgid "Start Unit just after being enabled"
+msgstr ""
+
+#. title
+#: data/interfaces/enable_unit_dialog.ui:88
+msgctxt "enable unit file"
+msgid "Run now"
+msgstr ""
+
+#. title
+#: data/interfaces/enable_unit_dialog.ui:93
+msgctxt "enable unit file"
+msgid "Starting mode options"
+msgstr ""
+
+#. title
+#: data/interfaces/enable_unit_dialog.ui:94
+msgctxt "enable unit file"
+msgid "Run mode"
+msgstr ""
+
+#. button
 #: data/interfaces/enable_unit_dialog.ui:106
-msgctxt "menu"
+msgctxt "enable unit file"
 msgid "Reset"
 msgstr ""
 
+#. button
 #: data/interfaces/enable_unit_dialog.ui:114
-msgctxt "menu"
+msgctxt "enable unit file"
 msgid "Enable"
 msgstr ""
 
+#. dialog title
 #: data/interfaces/enable_unit_dialog.ui:128
+msgctxt "enable unit file"
 msgid "Enable Unit File"
 msgstr ""
 
@@ -111,16 +185,70 @@ msgctxt "extented menu button"
 msgid "Clear"
 msgstr ""
 
+#. button
+#: data/interfaces/journal_panel.ui:22
+msgctxt "journal"
+msgid "Refresh"
+msgstr ""
+
 #: data/interfaces/journal_panel.ui:27
+msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr ""
 
+#. tooltip
 #: data/interfaces/journal_panel.ui:38
+msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
 
+#. tooltip
+#: data/interfaces/journal_panel.ui:54
+msgctxt "journal"
+msgid "Toggle events display order"
+msgstr ""
+
+#. tooltip
 #: data/interfaces/journal_panel.ui:60
+msgctxt "journal"
 msgid "List the boots of the system"
+msgstr ""
+
+#. button
+#: data/interfaces/journal_panel.ui:65
+msgctxt "journal"
+msgid "List Boots"
+msgstr ""
+
+#. button
+#: data/interfaces/journal_panel.ui:85
+msgctxt "journal"
+msgid "Current boot"
+msgstr ""
+
+#. button
+#: data/interfaces/journal_panel.ui:91
+msgctxt "journal"
+msgid "All events"
+msgstr ""
+
+#. title
+#: data/interfaces/journal_panel.ui:98
+msgctxt "journal"
+msgid "Boot id"
+msgstr ""
+
+#. description
+#: data/interfaces/journal_panel.ui:118
+msgctxt "journal"
+msgid "No journal events!\n"
+"It can be a good thing. 😉"
+msgstr ""
+
+#. title
+#: data/interfaces/journal_panel.ui:121
+msgctxt "journal"
+msgid "No journal events"
 msgstr ""
 
 #: data/interfaces/list_boots.ui:37
@@ -158,12 +286,71 @@ msgctxt "boot list dialog"
 msgid "List Boots"
 msgstr ""
 
+#. group
+#. button
 #: data/interfaces/mask_unit_dialog.ui:24
 #: data/interfaces/mask_unit_dialog.ui:75
+msgctxt "mask"
 msgid "Mask"
 msgstr ""
 
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:27
+msgctxt "mask"
+msgid "To mask temporarily until the next system reboot"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:28
+msgctxt "mask"
+msgid "Runtime"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:33
+msgctxt "mask"
+msgid "Controls whether symlinks pointing to other units shall be replaced if necessary"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:34
+msgctxt "mask"
+msgid "Force"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:48
+msgctxt "mask"
+msgid "Ensure that the unit will be also stopped"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:49
+msgctxt "mask"
+msgid "Stop Now"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:54
+msgctxt "mask"
+msgid "Argument for the stoping mode"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:55
+msgctxt "mask"
+msgid "Stop mode"
+msgstr ""
+
+#. button
+#: data/interfaces/mask_unit_dialog.ui:67
+msgctxt "mask"
+msgid "Reset"
+msgstr ""
+
+#. dialog title
 #: data/interfaces/mask_unit_dialog.ui:89
+msgctxt "mask"
 msgid "Mask Unit"
 msgstr ""
 
@@ -182,7 +369,7 @@ msgstr ""
 #. row subtitle
 #: data/interfaces/preferences.ui:29
 msgctxt "preference"
-msgid "Application division orientation mode"
+msgid "Application's division orientation mode"
 msgstr ""
 
 #. row
@@ -194,7 +381,7 @@ msgstr ""
 #. row
 #: data/interfaces/preferences.ui:35
 msgctxt "preference"
-msgid " Change the format of printed timestamps"
+msgid "Change the format of printed timestamps"
 msgstr ""
 
 #. row
@@ -253,7 +440,7 @@ msgstr ""
 #. title
 #: data/interfaces/preferences.ui:75
 msgctxt "preference"
-msgid "Display Summay"
+msgid "Display Totals Summary"
 msgstr ""
 
 #. title
@@ -313,7 +500,7 @@ msgstr ""
 #. subtitle
 #: data/interfaces/preferences.ui:148
 msgctxt "preference"
-msgid "The journal event maximum characters\n"
+msgid "Journal's event maximum characters\n"
 "<i>0 to no limit</i>"
 msgstr ""
 
@@ -379,10 +566,102 @@ msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr ""
 
-#: data/interfaces/side_control_panel.ui:104
-msgid "Mask the selected unit.  This will link these unit files to <u>/dev/null</u>, making it impossible to start them. \n"
+#. button
+#: data/interfaces/side_control_panel.ui:18
+msgctxt "control"
+msgid "Enable Unit File ➚"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:33
+msgctxt "control"
+msgid "Send _Kill Signal ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:34
+msgctxt "control"
+msgid "Send a signal to a process or a group of processes"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:48
+msgctxt "control"
+msgid "_Queue Signal ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:49
+msgctxt "control"
+msgid "Queue a signal to a process or a group of processes"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:63
+msgctxt "control"
+msgid "_Clean ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:64
+msgctxt "control"
+msgid "Remove the configuration, state, cache, logs or runtime data of the specified unit"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:81
+msgctxt "control"
+msgid "Freeze the specified unit using cgroup freezer"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:94
+msgctxt "control"
+msgid "Thaw"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:95
+msgctxt "control"
+msgid "Thaw (unfreeze) the specified unit"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:108
+msgctxt "control"
+msgid "M_ask ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:109
+msgctxt "control"
+msgid "Mask the selected unit. This will link these unit files to <u>/dev/null</u>, making it impossible to start them. \n"
 "This is a stronger version of <b>disable</b>, since it prohibits all kinds of activation of the unit, including enablement and manual activation. \n"
 "<b>Use this option with care.</b>"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:125
+msgctxt "control"
+msgid "_UnMask"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:126
+msgctxt "control"
+msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:141
+msgctxt "control"
+msgid "Reload Unit"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:142
+msgctxt "control"
+msgid "Ask the specified unit to reload its configuration"
 msgstr ""
 
 #: data/interfaces/signals_window.ui:24
@@ -558,14 +837,42 @@ msgctxt "list info tooltip"
 msgid "Hide Total Summary"
 msgstr ""
 
+#. short version
+#: data/interfaces/unit_list_panel.ui:192
+msgctxt "list info"
+msgid "Loaded"
+msgstr ""
+
+#. short version
+#: data/interfaces/unit_list_panel.ui:193
+msgctxt "list info"
+msgid "Files"
+msgstr ""
+
+#. short version
+#: data/interfaces/unit_list_panel.ui:194
+msgctxt "list info"
+msgid "Units"
+msgstr ""
+
 #: data/interfaces/unit_list_panel.ui:225
 msgctxt "list page description"
-msgid "No units returned, set environmental variable <b>RUST_LOG=info</b> to see what happend."
+msgid "No units returned, set environment variable <b>RUST_LOG=info</b> to see what happened."
 msgstr ""
 
 #: data/interfaces/unit_list_panel.ui:227
 msgctxt "list page title"
 msgid "Something went wrong"
+msgstr ""
+
+#: data/interfaces/unit_list_search.ui:16
+msgctxt "unit search"
+msgid "Filters"
+msgstr ""
+
+#: data/interfaces/unit_list_search.ui:23
+msgctxt "unit search"
+msgid "Clear Filters"
 msgstr ""
 
 #: src/analyze/mod.rs:27
@@ -595,10 +902,12 @@ msgstr ""
 
 #: src/analyze/mod.rs:174
 #, rust-format
+msgctxt "analyse blame"
 msgid "{} seconds"
 msgstr ""
 
-#: src/main.rs:79
+#. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
+#: src/main.rs:80
 msgid "Program starting up"
 msgstr ""
 
@@ -606,13 +915,62 @@ msgstr ""
 msgid "Thank you for your support"
 msgstr ""
 
-#: src/widget/preferences/data.rs:84 src/widget/preferences/data.rs:85
+#: src/widget/preferences/data.rs:45
+msgctxt "filter"
+msgid "Unit"
+msgstr ""
+
+#: src/widget/preferences/data.rs:51
+msgctxt "filter"
+msgid "Type"
+msgstr ""
+
+#: src/widget/preferences/data.rs:56
+msgctxt "filter"
+msgid "Bus"
+msgstr ""
+
+#: src/widget/preferences/data.rs:58
+msgctxt "filter"
+msgid "State"
+msgstr ""
+
+#: src/widget/preferences/data.rs:64
+msgctxt "filter"
+msgid "Preset"
+msgstr ""
+
+#: src/widget/preferences/data.rs:70
+msgctxt "filter"
+msgid "Load"
+msgstr ""
+
+#: src/widget/preferences/data.rs:76
+msgctxt "filter"
+msgid "Active"
+msgstr ""
+
+#: src/widget/preferences/data.rs:81
+msgctxt "filter"
+msgid "Sub"
+msgstr ""
+
+#: src/widget/preferences/data.rs:83
+msgctxt "filter"
+msgid "Description"
+msgstr ""
+
+#: src/widget/preferences/data.rs:120 src/widget/preferences/data.rs:121
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr ""
 
-#: src/widget/preferences/data.rs:86
+#: src/widget/preferences/data.rs:122
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr ""
+
+#~ msgctxt "control"
+#~ msgid "Unmask"
+#~ msgstr "Démasquer"
 
