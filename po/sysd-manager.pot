@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-10 23:13-0400\n"
+"POT-Creation-Date: 2025-06-11 13:24-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -740,7 +740,7 @@ msgstr ""
 #: data/interfaces/signals_window.ui:24
 msgctxt "signals"
 msgid ""
-"No systemd signals\n"
+"No Systemd signals\n"
 "Start or Stop a Unit to see some appearing"
 msgstr ""
 
@@ -1008,7 +1008,7 @@ msgid "Running units"
 msgstr ""
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:80
+#: src/main.rs:86
 msgid "Program starting up"
 msgstr ""
 
@@ -1088,37 +1088,47 @@ msgid ""
 "units may not be enabled."
 msgstr ""
 
-#: src/systemd/enums.rs:919
+#: src/systemd/enums.rs:838
+msgctxt "dbus"
+msgid "User Session"
+msgstr ""
+
+#: src/systemd/enums.rs:839
+msgctxt "dbus"
+msgid "System"
+msgstr ""
+
+#: src/systemd/enums.rs:926
 msgctxt "clean"
 msgid "_Runtime"
 msgstr ""
 
-#: src/systemd/enums.rs:920
+#: src/systemd/enums.rs:927
 msgctxt "clean"
 msgid "_State"
 msgstr ""
 
-#: src/systemd/enums.rs:921
+#: src/systemd/enums.rs:928
 msgctxt "clean"
 msgid "Cac_he"
 msgstr ""
 
-#: src/systemd/enums.rs:922
+#: src/systemd/enums.rs:929
 msgctxt "clean"
 msgid "_Logs"
 msgstr ""
 
-#: src/systemd/enums.rs:923
+#: src/systemd/enums.rs:930
 msgctxt "clean"
 msgid "_Configuration"
 msgstr ""
 
-#: src/systemd/enums.rs:924
+#: src/systemd/enums.rs:931
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr ""
 
-#: src/systemd/enums.rs:925
+#: src/systemd/enums.rs:932
 msgctxt "clean"
 msgid "_All"
 msgstr ""
@@ -1435,9 +1445,14 @@ msgctxt "filter"
 msgid "Description"
 msgstr ""
 
-#: src/widget/preferences/data.rs:120 src/widget/preferences/data.rs:121
+#: src/widget/preferences/data.rs:120
 msgctxt "dbus"
 msgid "User Session Bus"
+msgstr ""
+
+#: src/widget/preferences/data.rs:121
+msgctxt "dbus"
+msgid "System Bus"
 msgstr ""
 
 #: src/widget/preferences/data.rs:122

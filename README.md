@@ -130,21 +130,43 @@ Interested in contributing? Contact the project maintainer on [GitHub](https://g
 
 ## 🌐 Internationalization
 
-__SysD Manager__ interface can be displayed in different languages.
+__SysD Manager__ can be displayed in different languages as long a translation has been made.
 
-### Translators
 
-I made some tools to help translation
 
-### Generate POTFILES
+Some tools have been created to help with translation. The following shows the most important ones to help translators
+
+
+<!-- ### Generate POTFILES
 
 To generate the POTFILES file that contains the list of input files to look for to exrtact translatable strings. 
 ```
 cargo run -p transtools -- potfiles
 ```
 
-_Normally a translator don't have to use this command. Use it only after you created or removed new source files_
+_Normally a translator don't have to use this command. Use it only after you created or removed new source files_ -->
 
+### Generate missing po files or update them
+
+After changes in the source code it's needed to update a po languages file. The following command helps you to perform that.
+```
+cargo run -p transtools -- po -lang <LANG>
+```
+
+_Also useful for adding a new translated language_
+
+### Extract transalation texts
+
+To extract translation texts form source code and generate a Portable Object Template (pot) file. This is needed __only__ after code changes.
+
+```
+cargo run -p transtools -- extract -lang <LANG>
+```
+
+### Translators Notes
+
+- To add a new translated language, first add the new language code, respecting ```ll``` or ```ll_LL``` format, in the ```./po/LINGUAS``` files.
+- To test any tanslated languages, just set the envroment variable like this:  ```export LANGUAGE=<language code>```
 
 ### Generate Templated
 

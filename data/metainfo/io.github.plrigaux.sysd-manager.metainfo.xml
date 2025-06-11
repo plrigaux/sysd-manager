@@ -89,7 +89,10 @@ https://hughsie.github.io/oars/index.html
         </ul>    
          <ul>
           <li>French translation</li>          
-        </ul>               
+        </ul>    
+         <ul>
+          <li>Ability for translators to translate Sysd Manager</li>          
+        </ul>                  
     </description>
     </release>
     <release version="1.28.0" date="2025-06-01">

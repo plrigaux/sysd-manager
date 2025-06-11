@@ -833,6 +833,13 @@ impl UnitDBusLevel {
         self.as_str()
     }
 
+    pub fn nice_label(&self) -> String {
+        match self {
+            UnitDBusLevel::UserSession => pgettext("dbus", "User Session"),
+            UnitDBusLevel::System => pgettext("dbus", "System"),
+        }
+    }
+
     pub(crate) fn from_short(suffix: &str) -> Self {
         match suffix {
             "s" => UnitDBusLevel::System,

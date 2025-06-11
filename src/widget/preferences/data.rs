@@ -118,7 +118,7 @@ impl DbusLevel {
     pub fn label(&self) -> String {
         match self {
             DbusLevel::UserSession => pgettext("dbus", "User Session Bus"),
-            DbusLevel::System => pgettext("dbus", "User Session Bus"),
+            DbusLevel::System => pgettext("dbus", "System Bus"),
             DbusLevel::SystemAndSession => pgettext("dbus", "System & User Session Bus"),
         }
     }

@@ -1,7 +1,9 @@
 extern crate log;
 extern crate translating;
 
+use clap::Command;
 use clap::Parser;
+use clap::Subcommand;
 use translating::MAIN_PROG;
 use translating::PO_DIR;
 use translating::error::TransError;
@@ -14,47 +16,60 @@ use std::{fs::File, io, path::Path};
 
 /// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
-#[command()]
+#[command(version, about, long_about = None)]
 struct Args {
-    /// Action to perform
-    #[arg()]
-    action: Option<String>,
-
-    //Language used to generate po file
-    #[arg(short, long)]
-    lang: Option<String>,
+    #[command(subcommand)]
+    command: Option<Commands>,
 }
 
-const ACTION_GENERATE: &str = "genpo";
-const ACTION_POTFILE: &str = "gen_potfiles";
-const ACTION_XGETTEXT: &str = "extract";
-const ACTION_XNGEN: &str = "xngen";
-const ACTION_MO: &str = "mo";
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Extract translation text form code and generate a Portable Object Template (pot) file
+    Extract,
+
+    /// Generate the POTFILES. i.e. the file containign the list of source files used for the translation text extraction
+    Potfile,
+
+    /// Generate missing po files or update them
+    Po {
+        /// The po file language. Pass \"all\" if you want all of them
+        #[arg(short, long)]
+        lang: String,
+    },
+
+    /// Extract translation text and Generate missing po files or update them in one command
+    Expo {
+        /// The po file language. Pass \"all\" if you want all of them
+        #[arg(short, long)]
+        lang: String,
+    },
+
+    /// Generate all Machine Object files
+    Mo,
+}
 
 fn main() {
-    println!("Hello, world!");
+    println!("Tanslation tool!");
 
     let args = Args::parse();
 
-    let result = match args.action {
-        Some(s) if s == ACTION_POTFILE => generate_potfiles(),
-        Some(s) if s == ACTION_XGETTEXT => extract_and_generate_po_template(),
-        Some(s) if s == ACTION_GENERATE => generate_missing_po_or_update(args.lang),
-        Some(s) if s == ACTION_XNGEN => {
-            let res = extract_and_generate_po_template();
-            if res.is_ok() {
-                generate_missing_po_or_update(args.lang)
-            } else {
-                res
+    let result = match &args.command {
+        Some(Commands::Mo) => generate_mo(),
+        Some(Commands::Po { lang }) => generate_missing_po_or_update(lang),
+        Some(Commands::Expo { lang }) => {
+            let mut result = extract_and_generate_po_template();
+            if result.is_ok() {
+                result = generate_missing_po_or_update(lang);
             }
+            result
         }
-        Some(s) if s == ACTION_MO => generate_mo(),
-        Some(s) => {
-            display_hint(Some(&s));
-            Ok(())
-        }
+        Some(Commands::Extract) => extract_and_generate_po_template(),
+        Some(Commands::Potfile) => generate_potfiles(),
         None => {
-            display_hint(None);
+            println!("Unknown command. Use \"help\" to know what is available \n");
+
+            let mut cmd = Command::new("transtools");
+            let _ = cmd.print_long_help();
             Ok(())
         }
     };
@@ -64,27 +79,7 @@ fn main() {
     }
 }
 
-fn display_hint(unknown_action: Option<&str>) {
-    if let Some(unknown_action) = unknown_action {
-        println!("Unknown action {:?}", unknown_action)
-    }
-
-    let mut actions = [ACTION_GENERATE, ACTION_POTFILE, ACTION_XGETTEXT];
-    actions.sort();
-
-    let actions = actions.join(", ");
-
-    println!("Choose following actions: {actions}");
-}
-
-fn generate_missing_po_or_update(lang: Option<String>) -> Result<(), TransError> {
-    //open file LINGUA
-
-    let Some(lang) = lang else {
-        eprintln!("Need to set a language or \"all\"");
-        return Err(TransError::LanguageNotSet);
-    };
-
+fn generate_missing_po_or_update(lang: &String) -> Result<(), TransError> {
     let po_dir = PathBuf::from(PO_DIR);
 
     let mut linguas_dir = po_dir.clone();
@@ -93,18 +88,29 @@ fn generate_missing_po_or_update(lang: Option<String>) -> Result<(), TransError>
     let lines = read_lines(linguas_dir)?;
 
     let mut linguas = Vec::new();
+    let mut valid = Vec::new();
     for line in lines {
         let line = line.expect("read line should be ok");
 
         let line = line.trim();
 
-        if !line.starts_with('#') && (line == lang || lang.eq_ignore_ascii_case("all")) {
+        if line.starts_with('#') {
+            continue;
+        }
+
+        if line == lang || lang.eq_ignore_ascii_case("all") {
             linguas.push(line.to_owned());
         }
-    }
-    //parse
 
-    //write file
+        valid.push(line.to_owned());
+    }
+
+    if linguas.is_empty() {
+        eprintln!("Need to provide one valid language or \"all\" to perform this action");
+        valid.sort();
+        eprintln!("Valid languages currently are: {}", valid.join(", "));
+        return Err(TransError::LanguageNotSet);
+    };
 
     println!("{:?}", linguas);
 

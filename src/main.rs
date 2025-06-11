@@ -45,18 +45,24 @@ fn main() -> glib::ExitCode {
 
     info!("LANGUAGE {:?}", env::var("LANGUAGE"));
     let textdomain_dir = env::var("TEXTDOMAINDIR");
-    info!("TEXTDOMAINDIR {:?}", textdomain_dir);
-    let local_dir = if let Ok(val) = textdomain_dir {
-        val
+    info!("env TEXTDOMAINDIR {:?}", textdomain_dir);
+    let locale_dir = if let Ok(domain_dir) = textdomain_dir {
+        domain_dir
     } else {
-        "/usr/share/locale".to_owned()
+        #[cfg(feature = "flatpak")]
+        let domain_dir = "/app/share/locale".to_owned();
+
+        #[cfg(not(feature = "flatpak"))]
+        let domain_dir = "/usr/share/locale".to_owned();
+
+        domain_dir
     };
 
     gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
 
     // Set up gettext translations
     let path =
-        gettextrs::bindtextdomain(DOMAIN_NAME, local_dir).expect("Unable to bind the text domain");
+        gettextrs::bindtextdomain(DOMAIN_NAME, locale_dir).expect("Unable to bind the text domain");
     info!("bindtextdomain path {:?}", path);
 
     match gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {

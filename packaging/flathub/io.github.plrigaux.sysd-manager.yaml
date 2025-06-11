@@ -15,8 +15,8 @@ finish-args:
 - --filesystem=host-etc
 # Needed to access journal logs
 - --filesystem=/var/log:ro
-- --env=RUST_LOG=info
-- --env=RUST_BACKTRACE=1
+#- --env=RUST_LOG=info
+#- --env=RUST_BACKTRACE=1
 #- --env=SYSDMNG_DIST_MODE=flatpack
 # Needed to talk to systemd1 with dbus
 - --talk-name=org.freedesktop.systemd1
@@ -38,7 +38,8 @@ modules:
   - install -Dm644 ./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg -t /app/share/icons/hicolor/scalable/apps/
   - install -Dm644 ./data/schemas/io.github.plrigaux.sysd-manager.gschema.xml -t /app/share/glib-2.0/schemas
   - install -Dm644 ./data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml -t /app/share/metainfo
-  - cp -r "./target/locale/"  "/app/share/locale" 
+  # Copy Language Machine Objet (mo) files
+  - cp -r ./target/locale /app/share/
   - glib-compile-schemas /app/share/glib-2.0/schemas
 
   sources:

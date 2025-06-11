@@ -1,5 +1,3 @@
-use std::cell::OnceCell;
-
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use gettextrs::pgettext;
 use gio::glib::BoolError;
@@ -14,6 +12,8 @@ use gtk::{
     },
 };
 use log::{info, warn};
+use std::cell::OnceCell;
+use strum::IntoEnumIterator;
 
 use crate::{
     systemd::{
@@ -334,16 +334,14 @@ impl ObjectImpl for EnableUnitDialogImp {
         self.run_mode_combo.set_expression(Some(expression));
         self.run_mode_combo.set_model(Some(&model));
 
-        let model = adw::EnumListModel::new(UnitDBusLevel::static_type());
+        let mut levels_string = Vec::new();
+        for level in UnitDBusLevel::iter() {
+            levels_string.push(level.nice_label());
+        }
 
-        let expression = gtk::PropertyExpression::new(
-            adw::EnumListItem::static_type(),
-            None::<gtk::Expression>,
-            "nick",
-        );
-
-        self.dbus_level_combo.set_expression(Some(expression));
-        self.dbus_level_combo.set_model(Some(&model));
+        let level_str: Vec<&str> = levels_string.iter().map(|x| &**x).collect();
+        let string_list = gtk::StringList::new(&level_str);
+        self.dbus_level_combo.set_model(Some(&string_list));
 
         self.reset_button_clicked();
     }
