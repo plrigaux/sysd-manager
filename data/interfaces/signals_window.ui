@@ -21,10 +21,10 @@
                   <object class="AdwViewStackPage">
                     <property name="child">
                       <object class="AdwStatusPage">
-                        <property name="description" translatable="yes">No systemd signals
+                        <property name="description" translatable="yes" context="signals" comments="description">No Systemd signals
 Start or Stop a Unit to see some appearing</property>
                         <property name="icon-name">dialog-question</property>
-                        <property name="title">No signals</property>
+                        <property name="title" translatable="yes" context="signals" comments="title">No signals</property>
                       </object>
                     </property>
                     <property name="name">empty</property>
@@ -52,20 +52,20 @@ Start or Stop a Unit to see some appearing</property>
                               <object class="GtkColumnViewColumn" id="time_column">
                                 <property name="fixed-width">150</property>
                                 <property name="resizable">True</property>
-                                <property name="title">Time</property>
+                                <property name="title" translatable="yes" context="signals" comments="column title">Time</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkColumnViewColumn" id="type_column">
                                 <property name="fixed-width">150</property>
                                 <property name="resizable">True</property>
-                                <property name="title">Type</property>
+                                <property name="title" translatable="yes" context="signals" comments="column title">Type</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkColumnViewColumn" id="details_column">
                                 <property name="expand">True</property>
-                                <property name="title">Details</property>
+                                <property name="title" translatable="yes" context="signals" comments="column title">Details</property>
                               </object>
                             </child>
                           </object>
@@ -84,7 +84,7 @@ Start or Stop a Unit to see some appearing</property>
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title">Watch Signals</property>
+                <property name="title" translatable="yes" context="signals" comments="dialog title">Watch Signals</property>
               </object>
             </property>
           </object>

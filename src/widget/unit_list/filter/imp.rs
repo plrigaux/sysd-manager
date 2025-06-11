@@ -378,7 +378,7 @@ macro_rules! build_elem_filter {
                     .build()
             };
 
-            check.set_tooltip_markup(value.tooltip_info());
+            check.set_tooltip_markup(value.tooltip_info().as_deref());
 
             let filter_elem = $filter_container.clone();
             check.connect_toggled(move |check_button| {

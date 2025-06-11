@@ -17,24 +17,24 @@
             <property name="spacing">5</property>
             <child>
               <object class="AdwPreferencesGroup">
-                <property name="title">Parameters</property>
+                <property name="title" translatable="yes" context="kill" comments="group">Parameters</property>
                 <child>
                   <object class="AdwEntryRow" id="signal_id_entry">
-                    <property name="title">Unix signal</property>
+                    <property name="title" translatable="yes" context="kill" comments="title">Unix signal</property>
                     <signal name="changed" handler="kill_signal_text_change" swapped="yes"/>
                   </object>
                 </child>
                 <child>
                   <object class="AdwComboRow" id="who_to_kill">
-                    <property name="subtitle">Unit related processes</property>
-                    <property name="title">Who to kill</property>
+                    <property name="subtitle" translatable="yes" context="kill" comments="subtitle">Unit related processes</property>
+                    <property name="title" translatable="yes" context="kill" comments="title">Who to kill</property>
                     <signal name="activate" handler="who_to_kill_activate" swapped="yes"/>
                     <signal name="activated" handler="who_to_kill_activated" swapped="yes"/>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="sigqueue_value">
-                    <property name="title">Signal Value</property>
+                    <property name="title" translatable="yes" context="kill" comments="title">Signal Value</property>
                     <signal name="changed" handler="sigqueue_value_changed" swapped="yes"/>
                   </object>
                 </child>
@@ -48,7 +48,7 @@
                 <child>
                   <object class="GtkButton" id="send_button">
                     <property name="css-classes">suggested-action</property>
-                    <property name="label">Send</property>
+                    <property name="label" translatable="yes" context="kill" comments="button">Send</property>
                     <property name="sensitive">False</property>
                     <signal name="clicked" handler="button_send_clicked" swapped="yes"/>
                   </object>
@@ -57,9 +57,9 @@
             </child>
             <child>
               <object class="AdwPreferencesGroup">
-                <property name="description">most common linux signals</property>
+                <property name="description" translatable="yes" context="kill" comments="description">Most common Linux signals</property>
                 <property name="margin-end">5</property>
-                <property name="title">Common Unix signals</property>
+                <property name="title" translatable="yes" context="kill" comments="description">Common Unix signals</property>
                 <child>
                   <object class="GtkScrolledWindow">
                     <property name="halign">baseline-fill</property>
@@ -81,7 +81,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title">Send Kill Signal to Unit</property>
+                <property name="title" translatable="yes" context="kill" comments="button">Send Kill Signal to Unit</property>
               </object>
             </property>
           </object>

@@ -1,6 +1,7 @@
 use std::cell::{OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use gettextrs::pgettext;
 use gio::glib::BoolError;
 use gtk::{
     glib::{self},
@@ -117,7 +118,13 @@ impl MaskUnitDialogImp {
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Mask Unit File", true, &button, lambda, lambda_out);
+            .call_method(
+                /*Message answer*/ &pgettext("mask", "Mask Unit File"),
+                true,
+                &button,
+                lambda,
+                lambda_out,
+            );
     }
 
     #[template_callback]
@@ -198,7 +205,8 @@ impl MaskUnitDialogImp {
             None => {
                 warn!("set unit to None");
                 self.unit.set(None);
-                self.mask_unit_dialog_title.set_subtitle("No Unit Selected");
+                let sub_title = pgettext("mask", "No Unit Selected");
+                self.mask_unit_dialog_title.set_subtitle(&sub_title);
                 return;
             }
         };

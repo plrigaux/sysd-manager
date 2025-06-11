@@ -2,6 +2,7 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
 use const_format::concatcp;
+use gettextrs::pgettext;
 use gtk::{
     gio::{self, MENU_ATTRIBUTE_TARGET},
     glib::{self, Variant, VariantTy},
@@ -125,8 +126,13 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn thaw_button_clicked(&self, button: &gtk::Button) {
-        self.parent()
-            .call_method("Thaw", true, button, systemd::thaw_unit, Self::lambda_out)
+        self.parent().call_method(
+            /*Message answer*/ &pgettext("thaw", "Thaw"),
+            true,
+            button,
+            systemd::thaw_unit,
+            Self::lambda_out,
+        )
     }
 
     #[template_callback]
@@ -146,8 +152,13 @@ impl SideControlPanelImpl {
         let lambda =
             move |unit: Option<&UnitInfo>| systemd::reload_unit(unit.expect("Unit not None"), mode);
 
-        self.parent()
-            .call_method("Reload", true, button, lambda, Self::lambda_out)
+        self.parent().call_method(
+            /*Message answer*/ &pgettext("reload", "Reload"),
+            true,
+            button,
+            lambda,
+            Self::lambda_out,
+        )
     }
 
     #[template_callback]

@@ -5,7 +5,7 @@ use crate::{
     },
     widget::unit_file_panel::flatpak,
 };
-use formatx::formatx;
+
 use std::cell::Ref;
 
 use gettextrs::pgettext;
@@ -16,7 +16,7 @@ use gtk::{
     pango::{AttrInt, AttrList, Weight},
     prelude::*,
 };
-use log::{error, info, warn};
+use log::{info, warn};
 
 const PAGE_BLAME: &str = "blame";
 
@@ -171,15 +171,10 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
 
                     let time = (time_full as f32) / 1000f32;
 
-                    match formatx!(pgettext("analyse blame", "{} seconds"), time) {
-                        Ok(total_time_label_str) => {
-                            total_time_label.set_label(&total_time_label_str)
-                        }
-                        Err(error) => {
-                            error!("Translation error: {:?}", error);
-                            total_time_label.set_label(&time.to_string())
-                        }
-                    }
+                    let total_time_label_str =
+                        crate::format2!(pgettext("analyse blame", "{} seconds"), time);
+
+                    total_time_label.set_label(&total_time_label_str);
 
                     stack.set_visible_child_name(PAGE_BLAME);
                 }

@@ -25,7 +25,7 @@
               <object class="GtkButton" id="clean_button">
                 <property name="css-classes">suggested-action</property>
                 <property name="halign">end</property>
-                <property name="label" translatable="yes" context="button">Clean</property>
+                <property name="label" translatable="yes" context="clean" comments="button">Clean</property>
                 <property name="sensitive">False</property>
                 <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
               </object>
@@ -37,7 +37,7 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title">Clean</property>
+                <property name="title" translatable="yes" context="clean" comments="title dialog">Clean</property>
               </object>
             </property>
           </object>

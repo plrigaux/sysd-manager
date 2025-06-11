@@ -4,6 +4,7 @@ use std::{
 };
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use gettextrs::pgettext;
 use gtk::{
     glib::{self, property::PropertySet},
     subclass::{
@@ -94,7 +95,13 @@ impl CleanDialogImp {
         self.unit_control
             .get()
             .expect("unit_control not None")
-            .call_method("Clean", true, &button, lambda, lambda_out);
+            .call_method(
+                /*Message answer*/ &pgettext("clean", "Clean"),
+                true,
+                &button,
+                lambda,
+                lambda_out,
+            );
     }
 
     pub(crate) fn set_app_window(
@@ -119,7 +126,8 @@ impl CleanDialogImp {
             None => {
                 warn!("set unit to None");
                 self.unit.set(None);
-                self.window_title.set_subtitle("No Unit Selected");
+                let sub_title = pgettext("clean", "No Unit Selected");
+                self.window_title.set_subtitle(&sub_title);
                 return;
             }
         };

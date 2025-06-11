@@ -1,6 +1,7 @@
 use std::cell::OnceCell;
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use gettextrs::pgettext;
 use gio::glib::BoolError;
 use gtk::{
     glib::{self},
@@ -161,7 +162,7 @@ impl EnableUnitDialogImp {
             .get()
             .expect("unit_control not None")
             .call_method(
-                "Enable Unit File",
+                /*Message answer*/ &pgettext("enable unit file", "Enable Unit File"),
                 false,
                 &button,
                 lambda,
