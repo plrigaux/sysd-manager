@@ -203,13 +203,13 @@ pub enum PreferredColorScheme {
 }
 
 impl PreferredColorScheme {
-    pub fn text(&self) -> &str {
+    pub fn text(&self) -> String {
         match self {
-            PreferredColorScheme::Default => "No Preference",
-            PreferredColorScheme::PreferDark => "Prefer Dark",
-            PreferredColorScheme::PreferLight => "Prefer Light",
-            PreferredColorScheme::ForceDark => "Force Dark",
-            PreferredColorScheme::ForceLight => "Force Light",
+            PreferredColorScheme::Default => pgettext("pref color scheme", "No Preference"),
+            PreferredColorScheme::PreferDark => pgettext("pref color scheme", "Prefer Dark"),
+            PreferredColorScheme::PreferLight => pgettext("pref color scheme", "Prefer Light"),
+            PreferredColorScheme::ForceDark => pgettext("pref color scheme", "Force Dark"),
+            PreferredColorScheme::ForceLight => pgettext("pref color scheme", "Force Light"),
         }
     }
 
@@ -252,11 +252,11 @@ pub enum OrientationMode {
 }
 
 impl OrientationMode {
-    pub fn label(&self) -> &str {
+    pub fn label(&self) -> String {
         match self {
-            OrientationMode::Automatic => "Auto",
-            OrientationMode::ForceHorizontal => "Side by Side",
-            OrientationMode::ForceVertical => "Top Bottom",
+            OrientationMode::Automatic => pgettext("pref orientation", "Automatic"),
+            OrientationMode::ForceHorizontal => pgettext("pref orientation", "Side by Side"),
+            OrientationMode::ForceVertical => pgettext("pref orientation", "Top Bottom"),
         }
     }
 

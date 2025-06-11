@@ -1,14 +1,5 @@
 use gio::Settings;
 
-use adw::{EnumListItem, prelude::*, subclass::prelude::*};
-use gtk::{
-    StringObject, gio,
-    glib::{self, BoolError},
-    pango::{self, FontFace},
-};
-use log::{debug, error, info, warn};
-use std::cell::{OnceCell, RefCell};
-
 use crate::{
     consts::ADWAITA,
     systemd_gui::new_settings,
@@ -26,6 +17,15 @@ use crate::{
     },
 };
 use crate::{utils::th::TimestampStyle, widget::InterPanelMessage};
+use adw::{prelude::*, subclass::prelude::*};
+use gtk::{
+    StringObject, gio,
+    glib::{self, BoolError},
+    pango::{self, FontFace},
+};
+use log::{debug, error, info, warn};
+use std::cell::{OnceCell, RefCell};
+use strum::IntoEnumIterator;
 
 use super::data::{
     COL_WIDTH_PREFIX, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS,
@@ -349,7 +349,7 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         settings.set_string(KEY_PREF_UNIT_FILE_STYLE_SCHEME, &unit_file_style_scheme)?;
 
         let timestamp_style = PREFERENCES.timestamp_style();
-        settings.set_string(KEY_PREF_TIMESTAMP_STYLE, &timestamp_style.to_string())?;
+        settings.set_string(KEY_PREF_TIMESTAMP_STYLE, timestamp_style.code())?;
 
         let font_family = PREFERENCES.font_family();
         settings.set_string(KEY_PREF_STYLE_TEXT_FONT_FAMILY, &font_family)?;
@@ -383,36 +383,27 @@ impl ObjectImpl for PreferencesDialogImpl {
         self.parent_constructed();
         self.setup_settings();
 
-        let model = adw::EnumListModel::new(TimestampStyle::static_type());
+        let mut levels_string = Vec::new();
+        for ts in TimestampStyle::iter() {
+            levels_string.push(ts.label());
+        }
 
-        let expression = gtk::PropertyExpression::new(
-            adw::EnumListItem::static_type(),
-            None::<gtk::Expression>,
-            "name",
-        );
-
-        self.timestamp_style.set_model(Some(&model));
-        self.timestamp_style.set_expression(Some(expression));
+        let level_str: Vec<&str> = levels_string.iter().map(|x| &**x).collect();
+        let string_list = gtk::StringList::new(&level_str);
+        self.timestamp_style.set_model(Some(&string_list));
 
         let cur_style = PREFERENCES.timestamp_style();
         self.timestamp_style.set_selected(cur_style as u32);
 
         self.timestamp_style
             .connect_selected_item_notify(|combo_box| {
-                let selected_item = combo_box.selected_item();
+                let selected_item_position = combo_box.selected() as i32;
 
-                let Some(timestamp_style) = selected_item else {
-                    return;
-                };
+                let timestamp_style: TimestampStyle = selected_item_position.into();
 
-                let timestamp_style = timestamp_style
-                    .downcast::<EnumListItem>()
-                    .expect("Needs to be TimestampStyle");
+                combo_box.set_tooltip_text(Some(timestamp_style.details()));
 
-                combo_box.set_tooltip_text(Some(&timestamp_style.nick()));
-
-                let tss = TimestampStyle::from(timestamp_style.value());
-                PREFERENCES.set_timestamp_style(tss);
+                PREFERENCES.set_timestamp_style(timestamp_style);
             });
         let settings = self.settings();
         build_preferred_color_scheme(&self.preferred_color_scheme, settings);

@@ -1,5 +1,7 @@
 use chrono::{DateTime, Local, TimeDelta, TimeZone, Utc};
-use gtk::{glib, prelude::*};
+use gettextrs::pgettext;
+use gtk::glib;
+use strum::EnumIter;
 
 use std::{
     ffi::CStr,
@@ -8,29 +10,50 @@ use std::{
 
 use crate::consts::U64MAX;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, glib::Enum)]
-#[enum_type(name = "TimestampStyle")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, EnumIter)]
 pub enum TimestampStyle {
-    #[enum_value(name = "Pretty", nick = "Day YYYY-MM-DD HH:MM:SS TZ")]
     Pretty,
-
-    #[enum_value(name = "Pretty usec", nick = "Day YYYY-MM-DD HH:MM:SS.000000 TZ")]
     PrettyUsec,
-
-    #[enum_value(name = "UTC", nick = "Day YYYY-MM-DD HH:MM:SS UTC")]
     Utc,
-
-    #[enum_value(name = "UTC usec", nick = "Day YYYY-MM-DD HH:MM:SS.000000 UTC")]
     UtcUsec,
-
-    #[enum_value(name = "Unix", nick = "Seconds since the epoch")]
     Unix,
-
-    #[enum_value(name = "Unix usec", nick = "Micro seconds since the epoch")]
     UnixUsec,
 }
 
 impl TimestampStyle {
+    pub fn code(&self) -> &str {
+        match self {
+            TimestampStyle::Pretty => "Pretty",
+            TimestampStyle::PrettyUsec => "Pretty usec",
+            TimestampStyle::Utc => "UTC",
+            TimestampStyle::UtcUsec => "UTC usec",
+            TimestampStyle::Unix => "Unix",
+            TimestampStyle::UnixUsec => "Unix usec",
+        }
+    }
+
+    pub fn label(&self) -> String {
+        match self {
+            TimestampStyle::Pretty => pgettext("pref time style", "Pretty"),
+            TimestampStyle::PrettyUsec => pgettext("pref time style", "Pretty usec"),
+            TimestampStyle::Utc => pgettext("pref time style", "UTC"),
+            TimestampStyle::UtcUsec => pgettext("pref time style", "UTC usec"),
+            TimestampStyle::Unix => pgettext("pref time style", "Unix"),
+            TimestampStyle::UnixUsec => pgettext("pref time style", "Unix usec"),
+        }
+    }
+
+    pub fn details(&self) -> &str {
+        match self {
+            TimestampStyle::Pretty => "Day YYYY-MM-DD HH:MM:SS TZ",
+            TimestampStyle::PrettyUsec => "Day YYYY-MM-DD HH:MM:SS.000000 TZ",
+            TimestampStyle::Utc => "Day YYYY-MM-DD HH:MM:SS UTC",
+            TimestampStyle::UtcUsec => "Day YYYY-MM-DD HH:MM:SS.000000 UTC",
+            TimestampStyle::Unix => "Seconds since the epoch",
+            TimestampStyle::UnixUsec => "Micro seconds since the epoch",
+        }
+    }
+
     pub fn usec_formated(&self, timestamp_usec: u64) -> String {
         match self {
             TimestampStyle::Pretty => pretty(timestamp_usec, "%a, %d %b %Y %H:%M:%S"),
@@ -58,15 +81,16 @@ impl TimestampStyle {
 
 impl Display for TimestampStyle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let value: glib::Value = self.to_value();
+        /*         let value: glib::Value = self.to_value();
 
-        let out = if let Some((_enum_type, enum_value)) = glib::EnumValue::from_value(&value) {
-            enum_value.name()
-        } else {
-            ""
-        };
+               let out = if let Some((_enum_type, enum_value)) = glib::EnumValue::from_value(&value) {
+                   enum_value.name()
+               } else {
+                   ""
+               };
+        */
 
-        write!(f, "{}", out)
+        write!(f, "{}", self.label())
     }
 }
 
@@ -431,7 +455,6 @@ mod tests {
     use std::ffi::CStr;
 
     use chrono::{Duration, TimeDelta};
-    use glib::value::ToValue;
 
     use super::*;
 
@@ -663,13 +686,6 @@ mod tests {
         println!("{}", date.format("%a, %d %b %Y %H:%M:%S %Z"));
         println!("{}", date.to_rfc2822());
         println!("{}", date.to_rfc3339());
-    }
-
-    #[test]
-    fn test_timestamp_style_enum() {
-        let v = TimestampStyle::Pretty.to_value();
-
-        println!("{:?}", v);
     }
 
     #[test]

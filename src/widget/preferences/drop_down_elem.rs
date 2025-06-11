@@ -118,7 +118,7 @@ pub(super) fn build_pane_orientation_selector(
         let mode: Ref<'_, OrientationMode> = boxed.borrow();
 
         img.set_icon_name(mode.icon_name());
-        label.set_label(mode.label());
+        label.set_label(&mode.label());
     });
 
     app_orientation.set_factory(Some(&factory));
