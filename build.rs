@@ -28,7 +28,7 @@ fn main() {
     }
 
     if let Err(error) = generate_mo() {
-        script_error!("Generate release notes error : {:?}", error);
+        script_error!("Generate release mo files error : {:?}", error);
     }
 }
 

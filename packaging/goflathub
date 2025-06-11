@@ -312,6 +312,8 @@ def set_required_files(from_git: bool):
             "data",
             "build.rs",
             "screenshots",
+            "po",
+            "translating", "transtools", "tiny_daemon",
             f"{FLATPACK_BUILD_DIR}",
         ]
     )
