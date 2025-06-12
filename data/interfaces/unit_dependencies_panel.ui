@@ -17,7 +17,7 @@
         </child>
         <child>
           <object class="GtkLabel">
-            <property name="label">plain</property>
+            <property name="label" translatable="yes" context="dependency" comments="label">plain</property>
           </object>
         </child>
         <child>
@@ -34,7 +34,7 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="title">No dependencies events</property>
+                <property name="title" translatable="yes" context="dependency" comments="label">No dependencies</property>
               </object>
             </property>
             <property name="name">empty</property>

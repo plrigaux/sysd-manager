@@ -1,3 +1,4 @@
+use gettextrs::pgettext;
 use gtk::{
     TemplateChild, gio,
     glib::{self},
@@ -274,18 +275,14 @@ impl UnitDependenciesPanelImp {
     }
 
     fn setup_dependency_type_dropdown(&self) {
-        let expression = gtk::PropertyExpression::new(
-            adw::EnumListItem::static_type(),
-            None::<gtk::Expression>,
-            "nick",
-        );
+        let mut levels_string = Vec::new();
+        for dep_type in DependencyType::iter() {
+            levels_string.push(dep_type.label());
+        }
 
-        self.dependency_types_dropdown
-            .set_expression(Some(expression));
-
-        let model = adw::EnumListModel::new(DependencyType::static_type());
-
-        self.dependency_types_dropdown.set_model(Some(&model));
+        let level_str: Vec<&str> = levels_string.iter().map(|x| &**x).collect();
+        let string_list = gtk::StringList::new(&level_str);
+        self.dependency_types_dropdown.set_model(Some(&string_list));
 
         {
             let dependency_panel = self.obj().clone();
@@ -352,7 +349,8 @@ impl ObjectImpl for UnitDependenciesPanelImp {
 
         self.setup_dependency_type_dropdown();
 
-        let mut filter_button_unit_type = ExMenuButton::new("Type");
+        //menu filter
+        let mut filter_button_unit_type = ExMenuButton::new(&pgettext("dependency", "Unit Types"));
         filter_button_unit_type.set_margin_end(5);
         filter_button_unit_type.set_tooltip_text(Some("Filter dependencies by types"));
 

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-11 20:25-0400\n"
-"PO-Revision-Date: 2025-06-11 20:26-0400\n"
+"POT-Creation-Date: 2025-06-11 20:55-0400\n"
+"PO-Revision-Date: 2025-06-11 20:58-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -877,6 +877,18 @@ msgctxt "controls tab"
 msgid "Journal"
 msgstr "Journal"
 
+#. label
+#: data/interfaces/unit_dependencies_panel.ui:20
+msgctxt "dependency"
+msgid "plain"
+msgstr "plat"
+
+#. label
+#: data/interfaces/unit_dependencies_panel.ui:37
+msgctxt "dependency"
+msgid "No dependencies"
+msgstr "Aucune dépendances"
+
 #. description
 #: data/interfaces/unit_file_panel.ui:16
 msgctxt "file"
@@ -1171,47 +1183,67 @@ msgstr ""
 "Le fichier d'unité a été créé dynamiquement avec l'API d'exécution. Les "
 "unités transitoires ne peuvent pas être activées."
 
-#: src/systemd/enums.rs:838
+#: src/systemd/enums.rs:679
+msgctxt "dependency"
+msgid "Forward"
+msgstr "Avant"
+
+#: src/systemd/enums.rs:680
+msgctxt "dependency"
+msgid "Reverse"
+msgstr "Inverse"
+
+#: src/systemd/enums.rs:681
+msgctxt "dependency"
+msgid "After"
+msgstr "Après"
+
+#: src/systemd/enums.rs:682
+msgctxt "dependency"
+msgid "Before"
+msgstr "Avant"
+
+#: src/systemd/enums.rs:852
 msgctxt "dbus"
 msgid "User Session"
 msgstr "Session utilisateur"
 
-#: src/systemd/enums.rs:839
+#: src/systemd/enums.rs:853
 msgctxt "dbus"
 msgid "System"
 msgstr "Système"
 
-#: src/systemd/enums.rs:929
+#: src/systemd/enums.rs:943
 msgctxt "clean"
 msgid "_Runtime"
 msgstr "_Runtime"
 
-#: src/systemd/enums.rs:930
+#: src/systemd/enums.rs:944
 msgctxt "clean"
 msgid "_State"
 msgstr "État"
 
-#: src/systemd/enums.rs:931
+#: src/systemd/enums.rs:945
 msgctxt "clean"
 msgid "Cac_he"
 msgstr "Cac_he"
 
-#: src/systemd/enums.rs:932
+#: src/systemd/enums.rs:946
 msgctxt "clean"
 msgid "_Logs"
 msgstr "Journau_x"
 
-#: src/systemd/enums.rs:933
+#: src/systemd/enums.rs:947
 msgctxt "clean"
 msgid "_Configuration"
 msgstr "_Configuration"
 
-#: src/systemd/enums.rs:934
+#: src/systemd/enums.rs:948
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr "Magasin de descripteurs de _fichiers"
 
-#: src/systemd/enums.rs:935
+#: src/systemd/enums.rs:949
 msgctxt "clean"
 msgid "_All"
 msgstr "_Tous"
@@ -1653,6 +1685,12 @@ msgstr "Décongeler"
 msgctxt "reload"
 msgid "Reload"
 msgstr "Recharger"
+
+#. menu filter
+#: src/widget/unit_dependencies_panel/imp.rs:353
+msgctxt "dependency"
+msgid "Unit Types"
+msgstr "Type d'unité"
 
 #, fuzzy
 #~ msgctxt "enable"

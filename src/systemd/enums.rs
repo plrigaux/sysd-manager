@@ -654,21 +654,35 @@ impl From<u32> for KillWho {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum)]
-#[enum_type(name = "DependencyType")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, strum::EnumIter)]
+
 pub enum DependencyType {
-    #[enum_value(name = "forward", nick = "Forward")]
     #[default]
     Forward = 0,
-    #[enum_value(name = "reverse", nick = "Reverse")]
     Reverse = 1,
-    #[enum_value(name = "after", nick = "After")]
     After = 2,
-    #[enum_value(name = "before", nick = "Before")]
     Before = 3,
 }
 
 impl DependencyType {
+    /*     pub fn name(&self) -> &str {
+        match self {
+            DependencyType::Forward => "forward",
+            DependencyType::Reverse => "reverse",
+            DependencyType::After => "after",
+            DependencyType::Before => "before",
+        }
+    } */
+
+    pub fn label(&self) -> String {
+        match self {
+            DependencyType::Forward => pgettext("dependency", "Forward"),
+            DependencyType::Reverse => pgettext("dependency", "Reverse"),
+            DependencyType::After => pgettext("dependency", "After"),
+            DependencyType::Before => pgettext("dependency", "Before"),
+        }
+    }
+
     pub(super) fn properties(&self) -> &[&str] {
         let properties: &[&str] = match self {
             DependencyType::Forward => &[
