@@ -36,9 +36,12 @@ fn generate_mo() -> Result<(), TransError> {
     println!("generate_mo");
     println!("cargo::rerun-if-changed={PO_DIR}");
 
+    script_warning!("Go to read {PO_DIR}");
     let paths = fs::read_dir(PO_DIR)?;
+    script_warning!("Path {:?}", paths);
 
     for path_result in paths {
+        script_warning!("path_result {:?}", path_result);
         let path = path_result?.path();
         if path.extension().is_some_and(|this_ext| this_ext == "po") {
             println!("PO file {:?} lang {:?}", path, path.file_stem());
