@@ -130,7 +130,7 @@ Interested in contributing? Contact the project maintainer on [GitHub](https://g
 
 ## 🌐 Internationalization
 
-__SysD Manager__ can be displayed in different languages as long a translation has been made.
+__SysD Manager__ can be displayed in different languages as long a translation has been provided.
 
 
 
@@ -167,7 +167,7 @@ cargo run -p transtools -- extract -lang <LANG>
 
 - To add a new translated language, first add the new language code, respecting ```ll``` or ```ll_LL``` format, in the ```./po/LINGUAS``` files.
 - To test any tanslated languages, just set the envroment variable like this:  ```export LANGUAGE=<language code>```
-
+<!--
 ### Generate Templated
 
 To generate the language template. 
@@ -177,7 +177,7 @@ cargo run -p transtools -- xgettext
 ```
 
 _Normally a translator don't have to use this command. Use it only after you created or removed new source files_
-
+-->
 ## 💡 Credits
 
 This project is inspired by the work of Guillaume Gomez: https://github.com/GuillaumeGomez/systemd-manager/
