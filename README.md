@@ -93,7 +93,7 @@ yay -S sysd-manager
 2. Clone and build:
 ```bash
 git clone https://github.com/plrigaux/sysd-manager
-cd sysd-manager
+cd sysd-manager/scripts 
 sh install.sh
 ```
 
