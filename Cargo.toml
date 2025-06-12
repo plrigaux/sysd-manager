@@ -81,7 +81,7 @@ zvariant = "5.5"
 #glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
 quick-xml =  "0.37"
-translating = { path = "./translating" }
+translating = { version = "0.1", path = "./translating" }
 
 [package.metadata.generate-rpm]
 summary = "A systemd units manager"
