@@ -1,6 +1,8 @@
+use gettextrs::pgettext;
 use gtk::{gio, glib};
 use log::{debug, info, warn};
 
+use crate::format2;
 use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus, errors::SystemdErrors};
 
 use super::UnitControlPanel;
@@ -47,8 +49,13 @@ pub(super) fn switch_ablement_state_set(
             Ok(enablement_status_ret) => {
                 let blue = blue(true).get_color();
 
-                let toast_info = format!(
-                    "Unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{blue}'>{}</span>",
+                //
+                let toast_info = format2!(
+                    pgettext(
+                        "toast",
+                        "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{0}'>{}</span>"
+                    ),
+                    blue,
                     unit.primary(),
                     expected_new_status,
                 );

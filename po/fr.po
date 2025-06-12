@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-11 20:55-0400\n"
-"PO-Revision-Date: 2025-06-11 20:58-0400\n"
+"POT-Creation-Date: 2025-06-11 23:11-0400\n"
+"PO-Revision-Date: 2025-06-11 23:14-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -1248,6 +1248,26 @@ msgctxt "clean"
 msgid "_All"
 msgstr "_Tous"
 
+#: src/systemd/errors.rs:40
+msgctxt "error"
+msgid ""
+"The program <b>flatpack-spawn</b> is needed if you use the application from "
+"Flatpack.\n"
+"Please install it to enable all features."
+msgstr ""
+"Le programme <b> flatPack-spawn </b> est nécessaire si vous utilisez "
+"l'application sous format Flatpack.\n"
+"Veuillez l'installer pour activer toutes les fonctionnalités."
+
+#: src/systemd/errors.rs:47
+msgctxt "error"
+msgid ""
+"It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
+"interface when the program is a Flatpak."
+msgstr ""
+"Il nécessite l'autorisation de parler à <b> org.freedesktop.flatpak </b> d-"
+"bus interface lorsque le programme est un flatpak."
+
 #: src/utils/time_handling.rs:37
 msgctxt "pref time style"
 msgid "Pretty"
@@ -1673,6 +1693,77 @@ msgstr "Afficher"
 msgctxt "preference column"
 msgid "Width"
 msgstr "Largeur"
+
+#: src/widget/unit_control_panel/controls.rs:56
+msgctxt "toast"
+msgid ""
+"Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
+"been successfully <span fgcolor='{0}'>{}</span>"
+msgstr ""
+"L'unité <span fgcolor = '{0}' font_family = 'monospace' size = 'larger'> {} "
+"</span> a été <span fgColor = '{0}'>{}</span> avec succès"
+
+#: src/widget/unit_control_panel/enums.rs:13
+msgctxt "toast"
+msgid "start"
+msgstr "démarrer"
+
+#: src/widget/unit_control_panel/enums.rs:14
+msgctxt "toast"
+msgid "stop"
+msgstr "arrêter"
+
+#: src/widget/unit_control_panel/enums.rs:15
+msgctxt "toast"
+msgid "restart"
+msgstr "redémarrer"
+
+#: src/widget/unit_control_panel/enums.rs:21
+msgctxt "toast"
+msgid "started"
+msgstr "démarré"
+
+#: src/widget/unit_control_panel/enums.rs:22
+msgctxt "toast"
+msgid "stopped"
+msgstr "arrêté"
+
+#: src/widget/unit_control_panel/enums.rs:23
+msgctxt "toast"
+msgid "restarted"
+msgstr "redémarré"
+
+#: src/widget/unit_control_panel/imp.rs:294
+msgctxt "toast"
+msgid ""
+"Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
+msgstr ""
+"L'unité <unit>{}</unit> a été <{0}>{}</{0}> avec le mode <unit>{}</unit>"
+
+#: src/widget/unit_control_panel/imp.rs:567
+msgctxt "toast"
+msgid ""
+"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
+"successful"
+msgstr ""
+"{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
+"span> a été réussi"
+
+#: src/widget/unit_control_panel/imp.rs:585
+#, rust-format
+msgctxt "toast"
+msgid ""
+"{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
+"failed. Reason: <span fgcolor='{}'>{}</span>."
+msgstr ""
+"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> "
+"{} </span> a échoué. Raison: <span fgColor = '{}'> {} </span>."
+
+#: src/widget/unit_control_panel/imp.rs:595
+#, rust-format
+msgctxt "toast"
+msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
+msgstr "{} a échoué. Raison: <span fgcolor='{}'>{}</span>."
 
 #. Message answer
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:130

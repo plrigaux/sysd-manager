@@ -1,6 +1,7 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
+use gettextrs::pgettext;
 use gtk::{
     gio,
     glib::{self},
@@ -10,6 +11,7 @@ use log::{debug, info, warn};
 
 use crate::{
     consts::{DESTRUCTIVE_ACTION, SUGGESTED_ACTION},
+    format2,
     systemd::{
         self,
         data::UnitInfo,
@@ -286,12 +288,17 @@ impl UnitControlPanelImpl {
                     "red"
                 };
 
-                let info = format!(
-                    "Unit <unit>{}</unit> has been <{red_green}>{}</{red_green}> with the mode <unit>{}</unit>",
+                let info = format2!(
+                    pgettext(
+                        "toast",
+                        "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
+                    ),
+                    red_green,
                     unit_name,
                     action.past_participle(),
                     mode.as_str()
                 );
+
                 info!("{info}");
 
                 self.add_toast_message(&info, true);
@@ -554,12 +561,17 @@ impl UnitControlPanelImpl {
             match result {
                 Ok(_) => {
                     let msg = if let Some(ref unit) = unit_op {
-                        format!(
-                            "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> successful.",
+                        format2!(
+                            pgettext(
+                                "toast",
+                                "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> successful"
+                            ),
+                            blue,
+                            &method_name,
                             unit.primary(),
                         )
                     } else {
-                        format!("{method_name} successful.",)
+                        format2!("{} successful.", &method_name)
                     };
                     control_panel.add_toast_message(&msg, true)
                 }
@@ -567,14 +579,22 @@ impl UnitControlPanelImpl {
                     let red = red(is_dark).get_color();
 
                     let msg = if let Some(ref unit) = unit_op {
-                        format!(
-                            "{method_name} unit <span fgcolor='{blue}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{red}'>{}</span>.",
+                        format2!(
+                            pgettext(
+                                "toast",
+                                "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{}'>{}</span>."
+                            ),
+                            &method_name,
+                            blue,
                             unit.primary(),
+                            red,
                             error.human_error_type()
                         )
                     } else {
-                        format!(
-                            "{method_name} failed. Reason: <span fgcolor='{red}'>{}</span>.",
+                        format2!(
+                            pgettext("toast", "{} failed. Reason: <span fgcolor='{}'>{}</span>."),
+                            &method_name,
+                            red,
                             error.human_error_type()
                         )
                     };

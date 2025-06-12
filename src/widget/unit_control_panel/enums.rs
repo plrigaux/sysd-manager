@@ -1,3 +1,5 @@
+use gettextrs::pgettext;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UnitContolType {
     Start,
@@ -6,19 +8,19 @@ pub enum UnitContolType {
 }
 
 impl UnitContolType {
-    pub fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> String {
         match self {
-            UnitContolType::Start => "start",
-            UnitContolType::Stop => "stop",
-            UnitContolType::Restart => "restart",
+            UnitContolType::Start => pgettext("toast", "start"),
+            UnitContolType::Stop => pgettext("toast", "stop"),
+            UnitContolType::Restart => pgettext("toast", "restart"),
         }
     }
 
-    pub fn past_participle(&self) -> &str {
+    pub fn past_participle(&self) -> String {
         match self {
-            UnitContolType::Start => "started",
-            UnitContolType::Stop => "stopped",
-            UnitContolType::Restart => "restarted",
+            UnitContolType::Start => pgettext("toast", "started"),
+            UnitContolType::Stop => pgettext("toast", "stopped"),
+            UnitContolType::Restart => pgettext("toast", "restarted"),
         }
     }
 }

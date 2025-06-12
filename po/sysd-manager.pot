@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-11 20:55-0400\n"
+"POT-Creation-Date: 2025-06-11 23:11-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1189,6 +1189,21 @@ msgctxt "clean"
 msgid "_All"
 msgstr ""
 
+#: src/systemd/errors.rs:40
+msgctxt "error"
+msgid ""
+"The program <b>flatpack-spawn</b> is needed if you use the application from "
+"Flatpack.\n"
+"Please install it to enable all features."
+msgstr ""
+
+#: src/systemd/errors.rs:47
+msgctxt "error"
+msgid ""
+"It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
+"interface when the program is a Flatpak."
+msgstr ""
+
 #: src/utils/time_handling.rs:37
 msgctxt "pref time style"
 msgid "Pretty"
@@ -1608,6 +1623,70 @@ msgstr ""
 #: src/widget/preferences/imp.rs:474
 msgctxt "preference column"
 msgid "Width"
+msgstr ""
+
+#: src/widget/unit_control_panel/controls.rs:56
+msgctxt "toast"
+msgid ""
+"Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
+"been successfully <span fgcolor='{0}'>{}</span>"
+msgstr ""
+
+#: src/widget/unit_control_panel/enums.rs:13
+msgctxt "toast"
+msgid "start"
+msgstr ""
+
+#: src/widget/unit_control_panel/enums.rs:14
+msgctxt "toast"
+msgid "stop"
+msgstr ""
+
+#: src/widget/unit_control_panel/enums.rs:15
+msgctxt "toast"
+msgid "restart"
+msgstr ""
+
+#: src/widget/unit_control_panel/enums.rs:21
+msgctxt "toast"
+msgid "started"
+msgstr ""
+
+#: src/widget/unit_control_panel/enums.rs:22
+msgctxt "toast"
+msgid "stopped"
+msgstr ""
+
+#: src/widget/unit_control_panel/enums.rs:23
+msgctxt "toast"
+msgid "restarted"
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:294
+msgctxt "toast"
+msgid ""
+"Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:567
+msgctxt "toast"
+msgid ""
+"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
+"successful"
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:585
+#, rust-format
+msgctxt "toast"
+msgid ""
+"{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
+"failed. Reason: <span fgcolor='{}'>{}</span>."
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:595
+#, rust-format
+msgctxt "toast"
+msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr ""
 
 #. Message answer

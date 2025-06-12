@@ -3,6 +3,8 @@ use std::{
     string::FromUtf8Error,
 };
 
+use gettextrs::pgettext;
+
 #[derive(Debug)]
 #[allow(unused)]
 pub enum SystemdErrors {
@@ -33,12 +35,18 @@ impl SystemdErrors {
     pub fn gui_description(&self) -> Option<String> {
         match self {
             SystemdErrors::CmdNoFlatpakSpawn => {
-                let value = "The program <b>flatpack-spawn</b> is needed if you use the application from Flatpack.\nPlease install it to enable all features.";
-                Some(value.to_owned())
+                let value = pgettext(
+                    "error",
+                    "The program <b>flatpack-spawn</b> is needed if you use the application from Flatpack.\nPlease install it to enable all features.",
+                );
+                Some(value)
             }
             SystemdErrors::CmdNoFreedesktopFlatpakPermission(_cmdl, _file_path) => {
-                let msg = "Requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.";
-                Some(msg.to_owned())
+                let msg = pgettext(
+                    "error",
+                    "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.",
+                );
+                Some(msg)
             }
             _ => None,
         }
