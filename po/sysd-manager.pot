@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-11 13:24-0400\n"
+"POT-Creation-Date: 2025-06-11 20:25-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -850,6 +850,30 @@ msgctxt "controls tab"
 msgid "Journal"
 msgstr ""
 
+#. description
+#: data/interfaces/unit_file_panel.ui:16
+msgctxt "file"
+msgid "The  unit has no file associated"
+msgstr ""
+
+#. title
+#: data/interfaces/unit_file_panel.ui:18
+msgctxt "file"
+msgid "No unit file"
+msgstr ""
+
+#. label
+#: data/interfaces/unit_file_panel.ui:42
+msgctxt "file"
+msgid "File path:"
+msgstr ""
+
+#. button
+#: data/interfaces/unit_file_panel.ui:59
+msgctxt "file"
+msgid "Save"
+msgstr ""
+
 #. button
 #: data/interfaces/unit_info_panel.ui:17
 msgctxt "unit info"
@@ -1098,39 +1122,69 @@ msgctxt "dbus"
 msgid "System"
 msgstr ""
 
-#: src/systemd/enums.rs:926
+#: src/systemd/enums.rs:929
 msgctxt "clean"
 msgid "_Runtime"
 msgstr ""
 
-#: src/systemd/enums.rs:927
+#: src/systemd/enums.rs:930
 msgctxt "clean"
 msgid "_State"
 msgstr ""
 
-#: src/systemd/enums.rs:928
+#: src/systemd/enums.rs:931
 msgctxt "clean"
 msgid "Cac_he"
 msgstr ""
 
-#: src/systemd/enums.rs:929
+#: src/systemd/enums.rs:932
 msgctxt "clean"
 msgid "_Logs"
 msgstr ""
 
-#: src/systemd/enums.rs:930
+#: src/systemd/enums.rs:933
 msgctxt "clean"
 msgid "_Configuration"
 msgstr ""
 
-#: src/systemd/enums.rs:931
+#: src/systemd/enums.rs:934
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr ""
 
-#: src/systemd/enums.rs:932
+#: src/systemd/enums.rs:935
 msgctxt "clean"
 msgid "_All"
+msgstr ""
+
+#: src/utils/time_handling.rs:37
+msgctxt "pref time style"
+msgid "Pretty"
+msgstr ""
+
+#: src/utils/time_handling.rs:38
+msgctxt "pref time style"
+msgid "Pretty usec"
+msgstr ""
+
+#: src/utils/time_handling.rs:39
+msgctxt "pref time style"
+msgid "UTC"
+msgstr ""
+
+#: src/utils/time_handling.rs:40
+msgctxt "pref time style"
+msgid "UTC usec"
+msgstr ""
+
+#: src/utils/time_handling.rs:41
+msgctxt "pref time style"
+msgid "Unix"
+msgstr ""
+
+#: src/utils/time_handling.rs:42
+msgctxt "pref time style"
+msgid "Unix usec"
 msgstr ""
 
 #: src/widget/app_window/menu.rs:193
@@ -1458,6 +1512,70 @@ msgstr ""
 #: src/widget/preferences/data.rs:122
 msgctxt "dbus"
 msgid "System & User Session Bus"
+msgstr ""
+
+#: src/widget/preferences/data.rs:208
+msgctxt "pref color scheme"
+msgid "No Preference"
+msgstr ""
+
+#: src/widget/preferences/data.rs:209
+msgctxt "pref color scheme"
+msgid "Prefer Dark"
+msgstr ""
+
+#: src/widget/preferences/data.rs:210
+msgctxt "pref color scheme"
+msgid "Prefer Light"
+msgstr ""
+
+#: src/widget/preferences/data.rs:211
+msgctxt "pref color scheme"
+msgid "Force Dark"
+msgstr ""
+
+#: src/widget/preferences/data.rs:212
+msgctxt "pref color scheme"
+msgid "Force Light"
+msgstr ""
+
+#: src/widget/preferences/data.rs:257
+msgctxt "pref orientation"
+msgid "Automatic"
+msgstr ""
+
+#: src/widget/preferences/data.rs:258
+msgctxt "pref orientation"
+msgid "Side by Side"
+msgstr ""
+
+#: src/widget/preferences/data.rs:259
+msgctxt "pref orientation"
+msgid "Top Bottom"
+msgstr ""
+
+#: src/widget/preferences/imp.rs:429
+msgctxt "pref file style"
+msgid "None"
+msgstr ""
+
+#. pref group
+#: src/widget/preferences/imp.rs:452
+#, rust-format
+msgctxt "preference column"
+msgid "Column {}"
+msgstr ""
+
+#. SwitchRow
+#: src/widget/preferences/imp.rs:457
+msgctxt "preference column"
+msgid "Show"
+msgstr ""
+
+#. Spin row
+#: src/widget/preferences/imp.rs:474
+msgctxt "preference column"
+msgid "Width"
 msgstr ""
 
 #. Message answer

@@ -247,56 +247,65 @@ impl UnitFilePanelImp {
         }
     }
 
-    fn set_new_style_scheme(&self, mut style_scheme_id: Option<&str>) {
-        if !PREFERENCES.unit_file_line_number() {
+    fn set_new_style_scheme(&self, style_scheme_id: Option<&str>) {
+        /*         if !PREFERENCES.unit_file_line_number() {
             style_scheme_id = None
-        }
+        } */
 
         info!("Set new style scheme {:?}", style_scheme_id);
-        if let Some(mut style_scheme_id) = style_scheme_id {
-            let style_schemes_map = style_schemes();
 
-            debug!("{:#?}", style_schemes_map);
-            if style_scheme_id.is_empty() {
-                style_scheme_id = ADWAITA;
-            }
-
-            let style_scheme_st = style_schemes_map.get(style_scheme_id);
-
-            let style_sheme_st = match style_scheme_st {
-                Some(ss) => ss,
-                None => {
-                    info!(
-                        "style scheme id \"{style_scheme_id}\" not found in {:?}",
-                        style_schemes_map.keys().collect::<Vec<_>>()
-                    );
-
-                    //fallback on style Adwaita
-                    if let Some(style_scheme_st) = style_schemes_map.get(ADWAITA) {
-                        style_scheme_st
-                    } else
-                    //fallback on first item
-                    if let Some((_, style_scheme_st)) = style_schemes_map.first_key_value() {
-                        style_scheme_st
-                    } else {
-                        return;
-                    }
-                }
-            };
-
-            let scheme_id = &style_sheme_st.get_style_scheme_id(self.is_dark.get());
-
-            if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
+        match style_scheme_id {
+            Some("") | None => {
                 let buffer = get_buffer!(self);
-                info!("Style Scheme found for id {:?}", scheme_id);
-                buffer.set_style_scheme(Some(scheme));
-            } else {
-                warn!("No Style Scheme found for id {:?}", scheme_id)
-            }
-        } else {
-            let buffer = get_buffer!(self);
 
-            buffer.set_style_scheme(None);
+                buffer.set_style_scheme(None);
+            }
+            Some(style_scheme_id) => {
+                let style_schemes_map: &'static std::collections::BTreeMap<
+                    String,
+                    crate::widget::preferences::style_scheme::StyleSchemes,
+                > = style_schemes();
+
+                debug!("{:#?}", style_schemes_map);
+                /*             if style_scheme_id.is_empty() {
+                    style_scheme_id = ADWAITA;
+                } */
+
+                let style_scheme_st = style_schemes_map.get(style_scheme_id);
+
+                let style_sheme_st = match style_scheme_st {
+                    Some(ss) => ss,
+                    None => {
+                        info!(
+                            "Style scheme id \"{style_scheme_id}\" not found in {:?}",
+                            style_schemes_map.keys().collect::<Vec<_>>()
+                        );
+
+                        //fallback on style Adwaita
+                        if let Some(style_scheme_st) = style_schemes_map.get(ADWAITA) {
+                            style_scheme_st
+                        } else
+                        //fallback on first item
+                        if let Some((_, style_scheme_st)) =
+                            style_schemes_map.first_key_value()
+                        {
+                            style_scheme_st
+                        } else {
+                            return;
+                        }
+                    }
+                };
+
+                let scheme_id = &style_sheme_st.get_style_scheme_id(self.is_dark.get());
+
+                if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
+                    let buffer = get_buffer!(self);
+                    info!("Style Scheme found for id {:?}", scheme_id);
+                    buffer.set_style_scheme(Some(scheme));
+                } else {
+                    warn!("No Style Scheme found for id {:?}", scheme_id)
+                }
+            }
         }
     }
 
@@ -387,6 +396,9 @@ impl ObjectImpl for UnitFilePanelImp {
         self.unit_file_text
             .set(view)
             .expect("unit_file_text set once");
+
+        let unit_file_line_number = PREFERENCES.unit_file_line_number();
+        self.set_line_number(unit_file_line_number)
     }
 }
 impl WidgetImpl for UnitFilePanelImp {}

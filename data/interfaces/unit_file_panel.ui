@@ -13,9 +13,9 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description">The  unit has no file associated</property>
+                <property name="description" translatable="yes" context="file" comments="description">The  unit has no file associated</property>
                 <property name="icon-name">unreadable-symbolic</property>
-                <property name="title">No unit file</property>
+                <property name="title" translatable="yes" context="file" comments="title">No unit file</property>
               </object>
             </property>
             <property name="name">empty</property>
@@ -39,7 +39,7 @@
                     <property name="margin-top">5</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">File path: </property>
+                        <property name="label"  translatable="yes" context="file" comments="label">File path:</property>
                         <property name="xalign">0.0</property>
                       </object>
                     </child>
@@ -56,7 +56,7 @@
                           <object class="AdwButtonContent">
                             <property name="halign">baseline-center</property>
                             <property name="icon-name">document-save</property>
-                            <property name="label">Save</property>
+                            <property name="label" translatable="yes" context="file" comments="button">Save</property>
                             <property name="valign">baseline-center</property>
                           </object>
                         </property>

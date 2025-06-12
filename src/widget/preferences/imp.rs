@@ -1,7 +1,9 @@
+use gettextrs::pgettext;
 use gio::Settings;
 
 use crate::{
     consts::ADWAITA,
+    format2,
     systemd_gui::new_settings,
     utils::font_management::FONT_CONTEXT,
     widget::{
@@ -206,6 +208,11 @@ impl PreferencesDialogImpl {
     }
 
     fn select_style_scheme(&self, vec: &Vec<&str>, style_scheme_id: &str) -> bool {
+        if style_scheme_id.is_empty() {
+            self.unit_file_style.set_selected(0);
+            return true;
+        }
+
         for (position, style_scheme_id_list) in vec.iter().enumerate() {
             if style_scheme_id == *style_scheme_id_list {
                 self.unit_file_style.set_selected(position as u32);
@@ -229,22 +236,29 @@ impl PreferencesDialogImpl {
 
         self.unit_file_style
             .connect_selected_item_notify(move |combo_box| {
+                let selected_item_position = combo_box.selected();
                 let selected_item = combo_box.selected_item();
                 let Some(style_scheme) = selected_item else {
                     return;
                 };
 
-                let style_scheme = style_scheme
-                    .downcast::<StringObject>()
-                    .expect("Needs to be TimestampStyle");
+                let style_scheme = if selected_item_position == 0 {
+                    glib::GString::new()
+                } else {
+                    style_scheme
+                        .downcast::<StringObject>()
+                        .expect("Needs to be TimestampStyle")
+                        .string()
+                };
 
-                PREFERENCES.set_unit_file_style_scheme(&style_scheme.string());
+                PREFERENCES.set_unit_file_style_scheme(&style_scheme);
 
-                let style_scheme_g = style_scheme.string();
-                let style_scheme_op = if style_scheme_g == "None" {
+                let style_scheme_op = if selected_item_position == 0
+                /*"None"*/
+                {
                     None
                 } else {
-                    Some(style_scheme_g.as_str())
+                    Some(style_scheme.as_str())
                 };
 
                 let action = crate::widget::InterPanelMessage::NewStyleScheme(style_scheme_op);
@@ -411,15 +425,18 @@ impl ObjectImpl for PreferencesDialogImpl {
         build_pane_orientation_selector(&self.app_orientation, settings);
 
         debug!("All styles {:?}", style_schemes());
-        let mut vec = vec!["None"];
-        let mut vec_style_schemes: Vec<_> = style_schemes().keys().map(|f| f.as_str()).collect();
-        vec.append(&mut vec_style_schemes);
+
+        let mut styles = vec![pgettext("pref file style", "None")];
+        let mut vec_style_schemes: Vec<String> = style_schemes().keys().cloned().collect();
+        styles.append(&mut vec_style_schemes);
+        let vec: Vec<&str> = styles.iter().map(|x| &**x).collect();
         let model = gtk::StringList::new(&vec);
         self.unit_file_style.set_model(Some(&model));
 
         let style_scheme_id = PREFERENCES.unit_file_style_scheme();
 
         if !self.select_style_scheme(&vec, &style_scheme_id) {
+            warn!("style not found {:?}", style_scheme_id);
             self.select_style_scheme(&vec, ADWAITA);
         }
 
@@ -431,11 +448,13 @@ impl ObjectImpl for PreferencesDialogImpl {
                 .margin_start(8)
                 .margin_end(8)
                 .margin_bottom(8)
-                .title(format!("Column {title}"))
+                //pref group
+                .title(format2!(pgettext("preference column", "Column {}"), title))
                 .build();
 
             let switch = adw::SwitchRow::builder()
-                .title("Show")
+                //SwitchRow
+                .title(pgettext("preference column", "Show"))
                 .subtitle(format!("Hide or display unit list column {title}"))
                 .build();
 
@@ -451,7 +470,8 @@ impl ObjectImpl for PreferencesDialogImpl {
 
             if flags & FLAG_WIDTH != 0 {
                 let spin_row = adw::SpinRow::builder()
-                    .title("Width")
+                    //Spin row
+                    .title(pgettext("preference column", "Width"))
                     .subtitle(format!("Set width of column {title}"))
                     .update_policy(gtk::SpinButtonUpdatePolicy::IfValid)
                     .adjustment(&gtk::Adjustment::new(0.0, -1.0, 5000.0, 1.0, 10.0, 0.0))

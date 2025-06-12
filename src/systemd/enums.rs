@@ -886,11 +886,14 @@ impl From<Option<glib::Object>> for UnitDBusLevel {
             return UnitDBusLevel::default();
         };
 
-        let enum_list_item = object
-            .downcast::<adw::EnumListItem>()
-            .expect("Needs to be EnumListItem");
-
-        UnitDBusLevel::from(enum_list_item.name().as_str())
+        match object.downcast_ref::<gtk::StringObject>() {
+            Some(so) => UnitDBusLevel::from(so.string().as_str()),
+            //Fall back on EnumList
+            None => match object.downcast::<adw::EnumListItem>() {
+                Ok(enum_list_item) => UnitDBusLevel::from(enum_list_item.name().as_str()),
+                Err(_) => UnitDBusLevel::default(),
+            },
+        }
     }
 }
 
