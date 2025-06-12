@@ -27,6 +27,7 @@ include = [
     "README.md",
     "/data",
     "!/**/meson.build",
+    "/po"
 ]
 default-run = "sysd-manager"
 
