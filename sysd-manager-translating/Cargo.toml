@@ -1,0 +1,11 @@
+[package]
+name = "sysd-manager-translating"
+version = "0.0.0"
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+keywords = ["xtext"]
+license = { workspace = true }
+readme = "README.md"
+description = "Simple lib used by sysd-manager to generate mo file"
+repository = { workspace = true }

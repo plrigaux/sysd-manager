@@ -1,0 +1,1 @@
+Simple lib used by sysd-manager to generate mo file

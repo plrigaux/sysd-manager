@@ -1,18 +1,19 @@
 [workspace]
-members = ["transtools", "translating", "tiny_daemon"]
+members = ["transtools", "sysd-manager-translating", "tiny_daemon"]
 
 [workspace.package]
 edition = "2024"
 rust-version = "1.85"
 authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
 license = "GPL-3.0-or-later"
+repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
 version = "1.29.0"
 edition = { workspace = true }
 license = { workspace = true }
-repository = "https://github.com/plrigaux/sysd-manager"
+repository = { workspace = true }
 readme = "README.md"
 authors = { workspace = true }
 description = "Application to empower user to manage their <b>systemd units</b> via Graphical User Interface. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs."
@@ -81,7 +82,7 @@ zvariant = "5.5"
 #glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
 quick-xml =  "0.37"
-translating = { version = "0.1", path = "./translating" }
+translating = { version = "0.0.0", path = "./sysd-manager-translating", package = "sysd-manager-translating"}
 
 [package.metadata.generate-rpm]
 summary = "A systemd units manager"

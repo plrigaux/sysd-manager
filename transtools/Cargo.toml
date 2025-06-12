@@ -5,8 +5,9 @@ edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
+repository = { workspace = true }
 
 [dependencies]
-translating = { path = "../translating" }
+translating = { package = "sysd-manager-translating", path = "../sysd-manager-translating" }
 clap.workspace = true
 log.workspace = true
