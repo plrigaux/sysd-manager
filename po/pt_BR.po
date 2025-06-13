@@ -1704,32 +1704,32 @@ msgstr ""
 #: src/widget/unit_control_panel/enums.rs:13
 msgctxt "toast"
 msgid "start"
-msgstr "iniciar"
+msgstr "Iniciar"
 
 #: src/widget/unit_control_panel/enums.rs:14
 msgctxt "toast"
 msgid "stop"
-msgstr "parar"
+msgstr "Parar"
 
 #: src/widget/unit_control_panel/enums.rs:15
 msgctxt "toast"
 msgid "restart"
-msgstr "reiniciar"
+msgstr "Reiniciar"
 
 #: src/widget/unit_control_panel/enums.rs:21
 msgctxt "toast"
 msgid "started"
-msgstr "iniciado"
+msgstr "Iniciado"
 
 #: src/widget/unit_control_panel/enums.rs:22
 msgctxt "toast"
 msgid "stopped"
-msgstr "parou"
+msgstr "Parou"
 
 #: src/widget/unit_control_panel/enums.rs:23
 msgctxt "toast"
 msgid "restarted"
-msgstr "reiniciado"
+msgstr "Reiniciado"
 
 #: src/widget/unit_control_panel/imp.rs:294
 msgctxt "toast"
