@@ -8,7 +8,14 @@ pub enum UnitContolType {
 }
 
 impl UnitContolType {
-    pub fn as_str(&self) -> String {
+    pub fn code(&self) -> &str {
+        match self {
+            UnitContolType::Start => "start",
+            UnitContolType::Stop => "stop",
+            UnitContolType::Restart => "restart",
+        }
+    }
+    pub fn label(&self) -> String {
         match self {
             UnitContolType::Start => pgettext("toast", "start"),
             UnitContolType::Stop => pgettext("toast", "stop"),

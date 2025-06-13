@@ -525,21 +525,18 @@ pub(super) fn disable_unit_files(
     level: UnitDBusLevel,
     unit_names_or_files: &[&str],
     flags: DisEnableFlags,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     fn handle_answer(
         _method: &str,
         return_message: &Message,
-    ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
         let body = return_message.body();
 
         let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
 
         info!("Disable unit files {:?}", return_msg);
 
-        Ok(EnableUnitFilesReturn {
-            vec: return_msg,
-            carries_install_info: false,
-        })
+        Ok(return_msg)
     }
 
     send_disenable_message(
@@ -693,6 +690,7 @@ pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), Sys
     send_disenable_message(level, METHOD_THAW_UNIT, &(unit_name), handler)
 }
 
+#[allow(dead_code)]
 pub(super) fn preset_unit_file(
     level: UnitDBusLevel,
     files: &[&str],
@@ -717,25 +715,52 @@ pub(super) fn preset_unit_file(
     )
 }
 
-pub(super) fn link_unit_file(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
-    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Thaw Unit {} SUCCESS", unit_name);
-        Ok(())
-    };
+#[allow(dead_code)]
+pub(super) fn link_unit_file(
+    level: UnitDBusLevel,
+    files: &[&str],
+    runtime: bool,
+    force: bool,
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    let handler =
+        |_method: &str, return_message: &Message| -> Result<EnableUnitFilesReturn, SystemdErrors> {
+            let body = return_message.body();
 
-    send_disenable_message(level, METHOD_LINK_UNIT_FILES, &(unit_name), handler)
+            let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+
+            info!("Link Unit Files {:?} SUCCESS", files);
+            Ok(return_msg)
+        };
+    send_disenable_message(
+        level,
+        METHOD_LINK_UNIT_FILES,
+        &(files, runtime, force),
+        handler,
+    )
 }
 
+#[allow(dead_code)]
 pub(super) fn reenable_unit_file(
     level: UnitDBusLevel,
-    unit_name: &str,
-) -> Result<(), SystemdErrors> {
-    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Thaw Unit {} SUCCESS", unit_name);
-        Ok(())
-    };
+    files: &[&str],
+    runtime: bool,
+    force: bool,
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    let handler =
+        |_method: &str, return_message: &Message| -> Result<EnableUnitFilesReturn, SystemdErrors> {
+            let body = return_message.body();
 
-    send_disenable_message(level, METHOD_REENABLE_UNIT_FILES, &(unit_name), handler)
+            let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+
+            info!("Reenable Unit Files {:?} SUCCESS", files);
+            Ok(return_msg)
+        };
+    send_disenable_message(
+        level,
+        METHOD_REENABLE_UNIT_FILES,
+        &(files, runtime, force),
+        handler,
+    )
 }
 
 pub(super) fn reload_unit(

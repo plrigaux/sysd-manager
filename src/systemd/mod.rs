@@ -166,21 +166,34 @@ pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, Syst
     sysdbus::restart_unit(unit.dbus_level(), &unit.primary(), mode)
 }
 
+#[allow(dead_code)]
+#[derive(Debug)]
+pub enum DisEnableUnitFilesOutput {
+    Enable(EnableUnitFilesReturn),
+    Disable(Vec<DisEnAbleUnitFiles>),
+}
+
 pub fn disenable_unit_file(
     unit: &UnitInfo,
     expected_status: EnablementStatus,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+) -> Result<DisEnableUnitFilesOutput, SystemdErrors> {
     let msg_return = match expected_status {
-        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => sysdbus::enable_unit_files(
-            unit.dbus_level(),
-            &[&unit.primary()],
-            DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
-        )?,
-        _ => sysdbus::disable_unit_files(
-            unit.dbus_level(),
-            &[&unit.primary()],
-            DisEnableFlags::empty(),
-        )?,
+        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => {
+            let res = sysdbus::enable_unit_files(
+                unit.dbus_level(),
+                &[&unit.primary()],
+                DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
+            )?;
+            DisEnableUnitFilesOutput::Enable(res)
+        }
+        _ => {
+            let out = sysdbus::disable_unit_files(
+                unit.dbus_level(),
+                &[&unit.primary()],
+                DisEnableFlags::empty(),
+            )?;
+            DisEnableUnitFilesOutput::Disable(out)
+        }
     };
 
     Ok(msg_return)

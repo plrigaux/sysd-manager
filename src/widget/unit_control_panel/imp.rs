@@ -313,7 +313,7 @@ impl UnitControlPanelImpl {
             Err(err) => {
                 let info = format!(
                     "Can't {} the unit <unit>{}</unit>, because: {}",
-                    action.as_str(),
+                    action.label(),
                     unit_name,
                     err.human_error_type()
                 );
@@ -458,7 +458,7 @@ impl UnitControlPanelImpl {
 
             modes_box.append(&ck);
 
-            let source_property = format!("{}_mode", control_type.as_str());
+            let source_property = format!("{}_mode", control_type.code());
             let unit_control_panel = self.obj();
             ck.bind_property(
                 "active",
