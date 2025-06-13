@@ -22,7 +22,7 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 use crate::{
     systemd::{
-        data::UnitInfo,
+        data::{EnableUnitFilesReturn, UnitInfo},
         enums::{ActiveState, UnitType},
     },
     widget::preferences::data::{DbusLevel, PREFERENCES},
@@ -62,6 +62,10 @@ pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 pub const METHOD_FREEZE_UNIT: &str = "FreezeUnit";
 pub const METHOD_THAW_UNIT: &str = "ThawUnit";
 pub const METHOD_RELOAD_UNIT: &str = "ReloadUnit";
+
+const METHOD_PRESET_UNIT_FILES: &str = "PresetUnitFiles";
+const METHOD_LINK_UNIT_FILES: &str = "LinkUnitFiles";
+const METHOD_REENABLE_UNIT_FILES: &str = "ReenableUnitFiles";
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
 struct LUnitFiles<'a> {
@@ -491,29 +495,22 @@ pub(super) fn restart_unit(
     )
 }
 
-#[derive(Debug, Type, Deserialize)]
-#[allow(unused)]
-pub struct EnableUnitFilesReturn {
-    pub carries_install_info: bool,
-    pub vec: Vec<DisEnAbleUnitFiles>,
-}
-
 pub(super) fn enable_unit_files(
     level: UnitDBusLevel,
     unit_names_or_files: &[&str],
     flags: DisEnableFlags,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
     fn handle_answer(
         _method: &str,
         return_message: &Message,
-    ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
         let body = return_message.body();
 
         let return_msg: EnableUnitFilesReturn = body.deserialize()?;
 
         info!("Enable unit files {:?}", return_msg);
 
-        Ok(return_msg.vec)
+        Ok(return_msg)
     }
 
     send_disenable_message(
@@ -528,18 +525,21 @@ pub(super) fn disable_unit_files(
     level: UnitDBusLevel,
     unit_names_or_files: &[&str],
     flags: DisEnableFlags,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
     fn handle_answer(
         _method: &str,
         return_message: &Message,
-    ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
         let body = return_message.body();
 
         let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
 
         info!("Disable unit files {:?}", return_msg);
 
-        Ok(return_msg)
+        Ok(EnableUnitFilesReturn {
+            vec: return_msg,
+            carries_install_info: false,
+        })
     }
 
     send_disenable_message(
@@ -691,6 +691,51 @@ pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), Sys
     };
 
     send_disenable_message(level, METHOD_THAW_UNIT, &(unit_name), handler)
+}
+
+pub(super) fn preset_unit_file(
+    level: UnitDBusLevel,
+    files: &[&str],
+    runtime: bool,
+    force: bool,
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    let handler =
+        |_method: &str, return_message: &Message| -> Result<EnableUnitFilesReturn, SystemdErrors> {
+            let body = return_message.body();
+
+            let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+
+            info!("Preset Unit Files {:?} SUCCESS", files);
+            Ok(return_msg)
+        };
+
+    send_disenable_message(
+        level,
+        METHOD_PRESET_UNIT_FILES,
+        &(files, runtime, force),
+        handler,
+    )
+}
+
+pub(super) fn link_unit_file(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
+        info!("Thaw Unit {} SUCCESS", unit_name);
+        Ok(())
+    };
+
+    send_disenable_message(level, METHOD_LINK_UNIT_FILES, &(unit_name), handler)
+}
+
+pub(super) fn reenable_unit_file(
+    level: UnitDBusLevel,
+    unit_name: &str,
+) -> Result<(), SystemdErrors> {
+    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
+        info!("Thaw Unit {} SUCCESS", unit_name);
+        Ok(())
+    };
+
+    send_disenable_message(level, METHOD_REENABLE_UNIT_FILES, &(unit_name), handler)
 }
 
 pub(super) fn reload_unit(

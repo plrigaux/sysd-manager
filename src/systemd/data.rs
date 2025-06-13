@@ -322,3 +322,10 @@ pub struct DisEnAbleUnitFiles {
     pub file_name: String,
     pub destination: String,
 }
+
+#[derive(Debug, Type, Deserialize)]
+#[allow(unused)]
+pub struct EnableUnitFilesReturn {
+    pub carries_install_info: bool,
+    pub vec: Vec<DisEnAbleUnitFiles>,
+}

@@ -30,6 +30,8 @@ use tokio::runtime::Runtime;
 use tokio::sync::mpsc;
 use zvariant::{OwnedObjectPath, OwnedValue};
 
+use crate::systemd::data::EnableUnitFilesReturn;
+
 pub mod enums;
 
 const FLATPAK_SPAWN: &str = "flatpak-spawn";
@@ -167,7 +169,7 @@ pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, Syst
 pub fn disenable_unit_file(
     unit: &UnitInfo,
     expected_status: EnablementStatus,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
     let msg_return = match expected_status {
         EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => sysdbus::enable_unit_files(
             unit.dbus_level(),
@@ -188,7 +190,7 @@ pub fn enable_unit_file(
     unit_file: &str,
     level: UnitDBusLevel,
     flags: DisEnableFlags,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
     sysdbus::enable_unit_files(level, &[unit_file], flags)
 }
 

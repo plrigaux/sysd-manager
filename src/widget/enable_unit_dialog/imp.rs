@@ -18,7 +18,7 @@ use strum::IntoEnumIterator;
 use crate::{
     systemd::{
         self,
-        data::{DisEnAbleUnitFiles, UnitInfo},
+        data::{EnableUnitFilesReturn, UnitInfo},
         enums::{ActiveState, DisEnableFlags, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
@@ -92,7 +92,7 @@ impl EnableUnitDialogImp {
         let handling_response_callback = {
             move |_method: &str,
                   _unit: Option<&UnitInfo>,
-                  result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
+                  result: Result<EnableUnitFilesReturn, SystemdErrors>,
                   control: &UnitControlPanel| {
                 match result {
                     Ok(vec) => {

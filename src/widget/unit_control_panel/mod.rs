@@ -122,7 +122,7 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
     content_box.append(
         &gtk::Label::builder()
             .label(format!(
-                "Unfortunately <b>SysD-Manager</b> can't perfom <b>{}</b> action.",
+                "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action.",
                 method
             ))
             .use_markup(true)
@@ -144,7 +144,8 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
 
     content_box.append(
         &gtk::Label::builder()
-            .label("\n\nOtherwise, you can try the bellow command line in your terminal")
+            .label("Otherwise, you can try the bellow command line in your terminal")
+            .margin_top(10)
             .build(),
     );
 
