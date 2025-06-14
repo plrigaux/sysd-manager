@@ -1,5 +1,4 @@
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
-use gettextrs::pgettext;
 use gio::glib::BoolError;
 use gtk::{
     glib::{self},
@@ -58,10 +57,10 @@ pub struct EnableUnitDialogImp {
     portable_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
-    run_now_switch: TemplateChild<adw::SwitchRow>,
+    run_stop_now_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
-    run_mode_combo: TemplateChild<adw::ComboRow>,
+    run_stop_mode_combo: TemplateChild<adw::ComboRow>,
 
     #[template_child]
     dbus_level_combo: TemplateChild<adw::ComboRow>,
@@ -105,8 +104,8 @@ impl EnableUnitDialogImp {
         let runtime = self.runtime_switch.is_active();
         let force = self.force_switch.is_active();
 
-        let action_type = self.action_type.get().expect("Value need to be set");
-        match self.action_type.get().expect("Value need to be set") {
+        let action_type = *self.action_type.get().expect("Value need to be set");
+        match action_type {
             ControlActionType::EnableUnitFiles => {
                 let handling_response_callback = {
                     move |_method: &str,
@@ -115,11 +114,11 @@ impl EnableUnitDialogImp {
                           control: &UnitControlPanel| {
                         match result {
                             Ok(vec) => {
-                                info!("Enable Unit File Result: {:?}", vec); //TODO enable start
+                                info!("{} Result: {:?}", action_type.code(), vec);
                                 let unit_name = unit_file.as_str();
-                                if dialog.imp().run_now_switch.is_active() {
+                                if dialog.imp().run_stop_now_switch.is_active() {
                                     //TODO Check if Reload Units needed
-                                    let mode = dialog.imp().run_mode_combo.selected_item();
+                                    let mode = dialog.imp().run_stop_mode_combo.selected_item();
                                     let start_mode: StartStopMode = mode.into();
                                     info!(
                                         "Try to start {:?} level: {:?} mode: {:?}",
@@ -188,6 +187,71 @@ impl EnableUnitDialogImp {
                         handling_response_callback,
                     );
             }
+            ControlActionType::DisableUnitFiles => {
+                let handling_response_callback = {
+                    move |_method: &str,
+                          unit: Option<&UnitInfo>,
+                          result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
+                          control: &UnitControlPanel| {
+                        match result {
+                            Ok(ref vec) => {
+                                info!("{} Result: {:?}", action_type.code(), vec);
+
+                                if let Some(unit) = unit {
+                                    if dialog.imp().run_stop_now_switch.is_active() {
+                                        let mode = dialog.imp().run_stop_mode_combo.selected_item();
+                                        let mode: StartStopMode = mode.into();
+                                        info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
+                                        let stop_results = systemd::stop_unit(unit, mode);
+
+                                        control.start_restart(
+                                            &unit.primary(),
+                                            Some(unit),
+                                            stop_results,
+                                            UnitContolType::Stop,
+                                            ActiveState::Inactive,
+                                            mode,
+                                        );
+                                    }
+                                }
+
+                                let result = result.map(|_arg| ());
+                                after_mask(&action_type.method_name(), unit, result, control);
+                            }
+                            Err(_error) => {}
+                        }
+                    }
+                };
+
+                let mut flags = DisEnableFlags::empty();
+
+                if force {
+                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_FORCE
+                }
+
+                if self.portable_switch.is_active() {
+                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_PORTABLE
+                }
+
+                if runtime {
+                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
+                }
+
+                let lambda = move |_unit: Option<&UnitInfo>| {
+                    systemd::disable_unit_files(unit_file2.as_str(), dbus_level, flags)
+                };
+
+                self.unit_control
+                    .get()
+                    .expect("unit_control not None")
+                    .call_method(
+                        &action_type.method_name(),
+                        false,
+                        &button,
+                        lambda,
+                        handling_response_callback,
+                    );
+            }
             ControlActionType::MaskUnit => {
                 let handling_response_callback = {
                     move |_method: &str,
@@ -196,11 +260,11 @@ impl EnableUnitDialogImp {
                           control: &UnitControlPanel| {
                         match result {
                             Ok(ref vec) => {
-                                info!("Unit Masked {:?}", vec);
+                                info!("{} Result: {:?}", action_type.code(), vec);
 
                                 if let Some(unit) = unit {
-                                    if dialog.imp().run_now_switch.is_active() {
-                                        let mode = dialog.imp().run_mode_combo.selected_item();
+                                    if dialog.imp().run_stop_now_switch.is_active() {
+                                        let mode = dialog.imp().run_stop_mode_combo.selected_item();
                                         let mode: StartStopMode = mode.into();
                                         info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
                                         let stop_results = systemd::stop_unit(unit, mode);
@@ -246,7 +310,7 @@ impl EnableUnitDialogImp {
                           control: &UnitControlPanel| {
                         match result {
                             Ok(ref vec) => {
-                                info!("Unit Preset {:?}", vec);
+                                info!("{} Result: {:?}", action_type.code(), vec);
 
                                 let result = result.map(|_arg| ());
                                 after_mask("Preset", unit, result, control);
@@ -271,8 +335,40 @@ impl EnableUnitDialogImp {
                         handling_response_callback,
                     );
             }
-            ControlActionType::DisableUnitFiles => todo!(),
-            ControlActionType::Reenable => todo!(),
+
+            ControlActionType::Reenable => {
+                let handling_response_callback = {
+                    move |_method: &str,
+                          unit: Option<&UnitInfo>,
+                          result: Result<EnableUnitFilesReturn, SystemdErrors>,
+                          control: &UnitControlPanel| {
+                        match result {
+                            Ok(ref vec) => {
+                                info!("{} Result: {:?}", action_type.code(), vec);
+
+                                let result = result.map(|_arg| ());
+                                after_mask(&action_type.method_name(), unit, result, control);
+                            }
+                            Err(_error) => {}
+                        }
+                    }
+                };
+
+                let lambda = move |unit: Option<&UnitInfo>| {
+                    systemd::reenable_unit_file(unit.expect("Unit not None"), runtime, force)
+                };
+
+                self.unit_control
+                    .get()
+                    .expect("unit_control not None")
+                    .call_method(
+                        &action_type.method_name(),
+                        false,
+                        &button,
+                        lambda,
+                        handling_response_callback,
+                    );
+            }
         }
 
         /*   self.unit_control
@@ -343,11 +439,11 @@ impl EnableUnitDialogImp {
 
         self.runtime_switch.set_active(runtime);
         self.force_switch.set_active(force);
-        self.run_now_switch.set_active(run_now);
+        self.run_stop_now_switch.set_active(run_now);
 
         let start_mode: StartStopMode = start_mode.as_str().into();
         let position = start_mode.discriminant();
-        self.run_mode_combo.set_selected(position);
+        self.run_stop_mode_combo.set_selected(position);
     }
 
     pub(crate) fn set_app_window(
@@ -442,6 +538,10 @@ impl EnableUnitDialogImp {
 
         self.send_action_button
             .set_label(&action_type.send_action_label());
+
+        let (title, subtitle) = action_type.run_stop_now();
+        self.run_stop_now_switch.set_title(&title);
+        self.run_stop_now_switch.set_subtitle(&subtitle);
     }
 }
 
@@ -480,8 +580,8 @@ impl ObjectImpl for EnableUnitDialogImp {
             "nick",
         );
 
-        self.run_mode_combo.set_expression(Some(expression));
-        self.run_mode_combo.set_model(Some(&model));
+        self.run_stop_mode_combo.set_expression(Some(expression));
+        self.run_stop_mode_combo.set_model(Some(&model));
 
         let mut levels_string = Vec::new();
         for level in UnitDBusLevel::iter() {
@@ -506,8 +606,8 @@ impl WindowImpl for EnableUnitDialogImp {
         let dbus_level: UnitDBusLevel = dbus_level.into();
         let runtime = self.runtime_switch.is_active();
         let force = self.force_switch.is_active();
-        let run_now = self.run_now_switch.is_active();
-        let start_mode = self.run_mode_combo.selected_item();
+        let run_now = self.run_stop_now_switch.is_active();
+        let start_mode = self.run_stop_mode_combo.selected_item();
         let start_mode: StartStopMode = start_mode.into();
 
         let settings = self.settings.get().expect("Settings not None");

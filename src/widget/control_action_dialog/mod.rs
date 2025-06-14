@@ -103,7 +103,9 @@ impl ControlActionType {
     fn after_action_group_visible(&self) -> bool {
         matches!(
             self,
-            ControlActionType::EnableUnitFiles | ControlActionType::MaskUnit
+            ControlActionType::EnableUnitFiles
+                | ControlActionType::MaskUnit
+                | ControlActionType::DisableUnitFiles
         )
     }
 
@@ -114,6 +116,23 @@ impl ControlActionType {
             ControlActionType::Preset => pgettext("action unit file", "Preset"),
             ControlActionType::DisableUnitFiles => pgettext("action unit file", "Enable"),
             ControlActionType::Reenable => pgettext("action unit file", "Enable"),
+        }
+    }
+
+    fn run_stop_now(&self) -> (String, String) {
+        match self {
+            ControlActionType::EnableUnitFiles => (
+                pgettext("action unit file", "Run now"),
+                pgettext("action unit file", "Start Unit just after being enabled"),
+            ),
+            ControlActionType::MaskUnit | ControlActionType::DisableUnitFiles => (
+                pgettext("action unit file", "Stop now"),
+                pgettext(
+                    "action unit file",
+                    "Ensure that the unit will also be stopped",
+                ),
+            ),
+            _ => (String::new(), String::new()),
         }
     }
 

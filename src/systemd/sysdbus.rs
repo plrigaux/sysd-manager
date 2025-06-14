@@ -714,6 +714,7 @@ pub(super) fn preset_unit_file(
     )
 }
 
+#[allow(dead_code)]
 pub(super) fn link_unit_file(
     level: UnitDBusLevel,
     files: &[&str],

@@ -200,38 +200,32 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn preset_unit_files_button_clicked(&self, _button: &gtk::Widget) {
-        let app_window = self.app_window.get();
-        let parent = self.parent();
-        let unit_binding = self.current_unit.borrow();
-
-        let enable_unit_dialog = ControlActionDialog::new(
-            unit_binding.as_ref(),
-            app_window,
-            parent,
-            ControlActionType::Preset,
-        );
-
-        enable_unit_dialog.set_transient_for(app_window);
-        //clean_dialog.set_modal(true);
-
-        enable_unit_dialog.present();
+        self.show_dialog(ControlActionType::Preset);
     }
 
     #[template_callback]
-    fn mask_button_clicked(&self, _button: &gtk::Widget) {
+    fn mask_button_clicked(&self) {
+        self.show_dialog(ControlActionType::MaskUnit);
+    }
+
+    #[template_callback]
+    fn disable_unit_files_button_clicked(&self, _button: &gtk::Button) {
+        self.show_dialog(ControlActionType::DisableUnitFiles);
+    }
+
+    #[template_callback]
+    fn reenable_unit_files_button_clicked(&self) {
+        self.show_dialog(ControlActionType::Reenable);
+    }
+    fn show_dialog(&self, action: ControlActionType) {
         let unit_binding = self.current_unit.borrow();
         let app_window = self.app_window.get();
         let parent = self.parent();
 
-        let mask_unit_dialog = ControlActionDialog::new(
-            unit_binding.as_ref(),
-            app_window,
-            parent,
-            ControlActionType::MaskUnit,
-        );
-        mask_unit_dialog.set_transient_for(app_window);
+        let dialog = ControlActionDialog::new(unit_binding.as_ref(), app_window, parent, action);
+        dialog.set_transient_for(app_window);
 
-        mask_unit_dialog.present();
+        dialog.present();
     }
 
     #[template_callback]

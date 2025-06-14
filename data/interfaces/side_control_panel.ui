@@ -25,6 +25,21 @@
       </object>
     </child>
     <child>
+      <object class="GtkButton" id="disable_unit_file">
+        <property name="css-classes">flat</property>
+        <signal name="clicked" handler="disable_unit_files_button_clicked" swapped="yes"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="halign">start</property>
+            <property name="icon-name">media-record-symbolic</property>
+            <property name="label" translatable="yes" context="control" comments="button">_Disable Unit File</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
+            <property name="use-underline">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
       <object class="GtkButton">
         <property name="child">
           <object class="AdwButtonContent">
@@ -153,6 +168,21 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <property name="halign">start</property>
             <property name="icon-name">media-record-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">_Preset</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
+            <property name="use-underline">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="reenable_button">
+        <property name="css-classes">flat</property>
+        <signal name="clicked" handler="reenable_unit_files_button_clicked" swapped="yes"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="halign">start</property>
+            <property name="icon-name">gnome-disks-state-standby-symbolic</property>
+            <property name="label" translatable="yes" context="control" comments="button">_Reenable</property>
             <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
             <property name="use-underline">True</property>
           </object>

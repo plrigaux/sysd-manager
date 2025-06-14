@@ -83,13 +83,13 @@
                 <property name="margin-top">5</property>
                 <property name="title">Start</property>
                 <child>
-                  <object class="AdwSwitchRow" id="run_now_switch">
+                  <object class="AdwSwitchRow" id="run_stop_now_switch">
                     <property name="subtitle" translatable="yes" context="enable unit file" comments="subtitle">Start Unit just after being enabled</property>
                     <property name="title" translatable="yes" context="enable unit file" comments="title">Run now</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwComboRow" id="run_mode_combo">
+                  <object class="AdwComboRow" id="run_stop_mode_combo">
                     <property name="subtitle" translatable="yes" context="enable unit file" comments="title">Starting mode options</property>
                     <property name="title" translatable="yes" context="enable unit file" comments="title">Run mode</property>
                   </object>
