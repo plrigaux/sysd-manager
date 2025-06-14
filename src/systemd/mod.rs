@@ -617,6 +617,22 @@ pub fn mask_unit_files(
     sysdbus::mask_unit_files(unit.dbus_level(), &[&unit.primary()], runtime, force)
 }
 
+pub fn preset_unit_files(
+    unit: &UnitInfo,
+    runtime: bool,
+    force: bool,
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    sysdbus::preset_unit_file(unit.dbus_level(), &[&unit.primary()], runtime, force)
+}
+
+pub fn reenable_unit_file(
+    unit: &UnitInfo,
+    runtime: bool,
+    force: bool,
+) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    sysdbus::reenable_unit_file(unit.dbus_level(), &[&unit.primary()], runtime, force)
+}
+
 pub fn unmask_unit_files(
     unit: &UnitInfo,
     runtime: bool,

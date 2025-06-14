@@ -18,19 +18,20 @@ use strum::IntoEnumIterator;
 use crate::{
     systemd::{
         self,
-        data::{EnableUnitFilesReturn, UnitInfo},
+        data::{DisEnAbleUnitFiles, EnableUnitFilesReturn, UnitInfo},
         enums::{ActiveState, DisEnableFlags, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
     systemd_gui,
     widget::{
         app_window::AppWindow,
+        control_action_dialog::ControlActionType,
         mask_unit_dialog::after_mask,
         unit_control_panel::{UnitControlPanel, enums::UnitContolType},
     },
 };
 
-use super::EnableUnitDialog;
+use super::ControlActionDialog;
 
 const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUNTIME: &str = "save-context-enable-unit-file-runtime";
 const SAVE_CONTEXT_ENABLE_UNIT_FILE_FORCE: &str = "save-context-enable-unit-file-force";
@@ -39,10 +40,10 @@ const SAVE_CONTEXT_ENABLE_UNIT_FILE_START_MODE: &str = "save-context-enable-unit
 const SAVE_CONTEXT_ENABLE_UNIT_FILE_DBUS_LEVEL: &str = "save-context-enable-unit-file-dbus-level";
 
 #[derive(Default, gtk::CompositeTemplate)]
-#[template(resource = "/io/github/plrigaux/sysd-manager/enable_unit_dialog.ui")]
+#[template(resource = "/io/github/plrigaux/sysd-manager/control_action_dialog.ui")]
 pub struct EnableUnitDialogImp {
     #[template_child]
-    enable_button: TemplateChild<gtk::Button>,
+    send_action_button: TemplateChild<gtk::Button>,
 
     #[template_child]
     unit_file_entry: TemplateChild<adw::EntryRow>,
@@ -68,7 +69,18 @@ pub struct EnableUnitDialogImp {
     #[template_child]
     use_selected_unit_button: TemplateChild<gtk::Button>,
 
+    #[template_child]
+    first_group: TemplateChild<adw::PreferencesGroup>,
+
+    #[template_child]
+    after_action_group: TemplateChild<adw::PreferencesGroup>,
+
+    #[template_child]
+    window_title: TemplateChild<adw::WindowTitle>,
+
     unit: OnceCell<Option<UnitInfo>>,
+
+    action_type: OnceCell<ControlActionType>,
 
     app_window: OnceCell<AppWindow>,
 
@@ -80,7 +92,7 @@ pub struct EnableUnitDialogImp {
 #[gtk::template_callbacks]
 impl EnableUnitDialogImp {
     #[template_callback]
-    fn enable_unit_file_button_clicked(&self, button: gtk::Button) {
+    fn send_action_button_clicked(&self, button: gtk::Button) {
         let unit_file = self.unit_file_entry.text();
         let unit_file2 = unit_file.clone();
 
@@ -89,85 +101,190 @@ impl EnableUnitDialogImp {
         let dialog = self.obj().clone();
 
         let app_window = self.app_window.get().expect("Need window set").clone();
-        let handling_response_callback = {
-            move |_method: &str,
-                  _unit: Option<&UnitInfo>,
-                  result: Result<EnableUnitFilesReturn, SystemdErrors>,
-                  control: &UnitControlPanel| {
-                match result {
-                    Ok(vec) => {
-                        info!("Enable Unit File Result: {:?}", vec); //TODO enable start
-                        let unit_name = unit_file.as_str();
-                        if dialog.imp().run_now_switch.is_active() {
-                            //TODO Check if Reload Units needed
-                            let mode = dialog.imp().run_mode_combo.selected_item();
-                            let start_mode: StartStopMode = mode.into();
-                            info!(
-                                "Try to start {:?} level: {:?} mode: {:?}",
-                                unit_name, dbus_level, start_mode
-                            );
 
-                            let start_results =
-                                systemd::start_unit_name(dbus_level, unit_name, start_mode);
+        let runtime = self.runtime_switch.is_active();
+        let force = self.force_switch.is_active();
 
-                            control.start_restart(
-                                unit_name,
-                                None,
-                                start_results,
-                                UnitContolType::Start,
-                                ActiveState::Active,
-                                start_mode,
-                            );
-                        }
+        let action_type = self.action_type.get().expect("Value need to be set");
+        match self.action_type.get().expect("Value need to be set") {
+            ControlActionType::EnableUnitFiles => {
+                let handling_response_callback = {
+                    move |_method: &str,
+                          _unit: Option<&UnitInfo>,
+                          result: Result<EnableUnitFilesReturn, SystemdErrors>,
+                          control: &UnitControlPanel| {
+                        match result {
+                            Ok(vec) => {
+                                info!("Enable Unit File Result: {:?}", vec); //TODO enable start
+                                let unit_name = unit_file.as_str();
+                                if dialog.imp().run_now_switch.is_active() {
+                                    //TODO Check if Reload Units needed
+                                    let mode = dialog.imp().run_mode_combo.selected_item();
+                                    let start_mode: StartStopMode = mode.into();
+                                    info!(
+                                        "Try to start {:?} level: {:?} mode: {:?}",
+                                        unit_name, dbus_level, start_mode
+                                    );
 
-                        match systemd::fetch_unit(dbus_level, unit_name) {
-                            Ok(unit) => {
-                                let returned_unit = app_window.set_unit(Some(&unit));
-                                after_mask("", returned_unit.as_ref(), Ok(()), control);
+                                    let start_results =
+                                        systemd::start_unit_name(dbus_level, unit_name, start_mode);
+
+                                    control.start_restart(
+                                        unit_name,
+                                        None,
+                                        start_results,
+                                        UnitContolType::Start,
+                                        ActiveState::Active,
+                                        start_mode,
+                                    );
+                                }
+
+                                match systemd::fetch_unit(dbus_level, unit_name) {
+                                    Ok(unit) => {
+                                        let returned_unit = app_window.set_unit(Some(&unit));
+                                        after_mask("", returned_unit.as_ref(), Ok(()), control);
+                                    }
+                                    Err(e) => {
+                                        warn!(
+                                            "Enable unit fetch {:?} level {:?} Error: {:?}",
+                                            unit_name, dbus_level, e
+                                        );
+                                    }
+                                }
                             }
-                            Err(e) => {
-                                warn!(
-                                    "Enable unit fetch {:?} level {:?} Error: {:?}",
-                                    unit_name, dbus_level, e
-                                );
+                            Err(_error) => {
+                                //handle by caller function
                             }
                         }
                     }
-                    Err(_error) => {
-                        //handle by caller function
-                    }
+                };
+
+                let mut flags = DisEnableFlags::empty();
+
+                if force {
+                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_FORCE
                 }
+
+                if self.portable_switch.is_active() {
+                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_PORTABLE
+                }
+
+                if runtime {
+                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
+                }
+
+                let lambda = move |_unit: Option<&UnitInfo>| {
+                    systemd::enable_unit_file(unit_file2.as_str(), dbus_level, flags)
+                };
+
+                self.unit_control
+                    .get()
+                    .expect("unit_control not None")
+                    .call_method(
+                        &action_type.method_name(),
+                        false,
+                        &button,
+                        lambda,
+                        handling_response_callback,
+                    );
             }
-        };
+            ControlActionType::MaskUnit => {
+                let handling_response_callback = {
+                    move |_method: &str,
+                          unit: Option<&UnitInfo>,
+                          result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
+                          control: &UnitControlPanel| {
+                        match result {
+                            Ok(ref vec) => {
+                                info!("Unit Masked {:?}", vec);
 
-        let mut flags = DisEnableFlags::empty();
+                                if let Some(unit) = unit {
+                                    if dialog.imp().run_now_switch.is_active() {
+                                        let mode = dialog.imp().run_mode_combo.selected_item();
+                                        let mode: StartStopMode = mode.into();
+                                        info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
+                                        let stop_results = systemd::stop_unit(unit, mode);
 
-        if self.force_switch.is_active() {
-            flags |= DisEnableFlags::SD_SYSTEMD_UNIT_FORCE
+                                        control.start_restart(
+                                            &unit.primary(),
+                                            Some(unit),
+                                            stop_results,
+                                            UnitContolType::Stop,
+                                            ActiveState::Inactive,
+                                            mode,
+                                        );
+                                    }
+                                }
+
+                                let result = result.map(|_arg| ());
+                                after_mask("Mask", unit, result, control);
+                            }
+                            Err(_error) => {}
+                        }
+                    }
+                };
+
+                let lambda = move |unit: Option<&UnitInfo>| {
+                    systemd::mask_unit_files(unit.expect("Unit not None"), runtime, force)
+                };
+                self.unit_control
+                    .get()
+                    .expect("unit_control not None")
+                    .call_method(
+                        &action_type.method_name(),
+                        false,
+                        &button,
+                        lambda,
+                        handling_response_callback,
+                    );
+            }
+            ControlActionType::Preset => {
+                let handling_response_callback = {
+                    move |_method: &str,
+                          unit: Option<&UnitInfo>,
+                          result: Result<EnableUnitFilesReturn, SystemdErrors>,
+                          control: &UnitControlPanel| {
+                        match result {
+                            Ok(ref vec) => {
+                                info!("Unit Preset {:?}", vec);
+
+                                let result = result.map(|_arg| ());
+                                after_mask("Preset", unit, result, control);
+                            }
+                            Err(_error) => {}
+                        }
+                    }
+                };
+
+                let lambda = move |unit: Option<&UnitInfo>| {
+                    systemd::preset_unit_files(unit.expect("Unit not None"), runtime, force)
+                };
+
+                self.unit_control
+                    .get()
+                    .expect("unit_control not None")
+                    .call_method(
+                        &action_type.method_name(),
+                        false,
+                        &button,
+                        lambda,
+                        handling_response_callback,
+                    );
+            }
+            ControlActionType::DisableUnitFiles => todo!(),
+            ControlActionType::Reenable => todo!(),
         }
 
-        if self.portable_switch.is_active() {
-            flags |= DisEnableFlags::SD_SYSTEMD_UNIT_PORTABLE
-        }
-
-        if self.runtime_switch.is_active() {
-            flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
-        }
-
-        let lambda = move |_unit: Option<&UnitInfo>| {
-            systemd::enable_unit_file(unit_file2.as_str(), dbus_level, flags)
-        };
-
-        self.unit_control
-            .get()
-            .expect("unit_control not None")
-            .call_method(
-                /*Message answer*/ &pgettext("enable unit file", "Enable Unit File"),
-                false,
-                &button,
-                lambda,
-                handling_response_callback,
-            );
+        /*   self.unit_control
+        .get()
+        .expect("unit_control not None")
+        .call_method(
+            /*Message answer*/ &pgettext("enable unit file", "Enable Unit File"),
+            false,
+            &button,
+            lambda,
+            handling_response_callback,
+        ); */
     }
 
     #[template_callback]
@@ -286,21 +403,53 @@ impl EnableUnitDialogImp {
         let unit_file = self.unit_file_entry.text();
 
         //  let enable_button = if unit_file.is_empty() { false } else { true };
-        self.enable_button.set_sensitive(!unit_file.is_empty());
+        self.send_action_button.set_sensitive(!unit_file.is_empty());
     }
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) {
         self.unit.set(unit.cloned()).expect("Unit set Once Only");
 
+        if let Some(unit) = unit {
+            if self.action_type.get().expect("Not None").dialog_subtitle() {
+                self.window_title.set_subtitle(&unit.primary());
+            }
+        }
+
         self.use_selected_unit_button.set_sensitive(unit.is_some());
+    }
+
+    pub(crate) fn set_action_type(&self, action_type: super::ControlActionType) {
+        self.action_type.set(action_type).expect("Only set once");
+
+        self.window_title.set_title(&action_type.title());
+
+        self.first_group.set_title(&action_type.first_group_title());
+
+        self.after_action_group
+            .set_title(&action_type.after_group_title());
+
+        self.unit_file_entry
+            .set_visible(action_type.unit_file_entry_visible());
+
+        self.dbus_level_combo
+            .set_visible(action_type.dbus_level_combo_visible());
+
+        self.portable_switch
+            .set_visible(action_type.portable_switch_visible());
+
+        self.after_action_group
+            .set_visible(action_type.after_action_group_visible());
+
+        self.send_action_button
+            .set_label(&action_type.send_action_label());
     }
 }
 
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
 impl ObjectSubclass for EnableUnitDialogImp {
-    const NAME: &'static str = "ENABLE_UNIT_DIALOG";
-    type Type = EnableUnitDialog;
+    const NAME: &'static str = "ControlAction_DIALOG";
+    type Type = ControlActionDialog;
     type ParentType = adw::Window;
 
     fn class_init(klass: &mut Self::Class) {

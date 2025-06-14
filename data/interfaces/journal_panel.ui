@@ -57,12 +57,12 @@
         </child>
         <child>
           <object class="GtkButton">
-            <property name="tooltip-text"  translatable="yes" context="journal" comments="tooltip">List the boots of the system</property>
+            <property name="tooltip-text" translatable="yes" context="journal" comments="tooltip">List the boots of the system</property>
             <signal name="clicked" handler="list_boots_clicked" swapped="yes"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">list-symbolic</property>
-                <property name="label"  translatable="yes" context="journal" comments="button">List Boots</property>
+                <property name="label" translatable="yes" context="journal" comments="button">List Boots</property>
               </object>
             </child>
           </object>
@@ -88,7 +88,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="journal_boot_all_button">
-                        <property name="label"  translatable="yes" context="journal" comments="button">All events</property>
+                        <property name="label" translatable="yes" context="journal" comments="button">All events</property>
                         <signal name="clicked" handler="journal_boot_all_button_clicked" swapped="yes"/>
                       </object>
                     </child>
@@ -115,7 +115,7 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description"  translatable="yes" context="journal" comments="description">No journal events!
+                <property name="description" translatable="yes" context="journal" comments="description">No journal events!
 It can be a good thing. 😉</property>
                 <property name="icon-name">dialog-question</property>
                 <property name="title" translatable="yes" context="journal" comments="title">No journal events</property>

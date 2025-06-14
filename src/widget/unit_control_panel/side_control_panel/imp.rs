@@ -20,9 +20,8 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         clean_dialog::CleanUnitDialog,
-        enable_unit_dialog::EnableUnitDialog,
+        control_action_dialog::{ControlActionDialog, ControlActionType},
         kill_panel::KillPanel,
-        mask_unit_dialog::MaskUnitDialog,
         unit_control_panel::{UnitControlPanel, work_around_dialog},
     },
 };
@@ -186,7 +185,31 @@ impl SideControlPanelImpl {
         let parent = self.parent();
         let unit_binding = self.current_unit.borrow();
 
-        let enable_unit_dialog = EnableUnitDialog::new(unit_binding.as_ref(), app_window, parent);
+        let enable_unit_dialog = ControlActionDialog::new(
+            unit_binding.as_ref(),
+            app_window,
+            parent,
+            ControlActionType::EnableUnitFiles,
+        );
+
+        enable_unit_dialog.set_transient_for(app_window);
+        //clean_dialog.set_modal(true);
+
+        enable_unit_dialog.present();
+    }
+
+    #[template_callback]
+    fn preset_unit_files_button_clicked(&self, _button: &gtk::Widget) {
+        let app_window = self.app_window.get();
+        let parent = self.parent();
+        let unit_binding = self.current_unit.borrow();
+
+        let enable_unit_dialog = ControlActionDialog::new(
+            unit_binding.as_ref(),
+            app_window,
+            parent,
+            ControlActionType::Preset,
+        );
 
         enable_unit_dialog.set_transient_for(app_window);
         //clean_dialog.set_modal(true);
@@ -200,13 +223,12 @@ impl SideControlPanelImpl {
         let app_window = self.app_window.get();
         let parent = self.parent();
 
-        let mask_unit_dialog = MaskUnitDialog::new(
+        let mask_unit_dialog = ControlActionDialog::new(
             unit_binding.as_ref(),
-            self.is_dark.get(),
             app_window,
             parent,
+            ControlActionType::MaskUnit,
         );
-
         mask_unit_dialog.set_transient_for(app_window);
 
         mask_unit_dialog.present();

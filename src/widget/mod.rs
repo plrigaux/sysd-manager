@@ -4,7 +4,7 @@ use crate::systemd::{BootFilter, data::UnitInfo};
 
 pub mod app_window;
 pub mod clean_dialog;
-pub mod enable_unit_dialog;
+pub mod control_action_dialog;
 pub mod grid_cell;
 pub mod info_window;
 pub mod journal;

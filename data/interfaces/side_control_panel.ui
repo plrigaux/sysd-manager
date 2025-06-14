@@ -116,7 +116,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
     </child>
     <child>
       <object class="GtkButton" id="unmask_button">
-        <property name="css-classes">flat</property>     
+        <property name="css-classes">flat</property>
         <signal name="clicked" handler="unmask_button_clicked" swapped="yes"/>
         <child>
           <object class="AdwButtonContent">
@@ -140,6 +140,21 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <property name="icon-name">view-refresh-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">Reload Unit</property>
             <property name="tooltip-text" translatable="yes" context="control" comments="button">Ask the specified unit to reload its configuration</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="preset_button">
+        <property name="css-classes">flat</property>
+        <signal name="clicked" handler="preset_unit_files_button_clicked" swapped="yes"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="halign">start</property>
+            <property name="icon-name">media-record-symbolic</property>
+            <property name="label" translatable="yes" context="control" comments="button">_Preset</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
+            <property name="use-underline">True</property>
           </object>
         </child>
       </object>
