@@ -20,6 +20,7 @@ pub enum SystemdErrors {
     NoFilePathforUnit(String),
     //FlatpakAccess(ErrorKind),
     NotAuthorized,
+    NoUnit,
     Tokio,
     ZBusError(zbus::Error),
     ZAccessDenied(String, String),

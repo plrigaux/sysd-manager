@@ -95,8 +95,6 @@ impl EnableUnitDialogImp {
         let unit_file = self.unit_file_entry.text();
         let unit_file2 = unit_file.clone();
 
-        let dbus_level = self.dbus_level_combo.selected_item();
-        let dbus_level: UnitDBusLevel = dbus_level.into();
         let dialog = self.obj().clone();
 
         let app_window = self.app_window.get().expect("Need window set").clone();
@@ -107,6 +105,8 @@ impl EnableUnitDialogImp {
         let action_type = *self.action_type.get().expect("Value need to be set");
         match action_type {
             ControlActionType::EnableUnitFiles => {
+                let dbus_level = self.dbus_level_combo.selected_item();
+                let dbus_level: UnitDBusLevel = dbus_level.into();
                 let handling_response_callback = {
                     move |_method: &str,
                           _unit: Option<&UnitInfo>,
@@ -237,8 +237,12 @@ impl EnableUnitDialogImp {
                     flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
                 }
 
-                let lambda = move |_unit: Option<&UnitInfo>| {
-                    systemd::disable_unit_files(unit_file2.as_str(), dbus_level, flags)
+                let lambda = move |unit: Option<&UnitInfo>| {
+                    let Some(unit) = unit else {
+                        return Err(SystemdErrors::NoUnit);
+                    };
+
+                    systemd::disable_unit_files(&unit.primary(), unit.dbus_level(), flags)
                 };
 
                 self.unit_control
@@ -289,7 +293,10 @@ impl EnableUnitDialogImp {
                 };
 
                 let lambda = move |unit: Option<&UnitInfo>| {
-                    systemd::mask_unit_files(unit.expect("Unit not None"), runtime, force)
+                    let Some(unit) = unit else {
+                        return Err(SystemdErrors::NoUnit);
+                    };
+                    systemd::mask_unit_files(unit, runtime, force)
                 };
                 self.unit_control
                     .get()
@@ -321,7 +328,10 @@ impl EnableUnitDialogImp {
                 };
 
                 let lambda = move |unit: Option<&UnitInfo>| {
-                    systemd::preset_unit_files(unit.expect("Unit not None"), runtime, force)
+                    let Some(unit) = unit else {
+                        return Err(SystemdErrors::NoUnit);
+                    };
+                    systemd::preset_unit_files(unit, runtime, force)
                 };
 
                 self.unit_control
@@ -355,7 +365,10 @@ impl EnableUnitDialogImp {
                 };
 
                 let lambda = move |unit: Option<&UnitInfo>| {
-                    systemd::reenable_unit_file(unit.expect("Unit not None"), runtime, force)
+                    let Some(unit) = unit else {
+                        return Err(SystemdErrors::NoUnit);
+                    };
+                    systemd::reenable_unit_file(unit, runtime, force)
                 };
 
                 self.unit_control
@@ -509,6 +522,13 @@ impl EnableUnitDialogImp {
             if self.action_type.get().expect("Not None").dialog_subtitle() {
                 self.window_title.set_subtitle(&unit.primary());
             }
+
+            if !matches!(
+                self.action_type.get().expect("Not none"),
+                ControlActionType::EnableUnitFiles
+            ) {
+                self.send_action_button.set_sensitive(true);
+            }
         }
 
         self.use_selected_unit_button.set_sensitive(unit.is_some());
@@ -542,6 +562,10 @@ impl EnableUnitDialogImp {
         let (title, subtitle) = action_type.run_stop_now();
         self.run_stop_now_switch.set_title(&title);
         self.run_stop_now_switch.set_subtitle(&subtitle);
+
+        let (title, subtitle) = action_type.run_stop_now_mode();
+        self.run_stop_mode_combo.set_title(&title);
+        self.run_stop_mode_combo.set_subtitle(&subtitle);
     }
 }
 
