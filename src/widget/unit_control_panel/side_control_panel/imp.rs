@@ -244,7 +244,7 @@ impl SideControlPanelImpl {
             true,
             button,
             lambda,
-            crate::widget::mask_unit_dialog::after_mask,
+            crate::widget::control_action_dialog::imp::after_unit_file_action,
         );
     }
 }

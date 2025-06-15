@@ -25,7 +25,6 @@ use crate::{
     widget::{
         app_window::AppWindow,
         control_action_dialog::ControlActionType,
-        mask_unit_dialog::after_mask,
         unit_control_panel::{UnitControlPanel, enums::UnitContolType},
     },
 };
@@ -141,7 +140,12 @@ impl EnableUnitDialogImp {
                                 match systemd::fetch_unit(dbus_level, unit_name) {
                                     Ok(unit) => {
                                         let returned_unit = app_window.set_unit(Some(&unit));
-                                        after_mask("", returned_unit.as_ref(), Ok(()), control);
+                                        after_unit_file_action(
+                                            "",
+                                            returned_unit.as_ref(),
+                                            Ok(()),
+                                            control,
+                                        );
                                     }
                                     Err(e) => {
                                         warn!(
@@ -216,7 +220,12 @@ impl EnableUnitDialogImp {
                                 }
 
                                 let result = result.map(|_arg| ());
-                                after_mask(&action_type.method_name(), unit, result, control);
+                                after_unit_file_action(
+                                    &action_type.method_name(),
+                                    unit,
+                                    result,
+                                    control,
+                                );
                             }
                             Err(_error) => {}
                         }
@@ -285,7 +294,7 @@ impl EnableUnitDialogImp {
                                 }
 
                                 let result = result.map(|_arg| ());
-                                after_mask("Mask", unit, result, control);
+                                after_unit_file_action("Mask", unit, result, control);
                             }
                             Err(_error) => {}
                         }
@@ -320,7 +329,7 @@ impl EnableUnitDialogImp {
                                 info!("{} Result: {:?}", action_type.code(), vec);
 
                                 let result = result.map(|_arg| ());
-                                after_mask("Preset", unit, result, control);
+                                after_unit_file_action("Preset", unit, result, control);
                             }
                             Err(_error) => {}
                         }
@@ -357,7 +366,12 @@ impl EnableUnitDialogImp {
                                 info!("{} Result: {:?}", action_type.code(), vec);
 
                                 let result = result.map(|_arg| ());
-                                after_mask(&action_type.method_name(), unit, result, control);
+                                after_unit_file_action(
+                                    &action_type.method_name(),
+                                    unit,
+                                    result,
+                                    control,
+                                );
                             }
                             Err(_error) => {}
                         }
@@ -399,7 +413,12 @@ impl EnableUnitDialogImp {
                                 match systemd::fetch_unit(dbus_level, unit_name) {
                                     Ok(unit) => {
                                         let returned_unit = app_window.set_unit(Some(&unit));
-                                        after_mask("", returned_unit.as_ref(), Ok(()), control);
+                                        after_unit_file_action(
+                                            "",
+                                            returned_unit.as_ref(),
+                                            Ok(()),
+                                            control,
+                                        );
                                     }
                                     Err(e) => {
                                         warn!(
@@ -720,3 +739,50 @@ impl WindowImpl for EnableUnitDialogImp {
     }
 }
 impl AdwWindowImpl for EnableUnitDialogImp {}
+
+pub fn after_unit_file_action(
+    _method_name: &str,
+    unit: Option<&UnitInfo>,
+    result: Result<(), SystemdErrors>,
+    control: &UnitControlPanel,
+) {
+    if result.is_err() {
+        return;
+    }
+
+    let Some(unit) = unit else {
+        warn!("Unit None");
+        return;
+    };
+
+    let unit = unit.clone();
+    let control = control.clone();
+    glib::spawn_future_local(async move {
+        let unit2 = unit.clone();
+
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+
+        crate::systemd::runtime().spawn(async move {
+            let response = systemd::complete_single_unit_information(&unit2).await;
+
+            sender
+                .send(response)
+                .expect("The channel needs to be open.");
+        });
+
+        let vec_unit_info = match receiver.await.expect("Tokio receiver works") {
+            Ok(unit_files) => unit_files,
+            Err(err) => {
+                warn!("Fail to update Unit info {:?}", err);
+                return Err(err);
+            }
+        };
+
+        if let Some(update) = vec_unit_info.into_iter().next() {
+            unit.update_from_unit_info(update);
+        }
+
+        control.selection_change(Some(&unit));
+        Ok::<(), SystemdErrors>(())
+    });
+}

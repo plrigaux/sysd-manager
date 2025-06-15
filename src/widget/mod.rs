@@ -9,7 +9,6 @@ pub mod grid_cell;
 pub mod info_window;
 pub mod journal;
 pub mod kill_panel;
-pub mod mask_unit_dialog;
 pub mod menu_button;
 pub mod preferences;
 pub mod signals_dialog;

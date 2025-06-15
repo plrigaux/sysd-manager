@@ -1,4 +1,4 @@
-mod imp;
+pub mod imp;
 
 use gettextrs::pgettext;
 use gtk::{
