@@ -648,6 +648,15 @@ pub fn unmask_unit_files(
     sysdbus::unmask_unit_files(unit.dbus_level(), &[&unit.primary()], runtime)
 }
 
+pub fn link_unit_files(
+    dbus_level: UnitDBusLevel,
+    unit_file: &str,
+    runtime: bool,
+    force: bool,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    sysdbus::link_unit_files(dbus_level, &[unit_file], runtime, force)
+}
+
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
     if !IS_FLATPAK_MODE {
         return Ok(());

@@ -41,6 +41,7 @@ pub enum ControlActionType {
     Preset,
     DisableUnitFiles,
     Reenable,
+    Link,
 }
 
 impl ControlActionType {
@@ -51,6 +52,7 @@ impl ControlActionType {
             ControlActionType::Preset => "Preset Unit File",
             ControlActionType::Reenable => "Reenable Unit File",
             ControlActionType::DisableUnitFiles => "Disable Unit File",
+            ControlActionType::Link => "Link Unit File",
         }
     }
 
@@ -63,6 +65,7 @@ impl ControlActionType {
             ControlActionType::DisableUnitFiles => {
                 pgettext("action unit file", "Disable Unit File")
             }
+            ControlActionType::Link => pgettext("action unit file", "Link Unit File"),
         }
     }
 
@@ -78,22 +81,33 @@ impl ControlActionType {
     pub fn after_group_title(&self) -> String {
         match self {
             ControlActionType::EnableUnitFiles => pgettext("action unit file", "Start"),
-            ControlActionType::DisableUnitFiles => pgettext("action unit file", "Stop"),
-            ControlActionType::MaskUnit => pgettext("action unit file", "Stop"),
+            ControlActionType::DisableUnitFiles | ControlActionType::MaskUnit => {
+                pgettext("action unit file", "Stop")
+            }
+
             _ => String::new(),
         }
     }
 
     pub fn dialog_subtitle(&self) -> bool {
-        !matches!(self, ControlActionType::EnableUnitFiles)
+        !matches!(
+            self,
+            ControlActionType::EnableUnitFiles | ControlActionType::Link
+        )
     }
 
     fn unit_file_entry_visible(&self) -> bool {
-        matches!(self, ControlActionType::EnableUnitFiles)
+        matches!(
+            self,
+            ControlActionType::EnableUnitFiles | ControlActionType::Link
+        )
     }
 
     fn dbus_level_combo_visible(&self) -> bool {
-        matches!(self, ControlActionType::EnableUnitFiles)
+        matches!(
+            self,
+            ControlActionType::EnableUnitFiles | ControlActionType::Link
+        )
     }
 
     fn portable_switch_visible(&self) -> bool {
@@ -119,6 +133,7 @@ impl ControlActionType {
             ControlActionType::Preset => pgettext("action unit file", "Preset"),
             ControlActionType::DisableUnitFiles => pgettext("action unit file", "Disable"),
             ControlActionType::Reenable => pgettext("action unit file", "Reenable"),
+            ControlActionType::Link => pgettext("action unit file", "Link"),
         }
     }
 

@@ -86,6 +86,18 @@ macro_rules! factory_bind {
     }};
 }
 
+//TODO bind properties
+macro_rules! display_inactive {
+    ($widget:expr, $unit:expr) => {
+        let state = &$unit.active_state();
+        if state.is_inactive() {
+            $widget.set_css_classes(&["grey"]);
+        } else {
+            $widget.set_css_classes(&[]);
+        }
+    };
+}
+
 pub fn setup_factories(
     unit_list: &UnitListPanel,
     column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
@@ -101,7 +113,7 @@ pub fn setup_factories(
         //let unit_list = unit_list.clone();
         fac_unit_name.connect_bind(move |_factory, object| {
             let (inscription, unit, _unit_binding) = factory_bind!(object, display_name);
-            display_inactive(inscription, &unit);
+            display_inactive!(inscription, unit);
         });
     }
 
@@ -115,7 +127,7 @@ pub fn setup_factories(
         //let unit_list = unit_list.clone();
         fac_unit_type.connect_bind(move |_factory, object| {
             let (inscription, unit, _unit_binding) = factory_bind!(object, unit_type);
-            display_inactive(inscription, &unit);
+            display_inactive!(inscription, unit);
         });
     }
 
@@ -129,7 +141,7 @@ pub fn setup_factories(
         // let unit_list = unit_list.clone();
         fac_bus.connect_bind(move |_factory, object| {
             let (inscription, unit, _unit_binding) = factory_bind!(object, dbus_level_str);
-            display_inactive(inscription, &unit);
+            display_inactive!(inscription, unit);
         });
     }
 
@@ -168,12 +180,7 @@ pub fn setup_factories(
             .build();
 
         unit_binding.set_binding(BIND_ENABLE_ACTIVE_ICON, binding);
-
-        if state.is_inactive() {
-            icon_image.add_css_class("grey");
-        } else {
-            icon_image.remove_css_class("grey");
-        }
+        display_inactive!(icon_image, unit);
     });
 
     factory_connect_unbind!(fac_active, BIND_ENABLE_ACTIVE_ICON);
@@ -190,7 +197,7 @@ pub fn setup_factories(
             .bind_property("sub_state", &inscription, "text")
             .build();
         unit_binding.set_binding(BIND_SUB_STATE_TEXT, binding);
-        display_inactive(inscription, &unit);
+        display_inactive!(inscription, unit);
     });
 
     factory_connect_unbind!(fac_sub_state, BIND_SUB_STATE_TEXT);
@@ -207,7 +214,7 @@ pub fn setup_factories(
             .bind_property("description", &inscription, "text")
             .build();
         unit_binding.set_binding(BIND_DESCRIPTION_TEXT, binding);
-        display_inactive(inscription, &unit);
+        display_inactive!(inscription, unit);
     });
 
     fac_descrition.connect_unbind(|_factory, object| {
@@ -265,15 +272,6 @@ pub fn setup_factories(
     }
 }
 
-fn display_inactive(widget: gtk::Inscription, unit: &UnitInfo) {
-    let state = &unit.active_state();
-    if state.is_inactive() {
-        widget.set_css_classes(&["grey"]);
-    } else {
-        widget.set_css_classes(&[]);
-    }
-}
-
 const LOAD_STATE_NUM: &str = "load_state_num";
 fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_load_state = gtk::SignalListItemFactory::new();
@@ -314,7 +312,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             if let Some(css) = css_classes {
                 inscription.set_css_classes(&css);
             } else {
-                display_inactive(inscription, &unit);
+                display_inactive!(inscription, unit);
             }
         });
         factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_CSS);
@@ -324,7 +322,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
 
             load_state_text_binding(&inscription, &unit_binding, &unit);
 
-            display_inactive(inscription, &unit);
+            display_inactive!(inscription, unit);
         });
 
         factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT);
@@ -404,7 +402,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             if let Some(css) = css_classes {
                 inscription.set_css_classes(&css);
             } else {
-                display_inactive(inscription, &unit);
+                display_inactive!(inscription, unit);
             }
         });
 
@@ -427,7 +425,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
                 .build();
 
             unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
-            display_inactive(inscription, &unit);
+            display_inactive!(inscription, unit);
         });
 
         factory_connect_unbind!(fac_enable_status, BIND_ENABLE_STATUS_TEXT);
@@ -489,7 +487,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
             if let Some(css) = css_classes {
                 inscription.set_css_classes(&css);
             } else {
-                display_inactive(inscription, &unit);
+                display_inactive!(inscription, unit);
             }
         });
 
@@ -499,7 +497,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
             let (inscription, unit, unit_binding) = factory_bind!(object, preset_str);
 
             preset_text_binding(&inscription, &unit, &unit_binding);
-            display_inactive(inscription, &unit);
+            display_inactive!(inscription, unit);
         });
 
         factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT);

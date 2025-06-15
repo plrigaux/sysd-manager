@@ -105,7 +105,7 @@ impl EnableUnitDialogImp {
         let action_type = *self.action_type.get().expect("Value need to be set");
         match action_type {
             ControlActionType::EnableUnitFiles => {
-                let dbus_level = self.dbus_level_combo.selected_item();
+                let dbus_level = self.dbus_level_combo.selected();
                 let dbus_level: UnitDBusLevel = dbus_level.into();
                 let handling_response_callback = {
                     move |_method: &str,
@@ -369,6 +369,58 @@ impl EnableUnitDialogImp {
                         return Err(SystemdErrors::NoUnit);
                     };
                     systemd::reenable_unit_file(unit, runtime, force)
+                };
+
+                self.unit_control
+                    .get()
+                    .expect("unit_control not None")
+                    .call_method(
+                        &action_type.method_name(),
+                        false,
+                        &button,
+                        lambda,
+                        handling_response_callback,
+                    );
+            }
+
+            ControlActionType::Link => {
+                let dbus_level = self.dbus_level_combo.selected();
+                let dbus_level: UnitDBusLevel = dbus_level.into();
+                let handling_response_callback = {
+                    move |_method: &str,
+                          _unit: Option<&UnitInfo>,
+                          result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
+                          control: &UnitControlPanel| {
+                        match result {
+                            Ok(vec) => {
+                                info!("{} Result: {:?}", action_type.code(), vec);
+                                let unit_name = unit_file.as_str();
+
+                                match systemd::fetch_unit(dbus_level, unit_name) {
+                                    Ok(unit) => {
+                                        let returned_unit = app_window.set_unit(Some(&unit));
+                                        after_mask("", returned_unit.as_ref(), Ok(()), control);
+                                    }
+                                    Err(e) => {
+                                        warn!(
+                                            "{} fetch {:?} level {:?} Error: {:?}",
+                                            action_type.code(),
+                                            unit_name,
+                                            dbus_level,
+                                            e
+                                        );
+                                    }
+                                }
+                            }
+                            Err(_error) => {
+                                //handle by caller function
+                            }
+                        }
+                    }
+                };
+
+                let lambda = move |_unit: Option<&UnitInfo>| {
+                    systemd::link_unit_files(dbus_level, unit_file2.as_str(), runtime, force)
                 };
 
                 self.unit_control

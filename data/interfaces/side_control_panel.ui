@@ -168,7 +168,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <property name="halign">start</property>
             <property name="icon-name">media-record-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">_Preset</property>
-            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Enables/disables one or more unit files according to the preset policy</property>
             <property name="use-underline">True</property>
           </object>
         </child>
@@ -183,7 +183,23 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <property name="halign">start</property>
             <property name="icon-name">gnome-disks-state-standby-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">_Reenable</property>
-            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Applies the changes to one or more units that would result from disabling and enabling the unit quickly one after the other in an atomic fashion.</property>
+            <property name="use-underline">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+
+       <child>
+      <object class="GtkButton" id="link_button">
+        <property name="css-classes">flat</property>
+        <signal name="clicked" handler="link_unit_files_button_clicked" swapped="yes"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="halign">start</property>
+            <property name="icon-name">gnome-disks-state-standby-symbolic</property>
+            <property name="label" translatable="yes" context="control" comments="button">_Link</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Links unit files (that are located outside of the usual unit search paths) into the unit search path</property>
             <property name="use-underline">True</property>
           </object>
         </child>

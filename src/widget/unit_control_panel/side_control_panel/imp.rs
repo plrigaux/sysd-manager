@@ -217,6 +217,12 @@ impl SideControlPanelImpl {
     fn reenable_unit_files_button_clicked(&self) {
         self.show_dialog(ControlActionType::Reenable);
     }
+
+    #[template_callback]
+    fn link_unit_files_button_clicked(&self) {
+        self.show_dialog(ControlActionType::Link);
+    }
+
     fn show_dialog(&self, action: ControlActionType) {
         let unit_binding = self.current_unit.borrow();
         let app_window = self.app_window.get();

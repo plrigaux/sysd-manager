@@ -881,6 +881,12 @@ impl From<u8> for UnitDBusLevel {
     }
 }
 
+impl From<u32> for UnitDBusLevel {
+    fn from(level: u32) -> Self {
+        (level as u8).into()
+    }
+}
+
 impl From<&str> for UnitDBusLevel {
     fn from(level: &str) -> Self {
         match level {
