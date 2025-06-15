@@ -58,13 +58,20 @@ impl ControlActionType {
 
     pub fn title(&self) -> String {
         match self {
+            //Dialog title
             ControlActionType::EnableUnitFiles => pgettext("action unit file", "Enable Unit File"),
+            //Dialog title
             ControlActionType::MaskUnit => pgettext("action unit file", "Mask Unit"),
+            //Dialog title
             ControlActionType::Preset => pgettext("action unit file", "Preset Unit File"),
+            //Dialog title
             ControlActionType::Reenable => pgettext("action unit file", "Reenable Unit File"),
+
             ControlActionType::DisableUnitFiles => {
+                //Dialog title
                 pgettext("action unit file", "Disable Unit File")
             }
+            //Dialog title
             ControlActionType::Link => pgettext("action unit file", "Link Unit File"),
         }
     }
@@ -128,11 +135,17 @@ impl ControlActionType {
 
     fn send_action_label(&self) -> String {
         match self {
+            //Button
             ControlActionType::EnableUnitFiles => pgettext("action unit file", "Enable"),
+            //Button
             ControlActionType::MaskUnit => pgettext("action unit file", "Mask"),
+            //Button
             ControlActionType::Preset => pgettext("action unit file", "Preset"),
+            //Button
             ControlActionType::DisableUnitFiles => pgettext("action unit file", "Disable"),
+            //Button
             ControlActionType::Reenable => pgettext("action unit file", "Reenable"),
+            //Button
             ControlActionType::Link => pgettext("action unit file", "Link"),
         }
     }
@@ -140,7 +153,9 @@ impl ControlActionType {
     fn run_stop_now(&self) -> (String, String) {
         match self {
             ControlActionType::EnableUnitFiles => (
+                //after action title
                 pgettext("action unit file", "Run now"),
+                //after action subtitle
                 pgettext("action unit file", "Start Unit just after being enabled"),
             ),
             ControlActionType::MaskUnit | ControlActionType::DisableUnitFiles => (
@@ -157,11 +172,15 @@ impl ControlActionType {
     fn run_stop_now_mode(&self) -> (String, String) {
         match self {
             ControlActionType::EnableUnitFiles => (
+                //starts mode title
                 pgettext("action unit file", "Run mode"),
+                //starts mode subtitle
                 pgettext("action unit file", "Starting mode options"),
             ),
             ControlActionType::MaskUnit | ControlActionType::DisableUnitFiles => (
+                //starts mode title
                 pgettext("action unit file", "Stop mode"),
+                //starts mode subtitle
                 pgettext("action unit file", "Stoping mode options"),
             ),
             _ => (String::new(), String::new()),

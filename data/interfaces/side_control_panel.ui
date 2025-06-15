@@ -168,7 +168,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <property name="halign">start</property>
             <property name="icon-name">org.gnome.Settings-system-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">_Preset ➚</property>
-            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Enables/disables one or more unit files according to the preset policy</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Enable or Disable one or more unit files according to the preset policy</property>
             <property name="use-underline">True</property>
           </object>
         </child>
@@ -183,7 +183,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <property name="halign">start</property>
             <property name="icon-name">arrow-circular-top-right-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">_Reenable ➚</property>
-            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Applies the changes to one or more units that would result from disabling and enabling the unit quickly one after the other in an atomic fashion.</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Apply the changes to one or more units that would result from disabling and enabling the unit quickly one after the other in an atomic fashion</property>
             <property name="use-underline">True</property>
           </object>
         </child>
@@ -198,7 +198,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <property name="halign">start</property>
             <property name="icon-name">chain-link-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">_Link ➚</property>
-            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Links unit files (that are located outside of the usual unit search paths) into the unit search path</property>
+            <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Link unit files (that are located outside of the usual unit search paths) into the unit search path</property>
             <property name="use-underline">True</property>
           </object>
         </child>

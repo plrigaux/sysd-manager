@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-15 17:05-0400\n"
+"POT-Creation-Date: 2025-06-15 18:26-0400\n"
 "PO-Revision-Date: 2025-06-11 23:14-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -771,7 +771,7 @@ msgstr "Prérégler"
 #. tooltip
 #: data/interfaces/side_control_panel.ui:171
 msgctxt "control"
-msgid "Enables/disables one or more unit files according to the preset policy"
+msgid "Enable or Disable one or more unit files according to the preset policy"
 msgstr ""
 
 #. button
@@ -784,8 +784,8 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:186
 msgctxt "control"
 msgid ""
-"Applies the changes to one or more units that would result from disabling "
-"and enabling the unit quickly one after the other in an atomic fashion."
+"Apply the changes to one or more units that would result from disabling and "
+"enabling the unit quickly one after the other in an atomic fashion"
 msgstr ""
 
 #. button
@@ -798,7 +798,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:201
 msgctxt "control"
 msgid ""
-"Links unit files (that are located outside of the usual unit search paths) "
+"Link unit files (that are located outside of the usual unit search paths) "
 "into the unit search path"
 msgstr ""
 
@@ -1348,135 +1348,153 @@ msgctxt "clean"
 msgid "No Unit Selected"
 msgstr "Pas d'unité sélectionné"
 
-#: src/widget/control_action_dialog/mod.rs:61
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:62
 #, fuzzy
 msgctxt "action unit file"
 msgid "Enable Unit File"
 msgstr "Activer un fichier d'unité"
 
-#: src/widget/control_action_dialog/mod.rs:62
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:64
 #, fuzzy
 msgctxt "action unit file"
 msgid "Mask Unit"
 msgstr "Masquer l'unité"
 
-#: src/widget/control_action_dialog/mod.rs:63
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:66
 #, fuzzy
 msgctxt "action unit file"
 msgid "Preset Unit File"
 msgstr "Masquer fichier de l'unité"
 
-#: src/widget/control_action_dialog/mod.rs:64
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:68
 #, fuzzy
 msgctxt "action unit file"
 msgid "Reenable Unit File"
 msgstr "Activer un fichier d'unité"
 
-#: src/widget/control_action_dialog/mod.rs:66
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:72
 #, fuzzy
 msgctxt "action unit file"
 msgid "Disable Unit File"
 msgstr "Activer un fichier d'unité"
 
-#: src/widget/control_action_dialog/mod.rs:68
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:75
 #, fuzzy
 msgctxt "action unit file"
 msgid "Link Unit File"
 msgstr "Masquer fichier de l'unité"
 
-#: src/widget/control_action_dialog/mod.rs:74
-#: src/widget/control_action_dialog/mod.rs:131
+#. Button
+#: src/widget/control_action_dialog/mod.rs:81
+#: src/widget/control_action_dialog/mod.rs:139
 #, fuzzy
 msgctxt "action unit file"
 msgid "Enable"
 msgstr "Activer"
 
-#: src/widget/control_action_dialog/mod.rs:75
-#: src/widget/control_action_dialog/mod.rs:134
+#. Button
+#: src/widget/control_action_dialog/mod.rs:82
+#: src/widget/control_action_dialog/mod.rs:145
 #, fuzzy
 msgctxt "action unit file"
 msgid "Disable"
 msgstr "Activer"
 
-#: src/widget/control_action_dialog/mod.rs:76
-#: src/widget/control_action_dialog/mod.rs:132
+#. Button
+#: src/widget/control_action_dialog/mod.rs:83
+#: src/widget/control_action_dialog/mod.rs:141
 #, fuzzy
 msgctxt "action unit file"
 msgid "Mask"
 msgstr "Marker"
 
-#: src/widget/control_action_dialog/mod.rs:83
+#: src/widget/control_action_dialog/mod.rs:90
 #, fuzzy
 msgctxt "action unit file"
 msgid "Start"
 msgstr "_Démarrer"
 
-#: src/widget/control_action_dialog/mod.rs:85
+#: src/widget/control_action_dialog/mod.rs:92
 #, fuzzy
 msgctxt "action unit file"
 msgid "Stop"
 msgstr "Arrêtez"
 
-#: src/widget/control_action_dialog/mod.rs:133
+#. Button
+#: src/widget/control_action_dialog/mod.rs:143
 #, fuzzy
 msgctxt "action unit file"
 msgid "Preset"
 msgstr "Prérégler"
 
-#: src/widget/control_action_dialog/mod.rs:135
+#. Button
+#: src/widget/control_action_dialog/mod.rs:147
 #, fuzzy
 msgctxt "action unit file"
 msgid "Reenable"
 msgstr "Activer"
 
-#: src/widget/control_action_dialog/mod.rs:136
+#. Button
+#: src/widget/control_action_dialog/mod.rs:149
 msgctxt "action unit file"
 msgid "Link"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:143
+#. after action title
+#: src/widget/control_action_dialog/mod.rs:157
 #, fuzzy
 msgctxt "action unit file"
 msgid "Run now"
 msgstr "Démarrer maintenant"
 
-#: src/widget/control_action_dialog/mod.rs:144
+#. after action subtitle
+#: src/widget/control_action_dialog/mod.rs:159
 #, fuzzy
 msgctxt "action unit file"
 msgid "Start Unit just after being enabled"
 msgstr "Démarrer l'unité juste après avoir été activée"
 
-#: src/widget/control_action_dialog/mod.rs:147
+#: src/widget/control_action_dialog/mod.rs:162
 #, fuzzy
 msgctxt "action unit file"
 msgid "Stop now"
 msgstr "Arrêtez maintenant"
 
-#: src/widget/control_action_dialog/mod.rs:150
+#: src/widget/control_action_dialog/mod.rs:165
 #, fuzzy
 msgctxt "action unit file"
 msgid "Ensure that the unit will also be stopped"
 msgstr "S'assurer que l'unité sera également arrêtée"
 
-#: src/widget/control_action_dialog/mod.rs:160
+#. starts mode title
+#: src/widget/control_action_dialog/mod.rs:176
 #, fuzzy
 msgctxt "action unit file"
 msgid "Run mode"
 msgstr "Mode de démarrage"
 
-#: src/widget/control_action_dialog/mod.rs:161
+#. starts mode subtitle
+#: src/widget/control_action_dialog/mod.rs:178
 #, fuzzy
 msgctxt "action unit file"
 msgid "Starting mode options"
 msgstr "Options de démarrage"
 
-#: src/widget/control_action_dialog/mod.rs:164
+#. starts mode title
+#: src/widget/control_action_dialog/mod.rs:182
 #, fuzzy
 msgctxt "action unit file"
 msgid "Stop mode"
 msgstr "Mode d'arrêt"
 
-#: src/widget/control_action_dialog/mod.rs:165
+#. starts mode subtitle
+#: src/widget/control_action_dialog/mod.rs:184
 #, fuzzy
 msgctxt "action unit file"
 msgid "Stoping mode options"

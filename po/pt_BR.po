@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-15 17:05-0400\n"
+"POT-Creation-Date: 2025-06-15 18:26-0400\n"
 "PO-Revision-Date: 2025-06-06 16:50-0400\n"
 "Last-Translator:  <plr@archdell>\n"
 "Language-Team: Brazilian Portuguese <ldpbr-"
@@ -745,7 +745,7 @@ msgstr ""
 #. tooltip
 #: data/interfaces/side_control_panel.ui:171
 msgctxt "control"
-msgid "Enables/disables one or more unit files according to the preset policy"
+msgid "Enable or Disable one or more unit files according to the preset policy"
 msgstr ""
 
 #. button
@@ -758,8 +758,8 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:186
 msgctxt "control"
 msgid ""
-"Applies the changes to one or more units that would result from disabling "
-"and enabling the unit quickly one after the other in an atomic fashion."
+"Apply the changes to one or more units that would result from disabling and "
+"enabling the unit quickly one after the other in an atomic fashion"
 msgstr ""
 
 #. button
@@ -772,7 +772,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:201
 msgctxt "control"
 msgid ""
-"Links unit files (that are located outside of the usual unit search paths) "
+"Link unit files (that are located outside of the usual unit search paths) "
 "into the unit search path"
 msgstr ""
 
@@ -1283,115 +1283,133 @@ msgctxt "clean"
 msgid "No Unit Selected"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:61
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:62
 msgctxt "action unit file"
 msgid "Enable Unit File"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:62
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:64
 msgctxt "action unit file"
 msgid "Mask Unit"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:63
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:66
 msgctxt "action unit file"
 msgid "Preset Unit File"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:64
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:68
 msgctxt "action unit file"
 msgid "Reenable Unit File"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:66
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:72
 msgctxt "action unit file"
 msgid "Disable Unit File"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:68
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:75
 msgctxt "action unit file"
 msgid "Link Unit File"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:74
-#: src/widget/control_action_dialog/mod.rs:131
+#. Button
+#: src/widget/control_action_dialog/mod.rs:81
+#: src/widget/control_action_dialog/mod.rs:139
 msgctxt "action unit file"
 msgid "Enable"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:75
-#: src/widget/control_action_dialog/mod.rs:134
+#. Button
+#: src/widget/control_action_dialog/mod.rs:82
+#: src/widget/control_action_dialog/mod.rs:145
 msgctxt "action unit file"
 msgid "Disable"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:76
-#: src/widget/control_action_dialog/mod.rs:132
+#. Button
+#: src/widget/control_action_dialog/mod.rs:83
+#: src/widget/control_action_dialog/mod.rs:141
 msgctxt "action unit file"
 msgid "Mask"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:83
+#: src/widget/control_action_dialog/mod.rs:90
 msgctxt "action unit file"
 msgid "Start"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:85
+#: src/widget/control_action_dialog/mod.rs:92
 msgctxt "action unit file"
 msgid "Stop"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:133
+#. Button
+#: src/widget/control_action_dialog/mod.rs:143
 msgctxt "action unit file"
 msgid "Preset"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:135
+#. Button
+#: src/widget/control_action_dialog/mod.rs:147
 msgctxt "action unit file"
 msgid "Reenable"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:136
+#. Button
+#: src/widget/control_action_dialog/mod.rs:149
 msgctxt "action unit file"
 msgid "Link"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:143
+#. after action title
+#: src/widget/control_action_dialog/mod.rs:157
 msgctxt "action unit file"
 msgid "Run now"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:144
+#. after action subtitle
+#: src/widget/control_action_dialog/mod.rs:159
 msgctxt "action unit file"
 msgid "Start Unit just after being enabled"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:147
+#: src/widget/control_action_dialog/mod.rs:162
 msgctxt "action unit file"
 msgid "Stop now"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:150
+#: src/widget/control_action_dialog/mod.rs:165
 msgctxt "action unit file"
 msgid "Ensure that the unit will also be stopped"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:160
+#. starts mode title
+#: src/widget/control_action_dialog/mod.rs:176
 msgctxt "action unit file"
 msgid "Run mode"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:161
+#. starts mode subtitle
+#: src/widget/control_action_dialog/mod.rs:178
 msgctxt "action unit file"
 msgid "Starting mode options"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:164
+#. starts mode title
+#: src/widget/control_action_dialog/mod.rs:182
 msgctxt "action unit file"
 msgid "Stop mode"
 msgstr ""
 
-#: src/widget/control_action_dialog/mod.rs:165
+#. starts mode subtitle
+#: src/widget/control_action_dialog/mod.rs:184
 msgctxt "action unit file"
 msgid "Stoping mode options"
 msgstr ""
