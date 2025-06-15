@@ -107,9 +107,12 @@ impl UnitInfo {
         self.dbus_level().as_str()
     }
 
+    pub fn enable_status_enum(&self) -> EnablementStatus {
+        self.enable_status().into()
+    }
+
     pub fn enable_status_str(&self) -> &'static str {
-        let es: EnablementStatus = self.enable_status().into();
-        es.as_str()
+        self.enable_status_enum().as_str()
     }
 
     pub fn load_state(&self) -> LoadState {

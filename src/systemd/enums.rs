@@ -238,6 +238,15 @@ impl EnablementStatus {
             )),
         }
     }
+
+    pub(crate) fn is_runtime(&self) -> bool {
+        matches!(
+            self,
+            EnablementStatus::LinkedRuntime
+                | EnablementStatus::MaskedRuntime
+                | EnablementStatus::EnabledRuntime
+        )
+    }
 }
 
 impl Display for EnablementStatus {
@@ -906,13 +915,13 @@ impl From<Option<glib::Object>> for UnitDBusLevel {
             return UnitDBusLevel::default();
         };
 
-        match object.downcast_ref::<gtk::StringObject>() {
-            Some(so) => UnitDBusLevel::from(so.string().as_str()),
-            //Fall back on EnumList
-            None => match object.downcast::<adw::EnumListItem>() {
-                Ok(enum_list_item) => UnitDBusLevel::from(enum_list_item.name().as_str()),
-                Err(_) => UnitDBusLevel::default(),
-            },
+        //Fall back on EnumList
+        match object.downcast::<adw::EnumListItem>() {
+            Ok(enum_list_item) => UnitDBusLevel::from(enum_list_item.name().as_str()),
+            Err(e) => {
+                warn!("UnitDBusLevel error {:?} fallback on default", e);
+                UnitDBusLevel::default()
+            }
         }
     }
 }

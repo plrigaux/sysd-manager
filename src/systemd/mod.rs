@@ -187,11 +187,15 @@ pub fn disenable_unit_file(
             DisEnableUnitFilesOutput::Enable(res)
         }
         _ => {
-            let out = sysdbus::disable_unit_files(
-                unit.dbus_level(),
-                &[&unit.primary()],
-                DisEnableFlags::empty(),
-            )?;
+            let enable_status = unit.enable_status_enum();
+
+            let flags = if enable_status.is_runtime() {
+                DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
+            } else {
+                DisEnableFlags::empty()
+            };
+
+            let out = sysdbus::disable_unit_files(unit.dbus_level(), &[&unit.primary()], flags)?;
             DisEnableUnitFilesOutput::Disable(out)
         }
     };

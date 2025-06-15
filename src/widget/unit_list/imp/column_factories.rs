@@ -362,7 +362,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             let (inscription, unit_binding) = factory_bind_pre!(object);
 
             let unit = unit_binding.unit_ref();
-            let status_code: EnablementStatus = unit.enable_status().into();
+            let status_code = unit.enable_status_enum();
             inscription.set_text(Some(status_code.as_str()));
             inscription.set_tooltip_markup(status_code.tooltip_info().as_deref());
 

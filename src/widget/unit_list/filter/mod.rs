@@ -374,8 +374,7 @@ pub fn filter_enable_status(
     property_assessor: &FilterElementAssessor<EnablementStatus>,
     unit: &UnitInfo,
 ) -> bool {
-    let enable_status: EnablementStatus = unit.enable_status().into();
-    property_assessor.filter_unit_value(&enable_status)
+    property_assessor.filter_unit_value(&unit.enable_status_enum())
 }
 
 pub fn filter_load_state(

@@ -10,12 +10,7 @@ use gtk::{
 use log::warn;
 
 use crate::{
-    systemd::{
-        self,
-        data::UnitInfo,
-        enums::{EnablementStatus, StartStopMode},
-        errors::SystemdErrors,
-    },
+    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -238,8 +233,7 @@ impl SideControlPanelImpl {
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
         let lambda = |unit: Option<&UnitInfo>| -> Result<(), SystemdErrors> {
             if let Some(unit) = unit {
-                let enable_status: EnablementStatus = unit.enable_status().into();
-                let runtime = EnablementStatus::MaskedRuntime == enable_status;
+                let runtime = unit.enable_status_enum().is_runtime();
                 systemd::unmask_unit_files(unit, runtime)?;
             }
             Ok(())
