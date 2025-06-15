@@ -909,7 +909,7 @@ impl From<&str> for UnitDBusLevel {
     }
 }
 
-impl From<Option<glib::Object>> for UnitDBusLevel {
+/* impl From<Option<glib::Object>> for UnitDBusLevel {
     fn from(value: Option<glib::Object>) -> Self {
         let Some(object) = value else {
             return UnitDBusLevel::default();
@@ -924,7 +924,7 @@ impl From<Option<glib::Object>> for UnitDBusLevel {
             }
         }
     }
-}
+} */
 
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

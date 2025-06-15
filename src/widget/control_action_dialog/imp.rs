@@ -697,8 +697,7 @@ impl WindowImpl for EnableUnitDialogImp {
         // Save window size
         info!("Close window");
 
-        let dbus_level = self.dbus_level_combo.selected_item();
-        let dbus_level: UnitDBusLevel = dbus_level.into();
+        let dbus_level: UnitDBusLevel = self.dbus_level_combo.selected().into();
         let runtime = self.runtime_switch.is_active();
         let force = self.force_switch.is_active();
         let run_now = self.run_stop_now_switch.is_active();

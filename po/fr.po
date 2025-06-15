@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-11 23:11-0400\n"
+"POT-Creation-Date: 2025-06-15 17:05-0400\n"
 "PO-Revision-Date: 2025-06-11 23:14-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -83,44 +83,44 @@ msgid "Clean"
 msgstr "Nettoyer"
 
 #. entry title
-#: data/interfaces/enable_unit_dialog.ui:28
+#: data/interfaces/control_action_dialog.ui:28
 msgctxt "enable unit file"
 msgid "Unit file"
 msgstr "Fichier de l'unité"
 
 #. tooltip
-#: data/interfaces/enable_unit_dialog.ui:38
+#: data/interfaces/control_action_dialog.ui:38
 msgctxt "enable unit file"
 msgid "Use Selected Unit"
 msgstr "Utilisez l'unité sélectionnée"
 
 #. tooltip
-#: data/interfaces/enable_unit_dialog.ui:46
+#: data/interfaces/control_action_dialog.ui:46
 msgctxt "enable unit file"
 msgid "Browse for Unit file"
 msgstr "Parcourir pour un fichier d'unité"
 
 #. title
-#: data/interfaces/enable_unit_dialog.ui:54
+#: data/interfaces/control_action_dialog.ui:54
 msgctxt "enable unit file"
 msgid "DBus Level"
 msgstr "Niveau DBus"
 
 #. subtitle
-#: data/interfaces/enable_unit_dialog.ui:59
+#: data/interfaces/control_action_dialog.ui:59
 msgctxt "enable unit file"
 msgid "Whether the unit shall be enabled for runtime only"
 msgstr ""
 "Si l'unité doit être activée uniquement pour l'exécution (non persistant)"
 
 #. title
-#: data/interfaces/enable_unit_dialog.ui:60
+#: data/interfaces/control_action_dialog.ui:60
 msgctxt "enable unit file"
 msgid "Runtime"
 msgstr "Runtime"
 
 #. subtitle
-#: data/interfaces/enable_unit_dialog.ui:65
+#: data/interfaces/control_action_dialog.ui:65
 msgctxt "enable unit file"
 msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
@@ -130,13 +130,13 @@ msgstr ""
 "être remplacés si nécessaire"
 
 #. title
-#: data/interfaces/enable_unit_dialog.ui:66
+#: data/interfaces/control_action_dialog.ui:66
 msgctxt "enable unit file"
 msgid "Force"
 msgstr "Force"
 
 #. subtitle
-#: data/interfaces/enable_unit_dialog.ui:71
+#: data/interfaces/control_action_dialog.ui:71
 msgctxt "enable unit file"
 msgid ""
 "Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/"
@@ -146,54 +146,46 @@ msgstr ""
 "et /run/systemd/system.attached"
 
 #. title
-#: data/interfaces/enable_unit_dialog.ui:73
+#: data/interfaces/control_action_dialog.ui:73
 msgctxt "enable unit file"
 msgid "Portable"
 msgstr "Portable"
 
 #. subtitle
-#: data/interfaces/enable_unit_dialog.ui:87
+#: data/interfaces/control_action_dialog.ui:87
 msgctxt "enable unit file"
 msgid "Start Unit just after being enabled"
 msgstr "Démarrer l'unité juste après avoir été activée"
 
 #. title
-#: data/interfaces/enable_unit_dialog.ui:88
+#: data/interfaces/control_action_dialog.ui:88
 msgctxt "enable unit file"
 msgid "Run now"
 msgstr "Démarrer maintenant"
 
 #. title
-#: data/interfaces/enable_unit_dialog.ui:93
+#: data/interfaces/control_action_dialog.ui:93
 msgctxt "enable unit file"
 msgid "Starting mode options"
 msgstr "Options de démarrage"
 
 #. title
-#: data/interfaces/enable_unit_dialog.ui:94
+#: data/interfaces/control_action_dialog.ui:94
 msgctxt "enable unit file"
 msgid "Run mode"
 msgstr "Mode de démarrage"
 
 #. button
-#: data/interfaces/enable_unit_dialog.ui:106
+#: data/interfaces/control_action_dialog.ui:106
 msgctxt "enable unit file"
 msgid "Reset"
 msgstr "Réinitialiser"
 
 #. button
-#: data/interfaces/enable_unit_dialog.ui:114
+#: data/interfaces/control_action_dialog.ui:114
 msgctxt "enable unit file"
 msgid "Enable"
 msgstr "Activer"
-
-#. dialog title
-#. Message answer
-#: data/interfaces/enable_unit_dialog.ui:128
-#: src/widget/enable_unit_dialog/imp.rs:165
-msgctxt "enable unit file"
-msgid "Enable Unit File"
-msgstr "Activer un fichier d'unité"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
@@ -656,37 +648,53 @@ msgid "Enable Unit File ➚"
 msgstr "Activer un fichier d'unité ➚"
 
 #. button
-#: data/interfaces/side_control_panel.ui:33
+#: data/interfaces/side_control_panel.ui:35
+#, fuzzy
+msgctxt "control"
+msgid "_Disable Unit File ➚"
+msgstr "Activer un fichier d'unité ➚"
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:36
+#: data/interfaces/side_control_panel.ui:141
+msgctxt "control"
+msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
+msgstr ""
+"Démasquer le fichier d'unité sélectionné. Cela annulera l'effet de "
+"<b>Masquer</b>"
+
+#. button
+#: data/interfaces/side_control_panel.ui:48
 msgctxt "control"
 msgid "Send _Kill Signal ➚"
 msgstr "Envoyer un signal _Kill ➚"
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:34
+#: data/interfaces/side_control_panel.ui:49
 msgctxt "control"
 msgid "Send a signal to a process or a group of processes"
 msgstr "Envoyer un signal à un processus ou à un groupe de processus"
 
 #. button
-#: data/interfaces/side_control_panel.ui:48
+#: data/interfaces/side_control_panel.ui:63
 msgctxt "control"
 msgid "_Queue Signal ➚"
 msgstr "Envoyer un signal _Queue ➚"
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:49
+#: data/interfaces/side_control_panel.ui:64
 msgctxt "control"
 msgid "Queue a signal to a process or a group of processes"
 msgstr "Envoyer un signal à un processus ou à un groupe de processus"
 
 #. button
-#: data/interfaces/side_control_panel.ui:63
+#: data/interfaces/side_control_panel.ui:78
 msgctxt "control"
 msgid "_Clean ➚"
 msgstr "_Nettoyer ➚"
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:64
+#: data/interfaces/side_control_panel.ui:79
 msgctxt "control"
 msgid ""
 "Remove the configuration, state, cache, logs or runtime data of the "
@@ -696,31 +704,31 @@ msgstr ""
 "d'exécution des unités spécifiées"
 
 #. button
-#: data/interfaces/side_control_panel.ui:81
+#: data/interfaces/side_control_panel.ui:96
 msgctxt "control"
 msgid "Freeze the specified unit using cgroup freezer"
 msgstr "Geler l'unité spécifiée à l'aide du congélateur cgroup"
 
 #. button
-#: data/interfaces/side_control_panel.ui:94
+#: data/interfaces/side_control_panel.ui:109
 msgctxt "control"
 msgid "Thaw"
 msgstr "Décongeler"
 
 #. button
-#: data/interfaces/side_control_panel.ui:95
+#: data/interfaces/side_control_panel.ui:110
 msgctxt "control"
 msgid "Thaw (unfreeze) the specified unit"
 msgstr "Décongeler l'unité spécifiée"
 
 #. button
-#: data/interfaces/side_control_panel.ui:108
+#: data/interfaces/side_control_panel.ui:123
 msgctxt "control"
 msgid "M_ask ➚"
 msgstr "Masquer ➚"
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:109
+#: data/interfaces/side_control_panel.ui:124
 msgctxt "control"
 msgid ""
 "Mask the selected unit. This will link these unit files to <u>/dev/null</u>, "
@@ -736,30 +744,63 @@ msgstr ""
 "<b>Utilisez cette option avec précaution.</b>"
 
 #. button
-#: data/interfaces/side_control_panel.ui:125
+#: data/interfaces/side_control_panel.ui:140
 msgctxt "control"
 msgid "_UnMask"
 msgstr "Démasqu_er"
 
-#. tooltip
-#: data/interfaces/side_control_panel.ui:126
-msgctxt "control"
-msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
-msgstr ""
-"Démasquer le fichier d'unité sélectionné. Cela annulera l'effet de "
-"<b>Masquer</b>"
-
 #. button
-#: data/interfaces/side_control_panel.ui:141
+#: data/interfaces/side_control_panel.ui:156
 msgctxt "control"
 msgid "Reload Unit"
 msgstr "Recharger l'unité"
 
 #. button
-#: data/interfaces/side_control_panel.ui:142
+#: data/interfaces/side_control_panel.ui:157
 msgctxt "control"
 msgid "Ask the specified unit to reload its configuration"
 msgstr "Demander à l'unité spécifiée de recharger sa configuration"
+
+#. button
+#: data/interfaces/side_control_panel.ui:170
+#, fuzzy
+msgctxt "control"
+msgid "_Preset ➚"
+msgstr "Prérégler"
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:171
+msgctxt "control"
+msgid "Enables/disables one or more unit files according to the preset policy"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:185
+msgctxt "control"
+msgid "_Reenable ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:186
+msgctxt "control"
+msgid ""
+"Applies the changes to one or more units that would result from disabling "
+"and enabling the unit quickly one after the other in an atomic fashion."
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:200
+msgctxt "control"
+msgid "_Link ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:201
+msgctxt "control"
+msgid ""
+"Links unit files (that are located outside of the usual unit search paths) "
+"into the unit search path"
+msgstr ""
 
 #. description
 #: data/interfaces/signals_window.ui:24
@@ -1183,72 +1224,72 @@ msgstr ""
 "Le fichier d'unité a été créé dynamiquement avec l'API d'exécution. Les "
 "unités transitoires ne peuvent pas être activées."
 
-#: src/systemd/enums.rs:679
+#: src/systemd/enums.rs:688
 msgctxt "dependency"
 msgid "Forward"
 msgstr "Avant"
 
-#: src/systemd/enums.rs:680
+#: src/systemd/enums.rs:689
 msgctxt "dependency"
 msgid "Reverse"
 msgstr "Inverse"
 
-#: src/systemd/enums.rs:681
+#: src/systemd/enums.rs:690
 msgctxt "dependency"
 msgid "After"
 msgstr "Après"
 
-#: src/systemd/enums.rs:682
+#: src/systemd/enums.rs:691
 msgctxt "dependency"
 msgid "Before"
 msgstr "Avant"
 
-#: src/systemd/enums.rs:852
+#: src/systemd/enums.rs:861
 msgctxt "dbus"
 msgid "User Session"
 msgstr "Session utilisateur"
 
-#: src/systemd/enums.rs:853
+#: src/systemd/enums.rs:862
 msgctxt "dbus"
 msgid "System"
 msgstr "Système"
 
-#: src/systemd/enums.rs:943
+#: src/systemd/enums.rs:958
 msgctxt "clean"
 msgid "_Runtime"
 msgstr "_Runtime"
 
-#: src/systemd/enums.rs:944
+#: src/systemd/enums.rs:959
 msgctxt "clean"
 msgid "_State"
 msgstr "État"
 
-#: src/systemd/enums.rs:945
+#: src/systemd/enums.rs:960
 msgctxt "clean"
 msgid "Cac_he"
 msgstr "Cac_he"
 
-#: src/systemd/enums.rs:946
+#: src/systemd/enums.rs:961
 msgctxt "clean"
 msgid "_Logs"
 msgstr "Journau_x"
 
-#: src/systemd/enums.rs:947
+#: src/systemd/enums.rs:962
 msgctxt "clean"
 msgid "_Configuration"
 msgstr "_Configuration"
 
-#: src/systemd/enums.rs:948
+#: src/systemd/enums.rs:963
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr "Magasin de descripteurs de _fichiers"
 
-#: src/systemd/enums.rs:949
+#: src/systemd/enums.rs:964
 msgctxt "clean"
 msgid "_All"
 msgstr "_Tous"
 
-#: src/systemd/errors.rs:40
+#: src/systemd/errors.rs:41
 msgctxt "error"
 msgid ""
 "The program <b>flatpack-spawn</b> is needed if you use the application from "
@@ -1259,7 +1300,7 @@ msgstr ""
 "l'application sous format Flatpack.\n"
 "Veuillez l'installer pour activer toutes les fonctionnalités."
 
-#: src/systemd/errors.rs:47
+#: src/systemd/errors.rs:48
 msgctxt "error"
 msgid ""
 "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
@@ -1306,6 +1347,140 @@ msgstr "Merci pour votre soutien"
 msgctxt "clean"
 msgid "No Unit Selected"
 msgstr "Pas d'unité sélectionné"
+
+#: src/widget/control_action_dialog/mod.rs:61
+#, fuzzy
+msgctxt "action unit file"
+msgid "Enable Unit File"
+msgstr "Activer un fichier d'unité"
+
+#: src/widget/control_action_dialog/mod.rs:62
+#, fuzzy
+msgctxt "action unit file"
+msgid "Mask Unit"
+msgstr "Masquer l'unité"
+
+#: src/widget/control_action_dialog/mod.rs:63
+#, fuzzy
+msgctxt "action unit file"
+msgid "Preset Unit File"
+msgstr "Masquer fichier de l'unité"
+
+#: src/widget/control_action_dialog/mod.rs:64
+#, fuzzy
+msgctxt "action unit file"
+msgid "Reenable Unit File"
+msgstr "Activer un fichier d'unité"
+
+#: src/widget/control_action_dialog/mod.rs:66
+#, fuzzy
+msgctxt "action unit file"
+msgid "Disable Unit File"
+msgstr "Activer un fichier d'unité"
+
+#: src/widget/control_action_dialog/mod.rs:68
+#, fuzzy
+msgctxt "action unit file"
+msgid "Link Unit File"
+msgstr "Masquer fichier de l'unité"
+
+#: src/widget/control_action_dialog/mod.rs:74
+#: src/widget/control_action_dialog/mod.rs:131
+#, fuzzy
+msgctxt "action unit file"
+msgid "Enable"
+msgstr "Activer"
+
+#: src/widget/control_action_dialog/mod.rs:75
+#: src/widget/control_action_dialog/mod.rs:134
+#, fuzzy
+msgctxt "action unit file"
+msgid "Disable"
+msgstr "Activer"
+
+#: src/widget/control_action_dialog/mod.rs:76
+#: src/widget/control_action_dialog/mod.rs:132
+#, fuzzy
+msgctxt "action unit file"
+msgid "Mask"
+msgstr "Marker"
+
+#: src/widget/control_action_dialog/mod.rs:83
+#, fuzzy
+msgctxt "action unit file"
+msgid "Start"
+msgstr "_Démarrer"
+
+#: src/widget/control_action_dialog/mod.rs:85
+#, fuzzy
+msgctxt "action unit file"
+msgid "Stop"
+msgstr "Arrêtez"
+
+#: src/widget/control_action_dialog/mod.rs:133
+#, fuzzy
+msgctxt "action unit file"
+msgid "Preset"
+msgstr "Prérégler"
+
+#: src/widget/control_action_dialog/mod.rs:135
+#, fuzzy
+msgctxt "action unit file"
+msgid "Reenable"
+msgstr "Activer"
+
+#: src/widget/control_action_dialog/mod.rs:136
+msgctxt "action unit file"
+msgid "Link"
+msgstr ""
+
+#: src/widget/control_action_dialog/mod.rs:143
+#, fuzzy
+msgctxt "action unit file"
+msgid "Run now"
+msgstr "Démarrer maintenant"
+
+#: src/widget/control_action_dialog/mod.rs:144
+#, fuzzy
+msgctxt "action unit file"
+msgid "Start Unit just after being enabled"
+msgstr "Démarrer l'unité juste après avoir été activée"
+
+#: src/widget/control_action_dialog/mod.rs:147
+#, fuzzy
+msgctxt "action unit file"
+msgid "Stop now"
+msgstr "Arrêtez maintenant"
+
+#: src/widget/control_action_dialog/mod.rs:150
+#, fuzzy
+msgctxt "action unit file"
+msgid "Ensure that the unit will also be stopped"
+msgstr "S'assurer que l'unité sera également arrêtée"
+
+#: src/widget/control_action_dialog/mod.rs:160
+#, fuzzy
+msgctxt "action unit file"
+msgid "Run mode"
+msgstr "Mode de démarrage"
+
+#: src/widget/control_action_dialog/mod.rs:161
+#, fuzzy
+msgctxt "action unit file"
+msgid "Starting mode options"
+msgstr "Options de démarrage"
+
+#: src/widget/control_action_dialog/mod.rs:164
+#, fuzzy
+msgctxt "action unit file"
+msgid "Stop mode"
+msgstr "Mode d'arrêt"
+
+#: src/widget/control_action_dialog/mod.rs:165
+#, fuzzy
+msgctxt "action unit file"
+msgid "Stoping mode options"
+msgstr "Options de démarrage"
 
 #. Dailog subtitle
 #: src/widget/kill_panel/imp.rs:77
@@ -1559,17 +1734,6 @@ msgctxt "kill signal"
 msgid "Equivalent to SIGSYS"
 msgstr "Équivalent à SIGSYS"
 
-#. Message answer
-#: src/widget/mask_unit_dialog/imp.rs:122
-msgctxt "mask"
-msgid "Mask Unit File"
-msgstr "Masquer fichier de l'unité"
-
-#: src/widget/mask_unit_dialog/imp.rs:208
-msgctxt "mask"
-msgid "No Unit Selected"
-msgstr "Pas d'unité sélectionnée"
-
 #: src/widget/preferences/data.rs:45
 msgctxt "filter"
 msgid "Unit"
@@ -1703,32 +1867,32 @@ msgstr ""
 "L'unité <span fgcolor = '{0}' font_family = 'monospace' size = 'larger'> {} "
 "</span> a été <span fgcolor = '{0}'>{}</span> avec succès"
 
-#: src/widget/unit_control_panel/enums.rs:13
+#: src/widget/unit_control_panel/enums.rs:20
 msgctxt "toast"
 msgid "start"
 msgstr "démarrer"
 
-#: src/widget/unit_control_panel/enums.rs:14
+#: src/widget/unit_control_panel/enums.rs:21
 msgctxt "toast"
 msgid "stop"
 msgstr "arrêter"
 
-#: src/widget/unit_control_panel/enums.rs:15
+#: src/widget/unit_control_panel/enums.rs:22
 msgctxt "toast"
 msgid "restart"
 msgstr "redémarrer"
 
-#: src/widget/unit_control_panel/enums.rs:21
+#: src/widget/unit_control_panel/enums.rs:28
 msgctxt "toast"
 msgid "started"
 msgstr "démarré"
 
-#: src/widget/unit_control_panel/enums.rs:22
+#: src/widget/unit_control_panel/enums.rs:29
 msgctxt "toast"
 msgid "stopped"
 msgstr "arrêté"
 
-#: src/widget/unit_control_panel/enums.rs:23
+#: src/widget/unit_control_panel/enums.rs:30
 msgctxt "toast"
 msgid "restarted"
 msgstr "redémarré"
@@ -1765,14 +1929,36 @@ msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr "{} a échoué. Raison: <span fgcolor='{}'>{}</span>."
 
+#: src/widget/unit_control_panel/mod.rs:129
+#, rust-format
+msgctxt "workaround"
+msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:140
+msgctxt "workaround"
+msgid "The authorisation can be configured in the following file :"
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:157
+msgctxt "workaround"
+msgid "Otherwise, you can try the bellow command line in your terminal"
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:177
+#, rust-format
+msgctxt "workaround"
+msgid "Error: {}"
+msgstr ""
+
 #. Message answer
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:130
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:124
 msgctxt "thaw"
 msgid "Thaw"
 msgstr "Décongeler"
 
 #. Message answer
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:156
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:150
 msgctxt "reload"
 msgid "Reload"
 msgstr "Recharger"
@@ -1782,6 +1968,22 @@ msgstr "Recharger"
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Type d'unité"
+
+#: src/widget/unit_file_panel/flatpak.rs:46
+msgctxt "unit file"
+msgid ""
+"To save this file content, it requires permission to talk to "
+"<b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged "
+"as a Flatpak.\n"
+"\n"
+"<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/"
+"com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
+"<b>org.freedesktop.Flatpak</b> and restart the program."
+msgstr ""
+
+#~ msgctxt "mask"
+#~ msgid "No Unit Selected"
+#~ msgstr "Pas d'unité sélectionnée"
 
 #, fuzzy
 #~ msgctxt "enable"

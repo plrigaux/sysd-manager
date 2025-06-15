@@ -1,7 +1,7 @@
 #File generated
 data/interfaces/app_window.ui
 data/interfaces/clean_dialog.ui
-data/interfaces/enable_unit_dialog.ui
+data/interfaces/control_action_dialog.ui
 data/interfaces/ex_menu_button.ui
 data/interfaces/grid_cell.ui
 data/interfaces/journal_panel.ui
@@ -49,8 +49,8 @@ src/widget/app_window/menu.rs
 src/widget/app_window/mod.rs
 src/widget/clean_dialog/imp.rs
 src/widget/clean_dialog/mod.rs
-src/widget/enable_unit_dialog/imp.rs
-src/widget/enable_unit_dialog/mod.rs
+src/widget/control_action_dialog/imp.rs
+src/widget/control_action_dialog/mod.rs
 src/widget/grid_cell/imp.rs
 src/widget/grid_cell/mod.rs
 src/widget/info_window/imp.rs
@@ -63,8 +63,6 @@ src/widget/journal/list_boots.rs
 src/widget/journal/mod.rs
 src/widget/kill_panel/imp.rs
 src/widget/kill_panel/mod.rs
-src/widget/mask_unit_dialog/imp.rs
-src/widget/mask_unit_dialog/mod.rs
 src/widget/menu_button/imp.rs
 src/widget/menu_button/mod.rs
 src/widget/mod.rs
