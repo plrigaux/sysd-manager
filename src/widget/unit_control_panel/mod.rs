@@ -1,6 +1,8 @@
+use gettextrs::pgettext;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::{
+    format2,
     systemd::{
         data::UnitInfo,
         enums::{ActiveState, StartStopMode},
@@ -121,8 +123,11 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
 
     content_box.append(
         &gtk::Label::builder()
-            .label(format!(
-                "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action.",
+            .label(format2!(
+                pgettext(
+                    "workaround",
+                    "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
+                ),
                 method
             ))
             .use_markup(true)
@@ -130,7 +135,10 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
     );
     content_box.append(
         &gtk::Label::builder()
-            .label("The authorisation can be configured in the following file :")
+            .label(pgettext(
+                "workaround",
+                "The authorisation can be configured in the following file :",
+            ))
             .build(),
     );
 
@@ -144,7 +152,10 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
 
     content_box.append(
         &gtk::Label::builder()
-            .label("Otherwise, you can try the bellow command line in your terminal")
+            .label(pgettext(
+                "workaround",
+                "Otherwise, you can try the bellow command line in your terminal",
+            ))
             .margin_top(10)
             .build(),
     );
@@ -162,7 +173,10 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
     tool_bar.add_top_bar(&adw::HeaderBar::new());
 
     let dialog = adw::Window::builder()
-        .title(format!("Error {}", err.human_error_type()))
+        .title(format2!(
+            pgettext("workaround", "Error: {}"),
+            err.human_error_type()
+        ))
         .content(&tool_bar)
         .transient_for(window)
         .modal(true)
