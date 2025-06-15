@@ -1701,7 +1701,7 @@ msgid ""
 "been successfully <span fgcolor='{0}'>{}</span>"
 msgstr ""
 "L'unité <span fgcolor = '{0}' font_family = 'monospace' size = 'larger'> {} "
-"</span> a été <span fgColor = '{0}'>{}</span> avec succès"
+"</span> a été <span fgcolor = '{0}'>{}</span> avec succès"
 
 #: src/widget/unit_control_panel/enums.rs:13
 msgctxt "toast"
@@ -1757,7 +1757,7 @@ msgid ""
 "failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr ""
 "{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> "
-"{} </span> a échoué. Raison: <span fgColor = '{}'> {} </span>."
+"{} </span> a échoué. Raison: <span fgcolor = '{}'> {} </span>."
 
 #: src/widget/unit_control_panel/imp.rs:595
 #, rust-format

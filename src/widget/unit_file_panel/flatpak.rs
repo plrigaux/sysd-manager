@@ -1,4 +1,5 @@
 use adw::prelude::AdwDialogExt;
+use gettextrs::pgettext;
 use gtk::prelude::{BoxExt, ButtonExt, WidgetExt};
 
 pub fn new(command_line: Option<String>, file_link: Option<String>) -> adw::Dialog {
@@ -42,9 +43,9 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
 
     let description = gtk::Label::builder()
     .selectable(true)
-    .label("To save this file content, it requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged as a Flatpak.
+    .label(pgettext("unit file", "To save this file content, it requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged as a Flatpak.
 
-<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program.")
+<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program."))
     .use_markup(true)
     .wrap(true)
     .build();
