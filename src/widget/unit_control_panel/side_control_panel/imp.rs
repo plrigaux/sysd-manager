@@ -110,7 +110,8 @@ impl SideControlPanelImpl {
     #[template_callback]
     fn freeze_button_clicked(&self, button: &gtk::Button) {
         self.parent().call_method(
-            "Freeze",
+            //action name
+            &pgettext("action", "Freeze"),
             true,
             button,
             systemd::freeze_unit,
@@ -121,7 +122,8 @@ impl SideControlPanelImpl {
     #[template_callback]
     fn thaw_button_clicked(&self, button: &gtk::Button) {
         self.parent().call_method(
-            /*Message answer*/ &pgettext("thaw", "Thaw"),
+            //action name
+            &pgettext("action", "Thaw"),
             true,
             button,
             systemd::thaw_unit,
@@ -147,7 +149,8 @@ impl SideControlPanelImpl {
             move |unit: Option<&UnitInfo>| systemd::reload_unit(unit.expect("Unit not None"), mode);
 
         self.parent().call_method(
-            /*Message answer*/ &pgettext("reload", "Reload"),
+            //action name
+            &pgettext("action", "Reload"),
             true,
             button,
             lambda,
@@ -240,7 +243,8 @@ impl SideControlPanelImpl {
         };
 
         self.parent().call_method(
-            "Unmask",
+            //action name
+            &pgettext("action", "Unmask"),
             true,
             button,
             lambda,

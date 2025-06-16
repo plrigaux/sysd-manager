@@ -350,9 +350,15 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         self.setup_dependency_type_dropdown();
 
         //menu filter
-        let mut filter_button_unit_type = ExMenuButton::new(&pgettext("dependency", "Unit Types"));
+        let mut filter_button_unit_type = ExMenuButton::new(
+            //Filter title
+            &pgettext("dependency", "Unit Types"),
+        );
         filter_button_unit_type.set_margin_end(5);
-        filter_button_unit_type.set_tooltip_text(Some("Filter dependencies by types"));
+        filter_button_unit_type.set_tooltip_text(Some(
+            //tooltip on filter
+            &pgettext("dependency", "Filter dependencies by types"),
+        ));
 
         for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
             filter_button_unit_type.add_item(unit_type.as_str());

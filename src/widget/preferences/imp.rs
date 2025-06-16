@@ -426,6 +426,7 @@ impl ObjectImpl for PreferencesDialogImpl {
 
         debug!("All styles {:?}", style_schemes());
 
+        //unit file no preference style selected
         let mut styles = vec![pgettext("pref file style", "None")];
         let mut vec_style_schemes: Vec<String> = style_schemes().keys().cloned().collect();
         styles.append(&mut vec_style_schemes);
@@ -453,9 +454,13 @@ impl ObjectImpl for PreferencesDialogImpl {
                 .build();
 
             let switch = adw::SwitchRow::builder()
-                //SwitchRow
+                //preference show unit browser column title
                 .title(pgettext("preference column", "Show"))
-                .subtitle(format!("Hide or display unit list column {title}"))
+                //preference show unit browser column subtitle
+                .subtitle(format2!(
+                    pgettext("preference column", "Hide or display unit list column {}"),
+                    title
+                ))
                 .build();
 
             if flags & FLAG_SHOW != 0 {
@@ -470,9 +475,13 @@ impl ObjectImpl for PreferencesDialogImpl {
 
             if flags & FLAG_WIDTH != 0 {
                 let spin_row = adw::SpinRow::builder()
-                    //Spin row
+                    //preference  unit browser column width title
                     .title(pgettext("preference column", "Width"))
-                    .subtitle(format!("Set width of column {title}"))
+                    //preference  unit browser column width subtitle
+                    .subtitle(format2!(
+                        pgettext("preference column", "Set width of column {}"),
+                        title
+                    ))
                     .update_policy(gtk::SpinButtonUpdatePolicy::IfValid)
                     .adjustment(&gtk::Adjustment::new(0.0, -1.0, 5000.0, 1.0, 10.0, 0.0))
                     .build();

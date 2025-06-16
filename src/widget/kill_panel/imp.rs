@@ -73,7 +73,7 @@ impl KillPanelImp {
             None => {
                 warn!("set unit to None");
                 self.unit.set(None);
-                //Dailog subtitle
+                //Dialog subtitle
                 let sub_title = pgettext("kill", "No Unit Selected");
                 self.window_title.set_subtitle(&sub_title);
                 return;
@@ -149,6 +149,7 @@ impl KillPanelImp {
     fn contruct_signals_description(&self, sg: Signal) {
         let title = sg.name;
 
+        //signal description subtitle
         let subtitle = format2!(
             pgettext("kill", "{}\nDefault Action: {}"),
             sg.comment,
@@ -221,8 +222,10 @@ impl KillPanelImp {
                 let signal = Signal {
                     id: (id as u32),
                     name: &name,
-                    default_action: pgettext("kill default action", "Terminate"),
-                    comment: pgettext("kill signal", "Real-time signal"),
+                    // SIGRTMIN to SIGRTMAX default action
+                    default_action: pgettext("kill", "Terminate"),
+                    // SIGRTMIN to SIGRTMAX default comment
+                    comment: pgettext("kill", "Real-time signal"),
                 };
                 self.contruct_signals_description(signal);
             }
@@ -295,6 +298,7 @@ impl KillPanelImp {
                     0
                 }
             };
+            //method name
             let prefix = format2!(
                 pgettext("kill", "Queued signal {} with value {} to"),
                 signal_id,
@@ -311,6 +315,7 @@ impl KillPanelImp {
             self.parent()
                 .call_method(&prefix, true, button, lambda, lambda_out);
         } else {
+            //toast method name
             let prefix = format2!(pgettext("kill", "Kill signal {} to"), signal_id);
             let lambda = move |unit: Option<&UnitInfo>| {
                 systemd::kill_unit(unit.expect("Unit not None"), who, signal_id)
@@ -412,209 +417,277 @@ fn signals<'a>() -> [Signal<'a>; 34] {
         Signal {
             id: 1,
             name: "SIGHUP",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Hang up controlling terminal or process"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Hang up controlling terminal or process"),
         },
         Signal {
             id: 2,
             name: "SIGINT",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Interrupt from keyboard, Control-C"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Interrupt from keyboard, Control-C"),
         },
         Signal {
             id: 3,
             name: "SIGQUIT",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Quit from keyboard, Control-\""),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Quit from keyboard, Control-\""),
         },
         Signal {
             id: 4,
             name: "SIGILL",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Illegal instruction"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Illegal instruction"),
         },
         Signal {
             id: 5,
             name: "SIGTRAP",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Breakpoint for debugging"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Breakpoint for debugging"),
         },
         Signal {
             id: 6,
             name: "SIGABRT",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Abnormal termination"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Abnormal termination"),
         },
         Signal {
             id: 6,
             name: "SIGIOT",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Equivalent to SIGABRT"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Equivalent to SIGABRT"),
         },
         Signal {
             id: 7,
             name: "SIGBUS",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Bus error"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Bus error"),
         },
         Signal {
             id: 8,
             name: "SIGFPE",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Floating-point exception"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Floating-point exception"),
         },
         Signal {
             id: 9,
             name: "SIGKILL",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Forced-process termination"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Forced-process termination"),
         },
         Signal {
             id: 10,
             name: "SIGUSR1",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Available to processes"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Available to processes"),
         },
         Signal {
             id: 11,
             name: "SIGSEGV",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Invalid memory reference"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Invalid memory reference"),
         },
         Signal {
             id: 12,
             name: "SIGUSR2",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Available to processes"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Available to processes"),
         },
         Signal {
             id: 13,
             name: "SIGPIPE",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Write to pipe with no readers"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Write to pipe with no readers"),
         },
         Signal {
             id: 14,
             name: "SIGALRM",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Real-timer clock"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Real-timer clock"),
         },
         Signal {
             id: 15,
             name: "SIGTERM",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Process termination"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Process termination"),
         },
         Signal {
             id: 16,
             name: "SIGSTKFLT",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Coprocessor stack error"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Coprocessor stack error"),
         },
         Signal {
             id: 17,
             name: "SIGCHLD",
-            default_action: pgettext("kill default action", "Ignore"),
+            //kill signal default action
+            default_action: pgettext("kill", "Ignore"),
+            //kill signal description
             comment: pgettext(
-                "kill signal",
+                "kill",
                 "Child process stopped or terminated or got a signal if traced",
             ),
         },
         Signal {
             id: 18,
             name: "SIGCONT",
-            default_action: pgettext("kill default action", "Continue"),
-            comment: pgettext("kill signal", "Resume execution, if stopped"),
+            //kill signal default action
+            default_action: pgettext("kill", "Continue"),
+            //kill signal description
+            comment: pgettext("kill", "Resume execution, if stopped"),
         },
         Signal {
             id: 19,
             name: "SIGSTOP",
-            default_action: pgettext("kill default action", "Stop"),
-            comment: pgettext("kill signal", "Stop process execution, Ctrl-Z"),
+            //kill signal default action
+            default_action: pgettext("kill", "Stop"),
+            //kill signal description
+            comment: pgettext("kill", "Stop process execution, Ctrl-Z"),
         },
         Signal {
             id: 20,
             name: "SIGTSTP",
-            default_action: pgettext("kill default action", "Stop"),
-            comment: pgettext("kill signal", "Stop process issued from tty"),
+            //kill signal default action
+            default_action: pgettext("kill", "Stop"),
+            //kill signal description
+            comment: pgettext("kill", "Stop process issued from tty"),
         },
         Signal {
             id: 21,
             name: "SIGTTIN",
-            default_action: pgettext("kill default action", "Stop"),
-            comment: pgettext("kill signal", "Background process requires input"),
+            //kill signal default action
+            default_action: pgettext("kill", "Stop"),
+            //kill signal description
+            comment: pgettext("kill", "Background process requires input"),
         },
         Signal {
             id: 22,
             name: "SIGTTOU",
-            default_action: pgettext("kill default action", "Stop"),
-            comment: pgettext("kill signal", "Background process requires output"),
+            //kill signal default action
+            default_action: pgettext("kill", "Stop"),
+            //kill signal description
+            comment: pgettext("kill", "Background process requires output"),
         },
         Signal {
             id: 23,
             name: "SIGURG",
-            default_action: pgettext("kill default action", "Ignore"),
-            comment: pgettext("kill signal", "Urgent condition on socket"),
+            //kill signal default action
+            default_action: pgettext("kill", "Ignore"),
+            //kill signal description
+            comment: pgettext("kill", "Urgent condition on socket"),
         },
         Signal {
             id: 24,
             name: "SIGXCPU",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "CPU time limit exceeded"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "CPU time limit exceeded"),
         },
         Signal {
             id: 25,
             name: "SIGXFSZ",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "File size limit exceeded"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "File size limit exceeded"),
         },
         Signal {
             id: 26,
             name: "SIGVTALRM",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Virtual timer clock"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Virtual timer clock"),
         },
         Signal {
             id: 27,
             name: "SIGPROF",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Profile timer clock"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Profile timer clock"),
         },
         Signal {
             id: 28,
             name: "SIGWINCH",
-            default_action: pgettext("kill default action", "Ignore"),
-            comment: pgettext("kill signal", "Window resizing"),
+            //kill signal default action
+            default_action: pgettext("kill", "Ignore"),
+            //kill signal description
+            comment: pgettext("kill", "Window resizing"),
         },
         Signal {
             id: 29,
             name: "SIGIO",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "I/O now possible"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "I/O now possible"),
         },
         Signal {
             id: 29,
             name: "SIGPOLL",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Equivalent to SIGIO"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Equivalent to SIGIO"),
         },
         Signal {
             id: 30,
             name: "SIGPWR",
-            default_action: pgettext("kill default action", "Terminate"),
-            comment: pgettext("kill signal", "Power supply failure"),
+            //kill signal default action
+            default_action: pgettext("kill", "Terminate"),
+            //kill signal description
+            comment: pgettext("kill", "Power supply failure"),
         },
         Signal {
             id: 31,
             name: "SIGSYS",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Bad system call"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Bad system call"),
         },
         Signal {
             id: 31,
             name: "SIGUNUSED",
-            default_action: pgettext("kill default action", "Dump"),
-            comment: pgettext("kill signal", "Equivalent to SIGSYS"),
+            //kill signal default action
+            default_action: pgettext("kill", "Dump"),
+            //kill signal description
+            comment: pgettext("kill", "Equivalent to SIGSYS"),
         },
     ]
 }

@@ -42,12 +42,14 @@ pub const UNIT_LIST_COLUMNS_UNIT: u8 = 0;
 pub static UNIT_LIST_COLUMNS: LazyLock<[(String, &str, u8, u8); 9]> = LazyLock::new(|| {
     [
         (
+            //filter title
             pgettext("filter", "Unit"),
             "unit",
             UNIT_LIST_COLUMNS_UNIT,
             FLAG_WIDTH,
         ),
         (
+            //filter title
             pgettext("filter", "Type"),
             "type",
             1,
@@ -55,31 +57,42 @@ pub static UNIT_LIST_COLUMNS: LazyLock<[(String, &str, u8, u8); 9]> = LazyLock::
         ),
         (pgettext("filter", "Bus"), "bus", 2, FLAG_SHOW | FLAG_WIDTH),
         (
+            //filter title
             pgettext("filter", "State"),
             "state",
             3,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
+            //filter title
             pgettext("filter", "Preset"),
             "preset",
             4,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
+            //filter title
             pgettext("filter", "Load"),
             "load",
             5,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
+            //filter title
             pgettext("filter", "Active"),
             "active",
             6,
             FLAG_SHOW | FLAG_WIDTH,
         ),
-        (pgettext("filter", "Sub"), "sub", 7, FLAG_SHOW | FLAG_WIDTH),
         (
+            //filter title
+            pgettext("filter", "Sub"),
+            "sub",
+            7,
+            FLAG_SHOW | FLAG_WIDTH,
+        ),
+        (
+            //filter title
             pgettext("filter", "Description"),
             "description",
             8,
@@ -117,8 +130,11 @@ impl DbusLevel {
     */
     pub fn label(&self) -> String {
         match self {
+            //browser dbus option
             DbusLevel::UserSession => pgettext("dbus", "User Session Bus"),
+            //browser dbus option
             DbusLevel::System => pgettext("dbus", "System Bus"),
+            //browser dbus option
             DbusLevel::SystemAndSession => pgettext("dbus", "System & User Session Bus"),
         }
     }
@@ -205,11 +221,16 @@ pub enum PreferredColorScheme {
 impl PreferredColorScheme {
     pub fn text(&self) -> String {
         match self {
-            PreferredColorScheme::Default => pgettext("pref color scheme", "No Preference"),
-            PreferredColorScheme::PreferDark => pgettext("pref color scheme", "Prefer Dark"),
-            PreferredColorScheme::PreferLight => pgettext("pref color scheme", "Prefer Light"),
-            PreferredColorScheme::ForceDark => pgettext("pref color scheme", "Force Dark"),
-            PreferredColorScheme::ForceLight => pgettext("pref color scheme", "Force Light"),
+            //preference color scheme option
+            PreferredColorScheme::Default => pgettext("color scheme", "No Preference"),
+            //preference color scheme option
+            PreferredColorScheme::PreferDark => pgettext("color scheme", "Prefer Dark"),
+            //preference color scheme option
+            PreferredColorScheme::PreferLight => pgettext("color scheme", "Prefer Light"),
+            //preference color scheme option
+            PreferredColorScheme::ForceDark => pgettext("color scheme", "Force Dark"),
+            //preference color scheme option
+            PreferredColorScheme::ForceLight => pgettext("color scheme", "Force Light"),
         }
     }
 
@@ -254,8 +275,11 @@ pub enum OrientationMode {
 impl OrientationMode {
     pub fn label(&self) -> String {
         match self {
+            //preference application orientation option
             OrientationMode::Automatic => pgettext("pref orientation", "Automatic"),
+            //preference application orientation option
             OrientationMode::ForceHorizontal => pgettext("pref orientation", "Side by Side"),
+            //preference application orientation option
             OrientationMode::ForceVertical => pgettext("pref orientation", "Top Bottom"),
         }
     }

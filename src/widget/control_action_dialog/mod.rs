@@ -78,8 +78,11 @@ impl ControlActionType {
 
     pub fn first_group_title(&self) -> String {
         match self {
+            //preference group title
             ControlActionType::EnableUnitFiles => pgettext("action unit file", "Enable"),
+            //preference group title
             ControlActionType::DisableUnitFiles => pgettext("action unit file", "Disable"),
+            //preference group title
             ControlActionType::MaskUnit => pgettext("action unit file", "Mask"),
             _ => String::new(),
         }
@@ -87,7 +90,9 @@ impl ControlActionType {
 
     pub fn after_group_title(&self) -> String {
         match self {
+            //second preference group title
             ControlActionType::EnableUnitFiles => pgettext("action unit file", "Start"),
+            //second preference group title
             ControlActionType::DisableUnitFiles | ControlActionType::MaskUnit => {
                 pgettext("action unit file", "Stop")
             }
@@ -159,7 +164,9 @@ impl ControlActionType {
                 pgettext("action unit file", "Start Unit just after being enabled"),
             ),
             ControlActionType::MaskUnit | ControlActionType::DisableUnitFiles => (
+                //after action title
                 pgettext("action unit file", "Stop now"),
+                //after action subtitle
                 pgettext(
                     "action unit file",
                     "Ensure that the unit will also be stopped",

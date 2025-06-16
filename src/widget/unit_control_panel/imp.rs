@@ -282,6 +282,13 @@ impl UnitControlPanelImpl {
     ) {
         let job_op = match start_results {
             Ok(job) => {
+                info!(
+                    "{} SUCCESS, Unit {:?} {:?}",
+                    action.code(),
+                    unit_name,
+                    mode.as_str()
+                );
+
                 let red_green = if action != UnitContolType::Stop {
                     "green"
                 } else {
@@ -289,6 +296,7 @@ impl UnitControlPanelImpl {
                 };
 
                 let info = format2!(
+                    //toast message
                     pgettext(
                         "toast",
                         "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
@@ -298,8 +306,6 @@ impl UnitControlPanelImpl {
                     action.past_participle(),
                     mode.as_str()
                 );
-
-                info!("{info}");
 
                 self.add_toast_message(&info, true);
 
@@ -311,14 +317,15 @@ impl UnitControlPanelImpl {
                 Some(job)
             }
             Err(err) => {
-                let info = format!(
-                    "Can't {} the unit <unit>{}</unit>, because: {}",
+                warn!("{} FAILED, Unit {:?} {:?}", action.code(), unit_name, err);
+
+                let info = format2!(
+                    //toast message error
+                    pgettext("toast", "Can't {} the unit <unit>{}</unit>, because: {}"),
                     action.label(),
                     unit_name,
                     err.human_error_type()
                 );
-
-                warn!("{info} {:?}", err);
 
                 self.add_toast_message(&info, true);
 
@@ -561,6 +568,7 @@ impl UnitControlPanelImpl {
             match result {
                 Ok(_) => {
                     let msg = if let Some(ref unit) = unit_op {
+                        // toast message success
                         format2!(
                             pgettext(
                                 "toast",
@@ -571,7 +579,8 @@ impl UnitControlPanelImpl {
                             unit.primary(),
                         )
                     } else {
-                        format2!("{} successful.", &method_name)
+                        // toast message success (no unit)
+                        format2!(pgettext("toast", "{} successful."), &method_name)
                     };
                     control_panel.add_toast_message(&msg, true)
                 }
@@ -580,6 +589,7 @@ impl UnitControlPanelImpl {
 
                     let msg = if let Some(ref unit) = unit_op {
                         format2!(
+                            // toast message failed
                             pgettext(
                                 "toast",
                                 "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -592,6 +602,7 @@ impl UnitControlPanelImpl {
                         )
                     } else {
                         format2!(
+                            // toast message failed (no unit)
                             pgettext("toast", "{} failed. Reason: <span fgcolor='{}'>{}</span>."),
                             &method_name,
                             red,

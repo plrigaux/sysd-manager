@@ -117,13 +117,14 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
         .spacing(15)
         .margin_start(10)
         .margin_end(10)
-        .margin_top(5)
+        .margin_top(15)
         .margin_bottom(15)
         .build();
 
     content_box.append(
         &gtk::Label::builder()
             .label(format2!(
+                // workaround text line
                 pgettext(
                     "workaround",
                     "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
@@ -135,10 +136,13 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
     );
     content_box.append(
         &gtk::Label::builder()
-            .label(pgettext(
-                "workaround",
-                "The authorisation can be configured in the following file :",
-            ))
+            .label(
+                // workaround text line
+                pgettext(
+                    "workaround",
+                    "The authorisation can be configured in the following file :",
+                ),
+            )
             .build(),
     );
 
@@ -152,10 +156,13 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
 
     content_box.append(
         &gtk::Label::builder()
-            .label(pgettext(
-                "workaround",
-                "Otherwise, you can try the bellow command line in your terminal",
-            ))
+            .label(
+                // workaround text line
+                pgettext(
+                    "workaround",
+                    "Otherwise, you can try the bellow command line in your terminal",
+                ),
+            )
             .margin_top(10)
             .build(),
     );
@@ -174,7 +181,8 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
 
     let dialog = adw::Window::builder()
         .title(format2!(
-            pgettext("workaround", "Error: {}"),
+            //workaround dialog title
+            pgettext("workaround", "Error\n{}"),
             err.human_error_type()
         ))
         .content(&tool_bar)
