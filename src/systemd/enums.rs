@@ -183,55 +183,69 @@ impl EnablementStatus {
 
     pub fn tooltip_info(&self) -> Option<String> {
         match self {
+            //tooltip column cell
             EnablementStatus::Alias => Some(pgettext(
                 "list",
                 "The name is an alias (symlink to another unit file).",
             )),
+            //tooltip column cell
             EnablementStatus::Bad => Some(pgettext(
                 "list",
                 "The unit file is invalid or another error occurred.",
             )),
+            //tooltip column cell
             EnablementStatus::Disabled => Some(pgettext(
                 "list",
                 "The unit file is not enabled, but contains an [Install] section with installation instructions.",
             )),
+            //tooltip column cell
             EnablementStatus::Enabled => Some(pgettext(
                 "list",
                 "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).",
             )),
+            //tooltip column cell
             EnablementStatus::Generated => Some(pgettext(
                 "list",
                 "The unit file was generated dynamically via a generator tool. See <b>man systemd.generator(7)</b>. Generated unit files may not be enabled, they are enabled implicitly by their generator.",
             )),
+            //tooltip column cell
             EnablementStatus::Indirect => Some(pgettext(
                 "list",
                 "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> setting in the [Install] unit file section, listing other unit files that might be enabled, or it has an alias under a different name through a symlink that is not specified in <u>Also=</u>. For template unit files, an instance different than the one specified in <u>DefaultInstance=</u> is enabled.",
             )),
+            //tooltip column cell
             EnablementStatus::Linked => Some(pgettext(
                 "list",
                 "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.",
             )),
+            //tooltip column cell
             EnablementStatus::Masked => Some(pgettext(
                 "list",
                 "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
             )),
+            //tooltip column cell
             EnablementStatus::Static => Some(pgettext(
                 "list",
                 "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section.",
             )),
+            //tooltip column cell
             EnablementStatus::Trancient => Some(pgettext(
                 "list",
                 "The unit file has been created dynamically with the runtime API. Transient units may not be enabled.",
             )),
+
             EnablementStatus::Unknown => None,
+            //tooltip column cell
             EnablementStatus::EnabledRuntime => Some(pgettext(
                 "list",
                 "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).",
             )),
+            //tooltip column cell
             EnablementStatus::LinkedRuntime => Some(pgettext(
                 "list",
                 "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.",
             )),
+            //tooltip column cell
             EnablementStatus::MaskedRuntime => Some(pgettext(
                 "list",
                 "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
@@ -685,9 +699,13 @@ impl DependencyType {
 
     pub fn label(&self) -> String {
         match self {
+            //menu option
             DependencyType::Forward => pgettext("dependency", "Forward"),
+            //menu option
             DependencyType::Reverse => pgettext("dependency", "Reverse"),
+            //menu option
             DependencyType::After => pgettext("dependency", "After"),
+            //menu option
             DependencyType::Before => pgettext("dependency", "Before"),
         }
     }
@@ -858,7 +876,9 @@ impl UnitDBusLevel {
 
     pub fn nice_label(&self) -> String {
         match self {
+            //menu option
             UnitDBusLevel::UserSession => pgettext("dbus", "User Session"),
+            //menu option
             UnitDBusLevel::System => pgettext("dbus", "System"),
         }
     }
@@ -955,12 +975,19 @@ pub enum CleanOption {
 impl CleanOption {
     pub fn label(&self) -> String {
         match &self {
+            //clean options
             CleanOption::Runtime => pgettext("clean", "_Runtime"),
+            //clean options
             CleanOption::State => pgettext("clean", "_State"),
+            //clean options
             CleanOption::Cache => pgettext("clean", "Cac_he"),
+            //clean options
             CleanOption::Logs => pgettext("clean", "_Logs"),
+            //clean options
             CleanOption::Configuration => pgettext("clean", "_Configuration"),
+            //clean options
             CleanOption::Fdstore => pgettext("clean", "_File Descriptor Store"),
+            //clean options
             CleanOption::All => pgettext("clean", "_All"),
         }
     }

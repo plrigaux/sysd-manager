@@ -415,7 +415,7 @@ impl ObjectImpl for PreferencesDialogImpl {
 
                 let timestamp_style: TimestampStyle = selected_item_position.into();
 
-                combo_box.set_tooltip_text(Some(timestamp_style.details()));
+                combo_box.set_tooltip_text(Some(&timestamp_style.details()));
 
                 PREFERENCES.set_timestamp_style(timestamp_style);
             });

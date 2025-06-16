@@ -34,23 +34,46 @@ impl TimestampStyle {
 
     pub fn label(&self) -> String {
         match self {
+            //time style option
             TimestampStyle::Pretty => pgettext("pref time style", "Pretty"),
+            //time style option
             TimestampStyle::PrettyUsec => pgettext("pref time style", "Pretty usec"),
+            //time style option
             TimestampStyle::Utc => pgettext("pref time style", "UTC"),
+            //time style option
             TimestampStyle::UtcUsec => pgettext("pref time style", "UTC usec"),
+            //time style option
             TimestampStyle::Unix => pgettext("pref time style", "Unix"),
+            //time style option
             TimestampStyle::UnixUsec => pgettext("pref time style", "Unix usec"),
         }
     }
 
-    pub fn details(&self) -> &str {
+    pub fn details(&self) -> String {
         match self {
-            TimestampStyle::Pretty => "Day YYYY-MM-DD HH:MM:SS TZ",
-            TimestampStyle::PrettyUsec => "Day YYYY-MM-DD HH:MM:SS.000000 TZ",
-            TimestampStyle::Utc => "Day YYYY-MM-DD HH:MM:SS UTC",
-            TimestampStyle::UtcUsec => "Day YYYY-MM-DD HH:MM:SS.000000 UTC",
-            TimestampStyle::Unix => "Seconds since the epoch",
-            TimestampStyle::UnixUsec => "Micro seconds since the epoch",
+            //time style option tooltip
+            TimestampStyle::Pretty => pgettext("pref time style", "Day YYYY-MM-DD HH:MM:SS TZ"),
+
+            //time style option tooltip
+            TimestampStyle::PrettyUsec => {
+                pgettext("pref time style", "Day YYYY-MM-DD HH:MM:SS.000000 TZ")
+            }
+
+            //time style option tooltip
+            TimestampStyle::Utc => pgettext("pref time style", "Day YYYY-MM-DD HH:MM:SS UTC"),
+
+            //time style option tooltip
+            TimestampStyle::UtcUsec => {
+                pgettext("pref time style", "Day YYYY-MM-DD HH:MM:SS.000000 UTC")
+            }
+
+            //time style option tooltip
+            TimestampStyle::Unix => pgettext("pref time style", "Seconds since the epoch"),
+
+            //time style option tooltip
+            TimestampStyle::UnixUsec => {
+                pgettext("pref time style", "Micro seconds since the epoch")
+            }
         }
     }
 

@@ -36,18 +36,18 @@ impl SystemdErrors {
     pub fn gui_description(&self) -> Option<String> {
         match self {
             SystemdErrors::CmdNoFlatpakSpawn => {
-                let value = pgettext(
+                //error message flatpak permission
+                Some(pgettext(
                     "error",
                     "The program <b>flatpack-spawn</b> is needed if you use the application from Flatpack.\nPlease install it to enable all features.",
-                );
-                Some(value)
+                ))
             }
             SystemdErrors::CmdNoFreedesktopFlatpakPermission(_cmdl, _file_path) => {
-                let msg = pgettext(
+                //error message flatpak permission
+                Some(pgettext(
                     "error",
                     "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is a Flatpak.",
-                );
-                Some(msg)
+                ))
             }
             _ => None,
         }

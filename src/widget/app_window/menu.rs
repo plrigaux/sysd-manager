@@ -190,6 +190,7 @@ fn create_about() -> adw::AboutDialog {
         .build();
 
     about.add_acknowledgement_section(
+        //about dialogue
         Some(&gettext("Thank you for your support")),
         &["AsciiWolf", "Justin Searle", "Damglador"],
     );

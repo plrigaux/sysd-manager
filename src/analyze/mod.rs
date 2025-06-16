@@ -24,6 +24,7 @@ pub fn build_analyze_window() -> Result<Window, SystemdErrors> {
     let analyse_box = build_analyze()?;
 
     let window = Window::builder()
+        //dialog title
         .title(pgettext("analyse blame", "Analyse Blame"))
         .default_height(600)
         .default_width(600)
@@ -43,6 +44,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
         let attribute_list = AttrList::new();
         attribute_list.insert(AttrInt::new_weight(Weight::Medium));
         gtk::Label::builder()
+            //label total
             .label(pgettext("analyse blame", "Total Time:"))
             .attributes(&attribute_list)
             .build()
@@ -51,6 +53,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
     let attribute_list = AttrList::new();
     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
     let total_time_label = gtk::Label::builder()
+        //place holder, lees likely to be displaied
         .label(pgettext("analyse blame", "seconds ..."))
         .attributes(&attribute_list)
         .build();
@@ -125,10 +128,12 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
     });
 
     let col1_time = gtk::ColumnViewColumn::new(
+        //column header
         Some(&pgettext("analyse blame", "Init time (ms)")),
         Some(col1factory),
     );
     let col2_unit = gtk::ColumnViewColumn::new(
+        //column header
         Some(&pgettext("analyse blame", "Running units")),
         Some(col2factory),
     );
@@ -171,6 +176,7 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
 
                     let time = (time_full as f32) / 1000f32;
 
+                    //total time
                     let total_time_label_str =
                         crate::format2!(pgettext("analyse blame", "{} seconds"), time);
 

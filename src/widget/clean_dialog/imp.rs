@@ -126,6 +126,7 @@ impl CleanDialogImp {
             None => {
                 warn!("set unit to None");
                 self.unit.set(None);
+                //dialog subtitle
                 let sub_title = pgettext("clean", "No Unit Selected");
                 self.window_title.set_subtitle(&sub_title);
                 return;
