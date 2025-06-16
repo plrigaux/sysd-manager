@@ -133,6 +133,11 @@ Interested in contributing? Contact the project maintainer on [GitHub](https://g
 __SysD Manager__ can be displayed in different languages as long a translation has been provided.
 
 
+### Translators
+
+Translation are generously hoster by Weblate and can be found there https://hosted.weblate.org/git/sysd-manager/translation/
+
+### Developpers and Translator
 
 Some tools have been created to help with translation. The following shows the most important ones to help translators
 
@@ -146,7 +151,7 @@ cargo run -p transtools -- potfiles
 
 _Normally a translator don't have to use this command. Use it only after you created or removed new source files_ -->
 
-### Generate missing po files or update them
+#### Generate missing po files or update them
 
 After changes in the source code it's needed to update a po languages file. The following command helps you to perform that.
 ```
@@ -155,7 +160,7 @@ cargo run -p transtools -- po -lang <LANG>
 
 _Also useful for adding a new translated language_
 
-### Extract transalation texts
+#### Extract transalation texts
 
 To extract translation texts form source code and generate a Portable Object Template (pot) file. This is needed __only__ after code changes.
 
@@ -163,7 +168,7 @@ To extract translation texts form source code and generate a Portable Object Tem
 cargo run -p transtools -- extract -lang <LANG>
 ```
 
-### Translators Notes
+#### Notes
 
 - To add a new translated language, first add the new language code, respecting ```ll``` or ```ll_LL``` format, in the ```./po/LINGUAS``` files.
 - To test any tanslated languages, just set the envroment variable like this:  ```export LANGUAGE=<language code>```
