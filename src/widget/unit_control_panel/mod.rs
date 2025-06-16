@@ -182,7 +182,7 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
     let dialog = adw::Window::builder()
         .title(format2!(
             //workaround dialog title
-            pgettext("workaround", "Error\n{}"),
+            pgettext("workaround", "Fail! {}"),
             err.human_error_type()
         ))
         .content(&tool_bar)
