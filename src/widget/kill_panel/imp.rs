@@ -436,7 +436,7 @@ fn signals<'a>() -> [Signal<'a>; 34] {
             //kill signal default action
             default_action: pgettext("kill", "Dump"),
             //kill signal description
-            comment: pgettext("kill", "Quit from keyboard, Control-\""),
+            comment: pgettext("kill", "Quit from keyboard, Control-\\"),
         },
         Signal {
             id: 4,
