@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 15:14+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-06-17 17:55+0000\n"
+"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -1638,10 +1638,9 @@ msgstr "Décharger"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:439
-#, fuzzy
 msgctxt "kill"
 msgid "Quit from keyboard, Ctrl+\\"
-msgstr "Quitter à partir du clavier, Ctrl-\\"
+msgstr "Quitter à partir du clavier, Ctrl+\\"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:447
@@ -1756,10 +1755,9 @@ msgstr "Arrêter"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:578
-#, fuzzy
 msgctxt "kill"
 msgid "Stop process execution, Ctrl+Z"
-msgstr "Interromps le processus (Ctrl-Z dans un terminal)"
+msgstr "Interromps le processus (Ctrl+Z dans un terminal)"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:586
