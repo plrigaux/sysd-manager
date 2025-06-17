@@ -428,7 +428,7 @@ fn signals<'a>() -> [Signal<'a>; 34] {
             //kill signal default action
             default_action: pgettext("kill", "Terminate"),
             //kill signal description
-            comment: pgettext("kill", "Interrupt from keyboard, Control-C"),
+            comment: pgettext("kill", "Interrupt from keyboard, Ctrl+C"),
         },
         Signal {
             id: 3,
@@ -436,7 +436,7 @@ fn signals<'a>() -> [Signal<'a>; 34] {
             //kill signal default action
             default_action: pgettext("kill", "Dump"),
             //kill signal description
-            comment: pgettext("kill", "Quit from keyboard, Control-\\"),
+            comment: pgettext("kill", "Quit from keyboard, Ctrl+\\"),
         },
         Signal {
             id: 4,
@@ -575,7 +575,7 @@ fn signals<'a>() -> [Signal<'a>; 34] {
             //kill signal default action
             default_action: pgettext("kill", "Stop"),
             //kill signal description
-            comment: pgettext("kill", "Stop process execution, Ctrl-Z"),
+            comment: pgettext("kill", "Stop process execution, Ctrl+Z"),
         },
         Signal {
             id: 20,
