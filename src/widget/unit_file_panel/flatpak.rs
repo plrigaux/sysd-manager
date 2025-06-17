@@ -84,8 +84,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
         format2!(
             //flatpak permision error dialog option 2
             pgettext(
-                "unit file",
-                "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor."
+                "unit file", "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor."
             ),
             file_link
         )
@@ -93,8 +92,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
         format2!(
               //flatpak permision error dialog option 3
             pgettext(
-                "unit file",
-                "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
+                "unit file", "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
             ),
             cmd
         )

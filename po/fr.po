@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 03:31+0000\n"
+"PO-Revision-Date: 2025-06-17 08:38-0400\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.12.1\n"
+"X-Generator: Poedit 3.6\n"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -766,7 +766,6 @@ msgstr "Demander à l'unité spécifiée de recharger sa configuration"
 msgctxt "control"
 msgid "_Preset ➚"
 msgstr "_Prérégler ➚"
-msgstr "_Prérégler ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:171
@@ -774,9 +773,8 @@ msgctxt "control"
 msgid "Enable or Disable one or more unit files according to the preset policy"
 msgstr ""
 "Activer ou désactiver un ou plusieurs fichiers d'unité en fonction de la "
-"politique de préréglage"
-"Activer ou désactiver un ou plusieurs fichiers d'unité en fonction de la "
-"politique de préréglage"
+"politique de préréglageActiver ou désactiver un ou plusieurs fichiers "
+"d'unité en fonction de la politique de préréglage"
 
 #. button
 #: data/interfaces/side_control_panel.ui:185
@@ -792,9 +790,9 @@ msgid ""
 "enabling the unit quickly one after the other in an atomic fashion"
 msgstr ""
 "Appliquer les modifications à une ou plusieurs unités qui résulteraient "
-"d'une désactivation suivie d'une activation atomique de l'unité"
-"Appliquer les modifications à une ou plusieurs unités qui résulteraient "
-"d'une désactivation suivie d'une activation atomique de l'unité"
+"d'une désactivation suivie d'une activation atomique de l'unitéAppliquer les "
+"modifications à une ou plusieurs unités qui résulteraient d'une "
+"désactivation suivie d'une activation atomique de l'unité"
 
 #. button
 #: data/interfaces/side_control_panel.ui:200
@@ -810,9 +808,9 @@ msgid ""
 "into the unit search path"
 msgstr ""
 "Lier des fichiers d'unité (qui sont situés à l'extérieur des chemins de "
-"recherche habituels) dans le chemin de recherche de l'unité"
-"Lier des fichiers d'unité (qui sont situés à l'extérieur des chemins de "
-"recherche habituels) dans le chemin de recherche de l'unité"
+"recherche habituels) dans le chemin de recherche de l'unitéLier des fichiers "
+"d'unité (qui sont situés à l'extérieur des chemins de recherche habituels) "
+"dans le chemin de recherche de l'unité"
 
 #. description
 #: data/interfaces/signals_window.ui:24
@@ -958,7 +956,7 @@ msgstr "Aucun fichier d'unité"
 #: data/interfaces/unit_file_panel.ui:42
 msgctxt "file"
 msgid "File path:"
-msgstr "Chemin du fichier :"
+msgstr "Chemin du fichier:"
 
 #. button
 #: data/interfaces/unit_file_panel.ui:59
@@ -1436,20 +1434,17 @@ msgstr "Masquer l'unité"
 msgctxt "action unit file"
 msgid "Preset Unit File"
 msgstr "Prérégler le fichier de l'unité"
-msgstr "Prérégler le fichier de l'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:68
 msgctxt "action unit file"
 msgid "Reenable Unit File"
 msgstr "Réactiver le fichier d'unité"
-msgstr "Réactiver le fichier d'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:72
 msgctxt "action unit file"
 msgid "Disable Unit File"
-msgstr "Désactiver le fichier d'unité"
 msgstr "Désactiver le fichier d'unité"
 
 #. Dialog title
@@ -1480,7 +1475,6 @@ msgstr "Désactiver"
 #: src/widget/control_action_dialog/mod.rs:146
 msgctxt "action unit file"
 msgid "Mask"
-msgstr "Masquer"
 msgstr "Masquer"
 
 #. second preference group title
@@ -1528,7 +1522,6 @@ msgstr "Démarrer l'unité juste après avoir été activée"
 #: src/widget/control_action_dialog/mod.rs:168
 msgctxt "action unit file"
 msgid "Stop now"
-msgstr "Arrêter maintenant"
 msgstr "Arrêter maintenant"
 
 #: src/widget/control_action_dialog/mod.rs:172
@@ -1625,7 +1618,8 @@ msgstr "Signal Kill {} vers"
 #: src/widget/kill_panel/imp.rs:423
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
-msgstr "Rupture détectée sur le terminal contrôleur ou mort du processus parent"
+msgstr ""
+"Rupture détectée sur le terminal contrôleur ou mort du processus parent"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
@@ -2114,7 +2108,8 @@ msgstr "{} a échoué. Raison: <span fgcolor='{}'>{}</span>."
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
-msgstr "Malheureusement, <b>SysD Manager</b> ne peut pas exécuter l'action <b>{}</b>."
+msgstr ""
+"Malheureusement, <b>SysD Manager</b> ne peut pas exécuter l'action <b>{}</b>."
 
 #: src/widget/unit_control_panel/mod.rs:143
 msgctxt "workaround"
@@ -2124,7 +2119,9 @@ msgstr "L'autorisation peut être configurée dans le fichier suivant :"
 #: src/widget/unit_control_panel/mod.rs:163
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
-msgstr "Sinon, vous pouvez essayer la ligne de commande ci-dessous dans votre terminal"
+msgstr ""
+"Sinon, vous pouvez essayer la ligne de commande ci-dessous dans votre "
+"terminal"
 
 #. workaround dialog title
 #: src/widget/unit_control_panel/mod.rs:185
@@ -2184,8 +2181,8 @@ msgid ""
 "as a Flatpak."
 msgstr ""
 "Il nécessite l'autorisation de parler à <b> org.freedesktop.flatpak </b> d-"
-"bus interface lorsque le programme est un Flatpak."
-"bus interface lorsque le programme est un Flatpak."
+"bus interface lorsque le programme est un Flatpak.bus interface lorsque le "
+"programme est un Flatpak."
 
 #. flatpak permision error dialog line 2
 #: src/widget/unit_file_panel/flatpak.rs:62
@@ -2195,14 +2192,12 @@ msgid ""
 "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
 "<b>org.freedesktop.Flatpak</b> and restart the program."
 msgstr ""
-"<b> Option 1 : </b> Vous pouvez utiliser <a href = "
-"\"https://frathub.org/apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous "
-"la section Bus Talks ajoutez <b> org.freedesktop.flatpak </b> et redémarrez "
-"le programme."
-"<b> Option 1 : </b> Vous pouvez utiliser <a href = "
-"\"https://frathub.org/apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous "
-"la section Bus Talks ajoutez <b> org.freedesktop.flatpak </b> et redémarrez "
-"le programme."
+"<b> Option 1 : </b> Vous pouvez utiliser <a href = \"https://frathub.org/"
+"apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks "
+"ajoutez <b> org.freedesktop.flatpak </b> et redémarrez le programme.<b> "
+"Option 1 : </b> Vous pouvez utiliser <a href = \"https://frathub.org/apps/"
+"com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks ajoutez "
+"<b> org.freedesktop.flatpak </b> et redémarrez le programme."
 
 #: src/widget/unit_file_panel/flatpak.rs:88
 #, rust-format
@@ -2212,9 +2207,8 @@ msgid ""
 "editor."
 msgstr ""
 "<b> Option 2: </b> Modifiez le fichier <a href = \"file://{}\"> </a> via un "
-"autre éditeur."
-"<b> Option 2: </b> Modifiez le fichier <a href = \"file://{}\"> </a> via un "
-"autre éditeur."
+"autre éditeur.<b> Option 2: </b> Modifiez le fichier <a href = \"file://{}"
+"\"> </a> via un autre éditeur."
 
 #: src/widget/unit_file_panel/flatpak.rs:97
 #, rust-format
