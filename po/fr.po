@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-16 11:28-0400\n"
+"POT-Creation-Date: 2025-06-17 10:40-0400\n"
 "PO-Revision-Date: 2025-06-17 15:14+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1141,7 +1141,8 @@ msgstr "Le nom est un alias (lien symbolique vers un autre fichier d'unité)."
 #: src/systemd/enums.rs:194
 msgctxt "list"
 msgid "The unit file is invalid or another error occurred."
-msgstr "Le fichier d'unité n'est pas valide ou une autre erreur s'est produite."
+msgstr ""
+"Le fichier d'unité n'est pas valide ou une autre erreur s'est produite."
 
 #: src/systemd/enums.rs:199
 msgctxt "list"
@@ -1163,8 +1164,8 @@ msgstr ""
 "Activé via les liens symboliques <span fgcolor='#62a0ea'>.wants/</span>, "
 "<span fgcolor='#62a0ea'>.requires/</span> ou <u>Alias=</u> (de manière "
 "permanente dans <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, ou de "
-"manière transitoire dans <span fgcolor='#62a0ea'>/run/systemd/system/"
-"</span>)."
+"manière transitoire dans <span fgcolor='#62a0ea'>/run/systemd/system/</"
+"span>)."
 
 #: src/systemd/enums.rs:209
 msgctxt "list"
@@ -1617,7 +1618,8 @@ msgstr "Signal Kill {} vers"
 #: src/widget/kill_panel/imp.rs:423
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
-msgstr "Rupture détectée sur le terminal contrôleur ou mort du processus parent"
+msgstr ""
+"Rupture détectée sur le terminal contrôleur ou mort du processus parent"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
@@ -2094,8 +2096,8 @@ msgid ""
 "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
 "failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr ""
-"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> {}"
-" </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
+"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> "
+"{} </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:606
@@ -2192,10 +2194,9 @@ msgid ""
 "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
 "<b>org.freedesktop.Flatpak</b> and restart the program."
 msgstr ""
-"<b> Option 1 : </b> Vous pouvez utiliser <a href = "
-"\"https://frathub.org/apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous "
-"la section Bus Talks ajoutez <b> org.freedesktop.flatpak </b> et redémarrez "
-"le programme."
+"<b> Option 1 : </b> Vous pouvez utiliser <a href = \"https://frathub.org/"
+"apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks "
+"ajoutez <b> org.freedesktop.flatpak </b> et redémarrez le programme."
 
 #: src/widget/unit_file_panel/flatpak.rs:87
 #, rust-format
