@@ -86,6 +86,7 @@ https://hughsie.github.io/oars/index.html
         <p>Added</p>
         <ul>
           <li>New unit file controls : Preset, Disable, Reenable and Link</li>          
+          <li>Portuguese Brazil translation strings</li>          
           <li>French translation strings</li>          
         </ul>    
         <p>Fix</p>
