@@ -149,7 +149,7 @@ impl KillPanelImp {
     fn contruct_signals_description(&self, sg: Signal) {
         let title = sg.name;
 
-        //signal description subtitle
+        //signal description subtitle -- "{comment}\nDefault Action: {default_action}"
         let subtitle = format2!(
             pgettext("kill", "{}\nDefault Action: {}"),
             sg.comment,
@@ -298,7 +298,7 @@ impl KillPanelImp {
                     0
                 }
             };
-            //method name
+            //method name -- "Queued signal {signal_id} with value {sigqueue_value} to"
             let prefix = format2!(
                 pgettext("kill", "Queued signal {} with value {} to"),
                 signal_id,
@@ -315,7 +315,7 @@ impl KillPanelImp {
             self.parent()
                 .call_method(&prefix, true, button, lambda, lambda_out);
         } else {
-            //toast method name
+            //toast method name -- "Kill signal {signal_id} to"
             let prefix = format2!(pgettext("kill", "Kill signal {} to"), signal_id);
             let lambda = move |unit: Option<&UnitInfo>| {
                 systemd::kill_unit(unit.expect("Unit not None"), who, signal_id)

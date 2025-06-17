@@ -320,7 +320,7 @@ impl UnitControlPanelImpl {
                 warn!("{} FAILED, Unit {:?} {:?}", action.code(), unit_name, err);
 
                 let info = format2!(
-                    //toast message error
+                    //toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
                     pgettext("toast", "Can't {} the unit <unit>{}</unit>, because: {}"),
                     action.label(),
                     unit_name,
@@ -579,7 +579,7 @@ impl UnitControlPanelImpl {
                             unit.primary(),
                         )
                     } else {
-                        // toast message success (no unit)
+                        // toast message success (no unit) -- "{ACTION} successful."
                         format2!(pgettext("toast", "{} successful."), &method_name)
                     };
                     control_panel.add_toast_message(&msg, true)
@@ -602,7 +602,7 @@ impl UnitControlPanelImpl {
                         )
                     } else {
                         format2!(
-                            // toast message failed (no unit)
+                            // toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
                             pgettext("toast", "{} failed. Reason: <span fgcolor='{}'>{}</span>."),
                             &method_name,
                             red,

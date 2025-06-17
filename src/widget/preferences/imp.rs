@@ -449,15 +449,15 @@ impl ObjectImpl for PreferencesDialogImpl {
                 .margin_start(8)
                 .margin_end(8)
                 .margin_bottom(8)
-                //pref group
+                //pref group -- "Column {column name}"
                 .title(format2!(pgettext("preference column", "Column {}"), title))
                 .build();
 
             let switch = adw::SwitchRow::builder()
                 //preference show unit browser column title
                 .title(pgettext("preference column", "Show"))
-                //preference show unit browser column subtitle
                 .subtitle(format2!(
+                    //preference show unit browser column subtitle -- Hide or display unit list column {column name}"
                     pgettext("preference column", "Hide or display unit list column {}"),
                     title
                 ))
@@ -477,8 +477,8 @@ impl ObjectImpl for PreferencesDialogImpl {
                 let spin_row = adw::SpinRow::builder()
                     //preference  unit browser column width title
                     .title(pgettext("preference column", "Width"))
-                    //preference  unit browser column width subtitle
                     .subtitle(format2!(
+                        //preference  unit browser column width subtitle -- "Set width of column {column name}"
                         pgettext("preference column", "Set width of column {}"),
                         title
                     ))
