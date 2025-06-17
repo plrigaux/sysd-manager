@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 09:48+0000\n"
+"PO-Revision-Date: 2025-06-17 12:19+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "sysd-manager/translation/pt_BR/>\n"
@@ -1698,21 +1698,18 @@ msgstr "Escrever no pipe sem leitores"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:535
-#, fuzzy
 msgctxt "kill"
 msgid "Real-timer clock"
 msgstr "Relógio em tempo real"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:543
-#, fuzzy
 msgctxt "kill"
 msgid "Process termination"
 msgstr "Término do processo"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:551
-#, fuzzy
 msgctxt "kill"
 msgid "Coprocessor stack error"
 msgstr "Erro de pilha do coprocessador"
@@ -1720,13 +1717,11 @@ msgstr "Erro de pilha do coprocessador"
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:557 src/widget/kill_panel/imp.rs:608
 #: src/widget/kill_panel/imp.rs:648
-#, fuzzy
 msgctxt "kill"
 msgid "Ignore"
 msgstr "Ignorar"
 
 #: src/widget/kill_panel/imp.rs:561
-#, fuzzy
 msgctxt "kill"
 msgid "Child process stopped or terminated or got a signal if traced"
 msgstr ""
@@ -1735,14 +1730,12 @@ msgstr ""
 
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:568
-#, fuzzy
 msgctxt "kill"
 msgid "Continue"
 msgstr "Continuar"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:570
-#, fuzzy
 msgctxt "kill"
 msgid "Resume execution, if stopped"
 msgstr "Retomar a execução, se interrompida"
@@ -1750,112 +1743,96 @@ msgstr "Retomar a execução, se interrompida"
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:576 src/widget/kill_panel/imp.rs:584
 #: src/widget/kill_panel/imp.rs:592 src/widget/kill_panel/imp.rs:600
-#, fuzzy
 msgctxt "kill"
 msgid "Stop"
 msgstr "Parar"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:578
-#, fuzzy
 msgctxt "kill"
 msgid "Stop process execution, Ctrl-Z"
 msgstr "Parar a execução do processo, Ctrl-Z"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:586
-#, fuzzy
 msgctxt "kill"
 msgid "Stop process issued from tty"
 msgstr "Parar processo emitido por tty"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:594
-#, fuzzy
 msgctxt "kill"
 msgid "Background process requires input"
 msgstr "O processo em segundo plano requer entrada"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:602
-#, fuzzy
 msgctxt "kill"
 msgid "Background process requires output"
 msgstr "O processo em segundo plano requer saída"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:610
-#, fuzzy
 msgctxt "kill"
 msgid "Urgent condition on socket"
 msgstr "Condição urgente no soquete"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:618
-#, fuzzy
 msgctxt "kill"
 msgid "CPU time limit exceeded"
 msgstr "Limite de tempo da CPU excedido"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:626
-#, fuzzy
 msgctxt "kill"
 msgid "File size limit exceeded"
 msgstr "Limite de tamanho de arquivo excedido"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:634
-#, fuzzy
 msgctxt "kill"
 msgid "Virtual timer clock"
 msgstr "Relógio temporizador virtual"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:642
-#, fuzzy
 msgctxt "kill"
 msgid "Profile timer clock"
 msgstr "Relógio temporizador de perfil"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:650
-#, fuzzy
 msgctxt "kill"
 msgid "Window resizing"
 msgstr "Redimensionamento de janela"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:658
-#, fuzzy
 msgctxt "kill"
 msgid "I/O now possible"
 msgstr "I/O agora possível"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:666
-#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGIO"
 msgstr "Equivalente a SIGIO"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:674
-#, fuzzy
 msgctxt "kill"
 msgid "Power supply failure"
 msgstr "Falha no fornecimento de energia"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:682
-#, fuzzy
 msgctxt "kill"
 msgid "Bad system call"
 msgstr "Chamada de sistema ruim"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:690
-#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
 msgstr "Equivalente ao SIGSYS"
@@ -1933,35 +1910,30 @@ msgstr "Barramento de sessão de sistema e usuário"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:225
-#, fuzzy
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Sem preferência"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:227
-#, fuzzy
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Prefiro escuro"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:229
-#, fuzzy
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Prefiro Claro"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:231
-#, fuzzy
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Força modo Escuro"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:233
-#, fuzzy
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Força modo Claro"
@@ -2007,7 +1979,7 @@ msgstr "Mostrar"
 #, rust-format
 msgctxt "preference column"
 msgid "Hide or display unit list column {}"
-msgstr ""
+msgstr "Ocultar ou exibir coluna da lista de unidades {}"
 
 #. preference  unit browser column width title
 #: src/widget/preferences/imp.rs:479
@@ -2019,7 +1991,7 @@ msgstr "Largura"
 #, rust-format
 msgctxt "preference column"
 msgid "Set width of column {}"
-msgstr ""
+msgstr "Definir largura da coluna {}"
 
 #: src/widget/unit_control_panel/controls.rs:56
 msgctxt "toast"
@@ -2031,14 +2003,13 @@ msgstr ""
 "span> foi <span fgcolor='{0}'>{}</span> com sucesso"
 
 #: src/widget/unit_control_panel/controls.rs:90
-#, fuzzy
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "has failed!"
 msgstr ""
 "{} unidade <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> bem-sucedida"
+"span> falhou!"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:21
@@ -2087,7 +2058,7 @@ msgstr "A unidade <unit>{}</unit> foi <{0}>{}</{0}> com o modo <unit>{}</unit>"
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
-msgstr ""
+msgstr "Não é possível {} a unidade <unidade>{}</unidade>, porque: {}"
 
 #: src/widget/unit_control_panel/imp.rs:575
 msgctxt "toast"
@@ -2103,7 +2074,7 @@ msgstr ""
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
-msgstr ""
+msgstr "{} bem-sucedido."
 
 #: src/widget/unit_control_panel/imp.rs:595
 #, rust-format
@@ -2126,41 +2097,40 @@ msgstr "{} falhou. Motivo: <span fgcolor='{}'>{}</span>."
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
-msgstr ""
+msgstr "Infelizmente, o <b>SysD Manager</b> não pode executar a <b>{}</b> ação."
 
 #: src/widget/unit_control_panel/mod.rs:143
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file :"
-msgstr ""
+msgstr "A autorização pode ser configurada no seguinte arquivo:"
 
 #: src/widget/unit_control_panel/mod.rs:163
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
 msgstr ""
+"Caso contrário, você pode tentar a linha de comando abaixo em seu terminal"
 
 #. workaround dialog title
 #: src/widget/unit_control_panel/mod.rs:185
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
-msgstr ""
+msgstr "Falhar! {}"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:114
 msgctxt "action"
 msgid "Freeze"
-msgstr ""
+msgstr "Congelar"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:126
-#, fuzzy
 msgctxt "action"
 msgid "Thaw"
 msgstr "Descongelamento"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:153
-#, fuzzy
 msgctxt "action"
 msgid "Reload"
 msgstr "Recarregar"
@@ -2169,7 +2139,7 @@ msgstr "Recarregar"
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:247
 msgctxt "action"
 msgid "Unmask"
-msgstr ""
+msgstr "Desmascarar"
 
 #. Filter title
 #: src/widget/unit_dependencies_panel/imp.rs:355
@@ -2179,28 +2149,27 @@ msgstr "Tipos de Unidade"
 
 #. tooltip on filter
 #: src/widget/unit_dependencies_panel/imp.rs:360
-#, fuzzy
 msgctxt "dependency"
 msgid "Filter dependencies by types"
-msgstr "Sem dependências"
+msgstr "Filtrar dependências por tipos"
 
 #. flatpak permision error dialog title
 #: src/widget/unit_file_panel/flatpak.rs:43
 msgctxt "unit file"
 msgid "Flatpak permission needed!"
-msgstr ""
+msgstr "Permissão para Flatpak necessária!"
 
 #. flatpak permision error dialog line 1
 #: src/widget/unit_file_panel/flatpak.rs:53
-#, fuzzy
 msgctxt "unit file"
 msgid ""
 "To save this file content, it requires permission to talk to "
 "<b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged "
 "as a Flatpak."
 msgstr ""
-"É necessária permissão para falar com a interface D-Bus "
-"<b>org.freedesktop.Flatpak</b> quando o programa é um Flatpak."
+"Para salvar o conteúdo deste arquivo, é necessária permissão para falar com "
+"a interface D-Bus <b>org.freedesktop.Flatpak</b> quando o programa é "
+"empacotado como um Flatpak."
 
 #. flatpak permision error dialog line 2
 #: src/widget/unit_file_panel/flatpak.rs:62
@@ -2210,6 +2179,10 @@ msgid ""
 "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
 "<b>org.freedesktop.Flatpak</b> and restart the program."
 msgstr ""
+"<b>Opção 1:</b> Você pode usar <a href="
+"\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Em "
+"Session Bus Talks, adicione <b>org.freedesktop.Flatpak</b> e reinicie o "
+"programa."
 
 #: src/widget/unit_file_panel/flatpak.rs:88
 #, rust-format
@@ -2218,12 +2191,14 @@ msgid ""
 "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another "
 "editor."
 msgstr ""
+"<b>Opção 2:</b> edite o <a href=\"file://{}\">arquivo</a> por meio de outro "
+"editor."
 
 #: src/widget/unit_file_panel/flatpak.rs:97
 #, rust-format
 msgctxt "unit file"
 msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
-msgstr ""
+msgstr "<b>Opção 3:</b> No seu terminal, execute o comando: <u>{}</u>"
 
 #~ msgctxt "mask"
 #~ msgid "No Unit Selected"
