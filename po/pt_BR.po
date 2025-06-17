@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
 "PO-Revision-Date: 2025-06-17 15:14+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "sysd-manager/translation/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -2102,8 +2102,7 @@ msgstr "{} falhou. Motivo: <span fgcolor='{}'>{}</span>."
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
-msgstr ""
-"Infelizmente, o <b>SysD Manager</b> não pode executar a <b>{}</b> ação."
+msgstr "Infelizmente, o <b>SysD Manager</b> não pode executar a <b>{}</b> ação."
 
 #: src/widget/unit_control_panel/mod.rs:143
 msgctxt "workaround"
@@ -2185,9 +2184,10 @@ msgid ""
 "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
 "<b>org.freedesktop.Flatpak</b> and restart the program."
 msgstr ""
-"<b>Opção 1:</b> Você pode usar <a href=\"https://flathub.org/apps/"
-"com.github.tchx84.Flatseal\">Flatseal</a>. Em Session Bus Talks, adicione "
-"<b>org.freedesktop.Flatpak</b> e reinicie o programa."
+"<b>Opção 1:</b> Você pode usar <a href="
+"\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Em "
+"Session Bus Talks, adicione <b>org.freedesktop.Flatpak</b> e reinicie o "
+"programa."
 
 #: src/widget/unit_file_panel/flatpak.rs:87
 #, rust-format
