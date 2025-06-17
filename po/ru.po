@@ -1,0 +1,2113 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-17 10:40-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#: data/interfaces/app_window.ui:12
+msgctxt "menu"
+msgid "Analyze Blame"
+msgstr ""
+
+#: data/interfaces/app_window.ui:16
+msgctxt "menu"
+msgid "Reload All Units"
+msgstr ""
+
+#: data/interfaces/app_window.ui:20
+msgctxt "menu"
+msgid "Systemd Info"
+msgstr ""
+
+#: data/interfaces/app_window.ui:24
+msgctxt "menu"
+msgid "List Boots"
+msgstr ""
+
+#: data/interfaces/app_window.ui:28
+msgctxt "menu"
+msgid "Watch Signals"
+msgstr ""
+
+#: data/interfaces/app_window.ui:34
+msgctxt "menu"
+msgid "Preferences"
+msgstr ""
+
+#: data/interfaces/app_window.ui:38
+msgctxt "menu"
+msgid "Keyboard Shortcuts"
+msgstr ""
+
+#: data/interfaces/app_window.ui:42
+msgctxt "menu"
+msgid "About"
+msgstr ""
+
+#: data/interfaces/app_window.ui:79
+msgctxt "title"
+msgid "SysD Manager"
+msgstr ""
+
+#: data/interfaces/app_window.ui:85
+msgctxt "top button tooltip"
+msgid "Open Search Bar"
+msgstr ""
+
+#: data/interfaces/app_window.ui:92
+msgctxt "top button tooltip"
+msgid "Refresh Unit List"
+msgstr ""
+
+#. button
+#. title dialog
+#. Message answer
+#: data/interfaces/clean_dialog.ui:28 data/interfaces/clean_dialog.ui:40
+#: src/widget/clean_dialog/imp.rs:99
+msgctxt "clean"
+msgid "Clean"
+msgstr ""
+
+#. entry title
+#: data/interfaces/control_action_dialog.ui:28
+msgctxt "enable unit file"
+msgid "Unit file"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/control_action_dialog.ui:38
+msgctxt "enable unit file"
+msgid "Use Selected Unit"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/control_action_dialog.ui:46
+msgctxt "enable unit file"
+msgid "Browse for Unit file"
+msgstr ""
+
+#. title
+#: data/interfaces/control_action_dialog.ui:54
+msgctxt "enable unit file"
+msgid "DBus Level"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/control_action_dialog.ui:59
+msgctxt "enable unit file"
+msgid "Whether the unit shall be enabled for runtime only"
+msgstr ""
+
+#. title
+#: data/interfaces/control_action_dialog.ui:60
+msgctxt "enable unit file"
+msgid "Runtime"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/control_action_dialog.ui:65
+msgctxt "enable unit file"
+msgid ""
+"Control whether symlinks pointing to other units shall be replaced if "
+"necessary"
+msgstr ""
+
+#. title
+#: data/interfaces/control_action_dialog.ui:66
+msgctxt "enable unit file"
+msgid "Force"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/control_action_dialog.ui:71
+msgctxt "enable unit file"
+msgid ""
+"Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/"
+"system.attached"
+msgstr ""
+
+#. title
+#: data/interfaces/control_action_dialog.ui:73
+msgctxt "enable unit file"
+msgid "Portable"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/control_action_dialog.ui:87
+msgctxt "enable unit file"
+msgid "Start Unit just after being enabled"
+msgstr ""
+
+#. title
+#: data/interfaces/control_action_dialog.ui:88
+msgctxt "enable unit file"
+msgid "Run now"
+msgstr ""
+
+#. title
+#: data/interfaces/control_action_dialog.ui:93
+msgctxt "enable unit file"
+msgid "Starting mode options"
+msgstr ""
+
+#. title
+#: data/interfaces/control_action_dialog.ui:94
+msgctxt "enable unit file"
+msgid "Run mode"
+msgstr ""
+
+#. button
+#: data/interfaces/control_action_dialog.ui:106
+msgctxt "enable unit file"
+msgid "Reset"
+msgstr ""
+
+#. button
+#: data/interfaces/control_action_dialog.ui:114
+msgctxt "enable unit file"
+msgid "Enable"
+msgstr ""
+
+#: data/interfaces/ex_menu_button.ui:40
+msgctxt "extented menu button"
+msgid "Clear"
+msgstr ""
+
+#. button
+#: data/interfaces/journal_panel.ui:22
+msgctxt "journal"
+msgid "Refresh"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:27
+msgctxt "journal"
+msgid "Clear journal events and refetch them"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/journal_panel.ui:38
+msgctxt "journal"
+msgid "Enable new entries continuous print as they are appended to the journal"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/journal_panel.ui:54
+msgctxt "journal"
+msgid "Toggle events display order"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/journal_panel.ui:60
+msgctxt "journal"
+msgid "List the boots of the system"
+msgstr ""
+
+#. button
+#: data/interfaces/journal_panel.ui:65
+msgctxt "journal"
+msgid "List Boots"
+msgstr ""
+
+#. button
+#: data/interfaces/journal_panel.ui:85
+msgctxt "journal"
+msgid "Current boot"
+msgstr ""
+
+#. button
+#: data/interfaces/journal_panel.ui:91
+msgctxt "journal"
+msgid "All events"
+msgstr ""
+
+#. title
+#: data/interfaces/journal_panel.ui:98
+msgctxt "journal"
+msgid "Boot id"
+msgstr ""
+
+#. description
+#: data/interfaces/journal_panel.ui:118
+msgctxt "journal"
+msgid ""
+"No journal events!\n"
+"It can be a good thing. 😉"
+msgstr ""
+
+#. title
+#: data/interfaces/journal_panel.ui:121
+msgctxt "journal"
+msgid "No journal events"
+msgstr ""
+
+#. group
+#: data/interfaces/kill_panel.ui:20
+msgctxt "kill"
+msgid "Parameters"
+msgstr ""
+
+#. title
+#: data/interfaces/kill_panel.ui:23
+msgctxt "kill"
+msgid "Unix signal"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/kill_panel.ui:29
+msgctxt "kill"
+msgid "Unit related processes"
+msgstr ""
+
+#. title
+#: data/interfaces/kill_panel.ui:30
+msgctxt "kill"
+msgid "Who to kill"
+msgstr ""
+
+#. title
+#: data/interfaces/kill_panel.ui:37
+msgctxt "kill"
+msgid "Signal Value"
+msgstr ""
+
+#. button
+#: data/interfaces/kill_panel.ui:51
+msgctxt "kill"
+msgid "Send"
+msgstr ""
+
+#. description
+#: data/interfaces/kill_panel.ui:60
+msgctxt "kill"
+msgid "Most common Linux signals"
+msgstr ""
+
+#. description
+#: data/interfaces/kill_panel.ui:62
+msgctxt "kill"
+msgid "Common Unix signals"
+msgstr ""
+
+#. button
+#: data/interfaces/kill_panel.ui:84
+msgctxt "kill"
+msgid "Send Kill Signal to Unit"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:37
+msgctxt "boot list column"
+msgid "Index"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:44
+msgctxt "boot list column"
+msgid "Offset"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:52
+msgctxt "boot list column"
+msgid "Boot Id"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:60
+msgctxt "boot list column"
+msgid "First Entry"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:68
+msgctxt "boot list column"
+msgid "Last Entry"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:75
+msgctxt "boot list column"
+msgid "Duration"
+msgstr ""
+
+#: data/interfaces/list_boots.ui:105
+msgctxt "boot list dialog"
+msgid "List Boots"
+msgstr ""
+
+#. group
+#. button
+#: data/interfaces/mask_unit_dialog.ui:24
+#: data/interfaces/mask_unit_dialog.ui:75
+msgctxt "mask"
+msgid "Mask"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:27
+msgctxt "mask"
+msgid "To mask temporarily until the next system reboot"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:28
+msgctxt "mask"
+msgid "Runtime"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:33
+msgctxt "mask"
+msgid ""
+"Controls whether symlinks pointing to other units shall be replaced if "
+"necessary"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:34
+msgctxt "mask"
+msgid "Force"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:48
+msgctxt "mask"
+msgid "Ensure that the unit will be also stopped"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:49
+msgctxt "mask"
+msgid "Stop Now"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/mask_unit_dialog.ui:54
+msgctxt "mask"
+msgid "Argument for the stoping mode"
+msgstr ""
+
+#. title
+#: data/interfaces/mask_unit_dialog.ui:55
+msgctxt "mask"
+msgid "Stop mode"
+msgstr ""
+
+#. button
+#: data/interfaces/mask_unit_dialog.ui:67
+msgctxt "mask"
+msgid "Reset"
+msgstr ""
+
+#. dialog title
+#: data/interfaces/mask_unit_dialog.ui:89
+msgctxt "mask"
+msgid "Mask Unit"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:21
+msgctxt "preference"
+msgid "General"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:24
+msgctxt "preference"
+msgid "Preferred Color Scheme"
+msgstr ""
+
+#. row subtitle
+#: data/interfaces/preferences.ui:29
+msgctxt "preference"
+msgid "Application's division orientation mode"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:30
+msgctxt "preference"
+msgid "Orientation"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:35
+msgctxt "preference"
+msgid "Change the format of printed timestamps"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:36
+msgctxt "preference"
+msgid "Timestamp style"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:41
+msgctxt "preference"
+msgid "The Monospace Font"
+msgstr ""
+
+#. row
+#: data/interfaces/preferences.ui:42
+msgctxt "preference"
+msgid "Text font"
+msgstr ""
+
+#: data/interfaces/preferences.ui:46
+msgctxt "preference"
+msgid "Default"
+msgstr ""
+
+#. button
+#: data/interfaces/preferences.ui:54
+msgctxt "preference"
+msgid "Select Font"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:65
+msgctxt "preference"
+msgid "Unit List"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:68
+msgctxt "preference"
+msgid "Display Colors on unit list table cells, according to their content."
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:69
+msgctxt "preference"
+msgid "Display Colors"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:74
+msgctxt "preference"
+msgid "Display different totals regarding retrieved units"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:75
+msgctxt "preference"
+msgid "Display Totals Summary"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:80
+msgctxt "preference"
+msgid "Columns Display Parameters"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:87
+msgctxt "preference"
+msgid "Unit File"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:90
+msgctxt "preference"
+msgid "Display unit file line number"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:91
+msgctxt "preference"
+msgid "Line number"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:102
+msgctxt "preference"
+msgid "Unit file highlight style"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:103
+msgctxt "preference"
+msgid "Text Highlight"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:113
+msgctxt "preference"
+msgid "To see the logs in color"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:114
+msgctxt "preference"
+msgid "Journal colors"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:135
+msgctxt "preference"
+msgid "Journal's events batch size"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:148
+msgctxt "preference"
+msgid ""
+"Journal's event maximum characters\n"
+"<i>0 to no limit</i>"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:151
+msgctxt "preference"
+msgid "Journal's event max size"
+msgstr ""
+
+#. dialog
+#: data/interfaces/preferences.ui:165
+msgctxt "preference"
+msgid "Preferences"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:14
+msgctxt "shortcut window"
+msgid "General"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:18
+msgctxt "shortcut window"
+msgid "Show Preferences"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:24
+msgctxt "shortcut window"
+msgid "Open Search Unit"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:30
+msgctxt "shortcut window"
+msgid "Open Unit Property Filter"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:36
+msgctxt "shortcut window"
+msgid "Open List Boots"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:43
+msgctxt "shortcut window"
+msgid "Pages"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:47
+msgctxt "shortcut window"
+msgid "Display Unit Information"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:53
+msgctxt "shortcut window"
+msgid "Display Unit Dependencies"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:59
+msgctxt "shortcut window"
+msgid "Display Unit Definition File"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:65
+msgctxt "shortcut window"
+msgid "Display Unit Journal Events"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:18
+msgctxt "control"
+msgid "Enable Unit File ➚"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:35
+msgctxt "control"
+msgid "_Disable Unit File ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:36
+#: data/interfaces/side_control_panel.ui:141
+msgctxt "control"
+msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:48
+msgctxt "control"
+msgid "Send _Kill Signal ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:49
+msgctxt "control"
+msgid "Send a signal to a process or a group of processes"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:63
+msgctxt "control"
+msgid "_Queue Signal ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:64
+msgctxt "control"
+msgid "Queue a signal to a process or a group of processes"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:78
+msgctxt "control"
+msgid "_Clean ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:79
+msgctxt "control"
+msgid ""
+"Remove the configuration, state, cache, logs or runtime data of the "
+"specified unit"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:96
+msgctxt "control"
+msgid "Freeze the specified unit using cgroup freezer"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:109
+msgctxt "control"
+msgid "Thaw"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:110
+msgctxt "control"
+msgid "Thaw (unfreeze) the specified unit"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:123
+msgctxt "control"
+msgid "M_ask ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:124
+msgctxt "control"
+msgid ""
+"Mask the selected unit. This will link these unit files to <u>/dev/null</u>, "
+"making it impossible to start them. \n"
+"This is a stronger version of <b>disable</b>, since it prohibits all kinds "
+"of activation of the unit, including enablement and manual activation. \n"
+"<b>Use this option with care.</b>"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:140
+msgctxt "control"
+msgid "_UnMask"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:156
+msgctxt "control"
+msgid "Reload Unit"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:157
+msgctxt "control"
+msgid "Ask the specified unit to reload its configuration"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:170
+msgctxt "control"
+msgid "_Preset ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:171
+msgctxt "control"
+msgid "Enable or Disable one or more unit files according to the preset policy"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:185
+msgctxt "control"
+msgid "_Reenable ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:186
+msgctxt "control"
+msgid ""
+"Apply the changes to one or more units that would result from disabling and "
+"enabling the unit quickly one after the other in an atomic fashion"
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:200
+msgctxt "control"
+msgid "_Link ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:201
+msgctxt "control"
+msgid ""
+"Link unit files (that are located outside of the usual unit search paths) "
+"into the unit search path"
+msgstr ""
+
+#. description
+#: data/interfaces/signals_window.ui:24
+msgctxt "signals"
+msgid ""
+"No Systemd signals\n"
+"Start or Stop a Unit to see some appearing"
+msgstr ""
+
+#. title
+#: data/interfaces/signals_window.ui:27
+msgctxt "signals"
+msgid "No signals"
+msgstr ""
+
+#. column title
+#: data/interfaces/signals_window.ui:55
+msgctxt "signals"
+msgid "Time"
+msgstr ""
+
+#. column title
+#: data/interfaces/signals_window.ui:62
+msgctxt "signals"
+msgid "Type"
+msgstr ""
+
+#. column title
+#: data/interfaces/signals_window.ui:68
+msgctxt "signals"
+msgid "Details"
+msgstr ""
+
+#. dialog title
+#: data/interfaces/signals_window.ui:87
+msgctxt "signals"
+msgid "Watch Signals"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:16
+msgctxt "control info"
+msgid "Enabled"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:39
+msgctxt "control tooltip"
+msgid "Start unit"
+msgstr ""
+
+#. The start button
+#: data/interfaces/unit_control_panel.ui:44
+msgctxt "controls"
+msgid "_Start"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:52
+msgctxt "control tooltip"
+msgid "Stop Modes"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:63
+msgctxt "control tooltip"
+msgid "Stop unit"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:68
+msgctxt "controls"
+msgid "S_top"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:69
+msgctxt "controls tooltip"
+msgid "Stop unit"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:77
+msgctxt "control tooltip"
+msgid "Restart Modes"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:88
+msgctxt "controls tooltip"
+msgid "Restart unit"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:93
+msgctxt "controls"
+msgid "Restart"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:109
+msgctxt "controls menu"
+msgid "_More ..."
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:143
+msgctxt "controls tab"
+msgid "Unit Info"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:153
+msgctxt "controls tab"
+msgid "Dependencies"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:163
+msgctxt "controls tab"
+msgid "File"
+msgstr ""
+
+#: data/interfaces/unit_control_panel.ui:173
+msgctxt "controls tab"
+msgid "Journal"
+msgstr ""
+
+#. label
+#: data/interfaces/unit_dependencies_panel.ui:20
+msgctxt "dependency"
+msgid "plain"
+msgstr ""
+
+#. label
+#: data/interfaces/unit_dependencies_panel.ui:37
+msgctxt "dependency"
+msgid "No dependencies"
+msgstr ""
+
+#. description
+#: data/interfaces/unit_file_panel.ui:16
+msgctxt "file"
+msgid "The  unit has no file associated"
+msgstr ""
+
+#. title
+#: data/interfaces/unit_file_panel.ui:18
+msgctxt "file"
+msgid "No unit file"
+msgstr ""
+
+#. label
+#: data/interfaces/unit_file_panel.ui:42
+msgctxt "file"
+msgid "File path:"
+msgstr ""
+
+#. button
+#: data/interfaces/unit_file_panel.ui:59
+msgctxt "file"
+msgid "Save"
+msgstr ""
+
+#. button
+#: data/interfaces/unit_info_panel.ui:17
+msgctxt "unit info"
+msgid "_Refresh"
+msgstr ""
+
+#. button
+#: data/interfaces/unit_info_panel.ui:29
+msgctxt "unit info"
+msgid "Show all _Properties"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:48
+msgctxt "list column"
+msgid "Unit"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:56
+msgctxt "list column"
+msgid "Type"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:64
+msgctxt "list column"
+msgid "Bus"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:72
+msgctxt "list column"
+msgid "State"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:80
+msgctxt "list column"
+msgid "Preset"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:88
+msgctxt "list column"
+msgid "Load"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:96
+msgctxt "list column"
+msgid "Active"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:104
+msgctxt "list column"
+msgid "Sub"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:112
+msgctxt "list column"
+msgid "Description"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:133
+msgctxt "list tooltip"
+msgid "Loaded Units Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:138
+msgctxt "list info"
+msgid "Loaded Units Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:149
+msgctxt "list tooltip"
+msgid "Unit Files Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:154
+msgctxt "list info"
+msgid "Unit Files Retrieved"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:165
+msgctxt "list tooltip"
+msgid "Units displayed"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:170
+msgctxt "list info"
+msgid "Units Displayed"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:180
+msgctxt "list info tooltip"
+msgid "Hide Total Summary"
+msgstr ""
+
+#. short version
+#: data/interfaces/unit_list_panel.ui:192
+msgctxt "list info"
+msgid "Loaded"
+msgstr ""
+
+#. short version
+#: data/interfaces/unit_list_panel.ui:193
+msgctxt "list info"
+msgid "Files"
+msgstr ""
+
+#. short version
+#: data/interfaces/unit_list_panel.ui:194
+msgctxt "list info"
+msgid "Units"
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:225
+msgctxt "list page description"
+msgid ""
+"No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
+"happened."
+msgstr ""
+
+#: data/interfaces/unit_list_panel.ui:227
+msgctxt "list page title"
+msgid "Something went wrong"
+msgstr ""
+
+#: data/interfaces/unit_list_search.ui:16
+msgctxt "unit search"
+msgid "Filters"
+msgstr ""
+
+#: data/interfaces/unit_list_search.ui:23
+msgctxt "unit search"
+msgid "Clear Filters"
+msgstr ""
+
+#. dialog title
+#: src/analyze/mod.rs:28
+msgctxt "analyse blame"
+msgid "Analyse Blame"
+msgstr ""
+
+#. label total
+#: src/analyze/mod.rs:48
+msgctxt "analyse blame"
+msgid "Total Time:"
+msgstr ""
+
+#. place holder, lees likely to be displaied
+#: src/analyze/mod.rs:57
+msgctxt "analyse blame"
+msgid "seconds ..."
+msgstr ""
+
+#. column header
+#: src/analyze/mod.rs:132
+msgctxt "analyse blame"
+msgid "Init time (ms)"
+msgstr ""
+
+#. column header
+#: src/analyze/mod.rs:137
+msgctxt "analyse blame"
+msgid "Running units"
+msgstr ""
+
+#. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
+#: src/main.rs:86
+msgid "Program starting up"
+msgstr ""
+
+#: src/systemd/enums.rs:189
+msgctxt "list"
+msgid "The name is an alias (symlink to another unit file)."
+msgstr ""
+
+#: src/systemd/enums.rs:194
+msgctxt "list"
+msgid "The unit file is invalid or another error occurred."
+msgstr ""
+
+#: src/systemd/enums.rs:199
+msgctxt "list"
+msgid ""
+"The unit file is not enabled, but contains an [Install] section with "
+"installation instructions."
+msgstr ""
+
+#: src/systemd/enums.rs:204 src/systemd/enums.rs:241
+msgctxt "list"
+msgid ""
+"Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span "
+"fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently "
+"in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in "
+"<span fgcolor='#62a0ea'>/run/systemd/system/</span>)."
+msgstr ""
+
+#: src/systemd/enums.rs:209
+msgctxt "list"
+msgid ""
+"The unit file was generated dynamically via a generator tool. See <b>man "
+"systemd.generator(7)</b>. Generated unit files may not be enabled, they are "
+"enabled implicitly by their generator."
+msgstr ""
+
+#: src/systemd/enums.rs:214
+msgctxt "list"
+msgid ""
+"The unit file itself is not enabled, but it has a non-empty <u>Also=</u> "
+"setting in the [Install] unit file section, listing other unit files that "
+"might be enabled, or it has an alias under a different name through a "
+"symlink that is not specified in <u>Also=</u>. For template unit files, an "
+"instance different than the one specified in <u>DefaultInstance=</u> is "
+"enabled."
+msgstr ""
+
+#: src/systemd/enums.rs:219 src/systemd/enums.rs:246
+msgctxt "list"
+msgid ""
+"Made available through one or more symlinks to the unit file (permanently in "
+"<span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span "
+"fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file "
+"might reside outside of the unit file search path."
+msgstr ""
+
+#: src/systemd/enums.rs:224 src/systemd/enums.rs:251
+msgctxt "list"
+msgid ""
+"Completely disabled, so that any start operation on it fails (permanently in "
+"<span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span "
+"fgcolor='#62a0ea'>/run/systemd/systemd/</span>)."
+msgstr ""
+
+#: src/systemd/enums.rs:229
+msgctxt "list"
+msgid ""
+"The unit file is not enabled, and has no provisions for enabling in the "
+"[Install] unit file section."
+msgstr ""
+
+#: src/systemd/enums.rs:234
+msgctxt "list"
+msgid ""
+"The unit file has been created dynamically with the runtime API. Transient "
+"units may not be enabled."
+msgstr ""
+
+#. menu option
+#: src/systemd/enums.rs:703
+msgctxt "dependency"
+msgid "Forward"
+msgstr ""
+
+#. menu option
+#: src/systemd/enums.rs:705
+msgctxt "dependency"
+msgid "Reverse"
+msgstr ""
+
+#. menu option
+#: src/systemd/enums.rs:707
+msgctxt "dependency"
+msgid "After"
+msgstr ""
+
+#. menu option
+#: src/systemd/enums.rs:709
+msgctxt "dependency"
+msgid "Before"
+msgstr ""
+
+#. menu option
+#: src/systemd/enums.rs:880
+msgctxt "dbus"
+msgid "User Session"
+msgstr ""
+
+#. menu option
+#: src/systemd/enums.rs:882
+msgctxt "dbus"
+msgid "System"
+msgstr ""
+
+#. clean options
+#: src/systemd/enums.rs:979
+msgctxt "clean"
+msgid "_Runtime"
+msgstr ""
+
+#. clean options
+#: src/systemd/enums.rs:981
+msgctxt "clean"
+msgid "_State"
+msgstr ""
+
+#. clean options
+#: src/systemd/enums.rs:983
+msgctxt "clean"
+msgid "Cac_he"
+msgstr ""
+
+#. clean options
+#: src/systemd/enums.rs:985
+msgctxt "clean"
+msgid "_Logs"
+msgstr ""
+
+#. clean options
+#: src/systemd/enums.rs:987
+msgctxt "clean"
+msgid "_Configuration"
+msgstr ""
+
+#. clean options
+#: src/systemd/enums.rs:989
+msgctxt "clean"
+msgid "_File Descriptor Store"
+msgstr ""
+
+#. clean options
+#: src/systemd/enums.rs:991
+msgctxt "clean"
+msgid "_All"
+msgstr ""
+
+#: src/systemd/errors.rs:42
+msgctxt "error"
+msgid ""
+"The program <b>flatpack-spawn</b> is needed if you use the application from "
+"Flatpack.\n"
+"Please install it to enable all features."
+msgstr ""
+
+#: src/systemd/errors.rs:49
+msgctxt "error"
+msgid ""
+"It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
+"interface when the program is a Flatpak."
+msgstr ""
+
+#. time style option
+#: src/utils/time_handling.rs:38
+msgctxt "pref time style"
+msgid "Pretty"
+msgstr ""
+
+#. time style option
+#: src/utils/time_handling.rs:40
+msgctxt "pref time style"
+msgid "Pretty usec"
+msgstr ""
+
+#. time style option
+#: src/utils/time_handling.rs:42
+msgctxt "pref time style"
+msgid "UTC"
+msgstr ""
+
+#. time style option
+#: src/utils/time_handling.rs:44
+msgctxt "pref time style"
+msgid "UTC usec"
+msgstr ""
+
+#. time style option
+#: src/utils/time_handling.rs:46
+msgctxt "pref time style"
+msgid "Unix"
+msgstr ""
+
+#. time style option
+#: src/utils/time_handling.rs:48
+msgctxt "pref time style"
+msgid "Unix usec"
+msgstr ""
+
+#. time style option tooltip
+#: src/utils/time_handling.rs:55
+msgctxt "pref time style"
+msgid "Day YYYY-MM-DD HH:MM:SS TZ"
+msgstr ""
+
+#: src/utils/time_handling.rs:59
+msgctxt "pref time style"
+msgid "Day YYYY-MM-DD HH:MM:SS.000000 TZ"
+msgstr ""
+
+#. time style option tooltip
+#: src/utils/time_handling.rs:63
+msgctxt "pref time style"
+msgid "Day YYYY-MM-DD HH:MM:SS UTC"
+msgstr ""
+
+#: src/utils/time_handling.rs:67
+msgctxt "pref time style"
+msgid "Day YYYY-MM-DD HH:MM:SS.000000 UTC"
+msgstr ""
+
+#. time style option tooltip
+#: src/utils/time_handling.rs:71
+msgctxt "pref time style"
+msgid "Seconds since the epoch"
+msgstr ""
+
+#: src/utils/time_handling.rs:75
+msgctxt "pref time style"
+msgid "Micro seconds since the epoch"
+msgstr ""
+
+#. about dialogue
+#: src/widget/app_window/menu.rs:194
+msgid "Thank you for your support"
+msgstr ""
+
+#. dialog subtitle
+#: src/widget/clean_dialog/imp.rs:130
+msgctxt "clean"
+msgid "No Unit Selected"
+msgstr ""
+
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:62
+msgctxt "action unit file"
+msgid "Enable Unit File"
+msgstr ""
+
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:64
+msgctxt "action unit file"
+msgid "Mask Unit"
+msgstr ""
+
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:66
+msgctxt "action unit file"
+msgid "Preset Unit File"
+msgstr ""
+
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:68
+msgctxt "action unit file"
+msgid "Reenable Unit File"
+msgstr ""
+
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:72
+msgctxt "action unit file"
+msgid "Disable Unit File"
+msgstr ""
+
+#. Dialog title
+#: src/widget/control_action_dialog/mod.rs:75
+msgctxt "action unit file"
+msgid "Link Unit File"
+msgstr ""
+
+#. preference group title
+#. Button
+#: src/widget/control_action_dialog/mod.rs:82
+#: src/widget/control_action_dialog/mod.rs:144
+msgctxt "action unit file"
+msgid "Enable"
+msgstr ""
+
+#. preference group title
+#. Button
+#: src/widget/control_action_dialog/mod.rs:84
+#: src/widget/control_action_dialog/mod.rs:150
+msgctxt "action unit file"
+msgid "Disable"
+msgstr ""
+
+#. preference group title
+#. Button
+#: src/widget/control_action_dialog/mod.rs:86
+#: src/widget/control_action_dialog/mod.rs:146
+msgctxt "action unit file"
+msgid "Mask"
+msgstr ""
+
+#. second preference group title
+#: src/widget/control_action_dialog/mod.rs:94
+msgctxt "action unit file"
+msgid "Start"
+msgstr ""
+
+#: src/widget/control_action_dialog/mod.rs:97
+msgctxt "action unit file"
+msgid "Stop"
+msgstr ""
+
+#. Button
+#: src/widget/control_action_dialog/mod.rs:148
+msgctxt "action unit file"
+msgid "Preset"
+msgstr ""
+
+#. Button
+#: src/widget/control_action_dialog/mod.rs:152
+msgctxt "action unit file"
+msgid "Reenable"
+msgstr ""
+
+#. Button
+#: src/widget/control_action_dialog/mod.rs:154
+msgctxt "action unit file"
+msgid "Link"
+msgstr ""
+
+#. after action title
+#: src/widget/control_action_dialog/mod.rs:162
+msgctxt "action unit file"
+msgid "Run now"
+msgstr ""
+
+#. after action subtitle
+#: src/widget/control_action_dialog/mod.rs:164
+msgctxt "action unit file"
+msgid "Start Unit just after being enabled"
+msgstr ""
+
+#. after action title
+#: src/widget/control_action_dialog/mod.rs:168
+msgctxt "action unit file"
+msgid "Stop now"
+msgstr ""
+
+#: src/widget/control_action_dialog/mod.rs:172
+msgctxt "action unit file"
+msgid "Ensure that the unit will also be stopped"
+msgstr ""
+
+#. starts mode title
+#: src/widget/control_action_dialog/mod.rs:183
+msgctxt "action unit file"
+msgid "Run mode"
+msgstr ""
+
+#. starts mode subtitle
+#: src/widget/control_action_dialog/mod.rs:185
+msgctxt "action unit file"
+msgid "Starting mode options"
+msgstr ""
+
+#. starts mode title
+#: src/widget/control_action_dialog/mod.rs:189
+msgctxt "action unit file"
+msgid "Stop mode"
+msgstr ""
+
+#. starts mode subtitle
+#: src/widget/control_action_dialog/mod.rs:191
+msgctxt "action unit file"
+msgid "Stoping mode options"
+msgstr ""
+
+#. Dialog subtitle
+#: src/widget/kill_panel/imp.rs:77
+msgctxt "kill"
+msgid "No Unit Selected"
+msgstr ""
+
+#: src/widget/kill_panel/imp.rs:154
+#, rust-format
+msgctxt "kill"
+msgid ""
+"{}\n"
+"Default Action: {}"
+msgstr ""
+
+#. Dialog title
+#: src/widget/kill_panel/imp.rs:200
+msgctxt "kill"
+msgid "Queue a Realtime Signal to Unit"
+msgstr ""
+
+#. SIGRTMIN to SIGRTMAX default action
+#. kill signal default action
+#: src/widget/kill_panel/imp.rs:226 src/widget/kill_panel/imp.rs:421
+#: src/widget/kill_panel/imp.rs:429 src/widget/kill_panel/imp.rs:493
+#: src/widget/kill_panel/imp.rs:501 src/widget/kill_panel/imp.rs:517
+#: src/widget/kill_panel/imp.rs:525 src/widget/kill_panel/imp.rs:533
+#: src/widget/kill_panel/imp.rs:541 src/widget/kill_panel/imp.rs:549
+#: src/widget/kill_panel/imp.rs:632 src/widget/kill_panel/imp.rs:640
+#: src/widget/kill_panel/imp.rs:656 src/widget/kill_panel/imp.rs:664
+#: src/widget/kill_panel/imp.rs:672
+msgctxt "kill"
+msgid "Terminate"
+msgstr ""
+
+#. SIGRTMIN to SIGRTMAX default comment
+#: src/widget/kill_panel/imp.rs:228
+msgctxt "kill"
+msgid "Real-time signal"
+msgstr ""
+
+#. Dialog title
+#: src/widget/kill_panel/imp.rs:234
+msgctxt "kill"
+msgid "Send a Kill Signal to Unit"
+msgstr ""
+
+#: src/widget/kill_panel/imp.rs:303
+#, rust-format
+msgctxt "kill"
+msgid "Queued signal {} with value {} to"
+msgstr ""
+
+#. toast method name -- "Kill signal {signal_id} to"
+#: src/widget/kill_panel/imp.rs:319
+#, rust-format
+msgctxt "kill"
+msgid "Kill signal {} to"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:423
+msgctxt "kill"
+msgid "Hang up controlling terminal or process"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:431
+msgctxt "kill"
+msgid "Interrupt from keyboard, Ctrl+C"
+msgstr ""
+
+#. kill signal default action
+#: src/widget/kill_panel/imp.rs:437 src/widget/kill_panel/imp.rs:445
+#: src/widget/kill_panel/imp.rs:453 src/widget/kill_panel/imp.rs:461
+#: src/widget/kill_panel/imp.rs:469 src/widget/kill_panel/imp.rs:477
+#: src/widget/kill_panel/imp.rs:485 src/widget/kill_panel/imp.rs:509
+#: src/widget/kill_panel/imp.rs:616 src/widget/kill_panel/imp.rs:624
+#: src/widget/kill_panel/imp.rs:680 src/widget/kill_panel/imp.rs:688
+msgctxt "kill"
+msgid "Dump"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:439
+msgctxt "kill"
+msgid "Quit from keyboard, Ctrl+\\"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:447
+msgctxt "kill"
+msgid "Illegal instruction"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:455
+msgctxt "kill"
+msgid "Breakpoint for debugging"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:463
+msgctxt "kill"
+msgid "Abnormal termination"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:471
+msgctxt "kill"
+msgid "Equivalent to SIGABRT"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:479
+msgctxt "kill"
+msgid "Bus error"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:487
+msgctxt "kill"
+msgid "Floating-point exception"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:495
+msgctxt "kill"
+msgid "Forced-process termination"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:503 src/widget/kill_panel/imp.rs:519
+msgctxt "kill"
+msgid "Available to processes"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:511
+msgctxt "kill"
+msgid "Invalid memory reference"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:527
+msgctxt "kill"
+msgid "Write to pipe with no readers"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:535
+msgctxt "kill"
+msgid "Real-timer clock"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:543
+msgctxt "kill"
+msgid "Process termination"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:551
+msgctxt "kill"
+msgid "Coprocessor stack error"
+msgstr ""
+
+#. kill signal default action
+#: src/widget/kill_panel/imp.rs:557 src/widget/kill_panel/imp.rs:608
+#: src/widget/kill_panel/imp.rs:648
+msgctxt "kill"
+msgid "Ignore"
+msgstr ""
+
+#: src/widget/kill_panel/imp.rs:561
+msgctxt "kill"
+msgid "Child process stopped or terminated or got a signal if traced"
+msgstr ""
+
+#. kill signal default action
+#: src/widget/kill_panel/imp.rs:568
+msgctxt "kill"
+msgid "Continue"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:570
+msgctxt "kill"
+msgid "Resume execution, if stopped"
+msgstr ""
+
+#. kill signal default action
+#: src/widget/kill_panel/imp.rs:576 src/widget/kill_panel/imp.rs:584
+#: src/widget/kill_panel/imp.rs:592 src/widget/kill_panel/imp.rs:600
+msgctxt "kill"
+msgid "Stop"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:578
+msgctxt "kill"
+msgid "Stop process execution, Ctrl+Z"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:586
+msgctxt "kill"
+msgid "Stop process issued from tty"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:594
+msgctxt "kill"
+msgid "Background process requires input"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:602
+msgctxt "kill"
+msgid "Background process requires output"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:610
+msgctxt "kill"
+msgid "Urgent condition on socket"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:618
+msgctxt "kill"
+msgid "CPU time limit exceeded"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:626
+msgctxt "kill"
+msgid "File size limit exceeded"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:634
+msgctxt "kill"
+msgid "Virtual timer clock"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:642
+msgctxt "kill"
+msgid "Profile timer clock"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:650
+msgctxt "kill"
+msgid "Window resizing"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:658
+msgctxt "kill"
+msgid "I/O now possible"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:666
+msgctxt "kill"
+msgid "Equivalent to SIGIO"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:674
+msgctxt "kill"
+msgid "Power supply failure"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:682
+msgctxt "kill"
+msgid "Bad system call"
+msgstr ""
+
+#. kill signal description
+#: src/widget/kill_panel/imp.rs:690
+msgctxt "kill"
+msgid "Equivalent to SIGSYS"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:46
+msgctxt "filter"
+msgid "Unit"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:53
+msgctxt "filter"
+msgid "Type"
+msgstr ""
+
+#: src/widget/preferences/data.rs:58
+msgctxt "filter"
+msgid "Bus"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:61
+msgctxt "filter"
+msgid "State"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:68
+msgctxt "filter"
+msgid "Preset"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:75
+msgctxt "filter"
+msgid "Load"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:82
+msgctxt "filter"
+msgid "Active"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:89
+msgctxt "filter"
+msgid "Sub"
+msgstr ""
+
+#. filter title
+#: src/widget/preferences/data.rs:96
+msgctxt "filter"
+msgid "Description"
+msgstr ""
+
+#. browser dbus option
+#: src/widget/preferences/data.rs:134
+msgctxt "dbus"
+msgid "User Session Bus"
+msgstr ""
+
+#. browser dbus option
+#: src/widget/preferences/data.rs:136
+msgctxt "dbus"
+msgid "System Bus"
+msgstr ""
+
+#. browser dbus option
+#: src/widget/preferences/data.rs:138
+msgctxt "dbus"
+msgid "System & User Session Bus"
+msgstr ""
+
+#. preference color scheme option
+#: src/widget/preferences/data.rs:225
+msgctxt "color scheme"
+msgid "No Preference"
+msgstr ""
+
+#. preference color scheme option
+#: src/widget/preferences/data.rs:227
+msgctxt "color scheme"
+msgid "Prefer Dark"
+msgstr ""
+
+#. preference color scheme option
+#: src/widget/preferences/data.rs:229
+msgctxt "color scheme"
+msgid "Prefer Light"
+msgstr ""
+
+#. preference color scheme option
+#: src/widget/preferences/data.rs:231
+msgctxt "color scheme"
+msgid "Force Dark"
+msgstr ""
+
+#. preference color scheme option
+#: src/widget/preferences/data.rs:233
+msgctxt "color scheme"
+msgid "Force Light"
+msgstr ""
+
+#. preference application orientation option
+#: src/widget/preferences/data.rs:279
+msgctxt "pref orientation"
+msgid "Automatic"
+msgstr ""
+
+#. preference application orientation option
+#: src/widget/preferences/data.rs:281
+msgctxt "pref orientation"
+msgid "Side by Side"
+msgstr ""
+
+#. preference application orientation option
+#: src/widget/preferences/data.rs:283
+msgctxt "pref orientation"
+msgid "Top Bottom"
+msgstr ""
+
+#. unit file no preference style selected
+#: src/widget/preferences/imp.rs:430
+msgctxt "pref file style"
+msgid "None"
+msgstr ""
+
+#. pref group -- "Column {column name}"
+#: src/widget/preferences/imp.rs:453
+#, rust-format
+msgctxt "preference column"
+msgid "Column {}"
+msgstr ""
+
+#. preference show unit browser column title
+#: src/widget/preferences/imp.rs:458
+msgctxt "preference column"
+msgid "Show"
+msgstr ""
+
+#. preference show unit browser column subtitle -- Hide or display unit list column {column name}"
+#: src/widget/preferences/imp.rs:461
+#, rust-format
+msgctxt "preference column"
+msgid "Hide or display unit list column {}"
+msgstr ""
+
+#. preference  unit browser column width title
+#: src/widget/preferences/imp.rs:479
+msgctxt "preference column"
+msgid "Width"
+msgstr ""
+
+#. preference  unit browser column width subtitle -- "Set width of column {column name}"
+#: src/widget/preferences/imp.rs:482
+#, rust-format
+msgctxt "preference column"
+msgid "Set width of column {}"
+msgstr ""
+
+#: src/widget/unit_control_panel/controls.rs:56
+msgctxt "toast"
+msgid ""
+"Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
+"been successfully <span fgcolor='{0}'>{}</span>"
+msgstr ""
+
+#: src/widget/unit_control_panel/controls.rs:90
+msgctxt "toast"
+msgid ""
+"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
+"has failed!"
+msgstr ""
+
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:21
+msgctxt "toast"
+msgid "start"
+msgstr ""
+
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:23
+msgctxt "toast"
+msgid "stop"
+msgstr ""
+
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:25
+msgctxt "toast"
+msgid "restart"
+msgstr ""
+
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:32
+msgctxt "toast"
+msgid "started"
+msgstr ""
+
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:34
+msgctxt "toast"
+msgid "stopped"
+msgstr ""
+
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:36
+msgctxt "toast"
+msgid "restarted"
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:302
+msgctxt "toast"
+msgid ""
+"Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
+msgstr ""
+
+#. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
+#: src/widget/unit_control_panel/imp.rs:324
+#, rust-format
+msgctxt "toast"
+msgid "Can't {} the unit <unit>{}</unit>, because: {}"
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:575
+msgctxt "toast"
+msgid ""
+"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
+"successful"
+msgstr ""
+
+#. toast message success (no unit) -- "{ACTION} successful."
+#: src/widget/unit_control_panel/imp.rs:583
+#, rust-format
+msgctxt "toast"
+msgid "{} successful."
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:595
+#, rust-format
+msgctxt "toast"
+msgid ""
+"{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
+"failed. Reason: <span fgcolor='{}'>{}</span>."
+msgstr ""
+
+#. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
+#: src/widget/unit_control_panel/imp.rs:606
+#, rust-format
+msgctxt "toast"
+msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:130
+#, rust-format
+msgctxt "workaround"
+msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:143
+msgctxt "workaround"
+msgid "The authorisation can be configured in the following file :"
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:163
+msgctxt "workaround"
+msgid "Otherwise, you can try the bellow command line in your terminal"
+msgstr ""
+
+#. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
+#: src/widget/unit_control_panel/mod.rs:185
+#, rust-format
+msgctxt "workaround"
+msgid "Fail! {}"
+msgstr ""
+
+#. action name
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:114
+msgctxt "action"
+msgid "Freeze"
+msgstr ""
+
+#. action name
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:126
+msgctxt "action"
+msgid "Thaw"
+msgstr ""
+
+#. action name
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:153
+msgctxt "action"
+msgid "Reload"
+msgstr ""
+
+#. action name
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:247
+msgctxt "action"
+msgid "Unmask"
+msgstr ""
+
+#. Filter title
+#: src/widget/unit_dependencies_panel/imp.rs:355
+msgctxt "dependency"
+msgid "Unit Types"
+msgstr ""
+
+#. tooltip on filter
+#: src/widget/unit_dependencies_panel/imp.rs:360
+msgctxt "dependency"
+msgid "Filter dependencies by types"
+msgstr ""
+
+#. flatpak permision error dialog title
+#: src/widget/unit_file_panel/flatpak.rs:43
+msgctxt "unit file"
+msgid "Flatpak permission needed!"
+msgstr ""
+
+#. flatpak permision error dialog line 1
+#: src/widget/unit_file_panel/flatpak.rs:53
+msgctxt "unit file"
+msgid ""
+"To save this file content, it requires permission to talk to "
+"<b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged "
+"as a Flatpak."
+msgstr ""
+
+#. flatpak permision error dialog line 2
+#: src/widget/unit_file_panel/flatpak.rs:62
+msgctxt "unit file"
+msgid ""
+"<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/"
+"com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
+"<b>org.freedesktop.Flatpak</b> and restart the program."
+msgstr ""
+
+#: src/widget/unit_file_panel/flatpak.rs:87
+#, rust-format
+msgctxt "unit file"
+msgid ""
+"<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another "
+"editor."
+msgstr ""
+
+#: src/widget/unit_file_panel/flatpak.rs:95
+#, rust-format
+msgctxt "unit file"
+msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
+msgstr ""
