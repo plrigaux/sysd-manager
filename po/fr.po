@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 03:18+0000\n"
+"PO-Revision-Date: 2025-06-17 03:31+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1372,34 +1372,34 @@ msgstr "Unix usec"
 #: src/utils/time_handling.rs:55
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS TZ"
-msgstr ""
+msgstr "Jour YYYY-MM-DD HH:MM:SS TZ"
 
 #: src/utils/time_handling.rs:59
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS.000000 TZ"
-msgstr ""
+msgstr "Jour YYYY-MM-DD HH:MM:SS.000000 TZ"
 
 #. time style option tooltip
 #: src/utils/time_handling.rs:63
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS UTC"
-msgstr ""
+msgstr "Jour YYYY-MM-DD HH:MM:SS UTC"
 
 #: src/utils/time_handling.rs:67
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS.000000 UTC"
-msgstr ""
+msgstr "Jour YYYY-MM-DD HH:MM:SS.000000 UTC"
 
 #. time style option tooltip
 #: src/utils/time_handling.rs:71
 msgctxt "pref time style"
 msgid "Seconds since the epoch"
-msgstr ""
+msgstr "Secondes depuis l'Époque"
 
 #: src/utils/time_handling.rs:75
 msgctxt "pref time style"
 msgid "Micro seconds since the epoch"
-msgstr ""
+msgstr "Micro secondes depuis l'Époque"
 
 #. about dialogue
 #: src/widget/app_window/menu.rs:194
@@ -1410,14 +1410,13 @@ msgstr "Merci pour votre soutien"
 #: src/widget/clean_dialog/imp.rs:130
 msgctxt "clean"
 msgid "No Unit Selected"
-msgstr "Pas d'unité sélectionné"
+msgstr "Pas d'unité sélectionnée"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:62
-#, fuzzy
 msgctxt "action unit file"
 msgid "Enable Unit File"
-msgstr "Activer un fichier d'unité"
+msgstr "Activer le fichier d'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:64
@@ -1436,19 +1435,19 @@ msgstr "Prérégler le fichier de l'unité"
 #: src/widget/control_action_dialog/mod.rs:68
 msgctxt "action unit file"
 msgid "Reenable Unit File"
-msgstr "Réactiver un fichier d'unité"
+msgstr "Réactiver le fichier d'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:72
 msgctxt "action unit file"
 msgid "Disable Unit File"
-msgstr "Désactiver un fichier d'unité"
+msgstr "Désactiver le fichier d'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:75
 msgctxt "action unit file"
 msgid "Link Unit File"
-msgstr "Lier fichier d'unité"
+msgstr "Lier le fichier d'unité"
 
 #. preference group title
 #. Button
@@ -1488,7 +1487,6 @@ msgstr "Arrêter"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:148
-#, fuzzy
 msgctxt "action unit file"
 msgid "Preset"
 msgstr "Prérégler"
