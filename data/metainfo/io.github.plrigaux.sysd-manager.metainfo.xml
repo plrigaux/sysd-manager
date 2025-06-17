@@ -81,11 +81,13 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-         <release version="1.30.0" date="2025-06-15">
+         <release version="1.30.0" date="2025-06-17">
       <description>  
         <p>Added</p>
         <ul>
           <li>New unit file controls : Preset, Disable, Reenable and Link</li>          
+          <li>Portuguese Brazil translation strings</li>          
+          <li>French translation strings</li>          
         </ul>    
         <p>Fix</p>
         <ul>
