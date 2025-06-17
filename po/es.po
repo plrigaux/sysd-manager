@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 15:14+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-06-17 23:00+0000\n"
+"Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/es/>\n"
 "Language: es\n"
@@ -22,57 +22,57 @@ msgstr ""
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
 msgid "Analyze Blame"
-msgstr ""
+msgstr "Analizar la culpa"
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Reload All Units"
-msgstr ""
+msgstr "Recargar todas las unidades"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
 msgid "Systemd Info"
-msgstr ""
+msgstr "Información de Systemd"
 
 #: data/interfaces/app_window.ui:24
 msgctxt "menu"
 msgid "List Boots"
-msgstr ""
+msgstr "Lista de botas"
 
 #: data/interfaces/app_window.ui:28
 msgctxt "menu"
 msgid "Watch Signals"
-msgstr ""
+msgstr "Señales de vigilancia"
 
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
 msgid "Preferences"
-msgstr ""
+msgstr "Preferencias"
 
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "Atajos de teclado"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
 msgid "About"
-msgstr ""
+msgstr "Acerca de"
 
 #: data/interfaces/app_window.ui:79
 msgctxt "title"
 msgid "SysD Manager"
-msgstr ""
+msgstr "Administrador de SysD"
 
 #: data/interfaces/app_window.ui:85
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
-msgstr ""
+msgstr "Abrir la barra de búsqueda"
 
 #: data/interfaces/app_window.ui:92
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
-msgstr ""
+msgstr "Actualizar lista de unidades"
 
 #. button
 #. title dialog
@@ -81,13 +81,13 @@ msgstr ""
 #: src/widget/clean_dialog/imp.rs:99
 msgctxt "clean"
 msgid "Clean"
-msgstr ""
+msgstr "Limpio"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
 msgctxt "enable unit file"
 msgid "Unit file"
-msgstr ""
+msgstr "Archivo de unidad"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:38
