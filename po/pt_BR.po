@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-11 23:11-0400\n"
+"POT-Creation-Date: 2025-06-16 11:28-0400\n"
 "PO-Revision-Date: 2025-06-13 18:22-0300\n"
 "Last-Translator: John peter sa <johnppetersa@gmail.com>\n"
 "Language-Team: Brazilian Portuguese <ldpbr-"
@@ -186,14 +186,6 @@ msgstr "Reiniciar"
 msgctxt "enable unit file"
 msgid "Enable"
 msgstr "Habilitar"
-
-#. dialog title
-#. Message answer
-#: data/interfaces/enable_unit_dialog.ui:128
-#: src/widget/enable_unit_dialog/imp.rs:165
-msgctxt "enable unit file"
-msgid "Enable Unit File"
-msgstr "Habilitar arquivo de unidade"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
@@ -657,9 +649,10 @@ msgstr "Ativar arquivo de unidade ➚"
 
 #. button
 #: data/interfaces/side_control_panel.ui:35
+#, fuzzy
 msgctxt "control"
 msgid "_Disable Unit File ➚"
-msgstr ""
+msgstr "Ativar arquivo de unidade ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:36
@@ -667,6 +660,8 @@ msgstr ""
 msgctxt "control"
 msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
 msgstr ""
+"Desmascare o arquivo de unidade selecionado. Isso desfará o efeito de "
+"<b>Máscara</b>"
 
 #. button
 #: data/interfaces/side_control_panel.ui:48
@@ -752,44 +747,59 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:140
 msgctxt "control"
 msgid "_UnMask"
-msgstr ""
+msgstr "_UnMask"
 
 #. button
 #: data/interfaces/side_control_panel.ui:156
 msgctxt "control"
 msgid "Reload Unit"
-msgstr ""
+msgstr "Unidade de recarga"
 
 #. button
 #: data/interfaces/side_control_panel.ui:157
 msgctxt "control"
 msgid "Ask the specified unit to reload its configuration"
-msgstr ""
+msgstr "Peça à unidade especificada para recarregar sua configuração"
 
 #. button
 #: data/interfaces/side_control_panel.ui:170
+#, fuzzy
 msgctxt "control"
 msgid "_Preset ➚"
-msgstr ""
+msgstr "Predefinição"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:171
 msgctxt "control"
 msgid "Enable or Disable one or more unit files according to the preset policy"
 msgstr ""
-"Desmascare o arquivo de unidade selecionado. Isso desfará o efeito de "
-"<b>Máscara</b>"
 
 #. button
 #: data/interfaces/side_control_panel.ui:185
 msgctxt "control"
-msgid "Reload Unit"
+msgid "_Reenable ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:186
+msgctxt "control"
+msgid ""
+"Apply the changes to one or more units that would result from disabling and "
+"enabling the unit quickly one after the other in an atomic fashion"
 msgstr ""
 
 #. button
 #: data/interfaces/side_control_panel.ui:200
 msgctxt "control"
-msgid "Ask the specified unit to reload its configuration"
+msgid "_Link ➚"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/side_control_panel.ui:201
+msgctxt "control"
+msgid ""
+"Link unit files (that are located outside of the usual unit search paths) "
+"into the unit search path"
 msgstr ""
 
 #. description
@@ -1398,86 +1408,99 @@ msgstr "Nenhuma unidade selecionada"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:62
+#, fuzzy
 msgctxt "action unit file"
 msgid "Enable Unit File"
-msgstr ""
+msgstr "Habilitar arquivo de unidade"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:64
+#, fuzzy
 msgctxt "action unit file"
 msgid "Mask Unit"
-msgstr ""
+msgstr "Unidade de máscara"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:66
+#, fuzzy
 msgctxt "action unit file"
 msgid "Preset Unit File"
-msgstr ""
+msgstr "Arquivo de unidade de máscara"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:68
+#, fuzzy
 msgctxt "action unit file"
 msgid "Reenable Unit File"
-msgstr ""
+msgstr "Habilitar arquivo de unidade"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:72
+#, fuzzy
 msgctxt "action unit file"
 msgid "Disable Unit File"
-msgstr ""
+msgstr "Habilitar arquivo de unidade"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:75
+#, fuzzy
 msgctxt "action unit file"
 msgid "Link Unit File"
-msgstr ""
+msgstr "Arquivo de unidade de máscara"
 
 #. preference group title
 #. Button
 #: src/widget/control_action_dialog/mod.rs:82
 #: src/widget/control_action_dialog/mod.rs:144
+#, fuzzy
 msgctxt "action unit file"
 msgid "Enable"
-msgstr ""
+msgstr "Habilitar"
 
 #. preference group title
 #. Button
 #: src/widget/control_action_dialog/mod.rs:84
 #: src/widget/control_action_dialog/mod.rs:150
+#, fuzzy
 msgctxt "action unit file"
 msgid "Disable"
-msgstr ""
+msgstr "Habilitar"
 
 #. preference group title
 #. Button
 #: src/widget/control_action_dialog/mod.rs:86
 #: src/widget/control_action_dialog/mod.rs:146
+#, fuzzy
 msgctxt "action unit file"
 msgid "Mask"
-msgstr ""
+msgstr "Máscara"
 
 #. second preference group title
 #: src/widget/control_action_dialog/mod.rs:94
+#, fuzzy
 msgctxt "action unit file"
 msgid "Start"
-msgstr ""
+msgstr "_Começar"
 
 #: src/widget/control_action_dialog/mod.rs:97
+#, fuzzy
 msgctxt "action unit file"
 msgid "Stop"
-msgstr ""
+msgstr "Parar"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:148
+#, fuzzy
 msgctxt "action unit file"
 msgid "Preset"
-msgstr ""
+msgstr "Predefinição"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:152
+#, fuzzy
 msgctxt "action unit file"
 msgid "Reenable"
-msgstr ""
+msgstr "Habilitar"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:154
@@ -1487,50 +1510,58 @@ msgstr ""
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:162
+#, fuzzy
 msgctxt "action unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Corra agora"
 
 #. after action subtitle
 #: src/widget/control_action_dialog/mod.rs:164
+#, fuzzy
 msgctxt "action unit file"
 msgid "Start Unit just after being enabled"
-msgstr ""
+msgstr "Iniciar a unidade logo após ser ativada"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:168
+#, fuzzy
 msgctxt "action unit file"
 msgid "Stop now"
-msgstr ""
+msgstr "Pare agora"
 
 #: src/widget/control_action_dialog/mod.rs:172
+#, fuzzy
 msgctxt "action unit file"
 msgid "Ensure that the unit will also be stopped"
-msgstr ""
+msgstr "Certifique-se de que a unidade também será parada"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:183
+#, fuzzy
 msgctxt "action unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "Modo de execução"
 
 #. starts mode subtitle
 #: src/widget/control_action_dialog/mod.rs:185
+#, fuzzy
 msgctxt "action unit file"
 msgid "Starting mode options"
-msgstr ""
+msgstr "Opções do modo de inicialização"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:189
+#, fuzzy
 msgctxt "action unit file"
 msgid "Stop mode"
-msgstr ""
+msgstr "Modo de parada"
 
 #. starts mode subtitle
 #: src/widget/control_action_dialog/mod.rs:191
+#, fuzzy
 msgctxt "action unit file"
 msgid "Stoping mode options"
-msgstr ""
+msgstr "Opções do modo de inicialização"
 
 #. Dialog subtitle
 #: src/widget/kill_panel/imp.rs:77
@@ -1564,12 +1595,14 @@ msgstr "Enfileirar um sinal em tempo real para a unidade"
 #: src/widget/kill_panel/imp.rs:632 src/widget/kill_panel/imp.rs:640
 #: src/widget/kill_panel/imp.rs:656 src/widget/kill_panel/imp.rs:664
 #: src/widget/kill_panel/imp.rs:672
+#, fuzzy
 msgctxt "kill"
 msgid "Terminate"
 msgstr "Terminar"
 
 #. SIGRTMIN to SIGRTMAX default comment
 #: src/widget/kill_panel/imp.rs:228
+#, fuzzy
 msgctxt "kill"
 msgid "Real-time signal"
 msgstr "Sinal em tempo real"
@@ -1595,12 +1628,14 @@ msgstr "Sinal de morte {} para"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:423
+#, fuzzy
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
 msgstr "Desligue o terminal de controle ou processo"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
+#, fuzzy
 msgctxt "kill"
 msgid "Interrupt from keyboard, Control-C"
 msgstr "Interrupção do teclado, Control-C"
@@ -1612,90 +1647,105 @@ msgstr "Interrupção do teclado, Control-C"
 #: src/widget/kill_panel/imp.rs:485 src/widget/kill_panel/imp.rs:509
 #: src/widget/kill_panel/imp.rs:616 src/widget/kill_panel/imp.rs:624
 #: src/widget/kill_panel/imp.rs:680 src/widget/kill_panel/imp.rs:688
+#, fuzzy
 msgctxt "kill"
 msgid "Dump"
 msgstr "Jogar fora"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:439
+#, fuzzy
 msgctxt "kill"
 msgid "Quit from keyboard, Control-\""
 msgstr "Sair do teclado, Control-\""
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:447
+#, fuzzy
 msgctxt "kill"
 msgid "Illegal instruction"
 msgstr "Instrução ilegal"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:455
+#, fuzzy
 msgctxt "kill"
 msgid "Breakpoint for debugging"
 msgstr "Ponto de interrupção para depuração"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:463
+#, fuzzy
 msgctxt "kill"
 msgid "Abnormal termination"
 msgstr "Término anormal"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:471
+#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGABRT"
 msgstr "Equivalente ao SIGABRT"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:479
+#, fuzzy
 msgctxt "kill"
 msgid "Bus error"
 msgstr "Erro de barramento"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:487
+#, fuzzy
 msgctxt "kill"
 msgid "Floating-point exception"
 msgstr "Exceção de ponto flutuante"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:495
+#, fuzzy
 msgctxt "kill"
 msgid "Forced-process termination"
 msgstr "Término forçado do processo"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:503 src/widget/kill_panel/imp.rs:519
+#, fuzzy
 msgctxt "kill"
 msgid "Available to processes"
 msgstr "Disponível para processos"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:511
+#, fuzzy
 msgctxt "kill"
 msgid "Invalid memory reference"
 msgstr "Referência de memória inválida"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:527
+#, fuzzy
 msgctxt "kill"
 msgid "Write to pipe with no readers"
 msgstr "Escrever no pipe sem leitores"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:535
+#, fuzzy
 msgctxt "kill"
 msgid "Real-timer clock"
 msgstr "Relógio em tempo real"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:543
+#, fuzzy
 msgctxt "kill"
 msgid "Process termination"
 msgstr "Término do processo"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:551
+#, fuzzy
 msgctxt "kill"
 msgid "Coprocessor stack error"
 msgstr "Erro de pilha do coprocessador"
@@ -1703,11 +1753,13 @@ msgstr "Erro de pilha do coprocessador"
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:557 src/widget/kill_panel/imp.rs:608
 #: src/widget/kill_panel/imp.rs:648
+#, fuzzy
 msgctxt "kill"
 msgid "Ignore"
 msgstr "Ignorar"
 
 #: src/widget/kill_panel/imp.rs:561
+#, fuzzy
 msgctxt "kill"
 msgid "Child process stopped or terminated or got a signal if traced"
 msgstr ""
@@ -1716,12 +1768,14 @@ msgstr ""
 
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:568
+#, fuzzy
 msgctxt "kill"
 msgid "Continue"
 msgstr "Continuar"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:570
+#, fuzzy
 msgctxt "kill"
 msgid "Resume execution, if stopped"
 msgstr "Retomar a execução, se interrompida"
@@ -1729,112 +1783,118 @@ msgstr "Retomar a execução, se interrompida"
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:576 src/widget/kill_panel/imp.rs:584
 #: src/widget/kill_panel/imp.rs:592 src/widget/kill_panel/imp.rs:600
+#, fuzzy
 msgctxt "kill"
 msgid "Stop"
 msgstr "Parar"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:578
+#, fuzzy
 msgctxt "kill"
 msgid "Stop process execution, Ctrl-Z"
 msgstr "Parar a execução do processo, Ctrl-Z"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:586
+#, fuzzy
 msgctxt "kill"
 msgid "Stop process issued from tty"
 msgstr "Parar processo emitido por tty"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:594
+#, fuzzy
 msgctxt "kill"
 msgid "Background process requires input"
 msgstr "O processo em segundo plano requer entrada"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:602
+#, fuzzy
 msgctxt "kill"
 msgid "Background process requires output"
 msgstr "O processo em segundo plano requer saída"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:610
+#, fuzzy
 msgctxt "kill"
 msgid "Urgent condition on socket"
 msgstr "Condição urgente no soquete"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:618
+#, fuzzy
 msgctxt "kill"
 msgid "CPU time limit exceeded"
 msgstr "Limite de tempo da CPU excedido"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:626
+#, fuzzy
 msgctxt "kill"
 msgid "File size limit exceeded"
 msgstr "Limite de tamanho de arquivo excedido"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:634
+#, fuzzy
 msgctxt "kill"
 msgid "Virtual timer clock"
 msgstr "Relógio temporizador virtual"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:642
+#, fuzzy
 msgctxt "kill"
 msgid "Profile timer clock"
 msgstr "Relógio temporizador de perfil"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:650
+#, fuzzy
 msgctxt "kill"
 msgid "Window resizing"
 msgstr "Redimensionamento de janela"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:658
+#, fuzzy
 msgctxt "kill"
 msgid "I/O now possible"
 msgstr "I/O agora possível"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:666
+#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGIO"
 msgstr "Equivalente a SIGIO"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:674
+#, fuzzy
 msgctxt "kill"
 msgid "Power supply failure"
 msgstr "Falha no fornecimento de energia"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:682
+#, fuzzy
 msgctxt "kill"
 msgid "Bad system call"
 msgstr "Chamada de sistema ruim"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:690
+#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
 msgstr "Equivalente ao SIGSYS"
 
-#. Message answer
-#: src/widget/mask_unit_dialog/imp.rs:122
-msgctxt "mask"
-msgid "Mask Unit File"
-msgstr "Arquivo de unidade de máscara"
-
-#: src/widget/mask_unit_dialog/imp.rs:208
-msgctxt "mask"
-msgid "No Unit Selected"
-msgstr "Nenhuma unidade selecionada"
-
-#: src/widget/preferences/data.rs:45
+#. filter title
+#: src/widget/preferences/data.rs:46
 msgctxt "filter"
 msgid "Unit"
 msgstr "Unidade"
@@ -1906,30 +1966,35 @@ msgstr "Barramento de sessão de sistema e usuário"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:225
+#, fuzzy
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Sem preferência"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:227
+#, fuzzy
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Prefiro escuro"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:229
+#, fuzzy
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Prefiro Claro"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:231
+#, fuzzy
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Força modo Escuro"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:233
+#, fuzzy
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Força modo Claro"
@@ -1999,11 +2064,14 @@ msgstr ""
 "span> foi <span fgcolor='{0}'>{}</span> com sucesso"
 
 #: src/widget/unit_control_panel/controls.rs:90
+#, fuzzy
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "has failed!"
 msgstr ""
+"{} unidade <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
+"span> bem-sucedida"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:21
@@ -2060,8 +2128,17 @@ msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "successful"
 msgstr ""
+"{} unidade <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
+"span> bem-sucedida"
 
-#: src/widget/unit_control_panel/imp.rs:585
+#. toast message success (no unit)
+#: src/widget/unit_control_panel/imp.rs:583
+#, rust-format
+msgctxt "toast"
+msgid "{} successful."
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:595
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2109,12 +2186,14 @@ msgstr ""
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:126
+#, fuzzy
 msgctxt "action"
 msgid "Thaw"
 msgstr "Descongelamento"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:153
+#, fuzzy
 msgctxt "action"
 msgid "Reload"
 msgstr "Recarregar"
@@ -2133,9 +2212,10 @@ msgstr "Tipos de Unidade"
 
 #. tooltip on filter
 #: src/widget/unit_dependencies_panel/imp.rs:360
+#, fuzzy
 msgctxt "dependency"
 msgid "Filter dependencies by types"
-msgstr ""
+msgstr "Sem dependências"
 
 #. flatpak permision error dialog title
 #: src/widget/unit_file_panel/flatpak.rs:43
@@ -2145,12 +2225,15 @@ msgstr ""
 
 #. flatpak permision error dialog line 1
 #: src/widget/unit_file_panel/flatpak.rs:53
+#, fuzzy
 msgctxt "unit file"
 msgid ""
 "To save this file content, it requires permission to talk to "
 "<b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged "
 "as a Flatpak."
 msgstr ""
+"É necessária permissão para falar com a interface D-Bus "
+"<b>org.freedesktop.Flatpak</b> quando o programa é um Flatpak."
 
 #. flatpak permision error dialog line 2
 #: src/widget/unit_file_panel/flatpak.rs:62
@@ -2174,3 +2257,11 @@ msgstr ""
 msgctxt "unit file"
 msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
 msgstr ""
+
+#~ msgctxt "mask"
+#~ msgid "No Unit Selected"
+#~ msgstr "Nenhuma unidade selecionada"
+
+#~ msgctxt "thaw"
+#~ msgid "Thaw"
+#~ msgstr "Descongelamento"
