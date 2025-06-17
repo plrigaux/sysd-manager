@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 01:00+0000\n"
+"PO-Revision-Date: 2025-06-17 03:18+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -763,22 +763,23 @@ msgstr "Demander à l'unité spécifiée de recharger sa configuration"
 
 #. button
 #: data/interfaces/side_control_panel.ui:170
-#, fuzzy
 msgctxt "control"
 msgid "_Preset ➚"
-msgstr "Prérégler"
+msgstr "_Prérégler ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:171
 msgctxt "control"
 msgid "Enable or Disable one or more unit files according to the preset policy"
 msgstr ""
+"Activer ou désactiver un ou plusieurs fichiers d'unité en fonction de la "
+"politique de préréglage"
 
 #. button
 #: data/interfaces/side_control_panel.ui:185
 msgctxt "control"
 msgid "_Reenable ➚"
-msgstr ""
+msgstr "_Réactivé"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:186
@@ -787,12 +788,14 @@ msgid ""
 "Apply the changes to one or more units that would result from disabling and "
 "enabling the unit quickly one after the other in an atomic fashion"
 msgstr ""
+"Appliquer les modifications à une ou plusieurs unités qui résulteraient "
+"d'une désactivation suivie d'une activation atomique de l'unité"
 
 #. button
 #: data/interfaces/side_control_panel.ui:200
 msgctxt "control"
 msgid "_Link ➚"
-msgstr ""
+msgstr "_Lier ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:201
@@ -801,6 +804,8 @@ msgid ""
 "Link unit files (that are located outside of the usual unit search paths) "
 "into the unit search path"
 msgstr ""
+"Lier des fichiers d'unité (qui sont situés à l'extérieur des chemins de "
+"recherche habituels) dans le chemin de recherche de l'unité"
 
 #. description
 #: data/interfaces/signals_window.ui:24
@@ -1423,31 +1428,27 @@ msgstr "Masquer l'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:66
-#, fuzzy
 msgctxt "action unit file"
 msgid "Preset Unit File"
-msgstr "Masquer fichier de l'unité"
+msgstr "Prérégler le fichier de l'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:68
-#, fuzzy
 msgctxt "action unit file"
 msgid "Reenable Unit File"
-msgstr "Activer un fichier d'unité"
+msgstr "Réactiver un fichier d'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:72
-#, fuzzy
 msgctxt "action unit file"
 msgid "Disable Unit File"
-msgstr "Activer un fichier d'unité"
+msgstr "Désactiver un fichier d'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:75
-#, fuzzy
 msgctxt "action unit file"
 msgid "Link Unit File"
-msgstr "Masquer fichier de l'unité"
+msgstr "Lier fichier d'unité"
 
 #. preference group title
 #. Button
@@ -1462,32 +1463,28 @@ msgstr "Activer"
 #. Button
 #: src/widget/control_action_dialog/mod.rs:84
 #: src/widget/control_action_dialog/mod.rs:150
-#, fuzzy
 msgctxt "action unit file"
 msgid "Disable"
-msgstr "Activer"
+msgstr "Désactiver"
 
 #. preference group title
 #. Button
 #: src/widget/control_action_dialog/mod.rs:86
 #: src/widget/control_action_dialog/mod.rs:146
-#, fuzzy
 msgctxt "action unit file"
 msgid "Mask"
-msgstr "Marker"
+msgstr "Masquer"
 
 #. second preference group title
 #: src/widget/control_action_dialog/mod.rs:94
-#, fuzzy
 msgctxt "action unit file"
 msgid "Start"
-msgstr "_Démarrer"
+msgstr "Démarrer"
 
 #: src/widget/control_action_dialog/mod.rs:97
-#, fuzzy
 msgctxt "action unit file"
 msgid "Stop"
-msgstr "Arrêtez"
+msgstr "Arrêter"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:148
@@ -1498,16 +1495,15 @@ msgstr "Prérégler"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:152
-#, fuzzy
 msgctxt "action unit file"
 msgid "Reenable"
-msgstr "Activer"
+msgstr "Réactiver"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:154
 msgctxt "action unit file"
 msgid "Link"
-msgstr ""
+msgstr "Lier"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:162
@@ -1525,10 +1521,9 @@ msgstr "Démarrer l'unité juste après avoir été activée"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:168
-#, fuzzy
 msgctxt "action unit file"
 msgid "Stop now"
-msgstr "Arrêtez maintenant"
+msgstr "Arrêter maintenant"
 
 #: src/widget/control_action_dialog/mod.rs:172
 #, fuzzy
@@ -1559,16 +1554,15 @@ msgstr "Mode d'arrêt"
 
 #. starts mode subtitle
 #: src/widget/control_action_dialog/mod.rs:191
-#, fuzzy
 msgctxt "action unit file"
 msgid "Stoping mode options"
-msgstr "Options de démarrage"
+msgstr "Options d'arrêt"
 
 #. Dialog subtitle
 #: src/widget/kill_panel/imp.rs:77
 msgctxt "kill"
 msgid "No Unit Selected"
-msgstr "Pas d'unité sélectionné"
+msgstr "Pas d'unité sélectionnée"
 
 #: src/widget/kill_panel/imp.rs:154
 #, rust-format
@@ -1625,7 +1619,7 @@ msgstr "Signal de file d'attente {} avec valeur {} vers"
 #, rust-format
 msgctxt "kill"
 msgid "Kill signal {} to"
-msgstr "Signal Kill  {} vers"
+msgstr "Signal Kill {} vers"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:423
@@ -2163,29 +2157,32 @@ msgstr "{} a échoué. Raison: <span fgcolor='{}'>{}</span>."
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
 msgstr ""
+"Malheureusement, <b>SysD Manager</b> ne peut pas exécuter l'action <b>{}</b>."
 
 #: src/widget/unit_control_panel/mod.rs:143
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file :"
-msgstr ""
+msgstr "L'autorisation peut être configurée dans le fichier suivant :"
 
 #: src/widget/unit_control_panel/mod.rs:163
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
 msgstr ""
+"Sinon, vous pouvez essayer la ligne de commande ci-dessous dans votre "
+"terminal"
 
 #. workaround dialog title
 #: src/widget/unit_control_panel/mod.rs:185
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
-msgstr ""
+msgstr "Échec! {}"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:114
 msgctxt "action"
 msgid "Freeze"
-msgstr ""
+msgstr "Geler"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:126
@@ -2212,24 +2209,22 @@ msgstr "Démasquer"
 #: src/widget/unit_dependencies_panel/imp.rs:355
 msgctxt "dependency"
 msgid "Unit Types"
-msgstr "Type d'unité"
+msgstr "Types d'unité"
 
 #. tooltip on filter
 #: src/widget/unit_dependencies_panel/imp.rs:360
-#, fuzzy
 msgctxt "dependency"
 msgid "Filter dependencies by types"
-msgstr "Aucune dépendances"
+msgstr "Filtrer les dépendances par types"
 
 #. flatpak permision error dialog title
 #: src/widget/unit_file_panel/flatpak.rs:43
 msgctxt "unit file"
 msgid "Flatpak permission needed!"
-msgstr ""
+msgstr "Permission Flatpak nécessaire!"
 
 #. flatpak permision error dialog line 1
 #: src/widget/unit_file_panel/flatpak.rs:53
-#, fuzzy
 msgctxt "unit file"
 msgid ""
 "To save this file content, it requires permission to talk to "
@@ -2237,7 +2232,7 @@ msgid ""
 "as a Flatpak."
 msgstr ""
 "Il nécessite l'autorisation de parler à <b> org.freedesktop.flatpak </b> d-"
-"bus interface lorsque le programme est un flatpak."
+"bus interface lorsque le programme est un Flatpak."
 
 #. flatpak permision error dialog line 2
 #: src/widget/unit_file_panel/flatpak.rs:62
@@ -2247,6 +2242,10 @@ msgid ""
 "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
 "<b>org.freedesktop.Flatpak</b> and restart the program."
 msgstr ""
+"<b> Option 1 : </b> Vous pouvez utiliser <a href = "
+"\"https://frathub.org/apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous "
+"la section Bus Talks ajoutez <b> org.freedesktop.flatpak </b> et redémarrez "
+"le programme."
 
 #: src/widget/unit_file_panel/flatpak.rs:88
 #, rust-format
@@ -2255,12 +2254,14 @@ msgid ""
 "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another "
 "editor."
 msgstr ""
+"<b> Option 2: </b> Modifiez le fichier <a href = \"file://{}\"> </a> via un "
+"autre éditeur."
 
 #: src/widget/unit_file_panel/flatpak.rs:97
 #, rust-format
 msgctxt "unit file"
 msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
-msgstr ""
+msgstr "<b>Option 3:</b> Dans votre terminal, exécutez la commande: <u>{}</u>"
 
 #~ msgctxt "kill default action"
 #~ msgid "Stop"
