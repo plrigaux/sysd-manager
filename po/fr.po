@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-16 11:28-0400\n"
+"POT-Creation-Date: 2025-06-17 10:40-0400\n"
 "PO-Revision-Date: 2025-06-17 08:38-0400\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1607,7 +1607,7 @@ msgctxt "kill"
 msgid "Queued signal {} with value {} to"
 msgstr "Signal de file d'attente {} avec valeur {} vers"
 
-#. toast method name
+#. toast method name -- "Kill signal {signal_id} to"
 #: src/widget/kill_panel/imp.rs:319
 #, rust-format
 msgctxt "kill"
@@ -1625,7 +1625,7 @@ msgstr ""
 #: src/widget/kill_panel/imp.rs:431
 #, fuzzy
 msgctxt "kill"
-msgid "Interrupt from keyboard, Control-C"
+msgid "Interrupt from keyboard, Ctrl+C"
 msgstr "Interruption du clavier (Ctrl-C dans un terminal)"
 
 #. kill signal default action
@@ -1641,8 +1641,9 @@ msgstr "Décharger"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:439
+#, fuzzy
 msgctxt "kill"
-msgid "Quit from keyboard, Control-\""
+msgid "Quit from keyboard, Ctrl+\\"
 msgstr "Quitter à partir du clavier, Ctrl-\\"
 
 #. kill signal description
@@ -1759,8 +1760,9 @@ msgstr "Arrêter"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:578
+#, fuzzy
 msgctxt "kill"
-msgid "Stop process execution, Ctrl-Z"
+msgid "Stop process execution, Ctrl+Z"
 msgstr "Interromps le processus (Ctrl-Z dans un terminal)"
 
 #. kill signal description
@@ -1972,7 +1974,7 @@ msgctxt "pref file style"
 msgid "None"
 msgstr "Aucun"
 
-#. pref group
+#. pref group -- "Column {column name}"
 #: src/widget/preferences/imp.rs:453
 #, rust-format
 msgctxt "preference column"
@@ -1985,6 +1987,7 @@ msgctxt "preference column"
 msgid "Show"
 msgstr "Afficher"
 
+#. preference show unit browser column subtitle -- Hide or display unit list column {column name}"
 #: src/widget/preferences/imp.rs:461
 #, rust-format
 msgctxt "preference column"
@@ -1997,6 +2000,7 @@ msgctxt "preference column"
 msgid "Width"
 msgstr "Largeur"
 
+#. preference  unit browser column width subtitle -- "Set width of column {column name}"
 #: src/widget/preferences/imp.rs:482
 #, rust-format
 msgctxt "preference column"
@@ -2064,7 +2068,7 @@ msgid ""
 msgstr ""
 "L'unité <unit>{}</unit> a été <{0}>{}</{0}> avec le mode <unit>{}</unit>"
 
-#. toast message error
+#. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
 #: src/widget/unit_control_panel/imp.rs:324
 #, rust-format
 msgctxt "toast"
@@ -2080,7 +2084,7 @@ msgstr ""
 "{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
 "span> a été réussi"
 
-#. toast message success (no unit)
+#. toast message success (no unit) -- "{ACTION} successful."
 #: src/widget/unit_control_panel/imp.rs:583
 #, rust-format
 msgctxt "toast"
@@ -2097,7 +2101,7 @@ msgstr ""
 "{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> "
 "{} </span> a échoué. Raison: <span fgcolor = '{}'> {} </span>."
 
-#. toast message failed (no unit)
+#. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:606
 #, rust-format
 msgctxt "toast"
@@ -2123,7 +2127,7 @@ msgstr ""
 "Sinon, vous pouvez essayer la ligne de commande ci-dessous dans votre "
 "terminal"
 
-#. workaround dialog title
+#. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
 #: src/widget/unit_control_panel/mod.rs:185
 #, rust-format
 msgctxt "workaround"
@@ -2199,7 +2203,7 @@ msgstr ""
 "com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks ajoutez "
 "<b> org.freedesktop.flatpak </b> et redémarrez le programme."
 
-#: src/widget/unit_file_panel/flatpak.rs:88
+#: src/widget/unit_file_panel/flatpak.rs:87
 #, rust-format
 msgctxt "unit file"
 msgid ""
@@ -2210,7 +2214,7 @@ msgstr ""
 "autre éditeur.<b> Option 2: </b> Modifiez le fichier <a href = \"file://{}"
 "\"> </a> via un autre éditeur."
 
-#: src/widget/unit_file_panel/flatpak.rs:97
+#: src/widget/unit_file_panel/flatpak.rs:95
 #, rust-format
 msgctxt "unit file"
 msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
