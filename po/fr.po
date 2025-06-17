@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 05:16+0000\n"
+"PO-Revision-Date: 2025-06-17 12:19+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1562,13 +1562,13 @@ msgid ""
 "Default Action: {}"
 msgstr ""
 "{}\n"
-"Action par défaut: {}"
+"Action par défaut : {}"
 
 #. Dialog title
 #: src/widget/kill_panel/imp.rs:200
 msgctxt "kill"
 msgid "Queue a Realtime Signal to Unit"
-msgstr "Envoyer un signal de file d'attente à l'unité"
+msgstr "Mettre en file d'attente un signal en temps réel vers l'unité"
 
 #. SIGRTMIN to SIGRTMAX default action
 #. kill signal default action
@@ -1586,7 +1586,6 @@ msgstr "Terminer"
 
 #. SIGRTMIN to SIGRTMAX default comment
 #: src/widget/kill_panel/imp.rs:228
-#, fuzzy
 msgctxt "kill"
 msgid "Real-time signal"
 msgstr "Signal temps réel"
@@ -1612,18 +1611,16 @@ msgstr "Signal Kill {} vers"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:423
-#, fuzzy
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
-msgstr ""
-"Rupture détectée sur le terminal contrôleur ou mort du processus parent"
+msgstr "Rupture détectée sur le terminal contrôleur ou mort du processus parent"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
 #, fuzzy
 msgctxt "kill"
 msgid "Interrupt from keyboard, Control-C"
-msgstr "Interruption du clavier (Ctrl+C dans un terminal)"
+msgstr "Interruption du clavier (Ctrl-C dans un terminal)"
 
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:437 src/widget/kill_panel/imp.rs:445
@@ -1632,17 +1629,15 @@ msgstr "Interruption du clavier (Ctrl+C dans un terminal)"
 #: src/widget/kill_panel/imp.rs:485 src/widget/kill_panel/imp.rs:509
 #: src/widget/kill_panel/imp.rs:616 src/widget/kill_panel/imp.rs:624
 #: src/widget/kill_panel/imp.rs:680 src/widget/kill_panel/imp.rs:688
-#, fuzzy
 msgctxt "kill"
 msgid "Dump"
 msgstr "Décharger"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:439
-#, fuzzy
 msgctxt "kill"
 msgid "Quit from keyboard, Control-\""
-msgstr "Arrêt du processus"
+msgstr "Quitter à partir du clavier, Ctrl-\\"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:447
@@ -1653,84 +1648,72 @@ msgstr "Instruction illégale"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:455
-#, fuzzy
 msgctxt "kill"
 msgid "Breakpoint for debugging"
 msgstr "Point d'arrêt pour le débogage"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:463
-#, fuzzy
 msgctxt "kill"
 msgid "Abnormal termination"
 msgstr "Arrêt anormal du processus"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:471
-#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGABRT"
 msgstr "Équivalent à SIGABRT"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:479
-#, fuzzy
 msgctxt "kill"
 msgid "Bus error"
 msgstr "Erreur de bus"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:487
-#, fuzzy
 msgctxt "kill"
 msgid "Floating-point exception"
 msgstr "Erreur sur un nombre flottant"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:495
-#, fuzzy
 msgctxt "kill"
 msgid "Forced-process termination"
 msgstr "Tue immédiatement le processus"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:503 src/widget/kill_panel/imp.rs:519
-#, fuzzy
 msgctxt "kill"
 msgid "Available to processes"
 msgstr "Disponible pour les processus"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:511
-#, fuzzy
 msgctxt "kill"
 msgid "Invalid memory reference"
 msgstr "Erreur de segmentation"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:527
-#, fuzzy
 msgctxt "kill"
 msgid "Write to pipe with no readers"
 msgstr "Erreur de tube (écriture dans un tube sans lecteur)"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:535
-#, fuzzy
 msgctxt "kill"
 msgid "Real-timer clock"
 msgstr "Horloge en temps réel"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:543
-#, fuzzy
 msgctxt "kill"
 msgid "Process termination"
 msgstr "Termine le processus"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:551
-#, fuzzy
 msgctxt "kill"
 msgid "Coprocessor stack error"
 msgstr "Erreur de pile du coprocesseur"
@@ -1738,13 +1721,11 @@ msgstr "Erreur de pile du coprocesseur"
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:557 src/widget/kill_panel/imp.rs:608
 #: src/widget/kill_panel/imp.rs:648
-#, fuzzy
 msgctxt "kill"
 msgid "Ignore"
 msgstr "Ignorer"
 
 #: src/widget/kill_panel/imp.rs:561
-#, fuzzy
 msgctxt "kill"
 msgid "Child process stopped or terminated or got a signal if traced"
 msgstr ""
@@ -1753,14 +1734,12 @@ msgstr ""
 
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:568
-#, fuzzy
 msgctxt "kill"
 msgid "Continue"
 msgstr "Continuer"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:570
-#, fuzzy
 msgctxt "kill"
 msgid "Resume execution, if stopped"
 msgstr "Reprendre l'exécution, si arrêtée"
@@ -1768,112 +1747,96 @@ msgstr "Reprendre l'exécution, si arrêtée"
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:576 src/widget/kill_panel/imp.rs:584
 #: src/widget/kill_panel/imp.rs:592 src/widget/kill_panel/imp.rs:600
-#, fuzzy
 msgctxt "kill"
 msgid "Stop"
-msgstr "Arrêtez"
+msgstr "Arrêter"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:578
-#, fuzzy
 msgctxt "kill"
 msgid "Stop process execution, Ctrl-Z"
-msgstr "Interromps le processus (Ctrl+Z dans un terminal)"
+msgstr "Interromps le processus (Ctrl-Z dans un terminal)"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:586
-#, fuzzy
 msgctxt "kill"
 msgid "Stop process issued from tty"
 msgstr "Processus d'arrêt émis depuis le tty"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:594
-#, fuzzy
 msgctxt "kill"
 msgid "Background process requires input"
 msgstr "Entrée de terminal pour un processus en arrière plan"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:602
-#, fuzzy
 msgctxt "kill"
 msgid "Background process requires output"
 msgstr "Sortie de terminal pour un processus en arrière plan"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:610
-#, fuzzy
 msgctxt "kill"
 msgid "Urgent condition on socket"
 msgstr "État urgent sur du socket"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:618
-#, fuzzy
 msgctxt "kill"
 msgid "CPU time limit exceeded"
 msgstr "Limite de temps CPU dépassée"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:626
-#, fuzzy
 msgctxt "kill"
 msgid "File size limit exceeded"
 msgstr "Limite de taille de fichier dépassée"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:634
-#, fuzzy
 msgctxt "kill"
 msgid "Virtual timer clock"
 msgstr "Chronomètre virtuel (Virtual Timer) expiré"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:642
-#, fuzzy
 msgctxt "kill"
 msgid "Profile timer clock"
 msgstr "Horloge de minuterie de profil"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:650
-#, fuzzy
 msgctxt "kill"
 msgid "Window resizing"
 msgstr "Redimensionnement de la fenêtre"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:658
-#, fuzzy
 msgctxt "kill"
 msgid "I/O now possible"
 msgstr "I/O désormais possibles"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:666
-#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGIO"
 msgstr "Équivalent à SIGIO"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:674
-#, fuzzy
 msgctxt "kill"
 msgid "Power supply failure"
 msgstr "Panne d'alimentation"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:682
-#, fuzzy
 msgctxt "kill"
 msgid "Bad system call"
 msgstr "Mauvais appel système"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:690
-#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
 msgstr "Équivalent à SIGSYS"
@@ -1951,35 +1914,30 @@ msgstr "Bus système et Bus session utilisateur"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:225
-#, fuzzy
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Sans préférences"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:227
-#, fuzzy
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Préfère sombre"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:229
-#, fuzzy
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Préfère claire"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:231
-#, fuzzy
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Force sombre"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:233
-#, fuzzy
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Force claire"
@@ -2049,14 +2007,13 @@ msgstr ""
 "</span> a été <span fgcolor = '{0}'>{}</span> avec succès"
 
 #: src/widget/unit_control_panel/controls.rs:90
-#, fuzzy
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "has failed!"
 msgstr ""
 "{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> a été réussi"
+"span> a été réussi!"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:21
@@ -2175,21 +2132,18 @@ msgstr "Geler"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:126
-#, fuzzy
 msgctxt "action"
 msgid "Thaw"
 msgstr "Décongeler"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:153
-#, fuzzy
 msgctxt "action"
 msgid "Reload"
 msgstr "Recharger"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:247
-#, fuzzy
 msgctxt "action"
 msgid "Unmask"
 msgstr "Démasquer"
