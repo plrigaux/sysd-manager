@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-17 10:40-0400\n"
-"PO-Revision-Date: 2025-06-17 15:14+0000\n"
+"POT-Creation-Date: 2025-06-16 11:28-0400\n"
+"PO-Revision-Date: 2025-06-17 23:00+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
 "manager/translation/pt_BR/>\n"
@@ -1615,10 +1615,9 @@ msgstr "Desligue o terminal de controle ou processo"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
-#, fuzzy
 msgctxt "kill"
 msgid "Interrupt from keyboard, Ctrl+C"
-msgstr "Interrupção do teclado, Control-C"
+msgstr "Interrupção do teclado, Ctrl+C"
 
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:437 src/widget/kill_panel/imp.rs:445
@@ -1633,10 +1632,9 @@ msgstr "Jogar fora"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:439
-#, fuzzy
 msgctxt "kill"
 msgid "Quit from keyboard, Ctrl+\\"
-msgstr "Sair do teclado, Control-\""
+msgstr "Sair do teclado, Ctrl+\\"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:447
@@ -1751,10 +1749,9 @@ msgstr "Parar"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:578
-#, fuzzy
 msgctxt "kill"
 msgid "Stop process execution, Ctrl+Z"
-msgstr "Parar a execução do processo, Ctrl-Z"
+msgstr "Parar a execução do processo, Ctrl+Z"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:586
