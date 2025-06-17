@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.12.1\n"
+"X-Generator: Poedit 3.6\n"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -956,7 +956,7 @@ msgstr "Aucun fichier d'unité"
 #: data/interfaces/unit_file_panel.ui:42
 msgctxt "file"
 msgid "File path:"
-msgstr "Chemin du fichier :"
+msgstr "Chemin du fichier:"
 
 #. button
 #: data/interfaces/unit_file_panel.ui:59
@@ -1108,7 +1108,7 @@ msgstr "Temps d'initialisation des unité"
 #: src/analyze/mod.rs:48
 msgctxt "analyse blame"
 msgid "Total Time:"
-msgstr "Temps total :"
+msgstr "Temps total:"
 
 #. place holder, lees likely to be displaied
 #: src/analyze/mod.rs:57
@@ -1176,7 +1176,7 @@ msgid ""
 msgstr ""
 "Le fichier unité a été généré dynamiquement via un outil générateur. Voir "
 "<b>man systemd.generator(7)</b>. Les fichiers d'unité générés ne peuvent pas "
-"être activés ; ils le sont implicitement par leur générateur."
+"être activés; ils le sont implicitement par leur générateur."
 
 #: src/systemd/enums.rs:214
 msgctxt "list"
@@ -1623,6 +1623,7 @@ msgstr ""
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
+#, fuzzy
 msgctxt "kill"
 msgid "Interrupt from keyboard, Ctrl+C"
 msgstr "Interruption du clavier (Ctrl-C dans un terminal)"
@@ -1647,6 +1648,7 @@ msgstr "Quitter à partir du clavier, Ctrl-\\"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:447
+#, fuzzy
 msgctxt "kill"
 msgid "Illegal instruction"
 msgstr "Instruction illégale"
@@ -2021,7 +2023,7 @@ msgid ""
 "has failed!"
 msgstr ""
 "{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> a été réussi !"
+"span> a été réussi!"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:21
@@ -2096,15 +2098,15 @@ msgid ""
 "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
 "failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr ""
-"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> {}"
-" </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
+"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> "
+"{} </span> a échoué. Raison: <span fgcolor = '{}'> {} </span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:606
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
-msgstr "{} a échoué. Raison : <span fgcolor='{}'>{}</span>."
+msgstr "{} a échoué. Raison: <span fgcolor='{}'>{}</span>."
 
 #: src/widget/unit_control_panel/mod.rs:130
 #, rust-format
@@ -2130,7 +2132,7 @@ msgstr ""
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
-msgstr "Échec ! {}"
+msgstr "Échec! {}"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:114
@@ -2194,10 +2196,12 @@ msgid ""
 "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
 "<b>org.freedesktop.Flatpak</b> and restart the program."
 msgstr ""
-"<b> Option 1 : </b> Vous pouvez utiliser <a href = "
-"\"https://frathub.org/apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous "
-"la section Bus Talks ajoutez <b> org.freedesktop.flatpak </b> et redémarrez "
-"le programme."
+"<b> Option 1 : </b> Vous pouvez utiliser <a href = \"https://frathub.org/"
+"apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks "
+"ajoutez <b> org.freedesktop.flatpak </b> et redémarrez le programme.<b> "
+"Option 1 : </b> Vous pouvez utiliser <a href = \"https://frathub.org/apps/"
+"com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks ajoutez "
+"<b> org.freedesktop.flatpak </b> et redémarrez le programme."
 
 #: src/widget/unit_file_panel/flatpak.rs:87
 #, rust-format
@@ -2206,8 +2210,9 @@ msgid ""
 "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another "
 "editor."
 msgstr ""
-"<b> Option 2 : </b> Modifiez le fichier <a href = \"file://{}\"> </a> via un "
-"autre éditeur."
+"<b> Option 2: </b> Modifiez le fichier <a href = \"file://{}\"> </a> via un "
+"autre éditeur.<b> Option 2: </b> Modifiez le fichier <a href = \"file://{}"
+"\"> </a> via un autre éditeur."
 
 #: src/widget/unit_file_panel/flatpak.rs:95
 #, rust-format

@@ -7,8 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2025-06-17 10:40-0400\n"
 "PO-Revision-Date: 2025-06-17 08:38-0400\n"
+=======
+"POT-Creation-Date: 2025-06-16 11:28-0400\n"
+"PO-Revision-Date: 2025-06-17 14:46+0000\n"
+>>>>>>> weblate/development
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1624,8 +1629,13 @@ msgstr ""
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
 msgctxt "kill"
+<<<<<<< HEAD
 msgid "Interrupt from keyboard, Ctrl+C"
 msgstr "Interruption du clavier (Ctrl-C dans un terminal)"
+=======
+msgid "Interrupt from keyboard, Control-C"
+msgstr "Interruption du clavier Ctrl-C"
+>>>>>>> weblate/development
 
 #. kill signal default action
 #: src/widget/kill_panel/imp.rs:437 src/widget/kill_panel/imp.rs:445
