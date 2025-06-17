@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 03:31+0000\n"
+"PO-Revision-Date: 2025-06-17 05:16+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1420,7 +1420,6 @@ msgstr "Activer le fichier d'unité"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:64
-#, fuzzy
 msgctxt "action unit file"
 msgid "Mask Unit"
 msgstr "Masquer l'unité"
@@ -1453,7 +1452,6 @@ msgstr "Lier le fichier d'unité"
 #. Button
 #: src/widget/control_action_dialog/mod.rs:82
 #: src/widget/control_action_dialog/mod.rs:144
-#, fuzzy
 msgctxt "action unit file"
 msgid "Enable"
 msgstr "Activer"
@@ -1505,14 +1503,12 @@ msgstr "Lier"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:162
-#, fuzzy
 msgctxt "action unit file"
 msgid "Run now"
 msgstr "Démarrer maintenant"
 
 #. after action subtitle
 #: src/widget/control_action_dialog/mod.rs:164
-#, fuzzy
 msgctxt "action unit file"
 msgid "Start Unit just after being enabled"
 msgstr "Démarrer l'unité juste après avoir été activée"
@@ -1524,28 +1520,24 @@ msgid "Stop now"
 msgstr "Arrêter maintenant"
 
 #: src/widget/control_action_dialog/mod.rs:172
-#, fuzzy
 msgctxt "action unit file"
 msgid "Ensure that the unit will also be stopped"
 msgstr "S'assurer que l'unité sera également arrêtée"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:183
-#, fuzzy
 msgctxt "action unit file"
 msgid "Run mode"
 msgstr "Mode de démarrage"
 
 #. starts mode subtitle
 #: src/widget/control_action_dialog/mod.rs:185
-#, fuzzy
 msgctxt "action unit file"
 msgid "Starting mode options"
-msgstr "Options de démarrage"
+msgstr "Options de modes de démarrage"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:189
-#, fuzzy
 msgctxt "action unit file"
 msgid "Stop mode"
 msgstr "Mode d'arrêt"
@@ -1588,7 +1580,6 @@ msgstr "Envoyer un signal de file d'attente à l'unité"
 #: src/widget/kill_panel/imp.rs:632 src/widget/kill_panel/imp.rs:640
 #: src/widget/kill_panel/imp.rs:656 src/widget/kill_panel/imp.rs:664
 #: src/widget/kill_panel/imp.rs:672
-#, fuzzy
 msgctxt "kill"
 msgid "Terminate"
 msgstr "Terminer"
@@ -2034,7 +2025,7 @@ msgstr "Afficher"
 #, rust-format
 msgctxt "preference column"
 msgid "Hide or display unit list column {}"
-msgstr ""
+msgstr "Masquer ou afficher la colonne de la liste des unités {}"
 
 #. preference  unit browser column width title
 #: src/widget/preferences/imp.rs:479
@@ -2046,7 +2037,7 @@ msgstr "Largeur"
 #, rust-format
 msgctxt "preference column"
 msgid "Set width of column {}"
-msgstr ""
+msgstr "Définir la largeur de la colonne {}"
 
 #: src/widget/unit_control_panel/controls.rs:56
 msgctxt "toast"
@@ -2115,7 +2106,7 @@ msgstr ""
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
-msgstr ""
+msgstr "Ne peut {} l'unité <unit>{}</unit>, à cause : {}"
 
 #: src/widget/unit_control_panel/imp.rs:575
 msgctxt "toast"
@@ -2131,7 +2122,7 @@ msgstr ""
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
-msgstr ""
+msgstr "{} réussi."
 
 #: src/widget/unit_control_panel/imp.rs:595
 #, rust-format
