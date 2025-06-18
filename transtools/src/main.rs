@@ -4,15 +4,18 @@ extern crate translating;
 use clap::Command;
 use clap::Parser;
 use clap::Subcommand;
+use log::info;
+use log::warn;
 use translating::MAIN_PROG;
 use translating::PO_DIR;
 use translating::error::TransError;
 
 use std::fs;
-use std::io::BufRead;
 use std::io::Write;
 use std::path::PathBuf;
-use std::{fs::File, io, path::Path};
+use std::{fs::File, io};
+
+use dotenv::dotenv;
 
 /// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
@@ -30,18 +33,25 @@ enum Commands {
     /// Generate the POTFILES. i.e. the file containign the list of source files used for the translation text extraction
     Potfile,
 
-    /// Generate missing po files or update them
+    /// Update po files
     Po {
         /// The po file language. Pass \"all\" if you want all of them
         #[arg(short, long)]
-        lang: String,
+        lang: Vec<String>,
+    },
+
+    /// Generate po files
+    Newpo {
+        /// The po file language
+        #[arg(short, long)]
+        lang: Vec<String>,
     },
 
     /// Extract translation text and Generate missing po files or update them in one command
     Expo {
         /// The po file language. Pass \"all\" if you want all of them
         #[arg(short, long)]
-        lang: String,
+        lang: Vec<String>,
     },
 
     /// Generate all Machine Object files
@@ -49,17 +59,20 @@ enum Commands {
 }
 
 fn main() {
-    println!("Tanslation tool!");
+    dotenv().ok();
+    env_logger::init();
+    info!("Tanslation tool!");
 
     let args = Args::parse();
 
     let result = match &args.command {
         Some(Commands::Mo) => generate_mo(),
-        Some(Commands::Po { lang }) => generate_missing_po_or_update(lang),
+        Some(Commands::Po { lang }) => update_po_file(lang),
+        Some(Commands::Newpo { lang }) => generate_po_file(lang),
         Some(Commands::Expo { lang }) => {
             let mut result = extract_and_generate_po_template();
             if result.is_ok() {
-                result = generate_missing_po_or_update(lang);
+                result = update_po_file(lang);
             }
             result
         }
@@ -79,40 +92,12 @@ fn main() {
     }
 }
 
-fn generate_missing_po_or_update(lang: &String) -> Result<(), TransError> {
+fn generate_po_file(linguas: &[String]) -> Result<(), TransError> {
     let po_dir = PathBuf::from(PO_DIR);
 
-    let mut linguas_dir = po_dir.clone();
-    linguas_dir.push("LINGUAS");
-
-    let lines = read_lines(linguas_dir)?;
-
-    let mut linguas = Vec::new();
-    let mut valid = Vec::new();
-    for line in lines {
-        let line = line.expect("read line should be ok");
-
-        let line = line.trim();
-
-        if line.starts_with('#') {
-            continue;
-        }
-
-        if line == lang || lang.eq_ignore_ascii_case("all") {
-            linguas.push(line.to_owned());
-        }
-
-        valid.push(line.to_owned());
+    if !po_dir.exists() {
+        return Err(TransError::PathNotExist(PO_DIR.to_owned()));
     }
-
-    if linguas.is_empty() {
-        eprintln!("Need to provide one valid language or \"all\" to perform this action");
-        valid.sort();
-        eprintln!("Valid languages currently are: {}", valid.join(", "));
-        return Err(TransError::LanguageNotSet);
-    };
-
-    println!("{:?}", linguas);
 
     for lang in linguas {
         let mut lang_po_path = po_dir.clone();
@@ -120,7 +105,7 @@ fn generate_missing_po_or_update(lang: &String) -> Result<(), TransError> {
 
         lang_po_path.push(&lang_po);
 
-        println!(
+        info!(
             "path {} exists {}",
             lang_po_path.display(),
             lang_po_path.exists()
@@ -130,23 +115,83 @@ fn generate_missing_po_or_update(lang: &String) -> Result<(), TransError> {
         let input_pot_file = format!("{PO_DIR}/sysd-manager.pot");
 
         if !lang_po_path.exists() {
-            translating::msginit(&input_pot_file, &output_file, &lang);
+            translating::msginit(&input_pot_file, &output_file, lang);
         } else {
-            translating::msgmerge(&input_pot_file, &format!("{PO_DIR}/{lang_po}"));
+            info!("{output_file} already exist. Do nothing.");
         }
     }
 
     Ok(())
 }
 
-// The output is wrapped in a Result to allow matching on errors.
-// Returns an Iterator to the Reader of the lines of the file.
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+fn update_po_file(linguas: &[String]) -> Result<(), TransError> {
+    let po_dir = PathBuf::from(PO_DIR);
+
+    if !po_dir.exists() {
+        return Err(TransError::PathNotExist(PO_DIR.to_owned()));
+    }
+
+    if !po_dir.is_dir() {
+        return Err(TransError::PathNotDIR(PO_DIR.to_owned()));
+    }
+
+    let all = linguas.iter().any(|s| s.eq_ignore_ascii_case("all"));
+
+    let mut po_files: Vec<_> = fs::read_dir(po_dir)?
+        .filter_map(|r| r.ok())
+        .map(|res| res.path())
+        .filter(|p| {
+            if let Some(ext) = p.extension() {
+                ext == "po"
+            } else {
+                false
+            }
+        })
+        .collect();
+
+    /*        .map(|p| let a = p.clone(); (p.clone(), a.file_stem()))
+    .filter(|f| f.1.is_some())
+    .map(|(a, b)| (a, b.unwrap().to_str()))
+    .filter(|(a, b)| b.is_some())
+    .map(|(a, b)| (a, b.unwrap())) */
+
+    let mut lang_files: Vec<(PathBuf, String)> = Vec::new();
+    for p in po_files.drain(..) {
+        if let Some(f) = p.file_stem() {
+            if let Some(s) = f.to_str() {
+                lang_files.push((p.clone(), s.to_owned()));
+            }
+        }
+    }
+
+    let limited: Vec<_> = lang_files
+        .iter()
+        .filter(|(_, b)| {
+            if all {
+                true
+            } else {
+                linguas.iter().any(|s| **s == *b)
+            }
+        })
+        .collect();
+
+    if limited.is_empty() {
+        warn!("Need to provide one valid language or \"all\" to perform this action");
+
+        let mut valid: Vec<_> = lang_files.iter().map(|(_, b)| b.clone()).collect();
+        valid.sort();
+
+        warn!("Valid languages currently are: {}", valid.join(", "));
+        return Err(TransError::LanguageNotSet);
+    };
+
+    let input_pot_file = format!("{PO_DIR}/sysd-manager.pot");
+
+    for (path, _lang) in limited {
+        translating::msgmerge(&input_pot_file, &path.to_string_lossy());
+    }
+
+    Ok(())
 }
 
 const POTFILES: &str = "POTFILES";

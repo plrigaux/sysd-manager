@@ -11,3 +11,5 @@ repository = { workspace = true }
 translating = { package = "sysd-manager-translating", path = "../sysd-manager-translating" }
 clap.workspace = true
 log.workspace = true
+dotenv.workspace = true
+env_logger.workspace = true
