@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 17:55+0000\n"
+"PO-Revision-Date: 2025-06-18 21:00+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -780,7 +780,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:185
 msgctxt "control"
 msgid "_Reenable ➚"
-msgstr "_Réactivé"
+msgstr "_Réactivé ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:186
