@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-19 15:08-0400\n"
-"PO-Revision-Date: 2025-06-17 23:00+0000\n"
+"PO-Revision-Date: 2025-06-20 00:29+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
-"manager/translation/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"sysd-manager/translation/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,24 +21,23 @@ msgstr ""
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:3
-#, fuzzy
 msgid "SysD Manager"
-msgstr "Gerente de SysD"
+msgstr "Gerenciador SysD"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:6
 msgid "Service manager"
-msgstr ""
+msgstr "Gerente de serviço"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:9
 msgid "A user-friendly application to manage systemd's units"
-msgstr ""
+msgstr "Um aplicativo amigável para gerenciar unidades systemd"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr ""
+msgstr "Systemd;Systemctl;Serviços;log;"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
