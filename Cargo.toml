@@ -46,6 +46,7 @@ lto = true
 clap = { version = "4.5", features = ["derive"] }
 dotenv = "0.15"
 env_logger = "0.11"
+libc = "0.2"
 log = "0.4"
 tokio = { version = "1", features = ["full"] }
 
@@ -65,7 +66,7 @@ formatx = "0.2"
 foreign-types-shared = "0.3.1"
 futures-util = "0.3"
 gettext-rs = { version ="0.7.2", features = ["gettext-system"]}
-libc = "0.2"
+libc.workspace = true
 libsysd = { version = "0.9", package = "libsystemd-sys"} 
 log.workspace = true
 regex = "1.11"

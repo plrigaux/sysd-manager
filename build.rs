@@ -36,23 +36,12 @@ fn generate_mo() -> Result<(), TransError> {
     println!("generate_mo");
     println!("cargo::rerun-if-changed={PO_DIR}");
 
-    //script_warning!("Go to read {PO_DIR}");
-    let paths = fs::read_dir(PO_DIR)?;
-    //script_warning!("Path {:?}", paths);
+    translating::generate_mo()?;
 
-    for path_result in paths {
-        //script_warning!("path_result {:?}", path_result);
-        let path = path_result?.path();
-        if path.extension().is_some_and(|this_ext| this_ext == "po") {
-            println!("PO file {:?} lang {:?}", path, path.file_stem());
+    println!("cargo::rerun-if-changed={DESKTOP_DIR}/io.github.plrigaux.sysd-manager.desktop.in");
 
-            if let Some(po_file) = path.to_str() {
-                if let Some(lang) = path.file_stem().and_then(|s| s.to_str()) {
-                    translating::msgfmt(po_file, lang, MAIN_PROG)?;
-                }
-            }
-        }
-    }
+    translating::generate_desktop()?;
+
     Ok(())
 }
 
@@ -377,7 +366,7 @@ use quick_xml::{
     events::{BytesStart, Event},
 };
 use translating::error::TransError;
-use translating::{MAIN_PROG, PO_DIR};
+use translating::{DESKTOP_DIR, PO_DIR};
 
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
     let (version, description) = if let Some(first) = release_notes.first() {

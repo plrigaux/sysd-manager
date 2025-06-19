@@ -16,3 +16,4 @@ __pycache__/
 data/schemas/gschemas.compiled
 /po/*.mo
 .weblate
+/data/applications/io.github.plrigaux.sysd-manager.desktop

@@ -1,8 +1,13 @@
 use std::{fs, io, process::Command};
+
+use log::info;
+
+use crate::error::TransError;
 pub mod error;
 
 pub const MAIN_PROG: &str = "sysd-manager";
 pub const PO_DIR: &str = "./po";
+pub const DESKTOP_DIR: &str = "./data/applications";
 
 /// Making the PO Template File
 /// https://www.gnu.org/software/gettext/manual/html_node/xgettext-Invocation.html
@@ -64,6 +69,92 @@ pub fn msgmerge(input_pot_file: &str, output_file: &str) {
         .unwrap();
 
     display_output("MSGMERGE", output);
+}
+
+pub fn generate_mo() -> Result<(), TransError> {
+    for path in fs::read_dir(PO_DIR)?
+        .filter_map(|r| r.ok())
+        .filter_map(|dir_entry| {
+            let p = dir_entry.path();
+            if p.extension().is_some_and(|this_ext| this_ext == "po") {
+                Some(p)
+            } else {
+                None
+            }
+        })
+    {
+        info!("PO file {:?} lang {:?}", path, path.file_stem());
+
+        if let Some(po_file) = path.to_str() {
+            if let Some(lang) = path.file_stem().and_then(|s| s.to_str()) {
+                msgfmt(po_file, lang, MAIN_PROG)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+use std::env;
+
+pub fn set_lingas_env() -> Result<(), TransError> {
+    let mut vec: Vec<_> = fs::read_dir(PO_DIR)?
+        .filter_map(|r| r.ok())
+        .filter_map(|dir_entry| {
+            let p = dir_entry.path();
+            if p.extension().is_some_and(|this_ext| this_ext == "po") {
+                Some(p)
+            } else {
+                None
+            }
+        })
+        .filter_map(|path| {
+            path.file_stem()
+                .and_then(|s| s.to_str())
+                .map(|s| s.to_string())
+            /*            if let Some(p) = path.file_stem().and_then(|s| s.to_str()) {
+                Some(p.to_string())
+            } else {
+                None
+            } */
+        })
+        .collect();
+
+    vec.sort();
+    let langs = vec.join(" ");
+
+    let key = "LINGUAS";
+    unsafe {
+        env::set_var(key, langs);
+    }
+
+    Ok(())
+}
+
+pub fn generate_desktop() -> Result<(), TransError> {
+    set_lingas_env()?;
+    let desktop_file_name = "io.github.plrigaux.sysd-manager.desktop";
+    let out_file = format!("{}/{}", DESKTOP_DIR, desktop_file_name);
+
+    let mut command = Command::new("msgfmt");
+    let output = command
+        .arg("--check")
+        .arg("--statistics")
+        .arg("--verbose")
+        .arg("--desktop")
+        .arg(format!(
+            "--template={}/{}.in",
+            DESKTOP_DIR, desktop_file_name
+        ))
+        .arg("-d")
+        .arg(PO_DIR)
+        .arg("-o")
+        .arg(out_file)
+        .output()?;
+
+    display_output("MSGFMT", output);
+
+    Ok(())
 }
 
 // /usr/bin/msgfmt -c --statistics --verbose -o pt_BR.gmo pt_BR.1po && rm -f pt_BR.1po
