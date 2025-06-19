@@ -1,9 +1,10 @@
 [Desktop Entry]
 Name=SysD Manager
 Exec=sysd-manager
+Icon=io.github.plrigaux.sysd-manager
+Comment=A user-friendly application to manage systemd units
 Terminal=false
 Type=Application
-Icon=io.github.plrigaux.sysd-manager
 StartupNotify=true
 Categories=Utility;System;Settings
 Keywords=Systemd;Systemctl;Services;log;
