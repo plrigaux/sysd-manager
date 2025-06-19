@@ -187,6 +187,10 @@ fn create_about() -> adw::AboutDialog {
         .website("https://github.com/plrigaux/sysd-manager")
         .issue_url("https://github.com/plrigaux/sysd-manager/issues")
         .artists(["4nyNoob"])
+        .translator_credits(
+            "John Peter Sa <johnppetersa@gmail.com>
+Pierre-Luc Rigaux",
+        )
         .build();
 
     about.add_acknowledgement_section(

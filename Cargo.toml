@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.30.3"
+version = "1.30.4"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -44,6 +44,8 @@ lto = true
 
 [workspace.dependencies]
 clap = { version = "4.5", features = ["derive"] }
+dotenv = "0.15"
+env_logger = "0.11"
 log = "0.4"
 tokio = { version = "1", features = ["full"] }
 
@@ -57,8 +59,8 @@ chrono = "0.4"
 clap.workspace = true
 constcat = "0.6"
 const_format = "0.2.34"
-dotenv = "0.15"
-env_logger = "0.11"
+dotenv.workspace = true
+env_logger.workspace = true
 formatx = "0.2"
 foreign-types-shared = "0.3.1"
 futures-util = "0.3"
