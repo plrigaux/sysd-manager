@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-19 15:08-0400\n"
-"PO-Revision-Date: 2025-06-19 18:17+0000\n"
+"PO-Revision-Date: 2025-06-20 00:29+0000\n"
 "Last-Translator: Priit Jõerüüt <hwlate@joeruut.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
@@ -21,24 +21,25 @@ msgstr ""
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:3
-#, fuzzy
 msgid "SysD Manager"
 msgstr "SysD haldur"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:6
 msgid "Service manager"
-msgstr ""
+msgstr "Teenusehaldur"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:9
 msgid "A user-friendly application to manage systemd's units"
-msgstr ""
+msgstr "Kasutajasõbralik rakendus systemd teenuseühikute haldamiseks"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:12
 msgid "Systemd;Systemctl;Services;log;"
 msgstr ""
+"Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
+""
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
