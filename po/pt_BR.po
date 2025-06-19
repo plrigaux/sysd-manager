@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-16 11:28-0400\n"
+"POT-Creation-Date: 2025-06-19 15:08-0400\n"
 "PO-Revision-Date: 2025-06-17 23:00+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
@@ -18,6 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.12.1\n"
+
+#. Desktop File Name
+#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:3
+#, fuzzy
+msgid "SysD Manager"
+msgstr "Gerente de SysD"
+
+#. Desktop File GenericName
+#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:6
+msgid "Service manager"
+msgstr ""
+
+#. Desktop File Comment
+#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:9
+msgid "A user-friendly application to manage systemd's units"
+msgstr ""
+
+#. Desktop File Keywords
+#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:12
+msgid "Systemd;Systemctl;Services;log;"
+msgstr ""
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -1400,7 +1421,7 @@ msgid "Micro seconds since the epoch"
 msgstr "Microssegundos desde a época"
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:194
+#: src/widget/app_window/menu.rs:198
 msgid "Thank you for your support"
 msgstr "Obrigado pelo seu apoio"
 
