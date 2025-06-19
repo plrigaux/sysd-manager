@@ -133,9 +133,9 @@ Interested in contributing? Contact the project maintainer on [GitHub](https://g
 __SysD Manager__ can be displayed in different languages as long a translation has been provided.
 
 <div align="center">
-
-[![Status da tradução](https://hosted.weblate.org/widget/sysd-manager/translation/multi-auto.svg)](https://hosted.weblate.org/engage/sysd-manager/)
-
+<a href="https://hosted.weblate.org/engage/sysd-manager/" target="_blank">
+<img src="https://hosted.weblate.org/widget/sysd-manager/translation/multi-auto.svg" alt="Status da tradução" style="height:200px;" >
+</a>
 </div>
 
 
