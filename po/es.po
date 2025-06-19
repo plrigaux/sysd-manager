@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-16 11:28-0400\n"
-"PO-Revision-Date: 2025-06-17 23:00+0000\n"
+"PO-Revision-Date: 2025-06-19 19:10+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/es/>\n"
@@ -93,31 +93,31 @@ msgstr "Archivo de unidad"
 #: data/interfaces/control_action_dialog.ui:38
 msgctxt "enable unit file"
 msgid "Use Selected Unit"
-msgstr ""
+msgstr "Usar unidad seleccionada"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:46
 msgctxt "enable unit file"
 msgid "Browse for Unit file"
-msgstr ""
+msgstr "Buscar archivo de unidad"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:54
 msgctxt "enable unit file"
 msgid "DBus Level"
-msgstr ""
+msgstr "Nivel DBus"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:59
 msgctxt "enable unit file"
 msgid "Whether the unit shall be enabled for runtime only"
-msgstr ""
+msgstr "Si la unidad se habilitará solo para tiempo de ejecución"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:60
 msgctxt "enable unit file"
 msgid "Runtime"
-msgstr ""
+msgstr "Tiempo de ejecución"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:65
@@ -126,12 +126,14 @@ msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
 "necessary"
 msgstr ""
+"Controlar si los enlaces simbólicos que apuntan a otras unidades se deben "
+"reemplazar si es necesario"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:66
 msgctxt "enable unit file"
 msgid "Force"
-msgstr ""
+msgstr "Fuerza"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:71
@@ -140,106 +142,110 @@ msgid ""
 "Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/"
 "system.attached"
 msgstr ""
+"Agregue o elimine los enlaces simbólicos en /etc/systemd/system.attached y /"
+"run/systemd/system.attached"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:73
 msgctxt "enable unit file"
 msgid "Portable"
-msgstr ""
+msgstr "Portátil"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:87
 msgctxt "enable unit file"
 msgid "Start Unit just after being enabled"
-msgstr ""
+msgstr "Iniciar la unidad justo después de habilitarla"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:88
 msgctxt "enable unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Corre ahora"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:93
 msgctxt "enable unit file"
 msgid "Starting mode options"
-msgstr ""
+msgstr "Opciones del modo de inicio"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:94
 msgctxt "enable unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "Modo de ejecución"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:106
 msgctxt "enable unit file"
 msgid "Reset"
-msgstr ""
+msgstr "Reiniciar"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:114
 msgctxt "enable unit file"
 msgid "Enable"
-msgstr ""
+msgstr "Permitir"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
 msgid "Clear"
-msgstr ""
+msgstr "Claro"
 
 #. button
 #: data/interfaces/journal_panel.ui:22
 msgctxt "journal"
 msgid "Refresh"
-msgstr ""
+msgstr "Refrescar"
 
 #: data/interfaces/journal_panel.ui:27
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
-msgstr ""
+msgstr "Borrar eventos del diario y volver a recuperarlos"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:38
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
+"Habilitar la impresión continua de nuevas entradas a medida que se añaden al "
+"diario"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:54
 msgctxt "journal"
 msgid "Toggle events display order"
-msgstr ""
+msgstr "Alternar el orden de visualización de los eventos"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:60
 msgctxt "journal"
 msgid "List the boots of the system"
-msgstr ""
+msgstr "Listar los arranques del sistema"
 
 #. button
 #: data/interfaces/journal_panel.ui:65
 msgctxt "journal"
 msgid "List Boots"
-msgstr ""
+msgstr "Lista de botas"
 
 #. button
 #: data/interfaces/journal_panel.ui:85
 msgctxt "journal"
 msgid "Current boot"
-msgstr ""
+msgstr "Arranque actual"
 
 #. button
 #: data/interfaces/journal_panel.ui:91
 msgctxt "journal"
 msgid "All events"
-msgstr ""
+msgstr "Todos los eventos"
 
 #. title
 #: data/interfaces/journal_panel.ui:98
 msgctxt "journal"
 msgid "Boot id"
-msgstr ""
+msgstr "Identificación de arranque"
 
 #. description
 #: data/interfaces/journal_panel.ui:118
@@ -248,101 +254,103 @@ msgid ""
 "No journal events!\n"
 "It can be a good thing. 😉"
 msgstr ""
+"¡Sin eventos en el diario!\n"
+"Puede ser algo bueno. 😉"
 
 #. title
 #: data/interfaces/journal_panel.ui:121
 msgctxt "journal"
 msgid "No journal events"
-msgstr ""
+msgstr "No hay eventos de diario"
 
 #. group
 #: data/interfaces/kill_panel.ui:20
 msgctxt "kill"
 msgid "Parameters"
-msgstr ""
+msgstr "Parámetros"
 
 #. title
 #: data/interfaces/kill_panel.ui:23
 msgctxt "kill"
 msgid "Unix signal"
-msgstr ""
+msgstr "Señal de Unix"
 
 #. subtitle
 #: data/interfaces/kill_panel.ui:29
 msgctxt "kill"
 msgid "Unit related processes"
-msgstr ""
+msgstr "Procesos relacionados con la unidad"
 
 #. title
 #: data/interfaces/kill_panel.ui:30
 msgctxt "kill"
 msgid "Who to kill"
-msgstr ""
+msgstr "¿A quién matar?"
 
 #. title
 #: data/interfaces/kill_panel.ui:37
 msgctxt "kill"
 msgid "Signal Value"
-msgstr ""
+msgstr "Valor de la señal"
 
 #. button
 #: data/interfaces/kill_panel.ui:51
 msgctxt "kill"
 msgid "Send"
-msgstr ""
+msgstr "Enviar"
 
 #. description
 #: data/interfaces/kill_panel.ui:60
 msgctxt "kill"
 msgid "Most common Linux signals"
-msgstr ""
+msgstr "Señales de Linux más comunes"
 
 #. description
 #: data/interfaces/kill_panel.ui:62
 msgctxt "kill"
 msgid "Common Unix signals"
-msgstr ""
+msgstr "Señales comunes de Unix"
 
 #. button
 #: data/interfaces/kill_panel.ui:84
 msgctxt "kill"
 msgid "Send Kill Signal to Unit"
-msgstr ""
+msgstr "Enviar señal de muerte a la unidad"
 
 #: data/interfaces/list_boots.ui:37
 msgctxt "boot list column"
 msgid "Index"
-msgstr ""
+msgstr "Índice"
 
 #: data/interfaces/list_boots.ui:44
 msgctxt "boot list column"
 msgid "Offset"
-msgstr ""
+msgstr "Compensar"
 
 #: data/interfaces/list_boots.ui:52
 msgctxt "boot list column"
 msgid "Boot Id"
-msgstr ""
+msgstr "Identificación de arranque"
 
 #: data/interfaces/list_boots.ui:60
 msgctxt "boot list column"
 msgid "First Entry"
-msgstr ""
+msgstr "Primera entrada"
 
 #: data/interfaces/list_boots.ui:68
 msgctxt "boot list column"
 msgid "Last Entry"
-msgstr ""
+msgstr "Última entrada"
 
 #: data/interfaces/list_boots.ui:75
 msgctxt "boot list column"
 msgid "Duration"
-msgstr ""
+msgstr "Duración"
 
 #: data/interfaces/list_boots.ui:105
 msgctxt "boot list dialog"
 msgid "List Boots"
-msgstr ""
+msgstr "Lista de botas"
 
 #. group
 #. button
@@ -350,19 +358,19 @@ msgstr ""
 #: data/interfaces/mask_unit_dialog.ui:75
 msgctxt "mask"
 msgid "Mask"
-msgstr ""
+msgstr "Mascarilla"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:27
 msgctxt "mask"
 msgid "To mask temporarily until the next system reboot"
-msgstr ""
+msgstr "Para enmascarar temporalmente hasta el próximo reinicio del sistema"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:28
 msgctxt "mask"
 msgid "Runtime"
-msgstr ""
+msgstr "Tiempo de ejecución"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:33
@@ -371,24 +379,26 @@ msgid ""
 "Controls whether symlinks pointing to other units shall be replaced if "
 "necessary"
 msgstr ""
+"Controla si los enlaces simbólicos que apuntan a otras unidades se deben "
+"reemplazar si es necesario"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:34
 msgctxt "mask"
 msgid "Force"
-msgstr ""
+msgstr "Fuerza"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:48
 msgctxt "mask"
 msgid "Ensure that the unit will be also stopped"
-msgstr ""
+msgstr "Asegúrese de que la unidad también se detenga."
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:49
 msgctxt "mask"
 msgid "Stop Now"
-msgstr ""
+msgstr "Detente ahora"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:54

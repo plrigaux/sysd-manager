@@ -56,6 +56,9 @@ enum Commands {
 
     /// Generate all Machine Object files
     Mo,
+
+    /// Generate desktop file
+    Desktop,
 }
 
 fn main() {
@@ -66,7 +69,8 @@ fn main() {
     let args = Args::parse();
 
     let result = match &args.command {
-        Some(Commands::Mo) => generate_mo(),
+        Some(Commands::Mo) => translating::generate_mo(),
+        Some(Commands::Desktop) => translating::generate_desktop(),
         Some(Commands::Po { lang }) => update_po_file(lang),
         Some(Commands::Newpo { lang }) => generate_po_file(lang),
         Some(Commands::Expo { lang }) => {
@@ -199,8 +203,10 @@ fn generate_potfiles() -> Result<(), TransError> {
     //TODO filter on gettext only
     let mut potfiles_entries = list_files("src", "rs")?;
     let mut interc = list_files("data/interfaces", "ui")?;
+    let desktop = PathBuf::from("data/applications/io.github.plrigaux.sysd-manager.desktop.in");
 
     potfiles_entries.append(&mut interc);
+    potfiles_entries.push(desktop);
     potfiles_entries.sort();
 
     println!("{:#?}", potfiles_entries);
@@ -251,23 +257,5 @@ fn extract_and_generate_po_template() -> Result<(), TransError> {
 
     translating::xgettext(&potfiles_file_path, &output_pot_file);
 
-    Ok(())
-}
-
-fn generate_mo() -> Result<(), TransError> {
-    let paths = fs::read_dir(PO_DIR)?;
-
-    for path_result in paths {
-        let path = path_result?.path();
-        if path.extension().is_some_and(|this_ext| this_ext == "po") {
-            println!("PO file {:?} lang {:?}", path, path.file_stem());
-
-            if let Some(po_file) = path.to_str() {
-                if let Some(lang) = path.file_stem().and_then(|s| s.to_str()) {
-                    translating::msgfmt(po_file, lang, MAIN_PROG)?;
-                }
-            }
-        }
-    }
     Ok(())
 }

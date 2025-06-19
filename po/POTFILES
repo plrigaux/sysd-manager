@@ -1,4 +1,5 @@
 #File generated
+data/applications/io.github.plrigaux.sysd-manager.desktop.in
 data/interfaces/app_window.ui
 data/interfaces/clean_dialog.ui
 data/interfaces/control_action_dialog.ui
