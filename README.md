@@ -116,7 +116,8 @@ python install_tiny
 ## 🛣️ Roadmap
 
 Planned features:
-- Non-blocking calls (in progress)
+- Filter units on more properties
+- Functionality edit gereated file or original
 - Always administrator mode
 - Continuous UX improvements
 
