@@ -105,7 +105,7 @@ pub enum EnablementStatus {
     Masked = 8,
     MaskedRuntime = 13,
     Static = 9,
-    Trancient = 10,
+    Transient = 10,
 }
 
 impl EnablementStatus {
@@ -147,7 +147,7 @@ impl EnablementStatus {
             }
             'b' => EnablementStatus::Bad,
             'g' => EnablementStatus::Generated,
-            't' => EnablementStatus::Trancient,
+            't' => EnablementStatus::Transient,
             _ => {
                 warn!("Unknown State: {}", enablement_status);
                 EnablementStatus::Unknown
@@ -166,7 +166,7 @@ impl EnablementStatus {
             EnablementStatus::Masked => MASKED,
             EnablementStatus::Static => "static",
             EnablementStatus::Generated => "generated",
-            EnablementStatus::Trancient => "trancient",
+            EnablementStatus::Transient => "transient",
             EnablementStatus::EnabledRuntime => "enabled-runtime",
             EnablementStatus::LinkedRuntime => "linked-runtime",
             EnablementStatus::MaskedRuntime => "masked-runtime",
@@ -229,7 +229,7 @@ impl EnablementStatus {
                 "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section.",
             )),
             //tooltip column cell
-            EnablementStatus::Trancient => Some(pgettext(
+            EnablementStatus::Transient => Some(pgettext(
                 "list",
                 "The unit file has been created dynamically with the runtime API. Transient units may not be enabled.",
             )),
@@ -303,7 +303,7 @@ impl From<u8> for EnablementStatus {
             7 => Self::Linked,
             8 => Self::Masked,
             9 => Self::Static,
-            10 => Self::Trancient,
+            10 => Self::Transient,
             11 => Self::EnabledRuntime,
             12 => Self::LinkedRuntime,
             13 => Self::MaskedRuntime,
