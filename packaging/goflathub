@@ -313,7 +313,9 @@ def set_required_files(from_git: bool):
             "build.rs",
             "screenshots",
             "po",
-            "translating", "transtools", "tiny_daemon",
+            "sysd-manager-translating", 
+            "transtools", 
+            "tiny_daemon",
             f"{FLATPACK_BUILD_DIR}",
         ]
     )
