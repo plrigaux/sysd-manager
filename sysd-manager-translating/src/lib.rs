@@ -132,9 +132,11 @@ pub fn set_lingas_env() -> Result<(), TransError> {
 }
 
 pub fn generate_desktop() -> Result<(), TransError> {
-    set_lingas_env()?;
     let desktop_file_name = "io.github.plrigaux.sysd-manager.desktop";
-    let out_file = format!("{}/{}", DESKTOP_DIR, desktop_file_name);
+
+    let out_dir = "target/locale";
+    fs::create_dir_all(out_dir)?;
+    let out_file = format!("{}/{}", out_dir, desktop_file_name);
 
     let mut command = Command::new("msgfmt");
     let output = command
@@ -142,10 +144,7 @@ pub fn generate_desktop() -> Result<(), TransError> {
         .arg("--statistics")
         .arg("--verbose")
         .arg("--desktop")
-        .arg(format!(
-            "--template={}/{}.in",
-            DESKTOP_DIR, desktop_file_name
-        ))
+        .arg(format!("--template={DESKTOP_DIR}/{desktop_file_name}"))
         .arg("-d")
         .arg(PO_DIR)
         .arg("-o")

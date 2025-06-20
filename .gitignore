@@ -15,6 +15,5 @@ __pycache__/
 .cargo
 data/schemas/gschemas.compiled
 /po/*.mo
-.weblate
-data/applications/io.github.plrigaux.sysd-manager.desktop
+
 

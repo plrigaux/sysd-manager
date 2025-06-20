@@ -87,7 +87,7 @@ https://hughsie.github.io/oars/index.html
           <ul>
             <li>Translation of desktop file</li>                      
           </ul>                  
-          <p>Fix</p>
+          <p>Fixed</p>
           <ul>
             <li>Transient typo</li>                      
           </ul>                  
@@ -106,7 +106,7 @@ https://hughsie.github.io/oars/index.html
       </release>
       <release version="1.29.2" date="2025-06-13">
       <description>  
-        <p>Fix</p>
+        <p>Fixed</p>
         <ul>
           <li>Translation making application to crash</li>          
         </ul>                  

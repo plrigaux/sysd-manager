@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Translation of desktop file
-Fix
 
+### Fixed
 - Transient typo
 
 ## [1.30.1] - 2025-06-18
@@ -21,8 +21,8 @@ Fix
 - Translators Credits
 
 ## [1.29.2] - 2025-06-13
-Fix
 
+### Fixed
 - Translation making application to crash
 
 ## [1.29.0] - 2025-06-09
