@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-19 15:08-0400\n"
-"PO-Revision-Date: 2025-06-18 21:00+0000\n"
+"PO-Revision-Date: 2025-06-20 00:29+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -21,24 +21,23 @@ msgstr ""
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:3
-#, fuzzy
 msgid "SysD Manager"
 msgstr "SysD Manager"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:6
 msgid "Service manager"
-msgstr ""
+msgstr "Gestionnaire de services"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:9
 msgid "A user-friendly application to manage systemd's units"
-msgstr ""
+msgstr "Une application conviviale pour gérer les unités de systemd"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop.in:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr ""
+msgstr "Systemd;Systemctl;Services;log;"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -912,7 +911,7 @@ msgstr "Arrêter l'unité"
 #: data/interfaces/unit_control_panel.ui:77
 msgctxt "control tooltip"
 msgid "Restart Modes"
-msgstr "Redémarrer"
+msgstr "Modes de redémarrage"
 
 #: data/interfaces/unit_control_panel.ui:88
 msgctxt "controls tooltip"
@@ -1093,7 +1092,7 @@ msgstr "Fichiers"
 #: data/interfaces/unit_list_panel.ui:194
 msgctxt "list info"
 msgid "Units"
-msgstr "Unité"
+msgstr "Unités"
 
 #: data/interfaces/unit_list_panel.ui:225
 msgctxt "list page description"
@@ -1264,13 +1263,13 @@ msgstr ""
 #: src/systemd/enums.rs:703
 msgctxt "dependency"
 msgid "Forward"
-msgstr "Avant"
+msgstr "En avant"
 
 #. menu option
 #: src/systemd/enums.rs:705
 msgctxt "dependency"
 msgid "Reverse"
-msgstr "Inverse"
+msgstr "En arrière"
 
 #. menu option
 #: src/systemd/enums.rs:707
@@ -1282,7 +1281,7 @@ msgstr "Après"
 #: src/systemd/enums.rs:709
 msgctxt "dependency"
 msgid "Before"
-msgstr "Avant"
+msgstr "Devant"
 
 #. menu option
 #: src/systemd/enums.rs:880
