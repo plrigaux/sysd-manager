@@ -6,7 +6,9 @@ use clap::Parser;
 use clap::Subcommand;
 use log::info;
 use log::warn;
+use translating::DESKTOP_FILE_PATH;
 use translating::MAIN_PROG;
+use translating::METAINFO_FILE_PATH;
 use translating::PO_DIR;
 use translating::error::TransError;
 
@@ -203,10 +205,12 @@ fn generate_potfiles() -> Result<(), TransError> {
     //TODO filter on gettext only
     let mut potfiles_entries = list_files("src", "rs")?;
     let mut interc = list_files("data/interfaces", "ui")?;
-    let desktop = PathBuf::from("data/applications/io.github.plrigaux.sysd-manager.desktop.in");
+    let desktop = PathBuf::from(DESKTOP_FILE_PATH);
+    let metainfo = PathBuf::from(METAINFO_FILE_PATH);
 
     potfiles_entries.append(&mut interc);
     potfiles_entries.push(desktop);
+    potfiles_entries.push(metainfo);
     potfiles_entries.sort();
 
     println!("{:#?}", potfiles_entries);

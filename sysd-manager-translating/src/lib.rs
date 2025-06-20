@@ -1,6 +1,6 @@
-use std::{fs, io, process::Command};
-
+use constcat::concat;
 use log::info;
+use std::{fs, io, process::Command};
 
 use crate::error::TransError;
 pub mod error;
@@ -8,6 +8,12 @@ pub mod error;
 pub const MAIN_PROG: &str = "sysd-manager";
 pub const PO_DIR: &str = "./po";
 pub const DESKTOP_DIR: &str = "./data/applications";
+pub const DESKTOP_FILE: &str = "io.github.plrigaux.sysd-manager.desktop";
+pub const DESKTOP_FILE_PATH: &str = concat!(DESKTOP_DIR, "/", DESKTOP_FILE);
+
+pub const METAINFO_DIR: &str = "./data/metainfo";
+pub const METAINFO_FILE: &str = "io.github.plrigaux.sysd-manager.metainfo.xml";
+pub const METAINFO_FILE_PATH: &str = concat!(METAINFO_DIR, "/", METAINFO_FILE);
 
 /// Making the PO Template File
 /// https://www.gnu.org/software/gettext/manual/html_node/xgettext-Invocation.html
@@ -132,11 +138,9 @@ pub fn set_lingas_env() -> Result<(), TransError> {
 }
 
 pub fn generate_desktop() -> Result<(), TransError> {
-    let desktop_file_name = "io.github.plrigaux.sysd-manager.desktop";
-
     let out_dir = "target/locale";
     fs::create_dir_all(out_dir)?;
-    let out_file = format!("{}/{}", out_dir, desktop_file_name);
+    let out_file = format!("{}/{}", out_dir, DESKTOP_FILE);
 
     let mut command = Command::new("msgfmt");
     let output = command
@@ -144,7 +148,7 @@ pub fn generate_desktop() -> Result<(), TransError> {
         .arg("--statistics")
         .arg("--verbose")
         .arg("--desktop")
-        .arg(format!("--template={DESKTOP_DIR}/{desktop_file_name}"))
+        .arg(format!("--template={}", DESKTOP_FILE_PATH))
         .arg("-d")
         .arg(PO_DIR)
         .arg("-o")

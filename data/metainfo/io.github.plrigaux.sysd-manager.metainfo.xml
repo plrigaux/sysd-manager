@@ -6,13 +6,13 @@
   <id>io.github.plrigaux.sysd-manager</id>
   <metadata_license>CC0</metadata_license>
   <project_license>GPL-3.0+</project_license>
-  <name>SysD Manager</name>
-  <summary>A GUI to manage systemd units</summary>
+  <name comments="metainfo name">SysD Manager</name>
+  <summary comments="metainfo summary">A user-friendly application to manage systemd's units</summary>
   <!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
   <description>
-    <p>Manage your Services, Timers, Sockets and other units. You can enable, disable, stop and
-      start them. Also,
-      you can view their config file and peak at their journal logs.
+    <p>
+      Manage your Services, Timers, Sockets and other units. You can enable, disable, stop and
+      start them. Also, you can view their config file and peak at their journal logs.
     </p>
   </description>
   <branding>
@@ -20,14 +20,14 @@
     <color type="primary" scheme_preference="dark">#424d38</color>
   </branding>
   <categories>
-    <category>System</category>
-    <category>Utility</category>
-    <category>Settings</category>
-    <category>GTK</category>
+    <category comments="metainfo category">Utility</category>
+    <category comments="metainfo category">GTK</category>    
+    <category comments="metainfo category">Services</category>
+    <category comments="metainfo category">System</category>
   </categories>
   <keywords>
-    <keyword>rust</keyword>
-    <keyword>Systemd</keyword>
+    <keyword translate="no">rust</keyword>
+    <keyword translate="no">Systemd</keyword>
   </keywords>
   <screenshots>
     <screenshot type="default">
@@ -38,37 +38,37 @@
     <screenshot>
       <image type="source" environment="gnome:dark">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_info_dark.png</image>
-      <caption>Unit Files</caption>
+      <caption comments="metainfo screenshot caption">Unit Files</caption>
     </screenshot>
     <screenshot>
       <image type="source" environment="gnome:dark">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/dependencies.png</image>
-      <caption>Unit Dependencies</caption>
+      <caption comments="metainfo screenshot caption">Unit Dependencies</caption>
     </screenshot>
     <screenshot>
       <image type="source" environment="gnome:dark">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/dependencies_dark.png</image>
-      <caption>Unit Dependencies</caption>
+      <caption comments="metainfo screenshot caption">Unit Dependencies</caption>
     </screenshot>
     <screenshot>
       <image type="source">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_file.png</image>
-      <caption>Unit File</caption>
+      <caption comments="metainfo screenshot caption">Unit File</caption>
     </screenshot>
     <screenshot>
       <image type="source" environment="gnome:dark">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/unit_file_dark.png</image>
-      <caption>Unit File</caption>
+      <caption comments="metainfo screenshot caption">Unit File</caption>
     </screenshot>
     <screenshot>
       <image type="source">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal.png</image>
-      <caption>Unit Journal</caption>
+      <caption comments="metainfo screenshot caption">Unit Journal</caption>
     </screenshot>
     <screenshot>
       <image type="source" environment="gnome:dark">
         https://raw.githubusercontent.com/plrigaux/sysd-manager/main/screenshots/journal_dark.png</image>
-      <caption>Unit Journal</caption>
+      <caption comments="metainfo screenshot caption">Unit Journal</caption>
     </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/plrigaux/sysd-manager</url>
@@ -80,192 +80,194 @@ Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
-    <releases>
-       <release version="1.30.5" date="2025-06-19">
-        <description>  
-          <p>Added</p>
-          <ul>
-            <li>Translation of desktop file</li>                      
-          </ul>                  
-          <p>Fixed</p>
-          <ul>
-            <li>Transient typo</li>                      
-          </ul>                  
-        </description>
-      </release>
-      <release version="1.30.1" date="2025-06-18">
-        <description>  
-          <p>Added</p>
-          <ul>
-            <li>New unit file controls : Preset, Disable, Reenable and Link</li>          
-            <li>Portuguese Brazil translation strings</li>          
-            <li>French translation strings</li>    
-            <li>Translators Credits</li>      
-          </ul>                  
-        </description>
-      </release>
-      <release version="1.29.2" date="2025-06-13">
-      <description>  
+  <releases>
+    <release version="1.30.5" date="2025-06-19">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Translation of desktop file</li>
+        </ul>
         <p>Fixed</p>
         <ul>
-          <li>Translation making application to crash</li>          
-        </ul>                  
-    </description>
+          <li>Transient typo</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.30.1" date="2025-06-18">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>New unit file controls : Preset, Disable, Reenable and Link</li>
+          <li>Portuguese Brazil translation strings</li>
+          <li>French translation strings</li>
+          <li>Translators Credits</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.29.2" date="2025-06-13">
+      <description translate="no">
+        <p>Fixed</p>
+        <ul>
+          <li>Translation making application to crash</li>
+        </ul>
+      </description>
     </release>
     <release version="1.29.0" date="2025-06-09">
-      <description>  
+      <description translate="no">
         <p>Added</p>
         <ul>
-          <li>Ability to start unit after enabling it</li>          
-        </ul>    
-         <ul>
-          <li>French translation</li>          
-        </ul>    
-         <ul>
-          <li>Ability for translators to translate Sysd Manager</li>          
-        </ul>                  
-    </description>
+          <li>Ability to start unit after enabling it</li>
+        </ul>
+        <ul>
+          <li>French translation</li>
+        </ul>
+        <ul>
+          <li>Ability for translators to translate Sysd Manager</li>
+        </ul>
+      </description>
     </release>
     <release version="1.28.0" date="2025-06-01">
-      <description>  
+      <description translate="no">
         <p>Added</p>
         <ul>
-          <li>New menu option: Watch Systemd signals</li>          
-        </ul>               
-    </description>
+          <li>New menu option: Watch Systemd signals</li>
+        </ul>
+      </description>
     </release>
     <release version="1.27.2" date="2025-05-30">
-      <description>  
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Unit dependencies navigation crash</li>
           <li>Action result message</li>
-        </ul>               
-    </description>
+        </ul>
+      </description>
     </release>
-     <release version="1.27.0" date="2025-05-29">
-      <description>  
+    <release version="1.27.0" date="2025-05-29">
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Add Mask unit more options</li>
-        </ul> 
-         <p>Fixed</p>
+        </ul>
+        <p>Fixed</p>
         <ul>
           <li>Enable unit file Dialog save context mixed up</li>
-        </ul>   
+        </ul>
         <ul>
           <li>1.27.1 Mask unit dialog behaviour malfunction</li>
-        </ul>          
+        </ul>
       </description>
     </release>
-     <release version="1.26.0" date="2025-05-28">
-      <description>  
+    <release version="1.26.0" date="2025-05-28">
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Enable unit file</li>
-        </ul> 
-         <p>Changed</p>
+        </ul>
+        <p>Changed</p>
         <ul>
           <li>Remove button destructive style for clear filter</li>
-        </ul>          
+        </ul>
       </description>
     </release>
     <release version="1.25.0" date="2025-05-22">
-      <description>  
+      <description translate="no">
         <p>Added</p>
         <ul>
-          <li>Feature to enable new journal entries continuous print as they are appended to the journal</li>
-        </ul> 
-         <p>Changed</p>
+          <li>Feature to enable new journal entries continuous print as they are appended to the
+            journal</li>
+        </ul>
+        <p>Changed</p>
         <ul>
           <li>UX Better error dialog message on not authorized for actions: clean, freese and thaw</li>
           <li>Named Damglador in the Acknowledgements section</li>
-        </ul>          
+        </ul>
       </description>
     </release>
-      <release version="1.24.2" date="2025-05-10">
-      <description>  
+    <release version="1.24.2" date="2025-05-10">
+      <description translate="no">
         <p>Fixed</p>
         <ul>
-          <li>Application crash when the preference for the unit file browser «Display colors» is set to Off</li>
-        </ul>           
+          <li>Application crash when the preference for the unit file browser «Display colors» is
+            set to Off</li>
+        </ul>
       </description>
     </release>
     <release version="1.24.1" date="2025-04-28">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>A clear all filters button on the filter panel</li>
-        </ul>   
+        </ul>
         <p>Fixed</p>
         <ul>
           <li>A possible starting crash</li>
-        </ul>           
+        </ul>
       </description>
     </release>
     <release version="1.24.0" date="2025-04-18">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Mask and Unmask a Unit functionnality</li>
-        </ul>         
+        </ul>
       </description>
     </release>
     <release version="1.23.0" date="2025-04-14">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>List the Journal Boots</li>
-        </ul>  
+        </ul>
         <p>Changed</p>
         <ul>
           <li>UX Journal Entries Filtered on Boot Direct Selection</li>
         </ul>
-          <p>Fixed</p>
+        <p>Fixed</p>
         <ul>
           <li>Clear Filters Menu option</li>
           <li>UX Unit search entry got focus when appearing</li>
-        </ul>         
+        </ul>
       </description>
     </release>
     <release version="1.22.4" date="2025-04-11">
-      <description>
-          <p>Fixed</p>
+      <description translate="no">
+        <p>Fixed</p>
         <ul>
           <li>Unit Filter Entry get focus when appearing</li>
-        </ul>         
+        </ul>
       </description>
     </release>
     <release version="1.22.1" date="2025-04-10">
-      <description>
-          <p>Added</p>
+      <description translate="no">
+        <p>Added</p>
         <ul>
           <li>Unit List Summary Totals</li>
-        </ul>  
+        </ul>
         <p>Changed</p>
         <ul>
           <li>Panel navigator look and feel</li>
-        </ul>      
+        </ul>
       </description>
     </release>
-   <release version="1.21.1" date="2025-04-09">
-      <description>
+    <release version="1.21.1" date="2025-04-09">
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Unit search entry input</li>
         </ul>
-         <p>Added</p>
+        <p>Added</p>
         <ul>
           <li>Clear filter button</li>
         </ul>
-         <p>Changed</p>
+        <p>Changed</p>
         <ul>
           <li>Some unit list optimizations</li>
         </ul>
       </description>
     </release>
-   <release version="1.21.0" date="2025-04-08">
-      <description>
+    <release version="1.21.0" date="2025-04-08">
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Fine column filter</li>
@@ -276,8 +278,8 @@ https://hughsie.github.io/oars/index.html
         </ul>
       </description>
     </release>
-   <release version="1.20.0" date="2025-03-29">
-      <description>
+    <release version="1.20.0" date="2025-03-29">
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Adaptive panes orientation</li>
@@ -289,15 +291,15 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.19.2" date="2025-03-27">
-      <description>
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Application title capitalization</li>
         </ul>
       </description>
-    </release>   
+    </release>
     <release version="1.19.0" date="2025-03-26">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>New button Freeze</li>
@@ -319,7 +321,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.18.2" date="2025-03-19">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>The possibility to sort the Description column</li>
@@ -338,7 +340,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.18.1" date="2025-03-18">
-      <description>
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Possible application crashes</li>
@@ -346,7 +348,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.18.0" date="2025-03-17">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>New columns: bus, preset, load and sub</li>
@@ -368,7 +370,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.17.0" date="2025-03-06">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Feature: Queue signal (sigqueue)</li>
@@ -382,7 +384,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.16.0" date="2025-02-24">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Preference option to display unit file line number</li>
@@ -405,7 +407,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.15.0" date="2025-02-19">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Tooltips for enable status</li>
@@ -423,7 +425,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.14.0" date="2025-02-17">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Retrieve the description of unloaded units for the list display</li>
@@ -437,7 +439,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.13.2" date="2025-02-11">
-      <description>
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Change logs</li>
@@ -445,7 +447,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.13.1" date="2025-02-11">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Different toast messages have color</li>
@@ -462,7 +464,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.12.4" date="2025-02-08">
-      <description>
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Make flatpak-linter pass on metainfo.xml</li>
@@ -470,7 +472,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.12.3" date="2025-02-08">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Add a CHANGELOG file</li>
@@ -482,7 +484,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.12.2" date="2025-02-08">
-      <description>
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Fix time_t conversion on 32bit architecture</li>
@@ -490,7 +492,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.12.1" date="2025-02-07">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Journal preferences batch size</li>
@@ -502,7 +504,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.12.0" date="2025-02-07">
-      <description>
+      <description translate="no">
         <p>Changed</p>
         <ul>
           <li>Redo journal handling and display</li>
@@ -511,7 +513,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.11.0" date="2025-01-30">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Possibility to select Monospace Font for the different views</li>
@@ -523,7 +525,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.10.3" date="2025-01-27">
-      <description>
+      <description translate="no">
         <p>Fixed</p>
         <ul>
           <li>Fix text style</li>
@@ -531,7 +533,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.10.0" date="2025-01-22">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Start and stop buttons are highlighted according to the unit state</li>
@@ -540,7 +542,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.9.4" date="2025-01-21">
-      <description>
+      <description translate="no">
         <p>This release worked on unit information</p>
         <p>Added</p>
         <ul>
@@ -559,21 +561,21 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.9.2" date="2025-01-18">
-      <description>
+      <description translate="no">
         <ul>
           <li>Fix unit information timer trigger</li>
         </ul>
       </description>
     </release>
     <release version="1.9.1" date="2025-01-16">
-      <description>
+      <description translate="no">
         <ul>
           <li>Fix scope unit information</li>
         </ul>
       </description>
     </release>
     <release version="1.9.0" date="2025-01-15">
-      <description>
+      <description translate="no">
         <ul>
           <li>Unit information: action man an http links</li>
           <li>Unit dependencies: add an unit type filter</li>
@@ -581,7 +583,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.8.2" date="2025-01-14">
-      <description>
+      <description translate="no">
         <ul>
           <li>Fix Unit info: CGroup now displays command line with arguments</li>
           <li>Fix Unit info: CGroup now displays all processes</li>
@@ -590,7 +592,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.8" date="2025-01-08">
-      <description>
+      <description translate="no">
         <ul>
           <li>New information page "Dependencies" to be able to view and navigate unit's
             dependencies</li>
@@ -601,7 +603,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.7" date="2025-01-03">
-      <description>
+      <description translate="no">
         <p>Added</p>
         <ul>
           <li>Select a unit at program opening by passing a unit name as cli
@@ -611,7 +613,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.6" date="2024-12-30">
-      <description>
+      <description translate="no">
         <ul>
           <li>Improve User Experience for the Save file button</li>
           <li>Reduce needed Flatpak file permissions</li>
@@ -619,14 +621,14 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.5.1" date="2024-12-20">
-      <description>
+      <description translate="no">
         <ul>
           <li>Fix unit info links under Flatpak</li>
         </ul>
       </description>
     </release>
     <release version="1.5.0" date="2024-12-20">
-      <description>
+      <description translate="no">
         <ul>
           <li>Unit info now displays file links</li>
           <li>Unit info now displays Invocation</li>
@@ -635,7 +637,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.4" date="2024-12-19">
-      <description>
+      <description translate="no">
         <ul>
           <li>Add invocation Id on unit info file</li>
           <li>Add a filter base on "boot id" for journal events</li>
@@ -646,14 +648,14 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.3.2" date="2024-12-06">
-      <description>
+      <description translate="no">
         <ul>
           <li>Fix journal coloring for flatpak version</li>
         </ul>
       </description>
     </release>
     <release version="1.3.1" date="2024-11-29">
-      <description>
+      <description translate="no">
         <ul>
           <li>Unit's initialize time (Analyze blame) is now fetch asynchronously to avoid to block
             the application</li>
@@ -661,7 +663,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.3.0" date="2024-11-28">
-      <description>
+      <description translate="no">
         <ul>
           <li>Journal events are fetch asynchronously to avoid to block the application</li>
           <li>Setting to limit the number of journal events</li>
@@ -669,7 +671,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.2.0" date="2024-11-22">
-      <description>
+      <description translate="no">
         <ul>
           <li>Load all units asynchronously</li>
           <li>Relocate the Session / System message bus switcher on the main window</li>
@@ -677,7 +679,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.1.1" date="2024-11-12">
-      <description>
+      <description translate="no">
         <ul>
           <li>Add reload all units function</li>
           <li>Modify logo</li>
@@ -685,14 +687,14 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="1.0.1" date="2024-11-09">
-      <description>
+      <description translate="no">
         <ul>
           <li>Fix missing unit info</li>
         </ul>
       </description>
     </release>
     <release version="1.0.0" date="2024-11-08">
-      <description>
+      <description translate="no">
         <ul>
           <li>Provide the option to change mode for Start, Stop and Restart actions</li>
           <li>If unit's object path doesn't exist it asks it again</li>
@@ -702,14 +704,14 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="0.1.12" date="2024-10-30">
-      <description>
+      <description translate="no">
         <ul>
           <li>Fix kill signals list scroll</li>
         </ul>
       </description>
     </release>
     <release version="0.1.11" date="2024-10-30">
-      <description>
+      <description translate="no">
         <ul>
           <li>New functionality: ability to send a kill signal to a unit</li>
           <li>The list now displays loaded and unloaded units</li>
@@ -718,7 +720,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="0.1.10" date="2024-10-22">
-      <description>
+      <description translate="no">
         <ul>
           <li>Add some colors on the unit information panel</li>
           <li>Add more information details on the unit information panel</li>
@@ -727,7 +729,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="0.1.9" date="2024-10-18">
-      <description>
+      <description translate="no">
         <ul>
           <li>Display a first opening message</li>
           <li>Improve the preference dialogue</li>
@@ -738,7 +740,7 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="0.1.8" date="2024-10-08">
-      <description>
+      <description translate="no">
         <ul>
           <li>Remove the flatpak test at startup</li>
           <li>Migrate some widgets to libadwaita</li>
@@ -746,34 +748,34 @@ https://hughsie.github.io/oars/index.html
       </description>
     </release>
     <release version="0.1.7" date="2024-10-03">
-      <description>
+      <description translate="no">
         <p>Update the unit information panel</p>
       </description>
     </release>
     <release version="0.1.6" date="2024-08-02">
-      <description>
+      <description translate="no">
         <p>Add a proto preference panel</p>
         <p>Release attempt on Flathub</p>
       </description>
     </release>
     <release version="0.1.3" date="2024-07-15">
-      <description>
+      <description translate="no">
         <p>Make the sub windows modal. i.e. not separated form the main window</p>
       </description>
     </release>
     <release version="0.1.2" date="2024-07-07">
-      <description>
+      <description translate="no">
         <p>Allow filtering on unit type</p>
       </description>
     </release>
     <release version="0.0.2" date="2024-06-21">
-      <description>
+      <description translate="no">
         <p>First release of Rust Flatpak App</p>
       </description>
     </release>
   </releases>
   <developer id="io.github.plrigaux">
-    <name>Pierre-Luc Rigaux</name>
+    <name translate="no">Pierre-Luc Rigaux</name>
   </developer>
 
   <launchable type="desktop-id">io.github.plrigaux.sysd-manager.desktop</launchable>

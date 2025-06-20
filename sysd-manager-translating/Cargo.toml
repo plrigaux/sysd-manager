@@ -12,4 +12,5 @@ repository = { workspace = true }
 
 
 [dependencies]
+constcat.workspace = true
 log.workspace = true

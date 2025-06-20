@@ -49,6 +49,7 @@ env_logger = "0.11"
 libc = "0.2"
 log = "0.4"
 tokio = { version = "1", features = ["full"] }
+constcat = "0.6"
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
@@ -58,7 +59,7 @@ gtk = { version = "0.9.6", package = "gtk4", features = ["v4_18"] }
 bitflags = "2.9"
 chrono = "0.4"
 clap.workspace = true
-constcat = "0.6"
+constcat.workspace = true
 const_format = "0.2.34"
 dotenv.workspace = true
 env_logger.workspace = true

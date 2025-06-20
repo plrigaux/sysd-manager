@@ -2,6 +2,15 @@ use std::collections::HashSet;
 use std::fs::OpenOptions;
 use std::io::Write;
 
+use std::io::BufRead;
+
+use quick_xml::{
+    Reader, Writer,
+    events::{BytesStart, Event},
+};
+use translating::error::TransError;
+use translating::{DESKTOP_FILE_PATH, PO_DIR};
+
 macro_rules! script_warning {
     ($($tokens: tt)*) => {
         println!("cargo::warning={}", format!($($tokens)*))
@@ -38,7 +47,7 @@ fn generate_mo() -> Result<(), TransError> {
 
     translating::generate_mo()?;
 
-    println!("cargo::rerun-if-changed={DESKTOP_DIR}/io.github.plrigaux.sysd-manager.desktop.in");
+    println!("cargo::rerun-if-changed={}", DESKTOP_FILE_PATH);
 
     translating::generate_desktop()?;
 
@@ -358,15 +367,6 @@ fn compare_files(file1_path: &Path, file2_path: &Path) -> bool {
 
     buffer1 == buffer2
 }
-
-use std::io::BufRead;
-
-use quick_xml::{
-    Reader, Writer,
-    events::{BytesStart, Event},
-};
-use translating::error::TransError;
-use translating::{DESKTOP_DIR, PO_DIR};
 
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
     let (version, description) = if let Some(first) = release_notes.first() {

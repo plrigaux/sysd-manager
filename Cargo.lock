@@ -1953,6 +1953,7 @@ dependencies = [
 name = "sysd-manager-translating"
 version = "0.2.0"
 dependencies = [
+ "constcat",
  "log",
 ]
 
@@ -2161,7 +2162,7 @@ dependencies = [
 
 [[package]]
 name = "transtools"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "clap",
  "dotenv",
