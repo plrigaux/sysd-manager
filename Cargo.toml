@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.30.4"
+version = "1.30.5"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }

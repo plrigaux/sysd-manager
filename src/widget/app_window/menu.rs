@@ -189,7 +189,8 @@ fn create_about() -> adw::AboutDialog {
         .artists(["4nyNoob"])
         .translator_credits(
             "John Peter Sa <johnppetersa@gmail.com>
-Pierre-Luc Rigaux",
+Pierre-Luc Rigaux
+Priit Jõerüüt <hwlate@joeruut.com>",
         )
         .build();
 

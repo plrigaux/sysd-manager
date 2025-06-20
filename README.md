@@ -135,14 +135,15 @@ __SysD Manager__ can be displayed in different languages as long a translation h
 
 <div align="center">
 <a href="https://hosted.weblate.org/engage/sysd-manager/" target="_blank">
-<img src="https://hosted.weblate.org/widget/sysd-manager/translation/multi-auto.svg" alt="Status da tradução" style="height:200px;" >
+<img src="https://hosted.weblate.org/widget/sysd-manager/translation/multi-auto.svg" alt="Status da tradução" style="height:300px;" >
 </a>
 </div>
 
 
 ### Translators
 
-Translation are generously hoster by Weblate and can be found there https://hosted.weblate.org/git/sysd-manager/translation/
+Translations are generously hosted by [Weblate](https://weblate.org).
+Please help translate __Sysd Manager__ into more languages through the [__Sysd Manager__ Hosted Weblate](https://hosted.weblate.org/engage/sysd-manager/).
 
 ### Developpers and Translator
 

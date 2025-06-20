@@ -1,3 +1,0 @@
-files:
-  - source: /po/*.po
-    translation: '%original_path%/%original_file_name%'

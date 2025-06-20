@@ -688,15 +688,6 @@ pub enum DependencyType {
 }
 
 impl DependencyType {
-    /*     pub fn name(&self) -> &str {
-        match self {
-            DependencyType::Forward => "forward",
-            DependencyType::Reverse => "reverse",
-            DependencyType::After => "after",
-            DependencyType::Before => "before",
-        }
-    } */
-
     pub fn label(&self) -> String {
         match self {
             //menu option
