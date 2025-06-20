@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-19 15:08-0400\n"
+"POT-Creation-Date: 2025-06-20 12:08-0400\n"
 "PO-Revision-Date: 2025-06-20 00:29+0000\n"
 "Last-Translator: Priit Jõerüüt <hwlate@joeruut.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -20,26 +20,53 @@ msgstr ""
 "X-Generator: Weblate 5.12.1\n"
 
 #. Desktop File Name
-#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:3
+#: data/applications/io.github.plrigaux.sysd-manager.desktop:3
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
 msgstr "SysD haldur"
 
 #. Desktop File GenericName
-#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:6
+#: data/applications/io.github.plrigaux.sysd-manager.desktop:6
 msgid "Service manager"
 msgstr "Teenusehaldur"
 
 #. Desktop File Comment
-#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:9
+#: data/applications/io.github.plrigaux.sysd-manager.desktop:9
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
 msgstr "Kasutajasõbralik rakendus systemd teenuseühikute haldamiseks"
 
 #. Desktop File Keywords
-#: data/applications/io.github.plrigaux.sysd-manager.desktop.in:12
+#: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
+msgstr "Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
+msgid ""
+"Manage your Services, Timers, Sockets and other units. You can enable, "
+"disable, stop and start them. Also, you can view their config file and peak "
+"at their journal logs."
 msgstr ""
-"Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
-""
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
+msgid "Unit Files"
+msgstr ""
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
+msgid "Unit Dependencies"
+msgstr ""
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
+msgid "Unit File"
+msgstr ""
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
+msgid "Unit Journal"
+msgstr ""
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -1193,79 +1220,79 @@ msgid ""
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:703
+#: src/systemd/enums.rs:694
 msgctxt "dependency"
 msgid "Forward"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:705
+#: src/systemd/enums.rs:696
 msgctxt "dependency"
 msgid "Reverse"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:707
+#: src/systemd/enums.rs:698
 msgctxt "dependency"
 msgid "After"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:709
+#: src/systemd/enums.rs:700
 msgctxt "dependency"
 msgid "Before"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:880
+#: src/systemd/enums.rs:871
 msgctxt "dbus"
 msgid "User Session"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:882
+#: src/systemd/enums.rs:873
 msgctxt "dbus"
 msgid "System"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:979
+#: src/systemd/enums.rs:970
 msgctxt "clean"
 msgid "_Runtime"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:981
+#: src/systemd/enums.rs:972
 msgctxt "clean"
 msgid "_State"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:983
+#: src/systemd/enums.rs:974
 msgctxt "clean"
 msgid "Cac_he"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:985
+#: src/systemd/enums.rs:976
 msgctxt "clean"
 msgid "_Logs"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:987
+#: src/systemd/enums.rs:978
 msgctxt "clean"
 msgid "_Configuration"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:989
+#: src/systemd/enums.rs:980
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:991
+#: src/systemd/enums.rs:982
 msgctxt "clean"
 msgid "_All"
 msgstr ""
@@ -1355,7 +1382,7 @@ msgid "Micro seconds since the epoch"
 msgstr ""
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:198
+#: src/widget/app_window/menu.rs:199
 msgid "Thank you for your support"
 msgstr ""
 
