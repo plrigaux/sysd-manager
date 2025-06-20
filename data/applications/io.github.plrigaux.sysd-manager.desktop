@@ -1,0 +1,19 @@
+[Desktop Entry]
+#Desktop File Name
+Name=SysD Manager
+
+#Desktop File GenericName
+GenericName=Service manager
+
+#Desktop File Comment
+Comment=A user-friendly application to manage systemd's units
+
+#Desktop File Keywords
+Keywords=Systemd;Systemctl;Services;log;
+
+Exec=sysd-manager
+Icon=io.github.plrigaux.sysd-manager
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Utility;System;Settings
