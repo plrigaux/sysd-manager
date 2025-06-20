@@ -63,7 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.25.0] - 2025-05-22
 
 ### Added
-- Feature to enable new journal entries continuous print as they are appended to the journal
+- Feature to enable new journal entries continuous print as they are appended to the
+            journal
 
 ### Changed
 - UX Better error dialog message on not authorized for actions: clean, freese and thaw
@@ -72,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.24.2] - 2025-05-10
 
 ### Fixed
-- Application crash when the preference for the unit file browser «Display colors» is set to Off
+- Application crash when the preference for the unit file browser «Display colors» is
+            set to Off
 
 ## [1.24.1] - 2025-04-28
 
