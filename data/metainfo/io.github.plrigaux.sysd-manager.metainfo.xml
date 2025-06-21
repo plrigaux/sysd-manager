@@ -20,10 +20,10 @@
     <color type="primary" scheme_preference="dark">#424d38</color>
   </branding>
   <categories>
-    <category comments="metainfo category">Utility</category>
-    <category comments="metainfo category">GTK</category>    
-    <category comments="metainfo category">Services</category>
-    <category comments="metainfo category">System</category>
+    <category translate="no">Utility</category>
+    <category translate="no">System</category>
+    <category translate="no">Settings</category>
+    <category translate="no">GTK</category>
   </categories>
   <keywords>
     <keyword translate="no">rust</keyword>
