@@ -41,9 +41,25 @@ fn main() {
     }
 }
 
+pub fn check_linguas() -> Result<(), TransError> {
+    let set1 = translating::lingas_from_files()?;
+    let set2 = translating::lingas_from_lingua_file()?;
+
+    let mut vec: Vec<_> = set1.iter().filter(move |s| !set2.contains(*s)).collect();
+    vec.sort();
+
+    if !vec.is_empty() {
+        script_warning!("Those languages {:?} not in LINGUAS file!", vec);
+    }
+
+    Ok(())
+}
+
 fn generate_mo() -> Result<(), TransError> {
     println!("generate_mo");
     println!("cargo::rerun-if-changed={PO_DIR}");
+
+    check_linguas()?;
 
     translating::generate_mo()?;
 

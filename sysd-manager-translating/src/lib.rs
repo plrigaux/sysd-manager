@@ -1,6 +1,12 @@
 use constcat::concat;
 use log::info;
-use std::{fs, io, process::Command};
+use std::{
+    collections::HashSet,
+    fs::{self, read_to_string},
+    io,
+    path::PathBuf,
+    process::Command,
+};
 
 use crate::error::TransError;
 pub mod error;
@@ -101,10 +107,8 @@ pub fn generate_mo() -> Result<(), TransError> {
     Ok(())
 }
 
-use std::env;
-
-pub fn set_lingas_env() -> Result<(), TransError> {
-    let mut vec: Vec<_> = fs::read_dir(PO_DIR)?
+pub fn lingas_from_files() -> Result<HashSet<String>, TransError> {
+    let linguas: HashSet<_> = fs::read_dir(PO_DIR)?
         .filter_map(|r| r.ok())
         .filter_map(|dir_entry| {
             let p = dir_entry.path();
@@ -118,26 +122,55 @@ pub fn set_lingas_env() -> Result<(), TransError> {
             path.file_stem()
                 .and_then(|s| s.to_str())
                 .map(|s| s.to_string())
-            /*            if let Some(p) = path.file_stem().and_then(|s| s.to_str()) {
-                Some(p.to_string())
-            } else {
-                None
-            } */
         })
         .collect();
 
-    vec.sort();
-    let langs = vec.join(" ");
+    Ok(linguas)
+}
 
-    let key = "LINGUAS";
-    unsafe {
-        env::set_var(key, langs);
+pub fn lingas_from_lingua_file() -> Result<HashSet<String>, TransError> {
+    let mut linguas_file = PathBuf::from(PO_DIR);
+    linguas_file.push("LINGUAS");
+
+    let mut linguas = HashSet::new();
+
+    for line in read_to_string(linguas_file)?
+        .lines()
+        .map(|s| s.trim())
+        .filter(|s| !s.starts_with("#"))
+    {
+        for lang in line.split_whitespace() {
+            linguas.insert(lang.to_owned());
+        }
     }
+
+    Ok(linguas)
+}
+
+pub fn generate_desktop() -> Result<(), TransError> {
+    let out_dir = "target/locale";
+    fs::create_dir_all(out_dir)?;
+    let out_file = format!("{}/{}", out_dir, DESKTOP_FILE);
+
+    let mut command = Command::new("msgfmt");
+    let output = command
+        .arg("--check")
+        .arg("--statistics")
+        .arg("--verbose")
+        .arg("--desktop")
+        .arg(format!("--template={}", DESKTOP_FILE_PATH))
+        .arg("-d")
+        .arg(PO_DIR)
+        .arg("-o")
+        .arg(out_file)
+        .output()?;
+
+    display_output("MSGFMT", output);
 
     Ok(())
 }
 
-pub fn generate_desktop() -> Result<(), TransError> {
+pub fn generate_metainfo() -> Result<(), TransError> {
     let out_dir = "target/locale";
     fs::create_dir_all(out_dir)?;
     let out_file = format!("{}/{}", out_dir, DESKTOP_FILE);
