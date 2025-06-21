@@ -148,7 +148,7 @@ pub fn lingas_from_lingua_file() -> Result<HashSet<String>, TransError> {
 }
 
 pub fn generate_desktop() -> Result<(), TransError> {
-    let out_dir = "target/locale";
+    let out_dir = "target/loc";
     fs::create_dir_all(out_dir)?;
     let out_file = format!("{}/{}", out_dir, DESKTOP_FILE);
 
@@ -171,7 +171,7 @@ pub fn generate_desktop() -> Result<(), TransError> {
 }
 
 pub fn generate_metainfo() -> Result<(), TransError> {
-    let out_dir = "target/locale";
+    let out_dir = "target/loc";
     fs::create_dir_all(out_dir)?;
     let out_file = format!("{}/{}", out_dir, METAINFO_FILE);
 
