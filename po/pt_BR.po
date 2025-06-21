@@ -8,16 +8,16 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-20 12:08-0400\n"
-"PO-Revision-Date: 2025-06-20 00:29+0000\n"
+"PO-Revision-Date: 2025-06-21 04:06+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
-"manager/translation/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"sysd-manager/translation/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.12.1\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -47,30 +47,30 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Gerencie seus serviços, temporizadores, soquetes e outras unidades. Você "
+"pode habilitá-los, desabilitá-los, pará-los e iniciá-los. Além disso, você "
+"pode visualizar seus arquivos de configuração e conferir seus registros de "
+"diário."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
-#, fuzzy
 msgid "Unit Files"
-msgstr "Arquivo de unidade"
+msgstr "Arquivos de unidade"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
-#, fuzzy
 msgid "Unit Dependencies"
-msgstr "Dependências"
+msgstr "Dependências de Unidade"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
-#, fuzzy
 msgid "Unit File"
 msgstr "Arquivo de unidade"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
-#, fuzzy
 msgid "Unit Journal"
-msgstr "Jornal"
+msgstr "Diário da Unidade"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -115,7 +115,7 @@ msgstr "Sobre"
 #: data/interfaces/app_window.ui:79
 msgctxt "title"
 msgid "SysD Manager"
-msgstr "Gerente de SysD"
+msgstr "Gerenciador SysD"
 
 #: data/interfaces/app_window.ui:85
 msgctxt "top button tooltip"
