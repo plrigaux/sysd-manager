@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-20 12:08-0400\n"
-"PO-Revision-Date: 2025-06-20 00:29+0000\n"
+"PO-Revision-Date: 2025-06-21 04:06+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.12.1\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -47,12 +47,14 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Gérez vos services, temporisateurs, sockets et autres unités. Vous pouvez "
+"les activer, les désactiver, les arrêter et les démarrer. Vous pouvez "
+"également consulter leur fichier de configuration et leurs journaux."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
-#, fuzzy
 msgid "Unit Files"
-msgstr "Fichier de l'unité"
+msgstr "Fichiers d'unité"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
@@ -62,13 +64,11 @@ msgstr "Dépendances"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
-#, fuzzy
 msgid "Unit File"
 msgstr "Fichier de l'unité"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
-#, fuzzy
 msgid "Unit Journal"
 msgstr "Journal"
 
