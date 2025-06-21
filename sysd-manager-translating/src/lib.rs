@@ -173,15 +173,15 @@ pub fn generate_desktop() -> Result<(), TransError> {
 pub fn generate_metainfo() -> Result<(), TransError> {
     let out_dir = "target/locale";
     fs::create_dir_all(out_dir)?;
-    let out_file = format!("{}/{}", out_dir, DESKTOP_FILE);
+    let out_file = format!("{}/{}", out_dir, METAINFO_FILE);
 
     let mut command = Command::new("msgfmt");
     let output = command
         .arg("--check")
         .arg("--statistics")
         .arg("--verbose")
-        .arg("--desktop")
-        .arg(format!("--template={}", DESKTOP_FILE_PATH))
+        .arg("--xml")
+        .arg(format!("--template={}", METAINFO_FILE_PATH))
         .arg("-d")
         .arg(PO_DIR)
         .arg("-o")

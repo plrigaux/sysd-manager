@@ -15,6 +15,7 @@ echo Removing files
 echo ""
 sudo rm "/usr/bin/sysd-manager" 
 sudo rm "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop" 
+sudo rm "/usr/share/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml"
 sudo rm "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg"
 sudo rm "/usr/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml" 
 sudo find /usr/share/locale -name sysd-manager.mo -type f -delete
