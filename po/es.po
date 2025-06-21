@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-20 12:08-0400\n"
-"PO-Revision-Date: 2025-06-19 19:10+0000\n"
+"PO-Revision-Date: 2025-06-22 14:04+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/es/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.12.1\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -29,18 +29,18 @@ msgstr "Administrador de SysD"
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
 msgid "Service manager"
-msgstr ""
+msgstr "Gerente de servicio"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
-msgstr ""
+msgstr "Una aplicación fácil de usar para administrar unidades systemd"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr ""
+msgstr "Systemd;Systemctl;Servicios;registro;"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
 msgid ""
@@ -48,28 +48,29 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Administra tus servicios, temporizadores, sockets y otras unidades. Puedes "
+"activarlos, desactivarlos, detenerlos e iniciarlos. También puedes ver su "
+"archivo de configuración y consultar sus registros."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
-#, fuzzy
 msgid "Unit Files"
 msgstr "Archivo de unidad"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
 msgid "Unit Dependencies"
-msgstr ""
+msgstr "Dependencias de la unidad"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
-#, fuzzy
 msgid "Unit File"
 msgstr "Archivo de unidad"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
 msgid "Unit Journal"
-msgstr ""
+msgstr "Diario de la unidad"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -456,168 +457,170 @@ msgstr "Detente ahora"
 #: data/interfaces/mask_unit_dialog.ui:54
 msgctxt "mask"
 msgid "Argument for the stoping mode"
-msgstr ""
+msgstr "Argumento a favor del modo de parada"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:55
 msgctxt "mask"
 msgid "Stop mode"
-msgstr ""
+msgstr "Modo de parada"
 
 #. button
 #: data/interfaces/mask_unit_dialog.ui:67
 msgctxt "mask"
 msgid "Reset"
-msgstr ""
+msgstr "Reiniciar"
 
 #. dialog title
 #: data/interfaces/mask_unit_dialog.ui:89
 msgctxt "mask"
 msgid "Mask Unit"
-msgstr ""
+msgstr "Unidad de mascarilla"
 
 #. group
 #: data/interfaces/preferences.ui:21
 msgctxt "preference"
 msgid "General"
-msgstr ""
+msgstr "General"
 
 #. row
 #: data/interfaces/preferences.ui:24
 msgctxt "preference"
 msgid "Preferred Color Scheme"
-msgstr ""
+msgstr "Esquema de color preferido"
 
 #. row subtitle
 #: data/interfaces/preferences.ui:29
 msgctxt "preference"
 msgid "Application's division orientation mode"
-msgstr ""
+msgstr "Modo de orientación de división de la aplicación"
 
 #. row
 #: data/interfaces/preferences.ui:30
 msgctxt "preference"
 msgid "Orientation"
-msgstr ""
+msgstr "Orientación"
 
 #. row
 #: data/interfaces/preferences.ui:35
 msgctxt "preference"
 msgid "Change the format of printed timestamps"
-msgstr ""
+msgstr "Cambiar el formato de las marcas de tiempo impresas"
 
 #. row
 #: data/interfaces/preferences.ui:36
 msgctxt "preference"
 msgid "Timestamp style"
-msgstr ""
+msgstr "Estilo de marca de tiempo"
 
 #. row
 #: data/interfaces/preferences.ui:41
 msgctxt "preference"
 msgid "The Monospace Font"
-msgstr ""
+msgstr "La fuente monoespaciada"
 
 #. row
 #: data/interfaces/preferences.ui:42
 msgctxt "preference"
 msgid "Text font"
-msgstr ""
+msgstr "Fuente del texto"
 
 #: data/interfaces/preferences.ui:46
 msgctxt "preference"
 msgid "Default"
-msgstr ""
+msgstr "Por defecto"
 
 #. button
 #: data/interfaces/preferences.ui:54
 msgctxt "preference"
 msgid "Select Font"
-msgstr ""
+msgstr "Seleccionar fuente"
 
 #. group
 #: data/interfaces/preferences.ui:65
 msgctxt "preference"
 msgid "Unit List"
-msgstr ""
+msgstr "Lista de unidades"
 
 #. subtitle
 #: data/interfaces/preferences.ui:68
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
 msgstr ""
+"Mostrar colores en las celdas de la tabla de lista de unidades, de acuerdo "
+"con su contenido."
 
 #. title
 #: data/interfaces/preferences.ui:69
 msgctxt "preference"
 msgid "Display Colors"
-msgstr ""
+msgstr "Colores de la pantalla"
 
 #. subtitle
 #: data/interfaces/preferences.ui:74
 msgctxt "preference"
 msgid "Display different totals regarding retrieved units"
-msgstr ""
+msgstr "Mostrar diferentes totales respecto a las unidades recuperadas"
 
 #. title
 #: data/interfaces/preferences.ui:75
 msgctxt "preference"
 msgid "Display Totals Summary"
-msgstr ""
+msgstr "Mostrar resumen de totales"
 
 #. title
 #: data/interfaces/preferences.ui:80
 msgctxt "preference"
 msgid "Columns Display Parameters"
-msgstr ""
+msgstr "Parámetros de visualización de columnas"
 
 #. group
 #: data/interfaces/preferences.ui:87
 msgctxt "preference"
 msgid "Unit File"
-msgstr ""
+msgstr "Archivo de unidad"
 
 #. subtitle
 #: data/interfaces/preferences.ui:90
 msgctxt "preference"
 msgid "Display unit file line number"
-msgstr ""
+msgstr "Número de línea del archivo de la unidad de visualización"
 
 #. title
 #: data/interfaces/preferences.ui:91
 msgctxt "preference"
 msgid "Line number"
-msgstr ""
+msgstr "Número de línea"
 
 #. subtitle
 #: data/interfaces/preferences.ui:102
 msgctxt "preference"
 msgid "Unit file highlight style"
-msgstr ""
+msgstr "Estilo de resaltado de archivo de unidad"
 
 #. title
 #: data/interfaces/preferences.ui:103
 msgctxt "preference"
 msgid "Text Highlight"
-msgstr ""
+msgstr "Resaltado de texto"
 
 #. subtitle
 #: data/interfaces/preferences.ui:113
 msgctxt "preference"
 msgid "To see the logs in color"
-msgstr ""
+msgstr "Para ver los registros en color"
 
 #. title
 #: data/interfaces/preferences.ui:114
 msgctxt "preference"
 msgid "Journal colors"
-msgstr ""
+msgstr "Colores de la revista"
 
 #. title
 #: data/interfaces/preferences.ui:135
 msgctxt "preference"
 msgid "Journal's events batch size"
-msgstr ""
+msgstr "Tamaño del lote de eventos del diario"
 
 #. subtitle
 #: data/interfaces/preferences.ui:148
@@ -626,53 +629,55 @@ msgid ""
 "Journal's event maximum characters\n"
 "<i>0 to no limit</i>"
 msgstr ""
+"Número máximo de caracteres del evento del diario\n"
+"<i>De 0 a ilimitado</i>"
 
 #. title
 #: data/interfaces/preferences.ui:151
 msgctxt "preference"
 msgid "Journal's event max size"
-msgstr ""
+msgstr "Tamaño máximo del evento del diario"
 
 #. dialog
 #: data/interfaces/preferences.ui:165
 msgctxt "preference"
 msgid "Preferences"
-msgstr ""
+msgstr "Preferencias"
 
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "General"
-msgstr ""
+msgstr "General"
 
 #: data/interfaces/shortcuts.ui:18
 msgctxt "shortcut window"
 msgid "Show Preferences"
-msgstr ""
+msgstr "Mostrar preferencias"
 
 #: data/interfaces/shortcuts.ui:24
 msgctxt "shortcut window"
 msgid "Open Search Unit"
-msgstr ""
+msgstr "Unidad de búsqueda abierta"
 
 #: data/interfaces/shortcuts.ui:30
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
-msgstr ""
+msgstr "Filtro de propiedades de unidad abierta"
 
 #: data/interfaces/shortcuts.ui:36
 msgctxt "shortcut window"
 msgid "Open List Boots"
-msgstr ""
+msgstr "Botas de lista abierta"
 
 #: data/interfaces/shortcuts.ui:43
 msgctxt "shortcut window"
 msgid "Pages"
-msgstr ""
+msgstr "Páginas"
 
 #: data/interfaces/shortcuts.ui:47
 msgctxt "shortcut window"
 msgid "Display Unit Information"
-msgstr ""
+msgstr "Información de la unidad de visualización"
 
 #: data/interfaces/shortcuts.ui:53
 msgctxt "shortcut window"
