@@ -8,8 +8,8 @@ use quick_xml::{
     Reader, Writer,
     events::{BytesStart, Event},
 };
+use translating::PO_DIR;
 use translating::error::TransError;
-use translating::{DESKTOP_FILE_PATH, PO_DIR};
 
 macro_rules! script_warning {
     ($($tokens: tt)*) => {
@@ -63,10 +63,10 @@ fn generate_mo() -> Result<(), TransError> {
 
     translating::generate_mo()?;
 
-    println!("cargo::rerun-if-changed={}", DESKTOP_FILE_PATH);
+    /*     println!("cargo::rerun-if-changed={}", DESKTOP_FILE_PATH);
 
     translating::generate_desktop()?;
-    translating::generate_metainfo()?;
+    translating::generate_metainfo()?; */
 
     Ok(())
 }

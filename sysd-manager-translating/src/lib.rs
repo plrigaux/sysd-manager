@@ -1,4 +1,5 @@
 use constcat::concat;
+use log::error;
 use log::info;
 use std::{
     collections::HashSet,
@@ -21,6 +22,8 @@ pub const METAINFO_DIR: &str = "./data/metainfo";
 pub const METAINFO_FILE: &str = "io.github.plrigaux.sysd-manager.metainfo.xml";
 pub const METAINFO_FILE_PATH: &str = concat!(METAINFO_DIR, "/", METAINFO_FILE);
 
+pub const PACK_FILE_DIR: &str = "target/loc";
+
 /// Making the PO Template File
 /// https://www.gnu.org/software/gettext/manual/html_node/xgettext-Invocation.html
 pub fn xgettext(potfiles_file_path: &str, output_pot_file: &str) {
@@ -41,10 +44,10 @@ pub fn xgettext(potfiles_file_path: &str, output_pot_file: &str) {
 }
 
 fn display_output(id: &str, output: std::process::Output) {
-    println!("{id}: {:?}", output.status);
-    println!("{id}: {}", String::from_utf8_lossy(&output.stdout));
+    info!("{id}: {:?}", output.status);
+    info!("{id}: {}", String::from_utf8_lossy(&output.stdout));
     if !output.status.success() {
-        eprintln!("{id}: {}", String::from_utf8_lossy(&output.stderr));
+        error!("{id}: {}", String::from_utf8_lossy(&output.stderr));
     }
 }
 
@@ -148,9 +151,8 @@ pub fn lingas_from_lingua_file() -> Result<HashSet<String>, TransError> {
 }
 
 pub fn generate_desktop() -> Result<(), TransError> {
-    let out_dir = "target/loc";
-    fs::create_dir_all(out_dir)?;
-    let out_file = format!("{}/{}", out_dir, DESKTOP_FILE);
+    fs::create_dir_all(PACK_FILE_DIR)?;
+    let out_file = format!("{}/{}", PACK_FILE_DIR, DESKTOP_FILE);
 
     let mut command = Command::new("msgfmt");
     let output = command
@@ -171,9 +173,9 @@ pub fn generate_desktop() -> Result<(), TransError> {
 }
 
 pub fn generate_metainfo() -> Result<(), TransError> {
-    let out_dir = "target/loc";
-    fs::create_dir_all(out_dir)?;
-    let out_file = format!("{}/{}", out_dir, METAINFO_FILE);
+    fs::create_dir_all(PACK_FILE_DIR)?;
+
+    let out_file = format!("{}/{}", PACK_FILE_DIR, METAINFO_FILE);
 
     let mut command = Command::new("msgfmt");
     let output = command

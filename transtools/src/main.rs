@@ -17,8 +17,6 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{fs::File, io};
 
-use dotenv::dotenv;
-
 /// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -61,11 +59,21 @@ enum Commands {
 
     /// Generate desktop file
     Desktop,
+
+    /// Generate package file
+    Packfiles,
 }
 
 fn main() {
-    dotenv().ok();
-    env_logger::init();
+    // Force log level
+    if let Err(err) = env_logger::builder()
+        .target(env_logger::Target::Stdout)
+        .filter_level(log::LevelFilter::Debug)
+        .try_init()
+    {
+        eprintln!("Logger error {:?}", err)
+    }
+
     info!("Tanslation tool!");
 
     let args = Args::parse();
@@ -84,6 +92,7 @@ fn main() {
         }
         Some(Commands::Extract) => extract_and_generate_po_template(),
         Some(Commands::Potfile) => generate_potfiles(),
+        Some(Commands::Packfiles) => generate_pack(),
         None => {
             println!("Unknown command. Use \"help\" to know what is available \n");
 
@@ -96,6 +105,31 @@ fn main() {
     if let Err(err) = result {
         log::error!("Error {:?}", err);
     }
+}
+
+pub fn check_linguas() -> Result<(), TransError> {
+    let set1 = translating::lingas_from_files()?;
+    let set2 = translating::lingas_from_lingua_file()?;
+
+    let mut vec: Vec<_> = set1.iter().filter(move |s| !set2.contains(*s)).collect();
+    vec.sort();
+
+    if !vec.is_empty() {
+        warn!("Those languages {:?} not in LINGUAS file!", vec);
+    }
+
+    Ok(())
+}
+
+fn generate_pack() -> Result<(), TransError> {
+    println!("generate_mo");
+
+    check_linguas()?;
+
+    translating::generate_desktop()?;
+    translating::generate_metainfo()?;
+
+    Ok(())
 }
 
 fn generate_po_file(linguas: &[String]) -> Result<(), TransError> {

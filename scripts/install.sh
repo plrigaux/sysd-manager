@@ -24,6 +24,10 @@ echo -e Compiling $PROGRAM program
 echo ""
 cargo build $BUILD_ARG || exit 1
 echo ""
+echo Generating files
+echo ""
+cargo run -p transtools -- packfiles
+echo ""
 echo Installing files
 echo ""
 sudo install -Dm755 "${REL_PATH}/target/${TARGET}/sysd-manager" -t "/usr/bin"
