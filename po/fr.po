@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-20 12:08-0400\n"
-"PO-Revision-Date: 2025-06-21 04:06+0000\n"
-"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
+"PO-Revision-Date: 2025-06-24 22:06+0000\n"
+"Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -58,9 +58,8 @@ msgstr "Fichiers d'unité"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
-#, fuzzy
 msgid "Unit Dependencies"
-msgstr "Dépendances"
+msgstr "Dépendances des unités"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
