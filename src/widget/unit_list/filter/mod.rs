@@ -52,6 +52,7 @@ pub trait UnitPropertyFilter {
     fn text(&self) -> &str {
         ""
     }
+
     fn clear_filter(&mut self);
     fn clear_widget_dependancy(&mut self) {
         let lambda = |_: bool| {};
@@ -113,14 +114,18 @@ where
         }
     }
 
+    fn elements(&self) -> &HashSet<T> {
+        &self.filter_elements
+    }
+
     fn contains(&self, value: &T) -> bool {
         self.filter_elements.contains(value)
     }
 
-    fn set_filter_elem(&mut self, f_element: T, set_element: bool) {
+    fn set_filter_elem(&mut self, f_element: T, add_or_remove: bool) {
         let old_is_empty = self.filter_elements.is_empty();
 
-        let has_changed = if set_element {
+        let has_changed = if add_or_remove {
             self.filter_elements.insert(f_element)
         } else {
             self.filter_elements.remove(&f_element)
@@ -132,7 +137,7 @@ where
 
         let new_is_empty = self.filter_elements.is_empty();
 
-        let change_type = match (set_element, old_is_empty, new_is_empty) {
+        let change_type = match (add_or_remove, old_is_empty, new_is_empty) {
             (true, true, _) => Some(FilterChange::MoreStrict),
             (true, false, _) => Some(FilterChange::LessStrict),
             (false, _, false) => Some(FilterChange::MoreStrict),
@@ -392,7 +397,10 @@ pub fn filter_active_state(
     property_assessor.filter_unit_value(&active_state)
 }
 
-pub fn filter_sub_state(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_sub_state(
+    property_assessor: &FilterElementAssessor<String>,
+    unit: &UnitInfo,
+) -> bool {
     property_assessor.filter_unit_value(&unit.sub_state())
 }
 

@@ -869,7 +869,7 @@ impl ObjectImpl for UnitListPanelImp {
                     filter_active_state,
                     &unit_list_panel,
                 ))),
-                "sub" => Some(Box::new(FilterText::new(
+                "sub" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_sub_state,
                     &unit_list_panel,
