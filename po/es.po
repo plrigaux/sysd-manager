@@ -1370,7 +1370,8 @@ msgid ""
 "Flatpack.\n"
 "Please install it to enable all features."
 msgstr ""
-"Necesita el programa <b>flatpack-spawn</b> si usa la aplicación de Flatpack. "
+"Necesita el programa <b>flatpack-spawn</b> si usa la aplicación de \n"
+"Flatpack. \n"
 "Instálelo para habilitar todas las funciones."
 
 #: src/systemd/errors.rs:49
@@ -1379,122 +1380,124 @@ msgid ""
 "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
 "interface when the program is a Flatpak."
 msgstr ""
+"Requiere permiso para hablar con la interfaz D-Bus "
+"<b>org.freedesktop.Flatpak</b> cuando el programa es un Flatpak."
 
 #. time style option
 #: src/utils/time_handling.rs:38
 msgctxt "pref time style"
 msgid "Pretty"
-msgstr ""
+msgstr "Bonito"
 
 #. time style option
 #: src/utils/time_handling.rs:40
 msgctxt "pref time style"
 msgid "Pretty usec"
-msgstr ""
+msgstr "Bastante útil"
 
 #. time style option
 #: src/utils/time_handling.rs:42
 msgctxt "pref time style"
 msgid "UTC"
-msgstr ""
+msgstr "UTC"
 
 #. time style option
 #: src/utils/time_handling.rs:44
 msgctxt "pref time style"
 msgid "UTC usec"
-msgstr ""
+msgstr "UTC usec"
 
 #. time style option
 #: src/utils/time_handling.rs:46
 msgctxt "pref time style"
 msgid "Unix"
-msgstr ""
+msgstr "Unix"
 
 #. time style option
 #: src/utils/time_handling.rs:48
 msgctxt "pref time style"
 msgid "Unix usec"
-msgstr ""
+msgstr "Unix usec"
 
 #. time style option tooltip
 #: src/utils/time_handling.rs:55
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS TZ"
-msgstr ""
+msgstr "Día AAAA-MM-DD HH:MM:SS TZ"
 
 #: src/utils/time_handling.rs:59
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS.000000 TZ"
-msgstr ""
+msgstr "Día AAAA-MM-DD HH:MM:SS.000000 TZ"
 
 #. time style option tooltip
 #: src/utils/time_handling.rs:63
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS UTC"
-msgstr ""
+msgstr "Día AAAA-MM-DD HH:MM:SS UTC"
 
 #: src/utils/time_handling.rs:67
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS.000000 UTC"
-msgstr ""
+msgstr "Día AAAA-MM-DD HH:MM:SS.000000 UTC"
 
 #. time style option tooltip
 #: src/utils/time_handling.rs:71
 msgctxt "pref time style"
 msgid "Seconds since the epoch"
-msgstr ""
+msgstr "Segundos desde la época"
 
 #: src/utils/time_handling.rs:75
 msgctxt "pref time style"
 msgid "Micro seconds since the epoch"
-msgstr ""
+msgstr "Microsegundos desde la época"
 
 #. about dialogue
 #: src/widget/app_window/menu.rs:199
 msgid "Thank you for your support"
-msgstr ""
+msgstr "Gracias por su apoyo"
 
 #. dialog subtitle
 #: src/widget/clean_dialog/imp.rs:130
 msgctxt "clean"
 msgid "No Unit Selected"
-msgstr ""
+msgstr "No hay unidad seleccionada"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:62
 msgctxt "action unit file"
 msgid "Enable Unit File"
-msgstr ""
+msgstr "Habilitar archivo de unidad"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:64
 msgctxt "action unit file"
 msgid "Mask Unit"
-msgstr ""
+msgstr "Unidad de mascarilla"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:66
 msgctxt "action unit file"
 msgid "Preset Unit File"
-msgstr ""
+msgstr "Archivo de unidad preestablecida"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:68
 msgctxt "action unit file"
 msgid "Reenable Unit File"
-msgstr ""
+msgstr "Habilitar archivo de unidad"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:72
 msgctxt "action unit file"
 msgid "Disable Unit File"
-msgstr ""
+msgstr "Deshabilitar archivo de unidad"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:75
 msgctxt "action unit file"
 msgid "Link Unit File"
-msgstr ""
+msgstr "Archivo de unidad de enlace"
 
 #. preference group title
 #. Button
@@ -1502,7 +1505,7 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:144
 msgctxt "action unit file"
 msgid "Enable"
-msgstr ""
+msgstr "Enable"
 
 #. preference group title
 #. Button
@@ -1510,7 +1513,7 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:150
 msgctxt "action unit file"
 msgid "Disable"
-msgstr ""
+msgstr "Desactivar"
 
 #. preference group title
 #. Button
@@ -1518,89 +1521,89 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:146
 msgctxt "action unit file"
 msgid "Mask"
-msgstr ""
+msgstr "Mascarilla"
 
 #. second preference group title
 #: src/widget/control_action_dialog/mod.rs:94
 msgctxt "action unit file"
 msgid "Start"
-msgstr ""
+msgstr "Comenzar"
 
 #: src/widget/control_action_dialog/mod.rs:97
 msgctxt "action unit file"
 msgid "Stop"
-msgstr ""
+msgstr "Detener"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:148
 msgctxt "action unit file"
 msgid "Preset"
-msgstr ""
+msgstr "Programar"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:152
 msgctxt "action unit file"
 msgid "Reenable"
-msgstr ""
+msgstr "Volver a habilitar"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:154
 msgctxt "action unit file"
 msgid "Link"
-msgstr ""
+msgstr "Link"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:162
 msgctxt "action unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Corre ahora"
 
 #. after action subtitle
 #: src/widget/control_action_dialog/mod.rs:164
 msgctxt "action unit file"
 msgid "Start Unit just after being enabled"
-msgstr ""
+msgstr "Iniciar la unidad justo después de habilitarla"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:168
 msgctxt "action unit file"
 msgid "Stop now"
-msgstr ""
+msgstr "Detente ahora"
 
 #: src/widget/control_action_dialog/mod.rs:172
 msgctxt "action unit file"
 msgid "Ensure that the unit will also be stopped"
-msgstr ""
+msgstr "Asegúrese de que la unidad también se detenga"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:183
 msgctxt "action unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "Modo de ejecución"
 
 #. starts mode subtitle
 #: src/widget/control_action_dialog/mod.rs:185
 msgctxt "action unit file"
 msgid "Starting mode options"
-msgstr ""
+msgstr "Opciones del modo de inicio"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:189
 msgctxt "action unit file"
 msgid "Stop mode"
-msgstr ""
+msgstr "Modo de parada"
 
 #. starts mode subtitle
 #: src/widget/control_action_dialog/mod.rs:191
 msgctxt "action unit file"
 msgid "Stoping mode options"
-msgstr ""
+msgstr "Opciones del modo de parada"
 
 #. Dialog subtitle
 #: src/widget/kill_panel/imp.rs:77
 msgctxt "kill"
 msgid "No Unit Selected"
-msgstr ""
+msgstr "No hay unidad seleccionada"
 
 #: src/widget/kill_panel/imp.rs:154
 #, rust-format
