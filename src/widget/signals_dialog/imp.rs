@@ -206,7 +206,7 @@ impl ObjectImpl for SignalsWindowImp {
 
         glib::spawn_future_local(async move {
             fn append(signal: SystemdSignalRow, model: &ListStore) {
-                debug!("Recieve {:?}", signal);
+                debug!("Recieve {signal:?}");
                 let boxed = BoxedAnyObject::new(signal);
                 model.append(&boxed);
             }

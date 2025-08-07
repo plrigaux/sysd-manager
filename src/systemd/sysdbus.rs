@@ -270,7 +270,7 @@ pub async fn complete_unit_information(
                 updated_unit_info.enablement_status = r2.ok();
                 ouput.push(updated_unit_info)
             }
-            Err(error) => warn!("Complete unit \"{}\" error {:?}", unit_primary, error),
+            Err(error) => warn!("Complete unit \"{unit_primary}\" error {error:?}"),
         }
     }
     Ok(ouput)
@@ -342,7 +342,7 @@ async fn complete_unit_info(
     let mut update = UpdatedUnitInfo::new(unit_primary.to_owned(), object_path);
 
     if let Err(error) = fill_update(unit_info_proxy, &mut update).await {
-        debug!("Complete info Error: {:?}", error);
+        debug!("Complete info Error: {error:?}");
     }
 
     Ok(update)
@@ -508,7 +508,7 @@ pub(super) fn enable_unit_files(
 
         let return_msg: EnableUnitFilesReturn = body.deserialize()?;
 
-        info!("Enable unit files {:?}", return_msg);
+        info!("Enable unit files {return_msg:?}");
 
         Ok(return_msg)
     }
@@ -534,7 +534,7 @@ pub(super) fn disable_unit_files(
 
         let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
 
-        info!("Disable unit files {:?}", return_msg);
+        info!("Disable unit files {return_msg:?}");
 
         Ok(return_msg)
     }
@@ -570,7 +570,7 @@ where
     let message_it = MessageIterator::from(connection);
 
     for message_res in message_it {
-        debug!("Message response {:?}", message_res);
+        debug!("Message response {message_res:?}");
         let return_message = message_res?;
 
         match return_message.message_type() {
@@ -580,7 +580,7 @@ where
                 return result;
             }
             zbus::message::Type::MethodCall => {
-                warn!("Not supposed to happen: {:?}", return_message);
+                warn!("Not supposed to happen: {return_message:?}");
                 break;
             }
             zbus::message::Type::Error => {
@@ -600,21 +600,21 @@ where
                                 message
                             )
                         }
-                        _ => warn!("Bus error: {:?}", zb_error),
+                        _ => warn!("Bus error: {zb_error:?}"),
                     }
                 }
                 let error = SystemdErrors::from((zb_error, method));
                 return Err(error);
             }
             zbus::message::Type::Signal => {
-                info!("Signal: {:?}", return_message);
+                info!("Signal: {return_message:?}");
                 continue;
             }
         }
     }
 
-    let msg = format!("{:?} ????, response supposed to be Unreachable", method);
-    warn!("{}", msg);
+    let msg = format!("{method:?} ????, response supposed to be Unreachable");
+    warn!("{msg}");
     Err(SystemdErrors::Malformed(
         msg,
         "sequences of messages".to_owned(),
@@ -658,8 +658,7 @@ pub(super) fn kill_unit(
 ) -> Result<(), SystemdErrors> {
     let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
         info!(
-            "Kill Unit {} mode {} signal {} SUCCESS",
-            unit_name, mode, signal
+            "Kill Unit {unit_name} mode {mode} signal {signal} SUCCESS"
         );
         Ok(())
     };
@@ -674,7 +673,7 @@ pub(super) fn kill_unit(
 
 pub(super) fn freeze_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
     let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Freeze Unit {} SUCCESS", unit_name);
+        info!("Freeze Unit {unit_name} SUCCESS");
         Ok(())
     };
 
@@ -683,7 +682,7 @@ pub(super) fn freeze_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), S
 
 pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
     let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Thaw Unit {} SUCCESS", unit_name);
+        info!("Thaw Unit {unit_name} SUCCESS");
         Ok(())
     };
 
@@ -702,7 +701,7 @@ pub(super) fn preset_unit_file(
 
             let return_msg: EnableUnitFilesReturn = body.deserialize()?;
 
-            info!("Preset Unit Files {:?} SUCCESS", files);
+            info!("Preset Unit Files {files:?} SUCCESS");
             Ok(return_msg)
         };
 
@@ -727,7 +726,7 @@ pub(super) fn link_unit_files(
 
         let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
 
-        info!("Link Unit Files {:?} SUCCESS", files);
+        info!("Link Unit Files {files:?} SUCCESS");
         Ok(return_msg)
     };
     send_disenable_message(
@@ -750,7 +749,7 @@ pub(super) fn reenable_unit_file(
 
             let return_msg: EnableUnitFilesReturn = body.deserialize()?;
 
-            info!("Reenable Unit Files {:?} SUCCESS", files);
+            info!("Reenable Unit Files {files:?} SUCCESS");
             Ok(return_msg)
         };
     send_disenable_message(
@@ -801,7 +800,7 @@ pub(super) fn clean_unit(
     what: &[&str],
 ) -> Result<(), SystemdErrors> {
     let handle_answer = |_method: &str, _return_message: &Message| {
-        info!("Clean Unit {} {:?} SUCCESS", unit_name, what);
+        info!("Clean Unit {unit_name} {what:?} SUCCESS");
 
         Ok(())
     };
@@ -819,15 +818,14 @@ pub(super) fn mask_unit_files(
                          return_message: &Message|
      -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
         info!(
-            "Mask Unit File {:?} runtime {:?} force {:?} SUCCESS",
-            files, runtime, force
+            "Mask Unit File {files:?} runtime {runtime:?} force {force:?} SUCCESS"
         );
 
         let body = return_message.body();
 
         let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
 
-        info!("Mask Unit File {:?}", return_msg);
+        info!("Mask Unit File {return_msg:?}");
 
         Ok(return_msg)
     };
@@ -849,15 +847,14 @@ pub(super) fn unmask_unit_files(
                          return_message: &Message|
      -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
         info!(
-            "UnMask Unit File {:?} runtime {:?}  SUCCESS",
-            files, runtime
+            "UnMask Unit File {files:?} runtime {runtime:?}  SUCCESS"
         );
 
         let body = return_message.body();
 
         let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
 
-        info!("UnMask Unit File {:?}", return_msg);
+        info!("UnMask Unit File {return_msg:?}");
 
         Ok(return_msg)
     };
@@ -930,7 +927,7 @@ fn convert_to_string(value: &zvariant::Value) -> String {
 
 pub fn fetch_system_info(level: UnitDBusLevel) -> Result<BTreeMap<String, String>, SystemdErrors> {
     let res = change_p(level);
-    warn!("res {:?}", res);
+    warn!("res {res:?}");
     fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager)
 }
 
@@ -945,7 +942,7 @@ pub fn fetch_system_unit_info(
     let mut map = BTreeMap::new();
 
     for (key, value) in properties.into_iter() {
-        trace!("{:?} {:?}", key, value);
+        trace!("{key:?} {value:?}");
 
         let str_val = convert_to_string(&value);
         map.insert(key.to_owned(), str_val);
@@ -972,7 +969,7 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     let message_it = MessageIterator::from(connection);
 
     for message_res in message_it {
-        debug!("Message response {:?}", message_res);
+        debug!("Message response {message_res:?}");
         let return_message = message_res?;
 
         match return_message.message_type() {
@@ -983,13 +980,13 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
 
                 let return_msg: OwnedValue = body.deserialize()?;
 
-                info!("{method} Response {:?}", return_msg);
+                info!("{method} Response {return_msg:?}");
 
                 //  let result = handler(method, &return_message);
                 return Ok(());
             }
             zbus::message::Type::MethodCall => {
-                warn!("Not supposed to happen: {:?}", return_message);
+                warn!("Not supposed to happen: {return_message:?}");
                 break;
             }
             zbus::message::Type::Error => {
@@ -997,14 +994,14 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
                 return Err(SystemdErrors::from(error));
             }
             zbus::message::Type::Signal => {
-                info!("Signal: {:?}", return_message);
+                info!("Signal: {return_message:?}");
                 continue;
             }
         }
     }
 
-    let msg = format!("{:?} ????, response supposed to be Unreachable", method);
-    warn!("{}", msg);
+    let msg = format!("{method:?} ????, response supposed to be Unreachable");
+    warn!("{msg}");
     Err(SystemdErrors::Malformed(
         msg,
         "sequences of messages".to_owned(),
@@ -1040,7 +1037,7 @@ pub fn fetch_system_unit_info_native(
         properties.extend(unit_properties);
     }
 
-    trace!("properties {:?}", properties);
+    trace!("properties {properties:?}");
     Ok(properties)
 }
 
@@ -1146,7 +1143,7 @@ fn reteive_dependencies(
     for property_key in dependencies_properties {
         let value = map.get(*property_key);
         let Some(value) = value else {
-            warn!("property key {:?} does't exist", property_key);
+            warn!("property key {property_key:?} does't exist");
             continue;
         };
 
@@ -1199,7 +1196,7 @@ fn fetch_unit_all_properties(
         match proxy.call("GetAll", &(INTERFACE_SYSTEMD_UNIT)) {
             Ok(m) => m,
             Err(e) => {
-                warn!("{:#?}", e);
+                warn!("{e:#?}");
                 return Err(e.into());
             }
         };
@@ -1325,7 +1322,7 @@ mod tests {
         let file1: &str = TEST_SERVICE;
 
         let status = get_unit_file_state(UnitDBusLevel::System, file1);
-        debug!("Status: {:?}", status);
+        debug!("Status: {status:?}");
     }
 
     #[ignore = "need a connection to a service"]
@@ -1338,7 +1335,7 @@ mod tests {
 
         let serv = units.iter().find(|ud| ud.full_name == TEST_SERVICE);
 
-        debug!("{:#?}", serv);
+        debug!("{serv:#?}");
         Ok(())
     }
     /*
@@ -1370,7 +1367,7 @@ mod tests {
             &(unit_file),
         )?;
 
-        println!("message {:?}", message);
+        println!("message {message:?}");
 
         let body = message.body();
 
@@ -1398,7 +1395,7 @@ mod tests {
             UnitType::Service,
         )?;
 
-        debug!("ALL PARAM: {:#?}", btree_map);
+        debug!("ALL PARAM: {btree_map:#?}");
         Ok(())
     }
 
@@ -1435,10 +1432,10 @@ mod tests {
 
         let path = unit_dbus_path_from_name(TEST_SERVICE);
 
-        println!("unit {} Path {}", TEST_SERVICE, path);
+        println!("unit {TEST_SERVICE} Path {path}");
         let map = fetch_system_unit_info(UnitDBusLevel::System, &path, UnitType::Service)?;
 
-        println!("{:#?}", map);
+        println!("{map:#?}");
         Ok(())
     }
 
@@ -1449,7 +1446,7 @@ mod tests {
 
         let map = fetch_system_info(UnitDBusLevel::System)?;
 
-        info!("{:#?}", map);
+        info!("{map:#?}");
         Ok(())
     }
 
@@ -1460,7 +1457,7 @@ mod tests {
 
         let unit = fetch_unit(UnitDBusLevel::System, TEST_SERVICE)?;
 
-        info!("{:#?}", unit);
+        info!("{unit:#?}");
         Ok(())
     }
 
@@ -1471,7 +1468,7 @@ mod tests {
 
         let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE)?;
 
-        info!("{:#?}", unit);
+        info!("{unit:#?}");
         Ok(())
     }
 
@@ -1518,7 +1515,7 @@ mod tests {
             false,
         );
 
-        info!("{:#?}", res);
+        info!("{res:#?}");
         Ok(())
     }
 
@@ -1531,7 +1528,7 @@ mod tests {
         match fetch_unit(UnitDBusLevel::System, &fake) {
             Ok(_) => todo!(),
             Err(e) => {
-                warn!("{:?}", e);
+                warn!("{e:?}");
                 if let SystemdErrors::ZNoSuchUnit(_method, _message) = e {
                     Ok(())
                 } else {
@@ -1571,7 +1568,7 @@ mod tests {
         let list = retreive_unit_processes(UnitDBusLevel::System, unit_file)?;
 
         for up in list {
-            println!("{:#?}", up)
+            println!("{up:#?}")
         }
 
         Ok(())
@@ -1585,7 +1582,7 @@ mod tests {
         println!("path : {unit_object}");
         let state = get_unit_active_state(UnitDBusLevel::System, &unit_object)?;
 
-        println!("state of {TEST_SERVICE} is {:?}", state);
+        println!("state of {TEST_SERVICE} is {state:?}");
 
         Ok(())
     }
@@ -1615,7 +1612,7 @@ mod tests {
         let _asdf = tokio::join!(t1, t2, t3, t4);
 
         let elapsed = now.elapsed();
-        println!("Elapsed: {:.2?}", elapsed);
+        println!("Elapsed: {elapsed:.2?}");
         /*        let a = asdf.0;
         let b = asdf.1;
 
@@ -1644,7 +1641,7 @@ mod tests {
         let joined_result = tokio::join!(t1, t2, t3, t4);
 
         let elapsed = now.elapsed();
-        println!("Elapsed: {:.2?}", elapsed);
+        println!("Elapsed: {elapsed:.2?}");
 
         let r1 = joined_result.0.unwrap();
         let r2 = joined_result.1.unwrap();
@@ -1659,7 +1656,7 @@ mod tests {
         //check system collision
         for (key, _val) in r1 {
             if r3.contains_key(&key) {
-                println!("collision description on key {}", key);
+                println!("collision description on key {key}");
             }
         }
 
@@ -1784,7 +1781,7 @@ mod tests {
         let message_it = MessageIterator::from(connection);
 
         for message_res in message_it {
-            debug!("Message response {:?}", message_res);
+            debug!("Message response {message_res:?}");
             let return_message = message_res?;
 
             match return_message.message_type() {
@@ -1794,7 +1791,7 @@ mod tests {
                     return result;
                 }
                 zbus::message::Type::MethodCall => {
-                    warn!("Not supposed to happen: {:?}", return_message);
+                    warn!("Not supposed to happen: {return_message:?}");
                     break;
                 }
                 zbus::message::Type::Error => {
@@ -1813,20 +1810,20 @@ mod tests {
                                     message
                                 )
                             }
-                            _ => warn!("Bus error: {:?}", error),
+                            _ => warn!("Bus error: {error:?}"),
                         }
                     }
                     return Err(SystemdErrors::from(error));
                 }
                 zbus::message::Type::Signal => {
-                    info!("Signal: {:?}", return_message);
+                    info!("Signal: {return_message:?}");
                     continue;
                 }
             }
         }
 
-        let msg = format!("{:?} ????, response supposed to be Unreachable", method);
-        warn!("{}", msg);
+        let msg = format!("{method:?} ????, response supposed to be Unreachable");
+        warn!("{msg}");
         Err(SystemdErrors::Malformed(
             msg,
             "sequences of messages".to_owned(),

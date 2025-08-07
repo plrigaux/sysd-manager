@@ -257,7 +257,7 @@ fn file_open_get_content(file_path: &str) -> Result<String, SystemdErrors> {
     let mut file = match File::open(file_path.as_ref()) {
         Ok(f) => f,
         Err(e) => {
-            warn!("Can't open file \"{file_path}\", reason: {}", e);
+            warn!("Can't open file \"{file_path}\", reason: {e}");
             return Err(SystemdErrors::IoError(e));
         }
     };
@@ -312,7 +312,9 @@ pub fn commander_output(
     prog_n_args: &[&str],
     environment_variables: Option<&[(&str, &str)]>,
 ) -> Result<std::process::Output, SystemdErrors> {
-    let new_output_result = match commander(prog_n_args, environment_variables).output() {
+    
+
+    match commander(prog_n_args, environment_variables).output() {
         Ok(output) => {
             if IS_FLATPAK_MODE {
                 info!("Journal status: {}", output.status);
@@ -339,11 +341,9 @@ pub fn commander_output(
         }
         Err(err) => match test_flatpak_spawn() {
             Ok(()) => Err(SystemdErrors::IoError(err)),
-            Err(e1) => return Err(e1),
+            Err(e1) => Err(e1),
         },
-    };
-
-    new_output_result
+    }
 }
 
 #[cfg(feature = "flatpak")]
@@ -397,14 +397,13 @@ pub fn save_text_to_file(
                 match err.kind() {
                     ErrorKind::PermissionDenied => {
                         info!(
-                            "Some error : {}, try executing command as another user",
-                            err
+                            "Some error : {err}, try executing command as another user"
                         );
                         write_with_priviledge(file_path, host_file_path, text)
                             .map(|bytes_written| (file_path.clone(), bytes_written))
                     }
                     _ => {
-                        warn!("Unable to open file: {:?}", err);
+                        warn!("Unable to open file: {err:?}");
                         Err(error)
                     }
                 }
@@ -425,7 +424,7 @@ fn write_on_disk(text: &GString, file_path: &str) -> Result<usize, SystemdErrors
 
     match file.write(text.as_bytes()) {
         Ok(bytes_written) => {
-            info!("{bytes_written} bytes writen to {}", file_path);
+            info!("{bytes_written} bytes writen to {file_path}");
             Ok(bytes_written)
         }
         Err(err) => Err(SystemdErrors::IoError(err)),
@@ -448,7 +447,7 @@ fn write_with_priviledge(
     let mut child = match child_result {
         Ok(child) => child,
         Err(error) => {
-            error!("failed to execute pkexec tee. Error {:?}", error);
+            error!("failed to execute pkexec tee. Error {error:?}");
             return Err(SystemdErrors::IoError(error));
         }
     };
@@ -467,17 +466,17 @@ fn write_with_priviledge(
 
     match child_stdin.write_all(bytes) {
         Ok(()) => {
-            info!("Write content as root on {}", file_path);
+            info!("Write content as root on {file_path}");
         }
         Err(error) => return Err(SystemdErrors::IoError(error)),
     };
 
     match child.wait() {
         Ok(exit_status) => {
-            info!("Subprocess exit status: {:?}", exit_status);
+            info!("Subprocess exit status: {exit_status:?}");
             if !exit_status.success() {
                 let code = exit_status.code();
-                warn!("Subprocess exit code: {:?}", code);
+                warn!("Subprocess exit code: {code:?}");
 
                 let Some(code) = code else {
                     return Err(SystemdErrors::Custom(
@@ -537,7 +536,7 @@ pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
 
 pub fn generate_file_uri(file_path: &str) -> String {
     let flatpak_host_file_path = flatpak_host_file_path(file_path);
-    format!("file://{}", flatpak_host_file_path)
+    format!("file://{flatpak_host_file_path}")
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
@@ -848,15 +847,14 @@ impl SystemdSignal {
             SystemdSignal::UnitNew(id, unit) => format!("{id} {unit}"),
             SystemdSignal::UnitRemoved(id, unit) => format!("{id} {unit}"),
             SystemdSignal::JobNew(id, job, unit) => {
-                format!("unit={} id={} path={}", unit, id, job)
+                format!("unit={unit} id={id} path={job}")
             }
             SystemdSignal::JobRemoved(id, job, unit, result) => {
-                format!("unit={} id={} path={} result={}", unit, id, job, result)
+                format!("unit={unit} id={id} path={job} result={result}")
             }
             SystemdSignal::StartupFinished(firmware, loader, kernel, initrd, userspace, total) => {
                 format!(
-                    "firmware={} loader={} kernel={} initrd={} userspace={} total={}",
-                    firmware, loader, kernel, initrd, userspace, total,
+                    "firmware={firmware} loader={loader} kernel={kernel} initrd={initrd} userspace={userspace} total={total}",
                 )
             }
             SystemdSignal::UnitFilesChanged => String::new(),
@@ -873,6 +871,6 @@ pub async fn watch_systemd_signals(
         sysdbus::watcher::watch_systemd_signals(systemd_signal_sender, cancellation_token).await;
 
     if let Err(err) = result {
-        log::error!("Error listening to jobs {:?}", err);
+        log::error!("Error listening to jobs {err:?}");
     }
 }

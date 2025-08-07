@@ -60,7 +60,7 @@ pub fn check_for_new_journal_entry() {
                         journal_panel.imp().append_journal_event(journal_events);
                     }
                     Err(error) => {
-                        log::warn!("Journal recv Error: {}", error);
+                        log::warn!("Journal recv Error: {error}");
                     }
                 }
             }

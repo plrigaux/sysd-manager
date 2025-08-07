@@ -63,22 +63,22 @@ fn main() -> glib::ExitCode {
     // Set up gettext translations
     let path =
         gettextrs::bindtextdomain(DOMAIN_NAME, locale_dir).expect("Unable to bind the text domain");
-    info!("bindtextdomain path {:?}", path);
+    info!("bindtextdomain path {path:?}");
 
     match gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
-        Ok(v) => log::info!("bind_textdomain_codeset {:?}", v),
-        Err(error) => log::error!("Unable to set the text domain encoding Error: {:?}", error),
+        Ok(v) => log::info!("bind_textdomain_codeset {v:?}"),
+        Err(error) => log::error!("Unable to set the text domain encoding Error: {error:?}"),
     }
 
     // Specify the name of the .mo file to use.
     match gettextrs::textdomain(DOMAIN_NAME) {
         Ok(v) => log::info!("textdomain {:?}", String::from_utf8_lossy(&v)),
-        Err(error) => log::error!("Unable to switch to the text domain Error: {:?}", error),
+        Err(error) => log::error!("Unable to switch to the text domain Error: {error:?}"),
     }
 
     // Ask gettext for UTF-8 strings. THIS CRATE CAN'T HANDLE NON-UTF-8 DATA!
     if let Err(error) = gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
-        log::error!("bind_textdomain_codeset Error: {:?}", error);
+        log::error!("bind_textdomain_codeset Error: {error:?}");
     };
 
     info!("Program starting up");
@@ -94,7 +94,7 @@ fn main() -> glib::ExitCode {
 
     match gio::resources_register_include!("sysd-manager.gresource") {
         Ok(_) => (),
-        Err(e) => warn!("Failed to register resources. Error: {:?}", e),
+        Err(e) => warn!("Failed to register resources. Error: {e:?}"),
     }
 
     // Create a new application
@@ -110,8 +110,7 @@ fn main() -> glib::ExitCode {
             unsafe { adw::ColorScheme::from_glib(preferred_color_scheme_id) };
 
         info!(
-            "id {:?} color {:?}",
-            preferred_color_scheme_id, preferred_color_scheme
+            "id {preferred_color_scheme_id:?} color {preferred_color_scheme:?}"
         );
         style_manager.set_color_scheme(preferred_color_scheme);
         load_css(&style_manager);
@@ -212,7 +211,7 @@ fn handle_args() -> Option<UnitInfo> {
 
     let current_level = PREFERENCES.dbus_level();
 
-    debug!("Current level: {:?}", current_level);
+    debug!("Current level: {current_level:?}");
     let (app_level, unit_level) = match (args.system, args.user) {
         (true, _) => (DbusLevel::System, UnitDBusLevel::System),
         (false, true) => (DbusLevel::UserSession, UnitDBusLevel::UserSession),
@@ -222,7 +221,7 @@ fn handle_args() -> Option<UnitInfo> {
     PREFERENCES.set_dbus_level(app_level);
 
     let current_level = PREFERENCES.dbus_level();
-    debug!("Current level: {:?}", current_level);
+    debug!("Current level: {current_level:?}");
     if current_level != app_level {
         let settings = new_settings();
         PREFERENCES.save_dbus_level(&settings);
@@ -233,7 +232,7 @@ fn handle_args() -> Option<UnitInfo> {
     match systemd::fetch_unit(unit_level, &unit_name) {
         Ok(unit) => Some(unit),
         Err(e) => {
-            warn!("Cli unit: {:?}", e);
+            warn!("Cli unit: {e:?}");
             None
         }
     }

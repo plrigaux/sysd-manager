@@ -96,7 +96,7 @@ impl InfoWindowImp {
             gtk::FilterChange::Different
         };
 
-        debug!("Current \"{}\" Prev \"{}\"", text, last_filter);
+        debug!("Current \"{text}\" Prev \"{last_filter}\"");
         last_filter.replace_range(.., text.as_str());
 
         if let Some(custom_filter) = self.custom_filter.get() {
@@ -148,7 +148,7 @@ impl InfoWindowImp {
                         store.append(&data);
                     }
                 }
-                Err(e) => warn!("Fails to retreive Unit info: {:?}", e),
+                Err(e) => warn!("Fails to retreive Unit info: {e:?}"),
             }
         } else {
             warn!("Store not supposed to be None");
@@ -171,7 +171,7 @@ impl InfoWindowImp {
                         store.append(&data);
                     }
                 }
-                Err(e) => error!("Fail to retreive Unit info: {:?}", e),
+                Err(e) => error!("Fail to retreive Unit info: {e:?}"),
             }
         } else {
             warn!("Store not supposed to be None");
@@ -186,7 +186,7 @@ impl InfoWindowImp {
 
         gtk::CustomFilter::new(move |object| {
             let Some(meta) = object.downcast_ref::<rowitem::Metadata>() else {
-                error!("some wrong downcast_ref {:?}", object);
+                error!("some wrong downcast_ref {object:?}");
                 return false;
             };
 

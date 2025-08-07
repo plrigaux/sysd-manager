@@ -82,7 +82,7 @@ pub enum TermColor {
 impl TermColor {
     pub fn get_hexa_code(&self) -> String {
         match self {
-            Self::Vga(r, g, b) => format!("#{:02x}{:02x}{:02x}", r, g, b),
+            Self::Vga(r, g, b) => format!("#{r:02x}{g:02x}{b:02x}"),
             _ => self.get_vga().get_hexa_code(),
         }
     }
@@ -264,7 +264,7 @@ mod tests {
     fn test_color_convert() {
         let color: TermColor = Palette::Red3.into();
 
-        println!("{:?}", color)
+        println!("{color:?}")
     }
 
     #[test]

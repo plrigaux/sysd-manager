@@ -261,7 +261,7 @@ impl KillPanelImp {
                 )
             }
             _a => {
-                debug!("a {:?}", _a);
+                debug!("a {_a:?}");
                 false
             }
         };
@@ -294,7 +294,7 @@ impl KillPanelImp {
             let sigqueue_value = match self.sigqueue_value.text().parse::<i32>() {
                 Ok(v) => v,
                 Err(err) => {
-                    warn!("Queued Signal value not a number: {:?}", err);
+                    warn!("Queued Signal value not a number: {err:?}");
                     0
                 }
             };

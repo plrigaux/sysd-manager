@@ -108,12 +108,12 @@ macro_rules! clean_message {
 }
 
 fn write_key(unit_writer: &mut UnitInfoWriter, key_label: &str) {
-    let s = format!("{:>KEY_WIDTH$} ", key_label);
+    let s = format!("{key_label:>KEY_WIDTH$} ");
     unit_writer.insert(&s);
 }
 
 fn fill_row(unit_writer: &mut UnitInfoWriter, key_label: &str, value: &str) {
-    let s = format!("{:>KEY_WIDTH$} {}\n", key_label, value);
+    let s = format!("{key_label:>KEY_WIDTH$} {value}\n");
     unit_writer.insert(&s);
 }
 
@@ -147,7 +147,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
             ""
         };
 
-        let s = format!("{:>KEY_WIDTH$} {}\n", key_label, prefix);
+        let s = format!("{key_label:>KEY_WIDTH$} {prefix}\n");
         unit_writer.insert(&s);
 
         let mut is_first = true;
@@ -671,7 +671,7 @@ fn fill_main_pid(
         unit.display_name()
     };
 
-    let v = &format!("{} ({})", main_pid, exec_val);
+    let v = &format!("{main_pid} ({exec_val})");
     fill_row(unit_writer, "Main PID:", v)
 }
 
@@ -834,7 +834,7 @@ fn fill_invocation(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
             continue;
         };
 
-        let hexa = format!("{:x}", converted);
+        let hexa = format!("{converted:x}");
 
         invocation.push_str(&hexa);
     }
@@ -948,7 +948,7 @@ fn fill_triggers(
                 unit_writer.insert_state(state);
             }
             Err(e) => {
-                warn!("Can't find state of {trigger_unit}, {:?}", e);
+                warn!("Can't find state of {trigger_unit}, {e:?}");
                 unit_writer.insert(" ");
             }
         };
@@ -985,7 +985,7 @@ fn fill_triggered_by(
                 unit_writer.insert_state(state);
             }
             Err(e) => {
-                warn!("Can't find state of {trigger_unit}, {:?}", e);
+                warn!("Can't find state of {trigger_unit}, {e:?}");
                 unit_writer.insert(" ");
             }
         };
@@ -1109,7 +1109,7 @@ fn value_to_str<'a>(value: &'a Value<'a>) -> &'a str {
     if let Value::Str(converted) = value as &Value {
         return converted.as_str();
     }
-    warn!("Wrong zvalue conversion to String: {:?}", value);
+    warn!("Wrong zvalue conversion to String: {value:?}");
     ""
 }
 
@@ -1120,7 +1120,7 @@ fn value_to_u64(value: &Value) -> u64 {
     if let Value::U64(converted) = value {
         return *converted;
     }
-    warn!("Wrong zvalue conversion to u64: {:?}", value);
+    warn!("Wrong zvalue conversion to u64: {value:?}");
     U64MAX
 }
 
@@ -1132,7 +1132,7 @@ fn valop_to_u64(value: Option<&OwnedValue>, default: u64) -> u64 {
     if let Value::U64(converted) = value as &Value {
         *converted
     } else {
-        warn!("Wrong zvalue conversion to u64: {:?}", value);
+        warn!("Wrong zvalue conversion to u64: {value:?}");
         default
     }
 }
@@ -1145,7 +1145,7 @@ fn valop_to_u32(value: Option<&OwnedValue>, default: u32) -> u32 {
     if let Value::U32(converted) = value as &Value {
         *converted
     } else {
-        warn!("Wrong zvalue conversion to u32: {:?}", value);
+        warn!("Wrong zvalue conversion to u32: {value:?}");
         default
     }
 }
@@ -1158,7 +1158,7 @@ fn valop_to_i32(value: Option<&OwnedValue>, default: i32) -> i32 {
     if let Value::I32(converted) = value as &Value {
         *converted
     } else {
-        warn!("Wrong zvalue conversion to u32: {:?}", value);
+        warn!("Wrong zvalue conversion to u32: {value:?}");
         default
     }
 }
@@ -1171,7 +1171,7 @@ fn valop_to_str<'a>(value: Option<&'a OwnedValue>, default: &'a str) -> &'a str 
     if let Value::Str(converted) = value as &Value {
         converted
     } else {
-        warn!("Wrong zvalue conversion to str: {:?}", value);
+        warn!("Wrong zvalue conversion to str: {value:?}");
         default
     }
 }
@@ -1196,7 +1196,7 @@ fn human_bytes(bytes: u64) -> String {
     let mut human_str = if base == 0 {
         bytes.to_string()
     } else {
-        format!("{:.1}", value)
+        format!("{value:.1}")
     };
 
     if let Some(suffix) = SUFFIX.get(base) {
@@ -1236,7 +1236,7 @@ mod tests {
             chrono::offset::LocalResult::None => "NONE".to_owned(),
         };
 
-        println!("date {}", date);
+        println!("date {date}");
 
         let local_result = chrono::TimeZone::timestamp_millis_opt(&Local, 173787328907);
         let fmt = "%b %d %T %Y";
@@ -1246,7 +1246,7 @@ mod tests {
             chrono::offset::LocalResult::None => "NONE".to_owned(),
         };
 
-        println!("date {}", date);
+        println!("date {date}");
     }
 
     #[test]
@@ -1261,7 +1261,7 @@ mod tests {
     fn test_strerror() {
         for i in 0..35 {
             let out = strerror(i);
-            println!("Error {i} {:?}", out);
+            println!("Error {i} {out:?}");
         }
     }
 }

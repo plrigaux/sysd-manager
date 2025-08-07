@@ -71,7 +71,7 @@ impl OnClose {
 
             if let Some(filter_change) = filter_change {
                 filter.changed(filter_change);
-                debug!("Filter change Level {:?}", filter_change);
+                debug!("Filter change Level {filter_change:?}");
             }
         } else if let Some(dependencies) = &self.dependencies {
             if !old.eq(new) {

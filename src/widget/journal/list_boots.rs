@@ -121,7 +121,7 @@ mod imp {
                             boots
                         }
                         Err(error) => {
-                            warn!("List boots Error {:?}", error);
+                            warn!("List boots Error {error:?}");
                             return;
                         }
                     };
@@ -137,7 +137,7 @@ mod imp {
                     let last_time = match last_time {
                         Ok(last_time) => last_time,
                         Err(error) => {
-                            warn!("Fetch_last_time  Error {:?}", error);
+                            warn!("Fetch_last_time  Error {error:?}");
                             return;
                         }
                     };
@@ -359,7 +359,7 @@ mod imp {
                 let boot_id: String = boot.boot_id.clone();
                 let list_boots_windows = list_boots_windows.clone();
                 child.connect_clicked(move |_button| {
-                    info!("boot {}", boot_id);
+                    info!("boot {boot_id}");
 
                     let Some(app_window) = list_boots_windows.imp().app_window.get() else {
                         warn!("No app window");

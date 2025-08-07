@@ -410,7 +410,7 @@ impl Preferences {
     }
 
     pub fn set_timestamp_style(&self, timestamp_style: TimestampStyle) {
-        info!("set_timestamp_style: {}", timestamp_style);
+        info!("set_timestamp_style: {timestamp_style}");
 
         let mut self_timestamp_style = self.timestamp_style.write().expect("supposed to write");
         *self_timestamp_style = timestamp_style;
@@ -423,7 +423,7 @@ impl Preferences {
                 "Save setting '{KEY_DBUS_LEVEL}' with value {:?}",
                 level.as_str()
             ),
-            Err(e) => warn!("Save setting Error {}", e),
+            Err(e) => warn!("Save setting Error {e}"),
         }
     }
 

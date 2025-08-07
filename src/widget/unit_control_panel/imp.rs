@@ -610,7 +610,7 @@ impl UnitControlPanelImpl {
                         )
                     };
 
-                    warn!("{msg} {:?}", error);
+                    warn!("{msg} {error:?}");
                     control_panel.add_toast_message(&msg, true);
                 }
             }

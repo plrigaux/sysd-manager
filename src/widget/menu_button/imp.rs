@@ -81,7 +81,7 @@ impl ExMenuButtonImpl {
         let new_set_ref = &self.filter_set.borrow();
         on_close.old_new_compare(&old_set, new_set_ref);
 
-        debug!("New set {:#?}", new_set_ref);
+        debug!("New set {new_set_ref:#?}");
     }
 
     #[template_callback(name = "clear_filter_selection")]

@@ -113,7 +113,7 @@ impl EnablementStatus {
     /// into a UnitType by matching the first character.
     pub fn from_str(enablement_status: &str) -> EnablementStatus {
         if enablement_status.is_empty() {
-            info!("Empty Enablement Status: \"{}\"", enablement_status);
+            info!("Empty Enablement Status: \"{enablement_status}\"");
             return EnablementStatus::Unknown;
         }
 
@@ -149,7 +149,7 @@ impl EnablementStatus {
             'g' => EnablementStatus::Generated,
             't' => EnablementStatus::Transient,
             _ => {
-                warn!("Unknown State: {}", enablement_status);
+                warn!("Unknown State: {enablement_status}");
                 EnablementStatus::Unknown
             }
         }
@@ -527,7 +527,7 @@ impl UnitType {
             "timer" => UnitType::Timer,
             "snapshot" => UnitType::Snapshot,
             _ => {
-                warn!("Unknown Unit Type: {}", unit_type);
+                warn!("Unknown Unit Type: {unit_type}");
                 UnitType::Unknown(unit_type.to_string())
             }
         }
@@ -656,7 +656,7 @@ impl Display for KillWho {
             ""
         };
 
-        write!(f, "{}", out)
+        write!(f, "{out}")
     }
 }
 
@@ -797,7 +797,7 @@ impl From<&str> for StartStopMode {
             "ignore-requirements" => StartStopMode::IgnoreRequirements,
 
             unknown => {
-                warn!("unknown start mode {:?}", unknown);
+                warn!("unknown start mode {unknown:?}");
                 StartStopMode::default()
             }
         }
@@ -913,7 +913,7 @@ impl From<&str> for UnitDBusLevel {
             "user" => UnitDBusLevel::UserSession,
             "system" => UnitDBusLevel::System,
             _ => {
-                warn!("Unit dbus Level not found {:?}", level);
+                warn!("Unit dbus Level not found {level:?}");
                 UnitDBusLevel::default()
             }
         }

@@ -34,7 +34,7 @@ impl LinkActivator {
                 None::<&gio::Cancellable>,
                 move |result| {
                     if let Err(error) = result {
-                        warn!("Finished launch {} Error {:?}", link, error)
+                        warn!("Finished launch {link} Error {error:?}")
                     }
                 },
             );
@@ -49,7 +49,7 @@ impl LinkActivator {
                 None::<&gio::Cancellable>,
                 move |result| {
                     if let Err(error) = result {
-                        warn!("Finished launch {} Error {:?}", link, error)
+                        warn!("Finished launch {link} Error {error:?}")
                     }
                 },
             );
@@ -64,7 +64,7 @@ impl LinkActivator {
             let unit = match systemd::fetch_unit(level, unit_name) {
                 Ok(unit) => Some(unit),
                 Err(e) => {
-                    warn!("Cli unit: {:?}", e);
+                    warn!("Cli unit: {e:?}");
                     None
                 }
             };
@@ -75,7 +75,7 @@ impl LinkActivator {
                 warn!("app_window missing");
             }
         } else {
-            warn!("Not handle link {:?}", link)
+            warn!("Not handle link {link:?}")
         }
     }
 }
@@ -96,7 +96,7 @@ pub fn build_textview_link_platform(
     text_view_original.set_has_tooltip(true);
 
     text_view_original.connect_query_tooltip(|text_view, mut x, mut y, keyboard_mode, tool_tip| {
-        let s = format!("TT x {} y {} b {}", x, y, keyboard_mode);
+        let s = format!("TT x {x} y {y} b {keyboard_mode}");
         tool_tip.set_text(Some(&s));
 
         //Adjust to the scrolling
@@ -279,7 +279,7 @@ fn retreive_tag_link_value(text_iter: gtk::TextIter) -> Option<String> {
     if let Some(link_value) = link_value {
         match link_value.get::<String>() {
             Ok(link) => return Some(link),
-            Err(e) => warn!("Link value Error {:?}", e),
+            Err(e) => warn!("Link value Error {e:?}"),
         }
     }
     None

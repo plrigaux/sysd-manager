@@ -9,7 +9,7 @@ pub(super) fn create_col_menu(key: &str) -> gio::MenuModel {
         &menu,
         "Hide this Column",
         "win.hide_unit_col",
-        &format!("{}{key}", COL_SHOW_PREFIX),
+        &format!("{COL_SHOW_PREFIX}{key}"),
     );
 
     let sub_menu = gio::Menu::new();

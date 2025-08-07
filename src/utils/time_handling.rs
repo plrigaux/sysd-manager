@@ -484,13 +484,13 @@ mod tests {
     #[test]
     fn test_since() {
         let since = get_since_and_passed_time(1727116768682604, TimestampStyle::Pretty);
-        println!("since {:?}", since);
+        println!("since {since:?}");
         let since = get_since_and_passed_time(1727116768682442, TimestampStyle::Pretty);
-        println!("since {:?}", since);
+        println!("since {since:?}");
         let since = get_since_and_passed_time(1727116768682435, TimestampStyle::Pretty);
-        println!("since {:?}", since);
+        println!("since {since:?}");
         let since = get_since_and_passed_time(1727413184243915, TimestampStyle::Pretty);
-        println!("since {:?}", since);
+        println!("since {since:?}");
     }
 
     #[test]
@@ -512,10 +512,7 @@ mod tests {
             .to_std()
             .unwrap();
 
-        println!(
-            "Duration between {:?} and {:?}: {:?}",
-            now, tomorrow_midnight, duration
-        );
+        println!("Duration between {now:?} and {tomorrow_midnight:?}: {duration:?}");
     }
 
     #[test]
@@ -542,19 +539,19 @@ mod tests {
     #[test]
     fn most_significant_duration_test() {
         let a = TimeDelta::minutes(1) + TimeDelta::seconds(30);
-        println!("{:?}", a);
+        println!("{a:?}");
         println!("{:?}", format_timestamp_relative_full_delta(a, true));
 
         let b = TimeDelta::minutes(2);
-        println!("{:?}", b);
+        println!("{b:?}");
         println!("{:?}", format_timestamp_relative_full_delta(b, true));
 
         let a = TimeDelta::minutes(10) + TimeDelta::seconds(30);
-        println!("{:?}", a);
+        println!("{a:?}");
         println!("{:?}", format_timestamp_relative_full_delta(a, true));
 
         let a = TimeDelta::minutes(9) + TimeDelta::seconds(30);
-        println!("{:?}", a);
+        println!("{a:?}");
         println!("{:?}", format_timestamp_relative_full_delta(a, true));
     }
 
@@ -682,16 +679,16 @@ mod tests {
     #[test]
     fn test_localtime_or_gmtime_usec() {
         let asdf = localtime_or_gmtime_usec(0, false);
-        println!("time {:?}", asdf);
+        println!("time {asdf:?}");
 
         let c_str = unsafe { CStr::from_ptr(asdf.tm_zone) };
-        println!("time zone {:?}", c_str);
+        println!("time zone {c_str:?}");
 
         let asdf = localtime_or_gmtime_usec(0, true);
-        println!("time {:?}", asdf);
+        println!("time {asdf:?}");
 
         let c_str = unsafe { CStr::from_ptr(asdf.tm_zone) };
-        println!("time zone {:?}", c_str);
+        println!("time zone {c_str:?}");
     }
 
     #[test]
@@ -717,6 +714,6 @@ mod tests {
 
         let b: i32 = a as i32;
 
-        println!("a {:#x} b {:#x}", a, b);
+        println!("a {a:#x} b {b:#x}");
     }
 }

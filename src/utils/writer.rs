@@ -312,7 +312,7 @@ impl UnitInfoWriter {
                 let link = type_.ensure_link_type(link);
 
                 let link_value = link.to_value();
-                debug!("text {} link {:?}", text, link_value);
+                debug!("text {text} link {link_value:?}");
                 unsafe {
                     tag.set_data(TAG_DATA_LINK, link_value);
                 }

@@ -89,7 +89,7 @@ pub async fn watch_systemd_signals(
             let signal_row = SystemdSignalRow::new(signal);
 
             if let Err(error) = systemd_signal_sender.send(signal_row).await {
-                warn!("Send signal Error {:?}", error)
+                warn!("Send signal Error {error:?}")
             };
         }
     }

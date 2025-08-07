@@ -54,7 +54,7 @@ pub struct UnitInfoPanelImp {
 impl UnitInfoPanelImp {
     #[template_callback]
     fn refresh_info_clicked(&self, button: &gtk::Button) {
-        info!("button {:?}", button);
+        info!("button {button:?}");
 
         self.refresh_panels();
     }

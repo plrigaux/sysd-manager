@@ -189,7 +189,7 @@ pub fn get_unit_journal_events_continuous(
             if next(&mut journal_reader, range.what_grab)? == 0 {
                 if !out_list.is_empty() {
                     if let Err(send_error) = sender.send(out_list) {
-                        warn!("Send Error: {:?}", send_error)
+                        warn!("Send Error: {send_error:?}")
                     }
 
                     gtk::glib::source::idle_add(|| {
@@ -372,8 +372,7 @@ fn create_journal_reader(
         .expect("Could not open journal");
     let unit_name = unit_name.as_str();
     info!(
-        "JOURNAL UNIT NAME {:?} BUS_LEVEL {:?} BOOT {:?}",
-        unit_name, level, boot_filter
+        "JOURNAL UNIT NAME {unit_name:?} BUS_LEVEL {level:?} BOOT {boot_filter:?}"
     );
     match level {
         UnitDBusLevel::System => {
@@ -403,7 +402,7 @@ fn create_journal_reader(
     match boot_filter {
         BootFilter::Current => {
             let boot_id = Id128::from_boot()?;
-            let boot_str = format!("{}", boot_id);
+            let boot_str = format!("{boot_id}");
 
             journal_reader.match_and()?;
             journal_reader.match_add(KEY_BOOT_ID, boot_str)?;
@@ -457,7 +456,8 @@ fn truncate(s: String, max_chars: usize) -> String {
 }
 
 fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
-    let value = match reader.get_data(field) {
+    
+    match reader.get_data(field) {
         Ok(journal_entry_op) => match journal_entry_op {
             Some(journal_entry_field) => journal_entry_field
                 .value()
@@ -466,11 +466,10 @@ fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
             None => default.to_owned(),
         },
         Err(e) => {
-            warn!("Get data field {field} Error: {:?}", e);
+            warn!("Get data field {field} Error: {e:?}");
             default.to_owned()
         }
-    };
-    value
+    }
 }
 
 const FMT: &str = "%b %d %T";

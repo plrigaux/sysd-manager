@@ -195,8 +195,7 @@ impl AppWindowImpl {
             self.system_session_dropdown.set_selected(level_num);
             let selected = self.system_session_dropdown.selected();
             info!(
-                "Set system_session_dropdown {:?} {} selected {}",
-                level, level_num, selected
+                "Set system_session_dropdown {level:?} {level_num} selected {selected}"
             );
 
             self.system_session_dropdown
@@ -205,8 +204,7 @@ impl AppWindowImpl {
                     let level: DbusLevel = idx.into();
 
                     debug!(
-                        "System Session Values Selected idx {:?} level {:?}",
-                        idx, level
+                        "System Session Values Selected idx {idx:?} level {level:?}"
                     );
 
                     PREFERENCES.set_dbus_level(level);
@@ -427,7 +425,7 @@ impl AppWindowImpl {
         let orientation_mode: gio::ActionEntry<adw::Application> =
             gio::ActionEntry::builder(KEY_PREF_ORIENTATION_MODE)
                 .activate(move |_win: &adw::Application, action, variant| {
-                    warn!("action {:?} variant {:?}", action, variant);
+                    warn!("action {action:?} variant {variant:?}");
                 })
                 .parameter_type(Some(VariantTy::STRING))
                 .state(default_state)
@@ -511,7 +509,7 @@ impl AppWindowImpl {
     }
 
     fn replace_tags(&self, message: &str) -> String {
-        debug!("{}", message);
+        debug!("{message}");
         let mut out = String::with_capacity(message.len() * 2);
         let re = toast_regex();
 
@@ -552,7 +550,7 @@ impl AppWindowImpl {
             i = m.end();
         }
         out.push_str(&message[i..message.len()]);
-        debug!("{}", out);
+        debug!("{out}");
         out
     }
 }
@@ -593,7 +591,7 @@ mod tests {
         let test_str = "asdf <unit>unit.serv</unit> ok";
 
         for capt in r.captures_iter(test_str) {
-            println!("capture: {:#?}", capt)
+            println!("capture: {capt:#?}")
         }
     }
 
@@ -608,7 +606,7 @@ mod tests {
 
         for test in test_str {
             for capt in r.captures_iter(test) {
-                println!("capture: {:#?}", capt)
+                println!("capture: {capt:#?}")
             }
         }
     }

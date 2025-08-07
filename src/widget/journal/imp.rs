@@ -83,7 +83,7 @@ impl JournalDisplayOrder {
             KEY_ASCENDING => JournalDisplayOrder::Ascending,
             KEY_DESCENDING => JournalDisplayOrder::Descending,
             _ => {
-                warn!("Journal Display Order key {:?} not found", key);
+                warn!("Journal Display Order key {key:?} not found");
                 JournalDisplayOrder::default()
             }
         }
@@ -188,7 +188,7 @@ impl JournalPanelImp {
     #[template_callback]
     fn boot_id_text_change(&self, entry: &adw::EntryRow) {
         let text = entry.text();
-        info!("boot id entry_changed {}", text);
+        info!("boot id entry_changed {text}");
     }
 
     #[template_callback]
@@ -240,7 +240,7 @@ impl JournalPanelImp {
 
     #[template_callback]
     fn continuous_switch_state_set(&self, active: bool, continuous_switch: &gtk::Switch) -> bool {
-        info!("continuous switch state {}", active);
+        info!("continuous switch state {active}");
 
         if active {
             if continuous_switch.state() {
@@ -280,14 +280,14 @@ impl JournalPanelImp {
 
     #[template_callback]
     fn scwin_edge_overshot(&self, position: gtk::PositionType) {
-        info!("scwin_edge_overshot {:?}", position);
+        info!("scwin_edge_overshot {position:?}");
 
         self.on_position(position);
     }
 
     #[template_callback]
     fn scwin_edge_reached(&self, position: gtk::PositionType) {
-        info!("scwin_edge_reached {:?}", position);
+        info!("scwin_edge_reached {position:?}");
 
         self.on_position(position);
     }
@@ -295,15 +295,14 @@ impl JournalPanelImp {
     #[template_callback]
     fn list_boots_clicked(&self, button: gtk::Button) {
         if let Err(e) = button.activate_action(APP_ACTION_LIST_BOOT, None) {
-            warn!("Send action Error : {:?}", e);
+            warn!("Send action Error : {e:?}");
         }
     }
 
     fn on_position(&self, position: gtk::PositionType) {
         let display_order = self.display_order.get();
         info!(
-            "call for new {:?}, display order {:?}",
-            position, display_order
+            "call for new {position:?}, display order {display_order:?}"
         );
 
         match (position, display_order) {
@@ -429,11 +428,10 @@ impl JournalPanelImp {
         let journal_panel = self.obj().clone();
 
         debug!(
-            "Call from time old {:?} new {:?}",
-            oldest_event_time, newest_event_time
+            "Call from time old {oldest_event_time:?} new {newest_event_time:?}"
         );
 
-        debug!("grabbing {:?}", grabbing);
+        debug!("grabbing {grabbing:?}");
 
         let range = EventRange::new(
             grabbing,
@@ -442,9 +440,9 @@ impl JournalPanelImp {
             newest_event_time,
         );
 
-        debug!("range {:?}", range);
+        debug!("range {range:?}");
 
-        info!("boot filter {:?}", boot_filter);
+        info!("boot filter {boot_filter:?}");
 
         glib::spawn_future_local(async move {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
@@ -454,7 +452,7 @@ impl JournalPanelImp {
                 match systemd::get_unit_journal(&unit, boot_filter, range) {
                     Ok(journal_output) => journal_output,
                     Err(error) => {
-                        warn!("Journal Events Error {:?}", error);
+                        warn!("Journal Events Error {error:?}");
                         JournalEventChunk::error(grabbing)
                     }
                 }
@@ -851,7 +849,7 @@ mod tests {
         for (boot_id, answer) in tests {
             let res = validate_boot_id(boot_id);
 
-            assert_eq!(res, answer, "boot_id {}", boot_id);
+            assert_eq!(res, answer, "boot_id {boot_id}");
         }
     }
 }

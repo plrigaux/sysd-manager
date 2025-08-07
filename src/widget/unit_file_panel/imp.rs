@@ -83,7 +83,7 @@ macro_rules! get_buffer {
 impl UnitFilePanelImp {
     #[template_callback]
     fn save_file(&self, button: &gtk::Button) {
-        info!("button {:?}", button);
+        info!("button {button:?}");
 
         let binding = self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
@@ -191,7 +191,7 @@ impl UnitFilePanelImp {
         let file_content = match systemd::get_unit_file_info(unit_ref) {
             Ok(content) => content,
             Err(e) => {
-                warn!("get_unit_file_info Error: {:?}", e);
+                warn!("get_unit_file_info Error: {e:?}");
                 "".to_owned()
             }
         };
@@ -234,8 +234,7 @@ impl UnitFilePanelImp {
         let style_scheme_id = PREFERENCES.unit_file_style_scheme();
 
         debug!(
-            "File Unit set_dark {is_dark} style_scheme_id {:?}",
-            style_scheme_id
+            "File Unit set_dark {is_dark} style_scheme_id {style_scheme_id:?}"
         );
 
         self.set_new_style_scheme(Some(&style_scheme_id));
@@ -252,7 +251,7 @@ impl UnitFilePanelImp {
             style_scheme_id = None
         } */
 
-        info!("Set new style scheme {:?}", style_scheme_id);
+        info!("Set new style scheme {style_scheme_id:?}");
 
         match style_scheme_id {
             Some("") | None => {
@@ -266,7 +265,7 @@ impl UnitFilePanelImp {
                     crate::widget::preferences::style_scheme::StyleSchemes,
                 > = style_schemes();
 
-                debug!("{:#?}", style_schemes_map);
+                debug!("{style_schemes_map:#?}");
                 /*             if style_scheme_id.is_empty() {
                     style_scheme_id = ADWAITA;
                 } */
@@ -300,10 +299,10 @@ impl UnitFilePanelImp {
 
                 if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
                     let buffer = get_buffer!(self);
-                    info!("Style Scheme found for id {:?}", scheme_id);
+                    info!("Style Scheme found for id {scheme_id:?}");
                     buffer.set_style_scheme(Some(scheme));
                 } else {
-                    warn!("No Style Scheme found for id {:?}", scheme_id)
+                    warn!("No Style Scheme found for id {scheme_id:?}")
                 }
             }
         }

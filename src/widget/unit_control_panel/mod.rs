@@ -150,7 +150,7 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
     content_box.append(
         &gtk::LinkButton::builder()
             .label(file_path)
-            .uri(format!("file://{}", file_path))
+            .uri(format!("file://{file_path}"))
             .build(),
     );
 

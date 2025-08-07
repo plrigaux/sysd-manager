@@ -202,7 +202,7 @@ impl UnitListPanelImp {
                 let unit_binding = match object.downcast::<UnitBinding>() {
                     Ok(unit) => unit,
                     Err(val) => {
-                        error!("Object.downcast::<UnitInfo> Error: {:?}", val);
+                        error!("Object.downcast::<UnitInfo> Error: {val:?}");
                         return;
                     }
                 };
@@ -253,7 +253,7 @@ impl UnitListPanelImp {
                     if let Some(value) = target_value {
                         let key = value.get::<String>().expect("variant always be String");
                         if let Err(error) = settings.set_boolean(&key, false) {
-                            warn!("Setting error, key {key}, {:?}", error);
+                            warn!("Setting error, key {key}, {error:?}");
                         }
                     }
                 })
@@ -268,7 +268,7 @@ impl UnitListPanelImp {
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     let column_id = target_value
                         .map(|var| var.get::<String>().expect("variant always be String"));
-                    debug!("Filter list, col {:?}", column_id);
+                    debug!("Filter list, col {column_id:?}");
 
                     let filter_win = UnitListFilterWindow::new(column_id, &unit_list_panel);
                     filter_win.construct_filter_dialog();
@@ -368,7 +368,7 @@ impl UnitListPanelImp {
             let (unit_desc, unit_from_files) = match receiver.await.expect("Tokio receiver works") {
                 Ok(unit_files) => unit_files,
                 Err(err) => {
-                    warn!("Fail fetch list {:?}", err);
+                    warn!("Fail fetch list {err:?}");
                     panel_stack.set_visible_child_name("error");
                     return;
                 }
@@ -441,8 +441,7 @@ impl UnitListPanelImp {
                     list_unit.unit_ref().primary().eq(&selected_unit_name)
                 }) {
                     info!(
-                        "Force selection to index {:?} to select unit {:?}",
-                        index, selected_unit_name
+                        "Force selection to index {index:?} to select unit {selected_unit_name:?}"
                     );
                     single_selection.select_item(index, true);
                     //unit_list.set_force_to_select(index);
@@ -476,7 +475,7 @@ impl UnitListPanelImp {
                         let updates = match systemd::complete_unit_information(batch).await {
                             Ok(updates) => updates,
                             Err(error) => {
-                                warn!("Complete Unit Information Error: {:?}", error);
+                                warn!("Complete Unit Information Error: {error:?}");
                                 vec![]
                             }
                         };
@@ -575,7 +574,7 @@ impl UnitListPanelImp {
                 self.unit.replace(Some(unit_item.unit_ref().clone()));
             }
         } else {
-            info!("Unit not found {:?} try to Add", unit_name);
+            info!("Unit not found {unit_name:?} try to Add");
 
             self.add_one_unit(unit);
         }
@@ -587,13 +586,13 @@ impl UnitListPanelImp {
                 //Unselect
                 self.single_selection
                     .set_selected(GTK_INVALID_LIST_POSITION);
-                info!("Unit {} no Match", unit_name);
+                info!("Unit {unit_name} no Match");
                 return Some(unit.clone());
             }
         }
 
         if let Some(row) = finding {
-            info!("Scroll to row {}", row);
+            info!("Scroll to row {row}");
 
             self.units_browser.scroll_to(
                 row, // to centerish on the selected unit
@@ -655,7 +654,7 @@ impl UnitListPanelImp {
         change_type: Option<gtk::FilterChange>,
         update_widget: bool,
     ) {
-        debug!("Assessor Change {:?} {:?}", new_assessor, change_type);
+        debug!("Assessor Change {new_assessor:?} {change_type:?}");
         let applied_assessors = self
             .applied_unit_property_filters
             .get()
@@ -754,7 +753,7 @@ impl UnitListPanelImp {
             let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
                 unit_binding.unit_ref()
             } else {
-                error!("some wrong downcast_ref to UnitBinding  {:?}", object);
+                error!("some wrong downcast_ref to UnitBinding  {object:?}");
                 return false;
             };
 

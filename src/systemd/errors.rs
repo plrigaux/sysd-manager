@@ -67,7 +67,7 @@ impl SystemdErrors {
 
 impl Display for SystemdErrors {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -135,7 +135,7 @@ impl From<zbus::fdo::Error> for SystemdErrors {
 
 impl From<Box<dyn std::error::Error>> for SystemdErrors {
     fn from(error: Box<dyn std::error::Error>) -> Self {
-        let msg = format!("{}", error);
+        let msg = format!("{error}");
         SystemdErrors::JournalError(msg)
     }
 }

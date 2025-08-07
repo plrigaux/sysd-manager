@@ -87,7 +87,7 @@ pub struct PreferencesDialogImpl {
 impl PreferencesDialogImpl {
     #[template_callback]
     fn journal_switch_state_set(&self, state: bool) -> bool {
-        info!("journal_colors_switch {}", state);
+        info!("journal_colors_switch {state}");
 
         self.journal_colors.set_state(state);
         PREFERENCES.set_journal_colors(state);
@@ -111,7 +111,7 @@ impl PreferencesDialogImpl {
 
     #[template_callback]
     fn unit_file_highlighting_state_set(&self, state: bool) -> bool {
-        info!("unit_file_highlighting_switch {}", state);
+        info!("unit_file_highlighting_switch {state}");
 
         self.unit_file_highlight.set_state(state);
         PREFERENCES.set_unit_file_line_number(state);
@@ -131,7 +131,7 @@ impl PreferencesDialogImpl {
     fn select_font_clicked(&self) {
         let filter = gtk::CustomFilter::new(move |object| {
             let Some(font_face) = object.downcast_ref::<FontFace>() else {
-                error!("some wrong downcast_ref {:?}", object);
+                error!("some wrong downcast_ref {object:?}");
                 return false;
             };
 
@@ -180,7 +180,7 @@ impl PreferencesDialogImpl {
 
                     select_font_row.set_subtitle(&font_name);
                 }
-                Err(e) => warn!("Select font error: {:?}", e),
+                Err(e) => warn!("Select font error: {e:?}"),
             },
         );
     }
@@ -320,12 +320,12 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         let value = spin.value();
         let text = spin.text();
 
-        info!("{var_name} to {:?} , text {:?}", value, text);
+        info!("{var_name} to {value:?} , text {text:?}");
 
         match text.parse::<u32>() {
             Ok(a) => a,
             Err(_e) => {
-                info!("Parse error {:?} to u32 do falback to f64", text);
+                info!("Parse error {text:?} to u32 do falback to f64");
                 //spin.set_text(&value32.to_string());
                 if value > f64::from(i32::MAX) {
                     u32::MAX
@@ -437,7 +437,7 @@ impl ObjectImpl for PreferencesDialogImpl {
         let style_scheme_id = PREFERENCES.unit_file_style_scheme();
 
         if !self.select_style_scheme(&vec, &style_scheme_id) {
-            warn!("style not found {:?}", style_scheme_id);
+            warn!("style not found {style_scheme_id:?}");
             self.select_style_scheme(&vec, ADWAITA);
         }
 
@@ -521,7 +521,7 @@ impl AdwDialogImpl for PreferencesDialogImpl {
         PREFERENCES.set_app_first_connection(false);
 
         if let Err(error) = self.save_preference_settings() {
-            warn!("Save setting  error {:?}", error)
+            warn!("Save setting  error {error:?}")
         }
 
         let binding = self.app_window.borrow();

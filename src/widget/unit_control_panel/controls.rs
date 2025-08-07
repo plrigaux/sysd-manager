@@ -60,7 +60,7 @@ pub(super) fn switch_ablement_state_set(
                     expected_new_status,
                 );
 
-                debug!("{toast_info} {:?}", enablement_status_ret);
+                debug!("{toast_info} {enablement_status_ret:?}");
 
                 control_panel.add_toast_message(&toast_info, true);
 
@@ -73,7 +73,7 @@ pub(super) fn switch_ablement_state_set(
             Err(error) => {
                 let error_message = match error {
                     SystemdErrors::SystemCtlError(s) => s,
-                    _ => format!("{:?}", error),
+                    _ => format!("{error:?}"),
                 };
                 let action_str = match expected_new_status {
                     EnablementStatus::Disabled => "Disabling",

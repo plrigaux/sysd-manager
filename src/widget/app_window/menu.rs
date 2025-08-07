@@ -138,7 +138,7 @@ pub fn on_startup(app: &adw::Application) {
                             add_toast(&application, "All units relaoded!");
                         }
                         Err(e) => {
-                            error!("Roload failed {:?}", e);
+                            error!("Roload failed {e:?}");
                             add_toast(&application, "Reload failed!");
                         }
                     }

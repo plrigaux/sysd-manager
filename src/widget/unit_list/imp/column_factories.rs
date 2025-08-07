@@ -293,7 +293,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
                     let load_state_value = match value.get::<u8>() {
                         Ok(v) => LoadState::from(v),
                         Err(err) => {
-                            warn!("The variant needs to be of type `String`. {:?}", err);
+                            warn!("The variant needs to be of type `String`. {err:?}");
                             return None;
                         }
                     };
@@ -383,7 +383,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
                     let value = match value.get::<u8>() {
                         Ok(v) => v,
                         Err(err) => {
-                            warn!("The variant needs to be of type `u8`. {:?}", err);
+                            warn!("The variant needs to be of type `u8`. {err:?}");
                             return None;
                         }
                     };
@@ -469,7 +469,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
                     let preset_value = match value.get::<u8>() {
                         Ok(v) => v,
                         Err(err) => {
-                            warn!("The variant needs to be of type `u8`. {:?}", err);
+                            warn!("The variant needs to be of type `u8`. {err:?}");
                             return None;
                         }
                     };
@@ -516,7 +516,7 @@ fn preset_text_binding(
             let preset_value = match value.get::<u8>() {
                 Ok(v) => v,
                 Err(err) => {
-                    warn!("The variant needs to be of type `u8`. {:?}", err);
+                    warn!("The variant needs to be of type `u8`. {err:?}");
                     return None;
                 }
             };

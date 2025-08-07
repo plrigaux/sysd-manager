@@ -120,8 +120,7 @@ impl EnableUnitDialogImp {
                                     let mode = dialog.imp().run_stop_mode_combo.selected_item();
                                     let start_mode: StartStopMode = mode.into();
                                     info!(
-                                        "Try to start {:?} level: {:?} mode: {:?}",
-                                        unit_name, dbus_level, start_mode
+                                        "Try to start {unit_name:?} level: {dbus_level:?} mode: {start_mode:?}"
                                     );
 
                                     let start_results =
@@ -149,8 +148,7 @@ impl EnableUnitDialogImp {
                                     }
                                     Err(e) => {
                                         warn!(
-                                            "Enable unit fetch {:?} level {:?} Error: {:?}",
-                                            unit_name, dbus_level, e
+                                            "Enable unit fetch {unit_name:?} level {dbus_level:?} Error: {e:?}"
                                         );
                                     }
                                 }
@@ -498,8 +496,7 @@ impl EnableUnitDialogImp {
         _entry: adw::EntryRow,
     ) {
         info!(
-            "unit_file_insert_text {:?} {:?} {:?}",
-            text, position, pointer
+            "unit_file_insert_text {text:?} {position:?} {pointer:?}"
         );
     }
 
@@ -567,7 +564,7 @@ impl EnableUnitDialogImp {
                             .set_text(&file_path_str);
                     }
                 }
-                Err(e) => warn!("Unit File Selection Error {:?}", e),
+                Err(e) => warn!("Unit File Selection Error {e:?}"),
             },
         );
     }
@@ -707,7 +704,7 @@ impl WindowImpl for EnableUnitDialogImp {
         let settings = self.settings.get().expect("Settings not None");
 
         fn settings_error(e: BoolError) {
-            log::error!("Setting error {:?}", e);
+            log::error!("Setting error {e:?}");
         }
 
         let _ = settings
@@ -772,7 +769,7 @@ pub fn after_unit_file_action(
         let vec_unit_info = match receiver.await.expect("Tokio receiver works") {
             Ok(unit_files) => unit_files,
             Err(err) => {
-                warn!("Fail to update Unit info {:?}", err);
+                warn!("Fail to update Unit info {err:?}");
                 return Err(err);
             }
         };
