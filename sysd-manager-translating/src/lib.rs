@@ -175,7 +175,7 @@ pub fn generate_desktop() -> Result<(), TransError> {
 pub fn generate_metainfo() -> Result<(), TransError> {
     fs::create_dir_all(PACK_FILE_DIR)?;
 
-    let out_file = format!("{}/{}", PACK_FILE_DIR, METAINFO_FILE);
+    let out_file = format!("{PACK_FILE_DIR}/{METAINFO_FILE}");
 
     let mut command = Command::new("msgfmt");
     let output = command
@@ -183,7 +183,7 @@ pub fn generate_metainfo() -> Result<(), TransError> {
         .arg("--statistics")
         .arg("--verbose")
         .arg("--xml")
-        .arg(format!("--template={}", METAINFO_FILE_PATH))
+        .arg(format!("--template={METAINFO_FILE_PATH}"))
         .arg("-d")
         .arg(PO_DIR)
         .arg("-o")
