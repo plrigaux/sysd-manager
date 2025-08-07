@@ -31,7 +31,7 @@ async fn main() -> std::io::Result<()> {
     let ret: Result<(), std::io::Error> = setup_server().await;
 
     if let Err(e) = ret {
-        warn!("Error: {:?}", e);
+        warn!("Error: {e:?}");
         return Err(e);
     }
 
@@ -77,7 +77,7 @@ async fn setup_server() -> std::io::Result<()> {
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(addr.clone()).await?;
     let local_addr = listener.local_addr()?;
-    info!("Tiny Daemon listening on {:?}", local_addr);
+    info!("Tiny Daemon listening on {local_addr:?}");
     axum::serve(listener, app)
         //.with_graceful_shutdown(shutdown_signal())
         .await?;
