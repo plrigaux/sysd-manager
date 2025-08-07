@@ -12,8 +12,6 @@ use crate::{
     widget::preferences::data::PREFERENCES,
 };
 use chrono::{Local, Utc};
-use foreign_types_shared::ForeignType;
-use libsysd::{self};
 use log::{debug, info, warn};
 use sysd::{Journal, id128::Id128, journal::OpenOptions};
 
@@ -71,7 +69,7 @@ pub(super) fn get_unit_journal_events(
             break;
         }
 
-        let time_in_usec = get_realtime_usec(&journal_reader)?;
+        let time_in_usec = journal_reader.timestamp_usec()?;
 
         //if == 0 no limit
         if range.batch_size != 0 && out_list.len() >= range.batch_size {
@@ -234,7 +232,7 @@ pub fn get_unit_journal_events_continuous(
             message = truncate(message, message_max_char);
         }
 
-        let time_in_usec = get_realtime_usec(&journal_reader)?;
+        let time_in_usec = journal_reader.timestamp_usec()?;
 
         let pid = get_data(&mut journal_reader, KEY_PID, &default);
         let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
@@ -307,7 +305,7 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
                 break;
             }
 
-            let previous = get_realtime_usec(&journal_reader)?;
+            let previous = journal_reader.timestamp_usec()?;
 
             if journal_reader.next()? == 0 {
                 break;
@@ -320,7 +318,7 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
         //if == 0 no limit
         //println!("{idx} boot_id {boot_id} time {time_in_usec}");
 
-        let time_in_usec = get_realtime_usec(&journal_reader)?;
+        let time_in_usec = journal_reader.timestamp_usec()?;
         boots.push(Boot {
             index,
             boot_id,
@@ -331,7 +329,7 @@ pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
         index += 1;
     }
 
-    let previous = get_realtime_usec(&journal_reader)?;
+    let previous = journal_reader.timestamp_usec()?;
 
     if let Some(mut prev) = boots.last_mut() {
         let m = prev.deref_mut();
@@ -356,7 +354,7 @@ pub(super) fn fetch_last_time() -> Result<u64, SystemdErrors> {
     journal_reader.seek_tail()?;
     journal_reader.previous()?;
 
-    let last_time = get_realtime_usec(&journal_reader)?;
+    let last_time = journal_reader.timestamp_usec()?;
 
     Ok(last_time)
 }
@@ -371,9 +369,7 @@ fn create_journal_reader(
         .open()
         .expect("Could not open journal");
     let unit_name = unit_name.as_str();
-    info!(
-        "JOURNAL UNIT NAME {unit_name:?} BUS_LEVEL {level:?} BOOT {boot_filter:?}"
-    );
+    info!("JOURNAL UNIT NAME {unit_name:?} BUS_LEVEL {level:?} BOOT {boot_filter:?}");
     match level {
         UnitDBusLevel::System => {
             journal_reader.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
@@ -432,7 +428,7 @@ fn next(journal_reader: &mut Journal, grab_direction: WhatGrab) -> Result<u64, s
     }
 }
  */
-fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {
+/* fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {
     //  libsysd::journal::sd_journal_get_realtime_usec(journal_reader)
 
     let mut timestamp_us: u64 = 0;
@@ -442,7 +438,7 @@ fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {
     ));
 
     Ok(timestamp_us)
-}
+} */
 
 fn truncate(s: String, max_chars: usize) -> String {
     match s.char_indices().nth(max_chars - 1) {
@@ -456,7 +452,6 @@ fn truncate(s: String, max_chars: usize) -> String {
 }
 
 fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
-    
     match reader.get_data(field) {
         Ok(journal_entry_op) => match journal_entry_op {
             Some(journal_entry_field) => journal_entry_field
@@ -567,7 +562,7 @@ mod tests {
         journal.next().unwrap();
         let real_time_system_time = journal.timestamp().unwrap();
 
-        let real_time = get_realtime_usec(&journal).unwrap();
+        let real_time = journal.timestamp_usec().unwrap();
 
         let since_the_epoch = real_time_system_time
             .duration_since(UNIX_EPOCH)
