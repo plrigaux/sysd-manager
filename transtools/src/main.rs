@@ -71,7 +71,7 @@ fn main() {
         .filter_level(log::LevelFilter::Debug)
         .try_init()
     {
-        eprintln!("Logger error {:?}", err)
+        eprintln!("Logger error {err:?}")
     }
 
     info!("Tanslation tool!");
@@ -103,7 +103,7 @@ fn main() {
     };
 
     if let Err(err) = result {
-        log::error!("Error {:?}", err);
+        log::error!("Error {err:?}");
     }
 }
 
@@ -115,7 +115,7 @@ pub fn check_linguas() -> Result<(), TransError> {
     vec.sort();
 
     if !vec.is_empty() {
-        warn!("Those languages {:?} not in LINGUAS file!", vec);
+        warn!("Those languages {vec:?} not in LINGUAS file!");
     }
 
     Ok(())
@@ -247,7 +247,7 @@ fn generate_potfiles() -> Result<(), TransError> {
     potfiles_entries.push(metainfo);
     potfiles_entries.sort();
 
-    println!("{:#?}", potfiles_entries);
+    println!("{potfiles_entries:#?}");
 
     let mut potfiles_path = PathBuf::from(PO_DIR);
     potfiles_path.push(POTFILES);
@@ -262,7 +262,7 @@ fn generate_potfiles() -> Result<(), TransError> {
             .into_string()
             .expect("get path to string");
 
-        writeln!(potfiles_file, "{}", file)?;
+        writeln!(potfiles_file, "{file}")?;
     }
 
     Ok(())
@@ -289,7 +289,7 @@ fn list_files_recurse(files: &mut Vec<PathBuf>, path: PathBuf, ext: &str) -> io:
 }
 
 fn extract_and_generate_po_template() -> Result<(), TransError> {
-    let output_pot_file = format!("{PO_DIR}/{}.pot", MAIN_PROG);
+    let output_pot_file = format!("{PO_DIR}/{MAIN_PROG}.pot");
 
     let potfiles_file_path = format!("{PO_DIR}/{POTFILES}");
 
