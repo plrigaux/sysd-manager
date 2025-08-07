@@ -110,6 +110,8 @@ pub fn on_startup(app: &adw::Application) {
 
                 let pdialog = PreferencesDialog::new(app_window);
                 pdialog.present(Some(&win));
+                //pdialog.present(Some(&win));
+                //gtk::prelude::GtkWindowExt::present(&pdialog);
             } else {
                 let pdialog = PreferencesDialog::new(None);
                 pdialog.present(None::<&gtk::Widget>);

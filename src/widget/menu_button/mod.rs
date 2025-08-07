@@ -13,7 +13,7 @@ use super::unit_dependencies_panel::UnitDependenciesPanel;
 glib::wrapper! {
     pub struct ExMenuButton(ObjectSubclass<imp::ExMenuButtonImpl>)
         @extends gtk::Widget,
-        @implements gtk::Buildable;
+        @implements gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl ExMenuButton {

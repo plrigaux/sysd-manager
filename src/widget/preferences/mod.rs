@@ -3,7 +3,7 @@ mod drop_down_elem;
 mod imp;
 pub mod style_scheme;
 
-use gtk::{gio, glib, subclass::prelude::*};
+use gtk::{glib, subclass::prelude::*};
 
 use super::app_window::AppWindow;
 
@@ -11,8 +11,7 @@ use super::app_window::AppWindow;
 glib::wrapper! {
     pub struct PreferencesDialog(ObjectSubclass<imp::PreferencesDialogImpl>)
         @extends adw::PreferencesDialog, adw::Dialog, gtk::Widget,
-        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
-                    gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
+        @implements  gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
 impl PreferencesDialog {

@@ -10,7 +10,7 @@ pub mod menu;
 
 glib::wrapper! {
     pub struct AppWindow(ObjectSubclass<imp::AppWindowImpl>)
-        @extends adw::ApplicationWindow, gtk::Window, adw::Window, gtk::Widget,
+        @extends adw::ApplicationWindow, gtk::ApplicationWindow, gtk::Window, gtk::Widget,
         @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
                     gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
 }

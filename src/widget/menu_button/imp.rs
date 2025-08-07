@@ -30,7 +30,7 @@ pub struct ExMenuButtonImpl {
     pub(super) filter_set: RefCell<HashSet<String>>,
 
     on_close: RefCell<OnClose>,
-    
+
     //pub(super) filter: RefCell<gtk::CustomFilter>,
     #[property(get=Self::label, set=Self::set_label)]
     #[allow(dead_code)]

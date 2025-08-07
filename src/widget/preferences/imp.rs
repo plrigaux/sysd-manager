@@ -512,7 +512,7 @@ impl ObjectImpl for PreferencesDialogImpl {
     }
 }
 impl WidgetImpl for PreferencesDialogImpl {}
-impl WindowImpl for PreferencesDialogImpl {}
+//impl WindowImpl for PreferencesDialogImpl {}
 
 impl AdwDialogImpl for PreferencesDialogImpl {
     fn closed(&self) {
