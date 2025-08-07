@@ -152,7 +152,7 @@ pub fn lingas_from_lingua_file() -> Result<HashSet<String>, TransError> {
 
 pub fn generate_desktop() -> Result<(), TransError> {
     fs::create_dir_all(PACK_FILE_DIR)?;
-    let out_file = format!("{}/{}", PACK_FILE_DIR, DESKTOP_FILE);
+    let out_file = format!("{PACK_FILE_DIR}/{DESKTOP_FILE}");
 
     let mut command = Command::new("msgfmt");
     let output = command
@@ -160,7 +160,7 @@ pub fn generate_desktop() -> Result<(), TransError> {
         .arg("--statistics")
         .arg("--verbose")
         .arg("--desktop")
-        .arg(format!("--template={}", DESKTOP_FILE_PATH))
+        .arg(format!("--template={DESKTOP_FILE_PATH}"))
         .arg("-d")
         .arg(PO_DIR)
         .arg("-o")

@@ -45,7 +45,7 @@ fn main() -> glib::ExitCode {
 
     info!("LANGUAGE {:?}", env::var("LANGUAGE"));
     let textdomain_dir = env::var("TEXTDOMAINDIR");
-    info!("env TEXTDOMAINDIR {:?}", textdomain_dir);
+    info!("env TEXTDOMAINDIR {textdomain_dir:?}");
     let locale_dir = if let Ok(domain_dir) = textdomain_dir {
         domain_dir
     } else {

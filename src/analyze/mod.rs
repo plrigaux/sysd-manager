@@ -155,7 +155,7 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
             let units_rep = gio::spawn_blocking(move || match analyze::blame() {
                 Ok(units) => Ok(units),
                 Err(error) => {
-                    warn!("Analyse blame Error {:?}", error);
+                    warn!("Analyse blame Error {error:?}");
                     Err(error)
                 }
             })

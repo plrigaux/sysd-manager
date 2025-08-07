@@ -1,3 +1,4 @@
+#![allow(clippy::uninlined_format_args)]
 use std::collections::HashSet;
 use std::fs::OpenOptions;
 use std::io::Write;
