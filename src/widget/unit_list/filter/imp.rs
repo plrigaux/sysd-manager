@@ -1,11 +1,12 @@
 use std::{
     cell::{OnceCell, RefCell},
-    rc::{Rc, Weak},
+    rc::Rc,
 };
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 
-use gio::glib::{WeakRef, clone::Downgrade};
+use gettextrs::pgettext;
+
 use gtk::{
     glib::{self},
     subclass::{
@@ -24,10 +25,7 @@ use crate::{
     systemd::enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
-        unit_list::{
-            UnitListPanel,
-            filter::{FilterElement, get_filter_element_mut},
-        },
+        unit_list::{UnitListPanel, filter::get_filter_element_mut},
     },
 };
 
@@ -72,7 +70,7 @@ impl UnitListFilterWindowImp {
                     "preset" => build_preset_filter(filter).into(),
                     "load" => build_load_filter(filter).into(),
                     "active" => build_active_state_filter(filter).into(),
-                    "sub" => sub_filter(filter).into(),
+                    "sub" => super::substate::sub_filter(filter).into(),
                     "description" => common_text_filter(filter).into(),
 
                     _ => unreachable!("unreachable"),
@@ -289,130 +287,18 @@ impl WindowImpl for UnitListFilterWindowImp {
 }
 impl AdwWindowImpl for UnitListFilterWindowImp {}
 
-fn sub_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
-    let container = create_content_box();
-
-    let wrapbox = adw::WrapBox::builder().build();
-
-    container.append(&wrapbox);
-
-    let (merge_box, entry) = contain_entry();
-
-    let wrapper = gtk::Box::builder()
-        .orientation(gtk::Orientation::Horizontal)
-        .spacing(5)
-        .build();
-
-    let add_button = gtk::Button::builder().label("Add").build();
-
-    wrapper.append(&merge_box);
-    wrapper.append(&add_button);
-
-    container.append(&wrapper);
-
-    let filter_container = filter_container.clone();
-    let container_weak = gtk::prelude::ObjectExt::downgrade(&wrapbox);
-
-    let filter_container_weak = filter_container.downgrade();
-    {
-        let filter_container = filter_container.borrow();
-
-        let filter_elem = filter_container
-            .as_any()
-            .downcast_ref::<FilterElement<String>>()
-            .expect("downcast_ref to FilterElement");
-
-        for e in filter_elem.elements() {
-            add_tag(e, &container_weak, filter_container_weak.clone());
-        }
-    }
-
-    add_button.connect_clicked(move |_but| {
-        // let (merge_box, _entry) = contain_entry();
-
-        let word = entry.text();
-        add_tag(
-            word.as_str(),
-            &container_weak,
-            filter_container_weak.clone(),
-        );
-        entry.set_text("");
-
-        let mut binding = filter_container.as_ref().borrow_mut();
-
-        let filter_text = binding
-            .as_any_mut()
-            .downcast_mut::<FilterElement<String>>()
-            .expect("downcast_mut to FilterElement");
-
-        filter_text.set_filter_elem(word.to_string(), true);
-    });
-
-    container
-}
-
-fn add_tag(
-    word: &str,
-    wrapbox_weak: &WeakRef<adw::WrapBox>,
-    filter_container: Weak<RefCell<Box<dyn UnitPropertyFilter>>>,
-) {
-    let box_word = gtk::Box::builder()
-        .orientation(gtk::Orientation::Horizontal)
-        .spacing(0)
-        .hexpand(false)
-        .css_name("tag")
-        .build();
-
-    let close_button = gtk::Button::builder()
-        .icon_name("window-close-symbolic")
-        .css_classes(["flat", "circular"])
-        .build();
-
-    let label = gtk::Label::builder()
-        .xalign(0.0)
-        .ellipsize(pango::EllipsizeMode::End)
-        .hexpand(true)
-        .label(word)
-        .build();
-
-    box_word.append(&label);
-    box_word.append(&close_button);
-
-    if let Some(wrapbox) = wrapbox_weak.upgrade() {
-        wrapbox.append(&box_word);
-    }
-
-    let wrap_box_weak = wrapbox_weak.clone();
-    let box_word_weak = gtk::prelude::ObjectExt::downgrade(&box_word);
-    let word = word.to_owned();
-    close_button.connect_clicked(move |_b| {
-        if let Some(wrap) = wrap_box_weak.upgrade() {
-            if let Some(box_word) = box_word_weak.upgrade() {
-                wrap.remove(&box_word);
-            }
-
-            if let Some(filter_container) = filter_container.upgrade() {
-                let mut binding = filter_container.as_ref().borrow_mut();
-
-                let filter_elem = binding
-                    .as_any_mut()
-                    .downcast_mut::<FilterElement<String>>()
-                    .expect("downcast_ref to FilterElement");
-
-                filter_elem.set_filter_elem(word.clone(), false);
-            }
-        }
-    });
-}
-
-fn contain_entry() -> (gtk::Box, gtk::Entry) {
+pub(crate) fn contain_entry() -> (gtk::Box, gtk::Entry) {
     let merge_box = gtk::Box::builder()
         .css_classes(["linked"])
         .halign(gtk::Align::BaselineFill)
         .build();
-    let entry = gtk::Entry::builder().hexpand(true).build();
+    let entry = gtk::Entry::builder()
+        .hexpand(true)
+        .placeholder_text(pgettext("filter", "Any sub states"))
+        .build();
     let button_clear_entry = gtk::Button::builder()
         .icon_name("edit-clear-symbolic")
+        .tooltip_text(pgettext("filter", "Clear"))
         .build();
     merge_box.append(&entry);
     merge_box.append(&button_clear_entry);
@@ -544,7 +430,7 @@ fn build_bus_level_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilt
     build_elem_filter!(filter_container, UnitDBusLevel::iter(), UnitDBusLevel)
 }
 
-fn create_content_box() -> gtk::Box {
+pub(crate) fn create_content_box() -> gtk::Box {
     gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .width_request(300)
@@ -562,7 +448,10 @@ fn build_controls(container: &gtk::Box) {
         .halign(gtk::Align::Center)
         .build();
 
-    let clear_button = gtk::Button::builder().label("Clear").build();
+    let clear_button = gtk::Button::builder()
+        .label(pgettext("filter", "Clear"))
+        .tooltip_text(pgettext("filter", "Clear filter's selected items"))
+        .build();
     {
         let container = container.clone();
         clear_button.connect_clicked(move |_| {
@@ -578,7 +467,10 @@ fn build_controls(container: &gtk::Box) {
         });
     }
 
-    let inv_button = gtk::Button::builder().label("Invert").build();
+    let inv_button = gtk::Button::builder()
+        .label(pgettext("filter", "Invert"))
+        .tooltip_text(pgettext("filter", "Invert filter's selected items"))
+        .build();
     {
         let container = container.clone();
         inv_button.connect_clicked(move |_| {

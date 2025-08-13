@@ -1,5 +1,7 @@
 mod dropdown;
 mod imp;
+mod substate;
+
 use std::{any::Any, collections::HashSet, hash::Hash};
 
 use adw::subclass::prelude::ObjectSubclassIsExt;
@@ -166,7 +168,7 @@ where
 
 impl<T> UnitPropertyFilter for FilterElement<T>
 where
-    T: Eq + Hash + Debug + 'static,
+    T: Eq + Hash + Debug + Clone + 'static,
 {
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
         self.lambda = lambda
@@ -181,7 +183,10 @@ where
     }
 
     fn clear_filter(&mut self) {
-        self.filter_elements.clear();
+        let set = self.filter_elements.clone();
+        for f_element in set {
+            FilterElement::set_filter_elem(self, f_element, false);
+        }
     }
 
     fn is_empty(&self) -> bool {

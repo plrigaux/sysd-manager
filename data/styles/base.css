@@ -58,3 +58,24 @@ buttoncontent.nav box label {
     border-top-left-radius: 9px;
     border-bottom-left-radius: 9px;
 }
+
+.tag {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    color: inherit;
+    border-radius: 99px;
+}
+
+.tag:dir(ltr) {
+    padding-left: 12px;
+}
+
+.tag:dir(rtl) {
+    padding-right: 12px;
+}
+
+.tag button {
+    margin: 3px;
+    min-width: 0;
+    min-height: 0;
+    padding: 6px;
+}
