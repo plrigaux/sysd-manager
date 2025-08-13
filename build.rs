@@ -64,11 +64,6 @@ fn generate_mo() -> Result<(), TransError> {
 
     translating::generate_mo()?;
 
-    /*     println!("cargo::rerun-if-changed={}", DESKTOP_FILE_PATH);
-
-    translating::generate_desktop()?;
-    translating::generate_metainfo()?; */
-
     Ok(())
 }
 

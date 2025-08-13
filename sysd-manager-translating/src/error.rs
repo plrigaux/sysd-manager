@@ -1,7 +1,10 @@
+use std::ffi::OsString;
+
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum TransError {
     IoError(std::io::Error),
+    Command(OsString, std::io::Error),
     BoxError(Box<dyn std::error::Error>),
     LanguageNotSet,
     PathNotExist(String),

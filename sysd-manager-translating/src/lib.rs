@@ -4,7 +4,6 @@ use log::info;
 use std::{
     collections::HashSet,
     fs::{self, read_to_string},
-    io,
     path::PathBuf,
     process::Command,
 };
@@ -198,22 +197,31 @@ pub fn generate_metainfo() -> Result<(), TransError> {
 // /usr/bin/msgfmt -c --statistics --verbose -o pt_BR.gmo pt_BR.1po && rm -f pt_BR.1po
 /// Generates a binary message catalog from a textual translation description.
 /// https://www.gnu.org/software/gettext/manual/html_node/msgfmt-Invocation.html
-pub fn msgfmt(po_file: &str, lang: &str, domain_name: &str) -> io::Result<()> {
+pub fn msgfmt(po_file: &str, lang: &str, domain_name: &str) -> Result<(), TransError> {
     let mut command = Command::new("msgfmt");
 
     let out_dir = format!("target/locale/{lang}/LC_MESSAGES");
 
     fs::create_dir_all(&out_dir)?;
 
-    let output = command
+    let command = command
         .arg("--check")
         .arg("--statistics")
         .arg("--verbose")
         .arg("-o")
         .arg(format!("{out_dir}/{domain_name}.mo"))
-        .arg(po_file)
-        .output()
-        .unwrap();
+        .arg(po_file);
+
+    let output = match command.output() {
+        Ok(output) => output,
+        Err(e) => {
+            println!("ERROR {e:?} {:?}", e.raw_os_error());
+
+            let program = command.get_program();
+
+            return Err(TransError::Command(program.to_os_string(), e));
+        }
+    };
 
     display_output("MSGFMT", output);
 
