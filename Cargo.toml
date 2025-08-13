@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.30.9"
+version = "1.31.0"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -87,7 +87,7 @@ zvariant = "5.5"
 #glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
 quick-xml =  "0.38"
-translating = { version = "0.4.1", path = "./sysd-manager-translating", package = "sysd-manager-translating"}
+translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating"}
 
 [package.metadata.generate-rpm]
 summary = "A systemd units manager"
