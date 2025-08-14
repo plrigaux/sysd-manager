@@ -25,12 +25,18 @@ use crate::{
     systemd::enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
-        unit_list::{UnitListPanel, filter::get_filter_element_mut},
+        unit_list::{
+            UnitListPanel,
+            filter::{
+                UnitListFilterWindow,
+                unit_prop_filter::{
+                    FilterText, UnitPropertyFilter, get_filter_element, get_filter_element_mut,
+                },
+            },
+        },
     },
 };
 
-use super::{FilterText, UnitListFilterWindow, get_filter_element};
-use crate::widget::unit_list::filter::UnitPropertyFilter;
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_filter.ui")]
 #[properties(wrapper_type = super::UnitListFilterWindow)]
@@ -70,7 +76,7 @@ impl UnitListFilterWindowImp {
                     "preset" => build_preset_filter(filter).into(),
                     "load" => build_load_filter(filter).into(),
                     "active" => build_active_state_filter(filter).into(),
-                    "sub" => super::substate::sub_filter(filter).into(),
+                    "sub" => super::substate::sub_state_filter(filter).into(),
                     "description" => common_text_filter(filter).into(),
 
                     _ => unreachable!("unreachable"),
@@ -141,9 +147,13 @@ impl UnitListFilterWindowImp {
             self.filter_navigation_container.append(&button);
         }
 
+        self.get_filter2(unit_list_panel, selected);
+    }
+
+    fn get_filter2(&self, unit_list_panel: &UnitListPanel, selected: Option<&String>) {
         let box_pad = gtk::Box::builder().vexpand(true).build();
 
-        let clear_filter_button = gtk::Button::builder()
+        let clear_all_filters_button = gtk::Button::builder()
             .label("Clear Filters")
             // .css_classes(["destructive-action"])
             .valign(gtk::Align::End)
@@ -152,7 +162,7 @@ impl UnitListFilterWindowImp {
         {
             let unit_list_panel = unit_list_panel.clone();
             let filter_stack = self.filter_stack.clone();
-            clear_filter_button.connect_clicked(move |_b| {
+            clear_all_filters_button.connect_clicked(move |_b| {
                 for (_, _, num_id, _) in &*UNIT_LIST_COLUMNS {
                     unit_list_panel.filter_assessor_change(
                         *num_id,
@@ -166,6 +176,7 @@ impl UnitListFilterWindowImp {
                 let list: gio::ListModel = sel.into();
 
                 let nb = list.n_items();
+                println!("FILTER {nb}");
                 for position in 0..nb {
                     let Some(object) = list.item(position) else {
                         warn!("No item at position {position}");
@@ -179,25 +190,12 @@ impl UnitListFilterWindowImp {
 
                     let container = page.child();
 
-                    fn clear(mut some_widget: Option<gtk::Widget>) {
-                        while let Some(w) = some_widget.as_ref() {
-                            if let Some(check) = w.downcast_ref::<gtk::CheckButton>() {
-                                check.set_active(false);
-                            } else if let Some(entry) = w.downcast_ref::<gtk::Entry>() {
-                                entry.set_text("");
-                            }
-
-                            clear(w.first_child());
-                            some_widget = w.next_sibling();
-                        }
-                    }
-
                     clear(container.first_child())
                 }
             });
         }
 
-        box_pad.append(&clear_filter_button);
+        box_pad.append(&clear_all_filters_button);
         self.filter_navigation_container.append(&box_pad);
 
         if let Some(selected) = selected {
@@ -212,6 +210,19 @@ impl UnitListFilterWindowImp {
             )
             .bidirectional()
             .build();
+    }
+}
+
+fn clear(mut some_widget: Option<gtk::Widget>) {
+    while let Some(widget) = some_widget.as_ref() {
+        if let Some(check) = widget.downcast_ref::<gtk::CheckButton>() {
+            check.set_active(false);
+        } else if let Some(entry) = widget.downcast_ref::<gtk::Entry>() {
+            entry.set_text("");
+        }
+
+        clear(widget.first_child());
+        some_widget = widget.next_sibling();
     }
 }
 

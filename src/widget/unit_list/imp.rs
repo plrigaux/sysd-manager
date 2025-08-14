@@ -43,17 +43,18 @@ use crate::{
         },
         unit_list::{
             filter::{
-                FilterElement, FilterText, UnitListFilterWindow, filter_active_state,
-                filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
-                filter_sub_state, filter_unit_description, filter_unit_name, filter_unit_type,
+                UnitListFilterWindow, filter_active_state, filter_bus_level, filter_enable_status,
+                filter_load_state, filter_preset, filter_sub_state, filter_unit_description,
+                filter_unit_name, filter_unit_type,
+                unit_prop_filter::{
+                    FilterElement, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
+                },
             },
             imp::rowdata::UnitBinding,
             search_controls::UnitListSearchControls,
         },
     },
 };
-
-use super::filter::{UnitPropertyAssessor, UnitPropertyFilter};
 
 type UnitPropertyFiltersContainer = OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>;
@@ -295,7 +296,7 @@ impl UnitListPanelImp {
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_UNIT_LIST_FILTER_CLEAR)
                 .activate(move |_application: &AppWindow, _b, _target_value| {
-                    unit_list_panel.imp().clear_filter();
+                    unit_list_panel.imp().clear_filters();
                 })
                 //     .parameter_type(Some(VariantTy::STRING))
                 .build()
@@ -694,7 +695,7 @@ impl UnitListPanelImp {
             .set_filter_is_set(!applied_assessors.borrow().is_empty());
     }
 
-    fn clear_filter(&self) {
+    fn clear_filters(&self) {
         let applied_assessors = self
             .applied_unit_property_filters
             .get()

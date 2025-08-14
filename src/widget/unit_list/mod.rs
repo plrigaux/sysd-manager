@@ -2,10 +2,13 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::systemd::data::UnitInfo;
+use crate::widget::unit_list::filter::unit_prop_filter::{
+    UnitPropertyAssessor, UnitPropertyFilter,
+};
 
 use super::InterPanelMessage;
 use super::app_window::AppWindow;
-use filter::{UnitPropertyAssessor, UnitPropertyFilter};
+
 use gtk::glib;
 use gtk::subclass::prelude::*;
 

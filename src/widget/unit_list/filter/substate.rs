@@ -3,16 +3,17 @@ use std::{cell::RefCell, rc::Rc};
 
 use gettextrs::pgettext;
 use gio::glib::WeakRef;
+use log::warn;
 
 use crate::gtk::prelude::*;
 
 use crate::gtk::glib::clone::Downgrade;
+use crate::widget::unit_list::filter::unit_prop_filter::{FilterElement, UnitPropertyFilter};
 use crate::widget::unit_list::filter::{
-    FilterElement, UnitPropertyFilter,
     dropdown::SubState,
     imp::{contain_entry, create_content_box},
 };
-pub fn sub_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+pub fn sub_state_filter(filter_container_: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
     let container = create_content_box();
 
     let wrapbox = adw::WrapBox::builder()
@@ -43,18 +44,18 @@ pub fn sub_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -
 
     container.append(&drop_down);
 
-    let filter_container = filter_container.clone();
+    //let filter_container = filter_container.clone();
     let wrapbox_weak = gtk::prelude::ObjectExt::downgrade(&wrapbox);
-    let filter_container_weak = filter_container.downgrade();
+    let filter_container_weak = filter_container_.downgrade();
     {
-        let filter_container = filter_container.borrow();
+        let filter_container = filter_container_.borrow();
 
-        let filter_elem = filter_container
+        let filter_element = filter_container
             .as_any()
             .downcast_ref::<FilterElement<String>>()
             .expect("downcast_ref to FilterElement");
 
-        for filter_word in filter_elem.elements() {
+        for filter_word in filter_element.elements() {
             add_filter_tag(
                 filter_word,
                 &wrapbox_weak,
@@ -108,6 +109,11 @@ pub fn sub_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -
                 filter_container_weak.clone(),
                 true,
             );
+
+            let Some(filter_container) = filter_container_weak.upgrade() else {
+                warn!("filter_container_weak None");
+                return;
+            };
 
             let mut binding = filter_container.as_ref().borrow_mut();
 

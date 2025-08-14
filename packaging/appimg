@@ -1,0 +1,14 @@
+/home/plr/.virtualenvs/mypie/bin
+/home/plr/.pyenv/shims
+/home/plr/.pyenv/bin
+/home/plr/.pyenv/bin
+
+/usr/local/bin
+/usr/bin
+/usr/local/sbin
+/home/plr/.local/share/flatpak/exports/bin
+/var/lib/flatpak/exports/bin
+/usr/bin/site_perl
+/usr/bin/vendor_perl
+/usr/bin/core_perl
+/usr/lib/rustup/bin
