@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-08-14 19:32-0400\n"
-"PO-Revision-Date: 2025-06-17 15:14+0000\n"
+"PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
 "sysd-manager/translation/en_GB/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.12.1\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -266,8 +266,7 @@ msgstr "Clear journal events and refetch them"
 #, fuzzy
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr ""
-"Enable new entries continuous print as they are appended to the journal"
+msgstr "Enable new entries continuous print as they are appended to the journal"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:54
