@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-20 12:08-0400\n"
+"POT-Creation-Date: 2025-08-14 19:32-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1380,7 +1380,7 @@ msgid "Micro seconds since the epoch"
 msgstr ""
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:199
+#: src/widget/app_window/menu.rs:201
 msgid "Thank you for your support"
 msgstr ""
 
@@ -2158,4 +2158,30 @@ msgstr ""
 #, rust-format
 msgctxt "unit file"
 msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
+msgstr ""
+
+#: src/widget/unit_list/filter/imp.rs:292
+msgctxt "filter"
+msgid "Any sub states"
+msgstr ""
+
+#: src/widget/unit_list/filter/imp.rs:296
+#: src/widget/unit_list/filter/imp.rs:485
+msgctxt "filter"
+msgid "Clear"
+msgstr ""
+
+#: src/widget/unit_list/filter/imp.rs:486
+msgctxt "filter"
+msgid "Clear filter's selected items"
+msgstr ""
+
+#: src/widget/unit_list/filter/imp.rs:504
+msgctxt "filter"
+msgid "Invert"
+msgstr ""
+
+#: src/widget/unit_list/filter/imp.rs:505
+msgctxt "filter"
+msgid "Invert filter's selected items"
 msgstr ""
