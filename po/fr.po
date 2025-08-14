@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-08-14 19:32-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -1669,8 +1669,7 @@ msgstr "Signal Kill {} vers"
 #: src/widget/kill_panel/imp.rs:423
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
-msgstr ""
-"Rupture détectée sur le terminal contrôleur ou mort du processus parent"
+msgstr "Rupture détectée sur le terminal contrôleur ou mort du processus parent"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:431
@@ -2145,8 +2144,8 @@ msgid ""
 "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
 "failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr ""
-"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> "
-"{} </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
+"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> {}"
+" </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:606
@@ -2243,9 +2242,10 @@ msgid ""
 "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
 "<b>org.freedesktop.Flatpak</b> and restart the program."
 msgstr ""
-"<b> Option 1 : </b> Vous pouvez utiliser <a href = \"https://frathub.org/"
-"apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks "
-"ajoutez <b> org.freedesktop.flatpak </b> et redémarrez le programme."
+"<b> Option 1 : </b> Vous pouvez utiliser <a href = "
+"\"https://frathub.org/apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous "
+"la section Bus Talks ajoutez <b> org.freedesktop.flatpak </b> et redémarrez "
+"le programme."
 
 #: src/widget/unit_file_panel/flatpak.rs:87
 #, rust-format
