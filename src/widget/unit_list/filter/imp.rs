@@ -18,7 +18,7 @@ use gtk::{
     },
 };
 
-use log::warn;
+use log::info;
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -54,6 +54,8 @@ pub struct UnitListFilterWindowImp {
 }
 
 #[gtk::template_callbacks]
+impl UnitListFilterWindowImp {}
+
 impl UnitListFilterWindowImp {
     pub(super) fn get_filter(&self) {
         let unit_list_panel = self
@@ -64,26 +66,31 @@ impl UnitListFilterWindowImp {
         let binding = self.selected.borrow();
         let selected = binding.as_ref();
 
+        let mut filter_widgets: Vec<Vec<FilterWidget>> = vec![];
         for (name, key, num_id, _) in &*UNIT_LIST_COLUMNS {
             let filter_assessor = unit_list_panel.try_get_filter_assessor(*num_id);
 
-            let widget: gtk::Widget = if let Some(filter) = filter_assessor {
-                match *key {
-                    "unit" => common_text_filter(filter).into(),
-                    "bus" => build_bus_level_filter(filter).into(),
-                    "type" => build_type_filter(filter).into(),
-                    "state" => build_enablement_filter(filter).into(),
-                    "preset" => build_preset_filter(filter).into(),
-                    "load" => build_load_filter(filter).into(),
-                    "active" => build_active_state_filter(filter).into(),
-                    "sub" => super::substate::sub_state_filter(filter).into(),
-                    "description" => common_text_filter(filter).into(),
+            let (widget, filter_widget): (gtk::Widget, Vec<FilterWidget>) =
+                if let Some(filter) = filter_assessor {
+                    let (widget, filter_widget) = match *key {
+                        "unit" => common_text_filter(filter),
+                        "bus" => build_bus_level_filter(filter),
+                        "type" => build_type_filter(filter),
+                        "state" => build_enablement_filter(filter),
+                        "preset" => build_preset_filter(filter),
+                        "load" => build_load_filter(filter),
+                        "active" => build_active_state_filter(filter),
+                        "sub" => super::substate::sub_state_filter(filter),
+                        "description" => common_text_filter(filter),
 
-                    _ => unreachable!("unreachable"),
-                }
-            } else {
-                gtk::Label::new(Some(name)).into()
-            };
+                        _ => unreachable!("unreachable"),
+                    };
+                    (widget.into(), filter_widget)
+                } else {
+                    (gtk::Label::new(Some(name)).into(), vec![])
+                };
+
+            filter_widgets.push(filter_widget);
 
             let _stack_page = self.filter_stack.add_titled(&widget, Some(key), name);
 
@@ -109,7 +116,7 @@ impl UnitListFilterWindowImp {
                 }
             }
 
-            let button = gtk::Button::builder()
+            let button: gtk::Button = gtk::Button::builder()
                 .child(&button_content)
                 .css_classes(["flat"])
                 .build();
@@ -147,10 +154,15 @@ impl UnitListFilterWindowImp {
             self.filter_navigation_container.append(&button);
         }
 
-        self.get_filter2(unit_list_panel, selected);
+        self.get_filter2(unit_list_panel, selected, filter_widgets);
     }
 
-    fn get_filter2(&self, unit_list_panel: &UnitListPanel, selected: Option<&String>) {
+    fn get_filter2(
+        &self,
+        unit_list_panel: &UnitListPanel,
+        selected: Option<&String>,
+        all_filter_widgets: Vec<Vec<FilterWidget>>,
+    ) {
         let box_pad = gtk::Box::builder().vexpand(true).build();
 
         let clear_all_filters_button = gtk::Button::builder()
@@ -162,35 +174,20 @@ impl UnitListFilterWindowImp {
         {
             let unit_list_panel = unit_list_panel.clone();
             let filter_stack = self.filter_stack.clone();
+
             clear_all_filters_button.connect_clicked(move |_b| {
-                for (_, _, num_id, _) in &*UNIT_LIST_COLUMNS {
-                    unit_list_panel.filter_assessor_change(
-                        *num_id,
-                        None,
-                        Some(gtk::FilterChange::LessStrict),
-                        true,
-                    );
-                }
+                unit_list_panel.clear_filters();
 
-                let sel = filter_stack.pages();
-                let list: gio::ListModel = sel.into();
-
+                let selection_model = filter_stack.pages();
+                let list: gio::ListModel = selection_model.into();
                 let nb = list.n_items();
-                println!("FILTER {nb}");
-                for position in 0..nb {
-                    let Some(object) = list.item(position) else {
-                        warn!("No item at position {position}");
-                        continue;
-                    };
 
-                    let Ok(page) = object.downcast::<adw::ViewStackPage>() else {
-                        warn!("Not a view stack page");
-                        continue;
-                    };
+                info!("Clean all the {nb} filters");
 
-                    let container = page.child();
-
-                    clear(container.first_child())
+                for filter_widgets_list in &all_filter_widgets {
+                    for filter_widget in filter_widgets_list {
+                        filter_widget.clear();
+                    }
                 }
             });
         }
@@ -210,19 +207,6 @@ impl UnitListFilterWindowImp {
             )
             .bidirectional()
             .build();
-    }
-}
-
-fn clear(mut some_widget: Option<gtk::Widget>) {
-    while let Some(widget) = some_widget.as_ref() {
-        if let Some(check) = widget.downcast_ref::<gtk::CheckButton>() {
-            check.set_active(false);
-        } else if let Some(entry) = widget.downcast_ref::<gtk::Entry>() {
-            entry.set_text("");
-        }
-
-        clear(widget.first_child());
-        some_widget = widget.next_sibling();
     }
 }
 
@@ -322,7 +306,34 @@ pub(crate) fn contain_entry() -> (gtk::Box, gtk::Entry) {
     (merge_box, entry)
 }
 
-fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+pub enum FilterWidget {
+    Text(gtk::Entry),
+    CheckBox(gtk::CheckButton),
+    WrapBox(adw::WrapBox),
+}
+
+impl FilterWidget {
+    fn clear(&self) {
+        match self {
+            FilterWidget::Text(entry) => {
+                entry.set_text("");
+            }
+            FilterWidget::CheckBox(check) => {
+                check.set_active(false);
+            }
+
+            FilterWidget::WrapBox(wrapbox) => {
+                while let Some(child) = wrapbox.first_child() {
+                    wrapbox.remove(&child);
+                }
+            }
+        }
+    }
+}
+
+fn common_text_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
     let container = create_content_box();
 
     let merge_box = gtk::Box::builder()
@@ -343,6 +354,9 @@ fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>
         let filter_container = filter_container.borrow();
         entry.set_text(filter_container.text());
     }
+
+    let filter_wiget = FilterWidget::Text(entry.clone());
+
     entry.connect_changed(move |entry| {
         let text = entry.text();
 
@@ -359,10 +373,12 @@ fn common_text_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>
         entry.set_text("");
     });
 
-    container
+    (container, vec![filter_wiget])
 }
 
-fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+fn build_type_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
     let container = create_content_box();
 
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
@@ -391,14 +407,14 @@ fn build_type_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>
 
     build_controls(&container);
 
-    container
+    (container, vec![])
 }
 
 macro_rules! build_elem_filter {
-    ($filter_container:expr, $iter:expr,$value_type:ty) => {{
+    ($filter_container:expr, $iter:expr, $value_type:ty) => {{
         let container = create_content_box();
 
-        //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
+        let mut vec = vec![];
         for value in $iter {
             let check = {
                 let binding = $filter_container.borrow();
@@ -415,6 +431,8 @@ macro_rules! build_elem_filter {
                     .build()
             };
 
+            vec.push(FilterWidget::CheckBox(check.clone()));
+
             check.set_tooltip_markup(value.tooltip_info().as_deref());
 
             let filter_elem = $filter_container.clone();
@@ -429,15 +447,19 @@ macro_rules! build_elem_filter {
 
         build_controls(&container);
 
-        container
+        (container, vec)
     }};
 }
 
-fn build_preset_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+fn build_preset_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
     build_elem_filter!(filter_container, Preset::iter(), Preset)
 }
 
-fn build_bus_level_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+fn build_bus_level_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
     build_elem_filter!(filter_container, UnitDBusLevel::iter(), UnitDBusLevel)
 }
 
@@ -505,16 +527,18 @@ fn build_controls(container: &gtk::Box) {
 
 fn build_enablement_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
-) -> gtk::Box {
+) -> (gtk::Box, Vec<FilterWidget>) {
     build_elem_filter!(filter_container, EnablementStatus::iter(), EnablementStatus)
 }
 
-fn build_load_filter(filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+fn build_load_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
     build_elem_filter!(filter_container, LoadState::iter(), LoadState)
 }
 
 fn build_active_state_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
-) -> gtk::Box {
+) -> (gtk::Box, Vec<FilterWidget>) {
     build_elem_filter!(filter_container, ActiveState::iter(), ActiveState)
 }

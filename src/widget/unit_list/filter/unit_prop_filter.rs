@@ -10,6 +10,7 @@ pub trait UnitPropertyFilter {
         ""
     }
 
+    fn clear_n_apply_filter(&mut self);
     fn clear_filter(&mut self);
     fn clear_widget_dependancy(&mut self) {
         let lambda = |_: bool| {};
@@ -136,11 +137,16 @@ where
         self
     }
 
-    fn clear_filter(&mut self) {
+    fn clear_n_apply_filter(&mut self) {
         let set = self.filter_elements.clone();
         for f_element in set {
             FilterElement::set_filter_elem(self, f_element, false);
         }
+    }
+
+    fn clear_filter(&mut self) {
+        self.filter_elements.clear();
+        (self.lambda)(true);
     }
 
     fn is_empty(&self) -> bool {
@@ -232,8 +238,13 @@ impl UnitPropertyFilter for FilterText {
         &self.filter_text
     }
 
+    fn clear_n_apply_filter(&mut self) {
+        self.filter_text.clear(); //FIXME it does not apply
+    }
+
     fn clear_filter(&mut self) {
         self.filter_text.clear();
+        (self.lambda)(true);
     }
 
     fn is_empty(&self) -> bool {

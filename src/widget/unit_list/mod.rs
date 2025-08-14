@@ -77,4 +77,8 @@ impl UnitListPanel {
     fn clear_unit_list_filter_window_dependancy(&self) {
         self.imp().clear_unit_list_filter_window_dependancy();
     }
+
+    fn clear_filters(&self) {
+        self.imp().clear_filters();
+    }
 }

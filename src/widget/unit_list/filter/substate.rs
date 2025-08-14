@@ -8,12 +8,15 @@ use log::warn;
 use crate::gtk::prelude::*;
 
 use crate::gtk::glib::clone::Downgrade;
+use crate::widget::unit_list::filter::imp::FilterWidget;
 use crate::widget::unit_list::filter::unit_prop_filter::{FilterElement, UnitPropertyFilter};
 use crate::widget::unit_list::filter::{
     dropdown::SubState,
     imp::{contain_entry, create_content_box},
 };
-pub fn sub_state_filter(filter_container_: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>) -> gtk::Box {
+pub fn sub_state_filter(
+    filter_container_: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
     let container = create_content_box();
 
     let wrapbox = adw::WrapBox::builder()
@@ -152,7 +155,7 @@ pub fn sub_state_filter(filter_container_: &Rc<RefCell<Box<dyn UnitPropertyFilte
                     .downcast_mut::<FilterElement<String>>()
                     .expect("downcast_ref to FilterElement");
 
-                filter_elem.clear_filter();
+                filter_elem.clear_n_apply_filter();
             }
         });
     }
@@ -161,7 +164,7 @@ pub fn sub_state_filter(filter_container_: &Rc<RefCell<Box<dyn UnitPropertyFilte
 
     container.append(&controls);
 
-    container
+    (container, vec![FilterWidget::WrapBox(wrapbox)])
 }
 
 fn add_filter_tag(

@@ -695,7 +695,7 @@ impl UnitListPanelImp {
             .set_filter_is_set(!applied_assessors.borrow().is_empty());
     }
 
-    fn clear_filters(&self) {
+    pub(super) fn clear_filters(&self) {
         let applied_assessors = self
             .applied_unit_property_filters
             .get()
@@ -705,7 +705,8 @@ impl UnitListPanelImp {
         applied_assessors.clear();
 
         for property_filter in self.unit_property_filters.get().expect("Not None").values() {
-            property_filter.borrow_mut().clear_filter();
+            let mut prop_filter_mut = property_filter.borrow_mut();
+            prop_filter_mut.clear_filter();
         }
 
         self.filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
