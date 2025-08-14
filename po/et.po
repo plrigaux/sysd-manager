@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-08-14 19:32-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
 "Language: et\n"
@@ -39,7 +39,9 @@ msgstr "Kasutajasõbralik rakendus systemd teenuseühikute haldamiseks"
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr "Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
+msgstr ""
+"Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
+""
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
 msgid ""
