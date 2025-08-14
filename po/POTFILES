@@ -90,8 +90,11 @@ src/widget/unit_file_panel/mod.rs
 src/widget/unit_info/construct_info.rs
 src/widget/unit_info/imp.rs
 src/widget/unit_info/mod.rs
+src/widget/unit_list/filter/dropdown.rs
 src/widget/unit_list/filter/imp.rs
 src/widget/unit_list/filter/mod.rs
+src/widget/unit_list/filter/substate.rs
+src/widget/unit_list/filter/unit_prop_filter.rs
 src/widget/unit_list/imp/column_factories.rs
 src/widget/unit_list/imp/menus.rs
 src/widget/unit_list/imp/rowdata.rs
