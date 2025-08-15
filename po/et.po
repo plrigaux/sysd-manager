@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-08-14 19:51-0400\n"
-"PO-Revision-Date: 2025-06-20 00:29+0000\n"
-"Last-Translator: Priit Jõerüüt <hwlate@joeruut.com>\n"
+"PO-Revision-Date: 2025-08-16 14:02+0000\n"
+"Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
 "Language: et\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -363,37 +363,37 @@ msgstr ""
 #: data/interfaces/list_boots.ui:37
 msgctxt "boot list column"
 msgid "Index"
-msgstr ""
+msgstr "Indeks"
 
 #: data/interfaces/list_boots.ui:44
 msgctxt "boot list column"
 msgid "Offset"
-msgstr ""
+msgstr "Nihe"
 
 #: data/interfaces/list_boots.ui:52
 msgctxt "boot list column"
 msgid "Boot Id"
-msgstr ""
+msgstr "Alglaadimise tunnus"
 
 #: data/interfaces/list_boots.ui:60
 msgctxt "boot list column"
 msgid "First Entry"
-msgstr ""
+msgstr "Esimene kirje"
 
 #: data/interfaces/list_boots.ui:68
 msgctxt "boot list column"
 msgid "Last Entry"
-msgstr ""
+msgstr "Viimane kirje"
 
 #: data/interfaces/list_boots.ui:75
 msgctxt "boot list column"
 msgid "Duration"
-msgstr ""
+msgstr "Kestus"
 
 #: data/interfaces/list_boots.ui:105
 msgctxt "boot list dialog"
 msgid "List Boots"
-msgstr ""
+msgstr "Alglaadimiste loend"
 
 #. group
 #. button
