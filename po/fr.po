@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-14 19:32-0400\n"
-"PO-Revision-Date: 2025-08-14 23:57+0000\n"
-"Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
+"POT-Creation-Date: 2025-08-14 19:51-0400\n"
+"PO-Revision-Date: 2025-08-15 00:24+0000\n"
+"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -2266,19 +2266,21 @@ msgstr "<b>Option 3:</b> Dans votre terminal, exécutez la commande: <u>{}</u>"
 #: src/widget/unit_list/filter/imp.rs:292
 msgctxt "filter"
 msgid "Any sub states"
-msgstr ""
+msgstr "Tous les sous-états"
 
 #: src/widget/unit_list/filter/imp.rs:296
 #: src/widget/unit_list/filter/imp.rs:485
+#: src/widget/unit_list/filter/substate.rs:141
 #, fuzzy
 msgctxt "filter"
 msgid "Clear"
 msgstr "Effacer"
 
 #: src/widget/unit_list/filter/imp.rs:486
+#: src/widget/unit_list/filter/substate.rs:142
 msgctxt "filter"
 msgid "Clear filter's selected items"
-msgstr ""
+msgstr "Effacer les éléments sélectionnés du filtre"
 
 #: src/widget/unit_list/filter/imp.rs:504
 msgctxt "filter"
@@ -2288,7 +2290,17 @@ msgstr "Inverser"
 #: src/widget/unit_list/filter/imp.rs:505
 msgctxt "filter"
 msgid "Invert filter's selected items"
-msgstr "Inverser la sélection"
+msgstr "Inverser les éléments sélectionnés du filtre"
+
+#: src/widget/unit_list/filter/substate.rs:36
+msgctxt "filter"
+msgid "Add"
+msgstr "Ajouté"
+
+#: src/widget/unit_list/filter/substate.rs:37
+msgctxt "filter"
+msgid "Add filter on sub state"
+msgstr "Ajouter un filtre au sous état"
 
 #~ msgctxt "kill default action"
 #~ msgid "Stop"

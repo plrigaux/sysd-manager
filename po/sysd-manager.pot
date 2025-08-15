@@ -2247,11 +2247,13 @@ msgstr "Any sub states"
 
 #: src/widget/unit_list/filter/imp.rs:296
 #: src/widget/unit_list/filter/imp.rs:485
+#: src/widget/unit_list/filter/substate.rs:141
 msgctxt "filter"
 msgid "Clear"
 msgstr "Clear"
 
 #: src/widget/unit_list/filter/imp.rs:486
+#: src/widget/unit_list/filter/substate.rs:142
 msgctxt "filter"
 msgid "Clear filter's selected items"
 msgstr "Clear filter's selected items"
@@ -2264,4 +2266,14 @@ msgstr "Invert"
 #: src/widget/unit_list/filter/imp.rs:505
 msgctxt "filter"
 msgid "Invert filter's selected items"
-msgstr "Invert filter's selected items"
+msgstr ""
+
+#: src/widget/unit_list/filter/substate.rs:36
+msgctxt "filter"
+msgid "Add"
+msgstr ""
+
+#: src/widget/unit_list/filter/substate.rs:37
+msgctxt "filter"
+msgid "Add filter on sub state"
+msgstr ""

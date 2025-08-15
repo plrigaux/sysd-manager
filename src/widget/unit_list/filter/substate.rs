@@ -33,9 +33,11 @@ pub fn sub_state_filter(
         .spacing(5)
         .build();
 
+    let label = pgettext("filter", "Add");
+    let tooltip_text = pgettext("filter", "Add filter on sub state");
     let add_button = gtk::Button::builder()
-        .label(pgettext("filter", "Add"))
-        .tooltip_text(pgettext("filter", "Add filter on sub state"))
+        .label(label)
+        .tooltip_text(tooltip_text)
         .build();
 
     wrapper.append(&merge_box);
