@@ -81,6 +81,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+      <release version="1.31.1" date="2025-08-14">
+      <description translate="no">
+        <p>Fixed</p>
+        <ul>
+          <li>Filter UI behaviour</li>
+        </ul>
+      </description>
+    </release>
      <release version="1.31.0" date="2025-08-13">
       <description translate="no">
         <p>Changed</p>
