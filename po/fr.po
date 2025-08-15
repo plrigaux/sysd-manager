@@ -2295,7 +2295,7 @@ msgstr "Inverser les éléments sélectionnés du filtre"
 #: src/widget/unit_list/filter/substate.rs:36
 msgctxt "filter"
 msgid "Add"
-msgstr "Ajouté"
+msgstr "Ajouter"
 
 #: src/widget/unit_list/filter/substate.rs:37
 msgctxt "filter"
