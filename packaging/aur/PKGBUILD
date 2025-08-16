@@ -48,7 +48,7 @@ build() {
 
 package() {
 	cd $_pkgsrcdir
-	echo Generating files
+	echo Generating translation files
 	echo ""
 	cargo run -p transtools -- packfiles
 	echo ""
