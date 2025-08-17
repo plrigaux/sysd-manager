@@ -2,3 +2,4 @@
 import appimage.build_appimage as aim
 
 aim.main()
+

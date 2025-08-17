@@ -1,6 +1,7 @@
 import build_aux.build_common as bc
 from build_aux.build_common import color
 import os
+import subprocess
 
 APP_IMAGE_DIR = "../AppImage"
 
@@ -80,6 +81,7 @@ def generating_translation_files():
 
     bc.cmd_run(["ln", "-s", "./usr/bin/sysd-manager", f"{APP_DIR}/AppRun"])
 
+def make_appimage():
     os.environ["ARCH"] = "x86_64"
     bc.cmd_run(
         [
@@ -88,6 +90,46 @@ def generating_translation_files():
             f"{APP_IMAGE_DIR}/SysD-Manager-x86_64.AppImage",
         ]
     )
+
+
+import re
+
+
+def pack_libs():
+    print(f"{color.CYAN}{color.BOLD}Parse libs{color.END} ")
+
+    """     os.chdir("..")
+
+        curdir = os.getcwd()
+        print(f"{color.BLUE}{color.BOLD}current working dir:{color.END} ", curdir) 
+    """
+
+    output = subprocess.check_output(["ldd", "target/release/sysd-manager"])
+    result = {}
+
+    output = output.decode("utf-8")
+
+    valid = re.compile(r"([\S]+) => (\S+)")
+    i = 0
+    for row in output.split("\n"):
+
+        m = valid.search(row)
+        print(i)
+        i += 1
+        print(row, m)
+        if m:
+            result[m[1]] = m[2]
+
+    # print(result)
+    exclude = {"libc", "libicudata", "libstdc++"}
+    for key, value in result.items():
+
+        lib_name = key.split(".", 1)[0]
+        #print(lib_name)
+        if lib_name in exclude:
+            print(f"{color.YELLOW}Excludes {lib_name}{color.END}")
+        else:
+            bc.cmd_run(["install", "-Dm644", value, "-t", f"{APP_DIR}/usr/lib"])
 
 
 def main():
@@ -104,3 +146,7 @@ def main():
     build_cargo()
 
     generating_translation_files()
+    
+    pack_libs()
+    
+    make_appimage()
