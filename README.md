@@ -81,6 +81,9 @@ A user-friendly GUI to manage systemd units
 yay -S sysd-manager
 ```
 
+### AppImage
+<a href="https://github.com/plrigaux/sysd-manager/releases/latest"><img width="100" alt="Download latest Appimage release" src="https://docs.appimage.org/_images/appimage.svg"/></a>
+
 ### Build from Source
 
 1. Install prerequisites:
