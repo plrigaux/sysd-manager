@@ -43,6 +43,18 @@ fn main() -> glib::ExitCode {
     dotenv().ok();
     env_logger::init();
 
+    let (unit, test, level) = handle_args();
+
+    if let Some(test) = test {
+        info!("End test");
+
+        systemd::runtime().block_on(async move {
+            systemd::test(&test, level).await;
+        });
+
+        return gtk::glib::ExitCode::SUCCESS;
+    }
+
     info!("LANGUAGE {:?}", env::var("LANGUAGE"));
     let textdomain_dir = env::var("TEXTDOMAINDIR");
     info!("env TEXTDOMAINDIR {textdomain_dir:?}");
@@ -85,8 +97,6 @@ fn main() -> glib::ExitCode {
     // Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
     info!("{}", gettext("Program starting up"));
 
-    let unit = handle_args();
-
     #[cfg(feature = "flatpak")]
     {
         info!("Flatpak version");
@@ -109,9 +119,7 @@ fn main() -> glib::ExitCode {
         let preferred_color_scheme: adw::ColorScheme =
             unsafe { adw::ColorScheme::from_glib(preferred_color_scheme_id) };
 
-        info!(
-            "id {preferred_color_scheme_id:?} color {preferred_color_scheme:?}"
-        );
+        info!("id {preferred_color_scheme_id:?} color {preferred_color_scheme:?}");
         style_manager.set_color_scheme(preferred_color_scheme);
         load_css(&style_manager);
     });
@@ -204,10 +212,16 @@ struct Args {
     /// Specify the system session bus (This is the implied default)
     #[arg(short, long)]
     system: bool,
+
+    /// Test some api call
+    #[arg(short, long)]
+    test: Option<String>,
 }
 
-fn handle_args() -> Option<UnitInfo> {
+fn handle_args() -> (Option<UnitInfo>, Option<String>, UnitDBusLevel) {
     let args = Args::parse();
+
+    let test = args.test;
 
     let current_level = PREFERENCES.dbus_level();
 
@@ -227,13 +241,15 @@ fn handle_args() -> Option<UnitInfo> {
         PREFERENCES.save_dbus_level(&settings);
     }
 
-    let unit_name = args.unit?;
+    let Some(unit_name) = args.unit else {
+        return (None, test, unit_level);
+    };
 
     match systemd::fetch_unit(unit_level, &unit_name) {
-        Ok(unit) => Some(unit),
+        Ok(unit) => (Some(unit), test, unit_level),
         Err(e) => {
             warn!("Cli unit: {e:?}");
-            None
+            (None, None, unit_level)
         }
     }
 }

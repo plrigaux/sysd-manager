@@ -123,7 +123,7 @@ pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, S
  */
 pub async fn list_units_description_and_state_async()
 -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
-    sysdbus::list_all_units().await
+    sysdbus::list_all_units_async().await
 }
 
 pub async fn complete_unit_information(
@@ -312,8 +312,6 @@ pub fn commander_output(
     prog_n_args: &[&str],
     environment_variables: Option<&[(&str, &str)]>,
 ) -> Result<std::process::Output, SystemdErrors> {
-    
-
     match commander(prog_n_args, environment_variables).output() {
         Ok(output) => {
             if IS_FLATPAK_MODE {
@@ -396,9 +394,7 @@ pub fn save_text_to_file(
             if let SystemdErrors::IoError(ref err) = error {
                 match err.kind() {
                     ErrorKind::PermissionDenied => {
-                        info!(
-                            "Some error : {err}, try executing command as another user"
-                        );
+                        info!("Some error : {err}, try executing command as another user");
                         write_with_priviledge(file_path, host_file_path, text)
                             .map(|bytes_written| (file_path.clone(), bytes_written))
                     }
@@ -872,5 +868,13 @@ pub async fn watch_systemd_signals(
 
     if let Err(err) = result {
         log::error!("Error listening to jobs {err:?}");
+    }
+}
+
+pub async fn test(test_name: &str, level: UnitDBusLevel) {
+    info!("Testing {test_name:?}");
+
+    if let Err(error) = sysdbus::test(test_name, level).await {
+        error!("{error:#?}");
     }
 }

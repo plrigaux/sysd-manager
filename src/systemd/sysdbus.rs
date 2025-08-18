@@ -228,7 +228,7 @@ pub async fn list_units_description_and_state_async(
     Ok((units_map, unit_files))
 }
 
-pub async fn list_all_units()
+pub async fn list_all_units_async()
 -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
     match PREFERENCES.dbus_level() {
         DbusLevel::UserSession => {
@@ -1296,4 +1296,30 @@ pub fn retreive_unit_processes(
     let unit_processes: Vec<UnitProcessDeserialize> = message.body().deserialize()?;
 
     Ok(unit_processes)
+}
+
+pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors> {
+    info!("Testing {test:?}");
+
+    match test {
+        "unit_list" => {
+            let connection = get_connection_async(level).await?;
+            let hmap = list_units_async_as_map(Arc::new(connection), level).await?;
+
+            debug!("UNIT LIST, bus {level:?}\n{:#?}", hmap.keys());
+            info!("UNIT LIST, bus {level:?} TOTAL: {}", hmap.len());
+        }
+        "unit_file_list" => {
+            let connection = get_connection_async(level).await?;
+            let list = list_unit_files_async(Arc::new(connection), level).await?;
+
+            debug!("UNIT FILE LIST, bus {level:?}\n{list:#?}");
+            info!("UNIT FILE LIST, bus {level:?} TOTAL: {}", list.len());
+        }
+        _ => {
+            warn!("No test selected")
+        }
+    }
+
+    Ok(())
 }
