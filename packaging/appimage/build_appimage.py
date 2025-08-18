@@ -121,7 +121,9 @@ def pack_libs():
             result[m[1]] = m[2]
 
     # print(result)
-    exclude = {"libc", "libicudata", "libstdc++"}
+    exclude = {"libc", "libicudata", "libstdc++", 
+               #because essential on the disto
+               "libsystemd"}
     for key, value in result.items():
 
         lib_name = key.split(".", 1)[0]
