@@ -368,8 +368,8 @@ impl UnitListPanelImp {
 
             let (unit_desc, unit_from_files) = match receiver.await.expect("Tokio receiver works") {
                 Ok(unit_files) => unit_files,
-                Err(err) => {
-                    warn!("Fail fetch list {err:?}");
+                Err(error) => {
+                    warn!("Fail fetch unit list {error:?}");
                     panel_stack.set_visible_child_name("error");
                     return;
                 }
