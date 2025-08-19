@@ -2,6 +2,7 @@ import build_aux.build_common as bc
 from build_aux.build_common import color
 import os
 import subprocess
+import argparse
 
 APP_IMAGE_DIR = "../AppImage"
 
@@ -20,10 +21,10 @@ def generating_translation_files():
     bc.cmd_run(["cargo", "run", "-p", "transtools", "--", "packfiles"])
 
 
-def generating_translation_files():
+def create_appdir():
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
 
-    bc.cmd_run(["rm", "-fr", APP_DIR])
+    bc.cmd_run(["rm", "-fr", APP_IMAGE_DIR])
     bc.cmd_run(["mkdir", "-p", APP_DIR])
     # bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/bin"])
 
@@ -81,6 +82,7 @@ def generating_translation_files():
 
     bc.cmd_run(["ln", "-s", "./usr/bin/sysd-manager", f"{APP_DIR}/AppRun"])
 
+
 def make_appimage():
     os.environ["ARCH"] = "x86_64"
     bc.cmd_run(
@@ -121,34 +123,87 @@ def pack_libs():
             result[m[1]] = m[2]
 
     # print(result)
-    exclude = {"libc", "libicudata", "libstdc++", 
-               #because essential on the disto
-               "libsystemd"}
+    exclude = {
+        "libc",
+        "libicudata",
+        "libstdc++",
+        # because essential on the disto
+        "libsystemd",
+    }
     for key, value in result.items():
 
         lib_name = key.split(".", 1)[0]
-        #print(lib_name)
+        # print(lib_name)
         if lib_name in exclude:
             print(f"{color.YELLOW}Excludes {lib_name}{color.END}")
         else:
             bc.cmd_run(["install", "-Dm644", value, "-t", f"{APP_DIR}/usr/lib"])
 
 
-def main():
-
+def build():
     print(f"color {color.RED}{color.BOLD}Creating an AppImage{color.END}")
-
-    os.chdir("..")
-
-    curdir = os.getcwd()
-    print(f"{color.BLUE}{color.BOLD}current working dir:{color.END} ", curdir)
 
     print(f"{color.BLUE}current working dir:{color.END} ", curdir)
 
     build_cargo()
 
     generating_translation_files()
-    
+
+    create_appdir()
+
     pack_libs()
-    
+
     make_appimage()
+
+
+def publish():
+    version = bc.get_version()
+    print(f"Publishing version {color.BOLD}{color.CYAN}{version}{color.END}")
+
+    title = f"Release {version}"
+
+    cmd = [
+        "gh",
+        "release",
+        "create",
+        version,
+        "--title",
+        title,
+        "--notes",
+        "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
+        "../AppImage/SysD-Manager-x86_64.AppImage",
+    ]
+    
+    print(cmd)
+    
+    bc.cmd_run(cmd)
+
+
+def main():
+
+    parser = argparse.ArgumentParser(
+        description="Appimage builder",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument(
+        "action",
+        choices=[
+            "build",
+            "publish",
+        ],
+        help="action to perform",
+    )
+
+    args = parser.parse_args()
+
+    os.chdir("..")
+
+    curdir = os.getcwd()
+    print(f"{color.BLUE}{color.BOLD}current working dir:{color.END} ", curdir)
+
+    match args.action:
+        case "build":
+            build()
+        case "publish":
+            publish()
