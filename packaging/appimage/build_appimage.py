@@ -143,8 +143,6 @@ def pack_libs():
 def build():
     print(f"color {color.RED}{color.BOLD}Creating an AppImage{color.END}")
 
-    print(f"{color.BLUE}current working dir:{color.END} ", curdir)
-
     build_cargo()
 
     generating_translation_files()
@@ -173,9 +171,9 @@ def publish():
         "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
         "../AppImage/SysD-Manager-x86_64.AppImage",
     ]
-    
+
     print(cmd)
-    
+
     bc.cmd_run(cmd)
 
 
@@ -206,4 +204,7 @@ def main():
         case "build":
             build()
         case "publish":
+            build()
+            publish()
+        case "publish_only":
             publish()
