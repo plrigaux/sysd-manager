@@ -81,7 +81,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-          <release version="1.31.3" date="2025-08-18">
+    <release version="1.31.4" date="2025-08-20">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Uk Translations</li>
+        </ul>
+        <ul>
+          <li>Testing dbus command lines</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.31.3" date="2025-08-18">
       <description translate="no">
         <p>Changed</p>
         <ul>
@@ -89,7 +100,7 @@ https://hughsie.github.io/oars/index.html
         </ul>
       </description>
     </release>
-      <release version="1.31.1" date="2025-08-14">
+    <release version="1.31.1" date="2025-08-14">
       <description translate="no">
         <p>Fixed</p>
         <ul>
@@ -97,7 +108,7 @@ https://hughsie.github.io/oars/index.html
         </ul>
       </description>
     </release>
-     <release version="1.31.0" date="2025-08-13">
+    <release version="1.31.0" date="2025-08-13">
       <description translate="no">
         <p>Changed</p>
         <ul>
