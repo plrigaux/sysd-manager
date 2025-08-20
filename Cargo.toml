@@ -77,9 +77,9 @@ strum = { version = "0.27", features = ["derive"] }
 sysd =  { version = "0.10", package = "systemd"} 
 tokio.workspace = true
 tokio-util = "0.7"
-zbus = "5.7"
-zbus_macros =  "5.7" 
-zvariant = "5.5"
+zbus = "5.9"
+zbus_macros =  "5.9" 
+zvariant = "5.6"
 
 [dev-dependencies]
 

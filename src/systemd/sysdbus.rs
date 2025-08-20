@@ -120,7 +120,7 @@ async fn get_connection_async(level: UnitDBusLevel) -> Result<zbus::Connection, 
         .build()
         .await?;
 
-    debug!("Connection Async: {connection:?}");
+    debug!("Connection Async: {connection:#?}");
 
     Ok(connection)
 }
@@ -1301,17 +1301,39 @@ pub fn retreive_unit_processes(
 pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     info!("Testing {test:?}");
 
+    async fn connection_testing(
+        level: UnitDBusLevel,
+    ) -> Result<Arc<zbus::Connection>, SystemdErrors> {
+        let connection = get_connection_async(level).await?;
+        debug!("Credentials: {:#?}", connection.peer_credentials().await?);
+        debug!("Unique name: {:#?}", connection.unique_name());
+
+        let con_info = format!("{connection:?}");
+
+        let re: regex::Regex = regex::Regex::new("peer:\\s\"(.+)\"").unwrap();
+
+        if let Some(c) = re.captures(&con_info)
+            && let Some(m) = c.get(1)
+        {
+            info!("socket file: {}", m.as_str());
+        } else {
+            info!("No socket file found!");
+        }
+
+        Ok(Arc::new(connection))
+    }
+
     match test {
         "unit_list" => {
-            let connection = get_connection_async(level).await?;
-            let hmap = list_units_async_as_map(Arc::new(connection), level).await?;
+            let connection = connection_testing(level).await?;
+            let hmap = list_units_async_as_map(connection, level).await?;
 
             debug!("UNIT LIST, bus {level:?}\n{:#?}", hmap.keys());
             info!("UNIT LIST, bus {level:?} TOTAL: {}", hmap.len());
         }
         "unit_file_list" => {
-            let connection = get_connection_async(level).await?;
-            let list = list_unit_files_async(Arc::new(connection), level).await?;
+            let connection = connection_testing(level).await?;
+            let list = list_unit_files_async(connection, level).await?;
 
             debug!("UNIT FILE LIST, bus {level:?}\n{list:#?}");
             info!("UNIT FILE LIST, bus {level:?} TOTAL: {}", list.len());
