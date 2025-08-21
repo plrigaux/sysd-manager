@@ -99,10 +99,10 @@ pub fn generate_mo() -> Result<(), TransError> {
     {
         info!("PO file {:?} lang {:?}", path, path.file_stem());
 
-        if let Some(po_file) = path.to_str() {
-            if let Some(lang) = path.file_stem().and_then(|s| s.to_str()) {
-                msgfmt(po_file, lang, MAIN_PROG)?;
-            }
+        if let Some(po_file) = path.to_str()
+            && let Some(lang) = path.file_stem().and_then(|s| s.to_str())
+        {
+            msgfmt(po_file, lang, MAIN_PROG)?;
         }
     }
 

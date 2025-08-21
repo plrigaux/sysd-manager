@@ -197,10 +197,10 @@ fn update_po_file(linguas: &[String]) -> Result<(), TransError> {
 
     let mut lang_files: Vec<(PathBuf, String)> = Vec::new();
     for p in po_files.drain(..) {
-        if let Some(f) = p.file_stem() {
-            if let Some(s) = f.to_str() {
-                lang_files.push((p.clone(), s.to_owned()));
-            }
+        if let Some(f) = p.file_stem()
+            && let Some(s) = f.to_str()
+        {
+            lang_files.push((p.clone(), s.to_owned()));
         }
     }
 
