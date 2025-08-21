@@ -166,11 +166,10 @@ impl UnitFilePanelImp {
         };
 
         let old_unit = self.unit.replace(Some(unit.clone()));
-        if let Some(old_unit) = old_unit {
-            if old_unit.primary() != unit.primary() {
+        if let Some(old_unit) = old_unit
+            && old_unit.primary() != unit.primary() {
                 self.unit_dependencies_loaded.set(false)
             }
-        }
 
         self.set_file_content()
     }

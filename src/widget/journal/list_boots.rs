@@ -143,8 +143,8 @@ mod imp {
                     };
 
                     let mut binding = app_window.imp().cached_list_boots_mut();
-                    if let Some(boots) = binding.deref_mut() {
-                        if let Some(boot) = boots.pop() {
+                    if let Some(boots) = binding.deref_mut()
+                        && let Some(boot) = boots.pop() {
                             let new_boot = Boot {
                                 boot_id: boot.boot_id.clone(),
                                 last: last_time,
@@ -153,7 +153,6 @@ mod imp {
 
                             boots.push(Rc::new(new_boot));
                         }
-                    }
                 }
 
                 let binding = app_window.imp().cached_list_boots();

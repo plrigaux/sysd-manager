@@ -305,12 +305,11 @@ fn fill_load_state(
             continue;
         };
 
-        if let Value::Str(inner_str) = value as &Value {
-            if !inner_str.is_empty() {
+        if let Value::Str(inner_str) = value as &Value
+            && !inner_str.is_empty() {
                 all_none = false;
                 break;
             }
-        }
     }
 
     if !all_none {
@@ -600,11 +599,10 @@ fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     ];
 
     for (key, value, _, _) in memories.iter_mut() {
-        if let Some(bus_value) = map.get(key as &str) {
-            if let Value::U64(converted) = bus_value as &Value {
+        if let Some(bus_value) = map.get(key as &str)
+            && let Value::U64(converted) = bus_value as &Value {
                 *value = *converted;
             }
-        }
     }
 
     let mut is_first = true;
@@ -733,11 +731,10 @@ fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart> {
 }
 
 fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
-    if let Some(exec_full) = get_exec_full(map) {
-        if let Some((_pre, last)) = exec_full.path.rsplit_once('/') {
+    if let Some(exec_full) = get_exec_full(map)
+        && let Some((_pre, last)) = exec_full.path.rsplit_once('/') {
             return Some(last.to_string());
         }
-    }
     None
 }
 

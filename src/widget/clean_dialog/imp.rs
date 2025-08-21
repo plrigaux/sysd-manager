@@ -72,8 +72,8 @@ impl CleanDialogImp {
                   unit: Option<&UnitInfo>,
                   result: Result<(), SystemdErrors>,
                   _control: &UnitControlPanel| {
-                if let Err(error) = result {
-                    if let SystemdErrors::ZAccessDenied(_, _) = error {
+                if let Err(error) = result
+                    && let SystemdErrors::ZAccessDenied(_, _) = error {
                         let mut cmd = "sudo systemctl clean ".to_owned();
 
                         for w in what {
@@ -85,7 +85,6 @@ impl CleanDialogImp {
                         cmd.push_str(&unit.expect("Unit not None").primary());
                         work_around_dialog(&cmd, &error, method, &this.into())
                     }
-                }
             }
         };
 
@@ -157,15 +156,14 @@ impl CleanDialogImp {
         };
 
         let code_all = CleanOption::All.code();
-        if let Some(all) = map.get(code_all) {
-            if all.is_active() {
+        if let Some(all) = map.get(code_all)
+            && all.is_active() {
                 for (key, check_button) in map.iter() {
                     if key != code_all {
                         check_button.set_active(false);
                     }
                 }
             }
-        }
 
         let mut at_least_one_checked = false;
         for check_button in map.values() {

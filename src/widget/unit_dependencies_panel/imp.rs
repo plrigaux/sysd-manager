@@ -131,11 +131,10 @@ impl UnitDependenciesPanelImp {
         };
 
         let old_unit = self.unit.replace(Some(unit.clone()));
-        if let Some(old_unit) = old_unit {
-            if old_unit.primary() != unit.primary() {
+        if let Some(old_unit) = old_unit
+            && old_unit.primary() != unit.primary() {
                 self.unit_dependencies_loaded.set(false)
             }
-        }
 
         self.update_dependencies()
     }
@@ -197,11 +196,10 @@ impl UnitDependenciesPanelImp {
             if !unit_type_filter.is_empty() {
                 let mut set = BTreeSet::new();
                 for dep in dependencies.children {
-                    if let Some((_, unit_type)) = dep.unit_name.rsplit_once('.') {
-                        if unit_type_filter.contains(unit_type) {
+                    if let Some((_, unit_type)) = dep.unit_name.rsplit_once('.')
+                        && unit_type_filter.contains(unit_type) {
                             set.insert(dep);
                         }
-                    }
                 }
                 dependencies.children = set;
             }

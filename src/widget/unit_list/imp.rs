@@ -540,12 +540,11 @@ impl UnitListPanelImp {
         };
 
         let old = self.unit.replace(Some(unit.clone()));
-        if let Some(old) = old {
-            if old.primary() == unit.primary() {
+        if let Some(old) = old
+            && old.primary() == unit.primary() {
                 info!("List {} == {}", old.primary(), unit.primary());
                 return Some(old);
             }
-        }
 
         let unit_name = unit.primary();
 
@@ -609,17 +608,15 @@ impl UnitListPanelImp {
     fn add_one_unit(&self, unit: &UnitInfo) {
         self.list_store.append(&UnitBinding::new(unit));
 
-        if LoadState::Loaded == unit.load_state() {
-            if let Ok(my_int) = self.loaded_units_count.label().parse::<i32>() {
+        if LoadState::Loaded == unit.load_state()
+            && let Ok(my_int) = self.loaded_units_count.label().parse::<i32>() {
                 self.loaded_units_count.set_label(&(my_int + 1).to_string());
             }
-        }
 
-        if unit.file_path().is_some() {
-            if let Ok(my_int) = self.unit_files_number.label().parse::<i32>() {
+        if unit.file_path().is_some()
+            && let Ok(my_int) = self.unit_files_number.label().parse::<i32>() {
                 self.unit_files_number.set_label(&(my_int + 1).to_string());
             }
-        }
     }
 
     pub fn selected_unit(&self) -> Option<UnitInfo> {

@@ -65,14 +65,13 @@ impl InfoWindowImp {
 
             let mut data = String::new();
             for i in 0..n_item {
-                if let Some(object) = store.item(i) {
-                    if let Ok(x) = object.downcast::<rowitem::Metadata>() {
+                if let Some(object) = store.item(i)
+                    && let Ok(x) = object.downcast::<rowitem::Metadata>() {
                         data.push_str(&x.col1());
                         data.push('\t');
                         data.push_str(&x.col2());
                         data.push('\n')
                     }
-                }
             }
             clipboard.set_text(&data)
         }

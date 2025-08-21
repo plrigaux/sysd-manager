@@ -359,13 +359,12 @@ impl UnitControlPanelImpl {
         };
 
         let old_unit = self.current_unit.replace(Some(unit.clone()));
-        if let Some(old_unit) = old_unit {
-            if old_unit.primary() == unit.primary() {
+        if let Some(old_unit) = old_unit
+            && old_unit.primary() == unit.primary() {
                 info! {"Same unit {}", unit.primary() };
                 /*                 self.highlight_controls(unit);
                 return; */
             }
-        }
 
         controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 

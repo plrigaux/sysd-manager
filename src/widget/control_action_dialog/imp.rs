@@ -199,8 +199,8 @@ impl EnableUnitDialogImp {
                             Ok(ref vec) => {
                                 info!("{} Result: {:?}", action_type.code(), vec);
 
-                                if let Some(unit) = unit {
-                                    if dialog.imp().run_stop_now_switch.is_active() {
+                                if let Some(unit) = unit
+                                    && dialog.imp().run_stop_now_switch.is_active() {
                                         let mode = dialog.imp().run_stop_mode_combo.selected_item();
                                         let mode: StartStopMode = mode.into();
                                         info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
@@ -215,7 +215,6 @@ impl EnableUnitDialogImp {
                                             mode,
                                         );
                                     }
-                                }
 
                                 let result = result.map(|_arg| ());
                                 after_unit_file_action(
@@ -273,8 +272,8 @@ impl EnableUnitDialogImp {
                             Ok(ref vec) => {
                                 info!("{} Result: {:?}", action_type.code(), vec);
 
-                                if let Some(unit) = unit {
-                                    if dialog.imp().run_stop_now_switch.is_active() {
+                                if let Some(unit) = unit
+                                    && dialog.imp().run_stop_now_switch.is_active() {
                                         let mode = dialog.imp().run_stop_mode_combo.selected_item();
                                         let mode: StartStopMode = mode.into();
                                         info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
@@ -289,7 +288,6 @@ impl EnableUnitDialogImp {
                                             mode,
                                         );
                                     }
-                                }
 
                                 let result = result.map(|_arg| ());
                                 after_unit_file_action("Mask", unit, result, control);

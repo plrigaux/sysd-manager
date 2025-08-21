@@ -176,11 +176,10 @@ pub fn build_textview_link_platform(
             }
 
             // we shouldn't follow a link if the user has selected something
-            if let Some((start, end)) = buf.selection_bounds() {
-                if start.offset() != end.offset() {
+            if let Some((start, end)) = buf.selection_bounds()
+                && start.offset() != end.offset() {
                     return;
                 }
-            }
 
             let Some(iter) = text_view.iter_at_location(x as i32, y as i32) else {
                 return;

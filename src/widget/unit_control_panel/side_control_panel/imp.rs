@@ -93,8 +93,8 @@ impl SideControlPanelImpl {
         result: Result<(), SystemdErrors>,
         control_panel: &UnitControlPanel,
     ) {
-        if let Err(error) = result {
-            if let SystemdErrors::ZAccessDenied(_, _) = error {
+        if let Err(error) = result
+            && let SystemdErrors::ZAccessDenied(_, _) = error {
                 let cmd = format!(
                     "sudo systemctl {} -u {}",
                     method_name.to_ascii_lowercase(),
@@ -104,7 +104,6 @@ impl SideControlPanelImpl {
                 let window = control_panel.parent_window();
                 work_around_dialog(&cmd, &error, method_name, &window)
             }
-        }
     }
 
     #[template_callback]

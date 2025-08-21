@@ -73,11 +73,10 @@ impl OnClose {
                 filter.changed(filter_change);
                 debug!("Filter change Level {filter_change:?}");
             }
-        } else if let Some(dependencies) = &self.dependencies {
-            if !old.eq(new) {
+        } else if let Some(dependencies) = &self.dependencies
+            && !old.eq(new) {
                 dependencies.update_dependencies_filtered(new);
             }
-        }
     }
 
     fn determine_filter_change(
