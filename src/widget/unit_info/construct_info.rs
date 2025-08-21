@@ -306,10 +306,11 @@ fn fill_load_state(
         };
 
         if let Value::Str(inner_str) = value as &Value
-            && !inner_str.is_empty() {
-                all_none = false;
-                break;
-            }
+            && !inner_str.is_empty()
+        {
+            all_none = false;
+            break;
+        }
     }
 
     if !all_none {
@@ -600,9 +601,10 @@ fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
     for (key, value, _, _) in memories.iter_mut() {
         if let Some(bus_value) = map.get(key as &str)
-            && let Value::U64(converted) = bus_value as &Value {
-                *value = *converted;
-            }
+            && let Value::U64(converted) = bus_value as &Value
+        {
+            *value = *converted;
+        }
     }
 
     let mut is_first = true;
@@ -699,7 +701,7 @@ struct ExecStart<'a> {
 }
 
 // Value: Array(Dynamic { child: Structure(Dynamic { fields: [Str, Array(Dynamic { child: Str }), Bool, U64, U64, U64, U64, U32, I32, I32] }) })
-fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart> {
+fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart<'_>> {
     let value = get_value!(map, "ExecStart", None);
 
     debug!(
@@ -720,10 +722,6 @@ fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart> {
 
         let exec_start = clean_message!(ExecStart::try_from(val), "ExecStart", None);
 
-        /*         let array_of_str: Vec<_> = exec_start.argv.iter().map(|s| s.as_str()).collect();
-
-        let cmd_line_joined = array_of_str.join(" "); */
-
         return Some(exec_start);
     }
 
@@ -732,9 +730,10 @@ fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart> {
 
 fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
     if let Some(exec_full) = get_exec_full(map)
-        && let Some((_pre, last)) = exec_full.path.rsplit_once('/') {
-            return Some(last.to_string());
-        }
+        && let Some((_pre, last)) = exec_full.path.rsplit_once('/')
+    {
+        return Some(last.to_string());
+    }
     None
 }
 
