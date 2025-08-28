@@ -1,5 +1,6 @@
 mod column_factories;
 mod menus;
+mod pop_menu;
 mod rowdata;
 
 use std::{
@@ -11,8 +12,7 @@ use std::{
 
 use gio::glib::VariantTy;
 use gtk::{
-    ListScrollFlags, PickFlags, TemplateChild,
-    ffi::GTK_INVALID_LIST_POSITION,
+    TemplateChild,
     gio::{self},
     glib::{self, Object, Properties},
     prelude::*,
@@ -422,7 +422,7 @@ impl UnitListPanelImp {
 
             info!("Unit list refreshed! list size {}", list_store.n_items());
 
-            let mut force_selected_index = GTK_INVALID_LIST_POSITION;
+            let mut force_selected_index = gtk::INVALID_LIST_POSITION;
 
             let selected_unit = unit_list.selected_unit();
             if let Some(selected_unit) = selected_unit {
@@ -586,7 +586,7 @@ impl UnitListPanelImp {
             if !filter.match_(&unit_binding) {
                 //Unselect
                 self.single_selection
-                    .set_selected(GTK_INVALID_LIST_POSITION);
+                    .set_selected(gtk::INVALID_LIST_POSITION);
                 info!("Unit {unit_name} no Match");
                 return Some(unit.clone());
             }
@@ -598,7 +598,7 @@ impl UnitListPanelImp {
             self.units_browser.scroll_to(
                 row, // to centerish on the selected unit
                 None,
-                ListScrollFlags::FOCUS | ListScrollFlags::SELECT,
+                gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
                 None,
             );
         }
@@ -931,110 +931,9 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         self.units_browser
-            .connect_activate(|_a, b| println!("pos {b}")); //TODO make selection
+            .connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
 
-        let gesture = gtk::GestureClick::builder()
-            .button(gtk::gdk::BUTTON_SECONDARY)
-            .build();
-        {
-            let cv: gtk::ColumnView = self.units_browser.clone();
-            let fm = self.filter_list_model.clone();
-            gesture.connect_pressed(move |g, n_press, x, y| {
-                println!("Pressed {n_press} {x} {y}");
-
-                let Some(gesture_widget) = g.widget() else {
-                    return;
-                };
-
-                if let Some(picked_widget) = gesture_widget.pick(x, y, PickFlags::NON_TARGETABLE) {
-                    println!("Clicked on Widget {picked_widget:?}");
-                }
-
-                let Some(cv_y) = cv.vadjustment().map(|a| a.value()) else {
-                    return;
-                };
-
-                let point_y: i32 = (cv_y + y) as i32;
-
-                let mut child_op = gesture_widget.first_child();
-
-                let mut header_height = 0;
-
-                let mut line_no = -2;
-                while let Some(ref child) = child_op {
-                    let child_name = child.type_().name();
-                    if child_name == "GtkListItemWidget" {
-                        header_height = child.height();
-                    } else if child_name == "GtkColumnListView" {
-                        line_no = check_list_widgets(child, point_y, header_height);
-
-                        // Break out the loop
-                        break;
-                    }
-
-                    child_op = child.next_sibling();
-                }
-
-                println!("line_no {line_no} model {}", fm.ref_count());
-
-                if line_no < 0 {
-                    warn!("some wrong line_no {line_no}");
-                    return;
-                }
-
-                if let Some(object) = fm.item(line_no as u32) {
-                    let ub = object.downcast::<UnitBinding>().expect("Ok");
-                    println!("Unit {}", ub.primary());
-                } else {
-                    log::warn!("some wrong");
-                }
-            });
-        }
-        gesture.connect_released(|_g, n_press, x, y| println!("Released {n_press} {x} {y}"));
-
-        self.units_browser.add_controller(gesture);
-
-        let row_fac = gtk::SignalListItemFactory::new();
-
-        row_fac.connect_bind(|_fac, object| {
-            let column_view_row = object
-                .downcast_ref::<gtk::ColumnViewRow>()
-                .expect("item.downcast_ref::<gtk::ColumnViewRow>()");
-
-            column_view_row.connect_activatable_notify(|_a| println!("asdfsd"));
-
-            let _unit_binding = column_view_row
-                .item()
-                .expect("Not None")
-                .downcast::<UnitBinding>()
-                .expect("item.downcast_ref::<gtk::UnitBinding>()");
-        });
-
-        self.units_browser.set_row_factory(Some(&row_fac));
-        println!("SETTING {}", self.units_browser.is_single_click_activate());
-    }
-}
-
-/// We assume that each line have same size
-fn check_list_widgets(w: &gtk::Widget, y: i32, header_height: i32) -> i32 {
-    let mut child_op = w.first_child();
-
-    let mut height = -1;
-    while let Some(child) = child_op {
-        let w_type_name = child.type_().name();
-        println!("w_type_name {w_type_name} y {y}");
-        if w_type_name == "GtkColumnViewRowWidget" {
-            height = child.height();
-            break;
-        }
-
-        child_op = child.next_sibling();
-    }
-
-    if height > 0 {
-        ((y - header_height) / height) - 1
-    } else {
-        -1
+        pop_menu::setup_popup_menu(&self.units_browser, &self.filter_list_model);
     }
 }
 
@@ -1045,7 +944,7 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
 
     unit_list.imp().force_selected_index.set(None);
 
-    if force_selected_index == GTK_INVALID_LIST_POSITION {
+    if force_selected_index == gtk::INVALID_LIST_POSITION {
         force_selected_index = 0;
     }
 
@@ -1067,7 +966,7 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
         units_browser.scroll_to(
             force_selected_index, // to centerish on the selected unit
             None,
-            ListScrollFlags::FOCUS,
+            gtk::ListScrollFlags::FOCUS,
             None,
         );
     });

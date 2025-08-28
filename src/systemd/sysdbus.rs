@@ -120,7 +120,7 @@ async fn get_connection_async(level: UnitDBusLevel) -> Result<zbus::Connection, 
         .build()
         .await?;
 
-    debug!("Connection Async: {connection:#?}");
+    trace!("Connection Async: {connection:#?}");
 
     Ok(connection)
 }
