@@ -120,7 +120,12 @@ python install_tiny
 
 Planned features:
 - Filter units on more properties
+   - Save filters
+- Display more properties in the unit browser
+   - Add/Remove columns
+   - Ajust cell viewer according to property types (time)
 - Functionality edit gereated file or original
+- Context menu on unit browser row
 - Always administrator mode
 - Continuous UX improvements
 

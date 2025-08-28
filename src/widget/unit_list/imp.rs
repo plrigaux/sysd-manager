@@ -11,7 +11,7 @@ use std::{
 
 use gio::glib::VariantTy;
 use gtk::{
-    ListScrollFlags, TemplateChild,
+    ListScrollFlags, PickFlags, TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
     gio::{self},
     glib::{self, Object, Properties},
@@ -541,10 +541,11 @@ impl UnitListPanelImp {
 
         let old = self.unit.replace(Some(unit.clone()));
         if let Some(old) = old
-            && old.primary() == unit.primary() {
-                info!("List {} == {}", old.primary(), unit.primary());
-                return Some(old);
-            }
+            && old.primary() == unit.primary()
+        {
+            info!("List {} == {}", old.primary(), unit.primary());
+            return Some(old);
+        }
 
         let unit_name = unit.primary();
 
@@ -609,14 +610,16 @@ impl UnitListPanelImp {
         self.list_store.append(&UnitBinding::new(unit));
 
         if LoadState::Loaded == unit.load_state()
-            && let Ok(my_int) = self.loaded_units_count.label().parse::<i32>() {
-                self.loaded_units_count.set_label(&(my_int + 1).to_string());
-            }
+            && let Ok(my_int) = self.loaded_units_count.label().parse::<i32>()
+        {
+            self.loaded_units_count.set_label(&(my_int + 1).to_string());
+        }
 
         if unit.file_path().is_some()
-            && let Ok(my_int) = self.unit_files_number.label().parse::<i32>() {
-                self.unit_files_number.set_label(&(my_int + 1).to_string());
-            }
+            && let Ok(my_int) = self.unit_files_number.label().parse::<i32>()
+        {
+            self.unit_files_number.set_label(&(my_int + 1).to_string());
+        }
     }
 
     pub fn selected_unit(&self) -> Option<UnitInfo> {
@@ -926,6 +929,112 @@ impl ObjectImpl for UnitListPanelImp {
                 "visible",
             )
             .build();
+
+        self.units_browser
+            .connect_activate(|_a, b| println!("pos {b}")); //TODO make selection
+
+        let gesture = gtk::GestureClick::builder()
+            .button(gtk::gdk::BUTTON_SECONDARY)
+            .build();
+        {
+            let cv: gtk::ColumnView = self.units_browser.clone();
+            let fm = self.filter_list_model.clone();
+            gesture.connect_pressed(move |g, n_press, x, y| {
+                println!("Pressed {n_press} {x} {y}");
+
+                let Some(gesture_widget) = g.widget() else {
+                    return;
+                };
+
+                if let Some(picked_widget) = gesture_widget.pick(x, y, PickFlags::NON_TARGETABLE) {
+                    println!("Clicked on Widget {picked_widget:?}");
+                }
+
+                let Some(cv_y) = cv.vadjustment().map(|a| a.value()) else {
+                    return;
+                };
+
+                let point_y: i32 = (cv_y + y) as i32;
+
+                let mut child_op = gesture_widget.first_child();
+
+                let mut header_height = 0;
+
+                let mut line_no = -2;
+                while let Some(ref child) = child_op {
+                    let child_name = child.type_().name();
+                    if child_name == "GtkListItemWidget" {
+                        header_height = child.height();
+                    } else if child_name == "GtkColumnListView" {
+                        line_no = check_list_widgets(child, point_y, header_height);
+
+                        // Break out the loop
+                        break;
+                    }
+
+                    child_op = child.next_sibling();
+                }
+
+                println!("line_no {line_no} model {}", fm.ref_count());
+
+                if line_no < 0 {
+                    warn!("some wrong line_no {line_no}");
+                    return;
+                }
+
+                if let Some(object) = fm.item(line_no as u32) {
+                    let ub = object.downcast::<UnitBinding>().expect("Ok");
+                    println!("Unit {}", ub.primary());
+                } else {
+                    log::warn!("some wrong");
+                }
+            });
+        }
+        gesture.connect_released(|_g, n_press, x, y| println!("Released {n_press} {x} {y}"));
+
+        self.units_browser.add_controller(gesture);
+
+        let row_fac = gtk::SignalListItemFactory::new();
+
+        row_fac.connect_bind(|_fac, object| {
+            let column_view_row = object
+                .downcast_ref::<gtk::ColumnViewRow>()
+                .expect("item.downcast_ref::<gtk::ColumnViewRow>()");
+
+            column_view_row.connect_activatable_notify(|_a| println!("asdfsd"));
+
+            let _unit_binding = column_view_row
+                .item()
+                .expect("Not None")
+                .downcast::<UnitBinding>()
+                .expect("item.downcast_ref::<gtk::UnitBinding>()");
+        });
+
+        self.units_browser.set_row_factory(Some(&row_fac));
+        println!("SETTING {}", self.units_browser.is_single_click_activate());
+    }
+}
+
+/// We assume that each line have same size
+fn check_list_widgets(w: &gtk::Widget, y: i32, header_height: i32) -> i32 {
+    let mut child_op = w.first_child();
+
+    let mut height = -1;
+    while let Some(child) = child_op {
+        let w_type_name = child.type_().name();
+        println!("w_type_name {w_type_name} y {y}");
+        if w_type_name == "GtkColumnViewRowWidget" {
+            height = child.height();
+            break;
+        }
+
+        child_op = child.next_sibling();
+    }
+
+    if height > 0 {
+        ((y - header_height) / height) - 1
+    } else {
+        -1
     }
 }
 
