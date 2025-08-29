@@ -36,6 +36,7 @@ src/systemd/errors.rs
 src/systemd/journal.rs
 src/systemd/journal_data.rs
 src/systemd/mod.rs
+src/systemd/sysdbus/tests.rs
 src/systemd/sysdbus/watcher.rs
 src/systemd/sysdbus.rs
 src/systemd_gui.rs
@@ -97,6 +98,7 @@ src/widget/unit_list/filter/substate.rs
 src/widget/unit_list/filter/unit_prop_filter.rs
 src/widget/unit_list/imp/column_factories.rs
 src/widget/unit_list/imp/menus.rs
+src/widget/unit_list/imp/pop_menu.rs
 src/widget/unit_list/imp/rowdata.rs
 src/widget/unit_list/imp.rs
 src/widget/unit_list/mod.rs

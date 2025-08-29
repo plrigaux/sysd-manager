@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-29 11:59-0400\n"
+"POT-Creation-Date: 2025-08-29 12:17-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -909,6 +909,7 @@ msgid "Restart unit"
 msgstr ""
 
 #: data/interfaces/unit_control_panel.ui:93
+#: src/widget/unit_list/imp/pop_menu.rs:164
 msgctxt "controls"
 msgid "Restart"
 msgstr ""
@@ -2196,4 +2197,14 @@ msgstr ""
 #: src/widget/unit_list/filter/substate.rs:37
 msgctxt "filter"
 msgid "Add filter on sub state"
+msgstr ""
+
+#: src/widget/unit_list/imp/pop_menu.rs:146
+msgctxt "controls"
+msgid "Start"
+msgstr ""
+
+#: src/widget/unit_list/imp/pop_menu.rs:155
+msgctxt "controls"
+msgid "Stop"
 msgstr ""

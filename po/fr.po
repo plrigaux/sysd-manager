@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-29 11:59-0400\n"
+"POT-Creation-Date: 2025-08-29 12:17-0400\n"
 "PO-Revision-Date: 2025-08-15 10:33+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -951,6 +951,7 @@ msgid "Restart unit"
 msgstr "Redémarrer l'unité"
 
 #: data/interfaces/unit_control_panel.ui:93
+#: src/widget/unit_list/imp/pop_menu.rs:164
 msgctxt "controls"
 msgid "Restart"
 msgstr "Redémarrer"
@@ -2301,6 +2302,18 @@ msgstr "Ajouter"
 msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr "Ajouter un filtre au sous état"
+
+#: src/widget/unit_list/imp/pop_menu.rs:146
+#, fuzzy
+msgctxt "controls"
+msgid "Start"
+msgstr "Démarrer"
+
+#: src/widget/unit_list/imp/pop_menu.rs:155
+#, fuzzy
+msgctxt "controls"
+msgid "Stop"
+msgstr "Arrêter"
 
 #~ msgctxt "kill default action"
 #~ msgid "Stop"
