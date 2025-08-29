@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.31.4"
+version = "1.32.0"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -77,9 +77,9 @@ strum = { version = "0.27", features = ["derive"] }
 sysd =  { version = "0.10", package = "systemd"} 
 tokio.workspace = true
 tokio-util = "0.7"
-zbus = "5.9"
-zbus_macros =  "5.9" 
-zvariant = "5.6"
+zbus = "5.10"
+zbus_macros =  "5.10" 
+zvariant = "5.7"
 
 [dev-dependencies]
 
