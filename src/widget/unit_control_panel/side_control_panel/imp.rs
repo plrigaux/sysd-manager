@@ -94,16 +94,17 @@ impl SideControlPanelImpl {
         control_panel: &UnitControlPanel,
     ) {
         if let Err(error) = result
-            && let SystemdErrors::ZAccessDenied(_, _) = error {
-                let cmd = format!(
-                    "sudo systemctl {} -u {}",
-                    method_name.to_ascii_lowercase(),
-                    unit.expect("Unit not None").primary()
-                );
+            && let SystemdErrors::ZAccessDenied(_, _) = error
+        {
+            let cmd = format!(
+                "sudo systemctl {} -u {}",
+                method_name.to_ascii_lowercase(),
+                unit.expect("Unit not None").primary()
+            );
 
-                let window = control_panel.parent_window();
-                work_around_dialog(&cmd, &error, method_name, &window)
-            }
+            let window = control_panel.parent_window();
+            work_around_dialog(&cmd, &error, method_name, &window)
+        }
     }
 
     #[template_callback]
@@ -285,7 +286,6 @@ impl SideControlPanelImpl {
 
                     let mode: StartStopMode = value.into();
                     side_control.imp().reload_unit_mode_changed(mode);
-                    println!("asdfasdfasdf asdfas dfasd");
                     action.set_state(value);
                 })
                 .parameter_type(Some(VariantTy::STRING))
