@@ -212,8 +212,6 @@ fn create_menu_button(
         _ => {}
     };
 
-    println!("{action:?} {}", unit.active_state());
-
     let unit = unit.clone();
     button.connect_clicked(move |button| {
         let inter_message = match action {
