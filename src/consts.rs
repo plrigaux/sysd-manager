@@ -12,5 +12,9 @@ pub const ERROR_CSS: &str = "error";
 pub const ACTION_LIST_BOOT: &str = "list_boots";
 pub const APP_ACTION_LIST_BOOT: &str = concat!("app.", ACTION_LIST_BOOT);
 
+pub const WIN: &str = "win.";
 pub const ACTION_UNIT_LIST_FILTER_CLEAR: &str = "unit_list_filter_clear";
-pub const NS_ACTION_UNIT_LIST_FILTER_CLEAR: &str = concat!("win.", ACTION_UNIT_LIST_FILTER_CLEAR);
+pub const NS_ACTION_UNIT_LIST_FILTER_CLEAR: &str = concat!(WIN, ACTION_UNIT_LIST_FILTER_CLEAR);
+
+pub const MENU_ACTION: &str = "unit-reload";
+pub const WIN_MENU_ACTION: &str = concat!(WIN, MENU_ACTION);

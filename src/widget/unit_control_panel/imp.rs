@@ -150,6 +150,47 @@ impl UnitControlPanelImpl {
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
+
+        /*         let menu_action_start: gio::ActionEntry<AppWindow> =
+            gio::ActionEntry::builder(MENU_ACTION_START)
+                .activate(|_app_window: &AppWindow, _action, value| {
+                    let Some(value) = value else {
+                        warn!("Action {MENU_ACTION_START} has no value");
+                        return;
+                    };
+
+                    info!("ACTION {MENU_ACTION_START} Option {value}");
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .build();
+
+        let menu_action_stop: gio::ActionEntry<AppWindow> =
+            gio::ActionEntry::builder(MENU_ACTION_STOP)
+                .activate(|_app_window: &AppWindow, _action, value| {
+                    let Some(value) = value else {
+                        warn!("Action {MENU_ACTION_STOP} has no value");
+                        return;
+                    };
+
+                    info!("ACTION {MENU_ACTION_STOP} Option {value}");
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .build();
+
+        let menu_action_restart: gio::ActionEntry<AppWindow> =
+            gio::ActionEntry::builder(MENU_ACTION_RESTART)
+                .activate(|_app_window: &AppWindow, _action, value| {
+                    let Some(value) = value else {
+                        warn!("Action {MENU_ACTION_RESTART} has no value");
+                        return;
+                    };
+
+                    info!("ACTION {MENU_ACTION_RESTART} Option {value}");
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .build();
+
+        app_window.add_action_entries([menu_action_start, menu_action_stop, menu_action_restart]); */
     }
 
     #[template_callback]
@@ -192,6 +233,7 @@ impl UnitControlPanelImpl {
             systemd::start_unit,
             UnitContolType::Start,
             ActiveState::Active,
+            None,
         );
     }
 
@@ -202,6 +244,7 @@ impl UnitControlPanelImpl {
             systemd::stop_unit,
             UnitContolType::Stop,
             ActiveState::Inactive,
+            None,
         );
     }
 
@@ -212,6 +255,7 @@ impl UnitControlPanelImpl {
             systemd::restart_unit,
             UnitContolType::Restart,
             ActiveState::Active,
+            None,
         );
     }
 
@@ -238,12 +282,17 @@ impl UnitControlPanelImpl {
     //Dry
     fn start_restart_action(
         &self,
-        button: &adw::SplitButton,
+        button: &impl IsA<gtk::Widget>,
         systemd_method: fn(&UnitInfo, StartStopMode) -> Result<String, SystemdErrors>,
         action: UnitContolType,
         expected_active_state: ActiveState,
+        unit: Option<&UnitInfo>,
     ) {
-        let unit = current_unit!(self);
+        let unit = if let Some(unit) = unit {
+            unit.clone()
+        } else {
+            current_unit!(self)
+        };
 
         let start_mode: StartStopMode = (&self.start_mode).into();
 
@@ -360,11 +409,12 @@ impl UnitControlPanelImpl {
 
         let old_unit = self.current_unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit
-            && old_unit.primary() == unit.primary() {
-                info! {"Same unit {}", unit.primary() };
-                /*                 self.highlight_controls(unit);
-                return; */
-            }
+            && old_unit.primary() == unit.primary()
+        {
+            info! {"Same unit {}", unit.primary() };
+            /*                 self.highlight_controls(unit);
+            return; */
+        }
 
         controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 
@@ -412,6 +462,35 @@ impl UnitControlPanelImpl {
                 self.display_journal_page();
                 self.forward_inter_actions(action)
             }
+
+            InterPanelMessage::StartUnit(button, unit) => {
+                self.start_restart_action(
+                    button,
+                    systemd::start_unit,
+                    UnitContolType::Start,
+                    ActiveState::Active,
+                    Some(unit),
+                );
+            }
+            InterPanelMessage::StopUnit(button, unit) => {
+                self.start_restart_action(
+                    button,
+                    systemd::stop_unit,
+                    UnitContolType::Restart,
+                    ActiveState::Active,
+                    Some(unit),
+                );
+            }
+            InterPanelMessage::ReStartUnit(button, unit) => {
+                self.start_restart_action(
+                    button,
+                    systemd::restart_unit,
+                    UnitContolType::Restart,
+                    ActiveState::Active,
+                    Some(unit),
+                );
+            }
+
             _ => self.forward_inter_actions(action),
         }
     }

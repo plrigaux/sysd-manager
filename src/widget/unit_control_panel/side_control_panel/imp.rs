@@ -1,7 +1,7 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
-use const_format::concatcp;
+
 use gettextrs::pgettext;
 use gtk::{
     gio::{self, MENU_ATTRIBUTE_TARGET},
@@ -10,6 +10,7 @@ use gtk::{
 use log::warn;
 
 use crate::{
+    consts::{MENU_ACTION, WIN_MENU_ACTION},
     systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     widget::{
         InterPanelMessage,
@@ -23,9 +24,6 @@ use crate::{
 
 use super::SideControlPanel;
 use strum::IntoEnumIterator;
-
-const MENU_ACTION: &str = "unit-reload";
-const WIN_MENU_ACTION: &str = concatcp!("win.", MENU_ACTION);
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/side_control_panel.ui")]
@@ -280,7 +278,7 @@ impl SideControlPanelImpl {
             gio::ActionEntry::builder(MENU_ACTION)
                 .activate(move |_app_window: &AppWindow, action, value| {
                     let Some(value) = value else {
-                        warn!("{WIN_MENU_ACTION} has no value");
+                        warn!("{} has no value", WIN_MENU_ACTION);
                         return;
                     };
 

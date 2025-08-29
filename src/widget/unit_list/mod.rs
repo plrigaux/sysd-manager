@@ -81,4 +81,8 @@ impl UnitListPanel {
     fn clear_filters(&self) {
         self.imp().clear_filters();
     }
+
+    pub fn button_action(&self, action: &InterPanelMessage) {
+        self.imp().button_action(action)
+    }
 }

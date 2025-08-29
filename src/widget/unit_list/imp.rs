@@ -113,6 +113,8 @@ pub struct UnitListPanelImp {
     pub unit_property_filters: UnitPropertyFiltersContainer,
 
     pub applied_unit_property_filters: AppliedUnitPropertyFilters,
+
+    app_window: OnceCell<AppWindow>,
 }
 
 macro_rules! compare_units {
@@ -185,6 +187,10 @@ impl UnitListPanelImp {
         refresh_unit_list_button: &gtk::Button,
     ) {
         let settings = systemd_gui::new_settings();
+
+        self.app_window
+            .set(app_window.clone())
+            .expect("app_window set once");
 
         let app_window_clone = app_window.clone();
         let unit_list = self.obj().clone();
@@ -715,6 +721,15 @@ impl UnitListPanelImp {
         search_controls.imp().clear();
     }
 
+    pub(super) fn button_action(&self, action: &InterPanelMessage) {
+        let Some(app_window) = self.app_window.get() else {
+            warn!("No app window");
+            return;
+        };
+
+        app_window.set_inter_message(action);
+    }
+
     fn search_entry_set_text(&self, text: &str) {
         let search_controls = self.search_controls.get().expect("Not Null");
 
@@ -933,7 +948,7 @@ impl ObjectImpl for UnitListPanelImp {
         self.units_browser
             .connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
 
-        pop_menu::setup_popup_menu(&self.units_browser, &self.filter_list_model);
+        pop_menu::setup_popup_menu(&self.units_browser, &self.filter_list_model, &self.obj());
     }
 }
 

@@ -1,17 +1,28 @@
+use gettextrs::pgettext;
 use log::{debug, info, warn};
 
-use gtk::{Popover, gdk::Rectangle, prelude::*};
+use gtk::{gdk::Rectangle, prelude::*};
 
-use crate::widget::unit_list::imp::rowdata::UnitBinding;
+use crate::{
+    systemd::data::UnitInfo,
+    widget::{
+        InterPanelMessage,
+        unit_list::{UnitListPanel, imp::rowdata::UnitBinding},
+    },
+};
 
-pub fn setup_popup_menu(units_browser: &gtk::ColumnView, filtered_list: &gtk::FilterListModel) {
+pub fn setup_popup_menu(
+    units_browser: &gtk::ColumnView,
+    filtered_list: &gtk::FilterListModel,
+    unit_list_panel: &UnitListPanel,
+) {
     let gesture = gtk::GestureClick::builder()
         .button(gtk::gdk::BUTTON_SECONDARY)
         .build();
     {
         let units_browser_clone: gtk::ColumnView = units_browser.clone();
         let filtered_list: gtk::FilterListModel = filtered_list.clone();
-
+        let unit_list_panel = unit_list_panel.clone();
         gesture.connect_pressed(move |_gesture_click, n_press, x, y| {
             debug!("Pressed n_press: {n_press} x: {x} y: {y}");
 
@@ -49,12 +60,24 @@ pub fn setup_popup_menu(units_browser: &gtk::ColumnView, filtered_list: &gtk::Fi
                 return;
             }
 
-            if let Some(object) = filtered_list.item(line_id as u32) {
+            let line_id = line_id as u32;
+            if let Some(object) = filtered_list.item(line_id) {
                 let unit_binding = object.downcast::<UnitBinding>().expect("Ok");
                 info!("Pointing on Unit {}", unit_binding.primary());
-                menu_show(&units_browser_clone, x as i32, y as i32);
+                menu_show(
+                    &units_browser_clone,
+                    &unit_binding.unit_ref(),
+                    x as i32,
+                    y as i32,
+                    &unit_list_panel,
+                );
+            } else if line_id >= filtered_list.n_items() {
+                warn!(
+                    "Line id: {line_id} is over or equals the number of lines {}",
+                    filtered_list.n_items()
+                );
             } else {
-                warn!("Somthing wrong");
+                warn!("Menu right click. Something wrong");
             }
         });
     }
@@ -90,30 +113,96 @@ fn retreive_row_id(widget: &gtk::Widget, y: i32, header_height: i32) -> i32 {
     }
 }
 
-fn menu_show(units_browser: &gtk::ColumnView, x: i32, y: i32) {
-    let menu = Popover::builder()
+enum MenuAction {
+    Start,
+    Stop,
+    Restart,
+}
+
+fn menu_show(
+    units_browser: &gtk::ColumnView,
+    unit: &UnitInfo,
+    x: i32,
+    y: i32,
+    unit_list_panel: &UnitListPanel,
+) {
+    let pop_menu = gtk::Popover::builder()
         .pointing_to(&Rectangle::new(x, y, 1, 1))
         .autohide(true)
         .position(gtk::PositionType::Right)
         .build();
+
+    pop_menu.set_parent(units_browser);
 
     let box_ = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(0)
         .build();
 
-    menu.set_parent(units_browser);
-    menu.set_child(Some(&box_));
+    pop_menu.set_child(Some(&box_));
 
-    let button = gtk::Button::builder().label("Start").build();
-    box_.append(&button);
+    create_menu_button(
+        &box_,
+        "Start",
+        "media-playback-start-symbolic",
+        unit,
+        MenuAction::Start,
+        unit_list_panel,
+    );
 
-    let button = gtk::Button::builder().label("stop").build();
-    box_.append(&button);
-    let button = gtk::Button::builder().label("ReStart").build();
-    box_.append(&button);
+    create_menu_button(
+        &box_,
+        "Stop",
+        "process-stop",
+        unit,
+        MenuAction::Stop,
+        unit_list_panel,
+    );
 
-    menu.popup();
+    create_menu_button(
+        &box_,
+        "Restart",
+        "view-refresh",
+        unit,
+        MenuAction::Restart,
+        unit_list_panel,
+    );
+
+    pop_menu.popup();
+}
+
+fn create_menu_button(
+    box_: &gtk::Box,
+    label_name: &str,
+    icon_name: &str,
+    unit: &UnitInfo,
+    action: MenuAction,
+    unit_list_panel: &UnitListPanel,
+) {
+    let button = gtk::Button::builder()
+        .child(
+            &adw::ButtonContent::builder()
+                .label(pgettext("controls", label_name))
+                .icon_name(icon_name)
+                .halign(gtk::Align::Start)
+                .build(),
+        )
+        .css_classes(["flat"])
+        .halign(gtk::Align::Fill)
+        .build();
+
+    let unit_list_panel = unit_list_panel.clone();
+
+    let unit = unit.clone();
+    button.connect_clicked(move |button| {
+        let inter_message = match action {
+            MenuAction::Start => InterPanelMessage::StartUnit(button, &unit),
+            MenuAction::Stop => InterPanelMessage::StopUnit(button, &unit),
+            MenuAction::Restart => InterPanelMessage::ReStartUnit(button, &unit),
+        };
+        unit_list_panel.button_action(&inter_message);
+    });
+    box_.append(&button);
 }
 
 #[cfg(test)]

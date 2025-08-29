@@ -27,4 +27,7 @@ pub enum InterPanelMessage<'a> {
     FileLineNumber(bool),
     UnitChange(Option<&'a UnitInfo>),
     JournalFilterBoot(BootFilter),
+    StartUnit(&'a gtk::Button, &'a UnitInfo),
+    StopUnit(&'a gtk::Button, &'a UnitInfo),
+    ReStartUnit(&'a gtk::Button, &'a UnitInfo),
 }
