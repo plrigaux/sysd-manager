@@ -143,7 +143,7 @@ fn menu_show(
 
     create_menu_button(
         &box_,
-        "Start",
+        &pgettext("controls", "Start"),
         "media-playback-start-symbolic",
         unit,
         MenuAction::Start,
@@ -152,7 +152,7 @@ fn menu_show(
 
     create_menu_button(
         &box_,
-        "Stop",
+        &pgettext("controls", "Stop"),
         "process-stop",
         unit,
         MenuAction::Stop,
@@ -161,7 +161,7 @@ fn menu_show(
 
     create_menu_button(
         &box_,
-        "Restart",
+        &pgettext("controls", "Restart"),
         "view-refresh",
         unit,
         MenuAction::Restart,
