@@ -22,6 +22,7 @@ use log::info;
 use strum::IntoEnumIterator;
 
 use crate::{
+    consts::FLAT,
     systemd::enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
@@ -118,11 +119,11 @@ impl UnitListFilterWindowImp {
 
             let button: gtk::Button = gtk::Button::builder()
                 .child(&button_content)
-                .css_classes(["flat"])
+                .css_classes([FLAT])
                 .build();
 
             if selected.is_some_and(|s| s == key) {
-                button.remove_css_class("flat");
+                button.remove_css_class(FLAT);
             }
 
             let tooltip_text = match *key {

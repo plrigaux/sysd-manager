@@ -5,6 +5,7 @@ use gettextrs::pgettext;
 use gio::glib::WeakRef;
 use log::warn;
 
+use crate::consts::FLAT;
 use crate::gtk::prelude::*;
 
 use crate::gtk::glib::clone::Downgrade;
@@ -197,7 +198,7 @@ fn add_filter_tag(
 
     let close_button = gtk::Button::builder()
         .icon_name("window-close-symbolic")
-        .css_classes(["flat", "circular"])
+        .css_classes([FLAT, "circular"])
         .build();
 
     let label = gtk::Label::builder()
