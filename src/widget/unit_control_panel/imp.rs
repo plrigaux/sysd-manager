@@ -150,47 +150,6 @@ impl UnitControlPanelImpl {
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
-
-        /*         let menu_action_start: gio::ActionEntry<AppWindow> =
-            gio::ActionEntry::builder(MENU_ACTION_START)
-                .activate(|_app_window: &AppWindow, _action, value| {
-                    let Some(value) = value else {
-                        warn!("Action {MENU_ACTION_START} has no value");
-                        return;
-                    };
-
-                    info!("ACTION {MENU_ACTION_START} Option {value}");
-                })
-                .parameter_type(Some(VariantTy::STRING))
-                .build();
-
-        let menu_action_stop: gio::ActionEntry<AppWindow> =
-            gio::ActionEntry::builder(MENU_ACTION_STOP)
-                .activate(|_app_window: &AppWindow, _action, value| {
-                    let Some(value) = value else {
-                        warn!("Action {MENU_ACTION_STOP} has no value");
-                        return;
-                    };
-
-                    info!("ACTION {MENU_ACTION_STOP} Option {value}");
-                })
-                .parameter_type(Some(VariantTy::STRING))
-                .build();
-
-        let menu_action_restart: gio::ActionEntry<AppWindow> =
-            gio::ActionEntry::builder(MENU_ACTION_RESTART)
-                .activate(|_app_window: &AppWindow, _action, value| {
-                    let Some(value) = value else {
-                        warn!("Action {MENU_ACTION_RESTART} has no value");
-                        return;
-                    };
-
-                    info!("ACTION {MENU_ACTION_RESTART} Option {value}");
-                })
-                .parameter_type(Some(VariantTy::STRING))
-                .build();
-
-        app_window.add_action_entries([menu_action_start, menu_action_stop, menu_action_restart]); */
     }
 
     #[template_callback]

@@ -4,7 +4,8 @@ use log::{debug, info, warn};
 use gtk::{gdk::Rectangle, prelude::*};
 
 use crate::{
-    systemd::data::UnitInfo,
+    consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
+    systemd::{data::UnitInfo, enums::ActiveState},
     widget::{
         InterPanelMessage,
         unit_list::{UnitListPanel, imp::rowdata::UnitBinding},
@@ -113,6 +114,7 @@ fn retreive_row_id(widget: &gtk::Widget, y: i32, header_height: i32) -> i32 {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 enum MenuAction {
     Start,
     Stop,
@@ -187,11 +189,30 @@ fn create_menu_button(
                 .halign(gtk::Align::Start)
                 .build(),
         )
-        .css_classes(["flat"])
+        .css_classes([FLAT])
         .halign(gtk::Align::Fill)
         .build();
 
     let unit_list_panel = unit_list_panel.clone();
+
+    match (action, unit.active_state()) {
+        (MenuAction::Start, ActiveState::Inactive | ActiveState::Deactivating) => {
+            println!("Action {SUGGESTED_ACTION:?}");
+            button.remove_css_class(FLAT);
+            button.add_css_class(SUGGESTED_ACTION);
+        }
+        (
+            MenuAction::Stop,
+            ActiveState::Active
+            | ActiveState::Activating
+            | ActiveState::Reloading
+            | ActiveState::Refreshing,
+        ) => button.add_css_class(DESTRUCTIVE_ACTION),
+
+        _ => {}
+    };
+
+    println!("{action:?} {}", unit.active_state());
 
     let unit = unit.clone();
     button.connect_clicked(move |button| {
