@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-14 19:51-0400\n"
+"POT-Creation-Date: 2025-08-29 11:59-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -132,7 +132,7 @@ msgstr ""
 #. title dialog
 #. Message answer
 #: data/interfaces/clean_dialog.ui:28 data/interfaces/clean_dialog.ui:40
-#: src/widget/clean_dialog/imp.rs:99
+#: src/widget/clean_dialog/imp.rs:98
 #, fuzzy
 msgctxt "clean"
 msgid "Clean"
@@ -266,7 +266,8 @@ msgstr "Clear journal events and refetch them"
 #, fuzzy
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr "Enable new entries continuous print as they are appended to the journal"
+msgstr ""
+"Enable new entries continuous print as they are appended to the journal"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:54
@@ -1196,7 +1197,7 @@ msgid "Running units"
 msgstr ""
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:86
+#: src/main.rs:98
 msgid "Program starting up"
 msgstr "Program starting up"
 
@@ -1446,7 +1447,7 @@ msgid "Thank you for your support"
 msgstr ""
 
 #. dialog subtitle
-#: src/widget/clean_dialog/imp.rs:130
+#: src/widget/clean_dialog/imp.rs:129
 #, fuzzy
 msgctxt "clean"
 msgid "No Unit Selected"
@@ -2105,20 +2106,20 @@ msgctxt "toast"
 msgid "restarted"
 msgstr "Restart"
 
-#: src/widget/unit_control_panel/imp.rs:302
+#: src/widget/unit_control_panel/imp.rs:351
 msgctxt "toast"
 msgid ""
 "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
 msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:324
+#: src/widget/unit_control_panel/imp.rs:373
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:575
+#: src/widget/unit_control_panel/imp.rs:653
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2126,13 +2127,13 @@ msgid ""
 msgstr ""
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:583
+#: src/widget/unit_control_panel/imp.rs:661
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:595
+#: src/widget/unit_control_panel/imp.rs:673
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2141,7 +2142,7 @@ msgid ""
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:606
+#: src/widget/unit_control_panel/imp.rs:684
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -2171,39 +2172,39 @@ msgid "Fail! {}"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:114
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:112
 msgctxt "action"
 msgid "Freeze"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:126
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:124
 msgctxt "action"
 msgid "Thaw"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:153
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:151
 #, fuzzy
 msgctxt "action"
 msgid "Reload"
 msgstr "Reload All Units"
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:247
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:245
 msgctxt "action"
 msgid "Unmask"
 msgstr ""
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:355
+#: src/widget/unit_dependencies_panel/imp.rs:353
 #, fuzzy
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Mask Unit"
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:360
+#: src/widget/unit_dependencies_panel/imp.rs:358
 #, fuzzy
 msgctxt "dependency"
 msgid "Filter dependencies by types"
