@@ -1,5 +1,7 @@
 use std::{
+    ffi::OsString,
     fmt::{self, Display, Formatter},
+    process::Command,
     string::FromUtf8Error,
 };
 
@@ -8,19 +10,24 @@ use gettextrs::pgettext;
 #[derive(Debug)]
 #[allow(unused)]
 pub enum SystemdErrors {
+    Command(
+        OsString,
+        Vec<OsString>,
+        Vec<(OsString, Option<OsString>)>,
+        std::io::Error,
+    ),
     Custom(String),
     IoError(std::io::Error),
     Utf8Error(FromUtf8Error),
-    SystemCtlError(String),
-    Malformed(String, String),
     ZMethodError(String, String, String),
     CmdNoFlatpakSpawn,
     CmdNoFreedesktopFlatpakPermission(Option<String>, Option<String>),
     JournalError(String),
     NoFilePathforUnit(String),
-    //FlatpakAccess(ErrorKind),
+    Malformed(String, String),
     NotAuthorized,
     NoUnit,
+    SystemCtlError(String),
     Tokio,
     ZBusError(zbus::Error),
     ZAccessDenied(String, String),
@@ -62,6 +69,17 @@ impl SystemdErrors {
             SystemdErrors::ZUnitMasked(_, detail) => detail.clone(),
             _ => self.to_string(),
         }
+    }
+
+    pub(crate) fn create_command_error(command: &Command, error: std::io::Error) -> Self {
+        let program = command.get_program().to_os_string();
+        let envs: Vec<(OsString, Option<OsString>)> = command
+            .get_envs()
+            .map(|(k, v)| (k.to_os_string(), v.map(|s| s.to_os_string())))
+            .collect();
+        let arg: Vec<OsString> = command.get_args().map(|s| s.to_os_string()).collect();
+
+        SystemdErrors::Command(program, arg, envs, error)
     }
 }
 

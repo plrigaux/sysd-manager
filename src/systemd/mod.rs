@@ -434,19 +434,12 @@ fn write_with_priviledge(
 ) -> Result<usize, SystemdErrors> {
     let prog_n_args = &["pkexec", "tee", "tee", host_file_path.as_ref()];
     let mut cmd = commander(prog_n_args, None);
-    let child_result = cmd
+    let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .spawn();
-
-    let mut child = match child_result {
-        Ok(child) => child,
-        Err(error) => {
-            error!("failed to execute pkexec tee. Error {error:?}");
-            return Err(SystemdErrors::IoError(error));
-        }
-    };
+        .spawn()
+        .map_err(|error| SystemdErrors::create_command_error(&cmd, error))?;
 
     let child_stdin = match child.stdin.as_mut() {
         Some(cs) => cs,
