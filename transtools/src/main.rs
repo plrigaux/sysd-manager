@@ -4,8 +4,8 @@ extern crate translating;
 use clap::Command;
 use clap::Parser;
 use clap::Subcommand;
-use log::info;
-use log::warn;
+use log::error;
+use log::{info, warn};
 use translating::DESKTOP_FILE_PATH;
 use translating::MAIN_PROG;
 use translating::METAINFO_FILE_PATH;
@@ -28,7 +28,11 @@ struct Args {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Extract translation text form code and generate a Portable Object Template (pot) file
-    Extract,
+    Extract {
+        // Donot regenerate the Potfile list
+        #[arg(short, long)]
+        no_gen: bool,
+    },
 
     /// Generate the POTFILES. i.e. the file containign the list of source files used for the translation text extraction
     Potfile,
@@ -52,6 +56,10 @@ enum Commands {
         /// The po file language. Pass \"all\" if you want all of them
         #[arg(short, long)]
         lang: Vec<String>,
+
+        // Donot regenerate the Potfile list
+        #[arg(short, long)]
+        no_gen: bool,
     },
 
     /// Generate all Machine Object files
@@ -78,19 +86,33 @@ fn main() {
 
     let args = Args::parse();
 
-    let result = match &args.command {
+    let result = execute_command(args);
+
+    if let Err(err) = result {
+        error!("Error {err:?}");
+    }
+}
+
+fn execute_command(args: Args) -> Result<(), TransError> {
+    match &args.command {
         Some(Commands::Mo) => translating::generate_mo(),
         Some(Commands::Desktop) => translating::generate_desktop(),
         Some(Commands::Po { lang }) => update_po_file(lang),
         Some(Commands::Newpo { lang }) => generate_po_file(lang),
-        Some(Commands::Expo { lang }) => {
-            let mut result = extract_and_generate_po_template();
-            if result.is_ok() {
-                result = update_po_file(lang);
+        Some(Commands::Expo { lang, no_gen }) => {
+            if *no_gen {
+                generate_potfiles()?
             }
-            result
+            extract_and_generate_po_template()?;
+
+            update_po_file(lang)
         }
-        Some(Commands::Extract) => extract_and_generate_po_template(),
+        Some(Commands::Extract { no_gen }) => {
+            if *no_gen {
+                generate_potfiles()?
+            }
+            extract_and_generate_po_template()
+        }
         Some(Commands::Potfile) => generate_potfiles(),
         Some(Commands::Packfiles) => generate_pack(),
         None => {
@@ -100,10 +122,6 @@ fn main() {
             let _ = cmd.print_long_help();
             Ok(())
         }
-    };
-
-    if let Err(err) = result {
-        log::error!("Error {err:?}");
     }
 }
 
@@ -228,7 +246,7 @@ fn update_po_file(linguas: &[String]) -> Result<(), TransError> {
     let input_pot_file = format!("{PO_DIR}/sysd-manager.pot");
 
     for (path, _lang) in limited {
-        translating::msgmerge(&input_pot_file, &path.to_string_lossy());
+        translating::msgmerge(&input_pot_file, &path.to_string_lossy())?;
     }
 
     Ok(())

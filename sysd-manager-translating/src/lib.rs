@@ -70,7 +70,7 @@ pub fn msginit(input_pot_file: &str, output_file: &str, lang: &str) {
 // pt_BR.1po: 2 translated messages.
 
 /// https://www.gnu.org/software/gettext/manual/html_node/msgmerge-Invocation.html
-pub fn msgmerge(input_pot_file: &str, output_file: &str) {
+pub fn msgmerge(input_pot_file: &str, output_file: &str) -> Result<(), TransError> {
     let mut command = Command::new("msgmerge");
 
     let output = command
@@ -79,10 +79,10 @@ pub fn msgmerge(input_pot_file: &str, output_file: &str) {
         .arg(output_file)
         .arg(input_pot_file)
         .arg("--verbose")
-        .output()
-        .unwrap();
+        .output()?;
 
     display_output("MSGMERGE", output);
+    Ok(())
 }
 
 pub fn generate_mo() -> Result<(), TransError> {
