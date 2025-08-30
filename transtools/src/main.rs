@@ -173,7 +173,7 @@ fn generate_po_file(linguas: &[String]) -> Result<(), TransError> {
         let input_pot_file = format!("{PO_DIR}/sysd-manager.pot");
 
         if !lang_po_path.exists() {
-            translating::msginit(&input_pot_file, &output_file, lang);
+            translating::msginit(&input_pot_file, &output_file, lang)?;
         } else {
             info!("{output_file} already exist. Do nothing.");
         }
@@ -206,12 +206,6 @@ fn update_po_file(linguas: &[String]) -> Result<(), TransError> {
             }
         })
         .collect();
-
-    /*        .map(|p| let a = p.clone(); (p.clone(), a.file_stem()))
-    .filter(|f| f.1.is_some())
-    .map(|(a, b)| (a, b.unwrap().to_str()))
-    .filter(|(a, b)| b.is_some())
-    .map(|(a, b)| (a, b.unwrap())) */
 
     let mut lang_files: Vec<(PathBuf, String)> = Vec::new();
     for p in po_files.drain(..) {
@@ -311,7 +305,7 @@ fn extract_and_generate_po_template() -> Result<(), TransError> {
 
     let potfiles_file_path = format!("{PO_DIR}/{POTFILES}");
 
-    translating::xgettext(&potfiles_file_path, &output_pot_file);
+    translating::xgettext(&potfiles_file_path, &output_pot_file)?;
 
     Ok(())
 }

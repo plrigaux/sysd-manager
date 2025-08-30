@@ -25,7 +25,7 @@ pub const PACK_FILE_DIR: &str = "target/loc";
 
 /// Making the PO Template File
 /// https://www.gnu.org/software/gettext/manual/html_node/xgettext-Invocation.html
-pub fn xgettext(potfiles_file_path: &str, output_pot_file: &str) {
+pub fn xgettext(potfiles_file_path: &str, output_pot_file: &str) -> Result<(), TransError> {
     let mut command = Command::new("xgettext");
 
     for preset in glib_preset() {
@@ -37,9 +37,11 @@ pub fn xgettext(potfiles_file_path: &str, output_pot_file: &str) {
         .arg(format!("--output={output_pot_file}"))
         .arg("--verbose")
         .output()
-        .unwrap();
+        .map_err(|error| TransError::create_command_error(command, error))?;
 
     display_output("XGETTEXT", output);
+
+    Ok(())
 }
 
 fn display_output(id: &str, output: std::process::Output) {
@@ -52,7 +54,7 @@ fn display_output(id: &str, output: std::process::Output) {
 
 /// Creating a New PO File
 /// https://www.gnu.org/software/gettext/manual/html_node/msginit-Invocation.html
-pub fn msginit(input_pot_file: &str, output_file: &str, lang: &str) {
+pub fn msginit(input_pot_file: &str, output_file: &str, lang: &str) -> Result<(), TransError> {
     let mut command = Command::new("msginit");
 
     let output = command
@@ -60,9 +62,10 @@ pub fn msginit(input_pot_file: &str, output_file: &str, lang: &str) {
         .arg(format!("--output-file={output_file}"))
         .arg(format!("--locale={lang}"))
         .output()
-        .expect("command msginit ok");
+        .map_err(|error| TransError::create_command_error(command, error))?;
 
     display_output("MSGINIT", output);
+    Ok(())
 }
 
 //   /usr/bin/msgmerge --update --quiet  --lang=pt_BR --previous pt_BR.po hello-rust.pot
@@ -79,7 +82,8 @@ pub fn msgmerge(input_pot_file: &str, output_file: &str) -> Result<(), TransErro
         .arg(output_file)
         .arg(input_pot_file)
         .arg("--verbose")
-        .output()?;
+        .output()
+        .map_err(|error| TransError::create_command_error(command, error))?;
 
     display_output("MSGMERGE", output);
     Ok(())
@@ -164,7 +168,8 @@ pub fn generate_desktop() -> Result<(), TransError> {
         .arg(PO_DIR)
         .arg("-o")
         .arg(out_file)
-        .output()?;
+        .output()
+        .map_err(|error| TransError::create_command_error(command, error))?;
 
     display_output("MSGFMT", output);
 
@@ -187,7 +192,8 @@ pub fn generate_metainfo() -> Result<(), TransError> {
         .arg(PO_DIR)
         .arg("-o")
         .arg(out_file)
-        .output()?;
+        .output()
+        .map_err(|error| TransError::create_command_error(command, error))?;
 
     display_output("MSGFMT", output);
 
@@ -204,24 +210,15 @@ pub fn msgfmt(po_file: &str, lang: &str, domain_name: &str) -> Result<(), TransE
 
     fs::create_dir_all(&out_dir)?;
 
-    let command = command
+    let output = command
         .arg("--check")
         .arg("--statistics")
         .arg("--verbose")
         .arg("-o")
         .arg(format!("{out_dir}/{domain_name}.mo"))
-        .arg(po_file);
-
-    let output = match command.output() {
-        Ok(output) => output,
-        Err(e) => {
-            println!("ERROR {e:?} {:?}", e.raw_os_error());
-
-            let program = command.get_program();
-
-            return Err(TransError::Command(program.to_os_string(), e));
-        }
-    };
+        .arg(po_file)
+        .output()
+        .map_err(|error| TransError::create_command_error(command, error))?;
 
     display_output("MSGFMT", output);
 
