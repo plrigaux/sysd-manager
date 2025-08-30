@@ -12,6 +12,7 @@ use translating::METAINFO_FILE_PATH;
 use translating::PO_DIR;
 use translating::error::TransError;
 
+use std::env;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
@@ -85,6 +86,23 @@ fn main() {
     info!("Tanslation tool!");
 
     let args = Args::parse();
+
+    const CARGO_MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
+    println!("CARGO_MANIFEST_DIR {CARGO_MANIFEST_DIR}");
+
+    println!("working dir   {:?}", env::current_dir().unwrap().to_str());
+
+    const TRANS_TOOL_DIR: &str = "/transtools";
+    if CARGO_MANIFEST_DIR.ends_with(TRANS_TOOL_DIR) {
+        let wd = &CARGO_MANIFEST_DIR[0..(CARGO_MANIFEST_DIR.len() - TRANS_TOOL_DIR.len())];
+
+        if let Err(e) = env::set_current_dir(wd) {
+            println!("set_current_dir {wd} Error {e:?}");
+            return;
+        }
+    }
+
+    println!("working dir   {:?}", env::current_dir().unwrap().to_str());
 
     let result = execute_command(args);
 
