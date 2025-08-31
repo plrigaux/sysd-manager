@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-29 12:17-0400\n"
+"POT-Creation-Date: 2025-08-30 22:48-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -960,8 +960,9 @@ msgctxt "controls tooltip"
 msgid "Restart unit"
 msgstr "Restart"
 
+#. Button label
 #: data/interfaces/unit_control_panel.ui:93
-#: src/widget/unit_list/imp/pop_menu.rs:164
+#: src/widget/unit_list/imp/pop_menu.rs:178
 msgctxt "controls"
 msgid "Restart"
 msgstr "Restart"
@@ -1358,7 +1359,7 @@ msgctxt "clean"
 msgid "_All"
 msgstr ""
 
-#: src/systemd/errors.rs:42
+#: src/systemd/errors.rs:49
 msgctxt "error"
 msgid ""
 "The program <b>flatpack-spawn</b> is needed if you use the application from "
@@ -1366,7 +1367,7 @@ msgid ""
 "Please install it to enable all features."
 msgstr ""
 
-#: src/systemd/errors.rs:49
+#: src/systemd/errors.rs:56
 msgctxt "error"
 msgid ""
 "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
@@ -2107,20 +2108,20 @@ msgctxt "toast"
 msgid "restarted"
 msgstr "Restart"
 
-#: src/widget/unit_control_panel/imp.rs:351
+#: src/widget/unit_control_panel/imp.rs:310
 msgctxt "toast"
 msgid ""
 "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
 msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:373
+#: src/widget/unit_control_panel/imp.rs:332
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:653
+#: src/widget/unit_control_panel/imp.rs:612
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2128,13 +2129,13 @@ msgid ""
 msgstr ""
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:661
+#: src/widget/unit_control_panel/imp.rs:620
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:673
+#: src/widget/unit_control_panel/imp.rs:632
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2143,7 +2144,7 @@ msgid ""
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:684
+#: src/widget/unit_control_panel/imp.rs:643
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -2250,55 +2251,75 @@ msgctxt "unit file"
 msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:292
+#: src/widget/unit_list/filter/imp.rs:293
 msgctxt "filter"
 msgid "Any sub states"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:296
-#: src/widget/unit_list/filter/imp.rs:485
-#: src/widget/unit_list/filter/substate.rs:141
+#: src/widget/unit_list/filter/imp.rs:297
+#: src/widget/unit_list/filter/imp.rs:486
+#: src/widget/unit_list/filter/substate.rs:142
 #, fuzzy
 msgctxt "filter"
 msgid "Clear"
 msgstr "Clean"
 
-#: src/widget/unit_list/filter/imp.rs:486
-#: src/widget/unit_list/filter/substate.rs:142
+#: src/widget/unit_list/filter/imp.rs:487
+#: src/widget/unit_list/filter/substate.rs:143
 msgctxt "filter"
 msgid "Clear filter's selected items"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:504
+#: src/widget/unit_list/filter/imp.rs:505
 msgctxt "filter"
 msgid "Invert"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:505
+#: src/widget/unit_list/filter/imp.rs:506
 msgctxt "filter"
 msgid "Invert filter's selected items"
 msgstr ""
 
-#: src/widget/unit_list/filter/substate.rs:36
+#: src/widget/unit_list/filter/substate.rs:37
 msgctxt "filter"
 msgid "Add"
 msgstr ""
 
-#: src/widget/unit_list/filter/substate.rs:37
+#: src/widget/unit_list/filter/substate.rs:38
 msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr ""
 
-#: src/widget/unit_list/imp/pop_menu.rs:146
+#: src/widget/unit_list/imp/pop_menu.rs:148
+#, fuzzy, rust-format
+msgctxt "controls"
+msgid "Start unit {}"
+msgstr "Restart"
+
+#. Button label
+#: src/widget/unit_list/imp/pop_menu.rs:153
 #, fuzzy
 msgctxt "controls"
 msgid "Start"
 msgstr "_Start"
 
-#: src/widget/unit_list/imp/pop_menu.rs:155
+#: src/widget/unit_list/imp/pop_menu.rs:161
+#, fuzzy, rust-format
+msgctxt "controls"
+msgid "Stop unit {}"
+msgstr "Restart"
+
+#. Button label
+#: src/widget/unit_list/imp/pop_menu.rs:165
 msgctxt "controls"
 msgid "Stop"
 msgstr ""
+
+#: src/widget/unit_list/imp/pop_menu.rs:173
+#, fuzzy, rust-format
+msgctxt "controls"
+msgid "Restart unit {}"
+msgstr "Restart"
 
 #, fuzzy
 #~ msgctxt "mask"
