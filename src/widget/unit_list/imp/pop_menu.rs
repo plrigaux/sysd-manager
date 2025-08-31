@@ -5,7 +5,9 @@ use gtk::{gdk::Rectangle, prelude::*};
 
 use crate::{
     consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
+    format2,
     systemd::{data::UnitInfo, enums::ActiveState},
+    utils::palette::blue,
     widget::{
         InterPanelMessage,
         unit_list::{UnitListPanel, imp::rowdata::UnitBinding},
@@ -143,27 +145,38 @@ fn menu_show(
 
     pop_menu.set_child(Some(&box_));
 
+    let tooltip = pgettext("controls", "Start unit {}");
+
     create_menu_button(
         &box_,
+        //Button label
         &pgettext("controls", "Start"),
+        &tooltip,
         "media-playback-start-symbolic",
         unit,
         MenuAction::Start,
         unit_list_panel,
     );
 
+    let tooltip = pgettext("controls", "Stop unit {}");
     create_menu_button(
         &box_,
+        //Button label
         &pgettext("controls", "Stop"),
+        &tooltip,
         "process-stop",
         unit,
         MenuAction::Stop,
         unit_list_panel,
     );
 
+    let tooltip = pgettext("controls", "Restart unit {}");
+
     create_menu_button(
         &box_,
+        //Button label
         &pgettext("controls", "Restart"),
+        &tooltip,
         "view-refresh",
         unit,
         MenuAction::Restart,
@@ -176,11 +189,21 @@ fn menu_show(
 fn create_menu_button(
     box_: &gtk::Box,
     label_name: &str,
+    tooltip: &str,
     icon_name: &str,
     unit: &UnitInfo,
     action: MenuAction,
     unit_list_panel: &UnitListPanel,
 ) {
+    let blue = blue(unit_list_panel.is_dark()).get_color();
+    let unit_str = format!(
+        "<span fgcolor='{}' font_family='monospace' size='larger' weight='bold'>{}</span>",
+        blue,
+        unit.primary()
+    );
+
+    let tooltip = format2!(tooltip, unit_str);
+
     let button = gtk::Button::builder()
         .child(
             &adw::ButtonContent::builder()
@@ -191,6 +214,7 @@ fn create_menu_button(
         )
         .css_classes([FLAT])
         .halign(gtk::Align::Fill)
+        .tooltip_markup(tooltip)
         .build();
 
     let unit_list_panel = unit_list_panel.clone();

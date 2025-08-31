@@ -115,6 +115,9 @@ pub struct UnitListPanelImp {
     pub applied_unit_property_filters: AppliedUnitPropertyFilters,
 
     app_window: OnceCell<AppWindow>,
+
+    #[property(name = "is-dark", get)]
+    is_dark: Cell<bool>,
 }
 
 macro_rules! compare_units {
@@ -632,7 +635,12 @@ impl UnitListPanelImp {
         self.unit.borrow().clone()
     }
 
-    pub fn set_inter_message(&self, _action: &InterPanelMessage) {}
+    pub fn set_inter_message(&self, action: &InterPanelMessage) {
+        match action {
+            InterPanelMessage::IsDark(is_dark) => self.is_dark.set(*is_dark),
+            _ => {}
+        }
+    }
 
     fn set_sorter(&self) {
         let sorter = self.units_browser.sorter();
