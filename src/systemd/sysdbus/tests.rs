@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use log::error;
+
 use super::*;
 
 pub const TEST_SERVICE: &str = "tiny_daemon.service";
@@ -79,6 +81,7 @@ fn test_list_units() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
+    init();
     let unit_file: &str = "tiny_daemon.service";
 
     let connection = get_connection(UnitDBusLevel::System)?;
@@ -91,14 +94,14 @@ pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
         &(unit_file),
     )?;
 
-    println!("message {message:?}");
+    info!("message {message:?}");
 
     let body = message.body();
 
     let z: zvariant::ObjectPath = body.deserialize()?;
     //let z :String = body.deserialize()?;
 
-    println!("obj {:?}", z.as_str());
+    info!("obj {:?}", z.as_str());
 
     /*         let body = message.body();
 
@@ -641,4 +644,182 @@ fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
     unmask_unit_files(UnitDBusLevel::System, &[unit_name], false)?;
 
     Ok(())
+}
+
+#[derive(Deserialize, Type, PartialEq, Debug)]
+pub(super) struct TestIntro {
+    pub prop: String,
+    pub pid: OwnedValue,
+}
+
+#[ignore = "need a connection to a service"]
+#[test]
+fn test_introspect() -> Result<(), SystemdErrors> {
+    init();
+
+    let result: Result<(), SystemdErrors> = {
+        let connection = get_connection(UnitDBusLevel::System)?;
+        info!("Connect");
+
+        let message = connection.call_method(
+            Some(DESTINATION_SYSTEMD),
+            //"/org/freedesktop/systemd1/unit/avahi_2ddaemon_2eservice",
+            //"/",
+            //"/org/freedesktop/systemd1/unit",
+            "/org/freedesktop/systemd1/archlinux_2dkeyring_2dwkd_2dsync_2etimer",
+            //  Some("org.freedesktop.DBus.Properties"),
+            Some("org.freedesktop.DBus.Introspectable"),
+            "Introspect",
+            // &(UnitType::Service.interface()),
+            &(),
+        )?;
+
+        info!("message {message:?}");
+
+        let body = message.body();
+
+        info!("signature {:?}", body.signature());
+
+        //let z: Vec<(String, OwnedValue)> = body.deserialize()?;
+
+        let z: String = body.deserialize()?;
+        //let z :String = body.deserialize()?;
+
+        info!("obj {:?}", z);
+
+        /*         let body = message.body();
+
+        let des = body.deserialize();
+
+        println!("{:#?}", des); */
+
+        /*     match get_unit_file_state(level, unit_primary_name) {
+            Ok(unit_file_status) => unit.set_enable_status(unit_file_status as u8),
+            Err(err) => warn!("Fail to get unit file state : {:?}", err),
+        } */
+        Ok(())
+    };
+
+    if let Err(ref e) = result {
+        warn!("ASTFGSDFGD {e:?}");
+    }
+    result
+}
+
+#[ignore = "need a connection to a service"]
+#[test]
+fn test_introspect2() -> Result<(), SystemdErrors> {
+    init();
+
+    fn sub() -> Result<(), SystemdErrors> {
+        let connection = get_connection(UnitDBusLevel::System)?;
+
+        let proxy = Proxy::new(
+            &connection,
+            DESTINATION_SYSTEMD,
+            "/org/freedesktop/systemd1/unit/archlinux_2dkeyring_2dwkd_2dsync_2etimer",
+            "org.freedesktop.DBus.Introspectable",
+        )?;
+
+        info!("Proxy {proxy:?}");
+
+        let xml = proxy.introspect()?;
+
+        let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
+
+        for int in root_node.interfaces() {
+            info!("Interface {}", int.name());
+
+            for prop in int.properties() {
+                info!("\tProp {} {:?}", prop.name(), prop.ty().to_string());
+            }
+        }
+
+        Ok(())
+    }
+
+    sub().map_err(|e| {
+        warn!("ASTFGSDFGD {e:?}");
+        e
+    })
+}
+
+#[test]
+fn test_introspect3() -> Result<(), SystemdErrors> {
+    init();
+
+    fn sub() -> Result<(), SystemdErrors> {
+        let connection = get_connection(UnitDBusLevel::System)?;
+
+        let proxy = Proxy::new(
+            &connection,
+            DESTINATION_SYSTEMD,
+            "/org/freedesktop/systemd1/unit",
+            INTERFACE_SYSTEMD_UNIT,
+        )?;
+
+        info!("Proxy {proxy:?}");
+
+        let xml = proxy.introspect()?;
+
+        let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
+
+        let nodes: BTreeSet<String> = root_node
+            .nodes()
+            .iter()
+            .map(|n| n.name())
+            .filter_map(|name| match name {
+                Some(s) => Some(s.to_owned()),
+                None => None,
+            })
+            .collect();
+
+        let mut map: BTreeMap<String, (usize, usize)> = BTreeMap::new();
+
+        for n in nodes {
+            for (name, len) in prop(&n, &connection)? {
+                if let Some((min, max)) = map.get_mut(&name) {
+                    if len < *min {
+                        *min = len
+                    } else if len > *max {
+                        *max = len
+                    }
+                } else {
+                    map.insert(name, (len, len));
+                }
+            }
+        }
+
+        info!("{map:#?}");
+        Ok(())
+    }
+
+    sub().map_err(|e| {
+        error!("Error {e:?}");
+        e
+    })
+}
+
+fn prop(unit: &str, connection: &Connection) -> Result<Vec<(String, usize)>, SystemdErrors> {
+    let mut path = String::from("/org/freedesktop/systemd1/unit/");
+    path.push_str(unit);
+
+    let proxy = Proxy::new(
+        connection,
+        DESTINATION_SYSTEMD,
+        path,
+        INTERFACE_SYSTEMD_UNIT,
+    )?;
+
+    let xml = proxy.introspect()?;
+
+    let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
+
+    let list: Vec<_> = root_node
+        .interfaces()
+        .iter()
+        .map(|intf| (intf.name().to_string(), intf.properties().len()))
+        .collect();
+
+    Ok(list)
 }

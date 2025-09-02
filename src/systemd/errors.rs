@@ -37,6 +37,7 @@ pub enum SystemdErrors {
     ZUnitMasked(String, String),
     ZVariantError(zvariant::Error),
     ZBusFdoError(zbus::fdo::Error),
+    ZXml(zbus_xml::Error),
 }
 
 impl SystemdErrors {
@@ -167,5 +168,11 @@ impl From<zvariant::Error> for SystemdErrors {
 impl From<tokio::task::JoinError> for SystemdErrors {
     fn from(_value: tokio::task::JoinError) -> Self {
         SystemdErrors::Tokio
+    }
+}
+
+impl From<zbus_xml::Error> for SystemdErrors {
+    fn from(value: zbus_xml::Error) -> Self {
+        SystemdErrors::ZXml(value)
     }
 }

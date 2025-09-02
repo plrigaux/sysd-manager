@@ -10,8 +10,13 @@ pub const ADWAITA: &str = "Adwaita";
 pub const WARNING_CSS: &str = "warning";
 pub const ERROR_CSS: &str = "error";
 
+pub const APP: &str = "app.";
+
 pub const ACTION_LIST_BOOT: &str = "list_boots";
-pub const APP_ACTION_LIST_BOOT: &str = concat!("app.", ACTION_LIST_BOOT);
+pub const APP_ACTION_LIST_BOOT: &str = concat!(APP, ACTION_LIST_BOOT);
+
+pub const ACTION_PROPERTIES_SELECTOR: &str = "properties_selector";
+pub const APP_ACTION_PROPERTIES_SELECTOR: &str = concat!(APP, ACTION_PROPERTIES_SELECTOR);
 
 pub const WIN: &str = "win.";
 pub const ACTION_UNIT_LIST_FILTER_CLEAR: &str = "unit_list_filter_clear";

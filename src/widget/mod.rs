@@ -17,6 +17,7 @@ pub mod unit_dependencies_panel;
 pub mod unit_file_panel;
 pub mod unit_info;
 pub mod unit_list;
+pub mod unit_properties_selector;
 
 pub enum InterPanelMessage<'a> {
     Font(Option<&'a FontDescription>),

@@ -6,7 +6,10 @@ use std::{
 };
 
 use crate::{
-    consts::{ACTION_LIST_BOOT, APP_ACTION_LIST_BOOT},
+    consts::{
+        ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, APP_ACTION_LIST_BOOT,
+        APP_ACTION_PROPERTIES_SELECTOR,
+    },
     systemd::{data::UnitInfo, journal::Boot},
     systemd_gui::new_settings,
     utils::palette::{blue, green, red},
@@ -17,6 +20,7 @@ use crate::{
         signals_dialog::SignalsWindow,
         unit_control_panel::UnitControlPanel,
         unit_list::UnitListPanel,
+        unit_properties_selector::UnitPropertiesSelectorDialog,
     },
 };
 use adw::subclass::prelude::*;
@@ -194,18 +198,14 @@ impl AppWindowImpl {
             let level_num = level as u32;
             self.system_session_dropdown.set_selected(level_num);
             let selected = self.system_session_dropdown.selected();
-            info!(
-                "Set system_session_dropdown {level:?} {level_num} selected {selected}"
-            );
+            info!("Set system_session_dropdown {level:?} {level_num} selected {selected}");
 
             self.system_session_dropdown
                 .connect_selected_item_notify(move |dropdown| {
                     let idx = dropdown.selected();
                     let level: DbusLevel = idx.into();
 
-                    debug!(
-                        "System Session Values Selected idx {idx:?} level {level:?}"
-                    );
+                    debug!("System Session Values Selected idx {idx:?} level {level:?}");
 
                     PREFERENCES.set_dbus_level(level);
                     PREFERENCES.save_dbus_level(&settings);
@@ -445,6 +445,20 @@ impl AppWindowImpl {
                 .build()
         };
 
+        let properties_selector = {
+            let app_window = self.obj().clone();
+
+            gio::ActionEntry::builder(ACTION_PROPERTIES_SELECTOR)
+                .activate(move |_, _action, _variant| {
+                    let dialog = UnitPropertiesSelectorDialog::new();
+
+                    dialog.set_transient_for(Some(&app_window));
+
+                    dialog.present();
+                })
+                .build()
+        };
+
         application.add_action_entries([
             search_units,
             open_info,
@@ -453,6 +467,7 @@ impl AppWindowImpl {
             open_file,
             orientation_mode,
             list_boots,
+            properties_selector,
         ]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
@@ -463,6 +478,7 @@ impl AppWindowImpl {
         application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Shift>f"]);
         application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
+        application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR, &["<Ctrl>p"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {

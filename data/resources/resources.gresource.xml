@@ -5,6 +5,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="grid_cell.ui">interfaces/grid_cell.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="ex_menu_button.ui">interfaces/ex_menu_button.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties.ui">interfaces/unit_properties.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties_selector.ui">interfaces/unit_properties_selector.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="preferences.ui">interfaces/preferences.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_info_panel.ui">interfaces/unit_info_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_file_panel.ui">interfaces/unit_file_panel.ui</file>

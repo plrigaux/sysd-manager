@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.32.1"
+version = "1.32.2"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -79,6 +79,7 @@ tokio.workspace = true
 tokio-util = "0.7"
 zbus = "5.10"
 zbus_macros =  "5.10" 
+zbus_xml="5.0"
 zvariant = "5.7"
 
 [dev-dependencies]
