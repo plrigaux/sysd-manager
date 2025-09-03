@@ -26,6 +26,7 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 use crate::{
     systemd::{
+        UnitProperty,
         data::{EnableUnitFilesReturn, UnitInfo},
         enums::{ActiveState, UnitType},
     },
@@ -1346,8 +1347,8 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
     Ok(())
 }
 
-pub(super) fn fetch_unit_properties()
--> Result<BTreeMap<String, Vec<(String, String)>>, SystemdErrors> {
+pub(super) fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors>
+{
     let connection = get_connection(UnitDBusLevel::System)?;
 
     let proxy = Proxy::new(
@@ -1363,7 +1364,7 @@ pub(super) fn fetch_unit_properties()
 
     let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
 
-    let mut map: BTreeMap<String, Vec<(String, String)>> = BTreeMap::new();
+    let mut map: BTreeMap<String, Vec<UnitProperty>> = BTreeMap::new();
     let mut set: HashSet<String> = HashSet::new();
 
     for node_name in root_node
@@ -1381,7 +1382,7 @@ pub(super) fn fetch_unit_properties()
 
         if !set.contains(unit_type) {
             set.insert(unit_type.to_owned());
-            prop(&node_name, &connection, &mut map)?
+            collect_properties(&node_name, &connection, &mut map)?
         }
     }
 
@@ -1389,10 +1390,10 @@ pub(super) fn fetch_unit_properties()
     Ok(map)
 }
 
-fn prop(
+fn collect_properties(
     unit: &str,
     connection: &Connection,
-    map: &mut BTreeMap<String, Vec<(String, String)>>,
+    map: &mut BTreeMap<String, Vec<UnitProperty>>,
 ) -> Result<(), SystemdErrors> {
     let mut path = String::from("/org/freedesktop/systemd1/unit/");
     path.push_str(unit);
@@ -1412,7 +1413,7 @@ fn prop(
         let list: Vec<_> = intf
             .properties()
             .iter()
-            .map(|p| (p.name().to_string(), p.ty().to_string()))
+            .map(|p| UnitProperty::new(&p))
             .collect();
 
         map.insert(intf.name().to_string(), list);

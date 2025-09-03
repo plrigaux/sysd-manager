@@ -1,36 +1,46 @@
+use std::{cell::Ref, ops::DerefMut};
+
 use adw::subclass::prelude::ObjectSubclassIsExt;
+use gio::glib::property::PropertySet;
 use gtk::glib::{self};
+
+use crate::systemd::UnitProperty;
 
 glib::wrapper! {
     pub struct PropertiesSelectorObject(ObjectSubclass<imp::PropertiesSelectorOpjectImpl>);
 }
 
-impl Default for PropertiesSelectorObject {
-    fn default() -> Self {
-        PropertiesSelectorObject::new()
-    }
-}
-
 impl PropertiesSelectorObject {
-    fn new() -> Self {
+    pub fn new_interface(interface: String) -> Self {
         let this_object: Self = glib::Object::new();
+        this_object.imp().interface.replace(interface);
+
         this_object
     }
 
-    pub fn ps(p: &String, s: &String) -> Self {
+    pub fn from(p: UnitProperty) -> Self {
         let this_object: Self = glib::Object::new();
 
-        this_object.set_unit_property(p.as_str());
-        this_object.set_signature(s.as_str());
+        let p_imp = this_object.imp();
+        p_imp.unit_property.replace(p.name);
+        p_imp.signature.replace(p.signature);
+        p_imp.access.replace(p.access);
 
         this_object
     }
 
     pub fn add_child(&self, child: PropertiesSelectorObject) {
-        self.imp().children.borrow_mut().push(child);
+        //v.as_deref_mut().push(child);
+        if let Some(v) = self.imp().children.borrow_mut().deref_mut() {
+            v.push(child);
+        } else {
+            let mut v = Vec::new();
+            v.push(child);
+            self.imp().children.set(Some(v));
+        }
     }
 
-    pub fn children(&self) -> std::cell::Ref<'_, Vec<PropertiesSelectorObject>> {
+    pub fn children(&self) -> Ref<'_, Option<Vec<PropertiesSelectorObject>>> {
         self.imp().children.borrow()
     }
 }
@@ -43,14 +53,16 @@ mod imp {
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::PropertiesSelectorObject)]
     pub struct PropertiesSelectorOpjectImpl {
-        #[property(get, set)]
-        pub interface: RefCell<Option<String>>,
-        #[property(get, set)]
-        pub(super) unit_property: RefCell<Option<String>>,
-        #[property(get, set)]
-        pub(super) signature: RefCell<Option<String>>,
+        #[property(get)]
+        pub(super) interface: RefCell<String>,
+        #[property(get)]
+        pub(super) unit_property: RefCell<String>,
+        #[property(get)]
+        pub(super) signature: RefCell<String>,
+        #[property(get)]
+        pub(super) access: RefCell<String>,
 
-        pub(super) children: RefCell<Vec<super::PropertiesSelectorObject>>,
+        pub(super) children: RefCell<Option<Vec<super::PropertiesSelectorObject>>>,
     }
 
     #[glib::object_subclass]

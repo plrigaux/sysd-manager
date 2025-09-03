@@ -12,7 +12,7 @@ use gtk::{
         },
     },
 };
-use log::{error, info, warn};
+use log::{error, warn};
 
 use crate::{systemd, widget::unit_properties_selector::data::PropertiesSelectorObject};
 
@@ -32,6 +32,9 @@ pub struct UnitPropertiesSelectorDialogImp {
 
     #[template_child]
     signature_column: TemplateChild<gtk::ColumnViewColumn>,
+
+    #[template_child]
+    access_column: TemplateChild<gtk::ColumnViewColumn>,
 }
 
 #[gtk::template_callbacks]
@@ -79,7 +82,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         factory_interface.connect_setup(|_fac, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
 
-            let label = gtk::Inscription::builder().width_request(300).build();
+            let label = gtk::Label::builder().xalign(0.0).build();
             let expander = gtk::TreeExpander::new();
             expander.set_child(Some(&label));
             item.set_child(Some(&expander));
@@ -94,11 +97,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .downcast::<gtk::TreeExpander>()
                 .unwrap();
 
-            let label = expander
-                .child()
-                .unwrap()
-                .downcast::<gtk::Inscription>()
-                .unwrap();
+            let label = expander.child().unwrap().downcast::<gtk::Label>().unwrap();
 
             let tree_list_row = item.item().unwrap().downcast::<TreeListRow>().unwrap();
 
@@ -109,74 +108,69 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .and_downcast::<PropertiesSelectorObject>()
                 .unwrap();
 
-            label.set_text(property_object.interface().as_deref());
+            label.set_text(&property_object.interface());
         });
         self.interface_column.set_factory(Some(&factory_interface));
 
         let factory_property = gtk::SignalListItemFactory::new();
-
-        fn setup(_fac: &gtk::SignalListItemFactory, item: &Object) {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let label = gtk::Inscription::builder().build();
-            item.set_child(Some(&label));
-        }
-
         factory_property.connect_setup(setup);
-
         factory_property.connect_bind(|_fac, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-
-            let widget = item.child();
-
-            let label = widget.and_downcast_ref::<gtk::Inscription>().unwrap();
-
-            let tree_list_row = item.item().unwrap().downcast::<TreeListRow>().unwrap();
-            let property_object = tree_list_row
-                .item()
-                .and_downcast::<PropertiesSelectorObject>()
-                .unwrap();
-
-            label.set_text(property_object.unit_property().as_deref());
+            bind(item, PropertiesSelectorObject::unit_property);
         });
-
         self.property_column.set_factory(Some(&factory_property));
 
         let signature_factory = gtk::SignalListItemFactory::new();
-
         signature_factory.connect_setup(setup);
-
         signature_factory.connect_bind(|_fac, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-
-            let widget = item.child();
-
-            let label = widget.and_downcast_ref::<gtk::Inscription>().unwrap();
-
-            let tree_list_row = item.item().unwrap().downcast::<TreeListRow>().unwrap();
-            let property_object = tree_list_row
-                .item()
-                .and_downcast::<PropertiesSelectorObject>()
-                .unwrap();
-
-            label.set_text(property_object.signature().as_deref());
+            bind(item, PropertiesSelectorObject::signature);
         });
 
         self.signature_column.set_factory(Some(&signature_factory));
 
-        info!("MAP {:?}", map.keys());
+        let access_factory = gtk::SignalListItemFactory::new();
 
-        for (inteface, props) in map.iter() {
-            let obj = PropertiesSelectorObject::default();
-            obj.set_interface(inteface.as_str());
+        access_factory.connect_setup(setup);
 
-            for (property, signature) in props {
-                let prop_object = PropertiesSelectorObject::ps(property, signature);
+        access_factory.connect_bind(|_fac, item| {
+            bind(item, PropertiesSelectorObject::access);
+        });
+
+        self.access_column.set_factory(Some(&access_factory));
+
+        for (inteface, mut props) in map.into_iter() {
+            let obj = PropertiesSelectorObject::new_interface(inteface);
+            props.sort();
+            for property in props {
+                let prop_object = PropertiesSelectorObject::from(property);
                 obj.add_child(prop_object);
             }
 
             store.append(&obj);
         }
     }
+}
+
+fn setup(_fac: &gtk::SignalListItemFactory, item: &Object) {
+    let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+    let label = gtk::Label::builder().xalign(0.0).build();
+    item.set_child(Some(&label));
+}
+
+fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
+    let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+
+    let widget = item.child();
+
+    let label = widget.and_downcast_ref::<gtk::Label>().unwrap();
+
+    let tree_list_row = item.item().unwrap().downcast::<TreeListRow>().unwrap();
+    let property_object = tree_list_row
+        .item()
+        .and_downcast::<PropertiesSelectorObject>()
+        .unwrap();
+
+    let value = func(&property_object);
+    label.set_text(&value)
 }
 
 fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
@@ -187,11 +181,9 @@ fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
 
     let store = gio::ListStore::new::<PropertiesSelectorObject>();
 
-    let children = prop_selector.children();
-
-    if children.is_empty() {
+    let Some(ref children) = *prop_selector.children() else {
         return None;
-    }
+    };
 
     for child in children.iter() {
         store.append(child)

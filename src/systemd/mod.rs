@@ -872,6 +872,28 @@ pub async fn test(test_name: &str, level: UnitDBusLevel) {
     }
 }
 
-pub fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<(String, String)>>, SystemdErrors> {
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub struct UnitProperty {
+    pub name: String,
+    pub signature: String,
+    pub access: String,
+}
+
+impl UnitProperty {
+    fn new(p: &zbus_xml::Property) -> Self {
+        let access = match p.access() {
+            zbus_xml::PropertyAccess::Read => "read",
+            zbus_xml::PropertyAccess::Write => "write",
+            zbus_xml::PropertyAccess::ReadWrite => "readwrite",
+        };
+
+        UnitProperty {
+            name: p.name().to_string(),
+            signature: p.ty().to_string(),
+            access: access.to_string(),
+        }
+    }
+}
+pub fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors> {
     sysdbus::fetch_unit_properties()
 }
