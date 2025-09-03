@@ -871,3 +871,7 @@ pub async fn test(test_name: &str, level: UnitDBusLevel) {
         error!("{error:#?}");
     }
 }
+
+pub fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<(String, String)>>, SystemdErrors> {
+    sysdbus::fetch_unit_properties()
+}

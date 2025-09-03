@@ -1,5 +1,5 @@
+mod data;
 mod imp;
-
 use gtk::glib::{self};
 
 glib::wrapper! {

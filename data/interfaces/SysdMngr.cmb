@@ -25,7 +25,7 @@
     <content><![CDATA[<interface/>
 ]]></content>
   </ui>
-  <ui template-class="UNIT_PROPERTIES_SELECTOR_DIALOG" filename="unit_properties_selector.ui" sha256="eebce9c5e70ea8c2554ddfe652f5e36b2cd26db54637ee6b7eade108feb757a6"/>
+  <ui template-class="UNIT_PROPERTIES_SELECTOR_DIALOG" filename="unit_properties_selector.ui" sha256="31f5bd33a117362db25400c61ab43a1ee0e89b68a654ecd7b699241643e65d0c"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="f6fab2bddd560a7d574db01cf077e79b93085a6c395e959e916ee2d5778ee63b">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>

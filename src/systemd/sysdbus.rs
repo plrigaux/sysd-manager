@@ -1345,3 +1345,77 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
 
     Ok(())
 }
+
+pub(super) fn fetch_unit_properties()
+-> Result<BTreeMap<String, Vec<(String, String)>>, SystemdErrors> {
+    let connection = get_connection(UnitDBusLevel::System)?;
+
+    let proxy = Proxy::new(
+        &connection,
+        DESTINATION_SYSTEMD,
+        "/org/freedesktop/systemd1/unit",
+        INTERFACE_SYSTEMD_UNIT,
+    )?;
+
+    info!("Proxy {proxy:?}");
+
+    let xml = proxy.introspect()?;
+
+    let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
+
+    let mut map: BTreeMap<String, Vec<(String, String)>> = BTreeMap::new();
+    let mut set: HashSet<String> = HashSet::new();
+
+    for node_name in root_node
+        .nodes()
+        .iter()
+        .map(|n| n.name())
+        .filter_map(|name| match name {
+            Some(s) => Some(s.to_owned()),
+            None => None,
+        })
+    {
+        let Some(unit_type) = node_name.split("_2e").last() else {
+            break;
+        };
+
+        if !set.contains(unit_type) {
+            set.insert(unit_type.to_owned());
+            prop(&node_name, &connection, &mut map)?
+        }
+    }
+
+    info!("Interface len {}", map.len());
+    Ok(map)
+}
+
+fn prop(
+    unit: &str,
+    connection: &Connection,
+    map: &mut BTreeMap<String, Vec<(String, String)>>,
+) -> Result<(), SystemdErrors> {
+    let mut path = String::from("/org/freedesktop/systemd1/unit/");
+    path.push_str(unit);
+
+    let proxy = Proxy::new(
+        connection,
+        DESTINATION_SYSTEMD,
+        path,
+        INTERFACE_SYSTEMD_UNIT,
+    )?;
+
+    let xml = proxy.introspect()?;
+
+    let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
+
+    for intf in root_node.interfaces() {
+        let list: Vec<_> = intf
+            .properties()
+            .iter()
+            .map(|p| (p.name().to_string(), p.ty().to_string()))
+            .collect();
+
+        map.insert(intf.name().to_string(), list);
+    }
+    Ok(())
+}
