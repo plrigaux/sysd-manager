@@ -34,8 +34,7 @@ impl PropertiesSelectorObject {
         if let Some(v) = self.imp().children.borrow_mut().deref_mut() {
             v.push(child);
         } else {
-            let mut v = Vec::new();
-            v.push(child);
+            let v = vec![child];
             self.imp().children.set(Some(v));
         }
     }

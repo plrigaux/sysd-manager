@@ -1,3 +1,5 @@
+use std::cell::{OnceCell, RefCell};
+
 use adw::subclass::window::AdwWindowImpl;
 use gio::glib::Object;
 use gtk::{
@@ -12,7 +14,7 @@ use gtk::{
         },
     },
 };
-use log::{error, warn};
+use log::{debug, error, info, warn};
 
 use crate::{systemd, widget::unit_properties_selector::data::PropertiesSelectorObject};
 
@@ -35,10 +37,105 @@ pub struct UnitPropertiesSelectorDialogImp {
 
     #[template_child]
     access_column: TemplateChild<gtk::ColumnViewColumn>,
+
+    #[template_child]
+    search_bar: TemplateChild<gtk::SearchBar>,
+
+    #[template_child]
+    search_entry: TemplateChild<gtk::SearchEntry>,
+
+    last_filter_string: RefCell<String>,
+
+    custom_filter: OnceCell<gtk::CustomFilter>,
+
+    tree_list_model: OnceCell<gtk::TreeListModel>,
 }
 
 #[gtk::template_callbacks]
-impl UnitPropertiesSelectorDialogImp {}
+impl UnitPropertiesSelectorDialogImp {
+    #[template_callback]
+    fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
+        let text = search_entry.text();
+
+        debug!("Search text \"{text}\"");
+
+        let mut last_filter = self.last_filter_string.borrow_mut();
+
+        let text_is_empty = text.is_empty();
+        if let Some(tree_list_model) = self.tree_list_model.get()
+            && !text_is_empty
+        {
+            let nb_item = tree_list_model.model().n_items();
+
+            for (a, b) in tree_list_model.model().into_iter().enumerate() {
+                info!("{a} {b:?}");
+            }
+
+            for i in 0..nb_item {
+                if let Some(row) = tree_list_model.row(i) {
+                    row.set_expanded(true);
+                }
+            }
+        }
+
+        let change_type = if text_is_empty {
+            gtk::FilterChange::LessStrict
+        } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
+            gtk::FilterChange::MoreStrict
+        } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
+            gtk::FilterChange::LessStrict
+        } else {
+            gtk::FilterChange::Different
+        };
+
+        debug!("Current \"{text}\" Prev \"{last_filter}\"");
+        last_filter.replace_range(.., text.as_str());
+
+        if let Some(custom_filter) = self.custom_filter.get() {
+            custom_filter.changed(change_type);
+        }
+
+        //self.set_filter_icon()
+    }
+
+    fn create_filter(&self) -> gtk::CustomFilter {
+        let search_entry = self.search_entry.clone();
+
+        gtk::CustomFilter::new(move |object| {
+            let text_gs = search_entry.text();
+            if text_gs.is_empty() {
+                return true;
+            }
+
+            let Some(tree_list_row) = object.downcast_ref::<TreeListRow>() else {
+                error!("some wrong downcast_ref {object:?}");
+                return false;
+            };
+
+            if tree_list_row.children().is_some() {
+                return true;
+            }
+
+            let item = tree_list_row.item();
+            let Some(prop_selector) = item.and_downcast_ref::<PropertiesSelectorObject>() else {
+                error!("some wrong downcast_ref {object:?}");
+                return false;
+            };
+
+            let texts = text_gs.as_str();
+
+            //if an upper case --> filter
+            if text_gs.chars().any(|c| c.is_ascii_uppercase()) {
+                prop_selector.unit_property().contains(texts)
+            } else {
+                prop_selector
+                    .unit_property()
+                    .to_ascii_lowercase()
+                    .contains(texts)
+            }
+        })
+    }
+}
 
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
@@ -64,8 +161,21 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         let store = gio::ListStore::new::<PropertiesSelectorObject>();
 
-        let model = gtk::TreeListModel::new(store.clone(), false, false, add_tree_node);
-        let selection_model = gtk::SingleSelection::new(Some(model));
+        let tree_list_model = gtk::TreeListModel::new(store.clone(), false, false, add_tree_node);
+
+        self.tree_list_model
+            .set(tree_list_model.clone())
+            .expect("set once only");
+
+        let filter = self.create_filter();
+
+        self.custom_filter
+            .set(filter.clone())
+            .expect("custom filter set once");
+
+        let filtering_model = gtk::FilterListModel::new(Some(tree_list_model), Some(filter));
+
+        let selection_model = gtk::SingleSelection::new(Some(filtering_model));
 
         self.properties_selector.set_model(Some(&selection_model));
 
@@ -181,9 +291,8 @@ fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
 
     let store = gio::ListStore::new::<PropertiesSelectorObject>();
 
-    let Some(ref children) = *prop_selector.children() else {
-        return None;
-    };
+    let binding = prop_selector.children();
+    let children = (*binding).as_ref()?;
 
     for child in children.iter() {
         store.append(child)

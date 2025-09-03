@@ -768,10 +768,7 @@ fn test_introspect3() -> Result<(), SystemdErrors> {
             .nodes()
             .iter()
             .map(|n| n.name())
-            .filter_map(|name| match name {
-                Some(s) => Some(s.to_owned()),
-                None => None,
-            })
+            .filter_map(|name| name.map(|s| s.to_owned()))
             .collect();
 
         let mut map: BTreeMap<String, (usize, usize)> = BTreeMap::new();

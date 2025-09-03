@@ -1371,10 +1371,7 @@ pub(super) fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitPropert
         .nodes()
         .iter()
         .map(|n| n.name())
-        .filter_map(|name| match name {
-            Some(s) => Some(s.to_owned()),
-            None => None,
-        })
+        .filter_map(|name| name.map(|s| s.to_owned()))
     {
         let Some(unit_type) = node_name.split("_2e").last() else {
             break;
@@ -1413,7 +1410,7 @@ fn collect_properties(
         let list: Vec<_> = intf
             .properties()
             .iter()
-            .map(|p| UnitProperty::new(&p))
+            .map(|p| UnitProperty::new(p))
             .collect();
 
         map.insert(intf.name().to_string(), list);

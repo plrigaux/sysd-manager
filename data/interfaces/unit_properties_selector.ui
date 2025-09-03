@@ -10,36 +10,61 @@
     <property name="content">
       <object class="AdwToolbarView">
         <property name="content">
-          <object class="GtkScrolledWindow">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkColumnView" id="properties_selector">
+              <object class="GtkSearchBar" id="search_bar">
+                <property name="hexpand">True</property>
+                <property name="search-mode-enabled">True</property>
+                <property name="show-close-button">True</property>
                 <child>
-                  <object class="GtkColumnViewColumn" id="interface_column">
-                    <property name="fixed-width">280</property>
-                    <property name="id">interface</property>
-                    <property name="resizable">True</property>
-                    <property name="title">Interface</property>
+                  <object class="GtkBox">
+                    <property name="halign">start</property>
+                    <property name="hexpand">True</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkSearchEntry" id="search_entry">
+                        <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="vexpand">True</property>
                 <child>
-                  <object class="GtkColumnViewColumn" id="property_column">
-                    <property name="fixed-width">350</property>
-                    <property name="id">property</property>
-                    <property name="resizable">True</property>
-                    <property name="title">Property</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkColumnViewColumn" id="signature_column">
-                    <property name="id">signature</property>
-                    <property name="title">Signature</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkColumnViewColumn" id="access_column">
-                    <property name="id">access</property>
-                    <property name="resizable">True</property>
-                    <property name="title">Access</property>
+                  <object class="GtkColumnView" id="properties_selector">
+                    <child>
+                      <object class="GtkColumnViewColumn" id="interface_column">
+                        <property name="fixed-width">280</property>
+                        <property name="id">interface</property>
+                        <property name="resizable">True</property>
+                        <property name="title">Interface</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkColumnViewColumn" id="property_column">
+                        <property name="fixed-width">350</property>
+                        <property name="id">property</property>
+                        <property name="resizable">True</property>
+                        <property name="title">Property</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkColumnViewColumn" id="signature_column">
+                        <property name="id">signature</property>
+                        <property name="title">Signature</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkColumnViewColumn" id="access_column">
+                        <property name="id">access</property>
+                        <property name="resizable">True</property>
+                        <property name="title">Access</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -57,7 +82,7 @@
         </child>
       </object>
     </property>
-    <property name="default-height">600</property>
+    <property name="default-height">800</property>
     <property name="default-width">1100</property>
     <property name="title">Filter</property>
   </template>

@@ -636,9 +636,8 @@ impl UnitListPanelImp {
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
-        match action {
-            InterPanelMessage::IsDark(is_dark) => self.is_dark.set(*is_dark),
-            _ => {}
+        if let InterPanelMessage::IsDark(is_dark) = action {
+            self.is_dark.set(*is_dark)
         }
     }
 

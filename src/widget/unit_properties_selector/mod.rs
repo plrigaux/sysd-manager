@@ -12,7 +12,12 @@ glib::wrapper! {
 impl UnitPropertiesSelectorDialog {
     pub fn new() -> Self {
         let obj: UnitPropertiesSelectorDialog = glib::Object::new();
-
         obj
+    }
+}
+
+impl Default for UnitPropertiesSelectorDialog {
+    fn default() -> Self {
+        Self::new()
     }
 }
