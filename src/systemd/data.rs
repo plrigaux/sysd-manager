@@ -223,16 +223,17 @@ mod imp {
 
         pub fn set_primary(&self, primary: String) {
             let mut split_char_index = primary.len();
-            for (i, c) in primary.chars().enumerate() {
+            for (i, c) in primary.chars().rev().enumerate() {
                 if c == '.' {
-                    split_char_index = i;
+                    split_char_index -= i;
+                    break;
                 }
             }
 
-            let display_name = primary[..split_char_index].to_owned();
+            let display_name = primary[..split_char_index - 1].to_owned();
             *self.display_name.write().expect("set_primary display_name") = display_name;
 
-            let unit_type = primary[(split_char_index + 1)..].to_owned();
+            let unit_type = primary[(split_char_index)..].to_owned();
             *self.unit_type.write().expect("set_primary unit_type") = unit_type;
 
             *self.primary.write().expect("set_primary primary") = primary;
