@@ -39,10 +39,10 @@ pub struct UnitPropertiesSelectorDialogImp {
     access_column: TemplateChild<gtk::ColumnViewColumn>,
 
     #[template_child]
-    search_bar: TemplateChild<gtk::SearchBar>,
+    search_entry: TemplateChild<gtk::SearchEntry>,
 
     #[template_child]
-    search_entry: TemplateChild<gtk::SearchEntry>,
+    toogle_button: TemplateChild<gtk::ToggleButton>,
 
     last_filter_string: RefCell<String>,
 
@@ -62,20 +62,14 @@ impl UnitPropertiesSelectorDialogImp {
         let mut last_filter = self.last_filter_string.borrow_mut();
 
         let text_is_empty = text.is_empty();
-        if let Some(tree_list_model) = self.tree_list_model.get()
-            && !text_is_empty
-        {
-            let nb_item = tree_list_model.model().n_items();
+        if !text_is_empty {
+            /*             let nb_item = tree_list_model.model().n_items();
 
             for (a, b) in tree_list_model.model().into_iter().enumerate() {
                 info!("{a} {b:?}");
-            }
+            } */
 
-            for i in 0..nb_item {
-                if let Some(row) = tree_list_model.row(i) {
-                    row.set_expanded(true);
-                }
-            }
+            self.toogle_button.set_active(true);
         }
 
         let change_type = if text_is_empty {
@@ -96,6 +90,36 @@ impl UnitPropertiesSelectorDialogImp {
         }
 
         //self.set_filter_icon()
+    }
+
+    #[template_callback]
+    fn expand_toggled(&self, toogle_button: &gtk::ToggleButton) {
+        info!("expand_toggled {}", toogle_button.is_active());
+
+        self.expand_interfaces(toogle_button.is_active());
+
+        if toogle_button.is_active() {
+            toogle_button.set_icon_name("go-down-symbolic");
+            toogle_button.set_tooltip_text(Some("Collapse all interfaces"));
+        } else {
+            toogle_button.set_icon_name("go-next-symbolic");
+            toogle_button.set_tooltip_text(Some("Expand all interfaces"));
+        }
+    }
+
+    fn expand_interfaces(&self, expand: bool) {
+        let Some(tree_list_model) = self.tree_list_model.get() else {
+            warn!("Can't find tree list model");
+            return;
+        };
+
+        let nb_item = tree_list_model.model().n_items();
+
+        for i in 0..nb_item {
+            if let Some(row) = tree_list_model.row(i) {
+                row.set_expanded(expand);
+            }
+        }
     }
 
     fn create_filter(&self) -> gtk::CustomFilter {
@@ -247,7 +271,10 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         self.access_column.set_factory(Some(&access_factory));
 
-        for (inteface, mut props) in map.into_iter() {
+        for (inteface, mut props) in map
+            .into_iter()
+            .filter(|(k, _v)| k.starts_with("org.freedesktop.systemd1"))
+        {
             let obj = PropertiesSelectorObject::new_interface(inteface);
             props.sort();
             for property in props {
