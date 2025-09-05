@@ -1,5 +1,7 @@
 mod data;
 mod imp;
+mod unit_properties_selection;
+
 use gtk::glib::{self};
 
 glib::wrapper! {

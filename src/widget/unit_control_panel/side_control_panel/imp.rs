@@ -1,11 +1,12 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
-use adw::{prelude::*, subclass::prelude::*};
-
 use gettextrs::pgettext;
+
 use gtk::{
     gio::{self, MENU_ATTRIBUTE_TARGET},
     glib::{self, Variant, VariantTy},
+    prelude::*,
+    subclass::prelude::*,
 };
 use log::warn;
 

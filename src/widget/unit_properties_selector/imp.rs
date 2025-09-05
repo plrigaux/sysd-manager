@@ -3,7 +3,6 @@ use std::cell::{OnceCell, RefCell};
 use adw::subclass::window::AdwWindowImpl;
 use gio::glib::Object;
 use gtk::{
-    TreeListRow,
     glib::{self},
     prelude::*,
     subclass::{
@@ -16,7 +15,12 @@ use gtk::{
 };
 use log::{debug, error, info, warn};
 
-use crate::{systemd, widget::unit_properties_selector::data::PropertiesSelectorObject};
+use crate::{
+    systemd,
+    widget::unit_properties_selector::{
+        data::PropertiesSelectorObject, unit_properties_selection::UnitPropertiesSelection,
+    },
+};
 
 use super::UnitPropertiesSelectorDialog;
 
@@ -44,6 +48,9 @@ pub struct UnitPropertiesSelectorDialogImp {
     #[template_child]
     toogle_button: TemplateChild<gtk::ToggleButton>,
 
+    #[template_child]
+    unit_properties_selection: TemplateChild<UnitPropertiesSelection>,
+
     last_filter_string: RefCell<String>,
 
     custom_filter: OnceCell<gtk::CustomFilter>,
@@ -57,18 +64,10 @@ impl UnitPropertiesSelectorDialogImp {
     fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
         let text = search_entry.text();
 
-        debug!("Search text \"{text}\"");
-
         let mut last_filter = self.last_filter_string.borrow_mut();
 
         let text_is_empty = text.is_empty();
         if !text_is_empty {
-            /*             let nb_item = tree_list_model.model().n_items();
-
-            for (a, b) in tree_list_model.model().into_iter().enumerate() {
-                info!("{a} {b:?}");
-            } */
-
             self.toogle_button.set_active(true);
         }
 
@@ -82,14 +81,12 @@ impl UnitPropertiesSelectorDialogImp {
             gtk::FilterChange::Different
         };
 
-        debug!("Current \"{text}\" Prev \"{last_filter}\"");
+        debug!("Search text. Current \"{text}\" Prev \"{last_filter}\"");
         last_filter.replace_range(.., text.as_str());
 
         if let Some(custom_filter) = self.custom_filter.get() {
             custom_filter.changed(change_type);
         }
-
-        //self.set_filter_icon()
     }
 
     #[template_callback]
@@ -114,9 +111,10 @@ impl UnitPropertiesSelectorDialogImp {
         };
 
         let nb_item = tree_list_model.model().n_items();
-
+        warn!("tree_list_model {}", nb_item);
         for i in 0..nb_item {
-            if let Some(row) = tree_list_model.row(i) {
+            if let Some(row) = tree_list_model.child_row(i) {
+                warn!("set_expanded {}", i);
                 row.set_expanded(expand);
             }
         }
@@ -131,12 +129,25 @@ impl UnitPropertiesSelectorDialogImp {
                 return true;
             }
 
-            let Some(tree_list_row) = object.downcast_ref::<TreeListRow>() else {
+            let Some(tree_list_row) = object.downcast_ref::<gtk::TreeListRow>() else {
                 error!("some wrong downcast_ref {object:?}");
                 return false;
             };
 
-            if tree_list_row.children().is_some() {
+            info!("Depth {} ", tree_list_row.depth());
+
+            if let Some(children) = tree_list_row.children() {
+                let item = tree_list_row.item();
+                if let Some(prop_selector) = item.and_downcast_ref::<PropertiesSelectorObject>() {
+                    info!(
+                        "Child model {} {}",
+                        children.n_items(),
+                        prop_selector.interface()
+                    );
+                } else {
+                    error!("some wrong downcast_ref {object:?}");
+                };
+
                 return true;
             }
 
@@ -145,6 +156,12 @@ impl UnitPropertiesSelectorDialogImp {
                 error!("some wrong downcast_ref {object:?}");
                 return false;
             };
+
+            info!(
+                "Inter {:?} Prop {:?}",
+                prop_selector.interface(),
+                prop_selector.unit_property()
+            );
 
             let texts = text_gs.as_str();
 
@@ -164,7 +181,7 @@ impl UnitPropertiesSelectorDialogImp {
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
 impl ObjectSubclass for UnitPropertiesSelectorDialogImp {
-    const NAME: &'static str = "UNIT_PROPERTIES_SELECTOR_DIALOG";
+    const NAME: &'static str = "UnitPropertiesSelectorDialog";
     type Type = UnitPropertiesSelectorDialog;
     type ParentType = adw::Window;
 
@@ -198,6 +215,8 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
             .expect("custom filter set once");
 
         let filtering_model = gtk::FilterListModel::new(Some(tree_list_model), Some(filter));
+        /*         warn!("incremental {}", filtering_model.is_incremental());
+        filtering_model.set_incremental(true); */
 
         let selection_model = gtk::SingleSelection::new(Some(filtering_model));
 
@@ -233,7 +252,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
             let label = expander.child().unwrap().downcast::<gtk::Label>().unwrap();
 
-            let tree_list_row = item.item().unwrap().downcast::<TreeListRow>().unwrap();
+            let tree_list_row = item.item().unwrap().downcast::<gtk::TreeListRow>().unwrap();
 
             expander.set_list_row(Some(&tree_list_row));
 
@@ -300,7 +319,7 @@ fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
 
     let label = widget.and_downcast_ref::<gtk::Label>().unwrap();
 
-    let tree_list_row = item.item().unwrap().downcast::<TreeListRow>().unwrap();
+    let tree_list_row = item.item().unwrap().downcast::<gtk::TreeListRow>().unwrap();
     let property_object = tree_list_row
         .item()
         .and_downcast::<PropertiesSelectorObject>()

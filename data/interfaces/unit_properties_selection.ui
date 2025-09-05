@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.96.1 -->
+<interface>
+  <!-- interface-name unit_properties_selected.ui -->
+  <requires lib="gtk" version="4.18"/>
+  <template class="UnitPropertiesSelection" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="css-classes">title</property>
+        <property name="label">Selected Unit Properties!</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
+        <child>
+          <object class="GtkColumnView" id="properties_selection">
+            <child>
+              <object class="GtkColumnViewColumn" id="interface_column">
+                <property name="fixed-width">280</property>
+                <property name="id">interface</property>
+                <property name="resizable">True</property>
+                <property name="title">Interface</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColumnViewColumn" id="property_column">
+                <property name="fixed-width">350</property>
+                <property name="id">property</property>
+                <property name="resizable">True</property>
+                <property name="title">Property</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColumnViewColumn" id="signature_column">
+                <property name="id">signature</property>
+                <property name="title">Signature</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColumnViewColumn" id="access_column">
+                <property name="id">access</property>
+                <property name="resizable">True</property>
+                <property name="title">Access</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
