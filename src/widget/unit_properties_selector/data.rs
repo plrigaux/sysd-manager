@@ -29,6 +29,21 @@ impl PropertiesSelectorObject {
         this_object
     }
 
+    pub fn from_parent(
+        interface: PropertiesSelectorObject,
+        property: PropertiesSelectorObject,
+    ) -> Self {
+        let this_object: Self = glib::Object::new();
+
+        let p_imp = this_object.imp();
+        p_imp.interface.replace(interface.interface());
+        p_imp.unit_property.replace(property.unit_property());
+        p_imp.signature.replace(property.signature());
+        p_imp.access.replace(property.access());
+
+        this_object
+    }
+
     pub fn add_child(&self, child: PropertiesSelectorObject) {
         //v.as_deref_mut().push(child);
         if let Some(v) = self.imp().children.borrow_mut().deref_mut() {
@@ -66,7 +81,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for PropertiesSelectorOpjectImpl {
-        const NAME: &'static str = "PROPERTIES_SELECTOR_OBJECT";
+        const NAME: &'static str = "PropertiesSelectorObject";
         type Type = super::PropertiesSelectorObject;
     }
 

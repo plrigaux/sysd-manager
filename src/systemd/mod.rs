@@ -872,7 +872,7 @@ pub async fn test(test_name: &str, level: UnitDBusLevel) {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct UnitProperty {
     pub name: String,
     pub signature: String,
@@ -894,6 +894,6 @@ impl UnitProperty {
         }
     }
 }
-pub fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors> {
-    sysdbus::fetch_unit_properties()
+pub async fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors> {
+    sysdbus::fetch_unit_properties().await
 }

@@ -16,7 +16,7 @@ use gtk::{
 use log::{debug, error, info, warn};
 
 use crate::{
-    systemd,
+    systemd::{self, runtime},
     widget::unit_properties_selector::{
         data::PropertiesSelectorObject, unit_properties_selection::UnitPropertiesSelection,
     },
@@ -218,17 +218,13 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         /*         warn!("incremental {}", filtering_model.is_incremental());
         filtering_model.set_incremental(true); */
 
-        let selection_model = gtk::SingleSelection::new(Some(filtering_model));
+        let selection_model = gtk::SingleSelection::builder()
+            .model(&filtering_model)
+            .can_unselect(true)
+            .autoselect(false)
+            .build();
 
         self.properties_selector.set_model(Some(&selection_model));
-
-        let map = match systemd::fetch_unit_properties() {
-            Ok(map) => map,
-            Err(err) => {
-                error!("{err:?}");
-                return;
-            }
-        };
 
         let factory_interface = gtk::SignalListItemFactory::new();
 
@@ -290,19 +286,74 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         self.access_column.set_factory(Some(&access_factory));
 
-        for (inteface, mut props) in map
-            .into_iter()
-            .filter(|(k, _v)| k.starts_with("org.freedesktop.systemd1"))
-        {
-            let obj = PropertiesSelectorObject::new_interface(inteface);
-            props.sort();
-            for property in props {
-                let prop_object = PropertiesSelectorObject::from(property);
-                obj.add_child(prop_object);
+        let unit_properties_selection = self.unit_properties_selection.clone();
+        selection_model.connect_selected_item_notify(move |single_selection| {
+            debug!(
+                "connect_selected_notify idx {}",
+                single_selection.selected()
+            );
+            let Some(object) = single_selection.selected_item() else {
+                warn!("No object selected");
+                return;
+            };
+
+            let tree_list_row = object.downcast::<gtk::TreeListRow>().unwrap();
+
+            let property_object = tree_list_row
+                .item()
+                .and_downcast::<PropertiesSelectorObject>()
+                .unwrap();
+
+            if property_object.unit_property().is_empty() {
+                single_selection.set_selected(gtk::INVALID_LIST_POSITION);
+                warn!("Cant select interface  {property_object:?}");
+                return;
             }
 
-            store.append(&obj);
-        }
+            info!("Select {property_object:?}");
+
+            let interface = tree_list_row
+                .parent()
+                .expect("has a parent")
+                .item()
+                .and_downcast::<PropertiesSelectorObject>()
+                .unwrap();
+
+            let new_property_object =
+                PropertiesSelectorObject::from_parent(interface, property_object);
+
+            unit_properties_selection.add_new_property(new_property_object);
+        });
+
+        glib::spawn_future_local(async move {
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+
+            runtime().spawn(async move {
+                match systemd::fetch_unit_properties().await {
+                    Ok(map) => sender.send(map).expect("The channel needs to be open."),
+                    Err(err) => error!("Fetch unir properties {err:?}"),
+                }
+            });
+
+            let unit_properties_map = receiver
+                .await
+                .map_err(|e| error!("Receiver {e:?}"))
+                .expect("Tokio receiver works");
+
+            for (inteface, mut properties) in unit_properties_map
+                .into_iter()
+                .filter(|(k, _)| k.starts_with("org.freedesktop.systemd1"))
+            {
+                let obj = PropertiesSelectorObject::new_interface(inteface);
+                properties.sort();
+                for property in properties {
+                    let prop_object = PropertiesSelectorObject::from(property);
+                    obj.add_child(prop_object);
+                }
+
+                store.append(&obj);
+            }
+        });
     }
 }
 

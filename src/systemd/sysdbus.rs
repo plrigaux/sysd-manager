@@ -1347,20 +1347,21 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
     Ok(())
 }
 
-pub(super) fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors>
-{
-    let connection = get_connection(UnitDBusLevel::System)?;
+pub(super) async fn fetch_unit_properties()
+-> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors> {
+    let connection = get_connection_async(UnitDBusLevel::System).await?;
 
-    let proxy = Proxy::new(
+    let proxy = zbus::Proxy::new(
         &connection,
         DESTINATION_SYSTEMD,
         "/org/freedesktop/systemd1/unit",
         INTERFACE_SYSTEMD_UNIT,
-    )?;
+    )
+    .await?;
 
     info!("Proxy {proxy:?}");
 
-    let xml = proxy.introspect()?;
+    let xml = proxy.introspect().await?;
 
     let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
 
@@ -1370,7 +1371,7 @@ pub(super) fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitPropert
     for node_name in root_node
         .nodes()
         .iter()
-        .map(|n| n.name())
+        .map(|node| node.name())
         .filter_map(|name| name.map(|s| s.to_owned()))
     {
         let Some(unit_type) = node_name.split("_2e").last() else {
@@ -1379,7 +1380,7 @@ pub(super) fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitPropert
 
         if !set.contains(unit_type) {
             set.insert(unit_type.to_owned());
-            collect_properties(&node_name, &connection, &mut map)?
+            collect_properties(&node_name, &connection, &mut map).await?
         }
     }
 
@@ -1387,22 +1388,23 @@ pub(super) fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitPropert
     Ok(map)
 }
 
-fn collect_properties(
+async fn collect_properties(
     unit: &str,
-    connection: &Connection,
+    connection: &zbus::Connection,
     map: &mut BTreeMap<String, Vec<UnitProperty>>,
 ) -> Result<(), SystemdErrors> {
     let mut path = String::from("/org/freedesktop/systemd1/unit/");
     path.push_str(unit);
 
-    let proxy = Proxy::new(
+    let proxy = zbus::Proxy::new(
         connection,
         DESTINATION_SYSTEMD,
         path,
         INTERFACE_SYSTEMD_UNIT,
-    )?;
+    )
+    .await?;
 
-    let xml = proxy.introspect()?;
+    let xml = proxy.introspect().await?;
 
     let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
 
