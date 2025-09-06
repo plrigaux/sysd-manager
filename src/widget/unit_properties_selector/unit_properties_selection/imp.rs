@@ -77,9 +77,7 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
 
         let factory_interface = gtk::SignalListItemFactory::new();
         factory_interface.connect_setup(setup);
-        factory_interface.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::interface);
-        });
+        factory_interface.connect_bind(bind_interface);
 
         self.interface_column.set_factory(Some(&factory_interface));
 
@@ -126,6 +124,25 @@ fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
         .unwrap();
 
     let value = func(&property_object);
+    let value = value.split('.').next_back();
+
+    label.set_text(value)
+}
+
+fn bind_interface(_: &gtk::SignalListItemFactory, item: &Object) {
+    let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+
+    let widget = item.child();
+
+    let label = widget.and_downcast_ref::<gtk::Inscription>().unwrap();
+
+    let property_object = item
+        .item()
+        .unwrap()
+        .downcast::<PropertiesSelectorObject>()
+        .unwrap();
+
+    let value = property_object.interface();
     label.set_text(Some(&value))
 }
 

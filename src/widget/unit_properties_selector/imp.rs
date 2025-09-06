@@ -232,6 +232,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
 
             let label = gtk::Label::builder().xalign(0.0).build();
+            //let label = gtk::Inscription::builder().build();
             let expander = gtk::TreeExpander::new();
             expander.set_child(Some(&label));
             item.set_child(Some(&expander));
@@ -257,7 +258,12 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .and_downcast::<PropertiesSelectorObject>()
                 .unwrap();
 
-            label.set_text(&property_object.interface());
+            let interface = property_object.interface();
+            if let Some(unit_type) = interface.split('.').next_back() {
+                label.set_text(unit_type);
+            } else {
+                label.set_text("");
+            }
         });
         self.interface_column.set_factory(Some(&factory_interface));
 
@@ -400,3 +406,15 @@ fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
 impl WidgetImpl for UnitPropertiesSelectorDialogImp {}
 impl WindowImpl for UnitPropertiesSelectorDialogImp {}
 impl AdwWindowImpl for UnitPropertiesSelectorDialogImp {}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_last() {
+        let var = "org.freedesktop.systemd1.some_stuff";
+
+        let token = var.split('.').next_back();
+
+        assert_eq!(token, Some("some_stuff"))
+    }
+}

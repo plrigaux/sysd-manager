@@ -24,7 +24,7 @@
                   <object class="GtkColumnView" id="properties_selector">
                     <child>
                       <object class="GtkColumnViewColumn" id="interface_column">
-                        <property name="fixed-width">280</property>
+                        <property name="fixed-width">105</property>
                         <property name="id">interface</property>
                         <property name="resizable">True</property>
                         <property name="title">Interface</property>
