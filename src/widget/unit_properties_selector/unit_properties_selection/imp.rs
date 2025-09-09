@@ -7,7 +7,7 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
-use log::warn;
+use log::{info, warn};
 
 use crate::widget::unit_properties_selector::data::PropertiesSelectorObject;
 
@@ -34,6 +34,14 @@ pub struct UnitPropertiesSelectionImp {
     list_store: OnceCell<gio::ListStore>,
 }
 
+#[gtk::template_callbacks]
+impl UnitPropertiesSelectionImp {
+    #[template_callback]
+    fn apply_clicked(&self, _button: &gtk::Button) {
+        info!("Apply pressed");
+    }
+}
+
 impl UnitPropertiesSelectionImp {
     pub fn add_new_property(&self, new_property_object: PropertiesSelectorObject) {
         let Some(list_store) = self.list_store.get() else {
@@ -55,7 +63,7 @@ impl ObjectSubclass for UnitPropertiesSelectionImp {
     fn class_init(klass: &mut Self::Class) {
         // The layout manager determines how child widgets are laid out.
         klass.bind_template();
-        //klass.bind_template_callbacks();
+        klass.bind_template_callbacks();
     }
 
     fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

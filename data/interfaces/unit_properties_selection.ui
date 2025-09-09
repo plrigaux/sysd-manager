@@ -7,8 +7,8 @@
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkLabel">
-        <property name="css-classes">title</property>
-        <property name="label">Selected Unit Properties!</property>
+        <property name="css-classes">title-2</property>
+        <property name="label">Selected Unit Properties</property>
       </object>
     </child>
     <child>
@@ -45,6 +45,17 @@
                 <property name="title">Access</property>
               </object>
             </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <child>
+          <object class="GtkButton">
+            <property name="css-classes">suggested-action</property>
+            <property name="label">Apply</property>
+            <signal name="clicked" handler="apply_clicked" swapped="yes"/>
           </object>
         </child>
       </object>
