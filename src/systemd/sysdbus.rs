@@ -1373,15 +1373,18 @@ pub(super) async fn fetch_unit_properties()
         .iter()
         .map(|node| node.name())
         .filter_map(|name| name.map(|s| s.to_owned()))
+        .filter(|n_name| {
+            if let Some(unit_type) = n_name.split("_2e").last()
+                && !set.contains(unit_type)
+            {
+                set.insert(unit_type.to_owned());
+                true
+            } else {
+                false
+            }
+        })
     {
-        let Some(unit_type) = node_name.split("_2e").last() else {
-            break;
-        };
-
-        if !set.contains(unit_type) {
-            set.insert(unit_type.to_owned());
-            collect_properties(&node_name, &connection, &mut map).await?
-        }
+        collect_properties(&node_name, &connection, &mut map).await?
     }
 
     info!("Interface len {}", map.len());

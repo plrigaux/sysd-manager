@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use log::error;
-
 use super::*;
 
 pub const TEST_SERVICE: &str = "tiny_daemon.service";
@@ -744,79 +742,16 @@ fn test_introspect2() -> Result<(), SystemdErrors> {
     })
 }
 
-#[test]
-fn test_introspect3() -> Result<(), SystemdErrors> {
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_introspect3() -> Result<(), SystemdErrors> {
     init();
 
-    fn sub() -> Result<(), SystemdErrors> {
-        let connection = get_connection(UnitDBusLevel::System)?;
+    let map = fetch_unit_properties().await?;
 
-        let proxy = Proxy::new(
-            &connection,
-            DESTINATION_SYSTEMD,
-            "/org/freedesktop/systemd1/unit",
-            INTERFACE_SYSTEMD_UNIT,
-        )?;
-
-        info!("Proxy {proxy:?}");
-
-        let xml = proxy.introspect()?;
-
-        let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
-
-        let nodes: BTreeSet<String> = root_node
-            .nodes()
-            .iter()
-            .map(|n| n.name())
-            .filter_map(|name| name.map(|s| s.to_owned()))
-            .collect();
-
-        let mut map: BTreeMap<String, (usize, usize)> = BTreeMap::new();
-
-        for n in nodes {
-            for (name, len) in prop(&n, &connection)? {
-                if let Some((min, max)) = map.get_mut(&name) {
-                    if len < *min {
-                        *min = len
-                    } else if len > *max {
-                        *max = len
-                    }
-                } else {
-                    map.insert(name, (len, len));
-                }
-            }
-        }
-
-        info!("{map:#?}");
-        Ok(())
+    for (k, v) in map.iter() {
+        info!("{k}\t{}", v.len());
     }
 
-    sub().map_err(|e| {
-        error!("Error {e:?}");
-        e
-    })
-}
-
-fn prop(unit: &str, connection: &Connection) -> Result<Vec<(String, usize)>, SystemdErrors> {
-    let mut path = String::from("/org/freedesktop/systemd1/unit/");
-    path.push_str(unit);
-
-    let proxy = Proxy::new(
-        connection,
-        DESTINATION_SYSTEMD,
-        path,
-        INTERFACE_SYSTEMD_UNIT,
-    )?;
-
-    let xml = proxy.introspect()?;
-
-    let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
-
-    let list: Vec<_> = root_node
-        .interfaces()
-        .iter()
-        .map(|intf| (intf.name().to_string(), intf.properties().len()))
-        .collect();
-
-    Ok(list)
+    Ok(())
 }
