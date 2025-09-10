@@ -66,6 +66,8 @@ pub struct UnitListPanelImp {
     #[template_child]
     list_store: TemplateChild<gio::ListStore>,
 
+    unit_map: Rc<RefCell<HashMap<String, UnitInfo>>>,
+
     #[template_child]
     unit_list_sort_list_model: TemplateChild<gtk::SortListModel>,
 
@@ -345,6 +347,7 @@ impl UnitListPanelImp {
 
     pub(super) fn fill_store(&self) {
         let list_store = self.list_store.clone();
+        let unit_map = self.unit_map.clone();
         let panel_stack = self.panel_stack.clone();
         let single_selection = self.single_selection.clone();
         let unit_list = self.obj().clone();
@@ -395,6 +398,8 @@ impl UnitListPanelImp {
 
             let n_items = list_store.n_items();
             list_store.remove_all();
+            let mut unit_map1 = unit_map.borrow_mut();
+            unit_map1.clear();
 
             let mut all_units = HashMap::with_capacity(unit_desc.len() + unit_from_files.len());
 
@@ -404,12 +409,14 @@ impl UnitListPanelImp {
                 } else {
                     let unit = UnitInfo::from_unit_file(system_unit_file);
                     list_store.append(&UnitBinding::new(&unit));
+                    unit_map1.insert(unit.primary(), unit.clone());
                     all_units.insert(unit.primary(), unit);
                 }
             }
 
             for (_key, unit) in unit_desc.into_iter() {
                 list_store.append(&UnitBinding::new(&unit));
+                unit_map1.insert(unit.primary(), unit.clone());
                 all_units.insert(unit.primary(), unit);
             }
 
@@ -444,11 +451,11 @@ impl UnitListPanelImp {
                 );
 
                 if let Some(index) = list_store.find_with_equal_func(|object| {
-                    let list_unit = object
+                    let unit_binding = object
                         .downcast_ref::<UnitBinding>()
                         .expect("Needs to be UnitBinding");
 
-                    list_unit.unit_ref().primary().eq(&selected_unit_name)
+                    unit_binding.unit_ref().primary().eq(&selected_unit_name)
                 }) {
                     info!(
                         "Force selection to index {index:?} to select unit {selected_unit_name:?}"
@@ -566,7 +573,7 @@ impl UnitListPanelImp {
             self.unit_list_sort_list_model.n_items()
         );
 
-        let finding = self.list_store.find_with_equal_func(|object| {
+        /*  let finding = self.list_store.find_with_equal_func(|object| {
             let unit_item = object
                 .downcast_ref::<UnitBinding>()
                 .expect("item.downcast_ref::<UnitBinding>()");
@@ -581,11 +588,17 @@ impl UnitListPanelImp {
                     .downcast_ref::<UnitBinding>()
                     .expect("item.downcast_ref::<UnitBinding>()");
                 //for constitency ensure that is the unit from the list
-                self.unit.replace(Some(unit_item.unit_ref().clone()));
+                self.unit.replace(Some( de.unit_ref().clone()));
             }
         } else {
             info!("Unit not found {unit_name:?} try to Add");
 
+            self.add_one_unit(unit);
+        } */
+
+        if let Some(unit2) = self.unit_map.borrow().get(&unit.primary()) {
+            self.unit.replace(Some(unit2.clone()));
+        } else {
             self.add_one_unit(unit);
         }
 
@@ -600,6 +613,15 @@ impl UnitListPanelImp {
                 return Some(unit.clone());
             }
         }
+
+        let finding = self.list_store.find_with_equal_func(|object| {
+            let Some(unit_item) = object.downcast_ref::<UnitBinding>() else {
+                error!("item.downcast_ref::<UnitBinding>()");
+                return false;
+            };
+
+            unit_name == unit_item.primary()
+        });
 
         if let Some(row) = finding {
             info!("Scroll to row {row}");
@@ -617,6 +639,8 @@ impl UnitListPanelImp {
 
     fn add_one_unit(&self, unit: &UnitInfo) {
         self.list_store.append(&UnitBinding::new(unit));
+        let mut unit_map = self.unit_map.borrow_mut();
+        unit_map.insert(unit.primary(), unit.clone());
 
         if LoadState::Loaded == unit.load_state()
             && let Ok(my_int) = self.loaded_units_count.label().parse::<i32>()

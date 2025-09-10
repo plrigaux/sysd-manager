@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use zvariant::Value;
+
 use super::*;
 
 pub const TEST_SERVICE: &str = "tiny_daemon.service";
@@ -752,6 +754,46 @@ async fn test_introspect3() -> Result<(), SystemdErrors> {
     for (k, v) in map.iter() {
         info!("{k}\t{}", v.len());
     }
+
+    Ok(())
+}
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_get_properties2() -> Result<(), SystemdErrors> {
+    init();
+
+    let connection = get_connection_async(UnitDBusLevel::System).await?;
+
+    let object_path = unit_dbus_path_from_name(TEST_SERVICE);
+    let message = connection
+        .call_method(
+            Some(DESTINATION_SYSTEMD),
+            //"/org/freedesktop/systemd1/unit/avahi_2ddaemon_2eservice",
+            //"/",
+            //"/org/freedesktop/systemd1/unit",
+            // "/org/freedesktop/systemd1/archlinux_2dkeyring_2dwkd_2dsync_2etimer",
+            object_path,
+            //  Some("org.freedesktop.DBus.Properties"),
+            Some("org.freedesktop.DBus.Properties"),
+            "Get",
+            // &(UnitType::Service.interface()),
+            //      &("org.freedesktop.systemd1.Unit", "Id", "ConditionTimestamp"),
+            &("org.freedesktop.systemd1.Unit", "ConditionTimestamp"),
+        )
+        .await?;
+
+    let body = message.body();
+
+    info!("signature {:?}", body.signature().to_string());
+
+    //let z: Vec<(String, OwnedValue)> = body.deserialize()?;
+
+    //let z: OwnedValue = body.deserialize()?;
+    let z: Value = body.deserialize()?;
+    //let z :String = body.deserialize()?;
+
+    info!("obj {:?}", z);
 
     Ok(())
 }
