@@ -26,8 +26,8 @@
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="show_all_check">
-                        <property name="label">Show all</property>
-                        <property name="tooltip-markup">Show empty properties</property>
+                        <property name="label" translatable="yes" context="unit properties" comments="Show all properties">Show all</property>
+                        <property name="tooltip-markup" translatable="yes" context="unit properties" comments="Show all properties tooltip">Show empty properties</property>
                         <signal name="toggled" handler="show_all_toggle" swapped="yes"/>
                       </object>
                     </child>
@@ -52,13 +52,13 @@
           <object class="AdwHeaderBar">
             <property name="title-widget">
               <object class="AdwWindowTitle" id="window_title">
-                <property name="title">Unit Properties</property>
+                <property name="title" translatable="yes" context="unit properties" comments="window title">Unit Properties</property>
               </object>
             </property>
             <child>
               <object class="GtkButton">
                 <property name="icon-name">edit-copy-symbolic</property>
-                <property name="tooltip-text">Copy all properties to clipboard</property>
+                <property name="tooltip-text" translatable="yes" context="unit properties" comments="Button tooltip-text">Copy all properties to clipboard</property>
                 <signal name="clicked" handler="handle_copy_click" swapped="yes"/>
               </object>
             </child>

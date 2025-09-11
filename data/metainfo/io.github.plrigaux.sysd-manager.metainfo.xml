@@ -81,6 +81,15 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+     <release version="1.32.2" date="2025-09-11">
+      <description translate="no">      
+      <p>Changed</p>
+        <ul>
+          <li>Translations</li>
+          <li>Improve some unit properties retrieving</li>
+        </ul>
+      </description>
+    </release>
    <release version="1.32.1" date="2025-08-30">
       <description translate="no">      
        <p>Changed</p>
