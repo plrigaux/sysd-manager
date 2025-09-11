@@ -341,13 +341,6 @@ pub enum ActiveState {
 }
 
 impl ActiveState {
-    pub fn discriminant(&self) -> u8 {
-        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
-        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
-        // field, so we can read the discriminant without offsetting the pointer.
-        unsafe { *<*const _>::from(self).cast::<u8>() }
-    }
-
     pub fn as_str(&self) -> &str {
         match self {
             ActiveState::Unknown => "unknown",
@@ -918,23 +911,6 @@ impl From<&str> for UnitDBusLevel {
     }
 }
 
-/* impl From<Option<glib::Object>> for UnitDBusLevel {
-    fn from(value: Option<glib::Object>) -> Self {
-        let Some(object) = value else {
-            return UnitDBusLevel::default();
-        };
-
-        //Fall back on EnumList
-        match object.downcast::<adw::EnumListItem>() {
-            Ok(enum_list_item) => UnitDBusLevel::from(enum_list_item.name().as_str()),
-            Err(e) => {
-                warn!("UnitDBusLevel error {:?} fallback on default", e);
-                UnitDBusLevel::default()
-            }
-        }
-    }
-} */
-
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
     pub struct DisEnableFlags : u8{
@@ -1000,12 +976,12 @@ impl CleanOption {
 #[enum_type(name = "LoadState")]
 pub enum LoadState {
     #[default]
-    Unknown = 0,
-    Loaded = 1,
-    NotFound = 2,
-    BadSetting = 3,
-    Error = 4,
-    Masked = 5,
+    Unknown,
+    Loaded,
+    NotFound,
+    BadSetting,
+    Error,
+    Masked,
 }
 
 impl LoadState {
@@ -1025,13 +1001,6 @@ impl LoadState {
             LoadState::Unknown => "<i>not set</i>",
             _ => self.as_str(),
         }
-    }
-
-    pub fn discriminant(&self) -> u8 {
-        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
-        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
-        // field, so we can read the discriminant without offsetting the pointer.
-        unsafe { *<*const _>::from(self).cast::<u8>() }
     }
 
     pub fn tooltip_info(&self) -> Option<&str> {
@@ -1072,19 +1041,6 @@ impl From<Option<&OwnedValue>> for LoadState {
         let value: Option<&zvariant::Value> = value.map(|v| &**v);
         match value {
             Some(zvariant::Value::Str(zvalue)) => zvalue.as_str().into(),
-            _ => LoadState::Unknown,
-        }
-    }
-}
-
-impl From<u8> for LoadState {
-    fn from(value: u8) -> Self {
-        match value {
-            1 => LoadState::Loaded,
-            2 => LoadState::NotFound,
-            3 => LoadState::BadSetting,
-            4 => LoadState::Error,
-            5 => LoadState::Masked,
             _ => LoadState::Unknown,
         }
     }

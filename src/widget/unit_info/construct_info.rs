@@ -24,18 +24,10 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     //let mut unit_info_tokens = Vec::new();
     fill_name_description(unit_writer, unit);
 
-    let map = match systemd::fetch_system_unit_info_native(unit) {
-        Ok(m) => m,
-        Err(e) => {
-            warn!(
-                "Fails to retrieve Unit info for {:?} {:?}",
-                unit.primary(),
-                e
-            );
-
-            HashMap::new()
-        }
-    };
+    let map = systemd::fetch_system_unit_info_native(unit).unwrap_or_else(|e| {
+        warn!("Fails to retrieve Unit info for {:?} {e:?}", unit.primary());
+        HashMap::new()
+    });
 
     let timestamp_style = PREFERENCES.timestamp_style();
 
@@ -278,8 +270,7 @@ fn fill_load_state(
     map: &HashMap<String, OwnedValue>,
     unit: &UnitInfo,
 ) {
-    let load_state = map.get("LoadState");
-    let load_state: LoadState = load_state.into();
+    let load_state: LoadState = map.get("LoadState").into();
 
     unit.set_load_state(load_state);
 

@@ -271,8 +271,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
 
     if display_color {
         fac_load_state.connect_bind(move |_factory, object| {
-            let (inscription, unit_binding) = factory_bind_pre!(object);
-            let unit = unit_binding.unit_ref();
+            let (inscription, unit, unit_binding) = factory_bind_enum!(object, load_state);
 
             load_state_text_binding(&inscription, &unit_binding, &unit);
 
@@ -300,9 +299,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     } else {
         fac_load_state.connect_bind(move |_factory, object| {
             let (inscription, unit, unit_binding) = factory_bind_enum!(object, load_state);
-
             load_state_text_binding(&inscription, &unit_binding, &unit);
-
             display_inactive!(inscription, unit);
         });
 
@@ -317,7 +314,10 @@ fn load_state_text_binding(
     unit_binding: &UnitBinding,
     unit: &UnitInfo,
 ) {
-    let binding = unit.bind_property(LOAD_STATE, inscription, "text").build();
+    let binding = unit
+        .bind_property(LOAD_STATE, inscription, "text")
+        .transform_to(|_, load_state: LoadState| Some(load_state.as_str()))
+        .build();
     unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
 }
 

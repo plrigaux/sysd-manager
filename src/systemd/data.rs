@@ -160,24 +160,6 @@ mod imp {
             *self.primary.write().expect("set_primary primary") = primary;
         }
 
-        pub fn active_state(&self) -> ActiveState {
-            *self.active_state.read().expect("get active_state")
-        }
-
-        pub fn preset(&self) -> Preset {
-            *self.preset.read().expect("get preset")
-        }
-
-        pub fn set_preset(&self, preset: &str) {
-            let preset = preset.into();
-
-            *self.preset.write().expect("set_preset preset") = preset;
-        }
-
-        pub fn preset_num(&self) -> u8 {
-            self.preset().discriminant()
-        }
-
         pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
             *self.object_path.write().unwrap() = Some(update.object_path);
 
