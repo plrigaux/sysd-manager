@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-30 22:48-0400\n"
+"POT-Creation-Date: 2025-09-11 17:10-0400\n"
 "PO-Revision-Date: 2025-08-19 16:29+0000\n"
 "Last-Translator: Damglador <vse.stopchanskyi@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -109,17 +109,17 @@ msgctxt "menu"
 msgid "About"
 msgstr "Про програму"
 
-#: data/interfaces/app_window.ui:79
+#: data/interfaces/app_window.ui:75
 msgctxt "title"
 msgid "SysD Manager"
 msgstr "SysD Manager"
 
-#: data/interfaces/app_window.ui:85
+#: data/interfaces/app_window.ui:81
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
 msgstr "Відкрити рядок пошуку"
 
-#: data/interfaces/app_window.ui:92
+#: data/interfaces/app_window.ui:88
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
 msgstr ""
@@ -1111,6 +1111,30 @@ msgctxt "unit search"
 msgid "Clear Filters"
 msgstr ""
 
+#. Show all properties
+#: data/interfaces/unit_properties.ui:29
+msgctxt "unit properties"
+msgid "Show all"
+msgstr ""
+
+#. Show all properties tooltip
+#: data/interfaces/unit_properties.ui:30
+msgctxt "unit properties"
+msgid "Show empty properties"
+msgstr ""
+
+#. window title
+#: data/interfaces/unit_properties.ui:55
+msgctxt "unit properties"
+msgid "Unit Properties"
+msgstr ""
+
+#. Button tooltip-text
+#: data/interfaces/unit_properties.ui:61
+msgctxt "unit properties"
+msgid "Copy all properties to clipboard"
+msgstr ""
+
 #. dialog title
 #: src/analyze/mod.rs:28
 msgctxt "analyse blame"
@@ -1146,24 +1170,24 @@ msgstr ""
 msgid "Program starting up"
 msgstr ""
 
-#: src/systemd/enums.rs:189
+#: src/systemd/enums.rs:167
 msgctxt "list"
 msgid "The name is an alias (symlink to another unit file)."
 msgstr ""
 
-#: src/systemd/enums.rs:194
+#: src/systemd/enums.rs:172
 msgctxt "list"
 msgid "The unit file is invalid or another error occurred."
 msgstr ""
 
-#: src/systemd/enums.rs:199
+#: src/systemd/enums.rs:177
 msgctxt "list"
 msgid ""
 "The unit file is not enabled, but contains an [Install] section with "
 "installation instructions."
 msgstr ""
 
-#: src/systemd/enums.rs:204 src/systemd/enums.rs:241
+#: src/systemd/enums.rs:182 src/systemd/enums.rs:219
 msgctxt "list"
 msgid ""
 "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span "
@@ -1172,7 +1196,7 @@ msgid ""
 "<span fgcolor='#62a0ea'>/run/systemd/system/</span>)."
 msgstr ""
 
-#: src/systemd/enums.rs:209
+#: src/systemd/enums.rs:187
 msgctxt "list"
 msgid ""
 "The unit file was generated dynamically via a generator tool. See <b>man "
@@ -1180,7 +1204,7 @@ msgid ""
 "enabled implicitly by their generator."
 msgstr ""
 
-#: src/systemd/enums.rs:214
+#: src/systemd/enums.rs:192
 msgctxt "list"
 msgid ""
 "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> "
@@ -1191,7 +1215,7 @@ msgid ""
 "enabled."
 msgstr ""
 
-#: src/systemd/enums.rs:219 src/systemd/enums.rs:246
+#: src/systemd/enums.rs:197 src/systemd/enums.rs:224
 msgctxt "list"
 msgid ""
 "Made available through one or more symlinks to the unit file (permanently in "
@@ -1200,7 +1224,7 @@ msgid ""
 "might reside outside of the unit file search path."
 msgstr ""
 
-#: src/systemd/enums.rs:224 src/systemd/enums.rs:251
+#: src/systemd/enums.rs:202 src/systemd/enums.rs:229
 msgctxt "list"
 msgid ""
 "Completely disabled, so that any start operation on it fails (permanently in "
@@ -1208,14 +1232,14 @@ msgid ""
 "fgcolor='#62a0ea'>/run/systemd/systemd/</span>)."
 msgstr ""
 
-#: src/systemd/enums.rs:229
+#: src/systemd/enums.rs:207
 msgctxt "list"
 msgid ""
 "The unit file is not enabled, and has no provisions for enabling in the "
 "[Install] unit file section."
 msgstr ""
 
-#: src/systemd/enums.rs:234
+#: src/systemd/enums.rs:212
 msgctxt "list"
 msgid ""
 "The unit file has been created dynamically with the runtime API. Transient "
@@ -1223,84 +1247,84 @@ msgid ""
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:694
+#: src/systemd/enums.rs:600
 msgctxt "dependency"
 msgid "Forward"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:696
+#: src/systemd/enums.rs:602
 msgctxt "dependency"
 msgid "Reverse"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:698
+#: src/systemd/enums.rs:604
 msgctxt "dependency"
 msgid "After"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:700
+#: src/systemd/enums.rs:606
 msgctxt "dependency"
 msgid "Before"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:871
+#: src/systemd/enums.rs:777
 msgctxt "dbus"
 msgid "User Session"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:873
+#: src/systemd/enums.rs:779
 msgctxt "dbus"
 msgid "System"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:970
+#: src/systemd/enums.rs:859
 msgctxt "clean"
 msgid "_Runtime"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:972
+#: src/systemd/enums.rs:861
 msgctxt "clean"
 msgid "_State"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:974
+#: src/systemd/enums.rs:863
 msgctxt "clean"
 msgid "Cac_he"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:976
+#: src/systemd/enums.rs:865
 msgctxt "clean"
 msgid "_Logs"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:978
+#: src/systemd/enums.rs:867
 msgctxt "clean"
 msgid "_Configuration"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:980
+#: src/systemd/enums.rs:869
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:982
+#: src/systemd/enums.rs:871
 msgctxt "clean"
 msgid "_All"
 msgstr ""
 
-#: src/systemd/errors.rs:49
+#: src/systemd/errors.rs:50
 msgctxt "error"
 msgid ""
 "The program <b>flatpack-spawn</b> is needed if you use the application from "
@@ -1308,7 +1332,7 @@ msgid ""
 "Please install it to enable all features."
 msgstr ""
 
-#: src/systemd/errors.rs:56
+#: src/systemd/errors.rs:57
 msgctxt "error"
 msgid ""
 "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
@@ -1983,7 +2007,7 @@ msgid ""
 "been successfully <span fgcolor='{0}'>{}</span>"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:90
+#: src/widget/unit_control_panel/controls.rs:89
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2092,25 +2116,25 @@ msgid "Fail! {}"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:112
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:113
 msgctxt "action"
 msgid "Freeze"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:124
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:125
 msgctxt "action"
 msgid "Thaw"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:151
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:152
 msgctxt "action"
 msgid "Reload"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:245
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:246
 msgctxt "action"
 msgid "Unmask"
 msgstr ""
