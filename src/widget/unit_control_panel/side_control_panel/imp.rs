@@ -235,7 +235,7 @@ impl SideControlPanelImpl {
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
         let lambda = |unit: Option<&UnitInfo>| -> Result<(), SystemdErrors> {
             if let Some(unit) = unit {
-                let runtime = unit.enable_status_enum().is_runtime();
+                let runtime = unit.enable_status().is_runtime();
                 systemd::unmask_unit_files(unit, runtime)?;
             }
             Ok(())

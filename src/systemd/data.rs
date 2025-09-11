@@ -1,10 +1,6 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use super::{
-    SystemdUnitFile, UpdatedUnitInfo,
-    enums::{EnablementStatus, Preset, UnitDBusLevel},
-    sysdbus::LUnit,
-};
+use super::{SystemdUnitFile, UpdatedUnitInfo, enums::UnitDBusLevel, sysdbus::LUnit};
 
 use gtk::{
     glib::{self},
@@ -43,60 +39,11 @@ impl UnitInfo {
     }
 
     pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
-        self.set_object_path(update.object_path);
-
-        if let Some(description) = update.description {
-            self.set_description(description);
-        }
-
-        if let Some(sub_state) = update.sub_state {
-            self.set_sub_state(sub_state);
-        }
-
-        if let Some(active_state) = update.active_state {
-            self.set_active_state(active_state);
-        }
-
-        if let Some(unit_file_preset) = update.unit_file_preset {
-            self.set_preset(&unit_file_preset);
-        }
-
-        if let Some(load_state) = update.load_state {
-            self.set_load_state(load_state);
-        }
-
-        if let Some(fragment_path) = update.fragment_path {
-            self.set_file_path(Some(fragment_path));
-        }
-
-        if let Some(enablement_status) = update.enablement_status {
-            let enablement_status: u8 = enablement_status.into();
-            self.set_enable_status(enablement_status);
-        }
+        self.imp().update_from_unit_info(update);
     }
 
     pub fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
         self.imp().update_from_unit_file(unit_file);
-    }
-
-    pub fn preset(&self) -> Preset {
-        self.imp().preset()
-    }
-
-    pub fn preset_str(&self) -> &'static str {
-        self.imp().preset().as_str()
-    }
-
-    pub fn set_preset(&self, preset: &str) {
-        self.imp().set_preset(preset)
-    }
-
-    pub fn enable_status_enum(&self) -> EnablementStatus {
-        self.enable_status().into()
-    }
-
-    pub fn enable_status_str(&self) -> &'static str {
-        self.enable_status_enum().as_str()
     }
 
     pub fn debug(&self) -> String {
@@ -110,8 +57,8 @@ mod imp {
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
     use crate::systemd::{
-        SystemdUnitFile,
-        enums::{ActiveState, LoadState, Preset, UnitDBusLevel},
+        SystemdUnitFile, UpdatedUnitInfo,
+        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
         sysdbus::LUnit,
     };
 
@@ -143,13 +90,13 @@ mod imp {
         pub(super) object_path: RwLock<Option<String>>,
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RwLock<Option<String>>,
-        #[property(get, set, default = 0)]
-        pub(super) enable_status: RwLock<u8>,
+        #[property(get, set, default)]
+        pub(super) enable_status: RwLock<EnablementStatus>,
 
         #[property(get, set, default)]
         pub(super) dbus_level: RwLock<UnitDBusLevel>,
 
-        #[property(get=Self::preset_num, name="preset-num", type = u8)]
+        #[property(get, set, default)]
         pub(super) preset: RwLock<Preset>,
     }
 
@@ -187,12 +134,12 @@ mod imp {
             //self.set_active_state(ActiveState::Unknown);
             *self.dbus_level.write().unwrap() = unit_file.level;
             *self.file_path.write().unwrap() = Some(unit_file.path);
-            *self.enable_status.write().unwrap() = unit_file.status_code as u8;
+            *self.enable_status.write().unwrap() = unit_file.status_code;
         }
 
         pub(super) fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
             *self.file_path.write().unwrap() = Some(unit_file.path);
-            *self.enable_status.write().unwrap() = unit_file.status_code as u8
+            *self.enable_status.write().unwrap() = unit_file.status_code;
         }
 
         pub fn set_primary(&self, primary: String) {
@@ -229,6 +176,39 @@ mod imp {
 
         pub fn preset_num(&self) -> u8 {
             self.preset().discriminant()
+        }
+
+        pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
+            *self.object_path.write().unwrap() = Some(update.object_path);
+
+            if let Some(description) = update.description {
+                *self.description.write().unwrap() = description;
+            }
+
+            if let Some(sub_state) = update.sub_state {
+                *self.sub_state.write().unwrap() = sub_state;
+            }
+
+            if let Some(active_state) = update.active_state {
+                *self.active_state.write().unwrap() = active_state;
+            }
+
+            if let Some(unit_file_preset) = update.unit_file_preset {
+                let preset: Preset = unit_file_preset.into();
+                *self.preset.write().unwrap() = preset;
+            }
+
+            if let Some(load_state) = update.load_state {
+                *self.load_state.write().unwrap() = load_state;
+            }
+
+            if let Some(fragment_path) = update.fragment_path {
+                *self.file_path.write().unwrap() = Some(fragment_path);
+            }
+
+            if let Some(enablement_status) = update.enablement_status {
+                *self.enable_status.write().unwrap() = enablement_status;
+            }
         }
     }
 }

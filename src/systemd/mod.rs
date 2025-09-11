@@ -187,7 +187,7 @@ pub fn disenable_unit_file(
             DisEnableUnitFilesOutput::Enable(res)
         }
         _ => {
-            let enable_status = unit.enable_status_enum();
+            let enable_status = unit.enable_status();
 
             let flags = if enable_status.is_runtime() {
                 DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME

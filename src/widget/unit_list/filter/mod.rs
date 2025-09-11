@@ -73,7 +73,7 @@ pub fn filter_enable_status(
     property_assessor: &FilterElementAssessor<EnablementStatus>,
     unit: &UnitInfo,
 ) -> bool {
-    property_assessor.filter_unit_value(&unit.enable_status_enum())
+    property_assessor.filter_unit_value(&unit.enable_status())
 }
 
 pub fn filter_load_state(

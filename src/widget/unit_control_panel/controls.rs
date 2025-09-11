@@ -19,12 +19,12 @@ pub(super) fn switch_ablement_state_set(
     info!(
         "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}",
         unit.primary(),
-        unit.enable_status_str(),
+        unit.enable_status().as_str(),
         switch.is_active(),
         switch.state()
     );
 
-    let current_enabled_status = unit.enable_status_enum();
+    let current_enabled_status = unit.enable_status();
 
     if expected_new_status == current_enabled_status {
         set_switch_tooltip(current_enabled_status, switch, &unit.primary());
@@ -64,10 +64,9 @@ pub(super) fn switch_ablement_state_set(
 
                 control_panel.add_toast_message(&toast_info, true);
 
-                unit.set_enable_status(expected_new_status as u8);
+                unit.set_enable_status(expected_new_status);
 
-                let enabled_new = expected_new_status == EnablementStatus::Enabled;
-                switch.set_state(enabled_new);
+                switch.set_state(expected_new_status == EnablementStatus::Enabled);
             }
 
             Err(error) => {
@@ -119,7 +118,7 @@ pub(super) fn handle_switch_sensivity(
     unit: &UnitInfo,
     check_current_state: bool,
 ) {
-    let mut unit_file_state = unit.enable_status_enum();
+    let mut unit_file_state = unit.enable_status();
 
     if check_current_state {
         let switch = switch.clone();
@@ -139,7 +138,7 @@ pub(super) fn handle_switch_sensivity(
 
             if current_state != unit_file_state {
                 unit_file_state = current_state;
-                unit.set_enable_status(unit_file_state as u8);
+                unit.set_enable_status(unit_file_state);
             }
 
             handle_switch_sensivity_part2(&switch, &unit, unit_file_state);

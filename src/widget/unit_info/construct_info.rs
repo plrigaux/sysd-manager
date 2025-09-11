@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 
 use crate::consts::U64MAX;
-use crate::systemd::enums::{LoadState, UnitDBusLevel};
+use crate::systemd::enums::{LoadState, Preset, UnitDBusLevel};
 use crate::utils::th::{self, TimestampStyle};
 use crate::utils::writer::{
     HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE,
@@ -335,7 +335,8 @@ fn fill_load_state(
             }
             unit_writer.insert("preset: ");
             let unit_file_preset = value_to_str(unit_file_preset);
-            unit.set_preset(unit_file_preset);
+            let preset: Preset = unit_file_preset.into();
+            unit.set_preset(preset);
             write_enabled_state(unit_writer, unit_file_preset);
         }
 

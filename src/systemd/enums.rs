@@ -14,7 +14,8 @@ const MASKED: &str = "masked";
 const ENABLED: &str = "enabled";
 const LINKED: &str = "linked";
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash, glib::Enum)]
+#[enum_type(name = "Preset")]
 pub enum Preset {
     #[default]
     UnSet = 0,
@@ -63,6 +64,12 @@ impl From<&str> for Preset {
     }
 }
 
+impl From<String> for Preset {
+    fn from(value: String) -> Self {
+        value.as_str().into()
+    }
+}
+
 impl From<u8> for Preset {
     fn from(value: u8) -> Self {
         match value {
@@ -89,7 +96,10 @@ impl Ord for Preset {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash, glib::Enum, PartialOrd, Ord,
+)]
+#[enum_type(name = "EnablementStatus")]
 pub enum EnablementStatus {
     #[default]
     Unknown = 0,
@@ -313,7 +323,9 @@ impl From<u8> for EnablementStatus {
     }
 }
 
-#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash, glib::Enum)]
+#[derive(
+    Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash, glib::Enum, PartialOrd, Ord,
+)]
 #[enum_type(name = "ActiveState")]
 pub enum ActiveState {
     Unknown = 0,
@@ -415,20 +427,6 @@ impl ActiveState {
         };
 
         Some(value)
-    }
-}
-
-impl PartialOrd for ActiveState {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for ActiveState {
-    fn cmp(&self, other: &Self) -> Ordering {
-        let value = self.discriminant();
-        let other_value = other.discriminant();
-        value.cmp(&other_value)
     }
 }
 

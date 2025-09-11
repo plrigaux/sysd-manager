@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use gtk::{glib, prelude::*};
-use log::{debug, warn};
+use log::debug;
 
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::{EnablementStatus, LoadState, Preset};
@@ -82,6 +82,16 @@ macro_rules! factory_bind {
     }};
 }
 
+macro_rules! factory_bind_enum {
+    ($item_obj:expr, $func:ident) => {{
+        let (inscription, unit_binding) = factory_bind_pre!($item_obj);
+        let unit = unit_binding.unit();
+        let text = unit.$func().as_str();
+        inscription.set_text(Some(&text));
+        (inscription, unit, unit_binding)
+    }};
+}
+
 //TODO bind properties
 macro_rules! display_inactive {
     ($widget:expr, $unit:expr) => {
@@ -129,10 +139,7 @@ pub fn setup_factories(
 
     {
         fac_bus.connect_bind(move |_factory, object| {
-            let (inscription, unit_binding) = factory_bind_pre!(object);
-            let unit = unit_binding.unit();
-            let dbus_level = unit.dbus_level();
-            inscription.set_text(Some(dbus_level.as_str()));
+            let (inscription, unit, _unit_binding) = factory_bind_enum!(object, dbus_level);
             display_inactive!(inscription, unit);
         });
     }
@@ -256,7 +263,7 @@ pub fn setup_factories(
     }
 }
 
-const LOAD_STATE_NUM: &str = "load_state";
+const LOAD_STATE: &str = "load_state";
 fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_load_state = gtk::SignalListItemFactory::new();
 
@@ -270,7 +277,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             load_state_text_binding(&inscription, &unit_binding, &unit);
 
             let binding = unit
-                .bind_property(LOAD_STATE_NUM, &inscription, "css-classes")
+                .bind_property(LOAD_STATE, &inscription, "css-classes")
                 .transform_to(|_, load_state: LoadState| {
                     let css_classes = load_state_css_classes(load_state);
                     css_classes.map(|css| css.to_value())
@@ -292,12 +299,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
         factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_CSS);
     } else {
         fac_load_state.connect_bind(move |_factory, object| {
-            //     let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
-
-            let (inscription, unit_binding) = factory_bind_pre!(object);
-            let unit = unit_binding.unit();
-            let text = unit.load_state().as_str();
-            inscription.set_text(Some(text));
+            let (inscription, unit, unit_binding) = factory_bind_enum!(object, load_state);
 
             load_state_text_binding(&inscription, &unit_binding, &unit);
 
@@ -315,9 +317,7 @@ fn load_state_text_binding(
     unit_binding: &UnitBinding,
     unit: &UnitInfo,
 ) {
-    let binding = unit
-        .bind_property(LOAD_STATE_NUM, inscription, "text")
-        .build();
+    let binding = unit.bind_property(LOAD_STATE, inscription, "text").build();
     unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
 }
 
@@ -339,16 +339,14 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             let (inscription, unit_binding) = factory_bind_pre!(object);
 
             let unit = unit_binding.unit_ref();
-            let status_code = unit.enable_status_enum();
+            let status_code = unit.enable_status();
             inscription.set_text(Some(status_code.as_str()));
             inscription.set_tooltip_markup(status_code.tooltip_info().as_deref());
 
             let binding = unit
                 .bind_property("enable_status", &inscription, "text")
-                .transform_to(|_, status: u8| {
-                    let enablement_status: EnablementStatus = status.into();
-                    let str = enablement_status.to_string();
-                    Some(str)
+                .transform_to(|_, enablement_status: EnablementStatus| {
+                    Some(enablement_status.as_str())
                 })
                 .build();
 
@@ -356,17 +354,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
 
             let binding = unit
                 .bind_property("enable_status", &inscription, "css-classes")
-                .transform_to_with_values(move |_s, value| {
-                    let value = match value.get::<u8>() {
-                        Ok(v) => v,
-                        Err(err) => {
-                            warn!("The variant needs to be of type `u8`. {err:?}");
-                            return None;
-                        }
-                    };
-
-                    let enablement_status: EnablementStatus = value.into();
-
+                .transform_to(|_, enablement_status: EnablementStatus| {
                     let css_classes = enablement_css_classes(enablement_status);
                     css_classes.map(|css| css.to_value())
                 })
@@ -390,15 +378,11 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
         );
     } else {
         fac_enable_status.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, enable_status_str);
+            let (inscription, unit, unit_binding) = factory_bind_enum!(object, enable_status);
 
             let binding = unit
                 .bind_property("enable_status", &inscription, "text")
-                .transform_to(|_, status: u8| {
-                    let estatus: EnablementStatus = status.into();
-                    let str = estatus.to_string();
-                    Some(str)
-                })
+                .transform_to(|_, status: EnablementStatus| Some(status.as_str()))
                 .build();
 
             unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
@@ -425,7 +409,7 @@ fn enablement_css_classes<'a>(enablement_status: EnablementStatus) -> Option<[&'
     }
 }
 
-const PRESET_NUM: &str = "preset-num";
+const PRESET_NUM: &str = "preset";
 
 fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_preset = gtk::SignalListItemFactory::new();
@@ -434,21 +418,13 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
 
     if display_color {
         fac_preset.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, preset_str);
+            let (inscription, unit, unit_binding) = factory_bind_enum!(object, preset);
 
             preset_text_binding(&inscription, &unit, &unit_binding);
 
             let binding = unit
                 .bind_property(PRESET_NUM, &inscription, "css-classes")
-                .transform_to_with_values(move |_s, value| {
-                    let preset_value = match value.get::<u8>() {
-                        Ok(v) => v,
-                        Err(err) => {
-                            warn!("The variant needs to be of type `u8`. {err:?}");
-                            return None;
-                        }
-                    };
-                    let preset_value: Preset = preset_value.into();
+                .transform_to(move |_s, preset_value: Preset| {
                     let css_classes = preset_css_classes(preset_value);
                     css_classes.map(|css| css.to_value())
                 })
@@ -469,7 +445,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
         factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_CSS);
     } else {
         fac_preset.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, preset_str);
+            let (inscription, unit, unit_binding) = factory_bind_enum!(object, preset);
 
             preset_text_binding(&inscription, &unit, &unit_binding);
             display_inactive!(inscription, unit);
@@ -487,15 +463,7 @@ fn preset_text_binding(
 ) {
     let binding = unit
         .bind_property(PRESET_NUM, inscription, "text")
-        .transform_to_with_values(move |_s, value| {
-            let preset_value = match value.get::<u8>() {
-                Ok(v) => v,
-                Err(err) => {
-                    warn!("The variant needs to be of type `u8`. {err:?}");
-                    return None;
-                }
-            };
-            let preset: Preset = preset_value.into();
+        .transform_to(move |_s, preset: Preset| {
             let preset_str = preset.as_str();
             Some(preset_str.to_value())
         })
