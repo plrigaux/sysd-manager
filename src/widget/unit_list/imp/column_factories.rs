@@ -163,12 +163,8 @@ pub fn setup_factories(
         icon_image.set_tooltip_text(Some(state.as_str()));
 
         let binding = unit
-            .bind_property("active_state_num", &icon_image, "icon-name")
-            .transform_to(|_, state: u8| {
-                let state: ActiveState = state.into();
-                state.icon_name()
-                //icon_name!(state)
-            })
+            .bind_property("active_state", &icon_image, "icon-name")
+            .transform_to(|_, state: ActiveState| state.icon_name())
             .build();
 
         unit_binding.set_binding(BIND_ENABLE_ACTIVE_ICON, binding);
@@ -260,7 +256,7 @@ pub fn setup_factories(
     }
 }
 
-const LOAD_STATE_NUM: &str = "load_state_num";
+const LOAD_STATE_NUM: &str = "load_state";
 fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_load_state = gtk::SignalListItemFactory::new();
 
@@ -275,16 +271,8 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
 
             let binding = unit
                 .bind_property(LOAD_STATE_NUM, &inscription, "css-classes")
-                .transform_to_with_values(move |_s, value| {
-                    let load_state_value = match value.get::<u8>() {
-                        Ok(v) => LoadState::from(v),
-                        Err(err) => {
-                            warn!("The variant needs to be of type `String`. {err:?}");
-                            return None;
-                        }
-                    };
-
-                    let css_classes = load_state_css_classes(&load_state_value);
+                .transform_to(|_, load_state: LoadState| {
+                    let css_classes = load_state_css_classes(load_state);
                     css_classes.map(|css| css.to_value())
                 })
                 .build();
@@ -294,7 +282,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             let load_state = unit.load_state();
             inscription.set_text(Some(load_state.as_str()));
 
-            let css_classes = load_state_css_classes(&load_state);
+            let css_classes = load_state_css_classes(load_state);
             if let Some(css) = css_classes {
                 inscription.set_css_classes(&css);
             } else {
@@ -304,7 +292,12 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
         factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_CSS);
     } else {
         fac_load_state.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind!(object, load_state_str);
+            //     let (inscription, unit, unit_binding) = factory_bind!(object, load_state);
+
+            let (inscription, unit_binding) = factory_bind_pre!(object);
+            let unit = unit_binding.unit();
+            let text = unit.load_state().as_str();
+            inscription.set_text(Some(text));
 
             load_state_text_binding(&inscription, &unit_binding, &unit);
 
@@ -328,7 +321,7 @@ fn load_state_text_binding(
     unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
 }
 
-fn load_state_css_classes<'a>(load_state: &LoadState) -> Option<[&'a str; 2]> {
+fn load_state_css_classes<'a>(load_state: LoadState) -> Option<[&'a str; 2]> {
     match load_state {
         LoadState::NotFound => Some(["yellow", "bold"]),
         LoadState::BadSetting | LoadState::Error | LoadState::Masked => Some(["red", "bold"]),

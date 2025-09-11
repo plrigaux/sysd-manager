@@ -313,8 +313,8 @@ impl From<u8> for EnablementStatus {
     }
 }
 
-#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash)]
-#[repr(u8)]
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash, glib::Enum)]
+#[enum_type(name = "ActiveState")]
 pub enum ActiveState {
     Unknown = 0,
     Active = 1,
@@ -836,7 +836,7 @@ impl From<Option<glib::Object>> for StartStopMode {
 }
 
 #[derive(
-    Debug, Copy, Clone, PartialEq, Eq, glib::Enum, Default, Hash, EnumIter, Ord, PartialOrd,
+    Debug, Copy, Clone, PartialEq, Eq, glib::Enum, Default, EnumIter, Hash, Ord, PartialOrd,
 )]
 #[enum_type(name = "UnitDBusLevel")]
 pub enum UnitDBusLevel {
@@ -996,7 +996,10 @@ impl CleanOption {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Hash, Default, Ord, PartialOrd)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, EnumIter, Hash, Default, Ord, PartialOrd, glib::Enum,
+)]
+#[enum_type(name = "LoadState")]
 pub enum LoadState {
     #[default]
     Unknown = 0,
@@ -1040,12 +1043,37 @@ impl LoadState {
 
 impl From<&str> for LoadState {
     fn from(value: &str) -> Self {
+        Some(value).into()
+    }
+}
+
+impl From<Option<&str>> for LoadState {
+    fn from(value: Option<&str>) -> Self {
         match value {
-            "loaded" => LoadState::Loaded,
-            "not-found" => LoadState::NotFound,
-            "bad-setting" => LoadState::BadSetting,
-            "error" => LoadState::Error,
-            "masked" => LoadState::Masked,
+            Some("loaded") => LoadState::Loaded,
+            Some("not-found") => LoadState::NotFound,
+            Some("bad-setting") => LoadState::BadSetting,
+            Some("error") => LoadState::Error,
+            Some("masked") => LoadState::Masked,
+            _ => LoadState::Unknown,
+        }
+    }
+}
+
+impl From<Option<String>> for LoadState {
+    fn from(value: Option<String>) -> Self {
+        match value {
+            Some(s) => s.as_str().into(),
+            None => LoadState::Unknown,
+        }
+    }
+}
+
+impl From<Option<&OwnedValue>> for LoadState {
+    fn from(value: Option<&OwnedValue>) -> Self {
+        let value: Option<&zvariant::Value> = value.map(|v| &**v);
+        match value {
+            Some(zvariant::Value::Str(zvalue)) => zvalue.as_str().into(),
             _ => LoadState::Unknown,
         }
     }

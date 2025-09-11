@@ -28,7 +28,7 @@ use crate::{
     systemd::{
         UnitProperty,
         data::{EnableUnitFilesReturn, UnitInfo},
-        enums::{ActiveState, UnitType},
+        enums::{ActiveState, LoadState, UnitType},
     },
     widget::preferences::data::{DbusLevel, PREFERENCES},
 };
@@ -370,7 +370,19 @@ async fn fill_update(
     let active_state: ActiveState = active_state.as_str().into();
     update.active_state = Some(active_state);
     fill_completing_info!(update, unit_info_proxy, description);
-    fill_completing_info!(update, unit_info_proxy, load_state);
+
+    let load_state = unit_info_proxy
+        .load_state()
+        .await
+        .map_err(|e| {
+            warn!("bus {e:?}");
+            let e: SystemdErrors = e.into();
+            e
+        })
+        .ok();
+    let load_state: LoadState = load_state.into();
+    update.load_state = Some(load_state);
+
     fill_completing_info!(update, unit_info_proxy, sub_state);
     fill_completing_info!(update, unit_info_proxy, unit_file_preset);
     fill_completing_info!(update, unit_info_proxy, fragment_path);

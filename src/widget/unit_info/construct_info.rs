@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 
 use crate::consts::U64MAX;
-use crate::systemd::enums::UnitDBusLevel;
+use crate::systemd::enums::{LoadState, UnitDBusLevel};
 use crate::utils::th::{self, TimestampStyle};
 use crate::utils::writer::{
     HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE,
@@ -278,20 +278,13 @@ fn fill_load_state(
     map: &HashMap<String, OwnedValue>,
     unit: &UnitInfo,
 ) {
-    let load_state = match map.get("LoadState") {
-        Some(value) => {
-            let load_state = value_to_str(value);
-            unit.set_load_state(load_state);
-            load_state
-        }
-        None => {
-            unit.set_load_state("");
-            "Not loaded"
-        }
-    };
+    let load_state = map.get("LoadState");
+    let load_state: LoadState = load_state.into();
+
+    unit.set_load_state(load_state);
 
     write_key(unit_writer, "Loaded:");
-    unit_writer.insert(load_state);
+    unit_writer.insert(load_state.as_str());
 
     let three_param = [
         map.get("FragmentPath"),

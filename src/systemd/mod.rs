@@ -30,7 +30,7 @@ use tokio::runtime::Runtime;
 use tokio::sync::mpsc;
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-use crate::systemd::data::EnableUnitFilesReturn;
+use crate::systemd::{data::EnableUnitFilesReturn, enums::LoadState};
 
 pub mod enums;
 
@@ -81,7 +81,7 @@ pub struct UpdatedUnitInfo {
     pub primary: String,
     pub object_path: String,
     pub description: Option<String>,
-    pub load_state: Option<String>,
+    pub load_state: Option<LoadState>,
     pub sub_state: Option<String>,
     pub active_state: Option<ActiveState>,
     pub unit_file_preset: Option<String>,
