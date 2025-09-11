@@ -5,7 +5,6 @@ use gettextrs::pgettext;
 use gtk::glib::{self, EnumValue};
 use gtk::prelude::*;
 use log::{info, warn};
-use std::cmp::Ordering;
 use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
 use zvariant::OwnedValue;
@@ -14,14 +13,16 @@ const MASKED: &str = "masked";
 const ENABLED: &str = "enabled";
 const LINKED: &str = "linked";
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash, glib::Enum)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash, glib::Enum, Ord, PartialOrd,
+)]
 #[enum_type(name = "Preset")]
 pub enum Preset {
     #[default]
-    UnSet = 0,
-    Enabled = 1,
-    Disabled = 2,
-    Ignore = 3,
+    UnSet,
+    Enabled,
+    Disabled,
+    Ignore,
 }
 
 impl Preset {
@@ -39,13 +40,6 @@ impl Preset {
             Preset::UnSet => "<i>not set</i>",
             _ => self.as_str(),
         }
-    }
-
-    pub fn discriminant(&self) -> u8 {
-        // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
-        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
-        // field, so we can read the discriminant without offsetting the pointer.
-        unsafe { *<*const _>::from(self).cast::<u8>() }
     }
 
     pub fn tooltip_info(&self) -> Option<&str> {
@@ -70,52 +64,26 @@ impl From<String> for Preset {
     }
 }
 
-impl From<u8> for Preset {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => Preset::UnSet,
-            1 => Preset::Disabled,
-            2 => Preset::Enabled,
-            3 => Preset::Ignore,
-            _ => Preset::UnSet,
-        }
-    }
-}
-
-impl PartialOrd for Preset {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Preset {
-    fn cmp(&self, other: &Self) -> Ordering {
-        let value = self.discriminant();
-        let other_value = other.discriminant();
-        value.cmp(&other_value)
-    }
-}
-
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash, glib::Enum, PartialOrd, Ord,
 )]
 #[enum_type(name = "EnablementStatus")]
 pub enum EnablementStatus {
     #[default]
-    Unknown = 0,
-    Alias = 1,
-    Bad = 2,
-    Disabled = 3,
-    Enabled = 4,
-    EnabledRuntime = 11,
-    Generated = 5,
-    Indirect = 6,
-    Linked = 7,
-    LinkedRuntime = 12,
-    Masked = 8,
-    MaskedRuntime = 13,
-    Static = 9,
-    Transient = 10,
+    Unknown,
+    Alias,
+    Bad,
+    Disabled,
+    Enabled,
+    EnabledRuntime,
+    Generated,
+    Indirect,
+    Linked,
+    LinkedRuntime,
+    Masked,
+    MaskedRuntime,
+    Static,
+    Transient,
 }
 
 impl EnablementStatus {
@@ -294,50 +262,21 @@ impl From<&str> for EnablementStatus {
     }
 }
 
-impl From<EnablementStatus> for u8 {
-    fn from(value: EnablementStatus) -> Self {
-        value as u8
-    }
-}
-
-impl From<u8> for EnablementStatus {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => Self::Unknown,
-            1 => Self::Alias,
-            2 => Self::Bad,
-            3 => Self::Disabled,
-            4 => Self::Enabled,
-            5 => Self::Generated,
-            6 => Self::Indirect,
-            7 => Self::Linked,
-            8 => Self::Masked,
-            9 => Self::Static,
-            10 => Self::Transient,
-            11 => Self::EnabledRuntime,
-            12 => Self::LinkedRuntime,
-            13 => Self::MaskedRuntime,
-
-            _ => Self::Unknown,
-        }
-    }
-}
-
 #[derive(
     Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash, glib::Enum, PartialOrd, Ord,
 )]
 #[enum_type(name = "ActiveState")]
 pub enum ActiveState {
-    Unknown = 0,
-    Active = 1,
-    Reloading = 2,
+    Unknown,
+    Active,
+    Reloading,
     #[default]
-    Inactive = 3,
-    Failed = 4,
-    Activating = 5,
-    Deactivating = 6,
-    Maintenance = 7,
-    Refreshing = 8,
+    Inactive,
+    Failed,
+    Activating,
+    Deactivating,
+    Maintenance,
+    Refreshing,
 }
 
 impl ActiveState {
@@ -441,30 +380,6 @@ impl From<&str> for ActiveState {
             "maintenance" => ActiveState::Maintenance,
             "refreshing" => ActiveState::Refreshing,
             _ => ActiveState::Unknown,
-        }
-    }
-}
-
-impl From<u8> for ActiveState {
-    fn from(value: u8) -> Self {
-        let state: ActiveState = (value as u32).into();
-        state
-    }
-}
-
-impl From<u32> for ActiveState {
-    fn from(value: u32) -> Self {
-        match value {
-            0 => Self::Unknown,
-            1 => Self::Active,
-            2 => Self::Reloading,
-            3 => Self::Inactive,
-            4 => Self::Failed,
-            5 => Self::Activating,
-            6 => Self::Deactivating,
-            7 => Self::Maintenance,
-            8 => Self::Refreshing,
-            _ => Self::Unknown,
         }
     }
 }
@@ -1049,51 +964,7 @@ impl From<Option<&OwnedValue>> for LoadState {
 #[cfg(test)]
 mod tests {
 
-    use strum::IntoEnumIterator;
-
     use super::*;
-
-    #[test]
-    fn test_enablement_status_any_number() {
-        let num: u32 = 1000;
-        let status: EnablementStatus = (num as u8).into();
-        assert_eq!(status, EnablementStatus::Unknown)
-    }
-
-    #[test]
-    fn test_enablement_status_mapping() {
-        for status in EnablementStatus::iter() {
-            assert_num_mapping_enablement_status(status);
-        }
-    }
-
-    fn assert_num_mapping_enablement_status(status: EnablementStatus) {
-        let val: u8 = status.into();
-        let convert: EnablementStatus = val.into();
-        assert_eq!(convert, status)
-    }
-
-    #[test]
-    fn test_active_state_any_number() {
-        assert_eq!(<u32 as Into<ActiveState>>::into(1000), ActiveState::Unknown)
-    }
-
-    #[test]
-    fn test_active_state_mapping() {
-        assert_num_mapping_active_state(ActiveState::Unknown);
-        assert_num_mapping_active_state(ActiveState::Active);
-        assert_num_mapping_active_state(ActiveState::Inactive);
-
-        for state in ActiveState::iter() {
-            assert_num_mapping_active_state(state);
-        }
-    }
-
-    fn assert_num_mapping_active_state(status: ActiveState) {
-        let val = status as u32;
-        let convert: ActiveState = val.into();
-        assert_eq!(convert, status)
-    }
 
     #[test]
     fn test_kill_who_glib() {
@@ -1104,14 +975,6 @@ mod tests {
 
     fn assert_kill(kill: KillWho) {
         assert_eq!(kill.as_str(), kill.to_string())
-    }
-
-    #[test]
-    fn test_preset() {
-        assert_eq!(Preset::UnSet.discriminant(), 0);
-        assert_eq!(Preset::Enabled.discriminant(), 1);
-        assert_eq!(Preset::Disabled.discriminant(), 2);
-        assert_eq!(Preset::Ignore.discriminant(), 3);
     }
 
     #[test]
