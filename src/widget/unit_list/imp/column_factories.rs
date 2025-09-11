@@ -26,18 +26,14 @@ macro_rules! downcast_list_item {
     }};
 }
 
-macro_rules! factory_setup {
-    ($list_item_object:expr) => {{
-        let list_item = downcast_list_item!($list_item_object);
-        let inscription = gtk::Inscription::builder()
-            .xalign(0.0)
-            .wrap_mode(gtk::pango::WrapMode::None)
-            .build();
+fn factory_setup(_factory: &gtk::SignalListItemFactory, object: &glib::Object) {
+    let list_item = downcast_list_item!(object);
+    let inscription = gtk::Inscription::builder()
+        //        .xalign(0.0)
+        .wrap_mode(gtk::pango::WrapMode::None)
+        .build();
 
-        //println!("tree {}", inscription.css_name());
-        list_item.set_child(Some(&inscription));
-        inscription
-    }};
+    list_item.set_child(Some(&inscription));
 }
 
 macro_rules! downcast_unit_binding {
@@ -105,9 +101,7 @@ pub fn setup_factories(
     let display_color = unit_list.display_color();
     let fac_unit_name = gtk::SignalListItemFactory::new();
 
-    fac_unit_name.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_unit_name.connect_setup(factory_setup);
 
     {
         //let unit_list = unit_list.clone();
@@ -119,9 +113,7 @@ pub fn setup_factories(
 
     let fac_unit_type = gtk::SignalListItemFactory::new();
 
-    fac_unit_type.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_unit_type.connect_setup(factory_setup);
 
     {
         //let unit_list = unit_list.clone();
@@ -133,14 +125,14 @@ pub fn setup_factories(
 
     let fac_bus = gtk::SignalListItemFactory::new();
 
-    fac_bus.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_bus.connect_setup(factory_setup);
 
     {
-        // let unit_list = unit_list.clone();
         fac_bus.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind!(object, dbus_level_str);
+            let (inscription, unit_binding) = factory_bind_pre!(object);
+            let unit = unit_binding.unit();
+            let dbus_level = unit.dbus_level();
+            inscription.set_text(Some(dbus_level.as_str()));
             display_inactive!(inscription, unit);
         });
     }
@@ -187,9 +179,7 @@ pub fn setup_factories(
 
     let fac_sub_state = gtk::SignalListItemFactory::new();
 
-    fac_sub_state.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_sub_state.connect_setup(factory_setup);
 
     fac_sub_state.connect_bind(|_factory, object| {
         let (inscription, unit, unit_binding) = factory_bind!(object, sub_state);
@@ -204,9 +194,7 @@ pub fn setup_factories(
 
     let fac_descrition = gtk::SignalListItemFactory::new();
 
-    fac_descrition.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_descrition.connect_setup(factory_setup);
 
     fac_descrition.connect_bind(|_factory, object| {
         let (inscription, unit, unit_binding) = factory_bind!(object, description);
@@ -276,9 +264,7 @@ const LOAD_STATE_NUM: &str = "load_state_num";
 fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_load_state = gtk::SignalListItemFactory::new();
 
-    fac_load_state.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_load_state.connect_setup(factory_setup);
 
     if display_color {
         fac_load_state.connect_bind(move |_factory, object| {
@@ -353,9 +339,7 @@ fn load_state_css_classes<'a>(load_state: &LoadState) -> Option<[&'a str; 2]> {
 fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_enable_status = gtk::SignalListItemFactory::new();
 
-    fac_enable_status.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_enable_status.connect_setup(factory_setup);
 
     if display_color {
         fac_enable_status.connect_bind(move |_factory, object| {
@@ -453,9 +437,7 @@ const PRESET_NUM: &str = "preset-num";
 fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_preset = gtk::SignalListItemFactory::new();
 
-    fac_preset.connect_setup(|_factory, object| {
-        factory_setup!(object);
-    });
+    fac_preset.connect_setup(factory_setup);
 
     if display_color {
         fac_preset.connect_bind(move |_factory, object| {
