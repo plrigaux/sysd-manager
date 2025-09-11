@@ -836,7 +836,7 @@ impl From<Option<glib::Object>> for StartStopMode {
 }
 
 #[derive(
-    Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default, Hash, EnumIter, glib::Enum,
+    Debug, Copy, Clone, PartialEq, Eq, glib::Enum, Default, Hash, EnumIter, Ord, PartialOrd,
 )]
 #[enum_type(name = "UnitDBusLevel")]
 pub enum UnitDBusLevel {

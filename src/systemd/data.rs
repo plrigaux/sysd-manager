@@ -99,14 +99,6 @@ impl UnitInfo {
         self.imp().set_preset(preset)
     }
 
-    pub fn dbus_level(&self) -> UnitDBusLevel {
-        *self.imp().level.read().unwrap()
-    }
-
-    pub fn dbus_level_str(&self) -> &'static str {
-        self.dbus_level().as_str()
-    }
-
     pub fn enable_status_enum(&self) -> EnablementStatus {
         self.enable_status().into()
     }
@@ -174,7 +166,8 @@ mod imp {
         #[property(get, set, default = 0)]
         pub(super) enable_status: RwLock<u8>,
 
-        pub(super) level: RwLock<UnitDBusLevel>,
+        #[property(get, set, default)]
+        pub(super) dbus_level: RwLock<UnitDBusLevel>,
 
         #[property(get=Self::preset_num, name="preset-num", type = u8)]
         pub(super) preset: RwLock<Preset>,
@@ -205,13 +198,13 @@ mod imp {
             *self.sub_state.write().unwrap() = listed_unit.sub_state.to_owned();
             *self.followed_unit.write().unwrap() = listed_unit.followed_unit.to_owned();
             *self.object_path.write().unwrap() = Some(listed_unit.unit_object_path.to_string());
-            *self.level.write().unwrap() = dbus_level;
+            *self.dbus_level.write().unwrap() = dbus_level;
         }
 
         pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile) {
             self.set_primary(unit_file.full_name);
             self.set_active_state(ActiveState::Unknown);
-            *self.level.write().unwrap() = unit_file.level;
+            *self.dbus_level.write().unwrap() = unit_file.level;
             *self.file_path.write().unwrap() = Some(unit_file.path);
             *self.enable_status.write().unwrap() = unit_file.status_code as u8;
         }
