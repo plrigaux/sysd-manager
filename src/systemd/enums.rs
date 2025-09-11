@@ -313,8 +313,8 @@ impl From<u8> for EnablementStatus {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, glib::Enum, Default, Hash, EnumIter)]
-#[enum_type(name = "ActiveState")]
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash)]
+#[repr(u8)]
 pub enum ActiveState {
     Unknown = 0,
     Active = 1,

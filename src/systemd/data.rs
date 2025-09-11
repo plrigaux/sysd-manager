@@ -2,7 +2,7 @@ use std::{cmp::Ordering, fmt::Debug};
 
 use super::{
     SystemdUnitFile, UpdatedUnitInfo,
-    enums::{EnablementStatus, LoadState, Preset, UnitDBusLevel},
+    enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
     sysdbus::LUnit,
 };
 
@@ -79,13 +79,13 @@ impl UnitInfo {
         self.imp().update_from_unit_file(unit_file);
     }
 
-    /*     pub fn active_state(&self) -> ActiveState {
+    pub fn active_state(&self) -> ActiveState {
         self.imp().active_state()
     }
 
     pub fn set_active_state(&self, state: ActiveState) {
         self.imp().set_active_state(state)
-    } */
+    }
 
     pub fn preset(&self) -> Preset {
         self.imp().preset()
@@ -149,8 +149,8 @@ mod imp {
         #[property(get=Self::load_state_num, name="load-state-num", type = u8)]
         pub(super) load_state: RwLock<LoadState>,
 
-        #[property(get, set, builder(ActiveState::Unknown))]
-        //pub(super) active_state_num: RwLock<u8>,
+        #[property(get, set=Self::set_active_state_num)]
+        pub(super) active_state_num: RwLock<u8>,
         pub(super) active_state: RwLock<ActiveState>,
 
         #[property(get, set)]
@@ -191,8 +191,7 @@ mod imp {
             let active_state: ActiveState = listed_unit.active_state.into();
 
             self.set_primary(listed_unit.primary_unit_name.to_owned());
-
-            *self.active_state.write().unwrap() = active_state;
+            self.set_active_state(active_state);
 
             *self.description.write().unwrap() = listed_unit.description.to_owned();
             self.set_load_state(listed_unit.load_state);
@@ -204,7 +203,7 @@ mod imp {
 
         pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile) {
             self.set_primary(unit_file.full_name);
-            //   *self.active_state.write().unwrap() = ActiveState::Unknown;
+            self.set_active_state(ActiveState::Unknown);
             *self.dbus_level.write().unwrap() = unit_file.level;
             *self.file_path.write().unwrap() = Some(unit_file.path);
             *self.enable_status.write().unwrap() = unit_file.status_code as u8;
@@ -232,7 +231,7 @@ mod imp {
 
             *self.primary.write().expect("set_primary primary") = primary;
         }
-        /*
+
         pub fn set_active_state_num(&self, state: u8) {
             *self
                 .active_state_num
@@ -248,7 +247,7 @@ mod imp {
 
             //call this way to make binding works
             self.obj().set_active_state_num(state as u8)
-        } */
+        }
 
         pub fn active_state(&self) -> ActiveState {
             *self.active_state.read().expect("get active_state")
