@@ -102,9 +102,8 @@ fn main() -> glib::ExitCode {
         info!("Flatpak version");
     }
 
-    match gio::resources_register_include!("sysd-manager.gresource") {
-        Ok(_) => (),
-        Err(e) => warn!("Failed to register resources. Error: {e:?}"),
+    if let Err(e) = gio::resources_register_include!("sysd-manager.gresource") {
+        warn!("Failed to register resources. Error: {e:?}");
     }
 
     // Create a new application
