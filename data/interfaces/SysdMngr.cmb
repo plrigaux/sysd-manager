@@ -5,7 +5,7 @@
   <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="9cef0bcb46c8090e884e43457eb35d6094c113739a4c4706ec1aaed8d412d2e6"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="88b7c58874d4c0848f7089b58fb70f13945f10dad1b64a46b10eec83e4608c1f"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="5f3536e3157dadd1fb4b4ad8972fdff11b9de2d344652cab27a1a3e4f609a1e8"/>
-  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="93f4462e985d7f8c833680180b86cf0c881745963383cc0b4d420249c3ceb8ab"/>
+  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="ebb5e9f00d7bc1d0f4e524822cf35a37ee0721780ab116dc17b156fbf5d54107"/>
   <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="f24eb2a8d91d07c816ae89ec1fe92b6c401416a46deadccb7b3ce7e5a213c462"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="494ba469fc1ba0d3bcf680f3082fecd5cf3c0c3a237ea806f450c0c52778afb5"/>

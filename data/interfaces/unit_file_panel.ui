@@ -12,18 +12,6 @@
         <child>
           <object class="AdwViewStackPage">
             <property name="child">
-              <object class="AdwStatusPage">
-                <property name="description" translatable="yes" context="file" comments="description">The  unit has no file associated</property>
-                <property name="icon-name">unreadable-symbolic</property>
-                <property name="title" translatable="yes" context="file" comments="title">No unit file</property>
-              </object>
-            </property>
-            <property name="name">empty</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwViewStackPage">
-            <property name="child">
               <object class="GtkBox">
                 <property name="orientation">vertical</property>
                 <child>
@@ -68,6 +56,18 @@
               </object>
             </property>
             <property name="name">file_panel</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwViewStackPage">
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="description" translatable="yes" context="file" comments="description">The  unit has no file associated</property>
+                <property name="icon-name">unreadable-symbolic</property>
+                <property name="title" translatable="yes" context="file" comments="title">No unit file</property>
+              </object>
+            </property>
+            <property name="name">empty</property>
           </object>
         </child>
       </object>
