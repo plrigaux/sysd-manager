@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import build_aux.build_common as bc
-from  build_aux.build_common import color
-import argparse
-import os
+import build_aux.tag_version as tag
+import aur.packaging as pacaur
+import flathub.goflathub as gof
+import appimage.build_appimage as aim
 
-bc.cmd_run(["tag_version"], shell=True)
-bc.cmd_run(["pacaur", "genpush"], shell=True)
-bc.cmd_run(["goflathub", "deploy"], shell=True)
+tag.main()
+pacaur.generate_and_push()
+gof.deploy()
+aim.build()
+aim.publish()
