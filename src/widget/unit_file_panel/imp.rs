@@ -33,9 +33,8 @@ use super::flatpak;
 const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
 
-#[derive(Default, glib::Properties, gtk::CompositeTemplate)]
+#[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
-#[properties(wrapper_type = super::UnitFilePanel)]
 pub struct UnitFilePanelImp {
     #[template_child]
     save_button: TemplateChild<gtk::Button>,
@@ -59,7 +58,6 @@ pub struct UnitFilePanelImp {
 
     visible_on_page: Cell<bool>,
 
-    #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
     is_dark: Cell<bool>,
@@ -167,9 +165,10 @@ impl UnitFilePanelImp {
 
         let old_unit = self.unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit
-            && old_unit.primary() != unit.primary() {
-                self.unit_dependencies_loaded.set(false)
-            }
+            && old_unit.primary() != unit.primary()
+        {
+            self.unit_dependencies_loaded.set(false)
+        }
 
         self.set_file_content()
     }
@@ -187,13 +186,10 @@ impl UnitFilePanelImp {
             return;
         };
 
-        let file_content = match systemd::get_unit_file_info(unit_ref) {
-            Ok(content) => content,
-            Err(e) => {
-                warn!("get_unit_file_info Error: {e:?}");
-                "".to_owned()
-            }
-        };
+        let file_content = systemd::get_unit_file_info(unit_ref).unwrap_or_else(|e| {
+            warn!("get_unit_file_info Error: {e:?}");
+            "".to_owned()
+        });
 
         let file_path = unit_ref.file_path().map_or("".to_owned(), |a| a);
 
@@ -232,9 +228,7 @@ impl UnitFilePanelImp {
 
         let style_scheme_id = PREFERENCES.unit_file_style_scheme();
 
-        debug!(
-            "File Unit set_dark {is_dark} style_scheme_id {style_scheme_id:?}"
-        );
+        debug!("File Unit set_dark {is_dark} style_scheme_id {style_scheme_id:?}");
 
         self.set_new_style_scheme(Some(&style_scheme_id));
     }
@@ -337,6 +331,7 @@ impl UnitFilePanelImp {
             InterPanelMessage::NewStyleScheme(style_scheme) => {
                 self.set_new_style_scheme(style_scheme)
             }
+            InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             _ => {}
         }
     }
@@ -360,7 +355,6 @@ impl ObjectSubclass for UnitFilePanelImp {
     }
 }
 
-#[glib::derived_properties]
 impl ObjectImpl for UnitFilePanelImp {
     fn constructed(&self) {
         self.parent_constructed();

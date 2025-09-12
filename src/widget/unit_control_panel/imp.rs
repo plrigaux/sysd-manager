@@ -354,9 +354,12 @@ impl UnitControlPanelImpl {
         self.set_inter_message(&action);
         self.unit_info_panel
             .set_inter_message(&InterPanelMessage::UnitChange(unit));
-        self.unit_file_panel.set_unit(unit);
-        self.unit_journal_panel.set_unit(unit);
-        self.unit_dependencies_panel.set_unit(unit);
+        self.unit_file_panel
+            .set_inter_message(&InterPanelMessage::UnitChange(unit));
+        self.unit_journal_panel
+            .set_inter_message(&InterPanelMessage::UnitChange(unit));
+        self.unit_dependencies_panel
+            .set_inter_message(&InterPanelMessage::UnitChange(unit));
 
         let unit = match unit {
             Some(u) => u,

@@ -1,6 +1,4 @@
 #![allow(clippy::uninlined_format_args)]
-use std::collections::HashSet;
-use std::fs::OpenOptions;
 use std::io::Write;
 
 use std::io::BufRead;
@@ -238,12 +236,12 @@ fn generate_notes() -> Result<(), ScriptError> {
 
     generate_release_notes_rs(&release_notes)?;
 
-    #[cfg(not(feature = "flatpak"))]
-    generate_changelog_md(&release_notes)?;
+    //#[cfg(not(feature = "flatpak"))]
+    //generate_changelog_md(&release_notes)?;
 
     Ok(())
 }
-
+/*
 fn generate_changelog_md(release_notes: &Vec<Release>) -> Result<(), ScriptError> {
     let Some(out_dir) = env::var_os("OUT_DIR") else {
         script_error!("No OUT_DIR");
@@ -380,7 +378,7 @@ fn compare_files(file1_path: &Path, file2_path: &Path) -> bool {
 
     buffer1 == buffer2
 }
-
+ */
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
     let (version, description) = if let Some(first) = release_notes.first() {
         (

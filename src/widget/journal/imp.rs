@@ -90,9 +90,8 @@ impl JournalDisplayOrder {
     }
 }
 
-#[derive(Default, glib::Properties, gtk::CompositeTemplate)]
+#[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
-#[properties(wrapper_type = super::JournalPanel)]
 pub struct JournalPanelImp {
     #[template_child]
     journal_refresh_button: TemplateChild<gtk::Button>,
@@ -123,7 +122,6 @@ pub struct JournalPanelImp {
     //unit_journal_loaded: Cell<bool>,
 
     //list_store: RefCell<Option<gio::ListStore>>,
-    #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
     is_dark: Cell<bool>,
@@ -301,9 +299,7 @@ impl JournalPanelImp {
 
     fn on_position(&self, position: gtk::PositionType) {
         let display_order = self.display_order.get();
-        info!(
-            "call for new {position:?}, display order {display_order:?}"
-        );
+        info!("call for new {position:?}, display order {display_order:?}");
 
         match (position, display_order) {
             (gtk::PositionType::Bottom, JournalDisplayOrder::Descending) => {
@@ -393,7 +389,7 @@ impl JournalPanelImp {
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
     fn update_journal(&self, grabbing: WhatGrab) {
         if !self.visible_on_page.get() {
-            info!("not visible --> quit");
+            debug!("not visible --> quit");
             return;
         }
 
@@ -427,9 +423,7 @@ impl JournalPanelImp {
 
         let journal_panel = self.obj().clone();
 
-        debug!(
-            "Call from time old {oldest_event_time:?} new {newest_event_time:?}"
-        );
+        debug!("Call from time old {oldest_event_time:?} new {newest_event_time:?}");
 
         debug!("grabbing {grabbing:?}");
 
@@ -640,6 +634,9 @@ impl JournalPanelImp {
             InterPanelMessage::JournalFilterBoot(boot_filter) => {
                 self.update_boot_filter(boot_filter.clone());
             }
+            InterPanelMessage::UnitChange(unit) => {
+                self.set_unit(*unit);
+            }
             _ => {}
         }
     }
@@ -706,7 +703,6 @@ impl ObjectSubclass for JournalPanelImp {
     }
 }
 
-#[glib::derived_properties]
 impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();

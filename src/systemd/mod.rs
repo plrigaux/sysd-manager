@@ -41,12 +41,6 @@ pub fn runtime() -> &'static Runtime {
     RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
 }
 
-#[cfg(feature = "flatpak")]
-const IS_FLATPAK_MODE: bool = true;
-
-#[cfg(not(feature = "flatpak"))]
-const IS_FLATPAK_MODE: bool = false;
-
 #[derive(Clone, Debug)]
 #[allow(unused)]
 pub struct SystemdUnitFile {
@@ -226,41 +220,58 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
         return Ok(String::new());
     };
 
-    #[cfg(feature = "flatpak")]
-    match file_open_get_content(file_path) {
-        Ok(content) => Ok(content),
-        Err(_err) => {
-            info!("Flatpack {}", unit.primary());
-            match commander_output(&["cat", file_path], None) {
-                Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
-                    Ok(content) => Ok(content),
-                    Err(e) => {
-                        warn!("Can't retreive contnent:  {:?}", e);
-                        Err(SystemdErrors::Custom("Utf8Error".to_owned()))
-                    }
-                },
-                Err(e) => {
-                    warn!("Can't open file \"{file_path}\" in cat, reason: {:?}", e);
-                    Err(e)
-                }
-            }
-        }
+    if cfg!(feature = "flatpak") {
+        flatpak_file_open_get_content(file_path, unit)
+    } else {
+        //#[cfg(not(feature = "flatpak"))]
+        file_open_get_content(file_path, unit)
     }
-
-    #[cfg(not(feature = "flatpak"))]
-    file_open_get_content(file_path)
 }
 
-fn file_open_get_content(file_path: &str) -> Result<String, SystemdErrors> {
-    let file_path = flatpak_host_file_path(file_path);
+#[allow(dead_code)]
+fn flatpak_file_open_get_content(
+    file_path: &str,
+    unit: &UnitInfo,
+) -> Result<String, SystemdErrors> {
+    match file_open_get_content(file_path, unit) {
+        Ok(content) => Ok(content),
+        Err(_) => file_open_get_content_cat(file_path, unit),
+    }
+}
 
-    let mut file = match File::open(file_path.as_ref()) {
-        Ok(f) => f,
+fn file_open_get_content_cat(file_path: &str, unit: &UnitInfo) -> Result<String, SystemdErrors> {
+    info!(
+        "Flatpack Fetching file content Unit: {} File \"{file_path}\"",
+        unit.primary()
+    );
+    //Use the REAL path because try to acceess through the 'cat' command
+    match commander_output(&["cat", file_path], None) {
+        Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
+            Ok(content) => Ok(content),
+            Err(e) => {
+                warn!("Can't retreive contnent: {e:?}");
+                Err(SystemdErrors::Custom("Utf8Error".to_owned()))
+            }
+        },
         Err(e) => {
-            warn!("Can't open file \"{file_path}\", reason: {e}");
-            return Err(SystemdErrors::IoError(e));
+            error!("Can't open file \"{file_path}\" with 'cat' command, reason: {e:?}");
+            Err(e)
         }
-    };
+    }
+}
+
+fn file_open_get_content(file_path: &str, unit: &UnitInfo) -> Result<String, SystemdErrors> {
+    //To get the relative path from a Flatpack
+    let file_path = flatpak_host_file_path(file_path);
+    info!(
+        "Fetching file content Unit: {} File: {file_path}",
+        unit.primary()
+    );
+    let mut file = File::open(file_path.as_ref()).map_err(|e| {
+        warn!("Can't open file \"{file_path}\", reason: {e}");
+        SystemdErrors::IoError(e)
+    })?;
+
     let mut output = String::new();
     let _ = file.read_to_string(&mut output);
 
@@ -314,7 +325,7 @@ pub fn commander_output(
 ) -> Result<std::process::Output, SystemdErrors> {
     match commander(prog_n_args, environment_variables).output() {
         Ok(output) => {
-            if IS_FLATPAK_MODE {
+            if cfg!(feature = "flatpak") {
                 info!("Journal status: {}", output.status);
 
                 if !output.status.success() {
@@ -388,6 +399,7 @@ pub fn save_text_to_file(
     };
 
     let host_file_path = flatpak_host_file_path(file_path);
+    info!("Try to save content on File: {host_file_path}");
     match write_on_disk(text, &host_file_path) {
         Ok(bytes_written) => Ok((file_path.clone(), bytes_written)),
         Err(error) => {
@@ -411,28 +423,26 @@ pub fn save_text_to_file(
 }
 
 fn write_on_disk(text: &GString, file_path: &str) -> Result<usize, SystemdErrors> {
-    let mut file = match fs::OpenOptions::new().write(true).open(file_path) {
-        Ok(file) => file,
-        Err(err) => {
-            return Err(SystemdErrors::IoError(err));
-        }
-    };
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(file_path)?;
 
-    match file.write(text.as_bytes()) {
-        Ok(bytes_written) => {
-            info!("{bytes_written} bytes writen to {file_path}");
-            Ok(bytes_written)
-        }
-        Err(err) => Err(SystemdErrors::IoError(err)),
-    }
+    let test_bytes = text.as_bytes();
+    file.write_all(test_bytes)?;
+    file.flush()?;
+
+    let bytes_written = test_bytes.len();
+    info!("{bytes_written} bytes writen on File: {file_path}");
+    Ok(bytes_written)
 }
 
 fn write_with_priviledge(
     file_path: &String,
-    host_file_path: Cow<'_, str>,
+    _host_file_path: Cow<'_, str>,
     text: &GString,
 ) -> Result<usize, SystemdErrors> {
-    let prog_n_args = &["pkexec", "tee", "tee", host_file_path.as_ref()];
+    let prog_n_args = &["pkexec", "tee", "tee", file_path.as_str()];
     let mut cmd = commander(prog_n_args, None);
     let mut child = cmd
         .stdin(Stdio::piped())
@@ -475,7 +485,7 @@ fn write_with_priviledge(
 
                 let subprocess_error = match code {
                     1 => {
-                        if IS_FLATPAK_MODE {
+                        if cfg!(feature = "flatpak") {
                             let vec = prog_n_args
                                 .iter()
                                 .map(|s| s.to_string())
@@ -483,7 +493,7 @@ fn write_with_priviledge(
                                 .join(" ");
                             SystemdErrors::CmdNoFreedesktopFlatpakPermission(
                                 Some(vec),
-                                Some(host_file_path.to_string()),
+                                Some(file_path.to_string()),
                             )
                         } else {
                             SystemdErrors::Custom(format!("Subprocess exit code: {code}"))
@@ -506,21 +516,13 @@ fn write_with_priviledge(
 
 /// To be able to acces the Flatpack mounted files.
 /// Limit to /usr for the least access principle
-#[cfg(feature = "flatpak")]
 pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
-    let host_file_path = if file_path.starts_with("/usr") || file_path.starts_with("/etc") {
+    if cfg!(feature = "flatpak") && (file_path.starts_with("/usr") || file_path.starts_with("/etc"))
+    {
         Cow::from(format!("/run/host{file_path}"))
     } else {
         Cow::from(file_path)
-    };
-    host_file_path
-}
-
-/// To be able to acces the Flatpack mounted files.
-/// Limit to /usr for the least access principle
-#[cfg(not(feature = "flatpak"))]
-pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
-    Cow::from(file_path)
+    }
 }
 
 pub fn generate_file_uri(file_path: &str) -> String {
@@ -529,7 +531,7 @@ pub fn generate_file_uri(file_path: &str) -> String {
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
-    //TODO chec with Session
+    //TODO check with Session (user)
     sysdbus::fetch_system_info(UnitDBusLevel::System)
 }
 
@@ -650,7 +652,7 @@ pub fn link_unit_files(
 }
 
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
-    if !IS_FLATPAK_MODE {
+    if cfg!(feature = "flatpak") {
         return Ok(());
     }
 

@@ -207,7 +207,9 @@ Priit Jõerüüt <hwlate@joeruut.com>",
     }
 
     if let Some(release_notes) = RELEASE_NOTES {
-        about.set_release_notes(release_notes);
+        let mut release_notes = String::from(release_notes);
+        release_notes.push_str("<p>_________________________</p><p>Full release notes:</p><p>https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md</p>");
+        about.set_release_notes(&release_notes);
     }
 
     about

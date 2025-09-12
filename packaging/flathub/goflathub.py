@@ -422,6 +422,3 @@ def deploy():
 def tag():
     commit = bcommon.get_tag_commit(None)
     print("commit", commit)
-
-
-main()

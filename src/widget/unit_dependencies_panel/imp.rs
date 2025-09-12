@@ -49,9 +49,8 @@ const PANEL_EMPTY: &str = "empty";
 const PANEL_DEPENDENCIES: &str = "dependencies";
 const PANEL_SPINNER: &str = "spinner";
 
-#[derive(Default, glib::Properties, gtk::CompositeTemplate)]
+#[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_dependencies_panel.ui")]
-#[properties(wrapper_type = super::UnitDependenciesPanel)]
 pub struct UnitDependenciesPanelImp {
     #[template_child]
     unit_dependencies_panel_stack: TemplateChild<adw::ViewStack>,
@@ -68,7 +67,6 @@ pub struct UnitDependenciesPanelImp {
     // #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
 
-    #[property(get, set=Self::set_unit, nullable)]
     unit: RefCell<Option<UnitInfo>>,
 
     is_dark: Cell<bool>,
@@ -132,9 +130,10 @@ impl UnitDependenciesPanelImp {
 
         let old_unit = self.unit.replace(Some(unit.clone()));
         if let Some(old_unit) = old_unit
-            && old_unit.primary() != unit.primary() {
-                self.unit_dependencies_loaded.set(false)
-            }
+            && old_unit.primary() != unit.primary()
+        {
+            self.unit_dependencies_loaded.set(false)
+        }
 
         self.update_dependencies()
     }
@@ -197,9 +196,10 @@ impl UnitDependenciesPanelImp {
                 let mut set = BTreeSet::new();
                 for dep in dependencies.children {
                     if let Some((_, unit_type)) = dep.unit_name.rsplit_once('.')
-                        && unit_type_filter.contains(unit_type) {
-                            set.insert(dep);
-                        }
+                        && unit_type_filter.contains(unit_type)
+                    {
+                        set.insert(dep);
+                    }
                 }
                 dependencies.children = set;
             }
@@ -311,6 +311,9 @@ impl UnitDependenciesPanelImp {
             InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
 
             InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
+            InterPanelMessage::UnitChange(unit) => {
+                self.set_unit(unit);
+            }
             _ => {}
         }
     }
@@ -338,7 +341,6 @@ impl ObjectSubclass for UnitDependenciesPanelImp {
     }
 }
 
-#[glib::derived_properties]
 impl ObjectImpl for UnitDependenciesPanelImp {
     fn constructed(&self) {
         self.parent_constructed();

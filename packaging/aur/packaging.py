@@ -159,5 +159,3 @@ def clean():
         #x = " ".join(["rm", "-fr", f])
         bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
 
-
-main()
