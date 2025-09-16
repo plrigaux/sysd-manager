@@ -1,5 +1,7 @@
 mod imp;
-use crate::widget::unit_properties_selector::data::PropertiesSelectorObject;
+use crate::widget::{
+    unit_list::UnitListPanel, unit_properties_selector::data::PropertiesSelectorObject,
+};
 use gtk::{
     glib::{self},
     subclass::prelude::*,
@@ -18,6 +20,10 @@ impl UnitPropertiesSelection {
 
     pub fn add_new_property(&self, new_property_object: PropertiesSelectorObject) {
         self.imp().add_new_property(new_property_object);
+    }
+
+    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+        self.imp().set_unit_list(unit_list_panel);
     }
 }
 

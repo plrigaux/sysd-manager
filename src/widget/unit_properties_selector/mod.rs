@@ -2,7 +2,10 @@ mod data;
 mod imp;
 mod unit_properties_selection;
 
+use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};
+
+use crate::widget::unit_list::UnitListPanel;
 
 glib::wrapper! {
     pub struct UnitPropertiesSelectorDialog(ObjectSubclass<imp::UnitPropertiesSelectorDialogImp>)
@@ -15,6 +18,10 @@ impl UnitPropertiesSelectorDialog {
     pub fn new() -> Self {
         let obj: UnitPropertiesSelectorDialog = glib::Object::new();
         obj
+    }
+
+    pub fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+        self.imp().set_unit_list(unit_list_panel);
     }
 }
 

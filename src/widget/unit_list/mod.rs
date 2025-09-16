@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::systemd::UnitProperty;
 use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
@@ -85,4 +86,6 @@ impl UnitListPanel {
     pub fn button_action(&self, action: &InterPanelMessage) {
         self.imp().button_action(action)
     }
+
+    pub fn set_new_columns(&self, list: Vec<UnitProperty>) {}
 }

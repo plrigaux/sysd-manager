@@ -26,7 +26,7 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 use crate::{
     systemd::{
-        UnitProperty,
+        UnitPropertyFetch,
         data::{EnableUnitFilesReturn, UnitInfo},
         enums::{ActiveState, LoadState, UnitType},
     },
@@ -1360,7 +1360,7 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
 }
 
 pub(super) async fn fetch_unit_properties()
--> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors> {
+-> Result<BTreeMap<String, Vec<UnitPropertyFetch>>, SystemdErrors> {
     let connection = get_connection_async(UnitDBusLevel::System).await?;
 
     let proxy = zbus::Proxy::new(
@@ -1377,7 +1377,7 @@ pub(super) async fn fetch_unit_properties()
 
     let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
 
-    let mut map: BTreeMap<String, Vec<UnitProperty>> = BTreeMap::new();
+    let mut map: BTreeMap<String, Vec<UnitPropertyFetch>> = BTreeMap::new();
     let mut set: HashSet<String> = HashSet::new();
 
     for node_name in root_node
@@ -1406,7 +1406,7 @@ pub(super) async fn fetch_unit_properties()
 async fn collect_properties(
     unit: &str,
     connection: &zbus::Connection,
-    map: &mut BTreeMap<String, Vec<UnitProperty>>,
+    map: &mut BTreeMap<String, Vec<UnitPropertyFetch>>,
 ) -> Result<(), SystemdErrors> {
     let mut path = String::from("/org/freedesktop/systemd1/unit/");
     path.push_str(unit);
@@ -1427,7 +1427,7 @@ async fn collect_properties(
         let list: Vec<_> = intf
             .properties()
             .iter()
-            .map(|p| UnitProperty::new(p))
+            .map(|p| UnitPropertyFetch::new(p))
             .collect();
 
         map.insert(intf.name().to_string(), list);

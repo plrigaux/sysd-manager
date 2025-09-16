@@ -31,7 +31,12 @@ use menus::create_col_menu;
 
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
-    systemd::{self, data::UnitInfo, enums::LoadState, runtime},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{LoadState, UnitDBusLevel},
+        runtime,
+    },
     systemd_gui,
     widget::{
         InterPanelMessage,
@@ -56,6 +61,21 @@ use crate::{
     },
 };
 
+#[derive(Debug, Eq, PartialEq, Hash)]
+struct UnitKey {
+    level: UnitDBusLevel,
+    primary: String,
+}
+
+impl UnitKey {
+    fn new(unit: &UnitInfo) -> Self {
+        UnitKey {
+            level: unit.dbus_level(),
+            primary: unit.primary(),
+        }
+    }
+}
+
 type UnitPropertyFiltersContainer = OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>;
 
@@ -66,7 +86,7 @@ pub struct UnitListPanelImp {
     #[template_child]
     list_store: TemplateChild<gio::ListStore>,
 
-    unit_map: Rc<RefCell<HashMap<String, UnitInfo>>>,
+    unit_map: Rc<RefCell<HashMap<UnitKey, UnitInfo>>>,
 
     #[template_child]
     unit_list_sort_list_model: TemplateChild<gtk::SortListModel>,
@@ -409,14 +429,14 @@ impl UnitListPanelImp {
                 } else {
                     let unit = UnitInfo::from_unit_file(system_unit_file);
                     list_store.append(&UnitBinding::new(&unit));
-                    unit_map1.insert(unit.primary(), unit.clone());
+                    unit_map1.insert(UnitKey::new(&unit), unit.clone());
                     all_units.insert(unit.primary(), unit);
                 }
             }
 
             for (_key, unit) in unit_desc.into_iter() {
                 list_store.append(&UnitBinding::new(&unit));
-                unit_map1.insert(unit.primary(), unit.clone());
+                unit_map1.insert(UnitKey::new(&unit), unit.clone());
                 all_units.insert(unit.primary(), unit);
             }
 
@@ -596,7 +616,7 @@ impl UnitListPanelImp {
             self.add_one_unit(unit);
         } */
 
-        if let Some(unit2) = self.unit_map.borrow().get(&unit.primary()) {
+        if let Some(unit2) = self.unit_map.borrow().get(&UnitKey::new(unit)) {
             self.unit.replace(Some(unit2.clone()));
         } else {
             self.add_one_unit(unit);
@@ -640,7 +660,7 @@ impl UnitListPanelImp {
     fn add_one_unit(&self, unit: &UnitInfo) {
         self.list_store.append(&UnitBinding::new(unit));
         let mut unit_map = self.unit_map.borrow_mut();
-        unit_map.insert(unit.primary(), unit.clone());
+        unit_map.insert(UnitKey::new(unit), unit.clone());
 
         if LoadState::Loaded == unit.load_state()
             && let Ok(my_int) = self.loaded_units_count.label().parse::<i32>()

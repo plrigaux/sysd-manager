@@ -4,7 +4,7 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use gio::glib::property::PropertySet;
 use gtk::glib::{self};
 
-use crate::systemd::UnitProperty;
+use crate::systemd::UnitPropertyFetch;
 
 glib::wrapper! {
     pub struct PropertiesSelectorObject(ObjectSubclass<imp::PropertiesSelectorOpjectImpl>);
@@ -18,7 +18,7 @@ impl PropertiesSelectorObject {
         this_object
     }
 
-    pub fn from(p: UnitProperty) -> Self {
+    pub fn from(p: UnitPropertyFetch) -> Self {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();

@@ -7,9 +7,12 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
-use log::{info, warn};
+use log::{error, info, warn};
 
-use crate::widget::unit_properties_selector::data::PropertiesSelectorObject;
+use crate::{
+    systemd::{UnitProperty, enums::UnitType},
+    widget::{unit_list::UnitListPanel, unit_properties_selector::data::PropertiesSelectorObject},
+};
 
 use super::UnitPropertiesSelection;
 
@@ -32,6 +35,8 @@ pub struct UnitPropertiesSelectionImp {
     access_column: TemplateChild<gtk::ColumnViewColumn>,
 
     list_store: OnceCell<gio::ListStore>,
+
+    unit_list_panel: OnceCell<UnitListPanel>,
 }
 
 #[gtk::template_callbacks]
@@ -39,6 +44,36 @@ impl UnitPropertiesSelectionImp {
     #[template_callback]
     fn apply_clicked(&self, _button: &gtk::Button) {
         info!("Apply pressed");
+
+        let Some(list_store) = self.list_store.get() else {
+            error!("list_store not set");
+            return;
+        };
+
+        let n_item = list_store.n_items();
+        let mut list = Vec::with_capacity(n_item as usize);
+        for i in 0..n_item {
+            let item = list_store.item(i);
+            let Some(item) = item.and_downcast_ref::<PropertiesSelectorObject>() else {
+                warn!("Bad downcast {:?}", list_store.item(i));
+                continue;
+            };
+
+            let interface = UnitType::from_intreface(&item.interface());
+            let unit_property = UnitProperty::new(
+                interface,
+                item.unit_property(),
+                item.signature(),
+                item.access(),
+            );
+
+            list.push(unit_property);
+        }
+        if let Some(unit_list_panel) = self.unit_list_panel.get() {
+            unit_list_panel.set_new_columns(list);
+        } else {
+            error!("No unit list panel");
+        }
     }
 }
 
@@ -50,6 +85,12 @@ impl UnitPropertiesSelectionImp {
         };
 
         list_store.append(&new_property_object);
+    }
+
+    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+        self.unit_list_panel
+            .set(unit_list_panel.clone())
+            .expect("Assigned only once");
     }
 }
 
@@ -79,7 +120,7 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
 
         self.list_store.set(store.clone()).expect("Only once");
 
-        let selection_model = gtk::NoSelection::new(Some(store));
+        let selection_model = gtk::NoSelection::new(Some(store.clone()));
 
         self.properties_selection.set_model(Some(&selection_model));
 
@@ -101,14 +142,40 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
         signature_factory.connect_bind(|_fac, item| {
             bind(item, PropertiesSelectorObject::signature);
         });
-
         self.signature_column.set_factory(Some(&signature_factory));
+
         let access_factory = gtk::SignalListItemFactory::new();
         access_factory.connect_setup(setup);
         access_factory.connect_bind(|_fac, item| {
             bind(item, PropertiesSelectorObject::access);
         });
         self.access_column.set_factory(Some(&access_factory));
+
+        let button_fac = gtk::SignalListItemFactory::new();
+        button_fac.connect_setup(|_f, o| {
+            let item = o.downcast_ref::<gtk::ListItem>().unwrap();
+            let label: gtk::Button = gtk::Button::builder().label("X").build();
+            item.set_child(Some(&label));
+        });
+
+        let list_store = store.clone();
+        button_fac.connect_bind(move |_fac, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+
+            let widget = item.child();
+
+            let button = widget.and_downcast_ref::<gtk::Button>().unwrap();
+
+            let list_store = list_store.clone();
+            let item = item.clone();
+            button.connect_clicked(move |_b| {
+                list_store.remove(item.position());
+            });
+        });
+
+        let button_column = gtk::ColumnViewColumn::new(None, Some(button_fac));
+
+        self.properties_selection.append_column(&button_column);
     }
 }
 

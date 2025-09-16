@@ -17,8 +17,11 @@ use log::{debug, error, info, warn};
 
 use crate::{
     systemd::{self, runtime},
-    widget::unit_properties_selector::{
-        data::PropertiesSelectorObject, unit_properties_selection::UnitPropertiesSelection,
+    widget::{
+        unit_list::UnitListPanel,
+        unit_properties_selector::{
+            data::PropertiesSelectorObject, unit_properties_selection::UnitPropertiesSelection,
+        },
     },
 };
 
@@ -175,6 +178,11 @@ impl UnitPropertiesSelectorDialogImp {
                     .contains(texts)
             }
         })
+    }
+
+    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+        self.unit_properties_selection
+            .set_unit_list(unit_list_panel);
     }
 }
 
