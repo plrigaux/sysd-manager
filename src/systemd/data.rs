@@ -58,7 +58,7 @@ mod imp {
 
     use crate::systemd::{
         SystemdUnitFile, UpdatedUnitInfo,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
+        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
         sysdbus::LUnit,
     };
 
@@ -69,8 +69,8 @@ mod imp {
         pub(super) primary: RwLock<String>,
         #[property(get)]
         display_name: RwLock<String>,
-        #[property(get)]
-        unit_type: RwLock<String>,
+        #[property(get, default)]
+        unit_type: RwLock<UnitType>,
         #[property(get, set)]
         pub(super) description: RwLock<String>,
 
@@ -154,7 +154,7 @@ mod imp {
             let display_name = primary[..split_char_index - 1].to_owned();
             *self.display_name.write().expect("set_primary display_name") = display_name;
 
-            let unit_type = primary[(split_char_index)..].to_owned();
+            let unit_type = UnitType::new(&primary[(split_char_index)..]);
             *self.unit_type.write().expect("set_primary unit_type") = unit_type;
 
             *self.primary.write().expect("set_primary primary") = primary;

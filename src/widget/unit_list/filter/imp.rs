@@ -383,7 +383,7 @@ fn build_type_filter(
     let container = create_content_box();
 
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
-    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
+    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown)) {
         let check = {
             let binding = filter_container.borrow();
             let active = get_filter_element::<String>(binding.as_ref())

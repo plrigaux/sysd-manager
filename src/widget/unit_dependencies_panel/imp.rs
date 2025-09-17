@@ -360,7 +360,7 @@ impl ObjectImpl for UnitDependenciesPanelImp {
             &pgettext("dependency", "Filter dependencies by types"),
         ));
 
-        for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
+        for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown)) {
             filter_button_unit_type.add_item(unit_type.as_str());
         }
 

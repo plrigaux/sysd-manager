@@ -396,7 +396,10 @@ impl From<Option<&OwnedValue>> for ActiveState {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
+#[derive(
+    Default, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, EnumIter, glib::Enum, Hash,
+)]
+#[enum_type(name = "UnitType")]
 pub enum UnitType {
     Automount,
     Busname,
@@ -413,7 +416,8 @@ pub enum UnitType {
     Target,
     Timer,
     Unit,
-    Unknown(String),
+    #[default]
+    Unknown,
 }
 
 impl UnitType {
@@ -436,12 +440,12 @@ impl UnitType {
             "unit" => UnitType::Unit,
             _ => {
                 warn!("Unknown Unit Type: {unit_type}");
-                UnitType::Unknown(unit_type.to_string())
+                UnitType::Unknown
             }
         }
     }
 
-    pub fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             Self::Automount => "automount",
             Self::Busname => "busname",
@@ -501,7 +505,7 @@ impl UnitType {
             INTERFACE_SYSTEMD_UNIT => UnitType::Unit,
             _ => {
                 warn!("Unknown Unit Type: {interface}");
-                UnitType::Unknown(interface.to_string())
+                UnitType::Unknown
             }
         }
     }

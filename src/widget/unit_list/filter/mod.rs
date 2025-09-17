@@ -9,7 +9,7 @@ use gtk::glib::{self};
 use crate::{
     systemd::{
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
+        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
     },
     widget::unit_list::filter::unit_prop_filter::{FilterElementAssessor, FilterTextAssessor},
 };
@@ -59,7 +59,7 @@ pub fn filter_bus_level(
 }
 
 pub fn filter_unit_type(
-    property_assessor: &FilterElementAssessor<String>,
+    property_assessor: &FilterElementAssessor<UnitType>,
     unit: &UnitInfo,
 ) -> bool {
     property_assessor.filter_unit_value(&unit.unit_type())

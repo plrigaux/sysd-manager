@@ -132,7 +132,7 @@ pub fn setup_factories(
     {
         //let unit_list = unit_list.clone();
         fac_unit_type.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind!(object, unit_type);
+            let (inscription, unit, _unit_binding) = factory_bind_enum!(object, unit_type);
             display_inactive!(inscription, unit);
         });
     }
@@ -483,16 +483,16 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
     }
 }
 
-pub(super) fn get_custom_factoy(prop: UnitProperty) -> gtk::SignalListItemFactory {
+pub(super) fn get_custom_factoy(prop: &UnitProperty) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
     factory.connect_setup(factory_setup);
-
+    let name = prop.name.clone();
     factory.connect_bind(move |_factory, object| {
         let (inscription, unit_binding) = factory_bind_pre!(object);
         let unit = unit_binding.unit();
 
-        inscription.set_text(Some(&prop.name));
+        inscription.set_text(Some(&name));
         display_inactive!(inscription, unit);
     });
 

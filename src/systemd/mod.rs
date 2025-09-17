@@ -539,7 +539,7 @@ pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let level = unit.dbus_level();
-    let unit_type: UnitType = UnitType::new(&unit.unit_type());
+    let unit_type: UnitType = unit.unit_type();
 
     let object_path = get_unit_path(unit);
 

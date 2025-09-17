@@ -505,24 +505,6 @@ impl UnitListPanelImp {
                 {
                     let all_units = all_units.clone();
 
-                    async fn call_complete_unit(
-                        sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
-                        batch: &Vec<(String, systemd::enums::UnitDBusLevel, Option<String>)>,
-                    ) {
-                        let updates = match systemd::complete_unit_information(batch).await {
-                            Ok(updates) => updates,
-                            Err(error) => {
-                                warn!("Complete Unit Information Error: {error:?}");
-                                vec![]
-                            }
-                        };
-
-                        sender
-                            .send(updates)
-                            .await
-                            .expect("The channel needs to be open.");
-                    }
-
                     runtime().spawn(async move {
                         const BATCH_SIZE: usize = 5;
                         let mut batch = Vec::with_capacity(BATCH_SIZE);
@@ -835,12 +817,53 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn set_new_columns(&self, list: Vec<UnitProperty>) {
-        for prop in list {
-            let name = prop.name.clone();
+        for prop in &list {
             let factory = column_factories::get_custom_factoy(prop);
-            let column = gtk::ColumnViewColumn::new(Some(&name), Some(factory));
+            let column = gtk::ColumnViewColumn::new(Some(&prop.name), Some(factory));
             self.units_browser.append_column(&column);
         }
+
+        for prop in list {}
+
+        let list_store = self.list_store.clone();
+        glib::spawn_future_local(async move {
+            //let (sender, receiver) = tokio::sync::oneshot::channel();
+            // let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
+            {
+                for position in 0..list_store.n_items() {
+                    let Some(obj) = list_store.item(position).and_downcast_ref::<UnitBinding>()
+                    else {
+                        warn!("No item found a position {position}");
+                        continue;
+                    };
+                }
+
+                runtime().spawn(async move {
+                    /*   const BATCH_SIZE: usize = 5;
+                    let mut batch = Vec::with_capacity(BATCH_SIZE);
+                    for (idx, unit) in (1..).zip(all_units.values()) {
+                        batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
+
+                        if idx % BATCH_SIZE == 0 {
+                            call_complete_unit(&sender, &batch).await;
+
+                            batch.clear();
+                        }
+                    }
+
+                    call_complete_unit(&sender, &batch).await; */
+                });
+            }
+            /*
+            while let Some(updates) = receiver.recv().await {
+                 for update in updates {
+                    let Some(unit) = all_units.get(&update.primary) else {
+                        continue;
+                    };
+
+                    unit.update_from_unit_info(update);
+                } */
+        });
     }
 }
 
@@ -1049,3 +1072,21 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
 
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
+
+async fn call_complete_unit(
+    sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
+    batch: &Vec<(String, systemd::enums::UnitDBusLevel, Option<String>)>,
+) {
+    let updates = match systemd::complete_unit_information(batch).await {
+        Ok(updates) => updates,
+        Err(error) => {
+            warn!("Complete Unit Information Error: {error:?}");
+            vec![]
+        }
+    };
+
+    sender
+        .send(updates)
+        .await
+        .expect("The channel needs to be open.");
+}
