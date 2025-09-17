@@ -5,7 +5,7 @@ mod rowdata;
 
 use std::{
     cell::{Cell, OnceCell, RefCell},
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     rc::Rc,
     time::Duration,
 };
@@ -34,7 +34,7 @@ use crate::{
     systemd::{
         self, UnitProperty,
         data::UnitInfo,
-        enums::{LoadState, UnitDBusLevel},
+        enums::{LoadState, UnitDBusLevel, UnitType},
         runtime,
     },
     systemd_gui,
@@ -61,9 +61,10 @@ use crate::{
     },
 };
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 struct UnitKey {
     level: UnitDBusLevel,
+    utype: UnitType,
     primary: String,
 }
 
@@ -71,6 +72,7 @@ impl UnitKey {
     fn new(unit: &UnitInfo) -> Self {
         UnitKey {
             level: unit.dbus_level(),
+            utype: unit.unit_type(),
             primary: unit.primary(),
         }
     }
@@ -86,7 +88,7 @@ pub struct UnitListPanelImp {
     #[template_child]
     list_store: TemplateChild<gio::ListStore>,
 
-    unit_map: Rc<RefCell<HashMap<UnitKey, UnitInfo>>>,
+    units_map: Rc<RefCell<HashMap<UnitKey, UnitInfo>>>,
 
     #[template_child]
     unit_list_sort_list_model: TemplateChild<gtk::SortListModel>,
@@ -367,7 +369,7 @@ impl UnitListPanelImp {
 
     pub(super) fn fill_store(&self) {
         let list_store = self.list_store.clone();
-        let unit_map = self.unit_map.clone();
+        let unit_map = self.units_map.clone();
         let panel_stack = self.panel_stack.clone();
         let single_selection = self.single_selection.clone();
         let unit_list = self.obj().clone();
@@ -598,7 +600,7 @@ impl UnitListPanelImp {
             self.add_one_unit(unit);
         } */
 
-        if let Some(unit2) = self.unit_map.borrow().get(&UnitKey::new(unit)) {
+        if let Some(unit2) = self.units_map.borrow().get(&UnitKey::new(unit)) {
             self.unit.replace(Some(unit2.clone()));
         } else {
             self.add_one_unit(unit);
@@ -641,7 +643,7 @@ impl UnitListPanelImp {
 
     fn add_one_unit(&self, unit: &UnitInfo) {
         self.list_store.append(&UnitBinding::new(unit));
-        let mut unit_map = self.unit_map.borrow_mut();
+        let mut unit_map = self.units_map.borrow_mut();
         unit_map.insert(UnitKey::new(unit), unit.clone());
 
         if LoadState::Loaded == unit.load_state()
@@ -817,43 +819,49 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn set_new_columns(&self, list: Vec<UnitProperty>) {
+        let mut types = HashSet::with_capacity(16);
+        let mut is_unit_type = false;
+        //  let mut properties = Vec::wi
         for prop in &list {
             let factory = column_factories::get_custom_factoy(prop);
             let column = gtk::ColumnViewColumn::new(Some(&prop.name), Some(factory));
             self.units_browser.append_column(&column);
+            if prop.interface == UnitType::Unit {
+                is_unit_type |= true
+            } else {
+                types.insert(prop.interface);
+            }
         }
 
-        for prop in list {}
-
-        let list_store = self.list_store.clone();
+        let units_map = self.units_map.clone();
         glib::spawn_future_local(async move {
-            //let (sender, receiver) = tokio::sync::oneshot::channel();
-            // let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
-            {
-                for position in 0..list_store.n_items() {
-                    let Some(obj) = list_store.item(position).and_downcast_ref::<UnitBinding>()
-                    else {
-                        warn!("No item found a position {position}");
-                        continue;
-                    };
+            let units_list: Vec<_> = units_map
+                .borrow()
+                .keys()
+                .filter(|uk| is_unit_type || types.contains(&uk.utype))
+                .cloned()
+                .collect();
+
+            runtime().spawn(async move {
+                for unit_key in units_list {
+                    for prop in &list {}
                 }
 
-                runtime().spawn(async move {
-                    /*   const BATCH_SIZE: usize = 5;
-                    let mut batch = Vec::with_capacity(BATCH_SIZE);
-                    for (idx, unit) in (1..).zip(all_units.values()) {
-                        batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
+                /*   const BATCH_SIZE: usize = 5;
+                let mut batch = Vec::with_capacity(BATCH_SIZE);
+                for (idx, unit) in (1..).zip(all_units.values()) {
+                    batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
 
-                        if idx % BATCH_SIZE == 0 {
-                            call_complete_unit(&sender, &batch).await;
+                    if idx % BATCH_SIZE == 0 {
+                        call_complete_unit(&sender, &batch).await;
 
-                            batch.clear();
-                        }
+                        batch.clear();
                     }
+                }
 
-                    call_complete_unit(&sender, &batch).await; */
-                });
-            }
+                call_complete_unit(&sender, &batch).await; */
+            });
+
             /*
             while let Some(updates) = receiver.recv().await {
                  for update in updates {
