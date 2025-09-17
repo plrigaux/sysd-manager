@@ -32,7 +32,7 @@ use menus::create_col_menu;
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
     systemd::{
-        self,
+        self, UnitProperty,
         data::UnitInfo,
         enums::{LoadState, UnitDBusLevel},
         runtime,
@@ -832,6 +832,15 @@ impl UnitListPanelImp {
             }
             true
         })
+    }
+
+    pub(super) fn set_new_columns(&self, list: Vec<UnitProperty>) {
+        for prop in list {
+            let name = prop.name.clone();
+            let factory = column_factories::get_custom_factoy(prop);
+            let column = gtk::ColumnViewColumn::new(Some(&name), Some(factory));
+            self.units_browser.append_column(&column);
+        }
     }
 }
 

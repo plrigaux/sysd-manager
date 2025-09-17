@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use gtk::{glib, prelude::*};
 use log::debug;
 
+use crate::systemd::UnitProperty;
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::{EnablementStatus, LoadState, Preset};
 use crate::widget::unit_list::imp::rowdata::UnitBinding;
@@ -17,6 +18,9 @@ pub const BIND_ENABLE_PRESET_CSS: u8 = 5;
 pub const BIND_ENABLE_LOAD_TEXT: u8 = 6;
 pub const BIND_ENABLE_LOAD_CSS: u8 = 7;
 pub const BIND_ENABLE_ACTIVE_ICON: u8 = 8;
+
+const CSS_CLASSES: &str = "css-classes";
+const TEXT: &str = "text";
 
 macro_rules! downcast_list_item {
     ($list_item_object:expr) => {{
@@ -186,9 +190,7 @@ pub fn setup_factories(
 
     fac_sub_state.connect_bind(|_factory, object| {
         let (inscription, unit, unit_binding) = factory_bind!(object, sub_state);
-        let binding = unit
-            .bind_property("sub_state", &inscription, "text")
-            .build();
+        let binding = unit.bind_property("sub_state", &inscription, TEXT).build();
         unit_binding.set_binding(BIND_SUB_STATE_TEXT, binding);
         display_inactive!(inscription, unit);
     });
@@ -202,7 +204,7 @@ pub fn setup_factories(
     fac_descrition.connect_bind(|_factory, object| {
         let (inscription, unit, unit_binding) = factory_bind!(object, description);
         let binding = unit
-            .bind_property("description", &inscription, "text")
+            .bind_property("description", &inscription, TEXT)
             .build();
         unit_binding.set_binding(BIND_DESCRIPTION_TEXT, binding);
         display_inactive!(inscription, unit);
@@ -276,7 +278,7 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
             load_state_text_binding(&inscription, &unit_binding, &unit);
 
             let binding = unit
-                .bind_property(LOAD_STATE, &inscription, "css-classes")
+                .bind_property(LOAD_STATE, &inscription, CSS_CLASSES)
                 .transform_to(|_, load_state: LoadState| {
                     let css_classes = load_state_css_classes(load_state);
                     css_classes.map(|css| css.to_value())
@@ -315,7 +317,7 @@ fn load_state_text_binding(
     unit: &UnitInfo,
 ) {
     let binding = unit
-        .bind_property(LOAD_STATE, inscription, "text")
+        .bind_property(LOAD_STATE, inscription, TEXT)
         .transform_to(|_, load_state: LoadState| Some(load_state.as_str()))
         .build();
     unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
@@ -329,6 +331,7 @@ fn load_state_css_classes<'a>(load_state: LoadState) -> Option<[&'a str; 2]> {
     }
 }
 
+const ENABLE_STATUS: &str = "enable_status";
 fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_enable_status = gtk::SignalListItemFactory::new();
 
@@ -344,7 +347,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             inscription.set_tooltip_markup(status_code.tooltip_info().as_deref());
 
             let binding = unit
-                .bind_property("enable_status", &inscription, "text")
+                .bind_property(ENABLE_STATUS, &inscription, TEXT)
                 .transform_to(|_, enablement_status: EnablementStatus| {
                     Some(enablement_status.as_str())
                 })
@@ -353,7 +356,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
 
             let binding = unit
-                .bind_property("enable_status", &inscription, "css-classes")
+                .bind_property(ENABLE_STATUS, &inscription, CSS_CLASSES)
                 .transform_to(|_, enablement_status: EnablementStatus| {
                     let css_classes = enablement_css_classes(enablement_status);
                     css_classes.map(|css| css.to_value())
@@ -381,7 +384,7 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             let (inscription, unit, unit_binding) = factory_bind_enum!(object, enable_status);
 
             let binding = unit
-                .bind_property("enable_status", &inscription, "text")
+                .bind_property(ENABLE_STATUS, &inscription, TEXT)
                 .transform_to(|_, status: EnablementStatus| Some(status.as_str()))
                 .build();
 
@@ -423,7 +426,7 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
             preset_text_binding(&inscription, &unit, &unit_binding);
 
             let binding = unit
-                .bind_property(PRESET_NUM, &inscription, "css-classes")
+                .bind_property(PRESET_NUM, &inscription, CSS_CLASSES)
                 .transform_to(move |_s, preset_value: Preset| {
                     let css_classes = preset_css_classes(preset_value);
                     css_classes.map(|css| css.to_value())
@@ -462,7 +465,7 @@ fn preset_text_binding(
     unit_binding: &UnitBinding,
 ) {
     let binding = unit
-        .bind_property(PRESET_NUM, inscription, "text")
+        .bind_property(PRESET_NUM, inscription, TEXT)
         .transform_to(move |_s, preset: Preset| {
             let preset_str = preset.as_str();
             Some(preset_str.to_value())
@@ -478,4 +481,20 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
         Preset::Ignore => Some(["yellow", "bold"]),
         _ => None,
     }
+}
+
+pub(super) fn get_custom_factoy(prop: UnitProperty) -> gtk::SignalListItemFactory {
+    let factory = gtk::SignalListItemFactory::new();
+
+    factory.connect_setup(factory_setup);
+
+    factory.connect_bind(move |_factory, object| {
+        let (inscription, unit_binding) = factory_bind_pre!(object);
+        let unit = unit_binding.unit();
+
+        inscription.set_text(Some(&prop.name));
+        display_inactive!(inscription, unit);
+    });
+
+    factory
 }

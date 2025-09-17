@@ -15,18 +15,13 @@ glib::wrapper! {
 }
 
 impl UnitPropertiesSelectorDialog {
-    pub fn new() -> Self {
+    pub fn new(unit_list_panel: &UnitListPanel) -> Self {
         let obj: UnitPropertiesSelectorDialog = glib::Object::new();
+        obj.set_unit_list(unit_list_panel);
         obj
     }
 
-    pub fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+    fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
         self.imp().set_unit_list(unit_list_panel);
-    }
-}
-
-impl Default for UnitPropertiesSelectorDialog {
-    fn default() -> Self {
-        Self::new()
     }
 }

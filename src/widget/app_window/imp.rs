@@ -445,12 +445,13 @@ impl AppWindowImpl {
                 .build()
         };
 
+        let unit_list_panel = self.unit_list_panel.clone();
         let properties_selector = {
             let app_window = self.obj().clone();
 
             gio::ActionEntry::builder(ACTION_PROPERTIES_SELECTOR)
                 .activate(move |_, _action, _variant| {
-                    let dialog = UnitPropertiesSelectorDialog::new();
+                    let dialog = UnitPropertiesSelectorDialog::new(&unit_list_panel);
 
                     dialog.set_transient_for(Some(&app_window));
 

@@ -87,5 +87,7 @@ impl UnitListPanel {
         self.imp().button_action(action)
     }
 
-    pub fn set_new_columns(&self, list: Vec<UnitProperty>) {}
+    pub fn set_new_columns(&self, list: Vec<UnitProperty>) {
+        self.imp().set_new_columns(list);
+    }
 }
