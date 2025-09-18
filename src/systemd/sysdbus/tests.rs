@@ -314,13 +314,11 @@ fn test_get_unit_active_state() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-async fn get_unit_list_test(
-    level: UnitDBusLevel,
-) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
+async fn get_unit_list_test(level: UnitDBusLevel) -> Result<Vec<LUnit>, SystemdErrors> {
     let connection = get_connection_async(level).await?;
     let conn = Arc::new(connection);
 
-    let r = list_units_async_as_map(conn.clone(), level).await?;
+    let r = list_units_list_async(conn.clone()).await?;
 
     info!("Returned units count: {}", r.len());
 
@@ -384,12 +382,9 @@ async fn test_get_list() -> Result<(), SystemdErrors> {
 
     use std::time::Instant;
     let now = Instant::now();
-    let t1 = tokio::spawn(list_units_async_as_map(conn.clone(), UnitDBusLevel::System));
+    let t1 = tokio::spawn(list_units_list_async(conn.clone()));
     let t2 = tokio::spawn(list_unit_files_async(conn, UnitDBusLevel::System));
-    let t3 = tokio::spawn(list_units_async_as_map(
-        conn2.clone(),
-        UnitDBusLevel::UserSession,
-    ));
+    let t3 = tokio::spawn(list_units_list_async(conn2.clone()));
     let t4 = tokio::spawn(list_unit_files_async(conn2, UnitDBusLevel::UserSession));
 
     let _asdf = tokio::join!(t1, t2, t3, t4);
@@ -416,9 +411,9 @@ async fn test_get_list2() -> Result<(), SystemdErrors> {
 
     use std::time::Instant;
     let now = Instant::now();
-    let t1 = list_units_async_as_map(conn.clone(), UnitDBusLevel::System);
+    let t1 = list_units_list_async(conn.clone());
     let t2 = list_unit_files_async(conn, UnitDBusLevel::System);
-    let t3 = list_units_async_as_map(conn2.clone(), UnitDBusLevel::UserSession);
+    let t3 = list_units_list_async(conn2.clone());
     let t4 = list_unit_files_async(conn2, UnitDBusLevel::UserSession);
 
     let joined_result = tokio::join!(t1, t2, t3, t4);
@@ -437,11 +432,11 @@ async fn test_get_list2() -> Result<(), SystemdErrors> {
     println!("Session unit file size {}", r4.len());
 
     //check system collision
-    for (key, _val) in r1 {
+    /*     for (key, _val) in r1 {
         if r3.contains_key(&key) {
             println!("collision description on key {key}");
         }
-    }
+    } */
 
     /*         let a = asdf.0;
            let b = asdf.1;
@@ -749,7 +744,7 @@ fn test_introspect2() -> Result<(), SystemdErrors> {
 async fn test_introspect3() -> Result<(), SystemdErrors> {
     init();
 
-    let map = fetch_unit_properties().await?;
+    let map = fetch_unit_interface_properties().await?;
 
     for (k, v) in map.iter() {
         info!("{k}\t{}", v.len());

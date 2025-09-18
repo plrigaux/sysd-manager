@@ -19,7 +19,12 @@ use log::{debug, warn};
 use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
     format2,
-    systemd::{self, data::UnitInfo, enums::KillWho, errors::SystemdErrors},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{KillWho, UnitDBusLevel},
+        errors::SystemdErrors,
+    },
     widget::{
         InterPanelMessage,
         unit_control_panel::{UnitControlPanel, side_control_panel::SideControlPanel},
@@ -304,21 +309,25 @@ impl KillPanelImp {
                 signal_id,
                 sigqueue_value
             );
-            let lambda = move |unit: Option<&UnitInfo>| {
-                systemd::queue_signal_unit(
-                    unit.expect("Unit not None"),
-                    who,
-                    signal_id,
-                    sigqueue_value,
-                )
+            let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+                if let Some((level, primary_name)) = params {
+                    systemd::queue_signal_unit(level, &primary_name, who, signal_id, sigqueue_value)
+                } else {
+                    Err(SystemdErrors::NoUnit)
+                }
             };
+
             self.parent()
                 .call_method(&prefix, true, button, lambda, lambda_out);
         } else {
             //toast method name -- "Kill signal {signal_id} to"
             let prefix = format2!(pgettext("kill", "Kill signal {} to"), signal_id);
-            let lambda = move |unit: Option<&UnitInfo>| {
-                systemd::kill_unit(unit.expect("Unit not None"), who, signal_id)
+            let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+                if let Some((level, primary_name)) = params {
+                    systemd::kill_unit(level, &primary_name, who, signal_id)
+                } else {
+                    Err(SystemdErrors::NoUnit)
+                }
             };
             self.parent()
                 .call_method(&prefix, true, button, lambda, lambda_out);

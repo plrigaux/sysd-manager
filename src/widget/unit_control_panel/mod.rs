@@ -5,7 +5,7 @@ use crate::{
     format2,
     systemd::{
         data::UnitInfo,
-        enums::{ActiveState, StartStopMode},
+        enums::{ActiveState, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
     widget::unit_control_panel::enums::UnitContolType,
@@ -70,7 +70,7 @@ impl UnitControlPanel {
         method_name: &str,
         need_selected_unit: bool,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(Option<&UnitInfo>) -> Result<T, SystemdErrors>
+        systemd_method: impl Fn(Option<(UnitDBusLevel, String)>) -> Result<T, SystemdErrors>
         + std::marker::Send
         + 'static,
         return_handle: impl FnOnce(&str, Option<&UnitInfo>, Result<T, SystemdErrors>, &UnitControlPanel)
@@ -108,6 +108,10 @@ impl UnitControlPanel {
             expected_active_state,
             mode,
         )
+    }
+
+    pub(super) fn current_unit(&self) -> Option<UnitInfo> {
+        self.imp().current_unit()
     }
 }
 

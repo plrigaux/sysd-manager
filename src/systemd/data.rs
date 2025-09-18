@@ -1,13 +1,13 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use super::{SystemdUnitFile, UpdatedUnitInfo, enums::UnitDBusLevel, sysdbus::LUnit};
+use super::{SystemdUnitFile, UpdatedUnitInfo, enums::UnitDBusLevel};
 
 use gtk::{
     glib::{self},
     subclass::prelude::*,
 };
 use serde::Deserialize;
-use zvariant::Type;
+use zvariant::{OwnedValue, Type};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -25,7 +25,7 @@ impl UnitInfo {
         this_object
     }
 
-    pub fn from_listed_unit(listed_unit: &LUnit, level: UnitDBusLevel) -> Self {
+    pub fn from_listed_unit(listed_unit: super::LUnit, level: UnitDBusLevel) -> Self {
         let this_object: Self = glib::Object::new();
         let imp = this_object.imp();
         imp.init_from_listed_unit(listed_unit, level);
@@ -49,17 +49,22 @@ impl UnitInfo {
     pub fn debug(&self) -> String {
         format!("{:#?}", *self.imp())
     }
+
+    pub fn set_property_values(&self, property_value_list: Vec<(String, OwnedValue)>) {
+        self.imp().set_property_values(property_value_list);
+    }
 }
 
 mod imp {
-    use std::sync::RwLock;
+    use std::{cell::RefCell, collections::HashMap, sync::RwLock};
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
+    use zvariant::OwnedValue;
 
     use crate::systemd::{
-        SystemdUnitFile, UpdatedUnitInfo,
+        LUnit, SystemdUnitFile, UpdatedUnitInfo,
         enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
-        sysdbus::LUnit,
+        sysdbus::{self},
     };
 
     #[derive(Debug, glib::Properties, Default)]
@@ -86,8 +91,8 @@ mod imp {
         pub(super) followed_unit: RwLock<String>,
 
         //#[property(get = Self::has_object_path, name = "pathexists", type = bool)]
-        #[property(get, set)]
-        pub(super) object_path: RwLock<Option<String>>,
+        #[property(get=Self::get_unit_path, type = String)]
+        pub(super) object_path: RefCell<Option<String>>,
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RwLock<Option<String>>,
         #[property(get, set, default)]
@@ -98,6 +103,9 @@ mod imp {
 
         #[property(get, set, default)]
         pub(super) preset: RwLock<Preset>,
+
+        custom_properties: RefCell<HashMap<String, OwnedValue>>,
+        //custom_properties: Arc<RefCell<Option<HashMap<String, OwnedValue>>>>,
     }
 
     #[glib::object_subclass]
@@ -114,18 +122,19 @@ mod imp {
     impl ObjectImpl for UnitInfoImpl {}
 
     impl UnitInfoImpl {
-        pub(super) fn init_from_listed_unit(&self, listed_unit: &LUnit, dbus_level: UnitDBusLevel) {
-            let active_state: ActiveState = listed_unit.active_state.into();
+        pub(super) fn init_from_listed_unit(&self, listed_unit: LUnit, dbus_level: UnitDBusLevel) {
+            let active_state: ActiveState = listed_unit.active_state.as_str().into();
 
-            self.set_primary(listed_unit.primary_unit_name.to_owned());
+            self.set_primary(listed_unit.primary_unit_name);
             *self.active_state.write().unwrap() = active_state;
 
-            *self.description.write().unwrap() = listed_unit.description.to_owned();
-            let load_state: LoadState = listed_unit.load_state.into();
+            *self.description.write().unwrap() = listed_unit.description;
+            let load_state: LoadState = listed_unit.load_state.as_str().into();
             *self.load_state.write().unwrap() = load_state;
-            *self.sub_state.write().unwrap() = listed_unit.sub_state.to_owned();
-            *self.followed_unit.write().unwrap() = listed_unit.followed_unit.to_owned();
-            *self.object_path.write().unwrap() = Some(listed_unit.unit_object_path.to_string());
+            *self.sub_state.write().unwrap() = listed_unit.sub_state;
+            *self.followed_unit.write().unwrap() = listed_unit.followed_unit;
+            let unit_object_path = Some(listed_unit.unit_object_path.to_string());
+            self.object_path.replace(unit_object_path);
             *self.dbus_level.write().unwrap() = dbus_level;
         }
 
@@ -161,7 +170,7 @@ mod imp {
         }
 
         pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
-            *self.object_path.write().unwrap() = Some(update.object_path);
+            self.object_path.replace(Some(update.object_path));
 
             if let Some(description) = update.description {
                 *self.description.write().unwrap() = description;
@@ -191,6 +200,36 @@ mod imp {
             if let Some(enablement_status) = update.enablement_status {
                 *self.enable_status.write().unwrap() = enablement_status;
             }
+        }
+
+        fn get_unit_path(&self) -> String {
+            if let Some(a) = &*self.object_path.borrow() {
+                a.clone()
+            } else {
+                let primary = &*self.primary.read().unwrap();
+                let object_path = sysdbus::unit_dbus_path_from_name(primary);
+                self.object_path.replace(Some(object_path.clone()));
+                object_path
+            }
+        }
+
+        pub fn set_property_values(&self, _property_value_list: Vec<(String, OwnedValue)>) {
+            //
+            /*   match *asdf {
+                           Some(a) => todo!(),
+                           None => todo!(),
+                       }
+            */
+            /* let custom_properties = match *self.custom_properties.get_mut().unwrap() {
+                Some(custom_properties) => custom_properties,
+                None => {
+                    let custom_properties: HashMap<String, OwnedValue> =
+                        HashMap::with_capacity(property_value_list.len());
+                    *self.custom_properties.write().unwrap() = Some(custom_properties);
+
+                    custom_properties
+                }
+            }; */
         }
     }
 }

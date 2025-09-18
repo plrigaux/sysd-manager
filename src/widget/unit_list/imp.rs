@@ -32,9 +32,10 @@ use menus::create_col_menu;
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
     systemd::{
-        self, UnitProperty,
+        self, LUnit, SystemdUnitFile, UnitProperty,
         data::UnitInfo,
         enums::{LoadState, UnitDBusLevel, UnitType},
+        errors::SystemdErrors,
         runtime,
     },
     systemd_gui,
@@ -42,8 +43,8 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::data::{
-            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
-            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, DbusLevel, FLAG_SHOW, FLAG_WIDTH,
+            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, PREFERENCES,
             UNIT_LIST_COLUMNS, UNIT_LIST_COLUMNS_UNIT,
         },
         unit_list::{
@@ -64,17 +65,16 @@ use crate::{
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 struct UnitKey {
     level: UnitDBusLevel,
-    utype: UnitType,
     primary: String,
 }
 
 impl UnitKey {
     fn new(unit: &UnitInfo) -> Self {
-        UnitKey {
-            level: unit.dbus_level(),
-            utype: unit.unit_type(),
-            primary: unit.primary(),
-        }
+        Self::new2(unit.dbus_level(), unit.primary())
+    }
+
+    fn new2(level: UnitDBusLevel, primary: String) -> Self {
+        UnitKey { level, primary }
     }
 }
 
@@ -387,26 +387,89 @@ impl UnitListPanelImp {
         self.unit_list_sort_list_model
             .set_sorter(None::<&gtk::Sorter>);
 
+        let int_level = PREFERENCES.dbus_level();
+
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
-            let (sender, receiver) = tokio::sync::oneshot::channel();
 
-            runtime().spawn(async move {
-                let response = systemd::list_units_description_and_state_async().await;
+            async fn go_fetch(
+                level: UnitDBusLevel,
+            ) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
+                let (sender, receiver) = tokio::sync::oneshot::channel();
 
-                sender
-                    .send(response)
-                    .expect("The channel needs to be open.");
-            });
+                runtime().spawn(async move {
+                    // let response = systemd::list_units_description_and_state_async().await;
 
-            let (unit_desc, unit_from_files) = match receiver.await.expect("Tokio receiver works") {
-                Ok(unit_files) => unit_files,
-                Err(error) => {
-                    warn!("Fail fetch unit list {error:?}");
-                    panel_stack.set_visible_child_name("error");
-                    return;
+                    let response = systemd::list_units_description_and_state_async(level).await;
+                    sender
+                        .send(response)
+                        .expect("The channel needs to be open.");
+                });
+
+                receiver.await.expect("Tokio receiver works")
+
+                /*  let (unit_desc, unit_from_files) =
+                match receiver.await.expect("Tokio receiver works") {
+                    Ok((unit_files, _a)) => {
+                        let mut hmap = HashMap::with_capacity(unit_files.len());
+                        for listed_unit in unit_files.into_iter() {
+                            let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                            hmap.insert(unit.primary(), unit);
+                        }
+
+                        (hmap, _a)
+                    }
+                    Err(error) => { /*
+                        warn!("Fail fetch unit list {error:?}");
+                        panel_stack.set_visible_child_name("error");
+                        return; */
+                    }
+                }; */
+            }
+
+            let u = match int_level {
+                DbusLevel::UserSession => {
+                    let level = UnitDBusLevel::UserSession;
+                    let r = go_fetch(level).await;
+
+                    match r {
+                        Ok((unit_files, b)) => {
+                            let mut hmap = HashMap::with_capacity(unit_files.len());
+                            for listed_unit in unit_files.into_iter() {
+                                let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                                hmap.insert(unit.primary(), unit);
+                            }
+                            (hmap, b)
+                        }
+                        Err(err) => {
+                            warn!("Fail fetch unit list {err:?}");
+                            panel_stack.set_visible_child_name("error");
+                            return;
+                        }
+                    }
                 }
+                DbusLevel::System => {
+                    let level = UnitDBusLevel::UserSession;
+                    let r = go_fetch(level).await;
+
+                    match r {
+                        Ok((unit_files, b)) => {
+                            let mut hmap = HashMap::with_capacity(unit_files.len());
+                            for listed_unit in unit_files.into_iter() {
+                                let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                                hmap.insert(unit.primary(), unit);
+                            }
+                            (hmap, b)
+                        }
+                        Err(err) => {
+                            warn!("Fail fetch unit list {err:?}");
+                            panel_stack.set_visible_child_name("error");
+                            return;
+                        }
+                    }
+                }
+                DbusLevel::SystemAndSession => todo!(),
             };
 
             unit_list
@@ -487,7 +550,7 @@ impl UnitListPanelImp {
                     force_selected_index = index;
                 }
             }
-
+            debug!("IM HERRE");
             unit_list
                 .imp()
                 .force_selected_index
@@ -503,26 +566,34 @@ impl UnitListPanelImp {
 
             glib::spawn_future_local(async move {
                 //let (sender, receiver) = tokio::sync::oneshot::channel();
+
+                debug!("IM HERRE 3 map len {}", all_units.len());
                 let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
-                {
-                    let all_units = all_units.clone();
 
-                    runtime().spawn(async move {
-                        const BATCH_SIZE: usize = 5;
-                        let mut batch = Vec::with_capacity(BATCH_SIZE);
-                        for (idx, unit) in (1..).zip(all_units.values()) {
-                            batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
-
-                            if idx % BATCH_SIZE == 0 {
-                                call_complete_unit(&sender, &batch).await;
-
-                                batch.clear();
-                            }
-                        }
-
-                        call_complete_unit(&sender, &batch).await;
-                    });
+                let mut list = Vec::with_capacity(all_units.len());
+                for unit in all_units.values() {
+                    let level = unit.dbus_level();
+                    let primary = unit.primary();
+                    let path = unit.object_path();
+                    debug!("path {path}");
+                    list.push((level, primary, path));
                 }
+
+                runtime().spawn(async move {
+                    const BATCH_SIZE: usize = 5;
+                    let mut batch = Vec::with_capacity(BATCH_SIZE);
+                    for (idx, triple) in (1..).zip(list.into_iter()) {
+                        batch.push(triple);
+
+                        if idx % BATCH_SIZE == 0 {
+                            call_complete_unit(&sender, batch).await;
+
+                            batch = Vec::with_capacity(BATCH_SIZE);
+                        }
+                    }
+
+                    call_complete_unit(&sender, batch).await;
+                });
 
                 while let Some(updates) = receiver.recv().await {
                     for update in updates {
@@ -818,33 +889,55 @@ impl UnitListPanelImp {
         })
     }
 
-    pub(super) fn set_new_columns(&self, list: Vec<UnitProperty>) {
+    pub(super) fn set_new_columns(&self, property_list: Vec<UnitProperty>) {
         let mut types = HashSet::with_capacity(16);
         let mut is_unit_type = false;
         //  let mut properties = Vec::wi
-        for prop in &list {
-            let factory = column_factories::get_custom_factoy(prop);
-            let column = gtk::ColumnViewColumn::new(Some(&prop.name), Some(factory));
+        for unit_property in &property_list {
+            let factory = column_factories::get_custom_factoy(unit_property);
+            let column = gtk::ColumnViewColumn::new(Some(&unit_property.name), Some(factory));
             self.units_browser.append_column(&column);
-            if prop.interface == UnitType::Unit {
+            if unit_property.interface == UnitType::Unit {
                 is_unit_type |= true
             } else {
-                types.insert(prop.interface);
+                types.insert(unit_property.interface);
             }
         }
 
+        let list_len = property_list.len();
         let units_map = self.units_map.clone();
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
                 .borrow()
-                .keys()
-                .filter(|uk| is_unit_type || types.contains(&uk.utype))
-                .cloned()
+                .values()
+                .filter(|unit| is_unit_type || types.contains(&unit.unit_type()))
+                .map(|unit| (unit.dbus_level(), unit.primary(), unit.object_path()))
                 .collect();
 
+            let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
             runtime().spawn(async move {
-                for unit_key in units_list {
-                    for prop in &list {}
+                for (level, primary_name, path) in units_list {
+                    let mut property_value_list = Vec::with_capacity(list_len);
+                    for prop in &property_list {
+                        let interface = prop.interface.interface();
+                        match systemd::fetch_unit_properties(level, &path, interface, &prop.name)
+                            .await
+                        {
+                            Ok(value) => property_value_list.push((prop.name.clone(), value)),
+                            Err(err) => {
+                                warn!("{interface} {} {err:?}", prop.name);
+                                continue;
+                            }
+                        }
+                    }
+
+                    if let Err(err) = sender
+                        .send((UnitKey::new2(level, primary_name), property_value_list))
+                        .await
+                    {
+                        error!("The channel needs to be open. {err:?}");
+                        break;
+                    }
                 }
 
                 /*   const BATCH_SIZE: usize = 5;
@@ -862,15 +955,11 @@ impl UnitListPanelImp {
                 call_complete_unit(&sender, &batch).await; */
             });
 
-            /*
-            while let Some(updates) = receiver.recv().await {
-                 for update in updates {
-                    let Some(unit) = all_units.get(&update.primary) else {
-                        continue;
-                    };
-
-                    unit.update_from_unit_info(update);
-                } */
+            while let Some((key, property_value_list)) = receiver.recv().await {
+                if let Some(unit) = units_map.borrow().get(&key) {
+                    unit.set_property_values(property_value_list);
+                }
+            }
         });
     }
 }
@@ -1083,7 +1172,7 @@ impl BoxImpl for UnitListPanelImp {}
 
 async fn call_complete_unit(
     sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
-    batch: &Vec<(String, systemd::enums::UnitDBusLevel, Option<String>)>,
+    batch: Vec<(UnitDBusLevel, String, String)>,
 ) {
     let updates = match systemd::complete_unit_information(batch).await {
         Ok(updates) => updates,

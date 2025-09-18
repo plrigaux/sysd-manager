@@ -168,18 +168,23 @@ impl UnitDependenciesPanelImp {
 
         plain = plain || !unit_type_filter.is_empty();
         let level = unit.dbus_level();
+        let primary_name = unit.primary();
+        let object_path = unit.object_path();
+
         glib::spawn_future_local(async move {
             stack.set_visible_child_name(PANEL_SPINNER);
             let dependencies =
                 gio::spawn_blocking(move || {
-                    match systemd::fetch_unit_dependencies(&unit, dep_type, plain) {
+                    match systemd::fetch_unit_dependencies(
+                        level,
+                        &primary_name,
+                        &object_path,
+                        dep_type,
+                        plain,
+                    ) {
                         Ok(dep) => Some(dep),
                         Err(error) => {
-                            warn!(
-                                "Fetching {:?} dependencies error {:?}",
-                                unit.primary(),
-                                error
-                            );
+                            warn!("Fetching {:?} dependencies error {:?}", primary_name, error);
                             None
                         }
                     }

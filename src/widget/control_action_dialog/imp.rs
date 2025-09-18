@@ -174,8 +174,8 @@ impl EnableUnitDialogImp {
                     flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
                 }
 
-                let lambda = move |_unit: Option<&UnitInfo>| {
-                    systemd::enable_unit_file(unit_file2.as_str(), dbus_level, flags)
+                let lambda = move |_params: Option<(UnitDBusLevel, String)>| {
+                    systemd::enable_unit_file(dbus_level, unit_file2.as_str(), flags)
                 };
 
                 self.unit_control
@@ -200,21 +200,26 @@ impl EnableUnitDialogImp {
                                 info!("{} Result: {:?}", action_type.code(), vec);
 
                                 if let Some(unit) = unit
-                                    && dialog.imp().run_stop_now_switch.is_active() {
-                                        let mode = dialog.imp().run_stop_mode_combo.selected_item();
-                                        let mode: StartStopMode = mode.into();
-                                        info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
-                                        let stop_results = systemd::stop_unit(unit, mode);
+                                    && dialog.imp().run_stop_now_switch.is_active()
+                                {
+                                    let mode = dialog.imp().run_stop_mode_combo.selected_item();
+                                    let mode: StartStopMode = mode.into();
+                                    info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
+                                    let stop_results = systemd::stop_unit(
+                                        unit.dbus_level(),
+                                        &unit.primary(),
+                                        mode,
+                                    );
 
-                                        control.start_restart(
-                                            &unit.primary(),
-                                            Some(unit),
-                                            stop_results,
-                                            UnitContolType::Stop,
-                                            ActiveState::Inactive,
-                                            mode,
-                                        );
-                                    }
+                                    control.start_restart(
+                                        &unit.primary(),
+                                        Some(unit),
+                                        stop_results,
+                                        UnitContolType::Stop,
+                                        ActiveState::Inactive,
+                                        mode,
+                                    );
+                                }
 
                                 let result = result.map(|_arg| ());
                                 after_unit_file_action(
@@ -243,12 +248,12 @@ impl EnableUnitDialogImp {
                     flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
                 }
 
-                let lambda = move |unit: Option<&UnitInfo>| {
-                    let Some(unit) = unit else {
-                        return Err(SystemdErrors::NoUnit);
-                    };
-
-                    systemd::disable_unit_files(&unit.primary(), unit.dbus_level(), flags)
+                let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+                    if let Some((level, primary_name)) = params {
+                        systemd::disable_unit_files(level, &primary_name, flags)
+                    } else {
+                        Err(SystemdErrors::NoUnit)
+                    }
                 };
 
                 self.unit_control
@@ -273,21 +278,26 @@ impl EnableUnitDialogImp {
                                 info!("{} Result: {:?}", action_type.code(), vec);
 
                                 if let Some(unit) = unit
-                                    && dialog.imp().run_stop_now_switch.is_active() {
-                                        let mode = dialog.imp().run_stop_mode_combo.selected_item();
-                                        let mode: StartStopMode = mode.into();
-                                        info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
-                                        let stop_results = systemd::stop_unit(unit, mode);
+                                    && dialog.imp().run_stop_now_switch.is_active()
+                                {
+                                    let mode = dialog.imp().run_stop_mode_combo.selected_item();
+                                    let mode: StartStopMode = mode.into();
+                                    info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
+                                    let stop_results = systemd::stop_unit(
+                                        unit.dbus_level(),
+                                        &unit.primary(),
+                                        mode,
+                                    );
 
-                                        control.start_restart(
-                                            &unit.primary(),
-                                            Some(unit),
-                                            stop_results,
-                                            UnitContolType::Stop,
-                                            ActiveState::Inactive,
-                                            mode,
-                                        );
-                                    }
+                                    control.start_restart(
+                                        &unit.primary(),
+                                        Some(unit),
+                                        stop_results,
+                                        UnitContolType::Stop,
+                                        ActiveState::Inactive,
+                                        mode,
+                                    );
+                                }
 
                                 let result = result.map(|_arg| ());
                                 after_unit_file_action("Mask", unit, result, control);
@@ -297,12 +307,14 @@ impl EnableUnitDialogImp {
                     }
                 };
 
-                let lambda = move |unit: Option<&UnitInfo>| {
-                    let Some(unit) = unit else {
-                        return Err(SystemdErrors::NoUnit);
-                    };
-                    systemd::mask_unit_files(unit, runtime, force)
+                let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+                    if let Some((level, primary_name)) = params {
+                        systemd::mask_unit_files(level, &primary_name, runtime, force)
+                    } else {
+                        Err(SystemdErrors::NoUnit)
+                    }
                 };
+
                 self.unit_control
                     .get()
                     .expect("unit_control not None")
@@ -332,11 +344,12 @@ impl EnableUnitDialogImp {
                     }
                 };
 
-                let lambda = move |unit: Option<&UnitInfo>| {
-                    let Some(unit) = unit else {
-                        return Err(SystemdErrors::NoUnit);
-                    };
-                    systemd::preset_unit_files(unit, runtime, force)
+                let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+                    if let Some((level, primary_name)) = params {
+                        systemd::preset_unit_files(level, &primary_name, runtime, force)
+                    } else {
+                        Err(SystemdErrors::NoUnit)
+                    }
                 };
 
                 self.unit_control
@@ -374,11 +387,12 @@ impl EnableUnitDialogImp {
                     }
                 };
 
-                let lambda = move |unit: Option<&UnitInfo>| {
-                    let Some(unit) = unit else {
-                        return Err(SystemdErrors::NoUnit);
-                    };
-                    systemd::reenable_unit_file(unit, runtime, force)
+                let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+                    if let Some((level, primary_name)) = params {
+                        systemd::reenable_unit_file(level, &primary_name, runtime, force)
+                    } else {
+                        Err(SystemdErrors::NoUnit)
+                    }
                 };
 
                 self.unit_control
@@ -434,7 +448,7 @@ impl EnableUnitDialogImp {
                     }
                 };
 
-                let lambda = move |_unit: Option<&UnitInfo>| {
+                let lambda = move |_params: Option<(UnitDBusLevel, String)>| {
                     systemd::link_unit_files(dbus_level, unit_file2.as_str(), runtime, force)
                 };
 
@@ -493,9 +507,7 @@ impl EnableUnitDialogImp {
         pointer: glib::Value,
         _entry: adw::EntryRow,
     ) {
-        info!(
-            "unit_file_insert_text {text:?} {position:?} {pointer:?}"
-        );
+        info!("unit_file_insert_text {text:?} {position:?} {pointer:?}");
     }
 
     #[template_callback]
@@ -752,12 +764,14 @@ pub fn after_unit_file_action(
     let unit = unit.clone();
     let control = control.clone();
     glib::spawn_future_local(async move {
-        let unit2 = unit.clone();
-
         let (sender, receiver) = tokio::sync::oneshot::channel();
 
+        let primary_name = unit.primary();
+        let level = unit.dbus_level();
+        let object_path = unit.object_path();
         crate::systemd::runtime().spawn(async move {
-            let response = systemd::complete_single_unit_information(&unit2).await;
+            let response =
+                systemd::complete_single_unit_information(primary_name, level, object_path).await;
 
             sender
                 .send(response)

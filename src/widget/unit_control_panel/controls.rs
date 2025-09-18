@@ -37,11 +37,14 @@ pub(super) fn switch_ablement_state_set(
     glib::spawn_future_local(async move {
         switch.set_sensitive(false);
 
-        let unit_ = unit.clone();
-        let enable_result =
-            gio::spawn_blocking(move || systemd::disenable_unit_file(&unit_, expected_new_status))
-                .await
-                .expect("Task needs to finish successfully.");
+        let primary_name = unit.primary();
+        let level = unit.dbus_level();
+        let enable_status = unit.enable_status();
+        let enable_result = gio::spawn_blocking(move || {
+            systemd::disenable_unit_file(primary_name, level, enable_status, expected_new_status)
+        })
+        .await
+        .expect("Task needs to finish successfully.");
 
         switch.set_sensitive(true);
 
@@ -123,18 +126,21 @@ pub(super) fn handle_switch_sensivity(
     if check_current_state {
         let switch = switch.clone();
         let unit = unit.clone();
+
+        let primary_name = unit.primary();
+        let level = unit.dbus_level();
         glib::spawn_future_local(async move {
-            let unit2 = unit.clone();
-            let current_state =
-                gio::spawn_blocking(move || match systemd::get_unit_file_state(&unit2) {
+            let current_state = gio::spawn_blocking(move || {
+                match systemd::get_unit_file_state(level, &primary_name) {
                     Ok(enblement_status) => enblement_status,
                     Err(err) => {
-                        info!("Get unit state fail! For {:?} : {:?}", unit2.primary(), err);
+                        info!("Get unit state fail! For {:?} : {:?}", primary_name, err);
                         unit_file_state
                     }
-                })
-                .await
-                .expect("Task needs to finish successfully.");
+                }
+            })
+            .await
+            .expect("Task needs to finish successfully.");
 
             if current_state != unit_file_state {
                 unit_file_state = current_state;

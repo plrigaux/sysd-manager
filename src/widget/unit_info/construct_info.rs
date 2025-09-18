@@ -922,7 +922,7 @@ fn fill_triggers(
 
         write_key(unit_writer, key_label);
 
-        match systemd::get_unit_active_state(trigger_unit, level) {
+        match systemd::get_unit_active_state(level, trigger_unit) {
             Ok(state) => {
                 unit_writer.insert_state(state);
             }
@@ -959,7 +959,7 @@ fn fill_triggered_by(
 
         write_key(unit_writer, key_label);
 
-        match systemd::get_unit_active_state(trigger_unit, level) {
+        match systemd::get_unit_active_state(level, trigger_unit) {
             Ok(state) => {
                 unit_writer.insert_state(state);
             }

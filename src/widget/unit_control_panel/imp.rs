@@ -15,7 +15,7 @@ use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, StartStopMode},
+        enums::{ActiveState, EnablementStatus, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
     utils::{
@@ -242,7 +242,7 @@ impl UnitControlPanelImpl {
     fn start_restart_action(
         &self,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: fn(&UnitInfo, StartStopMode) -> Result<String, SystemdErrors>,
+        systemd_method: fn(UnitDBusLevel, &str, StartStopMode) -> Result<String, SystemdErrors>,
         action: UnitContolType,
         expected_active_state: ActiveState,
         unit: Option<&UnitInfo>,
@@ -258,13 +258,15 @@ impl UnitControlPanelImpl {
         let unit_control_panel = self.obj().clone();
 
         let button = button.clone();
+        let primary_name = unit.primary();
+        let level = unit.dbus_level();
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
 
-            let unit_ = unit.clone();
-            let start_results = gio::spawn_blocking(move || systemd_method(&unit_, start_mode))
-                .await
-                .expect("Task needs to finish successfully.");
+            let start_results =
+                gio::spawn_blocking(move || systemd_method(level, &primary_name, start_mode))
+                    .await
+                    .expect("Task needs to finish successfully.");
 
             button.set_sensitive(true);
 
@@ -569,7 +571,7 @@ impl UnitControlPanelImpl {
         method_name: &str,
         need_selected_unit: bool,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(Option<&UnitInfo>) -> Result<T, SystemdErrors>
+        systemd_method: impl Fn(Option<(UnitDBusLevel, String)>) -> Result<T, SystemdErrors>
         + std::marker::Send
         + 'static,
         return_handle: impl FnOnce(&str, Option<&UnitInfo>, Result<T, SystemdErrors>, &UnitControlPanel)
@@ -578,7 +580,7 @@ impl UnitControlPanelImpl {
         T: Send + 'static,
     {
         let binding = self.current_unit.borrow();
-        let unit_option = binding.as_ref();
+        let unit_option = binding.clone();
 
         if need_selected_unit && unit_option.is_none() {
             warn!("No Unit");
@@ -592,14 +594,20 @@ impl UnitControlPanelImpl {
         let button = button.clone();
         let method_name = method_name.to_owned();
 
-        let unit_op = unit_option.cloned();
+        let params = if let Some(ref unit) = unit_option {
+            let primary_name = unit.primary();
+            let level = unit.dbus_level();
+
+            Some((level, primary_name))
+        } else {
+            None
+        };
 
         //   let systemd_method = systemd_method.clone();
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
 
-            let unit2 = unit_op.clone();
-            let result = gio::spawn_blocking(move || systemd_method(unit2.as_ref()))
+            let result = gio::spawn_blocking(move || systemd_method(params))
                 .await
                 .expect("Call needs to finish successfully.");
 
@@ -607,7 +615,7 @@ impl UnitControlPanelImpl {
 
             match result {
                 Ok(_) => {
-                    let msg = if let Some(ref unit) = unit_op {
+                    let msg = if let Some(ref unit) = unit_option {
                         // toast message success
                         format2!(
                             pgettext(
@@ -627,7 +635,7 @@ impl UnitControlPanelImpl {
                 Err(ref error) => {
                     let red = red(is_dark).get_color();
 
-                    let msg = if let Some(ref unit) = unit_op {
+                    let msg = if let Some(ref unit) = unit_option {
                         format2!(
                             // toast message failed
                             pgettext(
@@ -655,8 +663,12 @@ impl UnitControlPanelImpl {
                 }
             }
 
-            return_handle(&method_name, unit_op.as_ref(), result, &control_panel)
+            return_handle(&method_name, unit_option.as_ref(), result, &control_panel)
         });
+    }
+
+    pub(super) fn current_unit(&self) -> Option<UnitInfo> {
+        self.current_unit.borrow().clone()
     }
 }
 

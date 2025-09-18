@@ -8,11 +8,16 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
-use log::warn;
+use log::{error, warn};
 
 use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
-    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{StartStopMode, UnitDBusLevel},
+        errors::SystemdErrors,
+    },
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -144,8 +149,13 @@ impl SideControlPanelImpl {
 
         let mode: StartStopMode = value.into();
 
-        let lambda =
-            move |unit: Option<&UnitInfo>| systemd::reload_unit(unit.expect("Unit not None"), mode);
+        let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+            if let Some((level, primary_name)) = params {
+                systemd::reload_unit(level, &primary_name, mode)
+            } else {
+                Err(SystemdErrors::NoUnit)
+            }
+        };
 
         self.parent().call_method(
             //action name
@@ -233,12 +243,19 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
-        let lambda = |unit: Option<&UnitInfo>| -> Result<(), SystemdErrors> {
-            if let Some(unit) = unit {
-                let runtime = unit.enable_status().is_runtime();
-                systemd::unmask_unit_files(unit, runtime)?;
+        let Some(unit) = self.parent().current_unit() else {
+            error!("No unit");
+            return;
+        };
+
+        let runtime = unit.enable_status().is_runtime();
+        let lambda = move |params: Option<(UnitDBusLevel, String)>| -> Result<(), SystemdErrors> {
+            if let Some((level, primary_name)) = params {
+                systemd::unmask_unit_files(level, &primary_name, runtime)?;
+                Ok(())
+            } else {
+                Err(SystemdErrors::NoUnit)
             }
-            Ok(())
         };
 
         self.parent().call_method(

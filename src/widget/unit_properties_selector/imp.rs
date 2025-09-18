@@ -343,7 +343,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
             let (sender, receiver) = tokio::sync::oneshot::channel();
 
             runtime().spawn(async move {
-                match systemd::fetch_unit_properties().await {
+                match systemd::fetch_unit_interface_properties().await {
                     Ok(map) => sender.send(map).expect("The channel needs to be open."),
                     Err(err) => error!("Fetch unir properties {err:?}"),
                 }
