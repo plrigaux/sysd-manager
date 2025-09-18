@@ -22,11 +22,11 @@ use zbus::{
     proxy,
 };
 
-use zvariant::{Array, DynamicType, ObjectPath, OwnedObjectPath, OwnedValue, Str, Type};
+use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 use crate::systemd::{
-    LUnit, UnitPropertyFetch,
-    data::{EnableUnitFilesReturn, UnitInfo},
+    UnitPropertyFetch,
+    data::{EnableUnitFilesReturn, LUnit, UnitInfo},
     enums::{ActiveState, LoadState, UnitType},
 };
 

@@ -7,7 +7,7 @@ use gtk::{
     subclass::prelude::*,
 };
 use serde::Deserialize;
-use zvariant::{OwnedValue, Type};
+use zvariant::{OwnedObjectPath, OwnedValue, Type};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -25,7 +25,7 @@ impl UnitInfo {
         this_object
     }
 
-    pub fn from_listed_unit(listed_unit: super::LUnit, level: UnitDBusLevel) -> Self {
+    pub fn from_listed_unit(listed_unit: LUnit, level: UnitDBusLevel) -> Self {
         let this_object: Self = glib::Object::new();
         let imp = this_object.imp();
         imp.init_from_listed_unit(listed_unit, level);
@@ -62,7 +62,7 @@ mod imp {
     use zvariant::OwnedValue;
 
     use crate::systemd::{
-        LUnit, SystemdUnitFile, UpdatedUnitInfo,
+        SystemdUnitFile, UpdatedUnitInfo,
         enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
         sysdbus::{self},
     };
@@ -122,7 +122,11 @@ mod imp {
     impl ObjectImpl for UnitInfoImpl {}
 
     impl UnitInfoImpl {
-        pub(super) fn init_from_listed_unit(&self, listed_unit: LUnit, dbus_level: UnitDBusLevel) {
+        pub(super) fn init_from_listed_unit(
+            &self,
+            listed_unit: super::LUnit,
+            dbus_level: UnitDBusLevel,
+        ) {
             let active_state: ActiveState = listed_unit.active_state.as_str().into();
 
             self.set_primary(listed_unit.primary_unit_name);
@@ -278,4 +282,20 @@ pub struct DisEnAbleUnitFiles {
 pub struct EnableUnitFilesReturn {
     pub carries_install_info: bool,
     pub vec: Vec<DisEnAbleUnitFiles>,
+}
+
+#[derive(Deserialize, zvariant::Type, PartialEq, Debug)]
+pub struct LUnit {
+    pub primary_unit_name: String,
+    pub description: String,
+    pub load_state: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub followed_unit: String,
+
+    pub unit_object_path: OwnedObjectPath,
+    ///If there is a job queued for the job unit the numeric job id, 0 otherwise
+    pub numeric_job_id: u32,
+    pub job_type: String,
+    pub job_object_path: OwnedObjectPath,
 }

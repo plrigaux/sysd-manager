@@ -26,14 +26,11 @@ use gtk::{
     },
 };
 
-use log::{debug, error, info, warn};
-use menus::create_col_menu;
-
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
     systemd::{
-        self, LUnit, SystemdUnitFile, UnitProperty,
-        data::UnitInfo,
+        self, SystemdUnitFile, UnitProperty,
+        data::{LUnit, UnitInfo},
         enums::{LoadState, UnitDBusLevel, UnitType},
         errors::SystemdErrors,
         runtime,
@@ -61,6 +58,8 @@ use crate::{
         },
     },
 };
+use log::{debug, error, info, warn};
+use menus::create_col_menu;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 struct UnitKey {
@@ -381,8 +380,6 @@ impl UnitListPanelImp {
             .expect("Supposed to be set")
             .clone();
 
-        // let sender_c = sender.clone();
-
         //Rem sorting before adding lot of items for performance reasons
         self.unit_list_sort_list_model
             .set_sorter(None::<&gtk::Sorter>);
@@ -393,83 +390,13 @@ impl UnitListPanelImp {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
 
-            async fn go_fetch(
-                level: UnitDBusLevel,
-            ) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
-                let (sender, receiver) = tokio::sync::oneshot::channel();
-
-                runtime().spawn(async move {
-                    // let response = systemd::list_units_description_and_state_async().await;
-
-                    let response = systemd::list_units_description_and_state_async(level).await;
-                    sender
-                        .send(response)
-                        .expect("The channel needs to be open.");
-                });
-
-                receiver.await.expect("Tokio receiver works")
-
-                /*  let (unit_desc, unit_from_files) =
-                match receiver.await.expect("Tokio receiver works") {
-                    Ok((unit_files, _a)) => {
-                        let mut hmap = HashMap::with_capacity(unit_files.len());
-                        for listed_unit in unit_files.into_iter() {
-                            let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                            hmap.insert(unit.primary(), unit);
-                        }
-
-                        (hmap, _a)
-                    }
-                    Err(error) => { /*
-                        warn!("Fail fetch unit list {error:?}");
-                        panel_stack.set_visible_child_name("error");
-                        return; */
-                    }
-                }; */
-            }
-
-            let u = match int_level {
-                DbusLevel::UserSession => {
-                    let level = UnitDBusLevel::UserSession;
-                    let r = go_fetch(level).await;
-
-                    match r {
-                        Ok((unit_files, b)) => {
-                            let mut hmap = HashMap::with_capacity(unit_files.len());
-                            for listed_unit in unit_files.into_iter() {
-                                let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                                hmap.insert(unit.primary(), unit);
-                            }
-                            (hmap, b)
-                        }
-                        Err(err) => {
-                            warn!("Fail fetch unit list {err:?}");
-                            panel_stack.set_visible_child_name("error");
-                            return;
-                        }
-                    }
+            let (unit_desc, unit_from_files) = match go_fetch_data(int_level).await {
+                Ok(value) => value,
+                Err(err) => {
+                    warn!("Fail fetch unit list {err:?}");
+                    panel_stack.set_visible_child_name("error");
+                    return;
                 }
-                DbusLevel::System => {
-                    let level = UnitDBusLevel::UserSession;
-                    let r = go_fetch(level).await;
-
-                    match r {
-                        Ok((unit_files, b)) => {
-                            let mut hmap = HashMap::with_capacity(unit_files.len());
-                            for listed_unit in unit_files.into_iter() {
-                                let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                                hmap.insert(unit.primary(), unit);
-                            }
-                            (hmap, b)
-                        }
-                        Err(err) => {
-                            warn!("Fail fetch unit list {err:?}");
-                            panel_stack.set_visible_child_name("error");
-                            return;
-                        }
-                    }
-                }
-                DbusLevel::SystemAndSession => todo!(),
             };
 
             unit_list
@@ -961,6 +888,69 @@ impl UnitListPanelImp {
                 }
             }
         });
+    }
+}
+
+async fn go_fetch(
+    level: UnitDBusLevel,
+) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+
+    runtime().spawn(async move {
+        // let response = systemd::list_units_description_and_state_async().await;
+
+        let response = systemd::list_units_description_and_state_async(level).await;
+        sender
+            .send(response)
+            .expect("The channel needs to be open.");
+    });
+
+    receiver.await.expect("Tokio receiver works")
+}
+
+async fn go_fetch_data(
+    int_level: DbusLevel,
+) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
+    match int_level {
+        DbusLevel::SystemAndSession => {
+            let level_syst = UnitDBusLevel::System;
+            let (loaded_unit_system, mut unit_file_system) = go_fetch(level_syst).await?;
+
+            let level_user = UnitDBusLevel::UserSession;
+            let (loaded_unit_user, mut unit_file_user) = go_fetch(level_user).await?;
+
+            let mut hmap =
+                HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
+
+            for listed_unit in loaded_unit_system.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            for listed_unit in loaded_unit_user.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_syst);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            unit_file_system.append(&mut unit_file_user);
+            Ok((hmap, unit_file_system))
+        }
+        dlevel => {
+            let level: UnitDBusLevel = if dlevel == DbusLevel::System {
+                UnitDBusLevel::System
+            } else {
+                UnitDBusLevel::UserSession
+            };
+
+            let (loaded_unit, unit_files) = go_fetch(level).await?;
+
+            let mut hmap = HashMap::with_capacity(loaded_unit.len());
+            for listed_unit in loaded_unit.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                hmap.insert(unit.primary(), unit);
+            }
+            Ok((hmap, unit_files))
+        }
     }
 }
 

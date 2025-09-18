@@ -26,12 +26,14 @@ use gtk::glib::GString;
 use journal::Boot;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
-use serde::Deserialize;
-use tokio::runtime::Runtime;
-use tokio::sync::mpsc;
-use zvariant::{DeserializeValue, OwnedObjectPath, OwnedValue};
 
-use crate::systemd::{data::EnableUnitFilesReturn, enums::LoadState};
+use tokio::{runtime::Runtime, sync::mpsc};
+use zvariant::{OwnedObjectPath, OwnedValue};
+
+use crate::systemd::{
+    data::{EnableUnitFilesReturn, LUnit},
+    enums::LoadState,
+};
 
 pub mod enums;
 
@@ -118,22 +120,6 @@ pub fn get_unit_file_state(
     }
 }
  */
-
-#[derive(Deserialize, zvariant::Type, PartialEq, Debug)]
-pub struct LUnit {
-    pub primary_unit_name: String,
-    pub description: String,
-    pub load_state: String,
-    pub active_state: String,
-    pub sub_state: String,
-    pub followed_unit: String,
-
-    pub unit_object_path: OwnedObjectPath,
-    ///If there is a job queued for the job unit the numeric job id, 0 otherwise
-    pub numeric_job_id: u32,
-    pub job_type: String,
-    pub job_object_path: OwnedObjectPath,
-}
 
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
