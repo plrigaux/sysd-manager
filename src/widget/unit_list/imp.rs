@@ -30,7 +30,7 @@ use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
     systemd::{
         self, SystemdUnitFile, UnitProperty,
-        data::{LUnit, UnitInfo},
+        data::UnitInfo,
         enums::{LoadState, UnitDBusLevel, UnitType},
         errors::SystemdErrors,
         runtime,
@@ -900,69 +900,6 @@ impl UnitListPanelImp {
     }
 }
 
-async fn go_fetch(
-    level: UnitDBusLevel,
-) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
-    let (sender, receiver) = tokio::sync::oneshot::channel();
-
-    runtime().spawn(async move {
-        // let response = systemd::list_units_description_and_state_async().await;
-
-        let response = systemd::list_units_description_and_state_async(level).await;
-        sender
-            .send(response)
-            .expect("The channel needs to be open.");
-    });
-
-    receiver.await.expect("Tokio receiver works")
-}
-
-async fn go_fetch_data(
-    int_level: DbusLevel,
-) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
-    match int_level {
-        DbusLevel::SystemAndSession => {
-            let level_syst = UnitDBusLevel::System;
-            let (loaded_unit_system, mut unit_file_system) = go_fetch(level_syst).await?;
-
-            let level_user = UnitDBusLevel::UserSession;
-            let (loaded_unit_user, mut unit_file_user) = go_fetch(level_user).await?;
-
-            let mut hmap =
-                HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
-
-            for listed_unit in loaded_unit_system.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
-                hmap.insert(unit.primary(), unit);
-            }
-
-            for listed_unit in loaded_unit_user.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level_syst);
-                hmap.insert(unit.primary(), unit);
-            }
-
-            unit_file_system.append(&mut unit_file_user);
-            Ok((hmap, unit_file_system))
-        }
-        dlevel => {
-            let level: UnitDBusLevel = if dlevel == DbusLevel::System {
-                UnitDBusLevel::System
-            } else {
-                UnitDBusLevel::UserSession
-            };
-
-            let (loaded_unit, unit_files) = go_fetch(level).await?;
-
-            let mut hmap = HashMap::with_capacity(loaded_unit.len());
-            for listed_unit in loaded_unit.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                hmap.insert(unit.primary(), unit);
-            }
-            Ok((hmap, unit_files))
-        }
-    }
-}
-
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
 impl ObjectSubclass for UnitListPanelImp {
@@ -1185,4 +1122,82 @@ async fn call_complete_unit(
         .send(updates)
         .await
         .expect("The channel needs to be open.");
+}
+
+async fn go_fetch_data(
+    int_level: DbusLevel,
+) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
+    match int_level {
+        DbusLevel::SystemAndSession => {
+            let level_syst = UnitDBusLevel::System;
+            let level_user = UnitDBusLevel::UserSession;
+
+            let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
+            let (sender_user, receiver_user) = tokio::sync::oneshot::channel();
+
+            runtime().spawn(async move {
+                let t_syst =
+                    tokio::spawn(systemd::list_units_description_and_state_async(level_syst));
+                let t_user =
+                    tokio::spawn(systemd::list_units_description_and_state_async(level_user));
+
+                let joined = tokio::join!(t_syst, t_user);
+
+                sender_syst
+                    .send(joined.0)
+                    .expect("The channel needs to be open.");
+                sender_user
+                    .send(joined.1)
+                    .expect("The channel needs to be open.");
+            });
+
+            let (loaded_unit_system, mut unit_file_system) =
+                receiver_syst.await.expect("Tokio receiver works")??;
+            let (loaded_unit_user, mut unit_file_user) =
+                receiver_user.await.expect("Tokio receiver works")??;
+
+            let mut hmap =
+                HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
+
+            for listed_unit in loaded_unit_system.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_syst);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            for listed_unit in loaded_unit_user.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            unit_file_system.append(&mut unit_file_user);
+            Ok((hmap, unit_file_system))
+        }
+        dlevel => {
+            let level: UnitDBusLevel = if dlevel == DbusLevel::System {
+                UnitDBusLevel::System
+            } else {
+                UnitDBusLevel::UserSession
+            };
+
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+
+            runtime().spawn(async move {
+                // let response = systemd::list_units_description_and_state_async().await;
+
+                let response = systemd::list_units_description_and_state_async(level).await;
+                sender
+                    .send(response)
+                    .expect("The channel needs to be open.");
+            });
+
+            let (loaded_unit, unit_files) = receiver.await.expect("Tokio receiver works")?;
+
+            let mut hmap = HashMap::with_capacity(loaded_unit.len());
+            for listed_unit in loaded_unit.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                hmap.insert(unit.primary(), unit);
+            }
+            Ok((hmap, unit_files))
+        }
+    }
 }
