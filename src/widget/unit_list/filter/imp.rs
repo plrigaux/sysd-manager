@@ -383,11 +383,11 @@ fn build_type_filter(
     let container = create_content_box();
 
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
-    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown)) {
+    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown | UnitType::Unit))
+    {
         let check = {
             let binding = filter_container.borrow();
-            let active = get_filter_element::<String>(binding.as_ref())
-                .contains(&unit_type.as_str().to_owned());
+            let active = get_filter_element::<UnitType>(binding.as_ref()).contains(&unit_type);
 
             gtk::CheckButton::builder()
                 .label(unit_type.as_str())
@@ -399,8 +399,8 @@ fn build_type_filter(
         check.connect_toggled(move |check_button| {
             //println!("t {} {:?}", check_button.is_active(), unit_type.as_str());
             let mut filter_elem = filter_elem.borrow_mut();
-            let filter_element = get_filter_element_mut::<String>(filter_elem.as_mut());
-            filter_element.set_filter_elem(unit_type.as_str().to_owned(), check_button.is_active());
+            let filter_element = get_filter_element_mut::<UnitType>(filter_elem.as_mut());
+            filter_element.set_filter_elem(unit_type, check_button.is_active());
         });
 
         container.append(&check);
