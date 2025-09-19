@@ -13,7 +13,7 @@
   <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="4a993bd68b2994e7209b10c397491e743f78620804c4ea34225168697e8e64d3"/>
   <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="030cc265dd76ae7c1ca0fccac6040584c9a55b5bbc003aea467232756790eece"/>
   <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="d5d773be0fc3519a3d884aa4d28e04d0a8133c8b93fbef696415a03364aa9a73"/>
-  <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="b3b0001f67ee6c113df9547bc7a863ae25c8b3564dee5811d2f246ef8dcbe4d6"/>
+  <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="f5036f942d90775b6a8d5f0999cdd901b5e748c6e172096e83012fee4c3511cf"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="d5ab3cd94d4467c0913fb701b7b8072512ad992c0399e06c554cfdff435866d7"/>
   <ui filename="shortcuts.ui" sha256="f5e390e30098937bf1b253e9a0305d46551e42ff69fb2807e9bf29dcfc9045ce"/>
@@ -28,7 +28,7 @@
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="6f7983408b3aa8dd82f3d7cdc796728b597d84bc098f591c3ac373296c164ec1">
+  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="ed0dd09401836e1db7da793bc094f086d80103c48273a1413dd9c81c25e6d33d">
     <requires>UnitPropertiesSelection</requires>
   </ui>
   <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="432aa9589656bd2c5461ff299b33d61188f2d7202e24396d30525fd1d5774dc5">

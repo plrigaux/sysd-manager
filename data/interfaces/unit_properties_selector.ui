@@ -10,11 +10,12 @@
     <property name="content">
       <object class="AdwToolbarView">
         <property name="content">
-          <object class="GtkPaned">
+          <object class="GtkPaned" id="paned">
             <property name="end-child">
               <object class="UnitPropertiesSelection" id="unit_properties_selection"/>
             </property>
-            <property name="position">600</property>
+            <property name="orientation">vertical</property>
+            <property name="position">578</property>
             <property name="position-set">True</property>
             <property name="shrink-start-child">False</property>
             <property name="start-child">

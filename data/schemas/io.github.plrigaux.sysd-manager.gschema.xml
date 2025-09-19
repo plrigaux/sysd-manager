@@ -288,6 +288,17 @@
             <default>700</default>
             <summary>Signal window height</summary>
         </key>
-
+        <key name="unit-property-window-width" type="i">
+            <default>1100</default>
+            <summary>Unit property selector window width</summary>
+        </key>
+        <key name="unit-property-window-height" type="i">
+            <default>875</default>
+            <summary>Unit property selector window height</summary>
+        </key>
+        <key name="unit-property-paned-separator-position" type="i">
+            <default>440</default>
+            <summary>Unit property selector position</summary>
+        </key>
     </schema>
 </schemalist>

@@ -17,6 +17,7 @@ use log::{debug, error, info, warn};
 
 use crate::{
     systemd::{self, runtime},
+    systemd_gui::new_settings,
     widget::{
         unit_list::UnitListPanel,
         unit_properties_selector::{
@@ -26,6 +27,10 @@ use crate::{
 };
 
 use super::UnitPropertiesSelectorDialog;
+
+const WINDOW_WIDTH: &str = "unit-property-window-width";
+const WINDOW_HEIGHT: &str = "unit-property-window-height";
+const PANED_SEPARATOR_POSITION: &str = "unit-property-paned-separator-position";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties_selector.ui")]
@@ -53,6 +58,9 @@ pub struct UnitPropertiesSelectorDialogImp {
 
     #[template_child]
     unit_properties_selection: TemplateChild<UnitPropertiesSelection>,
+
+    #[template_child]
+    paned: TemplateChild<gtk::Paned>,
 
     last_filter_string: RefCell<String>,
 
@@ -184,6 +192,63 @@ impl UnitPropertiesSelectorDialogImp {
         self.unit_properties_selection
             .set_unit_list(unit_list_panel);
     }
+
+    fn load_window_size(&self) {
+        // Get the window state from `settings`
+        let settings = new_settings();
+
+        let mut width = settings.int(WINDOW_WIDTH);
+        let mut height = settings.int(WINDOW_HEIGHT);
+        let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
+
+        info!(
+            "Window settings: width {width}, height {height},  panes position {separator_position}"
+        );
+
+        let obj = self.obj();
+        let (def_width, def_height) = obj.default_size();
+
+        if width < 0 {
+            width = def_width;
+            if width < 0 {
+                width = 1280;
+            }
+        }
+
+        if height < 0 {
+            height = def_height;
+            if height < 0 {
+                height = 720;
+            }
+        }
+
+        // Set the size of the window
+        obj.set_default_size(width, height);
+
+        if separator_position < 0 {
+            separator_position = width / 2;
+        }
+
+        self.paned.set_position(separator_position);
+    }
+
+    pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
+        // Get the size of the window
+
+        let obj = self.obj();
+        let (width, height) = obj.default_size();
+
+        // Set the window state in `settings`
+        let settings = new_settings();
+
+        settings.set_int(WINDOW_WIDTH, width)?;
+        settings.set_int(WINDOW_HEIGHT, height)?;
+
+        let separator_position = self.paned.position();
+        settings.set_int(PANED_SEPARATOR_POSITION, separator_position)?;
+
+        Ok(())
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -207,6 +272,8 @@ impl ObjectSubclass for UnitPropertiesSelectorDialogImp {
 impl ObjectImpl for UnitPropertiesSelectorDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        self.load_window_size();
 
         let store = gio::ListStore::new::<PropertiesSelectorObject>();
 
@@ -412,7 +479,22 @@ fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
 }
 
 impl WidgetImpl for UnitPropertiesSelectorDialogImp {}
-impl WindowImpl for UnitPropertiesSelectorDialogImp {}
+
+impl WindowImpl for UnitPropertiesSelectorDialogImp {
+    // Save window state right before the window will be closed
+    fn close_request(&self) -> glib::Propagation {
+        // Save window size
+        debug!("Close window");
+        if let Err(_err) = self.save_window_context() {
+            error!("Failed to save window state");
+        }
+
+        self.parent_close_request();
+        // Allow to invoke other event handlers
+        glib::Propagation::Proceed
+    }
+}
+
 impl AdwWindowImpl for UnitPropertiesSelectorDialogImp {}
 
 #[cfg(test)]
