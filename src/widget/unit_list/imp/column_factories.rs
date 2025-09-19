@@ -487,12 +487,14 @@ pub(super) fn get_custom_factoy(prop: &UnitProperty) -> gtk::SignalListItemFacto
     let factory = gtk::SignalListItemFactory::new();
 
     factory.connect_setup(factory_setup);
-    let name = prop.name.clone();
+    let property_name = prop.name.clone();
     factory.connect_bind(move |_factory, object| {
         let (inscription, unit_binding) = factory_bind_pre!(object);
         let unit = unit_binding.unit();
 
-        inscription.set_text(Some(&name));
+        let value = unit.custom_property(&property_name);
+        inscription.set_text(value.as_deref());
+
         display_inactive!(inscription, unit);
     });
 

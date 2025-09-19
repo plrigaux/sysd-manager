@@ -53,6 +53,10 @@ impl UnitInfo {
     pub fn set_property_values(&self, property_value_list: Vec<(String, OwnedValue)>) {
         self.imp().set_property_values(property_value_list);
     }
+
+    pub fn custom_property(&self, property_name: &str) -> Option<String> {
+        self.imp().custom_property(property_name)
+    }
 }
 
 mod imp {
@@ -225,11 +229,20 @@ mod imp {
             } else {
                 let mut custom_properties: HashMap<String, OwnedValue> =
                     HashMap::with_capacity(property_value_list.len());
-
                 for (p, v) in property_value_list {
                     custom_properties.insert(p, v);
                 }
                 self.custom_properties.replace(Some(custom_properties));
+            }
+        }
+
+        pub fn custom_property(&self, property_name: &str) -> Option<String> {
+            if let Some(custom_properties) = &*self.custom_properties.borrow()
+                && let Some(value) = custom_properties.get(property_name)
+            {
+                Some(value.to_string())
+            } else {
+                None
             }
         }
     }

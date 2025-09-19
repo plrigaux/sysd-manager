@@ -838,21 +838,44 @@ impl UnitListPanelImp {
                 .borrow()
                 .values()
                 .filter(|unit| is_unit_type || types.contains(&unit.unit_type()))
-                .map(|unit| (unit.dbus_level(), unit.primary(), unit.object_path()))
+                .map(|unit| {
+                    (
+                        unit.dbus_level(),
+                        unit.primary(),
+                        unit.object_path(),
+                        unit.unit_type(),
+                    )
+                })
                 .collect();
 
             let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
             runtime().spawn(async move {
-                for (level, primary_name, path) in units_list {
+                for (level, primary_name, object_path, unit_type) in units_list {
                     let mut property_value_list = Vec::with_capacity(list_len);
-                    for prop in &property_list {
-                        let interface = prop.interface.interface();
-                        match systemd::fetch_unit_properties(level, &path, interface, &prop.name)
-                            .await
+                    for unit_property in &property_list {
+                        if unit_property.interface != UnitType::Unit
+                            && unit_type != unit_property.interface
                         {
-                            Ok(value) => property_value_list.push((prop.name.clone(), value)),
+                            continue;
+                        }
+
+                        let interface = unit_property.interface.interface();
+                        match systemd::fetch_unit_properties(
+                            level,
+                            &object_path,
+                            interface,
+                            &unit_property.name,
+                        )
+                        .await
+                        {
+                            Ok(value) => {
+                                property_value_list.push((unit_property.name.clone(), value))
+                            }
                             Err(err) => {
-                                warn!("{interface} {} {err:?}", prop.name);
+                                info!(
+                                    "PROP {} {interface} {object_path} {err:?}",
+                                    unit_property.name
+                                );
                                 continue;
                             }
                         }
@@ -866,20 +889,6 @@ impl UnitListPanelImp {
                         break;
                     }
                 }
-
-                /*   const BATCH_SIZE: usize = 5;
-                let mut batch = Vec::with_capacity(BATCH_SIZE);
-                for (idx, unit) in (1..).zip(all_units.values()) {
-                    batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
-
-                    if idx % BATCH_SIZE == 0 {
-                        call_complete_unit(&sender, &batch).await;
-
-                        batch.clear();
-                    }
-                }
-
-                call_complete_unit(&sender, &batch).await; */
             });
 
             while let Some((key, property_value_list)) = receiver.recv().await {

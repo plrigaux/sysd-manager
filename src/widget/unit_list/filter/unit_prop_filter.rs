@@ -27,7 +27,7 @@ where
     match prop_filter.as_any().downcast_ref::<FilterElement<T>>() {
         Some(a) => a,
         None => {
-            panic!("Type of prop_filter");
+            panic!("Type of prop_filter , Expect: FilterElement",);
         }
     }
     //.expect("downcast_mut to FilterElement")
