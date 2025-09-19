@@ -7,7 +7,7 @@ mod tests;
 
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
-    sync::Arc,
+    sync::{Arc, RwLock},
 };
 
 use log::{debug, info, trace, warn};
@@ -90,7 +90,36 @@ fn get_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
     Ok(connection)
 }
 
+/* pub static CON_ASYNC_SYST: LazyLock<zbus::Connection> = LazyLock::new(|| {
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+    runtime().spawn(async move {
+        let connection = get_connection_async(UnitDBusLevel::System).await;
+        connection
+    });
+});
+ */
+
+pub static CON_ASYNC_SYST: RwLock<Option<zbus::Connection>> = RwLock::new(None);
+pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
+
 async fn get_connection_async(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
+    let lock = match level {
+        UnitDBusLevel::UserSession => &CON_ASYNC_SYST,
+        UnitDBusLevel::System => &CON_ASYNC_USER,
+    };
+
+    if let Some(ref conn) = *lock.read().unwrap() {
+        return Ok(conn.clone());
+    }
+
+    let connection = get_connection_async2(level).await?;
+
+    *lock.write().unwrap() = Some(connection.clone());
+
+    Ok(connection)
+}
+
+async fn get_connection_async2(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
     debug!("Level {:?}, id {}", level, level as u32);
     let connection_builder = match level {
         UnitDBusLevel::UserSession => zbus::connection::Builder::session()?,
@@ -193,24 +222,6 @@ pub async fn list_units_description_and_state_async(
     Ok((units_map, unit_files))
 }
 
-/* pub async fn list_all_units_async()
--> Result<(UnitDBusLevel, Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
-    match PREFERENCES.dbus_level() {
-        DbusLevel::UserSession => {
-            list_units_description_and_state_async(UnitDBusLevel::UserSession).await
-        }
-        DbusLevel::System => list_units_description_and_state_async(UnitDBusLevel::System).await,
-        DbusLevel::SystemAndSession => {
-            let mut vec1 =
-                list_units_description_and_state_async(UnitDBusLevel::UserSession).await?;
-            let vec2 = list_units_description_and_state_async(UnitDBusLevel::System).await?;
-            vec1.2.extend(vec2.2);
-            vec1.1.extend(vec2.1);
-            Ok(vec1)
-        }
-    }
-}
- */
 pub async fn complete_unit_information(
     units: Vec<(UnitDBusLevel, String, String)>,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
