@@ -7,7 +7,7 @@ mod tests;
 
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
-    sync::{Arc, RwLock},
+    sync::RwLock,
 };
 
 use log::{debug, info, trace, warn};
@@ -74,11 +74,31 @@ struct LUnitFiles<'a> {
     enablement_status: &'a str,
 }
 
-fn get_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
+pub static BLK_CON_SYST: RwLock<Option<Connection>> = RwLock::new(None);
+pub static BLK_CON_USER: RwLock<Option<Connection>> = RwLock::new(None);
+
+fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
+    let lock = match level {
+        UnitDBusLevel::System => &BLK_CON_SYST,
+        UnitDBusLevel::UserSession => &BLK_CON_USER,
+    };
+
+    if let Some(ref conn) = *lock.read().unwrap() {
+        return Ok(conn.clone());
+    }
+
+    let connection = build_blocking_connection(level)?;
+
+    *lock.write().unwrap() = Some(connection.clone());
+
+    Ok(connection)
+}
+
+fn build_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
     debug!("Getting connection Level {:?}, id {}", level, level as u32);
     let connection_builder = match level {
-        UnitDBusLevel::UserSession => zbus::blocking::connection::Builder::session()?,
         UnitDBusLevel::System => zbus::blocking::connection::Builder::system()?,
+        UnitDBusLevel::UserSession => zbus::blocking::connection::Builder::session()?,
     };
 
     let connection = connection_builder
@@ -90,40 +110,31 @@ fn get_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
     Ok(connection)
 }
 
-/* pub static CON_ASYNC_SYST: LazyLock<zbus::Connection> = LazyLock::new(|| {
-    let (sender, receiver) = tokio::sync::oneshot::channel();
-    runtime().spawn(async move {
-        let connection = get_connection_async(UnitDBusLevel::System).await;
-        connection
-    });
-});
- */
-
 pub static CON_ASYNC_SYST: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 
-async fn get_connection_async(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
+async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
     let lock = match level {
-        UnitDBusLevel::UserSession => &CON_ASYNC_SYST,
-        UnitDBusLevel::System => &CON_ASYNC_USER,
+        UnitDBusLevel::System => &CON_ASYNC_SYST,
+        UnitDBusLevel::UserSession => &CON_ASYNC_USER,
     };
 
     if let Some(ref conn) = *lock.read().unwrap() {
         return Ok(conn.clone());
     }
 
-    let connection = get_connection_async2(level).await?;
+    let connection = build_connection(level).await?;
 
     *lock.write().unwrap() = Some(connection.clone());
 
     Ok(connection)
 }
 
-async fn get_connection_async2(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
+async fn build_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
     debug!("Level {:?}, id {}", level, level as u32);
     let connection_builder = match level {
-        UnitDBusLevel::UserSession => zbus::connection::Builder::session()?,
         UnitDBusLevel::System => zbus::connection::Builder::system()?,
+        UnitDBusLevel::UserSession => zbus::connection::Builder::session()?,
     };
 
     let connection = connection_builder
@@ -136,9 +147,7 @@ async fn get_connection_async2(level: UnitDBusLevel) -> Result<zbus::Connection,
     Ok(connection)
 }
 
-async fn list_units_list_async(
-    connection: Arc<zbus::Connection>,
-) -> Result<Vec<LUnit>, SystemdErrors> {
+async fn list_units_list_async(connection: zbus::Connection) -> Result<Vec<LUnit>, SystemdErrors> {
     let message = connection
         .call_method(
             Some(DESTINATION_SYSTEMD),
@@ -170,7 +179,7 @@ pub fn get_unit_file_state(
     level: UnitDBusLevel,
     unit_file: &str,
 ) -> Result<EnablementStatus, SystemdErrors> {
-    let connection = get_connection(level)?;
+    let connection = get_blocking_connection(level)?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -209,10 +218,10 @@ pub async fn get_unit_file_state_async(
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
 ) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
-    let connection = get_connection_async(level).await?;
-    let conn = Arc::new(connection);
-    let t1 = tokio::spawn(list_units_list_async(conn.clone()));
-    let t2 = tokio::spawn(list_unit_files_async(conn, level));
+    let connection = get_connection(level).await?;
+
+    let t1 = tokio::spawn(list_units_list_async(connection.clone()));
+    let t2 = tokio::spawn(list_unit_files_async(connection, level));
 
     let joined = tokio::join!(t1, t2);
 
@@ -235,7 +244,7 @@ pub async fn complete_unit_information(
                 if let Some(conn) = &connection_system {
                     conn
                 } else {
-                    let conn = get_connection_async(dbus_level).await?;
+                    let conn = get_connection(dbus_level).await?;
                     connection_system.get_or_insert(conn) as &zbus::Connection
                 }
             }
@@ -243,7 +252,7 @@ pub async fn complete_unit_information(
                 if let Some(conn) = &connection_session {
                     conn
                 } else {
-                    let conn = get_connection_async(dbus_level).await?;
+                    let conn = get_connection(dbus_level).await?;
                     connection_session.get_or_insert(conn) as &zbus::Connection
                 }
             }
@@ -415,7 +424,7 @@ fn fill_list_unit_files(
 
 /// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
 pub async fn list_unit_files_async(
-    connection: Arc<zbus::Connection>,
+    connection: zbus::Connection,
     level: UnitDBusLevel,
 ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let message = connection
@@ -559,7 +568,7 @@ where
         .interface(INTERFACE_SYSTEMD_MANAGER)?
         .build(body)?;
 
-    let connection = get_connection(level)?;
+    let connection = get_blocking_connection(level)?;
 
     connection.send(&message)?;
 
@@ -952,7 +961,7 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
         .with_flags(Flags::AllowInteractiveAuth)?
         .build(&body)?;
 
-    let connection = get_connection(level)?;
+    let connection = get_blocking_connection(level)?;
 
     connection.send(&message)?;
 
@@ -1003,7 +1012,7 @@ pub fn fetch_system_unit_info_native(
     object_path: &str,
     unit_type: UnitType,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    let connection = get_connection(level)?;
+    let connection = get_blocking_connection(level)?;
 
     debug!("Unit path: {object_path}");
     let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
@@ -1035,7 +1044,7 @@ pub fn fetch_unit(
     level: UnitDBusLevel,
     unit_primary_name: &str,
 ) -> Result<UnitInfo, SystemdErrors> {
-    let connection = get_connection(level)?;
+    let connection = get_blocking_connection(level)?;
 
     let object_path = unit_dbus_path_from_name(unit_primary_name);
 
@@ -1088,7 +1097,7 @@ pub(super) fn unit_get_dependencies(
     dependency_type: DependencyType,
     plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
-    let connection = get_connection(dbus_level)?;
+    let connection = get_blocking_connection(dbus_level)?;
     let dependencies_properties = dependency_type.properties();
     let mut units = HashSet::new();
 
@@ -1242,7 +1251,7 @@ pub fn get_unit_active_state(
     dbus_level: UnitDBusLevel,
     unit_path: &str,
 ) -> Result<ActiveState, SystemdErrors> {
-    let connection = get_connection(dbus_level)?;
+    let connection = get_blocking_connection(dbus_level)?;
 
     let proxy = Proxy::new(
         &connection,
@@ -1267,7 +1276,7 @@ pub fn retreive_unit_processes(
     dbus_level: UnitDBusLevel,
     unit_name: &str,
 ) -> Result<Vec<UnitProcessDeserialize>, SystemdErrors> {
-    let connection = get_connection(dbus_level)?;
+    let connection = get_blocking_connection(dbus_level)?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -1285,10 +1294,8 @@ pub fn retreive_unit_processes(
 pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     info!("Testing {test:?}");
 
-    async fn connection_testing(
-        level: UnitDBusLevel,
-    ) -> Result<Arc<zbus::Connection>, SystemdErrors> {
-        let connection = get_connection_async(level).await?;
+    async fn connection_testing(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
+        let connection = get_connection(level).await?;
         debug!("Credentials: {:#?}", connection.peer_credentials().await?);
         debug!("Unique name: {:#?}", connection.unique_name());
 
@@ -1304,7 +1311,7 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
             info!("No socket file found!");
         }
 
-        Ok(Arc::new(connection))
+        Ok(connection)
     }
 
     match test {
@@ -1332,7 +1339,7 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
 
 pub(super) async fn fetch_unit_interface_properties()
 -> Result<BTreeMap<String, Vec<UnitPropertyFetch>>, SystemdErrors> {
-    let connection = get_connection_async(UnitDBusLevel::System).await?;
+    let connection = get_connection(UnitDBusLevel::System).await?;
 
     let proxy = zbus::Proxy::new(
         &connection,
@@ -1412,7 +1419,7 @@ pub async fn fetch_unit_properties(
     property_interface: &str,
     property: &str,
 ) -> Result<OwnedValue, SystemdErrors> {
-    let connection = get_connection_async(level).await?;
+    let connection = get_connection(level).await?;
 
     let message = connection
         .call_method(
