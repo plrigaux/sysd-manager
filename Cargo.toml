@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.32.3"
+version = "1.32.4"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -27,7 +27,7 @@ include = [
     "README.md",
     "/data",
     "!/**/meson.build",
-    "/po"
+    "/po",
 ]
 default-run = "sysd-manager"
 
@@ -38,6 +38,7 @@ path = "src/main.rs"
 [features]
 default = []
 flatpak = []
+#gvariant = ["zvariant/gvariant"]
 
 [profile.release]
 lto = true
@@ -66,29 +67,32 @@ env_logger.workspace = true
 formatx = "0.2"
 foreign-types-shared = "0.3.1"
 futures-util = "0.3"
-gettext-rs = { version ="0.7.2", features = ["gettext-system"]}
+gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
 libc.workspace = true
-#libsysd = { version = "0.9", package = "libsystemd-sys"} 
 log.workspace = true
 regex = "1.11"
 serde = "1.0"
 sourceview5 = "0.10"
 strum = { version = "0.27", features = ["derive"] }
-sysd =  { version = "0.10", package = "systemd"} 
+sysd = { version = "0.10", package = "systemd" }
 tokio.workspace = true
 tokio-util = "0.7"
-zbus = "5.11"
-zbus_macros =  "5.11" 
-zbus_xml="5.0"
-zvariant = "5.7"
+zbus = { version = "5.11", default-features = false, features = [
+    "tokio",
+    "blocking-api",
+] }
+zbus_macros = { version = "*", features = ["gvariant"] }
+zbus_xml = "5"
+zvariant = { version = "*", features = ["gvariant"] }
+
 
 [dev-dependencies]
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
-quick-xml =  "0.38"
-translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating"}
+quick-xml = "0.38"
+translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating" }
 
 [package.metadata.generate-rpm]
 summary = "A systemd units manager"

@@ -920,7 +920,7 @@ fn convert_to_string(value: &zvariant::Value) -> String {
             d_str
         }
         zvariant::Value::Fd(fd) => fd.to_string(),
-        //zvariant::Value::Maybe(maybe) => maybe.to_string(),
+        zvariant::Value::Maybe(maybe) => maybe.to_string(),
     }
 }
 
