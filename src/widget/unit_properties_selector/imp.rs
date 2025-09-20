@@ -1,7 +1,7 @@
 use std::cell::{OnceCell, RefCell};
 
 use adw::subclass::window::AdwWindowImpl;
-use gio::glib::Object;
+use gio::glib::{Object, Variant};
 use gtk::{
     glib::{self},
     prelude::*,
@@ -28,8 +28,7 @@ use crate::{
 
 use super::UnitPropertiesSelectorDialog;
 
-const WINDOW_WIDTH: &str = "unit-property-window-width";
-const WINDOW_HEIGHT: &str = "unit-property-window-height";
+const WINDOW_SIZE: &str = "unit-property-window-size";
 const PANED_SEPARATOR_POSITION: &str = "unit-property-paned-separator-position";
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -197,8 +196,12 @@ impl UnitPropertiesSelectorDialogImp {
         // Get the window state from `settings`
         let settings = new_settings();
 
-        let mut width = settings.int(WINDOW_WIDTH);
-        let mut height = settings.int(WINDOW_HEIGHT);
+        let size = settings.value(WINDOW_SIZE);
+
+        let (mut width, mut height) = size.get::<(i32, i32)>().unwrap();
+        println!("VAR {height} {}", width);
+        //  let mut height = settings.int(WINDOW_HEIGHT);
+
         let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
 
         info!(
@@ -236,13 +239,12 @@ impl UnitPropertiesSelectorDialogImp {
         // Get the size of the window
 
         let obj = self.obj();
-        let (width, height) = obj.default_size();
+        let size = obj.default_size();
 
-        // Set the window state in `settings`
         let settings = new_settings();
 
-        settings.set_int(WINDOW_WIDTH, width)?;
-        settings.set_int(WINDOW_HEIGHT, height)?;
+        let value: Variant = size.into();
+        settings.set_value(WINDOW_SIZE, &value)?;
 
         let separator_position = self.paned.position();
         settings.set_int(PANED_SEPARATOR_POSITION, separator_position)?;
