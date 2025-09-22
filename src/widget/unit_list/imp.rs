@@ -141,6 +141,8 @@ pub struct UnitListPanelImp {
 
     #[property(name = "is-dark", get)]
     is_dark: Cell<bool>,
+
+    default_column_view_column_list: OnceCell<Vec<gtk::ColumnViewColumn>>,
 }
 
 macro_rules! compare_units {
@@ -355,15 +357,31 @@ impl UnitListPanelImp {
                 .downcast_ref::<gtk::ColumnViewColumn>()
                 .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
-            let id = column_view_column.id();
-
-            if let Some(id) = id {
+            if let Some(id) = column_view_column.id() {
                 col_map.insert(id, column_view_column.clone());
             } else {
                 warn!("Column {col_idx} has no id.")
             }
         }
         col_map
+    }
+
+    fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
+        let list_model: gio::ListModel = self.units_browser.columns();
+
+        let mut col_list = Vec::with_capacity(list_model.n_items() as usize);
+        for col_idx in 0..list_model.n_items() {
+            let item_out = list_model
+                .item(col_idx)
+                .expect("Expect item x to be not None");
+
+            let column_view_column = item_out
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+            col_list.push(column_view_column.clone());
+        }
+        col_list
     }
 
     pub(super) fn fill_store(&self) {
@@ -898,6 +916,27 @@ impl UnitListPanelImp {
             }
         });
     }
+
+    pub(super) fn columns(&self) {
+        /* let columns = self.units_browser.columns();
+
+        for col_position in 0..columns.n_items() {
+            let col = columns
+                .item(col_position)
+                .unwrap_or_else(|| panic!("Expect item at {col_position} to be not None"));
+
+            let c1 = col
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()")
+                .clone();
+        } */
+    }
+
+    pub(super) fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
+        self.default_column_view_column_list
+            .get()
+            .expect("Need to be set")
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -936,28 +975,33 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         let unit_list = self.obj().clone();
-        let column_view_column_map = self.generate_column_map();
-        column_factories::setup_factories(&unit_list, &column_view_column_map);
+        let column_view_column_list = self.generate_column_list();
+        column_factories::setup_factories(&unit_list, &column_view_column_list);
+        self.default_column_view_column_list
+            .set(column_view_column_list)
+            .expect("Set only once");
 
         settings.connect_changed(
             Some(KEY_PREF_UNIT_LIST_DISPLAY_COLORS),
             move |_settings, _key| {
                 let display_color = unit_list.display_color();
-                info!("change preference setting \"display color\" to {display_color}");
-                let column_view_column_map = unit_list.imp().generate_column_map();
-                column_factories::setup_factories(&unit_list, &column_view_column_map);
+                info!("Change preference setting \"display color\" to {display_color}");
+                let column_view_column_list = unit_list.imp().generate_column_list();
+                column_factories::setup_factories(&unit_list, &column_view_column_list);
             },
         );
 
-        column_view_column_set_sorter!(column_view_column_map, "unit", primary, dbus_level);
-        column_view_column_set_sorter!(column_view_column_map, "type", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "bus", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "state", enable_status);
-        column_view_column_set_sorter!(column_view_column_map, "preset", preset);
-        column_view_column_set_sorter!(column_view_column_map, "load", load_state);
-        column_view_column_set_sorter!(column_view_column_map, "active", active_state);
-        column_view_column_set_sorter!(column_view_column_map, "sub", sub_state);
-        column_view_column_set_sorter!(column_view_column_map, "description", description);
+        //TODO do at the same time of the factory building
+        let column_view_column_map = self.generate_column_map();
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-unit", primary, dbus_level);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-type", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-bus", unit_type);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-state", enable_status);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-preset", preset);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-load", load_state);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-active", active_state);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-sub", sub_state);
+        column_view_column_set_sorter!(column_view_column_map, "sysdm-description", description);
 
         let mut filter_assessors: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
             HashMap::with_capacity(UNIT_LIST_COLUMNS.len());

@@ -1838,6 +1838,8 @@ dependencies = [
  "zbus_macros",
  "zbus_xml",
  "zvariant",
+ "zvariant_derive",
+ "zvariant_utils",
 ]
 
 [[package]]

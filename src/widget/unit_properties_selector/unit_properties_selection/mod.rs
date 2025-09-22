@@ -23,7 +23,7 @@ impl UnitPropertiesSelection {
     }
 
     pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
-        self.imp().set_unit_list(unit_list_panel);
+        self.imp().set_unit_list_panel(unit_list_panel);
     }
 }
 

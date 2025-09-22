@@ -43,7 +43,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">150</property>
-                            <property name="id">unit</property>
+                            <property name="id">sysdm-unit</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Unit</property>
                           </object>
@@ -51,7 +51,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">82</property>
-                            <property name="id">type</property>
+                            <property name="id">sysdm-type</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Type</property>
                           </object>
@@ -59,7 +59,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">61</property>
-                            <property name="id">bus</property>
+                            <property name="id">sysdm-bus</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Bus</property>
                           </object>
@@ -67,7 +67,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">80</property>
-                            <property name="id">state</property>
+                            <property name="id">sysdm-state</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">State</property>
                           </object>
@@ -75,7 +75,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">70</property>
-                            <property name="id">preset</property>
+                            <property name="id">sysdm-preset</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Preset</property>
                           </object>
@@ -83,7 +83,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">80</property>
-                            <property name="id">load</property>
+                            <property name="id">sysdm-load</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Load</property>
                           </object>
@@ -91,7 +91,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">62</property>
-                            <property name="id">active</property>
+                            <property name="id">sysdm-active</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Active</property>
                           </object>
@@ -99,7 +99,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="fixed-width">71</property>
-                            <property name="id">sub</property>
+                            <property name="id">sysdm-sub</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Sub</property>
                           </object>
@@ -107,7 +107,7 @@
                         <child>
                           <object class="GtkColumnViewColumn">
                             <property name="expand">True</property>
-                            <property name="id">description</property>
+                            <property name="id">sysdm-description</property>
                             <property name="resizable">True</property>
                             <property name="title" translatable="yes" context="list column">Description</property>
                           </object>

@@ -190,6 +190,30 @@ impl UnitPropertiesSelectorDialogImp {
     pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
         self.unit_properties_selection
             .set_unit_list(unit_list_panel);
+
+        let Some(tree_list_model) = self.tree_list_model.get() else {
+            warn!("Not None");
+            return;
+        };
+
+        let interface_name = "Basic Columns";
+        let default = PropertiesSelectorObject::new_interface(interface_name.to_owned());
+        // list_store.append(&default);
+
+        for default_column in unit_list_panel.default_columns() {
+            let Some(property_name) = default_column.title() else {
+                warn!("Column with no title");
+                continue;
+            };
+
+            let new_property_object =
+                PropertiesSelectorObject::from_column(property_name.to_string());
+            default.add_child(new_property_object);
+        }
+
+        let model = tree_list_model.model();
+        let store = model.downcast_ref::<gio::ListStore>().unwrap();
+        store.append(&default);
     }
 
     fn load_window_size(&self) {

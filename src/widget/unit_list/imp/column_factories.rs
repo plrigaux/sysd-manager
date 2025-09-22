@@ -1,7 +1,5 @@
-use std::collections::HashMap;
-
 use gtk::{glib, prelude::*};
-use log::debug;
+use log::{debug, warn};
 
 use crate::systemd::UnitProperty;
 use crate::systemd::data::UnitInfo;
@@ -108,50 +106,45 @@ macro_rules! display_inactive {
     };
 }
 
-pub fn setup_factories(
-    unit_list: &UnitListPanel,
-    column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
-) {
-    let display_color = unit_list.display_color();
+fn fac_unit_name() -> gtk::SignalListItemFactory {
     let fac_unit_name = gtk::SignalListItemFactory::new();
 
     fac_unit_name.connect_setup(factory_setup);
 
-    {
-        //let unit_list = unit_list.clone();
-        fac_unit_name.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind!(object, display_name);
-            display_inactive!(inscription, unit);
-        });
-    }
+    fac_unit_name.connect_bind(move |_factory, object| {
+        let (inscription, unit, _unit_binding) = factory_bind!(object, display_name);
+        display_inactive!(inscription, unit);
+    });
 
+    fac_unit_name
+}
+
+fn fac_unit_type() -> gtk::SignalListItemFactory {
     let fac_unit_type = gtk::SignalListItemFactory::new();
 
     fac_unit_type.connect_setup(factory_setup);
 
-    {
-        //let unit_list = unit_list.clone();
-        fac_unit_type.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind_enum!(object, unit_type);
-            display_inactive!(inscription, unit);
-        });
-    }
+    fac_unit_type.connect_bind(move |_factory, object| {
+        let (inscription, unit, _unit_binding) = factory_bind_enum!(object, unit_type);
+        display_inactive!(inscription, unit);
+    });
 
+    fac_unit_type
+}
+
+fn fac_bus() -> gtk::SignalListItemFactory {
     let fac_bus = gtk::SignalListItemFactory::new();
 
     fac_bus.connect_setup(factory_setup);
 
-    {
-        fac_bus.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind_enum!(object, dbus_level);
-            display_inactive!(inscription, unit);
-        });
-    }
+    fac_bus.connect_bind(move |_factory, object| {
+        let (inscription, unit, _unit_binding) = factory_bind_enum!(object, dbus_level);
+        display_inactive!(inscription, unit);
+    });
+    fac_bus
+}
 
-    let fac_enable_status = fac_enable_status(display_color);
-    let fac_preset = fac_preset(display_color);
-    let fac_load_state = fac_load_state(display_color);
-
+fn fac_active() -> gtk::SignalListItemFactory {
     let fac_active = gtk::SignalListItemFactory::new();
 
     fac_active.connect_setup(|_factory, object| {
@@ -183,7 +176,10 @@ pub fn setup_factories(
     });
 
     factory_connect_unbind!(fac_active, BIND_ENABLE_ACTIVE_ICON);
+    fac_active
+}
 
+fn fac_sub_state() -> gtk::SignalListItemFactory {
     let fac_sub_state = gtk::SignalListItemFactory::new();
 
     fac_sub_state.connect_setup(factory_setup);
@@ -196,7 +192,10 @@ pub fn setup_factories(
     });
 
     factory_connect_unbind!(fac_sub_state, BIND_SUB_STATE_TEXT);
+    fac_sub_state
+}
 
+fn fac_descrition() -> gtk::SignalListItemFactory {
     let fac_descrition = gtk::SignalListItemFactory::new();
 
     fac_descrition.connect_setup(factory_setup);
@@ -210,52 +209,37 @@ pub fn setup_factories(
         display_inactive!(inscription, unit);
     });
 
-    fac_descrition.connect_unbind(|_factory, object| {
-        let unit_binding = downcast_unit_binding!(object);
-        unit_binding.unset_binding(BIND_DESCRIPTION_TEXT);
-    });
-
     factory_connect_unbind!(fac_descrition, BIND_DESCRIPTION_TEXT);
+    fac_descrition
+}
 
-    column_view_column_map
-        .get("unit")
-        .unwrap()
-        .set_factory(Some(&fac_unit_name));
-    column_view_column_map
-        .get("type")
-        .unwrap()
-        .set_factory(Some(&fac_unit_type));
-    column_view_column_map
-        .get("bus")
-        .unwrap()
-        .set_factory(Some(&fac_bus));
-    column_view_column_map
-        .get("state")
-        .unwrap()
-        .set_factory(Some(&fac_enable_status));
-    column_view_column_map
-        .get("preset")
-        .unwrap()
-        .set_factory(Some(&fac_preset));
-    column_view_column_map
-        .get("load")
-        .unwrap()
-        .set_factory(Some(&fac_load_state));
-    column_view_column_map
-        .get("active")
-        .unwrap()
-        .set_factory(Some(&fac_active));
-    column_view_column_map
-        .get("sub")
-        .unwrap()
-        .set_factory(Some(&fac_sub_state));
-    column_view_column_map
-        .get("description")
-        .unwrap()
-        .set_factory(Some(&fac_descrition));
+pub fn setup_factories(
+    unit_list: &UnitListPanel,
+    column_view_column_list: &Vec<gtk::ColumnViewColumn>,
+) {
+    let display_color = unit_list.display_color();
 
-    for cv_column in column_view_column_map.values() {
-        cv_column.connect_fixed_width_notify(|cvc| {
+    for column in column_view_column_list {
+        let Some(id) = column.id() else {
+            warn!("Column with no id!");
+            continue;
+        };
+
+        match id.as_str() {
+            "sysdm-unit" => column.set_factory(Some(&fac_unit_name())),
+            "sysdm-type" => column.set_factory(Some(&fac_unit_type())),
+            "sysdm-bus" => column.set_factory(Some(&fac_bus())),
+            "sysdm-state" => column.set_factory(Some(&fac_enable_status(display_color))),
+            "sysdm-preset" => column.set_factory(Some(&fac_preset(display_color))),
+            "sysdm-load" => column.set_factory(Some(&fac_load_state(display_color))),
+            "sysdm-active" => column.set_factory(Some(&fac_active())),
+            "sysdm-sub" => column.set_factory(Some(&fac_sub_state())),
+            "sysdm-description" => column.set_factory(Some(&fac_descrition())),
+
+            _ => warn!("What to do. Id {id} not handle with factory"),
+        }
+
+        column.connect_fixed_width_notify(|cvc| {
             debug!(
                 "Column width {:?} {}",
                 cvc.id().unwrap_or_default(),

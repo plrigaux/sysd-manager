@@ -87,7 +87,7 @@ impl UnitPropertiesSelectionImp {
         list_store.append(&new_property_object);
     }
 
-    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+    pub(super) fn set_unit_list_panel(&self, unit_list_panel: &UnitListPanel) {
         self.unit_list_panel
             .set(unit_list_panel.clone())
             .expect("Assigned only once");

@@ -29,6 +29,16 @@ impl PropertiesSelectorObject {
         this_object
     }
 
+    pub fn from_column(column_name: String) -> Self {
+        let this_object: Self = glib::Object::new();
+
+        let p_imp = this_object.imp();
+
+        p_imp.unit_property.replace(column_name);
+
+        this_object
+    }
+
     pub fn from_parent(
         interface: PropertiesSelectorObject,
         property: PropertiesSelectorObject,

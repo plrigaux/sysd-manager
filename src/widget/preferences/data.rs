@@ -44,57 +44,62 @@ pub static UNIT_LIST_COLUMNS: LazyLock<[(String, &str, u8, u8); 9]> = LazyLock::
         (
             //filter title
             pgettext("filter", "Unit"),
-            "unit",
+            "sysdm-unit",
             UNIT_LIST_COLUMNS_UNIT,
             FLAG_WIDTH,
         ),
         (
             //filter title
             pgettext("filter", "Type"),
-            "type",
+            "sysdm-type",
             1,
             FLAG_SHOW | FLAG_WIDTH,
         ),
-        (pgettext("filter", "Bus"), "bus", 2, FLAG_SHOW | FLAG_WIDTH),
+        (
+            pgettext("filter", "Bus"),
+            "sysdm-bus",
+            2,
+            FLAG_SHOW | FLAG_WIDTH,
+        ),
         (
             //filter title
             pgettext("filter", "State"),
-            "state",
+            "sysdm-state",
             3,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
             //filter title
             pgettext("filter", "Preset"),
-            "preset",
+            "sysdm-preset",
             4,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
             //filter title
             pgettext("filter", "Load"),
-            "load",
+            "sysdm-load",
             5,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
             //filter title
             pgettext("filter", "Active"),
-            "active",
+            "sysdm-active",
             6,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
             //filter title
             pgettext("filter", "Sub"),
-            "sub",
+            "sysdm-sub",
             7,
             FLAG_SHOW | FLAG_WIDTH,
         ),
         (
             //filter title
             pgettext("filter", "Description"),
-            "description",
+            "sysdm-description",
             8,
             FLAG_SHOW,
         ), //Because column "description" is expandable

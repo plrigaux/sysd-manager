@@ -81,9 +81,12 @@ zbus = { version = "5.11", default-features = false, features = [
     "tokio",
     "blocking-api",
 ] }
-zbus_macros = { version = "*", features = ["gvariant"] }
+zbus_macros =  "*"
 zbus_xml = "5"
-zvariant = { version = "*", features = ["gvariant"] }
+zvariant = "*"
+zvariant_derive =  "*"
+zvariant_utils =  "*"
+
 
 
 [dev-dependencies]

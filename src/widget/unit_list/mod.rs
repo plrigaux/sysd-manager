@@ -90,4 +90,11 @@ impl UnitListPanel {
     pub fn set_new_columns(&self, list: Vec<UnitProperty>) {
         self.imp().set_new_columns(list);
     }
+
+    pub fn columns(&self) {
+        self.imp().columns()
+    }
+    pub fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
+        self.imp().default_columns()
+    }
 }

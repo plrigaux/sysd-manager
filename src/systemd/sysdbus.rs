@@ -920,7 +920,7 @@ fn convert_to_string(value: &zvariant::Value) -> String {
             d_str
         }
         zvariant::Value::Fd(fd) => fd.to_string(),
-        zvariant::Value::Maybe(maybe) => maybe.to_string(),
+        //zvariant::Value::Maybe(maybe) => maybe.to_string(),
     }
 }
 
@@ -1436,6 +1436,7 @@ pub async fn fetch_unit_properties(
     debug!("signature {:?}", body.signature().to_string());
 
     let property_value: OwnedValue = body.deserialize()?;
+    //let property_value: Variant = body.deserialize()?;
 
     debug!("obj {:?}", property_value);
 

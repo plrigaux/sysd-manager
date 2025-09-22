@@ -25,7 +25,7 @@
                   <object class="GtkColumnView" id="properties_selector">
                     <child>
                       <object class="GtkColumnViewColumn" id="interface_column">
-                        <property name="fixed-width">105</property>
+                        <property name="expand">True</property>
                         <property name="id">interface</property>
                         <property name="resizable">True</property>
                         <property name="title">Interface</property>
@@ -33,7 +33,7 @@
                     </child>
                     <child>
                       <object class="GtkColumnViewColumn" id="property_column">
-                        <property name="fixed-width">350</property>
+                        <property name="expand">True</property>
                         <property name="id">property</property>
                         <property name="resizable">True</property>
                         <property name="title">Property</property>
@@ -41,12 +41,14 @@
                     </child>
                     <child>
                       <object class="GtkColumnViewColumn" id="signature_column">
+                        <property name="expand">True</property>
                         <property name="id">signature</property>
                         <property name="title">Signature</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkColumnViewColumn" id="access_column">
+                        <property name="expand">True</property>
                         <property name="id">access</property>
                         <property name="resizable">True</property>
                         <property name="title">Access</property>

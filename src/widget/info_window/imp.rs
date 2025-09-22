@@ -503,6 +503,6 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
             (d_str, is_empty)
         }
         zvariant::Value::Fd(fd) => (fd.to_string(), false),
-        zvariant::Value::Maybe(maybe) => (maybe.to_string(), false),
+        //zvariant::Value::Maybe(maybe) => (maybe.to_string(), false),
     }
 }
