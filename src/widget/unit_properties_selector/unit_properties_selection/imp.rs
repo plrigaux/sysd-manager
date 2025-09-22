@@ -1,6 +1,6 @@
 use std::cell::OnceCell;
 
-use gio::glib::{Object, object::Cast};
+use gio::glib::{Object, clone, object::Cast};
 use gtk::{
     SignalListItemFactory,
     glib::{self},
@@ -154,8 +154,27 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
         let button_fac = gtk::SignalListItemFactory::new();
         button_fac.connect_setup(|_f, o| {
             let item = o.downcast_ref::<gtk::ListItem>().unwrap();
-            let label: gtk::Button = gtk::Button::builder().label("X").build();
-            item.set_child(Some(&label));
+            let bbox = gtk::Box::builder()
+                .orientation(gtk::Orientation::Horizontal)
+                .build();
+            let move_up_button: gtk::Button = gtk::Button::builder()
+                .icon_name("go-up-symbolic")
+                .css_classes(["round"])
+                .build();
+            let move_down_button: gtk::Button = gtk::Button::builder()
+                .icon_name("go-down-symbolic")
+                .css_classes(["round"])
+                .build();
+            let delete_button: gtk::Button = gtk::Button::builder()
+                .icon_name("window-close-symbolic")
+                .css_classes(["destructive-action", "round"])
+                .build();
+
+            bbox.append(&move_up_button);
+            bbox.append(&move_down_button);
+            bbox.append(&delete_button);
+
+            item.set_child(Some(&bbox));
         });
 
         let list_store = store.clone();
@@ -164,13 +183,74 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
 
             let widget = item.child();
 
-            let button = widget.and_downcast_ref::<gtk::Button>().unwrap();
+            let gbox = widget.and_downcast_ref::<gtk::Box>().unwrap();
+
+            let move_up = gbox.first_child().and_downcast::<gtk::Button>().unwrap();
+            let move_down = move_up
+                .next_sibling()
+                .and_downcast::<gtk::Button>()
+                .unwrap();
+            let delete = move_down
+                .next_sibling()
+                .and_downcast::<gtk::Button>()
+                .unwrap();
 
             let list_store = list_store.clone();
+            let data = item
+                .item()
+                .and_downcast::<PropertiesSelectorObject>()
+                .unwrap();
             let item = item.clone();
-            button.connect_clicked(move |_b| {
-                list_store.remove(item.position());
-            });
+            /*
+            let position = item.position();
+
+            if position == 0 {
+                move_up.set_sensitive(false);
+            } else if position + 1 >= list_store.n_items() {
+                move_down.set_sensitive(false);
+            } */
+
+            move_up.connect_clicked(clone!(
+                #[weak]
+                list_store,
+                #[weak]
+                item,
+                #[weak]
+                data,
+                move |_b| {
+                    let pos = item.position();
+                    if pos == 0 {
+                        return;
+                    }
+                    list_store.remove(pos);
+                    list_store.insert(pos - 1, &data);
+                }
+            ));
+
+            move_down.connect_clicked(clone!(
+                #[weak]
+                list_store,
+                #[weak]
+                item,
+                move |_b| {
+                    let pos = item.position();
+                    if pos + 1 >= list_store.n_items() {
+                        return;
+                    }
+                    list_store.remove(item.position());
+                    list_store.insert(pos + 1, &data);
+                },
+            ));
+
+            delete.connect_clicked(clone!(
+                #[weak]
+                list_store,
+                #[weak]
+                item,
+                move |_b| {
+                    list_store.remove(item.position());
+                },
+            ));
         });
 
         let button_column = gtk::ColumnViewColumn::new(None, Some(button_fac));
