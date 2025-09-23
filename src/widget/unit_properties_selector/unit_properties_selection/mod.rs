@@ -1,4 +1,7 @@
+mod data;
 mod imp;
+mod row;
+
 use crate::widget::{
     unit_list::UnitListPanel, unit_properties_selector::data::PropertiesSelectorObject,
 };

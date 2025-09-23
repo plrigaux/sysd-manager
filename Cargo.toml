@@ -56,7 +56,7 @@ constcat = "0.6"
 pango = { version = "0", package = "pango", features = ["v1_56"] }
 adw = { version = "0.8", package = "libadwaita", features = ["v1_7"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
-gtk = { version = "0.10", package = "gtk4", features = ["v4_18"] }
+gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
 bitflags = "2.9"
 chrono = "0.4"
 clap.workspace = true

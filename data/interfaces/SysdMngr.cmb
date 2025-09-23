@@ -21,7 +21,12 @@
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="b8d7f594dfa26ce35a2e431067dc8401671a423e8e2975eeaf6fce05511a52b2"/>
   <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="0584f7f98354bcf4460e74928f67ce049cab306e8b1bcb2154ffc16cd5d3b8c0"/>
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="8f13015d5310e7da896eaaf84a1b27a49b30811d27b6dbe44feb6edd1e2b97ea"/>
-  <ui template-class="UnitPropertiesSelection" filename="unit_properties_selection.ui" sha256="8b46a62d6eec1c4157d934e6c4c653af1f034a06a13caa36229ac0ae62876391"/>
+  <ui template-class="UnitPropertiesSelection" filename="unit_properties_selection.ui" sha256="fc105780e066eaf166ec0c279f26f1a6bba92eca2782bc1cde7f2d1bd53c45a7"/>
+  <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="0d59b68ce67fcdeecee57a304269d06423032fbaf601c78d49dd7bb0b593e7a9"/>
+  <ui>
+    <content><![CDATA[<interface/>
+]]></content>
+  </ui>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="f6fab2bddd560a7d574db01cf077e79b93085a6c395e959e916ee2d5778ee63b">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>

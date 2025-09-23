@@ -223,8 +223,6 @@ impl UnitPropertiesSelectorDialogImp {
         let size = settings.value(WINDOW_SIZE);
 
         let (mut width, mut height) = size.get::<(i32, i32)>().unwrap();
-        println!("VAR {height} {}", width);
-        //  let mut height = settings.int(WINDOW_HEIGHT);
 
         let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
 

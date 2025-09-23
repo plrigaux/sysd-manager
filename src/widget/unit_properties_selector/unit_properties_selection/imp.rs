@@ -1,8 +1,7 @@
 use std::cell::OnceCell;
 
-use gio::glib::{Object, clone, object::Cast};
+use gio::glib::object::Cast;
 use gtk::{
-    SignalListItemFactory,
     glib::{self},
     prelude::*,
     subclass::prelude::*,
@@ -11,7 +10,15 @@ use log::{error, info, warn};
 
 use crate::{
     systemd::{UnitProperty, enums::UnitType},
-    widget::{unit_list::UnitListPanel, unit_properties_selector::data::PropertiesSelectorObject},
+    widget::{
+        unit_list::UnitListPanel,
+        unit_properties_selector::{
+            data::PropertiesSelectorObject,
+            unit_properties_selection::{
+                data::UnitPropertySelection, row::UnitPropertiesSelectionRow,
+            },
+        },
+    },
 };
 
 use super::UnitPropertiesSelection;
@@ -20,19 +27,7 @@ use super::UnitPropertiesSelection;
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties_selection.ui")]
 pub struct UnitPropertiesSelectionImp {
     #[template_child]
-    properties_selection: TemplateChild<gtk::ColumnView>,
-
-    #[template_child]
-    interface_column: TemplateChild<gtk::ColumnViewColumn>,
-
-    #[template_child]
-    property_column: TemplateChild<gtk::ColumnViewColumn>,
-
-    #[template_child]
-    signature_column: TemplateChild<gtk::ColumnViewColumn>,
-
-    #[template_child]
-    access_column: TemplateChild<gtk::ColumnViewColumn>,
+    properties_selection: TemplateChild<gtk::ListView>,
 
     list_store: OnceCell<gio::ListStore>,
 
@@ -54,7 +49,7 @@ impl UnitPropertiesSelectionImp {
         let mut list = Vec::with_capacity(n_item as usize);
         for i in 0..n_item {
             let item = list_store.item(i);
-            let Some(item) = item.and_downcast_ref::<PropertiesSelectorObject>() else {
+            let Some(item) = item.and_downcast_ref::<UnitPropertySelection>() else {
                 warn!("Bad downcast {:?}", list_store.item(i));
                 continue;
             };
@@ -84,7 +79,8 @@ impl UnitPropertiesSelectionImp {
             return;
         };
 
-        list_store.append(&new_property_object);
+        let new_unit_prop = UnitPropertySelection::from_po(new_property_object);
+        list_store.append(&new_unit_prop);
     }
 
     pub(super) fn set_unit_list_panel(&self, unit_list_panel: &UnitListPanel) {
@@ -116,189 +112,36 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let store = gio::ListStore::new::<PropertiesSelectorObject>();
+        let store = gio::ListStore::new::<UnitPropertySelection>();
 
         self.list_store.set(store.clone()).expect("Only once");
 
-        let selection_model = gtk::NoSelection::new(Some(store.clone()));
+        let selection_model = gtk::SingleSelection::new(Some(store.clone()));
 
         self.properties_selection.set_model(Some(&selection_model));
 
-        let factory_interface = gtk::SignalListItemFactory::new();
-        factory_interface.connect_setup(setup);
-        factory_interface.connect_bind(bind_interface);
-
-        self.interface_column.set_factory(Some(&factory_interface));
-
-        let factory_property = gtk::SignalListItemFactory::new();
-        factory_property.connect_setup(setup);
-        factory_property.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::unit_property);
-        });
-        self.property_column.set_factory(Some(&factory_property));
-
-        let signature_factory = gtk::SignalListItemFactory::new();
-        signature_factory.connect_setup(setup);
-        signature_factory.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::signature);
-        });
-        self.signature_column.set_factory(Some(&signature_factory));
-
-        let access_factory = gtk::SignalListItemFactory::new();
-        access_factory.connect_setup(setup);
-        access_factory.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::access);
-        });
-        self.access_column.set_factory(Some(&access_factory));
-
-        let button_fac = gtk::SignalListItemFactory::new();
-        button_fac.connect_setup(|_f, o| {
-            let item = o.downcast_ref::<gtk::ListItem>().unwrap();
-            let bbox = gtk::Box::builder()
-                .orientation(gtk::Orientation::Horizontal)
-                .build();
-            let move_up_button: gtk::Button = gtk::Button::builder()
-                .icon_name("go-up-symbolic")
-                .css_classes(["round"])
-                .build();
-            let move_down_button: gtk::Button = gtk::Button::builder()
-                .icon_name("go-down-symbolic")
-                .css_classes(["round"])
-                .build();
-            let delete_button: gtk::Button = gtk::Button::builder()
-                .icon_name("window-close-symbolic")
-                .css_classes(["destructive-action", "round"])
-                .build();
-
-            bbox.append(&move_up_button);
-            bbox.append(&move_down_button);
-            bbox.append(&delete_button);
-
-            item.set_child(Some(&bbox));
-        });
-
-        let list_store = store.clone();
-        button_fac.connect_bind(move |_fac, item| {
+        let factory = gtk::SignalListItemFactory::new();
+        // the "setup" stage is used for creating the widgets
+        factory.connect_setup(move |_factory, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-
-            let widget = item.child();
-
-            let gbox = widget.and_downcast_ref::<gtk::Box>().unwrap();
-
-            let move_up = gbox.first_child().and_downcast::<gtk::Button>().unwrap();
-            let move_down = move_up
-                .next_sibling()
-                .and_downcast::<gtk::Button>()
-                .unwrap();
-            let delete = move_down
-                .next_sibling()
-                .and_downcast::<gtk::Button>()
-                .unwrap();
-
-            let list_store = list_store.clone();
-            let data = item
-                .item()
-                .and_downcast::<PropertiesSelectorObject>()
-                .unwrap();
-            let item = item.clone();
-            /*
-            let position = item.position();
-
-            if position == 0 {
-                move_up.set_sensitive(false);
-            } else if position + 1 >= list_store.n_items() {
-                move_down.set_sensitive(false);
-            } */
-
-            move_up.connect_clicked(clone!(
-                #[weak]
-                list_store,
-                #[weak]
-                item,
-                #[weak]
-                data,
-                move |_b| {
-                    let pos = item.position();
-                    if pos == 0 {
-                        return;
-                    }
-                    list_store.remove(pos);
-                    list_store.insert(pos - 1, &data);
-                }
-            ));
-
-            move_down.connect_clicked(clone!(
-                #[weak]
-                list_store,
-                #[weak]
-                item,
-                move |_b| {
-                    let pos = item.position();
-                    if pos + 1 >= list_store.n_items() {
-                        return;
-                    }
-                    list_store.remove(item.position());
-                    list_store.insert(pos + 1, &data);
-                },
-            ));
-
-            delete.connect_clicked(clone!(
-                #[weak]
-                list_store,
-                #[weak]
-                item,
-                move |_b| {
-                    list_store.remove(item.position());
-                },
-            ));
+            let row = UnitPropertiesSelectionRow::default();
+            item.set_child(Some(&row));
         });
 
-        let button_column = gtk::ColumnViewColumn::new(None, Some(button_fac));
+        factory.connect_bind(move |_factory, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+            let prop_selection = item.item().and_downcast::<UnitPropertySelection>().unwrap();
 
-        self.properties_selection.append_column(&button_column);
+            let child = item
+                .child()
+                .and_downcast::<UnitPropertiesSelectionRow>()
+                .unwrap();
+
+            child.set_data_selection(&prop_selection, item, &store);
+        });
+
+        self.properties_selection.set_factory(Some(&factory));
     }
-}
-
-fn setup(_fac: &SignalListItemFactory, item: &Object) {
-    let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-    let label = gtk::Inscription::builder().xalign(0.0).build();
-    item.set_child(Some(&label));
-}
-
-fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
-    let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-
-    let widget = item.child();
-
-    let label = widget.and_downcast_ref::<gtk::Inscription>().unwrap();
-
-    let property_object = item
-        .item()
-        .unwrap()
-        .downcast::<PropertiesSelectorObject>()
-        .unwrap();
-
-    let value = func(&property_object);
-    let value = value.split('.').next_back();
-
-    label.set_text(value)
-}
-
-fn bind_interface(_: &gtk::SignalListItemFactory, item: &Object) {
-    let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-
-    let widget = item.child();
-
-    let label = widget.and_downcast_ref::<gtk::Inscription>().unwrap();
-
-    let property_object = item
-        .item()
-        .unwrap()
-        .downcast::<PropertiesSelectorObject>()
-        .unwrap();
-
-    let value = property_object.interface();
-    label.set_text(Some(&value))
 }
 
 impl WidgetImpl for UnitPropertiesSelectionImp {}

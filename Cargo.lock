@@ -773,9 +773,9 @@ dependencies = [
 
 [[package]]
 name = "glib"
-version = "0.21.2"
+version = "0.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8527f9a139b7ba936fe1cbb8710d7801d145a4e81534f2ae6e6be255b582f3b5"
+checksum = "e1f2cbc4577536c849335878552f42086bfd25a8dcd6f54a18655cf818b20c8f"
 dependencies = [
  "bitflags",
  "futures-channel",
@@ -1163,9 +1163,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.175"
+version = "0.2.176"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
+checksum = "58f929b4d672ea937a23a1ab494143d968337a5f47e56d0815df1e0890ddf174"
 
 [[package]]
 name = "libsystemd-sys"
@@ -1354,9 +1354,9 @@ dependencies = [
 
 [[package]]
 name = "pango"
-version = "0.21.2"
+version = "0.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88603ac9d6b539878e41fc5b72ecf8d32d606417912b0d17b6729c9688711730"
+checksum = "e37b7a678e18c2e9f2485f7e39b7b2dac99590d5ddef08a7f56eae38a145402e"
 dependencies = [
  "gio",
  "glib",
@@ -1588,9 +1588,9 @@ checksum = "d767eb0aabc880b29956c35734170f26ed551a859dbd361d140cdbeca61ab1e2"
 
 [[package]]
 name = "serde"
-version = "1.0.225"
+version = "1.0.226"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd6c24dee235d0da097043389623fb913daddf92c76e9f5a1db88607a0bcbd1d"
+checksum = "0dca6411025b24b60bfa7ec1fe1f8e710ac09782dca409ee8237ba74b51295fd"
 dependencies = [
  "serde_core",
  "serde_derive",
@@ -1598,18 +1598,18 @@ dependencies = [
 
 [[package]]
 name = "serde_core"
-version = "1.0.225"
+version = "1.0.226"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "659356f9a0cb1e529b24c01e43ad2bdf520ec4ceaf83047b83ddcc2251f96383"
+checksum = "ba2ba63999edb9dac981fb34b3e5c0d111a69b0924e253ed29d83f7c99e966a4"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.225"
+version = "1.0.226"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ea936adf78b1f766949a4977b91d2f5595825bd6ec079aa9543ad2685fc4516"
+checksum = "8db53ae22f34573731bafa1db20f04027b2d25e02d8205921b569171699cdb33"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1892,9 +1892,9 @@ checksum = "83176759e9416cf81ee66cb6508dbfe9c96f20b8b56265a39917551c23c70964"
 
 [[package]]
 name = "tempfile"
-version = "3.22.0"
+version = "3.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84fa4d11fadde498443cca10fd3ac23c951f0dc59e080e9f4b93d4df4e4eea53"
+checksum = "2d31c77bdf42a745371d260a26ca7163f1e0924b64afa0b688e61b5a9fa02f16"
 dependencies = [
  "fastrand",
  "getrandom",
