@@ -31,6 +31,8 @@ pub struct UnitPropertiesSelectionImp {
 
     list_store: OnceCell<gio::ListStore>,
 
+    selection_model: OnceCell<gtk::SingleSelection>,
+
     unit_list_panel: OnceCell<UnitListPanel>,
 }
 
@@ -88,6 +90,10 @@ impl UnitPropertiesSelectionImp {
             .set(unit_list_panel.clone())
             .expect("Assigned only once");
     }
+
+    pub(super) fn get_list_store(&self) -> Option<&gio::ListStore> {
+        self.list_store.get()
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -116,17 +122,25 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
 
         self.list_store.set(store.clone()).expect("Only once");
 
-        let selection_model = gtk::SingleSelection::new(Some(store.clone()));
+        let selection_model = gtk::SingleSelection::builder()
+            .can_unselect(true)
+            .model(&store.clone())
+            .build();
+
+        self.selection_model
+            .set(selection_model.clone())
+            .expect("Only once");
 
         self.properties_selection.set_model(Some(&selection_model));
-
         let factory = gtk::SignalListItemFactory::new();
-        // the "setup" stage is used for creating the widgets
-        factory.connect_setup(move |_factory, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let row = UnitPropertiesSelectionRow::default();
-            item.set_child(Some(&row));
-        });
+        {
+            let prop_selection = self.obj().clone();
+            factory.connect_setup(move |_factory, item| {
+                let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                let row = UnitPropertiesSelectionRow::new(prop_selection.clone());
+                item.set_child(Some(&row));
+            });
+        }
 
         factory.connect_bind(move |_factory, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
@@ -137,7 +151,7 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
                 .and_downcast::<UnitPropertiesSelectionRow>()
                 .unwrap();
 
-            child.set_data_selection(&prop_selection, item, &store);
+            child.set_data_selection(&prop_selection, item);
         });
 
         self.properties_selection.set_factory(Some(&factory));

@@ -4,7 +4,9 @@ use gtk::{
     subclass::prelude::*,
 };
 
-use crate::widget::unit_properties_selector::unit_properties_selection::data::UnitPropertySelection;
+use crate::widget::unit_properties_selector::unit_properties_selection::{
+    UnitPropertiesSelection, data::UnitPropertySelection,
+};
 glib::wrapper! {
     pub struct UnitPropertiesSelectionRow(ObjectSubclass<imp::UnitPropertiesSelectionRowImp>)
     @extends gtk::ListBoxRow, gtk::Widget,
@@ -12,14 +14,18 @@ glib::wrapper! {
 }
 
 impl UnitPropertiesSelectionRow {
-    pub fn set_data_selection(
-        &self,
-        prop_seletion: &UnitPropertySelection,
-        list_item: &ListItem,
-        list_store: &gio::ListStore,
-    ) {
-        self.imp()
-            .set_data_selection(prop_seletion, list_item, list_store)
+    pub fn new(prop_selection: UnitPropertiesSelection) -> Self {
+        let obj: UnitPropertiesSelectionRow = glib::Object::new();
+
+        obj.imp()
+            .prop_selection
+            .set(prop_selection)
+            .expect("Only Once");
+        obj
+    }
+
+    pub fn set_data_selection(&self, prop_seletion: &UnitPropertySelection, list_item: &ListItem) {
+        self.imp().set_data_selection(prop_seletion, list_item)
     }
 }
 
@@ -30,9 +36,11 @@ impl Default for UnitPropertiesSelectionRow {
 }
 
 mod imp {
-    use std::cell::RefCell;
+    use std::cell::{OnceCell, RefCell};
 
-    use crate::widget::unit_properties_selector::unit_properties_selection::data::UnitPropertySelection;
+    use crate::widget::unit_properties_selector::unit_properties_selection::{
+        UnitPropertiesSelection, data::UnitPropertySelection,
+    };
 
     use super::UnitPropertiesSelectionRow;
     use gtk::{
@@ -50,9 +58,9 @@ mod imp {
         #[template_child]
         property_label: TemplateChild<gtk::Label>,
 
-        prop_seletion: RefCell<Option<UnitPropertySelection>>,
+        pub(super) prop_selection: OnceCell<UnitPropertiesSelection>,
+
         list_item: RefCell<Option<gtk::ListItem>>,
-        list_store: RefCell<Option<gio::ListStore>>,
     }
 
     #[gtk::template_callbacks]
@@ -61,11 +69,8 @@ mod imp {
             &self,
             prop_seletion: &UnitPropertySelection,
             list_item: &gtk::ListItem,
-            list_store: &gio::ListStore,
         ) {
-            self.prop_seletion.replace(Some(prop_seletion.clone()));
             self.list_item.replace(Some(list_item.clone()));
-            self.list_store.replace(Some(list_store.clone()));
 
             self.interface.set_label(&prop_seletion.interface());
             self.property_label
@@ -83,8 +88,11 @@ mod imp {
                 return;
             }
 
-            if let Some(ref list_store) = *self.list_store.borrow()
-                && let Some(ref prop_seletion) = *self.prop_seletion.borrow()
+            if let Some(list_store) = self
+                .prop_selection
+                .get()
+                .and_then(|prop_selection| prop_selection.list_store())
+                && let Some(ref prop_seletion) = list_store.item(pos)
             {
                 list_store.remove(pos);
                 list_store.insert(pos - 1, prop_seletion);
@@ -99,7 +107,11 @@ mod imp {
                 return;
             };
 
-            let Some(ref list_store) = *self.list_store.borrow() else {
+            let Some(list_store) = self
+                .prop_selection
+                .get()
+                .and_then(|prop_selection| prop_selection.list_store())
+            else {
                 return;
             };
 
@@ -109,7 +121,7 @@ mod imp {
                 return;
             }
 
-            if let Some(ref prop_seletion) = *self.prop_seletion.borrow() {
+            if let Some(ref prop_seletion) = list_store.item(pos) {
                 list_store.remove(pos);
                 list_store.insert(pos + 1, prop_seletion);
             } else {
@@ -120,7 +132,10 @@ mod imp {
         #[template_callback]
         fn delete_clicked(&self, _b: &gtk::Button) {
             if let Some(ref list_item) = *self.list_item.borrow()
-                && let Some(ref list_store) = *self.list_store.borrow()
+                && let Some(list_store) = self
+                    .prop_selection
+                    .get()
+                    .and_then(|prop_selection| prop_selection.list_store())
             {
                 let pos = list_item.position();
                 list_store.remove(pos);

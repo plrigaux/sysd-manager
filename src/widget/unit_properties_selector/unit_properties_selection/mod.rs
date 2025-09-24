@@ -25,8 +25,12 @@ impl UnitPropertiesSelection {
         self.imp().add_new_property(new_property_object);
     }
 
-    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+    pub fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
         self.imp().set_unit_list_panel(unit_list_panel);
+    }
+
+    pub fn list_store(&self) -> Option<&gio::ListStore> {
+        self.imp().get_list_store()
     }
 }
 
