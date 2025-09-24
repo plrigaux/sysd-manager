@@ -10,7 +10,7 @@ url="https://github.com/plrigaux/sysd-manager"
 license=('GPLv3+')
 groups=()
 depends=("gtk4" "libadwaita" "systemd-libs" "gtksourceview5" "gettext")
-makedepends=('cargo>=1.89.0' git)
+makedepends=(cargo git)
 checkdepends=()
 optdepends=()
 provides=()
