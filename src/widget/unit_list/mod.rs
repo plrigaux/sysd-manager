@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use crate::systemd::UnitProperty;
@@ -6,6 +6,7 @@ use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
 };
+use crate::widget::unit_properties_selector::data::UnitPropertySelection;
 
 use super::InterPanelMessage;
 use super::app_window::AppWindow;
@@ -91,9 +92,10 @@ impl UnitListPanel {
         self.imp().set_new_columns(list);
     }
 
-    pub fn columns(&self) {
-        self.imp().columns()
+    pub fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
+        self.imp().current_columns()
     }
+
     pub fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
         self.imp().default_columns()
     }

@@ -1,4 +1,4 @@
-mod data;
+pub mod data;
 mod imp;
 mod unit_properties_selection;
 

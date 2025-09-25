@@ -21,7 +21,8 @@ use crate::{
     widget::{
         unit_list::UnitListPanel,
         unit_properties_selector::{
-            data::PropertiesSelectorObject, unit_properties_selection::UnitPropertiesSelection,
+            data::{INTERFACE_NAME, PropertiesSelectorObject},
+            unit_properties_selection::UnitPropertiesSelection,
         },
     },
 };
@@ -196,8 +197,7 @@ impl UnitPropertiesSelectorDialogImp {
             return;
         };
 
-        let interface_name = "Basic Columns";
-        let default = PropertiesSelectorObject::new_interface(interface_name.to_owned());
+        let default = PropertiesSelectorObject::new_interface(INTERFACE_NAME.to_owned());
         // list_store.append(&default);
 
         for default_column in unit_list_panel.default_columns() {

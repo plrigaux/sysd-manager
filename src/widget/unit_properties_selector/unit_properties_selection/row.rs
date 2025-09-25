@@ -4,9 +4,10 @@ use gtk::{
     subclass::prelude::*,
 };
 
-use crate::widget::unit_properties_selector::unit_properties_selection::{
-    UnitPropertiesSelection, data::UnitPropertySelection,
+use crate::widget::unit_properties_selector::{
+    data::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
 };
+
 glib::wrapper! {
     pub struct UnitPropertiesSelectionRow(ObjectSubclass<imp::UnitPropertiesSelectionRowImp>)
     @extends gtk::ListBoxRow, gtk::Widget,
@@ -38,8 +39,8 @@ impl Default for UnitPropertiesSelectionRow {
 mod imp {
     use std::cell::{OnceCell, RefCell};
 
-    use crate::widget::unit_properties_selector::unit_properties_selection::{
-        UnitPropertiesSelection, data::UnitPropertySelection,
+    use crate::widget::unit_properties_selector::{
+        data::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
     };
 
     use super::UnitPropertiesSelectionRow;

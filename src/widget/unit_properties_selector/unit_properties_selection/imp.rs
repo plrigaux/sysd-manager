@@ -13,10 +13,8 @@ use crate::{
     widget::{
         unit_list::UnitListPanel,
         unit_properties_selector::{
-            data::PropertiesSelectorObject,
-            unit_properties_selection::{
-                data::UnitPropertySelection, row::UnitPropertiesSelectionRow,
-            },
+            data::{PropertiesSelectorObject, UnitPropertySelection},
+            unit_properties_selection::row::UnitPropertiesSelectionRow,
         },
     },
 };
@@ -94,6 +92,11 @@ impl UnitPropertiesSelectionImp {
         self.unit_list_panel
             .set(unit_list_panel.clone())
             .expect("Assigned only once");
+
+        let list_store = get_list_store!(self);
+        for unit_property_column in unit_list_panel.current_columns().iter() {
+            list_store.append(unit_property_column);
+        }
     }
 
     pub(super) fn get_list_store(&self) -> Option<&gio::ListStore> {

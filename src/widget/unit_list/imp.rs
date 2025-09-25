@@ -4,7 +4,7 @@ mod pop_menu;
 mod rowdata;
 
 use std::{
-    cell::{Cell, OnceCell, RefCell},
+    cell::{Cell, OnceCell, Ref, RefCell},
     collections::{HashMap, HashSet},
     rc::Rc,
     time::Duration,
@@ -56,6 +56,7 @@ use crate::{
             imp::rowdata::UnitBinding,
             search_controls::UnitListSearchControls,
         },
+        unit_properties_selector::data::UnitPropertySelection,
     },
 };
 use log::{debug, error, info, warn};
@@ -143,6 +144,10 @@ pub struct UnitListPanelImp {
     is_dark: Cell<bool>,
 
     default_column_view_column_list: OnceCell<Vec<gtk::ColumnViewColumn>>,
+
+    current_column_view_column_definition_list: RefCell<Vec<UnitPropertySelection>>,
+
+    default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
 }
 
 macro_rules! compare_units {
@@ -917,19 +922,8 @@ impl UnitListPanelImp {
         });
     }
 
-    pub(super) fn columns(&self) {
-        /* let columns = self.units_browser.columns();
-
-        for col_position in 0..columns.n_items() {
-            let col = columns
-                .item(col_position)
-                .unwrap_or_else(|| panic!("Expect item at {col_position} to be not None"));
-
-            let c1 = col
-                .downcast_ref::<gtk::ColumnViewColumn>()
-                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()")
-                .clone();
-        } */
+    pub(super) fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
+        self.current_column_view_column_definition_list.borrow()
     }
 
     pub(super) fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
@@ -976,6 +970,26 @@ impl ObjectImpl for UnitListPanelImp {
 
         let unit_list = self.obj().clone();
         let column_view_column_list = self.generate_column_list();
+
+        let mut column_view_column_definition_list =
+            Vec::with_capacity(column_view_column_list.len());
+        for col in column_view_column_list.iter() {
+            let unit_property_selection = UnitPropertySelection::from_base_column(
+                col.title()
+                    .map(|t| t.to_string())
+                    .unwrap_or("Wrong_prop".to_string()),
+                col.clone(),
+            );
+            column_view_column_definition_list.push(unit_property_selection);
+        }
+
+        self.default_column_view_column_definition_list
+            .set(column_view_column_definition_list.clone())
+            .expect("Set only once");
+
+        self.current_column_view_column_definition_list
+            .replace(column_view_column_definition_list);
+
         column_factories::setup_factories(&unit_list, &column_view_column_list);
         self.default_column_view_column_list
             .set(column_view_column_list)
