@@ -32,6 +32,18 @@ impl UnitPropertiesSelection {
     pub fn list_store(&self) -> Option<&gio::ListStore> {
         self.imp().get_list_store()
     }
+
+    pub fn move_up(&self, position: u32) {
+        self.imp().move_up(position)
+    }
+
+    pub fn move_down(&self, position: u32) {
+        self.imp().move_down(position)
+    }
+
+    pub fn delete(&self, position: u32) {
+        self.imp().delete(position)
+    }
 }
 
 impl Default for UnitPropertiesSelection {

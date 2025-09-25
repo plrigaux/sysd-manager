@@ -107,41 +107,22 @@ mod imp {
                 return;
             };
 
-            let Some(list_store) = self
-                .prop_selection
-                .get()
-                .and_then(|prop_selection| prop_selection.list_store())
-            else {
-                return;
-            };
-
-            let pos = list_item.position();
-
-            if pos + 1 >= list_store.n_items() {
-                return;
+            if let Some(prop_selection) = self.prop_selection.get() {
+                let pos = list_item.position();
+                prop_selection.move_down(pos);
             }
-
-            if let Some(ref prop_seletion) = list_store.item(pos) {
-                list_store.remove(pos);
-                list_store.insert(pos + 1, prop_seletion);
-            } else {
-                warn!("list_store of data None");
-            };
         }
 
         #[template_callback]
         fn delete_clicked(&self, _b: &gtk::Button) {
-            if let Some(ref list_item) = *self.list_item.borrow()
-                && let Some(list_store) = self
-                    .prop_selection
-                    .get()
-                    .and_then(|prop_selection| prop_selection.list_store())
-            {
-                let pos = list_item.position();
-                list_store.remove(pos);
-            } else {
-                warn!("list_store of data None");
+            let Some(ref list_item) = *self.list_item.borrow() else {
+                return;
             };
+
+            if let Some(prop_selection) = self.prop_selection.get() {
+                let pos = list_item.position();
+                prop_selection.delete(pos);
+            }
         }
     }
 

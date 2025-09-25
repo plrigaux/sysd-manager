@@ -278,13 +278,6 @@ fn test_name_convertion() {
     }
 }
 
-#[derive(Deserialize, Type, PartialEq, Debug)]
-struct TestTruct {
-    a: String,
-    b: u32,
-    c: String,
-}
-
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_get_unit_processes() -> Result<(), SystemdErrors> {
@@ -634,12 +627,6 @@ fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
     unmask_unit_files(UnitDBusLevel::System, &[unit_name], false)?;
 
     Ok(())
-}
-
-#[derive(Deserialize, Type, PartialEq, Debug)]
-pub(super) struct TestIntro {
-    pub prop: String,
-    pub pid: OwnedValue,
 }
 
 #[ignore = "need a connection to a service"]

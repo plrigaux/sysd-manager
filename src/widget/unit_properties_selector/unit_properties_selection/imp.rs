@@ -36,16 +36,23 @@ pub struct UnitPropertiesSelectionImp {
     unit_list_panel: OnceCell<UnitListPanel>,
 }
 
+macro_rules! get_list_store {
+    ($self:expr) => {{
+        let Some(list_store) = $self.list_store.get() else {
+            error!("list_store not set");
+            return;
+        };
+        list_store
+    }};
+}
+
 #[gtk::template_callbacks]
 impl UnitPropertiesSelectionImp {
     #[template_callback]
     fn apply_clicked(&self, _button: &gtk::Button) {
         info!("Apply pressed");
 
-        let Some(list_store) = self.list_store.get() else {
-            error!("list_store not set");
-            return;
-        };
+        let list_store = get_list_store!(self);
 
         let n_item = list_store.n_items();
         let mut list = Vec::with_capacity(n_item as usize);
@@ -66,6 +73,7 @@ impl UnitPropertiesSelectionImp {
 
             list.push(unit_property);
         }
+
         if let Some(unit_list_panel) = self.unit_list_panel.get() {
             unit_list_panel.set_new_columns(list);
         } else {
@@ -76,10 +84,7 @@ impl UnitPropertiesSelectionImp {
 
 impl UnitPropertiesSelectionImp {
     pub fn add_new_property(&self, new_property_object: PropertiesSelectorObject) {
-        let Some(list_store) = self.list_store.get() else {
-            warn!("Not None");
-            return;
-        };
+        let list_store = get_list_store!(self);
 
         let new_unit_prop = UnitPropertySelection::from_po(new_property_object);
         list_store.append(&new_unit_prop);
@@ -93,6 +98,45 @@ impl UnitPropertiesSelectionImp {
 
     pub(super) fn get_list_store(&self) -> Option<&gio::ListStore> {
         self.list_store.get()
+    }
+
+    pub fn move_up(&self, position: u32) {
+        if position == 0 {
+            return;
+        }
+
+        let list_store = get_list_store!(self);
+
+        if let Some(ref prop_seletion) = list_store.item(position) {
+            list_store.remove(position);
+            list_store.insert(position - 1, prop_seletion);
+        } else {
+            warn!("list_store of data None");
+        };
+    }
+
+    pub fn move_down(&self, position: u32) {
+        let list_store = get_list_store!(self);
+
+        if position + 1 >= list_store.n_items() {
+            return;
+        }
+
+        if let Some(ref prop_seletion) = list_store.item(position) {
+            list_store.remove(position);
+            list_store.insert(position + 1, prop_seletion);
+        } else {
+            warn!("list_store of data None");
+        };
+    }
+
+    pub fn delete(&self, position: u32) {
+        let Some(list_store) = self.list_store.get() else {
+            warn!("list_store should not be None");
+            return;
+        };
+
+        list_store.remove(position);
     }
 }
 
@@ -121,6 +165,8 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
         let store = gio::ListStore::new::<UnitPropertySelection>();
 
         self.list_store.set(store.clone()).expect("Only once");
+
+        //let selection_model = gtk::NoSelection::new(Some(store.clone()));
 
         let selection_model = gtk::SingleSelection::builder()
             .can_unselect(true)
