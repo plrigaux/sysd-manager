@@ -21,7 +21,7 @@
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="b8d7f594dfa26ce35a2e431067dc8401671a423e8e2975eeaf6fce05511a52b2"/>
   <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="0584f7f98354bcf4460e74928f67ce049cab306e8b1bcb2154ffc16cd5d3b8c0"/>
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="8f13015d5310e7da896eaaf84a1b27a49b30811d27b6dbe44feb6edd1e2b97ea"/>
-  <ui template-class="UnitPropertiesSelection" filename="unit_properties_selection.ui" sha256="fc105780e066eaf166ec0c279f26f1a6bba92eca2782bc1cde7f2d1bd53c45a7"/>
+  <ui template-class="UnitPropertiesSelection" filename="unit_properties_selection.ui" sha256="15172a8e561001f6c4f817f83975ff5c30d22598947e588529f7695c845eb392"/>
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="ea15eec60c58bf67459dbe384b729eea480df79cd3ceb160da1169e7e7cce889"/>
   <ui>
     <content><![CDATA[<interface/>

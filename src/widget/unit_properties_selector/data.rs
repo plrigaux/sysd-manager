@@ -4,7 +4,7 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use gio::glib::property::PropertySet;
 use gtk::glib::{self};
 
-use crate::systemd::UnitPropertyFetch;
+use crate::systemd::{UnitPropertyFetch, enums::UnitType};
 
 pub const INTERFACE_NAME: &str = "Basic Columns";
 
@@ -87,10 +87,13 @@ impl UnitPropertySelection {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
-        p_imp.interface.replace(p.interface());
+        let interface = p.interface();
+        let unit_type = UnitType::from_intreface(&interface);
+        p_imp.interface.replace(interface);
         p_imp.unit_property.replace(p.unit_property());
         p_imp.signature.replace(p.signature());
         p_imp.access.replace(p.access());
+        p_imp.unit_type.set(unit_type);
 
         this_object
     }
@@ -103,6 +106,8 @@ impl UnitPropertySelection {
         p_imp.unit_property.replace(property_name);
         //p_imp.signature.replace(p.signature());
         //p_imp.access.replace(p.access());
+
+        p_imp.unit_type.set(UnitType::Unknown);
 
         p_imp.column.replace(column);
 
@@ -168,6 +173,8 @@ mod imp2 {
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
+    use crate::systemd::enums::UnitType;
+
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitPropertySelection)]
     pub struct UnitPropertySelectionImpl {
@@ -181,8 +188,10 @@ mod imp2 {
         pub(super) access: RefCell<String>,
         #[property(get)]
         pub(super) column: RefCell<gtk::ColumnViewColumn>,
-        #[property(get)]
+        #[property(get, default_value = false)]
         pub(super) hidden: Cell<bool>,
+        #[property(get, default)]
+        pub(super) unit_type: Cell<UnitType>,
     }
 
     #[glib::object_subclass]

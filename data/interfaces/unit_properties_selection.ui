@@ -22,11 +22,27 @@
     </child>
     <child>
       <object class="GtkBox">
+        <property name="spacing">5</property>
         <child>
           <object class="GtkButton">
             <property name="css-classes">suggested-action</property>
+            <property name="halign">start</property>
             <property name="label">Apply</property>
             <signal name="clicked" handler="apply_clicked" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">end</property>
+            <property name="hexpand">True</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkButton">
+                <property name="halign">baseline-fill</property>
+                <property name="label">Reset</property>
+                <signal name="clicked" handler="reset_clicked" swapped="yes"/>
+              </object>
+            </child>
           </object>
         </child>
       </object>

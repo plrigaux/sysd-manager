@@ -56,26 +56,33 @@ impl UnitPropertiesSelectionImp {
         let mut list = Vec::with_capacity(n_item as usize);
         for i in 0..n_item {
             let item = list_store.item(i);
-            let Some(item) = item.and_downcast_ref::<UnitPropertySelection>() else {
+            let Some(unit_property) = item.and_downcast_ref::<UnitPropertySelection>() else {
                 warn!("Bad downcast {:?}", list_store.item(i));
                 continue;
             };
 
-            let interface = UnitType::from_intreface(&item.interface());
-            let unit_property = UnitProperty::new(
-                interface,
-                item.unit_property(),
-                item.signature(),
-                item.access(),
-            );
-
-            list.push(unit_property);
+            list.push(unit_property.clone());
         }
 
         if let Some(unit_list_panel) = self.unit_list_panel.get() {
             unit_list_panel.set_new_columns(list);
         } else {
             error!("No unit list panel");
+        }
+    }
+
+    #[template_callback]
+    fn reset_clicked(&self, _button: &gtk::Button) {
+        let Some(unit_list_panel) = self.unit_list_panel.get() else {
+            error!("unit_list_panel is None");
+            return;
+        };
+
+        let list_store = get_list_store!(self);
+
+        list_store.remove_all();
+        for unit_property_column in unit_list_panel.default_displayed_columns().iter() {
+            list_store.append(unit_property_column);
         }
     }
 }

@@ -839,11 +839,11 @@ impl UnitListPanelImp {
         })
     }
 
-    pub(super) fn set_new_columns(&self, property_list: Vec<UnitProperty>) {
-        let mut types = HashSet::with_capacity(16);
+    pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
+        //let mut types = HashSet::with_capacity(16);
         let mut is_unit_type = false;
         //  let mut properties = Vec::wi
-        for unit_property in &property_list {
+        /*         for unit_property in &property_list {
             let factory = column_factories::get_custom_factoy(unit_property);
             let column = gtk::ColumnViewColumn::new(Some(&unit_property.name), Some(factory));
             self.units_browser.append_column(&column);
@@ -920,10 +920,17 @@ impl UnitListPanelImp {
                 }
             }
         });
+        */
     }
 
     pub(super) fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
         self.current_column_view_column_definition_list.borrow()
+    }
+
+    pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
+        self.default_column_view_column_definition_list
+            .get()
+            .expect("Not None")
     }
 
     pub(super) fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
