@@ -1,7 +1,6 @@
 use gtk::{glib, prelude::*};
 use log::{debug, warn};
 
-use crate::systemd::UnitProperty;
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::{EnablementStatus, LoadState, Preset};
 use crate::widget::unit_list::imp::rowdata::UnitBinding;
@@ -467,16 +466,16 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
     }
 }
 
-pub(super) fn get_custom_factoy(prop: &UnitProperty) -> gtk::SignalListItemFactory {
+pub(super) fn get_custom_factoy(property_index: usize) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
     factory.connect_setup(factory_setup);
-    let property_name = prop.name.clone();
+
     factory.connect_bind(move |_factory, object| {
         let (inscription, unit_binding) = factory_bind_pre!(object);
         let unit = unit_binding.unit();
 
-        let value = unit.custom_property(&property_name);
+        let value = unit.custom_property(property_index);
         inscription.set_text(value.as_deref());
 
         display_inactive!(inscription, unit);

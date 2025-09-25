@@ -135,6 +135,10 @@ impl UnitPropertySelection {
 
         this_object
     }
+
+    pub fn is_custom(&self) -> bool {
+        self.imp().is_custom()
+    }
 }
 
 mod imp {
@@ -156,6 +160,8 @@ mod imp {
 
         pub(super) children: RefCell<Option<Vec<super::PropertiesSelectorObject>>>,
     }
+
+    impl PropertiesSelectorOpjectImpl {}
 
     #[glib::object_subclass]
     impl ObjectSubclass for PropertiesSelectorOpjectImpl {
@@ -192,6 +198,12 @@ mod imp2 {
         pub(super) hidden: Cell<bool>,
         #[property(get, default)]
         pub(super) unit_type: Cell<UnitType>,
+    }
+
+    impl UnitPropertySelectionImpl {
+        pub fn is_custom(&self) -> bool {
+            !matches!(self.unit_type.get(), UnitType::Unknown)
+        }
     }
 
     #[glib::object_subclass]

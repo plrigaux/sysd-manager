@@ -933,25 +933,6 @@ impl UnitPropertyFetch {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
-pub struct UnitProperty {
-    pub interface: UnitType,
-    pub name: String,
-    pub signature: String,
-    pub access: String,
-}
-
-impl UnitProperty {
-    pub fn new(interface: UnitType, name: String, signature: String, access: String) -> Self {
-        UnitProperty {
-            interface,
-            name,
-            signature,
-            access,
-        }
-    }
-}
-
 pub async fn fetch_unit_interface_properties()
 -> Result<BTreeMap<String, Vec<UnitPropertyFetch>>, SystemdErrors> {
     sysdbus::fetch_unit_interface_properties().await

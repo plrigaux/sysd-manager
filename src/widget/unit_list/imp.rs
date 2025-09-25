@@ -10,10 +10,9 @@ use std::{
     time::Duration,
 };
 
-use gio::glib::VariantTy;
 use gtk::{
     TemplateChild,
-    gio::{self},
+    gio::{self, glib::VariantTy},
     glib::{self, Object, Properties},
     prelude::*,
     subclass::{
@@ -29,7 +28,7 @@ use gtk::{
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
     systemd::{
-        self, SystemdUnitFile, UnitProperty,
+        self, SystemdUnitFile,
         data::UnitInfo,
         enums::{LoadState, UnitDBusLevel, UnitType},
         errors::SystemdErrors,
@@ -840,17 +839,74 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
-        //let mut types = HashSet::with_capacity(16);
         let mut is_unit_type = false;
         //  let mut properties = Vec::wi
-        /*         for unit_property in &property_list {
-            let factory = column_factories::get_custom_factoy(unit_property);
-            let column = gtk::ColumnViewColumn::new(Some(&unit_property.name), Some(factory));
-            self.units_browser.append_column(&column);
-            if unit_property.interface == UnitType::Unit {
-                is_unit_type |= true
-            } else {
-                types.insert(unit_property.interface);
+
+        let l = self.units_browser.columns();
+
+        let mut current_columns = Vec::with_capacity(l.n_items() as usize);
+        for position in 0..l.n_items() {
+            let Some(c) = l.item(position).and_downcast::<gtk::ColumnViewColumn>() else {
+                warn!("Col None");
+                continue;
+            };
+            current_columns.push(c);
+        }
+
+        /*       for unit_property in self.current_columns().iter() {
+
+        } */
+
+        //remove all columns to simplify the algo
+        for col in current_columns.iter() {
+            self.units_browser.remove_column(col);
+        }
+
+        struct UnitProperty {
+            interface: String,
+            unit_property: String,
+            unit_type: UnitType,
+        }
+
+        let mut property_index = 0;
+        let mut types = HashSet::with_capacity(16);
+        let mut property_list_send = Vec::with_capacity(property_list.len());
+        for unit_property in &property_list {
+            if !unit_property.hidden() {
+                let column = unit_property.column();
+
+                if unit_property.is_custom() {
+                    //add custom factory
+
+                    let factory = column_factories::get_custom_factoy(property_index);
+                    property_index += 1;
+
+                    column.set_title(Some(&unit_property.unit_property()));
+                    column.set_id(Some(&format!(
+                        "{}::{}",
+                        unit_property.unit_type().as_str(),
+                        unit_property.unit_property()
+                    )));
+                    column.set_factory(Some(&factory));
+                }
+
+                self.units_browser.append_column(&column);
+            }
+
+            match unit_property.unit_type() {
+                UnitType::Unit => is_unit_type |= true,
+                UnitType::Unknown => {}
+                ut => {
+                    types.insert(ut);
+                }
+            }
+
+            if unit_property.is_custom() {
+                property_list_send.push(UnitProperty {
+                    interface: unit_property.interface(),
+                    unit_property: unit_property.unit_property(),
+                    unit_type: unit_property.unit_type(),
+                });
             }
         }
 
@@ -875,31 +931,28 @@ impl UnitListPanelImp {
             runtime().spawn(async move {
                 for (level, primary_name, object_path, unit_type) in units_list {
                     let mut property_value_list = Vec::with_capacity(list_len);
-                    for unit_property in &property_list {
-                        if unit_property.interface != UnitType::Unit
-                            && unit_type != unit_property.interface
+                    for unit_property in &property_list_send {
+                        if unit_property.unit_type != UnitType::Unit
+                            && unit_type != unit_property.unit_type
                         {
                             continue;
                         }
 
-                        let interface = unit_property.interface.interface();
                         match systemd::fetch_unit_properties(
                             level,
                             &object_path,
-                            interface,
-                            &unit_property.name,
+                            &unit_property.interface,
+                            &unit_property.unit_property,
                         )
                         .await
                         {
-                            Ok(value) => {
-                                property_value_list.push((unit_property.name.clone(), value))
-                            }
+                            Ok(value) => property_value_list.push(Some(value)),
                             Err(err) => {
+                                property_value_list.push(None);
                                 info!(
-                                    "PROP {} {interface} {object_path} {err:?}",
-                                    unit_property.name
+                                    "PROP {} {} {object_path} {err:?}",
+                                    unit_property.interface, unit_property.unit_property
                                 );
-                                continue;
                             }
                         }
                     }
@@ -920,7 +973,6 @@ impl UnitListPanelImp {
                 }
             }
         });
-        */
     }
 
     pub(super) fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {

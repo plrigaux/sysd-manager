@@ -50,19 +50,20 @@ impl UnitInfo {
         format!("{:#?}", *self.imp())
     }
 
-    pub fn set_property_values(&self, property_value_list: Vec<(String, OwnedValue)>) {
+    pub fn set_property_values(&self, property_value_list: Vec<Option<OwnedValue>>) {
         self.imp().set_property_values(property_value_list);
     }
 
-    pub fn custom_property(&self, property_name: &str) -> Option<String> {
-        self.imp().custom_property(property_name)
+    pub fn custom_property(&self, property_index: usize) -> Option<String> {
+        self.imp().custom_property(property_index)
     }
 }
 
 mod imp {
-    use std::{cell::RefCell, collections::HashMap};
+    use std::cell::RefCell;
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
+    use log::warn;
     use zvariant::OwnedValue;
 
     use crate::systemd::{
@@ -108,7 +109,7 @@ mod imp {
         #[property(get, set, default)]
         pub(super) preset: RefCell<Preset>,
 
-        custom_properties: RefCell<Option<HashMap<String, OwnedValue>>>,
+        custom_properties: RefCell<Vec<Option<OwnedValue>>>,
         //custom_properties: Arc<RefCell<Option<HashMap<String, OwnedValue>>>>,
     }
 
@@ -221,26 +222,23 @@ mod imp {
             }
         }
 
-        pub fn set_property_values(&self, property_value_list: Vec<(String, OwnedValue)>) {
-            if let Some(custom_properties) = &mut *self.custom_properties.borrow_mut() {
-                for (p, v) in property_value_list {
-                    custom_properties.insert(p, v);
-                }
-            } else {
-                let mut custom_properties: HashMap<String, OwnedValue> =
-                    HashMap::with_capacity(property_value_list.len());
-                for (p, v) in property_value_list {
-                    custom_properties.insert(p, v);
-                }
-                self.custom_properties.replace(Some(custom_properties));
-            }
+        pub fn set_property_values(&self, property_value_list: Vec<Option<OwnedValue>>) {
+            self.custom_properties.replace(property_value_list);
         }
 
-        pub fn custom_property(&self, property_name: &str) -> Option<String> {
-            if let Some(custom_properties) = &*self.custom_properties.borrow()
-                && let Some(value) = custom_properties.get(property_name)
+        pub fn custom_property(&self, property_index: usize) -> Option<String> {
+            let vec = self.custom_properties.borrow();
+
+            if property_index >= vec.len() {
+                warn!(
+                    "Property vector request out of bound!  Index {property_index} {}",
+                    vec.len()
+                );
+                None
+            } else if let Some(v) = vec.get(property_index)
+                && let Some(v) = v
             {
-                Some(value.to_string())
+                Some(v.to_string())
             } else {
                 None
             }

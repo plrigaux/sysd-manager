@@ -8,14 +8,11 @@ use gtk::{
 };
 use log::{error, info, warn};
 
-use crate::{
-    systemd::{UnitProperty, enums::UnitType},
-    widget::{
-        unit_list::UnitListPanel,
-        unit_properties_selector::{
-            data::{PropertiesSelectorObject, UnitPropertySelection},
-            unit_properties_selection::row::UnitPropertiesSelectionRow,
-        },
+use crate::widget::{
+    unit_list::UnitListPanel,
+    unit_properties_selector::{
+        data::{PropertiesSelectorObject, UnitPropertySelection},
+        unit_properties_selection::row::UnitPropertiesSelectionRow,
     },
 };
 

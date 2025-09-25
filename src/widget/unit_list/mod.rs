@@ -1,7 +1,6 @@
 use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
-use crate::systemd::UnitProperty;
 use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
