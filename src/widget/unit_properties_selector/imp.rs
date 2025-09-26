@@ -299,9 +299,10 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         self.load_window_size();
 
-        let store = gio::ListStore::new::<PropertiesSelectorObject>();
+        let list_store = gio::ListStore::new::<PropertiesSelectorObject>();
 
-        let tree_list_model = gtk::TreeListModel::new(store.clone(), false, false, add_tree_node);
+        let tree_list_model =
+            gtk::TreeListModel::new(list_store.clone(), false, false, add_tree_node);
 
         self.tree_list_model
             .set(tree_list_model.clone())
@@ -329,11 +330,10 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         factory_interface.connect_setup(|_fac, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+            item.set_selectable(true);
 
             let label = gtk::Label::builder().xalign(0.0).build();
-            //let label = gtk::Inscription::builder().build();
-            let expander = gtk::TreeExpander::new();
-            expander.set_child(Some(&label));
+            let expander = gtk::TreeExpander::builder().child(&label).build();
             item.set_child(Some(&expander));
         });
 
@@ -392,17 +392,23 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         self.access_column.set_factory(Some(&access_factory));
 
         let unit_properties_selection = self.unit_properties_selection.clone();
+
         selection_model.connect_selected_item_notify(move |single_selection| {
             debug!(
                 "connect_selected_notify idx {}",
                 single_selection.selected()
             );
+
             let Some(object) = single_selection.selected_item() else {
-                warn!("No object selected");
+                //warn!("No object selected");
                 return;
             };
 
             let tree_list_row = object.downcast::<gtk::TreeListRow>().unwrap();
+
+            if tree_list_row.is_expandable() {
+                tree_list_row.set_expanded(!tree_list_row.is_expanded());
+            }
 
             let property_object = tree_list_row
                 .item()
@@ -410,8 +416,9 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .unwrap();
 
             if property_object.unit_property().is_empty() {
-                single_selection.set_selected(gtk::INVALID_LIST_POSITION);
-                warn!("Cant select interface  {property_object:?}");
+                //single_selection.set_selected(gtk::INVALID_LIST_POSITION);
+                single_selection.unselect_item(single_selection.selected());
+                debug!("Can't select interface  {property_object:?}");
                 return;
             }
 
@@ -456,7 +463,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                     obj.add_child(prop_object);
                 }
 
-                store.append(&obj);
+                list_store.append(&obj);
             }
         });
     }

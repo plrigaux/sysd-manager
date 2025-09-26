@@ -20,8 +20,7 @@
             <property name="shrink-start-child">False</property>
             <property name="start-child">
               <object class="GtkScrolledWindow">
-                <property name="vexpand">True</property>
-                <child>
+                <property name="child">
                   <object class="GtkColumnView" id="properties_selector">
                     <child>
                       <object class="GtkColumnViewColumn" id="interface_column">
@@ -55,7 +54,8 @@
                       </object>
                     </child>
                   </object>
-                </child>
+                </property>
+                <property name="vexpand">True</property>
               </object>
             </property>
             <property name="wide-handle">True</property>

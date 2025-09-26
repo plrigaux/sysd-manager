@@ -18,7 +18,10 @@ pub fn construct_column(
     let sort_list_model = gtk::SortListModel::new(Some(list_store), None::<gtk::Sorter>);
     let filter_list_model =
         gtk::FilterListModel::new(Some(sort_list_model.clone()), None::<gtk::Filter>);
-    let selection_model = gtk::SingleSelection::new(Some(filter_list_model.clone()));
+    let selection_model = gtk::SingleSelection::builder()
+        .model(&filter_list_model)
+        .autoselect(false)
+        .build();
     let column_view = gtk::ColumnView::new(Some(selection_model.clone()));
 
     set_base_columns(&column_view, display_color);
