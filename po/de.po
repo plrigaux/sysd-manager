@@ -8,14 +8,16 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-11 17:10-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2025-09-26 15:40+0000\n"
+"Last-Translator: linusmuth <tropedat@mailbox.org>\n"
+"Language-Team: German <https://hosted.weblate.org/projects/sysd-manager/"
+"translation/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -32,7 +34,7 @@ msgstr ""
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
-msgstr ""
+msgstr "Eine bedienerfreundliche Anwendung um Systemd Units zu verwalten"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
@@ -45,6 +47,9 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Verwalten Sie ihre Services, Timers, Sockets und andere Units. Sie können "
+"sie einschalten, ausschalten, stoppen und starten. Außerdem können Sie die "
+"jeweiligen Konfigurationsdateien und Journal Protokolle ansehen."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
@@ -74,7 +79,7 @@ msgstr ""
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Reload All Units"
-msgstr ""
+msgstr "Lade alle Units neu"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -295,6 +300,8 @@ msgid ""
 "No journal events!\n"
 "It can be a good thing. 😉"
 msgstr ""
+"Keine Ereignisse im Journal!\n"
+"Das kann auch etwas Gutes sein. 😉"
 
 #. title
 #: data/interfaces/journal_panel.ui:121
