@@ -105,7 +105,7 @@ macro_rules! display_inactive {
     };
 }
 
-fn fac_unit_name() -> gtk::SignalListItemFactory {
+pub fn fac_unit_name() -> gtk::SignalListItemFactory {
     let fac_unit_name = gtk::SignalListItemFactory::new();
 
     fac_unit_name.connect_setup(factory_setup);
@@ -118,7 +118,7 @@ fn fac_unit_name() -> gtk::SignalListItemFactory {
     fac_unit_name
 }
 
-fn fac_unit_type() -> gtk::SignalListItemFactory {
+pub fn fac_unit_type() -> gtk::SignalListItemFactory {
     let fac_unit_type = gtk::SignalListItemFactory::new();
 
     fac_unit_type.connect_setup(factory_setup);
@@ -131,7 +131,7 @@ fn fac_unit_type() -> gtk::SignalListItemFactory {
     fac_unit_type
 }
 
-fn fac_bus() -> gtk::SignalListItemFactory {
+pub fn fac_bus() -> gtk::SignalListItemFactory {
     let fac_bus = gtk::SignalListItemFactory::new();
 
     fac_bus.connect_setup(factory_setup);
@@ -143,7 +143,7 @@ fn fac_bus() -> gtk::SignalListItemFactory {
     fac_bus
 }
 
-fn fac_active() -> gtk::SignalListItemFactory {
+pub fn fac_active() -> gtk::SignalListItemFactory {
     let fac_active = gtk::SignalListItemFactory::new();
 
     fac_active.connect_setup(|_factory, object| {
@@ -178,7 +178,7 @@ fn fac_active() -> gtk::SignalListItemFactory {
     fac_active
 }
 
-fn fac_sub_state() -> gtk::SignalListItemFactory {
+pub fn fac_sub_state() -> gtk::SignalListItemFactory {
     let fac_sub_state = gtk::SignalListItemFactory::new();
 
     fac_sub_state.connect_setup(factory_setup);
@@ -194,7 +194,7 @@ fn fac_sub_state() -> gtk::SignalListItemFactory {
     fac_sub_state
 }
 
-fn fac_descrition() -> gtk::SignalListItemFactory {
+pub fn fac_descrition() -> gtk::SignalListItemFactory {
     let fac_descrition = gtk::SignalListItemFactory::new();
 
     fac_descrition.connect_setup(factory_setup);
@@ -249,7 +249,7 @@ pub fn setup_factories(
 }
 
 const LOAD_STATE: &str = "load_state";
-fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
+pub fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_load_state = gtk::SignalListItemFactory::new();
 
     fac_load_state.connect_setup(factory_setup);
@@ -315,7 +315,7 @@ fn load_state_css_classes<'a>(load_state: LoadState) -> Option<[&'a str; 2]> {
 }
 
 const ENABLE_STATUS: &str = "enable_status";
-fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
+pub fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_enable_status = gtk::SignalListItemFactory::new();
 
     fac_enable_status.connect_setup(factory_setup);
@@ -397,7 +397,7 @@ fn enablement_css_classes<'a>(enablement_status: EnablementStatus) -> Option<[&'
 
 const PRESET_NUM: &str = "preset";
 
-fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
+pub fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_preset = gtk::SignalListItemFactory::new();
 
     fac_preset.connect_setup(factory_setup);

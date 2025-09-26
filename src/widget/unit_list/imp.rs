@@ -1,4 +1,6 @@
 mod column_factories;
+#[macro_use]
+mod construct;
 mod menus;
 mod pop_menu;
 mod rowdata;
@@ -13,7 +15,7 @@ use std::{
 use gtk::{
     TemplateChild,
     gio::{self, glib::VariantTy},
-    glib::{self, Object, Properties},
+    glib::{self, Properties},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -52,7 +54,7 @@ use crate::{
                     FilterElement, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
                 },
             },
-            imp::rowdata::UnitBinding,
+            imp::{construct::construct_column, rowdata::UnitBinding},
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::data::UnitPropertySelection,
@@ -84,25 +86,20 @@ type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAs
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
 #[properties(wrapper_type = super::UnitListPanel)]
 pub struct UnitListPanelImp {
-    #[template_child]
-    list_store: TemplateChild<gio::ListStore>,
+    list_store: OnceCell<gio::ListStore>,
 
     units_map: Rc<RefCell<HashMap<UnitKey, UnitInfo>>>,
 
-    #[template_child]
-    unit_list_sort_list_model: TemplateChild<gtk::SortListModel>,
+    unit_list_sort_list_model: RefCell<gtk::SortListModel>,
 
-    #[template_child]
-    units_browser: TemplateChild<gtk::ColumnView>,
+    units_browser: RefCell<gtk::ColumnView>,
 
-    #[template_child]
-    single_selection: TemplateChild<gtk::SingleSelection>,
+    single_selection: RefCell<gtk::SingleSelection>,
 
     #[template_child]
     search_bar: TemplateChild<gtk::SearchBar>,
 
-    #[template_child]
-    filter_list_model: TemplateChild<gtk::FilterListModel>,
+    filter_list_model: RefCell<gtk::FilterListModel>,
 
     #[template_child]
     panel_stack: TemplateChild<adw::ViewStack>,
@@ -149,48 +146,6 @@ pub struct UnitListPanelImp {
     default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
 }
 
-macro_rules! compare_units {
-    ($unit1:expr, $unit2:expr, $func:ident) => {{
-        $unit1.$func().cmp(&$unit2.$func()).into()
-    }};
-
-    ($unit1:expr, $unit2:expr, $func:ident, $($funcx:ident),+) => {{
-
-        let ordering = $unit1.$func().cmp(&$unit2.$func());
-        if ordering != core::cmp::Ordering::Equal {
-            return ordering.into();
-        }
-
-        compare_units!($unit1, $unit2, $($funcx),+)
-    }};
-}
-
-macro_rules! create_column_filter {
-    ($($func:ident),+) => {{
-        gtk::CustomSorter::new(move |obj1, obj2| {
-            let unit1 = obj1
-                .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit_ref();
-            let unit2 = obj2
-                .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit_ref();
-
-            compare_units!(unit1, unit2, $($func),+)
-        })
-    }};
-}
-
-macro_rules! column_view_column_set_sorter {
-    ($map:expr, $col_id:expr, $($func:ident),+) => {{
-        let column_view_column = $map.get($col_id)
-            .expect(&format!("Column with id {:?} not found!", $col_id));
-        let sorter = create_column_filter!($($func),+);
-        column_view_column.set_sorter(Some(&sorter));
-        let column_menu = create_col_menu($col_id);
-        column_view_column.set_header_menu(Some(&column_menu));
-    }};
-}
-
 macro_rules! update_search_entry {
     ($self:expr, $id:expr, $update_widget:expr, $text:expr) => {{
         if $update_widget && $id == UNIT_LIST_COLUMNS_UNIT {
@@ -228,6 +183,7 @@ impl UnitListPanelImp {
         let unit_list = self.obj().clone();
 
         self.single_selection
+            .borrow()
             .connect_selected_item_notify(move |single_selection| {
                 info!(
                     "connect_selected_notify idx {}",
@@ -349,7 +305,7 @@ impl UnitListPanelImp {
     }
 
     fn generate_column_map(&self) -> HashMap<glib::GString, gtk::ColumnViewColumn> {
-        let list_model: gio::ListModel = self.units_browser.columns();
+        let list_model: gio::ListModel = self.units_browser.borrow().columns();
 
         let mut col_map = HashMap::new();
         for col_idx in 0..list_model.n_items() {
@@ -371,7 +327,7 @@ impl UnitListPanelImp {
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
-        let list_model: gio::ListModel = self.units_browser.columns();
+        let list_model: gio::ListModel = self.units_browser.borrow().columns();
 
         let mut col_list = Vec::with_capacity(list_model.n_items() as usize);
         for col_idx in 0..list_model.n_items() {
@@ -389,12 +345,12 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn fill_store(&self) {
-        let list_store = self.list_store.clone();
+        let list_store = self.list_store.get().expect("LIST STORE NOT NONE").clone();
         let unit_map = self.units_map.clone();
         let panel_stack = self.panel_stack.clone();
-        let single_selection = self.single_selection.clone();
+        let single_selection = self.single_selection.borrow().clone();
         let unit_list = self.obj().clone();
-        let units_browser = self.units_browser.clone();
+        let units_browser = self.units_browser.borrow().clone();
 
         let refresh_unit_list_button = self
             .refresh_unit_list_button
@@ -404,6 +360,7 @@ impl UnitListPanelImp {
 
         //Rem sorting before adding lot of items for performance reasons
         self.unit_list_sort_list_model
+            .borrow()
             .set_sorter(None::<&gtk::Sorter>);
 
         let int_level = PREFERENCES.dbus_level();
@@ -455,18 +412,7 @@ impl UnitListPanelImp {
             }
 
             // The sort function needs to be the same of the  first column sorter
-            let sort_func = |o1: &Object, o2: &Object| {
-                let u1 = o1
-                    .downcast_ref::<UnitBinding>()
-                    .expect("Needs to be UnitInfo")
-                    .unit_ref();
-                let u2 = o2
-                    .downcast_ref::<UnitBinding>()
-                    .expect("Needs to be UnitInfo")
-                    .unit_ref();
-
-                compare_units!(u1, u2, primary, dbus_level)
-            };
+            let sort_func = construct::column_filter_lambda!(primary, dbus_level);
 
             list_store.sort(sort_func);
 
@@ -592,9 +538,9 @@ impl UnitListPanelImp {
         info!(
             "Unit List {} list_store {} filter {} sort_model {}",
             unit_name,
-            self.list_store.n_items(),
-            self.filter_list_model.n_items(),
-            self.unit_list_sort_list_model.n_items()
+            self.list_store.get().unwrap().n_items(),
+            self.filter_list_model.borrow().n_items(),
+            self.unit_list_sort_list_model.borrow().n_items()
         );
 
         /*  let finding = self.list_store.find_with_equal_func(|object| {
@@ -627,30 +573,35 @@ impl UnitListPanelImp {
         }
 
         //Don't select and focus if filter out
-        if let Some(filter) = self.filter_list_model.filter() {
+        if let Some(filter) = self.filter_list_model.borrow().filter() {
             let unit_binding = UnitBinding::new(unit);
             if !filter.match_(&unit_binding) {
                 //Unselect
                 self.single_selection
+                    .borrow()
                     .set_selected(gtk::INVALID_LIST_POSITION);
                 info!("Unit {unit_name} no Match");
                 return Some(unit.clone());
             }
         }
 
-        let finding = self.list_store.find_with_equal_func(|object| {
-            let Some(unit_item) = object.downcast_ref::<UnitBinding>() else {
-                error!("item.downcast_ref::<UnitBinding>()");
-                return false;
-            };
+        let finding = self
+            .list_store
+            .get()
+            .expect("LIST STORE NOT NONE")
+            .find_with_equal_func(|object| {
+                let Some(unit_item) = object.downcast_ref::<UnitBinding>() else {
+                    error!("item.downcast_ref::<UnitBinding>()");
+                    return false;
+                };
 
-            unit_name == unit_item.primary()
-        });
+                unit_name == unit_item.primary()
+            });
 
         if let Some(row) = finding {
             info!("Scroll to row {row}");
 
-            self.units_browser.scroll_to(
+            self.units_browser.borrow().scroll_to(
                 row, // to centerish on the selected unit
                 None,
                 gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
@@ -662,7 +613,10 @@ impl UnitListPanelImp {
     }
 
     fn add_one_unit(&self, unit: &UnitInfo) {
-        self.list_store.append(&UnitBinding::new(unit));
+        self.list_store
+            .get()
+            .unwrap()
+            .append(&UnitBinding::new(unit));
         let mut unit_map = self.units_map.borrow_mut();
         unit_map.insert(UnitKey::new(unit), unit.clone());
 
@@ -690,12 +644,15 @@ impl UnitListPanelImp {
     }
 
     fn set_sorter(&self) {
-        let sorter = self.units_browser.sorter();
+        let sorter = self.units_browser.borrow().sorter();
 
-        self.unit_list_sort_list_model.set_sorter(sorter.as_ref());
+        self.unit_list_sort_list_model
+            .borrow()
+            .set_sorter(sorter.as_ref());
 
         let item_out = self
             .units_browser
+            .borrow()
             .columns()
             .item(0)
             .expect("Expect item x to be not None");
@@ -706,6 +663,7 @@ impl UnitListPanelImp {
             .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
         self.units_browser
+            .borrow()
             .sort_by_column(Some(c1), gtk::SortType::Ascending);
     }
 
@@ -742,11 +700,13 @@ impl UnitListPanelImp {
         }
 
         if let Some(change_type) = change_type {
-            if let Some(filter) = self.filter_list_model.filter() {
+            if let Some(filter) = self.filter_list_model.borrow().filter() {
                 filter.changed(change_type);
             } else {
                 let custom_filter = self.create_custom_filter();
-                self.filter_list_model.set_filter(Some(&custom_filter));
+                self.filter_list_model
+                    .borrow()
+                    .set_filter(Some(&custom_filter));
             }
         }
 
@@ -770,7 +730,9 @@ impl UnitListPanelImp {
             prop_filter_mut.clear_filter();
         }
 
-        self.filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
+        self.filter_list_model
+            .borrow()
+            .set_filter(None::<&gtk::Filter>); //FIXME this workaround prevents core dump
 
         let search_controls = self.search_controls.get().expect("Not Null");
         search_controls.imp().clear();
@@ -842,7 +804,7 @@ impl UnitListPanelImp {
         let mut is_unit_type = false;
         //  let mut properties = Vec::wi
 
-        let l = self.units_browser.columns();
+        let l = self.units_browser.borrow().columns();
 
         let mut current_columns = Vec::with_capacity(l.n_items() as usize);
         for position in 0..l.n_items() {
@@ -860,7 +822,7 @@ impl UnitListPanelImp {
 
         //remove all columns to simplify the algo
         for col in current_columns.iter() {
-            self.units_browser.remove_column(col);
+            self.units_browser.borrow().remove_column(col);
         }
 
         struct UnitProperty {
@@ -891,7 +853,7 @@ impl UnitListPanelImp {
                     column.set_factory(Some(&factory));
                 }
 
-                self.units_browser.append_column(&column);
+                self.units_browser.borrow().append_column(&column);
             }
 
             match unit_property.unit_type() {
@@ -1051,6 +1013,21 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         let unit_list = self.obj().clone();
+
+        let list_store = gio::ListStore::new::<UnitBinding>();
+        self.list_store
+            .set(list_store.clone())
+            .expect("Set only Once");
+
+        let (units_browser, single_selection, filter_list_model, sort_list_model) =
+            construct_column(list_store, self.display_color.get());
+
+        self.scrolled_window.set_child(Some(&units_browser));
+        self.units_browser.replace(units_browser);
+        self.single_selection.replace(single_selection);
+        self.filter_list_model.replace(filter_list_model);
+        self.unit_list_sort_list_model.replace(sort_list_model);
+
         let column_view_column_list = self.generate_column_list();
 
         let mut column_view_column_definition_list =
@@ -1086,18 +1063,6 @@ impl ObjectImpl for UnitListPanelImp {
                 column_factories::setup_factories(&unit_list, &column_view_column_list);
             },
         );
-
-        //TODO do at the same time of the factory building
-        let column_view_column_map = self.generate_column_map();
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-unit", primary, dbus_level);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-type", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-bus", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-state", enable_status);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-preset", preset);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-load", load_state);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-active", active_state);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-sub", sub_state);
-        column_view_column_set_sorter!(column_view_column_map, "sysdm-description", description);
 
         let mut filter_assessors: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
             HashMap::with_capacity(UNIT_LIST_COLUMNS.len());
@@ -1168,9 +1133,12 @@ impl ObjectImpl for UnitListPanelImp {
         // let search_entry = self.fill_search_bar();
 
         let custom_filter = self.create_custom_filter();
-        self.filter_list_model.set_filter(Some(&custom_filter));
+        self.filter_list_model
+            .borrow()
+            .set_filter(Some(&custom_filter));
 
         self.filter_list_model
+            .borrow()
             .bind_property::<gtk::Label>("n-items", self.unit_filtered_count.as_ref(), "label")
             .build();
 
@@ -1185,7 +1153,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         {
             let unit_list = self.obj().clone();
-            let units_browser = self.units_browser.clone();
+            let units_browser = self.units_browser.borrow().clone();
             self.scrolled_window
                 .vadjustment()
                 .connect_changed(move |_adjustment| {
@@ -1202,9 +1170,14 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         self.units_browser
+            .borrow()
             .connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
 
-        pop_menu::setup_popup_menu(&self.units_browser, &self.filter_list_model, &self.obj());
+        pop_menu::setup_popup_menu(
+            &self.units_browser.borrow(),
+            &self.filter_list_model.borrow(),
+            &self.obj(),
+        );
     }
 }
 
