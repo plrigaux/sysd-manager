@@ -7,7 +7,7 @@ use gtk::{
     subclass::prelude::*,
 };
 use serde::Deserialize;
-use zvariant::{OwnedObjectPath, OwnedValue, Type};
+use zvariant::{OwnedObjectPath, OwnedValue, Type, Value};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -63,7 +63,7 @@ mod imp {
     use std::cell::RefCell;
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
-    use log::warn;
+
     use zvariant::OwnedValue;
 
     use crate::systemd::{
@@ -230,15 +230,16 @@ mod imp {
             let vec = self.custom_properties.borrow();
 
             if property_index >= vec.len() {
-                warn!(
+                /*  warn!(
                     "Property vector request out of bound!  Index {property_index} {}",
                     vec.len()
-                );
+                ); */
                 None
             } else if let Some(v) = vec.get(property_index)
                 && let Some(v) = v
             {
-                Some(v.to_string())
+                let s = super::convert_to_string(v);
+                Some(s)
             } else {
                 None
             }
@@ -306,4 +307,72 @@ pub struct LUnit {
     pub numeric_job_id: u32,
     pub job_type: String,
     pub job_object_path: OwnedObjectPath,
+}
+
+pub fn convert_to_string(value: &Value) -> String {
+    match value {
+        Value::U8(i) => i.to_string(),
+        Value::Bool(b) => b.to_string(),
+        Value::I16(i) => i.to_string(),
+        Value::U16(i) => i.to_string(),
+        Value::I32(i) => i.to_string(),
+        Value::U32(i) => i.to_string(),
+        Value::I64(i) => i.to_string(),
+        Value::U64(i) => i.to_string(),
+        Value::F64(i) => i.to_string(),
+        Value::Str(s) => s.to_string(),
+        Value::Signature(s) => s.to_string(),
+        Value::ObjectPath(op) => op.to_string(),
+        Value::Value(v) => v.to_string(),
+        Value::Array(a) => {
+            if a.is_empty() {
+                "[]".to_owned()
+            } else {
+                let mut d_str = String::from("[ ");
+
+                let mut it = a.iter().peekable();
+                while let Some(mi) = it.next() {
+                    let sub_value = convert_to_string(mi);
+
+                    d_str.push_str(&sub_value);
+                    if it.peek().is_some() {
+                        d_str.push_str(", ");
+                    }
+                }
+
+                d_str.push_str(" ]");
+                d_str
+            }
+        }
+        Value::Dict(d) => {
+            let mut d_str = String::from("{ ");
+
+            for (mik, miv) in d.iter() {
+                d_str.push_str(&convert_to_string(mik));
+                d_str.push_str(" : ");
+                d_str.push_str(&convert_to_string(miv));
+            }
+            d_str.push_str(" }");
+            d_str
+        }
+        Value::Structure(stc) => {
+            let mut d_str = String::from("{ ");
+
+            let mut it = stc.fields().iter().peekable();
+
+            while let Some(mi) = it.next() {
+                let sub_value = convert_to_string(mi);
+
+                d_str.push_str(&sub_value);
+                if it.peek().is_some() {
+                    d_str.push_str(", ");
+                }
+            }
+
+            d_str.push_str(" }");
+            d_str
+        }
+        Value::Fd(fd) => fd.to_string(),
+        //Value::Maybe(maybe) => (maybe.to_string(), false),
+    }
 }

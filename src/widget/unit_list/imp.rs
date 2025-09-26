@@ -856,6 +856,7 @@ impl UnitListPanelImp {
         /*       for unit_property in self.current_columns().iter() {
 
         } */
+        self.print_adj();
 
         //remove all columns to simplify the algo
         for col in current_columns.iter() {
@@ -909,6 +910,7 @@ impl UnitListPanelImp {
                 });
             }
         }
+        self.print_adj();
 
         let list_len = property_list.len();
         let units_map = self.units_map.clone();
@@ -929,6 +931,7 @@ impl UnitListPanelImp {
 
             let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
             runtime().spawn(async move {
+                info!("Fetching properties START");
                 for (level, primary_name, object_path, unit_type) in units_list {
                     let mut property_value_list = Vec::with_capacity(list_len);
                     for unit_property in &property_list_send {
@@ -966,13 +969,33 @@ impl UnitListPanelImp {
                     }
                 }
             });
-
+            info!("Fetching properties WAIT");
             while let Some((key, property_value_list)) = receiver.recv().await {
                 if let Some(unit) = units_map.borrow().get(&key) {
                     unit.set_property_values(property_value_list);
                 }
             }
+            info!("Fetching properties FINISED");
         });
+    }
+
+    fn print_adj(&self) {
+        let va = self.scrolled_window.vadjustment();
+        info!(
+            "Vl {} p {} u {} t {}",
+            va.lower(),
+            va.page_size(),
+            va.upper(),
+            (va.lower() + va.page_size()) - va.upper()
+        );
+        let ha = self.scrolled_window.hadjustment();
+        info!(
+            "Hl {} p {} u{} t{}",
+            ha.lower(),
+            ha.page_size(),
+            ha.upper(),
+            (ha.lower() + ha.page_size()) - ha.upper()
+        );
     }
 
     pub(super) fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {

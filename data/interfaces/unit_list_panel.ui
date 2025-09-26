@@ -3,8 +3,8 @@
 <interface>
   <!-- interface-name unit_list_panel.ui -->
   <requires lib="gio" version="2.44"/>
-  <requires lib="gtk" version="4.16"/>
-  <requires lib="libadwaita" version="1.6"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="UnitListPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <property name="vexpand">True</property>
