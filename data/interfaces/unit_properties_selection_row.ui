@@ -8,7 +8,7 @@
     <property name="margin-end">5</property>
     <property name="margin-start">5</property>
     <property name="margin-top">5</property>
-    <child>
+    <property name="child">
       <object class="GtkGrid">
         <property name="column-spacing">5</property>
         <property name="row-spacing">5</property>
@@ -103,6 +103,6 @@ destructive-action</property>
           </object>
         </child>
       </object>
-    </child>
+    </property>
   </template>
 </interface>
