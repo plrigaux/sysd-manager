@@ -835,26 +835,31 @@ impl UnitListPanelImp {
         let mut types = HashSet::with_capacity(16);
         let mut property_list_send = Vec::with_capacity(property_list.len());
         for unit_property in &property_list {
-            if !unit_property.hidden() {
-                let column = unit_property.column();
+            let column = unit_property.column();
 
-                if unit_property.is_custom() {
-                    //add custom factory
+            if unit_property.is_custom() {
+                //add custom factory
 
-                    let factory = column_factories::get_custom_factoy(property_index);
-                    property_index += 1;
+                let factory = column_factories::get_custom_factoy(property_index);
+                property_index += 1;
 
-                    column.set_title(Some(&unit_property.unit_property()));
-                    column.set_id(Some(&format!(
-                        "{}::{}",
-                        unit_property.unit_type().as_str(),
-                        unit_property.unit_property()
-                    )));
-                    column.set_factory(Some(&factory));
-                }
+                column.set_title(Some(&unit_property.unit_property()));
+                let id = format!(
+                    "{}@{}",
+                    unit_property.unit_type().as_str(),
+                    unit_property.unit_property()
+                );
+                column.set_id(Some(&id));
+                column.set_factory(Some(&factory));
 
-                self.units_browser.borrow().append_column(&column);
+                property_list_send.push(UnitProperty {
+                    interface: unit_property.interface(),
+                    unit_property: unit_property.unit_property(),
+                    unit_type: unit_property.unit_type(),
+                });
             }
+
+            self.units_browser.borrow().append_column(&column);
 
             match unit_property.unit_type() {
                 UnitType::Unit => is_unit_type |= true,
@@ -862,14 +867,6 @@ impl UnitListPanelImp {
                 ut => {
                     types.insert(ut);
                 }
-            }
-
-            if unit_property.is_custom() {
-                property_list_send.push(UnitProperty {
-                    interface: unit_property.interface(),
-                    unit_property: unit_property.unit_property(),
-                    unit_type: unit_property.unit_type(),
-                });
             }
         }
         self.print_adj();

@@ -207,6 +207,17 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
             child.set_data_selection(&prop_selection, item);
         });
 
+        factory.connect_unbind(move |_factory, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+
+            let child = item
+                .child()
+                .and_downcast::<UnitPropertiesSelectionRow>()
+                .unwrap();
+
+            child.unbind();
+        });
+
         self.properties_selection.set_factory(Some(&factory));
     }
 }

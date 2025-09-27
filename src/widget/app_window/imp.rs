@@ -454,7 +454,7 @@ impl AppWindowImpl {
                     let dialog = UnitPropertiesSelectorDialog::new(&unit_list_panel);
 
                     dialog.set_transient_for(Some(&app_window));
-
+                    dialog.set_modal(true);
                     dialog.present();
                 })
                 .build()

@@ -192,10 +192,11 @@ mod imp2 {
         pub(super) signature: RefCell<String>,
         #[property(get)]
         pub(super) access: RefCell<String>,
+
+        #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]
         #[property(get)]
         pub(super) column: RefCell<gtk::ColumnViewColumn>,
-        #[property(get, default_value = false)]
-        pub(super) hidden: Cell<bool>,
+
         #[property(get, default)]
         pub(super) unit_type: Cell<UnitType>,
     }
@@ -203,6 +204,14 @@ mod imp2 {
     impl UnitPropertySelectionImpl {
         pub fn is_custom(&self) -> bool {
             !matches!(self.unit_type.get(), UnitType::Unknown)
+        }
+
+        fn visible(&self) -> bool {
+            self.column.borrow().is_visible()
+        }
+
+        fn set_visible(&self, visible: bool) {
+            self.column.borrow().set_visible(visible)
         }
     }
 

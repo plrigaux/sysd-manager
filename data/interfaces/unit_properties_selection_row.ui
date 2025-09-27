@@ -86,6 +86,22 @@ destructive-action</property>
             </layout>
           </object>
         </child>
+        <child>
+          <object class="GtkBox">
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Visible</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="hidden_ckeck"/>
+            </child>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">2</property>
+            </layout>
+          </object>
+        </child>
       </object>
     </child>
   </template>
