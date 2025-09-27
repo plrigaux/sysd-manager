@@ -10,7 +10,7 @@ use crate::widget::unit_properties_selector::{
 
 glib::wrapper! {
     pub struct UnitPropertiesSelectionRow(ObjectSubclass<imp::UnitPropertiesSelectionRowImp>)
-    @extends gtk::ListBoxRow, gtk::Widget,
+    @extends gtk::Grid, gtk::Widget,
     @implements gtk::Actionable, gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
@@ -159,7 +159,7 @@ mod imp {
     impl ObjectSubclass for UnitPropertiesSelectionRowImp {
         const NAME: &'static str = "UnitPropertiesSelectorRow";
         type Type = UnitPropertiesSelectionRow;
-        type ParentType = gtk::ListBoxRow;
+        type ParentType = gtk::Grid;
 
         fn class_init(klass: &mut Self::Class) {
             // The layout manager determines how child widgets are laid out.
@@ -179,5 +179,5 @@ mod imp {
     }
 
     impl WidgetImpl for UnitPropertiesSelectionRowImp {}
-    impl ListBoxRowImpl for UnitPropertiesSelectionRowImp {}
+    impl GridImpl for UnitPropertiesSelectionRowImp {}
 }

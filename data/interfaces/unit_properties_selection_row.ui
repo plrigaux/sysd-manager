@@ -3,106 +3,102 @@
 <interface>
   <!-- interface-name unit_properties_selection_row.ui -->
   <requires lib="gtk" version="4.18"/>
-  <template class="UnitPropertiesSelectorRow" parent="GtkListBoxRow">
+  <template class="UnitPropertiesSelectorRow" parent="GtkGrid">
+    <property name="column-spacing">5</property>
     <property name="margin-bottom">5</property>
     <property name="margin-end">5</property>
     <property name="margin-start">5</property>
     <property name="margin-top">5</property>
-    <property name="child">
-      <object class="GtkGrid">
-        <property name="column-spacing">5</property>
-        <property name="row-spacing">5</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="css-classes">dim-label</property>
-            <property name="label">Interface</property>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">0</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="css-classes">dim-label</property>
-            <property name="label">Property</property>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">1</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="interface">
-            <property name="xalign">0.0</property>
-            <layout>
-              <property name="column">1</property>
-              <property name="row">0</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="property_label">
-            <property name="xalign">0.0</property>
-            <attributes>
-              <attribute name="weight" value="bold"/>
-            </attributes>
-            <layout>
-              <property name="column">1</property>
-              <property name="row">1</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="halign">end</property>
-            <property name="hexpand">True</property>
-            <child>
-              <object class="GtkButton" id="move_up_button">
-                <property name="css-classes">round</property>
-                <property name="icon-name">go-up-symbolic</property>
-                <signal name="clicked" handler="move_up_clicked" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="move_down_button">
-                <property name="css-classes">round</property>
-                <property name="icon-name">go-down-symbolic</property>
-                <signal name="clicked" handler="move_down_clicked" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="delete_button">
-                <property name="css-classes">round
-destructive-action</property>
-                <property name="icon-name">window-close-symbolic</property>
-                <signal name="clicked" handler="delete_clicked" swapped="yes"/>
-              </object>
-            </child>
-            <layout>
-              <property name="column">2</property>
-              <property name="column-span">2</property>
-              <property name="row">0</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <child>
-              <object class="GtkLabel">
-                <property name="label">Visible</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="hidden_ckeck"/>
-            </child>
-            <layout>
-              <property name="column">1</property>
-              <property name="row">2</property>
-            </layout>
-          </object>
-        </child>
+    <property name="row-spacing">5</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="css-classes">dim-label</property>
+        <property name="label">Interface</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">0</property>
+        </layout>
       </object>
-    </property>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="css-classes">dim-label</property>
+        <property name="label">Property</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="interface">
+        <property name="xalign">0.0</property>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="property_label">
+        <property name="xalign">0.0</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+        </attributes>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">end</property>
+        <property name="hexpand">True</property>
+        <child>
+          <object class="GtkButton" id="move_up_button">
+            <property name="css-classes">round</property>
+            <property name="icon-name">go-up-symbolic</property>
+            <signal name="clicked" handler="move_up_clicked" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="move_down_button">
+            <property name="css-classes">round</property>
+            <property name="icon-name">go-down-symbolic</property>
+            <signal name="clicked" handler="move_down_clicked" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="delete_button">
+            <property name="css-classes">round
+destructive-action</property>
+            <property name="icon-name">window-close-symbolic</property>
+            <signal name="clicked" handler="delete_clicked" swapped="yes"/>
+          </object>
+        </child>
+        <layout>
+          <property name="column">2</property>
+          <property name="column-span">2</property>
+          <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Visible</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="hidden_ckeck"/>
+        </child>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">2</property>
+        </layout>
+      </object>
+    </child>
   </template>
 </interface>
