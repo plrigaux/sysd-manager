@@ -77,9 +77,11 @@ impl UnitPropertiesSelectionImp {
 
         let list_store = get_list_store!(self);
 
-        list_store.remove_all();
+        list_store.remove_all(); //TBSafe
+
         for unit_property_column in unit_list_panel.default_displayed_columns().iter() {
-            list_store.append(unit_property_column);
+            let unit_property_column = unit_property_column.copy();
+            list_store.append(&unit_property_column);
         }
     }
 }
@@ -99,7 +101,8 @@ impl UnitPropertiesSelectionImp {
 
         let list_store = get_list_store!(self);
         for unit_property_column in unit_list_panel.current_columns().iter() {
-            list_store.append(unit_property_column);
+            let unit_property_column = unit_property_column.copy();
+            list_store.append(&unit_property_column);
         }
     }
 
@@ -169,15 +172,15 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let store = gio::ListStore::new::<UnitPropertySelection>();
+        let list_store = gio::ListStore::new::<UnitPropertySelection>();
 
-        self.list_store.set(store.clone()).expect("Only once");
+        self.list_store.set(list_store.clone()).expect("Only once");
 
         //let selection_model = gtk::NoSelection::new(Some(store.clone()));
 
         let selection_model = gtk::SingleSelection::builder()
             .can_unselect(true)
-            .model(&store.clone())
+            .model(&list_store.clone())
             .build();
 
         self.selection_model

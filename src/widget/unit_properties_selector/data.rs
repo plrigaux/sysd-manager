@@ -139,6 +139,33 @@ impl UnitPropertySelection {
     pub fn is_custom(&self) -> bool {
         self.imp().is_custom()
     }
+
+    pub fn copy(&self) -> Self {
+        let this_object: Self = glib::Object::new();
+
+        let p_imp = this_object.imp();
+
+        p_imp.interface.replace(self.interface());
+        p_imp.unit_property.replace(self.unit_property());
+        p_imp.signature.replace(self.signature());
+        p_imp.access.replace(self.access());
+        p_imp.unit_type.set(self.unit_type());
+
+        {
+            let col = self.column();
+            let cur_col = p_imp.column.borrow();
+            cur_col.set_expand(col.expands());
+            cur_col.set_factory(col.factory().as_ref());
+            cur_col.set_fixed_width(col.fixed_width());
+            cur_col.set_header_menu(col.header_menu().as_ref());
+            cur_col.set_id(col.id().as_deref());
+            cur_col.set_resizable(col.is_resizable());
+            cur_col.set_sorter(col.sorter().as_ref());
+            cur_col.set_title(col.title().as_deref());
+            cur_col.set_visible(col.is_visible());
+        }
+        this_object
+    }
 }
 
 mod imp {
