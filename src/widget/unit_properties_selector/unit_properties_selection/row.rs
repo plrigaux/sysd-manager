@@ -80,7 +80,14 @@ mod imp {
         ) {
             self.list_item.replace(Some(list_item.clone()));
 
-            self.interface.set_label(&prop_seletion.interface());
+            let interface = prop_seletion.interface();
+
+            if let Some(token) = interface.split('.').next_back() {
+                self.interface.set_label(token);
+            } else {
+                self.interface.set_label(&interface);
+            }
+
             self.property_label
                 .set_label(&prop_seletion.unit_property());
 
