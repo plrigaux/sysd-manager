@@ -24,7 +24,7 @@
       <object class="GtkBox">
         <property name="spacing">5</property>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="apply_button">
             <property name="css-classes">suggested-action</property>
             <property name="halign">start</property>
             <property name="label">Apply</property>

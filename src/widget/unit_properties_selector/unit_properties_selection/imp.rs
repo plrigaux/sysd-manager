@@ -24,6 +24,9 @@ pub struct UnitPropertiesSelectionImp {
     #[template_child]
     properties_selection: TemplateChild<gtk::ListView>,
 
+    #[template_child]
+    apply_button: TemplateChild<gtk::Button>,
+
     list_store: OnceCell<gio::ListStore>,
 
     selection_model: OnceCell<gtk::SingleSelection>,
@@ -222,6 +225,18 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
         });
 
         self.properties_selection.set_factory(Some(&factory));
+
+        list_store
+            .bind_property::<gtk::Button>("n-items", self.apply_button.as_ref(), "sensitive")
+            .transform_to_with_values(|_, value| {
+                let nitems = value.get::<u32>().expect("u32");
+                if nitems > 0 {
+                    Some(true.to_value())
+                } else {
+                    Some(false.to_value())
+                }
+            })
+            .build();
     }
 }
 
