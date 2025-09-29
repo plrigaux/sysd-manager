@@ -15,9 +15,9 @@
       <object class="GtkScrolledWindow">
         <property name="vexpand">True</property>
         <property name="vexpand-set">True</property>
-        <child>
+        <property name="child">
           <object class="GtkListView" id="properties_selection"/>
-        </child>
+        </property>
       </object>
     </child>
     <child>

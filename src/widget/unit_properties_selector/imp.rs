@@ -21,7 +21,7 @@ use crate::{
     widget::{
         unit_list::UnitListPanel,
         unit_properties_selector::{
-            data::{INTERFACE_NAME, PropertiesSelectorObject},
+            data::{INTERFACE_NAME, PropertyBrowseItem},
             unit_properties_selection::UnitPropertiesSelection,
         },
     },
@@ -149,7 +149,7 @@ impl UnitPropertiesSelectorDialogImp {
 
             if let Some(children) = tree_list_row.children() {
                 let item = tree_list_row.item();
-                if let Some(prop_selector) = item.and_downcast_ref::<PropertiesSelectorObject>() {
+                if let Some(prop_selector) = item.and_downcast_ref::<PropertyBrowseItem>() {
                     info!(
                         "Child model {} {}",
                         children.n_items(),
@@ -163,7 +163,7 @@ impl UnitPropertiesSelectorDialogImp {
             }
 
             let item = tree_list_row.item();
-            let Some(prop_selector) = item.and_downcast_ref::<PropertiesSelectorObject>() else {
+            let Some(prop_selector) = item.and_downcast_ref::<PropertyBrowseItem>() else {
                 error!("some wrong downcast_ref {object:?}");
                 return false;
             };
@@ -197,17 +197,11 @@ impl UnitPropertiesSelectorDialogImp {
             return;
         };
 
-        let default = PropertiesSelectorObject::new_interface(INTERFACE_NAME.to_owned());
+        let default = PropertyBrowseItem::new_interface(INTERFACE_NAME.to_owned());
         // list_store.append(&default);
 
         for default_column in unit_list_panel.default_columns() {
-            let Some(property_name) = default_column.title() else {
-                warn!("Column with no title");
-                continue;
-            };
-
-            let new_property_object =
-                PropertiesSelectorObject::from_column(property_name.to_string());
+            let new_property_object = PropertyBrowseItem::from_column(default_column);
             default.add_child(new_property_object);
         }
 
@@ -299,7 +293,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         self.load_window_size();
 
-        let list_store = gio::ListStore::new::<PropertiesSelectorObject>();
+        let list_store = gio::ListStore::new::<PropertyBrowseItem>();
 
         let tree_list_model =
             gtk::TreeListModel::new(list_store.clone(), false, false, add_tree_node);
@@ -354,7 +348,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
             let property_object = tree_list_row
                 .item()
-                .and_downcast::<PropertiesSelectorObject>()
+                .and_downcast::<PropertyBrowseItem>()
                 .unwrap();
 
             let interface = property_object.interface();
@@ -369,14 +363,14 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         let factory_property = gtk::SignalListItemFactory::new();
         factory_property.connect_setup(setup);
         factory_property.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::unit_property);
+            bind(item, PropertyBrowseItem::unit_property);
         });
         self.property_column.set_factory(Some(&factory_property));
 
         let signature_factory = gtk::SignalListItemFactory::new();
         signature_factory.connect_setup(setup);
         signature_factory.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::signature);
+            bind(item, PropertyBrowseItem::signature);
         });
 
         self.signature_column.set_factory(Some(&signature_factory));
@@ -386,7 +380,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         access_factory.connect_setup(setup);
 
         access_factory.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::access);
+            bind(item, PropertyBrowseItem::access);
         });
 
         self.access_column.set_factory(Some(&access_factory));
@@ -412,7 +406,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
             let property_object = tree_list_row
                 .item()
-                .and_downcast::<PropertiesSelectorObject>()
+                .and_downcast::<PropertyBrowseItem>()
                 .unwrap();
 
             if property_object.unit_property().is_empty() {
@@ -428,11 +422,10 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .parent()
                 .expect("has a parent")
                 .item()
-                .and_downcast::<PropertiesSelectorObject>()
+                .and_downcast::<PropertyBrowseItem>()
                 .unwrap();
 
-            let new_property_object =
-                PropertiesSelectorObject::from_parent(interface, property_object);
+            let new_property_object = PropertyBrowseItem::from_parent(interface, property_object);
 
             unit_properties_selection.add_new_property(new_property_object);
         });
@@ -456,10 +449,10 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .into_iter()
                 .filter(|(k, _)| k.starts_with("org.freedesktop.systemd1"))
             {
-                let obj = PropertiesSelectorObject::new_interface(inteface);
+                let obj = PropertyBrowseItem::new_interface(inteface);
                 properties.sort();
                 for property in properties {
-                    let prop_object = PropertiesSelectorObject::from(property);
+                    let prop_object = PropertyBrowseItem::from(property);
                     obj.add_child(prop_object);
                 }
 
@@ -475,7 +468,7 @@ fn setup(_fac: &gtk::SignalListItemFactory, item: &Object) {
     item.set_child(Some(&label));
 }
 
-fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
+fn bind(item: &Object, func: fn(&PropertyBrowseItem) -> String) {
     let item = item.downcast_ref::<gtk::ListItem>().unwrap();
 
     let widget = item.child();
@@ -485,7 +478,7 @@ fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
     let tree_list_row = item.item().unwrap().downcast::<gtk::TreeListRow>().unwrap();
     let property_object = tree_list_row
         .item()
-        .and_downcast::<PropertiesSelectorObject>()
+        .and_downcast::<PropertyBrowseItem>()
         .unwrap();
 
     let value = func(&property_object);
@@ -493,12 +486,12 @@ fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
 }
 
 fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
-    let Some(prop_selector) = object.downcast_ref::<PropertiesSelectorObject>() else {
+    let Some(prop_selector) = object.downcast_ref::<PropertyBrowseItem>() else {
         warn!("object type: {:?} {object:?}", object.type_());
         return None;
     };
 
-    let store = gio::ListStore::new::<PropertiesSelectorObject>();
+    let store = gio::ListStore::new::<PropertyBrowseItem>();
 
     let binding = prop_selector.children();
     let children = (*binding).as_ref()?;

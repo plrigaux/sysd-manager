@@ -57,7 +57,7 @@ use crate::{
             imp::{construct::construct_column, rowdata::UnitBinding},
             search_controls::UnitListSearchControls,
         },
-        unit_properties_selector::data::UnitPropertySelection,
+        unit_properties_selector::data2::UnitPropertySelection,
     },
 };
 use log::{debug, error, info, warn};
@@ -802,25 +802,85 @@ impl UnitListPanelImp {
 
     pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
         let mut is_unit_type = false;
-        //  let mut properties = Vec::wi
 
-        let l = self.units_browser.borrow().columns();
+        let columns_lis_model = self.units_browser.borrow().columns();
 
-        let mut current_columns = Vec::with_capacity(l.n_items() as usize);
-        for position in 0..l.n_items() {
-            let Some(c) = l.item(position).and_downcast::<gtk::ColumnViewColumn>() else {
+        let cur_n_items = columns_lis_model.n_items();
+        let mut current_columns = Vec::with_capacity(columns_lis_model.n_items() as usize);
+        for position in (property_list.len() as u32)..columns_lis_model.n_items() {
+            let Some(c) = columns_lis_model
+                .item(position)
+                .and_downcast::<gtk::ColumnViewColumn>()
+            else {
                 warn!("Col None");
                 continue;
             };
             current_columns.push(c);
         }
 
-        /*       for unit_property in self.current_columns().iter() {
+        self.print_scroll_adj_logs();
 
-        } */
-        self.print_adj();
+        let mut property_index = 0;
+        let mut property_list_send = Vec::with_capacity(property_list.len());
+        let mut types = HashSet::with_capacity(16);
+        for (idx, unit_property) in property_list.iter().enumerate() {
+            let new_column = unit_property.column();
 
-        //remove all columns to simplify the algo
+            if unit_property.is_custom() {
+                //add custom factory
+
+                let factory = column_factories::get_custom_factoy(property_index);
+                property_index += 1;
+
+                new_column.set_title(Some(&unit_property.unit_property()));
+                let id = format!(
+                    "{}@{}",
+                    unit_property.unit_type().as_str(),
+                    unit_property.unit_property()
+                );
+                new_column.set_id(Some(&id));
+                new_column.set_factory(Some(&factory));
+
+                property_list_send.push(UnitProperty {
+                    interface: unit_property.interface(),
+                    unit_property: unit_property.unit_property(),
+                    unit_type: unit_property.unit_type(),
+                });
+            }
+
+            match unit_property.unit_type() {
+                UnitType::Unit => is_unit_type |= true,
+                UnitType::Unknown => { //Do nothing
+                }
+                ut => {
+                    types.insert(ut);
+                }
+            }
+
+            let idx_32 = idx as u32;
+            if idx_32 < cur_n_items {
+                let Some(cur_column) = columns_lis_model
+                    .item(idx_32)
+                    .and_downcast::<gtk::ColumnViewColumn>()
+                else {
+                    warn!("Col None");
+                    continue;
+                };
+
+                UnitPropertySelection::copy_col_to_col(&new_column, &cur_column);
+                unit_property.set_column(cur_column);
+            } else {
+                info!("Append {:?} {:?}", new_column.id(), new_column.title());
+                self.units_browser.borrow().append_column(&new_column);
+            }
+        }
+
+        let list_len = property_list.len();
+
+        self.current_column_view_column_definition_list
+            .replace(property_list);
+
+        //remove all columns that exeed the new ones
         for col in current_columns.iter() {
             self.units_browser.borrow().remove_column(col);
         }
@@ -831,47 +891,8 @@ impl UnitListPanelImp {
             unit_type: UnitType,
         }
 
-        let mut property_index = 0;
-        let mut types = HashSet::with_capacity(16);
-        let mut property_list_send = Vec::with_capacity(property_list.len());
-        for unit_property in &property_list {
-            let column = unit_property.column();
+        self.print_scroll_adj_logs();
 
-            if unit_property.is_custom() {
-                //add custom factory
-
-                let factory = column_factories::get_custom_factoy(property_index);
-                property_index += 1;
-
-                column.set_title(Some(&unit_property.unit_property()));
-                let id = format!(
-                    "{}@{}",
-                    unit_property.unit_type().as_str(),
-                    unit_property.unit_property()
-                );
-                column.set_id(Some(&id));
-                column.set_factory(Some(&factory));
-
-                property_list_send.push(UnitProperty {
-                    interface: unit_property.interface(),
-                    unit_property: unit_property.unit_property(),
-                    unit_type: unit_property.unit_type(),
-                });
-            }
-
-            self.units_browser.borrow().append_column(&column);
-
-            match unit_property.unit_type() {
-                UnitType::Unit => is_unit_type |= true,
-                UnitType::Unknown => {}
-                ut => {
-                    types.insert(ut);
-                }
-            }
-        }
-        self.print_adj();
-
-        let list_len = property_list.len();
         let units_map = self.units_map.clone();
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
@@ -938,7 +959,7 @@ impl UnitListPanelImp {
         });
     }
 
-    fn print_adj(&self) {
+    fn print_scroll_adj_logs(&self) {
         let va = self.scrolled_window.vadjustment();
         info!(
             "Vl {} p {} u {} t {}",
@@ -1030,12 +1051,7 @@ impl ObjectImpl for UnitListPanelImp {
         let mut column_view_column_definition_list =
             Vec::with_capacity(column_view_column_list.len());
         for col in column_view_column_list.iter() {
-            let unit_property_selection = UnitPropertySelection::from_base_column(
-                col.title()
-                    .map(|t| t.to_string())
-                    .unwrap_or("Wrong_prop".to_string()),
-                col.clone(),
-            );
+            let unit_property_selection = UnitPropertySelection::from_base_column(col.clone());
             column_view_column_definition_list.push(unit_property_selection);
         }
 

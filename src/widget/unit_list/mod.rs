@@ -5,7 +5,7 @@ use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
 };
-use crate::widget::unit_properties_selector::data::UnitPropertySelection;
+use crate::widget::unit_properties_selector::data2::UnitPropertySelection;
 
 use super::InterPanelMessage;
 use super::app_window::AppWindow;

@@ -410,7 +410,7 @@ pub fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
 
             let binding = unit
                 .bind_property(PRESET_NUM, &inscription, CSS_CLASSES)
-                .transform_to(move |_s, preset_value: Preset| {
+                .transform_to(|_s, preset_value: Preset| {
                     let css_classes = preset_css_classes(preset_value);
                     css_classes.map(|css| css.to_value())
                 })
@@ -449,7 +449,7 @@ fn preset_text_binding(
 ) {
     let binding = unit
         .bind_property(PRESET_NUM, inscription, TEXT)
-        .transform_to(move |_s, preset: Preset| {
+        .transform_to(|_s, preset: Preset| {
             let preset_str = preset.as_str();
             Some(preset_str.to_value())
         })

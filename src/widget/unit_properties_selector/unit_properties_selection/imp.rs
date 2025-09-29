@@ -11,7 +11,7 @@ use log::{error, info, warn};
 use crate::widget::{
     unit_list::UnitListPanel,
     unit_properties_selector::{
-        data::{PropertiesSelectorObject, UnitPropertySelection},
+        data::PropertyBrowseItem, data2::UnitPropertySelection,
         unit_properties_selection::row::UnitPropertiesSelectionRow,
     },
 };
@@ -44,6 +44,16 @@ macro_rules! get_list_store {
     }};
 }
 
+macro_rules! get_unit_list_panel {
+    ($self:expr) => {{
+        let Some(list_store) = $self.unit_list_panel.get() else {
+            error!("No unit list panel");
+            return;
+        };
+        list_store
+    }};
+}
+
 #[gtk::template_callbacks]
 impl UnitPropertiesSelectionImp {
     #[template_callback]
@@ -64,11 +74,8 @@ impl UnitPropertiesSelectionImp {
             list.push(unit_property.clone());
         }
 
-        if let Some(unit_list_panel) = self.unit_list_panel.get() {
-            unit_list_panel.set_new_columns(list);
-        } else {
-            error!("No unit list panel");
-        }
+        let unit_list_panel = get_unit_list_panel!(self);
+        unit_list_panel.set_new_columns(list);
     }
 
     #[template_callback]
@@ -90,10 +97,10 @@ impl UnitPropertiesSelectionImp {
 }
 
 impl UnitPropertiesSelectionImp {
-    pub fn add_new_property(&self, new_property_object: PropertiesSelectorObject) {
-        let list_store = get_list_store!(self);
+    pub fn add_new_property(&self, new_property_object: PropertyBrowseItem) {
+        let new_unit_prop = UnitPropertySelection::from_browser(new_property_object);
 
-        let new_unit_prop = UnitPropertySelection::from_po(new_property_object);
+        let list_store = get_list_store!(self);
         list_store.append(&new_unit_prop);
     }
 
@@ -228,14 +235,7 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
 
         list_store
             .bind_property::<gtk::Button>("n-items", self.apply_button.as_ref(), "sensitive")
-            .transform_to_with_values(|_, value| {
-                let nitems = value.get::<u32>().expect("u32");
-                if nitems > 0 {
-                    Some(true.to_value())
-                } else {
-                    Some(false.to_value())
-                }
-            })
+            .transform_to(|_bond, nitems: u32| Some(nitems > 0))
             .build();
     }
 }

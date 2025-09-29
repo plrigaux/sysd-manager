@@ -3,16 +3,17 @@ use std::{cell::Ref, ops::DerefMut};
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gio::glib::property::PropertySet;
 use gtk::glib::{self};
+use log::warn;
 
-use crate::systemd::{UnitPropertyFetch, enums::UnitType};
+use crate::systemd::UnitPropertyFetch;
 
 pub const INTERFACE_NAME: &str = "Basic Columns";
 
 glib::wrapper! {
-    pub struct PropertiesSelectorObject(ObjectSubclass<imp::PropertiesSelectorOpjectImpl>);
+    pub struct PropertyBrowseItem(ObjectSubclass<imp::PropertyBrowseItemImp>);
 }
 
-impl PropertiesSelectorObject {
+impl PropertyBrowseItem {
     pub fn new_interface(interface: String) -> Self {
         let this_object: Self = glib::Object::new();
         this_object.imp().interface.replace(interface);
@@ -31,20 +32,25 @@ impl PropertiesSelectorObject {
         this_object
     }
 
-    pub fn from_column(column_name: String) -> Self {
+    pub fn from_column(column: &gtk::ColumnViewColumn) -> Self {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
 
-        p_imp.unit_property.replace(column_name);
+        p_imp.interface.replace(INTERFACE_NAME.to_owned());
+
+        if let Some(property_name) = column.title() {
+            p_imp.unit_property.replace(property_name.to_string());
+        } else {
+            warn!("Column with no title");
+        };
+
+        p_imp.column.replace(Some(column.clone()));
 
         this_object
     }
 
-    pub fn from_parent(
-        interface: PropertiesSelectorObject,
-        property: PropertiesSelectorObject,
-    ) -> Self {
+    pub fn from_parent(interface: PropertyBrowseItem, property: PropertyBrowseItem) -> Self {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
@@ -56,7 +62,7 @@ impl PropertiesSelectorObject {
         this_object
     }
 
-    pub fn add_child(&self, child: PropertiesSelectorObject) {
+    pub fn add_child(&self, child: PropertyBrowseItem) {
         //v.as_deref_mut().push(child);
         if let Some(v) = self.imp().children.borrow_mut().deref_mut() {
             v.push(child);
@@ -66,116 +72,19 @@ impl PropertiesSelectorObject {
         }
     }
 
-    pub fn children(&self) -> Ref<'_, Option<Vec<PropertiesSelectorObject>>> {
+    pub fn children(&self) -> Ref<'_, Option<Vec<PropertyBrowseItem>>> {
         self.imp().children.borrow()
-    }
-}
-
-glib::wrapper! {
-    pub struct UnitPropertySelection(ObjectSubclass<imp2::UnitPropertySelectionImpl>);
-}
-
-impl UnitPropertySelection {
-    pub fn new_interface(interface: String) -> Self {
-        let this_object: Self = glib::Object::new();
-        this_object.imp().interface.replace(interface);
-
-        this_object
-    }
-
-    pub fn from_po(p: PropertiesSelectorObject) -> Self {
-        let this_object: Self = glib::Object::new();
-
-        let p_imp = this_object.imp();
-        let interface = p.interface();
-        let unit_type = UnitType::from_intreface(&interface);
-        p_imp.interface.replace(interface);
-        p_imp.unit_property.replace(p.unit_property());
-        p_imp.signature.replace(p.signature());
-        p_imp.access.replace(p.access());
-        p_imp.unit_type.set(unit_type);
-
-        this_object
-    }
-
-    pub fn from_base_column(property_name: String, column: gtk::ColumnViewColumn) -> Self {
-        let this_object: Self = glib::Object::new();
-
-        let p_imp = this_object.imp();
-        p_imp.interface.replace(INTERFACE_NAME.to_string());
-        p_imp.unit_property.replace(property_name);
-        //p_imp.signature.replace(p.signature());
-        //p_imp.access.replace(p.access());
-
-        p_imp.unit_type.set(UnitType::Unknown);
-
-        p_imp.column.replace(column);
-
-        this_object
-    }
-
-    pub fn from_column(column_name: String) -> Self {
-        let this_object: Self = glib::Object::new();
-
-        let p_imp = this_object.imp();
-
-        p_imp.unit_property.replace(column_name);
-
-        this_object
-    }
-
-    pub fn from_parent(interface: UnitPropertySelection, property: UnitPropertySelection) -> Self {
-        let this_object: Self = glib::Object::new();
-
-        let p_imp = this_object.imp();
-        p_imp.interface.replace(interface.interface());
-        p_imp.unit_property.replace(property.unit_property());
-        p_imp.signature.replace(property.signature());
-        p_imp.access.replace(property.access());
-
-        this_object
-    }
-
-    pub fn is_custom(&self) -> bool {
-        self.imp().is_custom()
-    }
-
-    pub fn copy(&self) -> Self {
-        let this_object: Self = glib::Object::new();
-
-        let p_imp = this_object.imp();
-
-        p_imp.interface.replace(self.interface());
-        p_imp.unit_property.replace(self.unit_property());
-        p_imp.signature.replace(self.signature());
-        p_imp.access.replace(self.access());
-        p_imp.unit_type.set(self.unit_type());
-
-        {
-            let col = self.column();
-            let cur_col = p_imp.column.borrow();
-            cur_col.set_expand(col.expands());
-            cur_col.set_factory(col.factory().as_ref());
-            cur_col.set_fixed_width(col.fixed_width());
-            cur_col.set_header_menu(col.header_menu().as_ref());
-            cur_col.set_id(col.id().as_deref());
-            cur_col.set_resizable(col.is_resizable());
-            cur_col.set_sorter(col.sorter().as_ref());
-            cur_col.set_title(col.title().as_deref());
-            cur_col.set_visible(col.is_visible());
-        }
-        this_object
     }
 }
 
 mod imp {
     use std::cell::RefCell;
 
-    use gtk::{glib, prelude::*, subclass::prelude::*};
-
+    use crate::gtk::prelude::ObjectExt;
+    use gtk::{glib, subclass::prelude::*};
     #[derive(Debug, glib::Properties, Default)]
-    #[properties(wrapper_type = super::PropertiesSelectorObject)]
-    pub struct PropertiesSelectorOpjectImpl {
+    #[properties(wrapper_type = super::PropertyBrowseItem)]
+    pub struct PropertyBrowseItemImp {
         #[property(get)]
         pub(super) interface: RefCell<String>,
         #[property(get)]
@@ -184,71 +93,35 @@ mod imp {
         pub(super) signature: RefCell<String>,
         #[property(get)]
         pub(super) access: RefCell<String>,
+        #[property(get)]
+        pub(super) column: RefCell<Option<gtk::ColumnViewColumn>>,
 
-        pub(super) children: RefCell<Option<Vec<super::PropertiesSelectorObject>>>,
+        pub(super) children: RefCell<Option<Vec<super::PropertyBrowseItem>>>,
     }
 
-    impl PropertiesSelectorOpjectImpl {}
+    impl PropertyBrowseItemImp {}
 
     #[glib::object_subclass]
-    impl ObjectSubclass for PropertiesSelectorOpjectImpl {
-        const NAME: &'static str = "PropertiesSelectorObject";
-        type Type = super::PropertiesSelectorObject;
+    impl ObjectSubclass for PropertyBrowseItemImp {
+        const NAME: &'static str = "PropertyBrowseItem";
+        type Type = super::PropertyBrowseItem;
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for PropertiesSelectorOpjectImpl {}
-    impl PropertiesSelectorOpjectImpl {}
+    impl ObjectImpl for PropertyBrowseItemImp {}
+    impl PropertyBrowseItemImp {}
 }
 
-mod imp2 {
-    use std::cell::{Cell, RefCell};
+#[cfg(test)]
+mod test {
+    use std::rc::Rc;
 
-    use gtk::{glib, prelude::*, subclass::prelude::*};
+    use sourceview5::prelude::ToValue;
 
-    use crate::systemd::enums::UnitType;
-
-    #[derive(Debug, glib::Properties, Default)]
-    #[properties(wrapper_type = super::UnitPropertySelection)]
-    pub struct UnitPropertySelectionImpl {
-        #[property(get)]
-        pub(super) interface: RefCell<String>,
-        #[property(get)]
-        pub(super) unit_property: RefCell<String>,
-        #[property(get)]
-        pub(super) signature: RefCell<String>,
-        #[property(get)]
-        pub(super) access: RefCell<String>,
-
-        #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]
-        #[property(get)]
-        pub(super) column: RefCell<gtk::ColumnViewColumn>,
-
-        #[property(get, default)]
-        pub(super) unit_type: Cell<UnitType>,
+    #[test]
+    fn pizza() {
+        let s: Rc<str> = "testing".into();
+        let asdf = s.to_value();
+        println!("String {s} {:?}", asdf)
     }
-
-    impl UnitPropertySelectionImpl {
-        pub fn is_custom(&self) -> bool {
-            !matches!(self.unit_type.get(), UnitType::Unknown)
-        }
-
-        fn visible(&self) -> bool {
-            self.column.borrow().is_visible()
-        }
-
-        fn set_visible(&self, visible: bool) {
-            self.column.borrow().set_visible(visible)
-        }
-    }
-
-    #[glib::object_subclass]
-    impl ObjectSubclass for UnitPropertySelectionImpl {
-        const NAME: &'static str = "UnitPropertySelection";
-        type Type = super::UnitPropertySelection;
-    }
-
-    #[glib::derived_properties]
-    impl ObjectImpl for UnitPropertySelectionImpl {}
-    impl UnitPropertySelectionImpl {}
 }

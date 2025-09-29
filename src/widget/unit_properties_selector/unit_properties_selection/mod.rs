@@ -2,7 +2,7 @@ mod imp;
 mod row;
 
 use crate::widget::{
-    unit_list::UnitListPanel, unit_properties_selector::data::PropertiesSelectorObject,
+    unit_list::UnitListPanel, unit_properties_selector::data::PropertyBrowseItem,
 };
 use gtk::{
     glib::{self},
@@ -20,7 +20,7 @@ impl UnitPropertiesSelection {
         obj
     }
 
-    pub fn add_new_property(&self, new_property_object: PropertiesSelectorObject) {
+    pub fn add_new_property(&self, new_property_object: PropertyBrowseItem) {
         self.imp().add_new_property(new_property_object);
     }
 
