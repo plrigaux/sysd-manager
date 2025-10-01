@@ -445,16 +445,24 @@ impl AppWindowImpl {
                 .build()
         };
 
-        let unit_list_panel = self.unit_list_panel.clone();
         let properties_selector = {
             let app_window = self.obj().clone();
-
+            let unit_list_panel = self.unit_list_panel.clone();
             gio::ActionEntry::builder(ACTION_PROPERTIES_SELECTOR)
                 .activate(move |_, _action, _variant| {
                     let dialog = UnitPropertiesSelectorDialog::new(&unit_list_panel);
                     dialog.set_transient_for(Some(&app_window));
                     //dialog.set_modal(true);
                     dialog.present();
+                })
+                .build()
+        };
+
+        let print_debug = {
+            let unit_list_panel = self.unit_list_panel.clone();
+            gio::ActionEntry::builder("debug")
+                .activate(move |_, _action, _variant| {
+                    unit_list_panel.print_scroll_adj_logs();
                 })
                 .build()
         };
@@ -468,6 +476,7 @@ impl AppWindowImpl {
             orientation_mode,
             list_boots,
             properties_selector,
+            print_debug,
         ]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
@@ -479,6 +488,7 @@ impl AppWindowImpl {
         application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
         application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR, &["<Ctrl>p"]);
+        application.set_accels_for_action("app.debug", &["<Ctrl>q"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {

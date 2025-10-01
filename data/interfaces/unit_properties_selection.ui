@@ -13,11 +13,11 @@
     </child>
     <child>
       <object class="GtkScrolledWindow">
-        <property name="vexpand">True</property>
-        <property name="vexpand-set">True</property>
         <property name="child">
           <object class="GtkListView" id="properties_selection"/>
         </property>
+        <property name="vexpand">True</property>
+        <property name="vexpand-set">True</property>
       </object>
     </child>
     <child>

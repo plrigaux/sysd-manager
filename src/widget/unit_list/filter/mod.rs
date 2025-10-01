@@ -27,7 +27,7 @@ glib::wrapper! {
 impl UnitListFilterWindow {
     pub fn new(selected_filter: Option<String>, unit_list_panel: &UnitListPanel) -> Self {
         let selected_filter = if selected_filter.is_none() {
-            Some("unit".to_owned())
+            Some("sysdm-unit".to_owned())
         } else {
             selected_filter
         };

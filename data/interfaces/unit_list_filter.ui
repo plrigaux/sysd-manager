@@ -4,8 +4,8 @@
 -->
 <interface>
   <!-- interface-name unit_list_filter.ui -->
-  <requires lib="gtk" version="4.16"/>
-  <requires lib="libadwaita" version="1.6"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="UNIT_LIST_FILTER" parent="AdwWindow">
     <property name="content">
       <object class="AdwToolbarView">

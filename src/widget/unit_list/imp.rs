@@ -13,7 +13,7 @@ use std::{
 };
 
 use gtk::{
-    TemplateChild,
+    Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
     glib::{self, Properties},
     prelude::*,
@@ -803,12 +803,12 @@ impl UnitListPanelImp {
     pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
         let mut is_unit_type = false;
 
-        let columns_lis_model = self.units_browser.borrow().columns();
+        let columns_list_model = self.units_browser.borrow().columns();
 
-        let cur_n_items = columns_lis_model.n_items();
-        let mut current_columns = Vec::with_capacity(columns_lis_model.n_items() as usize);
-        for position in (property_list.len() as u32)..columns_lis_model.n_items() {
-            let Some(c) = columns_lis_model
+        let cur_n_items = columns_list_model.n_items();
+        let mut current_columns = Vec::with_capacity(columns_list_model.n_items() as usize);
+        for position in (property_list.len() as u32)..columns_list_model.n_items() {
+            let Some(c) = columns_list_model
                 .item(position)
                 .and_downcast::<gtk::ColumnViewColumn>()
             else {
@@ -818,7 +818,7 @@ impl UnitListPanelImp {
             current_columns.push(c);
         }
 
-        self.print_scroll_adj_logs();
+        //self.print_scroll_adj_logs();
 
         let mut property_index = 0;
         let mut property_list_send = Vec::with_capacity(property_list.len());
@@ -859,7 +859,7 @@ impl UnitListPanelImp {
 
             let idx_32 = idx as u32;
             if idx_32 < cur_n_items {
-                let Some(cur_column) = columns_lis_model
+                let Some(cur_column) = columns_list_model
                     .item(idx_32)
                     .and_downcast::<gtk::ColumnViewColumn>()
                 else {
@@ -882,7 +882,8 @@ impl UnitListPanelImp {
 
         //remove all columns that exeed the new ones
         for col in current_columns.iter() {
-            self.units_browser.borrow().remove_column(col);
+            // self.units_browser.borrow().remove_column(col);
+            col.set_visible(false);
         }
 
         struct UnitProperty {
@@ -891,7 +892,7 @@ impl UnitListPanelImp {
             unit_type: UnitType,
         }
 
-        self.print_scroll_adj_logs();
+        //self.print_scroll_adj_logs();
 
         let units_map = self.units_map.clone();
         glib::spawn_future_local(async move {
@@ -959,22 +960,23 @@ impl UnitListPanelImp {
         });
     }
 
-    fn print_scroll_adj_logs(&self) {
+    pub fn print_scroll_adj_logs(&self) {
         let va = self.scrolled_window.vadjustment();
+        self.print_adjustment("VER", &va);
+        let va = self.scrolled_window.hadjustment();
+        self.print_adjustment("HON", &va);
+    }
+
+    fn print_adjustment(&self, id: &str, adj: &Adjustment) {
         info!(
-            "Vl {} p {} u {} t {}",
-            va.lower(),
-            va.page_size(),
-            va.upper(),
-            (va.lower() + va.page_size()) - va.upper()
-        );
-        let ha = self.scrolled_window.hadjustment();
-        info!(
-            "Hl {} p {} u{} t{}",
-            ha.lower(),
-            ha.page_size(),
-            ha.upper(),
-            (ha.lower() + ha.page_size()) - ha.upper()
+            "{} lower={} + page={} <= upper={} gap {} step_inc {} page_inc {}",
+            id,
+            adj.lower(),
+            adj.upper(),
+            adj.page_size(),
+            adj.upper() - (adj.lower() + adj.page_size()),
+            adj.step_increment(),
+            adj.page_increment()
         );
     }
 
@@ -1084,52 +1086,55 @@ impl ObjectImpl for UnitListPanelImp {
             self.obj();
         for (_, key, num_id, _) in &*UNIT_LIST_COLUMNS {
             let filter: Option<Box<dyn UnitPropertyFilter>> = match *key {
-                "unit" => Some(Box::new(FilterText::new(
+                "sysdm-unit" => Some(Box::new(FilterText::new(
                     *num_id,
                     filter_unit_name,
                     &unit_list_panel,
                 ))),
-                "bus" => Some(Box::new(FilterElement::new(
+                "sysdm-bus" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_bus_level,
                     &unit_list_panel,
                 ))),
-                "type" => Some(Box::new(FilterElement::new(
+                "sysdm-type" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_unit_type,
                     &unit_list_panel,
                 ))),
-                "state" => Some(Box::new(FilterElement::new(
+                "sysdm-state" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_enable_status,
                     &unit_list_panel,
                 ))),
-                "preset" => Some(Box::new(FilterElement::new(
+                "sysdm-preset" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_preset,
                     &unit_list_panel,
                 ))),
-                "load" => Some(Box::new(FilterElement::new(
+                "sysdm-load" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_load_state,
                     &unit_list_panel,
                 ))),
-                "active" => Some(Box::new(FilterElement::new(
+                "sysdm-active" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_active_state,
                     &unit_list_panel,
                 ))),
-                "sub" => Some(Box::new(FilterElement::new(
+                "sysdm-sub" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_sub_state,
                     &unit_list_panel,
                 ))),
-                "description" => Some(Box::new(FilterText::new(
+                "sysdm-description" => Some(Box::new(FilterText::new(
                     *num_id,
                     filter_unit_description,
                     &unit_list_panel,
                 ))),
-                _ => None,
+                _ => {
+                    error!("Key {key}");
+                    None
+                }
             };
 
             if let Some(filter) = filter {
@@ -1171,6 +1176,8 @@ impl ObjectImpl for UnitListPanelImp {
                 .vadjustment()
                 .connect_changed(move |_adjustment| {
                     focus_on_row(&unit_list, &units_browser);
+
+                    UnitListPanelImp::print_scroll_adj_logs(unit_list.imp())
                 });
         }
 

@@ -53,9 +53,10 @@ tokio = { version = "1", features = ["full"] }
 constcat = "0.6"
 
 [dependencies]
-pango = { version = "0", package = "pango", features = ["v1_56"] }
-adw = { version = "0.8", package = "libadwaita", features = ["v1_7"] }
-gio = { version = "0", package = "gio", features = ["v2_84"] }
+pango = { version = "*", package = "pango", features = ["v1_56"] }
+adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
+gio = { version = "*", package = "gio", features = ["v2_84"] }
+glib = { version = "*", package = "glib", features = ["v2_84"] }
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
 bitflags = "2.9"
 chrono = "0.4"

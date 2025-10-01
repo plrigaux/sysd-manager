@@ -18,7 +18,7 @@ use gtk::{
     },
 };
 
-use log::info;
+use log::{error, info};
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -74,17 +74,20 @@ impl UnitListFilterWindowImp {
             let (widget, filter_widget): (gtk::Widget, Vec<FilterWidget>) =
                 if let Some(filter) = filter_assessor {
                     let (widget, filter_widget) = match *key {
-                        "unit" => common_text_filter(filter),
-                        "bus" => build_bus_level_filter(filter),
-                        "type" => build_type_filter(filter),
-                        "state" => build_enablement_filter(filter),
-                        "preset" => build_preset_filter(filter),
-                        "load" => build_load_filter(filter),
-                        "active" => build_active_state_filter(filter),
-                        "sub" => super::substate::sub_state_filter(filter),
-                        "description" => common_text_filter(filter),
+                        "sysdm-unit" => common_text_filter(filter),
+                        "sysdm-bus" => build_bus_level_filter(filter),
+                        "sysdm-type" => build_type_filter(filter),
+                        "sysdm-state" => build_enablement_filter(filter),
+                        "sysdm-preset" => build_preset_filter(filter),
+                        "sysdm-load" => build_load_filter(filter),
+                        "sysdm-active" => build_active_state_filter(filter),
+                        "sysdm-sub" => super::substate::sub_state_filter(filter),
+                        "sysdm-description" => common_text_filter(filter),
 
-                        _ => unreachable!("unreachable"),
+                        _ => {
+                            error!("Key {key}");
+                            unreachable!("unreachable")
+                        }
                     };
                     (widget.into(), filter_widget)
                 } else {
@@ -211,9 +214,9 @@ impl UnitListFilterWindowImp {
     }
 }
 
-fn set_visible_child_name(filter_stack: &adw::ViewStack, name: &str) {
-    filter_stack.set_visible_child_name(name);
-    let widget = filter_stack.child_by_name(name);
+fn set_visible_child_name(filter_stack: &adw::ViewStack, child_name: &str) {
+    filter_stack.set_visible_child_name(child_name);
+    let widget = filter_stack.child_by_name(child_name);
     if let Some(widget) = widget {
         grab_focus_on_child_entry(widget.first_child().as_ref());
     }
