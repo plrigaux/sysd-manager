@@ -46,6 +46,7 @@ use crate::{
             UNIT_LIST_COLUMNS, UNIT_LIST_COLUMNS_UNIT,
         },
         unit_list::{
+            COL_ID_UNIT,
             filter::{
                 UnitListFilterWindow, filter_active_state, filter_bus_level, filter_enable_status,
                 filter_load_state, filter_preset, filter_sub_state, filter_unit_description,
@@ -875,6 +876,17 @@ impl UnitListPanelImp {
             }
         }
 
+        let last: u32 = property_list.len() as u32;
+        if last != 0
+            && let Some(cur_column) = columns_list_model
+                .item(last - 1)
+                .and_downcast::<gtk::ColumnViewColumn>()
+        {
+            cur_column.set_expand(true);
+        } else {
+            warn!("Col None");
+        };
+
         let list_len = property_list.len();
 
         self.current_column_view_column_definition_list
@@ -1086,7 +1098,7 @@ impl ObjectImpl for UnitListPanelImp {
             self.obj();
         for (_, key, num_id, _) in &*UNIT_LIST_COLUMNS {
             let filter: Option<Box<dyn UnitPropertyFilter>> = match *key {
-                "sysdm-unit" => Some(Box::new(FilterText::new(
+                COL_ID_UNIT => Some(Box::new(FilterText::new(
                     *num_id,
                     filter_unit_name,
                     &unit_list_panel,

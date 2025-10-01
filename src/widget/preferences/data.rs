@@ -10,7 +10,7 @@ use strum::EnumIter;
 
 use std::sync::{LazyLock, RwLock};
 
-use crate::{systemd_gui::new_settings, utils::th::TimestampStyle};
+use crate::{systemd_gui::new_settings, utils::th::TimestampStyle, widget::unit_list::COL_ID_UNIT};
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();
@@ -44,7 +44,7 @@ pub static UNIT_LIST_COLUMNS: LazyLock<[(String, &str, u8, u8); 9]> = LazyLock::
         (
             //filter title
             pgettext("filter", "Unit"),
-            "sysdm-unit",
+            COL_ID_UNIT,
             UNIT_LIST_COLUMNS_UNIT,
             FLAG_WIDTH,
         ),

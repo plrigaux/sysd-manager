@@ -1,6 +1,9 @@
 use crate::{
     gtk::prelude::*,
-    widget::unit_list::imp::{column_factories::*, create_col_menu},
+    widget::unit_list::{
+        COL_ID_UNIT,
+        imp::{column_factories::*, create_col_menu},
+    },
 };
 use gettextrs::pgettext;
 
@@ -76,7 +79,7 @@ macro_rules! create_column_filter {
 
 const GETTEXT_CONTEXT: &str = "list column";
 fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
-    let id = "sysdm-unit";
+    let id = COL_ID_UNIT;
     let sorter = create_column_filter!(primary, dbus_level);
     let column_menu = create_col_menu(id);
     let factory = fac_unit_name();

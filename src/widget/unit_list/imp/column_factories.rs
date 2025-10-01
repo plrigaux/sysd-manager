@@ -3,6 +3,7 @@ use log::{debug, warn};
 
 use crate::systemd::data::UnitInfo;
 use crate::systemd::enums::{EnablementStatus, LoadState, Preset};
+use crate::widget::unit_list::COL_ID_UNIT;
 use crate::widget::unit_list::imp::rowdata::UnitBinding;
 use crate::{systemd::enums::ActiveState, widget::unit_list::UnitListPanel};
 
@@ -225,7 +226,7 @@ pub fn setup_factories(
         };
 
         match id.as_str() {
-            "sysdm-unit" => column.set_factory(Some(&fac_unit_name())),
+            COL_ID_UNIT => column.set_factory(Some(&fac_unit_name())),
             "sysdm-type" => column.set_factory(Some(&fac_unit_type())),
             "sysdm-bus" => column.set_factory(Some(&fac_bus())),
             "sysdm-state" => column.set_factory(Some(&fac_enable_status(display_color))),

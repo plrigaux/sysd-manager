@@ -11,7 +11,10 @@ use crate::{
         data::UnitInfo,
         enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
     },
-    widget::unit_list::filter::unit_prop_filter::{FilterElementAssessor, FilterTextAssessor},
+    widget::unit_list::{
+        COL_ID_UNIT,
+        filter::unit_prop_filter::{FilterElementAssessor, FilterTextAssessor},
+    },
 };
 
 use super::UnitListPanel;
@@ -27,7 +30,7 @@ glib::wrapper! {
 impl UnitListFilterWindow {
     pub fn new(selected_filter: Option<String>, unit_list_panel: &UnitListPanel) -> Self {
         let selected_filter = if selected_filter.is_none() {
-            Some("sysdm-unit".to_owned())
+            Some(COL_ID_UNIT.to_owned())
         } else {
             selected_filter
         };

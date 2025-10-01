@@ -17,6 +17,8 @@ mod filter;
 mod imp;
 mod search_controls;
 
+pub const COL_ID_UNIT: &str = "sysdm-unit";
+
 glib::wrapper! {
     pub struct UnitListPanel(ObjectSubclass<imp::UnitListPanelImp>)
         @extends gtk::Box, gtk::Widget,

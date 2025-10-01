@@ -27,7 +27,7 @@ use crate::{
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
         unit_list::{
-            UnitListPanel,
+            COL_ID_UNIT, UnitListPanel,
             filter::{
                 UnitListFilterWindow,
                 unit_prop_filter::{
@@ -74,7 +74,7 @@ impl UnitListFilterWindowImp {
             let (widget, filter_widget): (gtk::Widget, Vec<FilterWidget>) =
                 if let Some(filter) = filter_assessor {
                     let (widget, filter_widget) = match *key {
-                        "sysdm-unit" => common_text_filter(filter),
+                        COL_ID_UNIT => common_text_filter(filter),
                         "sysdm-bus" => build_bus_level_filter(filter),
                         "sysdm-type" => build_type_filter(filter),
                         "sysdm-state" => build_enablement_filter(filter),
