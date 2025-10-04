@@ -1,13 +1,12 @@
 use crate::{
     gtk::prelude::*,
+    systemd::data::UnitInfo,
     widget::unit_list::{
         COL_ID_UNIT,
         imp::{column_factories::*, create_col_menu},
     },
 };
 use gettextrs::pgettext;
-
-use crate::widget::unit_list::imp::rowdata::UnitBinding;
 
 pub fn construct_column(
     list_store: gio::ListStore,
@@ -58,11 +57,11 @@ macro_rules! column_filter_lambda {
  ($($func:ident),+) => {{
     |obj1: &gtk::glib::Object, obj2: &gtk::glib::Object| {
             let unit1 = obj1
-                .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit_ref();
+                .downcast_ref::<UnitInfo>()
+                .expect("Needs to be UnitInfo");
             let unit2 = obj2
-                .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit_ref();
+                .downcast_ref::<UnitInfo>()
+                .expect("Needs to be UnitInfo");
 
             compare_units!(unit1, unit2, $($func),+)
         }

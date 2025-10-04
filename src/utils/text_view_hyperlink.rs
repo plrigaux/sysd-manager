@@ -177,9 +177,10 @@ pub fn build_textview_link_platform(
 
             // we shouldn't follow a link if the user has selected something
             if let Some((start, end)) = buf.selection_bounds()
-                && start.offset() != end.offset() {
-                    return;
-                }
+                && start.offset() != end.offset()
+            {
+                return;
+            }
 
             let Some(iter) = text_view.iter_at_location(x as i32, y as i32) else {
                 return;
@@ -204,7 +205,7 @@ fn set_cursor_if_appropriate(
         let tags = iter.tags();
         for tag in tags.iter() {
             let val = unsafe {
-                let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
+                let val: Option<std::ptr::NonNull<Value>> = tag.qdata(*TAG_DATA_LINK);
                 val
             };
 
@@ -266,7 +267,7 @@ fn retreive_tag_link_value(text_iter: gtk::TextIter) -> Option<String> {
     let mut link_value = None;
     for tag in tags.iter() {
         link_value = unsafe {
-            let val: Option<std::ptr::NonNull<Value>> = tag.data(TAG_DATA_LINK);
+            let val: Option<std::ptr::NonNull<Value>> = tag.qdata(*TAG_DATA_LINK);
             val.map(|link_value_nonull| link_value_nonull.as_ref())
         };
 

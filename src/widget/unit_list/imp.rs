@@ -3,7 +3,6 @@ mod column_factories;
 mod construct;
 mod menus;
 mod pop_menu;
-mod rowdata;
 
 use std::{
     cell::{Cell, OnceCell, Ref, RefCell},
@@ -55,7 +54,7 @@ use crate::{
                     FilterElement, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
                 },
             },
-            imp::{construct::construct_column, rowdata::UnitBinding},
+            imp::construct::construct_column,
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::data2::UnitPropertySelection,
@@ -195,19 +194,15 @@ impl UnitListPanelImp {
                     return;
                 };
 
-                let unit_binding = match object.downcast::<UnitBinding>() {
-                    Ok(unit) => unit,
-                    Err(val) => {
-                        error!("Object.downcast::<UnitInfo> Error: {val:?}");
-                        return;
-                    }
+                let Some(unit) = object.downcast_ref::<UnitInfo>() else {
+                    error!("Object.downcast::<UnitInfo>");
+                    return;
                 };
 
-                let unit = unit_binding.unit();
                 info!("Selection changed, new unit {}", unit.primary());
 
-                unit_list.imp().set_unit_internal(&unit);
-                app_window_clone.selection_change(Some(&unit));
+                unit_list.imp().set_unit_internal(unit);
+                app_window_clone.selection_change(Some(unit));
             }); // FOR THE SEARCH
 
         self.refresh_unit_list_button
@@ -400,14 +395,14 @@ impl UnitListPanelImp {
                     loaded_unit.update_from_unit_file(system_unit_file);
                 } else {
                     let unit = UnitInfo::from_unit_file(system_unit_file);
-                    list_store.append(&UnitBinding::new(&unit));
+                    list_store.append(&unit);
                     unit_map1.insert(UnitKey::new(&unit), unit.clone());
                     all_units.insert(unit.primary(), unit);
                 }
             }
 
             for (_key, unit) in unit_desc.into_iter() {
-                list_store.append(&UnitBinding::new(&unit));
+                list_store.append(&unit);
                 unit_map1.insert(UnitKey::new(&unit), unit.clone());
                 all_units.insert(unit.primary(), unit);
             }
@@ -432,11 +427,11 @@ impl UnitListPanelImp {
                 );
 
                 if let Some(index) = list_store.find_with_equal_func(|object| {
-                    let unit_binding = object
-                        .downcast_ref::<UnitBinding>()
-                        .expect("Needs to be UnitBinding");
+                    let unit = object
+                        .downcast_ref::<UnitInfo>()
+                        .expect("Needs to be UnitInfo");
 
-                    unit_binding.unit_ref().primary().eq(&selected_unit_name)
+                    unit.primary().eq(&selected_unit_name)
                 }) {
                     info!(
                         "Force selection to index {index:?} to select unit {selected_unit_name:?}"
@@ -574,16 +569,15 @@ impl UnitListPanelImp {
         }
 
         //Don't select and focus if filter out
-        if let Some(filter) = self.filter_list_model.borrow().filter() {
-            let unit_binding = UnitBinding::new(unit);
-            if !filter.match_(&unit_binding) {
-                //Unselect
-                self.single_selection
-                    .borrow()
-                    .set_selected(gtk::INVALID_LIST_POSITION);
-                info!("Unit {unit_name} no Match");
-                return Some(unit.clone());
-            }
+        if let Some(filter) = self.filter_list_model.borrow().filter()
+            && !filter.match_(unit)
+        {
+            //Unselect
+            self.single_selection
+                .borrow()
+                .set_selected(gtk::INVALID_LIST_POSITION);
+            info!("Unit {unit_name} no Match");
+            return Some(unit.clone());
         }
 
         let finding = self
@@ -591,7 +585,7 @@ impl UnitListPanelImp {
             .get()
             .expect("LIST STORE NOT NONE")
             .find_with_equal_func(|object| {
-                let Some(unit_item) = object.downcast_ref::<UnitBinding>() else {
+                let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
                     error!("item.downcast_ref::<UnitBinding>()");
                     return false;
                 };
@@ -614,10 +608,7 @@ impl UnitListPanelImp {
     }
 
     fn add_one_unit(&self, unit: &UnitInfo) {
-        self.list_store
-            .get()
-            .unwrap()
-            .append(&UnitBinding::new(unit));
+        self.list_store.get().unwrap().append(unit);
         let mut unit_map = self.units_map.borrow_mut();
         unit_map.insert(UnitKey::new(unit), unit.clone());
 
@@ -785,15 +776,13 @@ impl UnitListPanelImp {
             .expect("not none")
             .clone();
         gtk::CustomFilter::new(move |object| {
-            let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
-                unit_binding.unit_ref()
-            } else {
+            let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                 error!("some wrong downcast_ref to UnitBinding  {object:?}");
                 return false;
             };
 
             for asserror in applied_assessors.borrow().iter() {
-                if !asserror.filter_unit(&unit) {
+                if !asserror.filter_unit(unit) {
                     return false;
                 }
             }
@@ -1046,7 +1035,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         let unit_list = self.obj().clone();
 
-        let list_store = gio::ListStore::new::<UnitBinding>();
+        let list_store = gio::ListStore::new::<UnitInfo>();
         self.list_store
             .set(list_store.clone())
             .expect("Set only Once");
