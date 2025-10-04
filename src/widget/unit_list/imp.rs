@@ -1178,7 +1178,7 @@ impl ObjectImpl for UnitListPanelImp {
                 .connect_changed(move |_adjustment| {
                     focus_on_row(&unit_list, &units_browser);
 
-                    UnitListPanelImp::print_scroll_adj_logs(unit_list.imp())
+                    //UnitListPanelImp::print_scroll_adj_logs(unit_list.imp())
                 });
         }
 

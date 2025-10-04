@@ -127,6 +127,7 @@ impl UnitPropertySelection {
 mod imp2 {
     use std::cell::{Cell, RefCell};
 
+    use glib::GString;
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
     use crate::systemd::enums::UnitType;
@@ -143,6 +144,10 @@ mod imp2 {
         #[property(get)]
         pub(super) access: RefCell<String>,
         #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]
+        #[property(name = "title", get= Self::title, set= Self::set_title, type = Option<GString>)]
+        #[property(name = "fixed-width", get= Self::fixed_width, set= Self::set_fixed_width, type = i32)]
+        #[property(name = "resizable", get= Self::resizable, set= Self::set_resizable, type = bool)]
+        #[property(name = "expands", get= Self::expands, set= Self::set_expand, type = bool)]
         #[property(get, set)]
         pub(super) column: RefCell<gtk::ColumnViewColumn>,
         #[property(get, default)]
@@ -160,6 +165,38 @@ mod imp2 {
 
         fn set_visible(&self, visible: bool) {
             self.column.borrow().set_visible(visible)
+        }
+
+        fn title(&self) -> Option<GString> {
+            self.column.borrow().title()
+        }
+
+        fn set_title(&self, title: Option<&str>) {
+            self.column.borrow().set_title(title)
+        }
+
+        fn fixed_width(&self) -> i32 {
+            self.column.borrow().fixed_width()
+        }
+
+        fn set_fixed_width(&self, fixed_width: i32) {
+            self.column.borrow().set_fixed_width(fixed_width);
+        }
+
+        fn resizable(&self) -> bool {
+            self.column.borrow().is_resizable()
+        }
+
+        fn set_resizable(&self, resizable: bool) {
+            self.column.borrow().set_resizable(resizable)
+        }
+
+        fn expands(&self) -> bool {
+            self.column.borrow().expands()
+        }
+
+        fn set_expand(&self, expand: bool) {
+            self.column.borrow().set_expand(expand)
         }
     }
 

@@ -47,6 +47,7 @@ mod imp {
 
     use super::UnitPropertiesSelectionRow;
     use gio::glib::Binding;
+    use glib::GString;
     use gtk::{
         glib::{self},
         prelude::*,
@@ -63,24 +64,32 @@ mod imp {
         property_label: TemplateChild<gtk::Label>,
         #[template_child]
         hidden_ckeck: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        title_entry: TemplateChild<gtk::Entry>,
+        #[template_child]
+        width_spin: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        resizable_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        expand_switch: TemplateChild<gtk::Switch>,
 
         pub prop_selection: RefCell<Option<UnitPropertiesSelection>>,
 
         list_item: RefCell<Option<gtk::ListItem>>,
 
-        bind: RefCell<Option<Binding>>,
+        binds: RefCell<Vec<Binding>>,
     }
 
     #[gtk::template_callbacks]
     impl UnitPropertiesSelectionRowImp {
         pub(super) fn set_data_selection(
             &self,
-            prop_seletion: &UnitPropertySelection,
+            prop_selection: &UnitPropertySelection,
             list_item: &gtk::ListItem,
         ) {
             self.list_item.replace(Some(list_item.clone()));
 
-            let interface = prop_seletion.interface();
+            let interface = prop_selection.interface();
 
             if let Some(token) = interface.split('.').next_back() {
                 self.interface.set_label(token);
@@ -89,25 +98,64 @@ mod imp {
             }
 
             self.property_label
-                .set_label(&prop_seletion.unit_property());
+                .set_label(&prop_selection.unit_property());
 
-            self.hidden_ckeck.set_active(prop_seletion.visible());
+            self.hidden_ckeck.set_active(prop_selection.visible());
             let bind = self
                 .hidden_ckeck
-                .bind_property("active", prop_seletion, "visible")
+                .bind_property("active", prop_selection, "visible")
                 .build();
 
-            let old_bind = self.bind.replace(Some(bind));
+            self.binds.borrow_mut().push(bind);
 
-            if let Some(old_bind) = old_bind {
-                old_bind.unbind();
-            }
+            let title = prop_selection.title().unwrap_or_default();
+            self.title_entry.buffer().set_text(title);
+            let bind = self
+                .title_entry
+                .buffer()
+                .bind_property("text", prop_selection, "title")
+                .transform_to(|_b, s: GString| Some(s))
+                .build();
+
+            self.binds.borrow_mut().push(bind);
+
+            self.width_spin
+                .set_value(prop_selection.fixed_width() as f64);
+            let bind = self
+                .width_spin
+                .bind_property("value", prop_selection, "fixed-width")
+                .transform_to(|_b, v: f64| Some(v as i32))
+                .build();
+
+            self.binds.borrow_mut().push(bind);
+
+            self.resizable_switch.set_active(prop_selection.resizable());
+            let bind = self
+                .resizable_switch
+                .bind_property("active", prop_selection, "resizable")
+                .transform_to(|_b, v: f64| Some(v as i32))
+                .build();
+
+            self.binds.borrow_mut().push(bind);
+
+            self.expand_switch.set_active(prop_selection.expands());
+            let bind = self
+                .expand_switch
+                .bind_property("active", prop_selection, "expands")
+                .transform_to(|_b, v: f64| Some(v as i32))
+                .build();
+
+            self.binds.borrow_mut().push(bind);
         }
 
         pub(super) fn unbind(&self) {
-            if let Some(old_bind) = self.bind.borrow().as_ref() {
-                old_bind.unbind();
+            {
+                for b in self.binds.borrow().iter() {
+                    b.unbind()
+                }
             }
+
+            self.binds.borrow_mut().clear();
 
             self.list_item.replace(None);
         }
