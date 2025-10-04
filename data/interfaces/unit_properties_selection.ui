@@ -9,6 +9,8 @@
       <object class="GtkLabel">
         <property name="css-classes">title-2</property>
         <property name="label">Selected Unit Properties</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">5</property>
       </object>
     </child>
     <child>
@@ -22,13 +24,17 @@
     </child>
     <child>
       <object class="GtkBox">
+        <property name="margin-end">5</property>
         <property name="spacing">5</property>
         <child>
-          <object class="GtkButton" id="apply_button">
-            <property name="css-classes">suggested-action</property>
+          <object class="GtkLabel" id="column_nb">
             <property name="halign">start</property>
-            <property name="label">Apply</property>
-            <signal name="clicked" handler="apply_clicked" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="halign">start</property>
+            <property name="label">Columns</property>
           </object>
         </child>
         <child>
@@ -41,6 +47,22 @@
                 <property name="halign">baseline-fill</property>
                 <property name="label">Reset</property>
                 <signal name="clicked" handler="reset_clicked" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="apply_button">
+                <property name="css-classes">suggested-action</property>
+                <property name="halign">start</property>
+                <property name="label">Apply</property>
+                <signal name="clicked" handler="apply_clicked" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="ok_button">
+                <property name="css-classes">suggested-action</property>
+                <property name="halign">start</property>
+                <property name="label">Ok</property>
+                <signal name="clicked" handler="ok_clicked" swapped="yes"/>
               </object>
             </child>
           </object>

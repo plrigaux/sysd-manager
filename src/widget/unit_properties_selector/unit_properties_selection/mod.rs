@@ -1,9 +1,7 @@
 mod imp;
 mod row;
 
-use crate::widget::{
-    unit_list::UnitListPanel, unit_properties_selector::data::PropertyBrowseItem,
-};
+use crate::widget::{unit_list::UnitListPanel, unit_properties_selector::data::PropertyBrowseItem};
 use gtk::{
     glib::{self},
     subclass::prelude::*,

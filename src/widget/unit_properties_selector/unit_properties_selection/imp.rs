@@ -27,6 +27,12 @@ pub struct UnitPropertiesSelectionImp {
     #[template_child]
     apply_button: TemplateChild<gtk::Button>,
 
+    #[template_child]
+    ok_button: TemplateChild<gtk::Button>,
+
+    #[template_child]
+    column_nb: TemplateChild<gtk::Label>,
+
     list_store: OnceCell<gio::ListStore>,
 
     selection_model: OnceCell<gtk::SingleSelection>,
@@ -76,6 +82,17 @@ impl UnitPropertiesSelectionImp {
 
         let unit_list_panel = get_unit_list_panel!(self);
         unit_list_panel.set_new_columns(list);
+    }
+
+    #[template_callback]
+    fn ok_clicked(&self, button: &gtk::Button) {
+        info!("Ok pressed");
+
+        self.apply_clicked(button);
+
+        if let Err(boolerror) = button.activate_action("window.close", None) {
+            warn!("bool error {boolerror}")
+        };
     }
 
     #[template_callback]
@@ -236,6 +253,16 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
         list_store
             .bind_property::<gtk::Button>("n-items", self.apply_button.as_ref(), "sensitive")
             .transform_to(|_bond, nitems: u32| Some(nitems > 0))
+            .build();
+
+        list_store
+            .bind_property::<gtk::Button>("n-items", self.ok_button.as_ref(), "sensitive")
+            .transform_to(|_bond, nitems: u32| Some(nitems > 0))
+            .build();
+
+        list_store
+            .bind_property::<gtk::Label>("n-items", self.column_nb.as_ref(), "label")
+            .transform_to(|_bond, nitems: u32| Some(nitems.to_string()))
             .build();
     }
 }
