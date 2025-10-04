@@ -8,16 +8,16 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-11 17:10-0400\n"
-"PO-Revision-Date: 2025-08-30 20:01+0000\n"
+"PO-Revision-Date: 2025-10-04 04:40+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
-"manager/translation/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"sysd-manager/translation/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.13.1-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -1149,30 +1149,27 @@ msgstr "Limpar filtros"
 
 #. Show all properties
 #: data/interfaces/unit_properties.ui:29
-#, fuzzy
 msgctxt "unit properties"
 msgid "Show all"
-msgstr "Mostrar"
+msgstr "Mostrar tudo"
 
 #. Show all properties tooltip
 #: data/interfaces/unit_properties.ui:30
-#, fuzzy
 msgctxt "unit properties"
 msgid "Show empty properties"
-msgstr "Mostrar todas as _Propriedades"
+msgstr "Mostrar propriedades vazias"
 
 #. window title
 #: data/interfaces/unit_properties.ui:55
-#, fuzzy
 msgctxt "unit properties"
 msgid "Unit Properties"
-msgstr "Filtro de propriedade de unidade aberta"
+msgstr "Propriedades da unidade"
 
 #. Button tooltip-text
 #: data/interfaces/unit_properties.ui:61
 msgctxt "unit properties"
 msgid "Copy all properties to clipboard"
-msgstr ""
+msgstr "Copiar todas as propriedades para a área de transferência"
 
 #. dialog title
 #: src/analyze/mod.rs:28
@@ -2323,36 +2320,34 @@ msgid "Add filter on sub state"
 msgstr "Adicionar filtro no sub estado"
 
 #: src/widget/unit_list/imp/pop_menu.rs:148
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
-msgstr "Unidade inicial"
+msgstr "Unidade inicial {}"
 
 #. Button label
 #: src/widget/unit_list/imp/pop_menu.rs:153
-#, fuzzy
 msgctxt "controls"
 msgid "Start"
 msgstr "Começar"
 
 #: src/widget/unit_list/imp/pop_menu.rs:161
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
-msgstr "Unidade de parada"
+msgstr "Unidade de parada {}"
 
 #. Button label
 #: src/widget/unit_list/imp/pop_menu.rs:165
-#, fuzzy
 msgctxt "controls"
 msgid "Stop"
 msgstr "Parar"
 
 #: src/widget/unit_list/imp/pop_menu.rs:173
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
-msgstr "Reiniciar unidade"
+msgstr "Reiniciar unidade {}"
 
 #~ msgctxt "mask"
 #~ msgid "No Unit Selected"
