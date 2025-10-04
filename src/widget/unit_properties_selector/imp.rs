@@ -352,11 +352,13 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .unwrap();
 
             let interface = property_object.interface();
-            if let Some(unit_type) = interface.split('.').next_back() {
-                label.set_text(unit_type);
+            let val = if tree_list_row.depth() == 0 {
+                interface.split('.').next_back().unwrap_or_default()
             } else {
-                label.set_text("");
-            }
+                ""
+            };
+
+            label.set_text(val);
         });
         self.interface_column.set_factory(Some(&factory_interface));
 
