@@ -81,7 +81,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
     let id = COL_ID_UNIT;
     let sorter = create_column_filter!(primary, dbus_level);
     let column_menu = create_col_menu(id);
-    let factory = fac_unit_name();
+    let factory = fac_unit_name(display_color);
     let unit_col = gtk::ColumnViewColumn::builder()
         .id(id)
         .sorter(&sorter)
@@ -95,7 +95,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
     let id = "sysdm-type";
     let sorter = create_column_filter!(unit_type);
     let column_menu = create_col_menu(id);
-    let factory = fac_unit_type();
+    let factory = fac_unit_type(display_color);
     let type_col = gtk::ColumnViewColumn::builder()
         .id(id)
         .sorter(&sorter)
@@ -109,7 +109,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
     let id = "sysdm-bus";
     let sorter = create_column_filter!(dbus_level);
     let column_menu = create_col_menu(id);
-    let factory = fac_bus();
+    let factory = fac_bus(display_color);
     let bus_col = gtk::ColumnViewColumn::builder()
         .id(id)
         .sorter(&sorter)
@@ -165,7 +165,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
     let id = "sysdm-active";
     let sorter = create_column_filter!(active_state);
     let column_menu = create_col_menu(id);
-    let factory = fac_active();
+    let factory = fac_active(display_color);
     let active_col = gtk::ColumnViewColumn::builder()
         .id(id)
         .sorter(&sorter)
@@ -179,7 +179,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
     let id = "sysdm-sub";
     let sorter = create_column_filter!(sub_state);
     let column_menu = create_col_menu(id);
-    let factory = fac_sub_state();
+    let factory = fac_sub_state(display_color);
     let sub_col = gtk::ColumnViewColumn::builder()
         .id(id)
         .sorter(&sorter)
@@ -193,7 +193,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
     let id = "sysdm-description";
     let sorter = create_column_filter!(description);
     let column_menu = create_col_menu(id);
-    let factory = fac_descrition();
+    let factory = fac_descrition(display_color);
     let sub_description = gtk::ColumnViewColumn::builder()
         .id(id)
         .sorter(&sorter)
