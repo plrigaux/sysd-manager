@@ -4,7 +4,9 @@ use glib::{Binding, Quark};
 
 use gtk::{glib, prelude::*};
 use log::{debug, warn};
+use zvariant::OwnedValue;
 
+use crate::systemd::data::convert_to_string;
 use crate::widget::unit_list::COL_ID_UNIT;
 use crate::{
     systemd::{
@@ -474,15 +476,20 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
     }
 }
 
-pub(super) fn get_custom_factoy(property_index: usize) -> gtk::SignalListItemFactory {
+pub(super) fn get_custom_factory(property_code: &str) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
+    let key = Quark::from_str(property_code);
     factory.connect_setup(factory_setup);
 
     factory.connect_bind(move |_factory, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
-        let value = unit.custom_property(property_index);
+        let data: Option<std::ptr::NonNull<OwnedValue>> = unsafe { unit.qdata(key) };
+
+        let value = data
+            .map(|ptr| unsafe { ptr.read() })
+            .map(|value| convert_to_string(&value));
         inscription.set_text(value.as_deref());
     });
 

@@ -7,7 +7,7 @@ use gtk::{
     subclass::prelude::*,
 };
 use serde::Deserialize;
-use zvariant::{OwnedObjectPath, OwnedValue, Type, Value};
+use zvariant::{OwnedObjectPath, Type, Value};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -49,22 +49,12 @@ impl UnitInfo {
     pub fn debug(&self) -> String {
         format!("{:#?}", *self.imp())
     }
-
-    pub fn set_property_values(&self, property_value_list: Vec<Option<OwnedValue>>) {
-        self.imp().set_property_values(property_value_list);
-    }
-
-    pub fn custom_property(&self, property_index: usize) -> Option<String> {
-        self.imp().custom_property(property_index)
-    }
 }
 
 mod imp {
     use std::cell::RefCell;
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
-
-    use zvariant::OwnedValue;
 
     use crate::systemd::{
         SystemdUnitFile, UpdatedUnitInfo,
@@ -108,9 +98,6 @@ mod imp {
 
         #[property(get, set, default)]
         pub(super) preset: RefCell<Preset>,
-
-        custom_properties: RefCell<Vec<Option<OwnedValue>>>,
-        //custom_properties: Arc<RefCell<Option<HashMap<String, OwnedValue>>>>,
     }
 
     #[glib::object_subclass]
@@ -221,29 +208,6 @@ mod imp {
                 object_path
             }
         }
-
-        pub fn set_property_values(&self, property_value_list: Vec<Option<OwnedValue>>) {
-            self.custom_properties.replace(property_value_list);
-        }
-
-        pub fn custom_property(&self, property_index: usize) -> Option<String> {
-            let vec = self.custom_properties.borrow();
-
-            if property_index >= vec.len() {
-                /*  warn!(
-                    "Property vector request out of bound!  Index {property_index} {}",
-                    vec.len()
-                ); */
-                None
-            } else if let Some(v) = vec.get(property_index)
-                && let Some(v) = v
-            {
-                let s = super::convert_to_string(v);
-                Some(s)
-            } else {
-                None
-            }
-        }
     }
 }
 
@@ -326,7 +290,7 @@ pub fn convert_to_string(value: &Value) -> String {
         Value::Value(v) => v.to_string(),
         Value::Array(a) => {
             if a.is_empty() {
-                "[]".to_owned()
+                "".to_owned()
             } else {
                 let mut d_str = String::from("[ ");
 

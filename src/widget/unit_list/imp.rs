@@ -11,6 +11,7 @@ use std::{
     time::Duration,
 };
 
+use glib::Quark;
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
@@ -25,6 +26,7 @@ use gtk::{
         },
     },
 };
+use zvariant::OwnedValue;
 
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
@@ -152,6 +154,12 @@ macro_rules! update_search_entry {
             $self.search_entry_set_text($text);
         }
     }};
+}
+
+struct UnitProperty {
+    interface: String,
+    unit_property: String,
+    unit_type: UnitType,
 }
 
 #[gtk::template_callbacks]
@@ -495,6 +503,7 @@ impl UnitListPanelImp {
                         unit.update_from_unit_info(update);
                     }
                 }
+                unit_list.imp().fetch_custom_unit_properties();
             });
         });
     }
@@ -791,10 +800,9 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
-        let mut is_unit_type = false;
-
         let columns_list_model = self.units_browser.borrow().columns();
 
+        //Get the current column
         let cur_n_items = columns_list_model.n_items();
         let mut current_columns = Vec::with_capacity(columns_list_model.n_items() as usize);
         for position in (property_list.len() as u32)..columns_list_model.n_items() {
@@ -808,19 +816,13 @@ impl UnitListPanelImp {
             current_columns.push(c);
         }
 
-        //self.print_scroll_adj_logs();
-
-        let mut property_index = 0;
-        let mut property_list_send = Vec::with_capacity(property_list.len());
-        let mut types = HashSet::with_capacity(16);
         for (idx, unit_property) in property_list.iter().enumerate() {
             let new_column = unit_property.column();
 
             if unit_property.is_custom() {
                 //add custom factory
 
-                let factory = column_factories::get_custom_factoy(property_index);
-                property_index += 1;
+                let factory = column_factories::get_custom_factory(&unit_property.unit_property());
 
                 new_column.set_title(Some(&unit_property.unit_property()));
                 let id = format!(
@@ -830,21 +832,6 @@ impl UnitListPanelImp {
                 );
                 new_column.set_id(Some(&id));
                 new_column.set_factory(Some(&factory));
-
-                property_list_send.push(UnitProperty {
-                    interface: unit_property.interface(),
-                    unit_property: unit_property.unit_property(),
-                    unit_type: unit_property.unit_type(),
-                });
-            }
-
-            match unit_property.unit_type() {
-                UnitType::Unit => is_unit_type |= true,
-                UnitType::Unknown => { //Do nothing
-                }
-                ut => {
-                    types.insert(ut);
-                }
             }
 
             let idx_32 = idx as u32;
@@ -871,29 +858,59 @@ impl UnitListPanelImp {
                 .item(last - 1)
                 .and_downcast::<gtk::ColumnViewColumn>()
         {
+            //Force to fill the widjet gap
             cur_column.set_expand(true);
         } else {
             warn!("Col None");
         };
-
-        let list_len = property_list.len();
 
         self.current_column_view_column_definition_list
             .replace(property_list);
 
         //remove all columns that exeed the new ones
         for col in current_columns.iter() {
-            // self.units_browser.borrow().remove_column(col);
             col.set_visible(false);
         }
 
-        struct UnitProperty {
-            interface: String,
-            unit_property: String,
-            unit_type: UnitType,
+        self.fetch_custom_unit_properties();
+    }
+
+    fn fetch_custom_unit_properties(&self) {
+        let property_list = self.current_column_view_column_definition_list.borrow();
+
+        if property_list.is_empty() {
+            return;
         }
 
-        //self.print_scroll_adj_logs();
+        let list_len = property_list.len();
+        let mut property_list_send = Vec::with_capacity(property_list.len());
+        let mut property_list_keys = Vec::with_capacity(property_list.len());
+        let mut types = HashSet::with_capacity(16);
+        let mut is_unit_type = false;
+        for unit_property in property_list.iter() {
+            if unit_property.is_custom() {
+                //add custom factory
+
+                let u_prop = unit_property.unit_property();
+                let key = Quark::from_str(&u_prop);
+                property_list_keys.push(key);
+
+                property_list_send.push(UnitProperty {
+                    interface: unit_property.interface(),
+                    unit_property: u_prop,
+                    unit_type: unit_property.unit_type(),
+                });
+            }
+
+            match unit_property.unit_type() {
+                UnitType::Unit => is_unit_type |= true,
+                UnitType::Unknown => { //Do nothing
+                }
+                unit_type => {
+                    types.insert(unit_type);
+                }
+            }
+        }
 
         let units_map = self.units_map.clone();
         glib::spawn_future_local(async move {
@@ -913,7 +930,7 @@ impl UnitListPanelImp {
 
             let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
             runtime().spawn(async move {
-                info!("Fetching properties START");
+                info!("Fetching properties START for {} units", units_list.len());
                 for (level, primary_name, object_path, unit_type) in units_list {
                     let mut property_value_list = Vec::with_capacity(list_len);
                     for unit_property in &property_list_send {
@@ -922,7 +939,7 @@ impl UnitListPanelImp {
                         {
                             continue;
                         }
-
+                        warn!("Fetch {} {}", primary_name, unit_property.unit_property);
                         match systemd::fetch_unit_properties(
                             level,
                             &object_path,
@@ -951,13 +968,26 @@ impl UnitListPanelImp {
                     }
                 }
             });
+
             info!("Fetching properties WAIT");
             while let Some((key, property_value_list)) = receiver.recv().await {
-                if let Some(unit) = units_map.borrow().get(&key) {
-                    unit.set_property_values(property_value_list);
+                let map_ref = units_map.borrow();
+                let Some(unit) = map_ref.get(&key) else {
+                    continue;
+                };
+
+                for (index, value) in property_value_list.into_iter().enumerate() {
+                    let key = property_list_keys.get(index).expect("Should never fail");
+
+                    match value {
+                        Some(value) => unsafe { unit.set_qdata(*key, value) },
+                        None => unsafe {
+                            unit.steal_qdata::<OwnedValue>(*key);
+                        },
+                    }
                 }
             }
-            info!("Fetching properties FINISED");
+            info!("Fetching properties FINISHED");
         });
     }
 
