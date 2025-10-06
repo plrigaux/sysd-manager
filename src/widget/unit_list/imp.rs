@@ -822,8 +822,6 @@ impl UnitListPanelImp {
             if unit_property.is_custom() {
                 //add custom factory
 
-                let factory = column_factories::get_custom_factory(&unit_property.unit_property());
-
                 new_column.set_title(Some(&unit_property.unit_property()));
                 let id = format!(
                     "{}@{}",
@@ -831,7 +829,6 @@ impl UnitListPanelImp {
                     unit_property.unit_property()
                 );
                 new_column.set_id(Some(&id));
-                new_column.set_factory(Some(&factory));
             }
 
             let idx_32 = idx as u32;
@@ -912,6 +909,7 @@ impl UnitListPanelImp {
             }
         }
 
+        let units_browser = self.units_browser.borrow().clone();
         let units_map = self.units_map.clone();
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
@@ -939,7 +937,7 @@ impl UnitListPanelImp {
                         {
                             continue;
                         }
-                        warn!("Fetch {} {}", primary_name, unit_property.unit_property);
+                        debug!("Fetch {} {}", primary_name, unit_property.unit_property);
                         match systemd::fetch_unit_properties(
                             level,
                             &object_path,
@@ -988,6 +986,31 @@ impl UnitListPanelImp {
                 }
             }
             info!("Fetching properties FINISHED");
+
+            //Force the factory to display data
+            let columns_list_model = units_browser.columns();
+            for position in 0..columns_list_model.n_items() {
+                let Some(column) = columns_list_model
+                    .item(position)
+                    .and_downcast::<gtk::ColumnViewColumn>()
+                else {
+                    warn!("Col None");
+                    continue;
+                };
+
+                let Some(id) = column.id() else {
+                    warn!("No column id");
+                    continue;
+                };
+
+                //identify custom properties
+                let Some((_type, prop)) = id.split_once('@') else {
+                    continue;
+                };
+
+                let factory = column_factories::get_custom_factory(prop);
+                column.set_factory(Some(&factory));
+            }
         });
     }
 
