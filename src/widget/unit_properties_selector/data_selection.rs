@@ -3,7 +3,9 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};
 use log::info;
 
-use crate::{systemd::enums::UnitType, widget::unit_properties_selector::data::PropertyBrowseItem};
+use crate::{
+    systemd::enums::UnitType, widget::unit_properties_selector::data_browser::PropertyBrowseItem,
+};
 
 pub const INTERFACE_NAME: &str = "Basic Columns";
 
@@ -26,17 +28,25 @@ impl UnitPropertySelection {
         let interface = broswer_property.interface();
         let unit_type = UnitType::from_intreface(&interface);
         p_imp.interface.replace(interface);
-        p_imp
-            .unit_property
-            .replace(broswer_property.unit_property());
+        let unit_property = broswer_property.unit_property();
         p_imp.signature.replace(broswer_property.signature());
         p_imp.access.replace(broswer_property.access());
         p_imp.unit_type.set(unit_type);
 
-        if let Some(col) = broswer_property.column() {
+        let col = if let Some(col) = broswer_property.column() {
             info!("COL {:?} {:?}", col.id(), col.title());
-            p_imp.column.replace(col);
-        }
+            col
+        } else {
+            let id = format!("{}@{}", unit_type.as_str(), unit_property); //IMPORTANT keep this format
+
+            gtk::ColumnViewColumn::builder()
+                .title(&unit_property)
+                .id(id)
+                .build()
+        };
+
+        p_imp.unit_property.replace(unit_property);
+        p_imp.column.replace(col);
 
         this_object
     }

@@ -59,7 +59,7 @@ use crate::{
             imp::construct::construct_column,
             search_controls::UnitListSearchControls,
         },
-        unit_properties_selector::data2::UnitPropertySelection,
+        unit_properties_selector::data_selection::UnitPropertySelection,
     },
 };
 use log::{debug, error, info, warn};
@@ -819,18 +819,6 @@ impl UnitListPanelImp {
         for (idx, unit_property) in property_list.iter().enumerate() {
             let new_column = unit_property.column();
 
-            if unit_property.is_custom() {
-                //add custom factory
-
-                new_column.set_title(Some(&unit_property.unit_property()));
-                let id = format!(
-                    "{}@{}",
-                    unit_property.unit_type().as_str(),
-                    unit_property.unit_property()
-                );
-                new_column.set_id(Some(&id));
-            }
-
             let idx_32 = idx as u32;
             if idx_32 < cur_n_items {
                 let Some(cur_column) = columns_list_model
@@ -911,6 +899,9 @@ impl UnitListPanelImp {
 
         let units_browser = self.units_browser.borrow().clone();
         let units_map = self.units_map.clone();
+        let display_color = self.display_color.get();
+
+        //TODO fetch oly new properties look at properties already fetched
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
                 .borrow()
@@ -1008,7 +999,7 @@ impl UnitListPanelImp {
                     continue;
                 };
 
-                let factory = column_factories::get_custom_factory(prop);
+                let factory = column_factories::get_custom_factory(prop, display_color);
                 column.set_factory(Some(&factory));
             }
         });

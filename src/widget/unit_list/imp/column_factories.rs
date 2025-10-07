@@ -476,15 +476,31 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
     }
 }
 
-pub(super) fn get_custom_factory(property_code: &str) -> gtk::SignalListItemFactory {
+pub(super) fn get_custom_factory(
+    property_code: &str,
+    display_color: bool,
+) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
     let key = Quark::from_str(property_code);
     factory.connect_setup(factory_setup);
 
-    factory.connect_bind(move |_factory, object| display_custom_property(key, object));
+    if display_color {
+        factory.connect_bind(move |_factory, object| display_custom_property_color(key, object));
+    } else {
+        factory.connect_bind(move |_factory, object| display_custom_property(key, object));
+    }
 
     factory
+}
+
+fn display_custom_property_color(key: Quark, object: &glib::Object) {
+    let (inscription, unit) = factory_bind_pre!(object);
+    inactive_display(&inscription, &unit);
+    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| convert_to_string(value));
+    inscription.set_text(value.as_deref());
 }
 
 fn display_custom_property(key: Quark, object: &glib::Object) {

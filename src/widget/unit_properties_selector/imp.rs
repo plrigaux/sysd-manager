@@ -21,7 +21,7 @@ use crate::{
     widget::{
         unit_list::UnitListPanel,
         unit_properties_selector::{
-            data::{INTERFACE_NAME, PropertyBrowseItem},
+            data_browser::{INTERFACE_NAME, PropertyBrowseItem},
             unit_properties_selection::UnitPropertiesSelection,
         },
     },

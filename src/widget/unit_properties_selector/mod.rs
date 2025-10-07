@@ -1,5 +1,5 @@
-pub mod data;
-pub mod data2;
+pub mod data_browser;
+pub mod data_selection;
 mod imp;
 mod unit_properties_selection;
 

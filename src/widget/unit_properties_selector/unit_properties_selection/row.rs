@@ -5,7 +5,7 @@ use gtk::{
 };
 
 use crate::widget::unit_properties_selector::{
-    data2::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
+    data_selection::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
 };
 
 glib::wrapper! {
@@ -42,7 +42,7 @@ mod imp {
     use std::cell::RefCell;
 
     use crate::widget::unit_properties_selector::{
-        data2::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
+        data_selection::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
     };
 
     use super::UnitPropertiesSelectionRow;
