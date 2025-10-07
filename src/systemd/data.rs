@@ -290,7 +290,7 @@ pub fn convert_to_string(value: &Value) -> String {
         Value::Value(v) => v.to_string(),
         Value::Array(a) => {
             if a.is_empty() {
-                "".to_owned()
+                String::from("")
             } else {
                 let mut d_str = String::from("[ ");
 

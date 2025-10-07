@@ -133,7 +133,6 @@ mod imp {
             let bind = self
                 .resizable_switch
                 .bind_property("active", prop_selection, "resizable")
-                .transform_to(|_b, v: f64| Some(v as i32))
                 .build();
 
             self.binds.borrow_mut().push(bind);
@@ -142,7 +141,6 @@ mod imp {
             let bind = self
                 .expand_switch
                 .bind_property("active", prop_selection, "expands")
-                .transform_to(|_b, v: f64| Some(v as i32))
                 .build();
 
             self.binds.borrow_mut().push(bind);

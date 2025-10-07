@@ -12,6 +12,12 @@
       </object>
     </child>
     <child>
+      <object class="GtkButton" id="show_customize_button">
+        <property name="label" translatable="yes" context="unit search">Customize</property>
+        <signal name="clicked" handler="show_filters_clicked"/>
+      </object>
+    </child>
+    <child>
       <object class="GtkButton" id="show_filter_button">
         <property name="label" translatable="yes" context="unit search">Filters</property>
         <signal name="clicked" handler="show_filters_clicked"/>

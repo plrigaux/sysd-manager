@@ -81,6 +81,24 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+
+    <release version="2.0.0" date="2025-09-12">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Customize unit properties display in the browser</li>
+          <li>Make the inactive units browser style change in real time</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Various code improvement</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Flatpak version to be able to read and save in home directory</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.32.3" date="2025-09-12">
       <description translate="no">
         <p>Added</p>

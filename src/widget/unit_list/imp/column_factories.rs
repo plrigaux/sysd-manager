@@ -1,16 +1,16 @@
 use std::sync::LazyLock;
 
-use glib::{Binding, Quark};
-
-use gtk::{glib, prelude::*};
+use gtk::{
+    glib::{self, Binding, Quark},
+    prelude::*,
+};
 use log::{debug, warn};
 use zvariant::OwnedValue;
 
-use crate::systemd::data::convert_to_string;
 use crate::widget::unit_list::COL_ID_UNIT;
 use crate::{
     systemd::{
-        data::UnitInfo,
+        data::{UnitInfo, convert_to_string},
         enums::{ActiveState, EnablementStatus, LoadState, Preset},
     },
     widget::unit_list::UnitListPanel,
@@ -482,16 +482,26 @@ pub(super) fn get_custom_factory(property_code: &str) -> gtk::SignalListItemFact
     let key = Quark::from_str(property_code);
     factory.connect_setup(factory_setup);
 
-    factory.connect_bind(move |_factory, object| {
-        let (inscription, unit) = factory_bind_pre!(object);
-
-        let data: Option<std::ptr::NonNull<OwnedValue>> = unsafe { unit.qdata(key) };
-
-        let value = data
-            .map(|ptr| unsafe { ptr.read() })
-            .map(|value| convert_to_string(&value));
-        inscription.set_text(value.as_deref());
-    });
+    factory.connect_bind(move |_factory, object| display_custom_property(key, object));
 
     factory
+}
+
+fn display_custom_property(key: Quark, object: &glib::Object) {
+    let (inscription, unit) = factory_bind_pre!(object);
+    /*
+    let retreived_data: Option<std::ptr::NonNull<OwnedValue>> = unsafe { unit.qdata(key) };
+
+         if let Some(value_ptr) = retreived_data {
+        let value = unsafe { value_ptr.as_ref() };
+        let s = convert_to_string(value);
+        inscription.set_text(Some(&s));
+    } else {
+        inscription.set_text(None);
+    } */
+    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| convert_to_string(value));
+
+    inscription.set_text(value.as_deref());
 }
