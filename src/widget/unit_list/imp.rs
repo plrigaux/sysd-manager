@@ -837,17 +837,7 @@ impl UnitListPanelImp {
             }
         }
 
-        let last: u32 = property_list.len() as u32;
-        if last != 0
-            && let Some(cur_column) = columns_list_model
-                .item(last - 1)
-                .and_downcast::<gtk::ColumnViewColumn>()
-        {
-            //Force to fill the widjet gap
-            cur_column.set_expand(true);
-        } else {
-            warn!("Col None");
-        };
+        force_expand_on_the_last_visible_column(columns_list_model);
 
         self.current_column_view_column_definition_list
             .replace(property_list);
@@ -1039,6 +1029,21 @@ impl UnitListPanelImp {
         self.default_column_view_column_list
             .get()
             .expect("Need to be set")
+    }
+}
+
+fn force_expand_on_the_last_visible_column(columns_list_model: gio::ListModel) {
+    for index in (0..columns_list_model.n_items()).rev() {
+        if let Some(column) = columns_list_model
+            .item(index)
+            .and_downcast::<gtk::ColumnViewColumn>()
+            && column.is_visible()
+        {
+            warn!("{:?} {}", column.id(), column.is_visible());
+            //Force to fill the widget gap in the scroll window
+            column.set_expand(true);
+            break;
+        }
     }
 }
 
@@ -1376,6 +1381,16 @@ async fn go_fetch_data(
                 hmap.insert(unit.primary(), unit);
             }
             Ok((hmap, unit_files))
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_reverse() {
+        for i in (0..10).rev() {
+            println!("{i}")
         }
     }
 }

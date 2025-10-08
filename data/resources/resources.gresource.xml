@@ -54,5 +54,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/circle-crossed-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/arrow-circular-top-right-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/chain-link-symbolic.svg</file>    
+    <file preprocess="xml-stripblanks">icons/scalable/actions/columns-symbolic.svg</file>       
   </gresource>
 </gresources>

@@ -8,7 +8,7 @@
     <child>
       <object class="GtkLabel">
         <property name="css-classes">title-2</property>
-        <property name="label">Selected Unit Properties</property>
+        <property name="label">Unit Property Columns</property>
         <property name="margin-end">5</property>
         <property name="margin-top">5</property>
       </object>

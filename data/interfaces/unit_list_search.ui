@@ -2,7 +2,8 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name unit_list_search.ui -->
-  <requires lib="gtk" version="4.16"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="SEARCH_CONTROLS" parent="GtkBox">
     <property name="hexpand">True</property>
     <property name="spacing">5</property>
@@ -13,8 +14,14 @@
     </child>
     <child>
       <object class="GtkButton" id="show_customize_button">
-        <property name="label" translatable="yes" context="unit search">Customize</property>
-        <signal name="clicked" handler="show_filters_clicked"/>
+        <property name="action-name">app.properties_selector</property>
+        <property name="label" translatable="yes" context="unit search"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="icon-name">columns-symbolic</property>
+            <property name="label">Columns</property>
+          </object>
+        </child>
       </object>
     </child>
     <child>

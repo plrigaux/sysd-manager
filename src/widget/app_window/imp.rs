@@ -487,7 +487,7 @@ impl AppWindowImpl {
         application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Shift>f"]);
         application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
-        application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR, &["<Ctrl>p"]);
+        application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR, &["<Ctrl>r"]);
         application.set_accels_for_action("app.debug", &["<Ctrl>q"]);
     }
 
