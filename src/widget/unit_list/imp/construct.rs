@@ -3,7 +3,7 @@ use crate::{
     systemd::data::UnitInfo,
     widget::unit_list::{
         COL_ID_UNIT,
-        imp::{column_factories::*, create_col_menu, force_expand_on_the_last_visible_column},
+        imp::{column_factories::*, create_col_menu},
     },
 };
 use gettextrs::pgettext;
@@ -213,6 +213,4 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
     column_view.append_column(&active_col);
     column_view.append_column(&sub_col);
     column_view.append_column(&sub_description);
-
-    force_expand_on_the_last_visible_column(column_view.columns());
 }

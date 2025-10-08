@@ -245,6 +245,8 @@ impl UnitListPanelImp {
             }
         }
 
+        force_expand_on_the_last_visible_column(&self.units_browser.borrow().columns());
+
         let action_entry = {
             let settings = settings.clone();
             gio::ActionEntry::builder("hide_unit_col")
@@ -837,7 +839,7 @@ impl UnitListPanelImp {
             }
         }
 
-        force_expand_on_the_last_visible_column(columns_list_model);
+        force_expand_on_the_last_visible_column(&columns_list_model);
 
         self.current_column_view_column_definition_list
             .replace(property_list);
@@ -1032,17 +1034,17 @@ impl UnitListPanelImp {
     }
 }
 
-fn force_expand_on_the_last_visible_column(columns_list_model: gio::ListModel) {
+fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) {
     for index in (0..columns_list_model.n_items()).rev() {
         if let Some(column) = columns_list_model
             .item(index)
             .and_downcast::<gtk::ColumnViewColumn>()
-            && column.is_visible()
         {
-            warn!("{:?} {}", column.id(), column.is_visible());
             //Force to fill the widget gap in the scroll window
-            column.set_expand(true);
-            break;
+            if column.is_visible() {
+                column.set_expand(true);
+                break;
+            }
         }
     }
 }
