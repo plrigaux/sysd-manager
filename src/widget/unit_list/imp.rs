@@ -1,8 +1,7 @@
 mod column_factories;
 #[macro_use]
 mod construct;
-mod menus;
-mod pop_menu;
+pub mod pop_menu;
 
 use std::{
     cell::{Cell, OnceCell, Ref, RefCell},
@@ -11,11 +10,10 @@ use std::{
     time::Duration,
 };
 
-use glib::Quark;
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
-    glib::{self, Properties},
+    glib::{self, Properties, Quark},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -63,7 +61,6 @@ use crate::{
     },
 };
 use log::{debug, error, info, warn};
-use menus::create_col_menu;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 struct UnitKey {
@@ -247,14 +244,27 @@ impl UnitListPanelImp {
 
         force_expand_on_the_last_visible_column(&self.units_browser.borrow().columns());
 
+        let units_browser = self.units_browser.borrow().clone();
         let action_entry = {
-            let settings = settings.clone();
             gio::ActionEntry::builder("hide_unit_col")
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     if let Some(value) = target_value {
-                        let key = value.get::<String>().expect("variant always be String");
-                        if let Err(error) = settings.set_boolean(&key, false) {
-                            warn!("Setting error, key {key}, {error:?}");
+                        let key = Some(value.get::<String>().expect("variant always be String"));
+
+                        let columns_list_model = units_browser.columns();
+
+                        for index in 0..columns_list_model.n_items() {
+                            let Some(cur_column) = columns_list_model
+                                .item(index)
+                                .and_downcast::<gtk::ColumnViewColumn>()
+                            else {
+                                warn!("Column w/ id {key:?} do not Exists");
+                                continue;
+                            };
+
+                            if cur_column.id().map(|s| s.to_string()) == key {
+                                cur_column.set_visible(false);
+                            }
                         }
                     }
                 })

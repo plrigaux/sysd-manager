@@ -4,7 +4,11 @@ use gtk::glib::{self};
 use log::info;
 
 use crate::{
-    systemd::enums::UnitType, widget::unit_properties_selector::data_browser::PropertyBrowseItem,
+    systemd::enums::UnitType,
+    widget::{
+        unit_list::menus::create_col_menu,
+        unit_properties_selector::data_browser::PropertyBrowseItem,
+    },
 };
 
 pub const INTERFACE_NAME: &str = "Basic Columns";
@@ -38,10 +42,11 @@ impl UnitPropertySelection {
             col
         } else {
             let id = format!("{}@{}", unit_type.as_str(), unit_property); //IMPORTANT keep this format
-
+            let menu = create_col_menu(&id, true);
             gtk::ColumnViewColumn::builder()
                 .title(&unit_property)
                 .id(id)
+                .header_menu(&menu)
                 .build()
         };
 

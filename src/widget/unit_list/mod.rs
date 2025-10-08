@@ -15,6 +15,7 @@ use gtk::subclass::prelude::*;
 
 mod filter;
 mod imp;
+pub mod menus;
 mod search_controls;
 
 pub const COL_ID_UNIT: &str = "sysdm-unit";
