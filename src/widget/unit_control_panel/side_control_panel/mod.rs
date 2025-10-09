@@ -1,7 +1,7 @@
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::{
-    systemd::{data::UnitInfo, errors::SystemdErrors},
+    systemd::{data::UnitInfo, enums::UnitDBusLevel, errors::SystemdErrors},
     widget::{InterPanelMessage, app_window::AppWindow},
 };
 
@@ -43,7 +43,7 @@ impl SideControlPanel {
         method_name: &str,
         need_selected_unit: bool,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: impl Fn(Option<&UnitInfo>) -> Result<(), SystemdErrors>
+        systemd_method: impl Fn(Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors>
         + std::marker::Send
         + 'static,
         return_handle: impl Fn(&str, Option<&UnitInfo>, Result<(), SystemdErrors>, &UnitControlPanel)

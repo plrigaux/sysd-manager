@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.32.4"
+version = "2.0.0"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -27,7 +27,7 @@ include = [
     "README.md",
     "/data",
     "!/**/meson.build",
-    "/po"
+    "/po",
 ]
 default-run = "sysd-manager"
 
@@ -38,6 +38,7 @@ path = "src/main.rs"
 [features]
 default = []
 flatpak = []
+#gvariant = ["zvariant/gvariant"]
 
 [profile.release]
 lto = true
@@ -52,10 +53,11 @@ tokio = { version = "1", features = ["full"] }
 constcat = "0.6"
 
 [dependencies]
-pango = { version = "0", package = "pango", features = ["v1_56"] }
-adw = { version = "0.8", package = "libadwaita", features = ["v1_7"] }
-gio = { version = "0", package = "gio", features = ["v2_84"] }
-gtk = { version = "0.10", package = "gtk4", features = ["v4_18"] }
+pango = { version = "*", package = "pango", features = ["v1_56"] }
+adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
+gio = { version = "*", package = "gio", features = ["v2_84"] }
+glib = { version = "*", package = "glib", features = ["v2_84"] }
+gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
 bitflags = "2.9"
 chrono = "0.4"
 clap.workspace = true
@@ -66,40 +68,32 @@ env_logger.workspace = true
 formatx = "0.2"
 foreign-types-shared = "0.3.1"
 futures-util = "0.3"
-gettext-rs = { version ="0.7.2", features = ["gettext-system"]}
+gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
 libc.workspace = true
-#libsysd = { version = "0.9", package = "libsystemd-sys"} 
 log.workspace = true
 regex = "1.11"
 serde = "1.0"
 sourceview5 = "0.10"
 strum = { version = "0.27", features = ["derive"] }
-sysd =  { version = "0.10", package = "systemd"} 
+sysd = { version = "0.10", package = "systemd" }
 tokio.workspace = true
 tokio-util = "0.7"
-zbus = "5.11"
-zbus_macros =  "5.11" 
-zbus_xml="5.0"
-zvariant = "5.7"
+zbus = { version = "5.11", default-features = false, features = [
+    "tokio",
+    "blocking-api",
+] }
+zbus_macros =  "*"
+zbus_xml = "5"
+zvariant = "*"
+zvariant_derive =  "*"
+zvariant_utils =  "*"
+
+
 
 [dev-dependencies]
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
-quick-xml =  "0.38"
-translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating"}
-
-[package.metadata.generate-rpm]
-summary = "A systemd units manager"
-assets = [
-    { source = "target/release/sysd-manager", dest = "/usr/bin/sysd-manager", mode = "755" },
-    { source = "data/applications/io.github.plrigaux.sysd-manager.desktop", dest = "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop", mode = "644" },
-    { source = "data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", dest = "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", mode = "644" },
-    { source = "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml", dest = "/usr/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml", mode = "644" },
-]
-
-[package.metadata.generate-rpm.requires]
-coreutils = ">= 9"
-polkit = ">= 123"
-systemd = ">= 254"
+quick-xml = "0.38"
+translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating" }

@@ -3,8 +3,8 @@
 <interface>
   <!-- interface-name unit_list_panel.ui -->
   <requires lib="gio" version="2.44"/>
-  <requires lib="gtk" version="4.16"/>
-  <requires lib="libadwaita" version="1.6"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="UnitListPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <property name="vexpand">True</property>
@@ -21,99 +21,6 @@
                 </child>
                 <child>
                   <object class="GtkScrolledWindow" id="scrolled_window">
-                    <property name="child">
-                      <object class="GtkColumnView" id="units_browser">
-                        <property name="model">
-                          <object class="GtkSingleSelection" id="single_selection">
-                            <property name="autoselect">False</property>
-                            <property name="model">
-                              <object class="GtkFilterListModel" id="filter_list_model">
-                                <property name="model">
-                                  <object class="GtkSortListModel" id="unit_list_sort_list_model">
-                                    <property name="model">
-                                      <object class="GListStore" id="list_store"/>
-                                    </property>
-                                  </object>
-                                </property>
-                              </object>
-                            </property>
-                          </object>
-                        </property>
-                        <property name="vexpand">True</property>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">150</property>
-                            <property name="id">unit</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Unit</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">82</property>
-                            <property name="id">type</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Type</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">61</property>
-                            <property name="id">bus</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Bus</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">80</property>
-                            <property name="id">state</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">State</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">70</property>
-                            <property name="id">preset</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Preset</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">80</property>
-                            <property name="id">load</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Load</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">62</property>
-                            <property name="id">active</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Active</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="fixed-width">71</property>
-                            <property name="id">sub</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Sub</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkColumnViewColumn">
-                            <property name="expand">True</property>
-                            <property name="id">description</property>
-                            <property name="resizable">True</property>
-                            <property name="title" translatable="yes" context="list column">Description</property>
-                          </object>
-                        </child>
-                      </object>
-                    </property>
                     <property name="vexpand">True</property>
                   </object>
                 </child>

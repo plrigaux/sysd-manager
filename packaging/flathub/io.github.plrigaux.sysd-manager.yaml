@@ -1,6 +1,6 @@
 id: io.github.plrigaux.sysd-manager
 runtime: org.gnome.Platform
-runtime-version: '48'
+runtime-version: '49'
 sdk: org.gnome.Sdk
 sdk-extensions:
 - org.freedesktop.Sdk.Extension.rust-stable
@@ -13,6 +13,7 @@ finish-args:
 # Needed to access /usr whre are located unit config files
 - --filesystem=host-os
 - --filesystem=host-etc
+- --filesystem=home
 # Needed to access journal logs
 - --filesystem=/var/log:ro
 #- --env=RUST_LOG=info

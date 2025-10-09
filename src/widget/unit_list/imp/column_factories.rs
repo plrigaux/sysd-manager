@@ -1,22 +1,26 @@
-use std::collections::HashMap;
+use std::sync::LazyLock;
 
-use gtk::{glib, prelude::*};
-use log::debug;
+use gtk::{
+    glib::{self, Binding, Quark},
+    prelude::*,
+};
+use log::{debug, warn};
+use zvariant::OwnedValue;
 
-use crate::systemd::data::UnitInfo;
-use crate::systemd::enums::{EnablementStatus, LoadState, Preset};
-use crate::widget::unit_list::imp::rowdata::UnitBinding;
-use crate::{systemd::enums::ActiveState, widget::unit_list::UnitListPanel};
+use crate::widget::unit_list::COL_ID_UNIT;
+use crate::{
+    systemd::{
+        data::{UnitInfo, convert_to_string},
+        enums::{ActiveState, EnablementStatus, LoadState, Preset},
+    },
+    widget::unit_list::UnitListPanel,
+};
 
-pub const BIND_DESCRIPTION_TEXT: u8 = 0;
-pub const BIND_SUB_STATE_TEXT: u8 = 1;
-pub const BIND_ENABLE_STATUS_TEXT: u8 = 2;
-pub const BIND_ENABLE_STATUS_CSS: u8 = 3;
-pub const BIND_ENABLE_PRESET_TEXT: u8 = 4;
-pub const BIND_ENABLE_PRESET_CSS: u8 = 5;
-pub const BIND_ENABLE_LOAD_TEXT: u8 = 6;
-pub const BIND_ENABLE_LOAD_CSS: u8 = 7;
-pub const BIND_ENABLE_ACTIVE_ICON: u8 = 8;
+static BIND_INFO: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("I"));
+static BIND_CSS: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("C"));
+
+const CSS_CLASSES: &str = "css-classes";
+const TEXT: &str = "text";
 
 macro_rules! downcast_list_item {
     ($list_item_object:expr) => {{
@@ -36,27 +40,6 @@ fn factory_setup(_factory: &gtk::SignalListItemFactory, object: &glib::Object) {
     list_item.set_child(Some(&inscription));
 }
 
-macro_rules! downcast_unit_binding {
-    ($list_item_object:expr) => {{
-        let list_item = downcast_list_item!($list_item_object);
-        list_item
-            .item()
-            .and_downcast::<UnitBinding>()
-            .expect("item.downcast_ref::<gtk::UnitBinding>()")
-    }};
-}
-
-macro_rules! factory_connect_unbind {
-    ($factory:expr, $($bind_id:expr), *) => {
-        $factory.connect_unbind(|_factory, object| {
-            let unit_binding = downcast_unit_binding!(object);
-            $(
-                unit_binding.unset_binding($bind_id);
-            )*
-        });
-    };
-}
-
 macro_rules! factory_bind_pre {
     ($list_item_object:expr) => {{
         let list_item = downcast_list_item!($list_item_object);
@@ -66,7 +49,7 @@ macro_rules! factory_bind_pre {
             .expect("item.downcast_ref::<gtk::Inscription>()");
         let unit_binding = list_item
             .item()
-            .and_downcast::<UnitBinding>()
+            .and_downcast::<UnitInfo>()
             .expect("item.downcast_ref::<gtk::UnitBinding>()");
         (inscription, unit_binding)
     }};
@@ -74,80 +57,151 @@ macro_rules! factory_bind_pre {
 
 macro_rules! factory_bind {
     ($item_obj:expr, $func:ident) => {{
-        let (inscription, unit_binding) = factory_bind_pre!($item_obj);
-        let unit = unit_binding.unit();
-        let text = unit.$func();
+        let (inscription, unit) = factory_bind_pre!($item_obj);
+        let text = $func(&unit);
         inscription.set_text(Some(&text));
-        (inscription, unit, unit_binding)
+        (inscription, unit)
     }};
 }
 
 macro_rules! factory_bind_enum {
     ($item_obj:expr, $func:ident) => {{
-        let (inscription, unit_binding) = factory_bind_pre!($item_obj);
-        let unit = unit_binding.unit();
+        let (inscription, unit) = factory_bind_pre!($item_obj);
         let text = unit.$func().as_str();
-        inscription.set_text(Some(&text));
-        (inscription, unit, unit_binding)
+        inscription.set_text(Some(text));
+        (inscription, unit)
     }};
 }
 
-//TODO bind properties
+const ACTIVE_STATE: &str = "active_state";
+const CSS_GREY: &str = "grey";
+
 macro_rules! display_inactive {
     ($widget:expr, $unit:expr) => {
-        let state = &$unit.active_state();
+        let state = $unit.active_state();
         if state.is_inactive() {
-            $widget.set_css_classes(&["grey"]);
+            $widget.set_css_classes(&[CSS_GREY]);
         } else {
             $widget.set_css_classes(&[]);
         }
     };
 }
 
-pub fn setup_factories(
-    unit_list: &UnitListPanel,
-    column_view_column_map: &HashMap<glib::GString, gtk::ColumnViewColumn>,
-) {
-    let display_color = unit_list.display_color();
-    let fac_unit_name = gtk::SignalListItemFactory::new();
-
-    fac_unit_name.connect_setup(factory_setup);
-
-    {
-        //let unit_list = unit_list.clone();
-        fac_unit_name.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind!(object, display_name);
-            display_inactive!(inscription, unit);
+macro_rules! factory_connect_unbind {
+    ($factory:expr, $($bind_id:expr), *) => {
+        $factory.connect_unbind(|_factory, object| {
+            let list_item = downcast_list_item!(object);
+            let Some(child) = list_item.child() else {
+                warn!("No child");
+                return;
+            };
+            $(
+                unbind(&child, $bind_id);
+            )*
         });
+    };
+}
+
+fn store_binding(object: &impl IsA<gtk::Widget>, key: Quark, binding: Binding) {
+    unsafe {
+        object.set_qdata(key, binding);
+    }
+}
+
+fn unbind(child: &gtk::Widget, key: Quark) {
+    let binding: Option<Binding> = unsafe { child.steal_qdata(key) };
+    if let Some(binding) = binding {
+        binding.unbind();
+    }
+}
+
+fn inactive_display(widget: &impl IsA<gtk::Widget>, unit: &UnitInfo) {
+    let state = unit.active_state();
+    if state.is_inactive() {
+        widget.set_css_classes(&[CSS_GREY]);
+    } else {
+        widget.set_css_classes(&[]);
     }
 
+    let binding = unit
+        .bind_property(ACTIVE_STATE, widget, CSS_CLASSES)
+        .transform_to(|_, load_state: ActiveState| {
+            let css_classes = if load_state.is_inactive() {
+                Some([CSS_GREY])
+            } else {
+                None
+            };
+            css_classes.map(|css| css.to_value())
+        })
+        .build();
+
+    store_binding(widget, *BIND_CSS, binding);
+}
+
+pub fn fac_unit_name(display_color: bool) -> gtk::SignalListItemFactory {
+    common_factory(display_color, UnitInfo::display_name)
+}
+
+fn common_factory(
+    display_color: bool,
+    func: fn(&UnitInfo) -> String,
+) -> gtk::SignalListItemFactory {
+    let factory = gtk::SignalListItemFactory::new();
+
+    factory.connect_setup(factory_setup);
+
+    if display_color {
+        factory.connect_bind(move |_factory, object| {
+            let (inscription, unit) = factory_bind!(object, func);
+            inactive_display(&inscription, &unit)
+        });
+
+        factory_connect_unbind!(factory, *BIND_CSS);
+    } else {
+        factory.connect_bind(move |_factory, object| {
+            factory_bind!(object, func);
+        });
+    }
+    factory
+}
+
+pub fn fac_unit_type(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_unit_type = gtk::SignalListItemFactory::new();
 
     fac_unit_type.connect_setup(factory_setup);
-
-    {
-        //let unit_list = unit_list.clone();
+    if display_color {
         fac_unit_type.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind!(object, unit_type);
-            display_inactive!(inscription, unit);
+            let (inscription, unit) = factory_bind_enum!(object, unit_type);
+            inactive_display(&inscription, &unit)
+        });
+        factory_connect_unbind!(fac_unit_type, *BIND_CSS);
+    } else {
+        fac_unit_type.connect_bind(move |_factory, object| {
+            factory_bind_enum!(object, unit_type);
         });
     }
+    fac_unit_type
+}
 
+pub fn fac_bus(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_bus = gtk::SignalListItemFactory::new();
 
     fac_bus.connect_setup(factory_setup);
-
-    {
+    if display_color {
         fac_bus.connect_bind(move |_factory, object| {
-            let (inscription, unit, _unit_binding) = factory_bind_enum!(object, dbus_level);
-            display_inactive!(inscription, unit);
+            let (inscription, unit) = factory_bind_enum!(object, dbus_level);
+            inactive_display(&inscription, &unit)
+        });
+        factory_connect_unbind!(fac_bus, *BIND_CSS);
+    } else {
+        fac_bus.connect_bind(move |_factory, object| {
+            factory_bind_enum!(object, dbus_level);
         });
     }
+    fac_bus
+}
 
-    let fac_enable_status = fac_enable_status(display_color);
-    let fac_preset = fac_preset(display_color);
-    let fac_load_state = fac_load_state(display_color);
-
+pub fn fac_active(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_active = gtk::SignalListItemFactory::new();
 
     fac_active.connect_setup(|_factory, object| {
@@ -156,104 +210,76 @@ pub fn setup_factories(
         item.set_child(Some(&image));
     });
 
-    fac_active.connect_bind(|_factory, object| {
-        let list_item: &gtk::ListItem = downcast_list_item!(object);
-        let icon_image = list_item.child().and_downcast::<gtk::Image>().unwrap();
+    if display_color {
+        fac_active.connect_bind(|_factory, object| {
+            let (icon_image, unit) = active_icon(object);
+            inactive_display(&icon_image, &unit)
+        });
 
-        let unit_binding = list_item.item().and_downcast::<UnitBinding>().unwrap();
-        let unit = unit_binding.unit_ref();
+        factory_connect_unbind!(&fac_active, *BIND_INFO, *BIND_CSS);
+    } else {
+        fac_active.connect_bind(|_factory, object| {
+            active_icon(object);
+        });
+        factory_connect_unbind!(&fac_active, *BIND_INFO);
+    }
+    fac_active
+}
 
-        let state = unit.active_state();
+fn active_icon(object: &glib::Object) -> (gtk::Image, UnitInfo) {
+    let list_item: &gtk::ListItem = downcast_list_item!(object);
+    let icon_image = list_item.child().and_downcast::<gtk::Image>().unwrap();
+    let unit = list_item.item().and_downcast::<UnitInfo>().unwrap();
+    let state = unit.active_state();
 
-        let icon_name = state.icon_name();
-        icon_image.set_icon_name(icon_name);
-        icon_image.set_tooltip_text(Some(state.as_str()));
+    let icon_name = state.icon_name();
+    icon_image.set_icon_name(icon_name);
+    icon_image.set_tooltip_text(Some(state.as_str()));
 
-        let binding = unit
-            .bind_property("active_state", &icon_image, "icon-name")
-            .transform_to(|_, state: ActiveState| state.icon_name())
-            .build();
+    let binding = unit
+        .bind_property("active_state", &icon_image, "icon-name")
+        .transform_to(|_, state: ActiveState| state.icon_name())
+        .build();
 
-        unit_binding.set_binding(BIND_ENABLE_ACTIVE_ICON, binding);
-        display_inactive!(icon_image, unit);
-    });
+    store_binding(&icon_image, *BIND_INFO, binding);
+    (icon_image, unit)
+}
 
-    factory_connect_unbind!(fac_active, BIND_ENABLE_ACTIVE_ICON);
+pub fn fac_sub_state(display_color: bool) -> gtk::SignalListItemFactory {
+    common_factory(display_color, UnitInfo::sub_state)
+}
 
-    let fac_sub_state = gtk::SignalListItemFactory::new();
+pub fn fac_descrition(display_color: bool) -> gtk::SignalListItemFactory {
+    common_factory(display_color, UnitInfo::description)
+}
 
-    fac_sub_state.connect_setup(factory_setup);
+pub fn setup_factories(
+    unit_list: &UnitListPanel,
+    column_view_column_list: &Vec<gtk::ColumnViewColumn>,
+) {
+    let display_color = unit_list.display_color();
 
-    fac_sub_state.connect_bind(|_factory, object| {
-        let (inscription, unit, unit_binding) = factory_bind!(object, sub_state);
-        let binding = unit
-            .bind_property("sub_state", &inscription, "text")
-            .build();
-        unit_binding.set_binding(BIND_SUB_STATE_TEXT, binding);
-        display_inactive!(inscription, unit);
-    });
+    for column in column_view_column_list {
+        let Some(id) = column.id() else {
+            warn!("Column with no id!");
+            continue;
+        };
 
-    factory_connect_unbind!(fac_sub_state, BIND_SUB_STATE_TEXT);
+        match id.as_str() {
+            COL_ID_UNIT => column.set_factory(Some(&fac_unit_name(display_color))),
+            "sysdm-type" => column.set_factory(Some(&fac_unit_type(display_color))),
+            "sysdm-bus" => column.set_factory(Some(&fac_bus(display_color))),
+            "sysdm-state" => column.set_factory(Some(&fac_enable_status(display_color))),
+            "sysdm-preset" => column.set_factory(Some(&fac_preset(display_color))),
+            "sysdm-load" => column.set_factory(Some(&fac_load_state(display_color))),
+            "sysdm-active" => column.set_factory(Some(&fac_active(display_color))),
+            "sysdm-sub" => column.set_factory(Some(&fac_sub_state(display_color))),
+            "sysdm-description" => column.set_factory(Some(&fac_descrition(display_color))),
 
-    let fac_descrition = gtk::SignalListItemFactory::new();
+            _ => warn!("What to do. Id {id} not handle with factory"),
+        }
 
-    fac_descrition.connect_setup(factory_setup);
-
-    fac_descrition.connect_bind(|_factory, object| {
-        let (inscription, unit, unit_binding) = factory_bind!(object, description);
-        let binding = unit
-            .bind_property("description", &inscription, "text")
-            .build();
-        unit_binding.set_binding(BIND_DESCRIPTION_TEXT, binding);
-        display_inactive!(inscription, unit);
-    });
-
-    fac_descrition.connect_unbind(|_factory, object| {
-        let unit_binding = downcast_unit_binding!(object);
-        unit_binding.unset_binding(BIND_DESCRIPTION_TEXT);
-    });
-
-    factory_connect_unbind!(fac_descrition, BIND_DESCRIPTION_TEXT);
-
-    column_view_column_map
-        .get("unit")
-        .unwrap()
-        .set_factory(Some(&fac_unit_name));
-    column_view_column_map
-        .get("type")
-        .unwrap()
-        .set_factory(Some(&fac_unit_type));
-    column_view_column_map
-        .get("bus")
-        .unwrap()
-        .set_factory(Some(&fac_bus));
-    column_view_column_map
-        .get("state")
-        .unwrap()
-        .set_factory(Some(&fac_enable_status));
-    column_view_column_map
-        .get("preset")
-        .unwrap()
-        .set_factory(Some(&fac_preset));
-    column_view_column_map
-        .get("load")
-        .unwrap()
-        .set_factory(Some(&fac_load_state));
-    column_view_column_map
-        .get("active")
-        .unwrap()
-        .set_factory(Some(&fac_active));
-    column_view_column_map
-        .get("sub")
-        .unwrap()
-        .set_factory(Some(&fac_sub_state));
-    column_view_column_map
-        .get("description")
-        .unwrap()
-        .set_factory(Some(&fac_descrition));
-
-    for cv_column in column_view_column_map.values() {
-        cv_column.connect_fixed_width_notify(|cvc| {
+        column.connect_fixed_width_notify(|cvc| {
             debug!(
                 "Column width {:?} {}",
                 cvc.id().unwrap_or_default(),
@@ -264,26 +290,26 @@ pub fn setup_factories(
 }
 
 const LOAD_STATE: &str = "load_state";
-fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
+pub fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_load_state = gtk::SignalListItemFactory::new();
 
     fac_load_state.connect_setup(factory_setup);
 
     if display_color {
         fac_load_state.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind_enum!(object, load_state);
+            let (inscription, unit) = factory_bind_enum!(object, load_state);
 
-            load_state_text_binding(&inscription, &unit_binding, &unit);
+            load_state_text_binding(&inscription, &unit);
 
             let binding = unit
-                .bind_property(LOAD_STATE, &inscription, "css-classes")
+                .bind_property(LOAD_STATE, &inscription, CSS_CLASSES)
                 .transform_to(|_, load_state: LoadState| {
                     let css_classes = load_state_css_classes(load_state);
                     css_classes.map(|css| css.to_value())
                 })
                 .build();
 
-            unit_binding.set_binding(BIND_ENABLE_LOAD_CSS, binding);
+            store_binding(&inscription, *BIND_CSS, binding);
 
             let load_state = unit.load_state();
             inscription.set_text(Some(load_state.as_str()));
@@ -295,30 +321,25 @@ fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
                 display_inactive!(inscription, unit);
             }
         });
-        factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT, BIND_ENABLE_LOAD_CSS);
+        factory_connect_unbind!(&fac_load_state, *BIND_INFO, *BIND_CSS);
     } else {
         fac_load_state.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind_enum!(object, load_state);
-            load_state_text_binding(&inscription, &unit_binding, &unit);
-            display_inactive!(inscription, unit);
+            let (inscription, unit) = factory_bind_enum!(object, load_state);
+            load_state_text_binding(&inscription, &unit);
         });
 
-        factory_connect_unbind!(fac_load_state, BIND_ENABLE_LOAD_TEXT);
+        factory_connect_unbind!(&fac_load_state, *BIND_INFO);
     }
 
     fac_load_state
 }
 
-fn load_state_text_binding(
-    inscription: &gtk::Inscription,
-    unit_binding: &UnitBinding,
-    unit: &UnitInfo,
-) {
+fn load_state_text_binding(inscription: &gtk::Inscription, unit: &UnitInfo) {
     let binding = unit
-        .bind_property(LOAD_STATE, inscription, "text")
+        .bind_property(LOAD_STATE, inscription, TEXT)
         .transform_to(|_, load_state: LoadState| Some(load_state.as_str()))
         .build();
-    unit_binding.set_binding(BIND_ENABLE_LOAD_TEXT, binding);
+    store_binding(inscription, *BIND_INFO, binding);
 }
 
 fn load_state_css_classes<'a>(load_state: LoadState) -> Option<[&'a str; 2]> {
@@ -329,38 +350,38 @@ fn load_state_css_classes<'a>(load_state: LoadState) -> Option<[&'a str; 2]> {
     }
 }
 
-fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
+const ENABLE_STATUS: &str = "enable_status";
+pub fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_enable_status = gtk::SignalListItemFactory::new();
 
     fac_enable_status.connect_setup(factory_setup);
 
     if display_color {
         fac_enable_status.connect_bind(move |_factory, object| {
-            let (inscription, unit_binding) = factory_bind_pre!(object);
+            let (inscription, unit) = factory_bind_pre!(object);
 
-            let unit = unit_binding.unit_ref();
             let status_code = unit.enable_status();
             inscription.set_text(Some(status_code.as_str()));
             inscription.set_tooltip_markup(status_code.tooltip_info().as_deref());
 
             let binding = unit
-                .bind_property("enable_status", &inscription, "text")
+                .bind_property(ENABLE_STATUS, &inscription, TEXT)
                 .transform_to(|_, enablement_status: EnablementStatus| {
                     Some(enablement_status.as_str())
                 })
                 .build();
 
-            unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
+            store_binding(&inscription, *BIND_INFO, binding);
 
             let binding = unit
-                .bind_property("enable_status", &inscription, "css-classes")
+                .bind_property(ENABLE_STATUS, &inscription, CSS_CLASSES)
                 .transform_to(|_, enablement_status: EnablementStatus| {
                     let css_classes = enablement_css_classes(enablement_status);
                     css_classes.map(|css| css.to_value())
                 })
                 .build();
 
-            unit_binding.set_binding(BIND_ENABLE_STATUS_CSS, binding);
+            store_binding(&inscription, *BIND_CSS, binding);
 
             let css_classes = enablement_css_classes(status_code);
 
@@ -371,25 +392,11 @@ fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             }
         });
 
-        factory_connect_unbind!(
-            fac_enable_status,
-            BIND_ENABLE_STATUS_TEXT,
-            BIND_ENABLE_STATUS_CSS
-        );
+        factory_connect_unbind!(&fac_enable_status, *BIND_INFO, *BIND_CSS);
     } else {
         fac_enable_status.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind_enum!(object, enable_status);
-
-            let binding = unit
-                .bind_property("enable_status", &inscription, "text")
-                .transform_to(|_, status: EnablementStatus| Some(status.as_str()))
-                .build();
-
-            unit_binding.set_binding(BIND_ENABLE_STATUS_TEXT, binding);
-            display_inactive!(inscription, unit);
+            factory_bind_enum!(object, enable_status);
         });
-
-        factory_connect_unbind!(fac_enable_status, BIND_ENABLE_STATUS_TEXT);
     }
     fac_enable_status
 }
@@ -411,26 +418,25 @@ fn enablement_css_classes<'a>(enablement_status: EnablementStatus) -> Option<[&'
 
 const PRESET_NUM: &str = "preset";
 
-fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
+pub fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_preset = gtk::SignalListItemFactory::new();
 
     fac_preset.connect_setup(factory_setup);
 
     if display_color {
         fac_preset.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind_enum!(object, preset);
-
-            preset_text_binding(&inscription, &unit, &unit_binding);
+            let (inscription, unit) = factory_bind_enum!(object, preset);
+            preset_text_binding(&inscription, &unit);
 
             let binding = unit
-                .bind_property(PRESET_NUM, &inscription, "css-classes")
-                .transform_to(move |_s, preset_value: Preset| {
+                .bind_property(PRESET_NUM, &inscription, CSS_CLASSES)
+                .transform_to(|_s, preset_value: Preset| {
                     let css_classes = preset_css_classes(preset_value);
                     css_classes.map(|css| css.to_value())
                 })
                 .build();
 
-            unit_binding.set_binding(BIND_ENABLE_PRESET_CSS, binding);
+            store_binding(&inscription, *BIND_CSS, binding);
 
             let preset_value = unit.preset();
             let css_classes = preset_css_classes(preset_value);
@@ -439,36 +445,26 @@ fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
                 inscription.set_css_classes(&css);
             } else {
                 display_inactive!(inscription, unit);
+                inscription.set_css_classes(&[]);
             }
         });
 
-        factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT, BIND_ENABLE_PRESET_CSS);
+        factory_connect_unbind!(&fac_preset, *BIND_INFO, *BIND_CSS);
     } else {
         fac_preset.connect_bind(move |_factory, object| {
-            let (inscription, unit, unit_binding) = factory_bind_enum!(object, preset);
-
-            preset_text_binding(&inscription, &unit, &unit_binding);
-            display_inactive!(inscription, unit);
+            let (inscription, unit) = factory_bind_enum!(object, preset);
+            preset_text_binding(&inscription, &unit);
         });
-
-        factory_connect_unbind!(fac_preset, BIND_ENABLE_PRESET_TEXT);
     }
     fac_preset
 }
 
-fn preset_text_binding(
-    inscription: &gtk::Inscription,
-    unit: &UnitInfo,
-    unit_binding: &UnitBinding,
-) {
+fn preset_text_binding(inscription: &gtk::Inscription, unit: &UnitInfo) {
     let binding = unit
-        .bind_property(PRESET_NUM, inscription, "text")
-        .transform_to(move |_s, preset: Preset| {
-            let preset_str = preset.as_str();
-            Some(preset_str.to_value())
-        })
+        .bind_property(PRESET_NUM, inscription, TEXT)
+        .transform_to(|_s, preset: Preset| Some(preset.as_str()))
         .build();
-    unit_binding.set_binding(BIND_ENABLE_PRESET_TEXT, binding);
+    store_binding(inscription, *BIND_INFO, binding);
 }
 
 fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
@@ -478,4 +474,50 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
         Preset::Ignore => Some(["yellow", "bold"]),
         _ => None,
     }
+}
+
+pub(super) fn get_custom_factory(
+    property_code: &str,
+    display_color: bool,
+) -> gtk::SignalListItemFactory {
+    let factory = gtk::SignalListItemFactory::new();
+
+    let key = Quark::from_str(property_code);
+    factory.connect_setup(factory_setup);
+
+    if display_color {
+        factory.connect_bind(move |_factory, object| display_custom_property_color(key, object));
+    } else {
+        factory.connect_bind(move |_factory, object| display_custom_property(key, object));
+    }
+
+    factory
+}
+
+fn display_custom_property_color(key: Quark, object: &glib::Object) {
+    let (inscription, unit) = factory_bind_pre!(object);
+    inactive_display(&inscription, &unit);
+    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| convert_to_string(value));
+    inscription.set_text(value.as_deref());
+}
+
+fn display_custom_property(key: Quark, object: &glib::Object) {
+    let (inscription, unit) = factory_bind_pre!(object);
+    /*
+    let retreived_data: Option<std::ptr::NonNull<OwnedValue>> = unsafe { unit.qdata(key) };
+
+         if let Some(value_ptr) = retreived_data {
+        let value = unsafe { value_ptr.as_ref() };
+        let s = convert_to_string(value);
+        inscription.set_text(Some(&s));
+    } else {
+        inscription.set_text(None);
+    } */
+    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| convert_to_string(value));
+
+    inscription.set_text(value.as_deref());
 }

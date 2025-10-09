@@ -17,7 +17,6 @@ use sysd::{Journal, id128::Id128, journal::OpenOptions};
 
 use super::{
     BootFilter, SystemdErrors,
-    data::UnitInfo,
     journal_data::{EventRange, JournalEvent, JournalEventChunk, WhatGrab},
 };
 
@@ -41,13 +40,14 @@ pub const BOOT_IDX: u8 = 200;
 //pub const EVENT_MAX_ID: u8 = 201;
 
 pub(super) fn get_unit_journal_events(
-    unit: &UnitInfo,
+    primary_name: String,
+    level: UnitDBusLevel,
     boot_filter: BootFilter,
     range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
     let mut out_list = JournalEventChunk::new(range.batch_size + 10, range.what_grab);
 
-    let mut journal_reader = create_journal_reader(unit.primary(), unit.dbus_level(), boot_filter)?;
+    let mut journal_reader = create_journal_reader(primary_name, level, boot_filter)?;
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();

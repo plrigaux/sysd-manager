@@ -8,10 +8,7 @@ use crate::{
     format2,
     systemd::{data::UnitInfo, enums::ActiveState},
     utils::palette::blue,
-    widget::{
-        InterPanelMessage,
-        unit_list::{UnitListPanel, imp::rowdata::UnitBinding},
-    },
+    widget::{InterPanelMessage, unit_list::UnitListPanel},
 };
 
 pub fn setup_popup_menu(
@@ -65,11 +62,11 @@ pub fn setup_popup_menu(
 
             let line_id = line_id as u32;
             if let Some(object) = filtered_list.item(line_id) {
-                let unit_binding = object.downcast::<UnitBinding>().expect("Ok");
-                info!("Pointing on Unit {}", unit_binding.primary());
+                let unit = object.downcast_ref::<UnitInfo>().expect("Ok");
+                info!("Pointing on Unit {}", unit.primary());
                 menu_show(
                     &units_browser_clone,
-                    &unit_binding.unit_ref(),
+                    unit,
                     x as i32,
                     y as i32,
                     &unit_list_panel,

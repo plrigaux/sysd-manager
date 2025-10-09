@@ -1,7 +1,12 @@
 use crate::{systemd::data::UnitInfo, widget::unit_list::UnitListPanel};
-use std::{any::Any, collections::HashSet, fmt::Debug, hash::Hash};
+use std::{
+    any::Any,
+    collections::HashSet,
+    fmt::{self, Debug},
+    hash::Hash,
+};
 
-pub trait UnitPropertyFilter {
+pub trait UnitPropertyFilter: Debug {
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>);
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
@@ -27,7 +32,7 @@ where
     match prop_filter.as_any().downcast_ref::<FilterElement<T>>() {
         Some(a) => a,
         None => {
-            panic!("Type of prop_filter");
+            panic!("Type of prop_filter, Expect: FilterElement",);
         }
     }
     //.expect("downcast_mut to FilterElement")
@@ -52,6 +57,21 @@ where
     filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
     id: u8,
     unit_list_panel: UnitListPanel,
+}
+
+impl<T> fmt::Debug for FilterElement<T>
+where
+    T: Eq + Hash + Debug + Clone + 'static,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let t = std::any::TypeId::of::<T>();
+
+        f.debug_struct("FilterElement")
+            .field("SUB_TYPE", &t)
+            .field("filter_elements", &self.filter_elements)
+            .field("id", &self.id)
+            .finish()
+    }
 }
 
 impl<T> FilterElement<T>
@@ -160,6 +180,15 @@ pub struct FilterText {
     filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
     id: u8,
     unit_list_panel: UnitListPanel,
+}
+
+impl fmt::Debug for FilterText {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FilterText")
+            .field("filter_text", &self.filter_text)
+            .field("id", &self.id)
+            .finish()
+    }
 }
 
 impl FilterText {

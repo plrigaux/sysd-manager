@@ -442,8 +442,10 @@ impl JournalPanelImp {
             panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
             let boot_filter2 = boot_filter.clone();
+            let level = unit.dbus_level();
+            let primary_name = unit.primary();
             let journal_events: JournalEventChunk = gio::spawn_blocking(move || {
-                match systemd::get_unit_journal(&unit, boot_filter, range) {
+                match systemd::get_unit_journal(primary_name, level, boot_filter, range) {
                     Ok(journal_output) => journal_output,
                     Err(error) => {
                         warn!("Journal Events Error {error:?}");
@@ -571,9 +573,9 @@ impl JournalPanelImp {
 
         self.set_or_send_cancelling(Some(journal_continuous_sender));
 
+        let unit_name = unit.primary();
+        let level = unit.dbus_level();
         thread::spawn(move || {
-            let unit_name = unit.primary();
-            let level = unit.dbus_level();
             systemd::get_unit_journal_continuous(
                 unit_name,
                 level,

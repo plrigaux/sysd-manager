@@ -1,8 +1,12 @@
-mod data;
+pub mod data_browser;
+pub mod data_selection;
 mod imp;
 mod unit_properties_selection;
 
+use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};
+
+use crate::widget::unit_list::UnitListPanel;
 
 glib::wrapper! {
     pub struct UnitPropertiesSelectorDialog(ObjectSubclass<imp::UnitPropertiesSelectorDialogImp>)
@@ -12,14 +16,13 @@ glib::wrapper! {
 }
 
 impl UnitPropertiesSelectorDialog {
-    pub fn new() -> Self {
+    pub fn new(unit_list_panel: &UnitListPanel) -> Self {
         let obj: UnitPropertiesSelectorDialog = glib::Object::new();
+        obj.set_unit_list(unit_list_panel);
         obj
     }
-}
 
-impl Default for UnitPropertiesSelectorDialog {
-    fn default() -> Self {
-        Self::new()
+    fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+        self.imp().set_unit_list(unit_list_panel);
     }
 }

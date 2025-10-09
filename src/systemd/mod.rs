@@ -26,11 +26,14 @@ use gtk::glib::GString;
 use journal::Boot;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
-use tokio::runtime::Runtime;
-use tokio::sync::mpsc;
+
+use tokio::{runtime::Runtime, sync::mpsc};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-use crate::systemd::{data::EnableUnitFilesReturn, enums::LoadState};
+use crate::systemd::{
+    data::{EnableUnitFilesReturn, LUnit},
+    enums::LoadState,
+};
 
 pub mod enums;
 
@@ -94,9 +97,11 @@ impl UpdatedUnitInfo {
     }
 }
 
-pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, SystemdErrors> {
-    let level = sytemd_unit.dbus_level();
-    sysdbus::get_unit_file_state(level, &sytemd_unit.primary())
+pub fn get_unit_file_state(
+    level: UnitDBusLevel,
+    primary_name: &str,
+) -> Result<EnablementStatus, SystemdErrors> {
+    sysdbus::get_unit_file_state(level, primary_name)
 }
 
 /* pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
@@ -115,29 +120,37 @@ pub fn get_unit_file_state(sytemd_unit: &UnitInfo) -> Result<EnablementStatus, S
     }
 }
  */
-pub async fn list_units_description_and_state_async()
--> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
-    sysdbus::list_all_units_async().await
+
+pub async fn list_units_description_and_state_async(
+    level: UnitDBusLevel,
+) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
+    sysdbus::list_units_description_and_state_async(level).await
 }
 
 pub async fn complete_unit_information(
-    units: &Vec<(String, UnitDBusLevel, Option<String>)>,
+    units: Vec<(UnitDBusLevel, String, String)>,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     sysdbus::complete_unit_information(units).await
 }
 
 pub async fn complete_single_unit_information(
-    unit: &UnitInfo,
+    primary_name: String,
+    level: UnitDBusLevel,
+    object_path: String,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
-    let units = vec![(unit.primary(), unit.dbus_level(), unit.object_path())];
-    sysdbus::complete_unit_information(&units).await
+    let units = vec![(level, primary_name, object_path)];
+    sysdbus::complete_unit_information(units).await
 }
 
 /// Takes a unit name as input and attempts to start it
 /// # returns
 /// job_path
-pub fn start_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    start_unit_name(unit.dbus_level(), &unit.primary(), mode)
+pub fn start_unit(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
+    start_unit_name(level, unit_name, mode)
 }
 
 /// Takes a unit name as input and attempts to start it
@@ -152,12 +165,20 @@ pub fn start_unit_name(
 }
 
 /// Takes a unit name as input and attempts to stop it.
-pub fn stop_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    sysdbus::stop_unit(unit.dbus_level(), &unit.primary(), mode)
+pub fn stop_unit(
+    level: UnitDBusLevel,
+    primary_name: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
+    sysdbus::stop_unit(level, primary_name, mode)
 }
 
-pub fn restart_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<String, SystemdErrors> {
-    sysdbus::restart_unit(unit.dbus_level(), &unit.primary(), mode)
+pub fn restart_unit(
+    level: UnitDBusLevel,
+    primary_name: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
+    sysdbus::restart_unit(level, primary_name, mode)
 }
 
 #[allow(dead_code)]
@@ -168,28 +189,28 @@ pub enum DisEnableUnitFilesOutput {
 }
 
 pub fn disenable_unit_file(
-    unit: &UnitInfo,
+    primary_name: String,
+    level: UnitDBusLevel,
+    enable_status: EnablementStatus,
     expected_status: EnablementStatus,
 ) -> Result<DisEnableUnitFilesOutput, SystemdErrors> {
     let msg_return = match expected_status {
         EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => {
             let res = sysdbus::enable_unit_files(
-                unit.dbus_level(),
-                &[&unit.primary()],
+                level,
+                &[&primary_name],
                 DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
             )?;
             DisEnableUnitFilesOutput::Enable(res)
         }
         _ => {
-            let enable_status = unit.enable_status();
-
             let flags = if enable_status.is_runtime() {
                 DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
             } else {
                 DisEnableFlags::empty()
             };
 
-            let out = sysdbus::disable_unit_files(unit.dbus_level(), &[&unit.primary()], flags)?;
+            let out = sysdbus::disable_unit_files(level, &[&primary_name], flags)?;
             DisEnableUnitFilesOutput::Disable(out)
         }
     };
@@ -198,16 +219,16 @@ pub fn disenable_unit_file(
 }
 
 pub fn enable_unit_file(
-    unit_file: &str,
     level: UnitDBusLevel,
+    unit_file: &str,
     flags: DisEnableFlags,
 ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
     sysdbus::enable_unit_files(level, &[unit_file], flags)
 }
 
 pub fn disable_unit_files(
-    unit_file: &str,
     level: UnitDBusLevel,
+    unit_file: &str,
     flags: DisEnableFlags,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     sysdbus::disable_unit_files(level, &[unit_file], flags)
@@ -280,11 +301,12 @@ fn file_open_get_content(file_path: &str, unit: &UnitInfo) -> Result<String, Sys
 
 /// Obtains the journal log for the given unit.
 pub fn get_unit_journal(
-    unit: &UnitInfo,
+    primary_name: String,
+    level: UnitDBusLevel,
     boot_filter: BootFilter,
     range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
-    journal::get_unit_journal_events(unit, boot_filter, range)
+    journal::get_unit_journal_events(primary_name, level, boot_filter, range)
 }
 
 pub fn get_unit_journal_continuous(
@@ -539,14 +561,14 @@ pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let level = unit.dbus_level();
-    let unit_type: UnitType = UnitType::new(&unit.unit_type());
+    let unit_type: UnitType = unit.unit_type();
 
-    let object_path = get_unit_path(unit);
+    let object_path = unit.object_path();
 
     sysdbus::fetch_system_unit_info_native(level, &object_path, unit_type)
 }
 
-fn get_unit_path(unit: &UnitInfo) -> String {
+/* fn get_unit_path(unit: &UnitInfo) -> String {
     match unit.object_path() {
         Some(s) => s,
         None => {
@@ -556,7 +578,7 @@ fn get_unit_path(unit: &UnitInfo) -> String {
         }
     }
 }
-
+ */
 pub fn fetch_unit(
     level: UnitDBusLevel,
     unit_primary_name: &str,
@@ -564,38 +586,54 @@ pub fn fetch_unit(
     sysdbus::fetch_unit(level, unit_primary_name)
 }
 
-pub fn kill_unit(unit: &UnitInfo, who: KillWho, signal: i32) -> Result<(), SystemdErrors> {
-    sysdbus::kill_unit(unit.dbus_level(), &unit.primary(), who, signal)
+pub fn kill_unit(
+    level: UnitDBusLevel,
+    primary_name: &str,
+    who: KillWho,
+    signal: i32,
+) -> Result<(), SystemdErrors> {
+    sysdbus::kill_unit(level, primary_name, who, signal)
 }
 
-pub fn freeze_unit(unit: Option<&UnitInfo>) -> Result<(), SystemdErrors> {
-    sysdbus::freeze_unit(
-        unit.expect("unit not None").dbus_level(),
-        &unit.expect("unit not None").primary(),
-    )
+pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
+    if let Some((level, primary_name)) = params {
+        sysdbus::freeze_unit(level, &primary_name)
+    } else {
+        Err(SystemdErrors::NoUnit)
+    }
 }
 
-pub fn thaw_unit(unit: Option<&UnitInfo>) -> Result<(), SystemdErrors> {
-    sysdbus::thaw_unit(
-        unit.expect("unit not None").dbus_level(),
-        &unit.expect("unit not None").primary(),
-    )
+pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
+    if let Some((level, primary_name)) = params {
+        sysdbus::thaw_unit(level, &primary_name)
+    } else {
+        Err(SystemdErrors::NoUnit)
+    }
 }
 
-pub fn reload_unit(unit: &UnitInfo, mode: StartStopMode) -> Result<(), SystemdErrors> {
-    sysdbus::reload_unit(unit.dbus_level(), &unit.primary(), mode.as_str())
+pub fn reload_unit(
+    level: UnitDBusLevel,
+    primary_name: &str,
+    mode: StartStopMode,
+) -> Result<(), SystemdErrors> {
+    sysdbus::reload_unit(level, primary_name, mode.as_str())
 }
 
 pub fn queue_signal_unit(
-    unit: &UnitInfo,
+    level: UnitDBusLevel,
+    primary_name: &str,
     who: KillWho,
     signal: i32,
     value: i32,
 ) -> Result<(), SystemdErrors> {
-    sysdbus::queue_signal_unit(unit.dbus_level(), &unit.primary(), who, signal, value)
+    sysdbus::queue_signal_unit(level, primary_name, who, signal, value)
 }
 
-pub fn clean_unit(unit: &UnitInfo, what: &[String]) -> Result<(), SystemdErrors> {
+pub fn clean_unit(
+    level: UnitDBusLevel,
+    primary_name: &str,
+    what: &[String],
+) -> Result<(), SystemdErrors> {
     //just send all if seleted
     let mut what_peekable = what
         .iter()
@@ -608,38 +646,42 @@ pub fn clean_unit(unit: &UnitInfo, what: &[String]) -> Result<(), SystemdErrors>
         what.iter().map(|s| s.as_str()).collect()
     };
 
-    sysdbus::clean_unit(unit.dbus_level(), &unit.primary(), &clean_what)
+    sysdbus::clean_unit(level, primary_name, &clean_what)
 }
 
 pub fn mask_unit_files(
-    unit: &UnitInfo,
+    level: UnitDBusLevel,
+    primary_name: &str,
     runtime: bool,
     force: bool,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    sysdbus::mask_unit_files(unit.dbus_level(), &[&unit.primary()], runtime, force)
+    sysdbus::mask_unit_files(level, &[primary_name], runtime, force)
 }
 
 pub fn preset_unit_files(
-    unit: &UnitInfo,
+    level: UnitDBusLevel,
+    primary_name: &str,
     runtime: bool,
     force: bool,
 ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    sysdbus::preset_unit_file(unit.dbus_level(), &[&unit.primary()], runtime, force)
+    sysdbus::preset_unit_file(level, &[primary_name], runtime, force)
 }
 
 pub fn reenable_unit_file(
-    unit: &UnitInfo,
+    level: UnitDBusLevel,
+    primary_name: &str,
     runtime: bool,
     force: bool,
 ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    sysdbus::reenable_unit_file(unit.dbus_level(), &[&unit.primary()], runtime, force)
+    sysdbus::reenable_unit_file(level, &[primary_name], runtime, force)
 }
 
 pub fn unmask_unit_files(
-    unit: &UnitInfo,
+    level: UnitDBusLevel,
+    primary_name: &str,
     runtime: bool,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    sysdbus::unmask_unit_files(unit.dbus_level(), &[&unit.primary()], runtime)
+    sysdbus::unmask_unit_files(level, &[primary_name], runtime)
 }
 
 pub fn link_unit_files(
@@ -720,26 +762,20 @@ impl PartialOrd for Dependency {
 }
 
 pub fn fetch_unit_dependencies(
-    unit: &UnitInfo,
+    level: UnitDBusLevel,
+    primary_name: &str,
+    object_path: &str,
     dependency_type: DependencyType,
     plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
-    let object_path = get_unit_path(unit);
-
-    sysdbus::unit_get_dependencies(
-        unit.dbus_level(),
-        &unit.primary(),
-        &object_path,
-        dependency_type,
-        plain,
-    )
+    sysdbus::unit_get_dependencies(level, primary_name, object_path, dependency_type, plain)
 }
 
 pub fn get_unit_active_state(
-    unit_name: &str,
     level: UnitDBusLevel,
+    primary_name: &str,
 ) -> Result<ActiveState, SystemdErrors> {
-    let object_path = sysdbus::unit_dbus_path_from_name(unit_name);
+    let object_path = sysdbus::unit_dbus_path_from_name(primary_name);
 
     sysdbus::get_unit_active_state(level, &object_path)
 }
@@ -875,13 +911,13 @@ pub async fn test(test_name: &str, level: UnitDBusLevel) {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
-pub struct UnitProperty {
+pub struct UnitPropertyFetch {
     pub name: String,
     pub signature: String,
     pub access: String,
 }
 
-impl UnitProperty {
+impl UnitPropertyFetch {
     fn new(p: &zbus_xml::Property) -> Self {
         let access = match p.access() {
             zbus_xml::PropertyAccess::Read => "read",
@@ -889,13 +925,24 @@ impl UnitProperty {
             zbus_xml::PropertyAccess::ReadWrite => "readwrite",
         };
 
-        UnitProperty {
+        UnitPropertyFetch {
             name: p.name().to_string(),
             signature: p.ty().to_string(),
             access: access.to_string(),
         }
     }
 }
-pub async fn fetch_unit_properties() -> Result<BTreeMap<String, Vec<UnitProperty>>, SystemdErrors> {
-    sysdbus::fetch_unit_properties().await
+
+pub async fn fetch_unit_interface_properties()
+-> Result<BTreeMap<String, Vec<UnitPropertyFetch>>, SystemdErrors> {
+    sysdbus::fetch_unit_interface_properties().await
+}
+
+pub async fn fetch_unit_properties(
+    level: UnitDBusLevel,
+    path: &str,
+    property_interface: &str,
+    property: &str,
+) -> Result<OwnedValue, SystemdErrors> {
+    sysdbus::fetch_unit_properties(level, path, property_interface, property).await
 }

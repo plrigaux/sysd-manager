@@ -1,7 +1,7 @@
 use std::cell::{OnceCell, RefCell};
 
 use adw::subclass::window::AdwWindowImpl;
-use gio::glib::Object;
+use gio::glib::{Object, Variant};
 use gtk::{
     glib::{self},
     prelude::*,
@@ -17,12 +17,20 @@ use log::{debug, error, info, warn};
 
 use crate::{
     systemd::{self, runtime},
-    widget::unit_properties_selector::{
-        data::PropertiesSelectorObject, unit_properties_selection::UnitPropertiesSelection,
+    systemd_gui::new_settings,
+    widget::{
+        unit_list::UnitListPanel,
+        unit_properties_selector::{
+            data_browser::{INTERFACE_NAME, PropertyBrowseItem},
+            unit_properties_selection::UnitPropertiesSelection,
+        },
     },
 };
 
 use super::UnitPropertiesSelectorDialog;
+
+const WINDOW_SIZE: &str = "unit-property-window-size";
+const PANED_SEPARATOR_POSITION: &str = "unit-property-paned-separator-position";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties_selector.ui")]
@@ -50,6 +58,9 @@ pub struct UnitPropertiesSelectorDialogImp {
 
     #[template_child]
     unit_properties_selection: TemplateChild<UnitPropertiesSelection>,
+
+    #[template_child]
+    paned: TemplateChild<gtk::Paned>,
 
     last_filter_string: RefCell<String>,
 
@@ -138,7 +149,7 @@ impl UnitPropertiesSelectorDialogImp {
 
             if let Some(children) = tree_list_row.children() {
                 let item = tree_list_row.item();
-                if let Some(prop_selector) = item.and_downcast_ref::<PropertiesSelectorObject>() {
+                if let Some(prop_selector) = item.and_downcast_ref::<PropertyBrowseItem>() {
                     info!(
                         "Child model {} {}",
                         children.n_items(),
@@ -152,7 +163,7 @@ impl UnitPropertiesSelectorDialogImp {
             }
 
             let item = tree_list_row.item();
-            let Some(prop_selector) = item.and_downcast_ref::<PropertiesSelectorObject>() else {
+            let Some(prop_selector) = item.and_downcast_ref::<PropertyBrowseItem>() else {
                 error!("some wrong downcast_ref {object:?}");
                 return false;
             };
@@ -175,6 +186,86 @@ impl UnitPropertiesSelectorDialogImp {
                     .contains(texts)
             }
         })
+    }
+
+    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
+        self.unit_properties_selection
+            .set_unit_list(unit_list_panel);
+
+        let Some(tree_list_model) = self.tree_list_model.get() else {
+            warn!("Not None");
+            return;
+        };
+
+        let default = PropertyBrowseItem::new_interface(INTERFACE_NAME.to_owned());
+        // list_store.append(&default);
+
+        for default_column in unit_list_panel.default_columns() {
+            let new_property_object = PropertyBrowseItem::from_column(default_column);
+            default.add_child(new_property_object);
+        }
+
+        let model = tree_list_model.model();
+        let store = model.downcast_ref::<gio::ListStore>().unwrap();
+        store.append(&default);
+    }
+
+    fn load_window_size(&self) {
+        // Get the window state from `settings`
+        let settings = new_settings();
+
+        let size = settings.value(WINDOW_SIZE);
+
+        let (mut width, mut height) = size.get::<(i32, i32)>().unwrap();
+
+        let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
+
+        info!(
+            "Window settings: width {width}, height {height},  panes position {separator_position}"
+        );
+
+        let obj = self.obj();
+        let (def_width, def_height) = obj.default_size();
+
+        if width < 0 {
+            width = def_width;
+            if width < 0 {
+                width = 1280;
+            }
+        }
+
+        if height < 0 {
+            height = def_height;
+            if height < 0 {
+                height = 720;
+            }
+        }
+
+        // Set the size of the window
+        obj.set_default_size(width, height);
+
+        if separator_position < 0 {
+            separator_position = width / 2;
+        }
+
+        self.paned.set_position(separator_position);
+    }
+
+    pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
+        // Get the size of the window
+
+        let obj = self.obj();
+        let size = obj.default_size();
+
+        let settings = new_settings();
+
+        let value: Variant = size.into();
+        settings.set_value(WINDOW_SIZE, &value)?;
+
+        let separator_position = self.paned.position();
+        settings.set_int(PANED_SEPARATOR_POSITION, separator_position)?;
+
+        Ok(())
     }
 }
 
@@ -200,9 +291,12 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let store = gio::ListStore::new::<PropertiesSelectorObject>();
+        self.load_window_size();
 
-        let tree_list_model = gtk::TreeListModel::new(store.clone(), false, false, add_tree_node);
+        let list_store = gio::ListStore::new::<PropertyBrowseItem>();
+
+        let tree_list_model =
+            gtk::TreeListModel::new(list_store.clone(), false, false, add_tree_node);
 
         self.tree_list_model
             .set(tree_list_model.clone())
@@ -230,11 +324,10 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         factory_interface.connect_setup(|_fac, item| {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+            item.set_selectable(true);
 
             let label = gtk::Label::builder().xalign(0.0).build();
-            //let label = gtk::Inscription::builder().build();
-            let expander = gtk::TreeExpander::new();
-            expander.set_child(Some(&label));
+            let expander = gtk::TreeExpander::builder().child(&label).build();
             item.set_child(Some(&expander));
         });
 
@@ -255,29 +348,31 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
             let property_object = tree_list_row
                 .item()
-                .and_downcast::<PropertiesSelectorObject>()
+                .and_downcast::<PropertyBrowseItem>()
                 .unwrap();
 
             let interface = property_object.interface();
-            if let Some(unit_type) = interface.split('.').next_back() {
-                label.set_text(unit_type);
+            let val = if tree_list_row.depth() == 0 {
+                interface.split('.').next_back().unwrap_or_default()
             } else {
-                label.set_text("");
-            }
+                ""
+            };
+
+            label.set_text(val);
         });
         self.interface_column.set_factory(Some(&factory_interface));
 
         let factory_property = gtk::SignalListItemFactory::new();
         factory_property.connect_setup(setup);
         factory_property.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::unit_property);
+            bind(item, PropertyBrowseItem::unit_property);
         });
         self.property_column.set_factory(Some(&factory_property));
 
         let signature_factory = gtk::SignalListItemFactory::new();
         signature_factory.connect_setup(setup);
         signature_factory.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::signature);
+            bind(item, PropertyBrowseItem::signature);
         });
 
         self.signature_column.set_factory(Some(&signature_factory));
@@ -287,32 +382,39 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         access_factory.connect_setup(setup);
 
         access_factory.connect_bind(|_fac, item| {
-            bind(item, PropertiesSelectorObject::access);
+            bind(item, PropertyBrowseItem::access);
         });
 
         self.access_column.set_factory(Some(&access_factory));
 
         let unit_properties_selection = self.unit_properties_selection.clone();
+
         selection_model.connect_selected_item_notify(move |single_selection| {
             debug!(
                 "connect_selected_notify idx {}",
                 single_selection.selected()
             );
+
             let Some(object) = single_selection.selected_item() else {
-                warn!("No object selected");
+                //warn!("No object selected");
                 return;
             };
 
             let tree_list_row = object.downcast::<gtk::TreeListRow>().unwrap();
 
+            if tree_list_row.is_expandable() {
+                tree_list_row.set_expanded(!tree_list_row.is_expanded());
+            }
+
             let property_object = tree_list_row
                 .item()
-                .and_downcast::<PropertiesSelectorObject>()
+                .and_downcast::<PropertyBrowseItem>()
                 .unwrap();
 
             if property_object.unit_property().is_empty() {
-                single_selection.set_selected(gtk::INVALID_LIST_POSITION);
-                warn!("Cant select interface  {property_object:?}");
+                //single_selection.set_selected(gtk::INVALID_LIST_POSITION);
+                single_selection.unselect_item(single_selection.selected());
+                debug!("Can't select interface  {property_object:?}");
                 return;
             }
 
@@ -322,11 +424,10 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .parent()
                 .expect("has a parent")
                 .item()
-                .and_downcast::<PropertiesSelectorObject>()
+                .and_downcast::<PropertyBrowseItem>()
                 .unwrap();
 
-            let new_property_object =
-                PropertiesSelectorObject::from_parent(interface, property_object);
+            let new_property_object = PropertyBrowseItem::from_parent(interface, property_object);
 
             unit_properties_selection.add_new_property(new_property_object);
         });
@@ -335,7 +436,7 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
             let (sender, receiver) = tokio::sync::oneshot::channel();
 
             runtime().spawn(async move {
-                match systemd::fetch_unit_properties().await {
+                match systemd::fetch_unit_interface_properties().await {
                     Ok(map) => sender.send(map).expect("The channel needs to be open."),
                     Err(err) => error!("Fetch unir properties {err:?}"),
                 }
@@ -350,14 +451,14 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
                 .into_iter()
                 .filter(|(k, _)| k.starts_with("org.freedesktop.systemd1"))
             {
-                let obj = PropertiesSelectorObject::new_interface(inteface);
+                let obj = PropertyBrowseItem::new_interface(inteface);
                 properties.sort();
                 for property in properties {
-                    let prop_object = PropertiesSelectorObject::from(property);
+                    let prop_object = PropertyBrowseItem::from(property);
                     obj.add_child(prop_object);
                 }
 
-                store.append(&obj);
+                list_store.append(&obj);
             }
         });
     }
@@ -369,7 +470,7 @@ fn setup(_fac: &gtk::SignalListItemFactory, item: &Object) {
     item.set_child(Some(&label));
 }
 
-fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
+fn bind(item: &Object, func: fn(&PropertyBrowseItem) -> String) {
     let item = item.downcast_ref::<gtk::ListItem>().unwrap();
 
     let widget = item.child();
@@ -379,7 +480,7 @@ fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
     let tree_list_row = item.item().unwrap().downcast::<gtk::TreeListRow>().unwrap();
     let property_object = tree_list_row
         .item()
-        .and_downcast::<PropertiesSelectorObject>()
+        .and_downcast::<PropertyBrowseItem>()
         .unwrap();
 
     let value = func(&property_object);
@@ -387,12 +488,12 @@ fn bind(item: &Object, func: fn(&PropertiesSelectorObject) -> String) {
 }
 
 fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
-    let Some(prop_selector) = object.downcast_ref::<PropertiesSelectorObject>() else {
+    let Some(prop_selector) = object.downcast_ref::<PropertyBrowseItem>() else {
         warn!("object type: {:?} {object:?}", object.type_());
         return None;
     };
 
-    let store = gio::ListStore::new::<PropertiesSelectorObject>();
+    let store = gio::ListStore::new::<PropertyBrowseItem>();
 
     let binding = prop_selector.children();
     let children = (*binding).as_ref()?;
@@ -404,7 +505,22 @@ fn add_tree_node(object: &Object) -> Option<gio::ListModel> {
 }
 
 impl WidgetImpl for UnitPropertiesSelectorDialogImp {}
-impl WindowImpl for UnitPropertiesSelectorDialogImp {}
+
+impl WindowImpl for UnitPropertiesSelectorDialogImp {
+    // Save window state right before the window will be closed
+    fn close_request(&self) -> glib::Propagation {
+        // Save window size
+        debug!("Close window");
+        if let Err(_err) = self.save_window_context() {
+            error!("Failed to save window state");
+        }
+
+        self.parent_close_request();
+        // Allow to invoke other event handlers
+        glib::Propagation::Proceed
+    }
+}
+
 impl AdwWindowImpl for UnitPropertiesSelectorDialogImp {}
 
 #[cfg(test)]

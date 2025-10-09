@@ -20,7 +20,12 @@ use strum::IntoEnumIterator;
 use log::{info, warn};
 
 use crate::{
-    systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
+    systemd::{
+        self,
+        data::UnitInfo,
+        enums::{CleanOption, UnitDBusLevel},
+        errors::SystemdErrors,
+    },
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -73,23 +78,29 @@ impl CleanDialogImp {
                   result: Result<(), SystemdErrors>,
                   _control: &UnitControlPanel| {
                 if let Err(error) = result
-                    && let SystemdErrors::ZAccessDenied(_, _) = error {
-                        let mut cmd = "sudo systemctl clean ".to_owned();
+                    && let SystemdErrors::ZAccessDenied(_, _) = error
+                {
+                    let mut cmd = "sudo systemctl clean ".to_owned();
 
-                        for w in what {
-                            cmd.push_str("--what=");
-                            cmd.push_str(&w);
-                            cmd.push(' ');
-                        }
-
-                        cmd.push_str(&unit.expect("Unit not None").primary());
-                        work_around_dialog(&cmd, &error, method, &this.into())
+                    for w in what {
+                        cmd.push_str("--what=");
+                        cmd.push_str(&w);
+                        cmd.push(' ');
                     }
+
+                    cmd.push_str(&unit.expect("Unit not None").primary());
+                    work_around_dialog(&cmd, &error, method, &this.into())
+                }
             }
         };
 
-        let lambda =
-            move |unit: Option<&UnitInfo>| systemd::clean_unit(unit.expect("Unit not None"), &what);
+        let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+            if let Some((level, primary_name)) = params {
+                systemd::clean_unit(level, &primary_name, &what)
+            } else {
+                Err(SystemdErrors::NoUnit)
+            }
+        };
 
         self.unit_control
             .get()
@@ -157,13 +168,14 @@ impl CleanDialogImp {
 
         let code_all = CleanOption::All.code();
         if let Some(all) = map.get(code_all)
-            && all.is_active() {
-                for (key, check_button) in map.iter() {
-                    if key != code_all {
-                        check_button.set_active(false);
-                    }
+            && all.is_active()
+        {
+            for (key, check_button) in map.iter() {
+                if key != code_all {
+                    check_button.set_active(false);
                 }
             }
+        }
 
         let mut at_least_one_checked = false;
         for check_button in map.values() {

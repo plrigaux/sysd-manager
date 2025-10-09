@@ -1,5 +1,6 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, sync::LazyLock};
 
+use glib::Quark;
 use gtk::{TextBuffer, TextIter, TextTag, glib::translate::IntoGlib, pango, prelude::*};
 use log::debug;
 
@@ -28,7 +29,8 @@ const TAG_NAME_GREY: &str = "grey";
 const TAG_NAME_GREY_DARK: &str = "grey_dark";
 const TAG_NAME_STATUS: &str = "blue";
 const TAG_NAME_STATUS_DARK: &str = "blue_dark";
-pub const TAG_DATA_LINK: &str = "link";
+pub static TAG_DATA_LINK: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("link"));
+
 const TAG_NAME_YELLOW_DARK: &str = "yellow_dark";
 const TAG_NAME_YELLOW: &str = "yellow";
 
@@ -314,7 +316,7 @@ impl UnitInfoWriter {
                 let link_value = link.to_value();
                 debug!("text {text} link {link_value:?}");
                 unsafe {
-                    tag.set_data(TAG_DATA_LINK, link_value);
+                    tag.set_qdata(*TAG_DATA_LINK, link_value);
                 }
             }
 

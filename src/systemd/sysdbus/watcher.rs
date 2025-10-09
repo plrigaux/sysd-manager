@@ -5,7 +5,7 @@ use zvariant::OwnedObjectPath;
 
 use crate::systemd::{
     SystemdSignal, SystemdSignalRow, enums::UnitDBusLevel, errors::SystemdErrors,
-    sysdbus::get_connection_async,
+    sysdbus::get_connection,
 };
 use futures_util::stream::StreamExt;
 
@@ -57,7 +57,7 @@ pub async fn watch_systemd_signals(
     systemd_signal_sender: mpsc::Sender<SystemdSignalRow>,
     cancellation_token: tokio_util::sync::CancellationToken,
 ) -> Result<(), SystemdErrors> {
-    let connection = get_connection_async(UnitDBusLevel::System).await?;
+    let connection = get_connection(UnitDBusLevel::System).await?;
 
     // `Systemd1ManagerProxy` is generated from `Systemd1Manager` trait
     let systemd_proxy = Systemd1ManagerProxy::new(&connection).await?;

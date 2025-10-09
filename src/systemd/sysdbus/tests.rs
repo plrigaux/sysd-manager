@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use zvariant::Value;
 
 use super::*;
@@ -84,7 +82,7 @@ pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
     init();
     let unit_file: &str = "tiny_daemon.service";
 
-    let connection = get_connection(UnitDBusLevel::System)?;
+    let connection = get_blocking_connection(UnitDBusLevel::System)?;
 
     let message = connection.call_method(
         Some(DESTINATION_SYSTEMD),
@@ -280,13 +278,6 @@ fn test_name_convertion() {
     }
 }
 
-#[derive(Deserialize, Type, PartialEq, Debug)]
-struct TestTruct {
-    a: String,
-    b: u32,
-    c: String,
-}
-
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_get_unit_processes() -> Result<(), SystemdErrors> {
@@ -314,13 +305,10 @@ fn test_get_unit_active_state() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-async fn get_unit_list_test(
-    level: UnitDBusLevel,
-) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
-    let connection = get_connection_async(level).await?;
-    let conn = Arc::new(connection);
+async fn get_unit_list_test(level: UnitDBusLevel) -> Result<Vec<LUnit>, SystemdErrors> {
+    let connection = get_connection(level).await?;
 
-    let r = list_units_async_as_map(conn.clone(), level).await?;
+    let r = list_units_list_async(connection).await?;
 
     info!("Returned units count: {}", r.len());
 
@@ -346,10 +334,9 @@ async fn test_get_unit_list_user() -> Result<(), SystemdErrors> {
 async fn get_unit_file_list_test(
     level: UnitDBusLevel,
 ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
-    let connection = get_connection_async(level).await?;
-    let conn = Arc::new(connection);
+    let connection = get_connection(level).await?;
 
-    let r = list_unit_files_async(conn, level).await?;
+    let r = list_unit_files_async(connection, level).await?;
 
     info!("Returned units count: {}", r.len());
 
@@ -376,21 +363,19 @@ async fn test_get_unit_file_list_user() -> Result<(), SystemdErrors> {
 #[tokio::test]
 async fn test_get_list() -> Result<(), SystemdErrors> {
     init();
-    let connection = get_connection_async(UnitDBusLevel::System).await?;
-    let conn = Arc::new(connection);
+    let connection = get_connection(UnitDBusLevel::System).await?;
 
-    let connection2 = get_connection_async(UnitDBusLevel::UserSession).await?;
-    let conn2 = Arc::new(connection2);
+    let connection2 = get_connection(UnitDBusLevel::UserSession).await?;
 
     use std::time::Instant;
     let now = Instant::now();
-    let t1 = tokio::spawn(list_units_async_as_map(conn.clone(), UnitDBusLevel::System));
-    let t2 = tokio::spawn(list_unit_files_async(conn, UnitDBusLevel::System));
-    let t3 = tokio::spawn(list_units_async_as_map(
-        conn2.clone(),
+    let t1 = tokio::spawn(list_units_list_async(connection.clone()));
+    let t2 = tokio::spawn(list_unit_files_async(connection, UnitDBusLevel::System));
+    let t3 = tokio::spawn(list_units_list_async(connection2.clone()));
+    let t4 = tokio::spawn(list_unit_files_async(
+        connection2,
         UnitDBusLevel::UserSession,
     ));
-    let t4 = tokio::spawn(list_unit_files_async(conn2, UnitDBusLevel::UserSession));
 
     let _asdf = tokio::join!(t1, t2, t3, t4);
 
@@ -408,18 +393,16 @@ async fn test_get_list() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_list2() -> Result<(), SystemdErrors> {
-    let connection = get_connection_async(UnitDBusLevel::System).await?;
-    let conn = Arc::new(connection);
+    let connection = get_connection(UnitDBusLevel::System).await?;
 
-    let connection2 = get_connection_async(UnitDBusLevel::UserSession).await?;
-    let conn2 = Arc::new(connection2);
+    let connection2 = get_connection(UnitDBusLevel::UserSession).await?;
 
     use std::time::Instant;
     let now = Instant::now();
-    let t1 = list_units_async_as_map(conn.clone(), UnitDBusLevel::System);
-    let t2 = list_unit_files_async(conn, UnitDBusLevel::System);
-    let t3 = list_units_async_as_map(conn2.clone(), UnitDBusLevel::UserSession);
-    let t4 = list_unit_files_async(conn2, UnitDBusLevel::UserSession);
+    let t1 = list_units_list_async(connection.clone());
+    let t2 = list_unit_files_async(connection, UnitDBusLevel::System);
+    let t3 = list_units_list_async(connection2.clone());
+    let t4 = list_unit_files_async(connection2, UnitDBusLevel::UserSession);
 
     let joined_result = tokio::join!(t1, t2, t3, t4);
 
@@ -437,11 +420,11 @@ async fn test_get_list2() -> Result<(), SystemdErrors> {
     println!("Session unit file size {}", r4.len());
 
     //check system collision
-    for (key, _val) in r1 {
+    /*     for (key, _val) in r1 {
         if r3.contains_key(&key) {
             println!("collision description on key {key}");
         }
-    }
+    } */
 
     /*         let a = asdf.0;
            let b = asdf.1;
@@ -456,7 +439,7 @@ async fn test_get_list2() -> Result<(), SystemdErrors> {
 #[test]
 fn test_get_properties() -> Result<(), SystemdErrors> {
     init();
-    let connection = get_connection(UnitDBusLevel::System)?;
+    let connection = get_blocking_connection(UnitDBusLevel::System)?;
 
     let object_path = unit_dbus_path_from_name(TEST_SERVICE);
     debug!("Unit path: {object_path}");
@@ -557,7 +540,7 @@ where
         .interface(INTERFACE_SYSTEMD_UNIT)?
         .build(body)?;
 
-    let connection = get_connection(level)?;
+    let connection = get_blocking_connection(level)?;
 
     connection.send(&message)?;
 
@@ -646,19 +629,13 @@ fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-#[derive(Deserialize, Type, PartialEq, Debug)]
-pub(super) struct TestIntro {
-    pub prop: String,
-    pub pid: OwnedValue,
-}
-
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_introspect() -> Result<(), SystemdErrors> {
     init();
 
     let result: Result<(), SystemdErrors> = {
-        let connection = get_connection(UnitDBusLevel::System)?;
+        let connection = get_blocking_connection(UnitDBusLevel::System)?;
         info!("Connect");
 
         let message = connection.call_method(
@@ -712,7 +689,7 @@ fn test_introspect2() -> Result<(), SystemdErrors> {
     init();
 
     fn sub() -> Result<(), SystemdErrors> {
-        let connection = get_connection(UnitDBusLevel::System)?;
+        let connection = get_blocking_connection(UnitDBusLevel::System)?;
 
         let proxy = Proxy::new(
             &connection,
@@ -749,7 +726,7 @@ fn test_introspect2() -> Result<(), SystemdErrors> {
 async fn test_introspect3() -> Result<(), SystemdErrors> {
     init();
 
-    let map = fetch_unit_properties().await?;
+    let map = fetch_unit_interface_properties().await?;
 
     for (k, v) in map.iter() {
         info!("{k}\t{}", v.len());
@@ -763,7 +740,7 @@ async fn test_introspect3() -> Result<(), SystemdErrors> {
 async fn test_get_properties2() -> Result<(), SystemdErrors> {
     init();
 
-    let connection = get_connection_async(UnitDBusLevel::System).await?;
+    let connection = get_connection(UnitDBusLevel::System).await?;
 
     let object_path = unit_dbus_path_from_name(TEST_SERVICE);
     let message = connection

@@ -18,7 +18,7 @@ use gtk::{
     },
 };
 
-use log::info;
+use log::{error, info};
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -27,7 +27,7 @@ use crate::{
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
         unit_list::{
-            UnitListPanel,
+            COL_ID_UNIT, UnitListPanel,
             filter::{
                 UnitListFilterWindow,
                 unit_prop_filter::{
@@ -74,17 +74,20 @@ impl UnitListFilterWindowImp {
             let (widget, filter_widget): (gtk::Widget, Vec<FilterWidget>) =
                 if let Some(filter) = filter_assessor {
                     let (widget, filter_widget) = match *key {
-                        "unit" => common_text_filter(filter),
-                        "bus" => build_bus_level_filter(filter),
-                        "type" => build_type_filter(filter),
-                        "state" => build_enablement_filter(filter),
-                        "preset" => build_preset_filter(filter),
-                        "load" => build_load_filter(filter),
-                        "active" => build_active_state_filter(filter),
-                        "sub" => super::substate::sub_state_filter(filter),
-                        "description" => common_text_filter(filter),
+                        COL_ID_UNIT => common_text_filter(filter),
+                        "sysdm-bus" => build_bus_level_filter(filter),
+                        "sysdm-type" => build_type_filter(filter),
+                        "sysdm-state" => build_enablement_filter(filter),
+                        "sysdm-preset" => build_preset_filter(filter),
+                        "sysdm-load" => build_load_filter(filter),
+                        "sysdm-active" => build_active_state_filter(filter),
+                        "sysdm-sub" => super::substate::sub_state_filter(filter),
+                        "sysdm-description" => common_text_filter(filter),
 
-                        _ => unreachable!("unreachable"),
+                        _ => {
+                            error!("Key {key}");
+                            unreachable!("unreachable")
+                        }
                     };
                     (widget.into(), filter_widget)
                 } else {
@@ -211,9 +214,9 @@ impl UnitListFilterWindowImp {
     }
 }
 
-fn set_visible_child_name(filter_stack: &adw::ViewStack, name: &str) {
-    filter_stack.set_visible_child_name(name);
-    let widget = filter_stack.child_by_name(name);
+fn set_visible_child_name(filter_stack: &adw::ViewStack, child_name: &str) {
+    filter_stack.set_visible_child_name(child_name);
+    let widget = filter_stack.child_by_name(child_name);
     if let Some(widget) = widget {
         grab_focus_on_child_entry(widget.first_child().as_ref());
     }
@@ -383,11 +386,11 @@ fn build_type_filter(
     let container = create_content_box();
 
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
-    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown(_))) {
+    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown | UnitType::Unit))
+    {
         let check = {
             let binding = filter_container.borrow();
-            let active = get_filter_element::<String>(binding.as_ref())
-                .contains(&unit_type.as_str().to_owned());
+            let active = get_filter_element::<UnitType>(binding.as_ref()).contains(&unit_type);
 
             gtk::CheckButton::builder()
                 .label(unit_type.as_str())
@@ -399,8 +402,8 @@ fn build_type_filter(
         check.connect_toggled(move |check_button| {
             //println!("t {} {:?}", check_button.is_active(), unit_type.as_str());
             let mut filter_elem = filter_elem.borrow_mut();
-            let filter_element = get_filter_element_mut::<String>(filter_elem.as_mut());
-            filter_element.set_filter_elem(unit_type.as_str().to_owned(), check_button.is_active());
+            let filter_element = get_filter_element_mut::<UnitType>(filter_elem.as_mut());
+            filter_element.set_filter_elem(unit_type, check_button.is_active());
         });
 
         container.append(&check);

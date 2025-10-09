@@ -396,7 +396,10 @@ impl From<Option<&OwnedValue>> for ActiveState {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
+#[derive(
+    Default, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, EnumIter, glib::Enum, Hash,
+)]
+#[enum_type(name = "UnitType")]
 pub enum UnitType {
     Automount,
     Busname,
@@ -412,7 +415,9 @@ pub enum UnitType {
     Swap,
     Target,
     Timer,
-    Unknown(String),
+    Unit,
+    #[default]
+    Unknown,
 }
 
 impl UnitType {
@@ -432,14 +437,15 @@ impl UnitType {
             "target" => UnitType::Target,
             "timer" => UnitType::Timer,
             "snapshot" => UnitType::Snapshot,
+            "unit" => UnitType::Unit,
             _ => {
                 warn!("Unknown Unit Type: {unit_type}");
-                UnitType::Unknown(unit_type.to_string())
+                UnitType::Unknown
             }
         }
     }
 
-    pub fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             Self::Automount => "automount",
             Self::Busname => "busname",
@@ -455,6 +461,7 @@ impl UnitType {
             Self::Timer => "timer",
             Self::Swap => "swap",
             Self::Snapshot => "snapshot",
+            Self::Unit => "unit",
             _ => "",
         }
     }
@@ -475,8 +482,31 @@ impl UnitType {
             Self::Swap => "org.freedesktop.systemd1.Swap",
             Self::Target => "org.freedesktop.systemd1.Target",
             Self::Timer => "org.freedesktop.systemd1.Timer",
+            Self::Unit => INTERFACE_SYSTEMD_UNIT,
 
             _ => INTERFACE_SYSTEMD_UNIT,
+        }
+    }
+
+    pub fn from_intreface(interface: &str) -> UnitType {
+        match interface {
+            "org.freedesktop.systemd1.Automount" => UnitType::Automount,
+            "org.freedesktop.systemd1.Device" => UnitType::Device,
+            "org.freedesktop.systemd1.Mount" => UnitType::Mount,
+            "org.freedesktop.systemd1.Path" => UnitType::Path,
+            "org.freedesktop.systemd1.Scope" => UnitType::Scope,
+            "org.freedesktop.systemd1.Service" => UnitType::Service,
+            "org.freedesktop.systemd1.Slice" => UnitType::Slice,
+            "org.freedesktop.systemd1.Snapshot" => UnitType::Snapshot,
+            "org.freedesktop.systemd1.Socket" => UnitType::Socket,
+            "org.freedesktop.systemd1.Swap" => UnitType::Swap,
+            "org.freedesktop.systemd1.Target" => UnitType::Target,
+            "org.freedesktop.systemd1.Timer" => UnitType::Timer,
+            INTERFACE_SYSTEMD_UNIT => UnitType::Unit,
+            _ => {
+                warn!("Unknown Unit Type: {interface}");
+                UnitType::Unknown
+            }
         }
     }
 

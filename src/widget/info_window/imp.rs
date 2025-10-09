@@ -66,12 +66,13 @@ impl InfoWindowImp {
             let mut data = String::new();
             for i in 0..n_item {
                 if let Some(object) = store.item(i)
-                    && let Ok(x) = object.downcast::<rowitem::Metadata>() {
-                        data.push_str(&x.col1());
-                        data.push('\t');
-                        data.push_str(&x.col2());
-                        data.push('\n')
-                    }
+                    && let Ok(x) = object.downcast::<rowitem::Metadata>()
+                {
+                    data.push_str(&x.col1());
+                    data.push('\t');
+                    data.push_str(&x.col2());
+                    data.push('\n')
+                }
             }
             clipboard.set_text(&data)
         }
@@ -502,5 +503,6 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
             (d_str, is_empty)
         }
         zvariant::Value::Fd(fd) => (fd.to_string(), false),
+        //zvariant::Value::Maybe(maybe) => (maybe.to_string(), false),
     }
 }

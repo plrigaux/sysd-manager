@@ -1,10 +1,11 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
 };
+use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
 
 use super::InterPanelMessage;
 use super::app_window::AppWindow;
@@ -14,7 +15,10 @@ use gtk::subclass::prelude::*;
 
 mod filter;
 mod imp;
+pub mod menus;
 mod search_controls;
+
+pub const COL_ID_UNIT: &str = "sysdm-unit";
 
 glib::wrapper! {
     pub struct UnitListPanel(ObjectSubclass<imp::UnitListPanelImp>)
@@ -84,5 +88,25 @@ impl UnitListPanel {
 
     pub fn button_action(&self, action: &InterPanelMessage) {
         self.imp().button_action(action)
+    }
+
+    pub fn set_new_columns(&self, list: Vec<UnitPropertySelection>) {
+        self.imp().set_new_columns(list);
+    }
+
+    pub fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
+        self.imp().current_columns()
+    }
+
+    pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
+        self.imp().default_displayed_columns()
+    }
+
+    pub fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
+        self.imp().default_columns()
+    }
+
+    pub fn print_scroll_adj_logs(&self) {
+        self.imp().print_scroll_adj_logs();
     }
 }

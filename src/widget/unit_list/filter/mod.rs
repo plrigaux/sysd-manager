@@ -9,9 +9,12 @@ use gtk::glib::{self};
 use crate::{
     systemd::{
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
+        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
     },
-    widget::unit_list::filter::unit_prop_filter::{FilterElementAssessor, FilterTextAssessor},
+    widget::unit_list::{
+        COL_ID_UNIT,
+        filter::unit_prop_filter::{FilterElementAssessor, FilterTextAssessor},
+    },
 };
 
 use super::UnitListPanel;
@@ -27,7 +30,7 @@ glib::wrapper! {
 impl UnitListFilterWindow {
     pub fn new(selected_filter: Option<String>, unit_list_panel: &UnitListPanel) -> Self {
         let selected_filter = if selected_filter.is_none() {
-            Some("unit".to_owned())
+            Some(COL_ID_UNIT.to_owned())
         } else {
             selected_filter
         };
@@ -59,7 +62,7 @@ pub fn filter_bus_level(
 }
 
 pub fn filter_unit_type(
-    property_assessor: &FilterElementAssessor<String>,
+    property_assessor: &FilterElementAssessor<UnitType>,
     unit: &UnitInfo,
 ) -> bool {
     property_assessor.filter_unit_value(&unit.unit_type())

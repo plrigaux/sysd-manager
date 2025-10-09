@@ -200,8 +200,7 @@ fn fill_duration(
     map: &HashMap<String, OwnedValue>,
     unit: &UnitInfo,
 ) {
-    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
-    if !systemd::enums::UnitType::Target.eq(&unit_type) {
+    if !systemd::enums::UnitType::Target.eq(&unit.unit_type()) {
         return;
     }
 
@@ -836,8 +835,7 @@ fn fill_trigger(
     unit: &UnitInfo,
     timestamp_style: TimestampStyle,
 ) {
-    let unit_type: systemd::enums::UnitType = unit.unit_type().into();
-    if !systemd::enums::UnitType::Timer.eq(&unit_type) {
+    if !systemd::enums::UnitType::Timer.eq(&unit.unit_type()) {
         return;
     }
 
@@ -924,7 +922,7 @@ fn fill_triggers(
 
         write_key(unit_writer, key_label);
 
-        match systemd::get_unit_active_state(trigger_unit, level) {
+        match systemd::get_unit_active_state(level, trigger_unit) {
             Ok(state) => {
                 unit_writer.insert_state(state);
             }
@@ -961,7 +959,7 @@ fn fill_triggered_by(
 
         write_key(unit_writer, key_label);
 
-        match systemd::get_unit_active_state(trigger_unit, level) {
+        match systemd::get_unit_active_state(level, trigger_unit) {
             Ok(state) => {
                 unit_writer.insert_state(state);
             }

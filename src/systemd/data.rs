@@ -1,13 +1,13 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use super::{SystemdUnitFile, UpdatedUnitInfo, enums::UnitDBusLevel, sysdbus::LUnit};
+use super::{SystemdUnitFile, UpdatedUnitInfo, enums::UnitDBusLevel};
 
 use gtk::{
     glib::{self},
     subclass::prelude::*,
 };
 use serde::Deserialize;
-use zvariant::Type;
+use zvariant::{OwnedObjectPath, Type, Value};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -25,7 +25,7 @@ impl UnitInfo {
         this_object
     }
 
-    pub fn from_listed_unit(listed_unit: &LUnit, level: UnitDBusLevel) -> Self {
+    pub fn from_listed_unit(listed_unit: LUnit, level: UnitDBusLevel) -> Self {
         let this_object: Self = glib::Object::new();
         let imp = this_object.imp();
         imp.init_from_listed_unit(listed_unit, level);
@@ -52,52 +52,52 @@ impl UnitInfo {
 }
 
 mod imp {
-    use std::sync::RwLock;
+    use std::cell::RefCell;
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
     use crate::systemd::{
         SystemdUnitFile, UpdatedUnitInfo,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel},
-        sysdbus::LUnit,
+        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
+        sysdbus::{self},
     };
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitInfo)]
     pub struct UnitInfoImpl {
         #[property(get, set = Self::set_primary )]
-        pub(super) primary: RwLock<String>,
+        pub(super) primary: RefCell<String>,
         #[property(get)]
-        display_name: RwLock<String>,
-        #[property(get)]
-        unit_type: RwLock<String>,
+        display_name: RefCell<String>,
+        #[property(get, default)]
+        unit_type: RefCell<UnitType>,
         #[property(get, set)]
-        pub(super) description: RwLock<String>,
+        pub(super) description: RefCell<String>,
 
         #[property(get, set, default)]
-        pub(super) load_state: RwLock<LoadState>,
+        pub(super) load_state: RefCell<LoadState>,
 
         #[property(get, set, builder(ActiveState::Unknown))]
-        pub(super) active_state: RwLock<ActiveState>,
+        pub(super) active_state: RefCell<ActiveState>,
 
         #[property(get, set)]
-        pub(super) sub_state: RwLock<String>,
+        pub(super) sub_state: RefCell<String>,
         #[property(get)]
-        pub(super) followed_unit: RwLock<String>,
+        pub(super) followed_unit: RefCell<String>,
 
         //#[property(get = Self::has_object_path, name = "pathexists", type = bool)]
-        #[property(get, set)]
-        pub(super) object_path: RwLock<Option<String>>,
+        #[property(get=Self::get_unit_path, type = String)]
+        pub(super) object_path: RefCell<Option<String>>,
         #[property(get, set, nullable, default = None)]
-        pub(super) file_path: RwLock<Option<String>>,
+        pub(super) file_path: RefCell<Option<String>>,
         #[property(get, set, default)]
-        pub(super) enable_status: RwLock<EnablementStatus>,
+        pub(super) enable_status: RefCell<EnablementStatus>,
 
         #[property(get, set, default)]
-        pub(super) dbus_level: RwLock<UnitDBusLevel>,
+        pub(super) dbus_level: RefCell<UnitDBusLevel>,
 
         #[property(get, set, default)]
-        pub(super) preset: RwLock<Preset>,
+        pub(super) preset: RefCell<Preset>,
     }
 
     #[glib::object_subclass]
@@ -114,32 +114,37 @@ mod imp {
     impl ObjectImpl for UnitInfoImpl {}
 
     impl UnitInfoImpl {
-        pub(super) fn init_from_listed_unit(&self, listed_unit: &LUnit, dbus_level: UnitDBusLevel) {
-            let active_state: ActiveState = listed_unit.active_state.into();
+        pub(super) fn init_from_listed_unit(
+            &self,
+            listed_unit: super::LUnit,
+            dbus_level: UnitDBusLevel,
+        ) {
+            let active_state: ActiveState = listed_unit.active_state.as_str().into();
 
-            self.set_primary(listed_unit.primary_unit_name.to_owned());
-            *self.active_state.write().unwrap() = active_state;
+            self.set_primary(listed_unit.primary_unit_name);
+            self.active_state.replace(active_state);
 
-            *self.description.write().unwrap() = listed_unit.description.to_owned();
-            let load_state: LoadState = listed_unit.load_state.into();
-            *self.load_state.write().unwrap() = load_state;
-            *self.sub_state.write().unwrap() = listed_unit.sub_state.to_owned();
-            *self.followed_unit.write().unwrap() = listed_unit.followed_unit.to_owned();
-            *self.object_path.write().unwrap() = Some(listed_unit.unit_object_path.to_string());
-            *self.dbus_level.write().unwrap() = dbus_level;
+            self.description.replace(listed_unit.description);
+            let load_state: LoadState = listed_unit.load_state.as_str().into();
+            self.load_state.replace(load_state);
+            self.sub_state.replace(listed_unit.sub_state);
+            self.followed_unit.replace(listed_unit.followed_unit);
+            let unit_object_path = Some(listed_unit.unit_object_path.to_string());
+            self.object_path.replace(unit_object_path);
+            self.dbus_level.replace(dbus_level);
         }
 
         pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile) {
             self.set_primary(unit_file.full_name);
             //self.set_active_state(ActiveState::Unknown);
-            *self.dbus_level.write().unwrap() = unit_file.level;
-            *self.file_path.write().unwrap() = Some(unit_file.path);
-            *self.enable_status.write().unwrap() = unit_file.status_code;
+            self.dbus_level.replace(unit_file.level);
+            self.file_path.replace(Some(unit_file.path));
+            self.enable_status.replace(unit_file.status_code);
         }
 
         pub(super) fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
-            *self.file_path.write().unwrap() = Some(unit_file.path);
-            *self.enable_status.write().unwrap() = unit_file.status_code;
+            self.file_path.replace(Some(unit_file.path));
+            self.enable_status.replace(unit_file.status_code);
         }
 
         pub fn set_primary(&self, primary: String) {
@@ -152,44 +157,55 @@ mod imp {
             }
 
             let display_name = primary[..split_char_index - 1].to_owned();
-            *self.display_name.write().expect("set_primary display_name") = display_name;
+            self.display_name.replace(display_name);
 
-            let unit_type = primary[(split_char_index)..].to_owned();
-            *self.unit_type.write().expect("set_primary unit_type") = unit_type;
+            let unit_type = UnitType::new(&primary[(split_char_index)..]);
+            self.unit_type.replace(unit_type);
 
-            *self.primary.write().expect("set_primary primary") = primary;
+            self.primary.replace(primary);
         }
 
         pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
-            *self.object_path.write().unwrap() = Some(update.object_path);
+            self.object_path.replace(Some(update.object_path));
 
             if let Some(description) = update.description {
-                *self.description.write().unwrap() = description;
+                self.description.replace(description);
             }
 
             if let Some(sub_state) = update.sub_state {
-                *self.sub_state.write().unwrap() = sub_state;
+                self.sub_state.replace(sub_state);
             }
 
             if let Some(active_state) = update.active_state {
-                *self.active_state.write().unwrap() = active_state;
+                self.active_state.replace(active_state);
             }
 
             if let Some(unit_file_preset) = update.unit_file_preset {
                 let preset: Preset = unit_file_preset.into();
-                *self.preset.write().unwrap() = preset;
+                self.preset.replace(preset);
             }
 
             if let Some(load_state) = update.load_state {
-                *self.load_state.write().unwrap() = load_state;
+                self.load_state.replace(load_state);
             }
 
             if let Some(fragment_path) = update.fragment_path {
-                *self.file_path.write().unwrap() = Some(fragment_path);
+                self.file_path.replace(Some(fragment_path));
             }
 
             if let Some(enablement_status) = update.enablement_status {
-                *self.enable_status.write().unwrap() = enablement_status;
+                self.enable_status.replace(enablement_status);
+            }
+        }
+
+        fn get_unit_path(&self) -> String {
+            if let Some(a) = &*self.object_path.borrow() {
+                a.clone()
+            } else {
+                let primary = &*self.primary.borrow();
+                let object_path = sysdbus::unit_dbus_path_from_name(primary);
+                self.object_path.replace(Some(object_path.clone()));
+                object_path
             }
         }
     }
@@ -239,4 +255,88 @@ pub struct DisEnAbleUnitFiles {
 pub struct EnableUnitFilesReturn {
     pub carries_install_info: bool,
     pub vec: Vec<DisEnAbleUnitFiles>,
+}
+
+#[derive(Deserialize, zvariant::Type, PartialEq, Debug)]
+pub struct LUnit {
+    pub primary_unit_name: String,
+    pub description: String,
+    pub load_state: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub followed_unit: String,
+
+    pub unit_object_path: OwnedObjectPath,
+    ///If there is a job queued for the job unit the numeric job id, 0 otherwise
+    pub numeric_job_id: u32,
+    pub job_type: String,
+    pub job_object_path: OwnedObjectPath,
+}
+
+pub fn convert_to_string(value: &Value) -> String {
+    match value {
+        Value::U8(i) => i.to_string(),
+        Value::Bool(b) => b.to_string(),
+        Value::I16(i) => i.to_string(),
+        Value::U16(i) => i.to_string(),
+        Value::I32(i) => i.to_string(),
+        Value::U32(i) => i.to_string(),
+        Value::I64(i) => i.to_string(),
+        Value::U64(i) => i.to_string(),
+        Value::F64(i) => i.to_string(),
+        Value::Str(s) => s.to_string(),
+        Value::Signature(s) => s.to_string(),
+        Value::ObjectPath(op) => op.to_string(),
+        Value::Value(v) => v.to_string(),
+        Value::Array(a) => {
+            if a.is_empty() {
+                String::from("")
+            } else {
+                let mut d_str = String::from("[ ");
+
+                let mut it = a.iter().peekable();
+                while let Some(mi) = it.next() {
+                    let sub_value = convert_to_string(mi);
+
+                    d_str.push_str(&sub_value);
+                    if it.peek().is_some() {
+                        d_str.push_str(", ");
+                    }
+                }
+
+                d_str.push_str(" ]");
+                d_str
+            }
+        }
+        Value::Dict(d) => {
+            let mut d_str = String::from("{ ");
+
+            for (mik, miv) in d.iter() {
+                d_str.push_str(&convert_to_string(mik));
+                d_str.push_str(" : ");
+                d_str.push_str(&convert_to_string(miv));
+            }
+            d_str.push_str(" }");
+            d_str
+        }
+        Value::Structure(stc) => {
+            let mut d_str = String::from("{ ");
+
+            let mut it = stc.fields().iter().peekable();
+
+            while let Some(mi) = it.next() {
+                let sub_value = convert_to_string(mi);
+
+                d_str.push_str(&sub_value);
+                if it.peek().is_some() {
+                    d_str.push_str(", ");
+                }
+            }
+
+            d_str.push_str(" }");
+            d_str
+        }
+        Value::Fd(fd) => fd.to_string(),
+        //Value::Maybe(maybe) => (maybe.to_string(), false),
+    }
 }

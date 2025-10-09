@@ -1,20 +1,19 @@
 mod column_factories;
-mod menus;
-mod pop_menu;
-mod rowdata;
+#[macro_use]
+mod construct;
+pub mod pop_menu;
 
 use std::{
-    cell::{Cell, OnceCell, RefCell},
-    collections::HashMap,
+    cell::{Cell, OnceCell, Ref, RefCell},
+    collections::{HashMap, HashSet},
     rc::Rc,
     time::Duration,
 };
 
-use gio::glib::VariantTy;
 use gtk::{
-    TemplateChild,
-    gio::{self},
-    glib::{self, Object, Properties},
+    Adjustment, TemplateChild,
+    gio::{self, glib::VariantTy},
+    glib::{self, Properties, Quark},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -25,23 +24,28 @@ use gtk::{
         },
     },
 };
-
-use log::{debug, error, info, warn};
-use menus::create_col_menu;
+use zvariant::OwnedValue;
 
 use crate::{
     consts::ACTION_UNIT_LIST_FILTER_CLEAR,
-    systemd::{self, data::UnitInfo, enums::LoadState, runtime},
+    systemd::{
+        self, SystemdUnitFile,
+        data::UnitInfo,
+        enums::{LoadState, UnitDBusLevel, UnitType},
+        errors::SystemdErrors,
+        runtime,
+    },
     systemd_gui,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::data::{
-            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, FLAG_SHOW, FLAG_WIDTH,
-            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, DbusLevel, FLAG_SHOW, FLAG_WIDTH,
+            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, PREFERENCES,
             UNIT_LIST_COLUMNS, UNIT_LIST_COLUMNS_UNIT,
         },
         unit_list::{
+            COL_ID_UNIT,
             filter::{
                 UnitListFilterWindow, filter_active_state, filter_bus_level, filter_enable_status,
                 filter_load_state, filter_preset, filter_sub_state, filter_unit_description,
@@ -50,11 +54,29 @@ use crate::{
                     FilterElement, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
                 },
             },
-            imp::rowdata::UnitBinding,
+            imp::construct::construct_column,
             search_controls::UnitListSearchControls,
         },
+        unit_properties_selector::data_selection::UnitPropertySelection,
     },
 };
+use log::{debug, error, info, warn};
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+struct UnitKey {
+    level: UnitDBusLevel,
+    primary: String,
+}
+
+impl UnitKey {
+    fn new(unit: &UnitInfo) -> Self {
+        Self::new2(unit.dbus_level(), unit.primary())
+    }
+
+    fn new2(level: UnitDBusLevel, primary: String) -> Self {
+        UnitKey { level, primary }
+    }
+}
 
 type UnitPropertyFiltersContainer = OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>;
@@ -63,25 +85,20 @@ type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAs
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_panel.ui")]
 #[properties(wrapper_type = super::UnitListPanel)]
 pub struct UnitListPanelImp {
-    #[template_child]
-    list_store: TemplateChild<gio::ListStore>,
+    list_store: OnceCell<gio::ListStore>,
 
-    unit_map: Rc<RefCell<HashMap<String, UnitInfo>>>,
+    units_map: Rc<RefCell<HashMap<UnitKey, UnitInfo>>>,
 
-    #[template_child]
-    unit_list_sort_list_model: TemplateChild<gtk::SortListModel>,
+    unit_list_sort_list_model: RefCell<gtk::SortListModel>,
 
-    #[template_child]
-    units_browser: TemplateChild<gtk::ColumnView>,
+    units_browser: RefCell<gtk::ColumnView>,
 
-    #[template_child]
-    single_selection: TemplateChild<gtk::SingleSelection>,
+    single_selection: RefCell<gtk::SingleSelection>,
 
     #[template_child]
     search_bar: TemplateChild<gtk::SearchBar>,
 
-    #[template_child]
-    filter_list_model: TemplateChild<gtk::FilterListModel>,
+    filter_list_model: RefCell<gtk::FilterListModel>,
 
     #[template_child]
     panel_stack: TemplateChild<adw::ViewStack>,
@@ -120,48 +137,12 @@ pub struct UnitListPanelImp {
 
     #[property(name = "is-dark", get)]
     is_dark: Cell<bool>,
-}
 
-macro_rules! compare_units {
-    ($unit1:expr, $unit2:expr, $func:ident) => {{
-        $unit1.$func().cmp(&$unit2.$func()).into()
-    }};
+    default_column_view_column_list: OnceCell<Vec<gtk::ColumnViewColumn>>,
 
-    ($unit1:expr, $unit2:expr, $func:ident, $($funcx:ident),+) => {{
+    current_column_view_column_definition_list: RefCell<Vec<UnitPropertySelection>>,
 
-        let ordering = $unit1.$func().cmp(&$unit2.$func());
-        if ordering != core::cmp::Ordering::Equal {
-            return ordering.into();
-        }
-
-        compare_units!($unit1, $unit2, $($funcx),+)
-    }};
-}
-
-macro_rules! create_column_filter {
-    ($($func:ident),+) => {{
-        gtk::CustomSorter::new(move |obj1, obj2| {
-            let unit1 = obj1
-                .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit_ref();
-            let unit2 = obj2
-                .downcast_ref::<UnitBinding>()
-                .expect("Needs to be UnitInfo").unit_ref();
-
-            compare_units!(unit1, unit2, $($func),+)
-        })
-    }};
-}
-
-macro_rules! column_view_column_set_sorter {
-    ($map:expr, $col_id:expr, $($func:ident),+) => {{
-        let column_view_column = $map.get($col_id)
-            .expect(&format!("Column with id {:?} not found!", $col_id));
-        let sorter = create_column_filter!($($func),+);
-        column_view_column.set_sorter(Some(&sorter));
-        let column_menu = create_col_menu($col_id);
-        column_view_column.set_header_menu(Some(&column_menu));
-    }};
+    default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
 }
 
 macro_rules! update_search_entry {
@@ -170,6 +151,12 @@ macro_rules! update_search_entry {
             $self.search_entry_set_text($text);
         }
     }};
+}
+
+struct UnitProperty {
+    interface: String,
+    unit_property: String,
+    unit_type: UnitType,
 }
 
 #[gtk::template_callbacks]
@@ -201,6 +188,7 @@ impl UnitListPanelImp {
         let unit_list = self.obj().clone();
 
         self.single_selection
+            .borrow()
             .connect_selected_item_notify(move |single_selection| {
                 info!(
                     "connect_selected_notify idx {}",
@@ -211,19 +199,15 @@ impl UnitListPanelImp {
                     return;
                 };
 
-                let unit_binding = match object.downcast::<UnitBinding>() {
-                    Ok(unit) => unit,
-                    Err(val) => {
-                        error!("Object.downcast::<UnitInfo> Error: {val:?}");
-                        return;
-                    }
+                let Some(unit) = object.downcast_ref::<UnitInfo>() else {
+                    error!("Object.downcast::<UnitInfo>");
+                    return;
                 };
 
-                let unit = unit_binding.unit();
                 info!("Selection changed, new unit {}", unit.primary());
 
-                unit_list.imp().set_unit_internal(&unit);
-                app_window_clone.selection_change(Some(&unit));
+                unit_list.imp().set_unit_internal(unit);
+                app_window_clone.selection_change(Some(unit));
             }); // FOR THE SEARCH
 
         self.refresh_unit_list_button
@@ -258,14 +242,29 @@ impl UnitListPanelImp {
             }
         }
 
+        force_expand_on_the_last_visible_column(&self.units_browser.borrow().columns());
+
+        let units_browser = self.units_browser.borrow().clone();
         let action_entry = {
-            let settings = settings.clone();
             gio::ActionEntry::builder("hide_unit_col")
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     if let Some(value) = target_value {
-                        let key = value.get::<String>().expect("variant always be String");
-                        if let Err(error) = settings.set_boolean(&key, false) {
-                            warn!("Setting error, key {key}, {error:?}");
+                        let key = Some(value.get::<String>().expect("variant always be String"));
+
+                        let columns_list_model = units_browser.columns();
+
+                        for index in 0..columns_list_model.n_items() {
+                            let Some(cur_column) = columns_list_model
+                                .item(index)
+                                .and_downcast::<gtk::ColumnViewColumn>()
+                            else {
+                                warn!("Column w/ id {key:?} do not Exists");
+                                continue;
+                            };
+
+                            if cur_column.id().map(|s| s.to_string()) == key {
+                                cur_column.set_visible(false);
+                            }
                         }
                     }
                 })
@@ -309,7 +308,7 @@ impl UnitListPanelImp {
                 .activate(move |_application: &AppWindow, _b, _target_value| {
                     unit_list_panel.imp().clear_filters();
                 })
-                //     .parameter_type(Some(VariantTy::STRING))
+                .parameter_type(Some(VariantTy::STRING))
                 .build()
         };
 
@@ -322,7 +321,7 @@ impl UnitListPanelImp {
     }
 
     fn generate_column_map(&self) -> HashMap<glib::GString, gtk::ColumnViewColumn> {
-        let list_model: gio::ListModel = self.units_browser.columns();
+        let list_model: gio::ListModel = self.units_browser.borrow().columns();
 
         let mut col_map = HashMap::new();
         for col_idx in 0..list_model.n_items() {
@@ -334,9 +333,7 @@ impl UnitListPanelImp {
                 .downcast_ref::<gtk::ColumnViewColumn>()
                 .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
-            let id = column_view_column.id();
-
-            if let Some(id) = id {
+            if let Some(id) = column_view_column.id() {
                 col_map.insert(id, column_view_column.clone());
             } else {
                 warn!("Column {col_idx} has no id.")
@@ -345,13 +342,31 @@ impl UnitListPanelImp {
         col_map
     }
 
+    fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
+        let list_model: gio::ListModel = self.units_browser.borrow().columns();
+
+        let mut col_list = Vec::with_capacity(list_model.n_items() as usize);
+        for col_idx in 0..list_model.n_items() {
+            let item_out = list_model
+                .item(col_idx)
+                .expect("Expect item x to be not None");
+
+            let column_view_column = item_out
+                .downcast_ref::<gtk::ColumnViewColumn>()
+                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+
+            col_list.push(column_view_column.clone());
+        }
+        col_list
+    }
+
     pub(super) fn fill_store(&self) {
-        let list_store = self.list_store.clone();
-        let unit_map = self.unit_map.clone();
+        let list_store = self.list_store.get().expect("LIST STORE NOT NONE").clone();
+        let unit_map = self.units_map.clone();
         let panel_stack = self.panel_stack.clone();
-        let single_selection = self.single_selection.clone();
+        let single_selection = self.single_selection.borrow().clone();
         let unit_list = self.obj().clone();
-        let units_browser = self.units_browser.clone();
+        let units_browser = self.units_browser.borrow().clone();
 
         let refresh_unit_list_button = self
             .refresh_unit_list_button
@@ -359,29 +374,21 @@ impl UnitListPanelImp {
             .expect("Supposed to be set")
             .clone();
 
-        // let sender_c = sender.clone();
-
         //Rem sorting before adding lot of items for performance reasons
         self.unit_list_sort_list_model
+            .borrow()
             .set_sorter(None::<&gtk::Sorter>);
+
+        let int_level = PREFERENCES.dbus_level();
 
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
-            let (sender, receiver) = tokio::sync::oneshot::channel();
 
-            runtime().spawn(async move {
-                let response = systemd::list_units_description_and_state_async().await;
-
-                sender
-                    .send(response)
-                    .expect("The channel needs to be open.");
-            });
-
-            let (unit_desc, unit_from_files) = match receiver.await.expect("Tokio receiver works") {
-                Ok(unit_files) => unit_files,
-                Err(error) => {
-                    warn!("Fail fetch unit list {error:?}");
+            let (unit_desc, unit_from_files) = match go_fetch_data(int_level).await {
+                Ok(value) => value,
+                Err(err) => {
+                    warn!("Fail fetch unit list {err:?}");
                     panel_stack.set_visible_child_name("error");
                     return;
                 }
@@ -408,31 +415,20 @@ impl UnitListPanelImp {
                     loaded_unit.update_from_unit_file(system_unit_file);
                 } else {
                     let unit = UnitInfo::from_unit_file(system_unit_file);
-                    list_store.append(&UnitBinding::new(&unit));
-                    unit_map1.insert(unit.primary(), unit.clone());
+                    list_store.append(&unit);
+                    unit_map1.insert(UnitKey::new(&unit), unit.clone());
                     all_units.insert(unit.primary(), unit);
                 }
             }
 
             for (_key, unit) in unit_desc.into_iter() {
-                list_store.append(&UnitBinding::new(&unit));
-                unit_map1.insert(unit.primary(), unit.clone());
+                list_store.append(&unit);
+                unit_map1.insert(UnitKey::new(&unit), unit.clone());
                 all_units.insert(unit.primary(), unit);
             }
 
             // The sort function needs to be the same of the  first column sorter
-            let sort_func = |o1: &Object, o2: &Object| {
-                let u1 = o1
-                    .downcast_ref::<UnitBinding>()
-                    .expect("Needs to be UnitInfo")
-                    .unit_ref();
-                let u2 = o2
-                    .downcast_ref::<UnitBinding>()
-                    .expect("Needs to be UnitInfo")
-                    .unit_ref();
-
-                compare_units!(u1, u2, primary, dbus_level)
-            };
+            let sort_func = construct::column_filter_lambda!(primary, dbus_level);
 
             list_store.sort(sort_func);
 
@@ -451,11 +447,11 @@ impl UnitListPanelImp {
                 );
 
                 if let Some(index) = list_store.find_with_equal_func(|object| {
-                    let unit_binding = object
-                        .downcast_ref::<UnitBinding>()
-                        .expect("Needs to be UnitBinding");
+                    let unit = object
+                        .downcast_ref::<UnitInfo>()
+                        .expect("Needs to be UnitInfo");
 
-                    unit_binding.unit_ref().primary().eq(&selected_unit_name)
+                    unit.primary().eq(&selected_unit_name)
                 }) {
                     info!(
                         "Force selection to index {index:?} to select unit {selected_unit_name:?}"
@@ -465,7 +461,7 @@ impl UnitListPanelImp {
                     force_selected_index = index;
                 }
             }
-
+            debug!("IM HERRE");
             unit_list
                 .imp()
                 .force_selected_index
@@ -481,44 +477,34 @@ impl UnitListPanelImp {
 
             glib::spawn_future_local(async move {
                 //let (sender, receiver) = tokio::sync::oneshot::channel();
+
+                debug!("IM HERRE 3 map len {}", all_units.len());
                 let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
-                {
-                    let all_units = all_units.clone();
 
-                    async fn call_complete_unit(
-                        sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
-                        batch: &Vec<(String, systemd::enums::UnitDBusLevel, Option<String>)>,
-                    ) {
-                        let updates = match systemd::complete_unit_information(batch).await {
-                            Ok(updates) => updates,
-                            Err(error) => {
-                                warn!("Complete Unit Information Error: {error:?}");
-                                vec![]
-                            }
-                        };
+                let mut list = Vec::with_capacity(all_units.len());
+                for unit in all_units.values() {
+                    let level = unit.dbus_level();
+                    let primary = unit.primary();
+                    let path = unit.object_path();
+                    debug!("path {path}");
+                    list.push((level, primary, path));
+                }
 
-                        sender
-                            .send(updates)
-                            .await
-                            .expect("The channel needs to be open.");
+                runtime().spawn(async move {
+                    const BATCH_SIZE: usize = 5;
+                    let mut batch = Vec::with_capacity(BATCH_SIZE);
+                    for (idx, triple) in (1..).zip(list.into_iter()) {
+                        batch.push(triple);
+
+                        if idx % BATCH_SIZE == 0 {
+                            call_complete_unit(&sender, batch).await;
+
+                            batch = Vec::with_capacity(BATCH_SIZE);
+                        }
                     }
 
-                    runtime().spawn(async move {
-                        const BATCH_SIZE: usize = 5;
-                        let mut batch = Vec::with_capacity(BATCH_SIZE);
-                        for (idx, unit) in (1..).zip(all_units.values()) {
-                            batch.push((unit.primary(), unit.dbus_level(), unit.object_path()));
-
-                            if idx % BATCH_SIZE == 0 {
-                                call_complete_unit(&sender, &batch).await;
-
-                                batch.clear();
-                            }
-                        }
-
-                        call_complete_unit(&sender, &batch).await;
-                    });
-                }
+                    call_complete_unit(&sender, batch).await;
+                });
 
                 while let Some(updates) = receiver.recv().await {
                     for update in updates {
@@ -529,6 +515,7 @@ impl UnitListPanelImp {
                         unit.update_from_unit_info(update);
                     }
                 }
+                unit_list.imp().fetch_custom_unit_properties();
             });
         });
     }
@@ -568,9 +555,9 @@ impl UnitListPanelImp {
         info!(
             "Unit List {} list_store {} filter {} sort_model {}",
             unit_name,
-            self.list_store.n_items(),
-            self.filter_list_model.n_items(),
-            self.unit_list_sort_list_model.n_items()
+            self.list_store.get().unwrap().n_items(),
+            self.filter_list_model.borrow().n_items(),
+            self.unit_list_sort_list_model.borrow().n_items()
         );
 
         /*  let finding = self.list_store.find_with_equal_func(|object| {
@@ -596,37 +583,41 @@ impl UnitListPanelImp {
             self.add_one_unit(unit);
         } */
 
-        if let Some(unit2) = self.unit_map.borrow().get(&unit.primary()) {
+        if let Some(unit2) = self.units_map.borrow().get(&UnitKey::new(unit)) {
             self.unit.replace(Some(unit2.clone()));
         } else {
             self.add_one_unit(unit);
         }
 
         //Don't select and focus if filter out
-        if let Some(filter) = self.filter_list_model.filter() {
-            let unit_binding = UnitBinding::new(unit);
-            if !filter.match_(&unit_binding) {
-                //Unselect
-                self.single_selection
-                    .set_selected(gtk::INVALID_LIST_POSITION);
-                info!("Unit {unit_name} no Match");
-                return Some(unit.clone());
-            }
+        if let Some(filter) = self.filter_list_model.borrow().filter()
+            && !filter.match_(unit)
+        {
+            //Unselect
+            self.single_selection
+                .borrow()
+                .set_selected(gtk::INVALID_LIST_POSITION);
+            info!("Unit {unit_name} no Match");
+            return Some(unit.clone());
         }
 
-        let finding = self.list_store.find_with_equal_func(|object| {
-            let Some(unit_item) = object.downcast_ref::<UnitBinding>() else {
-                error!("item.downcast_ref::<UnitBinding>()");
-                return false;
-            };
+        let finding = self
+            .list_store
+            .get()
+            .expect("LIST STORE NOT NONE")
+            .find_with_equal_func(|object| {
+                let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
+                    error!("item.downcast_ref::<UnitBinding>()");
+                    return false;
+                };
 
-            unit_name == unit_item.primary()
-        });
+                unit_name == unit_item.primary()
+            });
 
         if let Some(row) = finding {
             info!("Scroll to row {row}");
 
-            self.units_browser.scroll_to(
+            self.units_browser.borrow().scroll_to(
                 row, // to centerish on the selected unit
                 None,
                 gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
@@ -638,9 +629,9 @@ impl UnitListPanelImp {
     }
 
     fn add_one_unit(&self, unit: &UnitInfo) {
-        self.list_store.append(&UnitBinding::new(unit));
-        let mut unit_map = self.unit_map.borrow_mut();
-        unit_map.insert(unit.primary(), unit.clone());
+        self.list_store.get().unwrap().append(unit);
+        let mut unit_map = self.units_map.borrow_mut();
+        unit_map.insert(UnitKey::new(unit), unit.clone());
 
         if LoadState::Loaded == unit.load_state()
             && let Ok(my_int) = self.loaded_units_count.label().parse::<i32>()
@@ -666,12 +657,15 @@ impl UnitListPanelImp {
     }
 
     fn set_sorter(&self) {
-        let sorter = self.units_browser.sorter();
+        let sorter = self.units_browser.borrow().sorter();
 
-        self.unit_list_sort_list_model.set_sorter(sorter.as_ref());
+        self.unit_list_sort_list_model
+            .borrow()
+            .set_sorter(sorter.as_ref());
 
         let item_out = self
             .units_browser
+            .borrow()
             .columns()
             .item(0)
             .expect("Expect item x to be not None");
@@ -682,6 +676,7 @@ impl UnitListPanelImp {
             .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
         self.units_browser
+            .borrow()
             .sort_by_column(Some(c1), gtk::SortType::Ascending);
     }
 
@@ -718,11 +713,13 @@ impl UnitListPanelImp {
         }
 
         if let Some(change_type) = change_type {
-            if let Some(filter) = self.filter_list_model.filter() {
+            if let Some(filter) = self.filter_list_model.borrow().filter() {
                 filter.changed(change_type);
             } else {
                 let custom_filter = self.create_custom_filter();
-                self.filter_list_model.set_filter(Some(&custom_filter));
+                self.filter_list_model
+                    .borrow()
+                    .set_filter(Some(&custom_filter));
             }
         }
 
@@ -746,7 +743,9 @@ impl UnitListPanelImp {
             prop_filter_mut.clear_filter();
         }
 
-        self.filter_list_model.set_filter(None::<&gtk::Filter>); //FIXME this workaround prevent core dump
+        self.filter_list_model
+            .borrow()
+            .set_filter(None::<&gtk::Filter>); //FIXME this workaround prevents core dump
 
         let search_controls = self.search_controls.get().expect("Not Null");
         search_controls.imp().clear();
@@ -798,20 +797,265 @@ impl UnitListPanelImp {
             .expect("not none")
             .clone();
         gtk::CustomFilter::new(move |object| {
-            let unit = if let Some(unit_binding) = object.downcast_ref::<UnitBinding>() {
-                unit_binding.unit_ref()
-            } else {
+            let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                 error!("some wrong downcast_ref to UnitBinding  {object:?}");
                 return false;
             };
 
             for asserror in applied_assessors.borrow().iter() {
-                if !asserror.filter_unit(&unit) {
+                if !asserror.filter_unit(unit) {
                     return false;
                 }
             }
             true
         })
+    }
+
+    pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
+        let columns_list_model = self.units_browser.borrow().columns();
+
+        //Get the current column
+        let cur_n_items = columns_list_model.n_items();
+        let mut current_columns = Vec::with_capacity(columns_list_model.n_items() as usize);
+        for position in (property_list.len() as u32)..columns_list_model.n_items() {
+            let Some(c) = columns_list_model
+                .item(position)
+                .and_downcast::<gtk::ColumnViewColumn>()
+            else {
+                warn!("Col None");
+                continue;
+            };
+            current_columns.push(c);
+        }
+
+        for (idx, unit_property) in property_list.iter().enumerate() {
+            let new_column = unit_property.column();
+
+            let idx_32 = idx as u32;
+            if idx_32 < cur_n_items {
+                let Some(cur_column) = columns_list_model
+                    .item(idx_32)
+                    .and_downcast::<gtk::ColumnViewColumn>()
+                else {
+                    warn!("Col None");
+                    continue;
+                };
+
+                UnitPropertySelection::copy_col_to_col(&new_column, &cur_column);
+                unit_property.set_column(cur_column);
+            } else {
+                info!("Append {:?} {:?}", new_column.id(), new_column.title());
+                self.units_browser.borrow().append_column(&new_column);
+            }
+        }
+
+        force_expand_on_the_last_visible_column(&columns_list_model);
+
+        self.current_column_view_column_definition_list
+            .replace(property_list);
+
+        //remove all columns that exeed the new ones
+        for col in current_columns.iter() {
+            col.set_visible(false);
+        }
+
+        self.fetch_custom_unit_properties();
+    }
+
+    fn fetch_custom_unit_properties(&self) {
+        let property_list = self.current_column_view_column_definition_list.borrow();
+
+        if property_list.is_empty() {
+            return;
+        }
+
+        let list_len = property_list.len();
+        let mut property_list_send = Vec::with_capacity(property_list.len());
+        let mut property_list_keys = Vec::with_capacity(property_list.len());
+        let mut types = HashSet::with_capacity(16);
+        let mut is_unit_type = false;
+        for unit_property in property_list.iter() {
+            if unit_property.is_custom() {
+                //add custom factory
+
+                let u_prop = unit_property.unit_property();
+                let key = Quark::from_str(&u_prop);
+                property_list_keys.push(key);
+
+                property_list_send.push(UnitProperty {
+                    interface: unit_property.interface(),
+                    unit_property: u_prop,
+                    unit_type: unit_property.unit_type(),
+                });
+            }
+
+            match unit_property.unit_type() {
+                UnitType::Unit => is_unit_type |= true,
+                UnitType::Unknown => { //Do nothing
+                }
+                unit_type => {
+                    types.insert(unit_type);
+                }
+            }
+        }
+
+        let units_browser = self.units_browser.borrow().clone();
+        let units_map = self.units_map.clone();
+        let display_color = self.display_color.get();
+
+        //TODO fetch oly new properties look at properties already fetched
+        glib::spawn_future_local(async move {
+            let units_list: Vec<_> = units_map
+                .borrow()
+                .values()
+                .filter(|unit| is_unit_type || types.contains(&unit.unit_type()))
+                .map(|unit| {
+                    (
+                        unit.dbus_level(),
+                        unit.primary(),
+                        unit.object_path(),
+                        unit.unit_type(),
+                    )
+                })
+                .collect();
+
+            let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
+            runtime().spawn(async move {
+                info!("Fetching properties START for {} units", units_list.len());
+                for (level, primary_name, object_path, unit_type) in units_list {
+                    let mut property_value_list = Vec::with_capacity(list_len);
+                    for unit_property in &property_list_send {
+                        if unit_property.unit_type != UnitType::Unit
+                            && unit_type != unit_property.unit_type
+                        {
+                            continue;
+                        }
+                        debug!("Fetch {} {}", primary_name, unit_property.unit_property);
+                        match systemd::fetch_unit_properties(
+                            level,
+                            &object_path,
+                            &unit_property.interface,
+                            &unit_property.unit_property,
+                        )
+                        .await
+                        {
+                            Ok(value) => property_value_list.push(Some(value)),
+                            Err(err) => {
+                                property_value_list.push(None);
+                                info!(
+                                    "PROP {} {} {object_path} {err:?}",
+                                    unit_property.interface, unit_property.unit_property
+                                );
+                            }
+                        }
+                    }
+
+                    if let Err(err) = sender
+                        .send((UnitKey::new2(level, primary_name), property_value_list))
+                        .await
+                    {
+                        error!("The channel needs to be open. {err:?}");
+                        break;
+                    }
+                }
+            });
+
+            info!("Fetching properties WAIT");
+            while let Some((key, property_value_list)) = receiver.recv().await {
+                let map_ref = units_map.borrow();
+                let Some(unit) = map_ref.get(&key) else {
+                    continue;
+                };
+
+                for (index, value) in property_value_list.into_iter().enumerate() {
+                    let key = property_list_keys.get(index).expect("Should never fail");
+
+                    match value {
+                        Some(value) => unsafe { unit.set_qdata(*key, value) },
+                        None => unsafe {
+                            unit.steal_qdata::<OwnedValue>(*key);
+                        },
+                    }
+                }
+            }
+            info!("Fetching properties FINISHED");
+
+            //Force the factory to display data
+            let columns_list_model = units_browser.columns();
+            for position in 0..columns_list_model.n_items() {
+                let Some(column) = columns_list_model
+                    .item(position)
+                    .and_downcast::<gtk::ColumnViewColumn>()
+                else {
+                    warn!("Col None");
+                    continue;
+                };
+
+                let Some(id) = column.id() else {
+                    warn!("No column id");
+                    continue;
+                };
+
+                //identify custom properties
+                let Some((_type, prop)) = id.split_once('@') else {
+                    continue;
+                };
+
+                let factory = column_factories::get_custom_factory(prop, display_color);
+                column.set_factory(Some(&factory));
+            }
+        });
+    }
+
+    pub fn print_scroll_adj_logs(&self) {
+        let va = self.scrolled_window.vadjustment();
+        self.print_adjustment("VER", &va);
+        let va = self.scrolled_window.hadjustment();
+        self.print_adjustment("HON", &va);
+    }
+
+    fn print_adjustment(&self, id: &str, adj: &Adjustment) {
+        info!(
+            "{} lower={} + page={} <= upper={} gap {} step_inc {} page_inc {}",
+            id,
+            adj.lower(),
+            adj.upper(),
+            adj.page_size(),
+            adj.upper() - (adj.lower() + adj.page_size()),
+            adj.step_increment(),
+            adj.page_increment()
+        );
+    }
+
+    pub(super) fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
+        self.current_column_view_column_definition_list.borrow()
+    }
+
+    pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
+        self.default_column_view_column_definition_list
+            .get()
+            .expect("Not None")
+    }
+
+    pub(super) fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
+        self.default_column_view_column_list
+            .get()
+            .expect("Need to be set")
+    }
+}
+
+fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) {
+    for index in (0..columns_list_model.n_items()).rev() {
+        if let Some(column) = columns_list_model
+            .item(index)
+            .and_downcast::<gtk::ColumnViewColumn>()
+        {
+            //Force to fill the widget gap in the scroll window
+            if column.is_visible() {
+                column.set_expand(true);
+                break;
+            }
+        }
     }
 }
 
@@ -851,28 +1095,51 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         let unit_list = self.obj().clone();
-        let column_view_column_map = self.generate_column_map();
-        column_factories::setup_factories(&unit_list, &column_view_column_map);
+
+        let list_store = gio::ListStore::new::<UnitInfo>();
+        self.list_store
+            .set(list_store.clone())
+            .expect("Set only Once");
+
+        let (units_browser, single_selection, filter_list_model, sort_list_model) =
+            construct_column(list_store, self.display_color.get());
+
+        self.scrolled_window.set_child(Some(&units_browser));
+        self.units_browser.replace(units_browser);
+        self.single_selection.replace(single_selection);
+        self.filter_list_model.replace(filter_list_model);
+        self.unit_list_sort_list_model.replace(sort_list_model);
+
+        let column_view_column_list = self.generate_column_list();
+
+        let mut column_view_column_definition_list =
+            Vec::with_capacity(column_view_column_list.len());
+        for col in column_view_column_list.iter() {
+            let unit_property_selection = UnitPropertySelection::from_base_column(col.clone());
+            column_view_column_definition_list.push(unit_property_selection);
+        }
+
+        self.default_column_view_column_definition_list
+            .set(column_view_column_definition_list.clone())
+            .expect("Set only once");
+
+        self.current_column_view_column_definition_list
+            .replace(column_view_column_definition_list);
+
+        column_factories::setup_factories(&unit_list, &column_view_column_list);
+        self.default_column_view_column_list
+            .set(column_view_column_list)
+            .expect("Set only once");
 
         settings.connect_changed(
             Some(KEY_PREF_UNIT_LIST_DISPLAY_COLORS),
             move |_settings, _key| {
                 let display_color = unit_list.display_color();
-                info!("change preference setting \"display color\" to {display_color}");
-                let column_view_column_map = unit_list.imp().generate_column_map();
-                column_factories::setup_factories(&unit_list, &column_view_column_map);
+                info!("Change preference setting \"display color\" to {display_color}");
+                let column_view_column_list = unit_list.imp().generate_column_list();
+                column_factories::setup_factories(&unit_list, &column_view_column_list);
             },
         );
-
-        column_view_column_set_sorter!(column_view_column_map, "unit", primary, dbus_level);
-        column_view_column_set_sorter!(column_view_column_map, "type", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "bus", unit_type);
-        column_view_column_set_sorter!(column_view_column_map, "state", enable_status);
-        column_view_column_set_sorter!(column_view_column_map, "preset", preset);
-        column_view_column_set_sorter!(column_view_column_map, "load", load_state);
-        column_view_column_set_sorter!(column_view_column_map, "active", active_state);
-        column_view_column_set_sorter!(column_view_column_map, "sub", sub_state);
-        column_view_column_set_sorter!(column_view_column_map, "description", description);
 
         let mut filter_assessors: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
             HashMap::with_capacity(UNIT_LIST_COLUMNS.len());
@@ -881,52 +1148,55 @@ impl ObjectImpl for UnitListPanelImp {
             self.obj();
         for (_, key, num_id, _) in &*UNIT_LIST_COLUMNS {
             let filter: Option<Box<dyn UnitPropertyFilter>> = match *key {
-                "unit" => Some(Box::new(FilterText::new(
+                COL_ID_UNIT => Some(Box::new(FilterText::new(
                     *num_id,
                     filter_unit_name,
                     &unit_list_panel,
                 ))),
-                "bus" => Some(Box::new(FilterElement::new(
+                "sysdm-bus" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_bus_level,
                     &unit_list_panel,
                 ))),
-                "type" => Some(Box::new(FilterElement::new(
+                "sysdm-type" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_unit_type,
                     &unit_list_panel,
                 ))),
-                "state" => Some(Box::new(FilterElement::new(
+                "sysdm-state" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_enable_status,
                     &unit_list_panel,
                 ))),
-                "preset" => Some(Box::new(FilterElement::new(
+                "sysdm-preset" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_preset,
                     &unit_list_panel,
                 ))),
-                "load" => Some(Box::new(FilterElement::new(
+                "sysdm-load" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_load_state,
                     &unit_list_panel,
                 ))),
-                "active" => Some(Box::new(FilterElement::new(
+                "sysdm-active" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_active_state,
                     &unit_list_panel,
                 ))),
-                "sub" => Some(Box::new(FilterElement::new(
+                "sysdm-sub" => Some(Box::new(FilterElement::new(
                     *num_id,
                     filter_sub_state,
                     &unit_list_panel,
                 ))),
-                "description" => Some(Box::new(FilterText::new(
+                "sysdm-description" => Some(Box::new(FilterText::new(
                     *num_id,
                     filter_unit_description,
                     &unit_list_panel,
                 ))),
-                _ => None,
+                _ => {
+                    error!("Key {key}");
+                    None
+                }
             };
 
             if let Some(filter) = filter {
@@ -943,9 +1213,12 @@ impl ObjectImpl for UnitListPanelImp {
         // let search_entry = self.fill_search_bar();
 
         let custom_filter = self.create_custom_filter();
-        self.filter_list_model.set_filter(Some(&custom_filter));
+        self.filter_list_model
+            .borrow()
+            .set_filter(Some(&custom_filter));
 
         self.filter_list_model
+            .borrow()
             .bind_property::<gtk::Label>("n-items", self.unit_filtered_count.as_ref(), "label")
             .build();
 
@@ -960,11 +1233,13 @@ impl ObjectImpl for UnitListPanelImp {
 
         {
             let unit_list = self.obj().clone();
-            let units_browser = self.units_browser.clone();
+            let units_browser = self.units_browser.borrow().clone();
             self.scrolled_window
                 .vadjustment()
                 .connect_changed(move |_adjustment| {
                     focus_on_row(&unit_list, &units_browser);
+
+                    //UnitListPanelImp::print_scroll_adj_logs(unit_list.imp())
                 });
         }
 
@@ -977,9 +1252,14 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         self.units_browser
+            .borrow()
             .connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
 
-        pop_menu::setup_popup_menu(&self.units_browser, &self.filter_list_model, &self.obj());
+        pop_menu::setup_popup_menu(
+            &self.units_browser.borrow(),
+            &self.filter_list_model.borrow(),
+            &self.obj(),
+        );
     }
 }
 
@@ -1020,3 +1300,109 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
 
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
+
+async fn call_complete_unit(
+    sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
+    batch: Vec<(UnitDBusLevel, String, String)>,
+) {
+    let updates = match systemd::complete_unit_information(batch).await {
+        Ok(updates) => updates,
+        Err(error) => {
+            warn!("Complete Unit Information Error: {error:?}");
+            vec![]
+        }
+    };
+
+    sender
+        .send(updates)
+        .await
+        .expect("The channel needs to be open.");
+}
+
+async fn go_fetch_data(
+    int_level: DbusLevel,
+) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
+    match int_level {
+        DbusLevel::SystemAndSession => {
+            let level_syst = UnitDBusLevel::System;
+            let level_user = UnitDBusLevel::UserSession;
+
+            let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
+            let (sender_user, receiver_user) = tokio::sync::oneshot::channel();
+
+            runtime().spawn(async move {
+                let t_syst =
+                    tokio::spawn(systemd::list_units_description_and_state_async(level_syst));
+                let t_user =
+                    tokio::spawn(systemd::list_units_description_and_state_async(level_user));
+
+                let joined = tokio::join!(t_syst, t_user);
+
+                sender_syst
+                    .send(joined.0)
+                    .expect("The channel needs to be open.");
+                sender_user
+                    .send(joined.1)
+                    .expect("The channel needs to be open.");
+            });
+
+            let (loaded_unit_system, mut unit_file_system) =
+                receiver_syst.await.expect("Tokio receiver works")??;
+            let (loaded_unit_user, mut unit_file_user) =
+                receiver_user.await.expect("Tokio receiver works")??;
+
+            let mut hmap =
+                HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
+
+            for listed_unit in loaded_unit_system.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_syst);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            for listed_unit in loaded_unit_user.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            unit_file_system.append(&mut unit_file_user);
+            Ok((hmap, unit_file_system))
+        }
+        dlevel => {
+            let level: UnitDBusLevel = if dlevel == DbusLevel::System {
+                UnitDBusLevel::System
+            } else {
+                UnitDBusLevel::UserSession
+            };
+
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+
+            runtime().spawn(async move {
+                // let response = systemd::list_units_description_and_state_async().await;
+
+                let response = systemd::list_units_description_and_state_async(level).await;
+                sender
+                    .send(response)
+                    .expect("The channel needs to be open.");
+            });
+
+            let (loaded_unit, unit_files) = receiver.await.expect("Tokio receiver works")?;
+
+            let mut hmap = HashMap::with_capacity(loaded_unit.len());
+            for listed_unit in loaded_unit.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                hmap.insert(unit.primary(), unit);
+            }
+            Ok((hmap, unit_files))
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_reverse() {
+        for i in (0..10).rev() {
+            println!("{i}")
+        }
+    }
+}
