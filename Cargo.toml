@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "1.32.4"
+version = "2.0.0"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -97,17 +97,3 @@ zvariant_utils =  "*"
 #cargo-generate-rpm = "0.14.1"
 quick-xml = "0.38"
 translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating" }
-
-[package.metadata.generate-rpm]
-summary = "A systemd units manager"
-assets = [
-    { source = "target/release/sysd-manager", dest = "/usr/bin/sysd-manager", mode = "755" },
-    { source = "data/applications/io.github.plrigaux.sysd-manager.desktop", dest = "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop", mode = "644" },
-    { source = "data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", dest = "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg", mode = "644" },
-    { source = "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml", dest = "/usr/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml", mode = "644" },
-]
-
-[package.metadata.generate-rpm.requires]
-coreutils = ">= 9"
-polkit = ">= 123"
-systemd = ">= 254"
