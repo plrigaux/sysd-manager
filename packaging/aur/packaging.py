@@ -29,25 +29,32 @@ def main():
             "genpush"
         ],
         help="action to perform",)
+    
+
+    parser.add_argument("-r", "--release", help="Set the package release",  type=int)
 
     args = parser.parse_args()
 
+    release=None
+    if args.release:
+        release=args.release
+
     match args.action:
         case "generate":
-            gen_pkfile()
+            gen_pkfile(release)
         case "sum":
             do_check_sum()
         case "pkfile":
-            create_pkgbuild()
+            create_pkgbuild(release)
         case "clean":
             clean()
         case "make":
             make()
         case "genpush":
-            generate_and_push()
+            generate_and_push(release)
 
 
-def create_pkgbuild():
+def create_pkgbuild(release=None):
     #version
     version = bc.get_version()
     print(f"Version {color.BOLD}{color.CYAN}{version}{color.END}")
@@ -69,6 +76,11 @@ def create_pkgbuild():
 
     #set the version
     pkgbuild_text = pkgbuild_text.replace("pkgver=\n", f"pkgver={version}\n")
+
+    #set the version
+    
+    if isinstance(release, int):        
+        pkgbuild_text = pkgbuild_text.replace("pkgrel=1\n", f"pkgrel={release}\n")
 
     #put the commit label
     pkgbuild_text = pkgbuild_text.replace("_commit=\n", f"_commit={commit}\n")
@@ -115,14 +127,14 @@ def generate_sourceinfo():
         srcinfo_file.write(printsrcinfo)     
 
 
-def gen_pkfile(): 
-    create_pkgbuild()
+def gen_pkfile(release): 
+    create_pkgbuild(release)
     do_check_sum()
     generate_sourceinfo()
 
 
-def generate_and_push(): 
-    gen_pkfile()
+def generate_and_push(release): 
+    gen_pkfile(release)
 
     push()
 
@@ -138,8 +150,8 @@ def push():
     bc.cmd_run(["git", "push"], cwd=f"{AUR_OUT_DIR}")
 
 
-def make(): 
-    gen_pkfile()
+def make(release): 
+    gen_pkfile(release)
 
     bc.cmd_run(["makepkg"], cwd=f"{AUR_OUT_DIR}")
 
