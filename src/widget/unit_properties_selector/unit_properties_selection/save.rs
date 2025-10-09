@@ -65,6 +65,7 @@ pub fn save_column_config(data: &[UnitPropertySelection]) {
 
     if let Err(e) = fs::create_dir_all(&parent_dir) {
         error!("Failed to create config directory {:?}: {}", parent_dir, e);
+        return;
     }
 
     let config_path = parent_dir.join("unit_columns.toml");
