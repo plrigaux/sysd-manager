@@ -53,10 +53,10 @@ tokio = { version = "1", features = ["full"] }
 constcat = "0.6"
 
 [dependencies]
-pango = { version = "*", package = "pango", features = ["v1_56"] }
+pango = { version = "0", package = "pango", features = ["v1_56"] }
 adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
-gio = { version = "*", package = "gio", features = ["v2_84"] }
-glib = { version = "*", package = "glib", features = ["v2_84"] }
+gio = { version = "0", package = "gio", features = ["v2_84"] }
+glib = { version = "0", package = "glib", features = ["v2_84"] }
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
 bitflags = "2.9"
 chrono = "0.4"
@@ -82,11 +82,11 @@ zbus = { version = "5.11", default-features = false, features = [
     "tokio",
     "blocking-api",
 ] }
-zbus_macros =  "*"
+zbus_macros =  "5"
 zbus_xml = "5"
-zvariant = "*"
-zvariant_derive =  "*"
-zvariant_utils =  "*"
+zvariant = "5"
+zvariant_derive =  "5"
+zvariant_utils =  "3"
 
 
 
