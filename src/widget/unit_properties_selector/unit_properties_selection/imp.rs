@@ -11,8 +11,9 @@ use log::{error, info, warn};
 use crate::widget::{
     unit_list::UnitListPanel,
     unit_properties_selector::{
-        data_browser::PropertyBrowseItem, data_selection::UnitPropertySelection,
-        unit_properties_selection::row::UnitPropertiesSelectionRow,
+        data_browser::PropertyBrowseItem,
+        data_selection::UnitPropertySelection,
+        unit_properties_selection::{row::UnitPropertiesSelectionRow, save::save_column_config},
     },
 };
 
@@ -81,6 +82,9 @@ impl UnitPropertiesSelectionImp {
         }
 
         let unit_list_panel = get_unit_list_panel!(self);
+
+        save_column_config(&list);
+
         unit_list_panel.set_new_columns(list);
     }
 

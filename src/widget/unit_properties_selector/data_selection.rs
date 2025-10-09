@@ -159,6 +159,7 @@ mod imp2 {
         #[property(get)]
         pub(super) access: RefCell<String>,
         #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]
+        #[property(name = "id", get= Self::id, set= Self::set_id, type = Option<GString>)]
         #[property(name = "title", get= Self::title, set= Self::set_title, type = Option<GString>)]
         #[property(name = "fixed-width", get= Self::fixed_width, set= Self::set_fixed_width, type = i32)]
         #[property(name = "resizable", get= Self::resizable, set= Self::set_resizable, type = bool)]
@@ -180,6 +181,14 @@ mod imp2 {
 
         fn set_visible(&self, visible: bool) {
             self.column.borrow().set_visible(visible)
+        }
+
+        fn id(&self) -> Option<GString> {
+            self.column.borrow().id()
+        }
+
+        fn set_id(&self, id: Option<&str>) {
+            self.column.borrow().set_id(id)
         }
 
         fn title(&self) -> Option<GString> {
