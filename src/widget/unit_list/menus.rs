@@ -15,7 +15,7 @@ pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
     );
 
     if !is_custom {
-        let sub_menu = gio::Menu::new();
+        /*         let sub_menu = gio::Menu::new();
         sub_menu.append(Some("Unit"), Some("win.col-show-unit"));
         sub_menu.append(Some("Type"), Some("win.col-show-type"));
         sub_menu.append(Some("Bus"), Some("win.col-show-bus"));
@@ -25,11 +25,17 @@ pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
         sub_menu.append(Some("Active"), Some("win.col-show-active"));
         sub_menu.append(Some("Sub"), Some("win.col-show-sub"));
         sub_menu.append(Some("Description"), Some("win.col-show-description"));
-        menu.append_submenu(Some("Show columns"), &sub_menu);
+        menu.append_submenu(Some("Show columns"), &sub_menu); */
 
         let sub_menu = gio::Menu::new();
 
-        append_item_variant(&sub_menu, "Filter", "win.unit_list_filter", Some(key));
+        append_item_variant(
+            &sub_menu,
+            "Configure Filters",
+            "win.unit_list_filter",
+            Some(key),
+        );
+
         append_item_variant(
             &sub_menu,
             "Clear Filters",

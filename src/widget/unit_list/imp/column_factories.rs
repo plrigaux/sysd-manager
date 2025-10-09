@@ -73,11 +73,14 @@ macro_rules! factory_bind_enum {
     }};
 }
 
+const ACTIVE_STATE: &str = "active_state";
+const CSS_GREY: &str = "grey";
+
 macro_rules! display_inactive {
     ($widget:expr, $unit:expr) => {
         let state = $unit.active_state();
         if state.is_inactive() {
-            $widget.set_css_classes(&["grey"]);
+            $widget.set_css_classes(&[CSS_GREY]);
         } else {
             $widget.set_css_classes(&[]);
         }
@@ -111,8 +114,6 @@ fn unbind(child: &gtk::Widget, key: Quark) {
         binding.unbind();
     }
 }
-const ACTIVE_STATE: &str = "active_state";
-const CSS_GREY: &str = "grey";
 
 fn inactive_display(widget: &impl IsA<gtk::Widget>, unit: &UnitInfo) {
     let state = unit.active_state();
@@ -325,7 +326,6 @@ pub fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
         fac_load_state.connect_bind(move |_factory, object| {
             let (inscription, unit) = factory_bind_enum!(object, load_state);
             load_state_text_binding(&inscription, &unit);
-            display_inactive!(inscription, unit);
         });
 
         factory_connect_unbind!(&fac_load_state, *BIND_INFO);
@@ -388,7 +388,7 @@ pub fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
             if let Some(css) = css_classes {
                 inscription.set_css_classes(&css);
             } else {
-                inscription.set_css_classes(&[]);
+                display_inactive!(inscription, unit);
             }
         });
 
