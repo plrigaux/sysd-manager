@@ -19,6 +19,7 @@ use crate::{
     systemd::{self, runtime},
     systemd_gui::new_settings,
     widget::{
+        preferences::data::KEY_PREF_PROP_ORIENTATION_MODE,
         unit_list::UnitListPanel,
         unit_properties_selector::{
             data_browser::{INTERFACE_NAME, PropertyBrowseItem},
@@ -61,6 +62,9 @@ pub struct UnitPropertiesSelectorDialogImp {
 
     #[template_child]
     paned: TemplateChild<gtk::Paned>,
+
+    #[template_child]
+    orientation_button: TemplateChild<gtk::Button>,
 
     last_filter_string: RefCell<String>,
 
@@ -112,6 +116,33 @@ impl UnitPropertiesSelectorDialogImp {
         } else {
             toogle_button.set_icon_name("go-next-symbolic");
             toogle_button.set_tooltip_text(Some("Expand all interfaces"));
+        }
+    }
+
+    #[template_callback]
+    fn orientation_toggled(&self, _orientation_button: &gtk::Button) {
+        info!("orientation_toggled clicked ");
+
+        let orientation = self.paned.orientation();
+
+        let new_orientation = self.handle_paned_orientation(orientation);
+        warn!("New orientation {new_orientation:?}, Old {orientation:?}");
+        self.paned.set_orientation(new_orientation);
+    }
+
+    fn handle_paned_orientation(&self, orientation: gtk::Orientation) -> gtk::Orientation {
+        if orientation == gtk::Orientation::Vertical {
+            self.orientation_button.set_icon_name("top-down");
+            self.orientation_button
+                .set_tooltip_text(Some("Switch to top down layout"));
+
+            gtk::Orientation::Horizontal
+        } else {
+            self.orientation_button.set_icon_name("side-by-side");
+            self.orientation_button
+                .set_tooltip_text(Some("Switch to side by side layout"));
+
+            gtk::Orientation::Vertical
         }
     }
 
@@ -249,6 +280,16 @@ impl UnitPropertiesSelectorDialogImp {
         }
 
         self.paned.set_position(separator_position);
+
+        let (orientation, invert_orientation) = if settings.boolean(KEY_PREF_PROP_ORIENTATION_MODE)
+        {
+            (gtk::Orientation::Vertical, gtk::Orientation::Horizontal)
+        } else {
+            (gtk::Orientation::Horizontal, gtk::Orientation::Vertical)
+        };
+
+        self.handle_paned_orientation(invert_orientation);
+        self.paned.set_orientation(orientation);
     }
 
     pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
@@ -264,6 +305,11 @@ impl UnitPropertiesSelectorDialogImp {
 
         let separator_position = self.paned.position();
         settings.set_int(PANED_SEPARATOR_POSITION, separator_position)?;
+
+        settings.set_boolean(
+            KEY_PREF_PROP_ORIENTATION_MODE,
+            self.paned.orientation() == gtk::Orientation::Vertical,
+        )?;
 
         Ok(())
     }

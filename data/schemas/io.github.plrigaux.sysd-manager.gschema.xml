@@ -219,6 +219,10 @@
             <default>'auto'</default>
             <summary>Application panes orientation</summary>
         </key>
+        <key name="pref-window-properties-orientation-vertical" type="b">       
+            <default>true</default>
+            <summary>Unit property selector window's panes orientation</summary>
+        </key>
         <key name="pref-unit-list-display-summary" type="b"> 
             <default>true</default>
             <summary>Display the unit list summary</summary>

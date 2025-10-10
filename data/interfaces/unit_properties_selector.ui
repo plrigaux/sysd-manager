@@ -81,6 +81,12 @@
                 <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
               </object>
             </child>
+            <child type="end">
+              <object class="GtkToggleButton" id="orientation_button">
+                <property name="icon-name">side-by-side</property>
+                <signal name="clicked" handler="orientation_toggled" swapped="yes"/>
+              </object>
+            </child>
           </object>
         </child>
       </object>
