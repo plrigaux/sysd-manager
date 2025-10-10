@@ -61,8 +61,10 @@ cmd_run(["cargo", "build", "--release"], cwd=PROG_SOURCE_DIR)
 print(f"Install binary ...")
 # Source path
 cmd_run(["mkdir", "-p", SERVICE_DIR], verbose=False)
+
+cwd = os.getcwd()
 cmd_run(
-    ["cp", f"{PROG_SOURCE_DIR}/target/release/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
+    ["cp", f"{cwd}/target/release/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
 )
 
 print(f"Creating Service unit file in '{SERVICE_PATH}' ...")

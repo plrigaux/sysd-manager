@@ -1,6 +1,6 @@
 [package]
 name = "tiny_daemon"
-version = "0.1.6"
+version = "0.2.0"
 repository = "https://github.com/plrigaux/sysd-manager"
 readme = "README.md"
 description = "A Test service"
@@ -20,3 +20,6 @@ libc.workspace = true
 log.workspace = true
 signal-hook = "0.3"
 tokio.workspace = true
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tracing-journald = "0.3"

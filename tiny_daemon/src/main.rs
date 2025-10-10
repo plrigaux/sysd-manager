@@ -1,10 +1,10 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use clap::Parser;
 
-use log::{info, warn};
-use tokio::signal::unix::{signal, SignalKind};
+use tokio::signal::unix::{SignalKind, signal};
+use tracing::{error, info, warn};
 
-use std::io::Write;
+//use std::io::Write;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -16,17 +16,19 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::builder()
-        //.format_target(false)
-        //.format_timestamp(None)
-        .format(|buf, record| {
-            let style = buf
-                .default_level_style(record.level())
-                .effects(anstyle::Effects::BOLD);
-            writeln!(buf, "{style}{}{style:#} {}", record.level(), record.args())
-        })
-        .filter_level(log::LevelFilter::Info)
-        .init();
+    /*     env_logger::builder()
+    //.format_target(false)
+    //.format_timestamp(None)
+    .format(|buf, record| {
+        let style = buf
+            .default_level_style(record.level())
+            .effects(anstyle::Effects::BOLD);
+        writeln!(buf, "{style}{}{style:#} {}", record.level(), record.args())
+    })
+    .filter_level(log::LevelFilter::Info)
+    .init(); */
+
+    tracing_subscriber::fmt().init();
 
     let ret: Result<(), std::io::Error> = setup_server().await;
 
@@ -39,6 +41,7 @@ async fn main() -> std::io::Result<()> {
 }
 
 async fn setup_server() -> std::io::Result<()> {
+    info!("Starting tiny_daemon...");
     let args = Args::parse();
     let port = args.port;
     let ip_addr = args.addr;
@@ -51,7 +54,9 @@ async fn setup_server() -> std::io::Result<()> {
     let mut signal_hanghup = signal(SignalKind::hangup())?;
     let sig_min_1 = libc::SIGRTMIN() + 1;
     let mut signal_rt1 = signal(SignalKind::from_raw(sig_min_1))?;
-    info!("SIGRTMIN() + 1 = {sig_min_1}");
+    info!("SIGRTMIN() + 1 = {sig_min_1}!!!");
+    warn!("test warning message");
+    error!("test error message");
 
     tokio::spawn(async move {
         loop {
