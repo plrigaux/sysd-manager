@@ -33,6 +33,7 @@ pub const KEY_PREF_UNIT_LIST_DISPLAY_COLORS: &str = "pref-unit-list-display-colo
 pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "pref-unit-list-display-summary";
 pub const KEY_PREF_PREFERRED_COLOR_SCHEME: &str = "pref-preferred-color-scheme";
 pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
+pub const KEY_PREF_PROP_ORIENTATION_MODE: &str = "pref-window-properties-orientation-vertical";
 
 pub const FLAG_SHOW: u8 = 1;
 pub const FLAG_WIDTH: u8 = 2;

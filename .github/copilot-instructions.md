@@ -1,51 +1,77 @@
 # Copilot Instructions for sysd-manager
 
 ## Project Overview
-- **SysD Manager** is a Rust-based GUI application for managing systemd units, targeting less experienced users.
-- The project is organized as a multi-crate workspace:
+- **SysD Manager** is a Rust-based GTK4 application for managing systemd units, targeting less experienced users
+- The project is organized as a multi-crate workspace with specialized components:
   - Main GUI app in `src/`
-  - Supporting tools in `tiny_daemon/` and `sysd-manager-translating/`
-  - Packaging and build scripts in `packaging/` and `scripts/`
+  - Test web server in `tiny_daemon/`
+  - Translation tools in `sysd-manager-translating/` and `transtools/`
+  - Distribution packaging in `packaging/`
 
-## Architecture & Key Components
-- **src/**: Main Rust codebase. Major modules:
-  - `main.rs`: Application entry point, sets up GTK UI and core logic.
-  - `systemd/`: Systemd interaction logic (unit control, journal, etc).
-  - `widget/`: GTK widgets for UI (e.g., unit info, dependencies, properties selectors).
-  - `analyze/`: Utilities for analyzing systemd units.
-- **data/**: UI definitions (`.ui` files), icons, schemas, and resources.
-- **packaging/**: Scripts and configs for AppImage, Flatpak, AUR, etc.
-- **tiny_daemon/**: Minimal web server for testing systemd management.
-- **sysd-manager-translating/**: Translation utilities and resources.
+## Core Architecture
+- **Main App (`src/`)**: Key components and their responsibilities:
+  - `main.rs`: App entry point, GTK initialization, window setup
+  - `systemd/`: D-Bus and CLI based systemd interaction (units, journal)
+  - `widget/`: GTK4 widget implementations following composite template pattern
+  - `analyze/`: Unit file parsing and validation utilities
+  - `errors.rs`: Centralized error handling with user-friendly messages
 
-## Developer Workflows
-- **Build**: Use `cargo build` (main app), or `cargo build --workspace` for all crates.
-- **Run**: `cargo run` (main app). For Flatpak/AppImage, use scripts in `packaging/`.
-- **Test**: `cargo test` (unit/integration tests). Some crates have their own tests.
-- **Translations**: Update `.po` files in `po/`, use `sysd-manager-translating` for tooling.
-- **Packaging**: Use scripts in `packaging/` for building distributables.
+## Integration Patterns
+- **GTK Integration**:
+  - UI layouts defined in `data/interfaces/*.ui` (XML)
+  - Custom widgets implement `ObjectSubclass` trait pattern (see `src/widget/unit_properties_selector/`)
+  - Resources (icons, styles) bundled via `data/resources/resources.gresource.xml`
 
-## Project Conventions
-- **GTK UI**: All UI layouts are defined in `data/interfaces/*.ui` (Glade/Cambalache XML).
-- **Icons/Resources**: Place icons in `data/icons/`, update `resources.gresource.xml` as needed.
-- **Systemd Integration**: All systemd calls are wrapped in `src/systemd/` for testability and separation.
-- **Testing**: Use Rust's built-in test framework. For widget/UI logic, see `widget/` submodules.
-- **Error Handling**: Centralized in `src/errors.rs`.
-- **Style**: Follows Rust 2021 idioms. UI style in `data/styles/`.
+- **Systemd Integration**: 
+  - Primary D-Bus interface via `zbus` crate
+  - Fallback to CLI commands when needed
+  - Error handling adapts systemd errors to GUI-friendly messages
+  - Unit operations abstracted in `systemd/` module
 
-## Integration Points
-- **Systemd**: Interacts via D-Bus and CLI, abstracted in `src/systemd/`.
-- **GTK**: Uses `gtk-rs` for UI; all widgets/components in `widget/`.
-- **Packaging**: Integrates with Flatpak, AppImage, AUR, etc. via `packaging/` scripts.
+## Development Workflows
+- **Build**: 
+  - Development: `cargo build` or `cargo run` 
+  - Full workspace: `cargo build --workspace`
+  - Resource compilation happens in `build.rs`
 
-## Examples
-- To add a new UI panel: create a `.ui` in `data/interfaces/`, implement logic in `src/widget/`, and register in `main.rs`.
-- To add a new systemd operation: extend `src/systemd/`, expose via widget logic.
+- **Testing**:
+  - Unit tests alongside code
+  - `tiny_daemon/` provides mock systemd service for testing
+  - Example patterns in `widget/` modules
 
-## References
-- See `README.md` for user-facing features and screenshots.
-- See `packaging/` for build/distribution scripts.
-- See `po/` for translation workflow.
+- **UI Development**:
+  - Edit `.ui` files in Glade/Cambalache
+  - Follow composite template pattern for new widgets
+  - Update `resources.gresource.xml` when adding resources
 
----
-For questions, check the code comments, or see the main `README.md` for more context.
+- **Localization**:
+  - Source strings in code/UI files
+  - Run `transtools` to update `.po` files in `po/`
+  - Build generates `.mo` files via `build.rs`
+
+## Common Patterns
+- **Widget Creation**: 
+  ```rust
+  // 1. Define in data/interfaces/my_widget.ui
+  // 2. Implement in src/widget/my_widget/
+  pub struct MyWidget(ObjectSubclass<imp::MyWidgetImpl>);
+  // 3. Register in main.rs
+  ```
+
+- **Error Handling**:
+  ```rust
+  // Convert external errors to SystemdErrors
+  impl From<zbus::Error> for SystemdErrors {
+      fn from(error: zbus::Error) -> Self {
+          SystemdErrors::DBusError(error)
+      }
+  }
+  ```
+
+## Key References
+- `README.md`: User-facing features and screenshots
+- `data/interfaces/`: UI layout definitions 
+- `src/widget/`: Widget implementation examples
+- `packaging/`: Distribution-specific build scripts
+
+For details on specific systems, check module-level documentation in source files.

@@ -3,16 +3,12 @@ use gio::Settings;
 
 use crate::{
     consts::ADWAITA,
-    format2,
     systemd_gui::new_settings,
     utils::font_management::FONT_CONTEXT,
     widget::{
         app_window::AppWindow,
         preferences::{
-            data::{
-                COL_SHOW_PREFIX, FLAG_SHOW, FLAG_WIDTH, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
-                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_LIST_COLUMNS,
-            },
+            data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY},
             drop_down_elem::{build_pane_orientation_selector, build_preferred_color_scheme},
             style_scheme::style_schemes,
         },
@@ -30,10 +26,10 @@ use std::cell::{OnceCell, RefCell};
 use strum::IntoEnumIterator;
 
 use super::data::{
-    COL_WIDTH_PREFIX, KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS,
-    KEY_PREF_JOURNAL_EVENT_MAX_SIZE, KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE,
-    KEY_PREF_STYLE_TEXT_FONT_FAMILY, KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE,
-    KEY_PREF_UNIT_FILE_LINE_NUMBER, KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
+    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
+    KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
+    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBER,
+    KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
 };
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -64,9 +60,6 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     select_font_row: TemplateChild<adw::ActionRow>,
-
-    #[template_child]
-    unit_list_columns: TemplateChild<adw::ExpanderRow>,
 
     #[template_child]
     unit_list_colors: TemplateChild<adw::SwitchRow>,
@@ -443,56 +436,6 @@ impl ObjectImpl for PreferencesDialogImpl {
 
         // Load latest window state
         self.load_preferences_values();
-
-        for (title, key, _, flags) in &*UNIT_LIST_COLUMNS {
-            let group = adw::PreferencesGroup::builder()
-                .margin_start(8)
-                .margin_end(8)
-                .margin_bottom(8)
-                //pref group -- "Column {column name}"
-                .title(format2!(pgettext("preference column", "Column {}"), title))
-                .build();
-
-            let switch = adw::SwitchRow::builder()
-                //preference show unit browser column title
-                .title(pgettext("preference column", "Show"))
-                .subtitle(format2!(
-                    //preference show unit browser column subtitle -- Hide or display unit list column {column name}"
-                    pgettext("preference column", "Hide or display unit list column {}"),
-                    title
-                ))
-                .build();
-
-            if flags & FLAG_SHOW != 0 {
-                let setting_key = format!("{COL_SHOW_PREFIX}{key}");
-                settings.bind(&setting_key, &switch, "active").build();
-            } else {
-                switch.set_sensitive(false);
-                switch.set_active(true);
-            }
-
-            group.add(&switch);
-
-            if flags & FLAG_WIDTH != 0 {
-                let spin_row = adw::SpinRow::builder()
-                    //preference  unit browser column width title
-                    .title(pgettext("preference column", "Width"))
-                    .subtitle(format2!(
-                        //preference  unit browser column width subtitle -- "Set width of column {column name}"
-                        pgettext("preference column", "Set width of column {}"),
-                        title
-                    ))
-                    .update_policy(gtk::SpinButtonUpdatePolicy::IfValid)
-                    .adjustment(&gtk::Adjustment::new(0.0, -1.0, 5000.0, 1.0, 10.0, 0.0))
-                    .build();
-
-                let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
-                settings.bind(&setting_key, &spin_row, "value").build();
-                group.add(&spin_row);
-            }
-
-            self.unit_list_columns.add_row(&group);
-        }
 
         settings
             .bind(

@@ -2,7 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.1 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="9cef0bcb46c8090e884e43457eb35d6094c113739a4c4706ec1aaed8d412d2e6"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="549524eee9dc53795da17d594a457ea4ddc4d0a45f2edc6c363c2f10707b47cc"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="88b7c58874d4c0848f7089b58fb70f13945f10dad1b64a46b10eec83e4608c1f"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="5f3536e3157dadd1fb4b4ad8972fdff11b9de2d344652cab27a1a3e4f609a1e8"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="ebb5e9f00d7bc1d0f4e524822cf35a37ee0721780ab116dc17b156fbf5d54107"/>
@@ -29,7 +29,7 @@
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="02d204f2702f22b288e93ff982a44a39b156c119f118a15ac37048868f7c030d">
+  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="75b068545a68f7ca1f7f5161f752af95078b57112cae166aee65f500d2255011">
     <requires>UnitPropertiesSelection</requires>
   </ui>
   <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="432aa9589656bd2c5461ff299b33d61188f2d7202e24396d30525fd1d5774dc5">
