@@ -6,7 +6,9 @@ use gtk::{pango, prelude::TextBufferExt};
 use log::{debug, info, warn};
 use regex::Regex;
 
-use super::more_colors::{self, ColorCodeError, Intensity, TermColor};
+use crate::utils::more_colors::{ColorCodeError, Intensity, TermColor, get_256color};
+
+//use super::more_colors::{self, ColorCodeError, Intensity, TermColor};
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
@@ -127,7 +129,6 @@ pub(super) fn write_text(tokens: &Vec<Token>, buf: &gtk::TextBuffer, text: &str)
             Token::Hidden => sgr.set_hidden(true),
             Token::Strikeout => sgr.set_strikeout(true),
             Token::Hyperlink(link_start, link_end, link_text_stert, link_text_end) => {
-
                 let link = &text[*link_start..*link_end];
 
                 let link_text = &text[*link_text_stert..*link_text_end];
@@ -233,7 +234,7 @@ fn find_color(it: &mut std::str::Split<'_, &[char; 2]>) -> Result<TermColor, Col
         "5" => {
             if let Some(color_code) = it.next() {
                 let color_code_u8 = color_code.parse::<u8>()?;
-                more_colors::get_256color(color_code_u8)
+                get_256color(color_code_u8)
             } else {
                 return Err(ColorCodeError::Malformed);
             }
@@ -415,7 +416,7 @@ pub enum Underline {
     Double,
 }
 impl Underline {
-/*     fn pango_str(&self) -> &str {
+    /*     fn pango_str(&self) -> &str {
         match self {
             Underline::Single => "single",
             Underline::Double => "double",
@@ -435,27 +436,26 @@ mod tests {
 
     use gtk::gdk;
 
-    
-
     use super::*;
 
-    const TEST_STRS : [&str; 4] = [  "This is \u{1b}[4mvery\u{1b}[0m\u{1b}[1m\u{1b}[96m Important\u{1b}[0m",
-    "asdf \u{1b}[38;2;255;140;0;48;2;255;228;225mExample 24 bit color escape sequence\u{1b}[0m",
-    "0:13:37 fedora abrt-server[90694]: \u{1b}[0;1;38;5;185m\u{1b}[0;1;39m\u{1b}[0;1;38;5;185m'post-create' on '/var/spool/abrt/ccpp-2024-10-08-10:13:37.85581-16875' exited with 1\u{1b}[0m",
-    "nothing \u{1b}[91mframed\u{1b}[7m test ok\u{1b}[0m"];
+    const TEST_STRS: [&str; 4] = [
+        "This is \u{1b}[4mvery\u{1b}[0m\u{1b}[1m\u{1b}[96m Important\u{1b}[0m",
+        "asdf \u{1b}[38;2;255;140;0;48;2;255;228;225mExample 24 bit color escape sequence\u{1b}[0m",
+        "0:13:37 fedora abrt-server[90694]: \u{1b}[0;1;38;5;185m\u{1b}[0;1;39m\u{1b}[0;1;38;5;185m'post-create' on '/var/spool/abrt/ccpp-2024-10-08-10:13:37.85581-16875' exited with 1\u{1b}[0m",
+        "nothing \u{1b}[91mframed\u{1b}[7m test ok\u{1b}[0m",
+    ];
 
     #[test]
     fn test_display() {
-        let mut line = 0;
-        for s in TEST_STRS {
+        for (line, s) in TEST_STRS.into_iter().enumerate() {
             println!("line {} {}", line, s);
-            line += 1;
         }
     }
 
     #[test]
     fn test_tokens() {
-        for s in TEST_STRS {
+        for (line, s) in TEST_STRS.into_iter().enumerate() {
+            println!("\nLine {line}");
             println!("{}", s);
 
             let result = get_tokens(s);
@@ -464,7 +464,7 @@ mod tests {
         }
     }
 
-/*     #[test]
+    /*     #[test]
     fn test_full() {
         for s in TEST_STRS {
             println!("{}", s);
@@ -475,7 +475,7 @@ mod tests {
         }
     } */
 
-/*     #[test]
+    /*     #[test]
     fn test_reverse() {
         let s = "reverse test \u{1b}[7m reverse test \u{1b}[0;m test test \u{1b}[97mwhite\u{1b}[0m";
         println!("{}", s);
@@ -529,7 +529,7 @@ mod tests {
         assert_eq!(color, color_term.get_vga(),);
     }
 
-/*     #[test]
+    /*     #[test]
     fn test_make_markup() {
         let text = "this text is in italic not in bold.";
         let vaec = vec![
@@ -591,7 +591,7 @@ mod tests {
         }
     }
 
-/*     #[test]
+    /*     #[test]
     fn test_link_regex3() {
         let test_text =  "Oct 16 16:03:05 fedora systemd[1]: \u{1b}[0;1;38;5;185m\u{1b}]8;;file://fedora/etc/systemd/system/tiny_daemon.service\u{7}/etc/s\u{1b}[0;1;39m\u{1b}[0;1;38;5;185mystemd/system/tiny_daemon.service\u{1b}]8;;\u{7}:18: Unknown key 'test' in section [Install], ignoring.\u{1b}[0m\n";
 
@@ -616,19 +616,19 @@ mod tests {
 
         println!("out {:?}", token_list);
     }
-/* 
-    #[test]
-    fn test_tok_amp_regex() {
-        //let re_amp = Regex::new(r"\&").unwrap();
+    /*
+       #[test]
+       fn test_tok_amp_regex() {
+           //let re_amp = Regex::new(r"\&").unwrap();
 
-        let test_text = "Gnome & Co";
+           let test_text = "Gnome & Co";
 
-        let replaced = RE_AMP.replace_all(test_text, "&amp;");
+           let replaced = RE_AMP.replace_all(test_text, "&amp;");
 
-        println!("replaced {}", replaced);
-    }
- */
-/*     #[test]
+           println!("replaced {}", replaced);
+       }
+    */
+    /*     #[test]
     fn test_tok_amp_convert() {
         //let re_amp = Regex::new(r"\&").unwrap();
 
