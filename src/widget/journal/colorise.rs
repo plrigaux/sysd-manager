@@ -3,16 +3,19 @@
 use std::{fmt::Debug, sync::LazyLock};
 
 use gtk::{pango, prelude::TextBufferExt};
-use log::{debug, info, warn};
-use regex::Regex;
+use log::{debug, error, info, warn};
+use regex::bytes::Regex;
 
-use crate::utils::more_colors::{ColorCodeError, Intensity, TermColor, get_256color};
+use crate::utils::{
+    more_colors::{ColorCodeError, Intensity, TermColor, get_256color},
+    writer::UnitInfoWriter,
+};
 
 //use super::more_colors::{self, ColorCodeError, Intensity, TermColor};
 
 static RE: LazyLock<Regex> = LazyLock::new(|| {
     //https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
-    let re = match Regex::new(
+    match Regex::new(
         r"(?x)
         \u{1b}  # ESC
         (?:   # 7-bit C1 Fe (except CSI)
@@ -33,25 +36,28 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
     ) {
         Ok(ok) => ok,
         Err(e) => {
-            log::error!("Rexgex compile error : {:?}", e);
-            panic!()
+            let error_msg = format!("Regex compile error : {:?}", e);
+            log::error!("{error_msg}");
+            panic!("{error_msg}")
         }
-    };
-
-    re
+    }
 });
 
-pub fn convert_to_tag(text: &str) -> Vec<Token> {
-    let token_list = get_tokens(text);
-
-    token_list
+pub fn write(
+    writer: &mut UnitInfoWriter,
+    text: &str,
+    token_list: &mut Vec<Token>,
+    added_tokens: &[Token],
+) {
+    token_list.extend_from_slice(added_tokens);
+    get_tokens(token_list, text);
+    write_text(token_list, writer, text);
 }
 
-fn get_tokens(text: &str) -> Vec<Token> {
-    let mut token_list = Vec::<Token>::new();
+pub fn get_tokens(token_list: &mut Vec<Token>, text: &str) {
     let mut last_end: usize = 0;
 
-    for captures in RE.captures_iter(text) {
+    for captures in RE.captures_iter(text.as_bytes()) {
         let main_match = captures.get(0).expect("not supose to happen");
         let end = main_match.end();
         let start = main_match.start();
@@ -62,72 +68,121 @@ fn get_tokens(text: &str) -> Vec<Token> {
         last_end = end;
 
         if let Some(osc_contol) = captures.get(2) {
-            let control = osc_contol.as_str();
-            if control == "m" {
-                if let Some(select_graphic_rendition_match) = captures.get(1) {
-                    let select_graphic_rendition = select_graphic_rendition_match.as_str();
-                    match capture_code(select_graphic_rendition, &mut token_list) {
-                        Ok(_) => {
-                            continue;
-                        }
-                        Err(e) => {
-                            warn!("while parsing {select_graphic_rendition} got error {:?}", e)
-                        }
-                    };
-                }
+            let control = osc_contol.as_bytes();
+            if control == b"m"
+                && let Some(select_graphic_rendition_match) = captures.get(1)
+            {
+                let select_graphic_rendition = select_graphic_rendition_match.as_bytes();
+                match capture_code(select_graphic_rendition, token_list) {
+                    Ok(_) => {
+                        continue;
+                    }
+                    Err(e) => {
+                        warn!(
+                            "while parsing {} got error {:?}",
+                            String::from_utf8_lossy(select_graphic_rendition),
+                            e
+                        )
+                    }
+                };
             }
-        } else if let Some(link_match) = captures.get(3) {
-            if let Some(link_text_match) = captures.get(4) {
-                token_list.push(Token::Hyperlink(
-                    link_match.start(),
-                    link_match.end(),
-                    link_text_match.start(),
-                    link_text_match.end(),
-                ));
-                continue;
-            }
+        } else if let Some(link_match) = captures.get(3)
+            && let Some(link_text_match) = captures.get(4)
+        {
+            token_list.push(Token::Hyperlink(
+                link_match.start(),
+                link_match.end(),
+                link_text_match.start(),
+                link_text_match.end(),
+            ));
+            continue;
         }
-        token_list.push(Token::UnHandled(main_match.as_str().to_owned()));
+
+        let s = bytes_to_string(main_match.as_bytes());
+        token_list.push(Token::UnHandled(s));
     }
 
     if text.len() != last_end {
         token_list.push(Token::Text(last_end, text.len()));
     }
-    token_list
 }
 
-pub(super) fn write_text(tokens: &Vec<Token>, buf: &gtk::TextBuffer, text: &str) {
-    let tag_table = buf.tag_table();
+fn bytes_to_string(main_match: &[u8]) -> String {
+    match String::from_utf8(main_match.to_vec()) {
+        Ok(s) => s,
+        Err(e) => {
+            warn!("while parsing {:?} got error {:?}", main_match, e);
+            String::from_utf8_lossy(main_match).to_string()
+        }
+    }
+}
 
-    let mut iter = buf.start_iter();
+pub(super) fn write_text(tokens: &Vec<Token>, writer: &mut UnitInfoWriter, text: &str) {
+    let tag_table = writer.buffer.tag_table();
 
-    let mut sgr = SelectGraphicRendition::default();
+    let mut select_graphic_rendition = SelectGraphicRendition::default();
 
     for token in tokens {
         match token {
             Token::Text(start, end) => {
                 // !sgr.append_tags(&mut out, first);
 
-                let start_offset = iter.offset();
-                let sub_text = &text[*start..*end];
-                buf.insert(&mut iter, sub_text);
-                let start_iter = buf.iter_at_offset(start_offset);
+                //BUG  workaround for out of bound
+                let end = if *end > text.len() {
+                    error!(
+                        "Text token end {} > text.len() {} over {}",
+                        end,
+                        text.len(),
+                        end - text.len()
+                    );
+                    warn!("{:?} {:?}", token, text);
+                    text.len()
+                } else {
+                    *end
+                };
 
-                sgr.apply_tags(&tag_table, buf, &start_iter, &iter);
+                let start_offset = writer.text_iterator.offset();
+                //let sub_text = &text[*start..end]; //BUG is not a char boundary
+
+                let sub_text = text.get(*start..end).unwrap_or_else(|| {
+                    error!(
+                        "Text token start {} (is char boundary {}) end {} (is char boundary {})",
+                        start,
+                        text.is_char_boundary(*start),
+                        end,
+                        text.is_char_boundary(end)
+                    );
+                    warn!("{text}");
+                    ""
+                });
+
+                writer.buffer.insert(&mut writer.text_iterator, sub_text);
+                let start_iter = writer.buffer.iter_at_offset(start_offset);
+
+                select_graphic_rendition.apply_tags(
+                    &tag_table,
+                    &writer.buffer,
+                    &start_iter,
+                    &writer.text_iterator,
+                );
                 /*                 for tag in  sgr.tags.iter() {
                     buf.apply_tag(tag, &start_iter, &iter);
                 }  */
             }
 
-            Token::Intensity(intensity) => sgr.set_intensity(Some(*intensity)),
-            Token::FgColor(term_color) => sgr.set_foreground_color(Some(*term_color)),
-            Token::BgColor(term_color) => sgr.set_background_color(Some(*term_color)),
-            Token::Italic => sgr.set_italic(true),
-            Token::Underline(underline) => sgr.set_underline(*underline),
-            Token::Blink => sgr.set_blink(true),
-            Token::Reversed => sgr.set_reversed(true),
-            Token::Hidden => sgr.set_hidden(true),
-            Token::Strikeout => sgr.set_strikeout(true),
+            Token::Intensity(intensity) => select_graphic_rendition.set_intensity(Some(*intensity)),
+            Token::FgColor(term_color) => {
+                select_graphic_rendition.set_foreground_color(Some(*term_color))
+            }
+            Token::BgColor(term_color) => {
+                select_graphic_rendition.set_background_color(Some(*term_color))
+            }
+            Token::Italic => select_graphic_rendition.set_italic(true),
+            Token::Underline(underline) => select_graphic_rendition.set_underline(*underline),
+            Token::Blink => select_graphic_rendition.set_blink(true),
+            Token::Reversed => select_graphic_rendition.set_reversed(true),
+            Token::Hidden => select_graphic_rendition.set_hidden(true),
+            Token::Strikeout => select_graphic_rendition.set_strikeout(true),
             Token::Hyperlink(link_start, link_end, link_text_stert, link_text_end) => {
                 let link = &text[*link_start..*link_end];
 
@@ -146,79 +201,83 @@ pub(super) fn write_text(tokens: &Vec<Token>, buf: &gtk::TextBuffer, text: &str)
             Token::UnHandled(a) => debug!("UnHandled {a}"),
 
             Token::Reset(reset_type) => match reset_type {
-                ResetType::All => sgr.reset(),
-                ResetType::FgColor => sgr.set_foreground_color(None),
-                ResetType::BgColor => sgr.set_background_color(None),
-                ResetType::Intensity => sgr.set_intensity(None),
-                ResetType::Hidden => sgr.set_hidden(false),
+                ResetType::All => select_graphic_rendition.reset(),
+                ResetType::FgColor => select_graphic_rendition.set_foreground_color(None),
+                ResetType::BgColor => select_graphic_rendition.set_background_color(None),
+                ResetType::Intensity => select_graphic_rendition.set_intensity(None),
+                ResetType::Hidden => select_graphic_rendition.set_hidden(false),
             },
         }
     }
 }
 
-fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeError> {
-    let mut it = code_line.split(&[';', ':']); // insome case they use : as separator
+fn bsplit(b: &u8) -> bool {
+    matches!(b, b';' | b':')
+}
+
+fn capture_code(code_line: &[u8], vec: &mut Vec<Token>) -> Result<(), ColorCodeError> {
+    let mut it: std::slice::Split<'_, u8, fn(&u8) -> bool> = code_line.split(bsplit); // insome case they use : as separator
 
     while let Some(code) = it.next() {
         let token = match code {
-            "0" => Token::Reset(ResetType::All),
-            "1" => Token::Intensity(Intensity::Bold),
-            "2" => Token::Intensity(Intensity::Faint),
-            "3" => Token::Italic,
-            "4" => Token::Underline(Underline::Single),
-            "5" => Token::Blink,
-            "6" => Token::Blink,
-            "7" => Token::Reversed,
-            "8" => Token::Hidden,
-            "9" => Token::Strikeout,
-            "22" => Token::Reset(ResetType::Intensity),
-            "28" => Token::Reset(ResetType::Hidden),
-            "21" => Token::Underline(Underline::Double),
-            "30" => Token::FgColor(TermColor::Black),
-            "31" => Token::FgColor(TermColor::Red),
-            "32" => Token::FgColor(TermColor::Green),
-            "33" => Token::FgColor(TermColor::Yellow),
-            "34" => Token::FgColor(TermColor::Blue),
-            "35" => Token::FgColor(TermColor::Magenta),
-            "36" => Token::FgColor(TermColor::Cyan),
-            "37" => Token::FgColor(TermColor::White),
-            "38" => {
+            b"0" => Token::Reset(ResetType::All),
+            b"1" => Token::Intensity(Intensity::Bold),
+            b"2" => Token::Intensity(Intensity::Faint),
+            b"3" => Token::Italic,
+            b"4" => Token::Underline(Underline::Single),
+            b"5" => Token::Blink,
+            b"6" => Token::Blink,
+            b"7" => Token::Reversed,
+            b"8" => Token::Hidden,
+            b"9" => Token::Strikeout,
+            b"22" => Token::Reset(ResetType::Intensity),
+            b"28" => Token::Reset(ResetType::Hidden),
+            b"21" => Token::Underline(Underline::Double),
+            b"30" => Token::FgColor(TermColor::Black),
+            b"31" => Token::FgColor(TermColor::Red),
+            b"32" => Token::FgColor(TermColor::Green),
+            b"33" => Token::FgColor(TermColor::Yellow),
+            b"34" => Token::FgColor(TermColor::Blue),
+            b"35" => Token::FgColor(TermColor::Magenta),
+            b"36" => Token::FgColor(TermColor::Cyan),
+            b"37" => Token::FgColor(TermColor::White),
+            b"38" => {
                 let color = find_color(&mut it)?;
                 Token::FgColor(color)
             }
-            "39" => Token::Reset(ResetType::FgColor),
+            b"39" => Token::Reset(ResetType::FgColor),
 
-            "40" => Token::BgColor(TermColor::Black),
-            "41" => Token::BgColor(TermColor::Red),
-            "42" => Token::BgColor(TermColor::Green),
-            "43" => Token::BgColor(TermColor::Yellow),
-            "44" => Token::BgColor(TermColor::Blue),
-            "45" => Token::BgColor(TermColor::Magenta),
-            "46" => Token::BgColor(TermColor::Cyan),
-            "47" => Token::BgColor(TermColor::White),
-            "48" => {
+            b"40" => Token::BgColor(TermColor::Black),
+            b"41" => Token::BgColor(TermColor::Red),
+            b"42" => Token::BgColor(TermColor::Green),
+            b"43" => Token::BgColor(TermColor::Yellow),
+            b"44" => Token::BgColor(TermColor::Blue),
+            b"45" => Token::BgColor(TermColor::Magenta),
+            b"46" => Token::BgColor(TermColor::Cyan),
+            b"47" => Token::BgColor(TermColor::White),
+            b"48" => {
                 let color = find_color(&mut it)?;
                 Token::BgColor(color)
             }
-            "49" => Token::Reset(ResetType::BgColor),
-            "90" => Token::FgColor(TermColor::BrightBlack),
-            "91" => Token::FgColor(TermColor::BrightRed),
-            "92" => Token::FgColor(TermColor::BrightGreen),
-            "93" => Token::FgColor(TermColor::BrightYellow),
-            "94" => Token::FgColor(TermColor::BrightBlue),
-            "95" => Token::FgColor(TermColor::BrightMagenta),
-            "96" => Token::FgColor(TermColor::BrightCyan),
-            "97" => Token::FgColor(TermColor::BrightWhite),
+            b"49" => Token::Reset(ResetType::BgColor),
+            b"90" => Token::FgColor(TermColor::BrightBlack),
+            b"91" => Token::FgColor(TermColor::BrightRed),
+            b"92" => Token::FgColor(TermColor::BrightGreen),
+            b"93" => Token::FgColor(TermColor::BrightYellow),
+            b"94" => Token::FgColor(TermColor::BrightBlue),
+            b"95" => Token::FgColor(TermColor::BrightMagenta),
+            b"96" => Token::FgColor(TermColor::BrightCyan),
+            b"97" => Token::FgColor(TermColor::BrightWhite),
 
-            "100" => Token::BgColor(TermColor::BrightBlack),
-            "101" => Token::BgColor(TermColor::BrightRed),
-            "102" => Token::BgColor(TermColor::BrightGreen),
-            "103" => Token::BgColor(TermColor::BrightYellow),
-            "104" => Token::BgColor(TermColor::BrightBlue),
-            "105" => Token::BgColor(TermColor::BrightMagenta),
-            "106" => Token::BgColor(TermColor::BrightCyan),
-            "107" => Token::BgColor(TermColor::BrightWhite),
-            unknown_code => Token::UnHandledCode(unknown_code.to_string()),
+            b"100" => Token::BgColor(TermColor::BrightBlack),
+            b"101" => Token::BgColor(TermColor::BrightRed),
+            b"102" => Token::BgColor(TermColor::BrightGreen),
+            b"103" => Token::BgColor(TermColor::BrightYellow),
+            b"104" => Token::BgColor(TermColor::BrightBlue),
+            b"105" => Token::BgColor(TermColor::BrightMagenta),
+            b"106" => Token::BgColor(TermColor::BrightCyan),
+            b"107" => Token::BgColor(TermColor::BrightWhite),
+            unknown_code => Token::UnHandledCode(bytes_to_string(unknown_code)),
         };
 
         vec.push(token)
@@ -226,20 +285,21 @@ fn capture_code(code_line: &str, vec: &mut Vec<Token>) -> Result<(), ColorCodeEr
     Ok(())
 }
 
-fn find_color(it: &mut std::str::Split<'_, &[char; 2]>) -> Result<TermColor, ColorCodeError> {
+fn find_color(
+    it: &mut std::slice::Split<'_, u8, fn(&u8) -> bool>,
+) -> Result<TermColor, ColorCodeError> {
     let Some(sub_code) = it.next() else {
         return Err(ColorCodeError::Malformed);
     };
     let color = match sub_code {
-        "5" => {
+        b"5" => {
             if let Some(color_code) = it.next() {
-                let color_code_u8 = color_code.parse::<u8>()?;
-                get_256color(color_code_u8)
+                get_256color(color_code[0])
             } else {
                 return Err(ColorCodeError::Malformed);
             }
         }
-        "2" => {
+        b"2" => {
             let Some(r) = it.next() else {
                 return Err(ColorCodeError::Malformed);
             };
@@ -251,11 +311,16 @@ fn find_color(it: &mut std::str::Split<'_, &[char; 2]>) -> Result<TermColor, Col
             let Some(b) = it.next() else {
                 return Err(ColorCodeError::Malformed);
             };
+            let r = str::from_utf8(r)?;
+            let g = str::from_utf8(g)?;
+            let b = str::from_utf8(b)?;
 
             TermColor::new_vga(r, g, b)?
         }
         unexpected_code => {
-            return Err(ColorCodeError::UnexpectedCode(unexpected_code.to_owned()));
+            return Err(ColorCodeError::UnexpectedCode(bytes_to_string(
+                unexpected_code,
+            )));
         }
     };
     Ok(color)
@@ -378,16 +443,40 @@ impl SelectGraphicRendition {
         }
 
         if let Some(_italic) = self.italic {
-            let tt = gtk::TextTag::builder().style(pango::Style::Italic).build();
-            tag_table.add(&tt);
-            buf.apply_tag(&tt, start_iter, iter);
+            const ITALIC: &str = "italic";
+            let tag = if let Some(tag) = tag_table.lookup(ITALIC) {
+                tag
+            } else {
+                let tag = gtk::TextTag::builder()
+                    .style(pango::Style::Italic)
+                    .name(ITALIC)
+                    .build();
+                tag_table.add(&tag);
+                tag
+            };
+
+            buf.apply_tag(&tag, start_iter, iter);
         }
 
         if let Some(intensity) = self.intensity {
-            let tt = gtk::TextTag::builder()
-                .weight(intensity.pango_i32())
-                .build();
-            tag_table.add(&tt);
+            let name = intensity.pango_str();
+            let tt: gtk::TextTag = if let Some(tag) = tag_table.lookup(name) {
+                tag
+            } else {
+                let mut tag_builder = gtk::TextTag::builder()
+                    .weight(intensity.pango_i32())
+                    .name(name);
+
+                if intensity == Intensity::Faint {
+                    tag_builder =
+                        tag_builder.foreground_rgba(&TermColor::Vga(94, 94, 94).get_rgba());
+                }
+
+                let tag = tag_builder.build();
+                tag_table.add(&tag);
+                tag
+            };
+
             buf.apply_tag(&tt, start_iter, iter);
         }
 
@@ -489,12 +578,10 @@ mod tests {
     fn test_color_regex() {
         let mut results = vec![];
 
-        let mut line: usize = 0;
-        for haystack in TEST_STRS {
-            for capt in RE.captures_iter(haystack) {
+        for (line, haystack) in TEST_STRS.into_iter().enumerate() {
+            for capt in RE.captures_iter(haystack.as_bytes()) {
                 results.push((line, capt));
             }
-            line += 1;
         }
 
         for capt in results {
@@ -505,7 +592,7 @@ mod tests {
     #[test]
     fn test_capture_code() {
         let mut vec = Vec::<Token>::new();
-        let _res = capture_code("0;1;38;5;185", &mut vec);
+        let _res = capture_code(b"0;1;38;5;185", &mut vec);
 
         println!("{:?}", vec)
     }
@@ -570,7 +657,7 @@ mod tests {
 
     #[test]
     fn test_link_regex() {
-        let test_str = "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\u{07}[🡕]\x1b]8;;\x1b\u{7} test \x1b[0m";
+        let test_str = "\x1b[35;47mANSI? \x1b[0m\x1b[1;32mSI\x1b[0m \x1b]8;;man:abrt(1)\x1b\u{07}[🡕]\x1b]8;;\x1b\u{7} test \x1b[0m".as_bytes();
 
         //let test_str = "begin \x1b]8;;man:abrt(1)\x1b\\[🡕]\x1b]8;;\x1b\\ test";
         //let test_str = "begin \x1b]8;;qwer:\x1b\\[🡕]\x1b]8;;\x1b\\ test";
@@ -582,12 +669,15 @@ mod tests {
 
     #[test]
     fn test_link_regex2() {
-        let test_text = "Oct 15 08:07:19 fedora abrt-notification[160431]: \u{1b}]8;;man:abrt(1)\u{7}[🡕]\u{1b}]8;;\u{7}   end of line";
+        let test_text = "Oct 15 08:07:19 fedora abrt-notification[160431]: \u{1b}]8;;man:abrt(1)\u{7}[🡕]\u{1b}]8;;\u{7}   end of line".as_bytes();
 
         for capt in RE.captures_iter(test_text) {
             println!("capture: {:#?}", capt);
-            assert_eq!("man:abrt(1)", capt.get(3).unwrap().as_str());
-            assert_eq!("[🡕]", capt.get(4).unwrap().as_str());
+            assert_eq!(b"man:abrt(1)", capt.get(3).unwrap().as_bytes());
+            assert_eq!(
+                "[🡕]",
+                str::from_utf8(capt.get(4).unwrap().as_bytes()).unwrap()
+            );
         }
     }
 
@@ -608,6 +698,12 @@ mod tests {
         println!("out {out}");
     } */
 
+    pub fn get_tokens(text: &str) -> Vec<Token> {
+        let mut token_list = Vec::<Token>::new();
+        super::get_tokens(&mut token_list, text);
+        token_list
+    }
+
     #[test]
     fn test_tok_amp() {
         let test_text = "Gnome & Co";
@@ -615,6 +711,62 @@ mod tests {
         let token_list = get_tokens(test_text);
 
         println!("out {:?}", token_list);
+    }
+
+    #[test]
+    fn test_rust_log() {
+        let logs = r#"
+        Oct 10 02:02:44 systemd[1]: tiny_daemon.service: Deactivated successfully.
+Oct 10 02:02:44 systemd[1]: Stopped It is tiny, but is not the tiniest.
+Oct 10 02:02:44 systemd[1]: Started It is tiny, but is not the tiniest.
+Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657790Z[0m [32m INFO[0m [2mtiny_daemon[0m[2m:[0m Starting tiny_daemon...
+Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657890Z[0m [32m INFO[0m [2mtiny_daemon[0m[2m:[0m SIGRTMIN() + 1 = 35!!!
+Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657898Z[0m [33m WARN[0m [2mtiny_daemon[0m[2m:[0m test warning message
+Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657903Z[0m [31mERROR[0m [2mtiny_daemon[0m[2m:[0m test error message
+Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657956Z[0m [32m INFO[0m [2mtiny_daemon[0m[2m:[0m Tiny Daemon listening on 127.0.0.1:33001
+"#;
+
+        for (line, s) in logs.lines().enumerate() {
+            println!("\nLine {line}");
+            println!("{}", s);
+
+            let result = get_tokens(s);
+
+            println!("{:?}", result);
+        }
+    }
+
+    #[test]
+    fn test_color_out() {
+        let escape = '\u{001b}';
+        // Try this one-liner
+        for x in 0..5 {
+            println!("---");
+            for z in [0, 10, 60, 70] {
+                for y in 30..37 {
+                    let y = y + z;
+                    let label = format!("\\e[{x};{y}m");
+                    print!("{escape}[{x};{y}m {label: ^10} {escape}[0m");
+                }
+                println!()
+            }
+        }
+    }
+
+    #[test]
+    fn test_color_out2() {
+        let escape = '\u{001b}';
+        for code in 0..255 {
+            println!("{escape}[38;5;{code}m[38;5;'{code}m{escape}[0m");
+        }
+    }
+
+    #[test]
+    fn test_char_boundary() {
+        let s = "ab早cd";
+        for (index, character) in s.char_indices() {
+            println!("Character '{}' starts at byte index {}", character, index);
+        }
     }
     /*
        #[test]

@@ -1,7 +1,7 @@
 use std::{borrow::Cow, sync::LazyLock};
 
 use glib::Quark;
-use gtk::{TextBuffer, TextIter, TextTag, glib::translate::IntoGlib, pango, prelude::*};
+use gtk::{glib::translate::IntoGlib, pango, prelude::*};
 use log::debug;
 
 use crate::systemd::{
@@ -13,9 +13,9 @@ use crate::systemd::{
 use super::palette::{blue, green, grey, red, yellow};
 
 pub struct UnitInfoWriter {
-    buf: TextBuffer,
-    iter: TextIter,
-    is_dark: bool,
+    pub buffer: gtk::TextBuffer,
+    pub text_iterator: gtk::TextIter,
+    pub is_dark: bool,
 }
 
 //const TAG_NAME_HYPER_LINK: &str = "hyperlink";
@@ -31,9 +31,9 @@ const TAG_NAME_STATUS: &str = "blue";
 const TAG_NAME_STATUS_DARK: &str = "blue_dark";
 pub static TAG_DATA_LINK: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("link"));
 
-const TAG_NAME_YELLOW_DARK: &str = "yellow_dark";
+/* const TAG_NAME_YELLOW_DARK: &str = "yellow_dark";
 const TAG_NAME_YELLOW: &str = "yellow";
-
+ */
 pub const PROP_UNDERLINE: &str = "underline";
 
 pub const SPECIAL_GLYPH_TREE_VERTICAL: &str = "│ ";
@@ -77,21 +77,25 @@ impl HyperLinkType {
 }
 
 impl UnitInfoWriter {
-    pub fn new(buf: TextBuffer, iter: TextIter, is_dark: bool) -> Self {
-        UnitInfoWriter { buf, iter, is_dark }
+    pub fn new(buf: gtk::TextBuffer, iter: gtk::TextIter, is_dark: bool) -> Self {
+        UnitInfoWriter {
+            buffer: buf,
+            text_iterator: iter,
+            is_dark,
+        }
     }
 
     pub fn insert(&mut self, text: &str) {
-        self.buf.insert(&mut self.iter, text);
+        self.buffer.insert(&mut self.text_iterator, text);
     }
 
     pub fn insertln(&mut self, text: &str) {
-        self.buf.insert(&mut self.iter, text);
-        self.buf.insert(&mut self.iter, "\n");
+        self.buffer.insert(&mut self.text_iterator, text);
+        self.buffer.insert(&mut self.text_iterator, "\n");
     }
 
     pub fn newline(&mut self) {
-        self.buf.insert(&mut self.iter, "\n");
+        self.buffer.insert(&mut self.text_iterator, "\n");
     }
 
     pub fn insert_active(&mut self, text: &str) {
@@ -102,9 +106,9 @@ impl UnitInfoWriter {
         self.insert_tag(text, Self::create_red_tag, None, HyperLinkType::None);
     }
 
-    pub fn insert_yellow(&mut self, text: &str) {
+    /*     pub fn insert_yellow(&mut self, text: &str) {
         self.insert_tag(text, Self::create_yellow_tag, None, HyperLinkType::None);
-    }
+    } */
 
     pub fn insert_disable(&mut self, text: &str) {
         self.insert_tag(text, Self::create_disable_tag, None, HyperLinkType::None);
@@ -114,9 +118,9 @@ impl UnitInfoWriter {
         self.insert_tag(text, Self::create_grey_tag, None, HyperLinkType::None);
     }
 
-    pub fn insert_bold(&mut self, text: &str) {
+    /*     pub fn insert_bold(&mut self, text: &str) {
         self.insert_tag(text, Self::create_bold_tag, None, HyperLinkType::None);
-    }
+    } */
 
     pub fn insert_status(&mut self, text: &str) {
         self.insert_tag(text, Self::create_status_tag, None, HyperLinkType::None);
@@ -142,7 +146,7 @@ impl UnitInfoWriter {
         }
     }
 
-    fn create_hyperlink_tag(buf: &TextBuffer, _is_dark: bool) -> Option<TextTag> {
+    fn create_hyperlink_tag(buf: &gtk::TextBuffer, _is_dark: bool) -> Option<gtk::TextTag> {
         buf.create_tag(
             None,
             &[
@@ -152,7 +156,7 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_active_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_active_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
         let (color, name) = if is_dark {
             (green(is_dark), TAG_NAME_ACTIVE_DARK)
         } else {
@@ -173,7 +177,7 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_yellow_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    /*     fn create_yellow_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
         let (color, name) = if is_dark {
             (yellow(is_dark), TAG_NAME_YELLOW_DARK)
         } else {
@@ -192,7 +196,7 @@ impl UnitInfoWriter {
                 (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
             ],
         )
-    }
+    } */
 
     /*     pub fn red_dark() -> &'static str {
         Palette::RedErrorDark.get_color()
@@ -202,7 +206,7 @@ impl UnitInfoWriter {
         Palette::Red3.get_color()
     } */
 
-    fn create_red_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_red_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
         let (color, name) = if is_dark {
             (red(is_dark), TAG_NAME_RED_DARK)
         } else {
@@ -223,7 +227,7 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_disable_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_disable_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
         let (color, name) = if is_dark {
             (yellow(is_dark), TAG_NAME_DISABLE_DARK)
         } else {
@@ -244,7 +248,7 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_bold_tag(buf: &TextBuffer, _is_dark: bool) -> Option<TextTag> {
+    /*     fn create_bold_tag(buf: &gtk::TextBuffer, _is_dark: bool) -> Option<gtk::TextTag> {
         const NAME: &str = "BOLD_SIMPLE";
 
         let tag_op = buf.tag_table().lookup(NAME);
@@ -256,9 +260,9 @@ impl UnitInfoWriter {
             Some(NAME),
             &[(PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value())],
         )
-    }
+    } */
 
-    fn create_grey_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_grey_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
         let (color, name) = if is_dark {
             (grey(is_dark), TAG_NAME_GREY_DARK)
         } else {
@@ -276,7 +280,7 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_status_tag(buf: &TextBuffer, is_dark: bool) -> Option<TextTag> {
+    fn create_status_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
         let (color, name) = if is_dark {
             (blue(is_dark), TAG_NAME_STATUS_DARK)
         } else {
@@ -300,14 +304,14 @@ impl UnitInfoWriter {
     fn insert_tag(
         &mut self,
         text: &str,
-        create_tag: impl Fn(&TextBuffer, bool) -> Option<TextTag>,
+        create_tag: impl Fn(&gtk::TextBuffer, bool) -> Option<gtk::TextTag>,
         link: Option<&str>,
         type_: HyperLinkType,
     ) {
-        let start_offset = self.iter.offset();
-        self.buf.insert(&mut self.iter, text);
+        let start_offset = self.text_iterator.offset();
+        self.buffer.insert(&mut self.text_iterator, text);
 
-        let tag = create_tag(&self.buf, self.is_dark);
+        let tag = create_tag(&self.buffer, self.is_dark);
 
         if let Some(tag) = tag {
             if let Some(link) = link {
@@ -320,12 +324,13 @@ impl UnitInfoWriter {
                 }
             }
 
-            let start_iter = self.buf.iter_at_offset(start_offset);
-            self.buf.apply_tag(&tag, &start_iter, &self.iter);
+            let start_iter = self.buffer.iter_at_offset(start_offset);
+            self.buffer
+                .apply_tag(&tag, &start_iter, &self.text_iterator);
         }
     }
 
     pub fn char_count(&self) -> i32 {
-        self.buf.char_count()
+        self.buffer.char_count()
     }
 }

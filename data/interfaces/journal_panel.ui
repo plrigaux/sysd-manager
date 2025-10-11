@@ -114,6 +114,27 @@
         <child>
           <object class="AdwViewStackPage">
             <property name="child">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkScrolledWindow" id="scrolled_window">
+                    <property name="hscrollbar-policy">always</property>
+                    <property name="overlay-scrolling">False</property>
+                    <property name="vexpand">True</property>
+                    <property name="vexpand-set">True</property>
+                    <property name="vscrollbar-policy">always</property>
+                    <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="yes"/>
+                    <signal name="edge-reached" handler="scwin_edge_reached" swapped="yes"/>
+                  </object>
+                </child>
+              </object>
+            </property>
+            <property name="name">journal</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwViewStackPage">
+            <property name="child">
               <object class="AdwStatusPage">
                 <property name="description" translatable="yes" context="journal" comments="description">No journal events!
 It can be a good thing. 😉</property>
@@ -130,26 +151,6 @@ It can be a good thing. 😉</property>
               <object class="AdwSpinner"/>
             </property>
             <property name="name">spinner</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwViewStackPage">
-            <property name="child">
-              <object class="GtkBox">
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkScrolledWindow" id="scrolled_window">
-                    <property name="hscrollbar-policy">always</property>
-                    <property name="overlay-scrolling">False</property>
-                    <property name="vexpand">True</property>
-                    <property name="vscrollbar-policy">always</property>
-                    <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="yes"/>
-                    <signal name="edge-reached" handler="scwin_edge_reached" swapped="yes"/>
-                  </object>
-                </child>
-              </object>
-            </property>
-            <property name="name">journal</property>
           </object>
         </child>
       </object>

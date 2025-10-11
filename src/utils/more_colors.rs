@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::num::ParseIntError;
+use std::{num::ParseIntError, str::Utf8Error};
 
 use crate::gtk::glib::translate::IntoGlib;
 use gtk::{gdk, pango};
@@ -185,12 +185,19 @@ impl From<Palette<'_>> for TermColor {
 pub enum ColorCodeError {
     Malformed,
     ParseIntError(ParseIntError),
+    Utf8Error(Utf8Error),
     UnexpectedCode(String),
 }
 
 impl From<ParseIntError> for ColorCodeError {
     fn from(pe: ParseIntError) -> Self {
         ColorCodeError::ParseIntError(pe)
+    }
+}
+
+impl From<Utf8Error> for ColorCodeError {
+    fn from(utf_err: Utf8Error) -> Self {
+        ColorCodeError::Utf8Error(utf_err)
     }
 }
 

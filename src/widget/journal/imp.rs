@@ -29,9 +29,15 @@ use crate::{
         },
     },
     systemd_gui,
-    utils::{font_management::set_text_view_font, writer::UnitInfoWriter},
+    utils::{
+        font_management::set_text_view_font,
+        more_colors::{Intensity, TermColor},
+        palette,
+        writer::UnitInfoWriter,
+    },
     widget::{
         InterPanelMessage,
+        journal::colorise::{self, Token},
         preferences::data::{
             KEY_PREF_JOURNAL_DISPLAY_FOLLOW, KEY_PREF_JOURNAL_DISPLAY_ORDER, PREFERENCES,
         },
@@ -39,8 +45,8 @@ use crate::{
 };
 
 const PANEL_EMPTY: &str = "empty";
-const PANEL_JOURNAL: &str = "journal";
-const PANEL_SPINNER: &str = "spinner";
+/* const PANEL_JOURNAL: &str = "journal";
+const PANEL_SPINNER: &str = "spinner"; */
 
 const ASCD: &str = "view-sort-ascending";
 const DESC: &str = "view-sort-descending";
@@ -411,7 +417,7 @@ impl JournalPanelImp {
         let journal_refresh_button = self.journal_refresh_button.clone();
         let journal_max_events_batch_size: usize =
             PREFERENCES.journal_max_events_batch_size() as usize;
-        let panel_stack = self.panel_stack.clone();
+        //let panel_stack = self.panel_stack.clone();
         let boot_filter = self.boot_filter.borrow().clone();
         //let from_time = self.from_time.get();
         //let most_recent_time = self.most_recent_time.get();
@@ -439,7 +445,7 @@ impl JournalPanelImp {
         info!("boot filter {boot_filter:?}");
 
         glib::spawn_future_local(async move {
-            panel_stack.set_visible_child_name(PANEL_SPINNER);
+            //panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
             let boot_filter2 = boot_filter.clone();
             let level = unit.dbus_level();
@@ -520,20 +526,25 @@ impl JournalPanelImp {
         let is_dark = self.is_dark.get();
         let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
         let journal_color = PREFERENCES.journal_colors();
+        let mut journal_filler = JournalFiller::new(is_dark, journal_color);
         for journal_event in journal_events.iter() {
-            fill_journal_event(journal_event, &mut writer, journal_color);
+            journal_filler.fill_journal_event(journal_event, &mut writer);
         }
 
         info!("Finish added {size} journal events!");
 
-        let panel = if writer.char_count() <= 0 {
-            PANEL_EMPTY
-        } else {
-            PANEL_JOURNAL
-        };
+        if writer.char_count() <= 0 {
+            self.panel_stack.set_visible_child_name(PANEL_EMPTY);
+        }
 
         self.journal_refresh_button.set_sensitive(true);
-        self.panel_stack.set_visible_child_name(panel);
+        //TODO put  a load notification
+        //TODO fix PgDown annoying sound
+
+        /*      self.panel_stack.set_visible_child_name(panel);
+           if panel == PANEL_JOURNAL {
+            self.scrolled_window.grab_focus();
+        } */
     }
 
     fn continuous_entry(&self) {
@@ -767,66 +778,99 @@ fn validate_boot_id(boot_id: &str) -> BootIdValidation {
     }
 }
 
-/// When outputting to a tty, lines are colored according to priority:
-///        lines of level ERROR and higher  3-1
-///                  are colored red; lines of level
-///                  WARNING are colored yellow; 4
-///                  lines of level NOTICE are highlighted; 5
-///                  lines of level INFO are displayed normally; lines of level  6
-///                  DEBUG are colored grey.
-///
-fn fill_journal_event(
-    journal_event: &JournalEvent,
-    writer: &mut UnitInfoWriter,
+struct JournalFiller {
+    token_buffer: Vec<Token>,
+    red: [Token; 2],
+    yellow: [Token; 2],
+    bold: [Token; 1],
+    grey: [Token; 1],
+    empty: [Token; 0],
     journal_color: bool,
-) {
-    writer.insert(&journal_event.prefix);
-
-    let priority = if journal_color {
-        journal_event.priority
-    } else {
-        6
-    };
-
-    match priority {
-        0..=3 => pad_lines(writer, journal_event, UnitInfoWriter::insert_red),
-        4 => pad_lines(writer, journal_event, UnitInfoWriter::insert_yellow),
-        5 => pad_lines(writer, journal_event, UnitInfoWriter::insert_bold),
-        6 => pad_lines(writer, journal_event, UnitInfoWriter::insert),
-        7 => pad_lines(writer, journal_event, UnitInfoWriter::insert_grey),
-        BOOT_IDX => pad_lines(writer, journal_event, UnitInfoWriter::insert_bold),
-
-        _ => {
-            warn!("Priority {priority} not handeled")
-        }
-    };
-    writer.newline();
 }
 
-fn pad_lines(
-    writer: &mut UnitInfoWriter,
-    journal_event: &JournalEvent,
-    inserter: impl Fn(&mut UnitInfoWriter, &str),
-) {
-    let mut lines = journal_event.message.lines();
+impl JournalFiller {
+    fn new(is_dark: bool, journal_color: bool) -> Self {
+        let red = TermColor::from(palette::red(is_dark));
+        let red = [Token::FgColor(red), Token::Intensity(Intensity::Bold)];
 
-    if let Some(line) = lines.next() {
-        inserter(writer, line);
+        let yellow = TermColor::from(palette::yellow(is_dark));
+        let yellow = [Token::FgColor(yellow), Token::Intensity(Intensity::Bold)];
+
+        let bold = [Token::Intensity(Intensity::Bold)];
+
+        let grey = TermColor::from(palette::grey(is_dark));
+        let grey = [Token::FgColor(grey)];
+
+        Self {
+            token_buffer: vec![],
+            red,
+            yellow,
+            bold,
+            grey,
+            empty: [],
+            journal_color,
+        }
     }
 
-    let mut space_padding = String::new();
-    for line in lines {
-        if space_padding.is_empty() {
-            let bytes = vec![b' '; journal_event.prefix.len()];
-            space_padding = String::from_utf8(bytes).expect("No issues");
+    /// When outputting to a tty, lines are colored according to priority:
+    ///        lines of level ERROR and higher  3-1
+    ///                  are colored red; lines of level
+    ///                  WARNING are colored yellow; 4
+    ///                  lines of level NOTICE are highlighted; 5
+    ///                  lines of level INFO are displayed normally; lines of level  6
+    ///                  DEBUG are colored grey.
+    ///
+    fn fill_journal_event(&mut self, journal_event: &JournalEvent, writer: &mut UnitInfoWriter) {
+        writer.insert(&journal_event.prefix);
+
+        let priority_format = if self.journal_color {
+            let tokens: &[Token] = match journal_event.priority {
+                0..=3 => &self.red,
+                4 => &self.yellow,
+                5 => &self.bold,
+                6 => &self.empty,
+                7 => &self.grey,
+                BOOT_IDX => &self.bold,
+
+                _ => {
+                    warn!("Priority {} not handeled", journal_event.priority);
+                    &self.empty
+                }
+            };
+            tokens
+        } else {
+            &self.empty
+        };
+
+        let mut lines = journal_event.message.lines();
+        self.token_buffer.clear();
+
+        if let Some(line) = lines.next() {
+            if self.journal_color {
+                colorise::write(writer, line, &mut self.token_buffer, priority_format);
+            } else {
+                writer.insert(line);
+            }
         }
 
+        let mut space_padding = String::new();
+        for line in lines {
+            if space_padding.is_empty() {
+                let bytes = vec![b' '; journal_event.prefix.len()];
+                space_padding = String::from_utf8(bytes).expect("No issues");
+            }
+
+            writer.newline();
+            writer.insert(&space_padding);
+            if self.journal_color {
+                colorise::write(writer, line, &mut self.token_buffer, priority_format);
+            } else {
+                writer.insert(line);
+            }
+        }
         writer.newline();
-        writer.insert(&space_padding);
-        inserter(writer, line);
     }
 }
-
 #[cfg(test)]
 mod tests {
 

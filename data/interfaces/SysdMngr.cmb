@@ -4,7 +4,7 @@
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
   <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="549524eee9dc53795da17d594a457ea4ddc4d0a45f2edc6c363c2f10707b47cc"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="88b7c58874d4c0848f7089b58fb70f13945f10dad1b64a46b10eec83e4608c1f"/>
-  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="5f3536e3157dadd1fb4b4ad8972fdff11b9de2d344652cab27a1a3e4f609a1e8"/>
+  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="b51b8de5883468c775b38876e7f9e5e4b06c3e17a2c94cf191dd903befa8a3c5"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="ebb5e9f00d7bc1d0f4e524822cf35a37ee0721780ab116dc17b156fbf5d54107"/>
   <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="f24eb2a8d91d07c816ae89ec1fe92b6c401416a46deadccb7b3ce7e5a213c462"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
@@ -29,7 +29,7 @@
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="75b068545a68f7ca1f7f5161f752af95078b57112cae166aee65f500d2255011">
+  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="c79f4ca4be77acee81ae3d45658c3cc6ba1a3165e259ee8c1a55a63c03b107d4">
     <requires>UnitPropertiesSelection</requires>
   </ui>
   <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="432aa9589656bd2c5461ff299b33d61188f2d7202e24396d30525fd1d5774dc5">
