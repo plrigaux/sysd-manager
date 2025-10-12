@@ -178,7 +178,7 @@ impl UnitListPanelImp {
         app_window: &AppWindow,
         refresh_unit_list_button: &gtk::Button,
     ) {
-        let settings = systemd_gui::new_settings();
+        // let settings = systemd_gui::new_settings();
 
         self.app_window
             .set(app_window.clone())
@@ -215,34 +215,6 @@ impl UnitListPanelImp {
             .expect("refresh_unit_list_button was already set!");
 
         self.fill_store();
-
-        let col_map = self.generate_column_map();
-
-        for (_, key, _, flags) in &*UNIT_LIST_COLUMNS {
-            let Some(column_view_column) = col_map.get(*key) else {
-                warn!("Can't bind setting key {key} to column {key}");
-                continue;
-            };
-
-            if flags & FLAG_SHOW != 0 {
-                let setting_key = format!("{COL_SHOW_PREFIX}{key}");
-                let action = settings.create_action(&setting_key);
-                app_window.add_action(&action);
-
-                settings
-                    .bind(&setting_key, column_view_column, "visible")
-                    .build();
-            }
-
-            if flags & FLAG_WIDTH != 0 {
-                let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
-                settings
-                    .bind(&setting_key, column_view_column, "fixed-width")
-                    .build();
-            }
-        }
-
-        force_expand_on_the_last_visible_column(&self.units_browser.borrow().columns());
 
         let units_browser = self.units_browser.borrow().clone();
         let action_entry = {
@@ -1260,6 +1232,41 @@ impl ObjectImpl for UnitListPanelImp {
             &self.filter_list_model.borrow(),
             &self.obj(),
         );
+
+        let col_map = self.generate_column_map();
+
+        //Code to be removed when migration to Toml will finish
+        for (_, key, _, flags) in &*UNIT_LIST_COLUMNS {
+            let Some(column_view_column) = col_map.get(*key) else {
+                warn!("Can't bind setting key {key} to column {key}");
+                continue;
+            };
+
+            if flags & FLAG_SHOW != 0 {
+                let setting_key = format!("{COL_SHOW_PREFIX}{key}");
+
+                let visible = settings.boolean(&setting_key);
+                column_view_column.set_visible(visible);
+                /*  let action = settings.create_action(&setting_key);
+                app_window.add_action(&action);
+
+                settings
+                    .bind(&setting_key, column_view_column, "visible")
+                    .build(); */
+            }
+
+            if flags & FLAG_WIDTH != 0 {
+                let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
+
+                let width = settings.int(&setting_key);
+                column_view_column.set_fixed_width(width);
+                /*             settings
+                .bind(&setting_key, column_view_column, "fixed-width")
+                .build(); */
+            }
+        }
+
+        force_expand_on_the_last_visible_column(&self.units_browser.borrow().columns());
     }
 }
 

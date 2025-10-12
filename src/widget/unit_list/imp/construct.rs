@@ -23,7 +23,12 @@ pub fn construct_column(
         .build();
     let column_view = gtk::ColumnView::new(Some(selection_model.clone()));
 
-    set_base_columns(&column_view, display_color);
+    let base_columns = set_base_columns(display_color);
+
+    for col in base_columns {
+        column_view.append_column(&col);
+    }
+
     let sorter = column_view.sorter();
     sort_list_model.set_sorter(sorter.as_ref());
 
@@ -74,7 +79,9 @@ macro_rules! create_column_filter {
 }
 
 const GETTEXT_CONTEXT: &str = "list column";
-fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
+fn set_base_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
+    let mut columns = vec![];
+
     let id = COL_ID_UNIT;
     let sorter = create_column_filter!(primary, dbus_level);
     let column_menu = create_col_menu(id, false);
@@ -88,6 +95,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(150)
         .title(pgettext(GETTEXT_CONTEXT, "Unit"))
         .build();
+    columns.push(unit_col);
 
     let id = "sysdm-type";
     let sorter = create_column_filter!(unit_type);
@@ -102,6 +110,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(82)
         .title(pgettext(GETTEXT_CONTEXT, "Type"))
         .build();
+    columns.push(type_col);
 
     let id = "sysdm-bus";
     let sorter = create_column_filter!(dbus_level);
@@ -116,6 +125,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(61)
         .title(pgettext(GETTEXT_CONTEXT, "Bus"))
         .build();
+    columns.push(bus_col);
 
     let id = "sysdm-state";
     let sorter = create_column_filter!(enable_status);
@@ -130,6 +140,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(80)
         .title(pgettext(GETTEXT_CONTEXT, "State"))
         .build();
+    columns.push(state_col);
 
     let id = "sysdm-preset";
     let sorter = create_column_filter!(preset);
@@ -144,6 +155,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(70)
         .title(pgettext(GETTEXT_CONTEXT, "Preset"))
         .build();
+    columns.push(preset_col);
 
     let id = "sysdm-load";
     let sorter = create_column_filter!(load_state);
@@ -158,6 +170,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(80)
         .title(pgettext(GETTEXT_CONTEXT, "Load"))
         .build();
+    columns.push(load_col);
 
     let id = "sysdm-active";
     let sorter = create_column_filter!(active_state);
@@ -172,6 +185,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(62)
         .title(pgettext(GETTEXT_CONTEXT, "Active"))
         .build();
+    columns.push(active_col);
 
     let id = "sysdm-sub";
     let sorter = create_column_filter!(sub_state);
@@ -186,6 +200,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .fixed_width(71)
         .title(pgettext(GETTEXT_CONTEXT, "Sub"))
         .build();
+    columns.push(sub_col);
 
     let id = "sysdm-description";
     let sorter = create_column_filter!(description);
@@ -200,14 +215,7 @@ fn set_base_columns(column_view: &gtk::ColumnView, display_color: bool) {
         .expand(true)
         .title(pgettext(GETTEXT_CONTEXT, "Description"))
         .build();
+    columns.push(sub_description);
 
-    column_view.append_column(&unit_col);
-    column_view.append_column(&type_col);
-    column_view.append_column(&bus_col);
-    column_view.append_column(&state_col);
-    column_view.append_column(&preset_col);
-    column_view.append_column(&load_col);
-    column_view.append_column(&active_col);
-    column_view.append_column(&sub_col);
-    column_view.append_column(&sub_description);
+    columns
 }
