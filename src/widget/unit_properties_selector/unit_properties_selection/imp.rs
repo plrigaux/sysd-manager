@@ -11,9 +11,8 @@ use log::{error, info, warn};
 use crate::widget::{
     unit_list::UnitListPanel,
     unit_properties_selector::{
-        data_browser::PropertyBrowseItem,
-        data_selection::UnitPropertySelection,
-        unit_properties_selection::{row::UnitPropertiesSelectionRow, save::save_column_config},
+        data_browser::PropertyBrowseItem, data_selection::UnitPropertySelection,
+        save::save_column_config, unit_properties_selection::row::UnitPropertiesSelectionRow,
     },
 };
 

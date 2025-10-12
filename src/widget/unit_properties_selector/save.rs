@@ -7,24 +7,26 @@ use std::{env, fs};
 
 use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
 
+const UNIT_COLUMNS: &str = "unit_columns.toml";
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
-struct UnitColumn {
-    id: Option<String>,
-    title: Option<String>,
+pub struct UnitColumn {
+    pub id: String,
+    pub title: Option<String>,
     #[serde(rename = "width")]
-    fixed_width: i32,
-    expands: bool,
-    resizable: bool,
-    visible: bool,
+    pub fixed_width: i32,
+    pub expands: bool,
+    pub resizable: bool,
+    pub visible: bool,
     #[serde(rename = "type")]
-    prop_type: Option<String>,
+    pub prop_type: Option<String>,
 }
 
 impl Default for UnitColumn {
     fn default() -> Self {
         Self {
-            id: None,
+            id: "".to_owned(),
             title: None,
             fixed_width: -1,
             expands: false,
@@ -38,20 +40,20 @@ impl Default for UnitColumn {
 impl UnitColumn {
     pub fn from(data: &UnitPropertySelection) -> Self {
         Self {
-            id: data.id().map(|s| s.to_string()),
+            id: data.id().map(|s| s.to_string()).unwrap_or_default(),
             title: data.title().map(|s| s.to_string()),
             fixed_width: data.fixed_width(),
             expands: data.expands(),
             resizable: data.resizable(),
             visible: data.visible(),
-            prop_type: Some(data.prop_type()),
+            prop_type: data.prop_type(),
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MyConfig {
-    column: Vec<UnitColumn>,
+    pub column: Vec<UnitColumn>,
 }
 
 pub fn save_column_config(data: &[UnitPropertySelection]) {
@@ -59,19 +61,17 @@ pub fn save_column_config(data: &[UnitPropertySelection]) {
 
     let config = MyConfig { column: data_list };
 
-    let xdg_config_home = env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
-        let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-        format!("{}/.config", home)
-    });
+    let sysd_manager_config_dir = get_sysd_manager_config_dir();
 
-    let parent_dir = Path::new(&xdg_config_home).join("sysd-manager");
-
-    if let Err(e) = fs::create_dir_all(&parent_dir) {
-        error!("Failed to create config directory {:?}: {}", parent_dir, e);
+    if let Err(e) = fs::create_dir_all(&sysd_manager_config_dir) {
+        error!(
+            "Failed to create config directory {:?}: {}",
+            sysd_manager_config_dir, e
+        );
         return;
     }
 
-    let config_path = parent_dir.join("unit_columns.toml");
+    let config_path = sysd_manager_config_dir.join(UNIT_COLUMNS);
 
     if let Err(e) = save_to_toml_file(&config, &config_path) {
         error!(
@@ -83,11 +83,60 @@ pub fn save_column_config(data: &[UnitPropertySelection]) {
     }
 }
 
+fn get_sysd_manager_config_dir() -> std::path::PathBuf {
+    let xdg_config_home = get_xdg_config_home();
+
+    Path::new(&xdg_config_home).join("sysd-manager")
+}
+
+fn get_xdg_config_home() -> String {
+    env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
+        let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
+        format!("{}/.config", home)
+    })
+}
+
 pub fn save_to_toml_file(data: &MyConfig, path: &Path) -> std::io::Result<()> {
     let toml_str = toml::to_string_pretty(data).expect("Failed to serialize data to TOML");
     let mut file = File::create(path)?;
     file.write_all(toml_str.as_bytes())?;
     Ok(())
+}
+
+pub fn load_column_config() -> Option<MyConfig> {
+    let sysd_manager_config_dir = get_sysd_manager_config_dir();
+
+    if !sysd_manager_config_dir.exists() {
+        info!(
+            "Config directory {:?} does not exist. Using default configuration.",
+            sysd_manager_config_dir
+        );
+        return None;
+    }
+
+    let config_path = sysd_manager_config_dir.join(UNIT_COLUMNS);
+
+    if !config_path.exists() {
+        info!(
+            "Config file {:?} does not exist. Using default configuration.",
+            config_path
+        );
+        return None;
+    }
+
+    match fs::read_to_string(&config_path) {
+        Ok(toml_str) => match toml::from_str::<MyConfig>(&toml_str) {
+            Ok(config) => Some(config),
+            Err(e) => {
+                error!("Failed to parse TOML from {:?}: {}", config_path, e);
+                None
+            }
+        },
+        Err(e) => {
+            error!("Failed to read config file {:?}: {}", config_path, e);
+            None
+        }
+    }
 }
 
 #[cfg(test)]
@@ -98,7 +147,7 @@ mod test {
     fn test_save_array_of_structs_to_toml() {
         let data_list = vec![
             UnitColumn {
-                id: Some("alpha".to_string()),
+                id: "alpha".to_string(),
                 title: Some("Alpha Title".to_string()),
                 fixed_width: 1,
                 expands: true,
@@ -107,7 +156,7 @@ mod test {
                 ..Default::default()
             },
             UnitColumn {
-                id: Some("beta".to_string()),
+                id: "beta".to_string(),
                 title: Some("Beta Title".to_string()),
                 fixed_width: 2,
                 expands: false,
@@ -116,7 +165,7 @@ mod test {
                 ..Default::default()
             },
             UnitColumn {
-                id: Some("gamma".to_string()),
+                id: "gamma".to_string(),
                 title: Some("Gamma Title".to_string()),
                 fixed_width: 3,
                 expands: true,
@@ -125,7 +174,7 @@ mod test {
                 prop_type: Some("i".to_string()),
             },
             UnitColumn {
-                id: None,
+                id: "".to_string(),
                 title: None,
                 fixed_width: 3,
                 expands: true,
@@ -185,7 +234,7 @@ mod test {
         let config: MyConfig = toml::from_str(toml_content).expect("Failed to parse TOML");
 
         assert!(config.column.len() >= 4);
-        assert_eq!(config.column[0].id.as_deref(), Some("alpha"));
+        assert_eq!(config.column[0].id.as_str(), "alpha");
         assert_eq!(config.column[1].fixed_width, 2);
         assert!(config.column[2].visible);
         assert_eq!(config.column[3].title, None);

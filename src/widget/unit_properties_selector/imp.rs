@@ -77,7 +77,7 @@ pub struct UnitPropertiesSelectorDialogImp {
 impl UnitPropertiesSelectorDialogImp {
     #[template_callback]
     fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
-        let text = search_entry.text();
+        let text: glib::GString = search_entry.text();
 
         let mut last_filter = self.last_filter_string.borrow_mut();
 

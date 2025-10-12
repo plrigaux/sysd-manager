@@ -33,7 +33,7 @@ impl UnitPropertySelection {
         let unit_type = UnitType::from_intreface(&interface);
         p_imp.interface.replace(interface);
         let unit_property = broswer_property.unit_property();
-        p_imp.prop_type.replace(broswer_property.signature());
+        p_imp.prop_type.replace(Some(broswer_property.signature()));
         p_imp.access.replace(broswer_property.access());
         p_imp.unit_type.set(unit_type);
 
@@ -56,7 +56,7 @@ impl UnitPropertySelection {
         this_object
     }
 
-    pub fn from_base_column(column: gtk::ColumnViewColumn) -> Self {
+    pub fn from_column_view_column(column: gtk::ColumnViewColumn) -> Self {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
@@ -156,7 +156,7 @@ mod imp2 {
         #[property(get)]
         pub(super) unit_property: RefCell<String>,
         #[property(get)]
-        pub(super) prop_type: RefCell<String>,
+        pub(super) prop_type: RefCell<Option<String>>,
         #[property(get)]
         pub(super) access: RefCell<String>,
         #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]

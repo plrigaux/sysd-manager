@@ -4,7 +4,7 @@ use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
-use log::{debug, warn};
+use log::warn;
 use zvariant::OwnedValue;
 
 use crate::widget::unit_list::COL_ID_UNIT;
@@ -265,27 +265,32 @@ pub fn setup_factories(
             continue;
         };
 
-        match id.as_str() {
-            COL_ID_UNIT => column.set_factory(Some(&fac_unit_name(display_color))),
-            "sysdm-type" => column.set_factory(Some(&fac_unit_type(display_color))),
-            "sysdm-bus" => column.set_factory(Some(&fac_bus(display_color))),
-            "sysdm-state" => column.set_factory(Some(&fac_enable_status(display_color))),
-            "sysdm-preset" => column.set_factory(Some(&fac_preset(display_color))),
-            "sysdm-load" => column.set_factory(Some(&fac_load_state(display_color))),
-            "sysdm-active" => column.set_factory(Some(&fac_active(display_color))),
-            "sysdm-sub" => column.set_factory(Some(&fac_sub_state(display_color))),
-            "sysdm-description" => column.set_factory(Some(&fac_descrition(display_color))),
+        let factory = get_factory_by_id(id.as_str(), display_color);
 
-            _ => warn!("What to do. Id {id} not handle with factory"),
+        column.set_factory(factory.as_ref());
+    }
+}
+
+pub fn get_factory_by_id(id: &str, display_color: bool) -> Option<gtk::SignalListItemFactory> {
+    match id {
+        COL_ID_UNIT => Some(fac_unit_name(display_color)),
+        "sysdm-type" => Some(fac_unit_type(display_color)),
+        "sysdm-bus" => Some(fac_bus(display_color)),
+        "sysdm-state" => Some(fac_enable_status(display_color)),
+        "sysdm-preset" => Some(fac_preset(display_color)),
+        "sysdm-load" => Some(fac_load_state(display_color)),
+        "sysdm-active" => Some(fac_active(display_color)),
+        "sysdm-sub" => Some(fac_sub_state(display_color)),
+        "sysdm-description" => Some(fac_descrition(display_color)),
+
+        id => {
+            if let Some((_interface, property)) = id.split_once('@') {
+                Some(get_custom_factory(property, display_color))
+            } else {
+                warn!("What to do. Id {id} not handle with factory");
+                None
+            }
         }
-
-        column.connect_fixed_width_notify(|cvc| {
-            debug!(
-                "Column width {:?} {}",
-                cvc.id().unwrap_or_default(),
-                cvc.fixed_width()
-            )
-        });
     }
 }
 

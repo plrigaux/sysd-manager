@@ -54,10 +54,12 @@ use crate::{
                     FilterElement, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
                 },
             },
-            imp::construct::construct_column,
             search_controls::UnitListSearchControls,
         },
-        unit_properties_selector::data_selection::UnitPropertySelection,
+        unit_properties_selector::{
+            data_selection::UnitPropertySelection,
+            save::{self},
+        },
     },
 };
 use log::{debug, error, info, warn};
@@ -1004,15 +1006,30 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
-        self.default_column_view_column_definition_list
-            .get()
-            .expect("Not None")
+        let mut list = self.default_column_view_column_definition_list.get();
+
+        if list.is_none() {
+            let column_view_column_definition_list =
+                construct::default_column_definition_list(self.display_color.get());
+
+            self.default_column_view_column_definition_list
+                .set(column_view_column_definition_list.clone())
+                .expect("Set only once");
+
+            list = self.default_column_view_column_definition_list.get();
+        }
+
+        list.unwrap()
     }
 
     pub(super) fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
         self.default_column_view_column_list
             .get()
             .expect("Need to be set")
+    }
+
+    pub(super) fn save_config(&self) {
+        save::save_column_config(&self.current_columns());
     }
 }
 
@@ -1073,8 +1090,8 @@ impl ObjectImpl for UnitListPanelImp {
             .set(list_store.clone())
             .expect("Set only Once");
 
-        let (units_browser, single_selection, filter_list_model, sort_list_model) =
-            construct_column(list_store, self.display_color.get());
+        let (units_browser, single_selection, filter_list_model, sort_list_model, generated) =
+            construct::construct_column(list_store, self.display_color.get());
 
         self.scrolled_window.set_child(Some(&units_browser));
         self.units_browser.replace(units_browser);
@@ -1086,14 +1103,12 @@ impl ObjectImpl for UnitListPanelImp {
 
         let mut column_view_column_definition_list =
             Vec::with_capacity(column_view_column_list.len());
+
         for col in column_view_column_list.iter() {
-            let unit_property_selection = UnitPropertySelection::from_base_column(col.clone());
+            let unit_property_selection: UnitPropertySelection =
+                UnitPropertySelection::from_column_view_column(col.clone());
             column_view_column_definition_list.push(unit_property_selection);
         }
-
-        self.default_column_view_column_definition_list
-            .set(column_view_column_definition_list.clone())
-            .expect("Set only once");
 
         self.current_column_view_column_definition_list
             .replace(column_view_column_definition_list);
@@ -1233,39 +1248,40 @@ impl ObjectImpl for UnitListPanelImp {
             &self.obj(),
         );
 
-        let col_map = self.generate_column_map();
+        //TODO Code to be removed when migration to Toml will finish
+        if generated {
+            let col_map = self.generate_column_map();
 
-        //Code to be removed when migration to Toml will finish
-        for (_, key, _, flags) in &*UNIT_LIST_COLUMNS {
-            let Some(column_view_column) = col_map.get(*key) else {
-                warn!("Can't bind setting key {key} to column {key}");
-                continue;
-            };
+            for (_, key, _, flags) in &*UNIT_LIST_COLUMNS {
+                let Some(column_view_column) = col_map.get(*key) else {
+                    warn!("Can't bind setting key {key} to column {key}");
+                    continue;
+                };
 
-            if flags & FLAG_SHOW != 0 {
-                let setting_key = format!("{COL_SHOW_PREFIX}{key}");
+                if flags & FLAG_SHOW != 0 {
+                    let setting_key = format!("{COL_SHOW_PREFIX}{key}");
 
-                let visible = settings.boolean(&setting_key);
-                column_view_column.set_visible(visible);
-                /*  let action = settings.create_action(&setting_key);
-                app_window.add_action(&action);
+                    let visible = settings.boolean(&setting_key);
+                    column_view_column.set_visible(visible);
+                    /*  let action = settings.create_action(&setting_key);
+                    app_window.add_action(&action);
 
-                settings
-                    .bind(&setting_key, column_view_column, "visible")
+                    settings
+                        .bind(&setting_key, column_view_column, "visible")
+                        .build(); */
+                }
+
+                if flags & FLAG_WIDTH != 0 {
+                    let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
+
+                    let width = settings.int(&setting_key);
+                    column_view_column.set_fixed_width(width);
+                    /*             settings
+                    .bind(&setting_key, column_view_column, "fixed-width")
                     .build(); */
-            }
-
-            if flags & FLAG_WIDTH != 0 {
-                let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
-
-                let width = settings.int(&setting_key);
-                column_view_column.set_fixed_width(width);
-                /*             settings
-                .bind(&setting_key, column_view_column, "fixed-width")
-                .build(); */
+                }
             }
         }
-
         force_expand_on_the_last_visible_column(&self.units_browser.borrow().columns());
     }
 }

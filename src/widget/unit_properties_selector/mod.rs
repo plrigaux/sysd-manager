@@ -1,6 +1,7 @@
 pub mod data_browser;
 pub mod data_selection;
 mod imp;
+pub mod save;
 mod unit_properties_selection;
 
 use adw::subclass::prelude::ObjectSubclassIsExt;

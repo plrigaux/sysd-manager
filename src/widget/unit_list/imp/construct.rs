@@ -1,7 +1,12 @@
 use crate::{
     gtk::prelude::*,
     systemd::data::UnitInfo,
-    widget::unit_list::{COL_ID_UNIT, imp::column_factories::*, menus::create_col_menu},
+    widget::{
+        unit_list::{COL_ID_UNIT, imp::column_factories::*, menus::create_col_menu},
+        unit_properties_selector::{
+            data_selection::UnitPropertySelection, save::load_column_config,
+        },
+    },
 };
 use gettextrs::pgettext;
 
@@ -13,6 +18,7 @@ pub fn construct_column(
     gtk::SingleSelection,
     gtk::FilterListModel,
     gtk::SortListModel,
+    bool,
 ) {
     let sort_list_model = gtk::SortListModel::new(Some(list_store), None::<gtk::Sorter>);
     let filter_list_model =
@@ -23,7 +29,33 @@ pub fn construct_column(
         .build();
     let column_view = gtk::ColumnView::new(Some(selection_model.clone()));
 
-    let base_columns = set_base_columns(display_color);
+    let (base_columns, generated) = if let Some(col) = load_column_config() {
+        let mut list = Vec::with_capacity(col.column.len());
+        for unit_column_config in col.column {
+            let id = unit_column_config.id;
+            let sorter = get_sorter_by_id(&id);
+            let factory = get_factory_by_id(&id, display_color);
+
+            let column = gtk::ColumnViewColumn::builder()
+                .id(&id)
+                .fixed_width(unit_column_config.fixed_width)
+                .expand(unit_column_config.expands)
+                .resizable(unit_column_config.resizable)
+                .visible(unit_column_config.visible)
+                .build();
+
+            column.set_title(unit_column_config.title.as_deref());
+            let column_menu = create_col_menu(&id, false);
+            column.set_header_menu(Some(&column_menu));
+            column.set_factory(factory.as_ref());
+            column.set_sorter(sorter.as_ref());
+
+            list.push(column);
+        }
+        (list, false)
+    } else {
+        (generate_default_columns(display_color), true)
+    };
 
     for col in base_columns {
         column_view.append_column(&col);
@@ -37,6 +69,7 @@ pub fn construct_column(
         selection_model,
         filter_list_model,
         sort_list_model,
+        generated,
     )
 }
 
@@ -71,6 +104,7 @@ macro_rules! column_filter_lambda {
 }
 
 pub(crate) use column_filter_lambda;
+use log::warn;
 
 macro_rules! create_column_filter {
     ($($func:ident),+) => {{
@@ -78,8 +112,34 @@ macro_rules! create_column_filter {
     }};
 }
 
+pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySelection> {
+    generate_default_columns(display_color)
+        .into_iter()
+        .map(UnitPropertySelection::from_column_view_column)
+        .collect()
+}
+
+pub fn get_sorter_by_id(id: &str) -> Option<gtk::CustomSorter> {
+    match id {
+        COL_ID_UNIT => Some(create_column_filter!(primary, dbus_level)),
+        "sysdm-type" => Some(create_column_filter!(unit_type)),
+        "sysdm-bus" => Some(create_column_filter!(dbus_level)),
+        "sysdm-state" => Some(create_column_filter!(enable_status)),
+        "sysdm-preset" => Some(create_column_filter!(preset)),
+        "sysdm-load" => Some(create_column_filter!(load_state)),
+        "sysdm-active" => Some(create_column_filter!(active_state)),
+        "sysdm-sub" => Some(create_column_filter!(sub_state)),
+        "sysdm-description" => Some(create_column_filter!(description)),
+
+        _ => {
+            warn!("What to do. Id {id} not handle with sorter");
+            None
+        }
+    }
+}
+
 const GETTEXT_CONTEXT: &str = "list column";
-fn set_base_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
+fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let mut columns = vec![];
 
     let id = COL_ID_UNIT;

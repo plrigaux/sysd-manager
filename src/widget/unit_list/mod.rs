@@ -109,4 +109,8 @@ impl UnitListPanel {
     pub fn print_scroll_adj_logs(&self) {
         self.imp().print_scroll_adj_logs();
     }
+
+    pub fn save_config(&self) {
+        self.imp().save_config();
+    }
 }
