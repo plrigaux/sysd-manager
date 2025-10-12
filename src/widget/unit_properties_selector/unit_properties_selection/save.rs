@@ -12,10 +12,13 @@ use crate::widget::unit_properties_selector::data_selection::UnitPropertySelecti
 struct UnitColumn {
     id: Option<String>,
     title: Option<String>,
+    #[serde(rename = "width")]
     fixed_width: i32,
     expands: bool,
     resizable: bool,
     visible: bool,
+    #[serde(rename = "type")]
+    prop_type: Option<String>,
 }
 
 impl Default for UnitColumn {
@@ -27,6 +30,7 @@ impl Default for UnitColumn {
             expands: false,
             resizable: false,
             visible: true,
+            prop_type: None,
         }
     }
 }
@@ -40,21 +44,20 @@ impl UnitColumn {
             expands: data.expands(),
             resizable: data.resizable(),
             visible: data.visible(),
+            prop_type: Some(data.prop_type()),
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MyConfig {
-    data_items: Vec<UnitColumn>,
+    column: Vec<UnitColumn>,
 }
 
 pub fn save_column_config(data: &[UnitPropertySelection]) {
     let data_list: Vec<UnitColumn> = data.iter().map(UnitColumn::from).collect();
 
-    let config = MyConfig {
-        data_items: data_list,
-    };
+    let config = MyConfig { column: data_list };
 
     let xdg_config_home = env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
         let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
@@ -101,6 +104,7 @@ mod test {
                 expands: true,
                 resizable: false,
                 visible: true,
+                ..Default::default()
             },
             UnitColumn {
                 id: Some("beta".to_string()),
@@ -109,6 +113,7 @@ mod test {
                 expands: false,
                 resizable: true,
                 visible: false,
+                ..Default::default()
             },
             UnitColumn {
                 id: Some("gamma".to_string()),
@@ -117,6 +122,7 @@ mod test {
                 expands: true,
                 resizable: true,
                 visible: true,
+                prop_type: Some("i".to_string()),
             },
             UnitColumn {
                 id: None,
@@ -125,12 +131,11 @@ mod test {
                 expands: true,
                 resizable: true,
                 visible: true,
+                ..Default::default()
             },
         ];
 
-        let config = MyConfig {
-            data_items: data_list,
-        };
+        let config = MyConfig { column: data_list };
 
         let toml_str = toml::to_string_pretty(&config).expect("Failed to serialize array to TOML");
 
@@ -146,7 +151,7 @@ mod test {
     #[test]
     fn test_load_multiple_structs_from_toml_file() {
         let toml_content = r#"
-            [[data_items]]
+            [[column]]
             id = "alpha"
             title = "Alpha Title"
             fixed_width = 1
@@ -154,35 +159,37 @@ mod test {
             resizable = false
             visible = true
 
-            [[data_items]]
+            [[column]]
             id = "beta"
             title = "Beta Title"
-            fixed_width = 2
+            width = 2
             expands = false
             resizable = true
             visible = false
 
-            [[data_items]]
+            [[column]]
             id = "gamma"
             title = "Gamma Title"
-            fixed_width = 3
+            width = 3
             expands = true
             resizable = true
             visible = true
 
-            [[data_items]]         
+            [[column]]         
             expands = true
             resizable = true
             visible = true
+            type = "i"
         "#;
 
         let config: MyConfig = toml::from_str(toml_content).expect("Failed to parse TOML");
 
-        assert!(config.data_items.len() >= 4);
-        assert_eq!(config.data_items[0].id.as_deref(), Some("alpha"));
-        assert_eq!(config.data_items[1].fixed_width, 2);
-        assert!(config.data_items[2].visible);
-        assert_eq!(config.data_items[3].title, None);
-        assert_eq!(config.data_items[3].fixed_width, -1);
+        assert!(config.column.len() >= 4);
+        assert_eq!(config.column[0].id.as_deref(), Some("alpha"));
+        assert_eq!(config.column[1].fixed_width, 2);
+        assert!(config.column[2].visible);
+        assert_eq!(config.column[3].title, None);
+        assert_eq!(config.column[3].fixed_width, -1);
+        assert_eq!(config.column[3].prop_type, Some("i".to_string()));
     }
 }

@@ -33,7 +33,7 @@ impl UnitPropertySelection {
         let unit_type = UnitType::from_intreface(&interface);
         p_imp.interface.replace(interface);
         let unit_property = broswer_property.unit_property();
-        p_imp.signature.replace(broswer_property.signature());
+        p_imp.prop_type.replace(broswer_property.signature());
         p_imp.access.replace(broswer_property.access());
         p_imp.unit_type.set(unit_type);
 
@@ -92,7 +92,8 @@ impl UnitPropertySelection {
         let p_imp = this_object.imp();
         p_imp.interface.replace(interface.interface());
         p_imp.unit_property.replace(property.unit_property());
-        p_imp.signature.replace(property.signature());
+        p_imp.unit_type.replace(property.unit_type());
+        p_imp.prop_type.replace(property.prop_type());
         p_imp.access.replace(property.access());
 
         this_object
@@ -114,7 +115,7 @@ impl UnitPropertySelection {
 
         p_imp.interface.replace(self.interface());
         p_imp.unit_property.replace(self.unit_property());
-        p_imp.signature.replace(self.signature());
+        p_imp.prop_type.replace(self.prop_type());
         p_imp.access.replace(self.access());
         p_imp.unit_type.set(self.unit_type());
 
@@ -155,7 +156,7 @@ mod imp2 {
         #[property(get)]
         pub(super) unit_property: RefCell<String>,
         #[property(get)]
-        pub(super) signature: RefCell<String>,
+        pub(super) prop_type: RefCell<String>,
         #[property(get)]
         pub(super) access: RefCell<String>,
         #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]

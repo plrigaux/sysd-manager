@@ -59,7 +59,7 @@ src/widget/grid_cell/mod.rs
 src/widget/info_window/imp.rs
 src/widget/info_window/mod.rs
 src/widget/info_window/rowitem.rs
-src/widget/journal/colorise.rs
+src/widget/journal/colorize.rs
 src/widget/journal/imp.rs
 src/widget/journal/journal_row.rs
 src/widget/journal/list_boots.rs

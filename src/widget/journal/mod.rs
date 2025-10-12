@@ -1,4 +1,4 @@
-mod colorise;
+mod colorize;
 mod imp;
 pub mod list_boots;
 //mod journal_row;

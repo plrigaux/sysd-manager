@@ -37,7 +37,7 @@ use crate::{
     },
     widget::{
         InterPanelMessage,
-        journal::colorise::{self, Token},
+        journal::colorize::{self, Token},
         preferences::data::{
             KEY_PREF_JOURNAL_DISPLAY_FOLLOW, KEY_PREF_JOURNAL_DISPLAY_ORDER, PREFERENCES,
         },
@@ -843,27 +843,24 @@ impl JournalFiller {
         };
 
         let mut lines = journal_event.message.lines();
-        self.token_buffer.clear();
 
         if let Some(line) = lines.next() {
             if self.journal_color {
-                colorise::write(writer, line, &mut self.token_buffer, priority_format);
+                self.token_buffer.clear();
+                colorize::write(writer, line, &mut self.token_buffer, priority_format);
             } else {
                 writer.insert(line);
             }
         }
 
-        let mut space_padding = String::new();
         for line in lines {
-            if space_padding.is_empty() {
-                let bytes = vec![b' '; journal_event.prefix.len()];
-                space_padding = String::from_utf8(bytes).expect("No issues");
-            }
-
             writer.newline();
+
+            let space_padding = " ".repeat(journal_event.prefix.len());
             writer.insert(&space_padding);
             if self.journal_color {
-                colorise::write(writer, line, &mut self.token_buffer, priority_format);
+                self.token_buffer.clear();
+                colorize::write(writer, line, &mut self.token_buffer, priority_format);
             } else {
                 writer.insert(line);
             }

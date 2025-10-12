@@ -88,12 +88,7 @@ pub(super) fn get_unit_journal_events(
 
         let mut message = get_data(&mut journal_reader, KEY_MESSAGE, &default);
 
-        if message_max_char != 0 && message.len() > message_max_char {
-            warn!(
-                "MESSAGE LEN {} will truncate to {message_max_char}",
-                message.len()
-            );
-
+        if message_max_char > 0 {
             message = truncate(message, message_max_char);
         }
 
@@ -440,15 +435,17 @@ fn next(journal_reader: &mut Journal, grab_direction: WhatGrab) -> Result<u64, s
     Ok(timestamp_us)
 } */
 
-fn truncate(s: String, max_chars: usize) -> String {
-    match s.char_indices().nth(max_chars - 1) {
-        None => s,
-        Some((idx, _)) => {
-            let mut trunk_string = s[..idx].to_string();
-            trunk_string.push('\u{2026}');
-            trunk_string
+fn truncate(message: String, max_chars: usize) -> String {
+    if message.len() > max_chars {
+        for index in (0..=max_chars).rev() {
+            if message.is_char_boundary(index) {
+                warn!("MESSAGE LEN {} will truncate to {index}", message.len());
+
+                return [&message[..index], "\u{2026}"].concat();
+            }
         }
     }
+    message
 }
 
 fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
@@ -523,6 +520,14 @@ mod tests {
 
     use super::*;
 
+    fn init() {
+        let _ = env_logger::builder()
+            .target(env_logger::Target::Stdout)
+            .filter_level(log::LevelFilter::Debug)
+            .is_test(true)
+            .try_init();
+    }
+
     #[test]
     fn test_truncate() {
         let s = "12345678901234567890".to_string();
@@ -539,6 +544,18 @@ mod tests {
         let new_s = truncate(s.clone(), 1);
 
         println!("{s} {new_s}")
+    }
+
+    #[test]
+    fn test_truncate3() {
+        init();
+        let s = "Löwe 老虎 Léopard".to_string();
+
+        let new_s = truncate(s.clone(), 8);
+        info!("{s} {new_s}");
+
+        let new_s = truncate(s.clone(), 9);
+        info!("{s} {new_s}");
     }
 
     fn have_journal() -> bool {

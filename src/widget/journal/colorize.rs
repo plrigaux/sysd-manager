@@ -127,34 +127,10 @@ pub(super) fn write_text(tokens: &Vec<Token>, writer: &mut UnitInfoWriter, text:
             Token::Text(start, end) => {
                 // !sgr.append_tags(&mut out, first);
 
-                //BUG  workaround for out of bound
-                let end = if *end > text.len() {
-                    error!(
-                        "Text token end {} > text.len() {} over {}",
-                        end,
-                        text.len(),
-                        end - text.len()
-                    );
-                    warn!("{:?} {:?}", token, text);
-                    text.len()
-                } else {
-                    *end
-                };
-
                 let start_offset = writer.text_iterator.offset();
-                //let sub_text = &text[*start..end]; //BUG is not a char boundary
 
-                let sub_text = text.get(*start..end).unwrap_or_else(|| {
-                    error!(
-                        "Text token start {} (is char boundary {}) end {} (is char boundary {})",
-                        start,
-                        text.is_char_boundary(*start),
-                        end,
-                        text.is_char_boundary(end)
-                    );
-                    warn!("{text}");
-                    ""
-                });
+                //let sub_text = sub_string(text, *start, *end, token);
+                let sub_text = &text[*start..*end];
 
                 writer.buffer.insert(&mut writer.text_iterator, sub_text);
                 let start_iter = writer.buffer.iter_at_offset(start_offset);
@@ -209,6 +185,35 @@ pub(super) fn write_text(tokens: &Vec<Token>, writer: &mut UnitInfoWriter, text:
             },
         }
     }
+}
+
+//BUG workaround for out of bound and char boundary
+#[allow(dead_code)]
+fn sub_string<'a>(text: &'a str, start: usize, end: usize, token: &'a Token) -> &'a str {
+    text.get(start..end).unwrap_or_else(|| {
+        //BUG  workaround for out of bound
+        if end > text.len() {
+            error!(
+                "Text token end {} > text.len() {} over {}",
+                end,
+                text.len(),
+                end - text.len()
+            );
+            warn!("{:?} {:?}", token, text);
+
+            sub_string(text, start, text.len(), token)
+        } else {
+            error!(
+                "Text token start {} (is char boundary {}) end {} (is char boundary {})",
+                start,
+                text.is_char_boundary(start),
+                end,
+                text.is_char_boundary(end)
+            );
+            warn!("{text}");
+            ""
+        }
+    })
 }
 
 fn bsplit(b: &u8) -> bool {
@@ -547,7 +552,7 @@ mod tests {
             println!("\nLine {line}");
             println!("{}", s);
 
-            let result = get_tokens(s);
+            let result = get_tokens_test(s);
 
             println!("{:?}", result);
         }
@@ -698,7 +703,7 @@ mod tests {
         println!("out {out}");
     } */
 
-    pub fn get_tokens(text: &str) -> Vec<Token> {
+    pub fn get_tokens_test(text: &str) -> Vec<Token> {
         let mut token_list = Vec::<Token>::new();
         super::get_tokens(&mut token_list, text);
         token_list
@@ -708,7 +713,7 @@ mod tests {
     fn test_tok_amp() {
         let test_text = "Gnome & Co";
 
-        let token_list = get_tokens(test_text);
+        let token_list = get_tokens_test(test_text);
 
         println!("out {:?}", token_list);
     }
@@ -730,7 +735,7 @@ Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657956Z[0m [32m I
             println!("\nLine {line}");
             println!("{}", s);
 
-            let result = get_tokens(s);
+            let result = get_tokens_test(s);
 
             println!("{:?}", result);
         }
@@ -790,4 +795,153 @@ Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657956Z[0m [32m I
 
         println!("replaced {}", out);
     } */
+    #[test]
+    fn test_char_boundary2() {
+        let s = "Löwe 老虎 Léopard";
+
+        for index in 0..s.len() {
+            println!(
+                "Character at {} is char boundary {}",
+                index,
+                s.is_char_boundary(index)
+            );
+        }
+    }
+
+    #[test]
+    fn test_multiple_escape_sequences() {
+        // This test checks parsing of multiple consecutive ANSI escape sequences.
+        let test_str =
+            "\u{1b}[1mBold\u{1b}[0m and \u{1b}[3mItalic\u{1b}[0m and \u{1b}[4mUnderline\u{1b}[0m";
+        let tokens = get_tokens_test(test_str);
+        // Should alternate between formatting tokens and text tokens
+        let mut found_bold = false;
+        let mut found_italic = false;
+        let mut found_underline = false;
+        for token in &tokens {
+            match token {
+                Token::Intensity(Intensity::Bold) => found_bold = true,
+                Token::Italic => found_italic = true,
+                Token::Underline(Underline::Single) => found_underline = true,
+                _ => {}
+            }
+        }
+        assert!(found_bold, "Bold token not found");
+        assert!(found_italic, "Italic token not found");
+        assert!(found_underline, "Underline token not found");
+    }
+
+    #[test]
+    fn test_unhandled_escape_sequence() {
+        // This test checks that an unknown escape code is handled as UnHandledCode
+        let test_str = "\u{1b}[999mUnknown\u{1b}[0m";
+        let tokens = get_tokens_test(test_str);
+        let mut found_unhandled = false;
+        for token in &tokens {
+            if let Token::UnHandledCode(code) = token {
+                assert_eq!(code, "999");
+                found_unhandled = true;
+            }
+        }
+        assert!(
+            found_unhandled,
+            "UnHandledCode token not found for unknown code"
+        );
+    }
+
+    #[test]
+    fn test_reset_types() {
+        // This test checks that reset codes are parsed correctly
+        let test_str = "\u{1b}[0mResetAll\u{1b}[39mResetFg\u{1b}[49mResetBg\u{1b}[22mResetIntensity\u{1b}[28mResetHidden";
+        let tokens = get_tokens_test(test_str);
+        let mut found_all = false;
+        let mut found_fg = false;
+        let mut found_bg = false;
+        let mut found_intensity = false;
+        let mut found_hidden = false;
+        for token in &tokens {
+            match token {
+                Token::Reset(ResetType::All) => found_all = true,
+                Token::Reset(ResetType::FgColor) => found_fg = true,
+                Token::Reset(ResetType::BgColor) => found_bg = true,
+                Token::Reset(ResetType::Intensity) => found_intensity = true,
+                Token::Reset(ResetType::Hidden) => found_hidden = true,
+                _ => {}
+            }
+        }
+        assert!(found_all, "ResetType::All not found");
+        assert!(found_fg, "ResetType::FgColor not found");
+        assert!(found_bg, "ResetType::BgColor not found");
+        assert!(found_intensity, "ResetType::Intensity not found");
+        assert!(found_hidden, "ResetType::Hidden not found");
+    }
+
+    #[test]
+    fn test_24bit_color_parsing() {
+        // This test checks parsing of 24-bit color escape sequences
+        let test_str = "\u{1b}[38;2;12;34;56m24bitFG\u{1b}[48;2;78;90;123m24bitBG\u{1b}[0m";
+        let tokens = get_tokens_test(test_str);
+        let mut found_fg = false;
+        let mut found_bg = false;
+        for token in &tokens {
+            match token {
+                Token::FgColor(TermColor::Vga(r, g, b)) if *r == 12 && *g == 34 && *b == 56 => {
+                    found_fg = true
+                }
+                Token::BgColor(TermColor::Vga(r, g, b)) if *r == 78 && *g == 90 && *b == 123 => {
+                    found_bg = true
+                }
+                _ => {}
+            }
+        }
+        assert!(found_fg, "24-bit foreground color not parsed");
+        assert!(found_bg, "24-bit background color not parsed");
+    }
+
+    #[test]
+    fn test_hyperlink_token() {
+        // This test checks that OSC 8 hyperlinks are parsed into Hyperlink tokens
+        let test_str = "before \u{1b}]8;;https://example.com\u{7}link\u{1b}]8;;\u{7} after";
+        let tokens = get_tokens_test(test_str);
+        let mut found_hyperlink = false;
+        for token in &tokens {
+            if let Token::Hyperlink(link_start, link_end, text_start, text_end) = token {
+                let link = &test_str[*link_start..*link_end];
+                let link_text = &test_str[*text_start..*text_end];
+                assert_eq!(link, "https://example.com");
+                assert_eq!(link_text, "link");
+                found_hyperlink = true;
+            }
+        }
+        assert!(found_hyperlink, "Hyperlink token not found");
+    }
+
+    fn init() {
+        let _ = env_logger::builder()
+            .target(env_logger::Target::Stdout)
+            .filter_level(log::LevelFilter::Debug)
+            .is_test(true)
+            .try_init();
+    }
+
+    #[test]
+    fn test_multi_lines() {
+        init();
+        let s = r#"JS ERROR: Error: Impossible to remove untracked message
+_removeMessage@resource:///org/gnome/shell/ui/messageList.js:1599:19
+_removePlayer@resource:///org/gnome/shell/ui/messageList.js:1773:14
+_setupMpris/<@resource:///org/gnome/shell/ui/messageList.js:1757:51
+_onNameOwnerChanged@resource:///org/gnome/shell/ui/mpris.js:247:22
+_callHandlers@resource:///org/gnome/gjs/modules/core/_signals.js:130:42
+_emit@resource:///org/gnome/gjs/modules/core/_signals.js:119:10
+_convertToNativeSignal@resource:///org/gnome/gjs/modules/core/overrides/Gio.js:153:19
+@resource:///org/gnome/shell/ui/init.js:21:20"#;
+        let lines = s.lines();
+        let mut token_list = Vec::<Token>::new();
+        for line in lines {
+            info!("{line}");
+            get_tokens(&mut token_list, line);
+            info!("{:?} line len {}", token_list, line.len());
+        }
+    }
 }
