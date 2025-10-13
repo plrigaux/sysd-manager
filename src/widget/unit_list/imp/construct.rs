@@ -3,9 +3,7 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{COL_ID_UNIT, imp::column_factories::*, menus::create_col_menu},
-        unit_properties_selector::{
-            data_selection::UnitPropertySelection, save::load_column_config,
-        },
+        unit_properties_selector::{data_selection::UnitPropertySelection, save},
     },
 };
 use gettextrs::pgettext;
@@ -19,6 +17,7 @@ pub fn construct_column(
     gtk::FilterListModel,
     gtk::SortListModel,
     bool,
+    Vec<UnitPropertySelection>,
 ) {
     let sort_list_model = gtk::SortListModel::new(Some(list_store), None::<gtk::Sorter>);
     let filter_list_model =
@@ -29,36 +28,39 @@ pub fn construct_column(
         .build();
     let column_view = gtk::ColumnView::new(Some(selection_model.clone()));
 
-    let (base_columns, generated) = if let Some(col) = load_column_config() {
-        let mut list = Vec::with_capacity(col.column.len());
-        for unit_column_config in col.column {
-            let id = unit_column_config.id;
+    let (base_columns, generated) = if let Some(saved_config) = save::load_column_config() {
+        let mut list = Vec::with_capacity(saved_config.columns.len());
+        for unit_column_config in saved_config.columns {
+            let id = unit_column_config.id.clone();
+            let prop_selection = UnitPropertySelection::from_column_config(unit_column_config);
+
             let sorter = get_sorter_by_id(&id);
             let factory = get_factory_by_id(&id, display_color);
-
-            let column = gtk::ColumnViewColumn::builder()
-                .id(&id)
-                .fixed_width(unit_column_config.fixed_width)
-                .expand(unit_column_config.expands)
-                .resizable(unit_column_config.resizable)
-                .visible(unit_column_config.visible)
-                .build();
-
-            column.set_title(unit_column_config.title.as_deref());
-            let column_menu = create_col_menu(&id, false);
+            let column_menu = create_col_menu(&id, prop_selection.is_custom());
+            let column = prop_selection.column();
             column.set_header_menu(Some(&column_menu));
             column.set_factory(factory.as_ref());
             column.set_sorter(sorter.as_ref());
 
-            list.push(column);
+            list.push(prop_selection);
         }
         (list, false)
     } else {
-        (generate_default_columns(display_color), true)
+        let default_columns = generate_default_columns(display_color);
+
+        let mut column_view_column_definition_list = Vec::with_capacity(default_columns.len());
+
+        for col in default_columns.iter() {
+            let unit_property_selection: UnitPropertySelection =
+                UnitPropertySelection::from_column_view_column(col.clone());
+            column_view_column_definition_list.push(unit_property_selection);
+        }
+
+        (column_view_column_definition_list, true)
     };
 
-    for col in base_columns {
-        column_view.append_column(&col);
+    for col in base_columns.iter() {
+        column_view.append_column(&col.column());
     }
 
     let sorter = column_view.sorter();
@@ -70,6 +72,7 @@ pub fn construct_column(
         filter_list_model,
         sort_list_model,
         generated,
+        base_columns,
     )
 }
 

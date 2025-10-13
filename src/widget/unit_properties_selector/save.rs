@@ -53,13 +53,14 @@ impl UnitColumn {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MyConfig {
-    pub column: Vec<UnitColumn>,
+    #[serde(rename = "column")]
+    pub columns: Vec<UnitColumn>,
 }
 
 pub fn save_column_config(data: &[UnitPropertySelection]) {
     let data_list: Vec<UnitColumn> = data.iter().map(UnitColumn::from).collect();
 
-    let config = MyConfig { column: data_list };
+    let config = MyConfig { columns: data_list };
 
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
 
@@ -184,7 +185,7 @@ mod test {
             },
         ];
 
-        let config = MyConfig { column: data_list };
+        let config = MyConfig { columns: data_list };
 
         let toml_str = toml::to_string_pretty(&config).expect("Failed to serialize array to TOML");
 
@@ -233,12 +234,12 @@ mod test {
 
         let config: MyConfig = toml::from_str(toml_content).expect("Failed to parse TOML");
 
-        assert!(config.column.len() >= 4);
-        assert_eq!(config.column[0].id.as_str(), "alpha");
-        assert_eq!(config.column[1].fixed_width, 2);
-        assert!(config.column[2].visible);
-        assert_eq!(config.column[3].title, None);
-        assert_eq!(config.column[3].fixed_width, -1);
-        assert_eq!(config.column[3].prop_type, Some("i".to_string()));
+        assert!(config.columns.len() >= 4);
+        assert_eq!(config.columns[0].id.as_str(), "alpha");
+        assert_eq!(config.columns[1].fixed_width, 2);
+        assert!(config.columns[2].visible);
+        assert_eq!(config.columns[3].title, None);
+        assert_eq!(config.columns[3].fixed_width, -1);
+        assert_eq!(config.columns[3].prop_type, Some("i".to_string()));
     }
 }

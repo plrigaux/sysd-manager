@@ -7,31 +7,30 @@ use crate::{
     systemd::enums::UnitType,
     widget::{
         unit_list::menus::create_col_menu,
-        unit_properties_selector::data_browser::PropertyBrowseItem,
+        unit_properties_selector::{data_browser::PropertyBrowseItem, save::UnitColumn},
     },
 };
 
-pub const INTERFACE_NAME: &str = "Basic Columns";
+//pub const INTERFACE_NAME: &str = "Basic Columns";
 
 glib::wrapper! {
     pub struct UnitPropertySelection(ObjectSubclass<imp2::UnitPropertySelectionImpl>);
 }
 
 impl UnitPropertySelection {
-    pub fn new_interface(interface: String) -> Self {
-        let this_object: Self = glib::Object::new();
-        this_object.imp().interface.replace(interface);
+    /*     pub fn new_interface(interface: String) -> Self {
+           let this_object: Self = glib::Object::new();
+           this_object.imp().interface.replace(interface);
 
-        this_object
-    }
-
+           this_object
+       }
+    */
     pub fn from_browser(broswer_property: PropertyBrowseItem) -> Self {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
         let interface = broswer_property.interface();
         let unit_type = UnitType::from_intreface(&interface);
-        p_imp.interface.replace(interface);
         let unit_property = broswer_property.unit_property();
         p_imp.prop_type.replace(Some(broswer_property.signature()));
         p_imp.access.replace(broswer_property.access());
@@ -60,18 +59,60 @@ impl UnitPropertySelection {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
-        p_imp.interface.replace(INTERFACE_NAME.to_string());
+
         let property_name = column
             .title()
             .map(|t| t.to_string())
             .unwrap_or("Wrong_prop".to_string());
         p_imp.unit_property.replace(property_name);
-        //p_imp.signature.replace(p.signature());
-        //p_imp.access.replace(p.access());
 
-        p_imp.unit_type.set(UnitType::Unknown);
+        if let Some(id) = column.id() {
+            Self::fill_from_id(p_imp, id.as_str());
+        } else {
+            p_imp.unit_type.set(UnitType::Unknown);
+        }
 
         p_imp.column.replace(column);
+
+        this_object
+    }
+
+    fn fill_from_id(p_imp: &imp2::UnitPropertySelectionImpl, id: &str) {
+        if let Some((short_interface, prop)) = id.split_once('@') {
+            p_imp.unit_property.replace(prop.to_string());
+            let unit_type = UnitType::new(short_interface);
+            p_imp.unit_type.set(unit_type);
+        } else {
+            p_imp.unit_property.replace(id.to_owned());
+            p_imp.unit_type.set(UnitType::Unknown);
+        }
+
+        info!("UNIT TYPE FROM ID {} {:?}", id, p_imp.unit_type.get());
+    }
+    pub fn from_column_config(unit_column_config: UnitColumn) -> Self {
+        let id = unit_column_config.id;
+        //Self::fill_from_id(p_imp, &id);
+
+        let column = gtk::ColumnViewColumn::builder()
+            .id(&id)
+            .fixed_width(unit_column_config.fixed_width)
+            .expand(unit_column_config.expands)
+            .resizable(unit_column_config.resizable)
+            .visible(unit_column_config.visible)
+            .build();
+
+        let this_object = Self::from_column_view_column(column);
+
+        let p_imp = this_object.imp();
+
+        if let Some(title) = unit_column_config.title {
+            p_imp.column.borrow().set_title(Some(&title));
+            if !this_object.is_custom() {
+                p_imp.unit_property.replace(title);
+            }
+        }
+
+        p_imp.prop_type.replace(unit_column_config.prop_type);
 
         this_object
     }
@@ -85,19 +126,19 @@ impl UnitPropertySelection {
 
         this_object
     }
-
+    /*
     pub fn from_parent(interface: UnitPropertySelection, property: UnitPropertySelection) -> Self {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
-        p_imp.interface.replace(interface.interface());
+
         p_imp.unit_property.replace(property.unit_property());
         p_imp.unit_type.replace(property.unit_type());
         p_imp.prop_type.replace(property.prop_type());
         p_imp.access.replace(property.access());
 
         this_object
-    }
+    } */
 
     pub fn is_custom(&self) -> bool {
         self.imp().is_custom()
@@ -113,7 +154,6 @@ impl UnitPropertySelection {
     pub fn copy_to(&self, to: &Self) {
         let p_imp = to.imp();
 
-        p_imp.interface.replace(self.interface());
         p_imp.unit_property.replace(self.unit_property());
         p_imp.prop_type.replace(self.prop_type());
         p_imp.access.replace(self.access());
@@ -151,8 +191,8 @@ mod imp2 {
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitPropertySelection)]
     pub struct UnitPropertySelectionImpl {
-        #[property(get)]
-        pub(super) interface: RefCell<String>,
+        /*         #[property(get)]
+        pub(super) interface: RefCell<String>, */
         #[property(get)]
         pub(super) unit_property: RefCell<String>,
         #[property(get)]
@@ -167,6 +207,8 @@ mod imp2 {
         #[property(name = "expands", get= Self::expands, set= Self::set_expand, type = bool)]
         #[property(get, set)]
         pub(super) column: RefCell<gtk::ColumnViewColumn>,
+
+        #[property(name = "interface", get= Self::interface, type = String)]
         #[property(get, default)]
         pub(super) unit_type: Cell<UnitType>,
     }
@@ -174,6 +216,10 @@ mod imp2 {
     impl UnitPropertySelectionImpl {
         pub fn is_custom(&self) -> bool {
             !matches!(self.unit_type.get(), UnitType::Unknown)
+        }
+
+        fn interface(&self) -> String {
+            self.unit_type.get().interface().to_string()
         }
 
         fn visible(&self) -> bool {

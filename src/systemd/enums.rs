@@ -483,6 +483,7 @@ impl UnitType {
             Self::Target => "org.freedesktop.systemd1.Target",
             Self::Timer => "org.freedesktop.systemd1.Timer",
             Self::Unit => INTERFACE_SYSTEMD_UNIT,
+            Self::Unknown => "",
 
             _ => INTERFACE_SYSTEMD_UNIT,
         }
