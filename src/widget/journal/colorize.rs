@@ -49,6 +49,7 @@ pub fn write(
     token_list: &mut Vec<Token>,
     added_tokens: &[Token],
 ) {
+    token_list.clear();
     token_list.extend_from_slice(added_tokens);
     get_tokens(token_list, text);
     write_text(token_list, writer, text);

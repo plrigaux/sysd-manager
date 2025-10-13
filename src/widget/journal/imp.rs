@@ -45,8 +45,8 @@ use crate::{
 };
 
 const PANEL_EMPTY: &str = "empty";
-/* const PANEL_JOURNAL: &str = "journal";
-const PANEL_SPINNER: &str = "spinner"; */
+const PANEL_JOURNAL: &str = "journal";
+/*const PANEL_SPINNER: &str = "spinner"; */
 
 const ASCD: &str = "view-sort-ascending";
 const DESC: &str = "view-sort-descending";
@@ -535,6 +535,12 @@ impl JournalPanelImp {
 
         if writer.char_count() <= 0 {
             self.panel_stack.set_visible_child_name(PANEL_EMPTY);
+        } else if let Some(child_name) = self.panel_stack.visible_child_name()
+            && child_name.as_str() == PANEL_JOURNAL
+        {
+            //Do nothing
+        } else {
+            self.panel_stack.set_visible_child_name(PANEL_JOURNAL);
         }
 
         self.journal_refresh_button.set_sensitive(true);
@@ -846,7 +852,6 @@ impl JournalFiller {
 
         if let Some(line) = lines.next() {
             if self.journal_color {
-                self.token_buffer.clear();
                 colorize::write(writer, line, &mut self.token_buffer, priority_format);
             } else {
                 writer.insert(line);
@@ -859,7 +864,6 @@ impl JournalFiller {
             let space_padding = " ".repeat(journal_event.prefix.len());
             writer.insert(&space_padding);
             if self.journal_color {
-                self.token_buffer.clear();
                 colorize::write(writer, line, &mut self.token_buffer, priority_format);
             } else {
                 writer.insert(line);
