@@ -127,13 +127,13 @@ def generate_sourceinfo():
         srcinfo_file.write(printsrcinfo)     
 
 
-def gen_pkfile(release): 
+def gen_pkfile(release=None): 
     create_pkgbuild(release)
     do_check_sum()
     generate_sourceinfo()
 
 
-def generate_and_push(release): 
+def generate_and_push(release=None): 
     gen_pkfile(release)
 
     push()
