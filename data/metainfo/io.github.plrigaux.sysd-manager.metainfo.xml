@@ -81,8 +81,16 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-
-    <release version="2.0.0" date="2025-09-12">
+    <release version="2.0.0" date="2025-10-13">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Journal ANSI color codes parsing and rendering</li>
+          <li>Save full browser column context in a user config file</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.0.0" date="2025-10-07">
       <description translate="no">
         <p>Added</p>
         <ul>
