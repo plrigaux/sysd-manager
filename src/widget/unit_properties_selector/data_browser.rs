@@ -58,6 +58,7 @@ impl PropertyBrowseItem {
         p_imp.unit_property.replace(property.unit_property());
         p_imp.signature.replace(property.signature());
         p_imp.access.replace(property.access());
+        p_imp.column.replace(property.column());
 
         this_object
     }

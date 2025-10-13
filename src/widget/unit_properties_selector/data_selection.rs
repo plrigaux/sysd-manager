@@ -42,11 +42,13 @@ impl UnitPropertySelection {
         } else {
             let id = format!("{}@{}", unit_type.as_str(), unit_property); //IMPORTANT keep this format
             let menu = create_col_menu(&id, true);
-            gtk::ColumnViewColumn::builder()
+            let col = gtk::ColumnViewColumn::builder()
                 .title(&unit_property)
                 .id(id)
                 .header_menu(&menu)
-                .build()
+                .build();
+            info!("New COL {:?} {:?}", col.id(), col.title());
+            col
         };
 
         p_imp.unit_property.replace(unit_property);
@@ -83,7 +85,6 @@ impl UnitPropertySelection {
             let unit_type = UnitType::new(short_interface);
             p_imp.unit_type.set(unit_type);
         } else {
-            p_imp.unit_property.replace(id.to_owned());
             p_imp.unit_type.set(UnitType::Unknown);
         }
 

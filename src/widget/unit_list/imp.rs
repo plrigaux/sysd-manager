@@ -140,8 +140,7 @@ pub struct UnitListPanelImp {
     #[property(name = "is-dark", get)]
     is_dark: Cell<bool>,
 
-    default_column_view_column_list: OnceCell<Vec<gtk::ColumnViewColumn>>,
-
+    // default_column_view_column_list: OnceCell<Vec<gtk::ColumnViewColumn>>,
     current_column_view_column_definition_list: RefCell<Vec<UnitPropertySelection>>,
 
     default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
@@ -791,7 +790,7 @@ impl UnitListPanelImp {
 
         //Get the current column
         let cur_n_items = columns_list_model.n_items();
-        let mut current_columns = Vec::with_capacity(columns_list_model.n_items() as usize);
+        let mut current_columns_over = Vec::with_capacity(columns_list_model.n_items() as usize);
         for position in (property_list.len() as u32)..columns_list_model.n_items() {
             let Some(column) = columns_list_model
                 .item(position)
@@ -800,7 +799,7 @@ impl UnitListPanelImp {
                 warn!("Col None");
                 continue;
             };
-            current_columns.push(column);
+            current_columns_over.push(column);
         }
 
         for (idx, unit_property) in property_list.iter().enumerate() {
@@ -830,8 +829,8 @@ impl UnitListPanelImp {
             .replace(property_list);
 
         //remove all columns that exeed the new ones
-        for columns in current_columns.iter() {
-            columns.set_visible(false); //TODO Remove them?
+        for column in current_columns_over.iter() {
+            self.units_browser.borrow().remove_column(column);
         }
 
         self.fetch_custom_unit_properties();
@@ -1045,12 +1044,6 @@ impl UnitListPanelImp {
         list.unwrap()
     }
 
-    pub(super) fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
-        self.default_column_view_column_list
-            .get()
-            .expect("Need to be set")
-    }
-
     pub(super) fn save_config(&self) {
         save::save_column_config(&self.current_columns());
     }
@@ -1134,9 +1127,9 @@ impl ObjectImpl for UnitListPanelImp {
             .replace(column_view_column_definition_list);
 
         column_factories::setup_factories(&unit_list, &column_view_column_list);
-        self.default_column_view_column_list
-            .set(column_view_column_list)
-            .expect("Set only once");
+        /*      self.default_column_view_column_list
+        .set(column_view_column_list)
+        .expect("Set only once"); */
 
         settings.connect_changed(
             Some(KEY_PREF_UNIT_LIST_DISPLAY_COLORS),

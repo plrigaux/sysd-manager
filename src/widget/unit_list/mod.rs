@@ -102,10 +102,6 @@ impl UnitListPanel {
         self.imp().default_displayed_columns()
     }
 
-    pub fn default_columns(&self) -> &Vec<gtk::ColumnViewColumn> {
-        self.imp().default_columns()
-    }
-
     pub fn print_scroll_adj_logs(&self) {
         self.imp().print_scroll_adj_logs();
     }
