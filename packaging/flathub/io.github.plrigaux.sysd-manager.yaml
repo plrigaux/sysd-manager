@@ -13,7 +13,8 @@ finish-args:
 # Needed to access /usr whre are located unit config files
 - --filesystem=host-os
 - --filesystem=host-etc
-- --filesystem=xdg-config
+#- --filesystem=xdg-config
+- --filesystem=xdg-config/sysd-manager:rw
 # Needed to access journal logs
 - --filesystem=/var/log:ro
 #- --env=RUST_LOG=info
