@@ -226,18 +226,12 @@ impl UnitListPanelImp {
 
                         let columns_list_model = units_browser.columns();
 
-                        for index in 0..columns_list_model.n_items() {
-                            let Some(cur_column) = columns_list_model
-                                .item(index)
-                                .and_downcast::<gtk::ColumnViewColumn>()
-                            else {
-                                warn!("Column w/ id {key:?} do not Exists");
-                                continue;
-                            };
-
-                            if cur_column.id().map(|s| s.to_string()) == key {
-                                cur_column.set_visible(false);
-                            }
+                        for cur_column in columns_list_model
+                            .iter::<gtk::ColumnViewColumn>()
+                            .filter_map(|item| item.ok())
+                            .filter(|col| col.id().map(|s| s.to_string()) == key)
+                        {
+                            cur_column.set_visible(false);
                         }
                     }
                 })
@@ -297,19 +291,21 @@ impl UnitListPanelImp {
         let list_model: gio::ListModel = self.units_browser.borrow().columns();
 
         let mut col_map = HashMap::new();
-        for col_idx in 0..list_model.n_items() {
-            let item_out = list_model
-                .item(col_idx)
-                .expect("Expect item x to be not None");
 
-            let column_view_column = item_out
-                .downcast_ref::<gtk::ColumnViewColumn>()
-                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
-
+        for column_view_column in list_model
+            .iter::<gtk::ColumnViewColumn>()
+            .filter_map(|item| match item {
+                Ok(item) => Some(item),
+                Err(err) => {
+                    error!("Expect gtk::ColumnViewColumn> {err:?}");
+                    None
+                }
+            })
+        {
             if let Some(id) = column_view_column.id() {
                 col_map.insert(id, column_view_column.clone());
             } else {
-                warn!("Column {col_idx} has no id.")
+                warn!("Column has no id.")
             }
         }
         col_map
@@ -319,16 +315,18 @@ impl UnitListPanelImp {
         let list_model: gio::ListModel = self.units_browser.borrow().columns();
 
         let mut col_list = Vec::with_capacity(list_model.n_items() as usize);
-        for col_idx in 0..list_model.n_items() {
-            let item_out = list_model
-                .item(col_idx)
-                .expect("Expect item x to be not None");
 
-            let column_view_column = item_out
-                .downcast_ref::<gtk::ColumnViewColumn>()
-                .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
-
-            col_list.push(column_view_column.clone());
+        for column_view_column in list_model
+            .iter::<gtk::ColumnViewColumn>()
+            .filter_map(|item| match item {
+                Ok(item) => Some(item),
+                Err(err) => {
+                    error!("Expect gtk::ColumnViewColumn> {err:?}");
+                    None
+                }
+            })
+        {
+            col_list.push(column_view_column);
         }
         col_list
     }
@@ -976,16 +974,11 @@ impl UnitListPanelImp {
             info!("Fetching properties FINISHED");
 
             //Force the factory to display data
-            let columns_list_model = units_browser.columns();
-            for position in 0..columns_list_model.n_items() {
-                let Some(column) = columns_list_model
-                    .item(position)
-                    .and_downcast::<gtk::ColumnViewColumn>()
-                else {
-                    warn!("Col None");
-                    continue;
-                };
-
+            for column in units_browser
+                .columns()
+                .iter::<gtk::ColumnViewColumn>()
+                .filter_map(|item| item.ok())
+            {
                 let Some(id) = column.id() else {
                     warn!("No column id");
                     continue;
@@ -1061,7 +1054,16 @@ impl UnitListPanelImp {
 }
 
 fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) {
-    for index in (0..columns_list_model.n_items()).rev() {
+    if let Some(column) = columns_list_model
+        .iter::<gtk::ColumnViewColumn>()
+        .rev()
+        .filter_map(|item| item.ok())
+        .next()
+    {
+        column.set_expand(true);
+    }
+
+    /* for index in (0..columns_list_model.n_items()).rev() {
         if let Some(column) = columns_list_model
             .item(index)
             .and_downcast::<gtk::ColumnViewColumn>()
@@ -1072,7 +1074,7 @@ fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) 
                 break;
             }
         }
-    }
+    } */
 }
 
 // The central trait for subclassing a GObject

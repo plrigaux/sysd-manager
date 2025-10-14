@@ -144,15 +144,16 @@ mod imp {
 
                     let mut binding = app_window.imp().cached_list_boots_mut();
                     if let Some(boots) = binding.deref_mut()
-                        && let Some(boot) = boots.pop() {
-                            let new_boot = Boot {
-                                boot_id: boot.boot_id.clone(),
-                                last: last_time,
-                                ..*boot.as_ref()
-                            };
+                        && let Some(boot) = boots.pop()
+                    {
+                        let new_boot = Boot {
+                            boot_id: boot.boot_id.clone(),
+                            last: last_time,
+                            ..*boot.as_ref()
+                        };
 
-                            boots.push(Rc::new(new_boot));
-                        }
+                        boots.push(Rc::new(new_boot));
+                    }
                 }
 
                 let binding = app_window.imp().cached_list_boots();
@@ -176,25 +177,19 @@ mod imp {
             let list_model: gio::ListModel = self.boots_browser.columns();
 
             let mut col_map = HashMap::new();
-            for col_idx in 0..list_model.n_items() {
-                let item_out = list_model
-                    .item(col_idx)
-                    .expect("Expect item x to be not None");
 
-                let column_view_column = item_out
-                    .downcast_ref::<gtk::ColumnViewColumn>()
-                    .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
-
-                let id = column_view_column.id();
-
+            for column_view_column in list_model
+                .iter::<gtk::ColumnViewColumn>()
+                .filter_map(|item| item.ok())
+            {
                 column_view_column.connect_fixed_width_notify(|column| {
                     println!("{:?} {}", column.id(), column.fixed_width())
                 });
 
-                if let Some(id) = id {
+                if let Some(id) = column_view_column.id() {
                     col_map.insert(id, column_view_column.clone());
                 } else {
-                    warn!("Column {col_idx} has no id.")
+                    warn!("Column has no id.")
                 }
             }
             col_map
