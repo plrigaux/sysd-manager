@@ -4,7 +4,7 @@ mod construct;
 pub mod pop_menu;
 
 use std::{
-    cell::{Cell, OnceCell, Ref, RefCell},
+    cell::{Cell, OnceCell, Ref, RefCell, RefMut},
     collections::{HashMap, HashSet},
     rc::Rc,
     time::Duration,
@@ -1027,6 +1027,10 @@ impl UnitListPanelImp {
         self.current_column_view_column_definition_list.borrow()
     }
 
+    pub(super) fn current_columns_mut(&self) -> RefMut<'_, Vec<UnitPropertySelection>> {
+        self.current_column_view_column_definition_list.borrow_mut()
+    }
+
     pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
         let mut list = self.default_column_view_column_definition_list.get();
 
@@ -1045,7 +1049,10 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn save_config(&self) {
-        save::save_column_config(&self.current_columns());
+        save::save_column_config(
+            Some(&self.units_browser.borrow()),
+            &mut self.current_columns_mut(),
+        );
     }
 }
 

@@ -1,11 +1,11 @@
-use log::{error, info};
+use crate::gtk::prelude::ListModelExtManual;
+use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
+use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::{env, fs};
-
-use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
 
 const UNIT_COLUMNS: &str = "unit_columns.toml";
 
@@ -57,9 +57,13 @@ pub struct MyConfig {
     pub columns: Vec<UnitColumn>,
 }
 
-pub fn save_column_config(data: &[UnitPropertySelection]) {
-    let data_list: Vec<UnitColumn> = data.iter().map(UnitColumn::from).collect();
+pub fn save_column_config(
+    column_view: Option<&gtk::ColumnView>,
+    data: &mut [UnitPropertySelection],
+) {
+    order_columns(column_view, data);
 
+    let data_list: Vec<UnitColumn> = data.iter().map(UnitColumn::from).collect();
     let config = MyConfig { columns: data_list };
 
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
@@ -81,6 +85,55 @@ pub fn save_column_config(data: &[UnitPropertySelection]) {
         );
     } else {
         info!("Column config saved to {:?}", config_path);
+    }
+}
+
+fn order_columns(column_view: Option<&gtk::ColumnView>, data: &mut [UnitPropertySelection]) {
+    let Some(column_view) = column_view else {
+        return;
+    };
+
+    let ids: Vec<_> = column_view
+        .columns()
+        .iter::<gtk::ColumnViewColumn>()
+        .filter_map(|r| match r {
+            Ok(c) => Some(c),
+            Err(err) => {
+                warn!("Error: {err:?}");
+                None
+            }
+        })
+        .filter_map(|c| c.id())
+        .collect();
+
+    if ids.len() != data.len() {
+        warn!("Lenght not in sync");
+        return;
+    }
+
+    for (index, id) in ids.iter().enumerate() {
+        let mut index_op: Option<usize> = None;
+
+        // for sub_index in index..data.len() {
+        for (sub_index, ps) in data.iter().enumerate().skip(index) {
+            let Some(sub_id) = ps.id() else {
+                continue;
+            };
+
+            debug!("-- {index} {id} -- {sub_index} {sub_id} ");
+
+            if *id == sub_id {
+                if index != sub_index {
+                    index_op = Some(sub_index);
+                }
+                break;
+            }
+        }
+
+        if let Some(index_op) = index_op {
+            debug!("Swap {id} {index} {index_op} ");
+            data.swap(index, index_op);
+        }
     }
 }
 
@@ -241,5 +294,14 @@ mod test {
         assert_eq!(config.columns[3].title, None);
         assert_eq!(config.columns[3].fixed_width, -1);
         assert_eq!(config.columns[3].prop_type, Some("i".to_string()));
+    }
+
+    #[test]
+    fn test_iter() {
+        let data = ['a', 'b', 'c', 'd'];
+
+        for (sub_index, ps) in data[2..].iter().enumerate() {
+            println!("{sub_index} {ps}")
+        }
     }
 }

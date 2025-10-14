@@ -82,7 +82,7 @@ impl UnitPropertiesSelectionImp {
 
         let unit_list_panel = get_unit_list_panel!(self);
 
-        save_column_config(&list);
+        save_column_config(None, &mut list);
 
         unit_list_panel.set_new_columns(list);
     }
