@@ -32,7 +32,7 @@ impl UnitPropertySelection {
         let interface = broswer_property.interface();
         let unit_type = UnitType::from_intreface(&interface);
         let unit_property = broswer_property.unit_property();
-        p_imp.prop_type.replace(Some(broswer_property.signature()));
+        p_imp.prop_type.replace(broswer_property.signature());
         p_imp.access.replace(broswer_property.access());
         p_imp.unit_type.set(unit_type);
 
@@ -199,7 +199,7 @@ mod imp2 {
         #[property(get)]
         pub(super) prop_type: RefCell<Option<String>>,
         #[property(get)]
-        pub(super) access: RefCell<String>,
+        pub(super) access: RefCell<Option<String>>,
         #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]
         #[property(name = "id", get= Self::id, set= Self::set_id, type = Option<GString>)]
         #[property(name = "title", get= Self::title, set= Self::set_title, type = Option<GString>)]

@@ -418,7 +418,9 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         let signature_factory = gtk::SignalListItemFactory::new();
         signature_factory.connect_setup(setup);
         signature_factory.connect_bind(|_fac, item| {
-            bind(item, PropertyBrowseItem::signature);
+            bind(item, |property_object: &PropertyBrowseItem| {
+                PropertyBrowseItem::signature(property_object).unwrap_or_default()
+            });
         });
 
         self.signature_column.set_factory(Some(&signature_factory));
@@ -428,7 +430,9 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
         access_factory.connect_setup(setup);
 
         access_factory.connect_bind(|_fac, item| {
-            bind(item, PropertyBrowseItem::access);
+            bind(item, |property_object: &PropertyBrowseItem| {
+                PropertyBrowseItem::access(property_object).unwrap_or_default()
+            });
         });
 
         self.access_column.set_factory(Some(&access_factory));

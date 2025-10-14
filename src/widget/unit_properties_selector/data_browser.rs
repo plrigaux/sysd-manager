@@ -7,7 +7,7 @@ use log::warn;
 
 use crate::systemd::UnitPropertyFetch;
 
-pub const INTERFACE_NAME: &str = "Basic Columns";
+pub const INTERFACE_NAME: &str = "Default";
 
 glib::wrapper! {
     pub struct PropertyBrowseItem(ObjectSubclass<imp::PropertyBrowseItemImp>);
@@ -26,8 +26,8 @@ impl PropertyBrowseItem {
 
         let p_imp = this_object.imp();
         p_imp.unit_property.replace(p.name);
-        p_imp.signature.replace(p.signature);
-        p_imp.access.replace(p.access);
+        p_imp.signature.replace(Some(p.signature));
+        p_imp.access.replace(Some(p.access));
 
         this_object
     }
@@ -91,9 +91,9 @@ mod imp {
         #[property(get)]
         pub(super) unit_property: RefCell<String>,
         #[property(get)]
-        pub(super) signature: RefCell<String>,
+        pub(super) signature: RefCell<Option<String>>,
         #[property(get)]
-        pub(super) access: RefCell<String>,
+        pub(super) access: RefCell<Option<String>>,
         #[property(get)]
         pub(super) column: RefCell<Option<gtk::ColumnViewColumn>>,
 
