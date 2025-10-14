@@ -11,8 +11,10 @@ use log::{error, info, warn};
 use crate::widget::{
     unit_list::UnitListPanel,
     unit_properties_selector::{
-        data_browser::PropertyBrowseItem, data_selection::UnitPropertySelection,
-        save::save_column_config, unit_properties_selection::row::UnitPropertiesSelectionRow,
+        data_browser::PropertyBrowseItem,
+        data_selection::UnitPropertySelection,
+        save::{self, save_column_config},
+        unit_properties_selection::row::UnitPropertiesSelectionRow,
     },
 };
 
@@ -68,21 +70,14 @@ impl UnitPropertiesSelectionImp {
 
         let list_store = get_list_store!(self);
 
-        let n_item = list_store.n_items();
-        let mut list = Vec::with_capacity(n_item as usize);
-        for i in 0..n_item {
-            let item = list_store.item(i);
-            let Some(unit_property) = item.and_downcast_ref::<UnitPropertySelection>() else {
-                warn!("Bad downcast {:?}", list_store.item(i));
-                continue;
-            };
-
-            list.push(unit_property.clone());
-        }
-
-        let unit_list_panel = get_unit_list_panel!(self);
+        let mut list: Vec<UnitPropertySelection> = list_store
+            .iter::<UnitPropertySelection>()
+            .filter_map(|result| result.ok())
+            .collect();
 
         save_column_config(None, &mut list);
+
+        let unit_list_panel = get_unit_list_panel!(self);
 
         unit_list_panel.set_new_columns(list);
     }
@@ -130,8 +125,12 @@ impl UnitPropertiesSelectionImp {
             .expect("Assigned only once");
 
         let list_store = get_list_store!(self);
-        for unit_property_column in unit_list_panel.current_columns().iter() {
-            let unit_property_column = unit_property_column.copy();
+
+        let mut columns = { unit_list_panel.current_columns_mut() };
+        save::order_columns(Some(&unit_list_panel.columns()), &mut columns);
+
+        for unit_property_column in columns.iter() {
+            let unit_property_column = unit_property_column.copy(); //if no copy the column prop are in sync
             list_store.append(&unit_property_column);
         }
     }

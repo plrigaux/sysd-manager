@@ -1,4 +1,4 @@
-use std::cell::{Ref, RefCell};
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
 use crate::systemd::data::UnitInfo;
@@ -98,8 +98,16 @@ impl UnitListPanel {
         self.imp().current_columns()
     }
 
+    pub fn current_columns_mut(&self) -> RefMut<'_, Vec<UnitPropertySelection>> {
+        self.imp().current_columns_mut()
+    }
+
     pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
         self.imp().default_displayed_columns()
+    }
+
+    pub fn columns(&self) -> gio::ListModel {
+        self.imp().columns()
     }
 
     pub fn print_scroll_adj_logs(&self) {

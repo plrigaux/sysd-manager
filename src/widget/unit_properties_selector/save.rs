@@ -57,11 +57,8 @@ pub struct MyConfig {
     pub columns: Vec<UnitColumn>,
 }
 
-pub fn save_column_config(
-    column_view: Option<&gtk::ColumnView>,
-    data: &mut [UnitPropertySelection],
-) {
-    order_columns(column_view, data);
+pub fn save_column_config(columns: Option<&gio::ListModel>, data: &mut [UnitPropertySelection]) {
+    order_columns(columns, data);
 
     let data_list: Vec<UnitColumn> = data.iter().map(UnitColumn::from).collect();
     let config = MyConfig { columns: data_list };
@@ -88,13 +85,12 @@ pub fn save_column_config(
     }
 }
 
-fn order_columns(column_view: Option<&gtk::ColumnView>, data: &mut [UnitPropertySelection]) {
-    let Some(column_view) = column_view else {
+pub fn order_columns(columns: Option<&gio::ListModel>, data: &mut [UnitPropertySelection]) {
+    let Some(columns) = columns else {
         return;
     };
 
-    let ids: Vec<_> = column_view
-        .columns()
+    let ids: Vec<_> = columns
         .iter::<gtk::ColumnViewColumn>()
         .filter_map(|r| match r {
             Ok(c) => Some(c),

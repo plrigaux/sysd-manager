@@ -1031,6 +1031,10 @@ impl UnitListPanelImp {
         self.current_column_view_column_definition_list.borrow_mut()
     }
 
+    pub(super) fn columns(&self) -> gio::ListModel {
+        self.units_browser.borrow().columns()
+    }
+
     pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
         let mut list = self.default_column_view_column_definition_list.get();
 
@@ -1050,7 +1054,7 @@ impl UnitListPanelImp {
 
     pub(super) fn save_config(&self) {
         save::save_column_config(
-            Some(&self.units_browser.borrow()),
+            Some(&self.units_browser.borrow().columns()),
             &mut self.current_columns_mut(),
         );
     }
