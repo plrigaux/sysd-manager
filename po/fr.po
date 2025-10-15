@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-15 14:06-0400\n"
-"PO-Revision-Date: 2025-09-11 21:41+0000\n"
+"PO-Revision-Date: 2025-10-15 18:14+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -666,7 +666,7 @@ msgstr "Ouvrir la liste des boots"
 #: data/interfaces/shortcuts.ui:42
 msgctxt "shortcut window"
 msgid "Open columns manager"
-msgstr ""
+msgstr "Ouvrir le gestionnaire de colones"
 
 #: data/interfaces/shortcuts.ui:49
 msgctxt "shortcut window"
@@ -1097,10 +1097,9 @@ msgid "Something went wrong"
 msgstr "Quelque chose s'est mal passé"
 
 #: data/interfaces/unit_list_search.ui:22
-#, fuzzy
 msgctxt "unit search"
 msgid "Columns"
-msgstr "Colonne {}"
+msgstr "Colonnes"
 
 #: data/interfaces/unit_list_search.ui:29
 msgctxt "unit search"
