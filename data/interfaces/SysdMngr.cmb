@@ -29,7 +29,7 @@
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="c79f4ca4be77acee81ae3d45658c3cc6ba1a3165e259ee8c1a55a63c03b107d4">
+  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="97fdfe29ed5f1a15db8508dab269455553c04568ff8d9fc6c09cc3a8651049cd">
     <requires>UnitPropertiesSelection</requires>
   </ui>
   <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="432aa9589656bd2c5461ff299b33d61188f2d7202e24396d30525fd1d5774dc5">

@@ -8,83 +8,84 @@
   <requires lib="libadwaita" version="1.7"/>
   <template class="UnitPropertiesSelectorDialog" parent="AdwWindow">
     <property name="content">
-      <object class="AdwToolbarView">
-        <property name="content">
-          <object class="GtkPaned" id="paned">
-            <property name="end-child">
-              <object class="UnitPropertiesSelection" id="unit_properties_selection"/>
-            </property>
-            <property name="orientation">vertical</property>
-            <property name="position">578</property>
-            <property name="position-set">True</property>
-            <property name="shrink-start-child">False</property>
-            <property name="start-child">
-              <object class="GtkScrolledWindow">
-                <property name="child">
-                  <object class="GtkColumnView" id="properties_selector">
-                    <child>
-                      <object class="GtkColumnViewColumn" id="interface_column">
-                        <property name="expand">True</property>
-                        <property name="id">interface</property>
-                        <property name="resizable">True</property>
-                        <property name="title">Interface</property>
+      <object class="AdwToastOverlay" id="toast_overlay">
+        <child>
+          <object class="AdwToolbarView">
+            <property name="content">
+              <object class="GtkPaned" id="paned">
+                <property name="end-child">
+                  <object class="UnitPropertiesSelection" id="unit_properties_selection"/>
+                </property>
+                <property name="orientation">vertical</property>
+                <property name="position">578</property>
+                <property name="position-set">True</property>
+                <property name="shrink-start-child">False</property>
+                <property name="start-child">
+                  <object class="GtkScrolledWindow">
+                    <property name="child">
+                      <object class="GtkColumnView" id="properties_selector">
+                        <child>
+                          <object class="GtkColumnViewColumn" id="interface_column">
+                            <property name="expand">True</property>
+                            <property name="id">interface</property>
+                            <property name="title">Interface</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn" id="property_column">
+                            <property name="expand">True</property>
+                            <property name="id">property</property>
+                            <property name="title">Property</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn" id="signature_column">
+                            <property name="expand">True</property>
+                            <property name="id">signature</property>
+                            <property name="title">Signature</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkColumnViewColumn" id="access_column">
+                            <property name="expand">True</property>
+                            <property name="id">access</property>
+                            <property name="title">Access</property>
+                          </object>
+                        </child>
                       </object>
-                    </child>
-                    <child>
-                      <object class="GtkColumnViewColumn" id="property_column">
-                        <property name="expand">True</property>
-                        <property name="id">property</property>
-                        <property name="resizable">True</property>
-                        <property name="title">Property</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkColumnViewColumn" id="signature_column">
-                        <property name="expand">True</property>
-                        <property name="id">signature</property>
-                        <property name="title">Signature</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkColumnViewColumn" id="access_column">
-                        <property name="expand">True</property>
-                        <property name="id">access</property>
-                        <property name="resizable">True</property>
-                        <property name="title">Access</property>
-                      </object>
-                    </child>
+                    </property>
+                    <property name="vexpand">True</property>
                   </object>
                 </property>
-                <property name="vexpand">True</property>
+                <property name="wide-handle">True</property>
               </object>
             </property>
-            <property name="wide-handle">True</property>
-          </object>
-        </property>
-        <child type="top">
-          <object class="AdwHeaderBar">
-            <property name="title-widget">
-              <object class="AdwWindowTitle">
-                <property name="title">Unit Property Selector</property>
-              </object>
-            </property>
-            <child>
-              <object class="GtkToggleButton" id="toogle_button">
-                <property name="icon-name">go-next-symbolic</property>
-                <property name="tooltip-text">Expand all interfaces</property>
-                <signal name="toggled" handler="expand_toggled" swapped="yes"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSearchEntry" id="search_entry">
-                <property name="width-request">244</property>
-                <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
-              </object>
-            </child>
-            <child type="end">
-              <object class="GtkToggleButton" id="orientation_button">
-                <property name="icon-name">side-by-side</property>
-                <signal name="clicked" handler="orientation_toggled" swapped="yes"/>
+            <child type="top">
+              <object class="AdwHeaderBar">
+                <property name="title-widget">
+                  <object class="AdwWindowTitle">
+                    <property name="title">Unit Property Selector</property>
+                  </object>
+                </property>
+                <child>
+                  <object class="GtkToggleButton" id="toogle_button">
+                    <property name="icon-name">go-next-symbolic</property>
+                    <property name="tooltip-text">Expand all interfaces</property>
+                    <signal name="toggled" handler="expand_toggled" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSearchEntry" id="search_entry">
+                    <property name="width-request">244</property>
+                    <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkToggleButton" id="orientation_button">
+                    <property name="icon-name">side-by-side</property>
+                    <signal name="clicked" handler="orientation_toggled" swapped="yes"/>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

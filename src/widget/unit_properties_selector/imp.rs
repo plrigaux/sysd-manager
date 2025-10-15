@@ -1,9 +1,8 @@
 use std::cell::{OnceCell, RefCell};
 
 use adw::subclass::window::AdwWindowImpl;
-use gio::glib::{Object, Variant};
 use gtk::{
-    glib::{self},
+    glib::{self, Object, Variant},
     prelude::*,
     subclass::{
         prelude::*,
@@ -65,6 +64,9 @@ pub struct UnitPropertiesSelectorDialogImp {
 
     #[template_child]
     orientation_button: TemplateChild<gtk::Button>,
+
+    #[template_child]
+    toast_overlay: TemplateChild<adw::ToastOverlay>,
 
     last_filter_string: RefCell<String>,
 
@@ -313,6 +315,23 @@ impl UnitPropertiesSelectorDialogImp {
 
         Ok(())
     }
+
+    fn add_toast_message(&self, message: &str, use_markup: bool) {
+        /*         let msg = if use_markup {
+            let out = self.replace_tags(message);
+            Cow::from(out)
+        } else {
+            Cow::from(message)
+        }; */
+
+        let toast = adw::Toast::builder()
+            .title(message)
+            .use_markup(use_markup)
+            .build();
+
+        self.toast_overlay.dismiss_all();
+        self.toast_overlay.add_toast(toast);
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -437,9 +456,20 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         self.access_column.set_factory(Some(&access_factory));
 
-        let unit_properties_selection = self.unit_properties_selection.clone();
+        let unit_properties_selection = self.unit_properties_selection.downgrade();
+        let unit_properties_selector = self.obj().downgrade();
 
         selection_model.connect_selected_item_notify(move |single_selection| {
+            let Some(unit_properties_selection) = unit_properties_selection.upgrade() else {
+                warn!("Reference upgrade failed");
+                return;
+            };
+
+            let Some(unit_properties_selector) = unit_properties_selector.upgrade() else {
+                warn!("Reference upgrade failed");
+                return;
+            };
+
             debug!(
                 "connect_selected_notify idx {}",
                 single_selection.selected()
@@ -479,7 +509,12 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
             let new_property_object = PropertyBrowseItem::from_parent(interface, property_object);
 
+            let new_property = new_property_object.unit_property();
             unit_properties_selection.add_new_property(new_property_object);
+
+            unit_properties_selector
+                .imp()
+                .add_toast_message(&format!("New property {} added", new_property), false);
         });
 
         glib::spawn_future_local(async move {
