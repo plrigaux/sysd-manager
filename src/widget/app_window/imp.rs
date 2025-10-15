@@ -8,8 +8,7 @@ use std::{
 use crate::{
     consts::{
         ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
-        APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR,
-        APP_ACTION_PROPERTIES_SELECTOR_GENERAL,
+        APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR_GENERAL,
     },
     systemd::{data::UnitInfo, journal::Boot},
     systemd_gui::new_settings,
@@ -25,12 +24,12 @@ use crate::{
     },
 };
 use adw::subclass::prelude::*;
-use gio::{
-    glib::VariantTy,
-    prelude::{ActionMapExtManual, SettingsExt},
-};
 use gtk::{
-    gio, glib,
+    gio::{
+        self,
+        prelude::{ActionMapExtManual, SettingsExt},
+    },
+    glib::{self, VariantTy},
     prelude::{GtkApplicationExt, GtkWindowExt, OrientableExt, ToggleButtonExt, WidgetExt},
 };
 use log::{debug, error, info, warn};
