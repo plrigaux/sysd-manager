@@ -19,7 +19,7 @@
         <child>
           <object class="AdwButtonContent">
             <property name="icon-name">columns-symbolic</property>
-            <property name="label">Columns</property>
+            <property name="label" translatable="yes" context="unit search">Columns</property>
           </object>
         </child>
       </object>
