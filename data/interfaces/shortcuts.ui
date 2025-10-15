@@ -38,7 +38,7 @@
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.properties_selector</property>
+                <property name="action-name">app.properties_selector_general</property>
                 <property name="title" translatable="yes" context="shortcut window">Open columns manager</property>
               </object>
             </child>

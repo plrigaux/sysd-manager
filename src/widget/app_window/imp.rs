@@ -7,8 +7,9 @@ use std::{
 
 use crate::{
     consts::{
-        ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, APP_ACTION_LIST_BOOT,
-        APP_ACTION_PROPERTIES_SELECTOR,
+        ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
+        APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR,
+        APP_ACTION_PROPERTIES_SELECTOR_GENERAL,
     },
     systemd::{data::UnitInfo, journal::Boot},
     systemd_gui::new_settings,
@@ -449,8 +450,24 @@ impl AppWindowImpl {
             let app_window = self.obj().clone();
             let unit_list_panel = self.unit_list_panel.clone();
             gio::ActionEntry::builder(ACTION_PROPERTIES_SELECTOR)
-                .activate(move |_, _action, _variant| {
-                    let dialog = UnitPropertiesSelectorDialog::new(&unit_list_panel);
+                .activate(move |_, _action, variant| {
+                    let column_id = variant.map(|v| v.get::<String>().unwrap());
+                    let dialog = UnitPropertiesSelectorDialog::new(&unit_list_panel, column_id);
+                    dialog.set_transient_for(Some(&app_window));
+                    //dialog.set_modal(true);
+                    dialog.present();
+                })
+                .parameter_type(Some(VariantTy::STRING))
+                .build()
+        };
+
+        let properties_selector_general = {
+            let app_window = self.obj().clone();
+            let unit_list_panel = self.unit_list_panel.clone();
+            gio::ActionEntry::builder(ACTION_PROPERTIES_SELECTOR_GENERAL)
+                .activate(move |_, _action, variant| {
+                    let column_id = variant.map(|v| v.get::<String>().unwrap());
+                    let dialog = UnitPropertiesSelectorDialog::new(&unit_list_panel, column_id);
                     dialog.set_transient_for(Some(&app_window));
                     //dialog.set_modal(true);
                     dialog.present();
@@ -476,6 +493,7 @@ impl AppWindowImpl {
             orientation_mode,
             list_boots,
             properties_selector,
+            properties_selector_general,
             print_debug,
         ]);
 
@@ -487,7 +505,7 @@ impl AppWindowImpl {
         application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Shift>f"]);
         application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
-        application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR, &["<Ctrl>r"]);
+        application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR_GENERAL, &["<Ctrl>r"]);
         application.set_accels_for_action("app.debug", &["<Ctrl>q"]);
     }
 

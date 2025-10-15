@@ -25,3 +25,14 @@ macro_rules! format2 {
           }
      }};
 }
+
+#[macro_export]
+macro_rules! upgrade {
+    ($weak_ref:expr) => {{
+        let Some(weak_ref) = $weak_ref.upgrade() else {
+            log::warn!("Reference upgrade failed");
+            return;
+        };
+        weak_ref
+    }};
+}

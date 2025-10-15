@@ -17,12 +17,13 @@ use log::{debug, error, info, warn};
 use crate::{
     systemd::{self, runtime},
     systemd_gui::new_settings,
+    upgrade,
     widget::{
         preferences::data::KEY_PREF_PROP_ORIENTATION_MODE,
         unit_list::UnitListPanel,
         unit_properties_selector::{
             data_browser::{INTERFACE_NAME, PropertyBrowseItem},
-            unit_properties_selection::UnitPropertiesSelection,
+            unit_properties_selection::UnitPropertiesSelectionPanel,
         },
     },
 };
@@ -57,7 +58,7 @@ pub struct UnitPropertiesSelectorDialogImp {
     toogle_button: TemplateChild<gtk::ToggleButton>,
 
     #[template_child]
-    unit_properties_selection: TemplateChild<UnitPropertiesSelection>,
+    unit_properties_selection_panel: TemplateChild<UnitPropertiesSelectionPanel>,
 
     #[template_child]
     paned: TemplateChild<gtk::Paned>,
@@ -221,9 +222,9 @@ impl UnitPropertiesSelectorDialogImp {
         })
     }
 
-    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
-        self.unit_properties_selection
-            .set_unit_list(unit_list_panel);
+    pub(super) fn set_unit_list(&self, unit_list_panel: &UnitListPanel, column_id: Option<String>) {
+        self.unit_properties_selection_panel
+            .set_unit_list(unit_list_panel, column_id);
 
         let Some(tree_list_model) = self.tree_list_model.get() else {
             warn!("Not None");
@@ -456,19 +457,12 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
         self.access_column.set_factory(Some(&access_factory));
 
-        let unit_properties_selection = self.unit_properties_selection.downgrade();
+        let unit_properties_selection = self.unit_properties_selection_panel.downgrade();
         let unit_properties_selector = self.obj().downgrade();
 
         selection_model.connect_selected_item_notify(move |single_selection| {
-            let Some(unit_properties_selection) = unit_properties_selection.upgrade() else {
-                warn!("Reference upgrade failed");
-                return;
-            };
-
-            let Some(unit_properties_selector) = unit_properties_selector.upgrade() else {
-                warn!("Reference upgrade failed");
-                return;
-            };
+            let unit_properties_selection = upgrade!(unit_properties_selection);
+            let unit_properties_selector = upgrade!(unit_properties_selector);
 
             debug!(
                 "connect_selected_notify idx {}",

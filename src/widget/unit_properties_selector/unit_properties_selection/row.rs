@@ -5,7 +5,7 @@ use gtk::{
 };
 
 use crate::widget::unit_properties_selector::{
-    data_selection::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
+    data_selection::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelectionPanel,
 };
 
 glib::wrapper! {
@@ -15,7 +15,7 @@ glib::wrapper! {
 }
 
 impl UnitPropertiesSelectionRow {
-    pub fn new(prop_selection: UnitPropertiesSelection) -> Self {
+    pub fn new(prop_selection: UnitPropertiesSelectionPanel) -> Self {
         let obj: UnitPropertiesSelectionRow = glib::Object::new();
 
         obj.imp().prop_selection.replace(Some(prop_selection));
@@ -42,7 +42,8 @@ mod imp {
     use std::cell::RefCell;
 
     use crate::widget::unit_properties_selector::{
-        data_selection::UnitPropertySelection, unit_properties_selection::UnitPropertiesSelection,
+        data_selection::UnitPropertySelection,
+        unit_properties_selection::UnitPropertiesSelectionPanel,
     };
 
     use super::UnitPropertiesSelectionRow;
@@ -73,7 +74,7 @@ mod imp {
         #[template_child]
         expand_switch: TemplateChild<gtk::Switch>,
 
-        pub prop_selection: RefCell<Option<UnitPropertiesSelection>>,
+        pub prop_selection: RefCell<Option<UnitPropertiesSelectionPanel>>,
 
         list_item: RefCell<Option<gtk::ListItem>>,
 

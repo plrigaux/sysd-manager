@@ -27,7 +27,7 @@ use gtk::{
 use zvariant::OwnedValue;
 
 use crate::{
-    consts::ACTION_UNIT_LIST_FILTER_CLEAR,
+    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR},
     systemd::{
         self, SystemdUnitFile,
         data::UnitInfo,
@@ -242,7 +242,7 @@ impl UnitListPanelImp {
         let list_filter_action_entry = {
             //  let settings = settings.clone();
             let unit_list_panel = self.obj().clone();
-            gio::ActionEntry::builder("unit_list_filter")
+            gio::ActionEntry::builder(ACTION_UNIT_LIST_FILTER)
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     let column_id = target_value
                         .map(|var| var.get::<String>().expect("variant always be String"));

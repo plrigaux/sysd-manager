@@ -17,13 +17,13 @@ glib::wrapper! {
 }
 
 impl UnitPropertiesSelectorDialog {
-    pub fn new(unit_list_panel: &UnitListPanel) -> Self {
+    pub fn new(unit_list_panel: &UnitListPanel, column_id: Option<String>) -> Self {
         let obj: UnitPropertiesSelectorDialog = glib::Object::new();
-        obj.set_unit_list(unit_list_panel);
+        obj.set_unit_list(unit_list_panel, column_id);
         obj
     }
 
-    fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
-        self.imp().set_unit_list(unit_list_panel);
+    fn set_unit_list(&self, unit_list_panel: &UnitListPanel, column_id: Option<String>) {
+        self.imp().set_unit_list(unit_list_panel, column_id);
     }
 }

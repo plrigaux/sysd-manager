@@ -1,6 +1,8 @@
 use gtk::glib::variant::ToVariant;
 
-use crate::consts::{APP_ACTION_PROPERTIES_SELECTOR, NS_ACTION_UNIT_LIST_FILTER_CLEAR};
+use crate::consts::{
+    APP_ACTION_PROPERTIES_SELECTOR, NS_ACTION_UNIT_LIST_FILTER, NS_ACTION_UNIT_LIST_FILTER_CLEAR,
+};
 
 pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
     let menu = gio::Menu::new();
@@ -11,7 +13,7 @@ pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
         &menu,
         "Configure columns",
         APP_ACTION_PROPERTIES_SELECTOR,
-        None,
+        Some(key),
     );
 
     if !is_custom {
@@ -32,7 +34,7 @@ pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
         append_item_variant(
             &sub_menu,
             "Configure Filters",
-            "win.unit_list_filter",
+            NS_ACTION_UNIT_LIST_FILTER,
             Some(key),
         );
 

@@ -9,14 +9,14 @@ use gtk::{
     subclass::prelude::*,
 };
 glib::wrapper! {
-    pub struct UnitPropertiesSelection(ObjectSubclass<imp::UnitPropertiesSelectionImp>)
+    pub struct UnitPropertiesSelectionPanel(ObjectSubclass<imp::UnitPropertiesSelectionPanelImp>)
     @extends gtk::Box, gtk::Widget,
     @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-impl UnitPropertiesSelection {
+impl UnitPropertiesSelectionPanel {
     pub fn new() -> Self {
-        let obj: UnitPropertiesSelection = glib::Object::new();
+        let obj: UnitPropertiesSelectionPanel = glib::Object::new();
         obj
     }
 
@@ -24,8 +24,8 @@ impl UnitPropertiesSelection {
         self.imp().add_new_property(new_property_object);
     }
 
-    pub fn set_unit_list(&self, unit_list_panel: &UnitListPanel) {
-        self.imp().set_unit_list_panel(unit_list_panel);
+    pub fn set_unit_list(&self, unit_list_panel: &UnitListPanel, column_id: Option<String>) {
+        self.imp().set_unit_list_panel(unit_list_panel, column_id);
     }
 
     pub fn list_store(&self) -> Option<&gio::ListStore> {
@@ -45,7 +45,7 @@ impl UnitPropertiesSelection {
     }
 }
 
-impl Default for UnitPropertiesSelection {
+impl Default for UnitPropertiesSelectionPanel {
     fn default() -> Self {
         Self::new()
     }

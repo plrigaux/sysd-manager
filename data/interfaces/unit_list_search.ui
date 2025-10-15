@@ -14,7 +14,7 @@
     </child>
     <child>
       <object class="GtkButton" id="show_customize_button">
-        <property name="action-name">app.properties_selector</property>
+        <property name="action-name">app.properties_selector_general</property>
         <property name="label" translatable="yes" context="unit search"/>
         <child>
           <object class="AdwButtonContent">

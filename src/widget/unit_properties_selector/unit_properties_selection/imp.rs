@@ -2,6 +2,7 @@ use std::cell::OnceCell;
 
 use gio::glib::object::Cast;
 use gtk::{
+    ListScrollFlags,
     glib::{self},
     prelude::*,
     subclass::prelude::*,
@@ -18,11 +19,11 @@ use crate::widget::{
     },
 };
 
-use super::UnitPropertiesSelection;
+use super::UnitPropertiesSelectionPanel;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties_selection.ui")]
-pub struct UnitPropertiesSelectionImp {
+pub struct UnitPropertiesSelectionPanelImp {
     #[template_child]
     properties_selection: TemplateChild<gtk::ListView>,
 
@@ -63,7 +64,7 @@ macro_rules! get_unit_list_panel {
 }
 
 #[gtk::template_callbacks]
-impl UnitPropertiesSelectionImp {
+impl UnitPropertiesSelectionPanelImp {
     #[template_callback]
     fn apply_clicked(&self, _button: &gtk::Button) {
         info!("Apply pressed");
@@ -111,15 +112,24 @@ impl UnitPropertiesSelectionImp {
     }
 }
 
-impl UnitPropertiesSelectionImp {
+impl UnitPropertiesSelectionPanelImp {
     pub fn add_new_property(&self, new_property_object: PropertyBrowseItem) {
         let new_unit_prop = UnitPropertySelection::from_browser(new_property_object);
 
         let list_store = get_list_store!(self);
         list_store.append(&new_unit_prop);
+        self.properties_selection.scroll_to(
+            list_store.n_items() - 1,
+            gtk::ListScrollFlags::FOCUS,
+            None,
+        );
     }
 
-    pub(super) fn set_unit_list_panel(&self, unit_list_panel: &UnitListPanel) {
+    pub(super) fn set_unit_list_panel(
+        &self,
+        unit_list_panel: &UnitListPanel,
+        column_id: Option<String>,
+    ) {
         self.unit_list_panel
             .set(unit_list_panel.clone())
             .expect("Assigned only once");
@@ -132,6 +142,30 @@ impl UnitPropertiesSelectionImp {
         for unit_property_column in columns.iter() {
             let unit_property_column = unit_property_column.copy(); //if no copy the column prop are in sync
             list_store.append(&unit_property_column);
+        }
+
+        if let Some(column_id) = column_id {
+            for (index, id) in list_store
+                .iter::<UnitPropertySelection>()
+                .enumerate()
+                .filter_map(|r| {
+                    if let Ok(item) = r.1
+                        && let Some(id) = item.id()
+                    {
+                        Some((r.0, id))
+                    } else {
+                        None
+                    }
+                })
+            {
+                if column_id == id {
+                    self.properties_selection.scroll_to(
+                        index as u32,
+                        ListScrollFlags::FOCUS | ListScrollFlags::SELECT,
+                        None,
+                    );
+                }
+            }
         }
     }
 
@@ -181,9 +215,9 @@ impl UnitPropertiesSelectionImp {
 
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
-impl ObjectSubclass for UnitPropertiesSelectionImp {
-    const NAME: &'static str = "UnitPropertiesSelection";
-    type Type = UnitPropertiesSelection;
+impl ObjectSubclass for UnitPropertiesSelectionPanelImp {
+    const NAME: &'static str = "UnitPropertiesSelectionPanel";
+    type Type = UnitPropertiesSelectionPanel;
     type ParentType = gtk::Box;
 
     fn class_init(klass: &mut Self::Class) {
@@ -197,7 +231,7 @@ impl ObjectSubclass for UnitPropertiesSelectionImp {
     }
 }
 
-impl ObjectImpl for UnitPropertiesSelectionImp {
+impl ObjectImpl for UnitPropertiesSelectionPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
@@ -269,5 +303,5 @@ impl ObjectImpl for UnitPropertiesSelectionImp {
     }
 }
 
-impl WidgetImpl for UnitPropertiesSelectionImp {}
-impl BoxImpl for UnitPropertiesSelectionImp {}
+impl WidgetImpl for UnitPropertiesSelectionPanelImp {}
+impl BoxImpl for UnitPropertiesSelectionPanelImp {}

@@ -3,7 +3,7 @@
 <interface>
   <!-- interface-name unit_properties_selected.ui -->
   <requires lib="gtk" version="4.18"/>
-  <template class="UnitPropertiesSelection" parent="GtkBox">
+  <template class="UnitPropertiesSelectionPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkLabel">

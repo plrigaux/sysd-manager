@@ -14,7 +14,7 @@
             <property name="content">
               <object class="GtkPaned" id="paned">
                 <property name="end-child">
-                  <object class="UnitPropertiesSelection" id="unit_properties_selection"/>
+                  <object class="UnitPropertiesSelectionPanel" id="unit_properties_selection_panel"/>
                 </property>
                 <property name="orientation">vertical</property>
                 <property name="position">578</property>
