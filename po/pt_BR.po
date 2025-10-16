@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-15 14:06-0400\n"
-"PO-Revision-Date: 2025-10-04 04:40+0000\n"
+"PO-Revision-Date: 2025-10-17 03:09+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
-"manager/translation/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"sysd-manager/translation/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -666,7 +666,7 @@ msgstr "Botas de lista aberta"
 #: data/interfaces/shortcuts.ui:42
 msgctxt "shortcut window"
 msgid "Open columns manager"
-msgstr ""
+msgstr "Gerenciador de colunas abertas"
 
 #: data/interfaces/shortcuts.ui:49
 msgctxt "shortcut window"
@@ -1092,10 +1092,9 @@ msgid "Something went wrong"
 msgstr "Algo deu errado"
 
 #: data/interfaces/unit_list_search.ui:22
-#, fuzzy
 msgctxt "unit search"
 msgid "Columns"
-msgstr "Coluna {}"
+msgstr "Colunas"
 
 #: data/interfaces/unit_list_search.ui:29
 msgctxt "unit search"
