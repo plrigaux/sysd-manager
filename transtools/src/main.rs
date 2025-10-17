@@ -102,7 +102,7 @@ fn main() {
         }
     }
 
-    println!("working dir   {:?}", env::current_dir().unwrap().to_str());
+    println!("working dir {:?}", env::current_dir().unwrap().to_str());
 
     let result = execute_command(args);
 

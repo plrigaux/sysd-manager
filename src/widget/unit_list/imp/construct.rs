@@ -7,6 +7,8 @@ use crate::{
     },
 };
 use gettextrs::pgettext;
+use log::warn;
+use zvariant::Value;
 
 pub fn construct_column(
     list_store: gio::ListStore,
@@ -107,7 +109,6 @@ macro_rules! column_filter_lambda {
 }
 
 pub(crate) use column_filter_lambda;
-use log::warn;
 
 macro_rules! create_column_filter {
     ($($func:ident),+) => {{
@@ -134,11 +135,41 @@ pub fn get_sorter_by_id(id: &str) -> Option<gtk::CustomSorter> {
         "sysdm-sub" => Some(create_column_filter!(sub_state)),
         "sysdm-description" => Some(create_column_filter!(description)),
 
-        _ => {
-            warn!("What to do. Id {id} not handle with sorter");
-            None
-        }
+        _ => create_custom_property_column_sorter(id),
     }
+}
+
+fn create_custom_property_column_sorter(id: &str) -> Option<gtk::CustomSorter> {
+    let Some((_short_interface, prop)) = id.split_once('@') else {
+        warn!("Column sorter for Id \"{id}\" not handle");
+        return None;
+    };
+
+    let key = glib::Quark::from_str(prop);
+
+    let sorter = gtk::CustomSorter::new(move |o1, o2| custom_property_comapre(o1, o2, key));
+
+    Some(sorter)
+}
+
+fn custom_property_comapre(
+    object1: &glib::Object,
+    object2: &glib::Object,
+    key: glib::Quark,
+) -> gtk::Ordering {
+    let v1 = unsafe {
+        object1
+            .qdata::<Value>(key)
+            .map(|value_ptr| value_ptr.as_ref())
+    };
+
+    let v2 = unsafe {
+        object2
+            .qdata::<Value>(key)
+            .map(|value_ptr| value_ptr.as_ref())
+    };
+
+    v1.into_iter().cmp(v2).into()
 }
 
 const GETTEXT_CONTEXT: &str = "list column";

@@ -3,7 +3,7 @@
 use std::{fmt::Debug, sync::LazyLock};
 
 use gtk::{pango, prelude::TextBufferExt};
-use log::{debug, error, info, warn};
+use log::{debug, info, warn};
 use regex::bytes::Regex;
 
 use crate::utils::{
@@ -186,35 +186,6 @@ pub(super) fn write_text(tokens: &Vec<Token>, writer: &mut UnitInfoWriter, text:
             },
         }
     }
-}
-
-//BUG workaround for out of bound and char boundary
-#[allow(dead_code)]
-fn sub_string<'a>(text: &'a str, start: usize, end: usize, token: &'a Token) -> &'a str {
-    text.get(start..end).unwrap_or_else(|| {
-        //BUG  workaround for out of bound
-        if end > text.len() {
-            error!(
-                "Text token end {} > text.len() {} over {}",
-                end,
-                text.len(),
-                end - text.len()
-            );
-            warn!("{:?} {:?}", token, text);
-
-            sub_string(text, start, text.len(), token)
-        } else {
-            error!(
-                "Text token start {} (is char boundary {}) end {} (is char boundary {})",
-                start,
-                text.is_char_boundary(start),
-                end,
-                text.is_char_boundary(end)
-            );
-            warn!("{text}");
-            ""
-        }
-    })
 }
 
 fn bsplit(b: &u8) -> bool {
