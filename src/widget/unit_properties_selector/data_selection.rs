@@ -1,7 +1,7 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
 
 use gtk::glib::{self};
-use log::info;
+use log::{debug, info};
 
 use crate::{
     systemd::enums::UnitType,
@@ -88,7 +88,7 @@ impl UnitPropertySelection {
             p_imp.unit_type.set(UnitType::Unknown);
         }
 
-        info!("UNIT TYPE FROM ID {} {:?}", id, p_imp.unit_type.get());
+        debug!("UNIT TYPE FROM ID {} {:?}", id, p_imp.unit_type.get());
     }
     pub fn from_column_config(unit_column_config: UnitColumn) -> Self {
         let id = unit_column_config.id;
