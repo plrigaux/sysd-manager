@@ -162,8 +162,9 @@ fn menu_show(
         &gtk::Label::builder()
             .label(unit.primary())
             .tooltip_text(unit.primary())
-            .max_width_chars(25)
+            .max_width_chars(20)
             .ellipsize(pango::EllipsizeMode::End)
+            .css_classes(["heading"])
             .build(),
     );
     box_.append(
