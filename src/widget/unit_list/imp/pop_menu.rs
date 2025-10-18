@@ -126,8 +126,8 @@ enum MenuAction {
     Restart,
     Enable,
     Disable,
-    Mask,
-    UnMask,
+    /*     Mask,
+    UnMask, */
 }
 
 fn menu_show(
@@ -238,31 +238,31 @@ fn menu_show(
     );
 
     box_.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+    /*
+       create_menu_button(
+           &box_,
+           //Button label
+           &pgettext("controls", "Mask"),
+           &tooltip,
+           "venetian-mask-symbolic",
+           unit,
+           MenuAction::Mask,
+           unit_list_panel,
+           &all_buttons,
+       );
 
-    create_menu_button(
-        &box_,
-        //Button label
-        &pgettext("controls", "Mask"),
-        &tooltip,
-        "venetian-mask-symbolic",
-        unit,
-        MenuAction::Mask,
-        unit_list_panel,
-        &all_buttons,
-    );
-
-    create_menu_button(
-        &box_,
-        //Button label
-        &pgettext("controls", "UnMask"),
-        &tooltip,
-        "venetian-unmask-symbolic",
-        unit,
-        MenuAction::UnMask,
-        unit_list_panel,
-        &all_buttons,
-    );
-
+       create_menu_button(
+           &box_,
+           //Button label
+           &pgettext("controls", "UnMask"),
+           &tooltip,
+           "venetian-unmask-symbolic",
+           unit,
+           MenuAction::UnMask,
+           unit_list_panel,
+           &all_buttons,
+       );
+    */
     pop_menu.popup();
 }
 
@@ -360,8 +360,6 @@ fn create_menu_button(
                     })),
                 )
             }
-            MenuAction::Mask => InterPanelMessage::MaskUnit(button, &unit),
-            MenuAction::UnMask => InterPanelMessage::UnMaskUnit(button, &unit),
         };
         unit_list_panel.button_action(&inter_message);
     });
