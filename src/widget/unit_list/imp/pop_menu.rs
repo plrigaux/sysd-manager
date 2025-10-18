@@ -96,7 +96,11 @@ pub fn setup_popup_menu(
 
 /// This works, because, we assume that each line have same height
 fn retreive_row_id(widget: &gtk::Widget, y: i32, header_height: i32) -> i32 {
+    debug!("widjet {widget:?}");
+
     let mut child_op = widget.first_child();
+
+    debug!("child_op {child_op:?}");
 
     let mut row_height = -1;
     while let Some(child) = child_op {
@@ -104,7 +108,9 @@ fn retreive_row_id(widget: &gtk::Widget, y: i32, header_height: i32) -> i32 {
         debug!("widget type name: {w_type_name}");
         if w_type_name == "GtkColumnViewRowWidget" {
             row_height = child.height();
-            break;
+            if row_height > 0 {
+                break;
+            }
         }
 
         child_op = child.next_sibling();
