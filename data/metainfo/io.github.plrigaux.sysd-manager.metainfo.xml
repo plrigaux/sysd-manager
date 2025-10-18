@@ -80,7 +80,20 @@ Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
-  <releases><release version="2.2.0" date="2025-10-15">
+    <releases><release version="2.4.0" date="2025-10-18">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Disable and Enable option in the popup men</li>
+        </ul>
+          <p>Fixed</p>
+        <ul>
+          <li>Popup menu appearance issues</li>
+          <li>Inactive unit display style behavior</li>
+        </ul>
+      </description>
+    </release>
+  <releases><release version="2.3.0" date="2025-10-15">
       <description translate="no">
         <p>Added</p>
         <ul>
