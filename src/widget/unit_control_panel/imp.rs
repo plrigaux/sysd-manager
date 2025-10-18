@@ -1,4 +1,7 @@
-use std::cell::{Cell, OnceCell, RefCell};
+use std::{
+    cell::{Cell, OnceCell, RefCell},
+    rc::Rc,
+};
 
 use adw::{prelude::*, subclass::prelude::*};
 use gettextrs::pgettext;
@@ -178,6 +181,7 @@ impl UnitControlPanelImpl {
             switch,
             &unit,
             self.is_dark.get(),
+            Rc::new(Box::new(|| {})),
         );
 
         self.unit_info_panel
@@ -191,8 +195,8 @@ impl UnitControlPanelImpl {
             button,
             systemd::start_unit,
             UnitContolType::Start,
-            ActiveState::Active,
             None,
+            Rc::new(Box::new(move || {})),
         );
     }
 
@@ -202,8 +206,8 @@ impl UnitControlPanelImpl {
             button,
             systemd::stop_unit,
             UnitContolType::Stop,
-            ActiveState::Inactive,
             None,
+            Rc::new(Box::new(move || {})),
         );
     }
 
@@ -213,8 +217,8 @@ impl UnitControlPanelImpl {
             button,
             systemd::restart_unit,
             UnitContolType::Restart,
-            ActiveState::Active,
             None,
+            Rc::new(Box::new(move || {})),
         );
     }
 
@@ -244,8 +248,9 @@ impl UnitControlPanelImpl {
         button: &impl IsA<gtk::Widget>,
         systemd_method: fn(UnitDBusLevel, &str, StartStopMode) -> Result<String, SystemdErrors>,
         action: UnitContolType,
-        expected_active_state: ActiveState,
+
         unit: Option<&UnitInfo>,
+        call_back: Rc<Box<dyn Fn()>>,
     ) {
         let unit = if let Some(unit) = unit {
             unit.clone()
@@ -275,9 +280,10 @@ impl UnitControlPanelImpl {
                 Some(&unit),
                 start_results,
                 action,
-                expected_active_state,
                 start_mode,
             );
+
+            call_back();
         });
     }
 
@@ -287,7 +293,6 @@ impl UnitControlPanelImpl {
         unit_op: Option<&UnitInfo>,
         start_results: Result<String, SystemdErrors>,
         action: UnitContolType,
-        expected_active_state: ActiveState,
         mode: StartStopMode,
     ) {
         let job_op = match start_results {
@@ -320,7 +325,13 @@ impl UnitControlPanelImpl {
                 self.add_toast_message(&info, true);
 
                 if let Some(unit) = unit_op {
-                    unit.set_active_state(expected_active_state);
+                    debug!("State-A {}", unit.active_state());
+
+                    if let Ok(new_unit) = systemd::fetch_unit(unit.dbus_level(), &unit.primary()) {
+                        unit.set_active_state(new_unit.active_state());
+                    }
+
+                    debug!("State-B {}", unit.active_state());
                     self.highlight_controls(unit);
                 }
 
@@ -380,7 +391,7 @@ impl UnitControlPanelImpl {
             return; */
         }
 
-        controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
+        controls::handle_switch_sensivity(&self.ablement_switch, unit, true, self.is_dark.get());
 
         self.start_button.set_sensitive(true);
         self.stop_button.set_sensitive(true);
@@ -406,7 +417,7 @@ impl UnitControlPanelImpl {
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
-        match *action {
+        match action {
             InterPanelMessage::Font(font_description) => {
                 let provider = create_provider(&font_description);
                 {
@@ -419,7 +430,7 @@ impl UnitControlPanelImpl {
                 self.old_font_provider.replace(provider);
             }
             InterPanelMessage::IsDark(is_dark) => {
-                self.set_dark(is_dark);
+                self.set_dark(*is_dark);
                 self.forward_inter_actions(action)
             }
             InterPanelMessage::JournalFilterBoot(_) => {
@@ -427,34 +438,53 @@ impl UnitControlPanelImpl {
                 self.forward_inter_actions(action)
             }
 
-            InterPanelMessage::StartUnit(button, unit) => {
+            InterPanelMessage::StartUnit(button, unit, call_back) => {
                 self.start_restart_action(
-                    button,
+                    *button,
                     systemd::start_unit,
                     UnitContolType::Start,
-                    ActiveState::Active,
                     Some(unit),
+                    call_back.clone(),
                 );
             }
-            InterPanelMessage::StopUnit(button, unit) => {
+            InterPanelMessage::StopUnit(button, unit, call_back) => {
                 self.start_restart_action(
-                    button,
+                    *button,
                     systemd::stop_unit,
-                    UnitContolType::Restart,
-                    ActiveState::Active,
+                    UnitContolType::Stop,
                     Some(unit),
+                    call_back.clone(),
                 );
             }
-            InterPanelMessage::ReStartUnit(button, unit) => {
+            InterPanelMessage::ReStartUnit(button, unit, call_back) => {
                 self.start_restart_action(
-                    button,
+                    *button,
                     systemd::restart_unit,
                     UnitContolType::Restart,
-                    ActiveState::Active,
                     Some(unit),
+                    call_back.clone(),
                 );
             }
-
+            InterPanelMessage::EnableUnit(unit, call_back) => {
+                controls::switch_ablement_state_set(
+                    &self.obj(),
+                    EnablementStatus::Enabled,
+                    &self.ablement_switch,
+                    &unit,
+                    self.is_dark.get(),
+                    call_back.clone(),
+                );
+            }
+            InterPanelMessage::DisableUnit(unit, call_back) => {
+                controls::switch_ablement_state_set(
+                    &self.obj(),
+                    EnablementStatus::Disabled,
+                    &self.ablement_switch,
+                    &unit,
+                    self.is_dark.get(),
+                    call_back.clone(),
+                );
+            }
             _ => self.forward_inter_actions(action),
         }
     }
@@ -587,6 +617,7 @@ impl UnitControlPanelImpl {
             return;
         };
 
+        //TODO investigate
         let is_dark = true; //self.is_dark.get();
         let blue = blue(is_dark).get_color();
 

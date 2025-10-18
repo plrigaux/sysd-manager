@@ -18,7 +18,7 @@ use crate::{
     systemd::{
         self,
         data::{DisEnAbleUnitFiles, EnableUnitFilesReturn, UnitInfo},
-        enums::{ActiveState, DisEnableFlags, StartStopMode, UnitDBusLevel},
+        enums::{DisEnableFlags, StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
     systemd_gui,
@@ -131,7 +131,6 @@ impl EnableUnitDialogImp {
                                         None,
                                         start_results,
                                         UnitContolType::Start,
-                                        ActiveState::Active,
                                         start_mode,
                                     );
                                 }
@@ -216,7 +215,6 @@ impl EnableUnitDialogImp {
                                         Some(unit),
                                         stop_results,
                                         UnitContolType::Stop,
-                                        ActiveState::Inactive,
                                         mode,
                                     );
                                 }
@@ -294,7 +292,6 @@ impl EnableUnitDialogImp {
                                         Some(unit),
                                         stop_results,
                                         UnitContolType::Stop,
-                                        ActiveState::Inactive,
                                         mode,
                                     );
                                 }

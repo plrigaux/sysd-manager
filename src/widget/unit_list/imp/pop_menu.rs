@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use gettextrs::pgettext;
 use log::{debug, info, warn};
 
@@ -6,7 +8,7 @@ use gtk::{gdk::Rectangle, prelude::*};
 use crate::{
     consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
     format2,
-    systemd::{data::UnitInfo, enums::ActiveState},
+    systemd::{data::UnitInfo, enums::EnablementStatus},
     utils::palette::blue,
     widget::{InterPanelMessage, unit_list::UnitListPanel},
 };
@@ -56,14 +58,18 @@ pub fn setup_popup_menu(
             debug!("Line id {line_id} list count {}", filtered_list.n_items());
 
             if line_id < 0 {
-                warn!("some wrong line_no {line_id}");
+                warn!("Some wrongs line_no {line_id}");
                 return;
             }
 
             let line_id = line_id as u32;
             if let Some(object) = filtered_list.item(line_id) {
                 let unit = object.downcast_ref::<UnitInfo>().expect("Ok");
-                info!("Pointing on Unit {}", unit.primary());
+                info!(
+                    "Pointing on Unit {} state {}",
+                    unit.primary(),
+                    unit.active_state()
+                );
                 menu_show(
                     &units_browser_clone,
                     unit,
@@ -108,7 +114,7 @@ fn retreive_row_id(widget: &gtk::Widget, y: i32, header_height: i32) -> i32 {
         debug!("y {y} header_height {header_height} row_height {row_height}");
         (y - header_height) / row_height
     } else {
-        warn!("No valid row height {row_height}");
+        warn!("Not a valid row height {row_height}");
         -1
     }
 }
@@ -118,6 +124,10 @@ enum MenuAction {
     Start,
     Stop,
     Restart,
+    Enable,
+    Disable,
+    Mask,
+    UnMask,
 }
 
 fn menu_show(
@@ -142,6 +152,22 @@ fn menu_show(
 
     pop_menu.set_child(Some(&box_));
 
+    box_.append(
+        &gtk::Label::builder()
+            .label(unit.primary())
+            .tooltip_text(unit.primary())
+            .max_width_chars(25)
+            .ellipsize(pango::EllipsizeMode::End)
+            .build(),
+    );
+    box_.append(
+        &gtk::Separator::builder()
+            .margin_bottom(3)
+            .margin_top(3)
+            .build(),
+    );
+
+    let all_buttons = Rc::new(RefCell::new(vec![]));
     let tooltip = pgettext("controls", "Start unit {}");
 
     create_menu_button(
@@ -153,6 +179,7 @@ fn menu_show(
         unit,
         MenuAction::Start,
         unit_list_panel,
+        &all_buttons,
     );
 
     let tooltip = pgettext("controls", "Stop unit {}");
@@ -165,6 +192,7 @@ fn menu_show(
         unit,
         MenuAction::Stop,
         unit_list_panel,
+        &all_buttons,
     );
 
     let tooltip = pgettext("controls", "Restart unit {}");
@@ -178,6 +206,61 @@ fn menu_show(
         unit,
         MenuAction::Restart,
         unit_list_panel,
+        &all_buttons,
+    );
+
+    box_.append(&gtk::Separator::new(gtk::Orientation::Vertical));
+
+    let tooltip = pgettext("controls", "Enable unit {}");
+    create_menu_button(
+        &box_,
+        //Button label
+        &pgettext("controls", "Enable"),
+        &tooltip,
+        "empty-icon",
+        unit,
+        MenuAction::Enable,
+        unit_list_panel,
+        &all_buttons,
+    );
+
+    let tooltip = pgettext("controls", "Disable unit {}");
+    create_menu_button(
+        &box_,
+        //Button label
+        &pgettext("controls", "Disable"),
+        &tooltip,
+        "empty-icon",
+        unit,
+        MenuAction::Disable,
+        unit_list_panel,
+        &all_buttons,
+    );
+
+    box_.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+
+    create_menu_button(
+        &box_,
+        //Button label
+        &pgettext("controls", "Mask"),
+        &tooltip,
+        "venetian-mask-symbolic",
+        unit,
+        MenuAction::Mask,
+        unit_list_panel,
+        &all_buttons,
+    );
+
+    create_menu_button(
+        &box_,
+        //Button label
+        &pgettext("controls", "UnMask"),
+        &tooltip,
+        "venetian-unmask-symbolic",
+        unit,
+        MenuAction::UnMask,
+        unit_list_panel,
+        &all_buttons,
     );
 
     pop_menu.popup();
@@ -191,6 +274,7 @@ fn create_menu_button(
     unit: &UnitInfo,
     action: MenuAction,
     unit_list_panel: &UnitListPanel,
+    all_buttons: &Rc<RefCell<Vec<(MenuAction, gtk::Button)>>>,
 ) {
     let blue = blue(unit_list_panel.is_dark()).get_color();
     let unit_str = format!(
@@ -216,33 +300,117 @@ fn create_menu_button(
 
     let unit_list_panel = unit_list_panel.clone();
 
-    match (action, unit.active_state()) {
-        (MenuAction::Start, ActiveState::Inactive | ActiveState::Deactivating) => {
-            println!("Action {SUGGESTED_ACTION:?}");
-            button.remove_css_class(FLAT);
-            button.add_css_class(SUGGESTED_ACTION);
-        }
-        (
-            MenuAction::Stop,
-            ActiveState::Active
-            | ActiveState::Activating
-            | ActiveState::Reloading
-            | ActiveState::Refreshing,
-        ) => button.add_css_class(DESTRUCTIVE_ACTION),
-
-        _ => {}
-    };
-
+    set_button_style(unit, action, &button);
+    //println!("PUSH {action:?} {:?}", button.label());
+    all_buttons.borrow_mut().push((action, button.clone()));
     let unit = unit.clone();
+    let all_buttons2 = all_buttons.clone();
     button.connect_clicked(move |button| {
         let inter_message = match action {
-            MenuAction::Start => InterPanelMessage::StartUnit(button, &unit),
-            MenuAction::Stop => InterPanelMessage::StopUnit(button, &unit),
-            MenuAction::Restart => InterPanelMessage::ReStartUnit(button, &unit),
+            MenuAction::Start => {
+                let all_buttons = all_buttons2.clone();
+                let unit = unit.clone();
+                InterPanelMessage::StartUnit(
+                    button,
+                    &unit.clone(),
+                    Rc::new(Box::new(move || {
+                        set_all_button_style(&unit, &all_buttons.borrow())
+                    })),
+                )
+            }
+            MenuAction::Stop => {
+                let all_buttons = all_buttons2.clone();
+                let unit = unit.clone();
+                InterPanelMessage::StopUnit(
+                    button,
+                    &unit.clone(),
+                    Rc::new(Box::new(move || {
+                        set_all_button_style(&unit, &all_buttons.borrow())
+                    })),
+                )
+            }
+            MenuAction::Restart => {
+                let all_buttons = all_buttons2.clone();
+                let unit = unit.clone();
+                InterPanelMessage::ReStartUnit(
+                    button,
+                    &unit.clone(),
+                    Rc::new(Box::new(move || {
+                        set_all_button_style(&unit, &all_buttons.borrow())
+                    })),
+                )
+            }
+            MenuAction::Enable => {
+                let all_buttons = all_buttons2.clone();
+                let unit = unit.clone();
+                InterPanelMessage::EnableUnit(
+                    &unit.clone(),
+                    Rc::new(Box::new(move || {
+                        set_all_button_style(&unit, &all_buttons.borrow())
+                    })),
+                )
+            }
+            MenuAction::Disable => {
+                let all_buttons = all_buttons2.clone();
+                let unit = unit.clone();
+                InterPanelMessage::DisableUnit(
+                    &unit.clone(),
+                    Rc::new(Box::new(move || {
+                        set_all_button_style(&unit, &all_buttons.borrow())
+                    })),
+                )
+            }
+            MenuAction::Mask => InterPanelMessage::MaskUnit(button, &unit),
+            MenuAction::UnMask => InterPanelMessage::UnMaskUnit(button, &unit),
         };
         unit_list_panel.button_action(&inter_message);
     });
     box_.append(&button);
+}
+
+fn set_all_button_style(unit: &UnitInfo, all_buttons: &Vec<(MenuAction, gtk::Button)>) {
+    for (action, but) in all_buttons {
+        set_button_style(unit, *action, but);
+    }
+}
+
+fn set_button_style(unit: &UnitInfo, action: MenuAction, button: &gtk::Button) {
+    match action {
+        MenuAction::Start => {
+            if unit.active_state().is_inactive() {
+                button.remove_css_class(FLAT);
+                button.add_css_class(SUGGESTED_ACTION);
+            } else {
+                button.add_css_class(FLAT);
+                button.remove_css_class(SUGGESTED_ACTION);
+            }
+        }
+        MenuAction::Stop => {
+            if !unit.active_state().is_inactive() {
+                button.add_css_class(DESTRUCTIVE_ACTION);
+            } else {
+                button.remove_css_class(DESTRUCTIVE_ACTION);
+            }
+        }
+
+        MenuAction::Enable => {
+            let m = !matches!(
+                unit.enable_status(),
+                EnablementStatus::Enabled | EnablementStatus::Masked
+            );
+
+            button.set_sensitive(m);
+        }
+        MenuAction::Disable => {
+            let m = !matches!(
+                unit.enable_status(),
+                EnablementStatus::Disabled | EnablementStatus::Masked
+            );
+
+            button.set_sensitive(m);
+        }
+        _ => {}
+    };
 }
 
 #[cfg(test)]

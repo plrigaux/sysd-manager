@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use gtk::pango::FontDescription;
 
 use crate::systemd::{BootFilter, data::UnitInfo};
@@ -28,7 +30,11 @@ pub enum InterPanelMessage<'a> {
     FileLineNumber(bool),
     UnitChange(Option<&'a UnitInfo>),
     JournalFilterBoot(BootFilter),
-    StartUnit(&'a gtk::Button, &'a UnitInfo),
-    StopUnit(&'a gtk::Button, &'a UnitInfo),
-    ReStartUnit(&'a gtk::Button, &'a UnitInfo),
+    StartUnit(&'a gtk::Button, &'a UnitInfo, Rc<Box<dyn Fn()>>),
+    StopUnit(&'a gtk::Button, &'a UnitInfo, Rc<Box<dyn Fn()>>),
+    ReStartUnit(&'a gtk::Button, &'a UnitInfo, Rc<Box<dyn Fn()>>),
+    EnableUnit(&'a UnitInfo, Rc<Box<dyn Fn()>>),
+    DisableUnit(&'a UnitInfo, Rc<Box<dyn Fn()>>),
+    MaskUnit(&'a gtk::Button, &'a UnitInfo),
+    UnMaskUnit(&'a gtk::Button, &'a UnitInfo),
 }

@@ -514,6 +514,7 @@ impl UnitListPanelImp {
             }
         };
 
+        //FIXME update the data
         let old = self.unit.replace(Some(unit.clone()));
         if let Some(old) = old
             && old.primary() == unit.primary()

@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use gettextrs::pgettext;
 use gtk::{gio, glib};
 use log::{debug, info, warn};
@@ -15,6 +17,7 @@ pub(super) fn switch_ablement_state_set(
     switch: &gtk::Switch,
     unit: &UnitInfo,
     is_dark: bool,
+    call_back: Rc<Box<dyn Fn()>>,
 ) {
     info!(
         "switch_ablement_state_set Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}",
@@ -27,13 +30,15 @@ pub(super) fn switch_ablement_state_set(
     let current_enabled_status = unit.enable_status();
 
     if expected_new_status == current_enabled_status {
-        set_switch_tooltip(current_enabled_status, switch, &unit.primary());
+        set_switch_tooltip(current_enabled_status, switch, &unit.primary(), is_dark);
         return;
     }
 
     let switch = switch.clone();
     let control_panel = control_panel.clone();
     let unit = unit.clone();
+
+    //let call_back: Box<dyn Fn()> = Box::new(call_back.clone());
     glib::spawn_future_local(async move {
         switch.set_sensitive(false);
 
@@ -102,24 +107,43 @@ pub(super) fn switch_ablement_state_set(
             }
         }
 
-        handle_switch_sensivity(&switch, &unit, false);
+        handle_switch_sensivity(&switch, &unit, false, is_dark);
+
+        call_back()
     });
 }
 
-fn set_switch_tooltip(enabled: EnablementStatus, switch: &gtk::Switch, unit_name: &str) {
+//TODO do function to more constitency
+fn set_switch_tooltip(
+    enabled: EnablementStatus,
+    switch: &gtk::Switch,
+    unit_name: &str,
+    is_dark: bool,
+) {
     let enabled = enabled == EnablementStatus::Enabled;
 
-    let action_text = if enabled { "Disable" } else { "Enable" };
+    let action_text = if enabled {
+        pgettext("controls", "Disable unit {}")
+    } else {
+        pgettext("controls", "Enable unit {}")
+    };
 
-    let text = format!("{action_text} unit <b>{unit_name}</b>");
+    let blue = blue(is_dark).get_color();
+    let unit_str = format!(
+        "<span fgcolor='{}' font_family='monospace' size='larger' weight='bold'>{}</span>",
+        blue, unit_name
+    );
 
-    switch.set_tooltip_markup(Some(&text));
+    let tooltip = format2!(action_text, unit_str);
+
+    switch.set_tooltip_markup(Some(&tooltip));
 }
 
 pub(super) fn handle_switch_sensivity(
     switch: &gtk::Switch,
     unit: &UnitInfo,
     check_current_state: bool,
+    is_dark: bool,
 ) {
     let mut unit_file_state = unit.enable_status();
 
@@ -147,10 +171,10 @@ pub(super) fn handle_switch_sensivity(
                 unit.set_enable_status(unit_file_state);
             }
 
-            handle_switch_sensivity_part2(&switch, &unit, unit_file_state);
+            handle_switch_sensivity_part2(&switch, &unit, unit_file_state, is_dark);
         });
     } else {
-        handle_switch_sensivity_part2(switch, unit, unit_file_state);
+        handle_switch_sensivity_part2(switch, unit, unit_file_state, is_dark);
     }
 }
 
@@ -158,6 +182,7 @@ fn handle_switch_sensivity_part2(
     switch: &gtk::Switch,
     unit: &UnitInfo,
     unit_file_state: EnablementStatus,
+    is_dark: bool,
 ) {
     if unit_file_state == EnablementStatus::Enabled
         || unit_file_state == EnablementStatus::EnabledRuntime
@@ -173,7 +198,7 @@ fn handle_switch_sensivity_part2(
         EnablementStatus::Enabled
         | EnablementStatus::EnabledRuntime
         | EnablementStatus::Disabled => {
-            set_switch_tooltip(unit_file_state, switch, &unit.primary());
+            set_switch_tooltip(unit_file_state, switch, &unit.primary(), is_dark);
             true
         }
         _ => {

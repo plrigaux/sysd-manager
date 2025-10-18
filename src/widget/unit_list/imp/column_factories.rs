@@ -18,6 +18,7 @@ use crate::{
 
 static BIND_INFO: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("I"));
 static BIND_CSS: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("C"));
+static BIND_CSS2: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("C2"));
 
 const CSS_CLASSES: &str = "css-classes";
 const TEXT: &str = "text";
@@ -116,22 +117,17 @@ fn unbind(child: &gtk::Widget, key: Quark) {
 }
 
 fn inactive_display(widget: &impl IsA<gtk::Widget>, unit: &UnitInfo) {
-    let state = unit.active_state();
-    if state.is_inactive() {
-        widget.set_css_classes(&[CSS_GREY]);
-    } else {
-        widget.set_css_classes(&[]);
-    }
+    display_inactive!(widget, unit);
 
     let binding = unit
         .bind_property(ACTIVE_STATE, widget, CSS_CLASSES)
-        .transform_to(|_, load_state: ActiveState| {
-            let css_classes = if load_state.is_inactive() {
-                Some([CSS_GREY])
+        .transform_to(|_, active_state: ActiveState| {
+            let css_classes = if active_state.is_inactive() {
+                [CSS_GREY].to_value()
             } else {
-                None
+                [].to_value()
             };
-            css_classes.map(|css| css.to_value())
+            Some(css_classes)
         })
         .build();
 
@@ -316,6 +312,20 @@ pub fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
 
             store_binding(&inscription, *BIND_CSS, binding);
 
+            let binding = unit
+                .bind_property(ACTIVE_STATE, &inscription, CSS_CLASSES)
+                .transform_to(|_, active_state: ActiveState| {
+                    let css_classes = if active_state.is_inactive() {
+                        [CSS_GREY].to_value()
+                    } else {
+                        [].to_value()
+                    };
+                    Some(css_classes)
+                })
+                .build();
+
+            store_binding(&inscription, *BIND_CSS2, binding);
+
             let load_state = unit.load_state();
             inscription.set_text(Some(load_state.as_str()));
 
@@ -326,7 +336,7 @@ pub fn fac_load_state(display_color: bool) -> gtk::SignalListItemFactory {
                 display_inactive!(inscription, unit);
             }
         });
-        factory_connect_unbind!(&fac_load_state, *BIND_INFO, *BIND_CSS);
+        factory_connect_unbind!(&fac_load_state, *BIND_INFO, *BIND_CSS, *BIND_CSS2);
     } else {
         fac_load_state.connect_bind(move |_factory, object| {
             let (inscription, unit) = factory_bind_enum!(object, load_state);

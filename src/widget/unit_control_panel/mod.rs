@@ -5,7 +5,7 @@ use crate::{
     format2,
     systemd::{
         data::UnitInfo,
-        enums::{ActiveState, StartStopMode, UnitDBusLevel},
+        enums::{StartStopMode, UnitDBusLevel},
         errors::SystemdErrors,
     },
     widget::unit_control_panel::enums::UnitContolType,
@@ -97,17 +97,10 @@ impl UnitControlPanel {
         unit_op: Option<&UnitInfo>,
         start_results: Result<String, SystemdErrors>,
         action: UnitContolType,
-        expected_active_state: ActiveState,
         mode: StartStopMode,
     ) {
-        self.imp().start_restart(
-            unit_name,
-            unit_op,
-            start_results,
-            action,
-            expected_active_state,
-            mode,
-        )
+        self.imp()
+            .start_restart(unit_name, unit_op, start_results, action, mode)
     }
 
     pub(super) fn current_unit(&self) -> Option<UnitInfo> {

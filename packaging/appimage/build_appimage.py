@@ -82,6 +82,11 @@ def create_appdir():
 
     bc.cmd_run(["ln", "-s", "./usr/bin/sysd-manager", f"{APP_DIR}/AppRun"])
 
+def app_image_file_name(version=None) -> str:
+    if version is None:
+        version = bc.get_version()
+    file_name = f"SysDManager-{version}-x86_64.AppImage"
+    return file_name
 
 def make_appimage():
     os.environ["ARCH"] = "x86_64"
@@ -89,7 +94,7 @@ def make_appimage():
         [
             "appimagetool-x86_64.AppImage",
             APP_DIR,
-            f"{APP_IMAGE_DIR}/SysD-Manager-x86_64.AppImage",
+            f"{APP_IMAGE_DIR}/{app_image_file_name()}",
         ]
     )
 
@@ -156,7 +161,7 @@ def build():
 
 def publish():
     version = bc.get_version()
-    print(f"Publishing version {color.BOLD}{color.CYAN}{version}{color.END}")
+    print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
     title = f"Release {version}"
 
@@ -169,7 +174,7 @@ def publish():
         title,
         "--notes",
         "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
-        "../AppImage/SysD-Manager-x86_64.AppImage",
+        f"../AppImage/{app_image_file_name(version)}",
     ]
 
     print(cmd)
