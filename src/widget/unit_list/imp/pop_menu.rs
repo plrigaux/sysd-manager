@@ -1,97 +1,396 @@
-use std::{cell::RefCell, rc::Rc};
+use log::{debug, warn};
 
-use gettextrs::pgettext;
-use log::{debug, info, warn};
+use crate::{gtk::subclass::prelude::*, widget::unit_list::UnitListPanel};
+use gtk::prelude::*;
 
-use gtk::{gdk::Rectangle, prelude::*};
+glib::wrapper! {
+    pub struct UnitPopMenu(ObjectSubclass<imp::UnitPopMenuImp>)
+        @extends gtk::Popover,  gtk::Widget,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable, gtk::Native,gtk::ShortcutManager;
+}
 
-use crate::{
-    consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
-    format2,
-    systemd::{data::UnitInfo, enums::EnablementStatus},
-    utils::palette::blue,
-    widget::{InterPanelMessage, unit_list::UnitListPanel},
-};
+impl UnitPopMenu {
+    pub fn new(
+        units_browser: &gtk::ColumnView,
+        unit_list_panel: &UnitListPanel,
+        filtered_list: &gtk::FilterListModel,
+    ) -> Self {
+        let obj: UnitPopMenu = glib::Object::new();
+        obj.imp()
+            .set_gesture(units_browser, unit_list_panel, filtered_list);
+        obj
+    }
 
-pub fn setup_popup_menu(
-    units_browser: &gtk::ColumnView,
-    filtered_list: &gtk::FilterListModel,
-    unit_list_panel: &UnitListPanel,
-) {
-    let gesture = gtk::GestureClick::builder()
-        .button(gtk::gdk::BUTTON_SECONDARY)
-        .build();
-    {
-        let units_browser_clone: gtk::ColumnView = units_browser.clone();
-        let filtered_list: gtk::FilterListModel = filtered_list.clone();
-        let unit_list_panel = unit_list_panel.clone();
-        gesture.connect_pressed(move |_gesture_click, n_press, x, y| {
-            debug!("Pressed n_press: {n_press} x: {x} y: {y}");
+    fn refresh_buttons_style(&self) {
+        self.imp().refresh_buttons_style();
+    }
+}
 
-            let Some(adjustement_offset) = units_browser_clone
-                .vadjustment()
-                .map(|adjustment| adjustment.value())
-            else {
-                warn!("Failed to retreive the adjusment heigth");
+mod imp {
+    use std::{
+        cell::{OnceCell, RefCell},
+        rc::Rc,
+    };
+
+    use gettextrs::pgettext;
+    use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};
+    use log::{debug, info, warn};
+
+    use crate::{
+        consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
+        format2,
+        systemd::{data::UnitInfo, enums::EnablementStatus},
+        upgrade,
+        utils::palette::blue,
+        widget::{InterPanelMessage, unit_list::UnitListPanel},
+    };
+
+    macro_rules! unit {
+        ($self:expr) => {{
+            let borrow = $self.unit.borrow();
+            let Some(unit) = borrow.as_ref() else {
+                warn!("Pop menu has no unit");
+                return;
+            };
+            unit.clone()
+        }};
+    }
+
+    macro_rules! unit_list_panel {
+        ($self:expr) => {{
+            let Some(unit_list_panel) = $self.unit_list_panel.get() else {
+                warn!("Pop menu has Unit_list_panel");
+                return;
+            };
+            unit_list_panel
+        }};
+    }
+
+    #[derive(Default, gtk::CompositeTemplate)]
+    #[template(resource = "/io/github/plrigaux/sysd-manager/unit_pop_menu.ui")]
+    pub struct UnitPopMenuImp {
+        #[template_child]
+        unit_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        start_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        stop_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        restart_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        enable_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        disable_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        relaod_button: TemplateChild<gtk::Button>,
+
+        pub(super) units_browser: OnceCell<gtk::ColumnView>,
+        pub(super) unit_list_panel: OnceCell<UnitListPanel>,
+        unit: RefCell<Option<UnitInfo>>,
+    }
+
+    #[gtk::template_callbacks]
+    impl UnitPopMenuImp {
+        #[template_callback]
+        fn start_button_clicked(&self, button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::StartUnit(
+                button,
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        #[template_callback]
+        fn stop_button_clicked(&self, button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::StopUnit(
+                button,
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        #[template_callback]
+        fn restart_button_clicked(&self, button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::ReStartUnit(
+                button,
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        #[template_callback]
+        fn enable_button_clicked(&self, _button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::EnableUnit(
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        #[template_callback]
+        fn disable_button_clicked(&self, _button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::DisableUnit(
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        #[template_callback]
+        fn reload_button_clicked(&self, button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::ReloadUnit(
+                button,
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        fn set_unit(&self, unit: Option<&UnitInfo>) {
+            if let Some(unit) = unit {
+                self.unit.replace(Some(unit.clone()));
+
+                let primary_name = unit.primary();
+                self.unit_label.set_label(&primary_name);
+                self.unit_label.set_tooltip_text(Some(&primary_name));
+
+                let is_dark = self.unit_list_panel.get().expect("Sould Be Set").is_dark();
+                let blue = blue(is_dark).get_color();
+
+                self.set_tooltip(
+                    &self.start_button,
+                    blue,
+                    &primary_name,
+                    &pgettext("controls", "Start unit {}"),
+                );
+
+                self.set_tooltip(
+                    &self.stop_button,
+                    blue,
+                    &primary_name,
+                    &pgettext("controls", "Stop unit {}"),
+                );
+
+                self.set_tooltip(
+                    &self.restart_button,
+                    blue,
+                    &primary_name,
+                    &pgettext("controls", "Restart unit {}"),
+                );
+
+                self.set_tooltip(
+                    &self.enable_button,
+                    blue,
+                    &primary_name,
+                    &pgettext("controls", "Enable unit {}"),
+                );
+
+                self.set_tooltip(
+                    &self.disable_button,
+                    blue,
+                    &primary_name,
+                    &pgettext("controls", "Disable unit {}"),
+                );
+
+                self.set_tooltip(
+                    &self.relaod_button,
+                    blue,
+                    &primary_name,
+                    &pgettext("controls", "Reload unit {}"),
+                );
+
+                self.set_buttons_style(unit);
+            } else {
+                self.unit.replace(None);
+            }
+        }
+
+        fn set_tooltip(&self, button: &gtk::Button, blue: &str, unit_primary: &str, tooltip: &str) {
+            let unit_str = format!(
+                "<span fgcolor='{}' font_family='monospace' size='larger' weight='bold'>{}</span>",
+                blue, unit_primary
+            );
+
+            let tooltip = format2!(tooltip, unit_str);
+
+            button.set_tooltip_markup(Some(&tooltip));
+        }
+
+        pub(super) fn set_gesture(
+            &self,
+            units_browser: &gtk::ColumnView,
+            unit_list_panel: &UnitListPanel,
+            filtered_list: &gtk::FilterListModel,
+        ) {
+            self.obj().set_parent(units_browser);
+
+            let _ = self.units_browser.set(units_browser.clone());
+            let _ = self.unit_list_panel.set(unit_list_panel.clone());
+
+            let gesture = gtk::GestureClick::builder()
+                .button(gtk::gdk::BUTTON_SECONDARY)
+                .build();
+
+            let units_browser_wr = units_browser.downgrade();
+            let filtered_list = filtered_list.downgrade();
+
+            let pop_up = self.obj().downgrade();
+
+            gesture.connect_pressed(move |_gesture_click, n_press, x, y| {
+                debug!("Pressed n_press: {n_press} x: {x} y: {y}");
+
+                let units_browser = upgrade!(units_browser_wr);
+                let filtered_list = upgrade!(filtered_list);
+
+                let pop_up = upgrade!(pop_up);
+
+                let Some(adjustement_offset) = units_browser
+                    .vadjustment()
+                    .map(|adjustment| adjustment.value())
+                else {
+                    warn!("Failed to retreive the adjusment heigth");
+                    return;
+                };
+
+                let adjusted_y = (adjustement_offset + y) as i32;
+
+                let mut child_op = units_browser.first_child();
+
+                let mut header_height = 0;
+
+                let mut line_id = -2;
+                while let Some(ref child) = child_op {
+                    let child_name = child.type_().name();
+                    if child_name == "GtkColumnViewRowWidget" {
+                        header_height = child.height();
+                    } else if child_name == "GtkColumnListView" {
+                        line_id = super::retreive_row_id(child, adjusted_y, header_height);
+                        break;
+                    }
+
+                    child_op = child.next_sibling();
+                }
+
+                debug!("Line id {line_id} list count {}", filtered_list.n_items());
+
+                if line_id < 0 {
+                    warn!("Some wrongs line_no {line_id}");
+                    return;
+                }
+
+                let line_id = line_id as u32;
+                if let Some(object) = filtered_list.item(line_id) {
+                    let unit = object.downcast_ref::<UnitInfo>().expect("Ok");
+                    info!(
+                        "Pointing on Unit {} state {}",
+                        unit.primary(),
+                        unit.active_state()
+                    );
+                    pop_up.imp().set_unit(Some(unit));
+                    pop_up.set_pointing_to(Some(&gdk::Rectangle::new(x as i32, y as i32, 1, 1)));
+                    pop_up.popup();
+                } else if line_id >= filtered_list.n_items() {
+                    warn!(
+                        "Line id: {line_id} is over or equals the number of lines {}",
+                        filtered_list.n_items()
+                    );
+                } else {
+                    warn!("Menu right click. Something wrong");
+                }
+            });
+            gesture.connect_released(|_g, n_press, x, y| {
+                debug!("Released n_press: {n_press} x: {x} y: {y}")
+            });
+
+            units_browser.add_controller(gesture);
+        }
+
+        pub(super) fn refresh_buttons_style(&self) {
+            let Some(ref unit) = *self.unit.borrow() else {
+                warn!("Pop menu has no unit");
                 return;
             };
 
-            let adjusted_y = (adjustement_offset + y) as i32;
+            self.set_buttons_style(unit);
+        }
 
-            let mut child_op = units_browser_clone.first_child();
-
-            let mut header_height = 0;
-
-            let mut line_id = -2;
-            while let Some(ref child) = child_op {
-                let child_name = child.type_().name();
-                if child_name == "GtkColumnViewRowWidget" {
-                    header_height = child.height();
-                } else if child_name == "GtkColumnListView" {
-                    line_id = retreive_row_id(child, adjusted_y, header_height);
-                    break;
-                }
-
-                child_op = child.next_sibling();
-            }
-
-            debug!("Line id {line_id} list count {}", filtered_list.n_items());
-
-            if line_id < 0 {
-                warn!("Some wrongs line_no {line_id}");
-                return;
-            }
-
-            let line_id = line_id as u32;
-            if let Some(object) = filtered_list.item(line_id) {
-                let unit = object.downcast_ref::<UnitInfo>().expect("Ok");
-                info!(
-                    "Pointing on Unit {} state {}",
-                    unit.primary(),
-                    unit.active_state()
-                );
-                menu_show(
-                    &units_browser_clone,
-                    unit,
-                    x as i32,
-                    y as i32,
-                    &unit_list_panel,
-                );
-            } else if line_id >= filtered_list.n_items() {
-                warn!(
-                    "Line id: {line_id} is over or equals the number of lines {}",
-                    filtered_list.n_items()
-                );
+        fn set_buttons_style(&self, unit: &UnitInfo) {
+            if unit.active_state().is_inactive() {
+                self.start_button.remove_css_class(FLAT);
+                self.start_button.add_css_class(SUGGESTED_ACTION);
+                self.stop_button.remove_css_class(DESTRUCTIVE_ACTION);
             } else {
-                warn!("Menu right click. Something wrong");
+                self.start_button.add_css_class(FLAT);
+                self.start_button.remove_css_class(SUGGESTED_ACTION);
+                self.stop_button.add_css_class(DESTRUCTIVE_ACTION);
             }
-        });
+
+            if matches!(
+                unit.enable_status(),
+                EnablementStatus::Disabled | EnablementStatus::Masked
+            ) {
+                self.enable_button.set_sensitive(true);
+                self.disable_button.set_sensitive(false);
+            } else {
+                self.enable_button.set_sensitive(false);
+                self.disable_button.set_sensitive(true);
+            }
+        }
     }
 
-    gesture
-        .connect_released(|_g, n_press, x, y| debug!("Released n_press: {n_press} x: {x} y: {y}"));
+    #[glib::object_subclass]
+    impl ObjectSubclass for UnitPopMenuImp {
+        const NAME: &'static str = "UnitPopMenu";
+        type Type = super::UnitPopMenu;
+        type ParentType = gtk::Popover;
 
-    units_browser.add_controller(gesture);
+        fn class_init(klass: &mut Self::Class) {
+            // The layout manager determines how child widgets are laid out.
+            klass.bind_template();
+            klass.bind_template_callbacks();
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for UnitPopMenuImp {
+        fn constructed(&self) {
+            self.parent_constructed();
+        }
+    }
+
+    impl WidgetImpl for UnitPopMenuImp {}
+    //impl ShortcutManagerImpl for UnitPopMenuImp {}
+    impl PopoverImpl for UnitPopMenuImp {}
 }
 
 /// This works, because, we assume that each line have same height
@@ -123,299 +422,6 @@ fn retreive_row_id(widget: &gtk::Widget, y: i32, header_height: i32) -> i32 {
         warn!("Not a valid row height {row_height}");
         -1
     }
-}
-
-#[derive(Copy, Clone, Debug)]
-enum MenuAction {
-    Start,
-    Stop,
-    Restart,
-    Enable,
-    Disable,
-    /*     Mask,
-    UnMask, */
-}
-
-fn menu_show(
-    units_browser: &gtk::ColumnView,
-    unit: &UnitInfo,
-    x: i32,
-    y: i32,
-    unit_list_panel: &UnitListPanel,
-) {
-    let pop_menu = gtk::Popover::builder()
-        .pointing_to(&Rectangle::new(x, y, 1, 1))
-        .autohide(true)
-        .position(gtk::PositionType::Right)
-        .build();
-
-    pop_menu.set_parent(units_browser);
-
-    let box_ = gtk::Box::builder()
-        .orientation(gtk::Orientation::Vertical)
-        .spacing(0)
-        .build();
-
-    pop_menu.set_child(Some(&box_));
-
-    box_.append(
-        &gtk::Label::builder()
-            .label(unit.primary())
-            .tooltip_text(unit.primary())
-            .max_width_chars(20)
-            .ellipsize(pango::EllipsizeMode::End)
-            .css_classes(["heading"])
-            .build(),
-    );
-    box_.append(
-        &gtk::Separator::builder()
-            .margin_bottom(3)
-            .margin_top(3)
-            .build(),
-    );
-
-    let all_buttons = Rc::new(RefCell::new(vec![]));
-    let tooltip = pgettext("controls", "Start unit {}");
-
-    create_menu_button(
-        &box_,
-        //Button label
-        &pgettext("controls", "Start"),
-        &tooltip,
-        "media-playback-start-symbolic",
-        unit,
-        MenuAction::Start,
-        unit_list_panel,
-        &all_buttons,
-    );
-
-    let tooltip = pgettext("controls", "Stop unit {}");
-    create_menu_button(
-        &box_,
-        //Button label
-        &pgettext("controls", "Stop"),
-        &tooltip,
-        "process-stop",
-        unit,
-        MenuAction::Stop,
-        unit_list_panel,
-        &all_buttons,
-    );
-
-    let tooltip = pgettext("controls", "Restart unit {}");
-
-    create_menu_button(
-        &box_,
-        //Button label
-        &pgettext("controls", "Restart"),
-        &tooltip,
-        "view-refresh",
-        unit,
-        MenuAction::Restart,
-        unit_list_panel,
-        &all_buttons,
-    );
-
-    box_.append(&gtk::Separator::new(gtk::Orientation::Vertical));
-
-    let tooltip = pgettext("controls", "Enable unit {}");
-    create_menu_button(
-        &box_,
-        //Button label
-        &pgettext("controls", "Enable"),
-        &tooltip,
-        "empty-icon",
-        unit,
-        MenuAction::Enable,
-        unit_list_panel,
-        &all_buttons,
-    );
-
-    let tooltip = pgettext("controls", "Disable unit {}");
-    create_menu_button(
-        &box_,
-        //Button label
-        &pgettext("controls", "Disable"),
-        &tooltip,
-        "empty-icon",
-        unit,
-        MenuAction::Disable,
-        unit_list_panel,
-        &all_buttons,
-    );
-
-    box_.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
-    /*
-       create_menu_button(
-           &box_,
-           //Button label
-           &pgettext("controls", "Mask"),
-           &tooltip,
-           "venetian-mask-symbolic",
-           unit,
-           MenuAction::Mask,
-           unit_list_panel,
-           &all_buttons,
-       );
-
-       create_menu_button(
-           &box_,
-           //Button label
-           &pgettext("controls", "UnMask"),
-           &tooltip,
-           "venetian-unmask-symbolic",
-           unit,
-           MenuAction::UnMask,
-           unit_list_panel,
-           &all_buttons,
-       );
-    */
-    pop_menu.popup();
-}
-
-fn create_menu_button(
-    box_: &gtk::Box,
-    label_name: &str,
-    tooltip: &str,
-    icon_name: &str,
-    unit: &UnitInfo,
-    action: MenuAction,
-    unit_list_panel: &UnitListPanel,
-    all_buttons: &Rc<RefCell<Vec<(MenuAction, gtk::Button)>>>,
-) {
-    let blue = blue(unit_list_panel.is_dark()).get_color();
-    let unit_str = format!(
-        "<span fgcolor='{}' font_family='monospace' size='larger' weight='bold'>{}</span>",
-        blue,
-        unit.primary()
-    );
-
-    let tooltip = format2!(tooltip, unit_str);
-
-    let button = gtk::Button::builder()
-        .child(
-            &adw::ButtonContent::builder()
-                .label(pgettext("controls", label_name))
-                .icon_name(icon_name)
-                .halign(gtk::Align::Start)
-                .build(),
-        )
-        .css_classes([FLAT])
-        .halign(gtk::Align::Fill)
-        .tooltip_markup(tooltip)
-        .build();
-
-    let unit_list_panel = unit_list_panel.clone();
-
-    set_button_style(unit, action, &button);
-    //println!("PUSH {action:?} {:?}", button.label());
-    all_buttons.borrow_mut().push((action, button.clone()));
-    let unit = unit.clone();
-    let all_buttons2 = all_buttons.clone();
-    button.connect_clicked(move |button| {
-        let inter_message = match action {
-            MenuAction::Start => {
-                let all_buttons = all_buttons2.clone();
-                let unit = unit.clone();
-                InterPanelMessage::StartUnit(
-                    button,
-                    &unit.clone(),
-                    Rc::new(Box::new(move || {
-                        set_all_button_style(&unit, &all_buttons.borrow())
-                    })),
-                )
-            }
-            MenuAction::Stop => {
-                let all_buttons = all_buttons2.clone();
-                let unit = unit.clone();
-                InterPanelMessage::StopUnit(
-                    button,
-                    &unit.clone(),
-                    Rc::new(Box::new(move || {
-                        set_all_button_style(&unit, &all_buttons.borrow())
-                    })),
-                )
-            }
-            MenuAction::Restart => {
-                let all_buttons = all_buttons2.clone();
-                let unit = unit.clone();
-                InterPanelMessage::ReStartUnit(
-                    button,
-                    &unit.clone(),
-                    Rc::new(Box::new(move || {
-                        set_all_button_style(&unit, &all_buttons.borrow())
-                    })),
-                )
-            }
-            MenuAction::Enable => {
-                let all_buttons = all_buttons2.clone();
-                let unit = unit.clone();
-                InterPanelMessage::EnableUnit(
-                    &unit.clone(),
-                    Rc::new(Box::new(move || {
-                        set_all_button_style(&unit, &all_buttons.borrow())
-                    })),
-                )
-            }
-            MenuAction::Disable => {
-                let all_buttons = all_buttons2.clone();
-                let unit = unit.clone();
-                InterPanelMessage::DisableUnit(
-                    &unit.clone(),
-                    Rc::new(Box::new(move || {
-                        set_all_button_style(&unit, &all_buttons.borrow())
-                    })),
-                )
-            }
-        };
-        unit_list_panel.button_action(&inter_message);
-    });
-    box_.append(&button);
-}
-
-fn set_all_button_style(unit: &UnitInfo, all_buttons: &Vec<(MenuAction, gtk::Button)>) {
-    for (action, but) in all_buttons {
-        set_button_style(unit, *action, but);
-    }
-}
-
-fn set_button_style(unit: &UnitInfo, action: MenuAction, button: &gtk::Button) {
-    match action {
-        MenuAction::Start => {
-            if unit.active_state().is_inactive() {
-                button.remove_css_class(FLAT);
-                button.add_css_class(SUGGESTED_ACTION);
-            } else {
-                button.add_css_class(FLAT);
-                button.remove_css_class(SUGGESTED_ACTION);
-            }
-        }
-        MenuAction::Stop => {
-            if !unit.active_state().is_inactive() {
-                button.add_css_class(DESTRUCTIVE_ACTION);
-            } else {
-                button.remove_css_class(DESTRUCTIVE_ACTION);
-            }
-        }
-
-        MenuAction::Enable => {
-            let m = !matches!(
-                unit.enable_status(),
-                EnablementStatus::Enabled | EnablementStatus::Masked
-            );
-
-            button.set_sensitive(m);
-        }
-        MenuAction::Disable => {
-            let m = !matches!(
-                unit.enable_status(),
-                EnablementStatus::Disabled | EnablementStatus::Masked
-            );
-
-            button.set_sensitive(m);
-        }
-        _ => {}
-    };
 }
 
 #[cfg(test)]

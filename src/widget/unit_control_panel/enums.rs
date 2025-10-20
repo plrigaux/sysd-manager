@@ -5,6 +5,7 @@ pub enum UnitContolType {
     Start,
     Stop,
     Restart,
+    Reload,
 }
 
 impl UnitContolType {
@@ -13,6 +14,7 @@ impl UnitContolType {
             UnitContolType::Start => "start",
             UnitContolType::Stop => "stop",
             UnitContolType::Restart => "restart",
+            UnitContolType::Reload => "reload",
         }
     }
     pub fn label(&self) -> String {
@@ -23,6 +25,7 @@ impl UnitContolType {
             UnitContolType::Stop => pgettext("toast", "stop"),
             //unit action in toast message
             UnitContolType::Restart => pgettext("toast", "restart"),
+            UnitContolType::Reload => pgettext("toast", "reload"),
         }
     }
 
@@ -34,6 +37,8 @@ impl UnitContolType {
             UnitContolType::Stop => pgettext("toast", "stopped"),
             //unit action in toast message
             UnitContolType::Restart => pgettext("toast", "restarted"),
+            //unit action in toast message
+            UnitContolType::Reload => pgettext("toast", "reloaded"),
         }
     }
 }

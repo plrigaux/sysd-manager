@@ -559,9 +559,10 @@ fn send_disenable_message<T, U>(
     handler: impl Fn(&str, &Message) -> Result<U, SystemdErrors>,
 ) -> Result<U, SystemdErrors>
 where
-    T: serde::ser::Serialize + DynamicType,
+    T: serde::ser::Serialize + DynamicType + std::fmt::Debug,
     U: std::fmt::Debug,
 {
+    info!("Try to {method}, message body: {:?}", body);
     let message = Message::method_call(PATH_SYSTEMD, method)?
         .with_flags(Flags::AllowInteractiveAuth)?
         .destination(DESTINATION_SYSTEMD)?
@@ -767,13 +768,13 @@ pub(super) fn reload_unit(
     level: UnitDBusLevel,
     unit_name: &str,
     mode: &str,
-) -> Result<(), SystemdErrors> {
-    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Reload Unit SUCCESS");
-        Ok(())
-    };
-
-    send_disenable_message(level, METHOD_RELOAD_UNIT, &(unit_name, mode), handler)
+) -> Result<String, SystemdErrors> {
+    send_disenable_message(
+        level,
+        METHOD_RELOAD_UNIT,
+        &(unit_name, mode),
+        handle_start_stop_answer,
+    )
 }
 
 pub(super) fn queue_signal_unit(

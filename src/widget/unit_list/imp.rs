@@ -1269,10 +1269,10 @@ impl ObjectImpl for UnitListPanelImp {
             .borrow()
             .connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
 
-        pop_menu::setup_popup_menu(
+        pop_menu::UnitPopMenu::new(
             &self.units_browser.borrow(),
-            &self.filter_list_model.borrow(),
             &self.obj(),
+            &self.filter_list_model.borrow(),
         );
 
         //TODO Code to be removed when migration to Toml will finish

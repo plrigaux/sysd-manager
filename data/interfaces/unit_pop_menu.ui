@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.96.1 -->
+<interface>
+  <!-- interface-name unit_pop_menu.ui -->
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.4"/>
+  <template class="UnitPopMenu" parent="GtkPopover">
+    <property name="child">
+      <object class="GtkBox">
+        <property name="margin-bottom">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-start">5</property>
+        <property name="margin-top">5</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkLabel" id="unit_label">
+            <property name="css-classes">heading</property>
+            <property name="ellipsize">end</property>
+            <property name="max-width-chars">18</property>
+            <property name="xalign">0.0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator"/>
+        </child>
+        <child>
+          <object class="GtkButton" id="start_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="start_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">processes-symbolic</property>
+                <property name="label">Start</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="stop_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="stop_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">process-stop-symbolic</property>
+                <property name="label">Stop</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="restart_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="restart_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="label">Resart</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator"/>
+        </child>
+        <child>
+          <object class="GtkButton" id="enable_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="enable_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">empty-icon</property>
+                <property name="label">Enable</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="disable_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="disable_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">empty-icon</property>
+                <property name="label">Disable</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator"/>
+        </child>
+        <child>
+          <object class="GtkButton" id="relaod_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="reload_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">arrow-circular-top-left-symbolic</property>
+                <property name="label" translatable="yes">Reload</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+    <property name="position">right</property>
+  </template>
+</interface>

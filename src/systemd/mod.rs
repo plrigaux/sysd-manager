@@ -615,7 +615,7 @@ pub fn reload_unit(
     level: UnitDBusLevel,
     primary_name: &str,
     mode: StartStopMode,
-) -> Result<(), SystemdErrors> {
+) -> Result<String, SystemdErrors> {
     sysdbus::reload_unit(level, primary_name, mode.as_str())
 }
 

@@ -440,7 +440,7 @@ impl UnitControlPanelImpl {
 
             InterPanelMessage::StartUnit(button, unit, call_back) => {
                 self.start_restart_action(
-                    *button,
+                    button,
                     systemd::start_unit,
                     UnitContolType::Start,
                     Some(unit),
@@ -449,7 +449,7 @@ impl UnitControlPanelImpl {
             }
             InterPanelMessage::StopUnit(button, unit, call_back) => {
                 self.start_restart_action(
-                    *button,
+                    button,
                     systemd::stop_unit,
                     UnitContolType::Stop,
                     Some(unit),
@@ -458,7 +458,7 @@ impl UnitControlPanelImpl {
             }
             InterPanelMessage::ReStartUnit(button, unit, call_back) => {
                 self.start_restart_action(
-                    *button,
+                    button,
                     systemd::restart_unit,
                     UnitContolType::Restart,
                     Some(unit),
@@ -482,6 +482,15 @@ impl UnitControlPanelImpl {
                     &self.ablement_switch,
                     &unit,
                     self.is_dark.get(),
+                    call_back.clone(),
+                );
+            }
+            InterPanelMessage::ReloadUnit(button, unit, call_back) => {
+                self.start_restart_action(
+                    button,
+                    systemd::reload_unit,
+                    UnitContolType::Reload,
+                    Some(unit),
                     call_back.clone(),
                 );
             }

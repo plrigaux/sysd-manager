@@ -91,10 +91,10 @@ impl SideControlPanelImpl {
         self.kill_or_queue_new_window(&self.queue_signal_window, KillPanel::new_signal_window);
     }
 
-    fn lambda_out(
+    fn lambda_out<T>(
         method_name: &str,
         unit: Option<&UnitInfo>,
-        result: Result<(), SystemdErrors>,
+        result: Result<T, SystemdErrors>,
         control_panel: &UnitControlPanel,
     ) {
         if let Err(error) = result
