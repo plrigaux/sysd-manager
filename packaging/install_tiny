@@ -82,6 +82,7 @@ User={SERVICE_USER}
 Group={SERVICE_USER}
 WorkingDirectory={SERVICE_DIR}
 ExecStart= "{SERVICE_DIR}/{EXEC_FILE}" --port 33001
+ExecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=30
 LogsDirectory="{LOGS_DIR}"
 
