@@ -3,8 +3,9 @@
 <interface>
   <!-- interface-name unit_dependencies_panel.ui -->
   <requires lib="gtk" version="4.18"/>
-  <requires lib="libadwaita" version="1.6"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="UnitDependenciesPanel" parent="GtkBox">
+    <property name="hexpand">True</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox" id="controls_box">
@@ -30,6 +31,7 @@
     </child>
     <child>
       <object class="AdwViewStack" id="unit_dependencies_panel_stack">
+        <property name="vexpand">True</property>
         <child>
           <object class="AdwViewStackPage">
             <property name="child">
@@ -51,14 +53,23 @@
         <child>
           <object class="AdwViewStackPage">
             <property name="child">
-              <object class="GtkScrolledWindow">
-                <property name="child">
-                  <object class="GtkTextView" id="unit_dependencies_textview">
-                    <property name="editable">False</property>
-                    <property name="monospace">True</property>
-                    <property name="vexpand">True</property>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <property name="hexpand-set">True</property>
+                <property name="vexpand-set">True</property>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="child">
+                      <object class="GtkTextView" id="unit_dependencies_textview">
+                        <property name="editable">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="monospace">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="vexpand-set">True</property>
+                      </object>
+                    </property>
                   </object>
-                </property>
+                </child>
               </object>
             </property>
             <property name="name">dependencies</property>

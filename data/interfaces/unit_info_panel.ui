@@ -2,10 +2,12 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name unit_info_panel.ui -->
-  <requires lib="gtk" version="4.12"/>
-  <requires lib="libadwaita" version="1.4"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.7"/>
   <template class="UnitInfoPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
+    <property name="vexpand">True</property>
+    <property name="vexpand-set">True</property>
     <child>
       <object class="GtkBox">
         <property name="spacing">5</property>
@@ -38,10 +40,13 @@
     <child>
       <object class="GtkScrolledWindow">
         <property name="vexpand">True</property>
+        <property name="vexpand-set">True</property>
         <child>
           <object class="GtkTextView" id="unit_info_textview">
             <property name="editable">False</property>
             <property name="monospace">True</property>
+            <property name="vexpand">True</property>
+            <property name="vexpand-set">True</property>
             <property name="wrap-mode">word</property>
           </object>
         </child>
