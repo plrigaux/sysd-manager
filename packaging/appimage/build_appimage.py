@@ -133,7 +133,30 @@ def pack_libs():
         "libicudata",
         "libstdc++",
         # because essential on the disto
-        "libsystemd",
+        #"libsystemd",
+
+        #Blacklisted
+        "ld-linux-x86-64"
+        "libm",
+        "libresolv",
+        "libEGL",
+        "libGLdispatch",
+        "libGLX",
+        "libdrm",
+        "libgbm",
+        "libxcb",
+        "libX11",
+        "libX11-xcb",
+        "libwayland-client",
+        "libfontconfig",
+        "libfreetype",
+        "libharfbuzz",
+        "libcom_err",
+        "libexpat",
+        "libgcc_s",
+        "libz"
+        "libfribidi",
+        "libgmp"
     }
     for key, value in result.items():
 

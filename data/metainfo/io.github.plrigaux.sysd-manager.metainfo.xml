@@ -81,6 +81,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="2.5.0" date="2025-10-21">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Reload option in the unit popup menu</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Multiple scrolled windows behavior regarding the vertical height</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.4.0" date="2025-10-18">
       <description translate="no">
         <p>Added</p>
