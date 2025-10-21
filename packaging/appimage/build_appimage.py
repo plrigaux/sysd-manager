@@ -6,7 +6,7 @@ import argparse
 
 APP_IMAGE_DIR = "../AppImage"
 
-APP_DIR = f"{APP_IMAGE_DIR}/SysD-Manager.AppDir"
+APP_DIR = f"{APP_IMAGE_DIR}/SysDManager.AppDir"
 
 
 def build_cargo():
@@ -63,7 +63,17 @@ def create_appdir():
             "-Dm644",
             "./target/loc/io.github.plrigaux.sysd-manager.desktop",
             "-t",
-            APP_DIR,
+            f"{APP_DIR}/usr/share/applications",
+        ]
+    )
+    
+    bc.cmd_run(
+        [
+            "ln",
+            "-s",
+            "-v",
+            f"usr/share/applications/io.github.plrigaux.sysd-manager.desktop",
+            f"{APP_DIR}/io.github.plrigaux.sysd-manager.desktop",
         ]
     )
     bc.cmd_run(
@@ -71,8 +81,8 @@ def create_appdir():
             "install",
             "-Dm644",
             "./target/loc/io.github.plrigaux.sysd-manager.metainfo.xml",
-            "-t",
-            f"{APP_DIR}/usr/share/metainfo",
+            "-T",
+            f"{APP_DIR}/usr/share/metainfo/io.github.plrigaux.sysd-manager.appdata.xml",
         ]
     )
     bc.cmd_run(["cp", "-r", "./target/locale", f"{APP_DIR}/usr/share/"])
