@@ -7,6 +7,8 @@
   <template class="UnitControlPanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <property name="spacing">5</property>
+    <property name="vexpand">True</property>
+    <property name="vexpand-set">True</property>
     <child>
       <object class="GtkBox">
         <property name="margin-end">5</property>
@@ -182,6 +184,7 @@
         <property name="max-sidebar-width">180.0</property>
         <property name="min-sidebar-width">40.0</property>
         <property name="sidebar-position">end</property>
+        <property name="vexpand">True</property>
       </object>
     </child>
   </template>
