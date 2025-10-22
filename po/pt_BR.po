@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-18 10:45-0400\n"
-"PO-Revision-Date: 2025-10-17 03:09+0000\n"
+"PO-Revision-Date: 2025-10-23 04:02+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
-"manager/translation/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"sysd-manager/translation/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2020,17 +2020,17 @@ msgstr ""
 
 #: src/widget/unit_control_panel/controls.rs:126
 #: src/widget/unit_list/imp/pop_menu.rs:234
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
-msgstr "Desativar arquivo de unidade"
+msgstr "Desativar unidade {}"
 
 #: src/widget/unit_control_panel/controls.rs:128
 #: src/widget/unit_list/imp/pop_menu.rs:221
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
-msgstr "Habilitar arquivo de unidade"
+msgstr "Habilitar unidade {}"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:21
@@ -2291,14 +2291,12 @@ msgstr "Reiniciar unidade {}"
 
 #. Button label
 #: src/widget/unit_list/imp/pop_menu.rs:225
-#, fuzzy
 msgctxt "controls"
 msgid "Enable"
 msgstr "Habilitar"
 
 #. Button label
 #: src/widget/unit_list/imp/pop_menu.rs:238
-#, fuzzy
 msgctxt "controls"
 msgid "Disable"
 msgstr "Desabilitar"
