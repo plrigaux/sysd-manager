@@ -8,44 +8,46 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-18 10:45-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2025-10-23 04:02+0000\n"
+"Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
+"Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
+"projects/sysd-manager/translation/zh_Hans/>\n"
 "Language: zh_Hans\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
-msgstr ""
+msgstr "SysD 管理器"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
 msgid "Service manager"
-msgstr ""
+msgstr "服务经理"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
-msgstr ""
+msgstr "一个用户友好的应用程序，用于管理 systemd 单元"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr ""
+msgstr "Systemd；Systemctl；服务；日志；"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
 msgid ""
 "Manage your Services, Timers, Sockets and other units. You can enable, "
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
-msgstr ""
+msgstr "管理您的服务、定时器、套接字和其他单元。您可以启用、禁用、停止和启动它们。此"
+"外，您还可以查看它们的配置文件并查看它们的日志。"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
