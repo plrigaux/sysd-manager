@@ -222,15 +222,17 @@ def pack_libs():
     for key, value in result.items():
 
         lib_name = key.split(".", 1)[0]
-        # print(lib_name)
+        #print(lib_name)
         if lib_name in exclude:
-            print(f"{color.YELLOW}Excludes {lib_name}{color.END}")
+            print(f"{color.YELLOW}Excludes lib {lib_name}{color.END}")
         else:
-            bc.cmd_run(["install", "-Dm755", value, "-t", f"{APP_DIR}/usr/lib"])
+            bc.cmd_run(["install", "-Dm755", value, "-T", f"{APP_DIR}/usr/lib/{lib_name}.so"])
 
 
 def build():
-    print(f"color {color.RED}{color.BOLD}Creating an AppImage{color.END}")
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+    print(f"{color.GREEN}{color.BOLD}Creating an AppImage{color.END}")
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
 
     build_cargo()
 
