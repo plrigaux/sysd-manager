@@ -138,6 +138,11 @@ def pack_libs():
             result[m[1]] = m[2]
 
     # print(result)
+    
+#WARNING: Blacklisted file ld-linux-x86-64.so.2 found
+#WARNING: Blacklisted file libm.so.6 found
+#WARNING: Blacklisted file libz.so.1 found
+#WARNING: Blacklisted file libfribidi.so.0 found
     exclude = {
         "libc",
         "libicudata",
@@ -146,7 +151,8 @@ def pack_libs():
         #"libsystemd",
 
         #Blacklisted
-        "ld-linux-x86-64"
+        "ld-linux-x86-64",
+        "/lib64/ld-linux-x86-64",
         "libm",
         "libresolv",
         "libEGL",
@@ -164,9 +170,9 @@ def pack_libs():
         "libcom_err",
         "libexpat",
         "libgcc_s",
-        "libz"
+        "libz",
         "libfribidi",
-        "libgmp"
+        "libgmp",
     }
     for key, value in result.items():
 
