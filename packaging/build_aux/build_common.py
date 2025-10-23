@@ -53,6 +53,8 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True) -
             pprint.pp(err)
             print(f"{color.RED}Exit program{color.END}")
             exit(ret.returncode)
+        else:
+            print(f"{color.YELLOW}Continue program, but {err}{color.YELLOW}")    
 
     return ret.returncode
 

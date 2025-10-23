@@ -5,7 +5,6 @@ import subprocess
 import argparse
 
 APP_IMAGE_DIR = "../AppImage"
-
 APP_DIR = f"{APP_IMAGE_DIR}/SysDManager.AppDir"
 
 
@@ -20,7 +19,31 @@ def generating_translation_files():
 
     bc.cmd_run(["cargo", "run", "-p", "transtools", "--", "packfiles"])
 
-
+def linux_deploy():
+    print(f"{color.CYAN}{color.BOLD}Use Linux deploy{color.END} ")
+    
+    bc.cmd_run(["rm", "-fr", APP_IMAGE_DIR])
+    bc.cmd_run(["mkdir", "-p", APP_DIR])
+    
+    bc.cmd_run(
+        [
+            "linuxdeploy-x86_64.AppImage",
+            "-v",
+            "0",
+            "--appdir",
+            APP_DIR,
+            "--executable",
+            "target/release/sysd-manager",
+            #"--icon-filename",
+            #"./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            #"--desktop-file",
+            #"./target/loc/io.github.plrigaux.sysd-manager.desktop",
+        ], 
+        on_fail_exit = False
+    )
+    
+    #make_appimage()
+    
 def create_appdir():
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
 
@@ -28,7 +51,7 @@ def create_appdir():
     bc.cmd_run(["mkdir", "-p", APP_DIR])
     # bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/bin"])
 
-    bc.cmd_run(["cp", "target/release/sysd-manager", f"{APP_DIR}/bin"])
+    #bc.cmd_run(["cp", "target/release/sysd-manager", f"{APP_DIR}/bin"])
 
     bc.cmd_run(
         [
@@ -226,7 +249,7 @@ def pack_libs():
         if lib_name in exclude:
             print(f"{color.YELLOW}Excludes lib {lib_name}{color.END}")
         else:
-            bc.cmd_run(["install", "-Dm755", value, "-T", f"{APP_DIR}/usr/lib/{lib_name}.so"])
+            bc.cmd_run(["install", "-Dm755", value, "-t", f"{APP_DIR}/usr/lib"])
 
 
 def build():
@@ -237,12 +260,14 @@ def build():
     build_cargo()
 
     generating_translation_files()
+    
+    #linux_deploy()
 
     create_appdir()
 
     pack_libs()
+    
 
-    make_appimage()
 
 
 def publish():
@@ -280,6 +305,9 @@ def main():
         choices=[
             "build",
             "publish",
+            "linux",
+            "structure",
+            "pack"
         ],
         help="action to perform",
     )
@@ -292,10 +320,18 @@ def main():
     print(f"{color.BLUE}{color.BOLD}current working dir:{color.END} ", curdir)
 
     match args.action:
+        case "structure":
+            build()           
         case "build":
             build()
+            make_appimage()
         case "publish":
             build()
+            make_appimage()
             publish()
         case "publish_only":
             publish()
+        case "linux":
+            linux_deploy()
+        case "pack":
+            make_appimage()
