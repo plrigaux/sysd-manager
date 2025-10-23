@@ -39,15 +39,59 @@ def create_appdir():
             f"{APP_DIR}/usr/bin",
         ]
     )
+    
     bc.cmd_run(
         [
             "install",
             "-Dm644",
             "./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
             "-t",
-            APP_DIR,
+            f"{APP_DIR}/usr/share/icons/hicolor/scalable/apps/",
         ]
     )
+    
+    PNG_DIR= f"{APP_DIR}/usr/share/icons/hicolor/256x256/apps"
+     
+    bc.cmd_run(
+        [
+            "ln",
+            "-s",
+            "-v",
+            f"./usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            f"{APP_DIR}/io.github.plrigaux.sysd-manager.svg",
+        ]
+    )
+
+    bc.cmd_run(
+        [
+            "mkdir",
+            "-p",        
+            PNG_DIR,
+        ]
+    )
+    
+
+            
+    bc.cmd_run(
+        [
+            "convert",
+            "-resize",
+            "256x256",
+            "./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            f"{PNG_DIR}/io.github.plrigaux.sysd-manager.png",
+        ]
+    )
+    
+    bc.cmd_run(
+        [
+            "ln",
+            "-s",
+            "-v",
+            f"./usr/share/icons/hicolor/256x256/apps/io.github.plrigaux.sysd-manager.png",
+            f"{APP_DIR}/.DirIcon",
+        ]
+    )
+
     bc.cmd_run(
         [
             "install",
@@ -57,6 +101,7 @@ def create_appdir():
             f"{APP_DIR}/usr/share/glib-2.0/schemas",
         ]
     )
+    
     bc.cmd_run(
         [
             "install",
@@ -181,7 +226,7 @@ def pack_libs():
         if lib_name in exclude:
             print(f"{color.YELLOW}Excludes {lib_name}{color.END}")
         else:
-            bc.cmd_run(["install", "-Dm644", value, "-t", f"{APP_DIR}/usr/lib"])
+            bc.cmd_run(["install", "-Dm755", value, "-t", f"{APP_DIR}/usr/lib"])
 
 
 def build():
