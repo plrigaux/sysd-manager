@@ -19,12 +19,13 @@ def generating_translation_files():
 
     bc.cmd_run(["cargo", "run", "-p", "transtools", "--", "packfiles"])
 
+
 def linux_deploy():
     print(f"{color.CYAN}{color.BOLD}Use Linux deploy{color.END} ")
-    
+
     bc.cmd_run(["rm", "-fr", APP_IMAGE_DIR])
     bc.cmd_run(["mkdir", "-p", APP_DIR])
-    
+
     bc.cmd_run(
         [
             "linuxdeploy-x86_64.AppImage",
@@ -34,16 +35,17 @@ def linux_deploy():
             APP_DIR,
             "--executable",
             "target/release/sysd-manager",
-            #"--icon-filename",
-            #"./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
-            #"--desktop-file",
-            #"./target/loc/io.github.plrigaux.sysd-manager.desktop",
-        ], 
-        on_fail_exit = False
+            # "--icon-filename",
+            # "./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            # "--desktop-file",
+            # "./target/loc/io.github.plrigaux.sysd-manager.desktop",
+        ],
+        on_fail_exit=False,
     )
-    
-    #make_appimage()
-    
+
+    # make_appimage()
+
+
 def create_appdir():
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
 
@@ -51,7 +53,7 @@ def create_appdir():
     bc.cmd_run(["mkdir", "-p", APP_DIR])
     # bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/bin"])
 
-    #bc.cmd_run(["cp", "target/release/sysd-manager", f"{APP_DIR}/bin"])
+    # bc.cmd_run(["cp", "target/release/sysd-manager", f"{APP_DIR}/bin"])
 
     bc.cmd_run(
         [
@@ -62,7 +64,19 @@ def create_appdir():
             f"{APP_DIR}/usr/bin",
         ]
     )
+
+    bc.cmd_run(
+        [
+            "install",
+            "-Dm755",
+            "./packaging/appimage/start",
+            "-t",
+            f"{APP_DIR}/usr/bin",
+        ]
+    )
     
+    bc.cmd_run(["ln", "-s", "./usr/bin/start", f"{APP_DIR}/AppRun"])
+
     bc.cmd_run(
         [
             "install",
@@ -72,9 +86,9 @@ def create_appdir():
             f"{APP_DIR}/usr/share/icons/hicolor/scalable/apps/",
         ]
     )
-    
-    PNG_DIR= f"{APP_DIR}/usr/share/icons/hicolor/256x256/apps"
-     
+
+    PNG_DIR = f"{APP_DIR}/usr/share/icons/hicolor/256x256/apps"
+
     bc.cmd_run(
         [
             "ln",
@@ -88,13 +102,11 @@ def create_appdir():
     bc.cmd_run(
         [
             "mkdir",
-            "-p",        
+            "-p",
             PNG_DIR,
         ]
     )
-    
 
-            
     bc.cmd_run(
         [
             "convert",
@@ -104,7 +116,7 @@ def create_appdir():
             f"{PNG_DIR}/io.github.plrigaux.sysd-manager.png",
         ]
     )
-    
+
     bc.cmd_run(
         [
             "ln",
@@ -124,7 +136,7 @@ def create_appdir():
             f"{APP_DIR}/usr/share/glib-2.0/schemas",
         ]
     )
-    
+
     bc.cmd_run(
         [
             "install",
@@ -134,7 +146,7 @@ def create_appdir():
             f"{APP_DIR}/usr/share/applications",
         ]
     )
-    
+
     bc.cmd_run(
         [
             "ln",
@@ -158,7 +170,7 @@ def create_appdir():
     print(f"{color.CYAN}{color.BOLD}Compile schemas{color.END} ")
     bc.cmd_run(["glib-compile-schemas", f"{APP_DIR}/usr/share/glib-2.0/schemas"])
 
-    bc.cmd_run(["ln", "-s", "./usr/bin/sysd-manager", f"{APP_DIR}/AppRun"])
+
 
 def app_image_file_name(version=None) -> str:
     if version is None:
@@ -166,14 +178,22 @@ def app_image_file_name(version=None) -> str:
     file_name = f"SysDManager-{version}-x86_64.AppImage"
     return file_name
 
+
 def make_appimage():
-    os.environ["ARCH"] = "x86_64"
+
+    version = bc.get_version()
+
+    my_env = os.environ.copy()
+    my_env["ARCH"] = "x86_64"
+    my_env["VERSION"] = version
+
     bc.cmd_run(
         [
             "appimagetool-x86_64.AppImage",
             APP_DIR,
-            f"{APP_IMAGE_DIR}/{app_image_file_name()}",
-        ]
+            f"{APP_IMAGE_DIR}/{app_image_file_name(version)}",
+        ],
+        env=my_env,
     )
 
 
@@ -206,19 +226,18 @@ def pack_libs():
             result[m[1]] = m[2]
 
     # print(result)
-    
-#WARNING: Blacklisted file ld-linux-x86-64.so.2 found
-#WARNING: Blacklisted file libm.so.6 found
-#WARNING: Blacklisted file libz.so.1 found
-#WARNING: Blacklisted file libfribidi.so.0 found
+
+    # WARNING: Blacklisted file ld-linux-x86-64.so.2 found
+    # WARNING: Blacklisted file libm.so.6 found
+    # WARNING: Blacklisted file libz.so.1 found
+    # WARNING: Blacklisted file libfribidi.so.0 found
     exclude = {
         "libc",
         "libicudata",
         "libstdc++",
         # because essential on the disto
-        #"libsystemd",
-
-        #Blacklisted
+        # "libsystemd",
+        # Blacklisted
         "ld-linux-x86-64",
         "/lib64/ld-linux-x86-64",
         "libm",
@@ -242,10 +261,11 @@ def pack_libs():
         "libfribidi",
         "libgmp",
     }
+
     for key, value in result.items():
 
         lib_name = key.split(".", 1)[0]
-        #print(lib_name)
+        # print(lib_name)
         if lib_name in exclude:
             print(f"{color.YELLOW}Excludes lib {lib_name}{color.END}")
         else:
@@ -260,14 +280,12 @@ def build():
     build_cargo()
 
     generating_translation_files()
-    
-    #linux_deploy()
+
+    # linux_deploy()
 
     create_appdir()
 
     pack_libs()
-    
-
 
 
 def publish():
@@ -302,13 +320,7 @@ def main():
 
     parser.add_argument(
         "action",
-        choices=[
-            "build",
-            "publish",
-            "linux",
-            "structure",
-            "pack"
-        ],
+        choices=["build", "publish", "linux", "structure", "pack"],
         help="action to perform",
     )
 
@@ -321,7 +333,7 @@ def main():
 
     match args.action:
         case "structure":
-            build()           
+            build()
         case "build":
             build()
             make_appimage()

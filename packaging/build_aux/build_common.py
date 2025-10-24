@@ -19,7 +19,7 @@ class color:
     END = "\033[0m"
 
 
-def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True) -> int:
+def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, env=None) -> int:
 
     if cwd:
         print(f"{color.GREEN}Change Working Dir to: {cwd}{color.END}")
@@ -40,7 +40,7 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True) -
     else:
         cmd1 = cmd
 
-    ret = subprocess.run(cmd1, shell=shell, cwd=cwd)
+    ret = subprocess.run(cmd1, shell=shell, cwd=cwd, env=env)
 
     try:
         ret.check_returncode()
