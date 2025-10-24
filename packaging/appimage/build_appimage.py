@@ -87,7 +87,9 @@ def create_appdir():
         ]
     )
 
-    PNG_DIR = f"{APP_DIR}/usr/share/icons/hicolor/256x256/apps"
+    PNG_256_DIR = f"{APP_DIR}/usr/share/icons/hicolor/256x256/apps"
+    PNG_128_DIR = f"{APP_DIR}/usr/share/icons/hicolor/128x128/apps"
+    PNG_64_DIR = f"{APP_DIR}/usr/share/icons/hicolor/64x64/apps"
 
     bc.cmd_run(
         [
@@ -103,7 +105,7 @@ def create_appdir():
         [
             "mkdir",
             "-p",
-            PNG_DIR,
+            PNG_256_DIR,
         ]
     )
 
@@ -113,7 +115,43 @@ def create_appdir():
             "-resize",
             "256x256",
             "./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
-            f"{PNG_DIR}/io.github.plrigaux.sysd-manager.png",
+            f"{PNG_256_DIR}/io.github.plrigaux.sysd-manager.png",
+        ]
+    )
+    
+    bc.cmd_run(
+        [
+            "mkdir",
+            "-p",
+            PNG_128_DIR,
+        ]
+    )
+
+    bc.cmd_run(
+        [
+            "convert",
+            "-resize",
+            "128x128",
+            "./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            f"{PNG_128_DIR}/io.github.plrigaux.sysd-manager.png",
+        ]
+    )
+    
+    bc.cmd_run(
+        [
+            "mkdir",
+            "-p",
+            PNG_64_DIR,
+        ]
+    )
+
+    bc.cmd_run(
+        [
+            "convert",
+            "-resize",
+            "64x64",
+            "./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            f"{PNG_64_DIR}/io.github.plrigaux.sysd-manager.png",
         ]
     )
 
@@ -232,15 +270,15 @@ def pack_libs():
     # WARNING: Blacklisted file libz.so.1 found
     # WARNING: Blacklisted file libfribidi.so.0 found
     exclude = {
-        "libc",
-        "libicudata",
-        "libstdc++",
+        #"libc",
+        #"libicudata",
+        #"libstdc++",
         # because essential on the disto
         # "libsystemd",
         # Blacklisted
         "ld-linux-x86-64",
         "/lib64/ld-linux-x86-64",
-        "libm",
+        #"libm",
         "libresolv",
         "libEGL",
         "libGLdispatch",
@@ -269,6 +307,7 @@ def pack_libs():
         if lib_name in exclude:
             print(f"{color.YELLOW}Excludes lib {lib_name}{color.END}")
         else:
+            print(f"{lib_name} -- {key}")
             bc.cmd_run(["install", "-Dm755", value, "-t", f"{APP_DIR}/usr/lib"])
 
 
