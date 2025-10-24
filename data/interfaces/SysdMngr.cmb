@@ -23,7 +23,7 @@
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="8f13015d5310e7da896eaaf84a1b27a49b30811d27b6dbe44feb6edd1e2b97ea"/>
   <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="fc9f5293a9199d43666794072a191f2785eaef88c42e2f0c0d8046f6716538f2"/>
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="bc632f6a17915b3f4c85d5fc72b771840b3799a92851f8638410a98ea9f62d5c"/>
-  <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="b2b9621f1f9a68fb4111d4fe130a1723e5e27a087f100de2b5fcefe6927a408d"/>
+  <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="7ee53b03dfb9316d44ff7f1eccb32f17d63fa85e7e71d9b62a63bd4de281d0f3"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="269926542d562b15851ef061f4f8ff3e4c4edda36ec9bda14c6c468ba48f596c">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>

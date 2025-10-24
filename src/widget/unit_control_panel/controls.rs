@@ -46,7 +46,7 @@ pub(super) fn switch_ablement_state_set(
         let level = unit.dbus_level();
         let enable_status = unit.enable_status();
         let enable_result = gio::spawn_blocking(move || {
-            systemd::disenable_unit_file(primary_name, level, enable_status, expected_new_status)
+            systemd::disenable_unit_file(&primary_name, level, enable_status, expected_new_status)
         })
         .await
         .expect("Task needs to finish successfully.");
@@ -82,11 +82,127 @@ pub(super) fn switch_ablement_state_set(
                     SystemdErrors::SystemCtlError(s) => s,
                     _ => format!("{error:?}"),
                 };
+
                 let action_str = match expected_new_status {
-                    EnablementStatus::Disabled => "Disabling",
-                    EnablementStatus::Enabled => "Enabling",
-                    _ => "???",
+                    EnablementStatus::Disabled => {
+                        //toast message action on fail
+                        pgettext("toast", "Disabling")
+                    }
+                    EnablementStatus::Enabled => {
+                        //toast message action on fail
+                        pgettext("toast", "Enabling")
+                    }
+                    _ => "???".to_owned(),
                 };
+
+                let blue = blue(is_dark).get_color();
+
+                let toast_info = format2!(
+                    //toast message on fail
+                    pgettext(
+                        "toast",
+                        "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has failed!"
+                    ),
+                    blue,
+                    action_str,
+                    unit.primary()
+                );
+
+                warn!("{toast_info} : {error_message}");
+
+                control_panel.add_toast_message(&toast_info, true);
+            }
+        }
+
+        handle_switch_sensivity(&switch, &unit, false, is_dark);
+
+        call_back()
+    });
+}
+
+pub(super) fn reeenable_unit(
+    control_panel: &UnitControlPanel,
+    switch: &gtk::Switch,
+    unit: &UnitInfo,
+    is_dark: bool,
+    call_back: Rc<Box<dyn Fn()>>,
+) {
+    let expected_new_status = unit.enable_status(); //Expect new status
+    info!(
+        "Reeenable unit Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}",
+        unit.primary(),
+        unit.enable_status().as_str(),
+        switch.is_active(),
+        switch.state()
+    );
+
+    let switch = switch.clone();
+    let control_panel = control_panel.clone();
+    let unit = unit.clone();
+
+    //let call_back: Box<dyn Fn()> = Box::new(call_back.clone());
+    glib::spawn_future_local(async move {
+        switch.set_sensitive(false);
+
+        let primary_name = unit.primary();
+        let level = unit.dbus_level();
+
+        let enable_result = gio::spawn_blocking(move || {
+            systemd::disenable_unit_file(
+                &primary_name,
+                level,
+                EnablementStatus::Enabled,
+                EnablementStatus::Disabled,
+            )
+            .map(|_ret| {
+                systemd::disenable_unit_file(
+                    &primary_name,
+                    level,
+                    EnablementStatus::Disabled,
+                    expected_new_status,
+                )
+            })
+        })
+        .await
+        .expect("Task needs to finish successfully.");
+
+        switch.set_sensitive(true);
+
+        match enable_result {
+            Ok(enablement_status_ret) => {
+                let blue = blue(true).get_color();
+
+                //Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
+                let action_str = pgettext("toast", "Reenable");
+
+                let toast_info = format2!(
+                    //toast message on success
+                    pgettext(
+                        "toast",
+                        "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{0}'>{}</span>"
+                    ),
+                    blue,
+                    unit.primary(),
+                    action_str,
+                );
+
+                debug!("{toast_info} {enablement_status_ret:?}");
+
+                control_panel.add_toast_message(&toast_info, true);
+
+                unit.set_enable_status(expected_new_status);
+
+                switch.set_state(expected_new_status == EnablementStatus::Enabled);
+            }
+
+            Err(error) => {
+                let error_message = match error {
+                    SystemdErrors::SystemCtlError(s) => s,
+                    _ => format!("{error:?}"),
+                };
+
+                //toast message action on fail
+                let action_str = pgettext("toast", "Reenabling");
 
                 let blue = blue(is_dark).get_color();
 

@@ -189,7 +189,7 @@ pub enum DisEnableUnitFilesOutput {
 }
 
 pub fn disenable_unit_file(
-    primary_name: String,
+    primary_name: &str,
     level: UnitDBusLevel,
     enable_status: EnablementStatus,
     expected_status: EnablementStatus,

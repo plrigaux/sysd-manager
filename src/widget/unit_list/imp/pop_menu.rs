@@ -88,6 +88,9 @@ mod imp {
         disable_button: TemplateChild<gtk::Button>,
 
         #[template_child]
+        reenable_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
         relaod_button: TemplateChild<gtk::Button>,
 
         pub(super) units_browser: OnceCell<gtk::ColumnView>,
@@ -161,6 +164,18 @@ mod imp {
         }
 
         #[template_callback]
+        fn reenable_button_clicked(&self, _button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::ReenableUnit(
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        #[template_callback]
         fn reload_button_clicked(&self, button: gtk::Button) {
             let unit = unit!(self);
             let pop_menu = self.obj().clone();
@@ -220,10 +235,17 @@ mod imp {
                 );
 
                 self.set_tooltip(
+                    &self.reenable_button,
+                    blue,
+                    &primary_name,
+                    &pgettext("controls", "Disable and then Enable unit {}"),
+                );
+
+                self.set_tooltip(
                     &self.relaod_button,
                     blue,
                     &primary_name,
-                    &pgettext("controls", "Reload unit {}"),
+                    &pgettext("controls", "Reload unit {} configuration by calling the thier <b>ExecReload</b> unit file instruction"),
                 );
 
                 self.set_buttons_style(unit);
@@ -357,9 +379,11 @@ mod imp {
                 EnablementStatus::Disabled | EnablementStatus::Masked
             ) {
                 self.enable_button.set_sensitive(true);
+                self.reenable_button.set_sensitive(false);
                 self.disable_button.set_sensitive(false);
             } else {
                 self.enable_button.set_sensitive(false);
+                self.reenable_button.set_sensitive(true);
                 self.disable_button.set_sensitive(true);
             }
         }

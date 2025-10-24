@@ -35,6 +35,7 @@ pub enum InterPanelMessage<'a> {
     ReStartUnit(gtk::Button, UnitInfo, Rc<Box<dyn Fn()>>),
     EnableUnit(UnitInfo, Rc<Box<dyn Fn()>>),
     DisableUnit(UnitInfo, Rc<Box<dyn Fn()>>),
+    ReenableUnit(UnitInfo, Rc<Box<dyn Fn()>>),
     MaskUnit(&'a gtk::Button, &'a UnitInfo),
     UnMaskUnit(&'a gtk::Button, &'a UnitInfo),
     ReloadUnit(gtk::Button, UnitInfo, Rc<Box<dyn Fn()>>),

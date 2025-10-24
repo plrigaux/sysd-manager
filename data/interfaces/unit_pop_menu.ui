@@ -33,7 +33,7 @@
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
                 <property name="icon-name">processes-symbolic</property>
-                <property name="label">Start</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Start</property>
               </object>
             </child>
           </object>
@@ -47,7 +47,7 @@
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
                 <property name="icon-name">process-stop-symbolic</property>
-                <property name="label">Stop</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Stop</property>
               </object>
             </child>
           </object>
@@ -61,7 +61,7 @@
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
                 <property name="icon-name">view-refresh-symbolic</property>
-                <property name="label">Resart</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Restart</property>
               </object>
             </child>
           </object>
@@ -78,7 +78,7 @@
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
                 <property name="icon-name">empty-icon</property>
-                <property name="label">Enable</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Enable</property>
               </object>
             </child>
           </object>
@@ -92,7 +92,21 @@
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
                 <property name="icon-name">empty-icon</property>
-                <property name="label">Disable</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Disable</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="reenable_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="reenable_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">empty-icon</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Reenable</property>
               </object>
             </child>
           </object>
@@ -109,7 +123,7 @@
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
                 <property name="icon-name">arrow-circular-top-left-symbolic</property>
-                <property name="label" translatable="yes">Reload</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Reload</property>
               </object>
             </child>
           </object>

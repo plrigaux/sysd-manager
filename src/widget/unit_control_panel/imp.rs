@@ -485,6 +485,17 @@ impl UnitControlPanelImpl {
                     call_back.clone(),
                 );
             }
+
+            InterPanelMessage::ReenableUnit(unit, call_back) => {
+                controls::reeenable_unit(
+                    &self.obj(),
+                    &self.ablement_switch,
+                    &unit,
+                    self.is_dark.get(),
+                    call_back.clone(),
+                );
+            }
+
             InterPanelMessage::ReloadUnit(button, unit, call_back) => {
                 self.start_restart_action(
                     button,
