@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-25 00:11-0400\n"
-"PO-Revision-Date: 2025-10-15 18:14+0000\n"
+"PO-Revision-Date: 2025-10-25 04:21+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -2096,17 +2096,17 @@ msgstr "Réactiver"
 
 #: src/widget/unit_control_panel/controls.rs:242
 #: src/widget/unit_list/imp/pop_menu.rs:234
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
-msgstr "Désactiver le fichier d'unité"
+msgstr "Désactiver l'unité {}"
 
 #: src/widget/unit_control_panel/controls.rs:244
 #: src/widget/unit_list/imp/pop_menu.rs:227
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
-msgstr "Activer le fichier d'unité"
+msgstr "Activer l'unité {}"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:23
@@ -2152,10 +2152,9 @@ msgstr "redémarré"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:41
-#, fuzzy
 msgctxt "toast"
 msgid "reloaded"
-msgstr "Chargés"
+msgstr "rechargé"
 
 #: src/widget/unit_control_panel/imp.rs:317
 msgctxt "toast"
@@ -2369,10 +2368,10 @@ msgid "Restart unit {}"
 msgstr "Redémarrer l'unité {}"
 
 #: src/widget/unit_list/imp/pop_menu.rs:241
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "controls"
 msgid "Disable and then Enable unit {}"
-msgstr "Désactiver le fichier d'unité"
+msgstr "Désactiver et ensuite activer l'unité {}"
 
 #: src/widget/unit_list/imp/pop_menu.rs:248
 #, rust-format
@@ -2381,6 +2380,8 @@ msgid ""
 "Reload unit {} configuration by calling the thier <b>ExecReload</b> unit "
 "file instruction"
 msgstr ""
+"Rechargez la configuration de l'unité {} en appelant l'instruction "
+"<b>ExecReload</b> de son fichier d'unité"
 
 #~ msgctxt "preference"
 #~ msgid "Columns Display Parameters"
