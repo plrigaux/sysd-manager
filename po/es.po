@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-18 10:45-0400\n"
+"POT-Creation-Date: 2025-10-25 00:11-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
@@ -898,128 +898,127 @@ msgctxt "signals"
 msgid "Watch Signals"
 msgstr "Señales de vigilancia"
 
-#: data/interfaces/unit_control_panel.ui:16
+#: data/interfaces/unit_control_panel.ui:18
 msgctxt "control info"
 msgid "Enabled"
 msgstr "Activado"
 
-#: data/interfaces/unit_control_panel.ui:39
+#: data/interfaces/unit_control_panel.ui:41
 msgctxt "control tooltip"
 msgid "Start unit"
 msgstr "Unidad de arranque"
 
 #. The start button
-#: data/interfaces/unit_control_panel.ui:44
+#: data/interfaces/unit_control_panel.ui:46
 msgctxt "controls"
 msgid "_Start"
 msgstr "_Comenzar"
 
-#: data/interfaces/unit_control_panel.ui:52
+#: data/interfaces/unit_control_panel.ui:54
 msgctxt "control tooltip"
 msgid "Stop Modes"
 msgstr "Modos de parada"
 
-#: data/interfaces/unit_control_panel.ui:63
+#: data/interfaces/unit_control_panel.ui:65
 msgctxt "control tooltip"
 msgid "Stop unit"
 msgstr "Unidad de parada"
 
-#: data/interfaces/unit_control_panel.ui:68
+#: data/interfaces/unit_control_panel.ui:70
 msgctxt "controls"
 msgid "S_top"
 msgstr "_Detener"
 
-#: data/interfaces/unit_control_panel.ui:69
+#: data/interfaces/unit_control_panel.ui:71
 msgctxt "controls tooltip"
 msgid "Stop unit"
 msgstr "Unidad de parada"
 
-#: data/interfaces/unit_control_panel.ui:77
+#: data/interfaces/unit_control_panel.ui:79
 msgctxt "control tooltip"
 msgid "Restart Modes"
 msgstr "Modos de reinicio"
 
-#: data/interfaces/unit_control_panel.ui:88
+#: data/interfaces/unit_control_panel.ui:90
 msgctxt "controls tooltip"
 msgid "Restart unit"
 msgstr "Reiniciar la unidad"
 
-#. Button label
-#: data/interfaces/unit_control_panel.ui:93
-#: src/widget/unit_list/imp/pop_menu.rs:210
+#. unit popup menu
+#: data/interfaces/unit_control_panel.ui:95 data/interfaces/unit_pop_menu.ui:64
 msgctxt "controls"
 msgid "Restart"
 msgstr "Reanudar"
 
-#: data/interfaces/unit_control_panel.ui:109
+#: data/interfaces/unit_control_panel.ui:111
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Más ..."
 
-#: data/interfaces/unit_control_panel.ui:143
+#: data/interfaces/unit_control_panel.ui:147
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr "Información de la unidad"
 
-#: data/interfaces/unit_control_panel.ui:153
+#: data/interfaces/unit_control_panel.ui:157
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr "Dependencias"
 
-#: data/interfaces/unit_control_panel.ui:163
+#: data/interfaces/unit_control_panel.ui:167
 msgctxt "controls tab"
 msgid "File"
 msgstr "Archivo"
 
-#: data/interfaces/unit_control_panel.ui:173
+#: data/interfaces/unit_control_panel.ui:177
 msgctxt "controls tab"
 msgid "Journal"
 msgstr "Diario"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:20
+#: data/interfaces/unit_dependencies_panel.ui:21
 msgctxt "dependency"
 msgid "plain"
 msgstr "plano"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:37
+#: data/interfaces/unit_dependencies_panel.ui:39
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr "Sin dependencias"
 
 #. label
-#: data/interfaces/unit_file_panel.ui:30
+#: data/interfaces/unit_file_panel.ui:18
 msgctxt "file"
 msgid "File path:"
 msgstr "Ruta del archivo:"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:47
+#: data/interfaces/unit_file_panel.ui:35
 msgctxt "file"
 msgid "Save"
 msgstr "Ahorrar"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:65
+#: data/interfaces/unit_file_panel.ui:63
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr "La unidad no tiene ningún archivo asociado"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:67
+#: data/interfaces/unit_file_panel.ui:65
 msgctxt "file"
 msgid "No unit file"
 msgstr "No hay archivo de unidad"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:17
+#: data/interfaces/unit_info_panel.ui:19
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr "_Refrescar"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:29
+#: data/interfaces/unit_info_panel.ui:31
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Mostrar todas las _Propiedades"
@@ -1105,6 +1104,48 @@ msgstr "Filtros"
 msgctxt "unit search"
 msgid "Clear Filters"
 msgstr "Borrar filtros"
+
+#. unit popup menu
+#: data/interfaces/unit_pop_menu.ui:36
+#, fuzzy
+msgctxt "controls"
+msgid "Start"
+msgstr "Comenzar"
+
+#. unit popup menu
+#: data/interfaces/unit_pop_menu.ui:50
+#, fuzzy
+msgctxt "controls"
+msgid "Stop"
+msgstr "Detener"
+
+#. unit popup menu
+#: data/interfaces/unit_pop_menu.ui:81
+#, fuzzy
+msgctxt "controls"
+msgid "Enable"
+msgstr "Permitir"
+
+#. unit popup menu
+#: data/interfaces/unit_pop_menu.ui:95
+#, fuzzy
+msgctxt "controls"
+msgid "Disable"
+msgstr "Desactivar"
+
+#. unit popup menu
+#: data/interfaces/unit_pop_menu.ui:109
+#, fuzzy
+msgctxt "controls"
+msgid "Reenable"
+msgstr "Volver a habilitar"
+
+#. unit popup menu
+#: data/interfaces/unit_pop_menu.ui:126
+#, fuzzy
+msgctxt "controls"
+msgid "Reload"
+msgstr "Cargado"
 
 #. Show all properties
 #: data/interfaces/unit_properties.ui:29
@@ -1999,68 +2040,110 @@ msgid "None"
 msgstr ""
 
 #: src/widget/unit_control_panel/controls.rs:64
+#: src/widget/unit_control_panel/controls.rs:182
 msgctxt "toast"
 msgid ""
 "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
 "been successfully <span fgcolor='{0}'>{}</span>"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:97
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:89
+#, fuzzy
+msgctxt "toast"
+msgid "Disabling"
+msgstr "Desactivar"
+
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:93
+#, fuzzy
+msgctxt "toast"
+msgid "Enabling"
+msgstr "Permitir"
+
+#: src/widget/unit_control_panel/controls.rs:104
+#: src/widget/unit_control_panel/controls.rs:213
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "has failed!"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:126
+#. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
+#: src/widget/unit_control_panel/controls.rs:176
+#, fuzzy
+msgctxt "toast"
+msgid "Reenable"
+msgstr "Volver a habilitar"
+
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:205
+#, fuzzy
+msgctxt "toast"
+msgid "Reenabling"
+msgstr "Volver a habilitar"
+
+#: src/widget/unit_control_panel/controls.rs:242
 #: src/widget/unit_list/imp/pop_menu.rs:234
 #, fuzzy, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr "Deshabilitar archivo de unidad"
 
-#: src/widget/unit_control_panel/controls.rs:128
-#: src/widget/unit_list/imp/pop_menu.rs:221
+#: src/widget/unit_control_panel/controls.rs:244
+#: src/widget/unit_list/imp/pop_menu.rs:227
 #, fuzzy, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
 msgstr "Habilitar archivo de unidad"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:21
+#: src/widget/unit_control_panel/enums.rs:23
 msgctxt "toast"
 msgid "start"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:23
+#: src/widget/unit_control_panel/enums.rs:25
 msgctxt "toast"
 msgid "stop"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:25
+#: src/widget/unit_control_panel/enums.rs:27
 msgctxt "toast"
 msgid "restart"
 msgstr ""
 
+#: src/widget/unit_control_panel/enums.rs:28
+msgctxt "toast"
+msgid "reload"
+msgstr ""
+
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:32
+#: src/widget/unit_control_panel/enums.rs:35
 msgctxt "toast"
 msgid "started"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:34
+#: src/widget/unit_control_panel/enums.rs:37
 msgctxt "toast"
 msgid "stopped"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:36
+#: src/widget/unit_control_panel/enums.rs:39
 msgctxt "toast"
 msgid "restarted"
 msgstr ""
+
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:41
+#, fuzzy
+msgctxt "toast"
+msgid "reloaded"
+msgstr "Cargado"
 
 #: src/widget/unit_control_panel/imp.rs:317
 msgctxt "toast"
@@ -2075,7 +2158,7 @@ msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:654
+#: src/widget/unit_control_panel/imp.rs:674
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2083,13 +2166,13 @@ msgid ""
 msgstr ""
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:662
+#: src/widget/unit_control_panel/imp.rs:682
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:674
+#: src/widget/unit_control_panel/imp.rs:694
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2098,7 +2181,7 @@ msgid ""
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:685
+#: src/widget/unit_control_panel/imp.rs:705
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -2240,51 +2323,37 @@ msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr ""
 
-#: src/widget/unit_list/imp/pop_menu.rs:178
+#: src/widget/unit_list/imp/pop_menu.rs:206
 #, fuzzy, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
 msgstr "Unidad de arranque"
 
-#. Button label
-#: src/widget/unit_list/imp/pop_menu.rs:183
-#, fuzzy
-msgctxt "controls"
-msgid "Start"
-msgstr "Comenzar"
-
-#: src/widget/unit_list/imp/pop_menu.rs:192
+#: src/widget/unit_list/imp/pop_menu.rs:213
 #, fuzzy, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
 msgstr "Unidad de parada"
 
-#. Button label
-#: src/widget/unit_list/imp/pop_menu.rs:196
-#, fuzzy
-msgctxt "controls"
-msgid "Stop"
-msgstr "Detener"
-
-#: src/widget/unit_list/imp/pop_menu.rs:205
+#: src/widget/unit_list/imp/pop_menu.rs:220
 #, fuzzy, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
 msgstr "Reiniciar la unidad"
 
-#. Button label
-#: src/widget/unit_list/imp/pop_menu.rs:225
-#, fuzzy
+#: src/widget/unit_list/imp/pop_menu.rs:241
+#, fuzzy, rust-format
 msgctxt "controls"
-msgid "Enable"
-msgstr "Permitir"
+msgid "Disable and then Enable unit {}"
+msgstr "Deshabilitar archivo de unidad"
 
-#. Button label
-#: src/widget/unit_list/imp/pop_menu.rs:238
-#, fuzzy
+#: src/widget/unit_list/imp/pop_menu.rs:248
+#, rust-format
 msgctxt "controls"
-msgid "Disable"
-msgstr "Desactivar"
+msgid ""
+"Reload unit {} configuration by calling the thier <b>ExecReload</b> unit "
+"file instruction"
+msgstr ""
 
 #~ msgctxt "preference"
 #~ msgid "Columns Display Parameters"

@@ -24,6 +24,7 @@ data/interfaces/unit_info_panel.ui
 data/interfaces/unit_list_filter.ui
 data/interfaces/unit_list_panel.ui
 data/interfaces/unit_list_search.ui
+data/interfaces/unit_pop_menu.ui
 data/interfaces/unit_properties.ui
 data/interfaces/unit_properties_selection.ui
 data/interfaces/unit_properties_selection_row.ui
