@@ -25,6 +25,7 @@ impl UnitContolType {
             UnitContolType::Stop => pgettext("toast", "stop"),
             //unit action in toast message
             UnitContolType::Restart => pgettext("toast", "restart"),
+            //unit action in toast message
             UnitContolType::Reload => pgettext("toast", "reload"),
         }
     }
