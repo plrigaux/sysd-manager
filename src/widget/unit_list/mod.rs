@@ -118,3 +118,28 @@ impl UnitListPanel {
         self.imp().save_config();
     }
 }
+
+//TODO temporay name
+#[derive(Debug)]
+pub struct CustomId<'a> {
+    pub utype: &'a str,
+    pub prop: &'a str,
+}
+
+impl<'a> CustomId<'a> {
+    pub fn from_str(s: &'a str) -> Self {
+        let Some((t, p)) = s.split_once('@') else {
+            return Self { utype: "", prop: s };
+        };
+
+        Self { utype: t, prop: p }
+    }
+
+    fn generate_quark(&self) -> glib::Quark {
+        glib::Quark::from_str(self.prop)
+    }
+
+    pub fn has_defined_type(&self) -> bool {
+        !self.utype.is_empty()
+    }
+}

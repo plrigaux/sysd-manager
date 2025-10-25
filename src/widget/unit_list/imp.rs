@@ -644,13 +644,13 @@ impl UnitListPanelImp {
             .expect("Expect item x to be not None");
 
         //Sort on first column
-        let c1 = item_out
+        let first_column = item_out
             .downcast_ref::<gtk::ColumnViewColumn>()
             .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
 
         self.units_browser
             .borrow()
-            .sort_by_column(Some(c1), gtk::SortType::Ascending);
+            .sort_by_column(Some(first_column), gtk::SortType::Ascending);
     }
 
     pub(super) fn filter_assessor_change(
@@ -822,15 +822,15 @@ impl UnitListPanelImp {
             }
         }
 
-        force_expand_on_the_last_visible_column(&columns_list_model);
-
         self.current_column_view_column_definition_list
             .replace(property_list);
 
-        //remove all columns that exeed the new ones
+        //remove all columns that exceed the new ones
         for column in current_columns_over.iter() {
             self.units_browser.borrow().remove_column(column);
         }
+
+        force_expand_on_the_last_visible_column(&columns_list_model);
 
         self.fetch_custom_unit_properties();
     }
@@ -851,15 +851,8 @@ impl UnitListPanelImp {
         let mut types = HashSet::with_capacity(16);
         let mut is_unit_type = false;
         for unit_property in property_list.iter() {
-            /*             info!(
-                "{:?} custom {}",
-                unit_property.id(),
-                unit_property.is_custom()
-            ); */
-
             if unit_property.is_custom() {
-                //add custom factory
-
+                //Add custom factory
                 let u_prop = unit_property.unit_property();
                 let key = Quark::from_str(&u_prop);
                 property_list_keys.push(key);
@@ -980,19 +973,7 @@ impl UnitListPanelImp {
                 .iter::<gtk::ColumnViewColumn>()
                 .filter_map(|item| item.ok())
             {
-                let Some(id) = column.id() else {
-                    warn!("No column id");
-                    continue;
-                };
-
-                //identify custom properties
-                let Some((_type, prop)) = id.split_once('@') else {
-                    continue;
-                };
-
-                //force data display
-                let factory = column_factories::get_custom_factory(prop, display_color);
-                column.set_factory(Some(&factory));
+                construct::set_column_factory_and_sorter(&column, display_color);
             }
         });
     }
@@ -1063,19 +1044,6 @@ fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) 
     {
         column.set_expand(true);
     }
-
-    /* for index in (0..columns_list_model.n_items()).rev() {
-        if let Some(column) = columns_list_model
-            .item(index)
-            .and_downcast::<gtk::ColumnViewColumn>()
-        {
-            //Force to fill the widget gap in the scroll window
-            if column.is_visible() {
-                column.set_expand(true);
-                break;
-            }
-        }
-    } */
 }
 
 // The central trait for subclassing a GObject

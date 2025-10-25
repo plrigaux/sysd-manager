@@ -81,6 +81,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="2.6.0" date="2025-10-24">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Popup menu reenable option</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Sorting on user defined unit's property columns wasn't working at initiation time</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.5.0" date="2025-10-21">
       <description translate="no">
         <p>Added</p>

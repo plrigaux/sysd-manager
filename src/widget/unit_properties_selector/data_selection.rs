@@ -6,7 +6,7 @@ use log::{debug, info};
 use crate::{
     systemd::enums::UnitType,
     widget::{
-        unit_list::menus::create_col_menu,
+        unit_list::{CustomId, menus::create_col_menu},
         unit_properties_selector::{data_browser::PropertyBrowseItem, save::UnitColumn},
     },
 };
@@ -18,13 +18,6 @@ glib::wrapper! {
 }
 
 impl UnitPropertySelection {
-    /*     pub fn new_interface(interface: String) -> Self {
-           let this_object: Self = glib::Object::new();
-           this_object.imp().interface.replace(interface);
-
-           this_object
-       }
-    */
     pub fn from_browser(broswer_property: PropertyBrowseItem) -> Self {
         let this_object: Self = glib::Object::new();
 
@@ -42,10 +35,12 @@ impl UnitPropertySelection {
         } else {
             let id = format!("{}@{}", unit_type.as_str(), unit_property); //IMPORTANT keep this format
             let menu = create_col_menu(&id, true);
+
             let col = gtk::ColumnViewColumn::builder()
                 .title(&unit_property)
                 .id(id)
                 .header_menu(&menu)
+                .resizable(true)
                 .build();
             info!("New COL {:?} {:?}", col.id(), col.title());
             col
@@ -80,9 +75,10 @@ impl UnitPropertySelection {
     }
 
     fn fill_from_id(p_imp: &imp2::UnitPropertySelectionImpl, id: &str) {
-        if let Some((short_interface, prop)) = id.split_once('@') {
-            p_imp.unit_property.replace(prop.to_string());
-            let unit_type = UnitType::new(short_interface);
+        let custom_id = CustomId::from_str(id);
+        if custom_id.has_defined_type() {
+            p_imp.unit_property.replace(custom_id.prop.to_string());
+            let unit_type = UnitType::new(custom_id.utype);
             p_imp.unit_type.set(unit_type);
         } else {
             p_imp.unit_type.set(UnitType::Unknown);
@@ -90,6 +86,7 @@ impl UnitPropertySelection {
 
         debug!("UNIT TYPE FROM ID {} {:?}", id, p_imp.unit_type.get());
     }
+
     pub fn from_column_config(unit_column_config: UnitColumn) -> Self {
         let id = unit_column_config.id;
         //Self::fill_from_id(p_imp, &id);
@@ -127,19 +124,6 @@ impl UnitPropertySelection {
 
         this_object
     }
-    /*
-    pub fn from_parent(interface: UnitPropertySelection, property: UnitPropertySelection) -> Self {
-        let this_object: Self = glib::Object::new();
-
-        let p_imp = this_object.imp();
-
-        p_imp.unit_property.replace(property.unit_property());
-        p_imp.unit_type.replace(property.unit_type());
-        p_imp.prop_type.replace(property.prop_type());
-        p_imp.access.replace(property.access());
-
-        this_object
-    } */
 
     pub fn is_custom(&self) -> bool {
         self.imp().is_custom()

@@ -2,7 +2,14 @@ use crate::{
     gtk::prelude::*,
     systemd::data::UnitInfo,
     widget::{
-        unit_list::{COL_ID_UNIT, imp::column_factories::*, menus::create_col_menu},
+        unit_list::{
+            COL_ID_UNIT, CustomId,
+            imp::{
+                column_factories::{self, *},
+                construct,
+            },
+            menus::create_col_menu,
+        },
         unit_properties_selector::{data_selection::UnitPropertySelection, save},
     },
 };
@@ -36,13 +43,10 @@ pub fn construct_column(
             let id = unit_column_config.id.clone();
             let prop_selection = UnitPropertySelection::from_column_config(unit_column_config);
 
-            let sorter = get_sorter_by_id(&id);
-            let factory = get_factory_by_id(&id, display_color);
             let column_menu = create_col_menu(&id, prop_selection.is_custom());
             let column = prop_selection.column();
             column.set_header_menu(Some(&column_menu));
-            column.set_factory(factory.as_ref());
-            column.set_sorter(sorter.as_ref());
+            construct::set_column_factory_and_sorter(&column, display_color);
 
             list.push(prop_selection);
         }
@@ -123,8 +127,25 @@ pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySe
         .collect()
 }
 
-pub fn get_sorter_by_id(id: &str) -> Option<gtk::CustomSorter> {
-    match id {
+pub fn set_column_factory_and_sorter(column: &gtk::ColumnViewColumn, display_color: bool) {
+    let Some(id) = column.id() else {
+        warn!("No column id");
+        return;
+    };
+
+    //identify custom properties
+    let custom_id = CustomId::from_str(id.as_str());
+
+    //force data display
+    let factory = column_factories::get_factory_by_id(&custom_id, display_color);
+    column.set_factory(factory.as_ref());
+
+    let sorter = get_sorter_by_id(custom_id);
+    column.set_sorter(sorter.as_ref());
+}
+
+pub fn get_sorter_by_id(id: CustomId) -> Option<gtk::CustomSorter> {
+    match id.prop {
         COL_ID_UNIT => Some(create_column_filter!(primary, dbus_level)),
         "sysdm-type" => Some(create_column_filter!(unit_type)),
         "sysdm-bus" => Some(create_column_filter!(dbus_level)),
@@ -139,13 +160,8 @@ pub fn get_sorter_by_id(id: &str) -> Option<gtk::CustomSorter> {
     }
 }
 
-fn create_custom_property_column_sorter(id: &str) -> Option<gtk::CustomSorter> {
-    let Some((_short_interface, prop)) = id.split_once('@') else {
-        warn!("Column sorter for Id \"{id}\" not handle");
-        return None;
-    };
-
-    let key = glib::Quark::from_str(prop);
+fn create_custom_property_column_sorter(id: CustomId) -> Option<gtk::CustomSorter> {
+    let key = id.generate_quark();
 
     let sorter = gtk::CustomSorter::new(move |o1, o2| custom_property_comapre(o1, o2, key));
 

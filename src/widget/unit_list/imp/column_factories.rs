@@ -7,7 +7,7 @@ use gtk::{
 use log::warn;
 use zvariant::OwnedValue;
 
-use crate::widget::unit_list::COL_ID_UNIT;
+use crate::widget::unit_list::{COL_ID_UNIT, CustomId};
 use crate::{
     systemd::{
         data::{UnitInfo, convert_to_string},
@@ -261,31 +261,28 @@ pub fn setup_factories(
             continue;
         };
 
-        let factory = get_factory_by_id(id.as_str(), display_color);
+        let custom_id = CustomId::from_str(id.as_str());
+        let factory = get_factory_by_id(&custom_id, display_color);
 
         column.set_factory(factory.as_ref());
     }
 }
 
-pub fn get_factory_by_id(id: &str, display_color: bool) -> Option<gtk::SignalListItemFactory> {
-    match id {
-        COL_ID_UNIT => Some(fac_unit_name(display_color)),
-        "sysdm-type" => Some(fac_unit_type(display_color)),
-        "sysdm-bus" => Some(fac_bus(display_color)),
-        "sysdm-state" => Some(fac_enable_status(display_color)),
-        "sysdm-preset" => Some(fac_preset(display_color)),
-        "sysdm-load" => Some(fac_load_state(display_color)),
-        "sysdm-active" => Some(fac_active(display_color)),
-        "sysdm-sub" => Some(fac_sub_state(display_color)),
-        "sysdm-description" => Some(fac_descrition(display_color)),
-
-        id => {
-            if let Some((_interface, property)) = id.split_once('@') {
-                Some(get_custom_factory(property, display_color))
-            } else {
-                warn!("What to do. Id {id} not handle with factory");
-                None
-            }
+pub fn get_factory_by_id(id: &CustomId, display_color: bool) -> Option<gtk::SignalListItemFactory> {
+    match (id.has_defined_type(), id.prop) {
+        (true, _) => Some(get_custom_factory(id.prop, display_color)),
+        (false, COL_ID_UNIT) => Some(fac_unit_name(display_color)),
+        (false, "sysdm-type") => Some(fac_unit_type(display_color)),
+        (false, "sysdm-bus") => Some(fac_bus(display_color)),
+        (false, "sysdm-state") => Some(fac_enable_status(display_color)),
+        (false, "sysdm-preset") => Some(fac_preset(display_color)),
+        (false, "sysdm-load") => Some(fac_load_state(display_color)),
+        (false, "sysdm-active") => Some(fac_active(display_color)),
+        (false, "sysdm-sub") => Some(fac_sub_state(display_color)),
+        (false, "sysdm-description") => Some(fac_descrition(display_color)),
+        _ => {
+            warn!("What to do. Id {id:?} not handle with factory");
+            None
         }
     }
 }
