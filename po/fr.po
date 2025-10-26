@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-25 00:11-0400\n"
-"PO-Revision-Date: 2025-10-25 04:21+0000\n"
-"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
+"PO-Revision-Date: 2025-10-27 14:02+0000\n"
+"Last-Translator: p-sage <p-sage@users.noreply.hosted.weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -22,8 +22,9 @@ msgstr ""
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
+#, fuzzy
 msgid "SysD Manager"
-msgstr "SysD Manager"
+msgstr "Gestionnaire SysD"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
@@ -528,7 +529,7 @@ msgstr "Police du texte"
 #: data/interfaces/preferences.ui:46
 msgctxt "preference"
 msgid "Default"
-msgstr "Défaut"
+msgstr "Par défaut"
 
 #. button
 #: data/interfaces/preferences.ui:54
@@ -1124,28 +1125,24 @@ msgstr "Arrêter"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:81
-#, fuzzy
 msgctxt "controls"
 msgid "Enable"
 msgstr "Activer"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:95
-#, fuzzy
 msgctxt "controls"
 msgid "Disable"
 msgstr "Désactiver"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:109
-#, fuzzy
 msgctxt "controls"
 msgid "Reenable"
 msgstr "Réactiver"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:126
-#, fuzzy
 msgctxt "controls"
 msgid "Reload"
 msgstr "Recharger"
@@ -1966,7 +1963,7 @@ msgstr "Activation"
 #: src/widget/preferences/data.rs:95
 msgctxt "filter"
 msgid "Sub"
-msgstr "Sous Activation"
+msgstr "Sous activation"
 
 #. filter title
 #: src/widget/preferences/data.rs:102
@@ -2058,17 +2055,15 @@ msgstr ""
 
 #. toast message action on fail
 #: src/widget/unit_control_panel/controls.rs:89
-#, fuzzy
 msgctxt "toast"
 msgid "Disabling"
-msgstr "Désactiver"
+msgstr "Désactivation"
 
 #. toast message action on fail
 #: src/widget/unit_control_panel/controls.rs:93
-#, fuzzy
 msgctxt "toast"
 msgid "Enabling"
-msgstr "Activer"
+msgstr "Activation"
 
 #: src/widget/unit_control_panel/controls.rs:104
 #: src/widget/unit_control_panel/controls.rs:213
@@ -2082,17 +2077,15 @@ msgstr ""
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
 #: src/widget/unit_control_panel/controls.rs:176
-#, fuzzy
 msgctxt "toast"
 msgid "Reenable"
 msgstr "Réactiver"
 
 #. toast message action on fail
 #: src/widget/unit_control_panel/controls.rs:205
-#, fuzzy
 msgctxt "toast"
 msgid "Reenabling"
-msgstr "Réactiver"
+msgstr "Réactivation"
 
 #: src/widget/unit_control_panel/controls.rs:242
 #: src/widget/unit_list/imp/pop_menu.rs:234
@@ -2127,10 +2120,9 @@ msgid "restart"
 msgstr "redémarrer"
 
 #: src/widget/unit_control_panel/enums.rs:28
-#, fuzzy
 msgctxt "toast"
 msgid "reload"
-msgstr "Recharger"
+msgstr "recharger"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:35
@@ -2347,7 +2339,7 @@ msgstr "Ajouter"
 #: src/widget/unit_list/filter/substate.rs:38
 msgctxt "filter"
 msgid "Add filter on sub state"
-msgstr "Ajouter un filtre au sous état"
+msgstr "Ajouter un filtre au sous-état"
 
 #: src/widget/unit_list/imp/pop_menu.rs:206
 #, rust-format
