@@ -300,16 +300,7 @@ trait ZUnitInfo {
 
 macro_rules! fill_completing_info {
     ($update:expr, $unit_info_proxy:expr, $f:ident) => {
-        match $unit_info_proxy.$f().await {
-            Ok(s) => {
-                $update.$f = Some(s);
-            }
-            Err(err) => {
-                let err: SystemdErrors = err.into();
-                //warn!("Complete info Error: {:?}", err);
-                return Err(err);
-            }
-        }
+        $update.$f = $unit_info_proxy.$f().await.map(|val| Some(val))?;
     };
 }
 
@@ -355,28 +346,16 @@ async fn fill_update(
 
     fill_completing_info!(update, unit_info_proxy, sub_state);
     fill_completing_info!(update, unit_info_proxy, unit_file_preset);
-    fill_completing_info!(update, unit_info_proxy, fragment_path);
+
+    update.fragment_path = unit_info_proxy
+        .fragment_path()
+        .await
+        .map(|path| if path.is_empty() { None } else { Some(path) })?;
+
     update.valid_unit_name = true;
 
     Ok(())
 }
-/*
-/// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
-#[allow(dead_code)]
-pub fn list_unit_files(
-    connection: &Connection,
-    level: UnitDBusLevel,
-) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        METHOD_LIST_UNIT_FILES,
-        &(),
-    )?;
-
-    fill_list_unit_files(message, level)
-} */
 
 fn fill_list_unit_files(
     array: Vec<LUnitFiles>,
