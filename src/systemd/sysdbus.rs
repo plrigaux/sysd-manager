@@ -10,7 +10,7 @@ use std::{
     sync::RwLock,
 };
 
-use log::{debug, info, trace, warn};
+use log::{debug, error, info, trace, warn};
 
 use serde::Deserialize;
 
@@ -165,15 +165,6 @@ async fn list_units_list_async(connection: zbus::Connection) -> Result<Vec<LUnit
     Ok(array)
 }
 
-/* async fn list_units_async_as_map(
-    connection: Arc<zbus::Connection>,
-    _dbus_level: UnitDBusLevel,
-) -> Result<Vec<LUnit>, SystemdErrors> {
-    let array = list_units_list_async::<Vec<LUnit>>(connection).await?;
-
-    Ok(array)
-}
- */
 /// Returns the current enablement status of the unit
 pub fn get_unit_file_state(
     level: UnitDBusLevel,
@@ -395,21 +386,14 @@ fn fill_list_unit_files(
 
     for unit_file in array.iter() {
         let Some((_prefix, full_name)) = unit_file.primary_unit_name.rsplit_once('/') else {
-            return Err(SystemdErrors::Malformed(
-                "rsplit_once(\"/\")".to_string(),
-                unit_file.primary_unit_name.to_owned(),
-            ));
+            error!(
+                "MALFORMED rsplit_once(\"/\") {:?}",
+                unit_file.primary_unit_name,
+            );
+            continue;
         };
 
-        /*         let Some((name, system_type)) = full_name.rsplit_once('.') else {
-            return Err(SystemdErrors::Malformed(
-                "rsplit_once('.')".to_owned(),
-                full_name.to_owned(),
-            ));
-        }; */
-
         let status_code = EnablementStatus::from_str(unit_file.enablement_status);
-        //let utype = UnitType::new(system_type);
 
         systemd_units.push(SystemdUnitFile {
             full_name: full_name.to_owned(),

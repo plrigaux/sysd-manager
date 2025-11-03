@@ -180,7 +180,7 @@ impl UnitFilePanelImp {
 
         let binding = self.unit.borrow();
         let Some(unit_ref) = binding.as_ref() else {
-            warn!("No unit file");
+            warn!("No unit to present");
             self.set_text("");
 
             return;

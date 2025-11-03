@@ -29,6 +29,56 @@ fn test_get_unit_file_state() {
     debug!("Status: {status:?}");
 }
 
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
+    init();
+
+    let level = UnitDBusLevel::System;
+    let connection = get_connection(level).await?;
+    let unit_files = list_unit_files_async(connection, level).await?;
+
+    info!("Unit file returned {}", unit_files.len());
+
+    for (idx, unit_file) in unit_files.iter().enumerate() {
+        debug!("{idx} - {}", unit_file.full_name);
+        debug!("{}", unit_file.path);
+    }
+
+    Ok(())
+}
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_list_unit_files_system_raw() -> Result<(), SystemdErrors> {
+    init();
+
+    let level = UnitDBusLevel::System;
+    let connection = get_connection(level).await?;
+    let message = connection
+        .call_method(
+            Some(DESTINATION_SYSTEMD),
+            PATH_SYSTEMD,
+            Some(INTERFACE_SYSTEMD_MANAGER),
+            METHOD_LIST_UNIT_FILES,
+            &(),
+        )
+        .await?;
+
+    let body = message.body();
+
+    let array: Vec<LUnitFiles> = body.deserialize()?;
+
+    for (idx, unit_file) in array.iter().enumerate() {
+        debug!(
+            "{idx} - {} - {}",
+            unit_file.enablement_status, unit_file.primary_unit_name
+        );
+    }
+
+    Ok(())
+}
+
 /* fn list_unit_files_user_test(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let units = list_unit_files(&get_connection(level)?, level)?;
 

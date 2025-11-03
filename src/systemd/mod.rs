@@ -53,18 +53,6 @@ pub struct SystemdUnitFile {
     pub path: String,
 }
 
-impl SystemdUnitFile {
-    /*     pub fn full_name(&self) -> Result<&str, SystemdErrors> {
-        match self.path.rsplit_once("/") {
-            Some((_, end)) => Ok(end),
-            None => Err(SystemdErrors::Malformed(
-                "rsplit_once(\"/\")".to_string(),
-                self.path.clone(),
-            )),
-        }
-    } */
-}
-
 #[derive(Default, Clone, PartialEq, Debug)]
 pub enum BootFilter {
     #[default]
@@ -249,7 +237,6 @@ pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
     }
 }
 
-#[allow(dead_code)]
 fn flatpak_file_open_get_content(
     file_path: &str,
     unit: &UnitInfo,
@@ -284,10 +271,12 @@ fn file_open_get_content_cat(file_path: &str, unit: &UnitInfo) -> Result<String,
 fn file_open_get_content(file_path: &str, unit: &UnitInfo) -> Result<String, SystemdErrors> {
     //To get the relative path from a Flatpack
     let file_path = flatpak_host_file_path(file_path);
+
     info!(
         "Fetching file content Unit: {} File: {file_path}",
         unit.primary()
     );
+
     let mut file = File::open(file_path.as_ref()).map_err(|e| {
         warn!("Can't open file \"{file_path}\", reason: {e}");
         SystemdErrors::IoError(e)
