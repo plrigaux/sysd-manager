@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-03 12:14-0500\n"
-"PO-Revision-Date: 2025-11-03 17:18+0000\n"
-"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
+"PO-Revision-Date: 2025-11-04 14:05+0000\n"
+"Last-Translator: p-sage <p-sage@users.noreply.hosted.weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -114,7 +114,7 @@ msgstr "À propos"
 #: data/interfaces/app_window.ui:75
 msgctxt "title"
 msgid "SysD Manager"
-msgstr "SysD Manager"
+msgstr "Gestionnaire SysD"
 
 #: data/interfaces/app_window.ui:81
 msgctxt "top button tooltip"
@@ -667,7 +667,7 @@ msgstr "Ouvrir la liste des boots"
 #: data/interfaces/shortcuts.ui:42
 msgctxt "shortcut window"
 msgid "Open columns manager"
-msgstr "Ouvrir le gestionnaire de colones"
+msgstr "Ouvrir le gestionnaire de colonnes"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:49
@@ -1181,7 +1181,7 @@ msgstr "Propriétés de l'unité"
 #: data/interfaces/unit_properties.ui:61
 msgctxt "unit properties"
 msgid "Copy all properties to clipboard"
-msgstr "Copier toutes les propriétés dans le presse papier"
+msgstr "Copier toutes les propriétés dans le presse-papiers"
 
 #. dialog title
 #: src/analyze/mod.rs:28
@@ -2085,7 +2085,7 @@ msgid ""
 "has failed!"
 msgstr ""
 "{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> a été réussi !"
+"span> a échoué !"
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
 #: src/widget/unit_control_panel/controls.rs:176
@@ -2182,7 +2182,7 @@ msgid ""
 "successful"
 msgstr ""
 "{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> a été réussi"
+"span> réussie"
 
 #. toast message success (no unit) -- "{ACTION} successful."
 #: src/widget/unit_control_panel/imp.rs:682
@@ -2213,7 +2213,8 @@ msgstr "{} a échoué. Raison : <span fgcolor='{}'>{}</span>."
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
 msgstr ""
-"Malheureusement, <b>SysD Manager</b> ne peut pas exécuter l'action <b>{}</b>."
+"Malheureusement, <b>Gestionnaire SysD</b> ne peut pas exécuter l'action "
+"<b>{}</b>."
 
 #: src/widget/unit_control_panel/mod.rs:140
 msgctxt "workaround"
