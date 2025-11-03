@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-25 00:11-0400\n"
+"POT-Creation-Date: 2025-11-03 12:02-0500\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
@@ -637,6 +637,7 @@ msgctxt "preference"
 msgid "Preferences"
 msgstr "Preferencias"
 
+#. Section name
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "General"
@@ -667,6 +668,7 @@ msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr ""
 
+#. Section name
 #: data/interfaces/shortcuts.ui:49
 msgctxt "shortcut window"
 msgid "Pages"
@@ -691,6 +693,19 @@ msgstr "Archivo de definición de unidad de visualización"
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Eventos del diario de la unidad de visualización"
+
+#. Section name
+#: data/interfaces/shortcuts.ui:78
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Unit"
+msgstr "Unidad"
+
+#: data/interfaces/shortcuts.ui:82
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Show unit properties"
+msgstr "Mostrar todas las _Propiedades"
 
 #. button
 #: data/interfaces/side_control_panel.ui:18
@@ -1018,7 +1033,7 @@ msgid "_Refresh"
 msgstr "_Refrescar"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:31
+#: data/interfaces/unit_info_panel.ui:32
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Mostrar todas las _Propiedades"
@@ -2115,31 +2130,32 @@ msgctxt "toast"
 msgid "restart"
 msgstr ""
 
-#: src/widget/unit_control_panel/enums.rs:28
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:29
 msgctxt "toast"
 msgid "reload"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:35
+#: src/widget/unit_control_panel/enums.rs:36
 msgctxt "toast"
 msgid "started"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:37
+#: src/widget/unit_control_panel/enums.rs:38
 msgctxt "toast"
 msgid "stopped"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:39
+#: src/widget/unit_control_panel/enums.rs:40
 msgctxt "toast"
 msgid "restarted"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:41
+#: src/widget/unit_control_panel/enums.rs:42
 #, fuzzy
 msgctxt "toast"
 msgid "reloaded"
@@ -2358,10 +2374,6 @@ msgstr ""
 #~ msgctxt "preference"
 #~ msgid "Columns Display Parameters"
 #~ msgstr "Parámetros de visualización de columnas"
-
-#~ msgctxt "list column"
-#~ msgid "Unit"
-#~ msgstr "Unidad"
 
 #~ msgctxt "list column"
 #~ msgid "Type"

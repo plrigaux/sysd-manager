@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-25 00:11-0400\n"
+"POT-Creation-Date: 2025-11-03 12:02-0500\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -649,6 +649,7 @@ msgctxt "preference"
 msgid "Preferences"
 msgstr "Preferences"
 
+#. Section name
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "General"
@@ -679,6 +680,7 @@ msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr ""
 
+#. Section name
 #: data/interfaces/shortcuts.ui:49
 msgctxt "shortcut window"
 msgid "Pages"
@@ -703,6 +705,19 @@ msgstr "Display Unit Definition File"
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Display Unit Journal Events"
+
+#. Section name
+#: data/interfaces/shortcuts.ui:78
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Unit"
+msgstr "Mask Unit"
+
+#: data/interfaces/shortcuts.ui:82
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Show unit properties"
+msgstr "Show all _Properties"
 
 #. button
 #: data/interfaces/side_control_panel.ui:18
@@ -1036,7 +1051,7 @@ msgid "_Refresh"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_info_panel.ui:31
+#: data/interfaces/unit_info_panel.ui:32
 #, fuzzy
 msgctxt "unit info"
 msgid "Show all _Properties"
@@ -2122,34 +2137,35 @@ msgctxt "toast"
 msgid "restart"
 msgstr "Restart"
 
-#: src/widget/unit_control_panel/enums.rs:28
+#. unit action in toast message
+#: src/widget/unit_control_panel/enums.rs:29
 #, fuzzy
 msgctxt "toast"
 msgid "reload"
 msgstr "Reload All Units"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:35
+#: src/widget/unit_control_panel/enums.rs:36
 #, fuzzy
 msgctxt "toast"
 msgid "started"
 msgstr "Restart"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:37
+#: src/widget/unit_control_panel/enums.rs:38
 msgctxt "toast"
 msgid "stopped"
 msgstr ""
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:39
+#: src/widget/unit_control_panel/enums.rs:40
 #, fuzzy
 msgctxt "toast"
 msgid "restarted"
 msgstr "Restart"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:41
+#: src/widget/unit_control_panel/enums.rs:42
 #, fuzzy
 msgctxt "toast"
 msgid "reloaded"
