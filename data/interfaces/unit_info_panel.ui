@@ -25,6 +25,7 @@
         </child>
         <child>
           <object class="GtkButton" id="show_all_button">
+            <property name="action-name">app.unit_properties</property>
             <property name="child">
               <object class="AdwButtonContent">
                 <property name="icon-name">view-app-grid-symbolic</property>
@@ -32,7 +33,6 @@
                 <property name="use-underline">True</property>
               </object>
             </property>
-            <signal name="clicked" handler="show_all_clicked" swapped="yes"/>
           </object>
         </child>
       </object>

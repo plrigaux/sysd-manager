@@ -26,6 +26,9 @@ pub const WIN: &str = "win.";
 pub const ACTION_UNIT_LIST_FILTER_CLEAR: &str = "unit_list_filter_clear";
 pub const NS_ACTION_UNIT_LIST_FILTER_CLEAR: &str = concat!(WIN, ACTION_UNIT_LIST_FILTER_CLEAR);
 
+pub const ACTION_UNIT_PROPERTIES_DISPLAY: &str = "unit_properties";
+pub const APP_ACTION_UNIT_PROPERTIES_DISPLAY: &str = concat!(APP, ACTION_UNIT_PROPERTIES_DISPLAY);
+
 pub const ACTION_UNIT_LIST_FILTER: &str = "unit_list_filter";
 pub const NS_ACTION_UNIT_LIST_FILTER: &str = concat!(WIN, ACTION_UNIT_LIST_FILTER);
 

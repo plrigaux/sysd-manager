@@ -26,7 +26,7 @@ use crate::{
         text_view_hyperlink::{self, LinkActivator},
         writer::UnitInfoWriter,
     },
-    widget::{InterPanelMessage, app_window::AppWindow, info_window::InfoWindow},
+    widget::{InterPanelMessage, app_window::AppWindow},
 };
 
 use super::construct_info::fill_all_info;
@@ -57,21 +57,6 @@ impl UnitInfoPanelImp {
         info!("button {button:?}");
 
         self.refresh_panels();
-    }
-
-    #[template_callback]
-    fn show_all_clicked(&self, _button: &gtk::Button) {
-        let binding = self.unit.borrow();
-        let Some(unit) = binding.as_ref() else {
-            warn!("no unit file");
-            return;
-        };
-
-        let info_window = InfoWindow::new(Some(unit));
-
-        info!("show_all_clicked {:?}", unit.primary());
-
-        info_window.present();
     }
 }
 

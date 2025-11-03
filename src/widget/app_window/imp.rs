@@ -8,13 +8,15 @@ use std::{
 use crate::{
     consts::{
         ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
-        APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR_GENERAL,
+        ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
+        APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
     },
     systemd::{data::UnitInfo, journal::Boot},
     systemd_gui::new_settings,
     utils::palette::{blue, green, red},
     widget::{
         InterPanelMessage,
+        info_window::InfoWindow,
         journal::list_boots::ListBootsWindow,
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
         signals_dialog::SignalsWindow,
@@ -483,6 +485,30 @@ impl AppWindowImpl {
                 .build()
         };
 
+        let display_unit_properties = {
+            let app_window = self.obj().clone();
+
+            gio::ActionEntry::builder(ACTION_UNIT_PROPERTIES_DISPLAY)
+                .activate(move |_, _action, _variant| {
+                    let Some(selected_unit) = app_window.selected_unit() else {
+                        warn!("Can't display unit properties, No unit selected");
+                        return;
+                    };
+
+                    info!(
+                        "Displaying unit properties for {:?}",
+                        selected_unit.primary()
+                    );
+
+                    let unit_properties = InfoWindow::new(Some(&selected_unit));
+
+                    unit_properties.set_transient_for(Some(&app_window));
+                    //dialog.set_modal(true);
+                    unit_properties.present();
+                })
+                .build()
+        };
+
         application.add_action_entries([
             search_units,
             open_info,
@@ -494,6 +520,7 @@ impl AppWindowImpl {
             properties_selector,
             properties_selector_general,
             print_debug,
+            display_unit_properties,
         ]);
 
         application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
@@ -506,6 +533,7 @@ impl AppWindowImpl {
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
         application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR_GENERAL, &["<Ctrl>r"]);
         application.set_accels_for_action("app.debug", &["<Ctrl>q"]);
+        application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {

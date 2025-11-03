@@ -11,7 +11,7 @@
         <property name="section-name">shortcuts</property>
         <child>
           <object class="GtkShortcutsGroup">
-            <property name="title" translatable="yes" context="shortcut window">General</property>
+            <property name="title" translatable="yes" context="shortcut window" comments="Section name">General</property>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.preferences</property>
@@ -46,7 +46,7 @@
         </child>
         <child>
           <object class="GtkShortcutsGroup">
-            <property name="title" translatable="yes" context="shortcut window">Pages</property>
+            <property name="title" translatable="yes" context="shortcut window" comments="Section name">Pages</property>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.open_info</property>
@@ -69,6 +69,17 @@
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">app.open_journal</property>
                 <property name="title" translatable="yes" context="shortcut window">Display Unit Journal Events</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkShortcutsGroup">
+            <property name="title" translatable="yes" context="shortcut window" comments="Section name">Unit</property>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">app.unit_properties</property>
+                <property name="title" translatable="yes" context="shortcut window">Show unit properties</property>
               </object>
             </child>
           </object>
