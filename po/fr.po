@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-03 12:02-0500\n"
-"PO-Revision-Date: 2025-10-27 14:02+0000\n"
-"Last-Translator: p-sage <p-sage@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2025-11-03 17:14+0000\n"
+"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -22,7 +22,6 @@ msgstr ""
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
-#, fuzzy
 msgid "SysD Manager"
 msgstr "Gestionnaire SysD"
 
@@ -698,16 +697,14 @@ msgstr "Afficher le Journal Événements de l'unité"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:78
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Unité"
 
 #: data/interfaces/shortcuts.ui:82
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Show unit properties"
-msgstr "Afficher toutes les propriétés"
+msgstr "Afficher les propriétés de l'unité"
 
 #. button
 #: data/interfaces/side_control_panel.ui:18
