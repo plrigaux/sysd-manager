@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix Flatpak save file in home directory (make a warning)
 - Save unit file in run 
 
+## [2.6.1] - 2025-11-3
+
+### Added
+- Display unit properties dialog shortcut (Ctrl+p)
+
+### Fixed
+- Translation keys
+- Unit file path handling
+
 ## [2.6.0] - 2025-10-24
 
 ### Added
