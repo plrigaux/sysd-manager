@@ -245,7 +245,7 @@ mod imp {
                     &self.relaod_button,
                     blue,
                     &primary_name,
-                    &pgettext("controls", "Reload unit {} configuration by calling the thier <b>ExecReload</b> unit file instruction"),
+                    &pgettext("controls", "Reload unit {} configuration by calling the <b>ExecReload</b> unit file instruction"),
                 );
 
                 self.set_buttons_style(unit);
