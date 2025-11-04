@@ -12,11 +12,11 @@
   <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="d4c8413f9c91bf3a276c0658697e27e8accd7c96d32f9a1e97466164af3d5b2a"/>
   <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="4a993bd68b2994e7209b10c397491e743f78620804c4ea34225168697e8e64d3"/>
   <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="17963c3c244a657450834c03c3b7f2f2da08e72a3fa3bedfab48d6df1a5cc4c9"/>
-  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="d5d773be0fc3519a3d884aa4d28e04d0a8133c8b93fbef696415a03364aa9a73"/>
+  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="57f6dbe8c3b9fbb1e6670c221cb356134182019c121510af5dffaff833cad4a3"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="e6905e8ba7966c0f4fbd05b76f2a971e2b3252021bced3166e3bafdebecdac9d"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="877be95fb4df348a2d62a718523f3144b794e47d9f81cf0630a1c1279807410a"/>
-  <ui filename="shortcuts.ui" sha256="965c97e24824150c2d9f743f2308b45b67167994cbb9cb813d718512e86b646e"/>
+  <ui filename="shortcuts.ui" sha256="c352f6a082865f27b9c96d5e56e70215ac80aa5b19792f4a5e0e8d6816a1d545"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="b8d7f594dfa26ce35a2e431067dc8401671a423e8e2975eeaf6fce05511a52b2"/>
   <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="0584f7f98354bcf4460e74928f67ce049cab306e8b1bcb2154ffc16cd5d3b8c0"/>
