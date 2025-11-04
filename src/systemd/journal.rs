@@ -366,17 +366,6 @@ fn create_journal_reader(
     let unit_name = unit_name.as_str();
     info!("JOURNAL UNIT NAME {unit_name:?} BUS_LEVEL {level:?} BOOT {boot_filter:?}");
     match level {
-        UnitDBusLevel::System => {
-            journal_reader.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_COREDUMP_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_OBJECT_SYSTEMD_UNIT, unit_name)?;
-            journal_reader.match_or()?;
-            journal_reader.match_add(KEY_SYSTEMD_SLICE, unit_name)?;
-        }
         UnitDBusLevel::UserSession => {
             journal_reader.match_add(KEY_SYSTEMS_USER_UNIT, unit_name)?;
             journal_reader.match_or()?;
@@ -387,6 +376,17 @@ fn create_journal_reader(
             journal_reader.match_add(KEY_OBJECT_SYSTEMD_USER_UNIT, unit_name)?;
             journal_reader.match_or()?;
             journal_reader.match_add(KEY_SYSTEMD_USER_SLICE, unit_name)?;
+        }
+        _ => {
+            journal_reader.match_add(KEY_SYSTEMS_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_COREDUMP_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_OBJECT_SYSTEMD_UNIT, unit_name)?;
+            journal_reader.match_or()?;
+            journal_reader.match_add(KEY_SYSTEMD_SLICE, unit_name)?;
         }
     };
 

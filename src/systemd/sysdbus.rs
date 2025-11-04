@@ -81,8 +81,8 @@ pub static BLK_CON_USER: RwLock<Option<Connection>> = RwLock::new(None);
 
 fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
     let lock = match level {
-        UnitDBusLevel::System => &BLK_CON_SYST,
         UnitDBusLevel::UserSession => &BLK_CON_USER,
+        _ => &BLK_CON_SYST,
     };
 
     if let Some(ref conn) = *lock.read().unwrap() {
@@ -99,8 +99,8 @@ fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdEr
 fn build_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
     debug!("Getting connection Level {:?}, id {}", level, level as u32);
     let connection_builder = match level {
-        UnitDBusLevel::System => zbus::blocking::connection::Builder::system()?,
         UnitDBusLevel::UserSession => zbus::blocking::connection::Builder::session()?,
+        _ => zbus::blocking::connection::Builder::system()?,
     };
 
     let connection = connection_builder
@@ -117,8 +117,8 @@ pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 
 async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
     let lock = match level {
-        UnitDBusLevel::System => &CON_ASYNC_SYST,
         UnitDBusLevel::UserSession => &CON_ASYNC_USER,
+        _ => &CON_ASYNC_SYST,
     };
 
     if let Some(ref conn) = *lock.read().unwrap() {
@@ -135,8 +135,8 @@ async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, System
 async fn build_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
     debug!("Level {:?}, id {}", level, level as u32);
     let connection_builder = match level {
-        UnitDBusLevel::System => zbus::connection::Builder::system()?,
         UnitDBusLevel::UserSession => zbus::connection::Builder::session()?,
+        _ => zbus::connection::Builder::system()?,
     };
 
     let connection = connection_builder
@@ -278,20 +278,20 @@ pub async fn complete_unit_information(
     let mut ouput = Vec::with_capacity(units.len());
     for (dbus_level, unit_primary, object_path) in units {
         let connection = match dbus_level {
-            UnitDBusLevel::System => {
-                if let Some(conn) = &connection_system {
-                    conn
-                } else {
-                    let conn = get_connection(dbus_level).await?;
-                    connection_system.get_or_insert(conn) as &zbus::Connection
-                }
-            }
             UnitDBusLevel::UserSession => {
                 if let Some(conn) = &connection_session {
                     conn
                 } else {
                     let conn = get_connection(dbus_level).await?;
                     connection_session.get_or_insert(conn) as &zbus::Connection
+                }
+            }
+            _ => {
+                if let Some(conn) = &connection_system {
+                    conn
+                } else {
+                    let conn = get_connection(dbus_level).await?;
+                    connection_system.get_or_insert(conn) as &zbus::Connection
                 }
             }
         };

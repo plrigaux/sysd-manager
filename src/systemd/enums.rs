@@ -782,6 +782,8 @@ pub enum UnitDBusLevel {
     System = 0,
     #[enum_value(name = "user", nick = "User Session")]
     UserSession = 1,
+    #[enum_value(name = "both", nick = "System & User")]
+    Both = 2,
 }
 
 impl UnitDBusLevel {
@@ -789,6 +791,7 @@ impl UnitDBusLevel {
         match self {
             UnitDBusLevel::System => "s",
             UnitDBusLevel::UserSession => "u",
+            UnitDBusLevel::Both => "b",
         }
     }
 
@@ -807,7 +810,7 @@ impl UnitDBusLevel {
             //menu option
             UnitDBusLevel::UserSession => pgettext("dbus", "User Session"),
             //menu option
-            UnitDBusLevel::System => pgettext("dbus", "System"),
+            _ => pgettext("dbus", "System"),
         }
     }
 
@@ -815,6 +818,7 @@ impl UnitDBusLevel {
         match suffix {
             "s" => UnitDBusLevel::System,
             "u" => UnitDBusLevel::UserSession,
+            "b" => UnitDBusLevel::Both,
             _ => UnitDBusLevel::System,
         }
     }

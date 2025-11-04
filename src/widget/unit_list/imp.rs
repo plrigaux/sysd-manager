@@ -33,7 +33,6 @@ use crate::{
         data::UnitInfo,
         enums::{LoadState, UnitDBusLevel, UnitType},
         errors::SystemdErrors,
-        runtime,
     },
     systemd_gui,
     widget::{
@@ -461,7 +460,7 @@ impl UnitListPanelImp {
                     list.push((level, primary, path));
                 }
 
-                runtime().spawn(async move {
+                systemd::runtime().spawn(async move {
                     const BATCH_SIZE: usize = 5;
                     let mut batch = Vec::with_capacity(BATCH_SIZE);
                     for (idx, triple) in (1..).zip(list.into_iter()) {
@@ -901,7 +900,7 @@ impl UnitListPanelImp {
                 .collect();
 
             let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
-            runtime().spawn(async move {
+            systemd::runtime().spawn(async move {
                 info!("Fetching properties START for {} units", units_list.len());
                 for (level, primary_name, object_path, unit_type) in units_list {
                     let mut property_value_list = vec![None; list_len];
@@ -1348,7 +1347,7 @@ async fn go_fetch_data(
             let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
             let (sender_user, receiver_user) = tokio::sync::oneshot::channel();
 
-            runtime().spawn(async move {
+            systemd::runtime().spawn(async move {
                 let t_syst =
                     tokio::spawn(systemd::list_units_description_and_state_async(level_syst));
                 let t_user =
@@ -1372,19 +1371,26 @@ async fn go_fetch_data(
             let mut hmap =
                 HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
 
-            for listed_unit in loaded_unit_system.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level_syst);
+            for listed_unit in loaded_unit_user.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
                 hmap.insert(unit.primary(), unit);
             }
 
-            for listed_unit in loaded_unit_user.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
+            for listed_unit in loaded_unit_system.into_iter() {
+                let level = if let Some(_old_unit) = hmap.get(&listed_unit.primary_unit_name) {
+                    UnitDBusLevel::Both
+                } else {
+                    level_syst
+                };
+
+                let unit = UnitInfo::from_listed_unit(listed_unit, level);
                 hmap.insert(unit.primary(), unit);
             }
 
             unit_file_system.append(&mut unit_file_user);
             Ok((hmap, unit_file_system))
         }
+
         dlevel => {
             let level: UnitDBusLevel = if dlevel == DbusLevel::System {
                 UnitDBusLevel::System
@@ -1394,7 +1400,7 @@ async fn go_fetch_data(
 
             let (sender, receiver) = tokio::sync::oneshot::channel();
 
-            runtime().spawn(async move {
+            systemd::runtime().spawn(async move {
                 // let response = systemd::list_units_description_and_state_async().await;
 
                 let response = systemd::list_units_description_and_state_async(level).await;
