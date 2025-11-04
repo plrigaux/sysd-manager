@@ -41,11 +41,13 @@ use super::{
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 pub(super) const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
+pub(super) const INTERFACE_PROPERTIES: &str = "org.freedesktop.DBus.Properties";
 pub(crate) const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
 const METHOD_LIST_UNIT: &str = "ListUnits";
 const METHOD_LIST_UNIT_FILES: &str = "ListUnitFiles";
 
+const METHOD_GET: &str = "Get";
 const METHOD_START_UNIT: &str = "StartUnit";
 const METHOD_STOP_UNIT: &str = "StopUnit";
 const METHOD_RESTART_UNIT: &str = "RestartUnit";
@@ -148,15 +150,15 @@ async fn build_connection(level: UnitDBusLevel) -> Result<zbus::Connection, Syst
 }
 
 async fn list_units_list_async(connection: zbus::Connection) -> Result<Vec<LUnit>, SystemdErrors> {
-    let message = connection
-        .call_method(
-            Some(DESTINATION_SYSTEMD),
-            PATH_SYSTEMD,
-            Some(INTERFACE_SYSTEMD_MANAGER),
-            METHOD_LIST_UNIT,
-            &(),
-        )
-        .await?;
+    let message = call_method_async(
+        &connection,
+        DESTINATION_SYSTEMD,
+        PATH_SYSTEMD,
+        INTERFACE_SYSTEMD_MANAGER,
+        METHOD_LIST_UNIT,
+        &(),
+    )
+    .await?;
 
     let body = message.body();
 
@@ -170,15 +172,7 @@ pub fn get_unit_file_state(
     level: UnitDBusLevel,
     unit_file: &str,
 ) -> Result<EnablementStatus, SystemdErrors> {
-    let connection = get_blocking_connection(level)?;
-
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        METHOD_GET_UNIT_FILE_STATE,
-        &(unit_file),
-    )?;
+    let message = call_systemd_manager_method(level, METHOD_GET_UNIT_FILE_STATE, &(unit_file))?;
 
     let body = message.body();
     let enablement_status: &str = body.deserialize()?;
@@ -186,19 +180,72 @@ pub fn get_unit_file_state(
     Ok(EnablementStatus::from_str(enablement_status))
 }
 
+fn call_systemd_manager_method<B>(
+    level: UnitDBusLevel,
+    method: &str,
+    body: &B,
+) -> Result<Message, SystemdErrors>
+where
+    B: serde::ser::Serialize + DynamicType,
+{
+    let connection = get_blocking_connection(level)?;
+
+    call_method(
+        &connection,
+        DESTINATION_SYSTEMD,
+        PATH_SYSTEMD,
+        INTERFACE_SYSTEMD_MANAGER,
+        method,
+        body,
+    )
+}
+
+fn call_method<B>(
+    connection: &Connection,
+    destination: &str,
+    path: &str,
+    iface: &str,
+    method: &str,
+    body: &B,
+) -> Result<Message, SystemdErrors>
+where
+    B: serde::ser::Serialize + DynamicType,
+{
+    connection
+        .call_method(Some(destination), path, Some(iface), method, body)
+        .map_err(|e| SystemdErrors::from((e, method)))
+}
+
+pub async fn call_method_async<B>(
+    connection: &zbus::Connection,
+    destination: &str,
+    path: &str,
+    iface: &str,
+    method: &str,
+    body: &B,
+) -> Result<Message, SystemdErrors>
+where
+    B: serde::ser::Serialize + DynamicType,
+{
+    connection
+        .call_method(Some(destination), path, Some(iface), method, body)
+        .await
+        .map_err(|e| SystemdErrors::from((e, method)))
+}
+
 pub async fn get_unit_file_state_async(
     connection: &zbus::Connection,
     unit_file: &str,
 ) -> Result<EnablementStatus, SystemdErrors> {
-    let message = connection
-        .call_method(
-            Some(DESTINATION_SYSTEMD),
-            PATH_SYSTEMD,
-            Some(INTERFACE_SYSTEMD_MANAGER),
-            METHOD_GET_UNIT_FILE_STATE,
-            &(unit_file),
-        )
-        .await?;
+    let message = call_method_async(
+        connection,
+        DESTINATION_SYSTEMD,
+        PATH_SYSTEMD,
+        INTERFACE_SYSTEMD_MANAGER,
+        METHOD_GET_UNIT_FILE_STATE,
+        &(unit_file),
+    )
+    .await?;
 
     let body = message.body();
     let enablement_status: &str = body.deserialize()?;
@@ -390,15 +437,15 @@ pub async fn list_unit_files_async(
     connection: zbus::Connection,
     level: UnitDBusLevel,
 ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
-    let message = connection
-        .call_method(
-            Some(DESTINATION_SYSTEMD),
-            PATH_SYSTEMD,
-            Some(INTERFACE_SYSTEMD_MANAGER),
-            METHOD_LIST_UNIT_FILES,
-            &(),
-        )
-        .await?;
+    let message = call_method_async(
+        &connection,
+        DESTINATION_SYSTEMD,
+        PATH_SYSTEMD,
+        INTERFACE_SYSTEMD_MANAGER,
+        METHOD_LIST_UNIT_FILES,
+        &(),
+    )
+    .await?;
 
     let body = message.body();
 
@@ -595,10 +642,11 @@ fn get_unit_object_path_connection(
     unit_name: &str,
     connection: &Connection,
 ) -> Result<ObjectPath<'static>, SystemdErrors> {
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
+    let message = call_method(
+        connection,
+        DESTINATION_SYSTEMD,
         PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
+        INTERFACE_SYSTEMD_MANAGER,
         METHOD_GET_UNIT,
         &(unit_name),
     )?;
@@ -1240,15 +1288,7 @@ pub fn retreive_unit_processes(
     dbus_level: UnitDBusLevel,
     unit_name: &str,
 ) -> Result<Vec<UnitProcessDeserialize>, SystemdErrors> {
-    let connection = get_blocking_connection(dbus_level)?;
-
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        METHOD_GET_UNIT_PROCESSES,
-        &(unit_name),
-    )?;
+    let message = call_systemd_manager_method(dbus_level, METHOD_GET_UNIT_PROCESSES, &(unit_name))?;
 
     let unit_processes: Vec<UnitProcessDeserialize> = message.body().deserialize()?;
 
@@ -1385,15 +1425,15 @@ pub async fn fetch_unit_properties(
 ) -> Result<OwnedValue, SystemdErrors> {
     let connection = get_connection(level).await?;
 
-    let message = connection
-        .call_method(
-            Some(DESTINATION_SYSTEMD),
-            path,
-            Some("org.freedesktop.DBus.Properties"),
-            "Get",
-            &(property_interface, property),
-        )
-        .await?;
+    let message = call_method_async(
+        &connection,
+        DESTINATION_SYSTEMD,
+        path,
+        INTERFACE_PROPERTIES,
+        METHOD_GET,
+        &(property_interface, property),
+    )
+    .await?;
 
     let body = message.body();
 
