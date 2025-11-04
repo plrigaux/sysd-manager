@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix Flatpak save file in home directory (make a warning)
 - Save unit file in run 
 
+## [2.6.2] - 2025-11-4
+
+### Fixed
+- UX, extra controls side panel now scrolls
+
 ## [2.6.1] - 2025-11-3
 
 ### Added

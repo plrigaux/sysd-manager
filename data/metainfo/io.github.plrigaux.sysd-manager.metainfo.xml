@@ -81,111 +81,24 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="2.6.0" date="2025-10-24">
+    <release version="2.6.2" date="2025-11-4">
       <description translate="no">
         <p>Added</p>
         <ul>
           <li>Popup menu reenable option</li>
+          <li>Display unit properties dialog shortcut (Ctrl+P)</li>
         </ul>
         <p>Fixed</p>
         <ul>
           <li>Sorting on user defined unit's property columns wasn't working at initiation time</li>
+          <li>UX, extra controls side panel now scrolls</li>
+          <li>Unit file path handling</li>
         </ul>
       </description>
     </release>
-    <release version="2.5.0" date="2025-10-21">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Reload option in the unit popup menu</li>
-        </ul>
-        <p>Fixed</p>
-        <ul>
-          <li>Multiple scrolled windows behavior regarding the vertical height</li>
-        </ul>
-      </description>
-    </release>
-    <release version="2.4.0" date="2025-10-18">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Disable and Enable option in the popup men</li>
-        </ul>
-        <p>Fixed</p>
-        <ul>
-          <li>Popup menu appearance issues</li>
-          <li>Inactive unit display style behavior</li>
-        </ul>
-      </description>
-    </release>
-    <release version="2.3.0" date="2025-10-15">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Sorting on user defined unit's property columns</li>
-        </ul>
-      </description>
-    </release>
-    <release version="2.2.0" date="2025-10-15">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Column manager UX improvements</li>
-          <li>Translation German</li>
-          <li>Translation Portuguese Brazil</li>
-        </ul>
-      </description>
-    </release>
-    <release version="2.1.0" date="2025-10-13">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Journal ANSI color codes parsing and rendering</li>
-          <li>Save full browser column context in a user config file</li>
-        </ul>
-      </description>
-    </release>
-    <release version="2.0.0" date="2025-10-07">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Customize unit properties display in the browser</li>
-          <li>Make the inactive units browser style change in real time</li>
-        </ul>
-        <p>Changed</p>
-        <ul>
-          <li>Various code improvement</li>
-        </ul>
-        <p>Fixed</p>
-        <ul>
-          <li>Flatpak version to be able to read and save in home directory</li>
-        </ul>
-      </description>
-    </release>
-    <release version="1.32.3" date="2025-09-12">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Unit browser right click popup menu</li>
-        </ul>
-        <p>Changed</p>
-        <ul>
-          <li>Improve some unit properties retrieving</li>
-          <li>Unit browser right click popup menu look and feel</li>
-          <li>Translations fr</li>
-          <li>Translations pt_BR</li>
-        </ul>
-        <p>Fixed</p>
-        <ul>
-          <li>Cases of saving unit file not overriding completely the previous file</li>
-        </ul>
-      </description>
-    </release>
-
   </releases>
   <developer id="io.github.plrigaux">
     <name translate="no">Pierre-Luc Rigaux</name>
   </developer>
-
   <launchable type="desktop-id">io.github.plrigaux.sysd-manager.desktop</launchable>
 </component>
