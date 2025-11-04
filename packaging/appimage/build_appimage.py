@@ -327,7 +327,7 @@ def build():
     pack_libs()
 
 
-def publish():
+def just_publish():
     version = bc.get_version()
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
@@ -349,6 +349,10 @@ def publish():
 
     bc.cmd_run(cmd)
 
+def publish():
+    build()
+    make_appimage()
+    just_publish()
 
 def main():
 
@@ -377,11 +381,9 @@ def main():
             build()
             make_appimage()
         case "publish":
-            build()
-            make_appimage()
             publish()
         case "publish_only":
-            publish()
+            just_publish()
         case "linux":
             linux_deploy()
         case "pack":
