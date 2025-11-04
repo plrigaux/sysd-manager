@@ -123,8 +123,8 @@ Planned features:
    - Save filters
 - Display more properties in the unit browser
    - Add/Remove columns
-   - Ajust cell viewer according to property types (time)
-- Functionality edit gereated file or original
+   - Adjust cell viewer according to property types (time)
+- Functionality edit generated file or original
 - Context menu on unit browser row
 - Always administrator mode
 - Continuous UX improvements
@@ -187,7 +187,7 @@ cargo run -p transtools -- extract -lang <LANG>
 #### Notes
 
 - To add a new translated language, first add the new language code, respecting ```ll``` or ```ll_LL``` format, in the ```./po/LINGUAS``` files.
-- To test any tanslated languages, just set the envroment variable like this:  ```export LANGUAGE=<language code>```
+- To test any translated languages, just set the environment variable like this:  ```export LANGUAGE=<language code>```
 <!--
 ### Generate Templated
 
