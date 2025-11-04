@@ -81,7 +81,7 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="2.6.2" date="2025-11-4">
+    <release version="2.6.3" date="2025-11-4">
       <description translate="no">
         <p>Added</p>
         <ul>
@@ -93,6 +93,7 @@ https://hughsie.github.io/oars/index.html
           <li>Sorting on user defined unit's property columns wasn't working at initiation time</li>
           <li>UX, extra controls side panel now scrolls</li>
           <li>Unit file path handling</li>
+          <li>System unit takes precedence on User Session units</li>
         </ul>
       </description>
     </release>
