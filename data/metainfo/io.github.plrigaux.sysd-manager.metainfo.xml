@@ -81,7 +81,7 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="2.6.3" date="2025-11-4">
+    <release version="2.6.4" date="2025-11-5">
       <description translate="no">
         <p>Added</p>
         <ul>
@@ -94,6 +94,7 @@ https://hughsie.github.io/oars/index.html
           <li>UX, extra controls side panel now scrolls</li>
           <li>Unit file path handling</li>
           <li>System unit takes precedence on User Session units</li>
+          <li>Unit journal events displayed twice</li>
         </ul>
       </description>
     </release>
