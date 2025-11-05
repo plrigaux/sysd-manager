@@ -28,7 +28,7 @@ use crate::{
             EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo, WhatGrab,
         },
     },
-    systemd_gui,
+    systemd_gui, upgrade,
     utils::{
         font_management::set_text_view_font,
         more_colors::{Intensity, TermColor},
@@ -374,13 +374,11 @@ impl JournalPanelImp {
 
         let old_unit = self.unit.replace(Some(unit.clone()));
 
-        if unit.primary() != old_unit.map_or(String::new(), |o_unit| o_unit.primary()) {
+        if old_unit.map_or(true, |o_unit| o_unit.primary() != unit.primary()) {
             self.new_text_view();
-
             self.set_or_send_cancelling(None);
+            self.update_journal_according_to_display_order(); //TODO CHECK if needed to be include tin if clause 
         }
-
-        self.update_journal_according_to_display_order();
     }
 
     fn update_journal_according_to_display_order(&self) {
@@ -394,27 +392,27 @@ impl JournalPanelImp {
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
     fn update_journal(&self, grabbing: WhatGrab) {
+        warn!("BEGIN update_journal {grabbing:?}");
         if !self.visible_on_page.get() {
             debug!("not visible --> quit");
             return;
         }
 
         let sender_op = self.cancel_continuous_sender.borrow();
-        if sender_op.is_some() {
-            info!("under tail management --> quit");
+        if sender_op.is_some() && grabbing == WhatGrab::Newer {
+            info!("Under tail management for newer event --> quit");
             return;
         }
 
         let binding = self.unit.borrow();
-        let Some(unit_ref) = binding.as_ref() else {
+        let Some(unit) = binding.as_ref() else {
             info!("No unit file");
             self.panel_stack.set_visible_child_name(PANEL_EMPTY);
             return;
         };
 
         //self.unit_journal_loaded.set(true); // maybe wait at the full loaded
-        let unit = unit_ref.clone();
-        let journal_refresh_button = self.journal_refresh_button.clone();
+
         let journal_max_events_batch_size: usize =
             PREFERENCES.journal_max_events_batch_size() as usize;
         //let panel_stack = self.panel_stack.clone();
@@ -427,11 +425,7 @@ impl JournalPanelImp {
             .get()
             .map_or_else(|| (None, None), |(a, b)| (Some(a), Some(b)));
 
-        let journal_panel = self.obj().clone();
-
         debug!("Call from time old {oldest_event_time:?} new {newest_event_time:?}");
-
-        debug!("grabbing {grabbing:?}");
 
         let range = EventRange::new(
             grabbing,
@@ -440,16 +434,23 @@ impl JournalPanelImp {
             newest_event_time,
         );
 
-        debug!("range {range:?}");
+        info!(
+            "journal unit {:?} boot filter {boot_filter:?} Range {range:?}",
+            unit.primary()
+        );
 
-        info!("boot filter {boot_filter:?}");
-
+        let journal_panel = self.obj().downgrade();
+        let journal_refresh_button = self.journal_refresh_button.downgrade();
+        let level = unit.dbus_level();
+        let primary_name = unit.primary();
         glib::spawn_future_local(async move {
+            let journal_panel = upgrade!(journal_panel);
+            let journal_refresh_button = upgrade!(journal_refresh_button);
+
             //panel_stack.set_visible_child_name(PANEL_SPINNER);
             journal_refresh_button.set_sensitive(false);
             let boot_filter2 = boot_filter.clone();
-            let level = unit.dbus_level();
-            let primary_name = unit.primary();
+
             let journal_events: JournalEventChunk = gio::spawn_blocking(move || {
                 match systemd::get_unit_journal(primary_name, level, boot_filter, range) {
                     Ok(journal_output) => journal_output,
@@ -462,8 +463,8 @@ impl JournalPanelImp {
             .await
             .expect("Task needs to finish successfully.");
 
-            journal_panel.imp().handle_journal_events(&journal_events);
             let journal_panel_imp = journal_panel.imp();
+            journal_panel_imp.handle_journal_events(&journal_events);
 
             //TODO better check all cases
             match journal_events.info() {

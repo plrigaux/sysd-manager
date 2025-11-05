@@ -92,7 +92,7 @@ impl JournalEventChunk {
     } */
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum WhatGrab {
     //Grab newer events
     Newer,

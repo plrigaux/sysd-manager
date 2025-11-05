@@ -12,7 +12,7 @@ use crate::{
     widget::preferences::data::PREFERENCES,
 };
 use chrono::{Local, Utc};
-use log::{debug, info, warn};
+use log::{debug, info, trace, warn};
 use sysd::{Journal, id128::Id128, journal::OpenOptions};
 
 use super::{
@@ -47,7 +47,8 @@ pub(super) fn get_unit_journal_events(
 ) -> Result<JournalEventChunk, SystemdErrors> {
     let mut out_list = JournalEventChunk::new(range.batch_size + 10, range.what_grab);
 
-    let mut journal_reader = create_journal_reader(primary_name, level, boot_filter)?;
+    info!("Get journal Event {primary_name:?}");
+    let mut journal_reader = create_journal_reader(&primary_name, level, boot_filter)?;
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
@@ -153,7 +154,8 @@ pub fn get_unit_journal_events_continuous(
     journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
 ) -> Result<(), SystemdErrors> {
-    let mut journal_reader = create_journal_reader(unit_name, bus_level, BootFilter::Current)?;
+    info!("Journal Continiuous");
+    let mut journal_reader = create_journal_reader(&unit_name, bus_level, BootFilter::Current)?;
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
@@ -173,7 +175,7 @@ pub fn get_unit_journal_events_continuous(
         loop {
             match journal_continuous_receiver.try_recv() {
                 Ok(_) | Err(TryRecvError::Disconnected) => {
-                    warn!("Terminating.");
+                    info!("Terminating journal loop for {unit_name:?}.");
                     return Ok(());
                 }
                 Err(TryRecvError::Empty) => {}
@@ -198,7 +200,7 @@ pub fn get_unit_journal_events_continuous(
 
                 match journal_reader.wait(Some(std::time::Duration::from_secs(1)))? {
                     sysd::JournalWaitResult::Nop => {
-                        debug!("wait loop {idx}");
+                        trace!("wait loop {idx}");
                         idx += 1;
                     }
                     sysd::JournalWaitResult::Append => {
@@ -355,16 +357,15 @@ pub(super) fn fetch_last_time() -> Result<u64, SystemdErrors> {
 }
 
 fn create_journal_reader(
-    unit_name: String,
+    unit_name: &str,
     level: UnitDBusLevel,
     boot_filter: BootFilter,
 ) -> Result<Journal, SystemdErrors> {
-    info!("Starting journal-logger");
     let mut journal_reader = OpenOptions::default()
         .open()
         .expect("Could not open journal");
-    let unit_name = unit_name.as_str();
-    info!("JOURNAL UNIT NAME {unit_name:?} BUS_LEVEL {level:?} BOOT {boot_filter:?}");
+
+    info!("JOURNAL UNIT {unit_name:?} LEVEL {level:?} BOOT {boot_filter:?}");
     match level {
         UnitDBusLevel::UserSession => {
             journal_reader.match_add(KEY_SYSTEMS_USER_UNIT, unit_name)?;
