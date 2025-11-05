@@ -419,7 +419,7 @@ impl UnitControlPanelImpl {
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         match action {
             InterPanelMessage::Font(font_description) => {
-                let provider = create_provider(&font_description);
+                let provider = create_provider(font_description);
                 {
                     let binding = self.old_font_provider.borrow();
                     let old_provider = binding.as_ref();
@@ -470,7 +470,7 @@ impl UnitControlPanelImpl {
                     &self.obj(),
                     EnablementStatus::Enabled,
                     &self.ablement_switch,
-                    &unit,
+                    unit,
                     self.is_dark.get(),
                     call_back.clone(),
                 );
@@ -480,7 +480,7 @@ impl UnitControlPanelImpl {
                     &self.obj(),
                     EnablementStatus::Disabled,
                     &self.ablement_switch,
-                    &unit,
+                    unit,
                     self.is_dark.get(),
                     call_back.clone(),
                 );
@@ -490,7 +490,7 @@ impl UnitControlPanelImpl {
                 controls::reeenable_unit(
                     &self.obj(),
                     &self.ablement_switch,
-                    &unit,
+                    unit,
                     self.is_dark.get(),
                     call_back.clone(),
                 );

@@ -186,7 +186,7 @@ pub fn disenable_unit_file(
         EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => {
             let res = sysdbus::enable_unit_files(
                 level,
-                &[&primary_name],
+                &[primary_name],
                 DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
             )?;
             DisEnableUnitFilesOutput::Enable(res)
@@ -198,7 +198,7 @@ pub fn disenable_unit_file(
                 DisEnableFlags::empty()
             };
 
-            let out = sysdbus::disable_unit_files(level, &[&primary_name], flags)?;
+            let out = sysdbus::disable_unit_files(level, &[primary_name], flags)?;
             DisEnableUnitFilesOutput::Disable(out)
         }
     };

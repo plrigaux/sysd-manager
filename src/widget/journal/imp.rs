@@ -374,7 +374,8 @@ impl JournalPanelImp {
 
         let old_unit = self.unit.replace(Some(unit.clone()));
 
-        if old_unit.map_or(true, |o_unit| o_unit.primary() != unit.primary()) {
+        //Assume that the ne unit is not None
+        if old_unit.is_none_or(|o_unit| o_unit.primary() != unit.primary()) {
             self.new_text_view();
             self.set_or_send_cancelling(None);
             self.update_journal_according_to_display_order(); //TODO CHECK if needed to be include tin if clause 
