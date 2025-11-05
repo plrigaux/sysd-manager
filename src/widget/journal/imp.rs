@@ -683,7 +683,7 @@ impl JournalPanelImp {
 
     fn new_text_view(&self) {
         info!("new_text_view");
-        let tv: gtk::TextView = gtk::TextView::builder().build();
+        let tv: gtk::TextView = gtk::TextView::builder().editable(false).build();
         self.scrolled_window.set_child(Some(&tv));
         self.journal_text_view.replace(tv);
         self.time_old_new.set(None);
