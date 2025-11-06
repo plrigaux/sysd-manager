@@ -324,11 +324,12 @@ impl UnitPropertyFilter for FilterText {
     }
 
     fn clear_n_apply_filter(&mut self) {
-        self.filter_text.clear(); //FIXME it does not apply
+        self.filter_text.clear(); //FIXME it does not apply, but might be Ok
+        self.match_type = MatchType::default();
     }
 
     fn clear_filter(&mut self) {
-        self.filter_text.clear();
+        self.clear_n_apply_filter();
         (self.lambda)(true);
     }
 
@@ -413,11 +414,11 @@ impl UnitPropertyAssessor for FilterTextAssessor {
         self.id
     }
 
-    /*     fn text(&self) -> &str {
+    fn text(&self) -> &str {
         &self.filter_text
     }
 
     fn match_type(&self) -> MatchType {
         self.match_type
-    } */
+    }
 }
