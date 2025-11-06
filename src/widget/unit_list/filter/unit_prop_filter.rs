@@ -1,4 +1,9 @@
-use crate::{systemd::data::UnitInfo, widget::unit_list::UnitListPanel};
+use log::debug;
+
+use crate::{
+    systemd::{data::UnitInfo, enums::MatchType},
+    widget::unit_list::UnitListPanel,
+};
 use std::{
     any::Any,
     collections::HashSet,
@@ -23,6 +28,10 @@ pub trait UnitPropertyFilter: Debug {
     }
 
     fn is_empty(&self) -> bool;
+
+    fn match_type(&self) -> MatchType {
+        MatchType::default()
+    }
 }
 
 pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterElement<T>
@@ -176,6 +185,7 @@ where
 
 pub struct FilterText {
     filter_text: String,
+    match_type: MatchType,
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
     id: u8,
@@ -199,6 +209,7 @@ impl FilterText {
     ) -> Self {
         Self {
             filter_text: Default::default(),
+            match_type: MatchType::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
             id,
@@ -236,10 +247,51 @@ impl FilterText {
         } else {
             Some(Box::new(FilterTextAssessor {
                 filter_text: self.filter_text.clone(),
+                match_type: self.match_type,
                 filter_unit_func: self.filter_unit_func,
                 id: self.id,
             }))
         };
+
+        self.unit_list_panel.filter_assessor_change(
+            self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        );
+    }
+
+    pub fn set_filter_match_type(&mut self, match_type: MatchType, update_widget: bool) {
+        debug!("Match type new {match_type:?} old {:?}", self.match_type);
+        if match_type == self.match_type {
+            debug!("exit same");
+            return;
+        }
+
+        let change_type = match (match_type, self.match_type) {
+            (MatchType::Contains, MatchType::StartWith) => gtk::FilterChange::LessStrict,
+            (MatchType::Contains, MatchType::EndWith) => gtk::FilterChange::LessStrict,
+            (MatchType::StartWith, MatchType::Contains) => gtk::FilterChange::MoreStrict,
+            (MatchType::EndWith, MatchType::Contains) => gtk::FilterChange::MoreStrict,
+
+            (_, _) => gtk::FilterChange::Different,
+        };
+
+        debug!("change_type {change_type:?}");
+
+        self.match_type = match_type;
+
+        if self.filter_text.is_empty() {
+            debug!("exit filter_text empty");
+            return;
+        }
+
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = Some(Box::new(FilterTextAssessor {
+            filter_text: self.filter_text.clone(),
+            match_type: self.match_type,
+            filter_unit_func: self.filter_unit_func,
+            id: self.id,
+        }));
 
         self.unit_list_panel.filter_assessor_change(
             self.id,
@@ -288,6 +340,10 @@ pub trait UnitPropertyAssessor: core::fmt::Debug {
     fn text(&self) -> &str {
         ""
     }
+
+    fn match_type(&self) -> MatchType {
+        MatchType::default()
+    }
 }
 
 #[derive(Debug)]
@@ -325,6 +381,7 @@ where
 #[derive(Debug)]
 pub struct FilterTextAssessor {
     filter_text: String,
+    match_type: MatchType, //TODO make distintive struct to avoid runtime if
     filter_unit_func: fn(&FilterTextAssessor, &UnitInfo) -> bool,
     id: u8,
 }
@@ -334,7 +391,11 @@ impl FilterTextAssessor {
         if self.filter_text.is_empty() {
             true
         } else {
-            unit_value.contains(&self.filter_text)
+            match self.match_type {
+                MatchType::Contains => unit_value.contains(&self.filter_text),
+                MatchType::StartWith => unit_value.starts_with(&self.filter_text),
+                MatchType::EndWith => unit_value.ends_with(&self.filter_text),
+            }
         }
     }
 }
@@ -350,5 +411,9 @@ impl UnitPropertyAssessor for FilterTextAssessor {
 
     fn text(&self) -> &str {
         &self.filter_text
+    }
+
+    fn match_type(&self) -> MatchType {
+        self.match_type
     }
 }

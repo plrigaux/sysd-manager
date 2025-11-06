@@ -7,6 +7,7 @@ use gtk::prelude::*;
 use log::{info, warn};
 use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
+use strum::IntoEnumIterator;
 use zvariant::OwnedValue;
 
 const MASKED: &str = "masked";
@@ -993,6 +994,47 @@ impl From<Option<&OwnedValue>> for LoadState {
             Some(zvariant::Value::Str(zvalue)) => zvalue.as_str().into(),
             _ => LoadState::Unknown,
         }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum, EnumIter)]
+#[enum_type(name = "MatchType")]
+//#[allow(dead_code)]
+pub enum MatchType {
+    #[default]
+    #[enum_value(name = "contains")]
+    Contains,
+
+    #[enum_value(name = "start_with")]
+    StartWith,
+
+    #[enum_value(name = "end_with")]
+    EndWith,
+}
+
+impl MatchType {
+    pub fn as_str(&self) -> &'static str {
+        let enum_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
+        enum_value.name()
+    }
+
+    pub fn position(&self) -> u32 {
+        match self {
+            MatchType::Contains => 0,
+            MatchType::StartWith => 1,
+            MatchType::EndWith => 2,
+        }
+    }
+}
+
+impl From<u32> for MatchType {
+    fn from(value: u32) -> Self {
+        for (idx, mt) in MatchType::iter().enumerate() {
+            if idx == value as usize {
+                return mt;
+            }
+        }
+        MatchType::default()
     }
 }
 

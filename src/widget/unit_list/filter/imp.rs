@@ -18,12 +18,14 @@ use gtk::{
     },
 };
 
-use log::{error, info};
+use log::{debug, error, info};
 use strum::IntoEnumIterator;
 
 use crate::{
     consts::FLAT,
-    systemd::enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
+    systemd::enums::{
+        ActiveState, EnablementStatus, LoadState, MatchType, Preset, UnitDBusLevel, UnitType,
+    },
     widget::{
         preferences::data::UNIT_LIST_COLUMNS,
         unit_list::{
@@ -311,7 +313,7 @@ pub(crate) fn contain_entry() -> (gtk::Box, gtk::Entry) {
 }
 
 pub enum FilterWidget {
-    Text(gtk::Entry),
+    Text(gtk::Entry, gtk::DropDown),
     CheckBox(gtk::CheckButton),
     WrapBox(adw::WrapBox),
 }
@@ -319,9 +321,11 @@ pub enum FilterWidget {
 impl FilterWidget {
     fn clear(&self) {
         match self {
-            FilterWidget::Text(entry) => {
+            FilterWidget::Text(entry, dropdown) => {
                 entry.set_text("");
+                dropdown.set_selected(0);
             }
+
             FilterWidget::CheckBox(check) => {
                 check.set_active(false);
             }
@@ -350,28 +354,68 @@ fn common_text_filter(
         .build();
     merge_box.append(&entry);
     merge_box.append(&button_clear_entry);
+
     container.append(&merge_box);
+
+    let label = gtk::Label::builder().label("Match type:").build();
+
+    let model_str: Vec<&str> = MatchType::iter().map(|x| x.as_str()).collect();
+    let model = gtk::StringList::new(&model_str);
+    let dropdown = gtk::DropDown::builder()
+        .model(&model)
+        .halign(gtk::Align::Fill)
+        .build();
+    let drop_box = gtk::Box::builder()
+        .halign(gtk::Align::Fill)
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(5)
+        .build();
+
+    drop_box.append(&label);
+    drop_box.append(&dropdown);
+    container.append(&drop_box);
 
     let filter_container = filter_container.clone();
 
     {
         let filter_container = filter_container.borrow();
         entry.set_text(filter_container.text());
+        dropdown.set_selected(filter_container.match_type().position());
     }
 
-    let filter_wiget = FilterWidget::Text(entry.clone());
+    let filter_wiget = FilterWidget::Text(entry.clone(), dropdown.clone());
+    {
+        let filter_container = filter_container.clone();
+        entry.connect_changed(move |entry| {
+            let text = entry.text();
 
-    entry.connect_changed(move |entry| {
-        let text = entry.text();
+            let mut binding = filter_container.as_ref().borrow_mut();
 
-        let mut binding = filter_container.as_ref().borrow_mut();
+            let filter_text = binding
+                .as_any_mut()
+                .downcast_mut::<FilterText>()
+                .expect("downcast_mut to FilterText");
+            filter_text.set_filter_elem(&text, true);
+        });
+    }
 
-        let filter_text = binding
-            .as_any_mut()
-            .downcast_mut::<FilterText>()
-            .expect("downcast_mut to FilterText");
-        filter_text.set_filter_elem(&text, true);
-    });
+    {
+        dropdown.connect_selected_item_notify(move |dropdown| {
+            let idx = dropdown.selected();
+            let match_type: MatchType = idx.into();
+
+            debug!("Filter match type idx {idx:?} type {match_type:?}");
+
+            let mut binding = filter_container.as_ref().borrow_mut();
+
+            let filter_text = binding
+                .as_any_mut()
+                .downcast_mut::<FilterText>()
+                .expect("downcast_mut to FilterText");
+
+            filter_text.set_filter_match_type(match_type, true);
+        });
+    }
 
     button_clear_entry.connect_clicked(move |_| {
         entry.set_text("");
