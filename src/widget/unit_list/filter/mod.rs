@@ -51,7 +51,7 @@ impl UnitListFilterWindow {
 
 pub fn filter_unit_name(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
     let name = unit.display_name();
-    property_assessor.filter_unit_value(&name)
+    (property_assessor.filter_unit_value_func)(property_assessor, &name)
 }
 
 pub fn filter_bus_level(
@@ -102,5 +102,5 @@ pub fn filter_sub_state(
 }
 
 pub fn filter_unit_description(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
-    property_assessor.filter_unit_value(&unit.description())
+    (property_assessor.filter_unit_value_func)(property_assessor, &unit.description())
 }

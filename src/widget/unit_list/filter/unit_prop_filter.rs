@@ -245,12 +245,7 @@ impl FilterText {
         let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_empty {
             None
         } else {
-            Some(Box::new(FilterTextAssessor {
-                filter_text: self.filter_text.clone(),
-                match_type: self.match_type,
-                filter_unit_func: self.filter_unit_func,
-                id: self.id,
-            }))
+            Some(Box::new(FilterTextAssessor::new(self)))
         };
 
         self.unit_list_panel.filter_assessor_change(
@@ -286,12 +281,8 @@ impl FilterText {
             return;
         }
 
-        let assessor: Option<Box<dyn UnitPropertyAssessor>> = Some(Box::new(FilterTextAssessor {
-            filter_text: self.filter_text.clone(),
-            match_type: self.match_type,
-            filter_unit_func: self.filter_unit_func,
-            id: self.id,
-        }));
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> =
+            Some(Box::new(FilterTextAssessor::new(self)));
 
         self.unit_list_panel.filter_assessor_change(
             self.id,
@@ -386,22 +377,45 @@ where
 #[derive(Debug)]
 pub struct FilterTextAssessor {
     filter_text: String,
-    match_type: MatchType, //TODO make distintive struct to avoid runtime if
+    //match_type: MatchType, //TODO make distintive struct to avoid runtime if
     filter_unit_func: fn(&FilterTextAssessor, &UnitInfo) -> bool,
     id: u8,
+    pub(crate) filter_unit_value_func:
+        fn(filter_text: &FilterTextAssessor, unit_value: &str) -> bool,
 }
 
 impl FilterTextAssessor {
-    pub(crate) fn filter_unit_value(&self, unit_value: &str) -> bool {
-        if self.filter_text.is_empty() {
-            true
-        } else {
-            match self.match_type {
-                MatchType::Contains => unit_value.contains(&self.filter_text),
-                MatchType::StartWith => unit_value.starts_with(&self.filter_text),
-                MatchType::EndWith => unit_value.ends_with(&self.filter_text),
-            }
+    fn new(filter_text: &FilterText) -> Self {
+        let filter_unit_value_func =
+            match (filter_text.filter_text.is_empty(), filter_text.match_type) {
+                (true, _) => Self::filter_unit_value_func_empty,
+                (false, MatchType::Contains) => Self::filter_unit_value_func_contains,
+                (false, MatchType::StartWith) => Self::filter_unit_value_func_start_with,
+                (false, MatchType::EndWith) => Self::filter_unit_value_func_end_with,
+            };
+
+        FilterTextAssessor {
+            filter_text: filter_text.filter_text.clone(),
+            filter_unit_func: filter_text.filter_unit_func,
+            id: filter_text.id,
+            filter_unit_value_func,
         }
+    }
+
+    fn filter_unit_value_func_empty(&self, _unit_value: &str) -> bool {
+        true
+    }
+
+    fn filter_unit_value_func_contains(&self, unit_value: &str) -> bool {
+        unit_value.contains(&self.filter_text)
+    }
+
+    fn filter_unit_value_func_start_with(&self, unit_value: &str) -> bool {
+        unit_value.starts_with(&self.filter_text)
+    }
+
+    fn filter_unit_value_func_end_with(&self, unit_value: &str) -> bool {
+        unit_value.ends_with(&self.filter_text)
     }
 }
 
@@ -416,9 +430,5 @@ impl UnitPropertyAssessor for FilterTextAssessor {
 
     fn text(&self) -> &str {
         &self.filter_text
-    }
-
-    fn match_type(&self) -> MatchType {
-        self.match_type
     }
 }
