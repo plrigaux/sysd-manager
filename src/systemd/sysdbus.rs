@@ -297,7 +297,7 @@ pub async fn complete_unit_information(
         };
 
         let f2 = get_unit_file_state_async(connection, &unit_primary);
-        let f1 = complete_unit_info(&unit_primary, object_path, connection);
+        let f1 = complete_unit_info(connection, &unit_primary, object_path);
 
         let (r1, r2) = tokio::join!(f1, f2);
 
@@ -345,16 +345,29 @@ trait ZUnitInfo {
     fn unit_file_preset(&self) -> Result<String, zbus::Error>;
 }
 
+macro_rules! get_completing_info {
+    ($unit_info_proxy:expr, $f:ident) => {
+        $unit_info_proxy
+            .$f()
+            .await
+            .map_err(|e| {
+                warn!("bus {e:?}");
+                SystemdErrors::from(e)
+            })
+            .ok()
+    };
+}
+
 macro_rules! fill_completing_info {
     ($update:expr, $unit_info_proxy:expr, $f:ident) => {
-        $update.$f = $unit_info_proxy.$f().await.map(|val| Some(val))?;
+        $update.$f = get_completing_info!($unit_info_proxy, $f);
     };
 }
 
 async fn complete_unit_info(
+    connection: &zbus::Connection,
     unit_primary: &String,
     object_path: String,
-    connection: &zbus::Connection,
 ) -> Result<UpdatedUnitInfo, SystemdErrors> {
     let unit_info_proxy = ZUnitInfoProxy::builder(connection)
         .path(object_path.clone())?
@@ -379,15 +392,7 @@ async fn fill_update(
     update.active_state = Some(active_state);
     fill_completing_info!(update, unit_info_proxy, description);
 
-    let load_state = unit_info_proxy
-        .load_state()
-        .await
-        .map_err(|e| {
-            warn!("bus {e:?}");
-            let e: SystemdErrors = e.into();
-            e
-        })
-        .ok();
+    let load_state = get_completing_info!(unit_info_proxy, load_state);
     let load_state: LoadState = load_state.into();
     update.load_state = Some(load_state);
 

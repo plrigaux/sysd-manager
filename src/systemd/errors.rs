@@ -115,18 +115,43 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
 
                 match err_code {
                     "org.freedesktop.DBus.Error.AccessDenied" => {
+                        let method = if method.is_empty() {
+                            "AccessDenied"
+                        } else {
+                            method
+                        };
                         SystemdErrors::ZAccessDenied(method.to_owned(), message)
                     }
                     "org.freedesktop.systemd1.NoSuchUnit" => {
+                        let method = if method.is_empty() {
+                            "NoSuchUnit"
+                        } else {
+                            method
+                        };
                         SystemdErrors::ZNoSuchUnit(method.to_owned(), message)
                     }
                     "org.freedesktop.DBus.Error.InvalidArgs" => {
+                        let method = if method.is_empty() {
+                            "InvalidArgs"
+                        } else {
+                            method
+                        };
                         SystemdErrors::ZNoSuchUnitProxy(method.to_owned(), message)
                     }
                     "org.freedesktop.systemd1.JobTypeNotApplicable" => {
+                        let method = if method.is_empty() {
+                            "JobTypeNotApplicable"
+                        } else {
+                            method
+                        };
                         SystemdErrors::ZJobTypeNotApplicable(method.to_owned(), message)
                     }
                     "org.freedesktop.systemd1.UnitMasked" => {
+                        let method = if method.is_empty() {
+                            "UnitMasked"
+                        } else {
+                            method
+                        };
                         SystemdErrors::ZUnitMasked(method.to_owned(), message)
                     }
                     _ => {
@@ -142,6 +167,7 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
 
 impl From<zbus::Error> for SystemdErrors {
     fn from(error: zbus::Error) -> Self {
+        //log::info!("TS {:?}", error);
         SystemdErrors::from((error, ""))
     }
 }
