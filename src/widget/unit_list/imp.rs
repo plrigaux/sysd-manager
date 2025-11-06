@@ -274,7 +274,7 @@ impl UnitListPanelImp {
                 .activate(move |_application: &AppWindow, _b, _target_value| {
                     unit_list_panel.imp().clear_filters();
                 })
-                .parameter_type(Some(VariantTy::STRING))
+                //    .parameter_type(Some(VariantTy::STRING))
                 .build()
         };
 
