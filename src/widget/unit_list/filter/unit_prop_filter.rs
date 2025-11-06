@@ -319,6 +319,10 @@ impl UnitPropertyFilter for FilterText {
         &self.filter_text
     }
 
+    fn match_type(&self) -> MatchType {
+        self.match_type
+    }
+
     fn clear_n_apply_filter(&mut self) {
         self.filter_text.clear(); //FIXME it does not apply
     }
@@ -409,11 +413,11 @@ impl UnitPropertyAssessor for FilterTextAssessor {
         self.id
     }
 
-    fn text(&self) -> &str {
+    /*     fn text(&self) -> &str {
         &self.filter_text
     }
 
     fn match_type(&self) -> MatchType {
         self.match_type
-    }
+    } */
 }

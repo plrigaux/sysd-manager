@@ -375,10 +375,13 @@ fn common_text_filter(
     drop_box.append(&dropdown);
     container.append(&drop_box);
 
-    let filter_container = filter_container.clone();
-
     {
         let filter_container = filter_container.borrow();
+        debug!(
+            "starting match type {:?} text {:?}",
+            filter_container.match_type(),
+            filter_container.text()
+        );
         entry.set_text(filter_container.text());
         dropdown.set_selected(filter_container.match_type().position());
     }
@@ -395,11 +398,14 @@ fn common_text_filter(
                 .as_any_mut()
                 .downcast_mut::<FilterText>()
                 .expect("downcast_mut to FilterText");
+
             filter_text.set_filter_elem(&text, true);
         });
     }
 
     {
+        let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>> =
+            filter_container.clone();
         dropdown.connect_selected_item_notify(move |dropdown| {
             let idx = dropdown.selected();
             let match_type: MatchType = idx.into();
