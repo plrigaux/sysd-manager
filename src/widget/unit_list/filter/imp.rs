@@ -53,11 +53,35 @@ pub struct UnitListFilterWindowImp {
     #[property(get, set, nullable, default = None)]
     selected: RefCell<Option<String>>,
 
+    filter_widgets: RefCell<Vec<Vec<FilterWidget>>>,
+
     pub(super) unit_list_panel: OnceCell<UnitListPanel>,
 }
 
 #[gtk::template_callbacks]
-impl UnitListFilterWindowImp {}
+impl UnitListFilterWindowImp {
+    #[template_callback]
+    fn clear_all_filters_button_clicked(&self, _button: gtk::Button) {
+        let unit_list_panel = self
+            .unit_list_panel
+            .get()
+            .expect("unit_list_panel in filter dialog not None");
+
+        unit_list_panel.clear_filters();
+
+        let selection_model = self.filter_stack.pages();
+        let list: gio::ListModel = selection_model.into();
+        let nb = list.n_items();
+
+        info!("Clean all the {nb} filters");
+
+        for filter_widgets_list in self.filter_widgets.borrow().iter() {
+            for filter_widget in filter_widgets_list {
+                filter_widget.clear();
+            }
+        }
+    }
+}
 
 impl UnitListFilterWindowImp {
     pub(super) fn get_filter(&self) {
@@ -160,45 +184,10 @@ impl UnitListFilterWindowImp {
             self.filter_navigation_container.append(&button);
         }
 
-        self.get_filter2(unit_list_panel, selected, filter_widgets);
-    }
+        self.filter_widgets.replace(filter_widgets);
 
-    fn get_filter2(
-        &self,
-        unit_list_panel: &UnitListPanel,
-        selected: Option<&String>,
-        all_filter_widgets: Vec<Vec<FilterWidget>>,
-    ) {
         let box_pad = gtk::Box::builder().vexpand(true).build();
 
-        let clear_all_filters_button = gtk::Button::builder()
-            .label("Clear Filters")
-            // .css_classes(["destructive-action"])
-            .valign(gtk::Align::End)
-            .hexpand(true)
-            .build();
-        {
-            let unit_list_panel = unit_list_panel.clone();
-            let filter_stack = self.filter_stack.clone();
-
-            clear_all_filters_button.connect_clicked(move |_b| {
-                unit_list_panel.clear_filters();
-
-                let selection_model = filter_stack.pages();
-                let list: gio::ListModel = selection_model.into();
-                let nb = list.n_items();
-
-                info!("Clean all the {nb} filters");
-
-                for filter_widgets_list in &all_filter_widgets {
-                    for filter_widget in filter_widgets_list {
-                        filter_widget.clear();
-                    }
-                }
-            });
-        }
-
-        box_pad.append(&clear_all_filters_button);
         self.filter_navigation_container.append(&box_pad);
 
         if let Some(selected) = selected {
