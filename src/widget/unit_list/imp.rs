@@ -80,7 +80,7 @@ impl UnitKey {
 }
 
 type UnitPropertyFiltersContainer =
-    OnceCell<HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
+    RefCell<HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>;
 
 #[derive(Default, gtk::CompositeTemplate, Properties)]
@@ -711,7 +711,8 @@ impl UnitListPanelImp {
         let mut applied_assessors = applied_assessors.borrow_mut();
         applied_assessors.clear();
 
-        for property_filter in self.unit_property_filters.get().expect("Not None").values() {
+        //TODO investigate if usefull
+        for property_filter in self.unit_property_filters.borrow().values() {
             let mut prop_filter_mut = property_filter.borrow_mut();
             prop_filter_mut.clear_filter();
         }
@@ -741,13 +742,12 @@ impl UnitListPanelImp {
 
     pub(super) fn update_unit_name_search(&self, text: &str, update_widget: bool) {
         debug!("update_unit_name_search {text}");
-        let mut filter = self
-            .unit_property_filters
-            .get()
-            .expect("Not None")
-            .get(COL_ID_UNIT)
-            .expect("Always unit")
-            .borrow_mut();
+        let Some(filter) = self.try_get_filter_assessor(COL_ID_UNIT) else {
+            error!("No filter id {COL_ID_UNIT}");
+            return;
+        };
+
+        let mut filter = filter.borrow_mut();
 
         let filter = filter
             .as_any_mut()
@@ -758,7 +758,7 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
-        for property_filter in self.unit_property_filters.get().expect("Not None").values() {
+        for property_filter in self.unit_property_filters.borrow().values() {
             property_filter.borrow_mut().clear_widget_dependancy();
         }
     }
@@ -782,6 +782,82 @@ impl UnitListPanelImp {
             }
             true
         })
+    }
+
+    pub(super) fn try_get_filter_assessor(
+        &self,
+        id: &str,
+    ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
+        {
+            if let Some(filter) = self.unit_property_filters.borrow().get(id) {
+                return Some(filter.clone());
+            }
+        }
+
+        let unit_list_panel: glib::BorrowedObject<'_, crate::widget::unit_list::UnitListPanel> =
+            self.obj();
+
+        let filter: Option<Box<dyn UnitPropertyFilter>> = match id {
+            COL_ID_UNIT => Some(Box::new(FilterText::new(
+                id,
+                filter_unit_name,
+                &unit_list_panel,
+            ))),
+            "sysdm-bus" => Some(Box::new(FilterElement::new(
+                id,
+                filter_bus_level,
+                &unit_list_panel,
+            ))),
+            "sysdm-type" => Some(Box::new(FilterElement::new(
+                id,
+                filter_unit_type,
+                &unit_list_panel,
+            ))),
+            "sysdm-state" => Some(Box::new(FilterElement::new(
+                id,
+                filter_enable_status,
+                &unit_list_panel,
+            ))),
+            "sysdm-preset" => Some(Box::new(FilterElement::new(
+                id,
+                filter_preset,
+                &unit_list_panel,
+            ))),
+            "sysdm-load" => Some(Box::new(FilterElement::new(
+                id,
+                filter_load_state,
+                &unit_list_panel,
+            ))),
+            "sysdm-active" => Some(Box::new(FilterElement::new(
+                id,
+                filter_active_state,
+                &unit_list_panel,
+            ))),
+            "sysdm-sub" => Some(Box::new(FilterElement::new(
+                id,
+                filter_sub_state,
+                &unit_list_panel,
+            ))),
+            "sysdm-description" => Some(Box::new(FilterText::new(
+                id,
+                filter_unit_description,
+                &unit_list_panel,
+            ))),
+            _ => {
+                error!("Key {id}");
+                None
+            }
+        };
+
+        if let Some(filter) = filter {
+            let mut unit_property_filters = self.unit_property_filters.borrow_mut();
+            let filter = Rc::new(RefCell::new(filter));
+            unit_property_filters.insert(id.to_string(), filter.clone());
+
+            Some(filter)
+        } else {
+            None
+        }
     }
 
     pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
@@ -1122,71 +1198,6 @@ impl ObjectImpl for UnitListPanelImp {
                 column_factories::setup_factories(&unit_list, &column_view_column_list);
             },
         );
-
-        let mut filter_assessors: HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
-            HashMap::with_capacity(UNIT_LIST_COLUMNS.len());
-
-        let unit_list_panel: glib::BorrowedObject<'_, crate::widget::unit_list::UnitListPanel> =
-            self.obj();
-        for (_, key, _num_id, _) in &*UNIT_LIST_COLUMNS {
-            let filter: Option<Box<dyn UnitPropertyFilter>> = match *key {
-                COL_ID_UNIT => Some(Box::new(FilterText::new(
-                    key,
-                    filter_unit_name,
-                    &unit_list_panel,
-                ))),
-                "sysdm-bus" => Some(Box::new(FilterElement::new(
-                    key,
-                    filter_bus_level,
-                    &unit_list_panel,
-                ))),
-                "sysdm-type" => Some(Box::new(FilterElement::new(
-                    key,
-                    filter_unit_type,
-                    &unit_list_panel,
-                ))),
-                "sysdm-state" => Some(Box::new(FilterElement::new(
-                    key,
-                    filter_enable_status,
-                    &unit_list_panel,
-                ))),
-                "sysdm-preset" => Some(Box::new(FilterElement::new(
-                    key,
-                    filter_preset,
-                    &unit_list_panel,
-                ))),
-                "sysdm-load" => Some(Box::new(FilterElement::new(
-                    key,
-                    filter_load_state,
-                    &unit_list_panel,
-                ))),
-                "sysdm-active" => Some(Box::new(FilterElement::new(
-                    key,
-                    filter_active_state,
-                    &unit_list_panel,
-                ))),
-                "sysdm-sub" => Some(Box::new(FilterElement::new(
-                    key,
-                    filter_sub_state,
-                    &unit_list_panel,
-                ))),
-                "sysdm-description" => Some(Box::new(FilterText::new(
-                    key,
-                    filter_unit_description,
-                    &unit_list_panel,
-                ))),
-                _ => {
-                    error!("Key {key}");
-                    None
-                }
-            };
-
-            if let Some(filter) = filter {
-                filter_assessors.insert(key.to_string(), Rc::new(RefCell::new(filter)));
-            }
-        }
-
-        let _ = self.unit_property_filters.set(filter_assessors);
 
         let _ = self
             .applied_unit_property_filters

@@ -59,12 +59,8 @@ impl UnitListPanel {
     fn try_get_filter_assessor(
         &self,
         id: &str,
-    ) -> Option<&Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
-        self.imp()
-            .unit_property_filters
-            .get()
-            .expect("not None")
-            .get(id)
+    ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
+        self.imp().try_get_filter_assessor(id)
     }
 
     fn filter_assessor_change(

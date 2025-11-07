@@ -125,10 +125,10 @@ impl UnitListFilterWindowImp {
                 .title()
                 .map_or(key.clone(), |title| title.to_string());
 
-            let filter_assessor = unit_list_panel.try_get_filter_assessor(&key); //TODO make it layzy
+            let filter_assessor = unit_list_panel.try_get_filter_assessor(&key); //TODO make it lazy
 
             let (widget, filter_widget): (gtk::Widget, Vec<FilterWidget>) =
-                if let Some(filter) = filter_assessor {
+                if let Some(ref filter) = filter_assessor {
                     let (widget, filter_widget) = match key.as_str() {
                         COL_ID_UNIT => common_text_filter(filter),
                         "sysdm-bus" => build_bus_level_filter(filter),
