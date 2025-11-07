@@ -41,7 +41,7 @@ use crate::{
         preferences::data::{
             COL_SHOW_PREFIX, COL_WIDTH_PREFIX, DbusLevel, FLAG_SHOW, FLAG_WIDTH,
             KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, PREFERENCES,
-            UNIT_LIST_COLUMNS, UNIT_LIST_COLUMNS_UNIT,
+            UNIT_LIST_COLUMNS,
         },
         unit_list::{
             COL_ID_UNIT,
@@ -79,7 +79,8 @@ impl UnitKey {
     }
 }
 
-type UnitPropertyFiltersContainer = OnceCell<HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
+type UnitPropertyFiltersContainer =
+    OnceCell<HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>;
 
 #[derive(Default, gtk::CompositeTemplate, Properties)]
@@ -147,7 +148,7 @@ pub struct UnitListPanelImp {
 
 macro_rules! update_search_entry {
     ($self:expr, $id:expr, $update_widget:expr, $text:expr) => {{
-        if $update_widget && $id == UNIT_LIST_COLUMNS_UNIT {
+        if $update_widget && $id == COL_ID_UNIT {
             $self.search_entry_set_text($text);
         }
     }};
@@ -654,7 +655,7 @@ impl UnitListPanelImp {
 
     pub(super) fn filter_assessor_change(
         &self,
-        id: u8,
+        id: &str,
         new_assessor: Option<Box<dyn UnitPropertyAssessor>>,
         change_type: Option<gtk::FilterChange>,
         update_widget: bool,
@@ -744,7 +745,7 @@ impl UnitListPanelImp {
             .unit_property_filters
             .get()
             .expect("Not None")
-            .get(&UNIT_LIST_COLUMNS_UNIT)
+            .get(COL_ID_UNIT)
             .expect("Always unit")
             .borrow_mut();
 
@@ -1122,55 +1123,55 @@ impl ObjectImpl for UnitListPanelImp {
             },
         );
 
-        let mut filter_assessors: HashMap<u8, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
+        let mut filter_assessors: HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>> =
             HashMap::with_capacity(UNIT_LIST_COLUMNS.len());
 
         let unit_list_panel: glib::BorrowedObject<'_, crate::widget::unit_list::UnitListPanel> =
             self.obj();
-        for (_, key, num_id, _) in &*UNIT_LIST_COLUMNS {
+        for (_, key, _num_id, _) in &*UNIT_LIST_COLUMNS {
             let filter: Option<Box<dyn UnitPropertyFilter>> = match *key {
                 COL_ID_UNIT => Some(Box::new(FilterText::new(
-                    *num_id,
+                    key,
                     filter_unit_name,
                     &unit_list_panel,
                 ))),
                 "sysdm-bus" => Some(Box::new(FilterElement::new(
-                    *num_id,
+                    key,
                     filter_bus_level,
                     &unit_list_panel,
                 ))),
                 "sysdm-type" => Some(Box::new(FilterElement::new(
-                    *num_id,
+                    key,
                     filter_unit_type,
                     &unit_list_panel,
                 ))),
                 "sysdm-state" => Some(Box::new(FilterElement::new(
-                    *num_id,
+                    key,
                     filter_enable_status,
                     &unit_list_panel,
                 ))),
                 "sysdm-preset" => Some(Box::new(FilterElement::new(
-                    *num_id,
+                    key,
                     filter_preset,
                     &unit_list_panel,
                 ))),
                 "sysdm-load" => Some(Box::new(FilterElement::new(
-                    *num_id,
+                    key,
                     filter_load_state,
                     &unit_list_panel,
                 ))),
                 "sysdm-active" => Some(Box::new(FilterElement::new(
-                    *num_id,
+                    key,
                     filter_active_state,
                     &unit_list_panel,
                 ))),
                 "sysdm-sub" => Some(Box::new(FilterElement::new(
-                    *num_id,
+                    key,
                     filter_sub_state,
                     &unit_list_panel,
                 ))),
                 "sysdm-description" => Some(Box::new(FilterText::new(
-                    *num_id,
+                    key,
                     filter_unit_description,
                     &unit_list_panel,
                 ))),
@@ -1181,7 +1182,7 @@ impl ObjectImpl for UnitListPanelImp {
             };
 
             if let Some(filter) = filter {
-                filter_assessors.insert(*num_id, Rc::new(RefCell::new(filter)));
+                filter_assessors.insert(key.to_string(), Rc::new(RefCell::new(filter)));
             }
         }
 

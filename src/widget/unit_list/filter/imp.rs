@@ -18,23 +18,21 @@ use gtk::{
     },
 };
 
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use strum::IntoEnumIterator;
 
 use crate::{
     consts::FLAT,
     systemd::enums::{
-        ActiveState, EnablementStatus, LoadState, MatchType, Preset, UnitDBusLevel, UnitType,
+        ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType,
+        UnitDBusLevel, UnitType,
     },
-    widget::{
-        preferences::data::UNIT_LIST_COLUMNS,
-        unit_list::{
-            COL_ID_UNIT, UnitListPanel,
-            filter::{
-                UnitListFilterWindow,
-                unit_prop_filter::{
-                    FilterText, UnitPropertyFilter, get_filter_element, get_filter_element_mut,
-                },
+    widget::unit_list::{
+        COL_ID_UNIT, UnitListPanel,
+        filter::{
+            UnitListFilterWindow,
+            unit_prop_filter::{
+                FilterText, UnitPropertyFilter, get_filter_element, get_filter_element_mut,
             },
         },
     },
@@ -93,13 +91,45 @@ impl UnitListFilterWindowImp {
         let binding = self.selected.borrow();
         let selected = binding.as_ref();
 
+        /*
+
+        se and i'll finally end on this okay marketing and innovation are basically
+
+        the same thing now let me explain okay there are two ways you can create value in the marketplace you can either find out what
+
+        people want and work out a really clever way to make it or you can work out what you can make and find a really clever
+        way to make people want it. and the money you make is indistinguishable regardless of the direction of travel of that process so
+        it isn't necessary to introduce a new product to perform r d
+        one other way of doing r d is taking an existing product and presenting it or pricing it or positioning it or framing
+        it in a completely different way psychological arbitrage is where quite a
+        lot of money is made today there are psychological solutions out there that could save a fortune if you
+        want people to get an electric car we currently subsidize electric cars ver
+                 */
+
         let mut filter_widgets: Vec<Vec<FilterWidget>> = vec![];
-        for (name, key, num_id, _) in &*UNIT_LIST_COLUMNS {
-            let filter_assessor = unit_list_panel.try_get_filter_assessor(*num_id);
+        // for (name, key, _num_id, _) in &*UNIT_LIST_COLUMNS
+
+        for unit_prop_selection in unit_list_panel.default_displayed_columns().iter().chain(
+            unit_list_panel
+                .current_columns()
+                .iter()
+                .filter(|col| col.is_custom()),
+        ) {
+            let Some(id) = unit_prop_selection.id() else {
+                warn!("Column with no id");
+                continue;
+            };
+
+            let key = id.to_string();
+            let name = unit_prop_selection
+                .title()
+                .map_or(key.clone(), |title| title.to_string());
+
+            let filter_assessor = unit_list_panel.try_get_filter_assessor(&key); //TODO make it layzy
 
             let (widget, filter_widget): (gtk::Widget, Vec<FilterWidget>) =
                 if let Some(filter) = filter_assessor {
-                    let (widget, filter_widget) = match *key {
+                    let (widget, filter_widget) = match key.as_str() {
                         COL_ID_UNIT => common_text_filter(filter),
                         "sysdm-bus" => build_bus_level_filter(filter),
                         "sysdm-type" => build_type_filter(filter),
@@ -112,17 +142,19 @@ impl UnitListFilterWindowImp {
 
                         _ => {
                             error!("Key {key}");
-                            unreachable!("unreachable")
+                            let v = vec![];
+                            let dummy = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+                            (dummy, v)
                         }
                     };
                     (widget.into(), filter_widget)
                 } else {
-                    (gtk::Label::new(Some(name)).into(), vec![])
+                    (gtk::Label::new(Some(&name)).into(), vec![])
                 };
 
             filter_widgets.push(filter_widget);
 
-            let _stack_page = self.filter_stack.add_titled(&widget, Some(key), name);
+            let _stack_page = self.filter_stack.add_titled(&widget, Some(&key), &name);
 
             let button_content = adw::ButtonContent::builder()
                 .icon_name("empty-icon")
@@ -151,11 +183,11 @@ impl UnitListFilterWindowImp {
                 .css_classes([FLAT])
                 .build();
 
-            if selected.is_some_and(|s| s == key) {
+            if selected.is_some_and(|s| s == &key) {
                 button.remove_css_class(FLAT);
             }
 
-            let tooltip_text = match *key {
+            let tooltip_text = match key.as_str() {
                 "load" => Some("Reflects whether the unit definition was properly loaded."),
                 "active" => {
                     Some("The high-level unit activation state, i.e. generalization of <b>Sub</b>.")
@@ -168,7 +200,7 @@ impl UnitListFilterWindowImp {
             {
                 let filter_stack = self.filter_stack.clone();
                 button.connect_clicked(move |button| {
-                    set_visible_child_name(&filter_stack, key);
+                    set_visible_child_name(&filter_stack, &key);
 
                     if let Some(parent) = button.parent() {
                         let mut child_o = parent.first_child();
@@ -348,7 +380,100 @@ fn common_text_filter(
 
     let label = gtk::Label::builder().label("Match type:").build();
 
-    let model_str: Vec<&str> = MatchType::iter().map(|x| x.as_str()).collect();
+    let model_str: Vec<&str> = StrMatchType::iter().map(|x| x.as_str()).collect();
+    let model = gtk::StringList::new(&model_str);
+    let dropdown = gtk::DropDown::builder()
+        .model(&model)
+        .halign(gtk::Align::Fill)
+        .build();
+    let drop_box = gtk::Box::builder()
+        .halign(gtk::Align::Fill)
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(5)
+        .build();
+
+    drop_box.append(&label);
+    drop_box.append(&dropdown);
+    container.append(&drop_box);
+
+    {
+        let filter_container = filter_container.borrow();
+
+        //TODO make debug func
+        debug!(
+            "starting match type {:?} text {:?}",
+            filter_container.match_type(),
+            filter_container.text()
+        );
+        entry.set_text(filter_container.text());
+        dropdown.set_selected(filter_container.match_type().position());
+    }
+
+    let filter_wiget = FilterWidget::Text(entry.clone(), dropdown.clone());
+    {
+        let filter_container = filter_container.clone();
+        entry.connect_changed(move |entry| {
+            let text = entry.text();
+
+            let mut binding = filter_container.as_ref().borrow_mut();
+
+            let filter_text = binding
+                .as_any_mut()
+                .downcast_mut::<FilterText>()
+                .expect("downcast_mut to FilterText");
+
+            filter_text.set_filter_elem(&text, true);
+        });
+    }
+
+    {
+        let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>> =
+            filter_container.clone();
+        dropdown.connect_selected_item_notify(move |dropdown| {
+            let idx = dropdown.selected();
+            let match_type: StrMatchType = idx.into();
+
+            debug!("Filter match type idx {idx:?} type {match_type:?}");
+
+            let mut binding = filter_container.as_ref().borrow_mut();
+
+            let filter_text = binding
+                .as_any_mut()
+                .downcast_mut::<FilterText>()
+                .expect("downcast_mut to FilterText");
+
+            filter_text.set_filter_match_type(match_type, true);
+        });
+    }
+
+    button_clear_entry.connect_clicked(move |_| {
+        entry.set_text("");
+    });
+
+    (container, vec![filter_wiget])
+}
+
+fn common_num_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
+    let container = create_content_box();
+
+    let merge_box = gtk::Box::builder()
+        .css_classes(["linked"])
+        .halign(gtk::Align::BaselineFill)
+        .build();
+    let entry = gtk::Entry::builder().hexpand(true).build();
+    let button_clear_entry = gtk::Button::builder()
+        .icon_name("edit-clear-symbolic")
+        .build();
+    merge_box.append(&entry);
+    merge_box.append(&button_clear_entry);
+
+    container.append(&merge_box);
+
+    let label = gtk::Label::builder().label("Match type:").build();
+
+    let model_str: Vec<&str> = NumMatchType::iter().map(|x| x.as_str()).collect();
     let model = gtk::StringList::new(&model_str);
     let dropdown = gtk::DropDown::builder()
         .model(&model)
@@ -397,7 +522,7 @@ fn common_text_filter(
             filter_container.clone();
         dropdown.connect_selected_item_notify(move |dropdown| {
             let idx = dropdown.selected();
-            let match_type: MatchType = idx.into();
+            let match_type: StrMatchType = idx.into();
 
             debug!("Filter match type idx {idx:?} type {match_type:?}");
 

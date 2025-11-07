@@ -998,9 +998,9 @@ impl From<Option<&OwnedValue>> for LoadState {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum, EnumIter)]
-#[enum_type(name = "MatchType")]
+#[enum_type(name = "StrMatchType")]
 //#[allow(dead_code)]
-pub enum MatchType {
+pub enum StrMatchType {
     #[default]
     #[enum_value(name = "contains")]
     Contains,
@@ -1012,7 +1012,7 @@ pub enum MatchType {
     EndWith,
 }
 
-impl MatchType {
+impl StrMatchType {
     pub fn as_str(&self) -> &'static str {
         let enum_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
         enum_value.name()
@@ -1020,21 +1020,70 @@ impl MatchType {
 
     pub fn position(&self) -> u32 {
         match self {
-            MatchType::Contains => 0,
-            MatchType::StartWith => 1,
-            MatchType::EndWith => 2,
+            StrMatchType::Contains => 0,
+            StrMatchType::StartWith => 1,
+            StrMatchType::EndWith => 2,
         }
     }
 }
 
-impl From<u32> for MatchType {
+impl From<u32> for StrMatchType {
     fn from(value: u32) -> Self {
-        for (idx, mt) in MatchType::iter().enumerate() {
+        for (idx, mt) in StrMatchType::iter().enumerate() {
             if idx == value as usize {
                 return mt;
             }
         }
-        MatchType::default()
+        StrMatchType::default()
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, glib::Enum, EnumIter)]
+#[enum_type(name = "NumMatchType")]
+//#[allow(dead_code)]
+pub enum NumMatchType {
+    #[default]
+    #[enum_value(name = "equals")]
+    Equals,
+
+    #[enum_value(name = "greater")]
+    Greater,
+
+    #[enum_value(name = "smaller")]
+    Smaller,
+
+    #[enum_value(name = "greater equals")]
+    GreaterEquals,
+
+    #[enum_value(name = "smaller equals")]
+    SmallerEquals,
+}
+
+impl NumMatchType {
+    pub fn as_str(&self) -> &'static str {
+        let enum_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
+        enum_value.name()
+    }
+
+    pub fn position(&self) -> u32 {
+        match self {
+            NumMatchType::Equals => 0,
+            NumMatchType::Greater => 1,
+            NumMatchType::Smaller => 2,
+            NumMatchType::GreaterEquals => 3,
+            &NumMatchType::SmallerEquals => 4,
+        }
+    }
+}
+
+impl From<u32> for NumMatchType {
+    fn from(value: u32) -> Self {
+        for (idx, mt) in NumMatchType::iter().enumerate() {
+            if idx == value as usize {
+                return mt;
+            }
+        }
+        NumMatchType::default()
     }
 }
 

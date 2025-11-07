@@ -1,7 +1,10 @@
 use log::debug;
 
 use crate::{
-    systemd::{data::UnitInfo, enums::MatchType},
+    systemd::{
+        data::UnitInfo,
+        enums::{NumMatchType, StrMatchType},
+    },
     widget::unit_list::UnitListPanel,
 };
 use std::{
@@ -20,6 +23,14 @@ pub trait UnitPropertyFilter: Debug {
         ""
     }
 
+    fn match_type(&self) -> StrMatchType {
+        StrMatchType::default()
+    }
+
+    fn num_match_type(&self) -> NumMatchType {
+        NumMatchType::default()
+    }
+
     fn clear_n_apply_filter(&mut self);
     fn clear_filter(&mut self);
     fn clear_widget_dependancy(&mut self) {
@@ -28,10 +39,6 @@ pub trait UnitPropertyFilter: Debug {
     }
 
     fn is_empty(&self) -> bool;
-
-    fn match_type(&self) -> MatchType {
-        MatchType::default()
-    }
 }
 
 pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterElement<T>
@@ -64,7 +71,7 @@ where
     filter_elements: HashSet<T>,
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
-    id: u8,
+    id: String,
     unit_list_panel: UnitListPanel,
 }
 
@@ -88,7 +95,7 @@ where
     T: Eq + Hash + Debug + Clone + 'static,
 {
     pub fn new(
-        id: u8,
+        id: &str,
         filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
         unit_list_panel: &UnitListPanel,
     ) -> Self {
@@ -96,7 +103,7 @@ where
             filter_elements: Default::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
-            id,
+            id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
         }
     }
@@ -141,12 +148,12 @@ where
             Some(Box::new(FilterElementAssessor {
                 filter_elements: self.filter_elements.clone(),
                 filter_unit_func: self.filter_unit_func,
-                id: self.id,
+                id: self.id.clone(),
             }))
         };
 
         self.unit_list_panel
-            .filter_assessor_change(self.id, assessor, change_type, false);
+            .filter_assessor_change(&self.id, assessor, change_type, false);
     }
 }
 
@@ -185,10 +192,10 @@ where
 
 pub struct FilterText {
     filter_text: String,
-    match_type: MatchType,
+    match_type: StrMatchType,
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
-    id: u8,
+    id: String,
     unit_list_panel: UnitListPanel,
 }
 
@@ -203,16 +210,16 @@ impl fmt::Debug for FilterText {
 
 impl FilterText {
     pub fn new(
-        id: u8,
+        id: &str,
         filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
         unit_list_panel: &UnitListPanel,
     ) -> Self {
         Self {
             filter_text: Default::default(),
-            match_type: MatchType::default(),
+            match_type: StrMatchType::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
-            id,
+            id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
         }
     }
@@ -249,14 +256,14 @@ impl FilterText {
         };
 
         self.unit_list_panel.filter_assessor_change(
-            self.id,
+            &self.id,
             assessor,
             Some(change_type),
             update_widget,
         );
     }
 
-    pub fn set_filter_match_type(&mut self, match_type: MatchType, update_widget: bool) {
+    pub fn set_filter_match_type(&mut self, match_type: StrMatchType, update_widget: bool) {
         debug!("Match type new {match_type:?} old {:?}", self.match_type);
         if match_type == self.match_type {
             debug!("exit same");
@@ -264,10 +271,10 @@ impl FilterText {
         }
 
         let change_type = match (match_type, self.match_type) {
-            (MatchType::Contains, MatchType::StartWith) => gtk::FilterChange::LessStrict,
-            (MatchType::Contains, MatchType::EndWith) => gtk::FilterChange::LessStrict,
-            (MatchType::StartWith, MatchType::Contains) => gtk::FilterChange::MoreStrict,
-            (MatchType::EndWith, MatchType::Contains) => gtk::FilterChange::MoreStrict,
+            (StrMatchType::Contains, StrMatchType::StartWith) => gtk::FilterChange::LessStrict,
+            (StrMatchType::Contains, StrMatchType::EndWith) => gtk::FilterChange::LessStrict,
+            (StrMatchType::StartWith, StrMatchType::Contains) => gtk::FilterChange::MoreStrict,
+            (StrMatchType::EndWith, StrMatchType::Contains) => gtk::FilterChange::MoreStrict,
 
             (_, _) => gtk::FilterChange::Different,
         };
@@ -285,7 +292,7 @@ impl FilterText {
             Some(Box::new(FilterTextAssessor::new(self)));
 
         self.unit_list_panel.filter_assessor_change(
-            self.id,
+            &self.id,
             assessor,
             Some(change_type),
             update_widget,
@@ -310,13 +317,13 @@ impl UnitPropertyFilter for FilterText {
         &self.filter_text
     }
 
-    fn match_type(&self) -> MatchType {
+    fn match_type(&self) -> StrMatchType {
         self.match_type
     }
 
     fn clear_n_apply_filter(&mut self) {
         self.filter_text.clear(); //FIXME it does not apply, but might be Ok
-        self.match_type = MatchType::default();
+        self.match_type = StrMatchType::default();
     }
 
     fn clear_filter(&mut self) {
@@ -329,16 +336,151 @@ impl UnitPropertyFilter for FilterText {
     }
 }
 
+pub struct FilterNum<T>
+where
+    T: Debug,
+{
+    filter_num: T,
+    filter_text: String,
+    match_type: NumMatchType,
+    lambda: Box<dyn Fn(bool)>,
+    filter_unit_func: fn(property_assessor: &FilterNumAssessor<T>, unit: &UnitInfo) -> bool,
+    id: String,
+    unit_list_panel: UnitListPanel,
+}
+
+impl<T> fmt::Debug for FilterNum<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FilterNum")
+            .field("filter_num", &self.filter_num)
+            .field("id", &self.id)
+            .finish()
+    }
+}
+
+impl<T> FilterNum<T>
+where
+    T: Debug + Default + PartialEq + Copy + 'static,
+{
+    pub fn new(
+        id: String,
+        filter_unit_func: fn(property_assessor: &FilterNumAssessor<T>, unit: &UnitInfo) -> bool,
+        unit_list_panel: &UnitListPanel,
+    ) -> Self {
+        Self {
+            filter_num: Default::default(),
+            filter_text: Default::default(),
+            match_type: NumMatchType::default(),
+            lambda: Box::new(|_: bool| ()),
+            filter_unit_func,
+            id,
+            unit_list_panel: unit_list_panel.clone(),
+        }
+    }
+
+    pub fn set_filter_elem(&mut self, f_element: T, update_widget: bool) {
+        if f_element == self.filter_num {
+            return;
+        }
+        /*
+        self.unit_list_panel.filter_assessor_change(
+            self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        ); */
+    }
+
+    pub fn set_filter_match_type(&mut self, match_type: NumMatchType, update_widget: bool) {
+        debug!("Match type new {match_type:?} old {:?}", self.match_type);
+        if match_type == self.match_type {
+            debug!("exit same");
+            return;
+        }
+
+        let change_type = match (match_type, self.match_type) {
+            (_, _) => gtk::FilterChange::Different,
+        };
+
+        debug!("change_type {change_type:?}");
+
+        self.match_type = match_type;
+
+        //FIXME self.filter_text.is_empty()
+
+        /*         if self.filter_text.is_empty() {
+            debug!("exit filter_text empty");
+            return;
+        } */
+
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> =
+            Some(Box::new(FilterNumAssessor::new(self)));
+
+        self.unit_list_panel.filter_assessor_change(
+            &self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        );
+    }
+}
+
+impl<T> UnitPropertyFilter for FilterNum<T>
+where
+    T: Debug + ToString + 'static,
+{
+    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
+        self.lambda = lambda
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+
+    fn text(&self) -> &str {
+        &self.filter_text
+    }
+
+    fn match_type(&self) -> StrMatchType {
+        StrMatchType::default()
+    }
+
+    fn num_match_type(&self) -> NumMatchType {
+        self.match_type
+    }
+
+    fn clear_n_apply_filter(&mut self) {
+        // self.filter_text.clear(); //FIXME it does not apply, but might be Ok
+        self.match_type = NumMatchType::default();
+    }
+
+    fn clear_filter(&mut self) {
+        self.clear_n_apply_filter();
+        (self.lambda)(true);
+    }
+
+    fn is_empty(&self) -> bool {
+        false
+    }
+}
+
 pub trait UnitPropertyAssessor: core::fmt::Debug {
     fn filter_unit(&self, unit: &UnitInfo) -> bool;
     //  fn filter_unit_value(&self, unit_value: &str) -> bool;
-    fn id(&self) -> u8;
+    fn id(&self) -> &str;
     fn text(&self) -> &str {
         ""
     }
 
-    fn match_type(&self) -> MatchType {
-        MatchType::default()
+    fn match_type(&self) -> StrMatchType {
+        StrMatchType::default()
     }
 }
 
@@ -349,7 +491,7 @@ where
 {
     filter_elements: HashSet<T>,
     filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
-    id: u8,
+    id: String,
 }
 
 impl<T> FilterElementAssessor<T>
@@ -369,17 +511,16 @@ where
         (self.filter_unit_func)(self, unit)
     }
 
-    fn id(&self) -> u8 {
-        self.id
+    fn id(&self) -> &str {
+        &self.id
     }
 }
 
 #[derive(Debug)]
 pub struct FilterTextAssessor {
     filter_text: String,
-    //match_type: MatchType, //TODO make distintive struct to avoid runtime if
     filter_unit_func: fn(&FilterTextAssessor, &UnitInfo) -> bool,
-    id: u8,
+    id: String,
     pub(crate) filter_unit_value_func:
         fn(filter_text: &FilterTextAssessor, unit_value: &str) -> bool,
 }
@@ -389,15 +530,15 @@ impl FilterTextAssessor {
         let filter_unit_value_func =
             match (filter_text.filter_text.is_empty(), filter_text.match_type) {
                 (true, _) => Self::filter_unit_value_func_empty,
-                (false, MatchType::Contains) => Self::filter_unit_value_func_contains,
-                (false, MatchType::StartWith) => Self::filter_unit_value_func_start_with,
-                (false, MatchType::EndWith) => Self::filter_unit_value_func_end_with,
+                (false, StrMatchType::Contains) => Self::filter_unit_value_func_contains,
+                (false, StrMatchType::StartWith) => Self::filter_unit_value_func_start_with,
+                (false, StrMatchType::EndWith) => Self::filter_unit_value_func_end_with,
             };
 
         FilterTextAssessor {
             filter_text: filter_text.filter_text.clone(),
             filter_unit_func: filter_text.filter_unit_func,
-            id: filter_text.id,
+            id: filter_text.id.clone(),
             filter_unit_value_func,
         }
     }
@@ -424,11 +565,77 @@ impl UnitPropertyAssessor for FilterTextAssessor {
         (self.filter_unit_func)(self, unit)
     }
 
-    fn id(&self) -> u8 {
-        self.id
+    fn id(&self) -> &str {
+        &self.id
     }
 
     fn text(&self) -> &str {
         &self.filter_text
+    }
+}
+
+#[derive(Debug)]
+pub struct FilterNumAssessor<T>
+where
+    T: Debug,
+{
+    filter_num: T,
+    //match_type: MatchType, //TODO make distintive struct to avoid runtime if
+    filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo) -> bool,
+    id: String,
+    pub(crate) filter_unit_value_func:
+        fn(filter_text: &FilterNumAssessor<T>, unit_value: T) -> bool,
+}
+
+impl<T> FilterNumAssessor<T>
+where
+    T: Debug + Copy,
+{
+    fn new(filter_text: &FilterNum<T>) -> Self {
+        let filter_unit_value_func = Self::filter_unit_value_func_end_with;
+
+        Self {
+            filter_num: filter_text.filter_num,
+            filter_unit_func: Self::dummy,
+            id: filter_text.id.clone(),
+            filter_unit_value_func,
+        }
+    }
+
+    fn dummy(_a: &FilterNumAssessor<T>, _b: &UnitInfo) -> bool {
+        true
+    }
+
+    fn filter_unit_value_func_empty(&self, _unit_value: T) -> bool {
+        true
+    }
+
+    fn filter_unit_value_func_contains(&self, _unit_value: T) -> bool {
+        true
+    }
+
+    fn filter_unit_value_func_start_with(&self, _unit_value: T) -> bool {
+        true
+    }
+
+    fn filter_unit_value_func_end_with(&self, _unit_value: T) -> bool {
+        true
+    }
+}
+
+impl<T> UnitPropertyAssessor for FilterNumAssessor<T>
+where
+    T: Debug,
+{
+    fn filter_unit(&self, unit: &UnitInfo) -> bool {
+        (self.filter_unit_func)(self, unit)
+    }
+
+    fn id(&self) -> &str {
+        &self.id
+    }
+
+    fn text(&self) -> &str {
+        ""
     }
 }
