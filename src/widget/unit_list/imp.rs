@@ -44,13 +44,14 @@ use crate::{
             UNIT_LIST_COLUMNS,
         },
         unit_list::{
-            COL_ID_UNIT,
+            COL_ID_UNIT, CustomId,
             filter::{
-                UnitListFilterWindow, filter_active_state, filter_bus_level, filter_enable_status,
-                filter_load_state, filter_preset, filter_sub_state, filter_unit_description,
-                filter_unit_name, filter_unit_type,
+                UnitListFilterWindow, custom_num, custom_str, filter_active_state,
+                filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
+                filter_sub_state, filter_unit_description, filter_unit_name, filter_unit_type,
                 unit_prop_filter::{
-                    FilterElement, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
+                    FilterElement, FilterNum, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
+                    UnitPropertyFilterType,
                 },
             },
             search_controls::UnitListSearchControls,
@@ -742,7 +743,7 @@ impl UnitListPanelImp {
 
     pub(super) fn update_unit_name_search(&self, text: &str, update_widget: bool) {
         debug!("update_unit_name_search {text}");
-        let Some(filter) = self.try_get_filter_assessor(COL_ID_UNIT) else {
+        let Some(filter) = self.lazy_get_filter_assessor(COL_ID_UNIT, None) else {
             error!("No filter id {COL_ID_UNIT}");
             return;
         };
@@ -757,11 +758,11 @@ impl UnitListPanelImp {
         filter.set_filter_elem(text, update_widget);
     }
 
-    pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
+    /*     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
         for property_filter in self.unit_property_filters.borrow().values() {
             property_filter.borrow_mut().clear_widget_dependancy();
         }
-    }
+    } */
 
     fn create_custom_filter(&self) -> gtk::CustomFilter {
         let applied_assessors = self
@@ -784,9 +785,10 @@ impl UnitListPanelImp {
         })
     }
 
-    pub(super) fn try_get_filter_assessor(
+    pub(super) fn lazy_get_filter_assessor(
         &self,
         id: &str,
+        propperty_type: Option<String>,
     ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
         {
             if let Some(filter) = self.unit_property_filters.borrow().get(id) {
@@ -843,10 +845,57 @@ impl UnitListPanelImp {
                 filter_unit_description,
                 &unit_list_panel,
             ))),
-            _ => {
-                error!("Key {id}");
-                None
-            }
+            _ => match propperty_type.as_deref() {
+                Some("t") => Some(Box::new(FilterNum::<u64>::new(
+                    id,
+                    custom_num::<u64>,
+                    &unit_list_panel,
+                    CustomId::from_str(id).quark(),
+                    UnitPropertyFilterType::NumU64,
+                ))),
+                Some("s") => Some(Box::new(FilterText::newq(
+                    id,
+                    custom_str,
+                    &unit_list_panel,
+                    CustomId::from_str(id).quark(),
+                ))),
+                Some("i") => Some(Box::new(FilterNum::<i32>::new(
+                    id,
+                    custom_num::<i32>,
+                    &unit_list_panel,
+                    CustomId::from_str(id).quark(),
+                    UnitPropertyFilterType::NumI32,
+                ))),
+                Some("u") => Some(Box::new(FilterNum::<u32>::new(
+                    id,
+                    custom_num::<u32>,
+                    &unit_list_panel,
+                    CustomId::from_str(id).quark(),
+                    UnitPropertyFilterType::NumU32,
+                ))),
+                Some("q") => Some(Box::new(FilterNum::<u16>::new(
+                    id,
+                    custom_num::<u16>,
+                    &unit_list_panel,
+                    CustomId::from_str(id).quark(),
+                    UnitPropertyFilterType::NumU16,
+                ))),
+                Some("x") => Some(Box::new(FilterNum::<i64>::new(
+                    id,
+                    custom_num::<i64>,
+                    &unit_list_panel,
+                    CustomId::from_str(id).quark(),
+                    UnitPropertyFilterType::NumI64,
+                ))),
+                Some(&_) => {
+                    error!("Key {id} not handled, type {propperty_type:?}");
+                    None
+                }
+                None => {
+                    error!("Key {id} not handled, type {propperty_type:?}");
+                    None
+                }
+            },
         };
 
         if let Some(filter) = filter {

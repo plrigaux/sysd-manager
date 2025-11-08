@@ -13,11 +13,21 @@ use std::{
     fmt::{self, Debug},
     hash::Hash,
 };
-
+#[derive(Debug, Copy, Clone)]
+pub enum UnitPropertyFilterType {
+    Text,
+    Element,
+    NumU64,
+    NumI32,
+    NumU16,
+    NumU32,
+    NumI64,
+}
 pub trait UnitPropertyFilter: Debug {
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>);
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
+    fn ftype(&self) -> UnitPropertyFilterType;
 
     fn text(&self) -> &str {
         ""
@@ -33,10 +43,10 @@ pub trait UnitPropertyFilter: Debug {
 
     fn clear_n_apply_filter(&mut self);
     fn clear_filter(&mut self);
-    fn clear_widget_dependancy(&mut self) {
+    /*     fn clear_widget_dependancy(&mut self) {
         let lambda = |_: bool| {};
         self.set_on_change(Box::new(lambda));
-    }
+    } */
 
     fn is_empty(&self) -> bool;
 }
@@ -188,15 +198,21 @@ where
     fn is_empty(&self) -> bool {
         self.filter_elements.is_empty()
     }
+
+    fn ftype(&self) -> UnitPropertyFilterType {
+        UnitPropertyFilterType::Element
+    }
 }
 
 pub struct FilterText {
     filter_text: String,
     match_type: StrMatchType,
     lambda: Box<dyn Fn(bool)>,
-    filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
+    filter_unit_func:
+        fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo, key: glib::Quark) -> bool,
     id: String,
     unit_list_panel: UnitListPanel,
+    key: glib::Quark,
 }
 
 impl fmt::Debug for FilterText {
@@ -211,7 +227,11 @@ impl fmt::Debug for FilterText {
 impl FilterText {
     pub fn new(
         id: &str,
-        filter_unit_func: fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool,
+        filter_unit_func: fn(
+            property_assessor: &FilterTextAssessor,
+            unit: &UnitInfo,
+            key: glib::Quark,
+        ) -> bool,
         unit_list_panel: &UnitListPanel,
     ) -> Self {
         Self {
@@ -221,6 +241,28 @@ impl FilterText {
             filter_unit_func,
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
+            key: glib::Quark::from_str("default"),
+        }
+    }
+
+    pub fn newq(
+        id: &str,
+        filter_unit_func: fn(
+            property_assessor: &FilterTextAssessor,
+            unit: &UnitInfo,
+            key: glib::Quark,
+        ) -> bool,
+        unit_list_panel: &UnitListPanel,
+        key: glib::Quark,
+    ) -> Self {
+        Self {
+            filter_text: Default::default(),
+            match_type: StrMatchType::default(),
+            lambda: Box::new(|_: bool| ()),
+            filter_unit_func,
+            id: id.to_owned(),
+            unit_list_panel: unit_list_panel.clone(),
+            key,
         }
     }
 
@@ -334,6 +376,10 @@ impl UnitPropertyFilter for FilterText {
     fn is_empty(&self) -> bool {
         self.filter_text.is_empty()
     }
+
+    fn ftype(&self) -> UnitPropertyFilterType {
+        UnitPropertyFilterType::Text
+    }
 }
 
 pub struct FilterNum<T>
@@ -344,9 +390,11 @@ where
     filter_text: String,
     match_type: NumMatchType,
     lambda: Box<dyn Fn(bool)>,
-    filter_unit_func: fn(property_assessor: &FilterNumAssessor<T>, unit: &UnitInfo) -> bool,
+    filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo, glib::Quark) -> bool,
     id: String,
     unit_list_panel: UnitListPanel,
+    key: glib::Quark,
+    ftype: UnitPropertyFilterType,
 }
 
 impl<T> fmt::Debug for FilterNum<T>
@@ -363,12 +411,14 @@ where
 
 impl<T> FilterNum<T>
 where
-    T: Debug + Default + PartialEq + Copy + 'static,
+    T: Debug + Default + PartialEq + PartialOrd + Copy + 'static,
 {
     pub fn new(
-        id: String,
-        filter_unit_func: fn(property_assessor: &FilterNumAssessor<T>, unit: &UnitInfo) -> bool,
+        id: &str,
+        filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo, glib::Quark) -> bool,
         unit_list_panel: &UnitListPanel,
+        key: glib::Quark,
+        ftype: UnitPropertyFilterType,
     ) -> Self {
         Self {
             filter_num: Default::default(),
@@ -376,8 +426,10 @@ where
             match_type: NumMatchType::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
-            id,
+            id: id.to_string(),
             unit_list_panel: unit_list_panel.clone(),
+            key,
+            ftype,
         }
     }
 
@@ -401,7 +453,13 @@ where
             return;
         }
 
-        let change_type = match (match_type, self.match_type) {
+        let change_type = match (self.match_type, match_type) {
+            (NumMatchType::Equals, NumMatchType::GreaterEquals) => gtk::FilterChange::LessStrict,
+            (NumMatchType::Equals, NumMatchType::SmallerEquals) => gtk::FilterChange::LessStrict,
+            (NumMatchType::SmallerEquals, NumMatchType::Smaller) => gtk::FilterChange::MoreStrict,
+            (NumMatchType::GreaterEquals, NumMatchType::Greater) => gtk::FilterChange::MoreStrict,
+            (NumMatchType::Smaller, NumMatchType::SmallerEquals) => gtk::FilterChange::LessStrict,
+            (NumMatchType::Greater, NumMatchType::GreaterEquals) => gtk::FilterChange::LessStrict,
             (_, _) => gtk::FilterChange::Different,
         };
 
@@ -469,6 +527,10 @@ where
     fn is_empty(&self) -> bool {
         false
     }
+
+    fn ftype(&self) -> UnitPropertyFilterType {
+        self.ftype
+    }
 }
 
 pub trait UnitPropertyAssessor: core::fmt::Debug {
@@ -519,10 +581,11 @@ where
 #[derive(Debug)]
 pub struct FilterTextAssessor {
     filter_text: String,
-    filter_unit_func: fn(&FilterTextAssessor, &UnitInfo) -> bool,
+    filter_unit_func: fn(&FilterTextAssessor, &UnitInfo, glib::Quark) -> bool,
     id: String,
+    key: glib::Quark,
     pub(crate) filter_unit_value_func:
-        fn(filter_text: &FilterTextAssessor, unit_value: &str) -> bool,
+        fn(filter_text: &FilterTextAssessor, unit_value: Option<&str>) -> bool,
 }
 
 impl FilterTextAssessor {
@@ -540,29 +603,42 @@ impl FilterTextAssessor {
             filter_unit_func: filter_text.filter_unit_func,
             id: filter_text.id.clone(),
             filter_unit_value_func,
+            key: filter_text.key,
         }
     }
 
-    fn filter_unit_value_func_empty(&self, _unit_value: &str) -> bool {
+    fn filter_unit_value_func_empty(&self, _unit_value: Option<&str>) -> bool {
         true
     }
 
-    fn filter_unit_value_func_contains(&self, unit_value: &str) -> bool {
-        unit_value.contains(&self.filter_text)
+    fn filter_unit_value_func_contains(&self, unit_value: Option<&str>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.contains(&self.filter_text)
+        } else {
+            false
+        }
     }
 
-    fn filter_unit_value_func_start_with(&self, unit_value: &str) -> bool {
-        unit_value.starts_with(&self.filter_text)
+    fn filter_unit_value_func_start_with(&self, unit_value: Option<&str>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.starts_with(&self.filter_text)
+        } else {
+            false
+        }
     }
 
-    fn filter_unit_value_func_end_with(&self, unit_value: &str) -> bool {
-        unit_value.ends_with(&self.filter_text)
+    fn filter_unit_value_func_end_with(&self, unit_value: Option<&str>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.ends_with(&self.filter_text)
+        } else {
+            false
+        }
     }
 }
 
 impl UnitPropertyAssessor for FilterTextAssessor {
     fn filter_unit(&self, unit: &UnitInfo) -> bool {
-        (self.filter_unit_func)(self, unit)
+        (self.filter_unit_func)(self, unit, self.key)
     }
 
     fn id(&self) -> &str {
@@ -581,45 +657,60 @@ where
 {
     filter_num: T,
     //match_type: MatchType, //TODO make distintive struct to avoid runtime if
-    filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo) -> bool,
+    filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo, glib::Quark) -> bool,
     id: String,
     pub(crate) filter_unit_value_func:
-        fn(filter_text: &FilterNumAssessor<T>, unit_value: T) -> bool,
+        fn(filter_text: &FilterNumAssessor<T>, unit_value: Option<T>) -> bool,
+    key: glib::Quark,
 }
 
 impl<T> FilterNumAssessor<T>
 where
-    T: Debug + Copy,
+    T: Debug + Copy + PartialEq + PartialOrd,
 {
-    fn new(filter_text: &FilterNum<T>) -> Self {
-        let filter_unit_value_func = Self::filter_unit_value_func_end_with;
+    fn new(filter_num: &FilterNum<T>) -> Self {
+        let filter_unit_value_func =
+            match (filter_num.filter_text.is_empty(), filter_num.match_type) {
+                (true, _) => Self::filter_unit_value_func_empty,
+
+                (false, NumMatchType::Equals) => Self::filter_unit_value_func_equals,
+                (false, NumMatchType::Greater) => Self::filter_unit_value_func_greater,
+                (false, NumMatchType::Smaller) => Self::filter_unit_value_func_smaller,
+                (false, NumMatchType::GreaterEquals) => Self::filter_unit_value_func_greater_equals,
+                (false, NumMatchType::SmallerEquals) => Self::filter_unit_value_func_smaller_equals,
+            };
 
         Self {
-            filter_num: filter_text.filter_num,
-            filter_unit_func: Self::dummy,
-            id: filter_text.id.clone(),
+            filter_num: filter_num.filter_num,
+            filter_unit_func: filter_num.filter_unit_func,
+            id: filter_num.id.clone(),
             filter_unit_value_func,
+            key: filter_num.key,
         }
     }
 
-    fn dummy(_a: &FilterNumAssessor<T>, _b: &UnitInfo) -> bool {
+    fn filter_unit_value_func_empty(&self, _unit_value: Option<T>) -> bool {
         true
     }
 
-    fn filter_unit_value_func_empty(&self, _unit_value: T) -> bool {
-        true
+    fn filter_unit_value_func_equals(&self, unit_value: Option<T>) -> bool {
+        unit_value == Some(self.filter_num)
     }
 
-    fn filter_unit_value_func_contains(&self, _unit_value: T) -> bool {
-        true
+    fn filter_unit_value_func_smaller(&self, unit_value: Option<T>) -> bool {
+        Some(self.filter_num) > unit_value
     }
 
-    fn filter_unit_value_func_start_with(&self, _unit_value: T) -> bool {
-        true
+    fn filter_unit_value_func_smaller_equals(&self, unit_value: Option<T>) -> bool {
+        Some(self.filter_num) >= unit_value
     }
 
-    fn filter_unit_value_func_end_with(&self, _unit_value: T) -> bool {
-        true
+    fn filter_unit_value_func_greater(&self, unit_value: Option<T>) -> bool {
+        Some(self.filter_num) > unit_value
+    }
+
+    fn filter_unit_value_func_greater_equals(&self, unit_value: Option<T>) -> bool {
+        Some(self.filter_num) >= unit_value
     }
 }
 
@@ -628,7 +719,7 @@ where
     T: Debug,
 {
     fn filter_unit(&self, unit: &UnitInfo) -> bool {
-        (self.filter_unit_func)(self, unit)
+        (self.filter_unit_func)(self, unit, self.key)
     }
 
     fn id(&self) -> &str {
@@ -637,5 +728,22 @@ where
 
     fn text(&self) -> &str {
         ""
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_comp() {
+        let a = 4;
+        let b = None;
+
+        let c = Some(a) < b;
+
+        println!("c {c}");
+
+        let d = Some(a) > b;
+
+        println!("d {d}");
     }
 }

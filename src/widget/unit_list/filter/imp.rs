@@ -1,11 +1,12 @@
 use std::{
     cell::{OnceCell, RefCell},
     rc::Rc,
+    str::FromStr,
 };
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
-
 use gettextrs::pgettext;
+use std::fmt::Debug;
 
 use gtk::{
     glib::{self},
@@ -27,12 +28,14 @@ use crate::{
         ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType,
         UnitDBusLevel, UnitType,
     },
+    upgrade,
     widget::unit_list::{
         COL_ID_UNIT, UnitListPanel,
         filter::{
             UnitListFilterWindow,
             unit_prop_filter::{
-                FilterText, UnitPropertyFilter, get_filter_element, get_filter_element_mut,
+                FilterNum, FilterText, UnitPropertyFilter, UnitPropertyFilterType,
+                get_filter_element, get_filter_element_mut,
             },
         },
     },
@@ -125,32 +128,39 @@ impl UnitListFilterWindowImp {
                 .title()
                 .map_or(key.clone(), |title| title.to_string());
 
-            let filter_assessor = unit_list_panel.try_get_filter_assessor(&key); //TODO make it lazy
+            let prop_type = unit_prop_selection.prop_type();
+            let Some(filter_assessor) = unit_list_panel.lazy_get_filter_assessor(&key, prop_type)
+            else {
+                warn!("No filter for key {key}");
+                continue;
+            };
 
-            let (widget, filter_widget): (gtk::Widget, Vec<FilterWidget>) =
-                if let Some(ref filter) = filter_assessor {
-                    let (widget, filter_widget) = match key.as_str() {
-                        COL_ID_UNIT => common_text_filter(filter),
-                        "sysdm-bus" => build_bus_level_filter(filter),
-                        "sysdm-type" => build_type_filter(filter),
-                        "sysdm-state" => build_enablement_filter(filter),
-                        "sysdm-preset" => build_preset_filter(filter),
-                        "sysdm-load" => build_load_filter(filter),
-                        "sysdm-active" => build_active_state_filter(filter),
-                        "sysdm-sub" => super::substate::sub_state_filter(filter),
-                        "sysdm-description" => common_text_filter(filter),
+            let (widget, filter_widget): (gtk::Box, Vec<FilterWidget>) = match key.as_str() {
+                COL_ID_UNIT => common_text_filter(&filter_assessor),
+                "sysdm-bus" => build_bus_level_filter(&filter_assessor),
+                "sysdm-type" => build_type_filter(&filter_assessor),
+                "sysdm-state" => build_enablement_filter(&filter_assessor),
+                "sysdm-preset" => build_preset_filter(&filter_assessor),
+                "sysdm-load" => build_load_filter(&filter_assessor),
+                "sysdm-active" => build_active_state_filter(&filter_assessor),
+                "sysdm-sub" => super::substate::sub_state_filter(&filter_assessor),
+                "sysdm-description" => common_text_filter(&filter_assessor),
 
-                        _ => {
-                            error!("Key {key}");
-                            let v = vec![];
-                            let dummy = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-                            (dummy, v)
-                        }
-                    };
-                    (widget.into(), filter_widget)
-                } else {
-                    (gtk::Label::new(Some(&name)).into(), vec![])
-                };
+                _ => match filter_assessor.borrow().ftype() {
+                    UnitPropertyFilterType::Text => common_text_filter(&filter_assessor),
+                    UnitPropertyFilterType::NumU64 => common_num_filter::<u64>(&filter_assessor),
+                    UnitPropertyFilterType::NumI64 => common_num_filter::<i64>(&filter_assessor),
+                    UnitPropertyFilterType::NumU32 => common_num_filter::<u32>(&filter_assessor),
+                    UnitPropertyFilterType::NumI32 => common_num_filter::<i32>(&filter_assessor),
+                    UnitPropertyFilterType::NumU16 => common_num_filter::<u16>(&filter_assessor),
+                    UnitPropertyFilterType::Element => {
+                        error!("Key {key}");
+                        let w = gtk::Box::new(gtk::Orientation::Vertical, 0);
+                        w.append(&gtk::Label::new(Some(&name)));
+                        (w, vec![])
+                    }
+                },
+            };
 
             filter_widgets.push(filter_widget);
 
@@ -163,19 +173,18 @@ impl UnitListFilterWindowImp {
                 .css_classes(["nav"])
                 .build();
 
-            if let Some(filter_container) = filter_assessor {
-                let mut filter_container_binding = filter_container.as_ref().borrow_mut();
-                let is_empty = filter_container_binding.is_empty();
-                button_content.set_icon_name(icon_name(is_empty));
-                {
-                    let button_content = button_content.clone();
-                    let lambda = move |is_empty: bool| {
-                        let icon_name = icon_name(is_empty);
-                        button_content.set_icon_name(icon_name);
-                    };
+            let mut filter_container_binding = filter_assessor.as_ref().borrow_mut();
+            let is_empty = filter_container_binding.is_empty();
+            button_content.set_icon_name(icon_name(is_empty));
+            {
+                let button_content = button_content.downgrade();
+                let lambda = move |is_empty: bool| {
+                    let button_content = upgrade!(button_content);
+                    let icon_name = icon_name(is_empty);
+                    button_content.set_icon_name(icon_name);
+                };
 
-                    filter_container_binding.set_on_change(Box::new(lambda));
-                }
+                filter_container_binding.set_on_change(Box::new(lambda));
             }
 
             let button: gtk::Button = gtk::Button::builder()
@@ -297,11 +306,11 @@ impl WidgetImpl for UnitListFilterWindowImp {}
 impl WindowImpl for UnitListFilterWindowImp {
     // Save window state right before the window will be closed
     fn close_request(&self) -> glib::Propagation {
-        self.unit_list_panel
-            .get()
-            .expect("Not None")
-            .clear_unit_list_filter_window_dependancy();
-
+        /*   self.unit_list_panel
+                   .get()
+                   .expect("Not None")
+                   .clear_unit_list_filter_window_dependancy();
+        */
         self.parent_close_request();
         // Allow to invoke other event handlers
         glib::Propagation::Proceed
@@ -409,7 +418,7 @@ fn common_text_filter(
         dropdown.set_selected(filter_container.match_type().position());
     }
 
-    let filter_wiget = FilterWidget::Text(entry.clone(), dropdown.clone());
+    let filter_widget = FilterWidget::Text(entry.clone(), dropdown.clone());
     {
         let filter_container = filter_container.clone();
         entry.connect_changed(move |entry| {
@@ -450,12 +459,15 @@ fn common_text_filter(
         entry.set_text("");
     });
 
-    (container, vec![filter_wiget])
+    (container, vec![filter_widget])
 }
 
-fn common_num_filter(
+fn common_num_filter<T>(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
-) -> (gtk::Box, Vec<FilterWidget>) {
+) -> (gtk::Box, Vec<FilterWidget>)
+where
+    T: Debug + Default + PartialEq + PartialOrd + Copy + FromStr + 'static,
+{
     let container = create_content_box();
 
     let merge_box = gtk::Box::builder()
@@ -506,14 +518,20 @@ fn common_num_filter(
         entry.connect_changed(move |entry| {
             let text = entry.text();
 
+            //TODO handle empty str
+            let Ok(num_val) = text.parse::<T>() else {
+                info!("parse error");
+                return;
+            };
+
             let mut binding = filter_container.as_ref().borrow_mut();
 
             let filter_text = binding
                 .as_any_mut()
-                .downcast_mut::<FilterText>()
+                .downcast_mut::<FilterNum<T>>()
                 .expect("downcast_mut to FilterText");
 
-            filter_text.set_filter_elem(&text, true);
+            filter_text.set_filter_elem(num_val, true);
         });
     }
 
@@ -522,7 +540,7 @@ fn common_num_filter(
             filter_container.clone();
         dropdown.connect_selected_item_notify(move |dropdown| {
             let idx = dropdown.selected();
-            let match_type: StrMatchType = idx.into();
+            let match_type: NumMatchType = idx.into();
 
             debug!("Filter match type idx {idx:?} type {match_type:?}");
 
@@ -530,7 +548,7 @@ fn common_num_filter(
 
             let filter_text = binding
                 .as_any_mut()
-                .downcast_mut::<FilterText>()
+                .downcast_mut::<FilterNum<T>>()
                 .expect("downcast_mut to FilterText");
 
             filter_text.set_filter_match_type(match_type, true);

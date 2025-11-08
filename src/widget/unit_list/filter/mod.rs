@@ -4,7 +4,12 @@ mod substate;
 pub mod unit_prop_filter;
 
 use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::glib::{self};
+use gtk::{
+    glib::{self},
+    prelude::ObjectExt,
+};
+use log::warn;
+use zvariant::OwnedValue;
 
 use crate::{
     systemd::{
@@ -13,7 +18,7 @@ use crate::{
     },
     widget::unit_list::{
         COL_ID_UNIT,
-        filter::unit_prop_filter::{FilterElementAssessor, FilterTextAssessor},
+        filter::unit_prop_filter::{FilterElementAssessor, FilterNumAssessor, FilterTextAssessor},
     },
 };
 
@@ -49,9 +54,13 @@ impl UnitListFilterWindow {
     }
 }
 
-pub fn filter_unit_name(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
+pub fn filter_unit_name(
+    property_assessor: &FilterTextAssessor,
+    unit: &UnitInfo,
+    _key: glib::Quark,
+) -> bool {
     let name = unit.display_name();
-    (property_assessor.filter_unit_value_func)(property_assessor, &name)
+    (property_assessor.filter_unit_value_func)(property_assessor, Some(&name))
 }
 
 pub fn filter_bus_level(
@@ -101,6 +110,47 @@ pub fn filter_sub_state(
     property_assessor.filter_unit_value(&unit.sub_state())
 }
 
-pub fn filter_unit_description(property_assessor: &FilterTextAssessor, unit: &UnitInfo) -> bool {
-    (property_assessor.filter_unit_value_func)(property_assessor, &unit.description())
+pub fn filter_unit_description(
+    property_assessor: &FilterTextAssessor,
+    unit: &UnitInfo,
+    _key: glib::Quark,
+) -> bool {
+    (property_assessor.filter_unit_value_func)(property_assessor, Some(&unit.description()))
+}
+
+pub fn custom_num<T>(
+    property_assessor: &FilterNumAssessor<T>,
+    unit: &UnitInfo,
+    key: glib::Quark,
+) -> bool
+where
+    T: std::fmt::Debug + std::default::Default + for<'a> TryFrom<&'a zvariant::Value<'a>>,
+    for<'a> zvariant::Error:
+        std::convert::From<<T as std::convert::TryFrom<&'a zvariant::Value<'a>>>::Error>,
+{
+    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| {
+            value
+                .downcast_ref::<T>()
+                .inspect_err(|e| warn!("wrong type mapping {e:?}"))
+                .unwrap_or_default()
+        });
+    (property_assessor.filter_unit_value_func)(property_assessor, value)
+}
+
+pub fn custom_str(
+    property_assessor: &FilterTextAssessor,
+    unit: &UnitInfo,
+    key: glib::Quark,
+) -> bool {
+    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| {
+            value
+                .downcast_ref::<String>()
+                .inspect_err(|e| warn!("wrong type mapping {e:?}"))
+                .unwrap_or_default()
+        });
+    (property_assessor.filter_unit_value_func)(property_assessor, value.as_deref())
 }

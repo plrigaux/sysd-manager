@@ -56,11 +56,12 @@ impl UnitListPanel {
         self.imp().set_inter_message(action);
     }
 
-    fn try_get_filter_assessor(
+    fn lazy_get_filter_assessor(
         &self,
         id: &str,
+        propperty_type: Option<String>,
     ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
-        self.imp().try_get_filter_assessor(id)
+        self.imp().lazy_get_filter_assessor(id, propperty_type)
     }
 
     fn filter_assessor_change(
@@ -74,10 +75,10 @@ impl UnitListPanel {
             .filter_assessor_change(id, empty, change_type, update_widget);
     }
 
-    fn clear_unit_list_filter_window_dependancy(&self) {
-        self.imp().clear_unit_list_filter_window_dependancy();
-    }
-
+    /*     fn clear_unit_list_filter_window_dependancy(&self) {
+           self.imp().clear_unit_list_filter_window_dependancy();
+       }
+    */
     fn clear_filters(&self) {
         self.imp().clear_filters();
     }
@@ -137,5 +138,9 @@ impl<'a> CustomId<'a> {
 
     pub fn has_defined_type(&self) -> bool {
         !self.utype.is_empty()
+    }
+
+    pub fn quark(&self) -> glib::Quark {
+        glib::Quark::from_str(self.prop)
     }
 }

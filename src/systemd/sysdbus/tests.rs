@@ -787,6 +787,36 @@ async fn test_introspect3() -> Result<(), SystemdErrors> {
 
 #[ignore = "need a connection to a service"]
 #[tokio::test]
+async fn test_introspect_types() -> Result<(), SystemdErrors> {
+    init();
+
+    let map = fetch_unit_interface_properties().await?;
+    /*
+    let mut signatures = BTreeMap::new();
+
+    for unit_property in map.values().flat_map(|v| v) {
+        if let Some(v) = signatures.insert(&unit_property.signature, 1) {
+            signatures.insert(&unit_property.signature, v + 1);
+        }
+    }
+
+    println!("{signatures:#?}"); */
+
+    let signatures = map
+        .values()
+        .flatten()
+        .fold(BTreeMap::new(), |mut acc, unit_property| {
+            *acc.entry(&unit_property.signature).or_insert(1) += 1;
+            acc
+        });
+
+    println!("{signatures:#?}");
+
+    Ok(())
+}
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
 async fn test_get_properties2() -> Result<(), SystemdErrors> {
     init();
 

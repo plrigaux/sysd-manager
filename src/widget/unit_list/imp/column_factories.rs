@@ -270,7 +270,7 @@ pub fn setup_factories(
 
 pub fn get_factory_by_id(id: &CustomId, display_color: bool) -> Option<gtk::SignalListItemFactory> {
     match (id.has_defined_type(), id.prop) {
-        (true, _) => Some(get_custom_factory(id.prop, display_color)),
+        (true, _) => Some(get_custom_factory(id, display_color)),
         (false, COL_ID_UNIT) => Some(fac_unit_name(display_color)),
         (false, "sysdm-type") => Some(fac_unit_type(display_color)),
         (false, "sysdm-bus") => Some(fac_bus(display_color)),
@@ -489,12 +489,12 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
 }
 
 pub(super) fn get_custom_factory(
-    property_code: &str,
+    property_code: &CustomId,
     display_color: bool,
 ) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
-    let key = Quark::from_str(property_code);
+    let key = property_code.quark();
     factory.connect_setup(factory_setup);
 
     if display_color {

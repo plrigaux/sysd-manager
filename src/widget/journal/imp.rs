@@ -393,7 +393,7 @@ impl JournalPanelImp {
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
     fn update_journal(&self, grabbing: WhatGrab) {
-        warn!("BEGIN update_journal {grabbing:?}");
+        debug!("BEGIN update_journal {grabbing:?}");
         if !self.visible_on_page.get() {
             debug!("not visible --> quit");
             return;
