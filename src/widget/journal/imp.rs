@@ -19,7 +19,7 @@ use std::{
 use log::{debug, error, info, warn};
 
 use crate::{
-    consts::APP_ACTION_LIST_BOOT,
+    consts::{APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING},
     systemd::{
         self, BootFilter,
         data::UnitInfo,
@@ -50,11 +50,6 @@ const PANEL_JOURNAL: &str = "journal";
 
 const ASCD: &str = "view-sort-ascending";
 const DESC: &str = "view-sort-descending";
-
-const CLASS_SUCCESS: &str = "success";
-//const CLASS_ACCENT: &str = "accent";
-const CLASS_WARNING: &str = "warning";
-const CLASS_ERROR: &str = "error";
 
 const KEY_ASCENDING: &str = "Ascending";
 const KEY_DESCENDING: &str = "Descending";

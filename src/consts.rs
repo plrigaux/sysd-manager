@@ -34,3 +34,8 @@ pub const NS_ACTION_UNIT_LIST_FILTER: &str = concat!(WIN, ACTION_UNIT_LIST_FILTE
 
 pub const MENU_ACTION: &str = "unit-reload";
 pub const WIN_MENU_ACTION: &str = concat!(WIN, MENU_ACTION);
+
+pub const CLASS_SUCCESS: &str = "success";
+//const CLASS_ACCENT: &str = "accent";
+pub const CLASS_WARNING: &str = "warning";
+pub const CLASS_ERROR: &str = "error";

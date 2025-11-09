@@ -23,7 +23,7 @@ use log::{debug, error, info, warn};
 use strum::IntoEnumIterator;
 
 use crate::{
-    consts::FLAT,
+    consts::{CLASS_WARNING, FLAT},
     systemd::enums::{
         ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType,
         UnitDBusLevel, UnitType,
@@ -414,7 +414,7 @@ fn common_text_filter(
             filter_container.match_type(),
             filter_container.text()
         );
-        entry.set_text(filter_container.text());
+        entry.set_text(&filter_container.text());
         dropdown.set_selected(filter_container.match_type().position());
     }
 
@@ -467,6 +467,7 @@ fn common_num_filter<T>(
 ) -> (gtk::Box, Vec<FilterWidget>)
 where
     T: Debug + Default + PartialEq + PartialOrd + Copy + FromStr + 'static,
+    <T as FromStr>::Err: Debug,
 {
     let container = create_content_box();
 
@@ -487,10 +488,12 @@ where
 
     let model_str: Vec<&str> = NumMatchType::iter().map(|x| x.as_str()).collect();
     let model = gtk::StringList::new(&model_str);
+
     let dropdown = gtk::DropDown::builder()
         .model(&model)
         .halign(gtk::Align::Fill)
         .build();
+
     let drop_box = gtk::Box::builder()
         .halign(gtk::Align::Fill)
         .orientation(gtk::Orientation::Horizontal)
@@ -508,7 +511,7 @@ where
             filter_container.match_type(),
             filter_container.text()
         );
-        entry.set_text(filter_container.text());
+        entry.set_text(&filter_container.text());
         dropdown.set_selected(filter_container.match_type().position());
     }
 
@@ -518,10 +521,21 @@ where
         entry.connect_changed(move |entry| {
             let text = entry.text();
 
-            //TODO handle empty str
-            let Ok(num_val) = text.parse::<T>() else {
-                info!("parse error");
-                return;
+            let num_val = if text.is_empty() {
+                entry.remove_css_class(CLASS_WARNING);
+                None
+            } else {
+                match text.parse::<T>() {
+                    Ok(num_val) => {
+                        entry.remove_css_class(CLASS_WARNING);
+                        Some(num_val)
+                    }
+                    Err(e) => {
+                        info!("parse error {e:?}");
+                        entry.add_css_class(CLASS_WARNING);
+                        return;
+                    }
+                }
             };
 
             let mut binding = filter_container.as_ref().borrow_mut();

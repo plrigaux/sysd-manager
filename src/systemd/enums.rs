@@ -1010,6 +1010,9 @@ pub enum StrMatchType {
 
     #[enum_value(name = "end_with")]
     EndWith,
+
+    #[enum_value(name = "equals")]
+    Equals,
 }
 
 impl StrMatchType {
@@ -1023,6 +1026,7 @@ impl StrMatchType {
             StrMatchType::Contains => 0,
             StrMatchType::StartWith => 1,
             StrMatchType::EndWith => 2,
+            StrMatchType::Equals => 3,
         }
     }
 }

@@ -9,6 +9,7 @@ use crate::{
 };
 use std::{
     any::Any,
+    borrow::Cow,
     collections::HashSet,
     fmt::{self, Debug},
     hash::Hash,
@@ -29,8 +30,8 @@ pub trait UnitPropertyFilter: Debug {
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn ftype(&self) -> UnitPropertyFilterType;
 
-    fn text(&self) -> &str {
-        ""
+    fn text(&self) -> Cow<'_, str> {
+        Cow::from("")
     }
 
     fn match_type(&self) -> StrMatchType {
@@ -355,8 +356,8 @@ impl UnitPropertyFilter for FilterText {
         self
     }
 
-    fn text(&self) -> &str {
-        &self.filter_text
+    fn text(&self) -> Cow<'_, str> {
+        Cow::from(&self.filter_text)
     }
 
     fn match_type(&self) -> StrMatchType {
@@ -386,8 +387,7 @@ pub struct FilterNum<T>
 where
     T: Debug,
 {
-    filter_num: T,
-    filter_text: String,
+    filter_num: Option<T>,
     match_type: NumMatchType,
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo, glib::Quark) -> bool,
@@ -422,7 +422,6 @@ where
     ) -> Self {
         Self {
             filter_num: Default::default(),
-            filter_text: Default::default(),
             match_type: NumMatchType::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
@@ -433,17 +432,38 @@ where
         }
     }
 
-    pub fn set_filter_elem(&mut self, f_element: T, update_widget: bool) {
+    pub fn set_filter_elem(&mut self, f_element: Option<T>, update_widget: bool) {
         if f_element == self.filter_num {
             return;
         }
-        /*
+
+        let new_is_none = f_element.is_none();
+        let old_is_none = self.filter_num.is_none();
+
+        let change_type = if new_is_none {
+            gtk::FilterChange::LessStrict
+        } else {
+            gtk::FilterChange::Different
+        };
+
+        self.filter_num = f_element;
+
+        if old_is_none != new_is_none {
+            (self.lambda)(new_is_none);
+        }
+
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_none {
+            None
+        } else {
+            Some(Box::new(FilterNumAssessor::new(self)))
+        };
+
         self.unit_list_panel.filter_assessor_change(
-            self.id,
+            &self.id,
             assessor,
             Some(change_type),
             update_widget,
-        ); */
+        );
     }
 
     pub fn set_filter_match_type(&mut self, match_type: NumMatchType, update_widget: bool) {
@@ -502,8 +522,14 @@ where
         self
     }
 
-    fn text(&self) -> &str {
-        &self.filter_text
+    fn text(&self) -> Cow<'_, str> {
+        match &self.filter_num {
+            Some(val) => {
+                let s = val.to_string();
+                Cow::from(s)
+            }
+            None => Cow::from(""),
+        }
     }
 
     fn match_type(&self) -> StrMatchType {
@@ -525,7 +551,7 @@ where
     }
 
     fn is_empty(&self) -> bool {
-        false
+        self.filter_num.is_none()
     }
 
     fn ftype(&self) -> UnitPropertyFilterType {
@@ -596,6 +622,7 @@ impl FilterTextAssessor {
                 (false, StrMatchType::Contains) => Self::filter_unit_value_func_contains,
                 (false, StrMatchType::StartWith) => Self::filter_unit_value_func_start_with,
                 (false, StrMatchType::EndWith) => Self::filter_unit_value_func_end_with,
+                (false, StrMatchType::Equals) => Self::filter_unit_value_func_equals,
             };
 
         FilterTextAssessor {
@@ -634,6 +661,14 @@ impl FilterTextAssessor {
             false
         }
     }
+
+    fn filter_unit_value_func_equals(&self, unit_value: Option<&str>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.eq(&self.filter_text)
+        } else {
+            false
+        }
+    }
 }
 
 impl UnitPropertyAssessor for FilterTextAssessor {
@@ -655,7 +690,7 @@ pub struct FilterNumAssessor<T>
 where
     T: Debug,
 {
-    filter_num: T,
+    filter_num: Option<T>,
     //match_type: MatchType, //TODO make distintive struct to avoid runtime if
     filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo, glib::Quark) -> bool,
     id: String,
@@ -669,16 +704,15 @@ where
     T: Debug + Copy + PartialEq + PartialOrd,
 {
     fn new(filter_num: &FilterNum<T>) -> Self {
-        let filter_unit_value_func =
-            match (filter_num.filter_text.is_empty(), filter_num.match_type) {
-                (true, _) => Self::filter_unit_value_func_empty,
+        let filter_unit_value_func = match (filter_num.filter_num, filter_num.match_type) {
+            (None, _) => Self::filter_unit_value_func_empty,
 
-                (false, NumMatchType::Equals) => Self::filter_unit_value_func_equals,
-                (false, NumMatchType::Greater) => Self::filter_unit_value_func_greater,
-                (false, NumMatchType::Smaller) => Self::filter_unit_value_func_smaller,
-                (false, NumMatchType::GreaterEquals) => Self::filter_unit_value_func_greater_equals,
-                (false, NumMatchType::SmallerEquals) => Self::filter_unit_value_func_smaller_equals,
-            };
+            (Some(_), NumMatchType::Equals) => Self::filter_unit_value_func_equals,
+            (Some(_), NumMatchType::Greater) => Self::filter_unit_value_func_greater,
+            (Some(_), NumMatchType::Smaller) => Self::filter_unit_value_func_smaller,
+            (Some(_), NumMatchType::GreaterEquals) => Self::filter_unit_value_func_greater_equals,
+            (Some(_), NumMatchType::SmallerEquals) => Self::filter_unit_value_func_smaller_equals,
+        };
 
         Self {
             filter_num: filter_num.filter_num,
@@ -694,23 +728,23 @@ where
     }
 
     fn filter_unit_value_func_equals(&self, unit_value: Option<T>) -> bool {
-        unit_value == Some(self.filter_num)
+        unit_value == self.filter_num
     }
 
     fn filter_unit_value_func_smaller(&self, unit_value: Option<T>) -> bool {
-        Some(self.filter_num) > unit_value
+        unit_value < self.filter_num
     }
 
     fn filter_unit_value_func_smaller_equals(&self, unit_value: Option<T>) -> bool {
-        Some(self.filter_num) >= unit_value
+        unit_value <= self.filter_num
     }
 
     fn filter_unit_value_func_greater(&self, unit_value: Option<T>) -> bool {
-        Some(self.filter_num) > unit_value
+        unit_value > self.filter_num
     }
 
     fn filter_unit_value_func_greater_equals(&self, unit_value: Option<T>) -> bool {
-        Some(self.filter_num) >= unit_value
+        unit_value >= self.filter_num
     }
 }
 
