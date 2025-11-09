@@ -18,7 +18,9 @@ use crate::{
     },
     widget::unit_list::{
         COL_ID_UNIT,
-        filter::unit_prop_filter::{FilterElementAssessor, FilterNumAssessor, FilterTextAssessor},
+        filter::unit_prop_filter::{
+            FilterBoolAssessor, FilterElementAssessor, FilterNumAssessor, FilterTextAssessor,
+        },
     },
 };
 
@@ -153,4 +155,20 @@ pub fn custom_str(
                 .unwrap_or_default()
         });
     (property_assessor.filter_unit_value_func)(property_assessor, value.as_deref())
+}
+
+pub fn custom_bool(
+    property_assessor: &FilterBoolAssessor,
+    unit: &UnitInfo,
+    key: glib::Quark,
+) -> bool {
+    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| {
+            value
+                .downcast_ref::<bool>()
+                .inspect_err(|e| warn!("wrong type mapping {e:?}"))
+                .unwrap_or_default()
+        });
+    (property_assessor.filter_unit_value_func)(property_assessor, value)
 }

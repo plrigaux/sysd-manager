@@ -23,6 +23,7 @@ pub enum UnitPropertyFilterType {
     NumU16,
     NumU32,
     NumI64,
+    Bool,
 }
 pub trait UnitPropertyFilter: Debug {
     fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>);
@@ -112,7 +113,7 @@ where
     ) -> Self {
         Self {
             filter_elements: Default::default(),
-            lambda: Box::new(|_: bool| ()),
+            lambda: Box::new(|_: bool| ()), //empty func
             filter_unit_func,
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
@@ -559,7 +560,7 @@ where
     }
 }
 
-pub trait UnitPropertyAssessor: core::fmt::Debug {
+pub trait UnitPropertyAssessor: Debug {
     fn filter_unit(&self, unit: &UnitInfo) -> bool;
     //  fn filter_unit_value(&self, unit_value: &str) -> bool;
     fn id(&self) -> &str;
@@ -569,6 +570,128 @@ pub trait UnitPropertyAssessor: core::fmt::Debug {
 
     fn match_type(&self) -> StrMatchType {
         StrMatchType::default()
+    }
+}
+
+pub struct FilterBool {
+    filter_bool: Option<bool>,
+    match_type: NumMatchType,
+    lambda: Box<dyn Fn(bool)>,
+    filter_unit_func: fn(&FilterBoolAssessor, &UnitInfo, glib::Quark) -> bool,
+    id: String,
+    unit_list_panel: UnitListPanel,
+    key: glib::Quark,
+}
+
+impl Debug for FilterBool {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FilterNum")
+            .field("filter_bool", &self.filter_bool)
+            .field("id", &self.id)
+            .finish()
+    }
+}
+
+impl FilterBool {
+    pub fn new(
+        id: &str,
+        filter_unit_func: fn(&FilterBoolAssessor, &UnitInfo, glib::Quark) -> bool,
+        unit_list_panel: &UnitListPanel,
+        key: glib::Quark,
+    ) -> Self {
+        Self {
+            filter_bool: Default::default(),
+            match_type: NumMatchType::default(),
+            lambda: Box::new(|_: bool| ()),
+            filter_unit_func,
+            id: id.to_string(),
+            unit_list_panel: unit_list_panel.clone(),
+            key,
+        }
+    }
+
+    pub fn set_filter_elem(&mut self, f_element: Option<bool>, update_widget: bool) {
+        if f_element == self.filter_bool {
+            return;
+        }
+
+        let new_is_none = f_element.is_none();
+        let old_is_none = self.filter_bool.is_none();
+
+        let change_type = gtk::FilterChange::Different;
+
+        self.filter_bool = f_element;
+
+        if old_is_none != new_is_none {
+            (self.lambda)(new_is_none);
+        }
+
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_none {
+            None
+        } else {
+            Some(Box::new(FilterBoolAssessor::new(self)))
+        };
+
+        self.unit_list_panel.filter_assessor_change(
+            &self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        );
+    }
+
+    pub fn filter_value(&self) -> Option<bool> {
+        self.filter_bool
+    }
+}
+
+impl UnitPropertyFilter for FilterBool {
+    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
+        self.lambda = lambda
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+
+    fn text(&self) -> Cow<'_, str> {
+        match &self.filter_bool {
+            Some(val) => {
+                let s = val.to_string();
+                Cow::from(s)
+            }
+            None => Cow::from(""),
+        }
+    }
+
+    fn match_type(&self) -> StrMatchType {
+        StrMatchType::default()
+    }
+
+    fn num_match_type(&self) -> NumMatchType {
+        self.match_type
+    }
+
+    fn clear_n_apply_filter(&mut self) {
+        // self.filter_text.clear(); //FIXME it does not apply, but might be Ok
+        self.match_type = NumMatchType::default();
+    }
+
+    fn clear_filter(&mut self) {
+        self.clear_n_apply_filter();
+        (self.lambda)(true);
+    }
+
+    fn is_empty(&self) -> bool {
+        self.filter_bool.is_none()
+    }
+
+    fn ftype(&self) -> UnitPropertyFilterType {
+        UnitPropertyFilterType::Bool
     }
 }
 
@@ -752,6 +875,47 @@ impl<T> UnitPropertyAssessor for FilterNumAssessor<T>
 where
     T: Debug,
 {
+    fn filter_unit(&self, unit: &UnitInfo) -> bool {
+        (self.filter_unit_func)(self, unit, self.key)
+    }
+
+    fn id(&self) -> &str {
+        &self.id
+    }
+
+    fn text(&self) -> &str {
+        ""
+    }
+}
+
+#[derive(Debug)]
+pub struct FilterBoolAssessor {
+    filter_bool: Option<bool>,
+    //match_type: MatchType, //TODO make distintive struct to avoid runtime if
+    filter_unit_func: fn(&FilterBoolAssessor, &UnitInfo, glib::Quark) -> bool,
+    id: String,
+    pub(crate) filter_unit_value_func:
+        fn(filter_text: &FilterBoolAssessor, unit_value: Option<bool>) -> bool,
+    key: glib::Quark,
+}
+
+impl FilterBoolAssessor {
+    fn new(filter_bool: &FilterBool) -> Self {
+        Self {
+            filter_bool: filter_bool.filter_bool,
+            filter_unit_func: filter_bool.filter_unit_func,
+            id: filter_bool.id.clone(),
+            filter_unit_value_func: Self::compare,
+            key: filter_bool.key,
+        }
+    }
+
+    fn compare(&self, unit_value: Option<bool>) -> bool {
+        self.filter_bool == unit_value
+    }
+}
+
+impl UnitPropertyAssessor for FilterBoolAssessor {
     fn filter_unit(&self, unit: &UnitInfo) -> bool {
         (self.filter_unit_func)(self, unit, self.key)
     }

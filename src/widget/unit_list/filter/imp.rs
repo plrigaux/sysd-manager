@@ -20,7 +20,7 @@ use gtk::{
 };
 
 use log::{debug, error, info, warn};
-use strum::IntoEnumIterator;
+use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{
     consts::{CLASS_WARNING, FLAT},
@@ -34,7 +34,7 @@ use crate::{
         filter::{
             UnitListFilterWindow,
             unit_prop_filter::{
-                FilterNum, FilterText, UnitPropertyFilter, UnitPropertyFilterType,
+                FilterBool, FilterNum, FilterText, UnitPropertyFilter, UnitPropertyFilterType,
                 get_filter_element, get_filter_element_mut,
             },
         },
@@ -153,6 +153,7 @@ impl UnitListFilterWindowImp {
                     UnitPropertyFilterType::NumU32 => common_num_filter::<u32>(&filter_assessor),
                     UnitPropertyFilterType::NumI32 => common_num_filter::<i32>(&filter_assessor),
                     UnitPropertyFilterType::NumU16 => common_num_filter::<u16>(&filter_assessor),
+                    UnitPropertyFilterType::Bool => common_bool_filter(&filter_assessor),
                     UnitPropertyFilterType::Element => {
                         error!("Key {key}");
                         let w = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -460,6 +461,97 @@ fn common_text_filter(
     });
 
     (container, vec![filter_widget])
+}
+
+#[derive(
+    Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash, glib::Enum, PartialOrd, Ord,
+)]
+#[enum_type(name = "ActiveState")]
+enum BoolFilter {
+    True,
+    False,
+    #[default]
+    Unset,
+}
+
+impl BoolFilter {
+    fn label(&self) -> String {
+        match self {
+            BoolFilter::True => "True".to_owned(),
+            BoolFilter::False => "False".to_owned(),
+            BoolFilter::Unset => "<i>Unset</i>".to_owned(),
+        }
+    }
+
+    fn is_active(&self, value: Option<bool>) -> bool {
+        match self {
+            BoolFilter::True => value.is_some_and(|v| v),
+            BoolFilter::False => value.is_some_and(|v| !v),
+            BoolFilter::Unset => value.is_none(),
+        }
+    }
+    fn tooltip_info(&self) -> Option<String> {
+        None
+    }
+
+    fn get_value(&self) -> Option<bool> {
+        match self {
+            BoolFilter::True => Some(true),
+            BoolFilter::False => Some(false),
+            BoolFilter::Unset => None,
+        }
+    }
+}
+
+fn common_bool_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
+    let container = create_content_box();
+
+    let mut vec = vec![];
+
+    let binding = filter_container.borrow();
+    let Some(filter_bool) = binding.as_ref().as_any().downcast_ref::<FilterBool>() else {
+        error!("Wrong FilterBool");
+        return (gtk::Box::builder().build(), vec);
+    };
+
+    for value in BoolFilter::iter() {
+        let check = {
+            let filter_value = filter_bool.filter_value();
+            let active = value.is_active(filter_value);
+
+            let label = gtk::Label::builder()
+                .label(value.label())
+                .use_markup(true)
+                .build();
+
+            gtk::CheckButton::builder()
+                .child(&label)
+                .active(active)
+                .build()
+        };
+
+        vec.push(FilterWidget::CheckBox(check.clone()));
+
+        check.set_tooltip_markup(value.tooltip_info().as_deref());
+
+        let filter_container_bool = filter_container.clone();
+        check.connect_toggled(move |check_button| {
+            let mut binding = filter_container_bool.borrow_mut();
+            let Some(filter_bool) = binding.as_any_mut().downcast_mut::<FilterBool>() else {
+                error!("Wrong FilterBool Mut");
+                return;
+            };
+            filter_bool.set_filter_elem(value.get_value(), check_button.is_active());
+        });
+
+        container.append(&check);
+    }
+
+    build_controls(&container);
+
+    (container, vec)
 }
 
 fn common_num_filter<T>(

@@ -46,12 +46,12 @@ use crate::{
         unit_list::{
             COL_ID_UNIT, CustomId,
             filter::{
-                UnitListFilterWindow, custom_num, custom_str, filter_active_state,
+                UnitListFilterWindow, custom_bool, custom_num, custom_str, filter_active_state,
                 filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
                 filter_sub_state, filter_unit_description, filter_unit_name, filter_unit_type,
                 unit_prop_filter::{
-                    FilterElement, FilterNum, FilterText, UnitPropertyAssessor, UnitPropertyFilter,
-                    UnitPropertyFilterType,
+                    FilterBool, FilterElement, FilterNum, FilterText, UnitPropertyAssessor,
+                    UnitPropertyFilter, UnitPropertyFilterType,
                 },
             },
             search_controls::UnitListSearchControls,
@@ -872,6 +872,13 @@ impl UnitListPanelImp {
                     &unit_list_panel,
                     CustomId::from_str(id).quark(),
                     UnitPropertyFilterType::NumU32,
+                ))),
+
+                Some("b") => Some(Box::new(FilterBool::new(
+                    id,
+                    custom_bool,
+                    &unit_list_panel,
+                    CustomId::from_str(id).quark(),
                 ))),
                 Some("q") => Some(Box::new(FilterNum::<u16>::new(
                     id,
