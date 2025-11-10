@@ -24,13 +24,13 @@ use gtk::{
         },
     },
 };
-use zvariant::OwnedValue;
+use zvariant::{OwnedValue, Value};
 
 use crate::{
     consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR},
     systemd::{
         self, SystemdUnitFile,
-        data::UnitInfo,
+        data::{UnitInfo, convert_to_string},
         enums::{LoadState, UnitDBusLevel, UnitType},
         errors::SystemdErrors,
     },
@@ -895,11 +895,15 @@ impl UnitListPanelImp {
                     UnitPropertyFilterType::NumI64,
                 ))),
                 Some(&_) => {
-                    error!("Key {id} not handled, type {propperty_type:?}");
+                    error!(
+                        "Filtering for key {id:?} not handled yet, data type {propperty_type:?}"
+                    );
                     None
                 }
                 None => {
-                    error!("Key {id} not handled, type {propperty_type:?}");
+                    error!(
+                        "Filtering for key {id:?} not handled yet, data type {propperty_type:?}"
+                    );
                     None
                 }
             },
@@ -1089,12 +1093,7 @@ impl UnitListPanelImp {
                         panic!("Should never fail");
                     };
 
-                    match value {
-                        Some(value) => unsafe { unit.set_qdata(*key, value) },
-                        None => unsafe {
-                            unit.steal_qdata::<OwnedValue>(*key);
-                        },
-                    }
+                    Self::insert_value(*key, value, unit);
                 }
             }
             info!("Fetching properties FINISHED");
@@ -1108,6 +1107,109 @@ impl UnitListPanelImp {
                 construct::set_column_factory_and_sorter(&column, display_color);
             }
         });
+    }
+
+    fn insert_value(key: Quark, value: Option<OwnedValue>, unit: &UnitInfo) {
+        let Some(value) = value else {
+            unsafe { unit.steal_qdata::<OwnedValue>(key) };
+            return;
+        };
+
+        let value_ref = &value as &Value;
+        match value_ref {
+            Value::Bool(_b) => unsafe { unit.set_qdata(key, value) },
+            Value::U8(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::I16(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::U16(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::I32(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::U32(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::I64(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::U64(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::F64(_i) => unsafe { unit.set_qdata(key, value) },
+            Value::Str(s) => {
+                if s.is_empty() {
+                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                } else {
+                    unsafe { unit.set_qdata(key, value) };
+                }
+            }
+            Value::Signature(_s) => unsafe { unit.set_qdata(key, value) },
+            Value::ObjectPath(_op) => unsafe { unit.set_qdata(key, value) },
+            Value::Value(_v) => unsafe { unit.set_qdata(key, value) },
+            Value::Array(a) => {
+                if a.is_empty() {
+                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                } else {
+                    let mut d_str = String::from("");
+
+                    let mut it = a.iter().peekable();
+                    while let Some(mi) = it.next() {
+                        if let Some(v) = convert_to_string(mi) {
+                            d_str.push_str(&v);
+                        }
+                        if it.peek().is_some() {
+                            d_str.push_str(", ");
+                        }
+                    }
+
+                    match OwnedValue::try_from(Value::Str(d_str.into())) {
+                        Ok(v) => unsafe { unit.set_qdata(key, v) },
+                        Err(e) => {
+                            warn!("OwnedValue error {e:?}");
+                        }
+                    }
+                }
+            }
+            Value::Dict(d) => {
+                let mut it = d.iter().peekable();
+                if it.peek().is_none() {
+                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                } else {
+                    let mut d_str = String::from("{ ");
+
+                    for (mik, miv) in it {
+                        if let Some(k) = convert_to_string(mik) {
+                            d_str.push_str(&k);
+                        }
+                        d_str.push_str(" : ");
+
+                        if let Some(v) = convert_to_string(miv) {
+                            d_str.push_str(&v);
+                        }
+                    }
+                    d_str.push_str(" }");
+
+                    match OwnedValue::try_from(Value::Str(d_str.into())) {
+                        Ok(v) => unsafe { unit.set_qdata(key, v) },
+                        Err(e) => {
+                            warn!("OwnedValue error {e:?}");
+                        }
+                    }
+                }
+            }
+            Value::Structure(stc) => {
+                let mut it = stc.fields().iter().peekable();
+
+                if it.peek().is_none() {
+                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                } else {
+                    let v: Vec<String> = it
+                        .filter_map(|v| convert_to_string(v))
+                        .filter(|s| !s.is_empty())
+                        .collect();
+                    let d_str = v.join(", ");
+
+                    match OwnedValue::try_from(Value::Str(d_str.into())) {
+                        Ok(v) => unsafe { unit.set_qdata(key, v) },
+                        Err(e) => {
+                            warn!("OwnedValue error {e:?}");
+                        }
+                    }
+                }
+            }
+            Value::Fd(_fd) => unsafe { unit.set_qdata(key, value) },
+            //Value::Maybe(maybe) => (maybe.to_string(), false),
+        }
     }
 
     pub fn print_scroll_adj_logs(&self) {

@@ -511,7 +511,7 @@ fn display_custom_property_color(key: Quark, object: &glib::Object) {
     inactive_display(&inscription, &unit);
     let value = unsafe { unit.qdata::<OwnedValue>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .map(|value| convert_to_string(value));
+        .and_then(|value| convert_to_string(value));
     inscription.set_text(value.as_deref());
 }
 
@@ -529,7 +529,7 @@ fn display_custom_property(key: Quark, object: &glib::Object) {
     } */
     let value = unsafe { unit.qdata::<OwnedValue>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .map(|value| convert_to_string(value));
+        .and_then(|value| convert_to_string(value));
 
     inscription.set_text(value.as_deref());
 }

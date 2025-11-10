@@ -273,70 +273,83 @@ pub struct LUnit {
     pub job_object_path: OwnedObjectPath,
 }
 
-pub fn convert_to_string(value: &Value) -> String {
+pub fn convert_to_string(value: &Value) -> Option<String> {
     match value {
-        Value::U8(i) => i.to_string(),
-        Value::Bool(b) => b.to_string(),
-        Value::I16(i) => i.to_string(),
-        Value::U16(i) => i.to_string(),
-        Value::I32(i) => i.to_string(),
-        Value::U32(i) => i.to_string(),
-        Value::I64(i) => i.to_string(),
-        Value::U64(i) => i.to_string(),
-        Value::F64(i) => i.to_string(),
-        Value::Str(s) => s.to_string(),
-        Value::Signature(s) => s.to_string(),
-        Value::ObjectPath(op) => op.to_string(),
-        Value::Value(v) => v.to_string(),
+        Value::Bool(b) => Some(b.to_string()),
+        Value::U8(i) => Some(i.to_string()),
+        Value::I16(i) => Some(i.to_string()),
+        Value::U16(i) => Some(i.to_string()),
+        Value::I32(i) => Some(i.to_string()),
+        Value::U32(i) => Some(i.to_string()),
+        Value::I64(i) => Some(i.to_string()),
+        Value::U64(i) => Some(i.to_string()),
+        Value::F64(i) => Some(i.to_string()),
+        Value::Str(s) => Some(s.to_string()),
+        Value::Signature(s) => Some(s.to_string()),
+        Value::ObjectPath(op) => Some(op.to_string()),
+        Value::Value(v) => Some(v.to_string()),
         Value::Array(a) => {
             if a.is_empty() {
-                String::from("")
+                None
             } else {
-                let mut d_str = String::from("[ ");
+                let mut d_str = String::from("");
 
                 let mut it = a.iter().peekable();
                 while let Some(mi) = it.next() {
-                    let sub_value = convert_to_string(mi);
-
-                    d_str.push_str(&sub_value);
+                    if let Some(v) = convert_to_string(mi) {
+                        d_str.push_str(&v);
+                    }
                     if it.peek().is_some() {
                         d_str.push_str(", ");
                     }
                 }
 
-                d_str.push_str(" ]");
-                d_str
+                Some(d_str)
             }
         }
         Value::Dict(d) => {
-            let mut d_str = String::from("{ ");
+            let mut it = d.iter().peekable();
+            if it.peek().is_none() {
+                None
+            } else {
+                let mut d_str = String::from("{ ");
 
-            for (mik, miv) in d.iter() {
-                d_str.push_str(&convert_to_string(mik));
-                d_str.push_str(" : ");
-                d_str.push_str(&convert_to_string(miv));
+                for (mik, miv) in it {
+                    if let Some(k) = convert_to_string(mik) {
+                        d_str.push_str(&k);
+                    }
+                    d_str.push_str(" : ");
+
+                    if let Some(v) = convert_to_string(miv) {
+                        d_str.push_str(&v);
+                    }
+                }
+                d_str.push_str(" }");
+                Some(d_str)
             }
-            d_str.push_str(" }");
-            d_str
         }
         Value::Structure(stc) => {
-            let mut d_str = String::from("{ ");
-
             let mut it = stc.fields().iter().peekable();
 
-            while let Some(mi) = it.next() {
-                let sub_value = convert_to_string(mi);
+            if it.peek().is_none() {
+                None
+            } else {
+                let mut d_str = String::from("");
 
-                d_str.push_str(&sub_value);
-                if it.peek().is_some() {
-                    d_str.push_str(", ");
+                while let Some(mi) = it.next() {
+                    if let Some(v) = convert_to_string(mi) {
+                        d_str.push_str(&v);
+                    }
+
+                    if it.peek().is_some() {
+                        d_str.push_str(", ");
+                    }
                 }
-            }
 
-            d_str.push_str(" }");
-            d_str
+                Some(d_str)
+            }
         }
-        Value::Fd(fd) => fd.to_string(),
+        Value::Fd(fd) => Some(fd.to_string()),
         //Value::Maybe(maybe) => (maybe.to_string(), false),
     }
 }

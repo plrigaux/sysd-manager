@@ -157,7 +157,7 @@ impl UnitListFilterWindowImp {
                     UnitPropertyFilterType::NumU16 => common_num_filter::<u16>(&filter_assessor),
                     UnitPropertyFilterType::Bool => bool_filter_ui_builder(&filter_assessor),
                     UnitPropertyFilterType::Element => {
-                        error!("Key {key}");
+                        error!("Key {key:?} not handled");
                         let w = gtk::Box::new(gtk::Orientation::Vertical, 0);
                         w.append(&gtk::Label::new(Some(&name)));
                         (w, vec![])
