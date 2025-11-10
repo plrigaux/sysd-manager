@@ -9,6 +9,7 @@ use gtk::{
     prelude::ObjectExt,
 };
 use log::warn;
+use strum::{EnumIter, IntoEnumIterator};
 use zvariant::OwnedValue;
 
 use crate::{
@@ -171,4 +172,41 @@ pub fn custom_bool(
                 .unwrap_or_default()
         });
     (property_assessor.filter_unit_value_func)(property_assessor, value)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter, Hash, glib::Enum, PartialOrd, Ord)]
+#[enum_type(name = "ActiveState")]
+pub enum BoolFilter {
+    True,
+    False,
+    Set,
+    Unset,
+}
+
+impl BoolFilter {
+    fn code(&self) -> &str {
+        match self {
+            BoolFilter::True => "True",
+            BoolFilter::False => "False",
+            BoolFilter::Set => "Set",
+            BoolFilter::Unset => "Unset",
+        }
+    }
+
+    fn label(&self) -> String {
+        match self {
+            BoolFilter::True => "True".to_owned(),
+            BoolFilter::False => "False".to_owned(),
+            BoolFilter::Set => "<i>Set</i>".to_owned(),
+            BoolFilter::Unset => "<i>Unset</i>".to_owned(),
+        }
+    }
+
+    fn tooltip_info(&self) -> Option<String> {
+        None
+    }
+
+    fn from_code(code: &str) -> Option<BoolFilter> {
+        BoolFilter::iter().find(|bf| bf.code() == code)
+    }
 }

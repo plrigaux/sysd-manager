@@ -36,3 +36,14 @@ macro_rules! upgrade {
         weak_ref
     }};
 }
+
+#[macro_export]
+macro_rules! upgrade_continue {
+    ($weak_ref:expr) => {{
+        let Some(weak_ref) = $weak_ref.upgrade() else {
+            log::warn!("Reference upgrade failed");
+            continue;
+        };
+        weak_ref
+    }};
+}

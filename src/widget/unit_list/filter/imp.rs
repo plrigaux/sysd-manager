@@ -1,11 +1,13 @@
 use std::{
     cell::{OnceCell, RefCell},
+    collections::HashMap,
     rc::Rc,
     str::FromStr,
 };
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use gettextrs::pgettext;
+use glib::{Quark, SignalHandlerId};
 use std::fmt::Debug;
 
 use gtk::{
@@ -20,7 +22,7 @@ use gtk::{
 };
 
 use log::{debug, error, info, warn};
-use strum::{EnumIter, IntoEnumIterator};
+use strum::IntoEnumIterator;
 
 use crate::{
     consts::{CLASS_WARNING, FLAT},
@@ -28,11 +30,11 @@ use crate::{
         ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType,
         UnitDBusLevel, UnitType,
     },
-    upgrade,
+    upgrade, upgrade_continue,
     widget::unit_list::{
         COL_ID_UNIT, UnitListPanel,
         filter::{
-            UnitListFilterWindow,
+            BoolFilter, UnitListFilterWindow,
             unit_prop_filter::{
                 FilterBool, FilterNum, FilterText, UnitPropertyFilter, UnitPropertyFilterType,
                 get_filter_element, get_filter_element_mut,
@@ -153,7 +155,7 @@ impl UnitListFilterWindowImp {
                     UnitPropertyFilterType::NumU32 => common_num_filter::<u32>(&filter_assessor),
                     UnitPropertyFilterType::NumI32 => common_num_filter::<i32>(&filter_assessor),
                     UnitPropertyFilterType::NumU16 => common_num_filter::<u16>(&filter_assessor),
-                    UnitPropertyFilterType::Bool => common_bool_filter(&filter_assessor),
+                    UnitPropertyFilterType::Bool => bool_filter_ui_builder(&filter_assessor),
                     UnitPropertyFilterType::Element => {
                         error!("Key {key}");
                         let w = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -344,24 +346,28 @@ pub(crate) fn contain_entry() -> (gtk::Box, gtk::Entry) {
 }
 
 pub enum FilterWidget {
-    Text(gtk::Entry, gtk::DropDown),
-    CheckBox(gtk::CheckButton),
-    WrapBox(adw::WrapBox),
+    Text(glib::WeakRef<gtk::Entry>, glib::WeakRef<gtk::DropDown>),
+    CheckBox(glib::WeakRef<gtk::CheckButton>),
+    WrapBox(glib::WeakRef<adw::WrapBox>),
 }
 
 impl FilterWidget {
     fn clear(&self) {
         match self {
             FilterWidget::Text(entry, dropdown) => {
+                let entry = upgrade!(entry);
                 entry.set_text("");
+                let dropdown = upgrade!(dropdown);
                 dropdown.set_selected(0);
             }
 
             FilterWidget::CheckBox(check) => {
+                let check = upgrade!(check);
                 check.set_active(false);
             }
 
             FilterWidget::WrapBox(wrapbox) => {
+                let wrapbox = upgrade!(wrapbox);
                 while let Some(child) = wrapbox.first_child() {
                     wrapbox.remove(&child);
                 }
@@ -419,7 +425,7 @@ fn common_text_filter(
         dropdown.set_selected(filter_container.match_type().position());
     }
 
-    let filter_widget = FilterWidget::Text(entry.clone(), dropdown.clone());
+    let filter_widget = FilterWidget::Text(entry.downgrade(), dropdown.downgrade());
     {
         let filter_container = filter_container.clone();
         entry.connect_changed(move |entry| {
@@ -463,47 +469,7 @@ fn common_text_filter(
     (container, vec![filter_widget])
 }
 
-#[derive(
-    Clone, Copy, Default, Debug, PartialEq, Eq, EnumIter, Hash, glib::Enum, PartialOrd, Ord,
-)]
-#[enum_type(name = "ActiveState")]
-enum BoolFilter {
-    True,
-    False,
-    #[default]
-    Unset,
-}
-
-impl BoolFilter {
-    fn label(&self) -> String {
-        match self {
-            BoolFilter::True => "True".to_owned(),
-            BoolFilter::False => "False".to_owned(),
-            BoolFilter::Unset => "<i>Unset</i>".to_owned(),
-        }
-    }
-
-    fn is_active(&self, value: Option<bool>) -> bool {
-        match self {
-            BoolFilter::True => value.is_some_and(|v| v),
-            BoolFilter::False => value.is_some_and(|v| !v),
-            BoolFilter::Unset => value.is_none(),
-        }
-    }
-    fn tooltip_info(&self) -> Option<String> {
-        None
-    }
-
-    fn get_value(&self) -> Option<bool> {
-        match self {
-            BoolFilter::True => Some(true),
-            BoolFilter::False => Some(false),
-            BoolFilter::Unset => None,
-        }
-    }
-}
-
-fn common_bool_filter(
+fn bool_filter_ui_builder(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> (gtk::Box, Vec<FilterWidget>) {
     let container = create_content_box();
@@ -516,42 +482,170 @@ fn common_bool_filter(
         return (gtk::Box::builder().build(), vec);
     };
 
-    for value in BoolFilter::iter() {
+    let mut hmap = HashMap::new();
+    let filter_value = filter_bool.filter_value();
+    for bool_filter_type in BoolFilter::iter().filter(|f| *f != BoolFilter::Set) {
         let check = {
-            let filter_value = filter_bool.filter_value();
-            let active = value.is_active(filter_value);
+            let active = match (bool_filter_type, filter_value) {
+                (BoolFilter::True, Some(BoolFilter::True)) => true,
+                (BoolFilter::True, Some(_)) => false,
+                (BoolFilter::False, Some(BoolFilter::False)) => true,
+                (BoolFilter::False, Some(_)) => false,
+                (BoolFilter::Unset, Some(BoolFilter::Unset)) => true,
+                (BoolFilter::Unset, Some(_)) => false,
+                (_, None) => false,
+                (_, _) => false,
+            };
 
             let label = gtk::Label::builder()
-                .label(value.label())
+                .label(bool_filter_type.label())
                 .use_markup(true)
                 .build();
 
             gtk::CheckButton::builder()
                 .child(&label)
                 .active(active)
+                .name(bool_filter_type.code())
                 .build()
         };
 
-        vec.push(FilterWidget::CheckBox(check.clone()));
+        vec.push(FilterWidget::CheckBox(check.downgrade()));
 
-        check.set_tooltip_markup(value.tooltip_info().as_deref());
+        hmap.insert(bool_filter_type.code().to_owned(), check.downgrade());
 
+        check.set_tooltip_markup(bool_filter_type.tooltip_info().as_deref());
+
+        container.append(&check);
+    }
+
+    let key = Quark::from_str("SID_KEY");
+    for bool_filter_type in BoolFilter::iter().filter(|f| *f != BoolFilter::Set) {
         let filter_container_bool = filter_container.clone();
-        check.connect_toggled(move |check_button| {
+
+        let Some(FilterWidget::CheckBox(check)) = vec.iter().find(|f| {
+            let FilterWidget::CheckBox(fc) = f else {
+                return false;
+            };
+
+            let Some(fc) = fc.upgrade() else { return false };
+
+            fc.widget_name() == bool_filter_type.code()
+        }) else {
+            warn!("Bool Filter CheckBox not found");
+            continue;
+        };
+
+        let check = upgrade_continue!(check);
+
+        let Some(bool_filter) = BoolFilter::from_code(&check.widget_name()) else {
+            warn!("BoolFilter not found");
+            continue;
+        };
+
+        let hmap = hmap.clone();
+        let sid = check.connect_toggled(move |check_button| {
             let mut binding = filter_container_bool.borrow_mut();
             let Some(filter_bool) = binding.as_any_mut().downcast_mut::<FilterBool>() else {
                 error!("Wrong FilterBool Mut");
                 return;
             };
-            filter_bool.set_filter_elem(value.get_value(), check_button.is_active());
+
+            let check_active = check_button.is_active();
+
+            //Make cb logic here
+            let bool_filter_type = match (bool_filter, check_active) {
+                (BoolFilter::True, true) => {
+                    if let Some(unset_check) =
+                        hmap.get(BoolFilter::Unset.code()).and_then(|c| c.upgrade())
+                    {
+                        set_active_blocked(key, unset_check);
+                    };
+
+                    if let Some(false_check) =
+                        hmap.get(BoolFilter::False.code()).and_then(|c| c.upgrade())
+                        && false_check.is_active()
+                    {
+                        Some(BoolFilter::Set)
+                    } else {
+                        Some(BoolFilter::True)
+                    }
+                }
+                (BoolFilter::True, false) => {
+                    if let Some(false_check) =
+                        hmap.get(BoolFilter::False.code()).and_then(|c| c.upgrade())
+                        && false_check.is_active()
+                    {
+                        Some(BoolFilter::False)
+                    } else {
+                        None
+                    }
+                }
+                (BoolFilter::False, true) => {
+                    if let Some(unset_check) =
+                        hmap.get(BoolFilter::Unset.code()).and_then(|c| c.upgrade())
+                    {
+                        set_active_blocked(key, unset_check);
+                    }
+
+                    if let Some(true_check) =
+                        hmap.get(BoolFilter::True.code()).and_then(|c| c.upgrade())
+                        && true_check.is_active()
+                    {
+                        Some(BoolFilter::Set)
+                    } else {
+                        Some(BoolFilter::False)
+                    }
+                }
+
+                (BoolFilter::False, false) => {
+                    if let Some(true_check) =
+                        hmap.get(BoolFilter::True.code()).and_then(|c| c.upgrade())
+                        && true_check.is_active()
+                    {
+                        Some(BoolFilter::True)
+                    } else {
+                        None
+                    }
+                }
+                (BoolFilter::Set, _) => {
+                    warn!("not suppose to come here");
+                    None
+                }
+                (BoolFilter::Unset, true) => {
+                    for true_false_check in hmap.values().filter_map(|f| f.upgrade()).filter(|cb| {
+                        cb.widget_name() == BoolFilter::False.code()
+                            || cb.widget_name() == BoolFilter::True.code()
+                    }) {
+                        set_active_blocked(key, true_false_check);
+                    }
+
+                    Some(BoolFilter::Unset)
+                }
+
+                (BoolFilter::Unset, false) => None,
+            };
+
+            filter_bool.set_filter_elem(bool_filter_type);
         });
 
-        container.append(&check);
+        unsafe { check.set_qdata(key, sid) };
     }
 
     build_controls(&container);
 
     (container, vec)
+}
+
+fn set_active_blocked(signal_handler_key: Quark, check_button: gtk::CheckButton) {
+    if let Some(sid) = unsafe {
+        check_button
+            .qdata::<SignalHandlerId>(signal_handler_key)
+            .map(|value_ptr| value_ptr.as_ref())
+    } {
+        check_button.block_signal(sid);
+        check_button.set_active(false);
+        check_button.unblock_signal(sid);
+    }
 }
 
 fn common_num_filter<T>(
@@ -607,7 +701,7 @@ where
         dropdown.set_selected(filter_container.match_type().position());
     }
 
-    let filter_wiget = FilterWidget::Text(entry.clone(), dropdown.clone());
+    let filter_wiget = FilterWidget::Text(entry.downgrade(), dropdown.downgrade());
     {
         let filter_container = filter_container.clone();
         entry.connect_changed(move |entry| {
@@ -723,7 +817,7 @@ macro_rules! build_elem_filter {
                     .build()
             };
 
-            vec.push(FilterWidget::CheckBox(check.clone()));
+            vec.push(FilterWidget::CheckBox(check.downgrade()));
 
             check.set_tooltip_markup(value.tooltip_info().as_deref());
 

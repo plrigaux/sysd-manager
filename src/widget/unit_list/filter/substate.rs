@@ -167,7 +167,12 @@ pub fn sub_state_filter(
 
     container.append(&controls);
 
-    (container, vec![FilterWidget::WrapBox(wrapbox)])
+    (
+        container,
+        vec![FilterWidget::WrapBox(gtk::prelude::ObjectExt::downgrade(
+            &wrapbox,
+        ))],
+    )
 }
 
 fn add_filter_tag(

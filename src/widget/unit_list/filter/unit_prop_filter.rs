@@ -5,7 +5,7 @@ use crate::{
         data::UnitInfo,
         enums::{NumMatchType, StrMatchType},
     },
-    widget::unit_list::UnitListPanel,
+    widget::unit_list::{UnitListPanel, filter::BoolFilter},
 };
 use std::{
     any::Any,
@@ -574,8 +574,7 @@ pub trait UnitPropertyAssessor: Debug {
 }
 
 pub struct FilterBool {
-    filter_bool: Option<bool>,
-    match_type: NumMatchType,
+    filter_bool: Option<BoolFilter>,
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func: fn(&FilterBoolAssessor, &UnitInfo, glib::Quark) -> bool,
     id: String,
@@ -601,7 +600,6 @@ impl FilterBool {
     ) -> Self {
         Self {
             filter_bool: Default::default(),
-            match_type: NumMatchType::default(),
             lambda: Box::new(|_: bool| ()),
             filter_unit_func,
             id: id.to_string(),
@@ -610,7 +608,7 @@ impl FilterBool {
         }
     }
 
-    pub fn set_filter_elem(&mut self, f_element: Option<bool>, update_widget: bool) {
+    pub fn set_filter_elem(&mut self, f_element: Option<BoolFilter>) {
         if f_element == self.filter_bool {
             return;
         }
@@ -636,11 +634,11 @@ impl FilterBool {
             &self.id,
             assessor,
             Some(change_type),
-            update_widget,
+            true, //TODO check cases
         );
     }
 
-    pub fn filter_value(&self) -> Option<bool> {
+    pub fn filter_value(&self) -> Option<BoolFilter> {
         self.filter_bool
     }
 }
@@ -661,7 +659,7 @@ impl UnitPropertyFilter for FilterBool {
     fn text(&self) -> Cow<'_, str> {
         match &self.filter_bool {
             Some(val) => {
-                let s = val.to_string();
+                let s = val.code();
                 Cow::from(s)
             }
             None => Cow::from(""),
@@ -672,13 +670,9 @@ impl UnitPropertyFilter for FilterBool {
         StrMatchType::default()
     }
 
-    fn num_match_type(&self) -> NumMatchType {
-        self.match_type
-    }
-
     fn clear_n_apply_filter(&mut self) {
         // self.filter_text.clear(); //FIXME it does not apply, but might be Ok
-        self.match_type = NumMatchType::default();
+        // self.match_type = NumMatchType::default();
     }
 
     fn clear_filter(&mut self) {
@@ -890,7 +884,6 @@ where
 
 #[derive(Debug)]
 pub struct FilterBoolAssessor {
-    filter_bool: Option<bool>,
     //match_type: MatchType, //TODO make distintive struct to avoid runtime if
     filter_unit_func: fn(&FilterBoolAssessor, &UnitInfo, glib::Quark) -> bool,
     id: String,
@@ -901,17 +894,40 @@ pub struct FilterBoolAssessor {
 
 impl FilterBoolAssessor {
     fn new(filter_bool: &FilterBool) -> Self {
+        let filter_unit_value_func = match filter_bool.filter_bool {
+            Some(BoolFilter::True) => Self::compare_true,
+            Some(BoolFilter::False) => Self::compare_false,
+            Some(BoolFilter::Set) => Self::is_set,
+            Some(BoolFilter::Unset) => Self::is_not_set,
+            None => Self::empty,
+        };
+
         Self {
-            filter_bool: filter_bool.filter_bool,
             filter_unit_func: filter_bool.filter_unit_func,
             id: filter_bool.id.clone(),
-            filter_unit_value_func: Self::compare,
+            filter_unit_value_func,
             key: filter_bool.key,
         }
     }
 
-    fn compare(&self, unit_value: Option<bool>) -> bool {
-        self.filter_bool == unit_value
+    fn empty(&self, _unit_value: Option<bool>) -> bool {
+        true
+    }
+
+    fn is_set(&self, unit_value: Option<bool>) -> bool {
+        unit_value.is_some()
+    }
+
+    fn is_not_set(&self, unit_value: Option<bool>) -> bool {
+        unit_value.is_none()
+    }
+
+    fn compare_true(&self, unit_value: Option<bool>) -> bool {
+        Some(true) == unit_value
+    }
+
+    fn compare_false(&self, unit_value: Option<bool>) -> bool {
+        Some(false) == unit_value
     }
 }
 
