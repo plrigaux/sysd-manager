@@ -116,14 +116,13 @@ impl UnitListPanel {
     }
 }
 
-//TODO temporay name
 #[derive(Debug)]
-pub struct CustomId<'a> {
+pub struct CustomPropertyId<'a> {
     pub utype: &'a str,
     pub prop: &'a str,
 }
 
-impl<'a> CustomId<'a> {
+impl<'a> CustomPropertyId<'a> {
     pub fn from_str(s: &'a str) -> Self {
         let Some((t, p)) = s.split_once('@') else {
             return Self { utype: "", prop: s };

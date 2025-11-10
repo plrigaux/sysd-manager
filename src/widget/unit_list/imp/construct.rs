@@ -3,7 +3,7 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
-            COL_ID_UNIT, CustomId,
+            COL_ID_UNIT, CustomPropertyId,
             imp::{
                 column_factories::{self, *},
                 construct,
@@ -141,7 +141,7 @@ pub fn set_column_factory_and_sorter(
     };
 
     //identify custom properties
-    let custom_id = CustomId::from_str(id.as_str());
+    let custom_id = CustomPropertyId::from_str(id.as_str());
 
     //force data display
     let factory = column_factories::get_factory_by_id(&custom_id, display_color, &prop_type);
@@ -151,7 +151,10 @@ pub fn set_column_factory_and_sorter(
     column.set_sorter(sorter.as_ref());
 }
 
-pub fn get_sorter_by_id(id: CustomId, prop_type: &Option<String>) -> Option<gtk::CustomSorter> {
+pub fn get_sorter_by_id(
+    id: CustomPropertyId,
+    prop_type: &Option<String>,
+) -> Option<gtk::CustomSorter> {
     match id.prop {
         COL_ID_UNIT => Some(create_column_filter!(primary, dbus_level)),
         "sysdm-type" => Some(create_column_filter!(unit_type)),
@@ -168,7 +171,7 @@ pub fn get_sorter_by_id(id: CustomId, prop_type: &Option<String>) -> Option<gtk:
 }
 
 fn create_custom_property_column_sorter(
-    id: CustomId,
+    id: CustomPropertyId,
     prop_type: &Option<String>,
 ) -> Option<gtk::CustomSorter> {
     let key = id.generate_quark();

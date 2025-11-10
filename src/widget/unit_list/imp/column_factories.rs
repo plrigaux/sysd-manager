@@ -8,7 +8,7 @@ use log::{error, warn};
 use zvariant::OwnedValue;
 
 use crate::widget::{
-    unit_list::{COL_ID_UNIT, CustomId},
+    unit_list::{COL_ID_UNIT, CustomPropertyId},
     unit_properties_selector::data_selection::UnitPropertySelection,
 };
 use crate::{
@@ -277,7 +277,7 @@ pub fn setup_factories(
                     }
                 });
 
-        let custom_id = CustomId::from_str(id);
+        let custom_id = CustomPropertyId::from_str(id);
         let factory = get_factory_by_id(&custom_id, display_color, &prop_type);
 
         column.set_factory(factory.as_ref());
@@ -285,7 +285,7 @@ pub fn setup_factories(
 }
 
 pub fn get_factory_by_id(
-    id: &CustomId,
+    id: &CustomPropertyId,
     display_color: bool,
     prop_type: &Option<String>,
 ) -> Option<gtk::SignalListItemFactory> {
@@ -509,7 +509,7 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
 }
 
 pub(super) fn get_custom_factory(
-    property_code: &CustomId,
+    property_code: &CustomPropertyId,
     display_color: bool,
     prop_type: &Option<String>,
 ) -> gtk::SignalListItemFactory {

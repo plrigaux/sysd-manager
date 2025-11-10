@@ -8,9 +8,8 @@ use gtk::{
     glib::{self},
     prelude::ObjectExt,
 };
-use log::warn;
+
 use strum::{EnumIter, IntoEnumIterator};
-use zvariant::OwnedValue;
 
 use crate::{
     systemd::{
@@ -127,18 +126,17 @@ pub fn custom_num<T>(
     key: glib::Quark,
 ) -> bool
 where
-    T: std::fmt::Debug + std::default::Default + for<'a> TryFrom<&'a zvariant::Value<'a>>,
+    T: std::fmt::Debug
+        + std::default::Default
+        + for<'a> TryFrom<&'a zvariant::Value<'a>>
+        + 'static
+        + Copy,
     for<'a> zvariant::Error:
         std::convert::From<<T as std::convert::TryFrom<&'a zvariant::Value<'a>>>::Error>,
 {
-    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+    let value = unsafe { unit.qdata::<T>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .map(|value| {
-            value
-                .downcast_ref::<T>()
-                .inspect_err(|e| warn!("wrong type mapping {e:?}"))
-                .unwrap_or_default()
-        });
+        .copied();
     (property_assessor.filter_unit_value_func)(property_assessor, value)
 }
 
@@ -147,15 +145,8 @@ pub fn custom_str(
     unit: &UnitInfo,
     key: glib::Quark,
 ) -> bool {
-    let value = unsafe { unit.qdata::<OwnedValue>(key) }
-        .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .map(|value| {
-            value
-                .downcast_ref::<String>()
-                .inspect_err(|e| warn!("wrong type mapping {e:?}"))
-                .unwrap_or_default()
-        });
-    (property_assessor.filter_unit_value_func)(property_assessor, value.as_deref())
+    let value = unsafe { unit.qdata::<String>(key) }.map(|value_ptr| unsafe { value_ptr.as_ref() });
+    (property_assessor.filter_unit_value_func)(property_assessor, value)
 }
 
 pub fn custom_bool(
@@ -163,14 +154,7 @@ pub fn custom_bool(
     unit: &UnitInfo,
     key: glib::Quark,
 ) -> bool {
-    let value = unsafe { unit.qdata::<OwnedValue>(key) }
-        .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .map(|value| {
-            value
-                .downcast_ref::<bool>()
-                .inspect_err(|e| warn!("wrong type mapping {e:?}"))
-                .unwrap_or_default()
-        });
+    let value = unsafe { unit.qdata::<bool>(key) }.map(|value_ptr| unsafe { value_ptr.read() });
     (property_assessor.filter_unit_value_func)(property_assessor, value)
 }
 

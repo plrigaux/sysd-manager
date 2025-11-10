@@ -6,7 +6,7 @@ use log::{debug, info};
 use crate::{
     systemd::enums::UnitType,
     widget::{
-        unit_list::{CustomId, menus::create_col_menu},
+        unit_list::{CustomPropertyId, menus::create_col_menu},
         unit_properties_selector::{data_browser::PropertyBrowseItem, save::UnitColumn},
     },
 };
@@ -75,7 +75,7 @@ impl UnitPropertySelection {
     }
 
     fn fill_from_id(p_imp: &imp2::UnitPropertySelectionImpl, id: &str) {
-        let custom_id = CustomId::from_str(id);
+        let custom_id = CustomPropertyId::from_str(id);
         if custom_id.has_defined_type() {
             p_imp.unit_property.replace(custom_id.prop.to_string());
             let unit_type = UnitType::new(custom_id.utype);

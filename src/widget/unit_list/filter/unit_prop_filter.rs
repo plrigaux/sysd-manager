@@ -728,7 +728,7 @@ pub struct FilterTextAssessor {
     id: String,
     key: glib::Quark,
     pub(crate) filter_unit_value_func:
-        fn(filter_text: &FilterTextAssessor, unit_value: Option<&str>) -> bool,
+        fn(filter_text: &FilterTextAssessor, unit_value: Option<&String>) -> bool,
 }
 
 impl FilterTextAssessor {
@@ -751,11 +751,11 @@ impl FilterTextAssessor {
         }
     }
 
-    fn filter_unit_value_func_empty(&self, _unit_value: Option<&str>) -> bool {
+    fn filter_unit_value_func_empty(&self, _unit_value: Option<&String>) -> bool {
         true
     }
 
-    fn filter_unit_value_func_contains(&self, unit_value: Option<&str>) -> bool {
+    fn filter_unit_value_func_contains(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.contains(&self.filter_text)
         } else {
@@ -763,7 +763,7 @@ impl FilterTextAssessor {
         }
     }
 
-    fn filter_unit_value_func_start_with(&self, unit_value: Option<&str>) -> bool {
+    fn filter_unit_value_func_start_with(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.starts_with(&self.filter_text)
         } else {
@@ -771,7 +771,7 @@ impl FilterTextAssessor {
         }
     }
 
-    fn filter_unit_value_func_end_with(&self, unit_value: Option<&str>) -> bool {
+    fn filter_unit_value_func_end_with(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.ends_with(&self.filter_text)
         } else {
@@ -779,7 +779,7 @@ impl FilterTextAssessor {
         }
     }
 
-    fn filter_unit_value_func_equals(&self, unit_value: Option<&str>) -> bool {
+    fn filter_unit_value_func_equals(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.eq(&self.filter_text)
         } else {
@@ -801,8 +801,6 @@ impl UnitPropertyAssessor for FilterTextAssessor {
         &self.filter_text
     }
 }
-
-#[derive(Debug)]
 pub struct FilterNumAssessor<T>
 where
     T: Debug,
@@ -814,6 +812,19 @@ where
     pub(crate) filter_unit_value_func:
         fn(filter_text: &FilterNumAssessor<T>, unit_value: Option<T>) -> bool,
     key: glib::Quark,
+}
+
+impl<T> Debug for FilterNumAssessor<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FilterNumAssessor")
+            .field("id", &self.id)
+            .field("key", &self.key)
+            .field("filter_num", &self.filter_num)
+            .finish()
+    }
 }
 
 impl<T> FilterNumAssessor<T>
@@ -882,7 +893,6 @@ where
     }
 }
 
-#[derive(Debug)]
 pub struct FilterBoolAssessor {
     //match_type: MatchType, //TODO make distintive struct to avoid runtime if
     filter_unit_func: fn(&FilterBoolAssessor, &UnitInfo, glib::Quark) -> bool,
@@ -890,6 +900,16 @@ pub struct FilterBoolAssessor {
     pub(crate) filter_unit_value_func:
         fn(filter_text: &FilterBoolAssessor, unit_value: Option<bool>) -> bool,
     key: glib::Quark,
+}
+
+impl Debug for FilterBoolAssessor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FilterBoolAssessor")
+            .field("id", &self.id)
+            .field("key", &self.key)
+            .finish()
+        //The comparator is in the function pointer
+    }
 }
 
 impl FilterBoolAssessor {

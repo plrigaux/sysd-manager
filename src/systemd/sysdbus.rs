@@ -1442,12 +1442,9 @@ pub async fn fetch_unit_properties(
 
     let body = message.body();
 
-    debug!("signature {:?}", body.signature().to_string());
-
     let property_value: OwnedValue = body.deserialize()?;
-    //let property_value: Variant = body.deserialize()?;
 
-    debug!("obj {:?}", property_value);
+    debug!("fetched property value {:?}", property_value);
 
     Ok(property_value)
 }

@@ -44,7 +44,7 @@ use crate::{
             UNIT_LIST_COLUMNS,
         },
         unit_list::{
-            COL_ID_UNIT, CustomId,
+            COL_ID_UNIT, CustomPropertyId,
             filter::{
                 UnitListFilterWindow, custom_bool, custom_num, custom_str, filter_active_state,
                 filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
@@ -661,14 +661,14 @@ impl UnitListPanelImp {
         change_type: Option<gtk::FilterChange>,
         update_widget: bool,
     ) {
-        debug!("Assessor Change {new_assessor:?} {change_type:?}");
+        debug!("Assessor Change {new_assessor:?} Change Type: {change_type:?}");
         let applied_assessors = self
             .applied_unit_property_filters
             .get()
             .expect("applied_assessors not null");
 
         if let Some(new_assessor) = new_assessor {
-            //add
+            debug!("Add filter id {id}");
 
             update_search_entry!(self, id, update_widget, new_assessor.text());
 
@@ -680,7 +680,8 @@ impl UnitListPanelImp {
                 vect.push(new_assessor);
             }
         } else {
-            //remove
+            debug!("Remove filter id {id}");
+
             applied_assessors.borrow_mut().retain(|x| x.id() != id);
 
             update_search_entry!(self, id, update_widget, "");
@@ -850,27 +851,27 @@ impl UnitListPanelImp {
                     id,
                     custom_num::<u64>,
                     &unit_list_panel,
-                    CustomId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id).quark(),
                     UnitPropertyFilterType::NumU64,
                 ))),
                 Some("s") => Some(Box::new(FilterText::newq(
                     id,
                     custom_str,
                     &unit_list_panel,
-                    CustomId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id).quark(),
                 ))),
                 Some("i") => Some(Box::new(FilterNum::<i32>::new(
                     id,
                     custom_num::<i32>,
                     &unit_list_panel,
-                    CustomId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id).quark(),
                     UnitPropertyFilterType::NumI32,
                 ))),
                 Some("u") => Some(Box::new(FilterNum::<u32>::new(
                     id,
                     custom_num::<u32>,
                     &unit_list_panel,
-                    CustomId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id).quark(),
                     UnitPropertyFilterType::NumU32,
                 ))),
 
@@ -878,28 +879,28 @@ impl UnitListPanelImp {
                     id,
                     custom_bool,
                     &unit_list_panel,
-                    CustomId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id).quark(),
                 ))),
                 Some("q") => Some(Box::new(FilterNum::<u16>::new(
                     id,
                     custom_num::<u16>,
                     &unit_list_panel,
-                    CustomId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id).quark(),
                     UnitPropertyFilterType::NumU16,
                 ))),
                 Some("x") => Some(Box::new(FilterNum::<i64>::new(
                     id,
                     custom_num::<i64>,
                     &unit_list_panel,
-                    CustomId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id).quark(),
                     UnitPropertyFilterType::NumI64,
                 ))),
-                Some(&_) => {
-                    error!(
-                        "Filtering for key {id:?} not handled yet, data type {propperty_type:?}"
-                    );
-                    None
-                }
+                Some(&_) => Some(Box::new(FilterText::newq(
+                    id,
+                    custom_str,
+                    &unit_list_panel,
+                    CustomPropertyId::from_str(id).quark(),
+                ))),
                 None => {
                     error!(
                         "Filtering for key {id:?} not handled yet, data type {propperty_type:?}"
@@ -1140,13 +1141,12 @@ impl UnitListPanelImp {
                 if s.is_empty() {
                     unsafe { unit.steal_qdata::<String>(key) };
                 } else {
-                    let s = s.to_string();
-                    unsafe { unit.set_qdata(key, s) };
+                    unsafe { unit.set_qdata(key, s.to_string()) };
                 }
             }
             Value::Signature(s) => unsafe { unit.set_qdata(key, s.to_string()) },
             Value::ObjectPath(op) => unsafe { unit.set_qdata(key, op.to_string()) },
-            Value::Value(_v) => unsafe { unit.set_qdata(key, value) },
+            Value::Value(v) => unsafe { unit.set_qdata(key, v.to_string()) },
             Value::Array(a) => {
                 if a.is_empty() {
                     unsafe { unit.steal_qdata::<String>(key) };
