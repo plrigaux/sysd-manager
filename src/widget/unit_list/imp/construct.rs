@@ -46,7 +46,10 @@ pub fn construct_column(
             let column_menu = create_col_menu(&id, prop_selection.is_custom());
             let column = prop_selection.column();
             column.set_header_menu(Some(&column_menu));
-            construct::set_column_factory_and_sorter(&column, display_color);
+
+            let prop_type = prop_selection.prop_type();
+
+            construct::set_column_factory_and_sorter(&column, display_color, prop_type);
 
             list.push(prop_selection);
         }
@@ -127,7 +130,11 @@ pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySe
         .collect()
 }
 
-pub fn set_column_factory_and_sorter(column: &gtk::ColumnViewColumn, display_color: bool) {
+pub fn set_column_factory_and_sorter(
+    column: &gtk::ColumnViewColumn,
+    display_color: bool,
+    prop_type: Option<String>,
+) {
     let Some(id) = column.id() else {
         warn!("No column id");
         return;
@@ -137,14 +144,14 @@ pub fn set_column_factory_and_sorter(column: &gtk::ColumnViewColumn, display_col
     let custom_id = CustomId::from_str(id.as_str());
 
     //force data display
-    let factory = column_factories::get_factory_by_id(&custom_id, display_color);
+    let factory = column_factories::get_factory_by_id(&custom_id, display_color, &prop_type);
     column.set_factory(factory.as_ref());
 
-    let sorter = get_sorter_by_id(custom_id);
+    let sorter = get_sorter_by_id(custom_id, &prop_type);
     column.set_sorter(sorter.as_ref());
 }
 
-pub fn get_sorter_by_id(id: CustomId) -> Option<gtk::CustomSorter> {
+pub fn get_sorter_by_id(id: CustomId, prop_type: &Option<String>) -> Option<gtk::CustomSorter> {
     match id.prop {
         COL_ID_UNIT => Some(create_column_filter!(primary, dbus_level)),
         "sysdm-type" => Some(create_column_filter!(unit_type)),
@@ -156,34 +163,49 @@ pub fn get_sorter_by_id(id: CustomId) -> Option<gtk::CustomSorter> {
         "sysdm-sub" => Some(create_column_filter!(sub_state)),
         "sysdm-description" => Some(create_column_filter!(description)),
 
-        _ => create_custom_property_column_sorter(id),
+        _ => create_custom_property_column_sorter(id, prop_type),
     }
 }
 
-fn create_custom_property_column_sorter(id: CustomId) -> Option<gtk::CustomSorter> {
+fn create_custom_property_column_sorter(
+    id: CustomId,
+    prop_type: &Option<String>,
+) -> Option<gtk::CustomSorter> {
     let key = id.generate_quark();
 
-    let sorter = gtk::CustomSorter::new(move |o1, o2| custom_property_comapre(o1, o2, key));
+    let Some(prop_type) = prop_type else {
+        warn!("column sorter without prop_type ");
+        return None;
+    };
+
+    let sort_func = match prop_type.as_str() {
+        "b" => custom_property_comapre::<bool>,
+        "n" => custom_property_comapre::<i16>,
+        "q" => custom_property_comapre::<u16>,
+        "i" => custom_property_comapre::<i32>,
+        "u" => custom_property_comapre::<u32>,
+        "x" => custom_property_comapre::<i64>,
+        "t" => custom_property_comapre::<u64>,
+        "v" => custom_property_comapre::<Value>,
+        "s" => custom_property_comapre::<String>,
+        _ => custom_property_comapre::<String>,
+    };
+
+    let sorter = gtk::CustomSorter::new(move |o1, o2| sort_func(o1, o2, key));
 
     Some(sorter)
 }
 
-fn custom_property_comapre(
+fn custom_property_comapre<T>(
     object1: &glib::Object,
     object2: &glib::Object,
     key: glib::Quark,
-) -> gtk::Ordering {
-    let v1 = unsafe {
-        object1
-            .qdata::<Value>(key)
-            .map(|value_ptr| value_ptr.as_ref())
-    };
-
-    let v2 = unsafe {
-        object2
-            .qdata::<Value>(key)
-            .map(|value_ptr| value_ptr.as_ref())
-    };
+) -> gtk::Ordering
+where
+    T: Ord + 'static,
+{
+    let v1 = unsafe { object1.qdata::<T>(key).map(|value_ptr| value_ptr.as_ref()) };
+    let v2 = unsafe { object2.qdata::<T>(key).map(|value_ptr| value_ptr.as_ref()) };
 
     v1.into_iter().cmp(v2).into()
 }

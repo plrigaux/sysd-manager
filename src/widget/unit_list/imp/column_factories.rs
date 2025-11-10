@@ -4,10 +4,13 @@ use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
-use log::warn;
+use log::{error, warn};
 use zvariant::OwnedValue;
 
-use crate::widget::unit_list::{COL_ID_UNIT, CustomId};
+use crate::widget::{
+    unit_list::{COL_ID_UNIT, CustomId},
+    unit_properties_selector::data_selection::UnitPropertySelection,
+};
 use crate::{
     systemd::{
         data::{UnitInfo, convert_to_string},
@@ -252,6 +255,7 @@ pub fn fac_descrition(display_color: bool) -> gtk::SignalListItemFactory {
 pub fn setup_factories(
     unit_list: &UnitListPanel,
     column_view_column_list: &Vec<gtk::ColumnViewColumn>,
+    current_column_view_column_definition_list: &[UnitPropertySelection],
 ) {
     let display_color = unit_list.display_color();
 
@@ -261,16 +265,32 @@ pub fn setup_factories(
             continue;
         };
 
-        let custom_id = CustomId::from_str(id.as_str());
-        let factory = get_factory_by_id(&custom_id, display_color);
+        let id = id.as_str();
+        let prop_type =
+            current_column_view_column_definition_list
+                .iter()
+                .find_map(|prop_selection| {
+                    if prop_selection.id().is_some_and(|s| id == s.as_str()) {
+                        prop_selection.prop_type()
+                    } else {
+                        None
+                    }
+                });
+
+        let custom_id = CustomId::from_str(id);
+        let factory = get_factory_by_id(&custom_id, display_color, &prop_type);
 
         column.set_factory(factory.as_ref());
     }
 }
 
-pub fn get_factory_by_id(id: &CustomId, display_color: bool) -> Option<gtk::SignalListItemFactory> {
+pub fn get_factory_by_id(
+    id: &CustomId,
+    display_color: bool,
+    prop_type: &Option<String>,
+) -> Option<gtk::SignalListItemFactory> {
     match (id.has_defined_type(), id.prop) {
-        (true, _) => Some(get_custom_factory(id, display_color)),
+        (true, _) => Some(get_custom_factory(id, display_color, prop_type)),
         (false, COL_ID_UNIT) => Some(fac_unit_name(display_color)),
         (false, "sysdm-type") => Some(fac_unit_type(display_color)),
         (false, "sysdm-bus") => Some(fac_bus(display_color)),
@@ -491,45 +511,60 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
 pub(super) fn get_custom_factory(
     property_code: &CustomId,
     display_color: bool,
+    prop_type: &Option<String>,
 ) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
     let key = property_code.quark();
     factory.connect_setup(factory_setup);
 
+    let Some(prop_type) = prop_type else {
+        error!("NO PROP_TYPE SET");
+        return factory;
+    };
+
+    let get_value = match prop_type.as_str() {
+        "b" => display_custom_property_color_typed::<bool>,
+        "n" => display_custom_property_color_typed::<i16>,
+        "q" => display_custom_property_color_typed::<u16>,
+        "i" => display_custom_property_color_typed::<i32>,
+        "u" => display_custom_property_color_typed::<u32>,
+        "s" => display_custom_property_color_typed::<String>,
+        "x" => display_custom_property_color_typed::<i64>,
+        "t" => display_custom_property_color_typed::<u64>,
+        "v" => display_custom_property,
+        _ => display_custom_property_color_typed::<String>,
+    };
+
     if display_color {
-        factory.connect_bind(move |_factory, object| display_custom_property_color(key, object));
+        factory.connect_bind(move |_factory, object| {
+            let (inscription, unit) = factory_bind_pre!(object);
+            inactive_display(&inscription, &unit);
+            let value = get_value(key, &unit);
+            inscription.set_text(value.as_deref());
+        });
     } else {
-        factory.connect_bind(move |_factory, object| display_custom_property(key, object));
+        factory.connect_bind(move |_factory, object| {
+            let (inscription, unit) = factory_bind_pre!(object);
+            let value = get_value(key, &unit);
+            inscription.set_text(value.as_deref());
+        });
     }
 
     factory
 }
 
-fn display_custom_property_color(key: Quark, object: &glib::Object) {
-    let (inscription, unit) = factory_bind_pre!(object);
-    inactive_display(&inscription, &unit);
-    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+fn display_custom_property_color_typed<T>(key: Quark, unit: &UnitInfo) -> Option<String>
+where
+    T: ToString + 'static,
+{
+    unsafe { unit.qdata::<T>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .and_then(|value| convert_to_string(value));
-    inscription.set_text(value.as_deref());
+        .map(|value| value.to_string())
 }
 
-fn display_custom_property(key: Quark, object: &glib::Object) {
-    let (inscription, unit) = factory_bind_pre!(object);
-    /*
-    let retreived_data: Option<std::ptr::NonNull<OwnedValue>> = unsafe { unit.qdata(key) };
-
-         if let Some(value_ptr) = retreived_data {
-        let value = unsafe { value_ptr.as_ref() };
-        let s = convert_to_string(value);
-        inscription.set_text(Some(&s));
-    } else {
-        inscription.set_text(None);
-    } */
-    let value = unsafe { unit.qdata::<OwnedValue>(key) }
+fn display_custom_property(key: Quark, unit: &UnitInfo) -> Option<String> {
+    unsafe { unit.qdata::<OwnedValue>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .and_then(|value| convert_to_string(value));
-
-    inscription.set_text(value.as_deref());
+        .and_then(|value| convert_to_string(value))
 }

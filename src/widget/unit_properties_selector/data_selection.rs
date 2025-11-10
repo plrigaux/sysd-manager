@@ -89,7 +89,6 @@ impl UnitPropertySelection {
 
     pub fn from_column_config(unit_column_config: UnitColumn) -> Self {
         let id = unit_column_config.id;
-        //Self::fill_from_id(p_imp, &id);
 
         let column = gtk::ColumnViewColumn::builder()
             .id(&id)

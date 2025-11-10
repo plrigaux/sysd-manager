@@ -980,13 +980,15 @@ impl UnitListPanelImp {
             return;
         }
 
+        let current_property_list = property_list.clone();
+
         /*        let list_len = property_list.len();
         warn!("Property list size {} ", list_len); */
-        let mut property_list_send = Vec::with_capacity(property_list.len());
-        let mut property_list_keys = Vec::with_capacity(property_list.len());
+        let mut property_list_send = Vec::with_capacity(current_property_list.len());
+        let mut property_list_keys = Vec::with_capacity(current_property_list.len());
         let mut types = HashSet::with_capacity(16);
         let mut is_unit_type = false;
-        for unit_property in property_list.iter() {
+        for unit_property in current_property_list.iter() {
             if unit_property.is_custom() {
                 //Add custom factory
                 let u_prop = unit_property.unit_property();
@@ -1104,7 +1106,15 @@ impl UnitListPanelImp {
                 .iter::<gtk::ColumnViewColumn>()
                 .filter_map(|item| item.ok())
             {
-                construct::set_column_factory_and_sorter(&column, display_color);
+                let prop_type = current_property_list.iter().find_map(|prop_selection| {
+                    if prop_selection.id() == column.id() {
+                        prop_selection.prop_type()
+                    } else {
+                        None
+                    }
+                });
+
+                construct::set_column_factory_and_sorter(&column, display_color, prop_type);
             }
         });
     }
@@ -1115,30 +1125,31 @@ impl UnitListPanelImp {
             return;
         };
 
-        let value_ref = &value as &Value;
-        match value_ref {
-            Value::Bool(_b) => unsafe { unit.set_qdata(key, value) },
-            Value::U8(_i) => unsafe { unit.set_qdata(key, value) },
-            Value::I16(_i) => unsafe { unit.set_qdata(key, value) },
-            Value::U16(_i) => unsafe { unit.set_qdata(key, value) },
-            Value::I32(_i) => unsafe { unit.set_qdata(key, value) },
-            Value::U32(_i) => unsafe { unit.set_qdata(key, value) },
-            Value::I64(_i) => unsafe { unit.set_qdata(key, value) },
-            Value::U64(_i) => unsafe { unit.set_qdata(key, value) },
-            Value::F64(_i) => unsafe { unit.set_qdata(key, value) },
+        //let value_ref = &value as &Value;
+        match &value as &Value {
+            Value::Bool(b) => unsafe { unit.set_qdata(key, *b) },
+            Value::U8(i) => unsafe { unit.set_qdata(key, *i) },
+            Value::I16(i) => unsafe { unit.set_qdata(key, *i) },
+            Value::U16(i) => unsafe { unit.set_qdata(key, *i) },
+            Value::I32(i) => unsafe { unit.set_qdata(key, *i) },
+            Value::U32(i) => unsafe { unit.set_qdata(key, *i) },
+            Value::I64(i) => unsafe { unit.set_qdata(key, *i) },
+            Value::U64(i) => unsafe { unit.set_qdata(key, *i) },
+            Value::F64(i) => unsafe { unit.set_qdata(key, *i) },
             Value::Str(s) => {
                 if s.is_empty() {
-                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                    unsafe { unit.steal_qdata::<String>(key) };
                 } else {
-                    unsafe { unit.set_qdata(key, value) };
+                    let s = s.to_string();
+                    unsafe { unit.set_qdata(key, s) };
                 }
             }
-            Value::Signature(_s) => unsafe { unit.set_qdata(key, value) },
-            Value::ObjectPath(_op) => unsafe { unit.set_qdata(key, value) },
+            Value::Signature(s) => unsafe { unit.set_qdata(key, s.to_string()) },
+            Value::ObjectPath(op) => unsafe { unit.set_qdata(key, op.to_string()) },
             Value::Value(_v) => unsafe { unit.set_qdata(key, value) },
             Value::Array(a) => {
                 if a.is_empty() {
-                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                    unsafe { unit.steal_qdata::<String>(key) };
                 } else {
                     let mut d_str = String::from("");
 
@@ -1152,18 +1163,13 @@ impl UnitListPanelImp {
                         }
                     }
 
-                    match OwnedValue::try_from(Value::Str(d_str.into())) {
-                        Ok(v) => unsafe { unit.set_qdata(key, v) },
-                        Err(e) => {
-                            warn!("OwnedValue error {e:?}");
-                        }
-                    }
+                    unsafe { unit.set_qdata(key, d_str) };
                 }
             }
             Value::Dict(d) => {
                 let mut it = d.iter().peekable();
                 if it.peek().is_none() {
-                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                    unsafe { unit.steal_qdata::<String>(key) };
                 } else {
                     let mut d_str = String::from("{ ");
 
@@ -1179,19 +1185,14 @@ impl UnitListPanelImp {
                     }
                     d_str.push_str(" }");
 
-                    match OwnedValue::try_from(Value::Str(d_str.into())) {
-                        Ok(v) => unsafe { unit.set_qdata(key, v) },
-                        Err(e) => {
-                            warn!("OwnedValue error {e:?}");
-                        }
-                    }
+                    unsafe { unit.set_qdata(key, d_str) };
                 }
             }
             Value::Structure(stc) => {
                 let mut it = stc.fields().iter().peekable();
 
                 if it.peek().is_none() {
-                    unsafe { unit.steal_qdata::<OwnedValue>(key) };
+                    unsafe { unit.steal_qdata::<String>(key) };
                 } else {
                     let v: Vec<String> = it
                         .filter_map(|v| convert_to_string(v))
@@ -1199,15 +1200,10 @@ impl UnitListPanelImp {
                         .collect();
                     let d_str = v.join(", ");
 
-                    match OwnedValue::try_from(Value::Str(d_str.into())) {
-                        Ok(v) => unsafe { unit.set_qdata(key, v) },
-                        Err(e) => {
-                            warn!("OwnedValue error {e:?}");
-                        }
-                    }
+                    unsafe { unit.set_qdata(key, d_str) };
                 }
             }
-            Value::Fd(_fd) => unsafe { unit.set_qdata(key, value) },
+            Value::Fd(fd) => unsafe { unit.set_qdata(key, fd.to_string()) },
             //Value::Maybe(maybe) => (maybe.to_string(), false),
         }
     }
@@ -1342,7 +1338,13 @@ impl ObjectImpl for UnitListPanelImp {
         self.current_column_view_column_definition_list
             .replace(column_view_column_definition_list);
 
-        column_factories::setup_factories(&unit_list, &column_view_column_list);
+        let current_column_view_column_definition_list =
+            self.current_column_view_column_definition_list.borrow();
+        column_factories::setup_factories(
+            &unit_list,
+            &column_view_column_list,
+            &current_column_view_column_definition_list,
+        );
         /*      self.default_column_view_column_list
         .set(column_view_column_list)
         .expect("Set only once"); */
@@ -1353,7 +1355,16 @@ impl ObjectImpl for UnitListPanelImp {
                 let display_color = unit_list.display_color();
                 info!("Change preference setting \"display color\" to {display_color}");
                 let column_view_column_list = unit_list.imp().generate_column_list();
-                column_factories::setup_factories(&unit_list, &column_view_column_list);
+
+                let current_column_view_column_definition_list = unit_list
+                    .imp()
+                    .current_column_view_column_definition_list
+                    .borrow();
+                column_factories::setup_factories(
+                    &unit_list,
+                    &column_view_column_list,
+                    &current_column_view_column_definition_list,
+                );
             },
         );
 
