@@ -26,7 +26,8 @@ def main():
             "generate",
             "clean",
             "make",
-            "genpush"
+            "genpush",
+            "check"
         ],
         help="action to perform",)
     
@@ -49,9 +50,11 @@ def main():
         case "clean":
             clean()
         case "make":
-            make()
+            make(release)
         case "genpush":
             generate_and_push(release)
+        case "check":
+            check_package()
 
 
 def create_pkgbuild(release=None):
@@ -101,6 +104,7 @@ def do_check_sum():
     cmd = ["makepkg", "-g"]  
     checksum = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
 
+    #checksum = checksum.replace("'","\"") 
     print("OUT: ", checksum)
 
     pkgbuild_text = ""
@@ -115,8 +119,11 @@ def do_check_sum():
     with open(f'{AUR_OUT_DIR}/{PKGBUILD}', "w") as pkgbuild_file:
         print("WRITE SUM ")
 
-        pkgbuild_file.write(pkgbuild_text)       
-
+        pkgbuild_file.write(pkgbuild_text)      
+         
+def check_package():
+    cmd = ["namcap", "--info", "PKGBUILD"]  
+    bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
 
 def generate_sourceinfo():
     cmd = ["makepkg", "--printsrcinfo"]  
@@ -150,20 +157,14 @@ def push():
     bc.cmd_run(["git", "push"], cwd=f"{AUR_OUT_DIR}")
 
 
-def make(release): 
+def make(release=None): 
     gen_pkfile(release)
 
     bc.cmd_run(["makepkg"], cwd=f"{AUR_OUT_DIR}")
 
 def clean():
     list_dir = [
-        "PKGBUILD",
-        "src",
-        "sysd-manager",
-        "pkg",
-        "*.zst",
-        ".SRCINFO",
-        f"{INSTALL_FILE}",
+        "*",
     ]
 
     for f in list_dir:
