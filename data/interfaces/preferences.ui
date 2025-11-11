@@ -80,7 +80,7 @@
                         <property name="title">Columns Display Parameters</property>
                         <child>
                           <object class="GtkButton" id="show_customize_button">
-                            <property name="action-name">app.properties_selector</property>
+                            <property name="action-name">app.properties_selector_general</property>
                             <property name="label" translatable="yes" context="unit search"/>
                             <property name="valign">baseline-center</property>
                             <child>
