@@ -39,9 +39,8 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::data::{
-            COL_SHOW_PREFIX, COL_WIDTH_PREFIX, DbusLevel, FLAG_SHOW, FLAG_WIDTH,
-            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, PREFERENCES,
-            UNIT_LIST_COLUMNS,
+            DbusLevel, KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+            PREFERENCES,
         },
         unit_list::{
             COL_ID_UNIT, CustomPropertyId,
@@ -287,30 +286,6 @@ impl UnitListPanelImp {
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
         ]);
-    }
-
-    fn generate_column_map(&self) -> HashMap<glib::GString, gtk::ColumnViewColumn> {
-        let list_model: gio::ListModel = self.units_browser.borrow().columns();
-
-        let mut col_map = HashMap::new();
-
-        for column_view_column in list_model
-            .iter::<gtk::ColumnViewColumn>()
-            .filter_map(|item| match item {
-                Ok(item) => Some(item),
-                Err(err) => {
-                    error!("Expect gtk::ColumnViewColumn> {err:?}");
-                    None
-                }
-            })
-        {
-            if let Some(id) = column_view_column.id() {
-                col_map.insert(id, column_view_column.clone());
-            } else {
-                warn!("Column has no id.")
-            }
-        }
-        col_map
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -1361,7 +1336,7 @@ impl ObjectImpl for UnitListPanelImp {
             single_selection,
             filter_list_model,
             sort_list_model,
-            generated,
+            _generated,
             column_view_column_definition_list,
         ) = construct::construct_column(list_store, self.display_color.get());
 
@@ -1383,9 +1358,6 @@ impl ObjectImpl for UnitListPanelImp {
             &column_view_column_list,
             &current_column_view_column_definition_list,
         );
-        /*      self.default_column_view_column_list
-        .set(column_view_column_list)
-        .expect("Set only once"); */
 
         settings.connect_changed(
             Some(KEY_PREF_UNIT_LIST_DISPLAY_COLORS),
@@ -1461,40 +1433,6 @@ impl ObjectImpl for UnitListPanelImp {
             &self.filter_list_model.borrow(),
         );
 
-        //TODO Code to be removed when migration to Toml will finish
-        if generated {
-            let col_map = self.generate_column_map();
-
-            for (_, key, _, flags) in &*UNIT_LIST_COLUMNS {
-                let Some(column_view_column) = col_map.get(*key) else {
-                    warn!("Can't bind setting key {key} to column {key}");
-                    continue;
-                };
-
-                if flags & FLAG_SHOW != 0 {
-                    let setting_key = format!("{COL_SHOW_PREFIX}{key}");
-
-                    let visible = settings.boolean(&setting_key);
-                    column_view_column.set_visible(visible);
-                    /*  let action = settings.create_action(&setting_key);
-                    app_window.add_action(&action);
-
-                    settings
-                        .bind(&setting_key, column_view_column, "visible")
-                        .build(); */
-                }
-
-                if flags & FLAG_WIDTH != 0 {
-                    let setting_key = format!("{COL_WIDTH_PREFIX}{key}");
-
-                    let width = settings.int(&setting_key);
-                    column_view_column.set_fixed_width(width);
-                    /*             settings
-                    .bind(&setting_key, column_view_column, "fixed-width")
-                    .build(); */
-                }
-            }
-        }
         force_expand_on_the_last_visible_column(&self.units_browser.borrow().columns());
     }
 }

@@ -10,7 +10,7 @@ use strum::EnumIter;
 
 use std::sync::{LazyLock, RwLock};
 
-use crate::{systemd_gui::new_settings, utils::th::TimestampStyle, widget::unit_list::COL_ID_UNIT};
+use crate::{systemd_gui::new_settings, utils::th::TimestampStyle};
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();
@@ -34,80 +34,6 @@ pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "pref-unit-list-display-sum
 pub const KEY_PREF_PREFERRED_COLOR_SCHEME: &str = "pref-preferred-color-scheme";
 pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 pub const KEY_PREF_PROP_ORIENTATION_MODE: &str = "pref-window-properties-orientation-vertical";
-
-pub const FLAG_SHOW: u8 = 1;
-pub const FLAG_WIDTH: u8 = 2;
-
-pub const UNIT_LIST_COLUMNS_UNIT: u8 = 0;
-
-pub static UNIT_LIST_COLUMNS: LazyLock<[(String, &str, u8, u8); 9]> = LazyLock::new(|| {
-    [
-        (
-            //filter title
-            pgettext("filter", "Unit"),
-            COL_ID_UNIT,
-            UNIT_LIST_COLUMNS_UNIT,
-            FLAG_WIDTH,
-        ),
-        (
-            //filter title
-            pgettext("filter", "Type"),
-            "sysdm-type",
-            1,
-            FLAG_SHOW | FLAG_WIDTH,
-        ),
-        (
-            pgettext("filter", "Bus"),
-            "sysdm-bus",
-            2,
-            FLAG_SHOW | FLAG_WIDTH,
-        ),
-        (
-            //filter title
-            pgettext("filter", "State"),
-            "sysdm-state",
-            3,
-            FLAG_SHOW | FLAG_WIDTH,
-        ),
-        (
-            //filter title
-            pgettext("filter", "Preset"),
-            "sysdm-preset",
-            4,
-            FLAG_SHOW | FLAG_WIDTH,
-        ),
-        (
-            //filter title
-            pgettext("filter", "Load"),
-            "sysdm-load",
-            5,
-            FLAG_SHOW | FLAG_WIDTH,
-        ),
-        (
-            //filter title
-            pgettext("filter", "Active"),
-            "sysdm-active",
-            6,
-            FLAG_SHOW | FLAG_WIDTH,
-        ),
-        (
-            //filter title
-            pgettext("filter", "Sub"),
-            "sysdm-sub",
-            7,
-            FLAG_SHOW | FLAG_WIDTH,
-        ),
-        (
-            //filter title
-            pgettext("filter", "Description"),
-            "sysdm-description",
-            8,
-            FLAG_SHOW,
-        ), //Because column "description" is expandable
-    ]
-});
-pub const COL_SHOW_PREFIX: &str = "col-show-";
-pub const COL_WIDTH_PREFIX: &str = "col-width-";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
 pub enum DbusLevel {
