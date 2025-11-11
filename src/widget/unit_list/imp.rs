@@ -27,7 +27,7 @@ use gtk::{
 use zvariant::{OwnedValue, Value};
 
 use crate::{
-    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR},
+    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, FILTER_MARK},
     systemd::{
         self, SystemdUnitFile,
         data::{UnitInfo, convert_to_string},
@@ -667,7 +667,7 @@ impl UnitListPanelImp {
             .get()
             .expect("applied_assessors not null");
 
-        if let Some(new_assessor) = new_assessor {
+        let add = if let Some(new_assessor) = new_assessor {
             debug!("Add filter id {id}");
 
             update_search_entry!(self, id, update_widget, new_assessor.text());
@@ -679,13 +679,17 @@ impl UnitListPanelImp {
             } else {
                 vect.push(new_assessor);
             }
+            true
         } else {
             debug!("Remove filter id {id}");
 
             applied_assessors.borrow_mut().retain(|x| x.id() != id);
 
             update_search_entry!(self, id, update_widget, "");
-        }
+            false
+        };
+
+        self.set_filter_column_header_marker(add, id);
 
         if let Some(change_type) = change_type {
             if let Some(filter) = self.filter_list_model.borrow().filter() {
@@ -702,6 +706,45 @@ impl UnitListPanelImp {
         search_controls
             .imp()
             .set_filter_is_set(!applied_assessors.borrow().is_empty());
+    }
+
+    fn set_filter_column_header_marker(&self, add: bool, id: &str) {
+        if let Some(unit_prop_selection) = self
+            .current_column_view_column_definition_list
+            .borrow()
+            .iter()
+            .find(|unit_prop_selection| {
+                unit_prop_selection
+                    .column()
+                    .id()
+                    .is_some_and(|cid| cid == id)
+            })
+        {
+            let col = unit_prop_selection.column();
+
+            let title = if let Some(title) = col.title() {
+                title.to_string()
+            } else {
+                "".to_string()
+            };
+
+            let new_title = if add {
+                if !title.starts_with(FILTER_MARK) {
+                    format!("{FILTER_MARK} {title}")
+                } else {
+                    title
+                }
+            } else if title.starts_with(FILTER_MARK) {
+                title
+                    .chars()
+                    .skip(1) //remove filter mark
+                    .skip_while(|c| c.is_whitespace())
+                    .collect()
+            } else {
+                title.trim().to_string()
+            };
+            col.set_title(Some(&new_title));
+        }
     }
 
     pub(super) fn clear_filters(&self) {

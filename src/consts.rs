@@ -39,3 +39,5 @@ pub const CLASS_SUCCESS: &str = "success";
 //const CLASS_ACCENT: &str = "accent";
 pub const CLASS_WARNING: &str = "warning";
 pub const CLASS_ERROR: &str = "error";
+
+pub const FILTER_MARK: char = '⭐';
