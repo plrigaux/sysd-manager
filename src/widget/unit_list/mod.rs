@@ -1,6 +1,7 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
+use crate::consts::FILTER_MARK;
 use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
@@ -141,5 +142,17 @@ impl<'a> CustomPropertyId<'a> {
 
     pub fn quark(&self) -> glib::Quark {
         glib::Quark::from_str(self.prop)
+    }
+}
+
+pub fn get_clean_col_title(title: &str) -> String {
+    if title.starts_with(FILTER_MARK) {
+        title
+            .chars()
+            .skip(1) //remove filter mark
+            .skip_while(|c| c.is_whitespace())
+            .collect()
+    } else {
+        title.trim().to_string()
     }
 }

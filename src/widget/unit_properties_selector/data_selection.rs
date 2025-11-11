@@ -170,7 +170,7 @@ mod imp2 {
     use glib::GString;
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
-    use crate::systemd::enums::UnitType;
+    use crate::{systemd::enums::UnitType, widget::unit_list::get_clean_col_title};
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitPropertySelection)]
@@ -223,17 +223,10 @@ mod imp2 {
         }
 
         fn title(&self) -> Option<String> {
-            if let Some(t) = self.column.borrow().title() {
-                //TODO do one func
-                let t = t
-                    .chars()
-                    .skip(1) //remove filter mark
-                    .skip_while(|c| c.is_whitespace())
-                    .collect();
-                Some(t)
-            } else {
-                None
-            }
+            self.column
+                .borrow()
+                .title()
+                .map(|t| get_clean_col_title(t.as_str()))
         }
 
         fn set_title(&self, title: Option<&str>) {

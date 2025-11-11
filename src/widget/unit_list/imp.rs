@@ -54,6 +54,7 @@ use crate::{
                     UnitPropertyFilter, UnitPropertyFilterType,
                 },
             },
+            get_clean_col_title,
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::{
@@ -734,14 +735,8 @@ impl UnitListPanelImp {
                 } else {
                     title
                 }
-            } else if title.starts_with(FILTER_MARK) {
-                title
-                    .chars()
-                    .skip(1) //remove filter mark
-                    .skip_while(|c| c.is_whitespace())
-                    .collect()
             } else {
-                title.trim().to_string()
+                get_clean_col_title(&title)
             };
             col.set_title(Some(&new_title));
         }
