@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Add a filter marker on browser column
  - Allow string filter to filter on start, end or middle 
 ### Fixed
-  - #27 "Missing Icon in "More..." Button"
+  - Missing Icon in "More..." Button Issue https://github.com/plrigaux/sysd-manager/issues/27 
 
 ## [2.6.4] - 2025-11-5
 
