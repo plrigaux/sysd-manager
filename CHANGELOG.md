@@ -15,12 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Handle unset value as NULL
 - Show interface on properties list
 
-## [2.7.0] - 2025-11-10
+## [2.7.1] - 2025-11-10
 
 ### Added
  - Allow filtering on all other unit properties
  - Add a filter marker on browser column
  - Allow string filter to filter on start, end or middle 
+### Fixed
+  - #27 "Missing Icon in "More..." Button"
 
 ## [2.6.4] - 2025-11-5
 
