@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Expand browser filter to other unit properties
 - Fix Flatpak save file in home directory (make a warning)
 - Save unit file in run 
 - Search (simple) the logs
@@ -15,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Options on description menu
 - Handle unset value as NULL
 - Show interface on properties list
+
+## [2.7.0] - 2025-11-10
+
+### Added
+ - Allow filtering on all other unit properties
+ - Add a filter marker on browser column
+ - Allow string filter to filter on start, end or middle 
 
 ## [2.6.4] - 2025-11-5
 

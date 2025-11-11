@@ -81,6 +81,18 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+
+  <release version="2.7.0" date="2025-11-10">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Allow filtering on all other unit properties</li>
+          <li>Add a filter marker on browser column</li>
+          <li>Allow string filter to filter on start, end or middle</li>
+        </ul>
+      
+      </description>
+    </release>
     <release version="2.6.4" date="2025-11-5">
       <description translate="no">
         <p>Added</p>
