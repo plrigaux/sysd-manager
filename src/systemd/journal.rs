@@ -9,7 +9,6 @@ use std::{collections::HashSet, ops::DerefMut, sync::mpsc::TryRecvError};
 use crate::{
     systemd::{enums::UnitDBusLevel, journal_data::JournalEventChunkInfo},
     utils::th::{TimestampStyle, USEC_PER_SEC},
-    widget::preferences::data::PREFERENCES,
 };
 use chrono::{Local, Utc};
 use log::{debug, info, trace, warn};
@@ -44,6 +43,8 @@ pub(super) fn get_unit_journal_events(
     level: UnitDBusLevel,
     boot_filter: BootFilter,
     range: EventRange,
+    message_max_char: usize,
+    timestamp_style: TimestampStyle,
 ) -> Result<JournalEventChunk, SystemdErrors> {
     let mut out_list = JournalEventChunk::new(range.batch_size + 10, range.what_grab);
 
@@ -55,9 +56,6 @@ pub(super) fn get_unit_journal_events(
 
     //let mut index = 0;
     let mut last_boot_id = String::new();
-
-    let message_max_char = PREFERENCES.journal_event_max_size() as usize;
-    let timestamp_style = PREFERENCES.timestamp_style();
 
     //Position the indexer
     position_crawler(&mut journal_reader, &range)?;
@@ -153,15 +151,14 @@ pub fn get_unit_journal_events_continuous(
     range: EventRange,
     journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
+    message_max_char: usize,
+    timestamp_style: TimestampStyle,
 ) -> Result<(), SystemdErrors> {
     info!("Journal Continiuous");
     let mut journal_reader = create_journal_reader(&unit_name, bus_level, BootFilter::Current)?;
 
     let default = "NONE".to_string();
     let default_priority = "7".to_string();
-
-    let message_max_char = PREFERENCES.journal_event_max_size() as usize;
-    let timestamp_style = PREFERENCES.timestamp_style();
 
     //Position the indexer
     position_crawler(&mut journal_reader, &range)?;

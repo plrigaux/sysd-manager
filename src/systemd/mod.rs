@@ -30,9 +30,12 @@ use log::{error, info, warn};
 use tokio::{runtime::Runtime, sync::mpsc};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-use crate::systemd::{
-    data::{EnableUnitFilesReturn, LUnit},
-    enums::LoadState,
+use crate::{
+    systemd::{
+        data::{EnableUnitFilesReturn, LUnit},
+        enums::LoadState,
+    },
+    widget::preferences::data::PREFERENCES,
 };
 
 pub mod enums;
@@ -295,7 +298,16 @@ pub fn get_unit_journal(
     boot_filter: BootFilter,
     range: EventRange,
 ) -> Result<JournalEventChunk, SystemdErrors> {
-    journal::get_unit_journal_events(primary_name, level, boot_filter, range)
+    let message_max_char = PREFERENCES.journal_event_max_size() as usize;
+    let timestamp_style = PREFERENCES.timestamp_style();
+    journal::get_unit_journal_events(
+        primary_name,
+        level,
+        boot_filter,
+        range,
+        message_max_char,
+        timestamp_style,
+    )
 }
 
 pub fn get_unit_journal_continuous(
@@ -305,12 +317,16 @@ pub fn get_unit_journal_continuous(
     journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
 ) {
+    let message_max_char = PREFERENCES.journal_event_max_size() as usize;
+    let timestamp_style = PREFERENCES.timestamp_style();
     if let Err(err) = journal::get_unit_journal_events_continuous(
         unit_name,
         level,
         range,
         journal_continuous_receiver,
         sender,
+        message_max_char,
+        timestamp_style,
     ) {
         warn!(
             "Journal TailError type: {:?}  Error: {:?}",
