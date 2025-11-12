@@ -1448,3 +1448,42 @@ pub async fn fetch_unit_properties(
 
     Ok(property_value)
 }
+
+#[allow(unused)]
+pub async fn reboot_async(
+    connection: zbus::Connection,
+    interactive: bool,
+) -> Result<(), SystemdErrors> {
+    let message = call_method_async(
+        &connection,
+        "org.freedesktop.login1",
+        "/org/freedesktop/login1",
+        "org.freedesktop.login1.Manager",
+        "Reboot",
+        &(interactive),
+    )
+    .await?;
+
+    let body = message.body();
+
+    println!("Reboot {:?}", body);
+    Ok(())
+}
+
+#[allow(unused)]
+pub async fn power_off_async(connection: zbus::Connection) -> Result<(), SystemdErrors> {
+    let message = call_method_async(
+        &connection,
+        DESTINATION_SYSTEMD,
+        PATH_SYSTEMD,
+        INTERFACE_SYSTEMD_MANAGER,
+        "PowerOff",
+        &(),
+    )
+    .await?;
+
+    let body = message.body();
+
+    println!("PowerOff {:?}", body);
+    Ok(())
+}

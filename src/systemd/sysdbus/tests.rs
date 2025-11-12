@@ -854,3 +854,19 @@ async fn test_get_properties2() -> Result<(), SystemdErrors> {
 
     Ok(())
 }
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_reboot() -> Result<(), SystemdErrors> {
+    let connection = get_connection(UnitDBusLevel::System).await?;
+    reboot_async(connection, true).await?;
+    Ok(())
+}
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_power_off() -> Result<(), SystemdErrors> {
+    let connection = get_connection(UnitDBusLevel::System).await?;
+    power_off_async(connection).await?;
+    Ok(())
+}
