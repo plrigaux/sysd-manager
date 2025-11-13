@@ -346,7 +346,13 @@ pub(crate) fn contain_entry() -> (gtk::Box, gtk::Entry) {
 }
 
 pub enum FilterWidget {
-    Text(glib::WeakRef<gtk::Entry>, glib::WeakRef<gtk::DropDown>),
+    Text(
+        glib::WeakRef<gtk::Entry>,
+        glib::WeakRef<gtk::DropDown>,
+        glib::WeakRef<gtk::CheckButton>,
+        glib::WeakRef<gtk::CheckButton>,
+    ),
+    Num(glib::WeakRef<gtk::Entry>, glib::WeakRef<gtk::DropDown>),
     CheckBox(glib::WeakRef<gtk::CheckButton>),
     WrapBox(glib::WeakRef<adw::WrapBox>),
 }
@@ -354,13 +360,22 @@ pub enum FilterWidget {
 impl FilterWidget {
     fn clear(&self) {
         match self {
-            FilterWidget::Text(entry, dropdown) => {
+            FilterWidget::Text(entry, dropdown, invert, unset) => {
+                let entry = upgrade!(entry);
+                entry.set_text("");
+                let dropdown = upgrade!(dropdown);
+                dropdown.set_selected(0);
+                let invert = upgrade!(invert);
+                invert.set_active(false);
+                let unset = upgrade!(unset);
+                unset.set_active(false);
+            }
+            FilterWidget::Num(entry, dropdown) => {
                 let entry = upgrade!(entry);
                 entry.set_text("");
                 let dropdown = upgrade!(dropdown);
                 dropdown.set_selected(0);
             }
-
             FilterWidget::CheckBox(check) => {
                 let check = upgrade!(check);
                 check.set_active(false);
@@ -394,26 +409,64 @@ fn common_text_filter(
 
     container.append(&merge_box);
 
-    let label = gtk::Label::builder().label("Match type:").build();
+    let grid = gtk::Grid::builder()
+        .column_spacing(5)
+        .row_spacing(5)
+        .build();
+
+    let label = gtk::Label::builder()
+        .label("Match type")
+        .halign(gtk::Align::Start)
+        .build();
 
     let model_str: Vec<&str> = StrMatchType::iter().map(|x| x.as_str()).collect();
     let model = gtk::StringList::new(&model_str);
+
+    grid.attach(&label, 0, 0, 1, 1);
     let dropdown = gtk::DropDown::builder()
         .model(&model)
         .halign(gtk::Align::Fill)
         .build();
-    let drop_box = gtk::Box::builder()
-        .halign(gtk::Align::Fill)
-        .orientation(gtk::Orientation::Horizontal)
-        .spacing(5)
+
+    grid.attach_next_to(&dropdown, Some(&label), gtk::PositionType::Right, 1, 1);
+
+    let label = gtk::Label::builder()
+        .label("Unset")
+        .use_markup(true)
+        .halign(gtk::Align::Start)
+        .build();
+    grid.attach(&label, 0, 1, 1, 1);
+
+    let unset_check: gtk::CheckButton = gtk::CheckButton::builder()
+        .active(false)
+        .name("unset")
         .build();
 
-    drop_box.append(&label);
-    drop_box.append(&dropdown);
-    container.append(&drop_box);
+    grid.attach_next_to(&unset_check, Some(&label), gtk::PositionType::Right, 1, 1);
+
+    let label = gtk::Label::builder()
+        .label("Invert")
+        .use_markup(true)
+        .halign(gtk::Align::Start)
+        .build();
+    grid.attach(&label, 0, 2, 1, 1);
+
+    let invert_check: gtk::CheckButton = gtk::CheckButton::builder()
+        .active(false)
+        .name("invert")
+        .build();
+
+    grid.attach_next_to(&invert_check, Some(&label), gtk::PositionType::Right, 1, 1);
+
+    container.append(&grid);
 
     {
         let filter_container = filter_container.borrow();
+
+        let filter_text = filter_container
+            .as_any()
+            .downcast_ref::<FilterText>()
+            .expect("downcast_mut to FilterText");
 
         //TODO make debug func
         debug!(
@@ -421,11 +474,19 @@ fn common_text_filter(
             filter_container.match_type(),
             filter_container.text()
         );
-        entry.set_text(&filter_container.text());
-        dropdown.set_selected(filter_container.match_type().position());
+        entry.set_text(&filter_text.text());
+        dropdown.set_selected(filter_text.match_type().position());
+        invert_check.set_active(filter_text.is_invert());
+        unset_check.set_active(filter_text.is_unset());
     }
 
-    let filter_widget = FilterWidget::Text(entry.downgrade(), dropdown.downgrade());
+    let filter_widget = FilterWidget::Text(
+        entry.downgrade(),
+        dropdown.downgrade(),
+        invert_check.downgrade(),
+        unset_check.downgrade(),
+    );
+
     {
         let filter_container = filter_container.clone();
         entry.connect_changed(move |entry| {
@@ -459,6 +520,47 @@ fn common_text_filter(
                 .expect("downcast_mut to FilterText");
 
             filter_text.set_filter_match_type(match_type, true);
+        });
+    }
+
+    {
+        let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>> =
+            filter_container.clone();
+
+        invert_check.connect_toggled(move |check_button| {
+            let mut binding = filter_container.as_ref().borrow_mut();
+            let filter_text = binding
+                .as_any_mut()
+                .downcast_mut::<FilterText>()
+                .expect("downcast_mut to FilterText");
+
+            filter_text.set_filter_invert(check_button.is_active());
+        });
+    }
+
+    {
+        let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>> =
+            filter_container.clone();
+
+        let dropdown = dropdown.downgrade();
+        let entry = entry.downgrade();
+
+        unset_check.connect_toggled(move |check_button| {
+            let mut binding = filter_container.as_ref().borrow_mut();
+            let filter_text = binding
+                .as_any_mut()
+                .downcast_mut::<FilterText>()
+                .expect("downcast_mut to FilterText");
+
+            let filter_unset = check_button.is_active();
+
+            let entry = upgrade!(entry);
+            let dropdown = upgrade!(dropdown);
+
+            entry.set_sensitive(!filter_unset);
+            dropdown.set_sensitive(!filter_unset);
+
+            filter_text.set_filter_unset(filter_unset);
         });
     }
 
@@ -670,7 +772,7 @@ where
 
     container.append(&merge_box);
 
-    let label = gtk::Label::builder().label("Match type:").build();
+    let label = gtk::Label::builder().label("Match type").build();
 
     let model_str: Vec<&str> = NumMatchType::iter().map(|x| x.as_str()).collect();
     let model = gtk::StringList::new(&model_str);
@@ -701,7 +803,7 @@ where
         dropdown.set_selected(filter_container.match_type().position());
     }
 
-    let filter_wiget = FilterWidget::Text(entry.downgrade(), dropdown.downgrade());
+    let filter_wiget = FilterWidget::Num(entry.downgrade(), dropdown.downgrade());
     {
         let filter_container = filter_container.clone();
         entry.connect_changed(move |entry| {

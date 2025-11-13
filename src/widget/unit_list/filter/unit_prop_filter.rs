@@ -209,6 +209,8 @@ where
 pub struct FilterText {
     filter_text: String,
     match_type: StrMatchType,
+    filter_unset: bool,
+    filter_invert: bool,
     lambda: Box<dyn Fn(bool)>,
     filter_unit_func:
         fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo, key: glib::Quark) -> bool,
@@ -244,6 +246,8 @@ impl FilterText {
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
             key: glib::Quark::from_str("default"),
+            filter_unset: false,
+            filter_invert: false,
         }
     }
 
@@ -265,6 +269,8 @@ impl FilterText {
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
             key,
+            filter_unset: false,
+            filter_invert: false,
         }
     }
 
@@ -289,11 +295,13 @@ impl FilterText {
 
         self.filter_text.replace_range(.., f_element);
 
+        let filter_not_apply = self.is_empty();
+
         if old_is_empty != new_is_empty {
-            (self.lambda)(new_is_empty);
+            (self.lambda)(filter_not_apply);
         }
 
-        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_empty {
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_not_apply {
             None
         } else {
             Some(Box::new(FilterTextAssessor::new(self)))
@@ -327,7 +335,7 @@ impl FilterText {
 
         self.match_type = match_type;
 
-        if self.filter_text.is_empty() {
+        if self.is_empty() {
             debug!("exit filter_text empty");
             return;
         }
@@ -341,6 +349,70 @@ impl FilterText {
             Some(change_type),
             update_widget,
         );
+    }
+
+    pub(crate) fn set_filter_unset(&mut self, filter_unset: bool) {
+        let different = self.filter_unset != filter_unset;
+
+        self.filter_unset = filter_unset;
+
+        let filter_not_apply = self.is_empty();
+
+        if different {
+            (self.lambda)(filter_not_apply);
+        }
+
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_not_apply {
+            None
+        } else {
+            Some(Box::new(FilterTextAssessor::new(self)))
+        };
+
+        let change_type = gtk::FilterChange::Different;
+        let update_widget = true;
+
+        self.unit_list_panel.filter_assessor_change(
+            &self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        );
+    }
+
+    pub(crate) fn set_filter_invert(&mut self, filter_invert: bool) {
+        let different = self.filter_invert != filter_invert;
+
+        self.filter_invert = filter_invert;
+
+        let filter_not_apply = self.is_empty();
+
+        if different {
+            (self.lambda)(filter_not_apply);
+        }
+
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_not_apply {
+            None
+        } else {
+            Some(Box::new(FilterTextAssessor::new(self)))
+        };
+
+        let change_type = gtk::FilterChange::Different;
+
+        let update_widget = true;
+        self.unit_list_panel.filter_assessor_change(
+            &self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        );
+    }
+
+    pub(crate) fn is_invert(&self) -> bool {
+        self.filter_invert
+    }
+
+    pub(crate) fn is_unset(&self) -> bool {
+        self.filter_unset
     }
 }
 
@@ -368,6 +440,8 @@ impl UnitPropertyFilter for FilterText {
     fn clear_n_apply_filter(&mut self) {
         self.filter_text.clear(); //FIXME it does not apply, but might be Ok
         self.match_type = StrMatchType::default();
+        self.filter_invert = false;
+        self.filter_unset = false;
     }
 
     fn clear_filter(&mut self) {
@@ -376,7 +450,7 @@ impl UnitPropertyFilter for FilterText {
     }
 
     fn is_empty(&self) -> bool {
-        self.filter_text.is_empty()
+        self.filter_text.is_empty() && !self.filter_unset && !self.filter_invert
     }
 
     fn ftype(&self) -> UnitPropertyFilterType {
