@@ -72,7 +72,7 @@ mod imp {
         #[property(get, default)]
         unit_type: RefCell<UnitType>,
         #[property(get, set)]
-        pub(super) description: RefCell<String>,
+        pub(super) description: RefCell<Option<String>>,
 
         #[property(get, set, default)]
         pub(super) load_state: RefCell<LoadState>,
@@ -124,7 +124,13 @@ mod imp {
             self.set_primary(listed_unit.primary_unit_name);
             self.active_state.replace(active_state);
 
-            self.description.replace(listed_unit.description);
+            let description = if listed_unit.description.is_empty() {
+                Some(listed_unit.description)
+            } else {
+                None
+            };
+
+            self.description.replace(description);
             let load_state: LoadState = listed_unit.load_state.as_str().into();
             self.load_state.replace(load_state);
             self.sub_state.replace(listed_unit.sub_state);
@@ -168,9 +174,7 @@ mod imp {
         pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
             self.object_path.replace(Some(update.object_path));
 
-            if let Some(description) = update.description {
-                self.description.replace(description);
-            }
+            self.description.replace(update.description);
 
             if let Some(sub_state) = update.sub_state {
                 self.sub_state.replace(sub_state);

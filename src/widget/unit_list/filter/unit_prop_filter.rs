@@ -807,14 +807,24 @@ pub struct FilterTextAssessor {
 
 impl FilterTextAssessor {
     fn new(filter_text: &FilterText) -> Self {
-        let filter_unit_value_func =
-            match (filter_text.filter_text.is_empty(), filter_text.match_type) {
-                (true, _) => Self::filter_unit_value_func_empty,
-                (false, StrMatchType::Contains) => Self::filter_unit_value_func_contains,
-                (false, StrMatchType::StartWith) => Self::filter_unit_value_func_start_with,
-                (false, StrMatchType::EndWith) => Self::filter_unit_value_func_end_with,
-                (false, StrMatchType::Equals) => Self::filter_unit_value_func_equals,
-            };
+        let filter_unit_value_func = if filter_text.filter_unset {
+            if filter_text.filter_invert {
+                Self::filter_unit_value_func_unset_inv
+            } else {
+                Self::filter_unit_value_func_unset
+            }
+        } else {
+            match (filter_text.match_type, filter_text.filter_invert) {
+                (StrMatchType::Contains, false) => Self::filter_unit_value_func_contains,
+                (StrMatchType::Contains, true) => Self::filter_unit_value_func_contains_inv,
+                (StrMatchType::StartWith, false) => Self::filter_unit_value_func_start_with,
+                (StrMatchType::StartWith, true) => Self::filter_unit_value_func_start_with_inv,
+                (StrMatchType::EndWith, false) => Self::filter_unit_value_func_end_with,
+                (StrMatchType::EndWith, true) => Self::filter_unit_value_func_end_with_inv,
+                (StrMatchType::Equals, false) => Self::filter_unit_value_func_equals,
+                (StrMatchType::Equals, true) => Self::filter_unit_value_func_equals_inv,
+            }
+        };
 
         FilterTextAssessor {
             filter_text: filter_text.filter_text.clone(),
@@ -825,8 +835,16 @@ impl FilterTextAssessor {
         }
     }
 
-    fn filter_unit_value_func_empty(&self, _unit_value: Option<&String>) -> bool {
-        true
+    fn filter_unit_value_func_unset(&self, unit_value: Option<&String>) -> bool {
+        unit_value.is_none()
+    }
+
+    fn filter_unit_value_func_unset_inv(&self, unit_value: Option<&String>) -> bool {
+        unit_value.is_some()
+    }
+
+    fn filter_unit_value_func_contains_inv(&self, unit_value: Option<&String>) -> bool {
+        !self.filter_unit_value_func_contains(unit_value)
     }
 
     fn filter_unit_value_func_contains(&self, unit_value: Option<&String>) -> bool {
@@ -837,6 +855,10 @@ impl FilterTextAssessor {
         }
     }
 
+    fn filter_unit_value_func_start_with_inv(&self, unit_value: Option<&String>) -> bool {
+        !self.filter_unit_value_func_start_with(unit_value)
+    }
+
     fn filter_unit_value_func_start_with(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.starts_with(&self.filter_text)
@@ -845,11 +867,23 @@ impl FilterTextAssessor {
         }
     }
 
+    fn filter_unit_value_func_end_with_inv(&self, unit_value: Option<&String>) -> bool {
+        !self.filter_unit_value_func_end_with(unit_value)
+    }
+
     fn filter_unit_value_func_end_with(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.ends_with(&self.filter_text)
         } else {
             false
+        }
+    }
+
+    fn filter_unit_value_func_equals_inv(&self, unit_value: Option<&String>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.ne(&self.filter_text)
+        } else {
+            true
         }
     }
 

@@ -117,7 +117,7 @@ pub fn filter_unit_description(
     unit: &UnitInfo,
     _key: glib::Quark,
 ) -> bool {
-    (property_assessor.filter_unit_value_func)(property_assessor, Some(&unit.description()))
+    (property_assessor.filter_unit_value_func)(property_assessor, unit.description().as_ref())
 }
 
 pub fn custom_num<T>(

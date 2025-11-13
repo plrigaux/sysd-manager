@@ -249,7 +249,28 @@ pub fn fac_sub_state(display_color: bool) -> gtk::SignalListItemFactory {
 }
 
 pub fn fac_descrition(display_color: bool) -> gtk::SignalListItemFactory {
-    common_factory(display_color, UnitInfo::description)
+    let factory = gtk::SignalListItemFactory::new();
+
+    factory.connect_setup(factory_setup);
+
+    if display_color {
+        factory.connect_bind(move |_factory, object| {
+            let (inscription, unit) = factory_bind_pre!(object);
+            let text = UnitInfo::description(&unit);
+            inscription.set_text(text.as_deref());
+
+            inactive_display(&inscription, &unit)
+        });
+
+        factory_connect_unbind!(factory, *BIND_CSS);
+    } else {
+        factory.connect_bind(move |_factory, object| {
+            let (inscription, unit) = factory_bind_pre!(object);
+            let text = UnitInfo::description(&unit);
+            inscription.set_text(text.as_deref());
+        });
+    }
+    factory
 }
 
 pub fn setup_factories(
