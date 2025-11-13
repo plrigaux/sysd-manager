@@ -82,7 +82,19 @@ https://hughsie.github.io/oars/index.html
   <content_rating type="oars-1.1" />
   <releases>
 
-  <release version="2.7.2" date="2025-11-11">
+    <release version="2.7.2" date="2025-11-11">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Can filter on unset values</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Column button in the Preferences panel</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.7.2" date="2025-11-11">
       <description translate="no">
         <p>Added</p>
         <ul>
@@ -90,10 +102,11 @@ https://hughsie.github.io/oars/index.html
           <li>Add a filter marker on browser column</li>
           <li>Allow string filter to filter on start, end or middle</li>
         </ul>
-      <p>Fixed</p>
-          <ul>
-          <li>Column title that removed continuously first letter each time, it stop the issue but don't recover the damage</li>
-          </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Column title that removed continuously first letter each time, it stop the issue but
+            don't recover the damage</li>
+        </ul>
       </description>
     </release>
     <release version="2.6.4" date="2025-11-5">
