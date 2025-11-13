@@ -43,6 +43,8 @@ use crate::{
     },
 };
 
+type UnitFilterList = RefCell<Vec<Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
+
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_filter.ui")]
 #[properties(wrapper_type = super::UnitListFilterWindow)]
@@ -57,6 +59,8 @@ pub struct UnitListFilterWindowImp {
     selected: RefCell<Option<String>>,
 
     filter_widgets: RefCell<Vec<Vec<FilterWidget>>>,
+
+    filters: UnitFilterList,
 
     pub(super) unit_list_panel: OnceCell<UnitListPanel>,
 }
@@ -131,31 +135,48 @@ impl UnitListFilterWindowImp {
                 .map_or(key.clone(), |title| title.to_string());
 
             let prop_type = unit_prop_selection.prop_type();
-            let Some(filter_assessor) = unit_list_panel.lazy_get_filter_assessor(&key, prop_type)
+            let Some(unit_property_filter_configurator) =
+                unit_list_panel.lazy_get_filter_assessor(&key, prop_type)
             else {
                 warn!("No filter for key {key}");
                 continue;
             };
 
             let (widget, filter_widget): (gtk::Box, Vec<FilterWidget>) = match key.as_str() {
-                COL_ID_UNIT => common_text_filter(&filter_assessor),
-                "sysdm-bus" => build_bus_level_filter(&filter_assessor),
-                "sysdm-type" => build_type_filter(&filter_assessor),
-                "sysdm-state" => build_enablement_filter(&filter_assessor),
-                "sysdm-preset" => build_preset_filter(&filter_assessor),
-                "sysdm-load" => build_load_filter(&filter_assessor),
-                "sysdm-active" => build_active_state_filter(&filter_assessor),
-                "sysdm-sub" => super::substate::sub_state_filter(&filter_assessor),
-                "sysdm-description" => common_text_filter(&filter_assessor),
+                COL_ID_UNIT => common_text_filter(&unit_property_filter_configurator),
+                "sysdm-bus" => build_bus_level_filter(&unit_property_filter_configurator),
+                "sysdm-type" => build_type_filter(&unit_property_filter_configurator),
+                "sysdm-state" => build_enablement_filter(&unit_property_filter_configurator),
+                "sysdm-preset" => build_preset_filter(&unit_property_filter_configurator),
+                "sysdm-load" => build_load_filter(&unit_property_filter_configurator),
+                "sysdm-active" => build_active_state_filter(&unit_property_filter_configurator),
+                "sysdm-sub" => {
+                    super::substate::sub_state_filter(&unit_property_filter_configurator)
+                }
+                "sysdm-description" => common_text_filter(&unit_property_filter_configurator),
 
-                _ => match filter_assessor.borrow().ftype() {
-                    UnitPropertyFilterType::Text => common_text_filter(&filter_assessor),
-                    UnitPropertyFilterType::NumU64 => common_num_filter::<u64>(&filter_assessor),
-                    UnitPropertyFilterType::NumI64 => common_num_filter::<i64>(&filter_assessor),
-                    UnitPropertyFilterType::NumU32 => common_num_filter::<u32>(&filter_assessor),
-                    UnitPropertyFilterType::NumI32 => common_num_filter::<i32>(&filter_assessor),
-                    UnitPropertyFilterType::NumU16 => common_num_filter::<u16>(&filter_assessor),
-                    UnitPropertyFilterType::Bool => bool_filter_ui_builder(&filter_assessor),
+                _ => match unit_property_filter_configurator.borrow().ftype() {
+                    UnitPropertyFilterType::Text => {
+                        common_text_filter(&unit_property_filter_configurator)
+                    }
+                    UnitPropertyFilterType::NumU64 => {
+                        common_num_filter::<u64>(&unit_property_filter_configurator)
+                    }
+                    UnitPropertyFilterType::NumI64 => {
+                        common_num_filter::<i64>(&unit_property_filter_configurator)
+                    }
+                    UnitPropertyFilterType::NumU32 => {
+                        common_num_filter::<u32>(&unit_property_filter_configurator)
+                    }
+                    UnitPropertyFilterType::NumI32 => {
+                        common_num_filter::<i32>(&unit_property_filter_configurator)
+                    }
+                    UnitPropertyFilterType::NumU16 => {
+                        common_num_filter::<u16>(&unit_property_filter_configurator)
+                    }
+                    UnitPropertyFilterType::Bool => {
+                        bool_filter_ui_builder(&unit_property_filter_configurator)
+                    }
                     UnitPropertyFilterType::Element => {
                         error!("Key {key:?} not handled");
                         let w = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -176,7 +197,8 @@ impl UnitListFilterWindowImp {
                 .css_classes(["nav"])
                 .build();
 
-            let mut filter_container_binding = filter_assessor.as_ref().borrow_mut();
+            let mut filter_container_binding =
+                unit_property_filter_configurator.as_ref().borrow_mut();
             let is_filter_applies = filter_container_binding.is_filter_applies();
             button_content.set_icon_name(icon_name(is_filter_applies));
             {
@@ -227,6 +249,10 @@ impl UnitListFilterWindowImp {
                 });
             }
             self.filter_navigation_container.append(&button);
+
+            self.filters
+                .borrow_mut()
+                .push(unit_property_filter_configurator.clone());
         }
 
         self.filter_widgets.replace(filter_widgets);
@@ -247,6 +273,13 @@ impl UnitListFilterWindowImp {
             )
             .bidirectional()
             .build();
+    }
+
+    fn clear_unit_list_filter_window_dependancy(&self) {
+        for f in self.filters.borrow().iter() {
+            let mut f = f.borrow_mut();
+            f.unset_on_filter_apply_ui_func();
+        }
     }
 }
 
@@ -310,11 +343,8 @@ impl WidgetImpl for UnitListFilterWindowImp {}
 impl WindowImpl for UnitListFilterWindowImp {
     // Save window state right before the window will be closed
     fn close_request(&self) -> glib::Propagation {
-        /*   self.unit_list_panel
-                   .get()
-                   .expect("Not None")
-                   .clear_unit_list_filter_window_dependancy();
-        */
+        self.clear_unit_list_filter_window_dependancy();
+
         self.parent_close_request();
         // Allow to invoke other event handlers
         glib::Propagation::Proceed

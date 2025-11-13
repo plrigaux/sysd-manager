@@ -27,6 +27,10 @@ pub enum UnitPropertyFilterType {
 }
 pub trait UnitPropertyFilter: Debug {
     fn set_on_filter_apply_ui_func(&mut self, on_filter_apply_ui_func: Box<dyn Fn(bool)>);
+    fn unset_on_filter_apply_ui_func(&mut self) {
+        self.set_on_filter_apply_ui_func(Box::new(|_: bool| ()));
+    }
+
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn ftype(&self) -> UnitPropertyFilterType;
