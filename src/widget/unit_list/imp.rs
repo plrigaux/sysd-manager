@@ -718,23 +718,16 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn clear_filters(&self) {
-        let applied_assessors = self
-            .applied_unit_property_filters
-            .get()
-            .expect("applied_assessors not null");
-
-        let mut applied_assessors = applied_assessors.borrow_mut();
-        applied_assessors.clear();
-
         //TODO investigate if usefull
         for property_filter in self.unit_property_filters.borrow().values() {
             let mut prop_filter_mut = property_filter.borrow_mut();
-            prop_filter_mut.clear_filter();
+            prop_filter_mut.clear_n_apply_filter();
         }
 
-        self.filter_list_model
-            .borrow()
-            .set_filter(None::<&gtk::Filter>); //FIXME this workaround prevents core dump
+        /*   self.filter_list_model
+                   .borrow()
+                   .set_filter(None::<&gtk::Filter>); //FIXME this workaround prevents core dump
+        */
 
         let search_controls = self.search_controls.get().expect("Not Null");
         search_controls.imp().clear();

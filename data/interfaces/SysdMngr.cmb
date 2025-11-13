@@ -2,7 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.1 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="549524eee9dc53795da17d594a457ea4ddc4d0a45f2edc6c363c2f10707b47cc"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="93800ee9098cd73f0a5bab3dd81154024ce7be90b434874aab380a3d94e8561d"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="52de4a8c820fedbc8a6eff2216b9d203305d7d630049288f356ca49310d1dd3a"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="b51b8de5883468c775b38876e7f9e5e4b06c3e17a2c94cf191dd903befa8a3c5"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="c1a5a2752f692e1c4beebc08065ca873450d8965913825a1aa6e63bd162201c2"/>
@@ -15,7 +15,7 @@
   <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="57f6dbe8c3b9fbb1e6670c221cb356134182019c121510af5dffaff833cad4a3"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="01ca43632b58ccaee2ce1f2ca666781818f5d3bc200b0a85a9f4b2f58ba60b1c"/>
-  <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="877be95fb4df348a2d62a718523f3144b794e47d9f81cf0630a1c1279807410a"/>
+  <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="e1b2b51b4da6c7aa36c4b8b8b9f011c2e86b645ed5ed1c2874e02e73077bbd24"/>
   <ui filename="shortcuts.ui" sha256="c352f6a082865f27b9c96d5e56e70215ac80aa5b19792f4a5e0e8d6816a1d545"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="b8d7f594dfa26ce35a2e431067dc8401671a423e8e2975eeaf6fce05511a52b2"/>
@@ -24,7 +24,7 @@
   <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="fc9f5293a9199d43666794072a191f2785eaef88c42e2f0c0d8046f6716538f2"/>
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="bc632f6a17915b3f4c85d5fc72b771840b3799a92851f8638410a98ea9f62d5c"/>
   <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="7ee53b03dfb9316d44ff7f1eccb32f17d63fa85e7e71d9b62a63bd4de281d0f3"/>
-  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="269926542d562b15851ef061f4f8ff3e4c4edda36ec9bda14c6c468ba48f596c">
+  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="67f05cdaa4c3c8e21d1fb433ad1755969da5a872672ef002cced4e4aa0c9cdc9">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>

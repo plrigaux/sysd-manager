@@ -177,17 +177,18 @@ impl UnitListFilterWindowImp {
                 .build();
 
             let mut filter_container_binding = filter_assessor.as_ref().borrow_mut();
-            let is_empty = filter_container_binding.is_empty();
-            button_content.set_icon_name(icon_name(is_empty));
+            let is_filter_applies = filter_container_binding.is_filter_applies();
+            button_content.set_icon_name(icon_name(is_filter_applies));
             {
                 let button_content = button_content.downgrade();
-                let lambda = move |is_empty: bool| {
+                let on_filter_apply_ui_func = move |is_filter_apply: bool| {
                     let button_content = upgrade!(button_content);
-                    let icon_name = icon_name(is_empty);
+                    let icon_name = icon_name(is_filter_apply);
                     button_content.set_icon_name(icon_name);
                 };
 
-                filter_container_binding.set_on_change(Box::new(lambda));
+                filter_container_binding
+                    .set_on_filter_apply_ui_func(Box::new(on_filter_apply_ui_func));
             }
 
             let button: gtk::Button = gtk::Button::builder()
@@ -272,11 +273,11 @@ fn grab_focus_on_child_entry(widget: Option<&gtk::Widget>) {
     grab_focus_on_child_entry(widget.next_sibling().as_ref());
 }
 
-fn icon_name(is_empty: bool) -> &'static str {
-    if is_empty {
-        "empty-icon"
-    } else {
+fn icon_name(is_filter_apply: bool) -> &'static str {
+    if is_filter_apply {
         "funnel-symbolic"
+    } else {
+        "empty-icon"
     }
 }
 

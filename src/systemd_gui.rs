@@ -30,7 +30,7 @@ macro_rules! format2 {
 macro_rules! upgrade {
     ($weak_ref:expr) => {{
         let Some(weak_ref) = $weak_ref.upgrade() else {
-            log::warn!("Reference upgrade failed");
+            log::warn!("Reference upgrade failed {:?}", $weak_ref);
             return;
         };
         weak_ref
@@ -41,7 +41,7 @@ macro_rules! upgrade {
 macro_rules! upgrade_continue {
     ($weak_ref:expr) => {{
         let Some(weak_ref) = $weak_ref.upgrade() else {
-            log::warn!("Reference upgrade failed");
+            log::warn!("Reference upgrade failed {:?}", $weak_ref);
             continue;
         };
         weak_ref

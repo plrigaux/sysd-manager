@@ -26,7 +26,7 @@ pub enum UnitPropertyFilterType {
     Bool,
 }
 pub trait UnitPropertyFilter: Debug {
-    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>);
+    fn set_on_filter_apply_ui_func(&mut self, on_filter_apply_ui_func: Box<dyn Fn(bool)>);
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn ftype(&self) -> UnitPropertyFilterType;
@@ -43,14 +43,27 @@ pub trait UnitPropertyFilter: Debug {
         NumMatchType::default()
     }
 
-    fn clear_n_apply_filter(&mut self);
+    fn unit_list_panel(&self) -> &UnitListPanel;
+
+    fn id(&self) -> &String;
+
+    fn clear_n_apply_filter(&mut self) {
+        self.clear_filter();
+        self.unit_list_panel().filter_assessor_change(
+            self.id().as_str(),
+            None,
+            Some(gtk::FilterChange::LessStrict),
+            true,
+        );
+    }
+
     fn clear_filter(&mut self);
     /*     fn clear_widget_dependancy(&mut self) {
         let lambda = |_: bool| {};
         self.set_on_change(Box::new(lambda));
     } */
 
-    fn is_empty(&self) -> bool;
+    fn is_filter_applies(&self) -> bool;
 }
 
 pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterElement<T>
@@ -81,8 +94,8 @@ where
     T: Eq + Hash + Debug,
 {
     filter_elements: HashSet<T>,
-    lambda: Box<dyn Fn(bool)>,
-    filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
+    on_filter_apply_ui_func: Box<dyn Fn(bool)>,
+    unit_property_getter_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
     id: String,
     unit_list_panel: UnitListPanel,
 }
@@ -108,13 +121,13 @@ where
 {
     pub fn new(
         id: &str,
-        filter_unit_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
+        unit_property_getter_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
         unit_list_panel: &UnitListPanel,
     ) -> Self {
         Self {
             filter_elements: Default::default(),
-            lambda: Box::new(|_: bool| ()), //empty func
-            filter_unit_func,
+            on_filter_apply_ui_func: Box::new(|_: bool| ()), //empty func
+            unit_property_getter_func,
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
         }
@@ -151,7 +164,7 @@ where
         };
 
         if old_is_empty != new_is_empty {
-            (self.lambda)(new_is_empty);
+            (self.on_filter_apply_ui_func)(!new_is_empty);
         }
 
         let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_empty {
@@ -159,7 +172,7 @@ where
         } else {
             Some(Box::new(FilterElementAssessor {
                 filter_elements: self.filter_elements.clone(),
-                filter_unit_func: self.filter_unit_func,
+                filter_unit_func: self.unit_property_getter_func,
                 id: self.id.clone(),
             }))
         };
@@ -173,8 +186,8 @@ impl<T> UnitPropertyFilter for FilterElement<T>
 where
     T: Eq + Hash + Debug + Clone + 'static,
 {
-    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
-        self.lambda = lambda
+    fn set_on_filter_apply_ui_func(&mut self, lambda: Box<dyn Fn(bool)>) {
+        self.on_filter_apply_ui_func = lambda
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -186,23 +199,35 @@ where
     }
 
     fn clear_n_apply_filter(&mut self) {
-        let set = self.filter_elements.clone();
-        for f_element in set {
-            FilterElement::set_filter_elem(self, f_element, false);
-        }
+        self.filter_elements.clear();
+
+        self.unit_list_panel.filter_assessor_change(
+            &self.id,
+            None,
+            Some(gtk::FilterChange::LessStrict),
+            true,
+        );
     }
 
     fn clear_filter(&mut self) {
         self.filter_elements.clear();
-        (self.lambda)(true);
+        (self.on_filter_apply_ui_func)(true);
     }
 
-    fn is_empty(&self) -> bool {
-        self.filter_elements.is_empty()
+    fn is_filter_applies(&self) -> bool {
+        !self.filter_elements.is_empty()
     }
 
     fn ftype(&self) -> UnitPropertyFilterType {
         UnitPropertyFilterType::Element
+    }
+
+    fn unit_list_panel(&self) -> &UnitListPanel {
+        &self.unit_list_panel
+    }
+
+    fn id(&self) -> &String {
+        &self.id
     }
 }
 
@@ -211,7 +236,7 @@ pub struct FilterText {
     match_type: StrMatchType,
     filter_unset: bool,
     filter_invert: bool,
-    lambda: Box<dyn Fn(bool)>,
+    on_filter_apply_ui_func: Box<dyn Fn(bool)>,
     filter_unit_func:
         fn(property_assessor: &FilterTextAssessor, unit: &UnitInfo, key: glib::Quark) -> bool,
     id: String,
@@ -241,7 +266,7 @@ impl FilterText {
         Self {
             filter_text: Default::default(),
             match_type: StrMatchType::default(),
-            lambda: Box::new(|_: bool| ()),
+            on_filter_apply_ui_func: Box::new(|_: bool| ()),
             filter_unit_func,
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
@@ -264,7 +289,7 @@ impl FilterText {
         Self {
             filter_text: Default::default(),
             match_type: StrMatchType::default(),
-            lambda: Box::new(|_: bool| ()),
+            on_filter_apply_ui_func: Box::new(|_: bool| ()),
             filter_unit_func,
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
@@ -295,16 +320,16 @@ impl FilterText {
 
         self.filter_text.replace_range(.., f_element);
 
-        let filter_not_apply = self.is_empty();
+        let filter_applies = self.is_filter_applies();
 
         if old_is_empty != new_is_empty {
-            (self.lambda)(filter_not_apply);
+            (self.on_filter_apply_ui_func)(filter_applies);
         }
 
-        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_not_apply {
-            None
-        } else {
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_applies {
             Some(Box::new(FilterTextAssessor::new(self)))
+        } else {
+            None
         };
 
         self.unit_list_panel.filter_assessor_change(
@@ -335,8 +360,8 @@ impl FilterText {
 
         self.match_type = match_type;
 
-        if self.is_empty() {
-            debug!("exit filter_text empty");
+        if !self.is_filter_applies() {
+            debug!("exit filter_text doesn't apply");
             return;
         }
 
@@ -356,16 +381,16 @@ impl FilterText {
 
         self.filter_unset = filter_unset;
 
-        let filter_not_apply = self.is_empty();
+        let filter_applies = self.is_filter_applies();
 
         if different {
-            (self.lambda)(filter_not_apply);
+            (self.on_filter_apply_ui_func)(filter_applies);
         }
 
-        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_not_apply {
-            None
-        } else {
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_applies {
             Some(Box::new(FilterTextAssessor::new(self)))
+        } else {
+            None
         };
 
         let change_type = gtk::FilterChange::Different;
@@ -384,16 +409,16 @@ impl FilterText {
 
         self.filter_invert = filter_invert;
 
-        let filter_not_apply = self.is_empty();
+        let filter_applies = self.is_filter_applies();
 
         if different {
-            (self.lambda)(filter_not_apply);
+            (self.on_filter_apply_ui_func)(filter_applies);
         }
 
-        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_not_apply {
-            None
-        } else {
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_applies {
             Some(Box::new(FilterTextAssessor::new(self)))
+        } else {
+            None
         };
 
         let change_type = gtk::FilterChange::Different;
@@ -417,8 +442,8 @@ impl FilterText {
 }
 
 impl UnitPropertyFilter for FilterText {
-    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
-        self.lambda = lambda
+    fn set_on_filter_apply_ui_func(&mut self, lambda: Box<dyn Fn(bool)>) {
+        self.on_filter_apply_ui_func = lambda
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -437,24 +462,29 @@ impl UnitPropertyFilter for FilterText {
         self.match_type
     }
 
-    fn clear_n_apply_filter(&mut self) {
-        self.filter_text.clear(); //FIXME it does not apply, but might be Ok
+    fn clear_filter(&mut self) {
+        self.filter_text.clear();
         self.match_type = StrMatchType::default();
         self.filter_invert = false;
         self.filter_unset = false;
+
+        (self.on_filter_apply_ui_func)(false);
     }
 
-    fn clear_filter(&mut self) {
-        self.clear_n_apply_filter();
-        (self.lambda)(true);
-    }
-
-    fn is_empty(&self) -> bool {
-        self.filter_text.is_empty() && !self.filter_unset && !self.filter_invert
+    fn is_filter_applies(&self) -> bool {
+        !self.filter_text.is_empty() || self.filter_unset || self.filter_invert
     }
 
     fn ftype(&self) -> UnitPropertyFilterType {
         UnitPropertyFilterType::Text
+    }
+
+    fn unit_list_panel(&self) -> &UnitListPanel {
+        &self.unit_list_panel
+    }
+
+    fn id(&self) -> &String {
+        &self.id
     }
 }
 
@@ -464,7 +494,7 @@ where
 {
     filter_num: Option<T>,
     match_type: NumMatchType,
-    lambda: Box<dyn Fn(bool)>,
+    on_filter_apply_ui_func: Box<dyn Fn(bool)>,
     filter_unit_func: fn(&FilterNumAssessor<T>, &UnitInfo, glib::Quark) -> bool,
     id: String,
     unit_list_panel: UnitListPanel,
@@ -498,7 +528,7 @@ where
         Self {
             filter_num: Default::default(),
             match_type: NumMatchType::default(),
-            lambda: Box::new(|_: bool| ()),
+            on_filter_apply_ui_func: Box::new(|_: bool| ()),
             filter_unit_func,
             id: id.to_string(),
             unit_list_panel: unit_list_panel.clone(),
@@ -513,6 +543,7 @@ where
         }
 
         let new_is_none = f_element.is_none();
+        let filter_applies = !new_is_none;
         let old_is_none = self.filter_num.is_none();
 
         let change_type = if new_is_none {
@@ -524,13 +555,13 @@ where
         self.filter_num = f_element;
 
         if old_is_none != new_is_none {
-            (self.lambda)(new_is_none);
+            (self.on_filter_apply_ui_func)(filter_applies);
         }
 
-        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if new_is_none {
-            None
-        } else {
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_applies {
             Some(Box::new(FilterNumAssessor::new(self)))
+        } else {
+            None
         };
 
         self.unit_list_panel.filter_assessor_change(
@@ -585,8 +616,8 @@ impl<T> UnitPropertyFilter for FilterNum<T>
 where
     T: Debug + ToString + 'static,
 {
-    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
-        self.lambda = lambda
+    fn set_on_filter_apply_ui_func(&mut self, on_filter_apply_ui_func: Box<dyn Fn(bool)>) {
+        self.on_filter_apply_ui_func = on_filter_apply_ui_func
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -615,22 +646,26 @@ where
         self.match_type
     }
 
-    fn clear_n_apply_filter(&mut self) {
-        // self.filter_text.clear(); //FIXME it does not apply, but might be Ok
-        self.match_type = NumMatchType::default();
-    }
-
     fn clear_filter(&mut self) {
-        self.clear_n_apply_filter();
-        (self.lambda)(true);
+        self.match_type = NumMatchType::default();
+
+        (self.on_filter_apply_ui_func)(false);
     }
 
-    fn is_empty(&self) -> bool {
-        self.filter_num.is_none()
+    fn is_filter_applies(&self) -> bool {
+        self.filter_num.is_some()
     }
 
     fn ftype(&self) -> UnitPropertyFilterType {
         self.ftype
+    }
+
+    fn unit_list_panel(&self) -> &UnitListPanel {
+        &self.unit_list_panel
+    }
+
+    fn id(&self) -> &String {
+        &self.id
     }
 }
 
@@ -718,7 +753,7 @@ impl FilterBool {
 }
 
 impl UnitPropertyFilter for FilterBool {
-    fn set_on_change(&mut self, lambda: Box<dyn Fn(bool)>) {
+    fn set_on_filter_apply_ui_func(&mut self, lambda: Box<dyn Fn(bool)>) {
         self.lambda = lambda
     }
 
@@ -744,22 +779,25 @@ impl UnitPropertyFilter for FilterBool {
         StrMatchType::default()
     }
 
-    fn clear_n_apply_filter(&mut self) {
-        // self.filter_text.clear(); //FIXME it does not apply, but might be Ok
-        // self.match_type = NumMatchType::default();
-    }
-
     fn clear_filter(&mut self) {
-        self.clear_n_apply_filter();
+        self.filter_bool = Default::default();
         (self.lambda)(true);
     }
 
-    fn is_empty(&self) -> bool {
-        self.filter_bool.is_none()
+    fn is_filter_applies(&self) -> bool {
+        self.filter_bool.is_some()
     }
 
     fn ftype(&self) -> UnitPropertyFilterType {
         UnitPropertyFilterType::Bool
+    }
+
+    fn unit_list_panel(&self) -> &UnitListPanel {
+        &self.unit_list_panel
+    }
+
+    fn id(&self) -> &String {
+        &self.id
     }
 }
 

@@ -30,7 +30,7 @@ mod imp {
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
-    use crate::{consts::NS_ACTION_UNIT_LIST_FILTER_CLEAR, widget::unit_list::UnitListPanel};
+    use crate::widget::unit_list::UnitListPanel;
 
     use super::UnitListSearchControls;
 
@@ -55,20 +55,6 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl UnitListSearchControlsImp {
-        #[template_callback]
-        fn show_filters_clicked(button: &gtk::Button) {
-            button
-                .activate_action("win.unit_list_filter_blank", None)
-                .expect("The action \"list filter\" does not exist.");
-        }
-
-        #[template_callback]
-        fn clear_filter_clicked(button: &gtk::Button) {
-            button
-                .activate_action(NS_ACTION_UNIT_LIST_FILTER_CLEAR, None)
-                .expect("The action \"clear filter\" does not exist.");
-        }
-
         fn update_unit_name_search(&self, text: &str) {
             self.unit_list_panel
                 .get()
