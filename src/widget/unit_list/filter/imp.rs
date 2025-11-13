@@ -100,21 +100,6 @@ impl UnitListFilterWindowImp {
         let binding = self.selected.borrow();
         let selected = binding.as_ref();
 
-        /*
-
-        se and i'll finally end on this okay marketing and innovation are basically
-
-        the same thing now let me explain okay there are two ways you can create value in the marketplace you can either find out what
-
-        people want and work out a really clever way to make it or you can work out what you can make and find a really clever
-        way to make people want it. and the money you make is indistinguishable regardless of the direction of travel of that process so
-        it isn't necessary to introduce a new product to perform r d
-        one other way of doing r d is taking an existing product and presenting it or pricing it or positioning it or framing
-        it in a completely different way psychological arbitrage is where quite a
-        lot of money is made today there are psychological solutions out there that could save a fortune if you
-        want people to get an electric car we currently subsidize electric cars ver
-                 */
-
         let mut filter_widgets: Vec<Vec<FilterWidget>> = vec![];
         // for (name, key, _num_id, _) in &*UNIT_LIST_COLUMNS
 
@@ -210,7 +195,7 @@ impl UnitListFilterWindowImp {
                 };
 
                 filter_container_binding
-                    .set_on_filter_apply_ui_func(Box::new(on_filter_apply_ui_func));
+                    .set_on_filter_apply_ui_func(Some(Box::new(on_filter_apply_ui_func)));
             }
 
             let button: gtk::Button = gtk::Button::builder()
@@ -785,7 +770,7 @@ fn common_num_filter<T>(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> (gtk::Box, Vec<FilterWidget>)
 where
-    T: Debug + Default + PartialEq + PartialOrd + Copy + FromStr + 'static,
+    T: Debug + Default + PartialEq + PartialOrd + Copy + FromStr + ToString + 'static,
     <T as FromStr>::Err: Debug,
 {
     let container = create_content_box();
