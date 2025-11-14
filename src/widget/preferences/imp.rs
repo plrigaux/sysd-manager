@@ -8,7 +8,10 @@ use crate::{
     widget::{
         app_window::AppWindow,
         preferences::{
-            data::{KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY},
+            data::{
+                KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+            },
             drop_down_elem::{build_pane_orientation_selector, build_preferred_color_scheme},
             style_scheme::style_schemes,
         },
@@ -72,6 +75,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     unit_list_summay: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    unit_description_wrap: TemplateChild<adw::SwitchRow>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -449,6 +455,14 @@ impl ObjectImpl for PreferencesDialogImpl {
             .bind(
                 KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
                 &self.unit_list_summay.get(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind(
+                KEY_PREF_UNIT_DESCRIPTION_WRAP,
+                &self.unit_description_wrap.get(),
                 "active",
             )
             .build();

@@ -21,18 +21,22 @@ use log::{info, warn};
 
 use crate::{
     systemd::data::UnitInfo,
+    systemd_gui::new_settings,
     utils::{
         font_management::{set_font_context, set_text_view_font},
         text_view_hyperlink::{self, LinkActivator},
         writer::UnitInfoWriter,
     },
-    widget::{InterPanelMessage, app_window::AppWindow},
+    widget::{
+        InterPanelMessage, app_window::AppWindow, preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP,
+    },
 };
 
 use super::construct_info::fill_all_info;
 
-#[derive(Default, gtk::CompositeTemplate)]
+#[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
+#[properties(wrapper_type = super::UnitInfoPanel)]
 pub struct UnitInfoPanelImp {
     #[template_child]
     show_all_button: TemplateChild<gtk::Button>,
@@ -45,6 +49,7 @@ pub struct UnitInfoPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
+    #[property(get=Self::get_wrap,set=Self::set_wrap, type = bool)]
     is_dark: Cell<bool>,
 
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
@@ -148,6 +153,19 @@ impl UnitInfoPanelImp {
             _ => {}
         }
     }
+
+    fn get_wrap(&self) -> bool {
+        self.unit_info_textview.wrap_mode() != gtk::WrapMode::None
+    }
+
+    fn set_wrap(&self, wrap: bool) {
+        let wrap_mode = if wrap {
+            gtk::WrapMode::Word
+        } else {
+            gtk::WrapMode::None
+        };
+        self.unit_info_textview.set_wrap_mode(wrap_mode);
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -168,6 +186,7 @@ impl ObjectSubclass for UnitInfoPanelImp {
     }
 }
 
+#[glib::derived_properties]
 impl ObjectImpl for UnitInfoPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
@@ -175,6 +194,12 @@ impl ObjectImpl for UnitInfoPanelImp {
         self.set_sensitivity();
 
         set_font_context(&self.unit_info_textview);
+
+        let settings = new_settings();
+
+        settings
+            .bind(KEY_PREF_UNIT_DESCRIPTION_WRAP, self.obj().as_ref(), "wrap")
+            .build();
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}

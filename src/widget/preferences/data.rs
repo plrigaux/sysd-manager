@@ -24,6 +24,7 @@ pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
 pub const KEY_PREF_JOURNAL_DISPLAY_ORDER: &str = "pref-journal-display-order";
 pub const KEY_PREF_JOURNAL_DISPLAY_FOLLOW: &str = "pref-journal-display-follow";
 pub const KEY_PREF_UNIT_FILE_LINE_NUMBER: &str = "pref-unit-file-line-number";
+pub const KEY_PREF_UNIT_DESCRIPTION_WRAP: &str = "pref-unit-description-wrap";
 pub const KEY_PREF_UNIT_FILE_STYLE_SCHEME: &str = "pref-unit-file-style-scheme";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
 pub const KEY_PREF_TIMESTAMP_STYLE: &str = "pref-timestamp-style";
