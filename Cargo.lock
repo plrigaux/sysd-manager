@@ -1793,9 +1793,14 @@ name = "sysd-manager-proxy"
 version = "2.8.1"
 dependencies = [
  "constcat",
+ "dotenv",
+ "env_logger",
  "libc",
  "log",
  "tokio",
+ "tracing",
+ "tracing-journald",
+ "tracing-subscriber",
  "zbus",
 ]
 

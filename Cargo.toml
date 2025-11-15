@@ -55,6 +55,9 @@ zbus = { version = "5.11", default-features = false, features = [
     "tokio",
     "blocking-api",
 ] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tracing-journald = "0.3"
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
