@@ -28,10 +28,25 @@ macro_rules! format2 {
 
 #[macro_export]
 macro_rules! upgrade {
-    ($weak_ref:expr) => {{
+    ($weak_ref:expr) => {
+        upgrade!($weak_ref, ())
+    };
+
+    ($weak_ref:expr, $ret:expr) => {{
         let Some(weak_ref) = $weak_ref.upgrade() else {
             log::warn!("Reference upgrade failed {:?}", $weak_ref);
-            return;
+            return $ret;
+        };
+        weak_ref
+    }};
+}
+
+#[macro_export]
+macro_rules! upgrade_ret {
+    ($weak_ref:expr, ret:expr) => {{
+        let Some(weak_ref) = $weak_ref.upgrade() else {
+            log::warn!("Reference upgrade failed {:?}", $weak_ref);
+            return $ret;
         };
         weak_ref
     }};

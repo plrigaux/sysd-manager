@@ -1,0 +1,22 @@
+[package]
+name = "sysd-manager-proxy"
+version = "2.8.1"
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+keywords = ["xtext"]
+license = { workspace = true }
+readme = "README.md"
+description = "Simple lib used by sysd-manager to generate mo file"
+repository = { workspace = true }
+
+[[bin]]
+name = "sysd-manager-proxy"
+path = "src/main.rs"
+
+[dependencies]
+constcat.workspace = true
+libc.workspace = true
+log.workspace = true
+tokio.workspace = true
+zbus.workspace = true

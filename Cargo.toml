@@ -1,5 +1,5 @@
 [workspace]
-members = ["transtools", "sysd-manager-translating", "tiny_daemon"]
+members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy"]
 
 [workspace.package]
 edition = "2024"
@@ -45,12 +45,16 @@ lto = true
 
 [workspace.dependencies]
 clap = { version = "4.5", features = ["derive"] }
+constcat = "0.6"
 dotenv = "0.15"
 env_logger = "0.11"
 libc = "0.2"
 log = "0.4"
 tokio = { version = "1", features = ["full"] }
-constcat = "0.6"
+zbus = { version = "5.11", default-features = false, features = [
+    "tokio",
+    "blocking-api",
+] }
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
@@ -80,10 +84,7 @@ sysd = { version = "0.10", package = "systemd" }
 tokio.workspace = true
 tokio-util = "0.7"
 toml = "0.9"
-zbus = { version = "5.11", default-features = false, features = [
-    "tokio",
-    "blocking-api",
-] }
+zbus.workspace = true
 zbus_macros =  "5"
 zbus_xml = "5"
 zvariant = "5"
