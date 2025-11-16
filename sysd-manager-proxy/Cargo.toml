@@ -10,6 +10,12 @@ readme = "README.md"
 description = "Simple lib used by sysd-manager to generate mo file"
 repository = { workspace = true }
 
+
+[lib]
+name = "sysd_manager_proxy_lib"
+path = "src/lib.rs"
+
+
 [[bin]]
 name = "sysd-manager-proxy"
 path = "src/main.rs"
