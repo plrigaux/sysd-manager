@@ -49,9 +49,9 @@ pub struct UnitInfoPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    #[property(get=Self::get_wrap,set=Self::set_wrap, type = bool)]
     is_dark: Cell<bool>,
 
+    #[property(name="wrap", get=Self::get_wrap,set=Self::set_wrap, type = bool)]
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
 }
 
