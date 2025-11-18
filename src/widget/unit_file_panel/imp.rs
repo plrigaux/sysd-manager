@@ -2,7 +2,9 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::prelude::AdwDialogExt;
 use gtk::{
-    TemplateChild, glib,
+    TemplateChild,
+    ffi::GTK_INVALID_LIST_POSITION,
+    glib,
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -198,12 +200,7 @@ impl UnitFilePanelImp {
             return;
         }
 
-        let binding = self.unit.borrow();
-        let Some(unit) = binding.as_ref() else {
-            warn!("No unit to present");
-            self.set_editor_text("");
-            return;
-        };
+        let unit = get_unit!(self);
 
         let object_path = unit.object_path();
         let level = unit.dbus_level();
@@ -298,6 +295,8 @@ impl UnitFilePanelImp {
                 .build();
             self.file_dropin_selector.add(toggle);
         }
+
+        self.set_visible();
     }
 
     fn file_dropin_selector_activate(&self, selected_index: u32) {
@@ -326,8 +325,13 @@ impl UnitFilePanelImp {
         buf.set_text(file_content);
 
         self.save_button.remove_css_class(SUGGESTED_ACTION);
+        self.set_visible();
+    }
 
-        let panel = if file_content.is_empty() {
+    fn set_visible(&self) {
+        let file_path = self.unit.borrow().as_ref().and_then(|u| u.file_path());
+
+        let panel = if file_path.is_none() && self.drop_in_files.borrow().is_empty() {
             PANEL_EMPTY
         } else {
             PANEL_FILE
@@ -513,8 +517,11 @@ impl ObjectImpl for UnitFilePanelImp {
         let unit_file_panel = self.obj().clone();
         self.file_dropin_selector.connect_active_notify(move |tg| {
             let selected = tg.active();
-            info!("active file {selected}");
+            if selected == GTK_INVALID_LIST_POSITION {
+                return;
+            }
 
+            info!("unit file or drop in: {selected}");
             unit_file_panel
                 .imp()
                 .file_dropin_selector_activate(selected)
