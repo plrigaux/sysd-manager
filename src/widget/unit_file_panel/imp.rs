@@ -24,6 +24,7 @@ use crate::{
     consts::{ADWAITA, SUGGESTED_ACTION},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
+    upgrade,
     utils::font_management::set_text_view_font_display,
     widget::{
         InterPanelMessage,
@@ -43,8 +44,6 @@ pub struct UnitFilePanelImp {
     #[template_child]
     save_button: TemplateChild<gtk::Button>,
 
-    /*    #[template_child]
-    unit_file_text: TemplateChild<gtk::TextView>, */
     unit_file_text: OnceCell<sourceview5::View>,
 
     sourceview5_buffer: OnceCell<sourceview5::Buffer>,
@@ -344,7 +343,7 @@ impl UnitFilePanelImp {
         buf.set_text(""); //To clear current
         buf.set_text(file_content);
 
-        self.save_button.remove_css_class(SUGGESTED_ACTION);
+        self.save_button.set_sensitive(false);
         self.set_visible();
     }
 
@@ -510,12 +509,21 @@ impl ObjectImpl for UnitFilePanelImp {
         view.set_wrap_mode(gtk::WrapMode::WordChar);
 
         self.unit_file_scrolled_window.set_child(Some(&view));
+
+        self.save_button.add_css_class(SUGGESTED_ACTION);
+        self.save_button.set_sensitive(false);
         {
             let buffer = view.buffer();
 
-            let save_button = self.save_button.clone();
-            buffer.connect_begin_user_action(move |_buf| {
-                save_button.add_css_class(SUGGESTED_ACTION);
+            let save_button = self.save_button.downgrade();
+            let unit_file_panel = self.obj().downgrade();
+            buffer.connect_end_user_action(move |_buf| {
+                let save_button = upgrade!(save_button);
+
+                let unit_file_panel = upgrade!(unit_file_panel);
+
+                let allow_save_condition = unit_file_panel.imp().file_displayed.borrow().is_some(); //TODO check is the text has really changed
+                save_button.set_sensitive(allow_save_condition);
             });
         }
 
