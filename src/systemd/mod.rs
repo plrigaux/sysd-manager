@@ -225,35 +225,47 @@ pub fn disable_unit_files(
     sysdbus::disable_unit_files(level, &[unit_file], flags)
 }
 
+pub async fn fetch_drop_in_paths(
+    level: UnitDBusLevel,
+    unit_name: &str,
+) -> Result<Vec<String>, SystemdErrors> {
+    sysdbus::fetch_drop_in_paths(level, unit_name).await
+}
 /// Read the unit file and return it's contents so that we can display it
-pub fn get_unit_file_info(unit: &UnitInfo) -> Result<String, SystemdErrors> {
-    let Some(file_path) = &unit.file_path() else {
-        warn!("No file path for {:?}", unit.primary());
+pub fn get_unit_file_info(
+    file_path: Option<&str>,
+    unit_primary_name: &str,
+) -> Result<String, SystemdErrors> {
+    let Some(file_path) = file_path else {
+        warn!("No file path for {:?}", unit_primary_name);
         return Ok(String::new());
     };
 
     if cfg!(feature = "flatpak") {
-        flatpak_file_open_get_content(file_path, unit)
+        flatpak_file_open_get_content(file_path, unit_primary_name)
     } else {
         //#[cfg(not(feature = "flatpak"))]
-        file_open_get_content(file_path, unit)
+        file_open_get_content(file_path, unit_primary_name)
     }
 }
 
 fn flatpak_file_open_get_content(
     file_path: &str,
-    unit: &UnitInfo,
+    unit_primary_name: &str,
 ) -> Result<String, SystemdErrors> {
-    match file_open_get_content(file_path, unit) {
+    match file_open_get_content(file_path, unit_primary_name) {
         Ok(content) => Ok(content),
-        Err(_) => file_open_get_content_cat(file_path, unit),
+        Err(_) => file_open_get_content_cat(file_path, unit_primary_name),
     }
 }
 
-fn file_open_get_content_cat(file_path: &str, unit: &UnitInfo) -> Result<String, SystemdErrors> {
+fn file_open_get_content_cat(
+    file_path: &str,
+    unit_primary_name: &str,
+) -> Result<String, SystemdErrors> {
     info!(
         "Flatpack Fetching file content Unit: {} File \"{file_path}\"",
-        unit.primary()
+        unit_primary_name
     );
     //Use the REAL path because try to acceess through the 'cat' command
     match commander_output(&["cat", file_path], None) {
@@ -271,13 +283,16 @@ fn file_open_get_content_cat(file_path: &str, unit: &UnitInfo) -> Result<String,
     }
 }
 
-fn file_open_get_content(file_path: &str, unit: &UnitInfo) -> Result<String, SystemdErrors> {
+fn file_open_get_content(
+    file_path: &str,
+    unit_primary_name: &str,
+) -> Result<String, SystemdErrors> {
     //To get the relative path from a Flatpack
     let file_path = flatpak_host_file_path(file_path);
 
     info!(
         "Fetching file content Unit: {} File: {file_path}",
-        unit.primary()
+        unit_primary_name
     );
 
     let mut file = File::open(file_path.as_ref()).map_err(|e| {

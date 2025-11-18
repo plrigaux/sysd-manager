@@ -54,6 +54,9 @@ pub struct UnitFilePanelImp {
     #[template_child]
     panel_file_stack: TemplateChild<adw::ViewStack>,
 
+    #[template_child]
+    file_dropin_selector: TemplateChild<adw::ToggleGroup>,
+
     app_window: OnceCell<AppWindow>,
 
     visible_on_page: Cell<bool>,
@@ -63,6 +66,10 @@ pub struct UnitFilePanelImp {
     is_dark: Cell<bool>,
 
     unit_dependencies_loaded: Cell<bool>,
+
+    drop_in_files: RefCell<Vec<String>>,
+
+    file_content_selected_index: Cell<u32>,
 }
 
 macro_rules! get_buffer {
@@ -134,6 +141,17 @@ impl UnitFilePanelImp {
     }
 }
 
+macro_rules! get_unit {
+    ($self:expr) => {{
+        let binding = $self.unit.borrow();
+        let Some(unit) = binding.as_ref() else {
+            warn!("No unit to present");
+            $self.set_editor_text("");
+            return;
+        };
+        unit.clone()
+    }};
+}
 impl UnitFilePanelImp {
     fn add_toast_message(&self, message: &str, markup: bool) {
         if let Some(app_window) = self.app_window.get() {
@@ -149,7 +167,7 @@ impl UnitFilePanelImp {
             && !self.unit_dependencies_loaded.get()
             && self.unit.borrow().is_some()
         {
-            self.set_file_content()
+            self.set_file_content_init()
         }
     }
 
@@ -157,8 +175,9 @@ impl UnitFilePanelImp {
         let unit = match unit {
             Some(u) => u,
             None => {
+                self.file_content_selected_index.set(0);
                 self.unit.replace(None);
-                self.set_file_content();
+                self.set_file_content_init();
                 return;
             }
         };
@@ -170,28 +189,61 @@ impl UnitFilePanelImp {
             self.unit_dependencies_loaded.set(false)
         }
 
-        self.set_file_content()
+        self.file_content_selected_index.set(0);
+        self.set_file_content_init()
     }
 
-    pub fn set_file_content(&self) {
+    pub fn set_file_content_init(&self) {
         if !self.visible_on_page.get() {
             return;
         }
 
         let binding = self.unit.borrow();
-        let Some(unit_ref) = binding.as_ref() else {
+        let Some(unit) = binding.as_ref() else {
             warn!("No unit to present");
-            self.set_text("");
-
+            self.set_editor_text("");
             return;
         };
 
-        let file_content = systemd::get_unit_file_info(unit_ref).unwrap_or_else(|e| {
-            warn!("get_unit_file_info Error: {e:?}");
-            "".to_owned()
+        let object_path = unit.object_path();
+        let level = unit.dbus_level();
+
+        let unit_file_panel = self.obj().clone();
+        glib::spawn_future_local(async move {
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+
+            crate::systemd::runtime().spawn(async move {
+                let response = systemd::fetch_drop_in_paths(level, &object_path).await;
+
+                sender
+                    .send(response)
+                    .expect("The channel needs to be open.")
+            });
+
+            match receiver.await.expect("Tokio receiver works") {
+                Ok(drop_in_files) => {
+                    unit_file_panel.imp().drop_in_files.replace(drop_in_files);
+                    unit_file_panel.imp().set_dropins();
+                }
+                Err(err) => {
+                    warn!("Fail to update Unit info {err:?}");
+                }
+            };
         });
 
-        let file_path = unit_ref.file_path().map_or("".to_owned(), |a| a);
+        let file_path = unit.file_path();
+        let primary = unit.primary();
+        self.display_unit_file_content(file_path, &primary);
+    }
+
+    fn display_unit_file_content(&self, file_path: Option<String>, primary: &str) {
+        let file_content = systemd::get_unit_file_info(file_path.as_deref(), primary)
+            .unwrap_or_else(|e| {
+                warn!("get_unit_file_info Error: {e:?}");
+                "".to_owned()
+            });
+
+        let file_path = file_path.unwrap_or_default();
 
         let uri = generate_file_uri(&file_path);
 
@@ -199,10 +251,71 @@ impl UnitFilePanelImp {
 
         self.file_link.set_label(&file_path);
 
-        self.set_text(&file_content);
+        self.set_editor_text(&file_content);
     }
 
-    fn set_text(&self, file_content: &str) {
+    fn display_unit_drop_in_file_content(&self, drop_in_index: u32) {
+        let drop_in_files = self.drop_in_files.borrow();
+
+        let Some(file_path) = drop_in_files.get(drop_in_index as usize) else {
+            warn!(
+                "Drop in index out of bound requested: {drop_in_index} max: {}",
+                drop_in_files.len()
+            );
+            self.set_editor_text("");
+            return;
+        };
+
+        let unit = get_unit!(self);
+        let primary = unit.primary();
+        self.display_unit_file_content(Some(file_path.to_owned()), &primary);
+    }
+
+    fn set_dropins(&self) {
+        let drop_in_files = self.drop_in_files.borrow();
+        self.file_dropin_selector.remove_all();
+
+        if drop_in_files.is_empty() {
+            return;
+        }
+
+        let toggle = adw::Toggle::builder()
+            .label("Unit File")
+            .name("file")
+            .build();
+        self.file_dropin_selector.add(toggle);
+
+        for (idx, drop_in_file) in drop_in_files.iter().enumerate() {
+            let label = if drop_in_files.len() > 1 {
+                format!("Drop In {idx}")
+            } else {
+                "Drop In".to_owned()
+            };
+            let toggle = adw::Toggle::builder()
+                .label(label)
+                .name(format!("dropin {idx}"))
+                .tooltip(drop_in_file)
+                .build();
+            self.file_dropin_selector.add(toggle);
+        }
+    }
+
+    fn file_dropin_selector_activate(&self, selected_index: u32) {
+        if self.file_content_selected_index.get() == selected_index {
+            return;
+        }
+
+        self.file_content_selected_index.set(selected_index);
+
+        if selected_index == 0 {
+            let unit = get_unit!(self);
+            self.display_unit_file_content(unit.file_path(), &unit.primary());
+        } else {
+            self.display_unit_drop_in_file_content(selected_index - 1);
+        }
+    }
+
+    fn set_editor_text(&self, file_content: &str) {
         let buf = self
             .unit_file_text
             .get()
@@ -314,7 +427,7 @@ impl UnitFilePanelImp {
 
     pub(super) fn refresh_panels(&self) {
         if self.visible_on_page.get() {
-            self.set_file_content()
+            self.set_file_content_init()
         }
     }
 
@@ -390,7 +503,22 @@ impl ObjectImpl for UnitFilePanelImp {
             .expect("unit_file_text set once");
 
         let unit_file_line_number = PREFERENCES.unit_file_line_number();
-        self.set_line_number(unit_file_line_number)
+        self.set_line_number(unit_file_line_number);
+
+        self.file_dropin_selector.connect_n_toggles_notify(|tg| {
+            let selected = tg.active();
+            info!("selected file {selected}");
+        });
+
+        let unit_file_panel = self.obj().clone();
+        self.file_dropin_selector.connect_active_notify(move |tg| {
+            let selected = tg.active();
+            info!("active file {selected}");
+
+            unit_file_panel
+                .imp()
+                .file_dropin_selector_activate(selected)
+        });
     }
 }
 impl WidgetImpl for UnitFilePanelImp {}

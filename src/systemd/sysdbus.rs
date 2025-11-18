@@ -343,6 +343,9 @@ trait ZUnitInfo {
 
     #[zbus(property)]
     fn unit_file_preset(&self) -> Result<String, zbus::Error>;
+
+    #[zbus(property)]
+    fn drop_in_paths(&self) -> Result<Vec<String>, zbus::Error>;
 }
 
 macro_rules! get_completing_info {
@@ -1447,6 +1450,22 @@ pub async fn fetch_unit_properties(
     debug!("fetched property value {:?}", property_value);
 
     Ok(property_value)
+}
+
+pub async fn fetch_drop_in_paths(
+    level: UnitDBusLevel,
+    object_path: &str,
+) -> Result<Vec<String>, SystemdErrors> {
+    let connection = get_connection(level).await?;
+
+    let unit_info_proxy = ZUnitInfoProxy::builder(&connection)
+        .path(object_path)?
+        .build()
+        .await?;
+
+    let drop_in_paths = unit_info_proxy.drop_in_paths().await?;
+
+    Ok(drop_in_paths)
 }
 
 #[allow(unused)]

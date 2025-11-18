@@ -2,10 +2,10 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.1 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="93800ee9098cd73f0a5bab3dd81154024ce7be90b434874aab380a3d94e8561d"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="1cdc270162d0c95ec2b33a2aad16e95243ee8de7eaef0a97d0a241f9d1c721fc"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="52de4a8c820fedbc8a6eff2216b9d203305d7d630049288f356ca49310d1dd3a"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="b51b8de5883468c775b38876e7f9e5e4b06c3e17a2c94cf191dd903befa8a3c5"/>
-  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="c1a5a2752f692e1c4beebc08065ca873450d8965913825a1aa6e63bd162201c2"/>
+  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="7784a69e1a74663f05082771d7a1694544ab8dc6d68d3e1ea953e837c764f4ba"/>
   <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="7381d9cffa2c5ea5c0b5d683b1ebb46f8dc04e1e9877c9749a2ab480da8cc156"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="494ba469fc1ba0d3bcf680f3082fecd5cf3c0c3a237ea806f450c0c52778afb5"/>
