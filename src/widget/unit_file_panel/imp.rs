@@ -1,6 +1,7 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::prelude::AdwDialogExt;
+use gettextrs::pgettext;
 use gtk::{
     TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
@@ -21,6 +22,7 @@ use sourceview5::{Buffer, prelude::*};
 
 use crate::{
     consts::{ADWAITA, SUGGESTED_ACTION},
+    format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     utils::font_management::set_text_view_font_display,
     widget::{
@@ -72,6 +74,8 @@ pub struct UnitFilePanelImp {
     drop_in_files: RefCell<Vec<String>>,
 
     file_content_selected_index: Cell<u32>,
+
+    file_displayed: RefCell<Option<String>>,
 }
 
 macro_rules! get_buffer {
@@ -107,15 +111,28 @@ impl UnitFilePanelImp {
         let end = buffer.end_iter();
         let text = buffer.text(&start, &end, true);
 
-        match systemd::save_text_to_file(unit, &text) {
+        let file_path = self.file_displayed.borrow();
+
+        let Some(file_path) = file_path.as_deref() else {
+            warn!("No file path to save");
+            return;
+        };
+
+        match systemd::save_text_to_file(file_path, &text) {
             Ok((file_path, _bytes_written)) => {
                 button.remove_css_class(SUGGESTED_ACTION);
-                let msg = format!("File <u>{file_path}</u> saved successfully!");
+
+                //File saving success message
+                let msg = pgettext("file", "File {} saved successfully!");
+                let file_path_format = format!("<u>{file_path}</u>");
+                let msg = format2!(msg, file_path_format);
+
                 self.add_toast_message(&msg, true);
             }
             Err(error) => {
                 warn!(
-                    "Unable to save file: {:?}, Error {:?}",
+                    "Unit {:?}, Unable to save file: {:?}, Error {:?}",
+                    unit.primary(),
                     unit.file_path(),
                     error
                 );
@@ -234,19 +251,22 @@ impl UnitFilePanelImp {
     }
 
     fn display_unit_file_content(&self, file_path: Option<String>, primary: &str) {
-        let file_content = systemd::get_unit_file_info(file_path.as_deref(), primary)
-            .unwrap_or_else(|e| {
-                warn!("get_unit_file_info Error: {e:?}");
-                "".to_owned()
-            });
+        self.file_displayed.replace(file_path);
+
+        let binding = self.file_displayed.borrow();
+        let file_path = binding.as_deref();
+        let file_content = systemd::get_unit_file_info(file_path, primary).unwrap_or_else(|e| {
+            warn!("get_unit_file_info Error: {e:?}");
+            "".to_owned()
+        });
 
         let file_path = file_path.unwrap_or_default();
 
-        let uri = generate_file_uri(&file_path);
+        let uri = generate_file_uri(file_path);
 
         self.file_link.set_uri(&uri);
 
-        self.file_link.set_label(&file_path);
+        self.file_link.set_label(file_path);
 
         self.set_editor_text(&file_content);
     }

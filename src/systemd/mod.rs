@@ -432,25 +432,20 @@ pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &s
 }
 
 pub fn save_text_to_file(
-    unit: &UnitInfo,
+    file_path: &str,
     text: &GString,
 ) -> Result<(String, usize), SystemdErrors> {
-    let Some(file_path) = &unit.file_path() else {
-        error!("No file path for {}", unit.primary());
-        return Err(SystemdErrors::NoFilePathforUnit(unit.primary().to_string()));
-    };
-
     let host_file_path = flatpak_host_file_path(file_path);
     info!("Try to save content on File: {host_file_path}");
     match write_on_disk(text, &host_file_path) {
-        Ok(bytes_written) => Ok((file_path.clone(), bytes_written)),
+        Ok(bytes_written) => Ok((file_path.to_owned(), bytes_written)),
         Err(error) => {
             if let SystemdErrors::IoError(ref err) = error {
                 match err.kind() {
                     ErrorKind::PermissionDenied => {
                         info!("Some error : {err}, try executing command as another user");
                         write_with_priviledge(file_path, host_file_path, text)
-                            .map(|bytes_written| (file_path.clone(), bytes_written))
+                            .map(|bytes_written| (file_path.to_owned(), bytes_written))
                     }
                     _ => {
                         warn!("Unable to open file: {err:?}");
@@ -480,11 +475,11 @@ fn write_on_disk(text: &GString, file_path: &str) -> Result<usize, SystemdErrors
 }
 
 fn write_with_priviledge(
-    file_path: &String,
+    file_path: &str,
     _host_file_path: Cow<'_, str>,
     text: &GString,
 ) -> Result<usize, SystemdErrors> {
-    let prog_n_args = &["pkexec", "tee", "tee", file_path.as_str()];
+    let prog_n_args = &["pkexec", "tee", "tee", file_path];
     let mut cmd = commander(prog_n_args, None);
     let mut child = cmd
         .stdin(Stdio::piped())
