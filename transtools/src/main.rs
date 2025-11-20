@@ -126,7 +126,7 @@ fn execute_command(args: Args) -> Result<(), TransError> {
             update_po_file(lang)
         }
         Some(Commands::Extract { no_gen }) => {
-            if *no_gen {
+            if !*no_gen {
                 generate_potfiles()?
             }
             extract_and_generate_po_template()
