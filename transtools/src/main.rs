@@ -35,7 +35,7 @@ enum Commands {
         no_gen: bool,
     },
 
-    /// Generate the POTFILES. i.e. the file containign the list of source files used for the translation text extraction
+    /// Generate the POTFILES. i.e. the file containing the list of source files used for the translation text extraction
     Potfile,
 
     /// Update po files
