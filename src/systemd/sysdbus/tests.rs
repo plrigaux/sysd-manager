@@ -1,3 +1,4 @@
+use tokio::net::TcpStream;
 use zvariant::Value;
 
 use super::*;
@@ -36,6 +37,31 @@ async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
 
     let level = UnitDBusLevel::System;
     let connection = get_connection(level).await?;
+    let unit_files = list_unit_files_async(connection, level).await?;
+
+    info!("Unit file returned {}", unit_files.len());
+
+    for (idx, unit_file) in unit_files.iter().enumerate() {
+        debug!("{idx} - {}", unit_file.full_name);
+        debug!("{}", unit_file.path);
+    }
+
+    Ok(())
+}
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_list_unit_files_remote() -> Result<(), SystemdErrors> {
+    init();
+
+    let stream = TcpStream::connect("192.168.0.114:22").await?;
+    // let stream = UnixStream::connect("plr@192.168.0.114").await?;
+    let connection = zbus::connection::Builder::tcp_stream(stream)
+        .auth_mechanism(zbus::AuthMechanism::External)
+        .build()
+        .await?;
+
+    let level = UnitDBusLevel::System;
     let unit_files = list_unit_files_async(connection, level).await?;
 
     info!("Unit file returned {}", unit_files.len());

@@ -295,18 +295,25 @@ impl UnitFilePanelImp {
             return;
         }
 
+        //Unit file / Drop-Ins selector
+        let label_text = pgettext("file", "Unit File");
+
         let toggle = adw::Toggle::builder()
-            .label("Unit File")
+            .label(label_text)
             .name("file")
             .build();
         self.file_dropin_selector.add(toggle);
 
         for (idx, drop_in_file) in drop_in_files.iter().enumerate() {
+            //Unit file / Drop-Ins selector
+            let label_text = pgettext("file", "Drop In");
+
             let label = if drop_in_files.len() > 1 {
-                format!("Drop In {idx}")
+                format!("{label_text} {idx}")
             } else {
-                "Drop In".to_owned()
+                label_text
             };
+
             let toggle = adw::Toggle::builder()
                 .label(label)
                 .name(format!("dropin {idx}"))
@@ -315,7 +322,7 @@ impl UnitFilePanelImp {
             self.file_dropin_selector.add(toggle);
         }
 
-        self.set_visible();
+        self.set_visible_child_panel();
     }
 
     fn file_dropin_selector_activate(&self, selected_index: u32) {
@@ -344,10 +351,10 @@ impl UnitFilePanelImp {
         buf.set_text(file_content);
 
         self.save_button.set_sensitive(false);
-        self.set_visible();
+        self.set_visible_child_panel();
     }
 
-    fn set_visible(&self) {
+    fn set_visible_child_panel(&self) {
         let file_path = self.unit.borrow().as_ref().and_then(|u| u.file_path());
 
         let panel = if file_path.is_none() && self.drop_in_files.borrow().is_empty() {
@@ -494,6 +501,8 @@ impl ObjectSubclass for UnitFilePanelImp {
 impl ObjectImpl for UnitFilePanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        self.set_visible_child_panel();
 
         let buffer = sourceview5::Buffer::new(None);
 
