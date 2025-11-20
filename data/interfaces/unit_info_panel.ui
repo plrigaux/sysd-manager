@@ -10,6 +10,9 @@
     <property name="vexpand-set">True</property>
     <child>
       <object class="GtkBox">
+        <property name="margin-bottom">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-start">5</property>
         <property name="spacing">5</property>
         <child>
           <object class="GtkButton" id="refresh_button">

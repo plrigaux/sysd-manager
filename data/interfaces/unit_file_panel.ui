@@ -18,11 +18,12 @@
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox">
+                    <property name="margin-bottom">5</property>
                     <child>
                       <object class="AdwToggleGroup" id="file_dropin_selector">
                         <child>
                           <object class="AdwToggle">
-                            <property name="label">Unit File</property>
+                            <property name="label" context="file" comments="Unit file / Drop-Ins selector">Unit File</property>
                             <property name="name">file</property>
                           </object>
                         </child>
@@ -81,7 +82,7 @@
               <object class="AdwStatusPage">
                 <property name="description" translatable="yes" context="file" comments="description">The  unit has no file associated</property>
                 <property name="icon-name">unreadable-symbolic</property>
-                <property name="title" translatable="yes" context="file" comments="title">No unit file</property>
+                <property name="title" translatable="yes" context="file" comments="title">No Unit File</property>
               </object>
             </property>
             <property name="name">empty</property>
