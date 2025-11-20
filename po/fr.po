@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-20 09:53-0500\n"
-"PO-Revision-Date: 2025-11-04 14:05+0000\n"
-"Last-Translator: p-sage <p-sage@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2025-11-20 15:24+0000\n"
+"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -570,22 +570,21 @@ msgstr "Masquer les totaux"
 
 #. group
 #: data/interfaces/preferences.ui:100
-#, fuzzy
 msgctxt "preference"
 msgid "Unit Description"
-msgstr "Description"
+msgstr "Description de l'unité"
 
 #. subtitle
 #: data/interfaces/preferences.ui:103
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
-msgstr ""
+msgstr "Renvoie automatique des lignes de text de la description de l'unité"
 
 #. title
 #: data/interfaces/preferences.ui:104
 msgctxt "preference"
 msgid "Wrap unit description text"
-msgstr ""
+msgstr "Renvoie automatique du text"
 
 #. group
 #: data/interfaces/preferences.ui:111
@@ -1044,10 +1043,9 @@ msgstr "L'unité n'a aucun fichier associé"
 
 #. title
 #: data/interfaces/unit_file_panel.ui:85
-#, fuzzy
 msgctxt "file"
 msgid "No Unit File"
-msgstr "Fichier de l'unité"
+msgstr "Pas de fichier pour l'unité"
 
 #. button
 #: data/interfaces/unit_info_panel.ui:22
@@ -1063,7 +1061,6 @@ msgstr "Afficher tout les propriétés"
 
 #. Unit property filter button
 #: data/interfaces/unit_list_filter.ui:51
-#, fuzzy
 msgid "Clear Filters"
 msgstr "Supprimer les filtres"
 
@@ -2292,14 +2289,13 @@ msgstr "<b>Option 3:</b> Dans votre terminal, exécutez la commande: <u>{}</u>"
 
 #. File saving success message
 #: src/widget/unit_file_panel/imp.rs:125
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
-msgstr "{} réussi."
+msgstr "Fichier {} enregistré avec succès!"
 
 #. Unit file / Drop-Ins selector
 #: src/widget/unit_file_panel/imp.rs:299
-#, fuzzy
 msgctxt "file"
 msgid "Unit File"
 msgstr "Fichier de l'unité"
@@ -2308,7 +2304,7 @@ msgstr "Fichier de l'unité"
 #: src/widget/unit_file_panel/imp.rs:309
 msgctxt "file"
 msgid "Drop In"
-msgstr ""
+msgstr "Drop In"
 
 #: src/widget/unit_list/filter/imp.rs:347
 msgctxt "filter"
