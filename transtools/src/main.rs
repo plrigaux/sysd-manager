@@ -30,7 +30,7 @@ struct Args {
 enum Commands {
     /// Extract translation text form code and generate a Portable Object Template (pot) file
     Extract {
-        // Donot regenerate the Potfile list
+        /// Do not regenerate the Potfile list
         #[arg(short, long)]
         no_gen: bool,
     },
@@ -118,7 +118,7 @@ fn execute_command(args: Args) -> Result<(), TransError> {
         Some(Commands::Po { lang }) => update_po_file(lang),
         Some(Commands::Newpo { lang }) => generate_po_file(lang),
         Some(Commands::Expo { lang, no_gen }) => {
-            if *no_gen {
+            if !*no_gen {
                 generate_potfiles()?
             }
             extract_and_generate_po_template()?;

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-03 12:14-0500\n"
+"POT-Creation-Date: 2025-11-20 09:53-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -553,53 +553,71 @@ msgstr ""
 #. group
 #: data/interfaces/preferences.ui:100
 msgctxt "preference"
-msgid "Unit File"
+msgid "Unit Description"
 msgstr ""
 
 #. subtitle
 #: data/interfaces/preferences.ui:103
 msgctxt "preference"
-msgid "Display unit file line number"
+msgid "Wrap the unit description long text lines"
 msgstr ""
 
 #. title
 #: data/interfaces/preferences.ui:104
 msgctxt "preference"
-msgid "Line number"
+msgid "Wrap unit description text"
+msgstr ""
+
+#. group
+#: data/interfaces/preferences.ui:111
+msgctxt "preference"
+msgid "Unit File"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:115
+#: data/interfaces/preferences.ui:114
 msgctxt "preference"
-msgid "Unit file highlight style"
+msgid "Display unit file line number"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:116
+#: data/interfaces/preferences.ui:115
 msgctxt "preference"
-msgid "Text Highlight"
+msgid "Line number"
 msgstr ""
 
 #. subtitle
 #: data/interfaces/preferences.ui:126
 msgctxt "preference"
-msgid "To see the logs in color"
+msgid "Unit file highlight style"
 msgstr ""
 
 #. title
 #: data/interfaces/preferences.ui:127
 msgctxt "preference"
+msgid "Text Highlight"
+msgstr ""
+
+#. subtitle
+#: data/interfaces/preferences.ui:137
+msgctxt "preference"
+msgid "To see the logs in color"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:138
+msgctxt "preference"
 msgid "Journal colors"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:148
+#: data/interfaces/preferences.ui:159
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:161
+#: data/interfaces/preferences.ui:172
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -607,13 +625,13 @@ msgid ""
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:164
+#: data/interfaces/preferences.ui:175
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr ""
 
 #. dialog
-#: data/interfaces/preferences.ui:178
+#: data/interfaces/preferences.ui:189
 msgctxt "preference"
 msgid "Preferences"
 msgstr ""
@@ -687,56 +705,56 @@ msgid "Show unit properties"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:18
+#: data/interfaces/side_control_panel.ui:22
 msgctxt "control"
 msgid "Enable Unit File ➚"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:35
+#: data/interfaces/side_control_panel.ui:39
 msgctxt "control"
 msgid "_Disable Unit File ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:36
-#: data/interfaces/side_control_panel.ui:141
+#: data/interfaces/side_control_panel.ui:40
+#: data/interfaces/side_control_panel.ui:145
 msgctxt "control"
 msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:48
+#: data/interfaces/side_control_panel.ui:52
 msgctxt "control"
 msgid "Send _Kill Signal ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:49
+#: data/interfaces/side_control_panel.ui:53
 msgctxt "control"
 msgid "Send a signal to a process or a group of processes"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:63
+#: data/interfaces/side_control_panel.ui:67
 msgctxt "control"
 msgid "_Queue Signal ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:64
+#: data/interfaces/side_control_panel.ui:68
 msgctxt "control"
 msgid "Queue a signal to a process or a group of processes"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:78
+#: data/interfaces/side_control_panel.ui:82
 msgctxt "control"
 msgid "_Clean ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:79
+#: data/interfaces/side_control_panel.ui:83
 msgctxt "control"
 msgid ""
 "Remove the configuration, state, cache, logs or runtime data of the "
@@ -744,31 +762,31 @@ msgid ""
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:96
+#: data/interfaces/side_control_panel.ui:100
 msgctxt "control"
 msgid "Freeze the specified unit using cgroup freezer"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:109
+#: data/interfaces/side_control_panel.ui:113
 msgctxt "control"
 msgid "Thaw"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:110
+#: data/interfaces/side_control_panel.ui:114
 msgctxt "control"
 msgid "Thaw (unfreeze) the specified unit"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:123
+#: data/interfaces/side_control_panel.ui:127
 msgctxt "control"
 msgid "M_ask ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:124
+#: data/interfaces/side_control_panel.ui:128
 msgctxt "control"
 msgid ""
 "Mask the selected unit. This will link these unit files to <u>/dev/null</u>, "
@@ -779,43 +797,43 @@ msgid ""
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:140
+#: data/interfaces/side_control_panel.ui:144
 msgctxt "control"
 msgid "_UnMask"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:156
+#: data/interfaces/side_control_panel.ui:160
 msgctxt "control"
 msgid "Reload Unit"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:157
+#: data/interfaces/side_control_panel.ui:161
 msgctxt "control"
 msgid "Ask the specified unit to reload its configuration"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:170
+#: data/interfaces/side_control_panel.ui:174
 msgctxt "control"
 msgid "_Preset ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:171
+#: data/interfaces/side_control_panel.ui:175
 msgctxt "control"
 msgid "Enable or Disable one or more unit files according to the preset policy"
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:185
+#: data/interfaces/side_control_panel.ui:189
 msgctxt "control"
 msgid "_Reenable ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:186
+#: data/interfaces/side_control_panel.ui:190
 msgctxt "control"
 msgid ""
 "Apply the changes to one or more units that would result from disabling and "
@@ -823,13 +841,13 @@ msgid ""
 msgstr ""
 
 #. button
-#: data/interfaces/side_control_panel.ui:200
+#: data/interfaces/side_control_panel.ui:204
 msgctxt "control"
 msgid "_Link ➚"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/side_control_panel.ui:201
+#: data/interfaces/side_control_panel.ui:205
 msgctxt "control"
 msgid ""
 "Link unit files (that are located outside of the usual unit search paths) "
@@ -964,39 +982,44 @@ msgid "No dependencies"
 msgstr ""
 
 #. label
-#: data/interfaces/unit_file_panel.ui:18
+#: data/interfaces/unit_file_panel.ui:48
 msgctxt "file"
 msgid "File path:"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_file_panel.ui:35
+#: data/interfaces/unit_file_panel.ui:65
 msgctxt "file"
 msgid "Save"
 msgstr ""
 
 #. description
-#: data/interfaces/unit_file_panel.ui:63
+#: data/interfaces/unit_file_panel.ui:83
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr ""
 
 #. title
-#: data/interfaces/unit_file_panel.ui:65
+#: data/interfaces/unit_file_panel.ui:85
 msgctxt "file"
-msgid "No unit file"
+msgid "No Unit File"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_info_panel.ui:19
+#: data/interfaces/unit_info_panel.ui:22
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_info_panel.ui:32
+#: data/interfaces/unit_info_panel.ui:35
 msgctxt "unit info"
 msgid "Show all _Properties"
+msgstr ""
+
+#. Unit property filter button
+#: data/interfaces/unit_list_filter.ui:51
+msgid "Clear Filters"
 msgstr ""
 
 #: data/interfaces/unit_list_panel.ui:40
@@ -1069,12 +1092,12 @@ msgctxt "unit search"
 msgid "Columns"
 msgstr ""
 
-#: data/interfaces/unit_list_search.ui:29
+#: data/interfaces/unit_list_search.ui:30
 msgctxt "unit search"
 msgid "Filters"
 msgstr ""
 
-#: data/interfaces/unit_list_search.ui:36
+#: data/interfaces/unit_list_search.ui:37
 msgctxt "unit search"
 msgid "Clear Filters"
 msgstr ""
@@ -1174,24 +1197,24 @@ msgstr ""
 msgid "Program starting up"
 msgstr ""
 
-#: src/systemd/enums.rs:167
+#: src/systemd/enums.rs:168
 msgctxt "list"
 msgid "The name is an alias (symlink to another unit file)."
 msgstr ""
 
-#: src/systemd/enums.rs:172
+#: src/systemd/enums.rs:173
 msgctxt "list"
 msgid "The unit file is invalid or another error occurred."
 msgstr ""
 
-#: src/systemd/enums.rs:177
+#: src/systemd/enums.rs:178
 msgctxt "list"
 msgid ""
 "The unit file is not enabled, but contains an [Install] section with "
 "installation instructions."
 msgstr ""
 
-#: src/systemd/enums.rs:182 src/systemd/enums.rs:219
+#: src/systemd/enums.rs:183 src/systemd/enums.rs:220
 msgctxt "list"
 msgid ""
 "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span "
@@ -1200,7 +1223,7 @@ msgid ""
 "<span fgcolor='#62a0ea'>/run/systemd/system/</span>)."
 msgstr ""
 
-#: src/systemd/enums.rs:187
+#: src/systemd/enums.rs:188
 msgctxt "list"
 msgid ""
 "The unit file was generated dynamically via a generator tool. See <b>man "
@@ -1208,7 +1231,7 @@ msgid ""
 "enabled implicitly by their generator."
 msgstr ""
 
-#: src/systemd/enums.rs:192
+#: src/systemd/enums.rs:193
 msgctxt "list"
 msgid ""
 "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> "
@@ -1219,7 +1242,7 @@ msgid ""
 "enabled."
 msgstr ""
 
-#: src/systemd/enums.rs:197 src/systemd/enums.rs:224
+#: src/systemd/enums.rs:198 src/systemd/enums.rs:225
 msgctxt "list"
 msgid ""
 "Made available through one or more symlinks to the unit file (permanently in "
@@ -1228,7 +1251,7 @@ msgid ""
 "might reside outside of the unit file search path."
 msgstr ""
 
-#: src/systemd/enums.rs:202 src/systemd/enums.rs:229
+#: src/systemd/enums.rs:203 src/systemd/enums.rs:230
 msgctxt "list"
 msgid ""
 "Completely disabled, so that any start operation on it fails (permanently in "
@@ -1236,14 +1259,14 @@ msgid ""
 "fgcolor='#62a0ea'>/run/systemd/systemd/</span>)."
 msgstr ""
 
-#: src/systemd/enums.rs:207
+#: src/systemd/enums.rs:208
 msgctxt "list"
 msgid ""
 "The unit file is not enabled, and has no provisions for enabling in the "
 "[Install] unit file section."
 msgstr ""
 
-#: src/systemd/enums.rs:212
+#: src/systemd/enums.rs:213
 msgctxt "list"
 msgid ""
 "The unit file has been created dynamically with the runtime API. Transient "
@@ -1251,79 +1274,79 @@ msgid ""
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:631
+#: src/systemd/enums.rs:632
 msgctxt "dependency"
 msgid "Forward"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:633
+#: src/systemd/enums.rs:634
 msgctxt "dependency"
 msgid "Reverse"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:635
+#: src/systemd/enums.rs:636
 msgctxt "dependency"
 msgid "After"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:637
+#: src/systemd/enums.rs:638
 msgctxt "dependency"
 msgid "Before"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:808
+#: src/systemd/enums.rs:812
 msgctxt "dbus"
 msgid "User Session"
 msgstr ""
 
 #. menu option
-#: src/systemd/enums.rs:810
+#: src/systemd/enums.rs:814
 msgctxt "dbus"
 msgid "System"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:890
+#: src/systemd/enums.rs:895
 msgctxt "clean"
 msgid "_Runtime"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:892
+#: src/systemd/enums.rs:897
 msgctxt "clean"
 msgid "_State"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:894
+#: src/systemd/enums.rs:899
 msgctxt "clean"
 msgid "Cac_he"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:896
+#: src/systemd/enums.rs:901
 msgctxt "clean"
 msgid "_Logs"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:898
+#: src/systemd/enums.rs:903
 msgctxt "clean"
 msgid "_Configuration"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:900
+#: src/systemd/enums.rs:905
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr ""
 
 #. clean options
-#: src/systemd/enums.rs:902
+#: src/systemd/enums.rs:907
 msgctxt "clean"
 msgid "_All"
 msgstr ""
@@ -1846,127 +1869,74 @@ msgctxt "kill"
 msgid "Equivalent to SIGSYS"
 msgstr ""
 
-#. filter title
-#: src/widget/preferences/data.rs:47
-msgctxt "filter"
-msgid "Unit"
-msgstr ""
-
-#. filter title
-#: src/widget/preferences/data.rs:54
-msgctxt "filter"
-msgid "Type"
-msgstr ""
-
-#: src/widget/preferences/data.rs:60
-msgctxt "filter"
-msgid "Bus"
-msgstr ""
-
-#. filter title
-#: src/widget/preferences/data.rs:67
-msgctxt "filter"
-msgid "State"
-msgstr ""
-
-#. filter title
-#: src/widget/preferences/data.rs:74
-msgctxt "filter"
-msgid "Preset"
-msgstr ""
-
-#. filter title
-#: src/widget/preferences/data.rs:81
-msgctxt "filter"
-msgid "Load"
-msgstr ""
-
-#. filter title
-#: src/widget/preferences/data.rs:88
-msgctxt "filter"
-msgid "Active"
-msgstr ""
-
-#. filter title
-#: src/widget/preferences/data.rs:95
-msgctxt "filter"
-msgid "Sub"
-msgstr ""
-
-#. filter title
-#: src/widget/preferences/data.rs:102
-msgctxt "filter"
-msgid "Description"
-msgstr ""
-
 #. browser dbus option
-#: src/widget/preferences/data.rs:140
+#: src/widget/preferences/data.rs:67
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:142
+#: src/widget/preferences/data.rs:69
 msgctxt "dbus"
 msgid "System Bus"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:144
+#: src/widget/preferences/data.rs:71
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:231
+#: src/widget/preferences/data.rs:158
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:233
+#: src/widget/preferences/data.rs:160
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:235
+#: src/widget/preferences/data.rs:162
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:237
+#: src/widget/preferences/data.rs:164
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:239
+#: src/widget/preferences/data.rs:166
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:285
+#: src/widget/preferences/data.rs:212
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:287
+#: src/widget/preferences/data.rs:214
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:289
+#: src/widget/preferences/data.rs:216
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr ""
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:423
+#: src/widget/preferences/imp.rs:429
 msgctxt "pref file style"
 msgid "None"
 msgstr ""
@@ -2212,30 +2182,49 @@ msgctxt "unit file"
 msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:296
+#. File saving success message
+#: src/widget/unit_file_panel/imp.rs:125
+#, rust-format
+msgctxt "file"
+msgid "File {} saved successfully!"
+msgstr ""
+
+#. Unit file / Drop-Ins selector
+#: src/widget/unit_file_panel/imp.rs:299
+msgctxt "file"
+msgid "Unit File"
+msgstr ""
+
+#. Unit file / Drop-Ins selector
+#: src/widget/unit_file_panel/imp.rs:309
+msgctxt "file"
+msgid "Drop In"
+msgstr ""
+
+#: src/widget/unit_list/filter/imp.rs:347
 msgctxt "filter"
 msgid "Any sub states"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:300
-#: src/widget/unit_list/filter/imp.rs:489
+#: src/widget/unit_list/filter/imp.rs:351
+#: src/widget/unit_list/filter/imp.rs:989
 #: src/widget/unit_list/filter/substate.rs:142
 msgctxt "filter"
 msgid "Clear"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:490
+#: src/widget/unit_list/filter/imp.rs:990
 #: src/widget/unit_list/filter/substate.rs:143
 msgctxt "filter"
 msgid "Clear filter's selected items"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:508
+#: src/widget/unit_list/filter/imp.rs:1008
 msgctxt "filter"
 msgid "Invert"
 msgstr ""
 
-#: src/widget/unit_list/filter/imp.rs:509
+#: src/widget/unit_list/filter/imp.rs:1009
 msgctxt "filter"
 msgid "Invert filter's selected items"
 msgstr ""
