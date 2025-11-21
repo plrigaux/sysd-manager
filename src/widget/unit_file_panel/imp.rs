@@ -2,6 +2,7 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::prelude::AdwDialogExt;
 use gettextrs::pgettext;
+use gio::SimpleAction;
 use gtk::{
     TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
@@ -59,6 +60,9 @@ pub struct UnitFilePanelImp {
 
     #[template_child]
     file_dropin_selector: TemplateChild<adw::ToggleGroup>,
+
+    #[template_child]
+    unit_file_menu: TemplateChild<gio::MenuModel>,
 
     app_window: OnceCell<AppWindow>,
 
@@ -448,9 +452,37 @@ impl UnitFilePanelImp {
     }
 
     pub(crate) fn register(&self, app_window: &AppWindow) {
-        self.app_window
-            .set(app_window.clone())
-            .expect("toast_overlay once");
+        if self.app_window.set(app_window.clone()).is_ok() {
+            let rename_drop_in_file = gio::ActionEntry::builder("rename_drop_in_file")
+                .activate(move |_application: &AppWindow, _b, _target_value| {
+                    info!("call rename_drop_in_file");
+                })
+                .build();
+
+            let create_drop_in_file_runtime =
+                gio::ActionEntry::builder("create_drop_in_file_runtime")
+                    .activate(
+                        move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                            info!("call create_drop_in_file_runtime");
+                            _b.is_enabled();
+                        },
+                    )
+                    .build();
+
+            app_window.add_action_entries([rename_drop_in_file, create_drop_in_file_runtime]);
+
+            if let Some(action) = app_window
+                .lookup_action("create_drop_in_file_runtime")
+                .and_downcast_ref::<gio::SimpleAction>()
+            {
+                let b = action.is_enabled();
+                warn!("create_drop_in_file_runtime {}", b);
+            } else {
+                warn!("No action {}", "create_drop_in_file_runtime");
+            }
+
+            warn!("actions {:?}", app_window.list_actions());
+        }
 
         /* let dialog = flatpak::new("/home/pier/school.txt");
         let window = self.app_window.get().expect("AppWindow supposed to be set");
@@ -494,6 +526,10 @@ impl ObjectSubclass for UnitFilePanelImp {
         // The layout manager determines how child widgets are laid out.
         klass.bind_template();
         klass.bind_template_callbacks();
+
+        klass.install_action("test_pizza", None, |a, b, c| {
+            println!("test a {:?} b {:?} c {:?}", a, b, c)
+        });
     }
 
     fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

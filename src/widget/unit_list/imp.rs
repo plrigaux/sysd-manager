@@ -276,7 +276,7 @@ impl UnitListPanelImp {
                 .activate(move |_application: &AppWindow, _b, _target_value| {
                     unit_list_panel.imp().clear_filters();
                 })
-                //    .parameter_type(Some(VariantTy::STRING))
+                .parameter_type(Some(VariantTy::STRING))
                 .build()
         };
 
@@ -1394,7 +1394,7 @@ impl ObjectImpl for UnitListPanelImp {
             .set(search_controls)
             .expect("Search entry set once");
 
-        self.obj().action_set_enabled("win.col", true);
+        /*      self.obj().action_set_enabled("win.col", true); */
 
         {
             let unit_list = self.obj().clone();

@@ -33,6 +33,7 @@
     <child>
       <object class="GtkButton" id="clear_filters_button">
         <property name="action-name">win.unit_list_filter_clear</property>
+        <property name="action-target">'all'</property>
         <property name="css-classes">flat</property>
         <property name="label" translatable="yes" context="unit search">Clear Filters</property>
       </object>

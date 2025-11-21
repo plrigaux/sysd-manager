@@ -3,9 +3,9 @@
 <interface>
   <!-- interface-name unit_file_panel.ui -->
   <!-- interface-description Unit file panel -->
+  <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.7"/>
-  <requires lib="gio" version="2.0"/>
   <template class="UnitFilePanel" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
@@ -85,11 +85,30 @@
     </child>
   </template>
   <menu id="unit_file_menu">
+    <submenu>
+      <attribute name="label">Create Drop-in</attribute>
+      <item>
+        <attribute name="action">win.create_drop_in_file_runtime</attribute>
+        <attribute name="label">Runtime</attribute>
+      </item>
+      <item>
+        <attribute name="action">test_pizza</attribute>
+        <attribute name="label">Permanent</attribute>
+      </item>
+    </submenu>
+    <submenu>
+      <attribute name="label">Revert</attribute>
+      <item>
+        <attribute name="label">Full</attribute>
+      </item>
+      <item>
+        <attribute name="label">Drop-in Only</attribute>
+      </item>
+    </submenu>
     <item>
-      <attribute name="label">Runtime Dropin</attribute>
-    </item>
-    <item>
-      <attribute name="label">Dropin</attribute>
+      <attribute name="action">win.rename_drop_in_file</attribute>
+      <attribute name="icon">address-book-new</attribute>
+      <attribute name="label">Rename Drop-in File</attribute>
     </item>
   </menu>
 </interface>

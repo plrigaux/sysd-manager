@@ -17,18 +17,6 @@ pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
     );
 
     if !is_custom {
-        /*         let sub_menu = gio::Menu::new();
-        sub_menu.append(Some("Unit"), Some("win.col-show-unit"));
-        sub_menu.append(Some("Type"), Some("win.col-show-type"));
-        sub_menu.append(Some("Bus"), Some("win.col-show-bus"));
-        sub_menu.append(Some("State"), Some("win.col-show-state"));
-        sub_menu.append(Some("Preset"), Some("win.col-show-preset"));
-        sub_menu.append(Some("Load"), Some("win.col-show-load"));
-        sub_menu.append(Some("Active"), Some("win.col-show-active"));
-        sub_menu.append(Some("Sub"), Some("win.col-show-sub"));
-        sub_menu.append(Some("Description"), Some("win.col-show-description"));
-        menu.append_submenu(Some("Show columns"), &sub_menu); */
-
         let sub_menu = gio::Menu::new();
 
         append_item_variant(
