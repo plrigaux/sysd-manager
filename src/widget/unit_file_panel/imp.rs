@@ -292,8 +292,11 @@ impl UnitFilePanelImp {
         self.file_dropin_selector.remove_all();
 
         if drop_in_files.is_empty() {
+            self.file_dropin_selector.set_visible(false);
             return;
         }
+
+        self.file_dropin_selector.set_visible(true);
 
         //Unit file / Drop-Ins selector
         let label_text = pgettext("file", "Unit File");
