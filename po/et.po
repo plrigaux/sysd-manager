@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-11-22 23:44+0000\n"
+"PO-Revision-Date: 2025-11-22 23:54+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
@@ -268,19 +268,19 @@ msgstr "Vaheta sündmuste kuvamise suunda"
 #: data/interfaces/journal_panel.ui:60
 msgctxt "journal"
 msgid "List the boots of the system"
-msgstr "Kuva süsteemi algkäivituste loend"
+msgstr "Näita süsteemi alglaadimiste loendit"
 
 #. button
 #: data/interfaces/journal_panel.ui:65
 msgctxt "journal"
 msgid "List Boots"
-msgstr "Algkäivituste loend"
+msgstr "Alglaadimiste loend"
 
 #. button
 #: data/interfaces/journal_panel.ui:85
 msgctxt "journal"
 msgid "Current boot"
-msgstr "Viimane algkäivitus"
+msgstr "Viimane alglaadimine"
 
 #. button
 #: data/interfaces/journal_panel.ui:91
@@ -900,7 +900,7 @@ msgstr "Üksikasjad"
 #: data/interfaces/signals_window.ui:87
 msgctxt "signals"
 msgid "Watch Signals"
-msgstr ""
+msgstr "Jälgi signaale"
 
 #: data/interfaces/unit_control_panel.ui:18
 msgctxt "control info"
@@ -989,7 +989,7 @@ msgstr ""
 #: data/interfaces/unit_dependencies_panel.ui:39
 msgctxt "dependency"
 msgid "No dependencies"
-msgstr ""
+msgstr "Sõltuvusi pole"
 
 #. button
 #: data/interfaces/unit_file_panel.ui:53
@@ -1024,17 +1024,17 @@ msgstr "Näita kõiki _omadusi"
 #. Unit property filter button
 #: data/interfaces/unit_list_filter.ui:51
 msgid "Clear Filters"
-msgstr ""
+msgstr "Tühjenda filtrid"
 
 #: data/interfaces/unit_list_panel.ui:40
 msgctxt "list tooltip"
 msgid "Loaded Units Retrieved"
-msgstr ""
+msgstr "Laaditud üksusefailid on otsitud välja"
 
 #: data/interfaces/unit_list_panel.ui:45
 msgctxt "list info"
 msgid "Loaded Units Retrieved"
-msgstr ""
+msgstr "laaditud üksusefaili on otsitud välja"
 
 #: data/interfaces/unit_list_panel.ui:56
 msgctxt "list tooltip"
@@ -1044,7 +1044,7 @@ msgstr "Üksusefailid on otsitud välja"
 #: data/interfaces/unit_list_panel.ui:61
 msgctxt "list info"
 msgid "Unit Files Retrieved"
-msgstr "Üksusefailid on otsitud välja"
+msgstr "üksusefaili on otsitud välja"
 
 #: data/interfaces/unit_list_panel.ui:72
 msgctxt "list tooltip"
@@ -1054,12 +1054,12 @@ msgstr "Kuvatud üksused"
 #: data/interfaces/unit_list_panel.ui:77
 msgctxt "list info"
 msgid "Units Displayed"
-msgstr "Kuvatud üksused"
+msgstr "kuvatud üksust"
 
 #: data/interfaces/unit_list_panel.ui:87
 msgctxt "list info tooltip"
 msgid "Hide Total Summary"
-msgstr ""
+msgstr "Peida terviklik kokkuvõte"
 
 #. short version
 #: data/interfaces/unit_list_panel.ui:99
@@ -1199,7 +1199,7 @@ msgstr "Töösolevad üksused"
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
 #: src/main.rs:98
 msgid "Program starting up"
-msgstr ""
+msgstr "Programm on käivitumas"
 
 #: src/systemd/enums.rs:168
 msgctxt "list"
