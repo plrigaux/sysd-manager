@@ -41,6 +41,7 @@
                     <child>
                       <object class="GtkMenuButton">
                         <property name="menu-model">unit_file_menu</property>
+                        <property name="visible">False</property>
                       </object>
                     </child>
                     <child>
