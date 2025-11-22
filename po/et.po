@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-08-16 14:02+0000\n"
+"PO-Revision-Date: 2025-11-22 23:24+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -47,36 +47,40 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Halda oma arvuti teenuseid, taimereid, sokleid ja muid systemd üksusi. Sa "
+"võid neid sisse lülitada ja kasutusel eemaldada, peatada ja käivitada. "
+"Lisaks võid vaadata nende seadistusfaili ning kiigata süsteemipäeviku "
+"logidesse."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
 msgid "Unit Files"
-msgstr ""
+msgstr "Üksusefailid"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
 msgid "Unit Dependencies"
-msgstr ""
+msgstr "Üksuse sõltuvused"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
 msgid "Unit File"
-msgstr ""
+msgstr "Üksuse fail"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
 msgid "Unit Journal"
-msgstr ""
+msgstr "Üksuse päevik"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
 msgid "Analyze Blame"
-msgstr ""
+msgstr "Analüüsi ja otsi põhjused"
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Reload All Units"
-msgstr ""
+msgstr "Laadi kõik üksused uuesti"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -91,7 +95,7 @@ msgstr "Alglaadimiste loend"
 #: data/interfaces/app_window.ui:28
 msgctxt "menu"
 msgid "Watch Signals"
-msgstr ""
+msgstr "Jälgi signaale"
 
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
@@ -121,7 +125,7 @@ msgstr "Ava otsinguriba"
 #: data/interfaces/app_window.ui:88
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
-msgstr ""
+msgstr "Värskenda üksuste loend"
 
 #. button
 #. title dialog
@@ -130,43 +134,43 @@ msgstr ""
 #: src/widget/clean_dialog/imp.rs:109
 msgctxt "clean"
 msgid "Clean"
-msgstr ""
+msgstr "Eemalda"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
 msgctxt "enable unit file"
 msgid "Unit file"
-msgstr ""
+msgstr "Üksuse fail"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:38
 msgctxt "enable unit file"
 msgid "Use Selected Unit"
-msgstr ""
+msgstr "Kasuta valitud üksust"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:46
 msgctxt "enable unit file"
 msgid "Browse for Unit file"
-msgstr ""
+msgstr "Otsi üksuse faili"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:54
 msgctxt "enable unit file"
 msgid "DBus Level"
-msgstr ""
+msgstr "DBus-i tase"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:59
 msgctxt "enable unit file"
 msgid "Whether the unit shall be enabled for runtime only"
-msgstr ""
+msgstr "Kas üksus peaks olema kasutusel vaid käituse ajaks"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:60
 msgctxt "enable unit file"
 msgid "Runtime"
-msgstr ""
+msgstr "Käitusaegne"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:65
@@ -224,24 +228,24 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:106
 msgctxt "enable unit file"
 msgid "Reset"
-msgstr ""
+msgstr "Lähtesta"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:114
 msgctxt "enable unit file"
 msgid "Enable"
-msgstr ""
+msgstr "Luba"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
 msgid "Clear"
-msgstr ""
+msgstr "Tühjenda"
 
 #. button
 #: data/interfaces/journal_panel.ui:22
 msgctxt "journal"
 msgid "Refresh"
-msgstr ""
+msgstr "Värskenda andmeid"
 
 #: data/interfaces/journal_panel.ui:27
 msgctxt "journal"
@@ -297,30 +301,32 @@ msgid ""
 "No journal events!\n"
 "It can be a good thing. 😉"
 msgstr ""
+"Süsteemipäevikus pole logisissekandeid!\n"
+"See võib ju olla üsna hea lugu. 😉"
 
 #. title
 #: data/interfaces/journal_panel.ui:142
 msgctxt "journal"
 msgid "No journal events"
-msgstr ""
+msgstr "Süsteemipäevikus pole sündmusi"
 
 #. group
 #: data/interfaces/kill_panel.ui:20
 msgctxt "kill"
 msgid "Parameters"
-msgstr ""
+msgstr "Parameetrid"
 
 #. title
 #: data/interfaces/kill_panel.ui:23
 msgctxt "kill"
 msgid "Unix signal"
-msgstr ""
+msgstr "UNIX-i signaal"
 
 #. subtitle
 #: data/interfaces/kill_panel.ui:29
 msgctxt "kill"
 msgid "Unit related processes"
-msgstr ""
+msgstr "Üksusega seotud protsessid"
 
 #. title
 #: data/interfaces/kill_panel.ui:30
@@ -332,25 +338,25 @@ msgstr ""
 #: data/interfaces/kill_panel.ui:37
 msgctxt "kill"
 msgid "Signal Value"
-msgstr ""
+msgstr "Signaali väärtus"
 
 #. button
 #: data/interfaces/kill_panel.ui:51
 msgctxt "kill"
 msgid "Send"
-msgstr ""
+msgstr "Saada"
 
 #. description
 #: data/interfaces/kill_panel.ui:60
 msgctxt "kill"
 msgid "Most common Linux signals"
-msgstr ""
+msgstr "Kõige tavalisemad Linuxi signaalid"
 
 #. description
 #: data/interfaces/kill_panel.ui:62
 msgctxt "kill"
 msgid "Common Unix signals"
-msgstr ""
+msgstr "Tavalised Linuxi signaalid"
 
 #. button
 #: data/interfaces/kill_panel.ui:84
@@ -399,7 +405,7 @@ msgstr "Alglaadimiste loend"
 #: data/interfaces/mask_unit_dialog.ui:75
 msgctxt "mask"
 msgid "Mask"
-msgstr ""
+msgstr "Peida"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:27
@@ -455,7 +461,7 @@ msgstr ""
 #: data/interfaces/mask_unit_dialog.ui:67
 msgctxt "mask"
 msgid "Reset"
-msgstr ""
+msgstr "Lähtesta"
 
 #. dialog title
 #: data/interfaces/mask_unit_dialog.ui:89
@@ -467,13 +473,13 @@ msgstr ""
 #: data/interfaces/preferences.ui:21
 msgctxt "preference"
 msgid "General"
-msgstr ""
+msgstr "Üldised"
 
 #. row
 #: data/interfaces/preferences.ui:24
 msgctxt "preference"
 msgid "Preferred Color Scheme"
-msgstr ""
+msgstr "Eelistatud värvikombinatsioon"
 
 #. row subtitle
 #: data/interfaces/preferences.ui:29
@@ -485,7 +491,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:30
 msgctxt "preference"
 msgid "Orientation"
-msgstr ""
+msgstr "Paigutus"
 
 #. row
 #: data/interfaces/preferences.ui:35
@@ -514,7 +520,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:46
 msgctxt "preference"
 msgid "Default"
-msgstr ""
+msgstr "Vaikimisi"
 
 #. button
 #: data/interfaces/preferences.ui:54
@@ -636,18 +642,18 @@ msgstr ""
 #: data/interfaces/preferences.ui:189
 msgctxt "preference"
 msgid "Preferences"
-msgstr ""
+msgstr "Eelistused"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "General"
-msgstr ""
+msgstr "Üldised"
 
 #: data/interfaces/shortcuts.ui:18
 msgctxt "shortcut window"
 msgid "Show Preferences"
-msgstr ""
+msgstr "Näita eelistusi"
 
 #: data/interfaces/shortcuts.ui:24
 msgctxt "shortcut window"
@@ -673,7 +679,7 @@ msgstr ""
 #: data/interfaces/shortcuts.ui:49
 msgctxt "shortcut window"
 msgid "Pages"
-msgstr ""
+msgstr "Lehed"
 
 #: data/interfaces/shortcuts.ui:53
 msgctxt "shortcut window"
@@ -802,7 +808,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:144
 msgctxt "control"
 msgid "_UnMask"
-msgstr ""
+msgstr "_Lõpeta peitmine"
 
 #. button
 #: data/interfaces/side_control_panel.ui:160
@@ -874,19 +880,19 @@ msgstr ""
 #: data/interfaces/signals_window.ui:55
 msgctxt "signals"
 msgid "Time"
-msgstr ""
+msgstr "Aeg"
 
 #. column title
 #: data/interfaces/signals_window.ui:62
 msgctxt "signals"
 msgid "Type"
-msgstr ""
+msgstr "Tüüp"
 
 #. column title
 #: data/interfaces/signals_window.ui:68
 msgctxt "signals"
 msgid "Details"
-msgstr ""
+msgstr "Üksikasjad"
 
 #. dialog title
 #: data/interfaces/signals_window.ui:87
@@ -897,7 +903,7 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:18
 msgctxt "control info"
 msgid "Enabled"
-msgstr ""
+msgstr "Kasutusel"
 
 #: data/interfaces/unit_control_panel.ui:41
 msgctxt "control tooltip"
@@ -908,7 +914,7 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:46
 msgctxt "controls"
 msgid "_Start"
-msgstr ""
+msgstr "_Käivita"
 
 #: data/interfaces/unit_control_panel.ui:54
 msgctxt "control tooltip"
@@ -923,7 +929,7 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:70
 msgctxt "controls"
 msgid "S_top"
-msgstr ""
+msgstr "Lõpe_ta"
 
 #: data/interfaces/unit_control_panel.ui:71
 msgctxt "controls tooltip"
@@ -944,7 +950,7 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:95 data/interfaces/unit_pop_menu.ui:64
 msgctxt "controls"
 msgid "Restart"
-msgstr ""
+msgstr "Käivita uuesti"
 
 #: data/interfaces/unit_control_panel.ui:111
 msgctxt "controls menu"
@@ -959,12 +965,12 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:157
 msgctxt "controls tab"
 msgid "Dependencies"
-msgstr ""
+msgstr "Sõltuvused"
 
 #: data/interfaces/unit_control_panel.ui:167
 msgctxt "controls tab"
 msgid "File"
-msgstr ""
+msgstr "Fail"
 
 #: data/interfaces/unit_control_panel.ui:177
 msgctxt "controls tab"
@@ -987,7 +993,7 @@ msgstr ""
 #: data/interfaces/unit_file_panel.ui:53
 msgctxt "file"
 msgid "Save"
-msgstr ""
+msgstr "Salvesta"
 
 #. description
 #: data/interfaces/unit_file_panel.ui:77
@@ -1005,7 +1011,7 @@ msgstr ""
 #: data/interfaces/unit_info_panel.ui:22
 msgctxt "unit info"
 msgid "_Refresh"
-msgstr ""
+msgstr "Vä_rskenda"
 
 #. button
 #: data/interfaces/unit_info_panel.ui:35
@@ -1057,19 +1063,19 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:99
 msgctxt "list info"
 msgid "Loaded"
-msgstr ""
+msgstr "Laaditud"
 
 #. short version
 #: data/interfaces/unit_list_panel.ui:100
 msgctxt "list info"
 msgid "Files"
-msgstr ""
+msgstr "Failid"
 
 #. short version
 #: data/interfaces/unit_list_panel.ui:101
 msgctxt "list info"
 msgid "Units"
-msgstr ""
+msgstr "Ühikud"
 
 #: data/interfaces/unit_list_panel.ui:132
 msgctxt "list page description"
@@ -1091,7 +1097,7 @@ msgstr ""
 #: data/interfaces/unit_list_search.ui:30
 msgctxt "unit search"
 msgid "Filters"
-msgstr ""
+msgstr "Filtrid"
 
 #: data/interfaces/unit_list_search.ui:38
 msgctxt "unit search"
