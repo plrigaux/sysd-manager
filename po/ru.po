@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-20 09:53-0500\n"
+"POT-Creation-Date: 2025-11-21 19:56-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -983,26 +983,20 @@ msgctxt "dependency"
 msgid "No dependencies"
 msgstr ""
 
-#. label
-#: data/interfaces/unit_file_panel.ui:48
-msgctxt "file"
-msgid "File path:"
-msgstr ""
-
 #. button
-#: data/interfaces/unit_file_panel.ui:65
+#: data/interfaces/unit_file_panel.ui:53
 msgctxt "file"
 msgid "Save"
 msgstr ""
 
 #. description
-#: data/interfaces/unit_file_panel.ui:83
+#: data/interfaces/unit_file_panel.ui:77
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr ""
 
 #. title
-#: data/interfaces/unit_file_panel.ui:85
+#: data/interfaces/unit_file_panel.ui:79
 msgctxt "file"
 msgid "No Unit File"
 msgstr ""
@@ -1099,7 +1093,7 @@ msgctxt "unit search"
 msgid "Filters"
 msgstr ""
 
-#: data/interfaces/unit_list_search.ui:37
+#: data/interfaces/unit_list_search.ui:38
 msgctxt "unit search"
 msgid "Clear Filters"
 msgstr ""
@@ -2185,20 +2179,20 @@ msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
 msgstr ""
 
 #. File saving success message
-#: src/widget/unit_file_panel/imp.rs:125
+#: src/widget/unit_file_panel/imp.rs:129
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr ""
 
 #. Unit file / Drop-Ins selector
-#: src/widget/unit_file_panel/imp.rs:299
+#: src/widget/unit_file_panel/imp.rs:306
 msgctxt "file"
 msgid "Unit File"
 msgstr ""
 
 #. Unit file / Drop-Ins selector
-#: src/widget/unit_file_panel/imp.rs:309
+#: src/widget/unit_file_panel/imp.rs:316
 msgctxt "file"
 msgid "Drop In"
 msgstr ""
@@ -2271,4 +2265,34 @@ msgctxt "controls"
 msgid ""
 "Reload unit {} configuration by calling the <b>ExecReload</b> unit file "
 "instruction"
+msgstr ""
+
+#. column header menu
+#: src/widget/unit_list/menus.rs:15
+msgctxt "menu"
+msgid "Hide this Column"
+msgstr ""
+
+#. column header menu
+#: src/widget/unit_list/menus.rs:23
+msgctxt "menu"
+msgid "Configure columns"
+msgstr ""
+
+#. column header menu
+#: src/widget/unit_list/menus.rs:34
+msgctxt "menu"
+msgid "Configure Filters"
+msgstr ""
+
+#. column header menu
+#: src/widget/unit_list/menus.rs:42
+msgctxt "menu"
+msgid "Clear Column Filter"
+msgstr ""
+
+#. column header menu section
+#: src/widget/unit_list/menus.rs:48
+msgctxt "menu"
+msgid "Filtering"
 msgstr ""
