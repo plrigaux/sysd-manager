@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-11-22 23:24+0000\n"
+"PO-Revision-Date: 2025-11-22 23:44+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
@@ -34,7 +34,7 @@ msgstr "Teenusehaldur"
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
-msgstr "Kasutajasõbralik rakendus systemd teenuseühikute haldamiseks"
+msgstr "Kasutajasõbralik rakendus systemd teenuseüksuste haldamiseks"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
@@ -210,7 +210,7 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:88
 msgctxt "enable unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Käivita kohe"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:93
@@ -222,7 +222,7 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:94
 msgctxt "enable unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "Käivitusrežiim"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:106
@@ -262,37 +262,37 @@ msgstr ""
 #: data/interfaces/journal_panel.ui:54
 msgctxt "journal"
 msgid "Toggle events display order"
-msgstr ""
+msgstr "Vaheta sündmuste kuvamise suunda"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:60
 msgctxt "journal"
 msgid "List the boots of the system"
-msgstr ""
+msgstr "Kuva süsteemi algkäivituste loend"
 
 #. button
 #: data/interfaces/journal_panel.ui:65
 msgctxt "journal"
 msgid "List Boots"
-msgstr ""
+msgstr "Algkäivituste loend"
 
 #. button
 #: data/interfaces/journal_panel.ui:85
 msgctxt "journal"
 msgid "Current boot"
-msgstr ""
+msgstr "Viimane algkäivitus"
 
 #. button
 #: data/interfaces/journal_panel.ui:91
 msgctxt "journal"
 msgid "All events"
-msgstr ""
+msgstr "Kõik sündmused"
 
 #. title
 #: data/interfaces/journal_panel.ui:98
 msgctxt "journal"
 msgid "Boot id"
-msgstr ""
+msgstr "Alglaadimise tunnus"
 
 #. description
 #: data/interfaces/journal_panel.ui:139
@@ -532,7 +532,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:65
 msgctxt "preference"
 msgid "Unit List"
-msgstr ""
+msgstr "Üksuste loend"
 
 #. subtitle
 #: data/interfaces/preferences.ui:68
@@ -562,7 +562,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:100
 msgctxt "preference"
 msgid "Unit Description"
-msgstr ""
+msgstr "Üksuse kirjeldus"
 
 #. subtitle
 #: data/interfaces/preferences.ui:103
@@ -580,13 +580,13 @@ msgstr ""
 #: data/interfaces/preferences.ui:111
 msgctxt "preference"
 msgid "Unit File"
-msgstr ""
+msgstr "Üksuse fail"
 
 #. subtitle
 #: data/interfaces/preferences.ui:114
 msgctxt "preference"
 msgid "Display unit file line number"
-msgstr ""
+msgstr "Näita üksusefailis reanumbreid"
 
 #. title
 #: data/interfaces/preferences.ui:115
@@ -598,7 +598,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:126
 msgctxt "preference"
 msgid "Unit file highlight style"
-msgstr ""
+msgstr "Üksusefaili esiletõstmise stiil"
 
 #. title
 #: data/interfaces/preferences.ui:127
@@ -616,13 +616,13 @@ msgstr ""
 #: data/interfaces/preferences.ui:138
 msgctxt "preference"
 msgid "Journal colors"
-msgstr ""
+msgstr "Süsteemipäeviku värvid"
 
 #. title
 #: data/interfaces/preferences.ui:159
 msgctxt "preference"
 msgid "Journal's events batch size"
-msgstr ""
+msgstr "Süsteemipäeviku sündmuse pakkide suurus"
 
 #. subtitle
 #: data/interfaces/preferences.ui:172
@@ -631,12 +631,14 @@ msgid ""
 "Journal's event maximum characters\n"
 "<i>0 to no limit</i>"
 msgstr ""
+"Süsteemipäeviku sündmuse maksimumsuurus\n"
+"<i>0 märgib ülempiiri puudumist</i>"
 
 #. title
 #: data/interfaces/preferences.ui:175
 msgctxt "preference"
 msgid "Journal's event max size"
-msgstr ""
+msgstr "Süsteemipäeviku sündmuse maksimumsuurus"
 
 #. dialog
 #: data/interfaces/preferences.ui:189
@@ -663,7 +665,7 @@ msgstr ""
 #: data/interfaces/shortcuts.ui:30
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
-msgstr ""
+msgstr "Ava üksuse omaduste filter"
 
 #: data/interfaces/shortcuts.ui:36
 msgctxt "shortcut window"
@@ -684,45 +686,45 @@ msgstr "Lehed"
 #: data/interfaces/shortcuts.ui:53
 msgctxt "shortcut window"
 msgid "Display Unit Information"
-msgstr ""
+msgstr "Näita üksuse teavet"
 
 #: data/interfaces/shortcuts.ui:59
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
-msgstr ""
+msgstr "Näita üksuse sõltuvusi"
 
 #: data/interfaces/shortcuts.ui:65
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
-msgstr ""
+msgstr "Näita üksuse määratluste fail"
 
 #: data/interfaces/shortcuts.ui:71
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
-msgstr ""
+msgstr "Näita üksuse sündmusi süsteemipäevikus"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:78
 msgctxt "shortcut window"
 msgid "Unit"
-msgstr ""
+msgstr "Üksus"
 
 #: data/interfaces/shortcuts.ui:82
 msgctxt "shortcut window"
 msgid "Show unit properties"
-msgstr ""
+msgstr "Näita üksuse omadusi"
 
 #. button
 #: data/interfaces/side_control_panel.ui:22
 msgctxt "control"
 msgid "Enable Unit File ➚"
-msgstr ""
+msgstr "Võta üksusefail kasutusel ➚"
 
 #. button
 #: data/interfaces/side_control_panel.ui:39
 msgctxt "control"
 msgid "_Disable Unit File ➚"
-msgstr ""
+msgstr "Eemal_da üksusefail kasutuselt ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:40
@@ -814,7 +816,7 @@ msgstr "_Lõpeta peitmine"
 #: data/interfaces/side_control_panel.ui:160
 msgctxt "control"
 msgid "Reload Unit"
-msgstr ""
+msgstr "Laadi üksus uuesti"
 
 #. button
 #: data/interfaces/side_control_panel.ui:161
@@ -908,7 +910,7 @@ msgstr "Kasutusel"
 #: data/interfaces/unit_control_panel.ui:41
 msgctxt "control tooltip"
 msgid "Start unit"
-msgstr ""
+msgstr "Käivita üksus"
 
 #. The start button
 #: data/interfaces/unit_control_panel.ui:46
@@ -924,7 +926,7 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:65
 msgctxt "control tooltip"
 msgid "Stop unit"
-msgstr ""
+msgstr "Lõpeta üksuse töö"
 
 #: data/interfaces/unit_control_panel.ui:70
 msgctxt "controls"
@@ -934,7 +936,7 @@ msgstr "Lõpe_ta"
 #: data/interfaces/unit_control_panel.ui:71
 msgctxt "controls tooltip"
 msgid "Stop unit"
-msgstr ""
+msgstr "Lõpeta üksuse töö"
 
 #: data/interfaces/unit_control_panel.ui:79
 msgctxt "control tooltip"
@@ -944,7 +946,7 @@ msgstr ""
 #: data/interfaces/unit_control_panel.ui:90
 msgctxt "controls tooltip"
 msgid "Restart unit"
-msgstr ""
+msgstr "Käivita üksus uuesti"
 
 #. unit popup menu
 #: data/interfaces/unit_control_panel.ui:95 data/interfaces/unit_pop_menu.ui:64
@@ -955,12 +957,12 @@ msgstr "Käivita uuesti"
 #: data/interfaces/unit_control_panel.ui:111
 msgctxt "controls menu"
 msgid "_More ..."
-msgstr ""
+msgstr "_Veel ..."
 
 #: data/interfaces/unit_control_panel.ui:147
 msgctxt "controls tab"
 msgid "Unit Info"
-msgstr ""
+msgstr "Üksuse teave"
 
 #: data/interfaces/unit_control_panel.ui:157
 msgctxt "controls tab"
@@ -975,7 +977,7 @@ msgstr "Fail"
 #: data/interfaces/unit_control_panel.ui:177
 msgctxt "controls tab"
 msgid "Journal"
-msgstr ""
+msgstr "Süsteemipäevik"
 
 #. label
 #: data/interfaces/unit_dependencies_panel.ui:21
@@ -999,13 +1001,13 @@ msgstr "Salvesta"
 #: data/interfaces/unit_file_panel.ui:77
 msgctxt "file"
 msgid "The  unit has no file associated"
-msgstr ""
+msgstr "Antud üksusega pole faili seotud"
 
 #. title
 #: data/interfaces/unit_file_panel.ui:79
 msgctxt "file"
 msgid "No Unit File"
-msgstr ""
+msgstr "Üksusefaili pole"
 
 #. button
 #: data/interfaces/unit_info_panel.ui:22
@@ -1017,7 +1019,7 @@ msgstr "Vä_rskenda"
 #: data/interfaces/unit_info_panel.ui:35
 msgctxt "unit info"
 msgid "Show all _Properties"
-msgstr ""
+msgstr "Näita kõiki _omadusi"
 
 #. Unit property filter button
 #: data/interfaces/unit_list_filter.ui:51
@@ -1037,22 +1039,22 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:56
 msgctxt "list tooltip"
 msgid "Unit Files Retrieved"
-msgstr ""
+msgstr "Üksusefailid on otsitud välja"
 
 #: data/interfaces/unit_list_panel.ui:61
 msgctxt "list info"
 msgid "Unit Files Retrieved"
-msgstr ""
+msgstr "Üksusefailid on otsitud välja"
 
 #: data/interfaces/unit_list_panel.ui:72
 msgctxt "list tooltip"
 msgid "Units displayed"
-msgstr ""
+msgstr "Kuvatud üksused"
 
 #: data/interfaces/unit_list_panel.ui:77
 msgctxt "list info"
 msgid "Units Displayed"
-msgstr ""
+msgstr "Kuvatud üksused"
 
 #: data/interfaces/unit_list_panel.ui:87
 msgctxt "list info tooltip"
@@ -1075,7 +1077,7 @@ msgstr "Failid"
 #: data/interfaces/unit_list_panel.ui:101
 msgctxt "list info"
 msgid "Units"
-msgstr "Ühikud"
+msgstr "Üksused"
 
 #: data/interfaces/unit_list_panel.ui:132
 msgctxt "list page description"
@@ -1092,7 +1094,7 @@ msgstr ""
 #: data/interfaces/unit_list_search.ui:22
 msgctxt "unit search"
 msgid "Columns"
-msgstr ""
+msgstr "Veerud"
 
 #: data/interfaces/unit_list_search.ui:30
 msgctxt "unit search"
@@ -1102,7 +1104,7 @@ msgstr "Filtrid"
 #: data/interfaces/unit_list_search.ui:38
 msgctxt "unit search"
 msgid "Clear Filters"
-msgstr ""
+msgstr "Kustuta filtrid"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:36
@@ -1144,25 +1146,25 @@ msgstr ""
 #: data/interfaces/unit_properties.ui:29
 msgctxt "unit properties"
 msgid "Show all"
-msgstr ""
+msgstr "Näita kõiki"
 
 #. Show all properties tooltip
 #: data/interfaces/unit_properties.ui:30
 msgctxt "unit properties"
 msgid "Show empty properties"
-msgstr ""
+msgstr "Näita tühje omadusi"
 
 #. window title
 #: data/interfaces/unit_properties.ui:55
 msgctxt "unit properties"
 msgid "Unit Properties"
-msgstr ""
+msgstr "Üksuse omadused"
 
 #. Button tooltip-text
 #: data/interfaces/unit_properties.ui:61
 msgctxt "unit properties"
 msgid "Copy all properties to clipboard"
-msgstr ""
+msgstr "Kopeeri kõik omadused lõikelauale"
 
 #. dialog title
 #: src/analyze/mod.rs:28
@@ -1192,7 +1194,7 @@ msgstr ""
 #: src/analyze/mod.rs:137
 msgctxt "analyse blame"
 msgid "Running units"
-msgstr ""
+msgstr "Töösolevad üksused"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
 #: src/main.rs:98
@@ -1202,7 +1204,7 @@ msgstr ""
 #: src/systemd/enums.rs:168
 msgctxt "list"
 msgid "The name is an alias (symlink to another unit file)."
-msgstr ""
+msgstr "Nimi on viide teisele üksusefailile."
 
 #: src/systemd/enums.rs:173
 msgctxt "list"
@@ -1446,7 +1448,7 @@ msgstr ""
 #: src/widget/clean_dialog/imp.rs:140
 msgctxt "clean"
 msgid "No Unit Selected"
-msgstr ""
+msgstr "Ühtegi üksust pole valitud"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:62
@@ -1512,12 +1514,12 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:94
 msgctxt "action unit file"
 msgid "Start"
-msgstr ""
+msgstr "Käivita"
 
 #: src/widget/control_action_dialog/mod.rs:97
 msgctxt "action unit file"
 msgid "Stop"
-msgstr ""
+msgstr "Lõpeta töö"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:148
@@ -1541,7 +1543,7 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:162
 msgctxt "action unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Käivita kohe"
 
 #. after action subtitle
 #: src/widget/control_action_dialog/mod.rs:164
@@ -1553,7 +1555,7 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:168
 msgctxt "action unit file"
 msgid "Stop now"
-msgstr ""
+msgstr "Lõpeta töö kohe"
 
 #: src/widget/control_action_dialog/mod.rs:172
 msgctxt "action unit file"
@@ -1564,13 +1566,13 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:183
 msgctxt "action unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "Käivitusrežiim"
 
 #. starts mode subtitle
 #: src/widget/control_action_dialog/mod.rs:185
 msgctxt "action unit file"
 msgid "Starting mode options"
-msgstr ""
+msgstr "Käivitusrežiimi valikud"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:189
@@ -2195,7 +2197,7 @@ msgstr ""
 #: src/widget/unit_file_panel/imp.rs:306
 msgctxt "file"
 msgid "Unit File"
-msgstr ""
+msgstr "Üksusefail"
 
 #. Unit file / Drop-Ins selector
 #: src/widget/unit_file_panel/imp.rs:316
@@ -2245,19 +2247,19 @@ msgstr ""
 #, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
-msgstr ""
+msgstr "Käivita üksus: {}"
 
 #: src/widget/unit_list/imp/pop_menu.rs:213
 #, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
-msgstr ""
+msgstr "Lõpeta üksuse töö: {}"
 
 #: src/widget/unit_list/imp/pop_menu.rs:220
 #, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
-msgstr ""
+msgstr "Käivita üksus uuesti: {}"
 
 #: src/widget/unit_list/imp/pop_menu.rs:241
 #, rust-format
