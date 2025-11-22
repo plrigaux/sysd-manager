@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-11-20 15:24+0000\n"
+"PO-Revision-Date: 2025-11-22 01:06+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -2376,35 +2376,31 @@ msgstr ""
 #: src/widget/unit_list/menus.rs:15
 msgctxt "menu"
 msgid "Hide this Column"
-msgstr ""
+msgstr "Masquer cette colonne"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:23
-#, fuzzy
 msgctxt "menu"
 msgid "Configure columns"
-msgstr "_Configuration"
+msgstr "Configurer les colonnes"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:34
-#, fuzzy
 msgctxt "menu"
 msgid "Configure Filters"
-msgstr "Supprimer les filtres"
+msgstr "Configurer les filtres"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:42
-#, fuzzy
 msgctxt "menu"
 msgid "Clear Column Filter"
-msgstr "Supprimer les filtres"
+msgstr "Supprimer les filtres de cette colonne"
 
 #. column header menu section
 #: src/widget/unit_list/menus.rs:48
-#, fuzzy
 msgctxt "menu"
 msgid "Filtering"
-msgstr "Filtres"
+msgstr "Filtrage"
 
 #~ msgctxt "file"
 #~ msgid "File path:"
