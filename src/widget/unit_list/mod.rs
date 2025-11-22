@@ -76,12 +76,8 @@ impl UnitListPanel {
             .filter_assessor_change(id, empty, change_type, update_widget);
     }
 
-    /*     fn clear_unit_list_filter_window_dependancy(&self) {
-           self.imp().clear_unit_list_filter_window_dependancy();
-       }
-    */
-    fn clear_filters(&self) {
-        self.imp().clear_filters();
+    fn clear_filters(&self, filter_key: &str) {
+        self.imp().clear_filters(filter_key);
     }
 
     pub fn button_action(&self, action: &InterPanelMessage) {

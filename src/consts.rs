@@ -41,3 +41,5 @@ pub const CLASS_WARNING: &str = "warning";
 pub const CLASS_ERROR: &str = "error";
 
 pub const FILTER_MARK: char = '⭐';
+
+pub const ALL_FILTER_KEY: &str = "all";

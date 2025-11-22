@@ -25,7 +25,7 @@ use log::{debug, error, info, warn};
 use strum::IntoEnumIterator;
 
 use crate::{
-    consts::{CLASS_WARNING, FLAT},
+    consts::{ALL_FILTER_KEY, CLASS_WARNING, FLAT},
     systemd::enums::{
         ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType,
         UnitDBusLevel, UnitType,
@@ -74,7 +74,7 @@ impl UnitListFilterWindowImp {
             .get()
             .expect("unit_list_panel in filter dialog not None");
 
-        unit_list_panel.clear_filters();
+        unit_list_panel.clear_filters(ALL_FILTER_KEY);
 
         let selection_model = self.filter_stack.pages();
         let list: gio::ListModel = selection_model.into();

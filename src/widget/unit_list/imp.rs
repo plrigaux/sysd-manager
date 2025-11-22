@@ -27,7 +27,7 @@ use gtk::{
 use zvariant::{OwnedValue, Value};
 
 use crate::{
-    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, FILTER_MARK},
+    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
     systemd::{
         self, SystemdUnitFile,
         data::{UnitInfo, convert_to_string},
@@ -196,8 +196,9 @@ impl UnitListPanelImp {
                     "connect_selected_notify idx {}",
                     single_selection.selected()
                 );
+
                 let Some(object) = single_selection.selected_item() else {
-                    warn!("No object selected");
+                    warn!("No unit selected");
                     return;
                 };
 
@@ -273,8 +274,12 @@ impl UnitListPanelImp {
             //  let settings = settings.clone();
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_UNIT_LIST_FILTER_CLEAR)
-                .activate(move |_application: &AppWindow, _b, _target_value| {
-                    unit_list_panel.imp().clear_filters();
+                .activate(move |_application: &AppWindow, _b, target_value| {
+                    if let Some(v) = target_value
+                        && let Some(filter_key) = v.get::<String>()
+                    {
+                        unit_list_panel.imp().clear_filters(&filter_key);
+                    }
                 })
                 .parameter_type(Some(VariantTy::STRING))
                 .build()
@@ -717,20 +722,19 @@ impl UnitListPanelImp {
         }
     }
 
-    pub(super) fn clear_filters(&self) {
-        //TODO investigate if usefull
+    pub(super) fn clear_filters(&self, filter_key: &str) {
         for property_filter in self.unit_property_filters.borrow().values() {
             let mut prop_filter_mut = property_filter.borrow_mut();
-            prop_filter_mut.clear_n_apply_filter();
+
+            if filter_key == prop_filter_mut.id() || filter_key == ALL_FILTER_KEY {
+                prop_filter_mut.clear_n_apply_filter();
+            }
         }
 
-        /*   self.filter_list_model
-                   .borrow()
-                   .set_filter(None::<&gtk::Filter>); //FIXME this workaround prevents core dump
-        */
-
-        let search_controls = self.search_controls.get().expect("Not Null");
-        search_controls.imp().clear();
+        if filter_key == COL_ID_UNIT || filter_key == ALL_FILTER_KEY {
+            let search_controls = self.search_controls.get().expect("Not Null");
+            search_controls.imp().clear();
+        }
     }
 
     pub(super) fn button_action(&self, action: &InterPanelMessage) {

@@ -15,7 +15,7 @@
   <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="57f6dbe8c3b9fbb1e6670c221cb356134182019c121510af5dffaff833cad4a3"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="01ca43632b58ccaee2ce1f2ca666781818f5d3bc200b0a85a9f4b2f58ba60b1c"/>
-  <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="575f558b652835ca3011e405305d3379a2b510450c2a360d529683ff5a46e61c"/>
+  <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="801d1758e8e6f10d76a13132793a7467e1b7f6ee572488a3125cd7664759fca6"/>
   <ui filename="shortcuts.ui" sha256="c352f6a082865f27b9c96d5e56e70215ac80aa5b19792f4a5e0e8d6816a1d545"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="b8d7f594dfa26ce35a2e431067dc8401671a423e8e2975eeaf6fce05511a52b2"/>

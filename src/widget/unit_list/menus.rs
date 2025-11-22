@@ -1,3 +1,4 @@
+use gettextrs::pgettext;
 use gtk::glib::variant::ToVariant;
 
 use crate::consts::{
@@ -7,13 +8,21 @@ use crate::consts::{
 pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
     let menu = gio::Menu::new();
 
-    append_item_variant(&menu, "Hide this Column", "win.hide_unit_col", Some(key));
+    let variant = key.to_variant();
+    append_item_variant(
+        &menu,
+        //column header menu
+        &pgettext("menu", "Hide this Column"),
+        "win.hide_unit_col",
+        &variant,
+    );
 
     append_item_variant(
         &menu,
-        "Configure columns",
+        //column header menu
+        &pgettext("menu", "Configure columns"),
         APP_ACTION_PROPERTIES_SELECTOR,
-        Some(key),
+        &variant,
     );
 
     if !is_custom {
@@ -21,28 +30,30 @@ pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
 
         append_item_variant(
             &sub_menu,
-            "Configure Filters",
+            //column header menu
+            &pgettext("menu", "Configure Filters"),
             NS_ACTION_UNIT_LIST_FILTER,
-            Some(key),
+            &variant,
         );
 
         append_item_variant(
             &sub_menu,
-            "Clear Filters",
+            //column header menu
+            &pgettext("menu", "Clear Column Filter"),
             NS_ACTION_UNIT_LIST_FILTER_CLEAR,
-            Some(key),
+            &variant,
         );
 
-        menu.append_section(Some("Filterring"), &sub_menu);
+        //column header menu section
+        menu.append_section(Some(&pgettext("menu", "Filtering")), &sub_menu);
     }
     menu.freeze();
 
     menu.into()
 }
 
-fn append_item_variant(menu: &gio::Menu, title: &str, action: &str, target_value: Option<&str>) {
+fn append_item_variant(menu: &gio::Menu, title: &str, action: &str, target_value: &glib::Variant) {
     let item: gio::MenuItem = gio::MenuItem::new(Some(title), None);
-    let target_value = target_value.map(|t| t.to_variant());
-    item.set_action_and_target_value(Some(action), target_value.as_ref());
+    item.set_action_and_target_value(Some(action), Some(target_value));
     menu.append_item(&item);
 }
