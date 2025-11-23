@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-11-23 00:32+0000\n"
+"PO-Revision-Date: 2025-11-23 00:56+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
@@ -479,7 +479,7 @@ msgstr "Üldised"
 #: data/interfaces/preferences.ui:24
 msgctxt "preference"
 msgid "Preferred Color Scheme"
-msgstr "Eelistatud värvikombinatsioon"
+msgstr "Eelistatud kujundus"
 
 #. row subtitle
 #: data/interfaces/preferences.ui:29
@@ -497,7 +497,7 @@ msgstr "Paigutus"
 #: data/interfaces/preferences.ui:35
 msgctxt "preference"
 msgid "Change the format of printed timestamps"
-msgstr ""
+msgstr "Muuda kuvatavate ajatemplite vormingut"
 
 #. row
 #: data/interfaces/preferences.ui:36
@@ -574,7 +574,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:104
 msgctxt "preference"
 msgid "Wrap unit description text"
-msgstr ""
+msgstr "Muura üksust kirjeldav tekst"
 
 #. group
 #: data/interfaces/preferences.ui:111
@@ -610,7 +610,7 @@ msgstr "Teksti esiletõstmine"
 #: data/interfaces/preferences.ui:137
 msgctxt "preference"
 msgid "To see the logs in color"
-msgstr ""
+msgstr "Kui tahad logisid näha värvilisena"
 
 #. title
 #: data/interfaces/preferences.ui:138
@@ -761,7 +761,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:82
 msgctxt "control"
 msgid "_Clean ➚"
-msgstr ""
+msgstr "_Tühjenda ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:83
@@ -775,7 +775,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:100
 msgctxt "control"
 msgid "Freeze the specified unit using cgroup freezer"
-msgstr ""
+msgstr "Külmuta määratud üksus kasutades cgroup'i põhist külmutamist"
 
 #. button
 #: data/interfaces/side_control_panel.ui:113
@@ -793,7 +793,7 @@ msgstr "Sulata valitud üksus üles"
 #: data/interfaces/side_control_panel.ui:127
 msgctxt "control"
 msgid "M_ask ➚"
-msgstr ""
+msgstr "Peid_a ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:128
@@ -828,7 +828,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:174
 msgctxt "control"
 msgid "_Preset ➚"
-msgstr ""
+msgstr "_Eelseadistus ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:175
@@ -854,7 +854,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:204
 msgctxt "control"
 msgid "_Link ➚"
-msgstr ""
+msgstr "_Link ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:205
@@ -1323,13 +1323,13 @@ msgstr ""
 #: src/systemd/enums.rs:897
 msgctxt "clean"
 msgid "_State"
-msgstr ""
+msgstr "_Olek"
 
 #. clean options
 #: src/systemd/enums.rs:899
 msgctxt "clean"
 msgid "Cac_he"
-msgstr ""
+msgstr "Pu_hver"
 
 #. clean options
 #: src/systemd/enums.rs:901
@@ -1398,7 +1398,7 @@ msgstr "UTC μsek"
 #: src/utils/time_handling.rs:46
 msgctxt "pref time style"
 msgid "Unix"
-msgstr ""
+msgstr "Unix"
 
 #. time style option
 #: src/utils/time_handling.rs:48
@@ -1466,7 +1466,7 @@ msgstr "Peida üksus"
 #: src/widget/control_action_dialog/mod.rs:66
 msgctxt "action unit file"
 msgid "Preset Unit File"
-msgstr ""
+msgstr "Üksusefaili eelseadistus"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:68
@@ -1484,7 +1484,7 @@ msgstr "Lülita üksus välja"
 #: src/widget/control_action_dialog/mod.rs:75
 msgctxt "action unit file"
 msgid "Link Unit File"
-msgstr ""
+msgstr "Üksusefaili link"
 
 #. preference group title
 #. Button
@@ -1525,7 +1525,7 @@ msgstr "Lõpeta töö"
 #: src/widget/control_action_dialog/mod.rs:148
 msgctxt "action unit file"
 msgid "Preset"
-msgstr ""
+msgstr "Eelseadistus"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:152
@@ -1537,7 +1537,7 @@ msgstr "Lülita uuesti sisse"
 #: src/widget/control_action_dialog/mod.rs:154
 msgctxt "action unit file"
 msgid "Link"
-msgstr ""
+msgstr "Link"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:162
@@ -1560,7 +1560,7 @@ msgstr "Lõpeta töö kohe"
 #: src/widget/control_action_dialog/mod.rs:172
 msgctxt "action unit file"
 msgid "Ensure that the unit will also be stopped"
-msgstr ""
+msgstr "Taga, et ka üksuse töö peatatakse"
 
 #. starts mode title
 #: src/widget/control_action_dialog/mod.rs:183
@@ -1590,7 +1590,7 @@ msgstr "Lõpetamisviisi valikud"
 #: src/widget/kill_panel/imp.rs:82
 msgctxt "kill"
 msgid "No Unit Selected"
-msgstr ""
+msgstr "Ühtegi üksust pole valitud"
 
 #: src/widget/kill_panel/imp.rs:159
 #, rust-format
@@ -1599,6 +1599,8 @@ msgid ""
 "{}\n"
 "Default Action: {}"
 msgstr ""
+"{}\n"
+"Vaikimisi toiming: {}"
 
 #. Dialog title
 #: src/widget/kill_panel/imp.rs:205
@@ -1624,7 +1626,7 @@ msgstr ""
 #: src/widget/kill_panel/imp.rs:233
 msgctxt "kill"
 msgid "Real-time signal"
-msgstr ""
+msgstr "Signaal reaalajas"
 
 #. Dialog title
 #: src/widget/kill_panel/imp.rs:239
@@ -1871,25 +1873,25 @@ msgstr ""
 #: src/widget/kill_panel/imp.rs:699
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
-msgstr ""
+msgstr "Sama, kui SIGSYS"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:67
 msgctxt "dbus"
 msgid "User Session Bus"
-msgstr ""
+msgstr "Kasutaja sessioonisiin"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:69
 msgctxt "dbus"
 msgid "System Bus"
-msgstr ""
+msgstr "Sessioonisiin"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:71
 msgctxt "dbus"
 msgid "System & User Session Bus"
-msgstr ""
+msgstr "Süsteemi ja kasutaja süsteemisiin"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:158
@@ -1925,25 +1927,25 @@ msgstr "Kasuta heledat kujundust"
 #: src/widget/preferences/data.rs:212
 msgctxt "pref orientation"
 msgid "Automatic"
-msgstr ""
+msgstr "Automaatne"
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:214
 msgctxt "pref orientation"
 msgid "Side by Side"
-msgstr ""
+msgstr "Paanid asuvad kõrvuti"
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:216
 msgctxt "pref orientation"
 msgid "Top Bottom"
-msgstr "Üleval ja all"
+msgstr "Paanid asuvad üksteise kohal"
 
 #. unit file no preference style selected
 #: src/widget/preferences/imp.rs:429
 msgctxt "pref file style"
 msgid "None"
-msgstr ""
+msgstr "Puudub"
 
 #: src/widget/unit_control_panel/controls.rs:64
 #: src/widget/unit_control_panel/controls.rs:182
@@ -2152,7 +2154,7 @@ msgstr ""
 #: src/widget/unit_file_panel/flatpak.rs:43
 msgctxt "unit file"
 msgid "Flatpak permission needed!"
-msgstr "Vajalikud on flatpaki õigused!"
+msgstr "Flatpak vajab õigusi!"
 
 #. flatpak permision error dialog line 1
 #: src/widget/unit_file_panel/flatpak.rs:53
