@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-11-23 00:56+0000\n"
+"PO-Revision-Date: 2025-11-24 01:51+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
@@ -660,7 +660,7 @@ msgstr "Näita eelistusi"
 #: data/interfaces/shortcuts.ui:24
 msgctxt "shortcut window"
 msgid "Open Search Unit"
-msgstr ""
+msgstr "Ava üksuste otsing"
 
 #: data/interfaces/shortcuts.ui:30
 msgctxt "shortcut window"
@@ -1380,7 +1380,7 @@ msgstr "Inimloetav"
 #: src/utils/time_handling.rs:40
 msgctxt "pref time style"
 msgid "Pretty usec"
-msgstr "Ilustatud μsek"
+msgstr "Inimloetav μsek"
 
 #. time style option
 #: src/utils/time_handling.rs:42
