@@ -31,6 +31,6 @@ tokio-util.workspace = true
 zbus.workspace = true
 zbus_macros =  "5"
 zbus_xml = "5"
-zvariant = "5"
+zvariant.workspace = true
 zvariant_derive =  "5"
 zvariant_utils =  "3"

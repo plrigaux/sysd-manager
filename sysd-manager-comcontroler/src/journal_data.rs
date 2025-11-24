@@ -1,3 +1,5 @@
+pub const BOOT_IDX: u8 = 200;
+
 #[derive(Clone, Copy, Debug)]
 pub enum JournalEventChunkInfo {
     NoMore,
@@ -152,5 +154,26 @@ impl JournalEvent {
             timestamp,
             priority,
         }
+    }
+}
+pub struct Boot {
+    pub index: i32,
+    pub boot_id: String,
+    pub first: u64,
+    pub last: u64,
+    pub total: i32,
+}
+
+impl Boot {
+    pub fn neg_offset(&self) -> i32 {
+        -(self.total - self.index)
+    }
+
+    pub fn index(&self) -> i32 {
+        self.index
+    }
+
+    pub fn duration(&self) -> u64 {
+        self.last - self.first
     }
 }

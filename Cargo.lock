@@ -1752,7 +1752,6 @@ checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 name = "sysd-manager"
 version = "2.9.2"
 dependencies = [
- "bitflags",
  "chrono",
  "clap",
  "const_format",
@@ -1775,17 +1774,12 @@ dependencies = [
  "serde",
  "sourceview5",
  "strum",
+ "sysd-manager-comcontroler",
  "sysd-manager-translating",
- "systemd",
  "tokio",
  "tokio-util",
  "toml",
- "zbus",
- "zbus_macros",
- "zbus_xml",
  "zvariant",
- "zvariant_derive",
- "zvariant_utils",
 ]
 
 [[package]]
@@ -1813,10 +1807,6 @@ dependencies = [
  "zvariant_derive",
  "zvariant_utils",
 ]
-
-[[package]]
-name = "sysd-manager-fondation"
-version = "0.1.0"
 
 [[package]]
 name = "sysd-manager-proxy"

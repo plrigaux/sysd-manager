@@ -3,21 +3,20 @@ use std::fmt::Write;
 
 use crate::consts::U64MAX;
 use crate::systemd::enums::{LoadState, Preset, UnitDBusLevel};
-use crate::utils::th::{self, TimestampStyle};
+
+use crate::systemd::{
+    self,
+    data::{UnitInfo, UnitProcess},
+};
 use crate::utils::writer::{
     HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE,
     SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
 };
 use crate::widget::preferences::data::PREFERENCES;
-use crate::{
-    swrite,
-    systemd::{
-        self,
-        data::{UnitInfo, UnitProcess},
-    },
-};
 
 use log::{debug, warn};
+use systemd::swrite;
+use systemd::time_handling::{self, TimestampStyle};
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
@@ -216,7 +215,7 @@ fn fill_duration(
         && active_exit_timestamp >= active_enter_timestamp
     {
         let duration = active_exit_timestamp - active_enter_timestamp;
-        let timespan = th::format_timespan(duration, th::MSEC_PER_SEC);
+        let timespan = time_handling::format_timespan(duration, time_handling::MSEC_PER_SEC);
         fill_row(unit_writer, "Duration:", &timespan);
     }
 }
@@ -245,7 +244,7 @@ fn add_since(
     let duration = value_to_u64(value);
 
     if duration != 0 {
-        let since = th::get_since_and_passed_time(duration, timestamp_style);
+        let since = time_handling::get_since_and_passed_time(duration, timestamp_style);
         Some(since)
     } else {
         None
@@ -728,7 +727,10 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
         return;
     }
 
-    let value_str = th::format_timespan(cpu_usage_nsec / th::NSEC_PER_USEC, th::USEC_PER_MSEC);
+    let value_str = time_handling::format_timespan(
+        cpu_usage_nsec / time_handling::NSEC_PER_USEC,
+        time_handling::USEC_PER_MSEC,
+    );
     fill_row(unit_writer, "CPU:", &value_str)
 }
 
@@ -846,8 +848,8 @@ fn fill_trigger(
         .get("NextElapseUSecMonotonic")
         .map_or(U64MAX, |v| value_to_u64(v));
 
-    let now_realtime = th::now_realtime();
-    let now_monotonic = th::now_monotonic();
+    let now_realtime = time_handling::now_realtime();
+    let now_monotonic = time_handling::now_monotonic();
 
     let next_elapse = calc_next_elapse(
         now_realtime,
@@ -857,7 +859,8 @@ fn fill_trigger(
     );
 
     let trigger_msg = if timestamp_is_set!(next_elapse) {
-        let (first, second) = th::get_since_and_passed_time(next_elapse, timestamp_style);
+        let (first, second) =
+            time_handling::get_since_and_passed_time(next_elapse, timestamp_style);
 
         format!("{first}; {second}")
     } else {

@@ -7,10 +7,11 @@ use gtk::{
 };
 use log::{info, warn};
 use strum::EnumIter;
+use systemd::time_handling::TimestampStyle;
 
 use std::sync::{LazyLock, RwLock};
 
-use crate::{systemd_gui::new_settings, utils::th::TimestampStyle};
+use crate::systemd_gui::new_settings;
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();

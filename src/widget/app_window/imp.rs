@@ -11,7 +11,7 @@ use crate::{
         ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
     },
-    systemd::{data::UnitInfo, journal::Boot},
+    systemd::data::UnitInfo,
     systemd_gui::new_settings,
     utils::palette::{blue, green, red},
     widget::{
@@ -38,6 +38,7 @@ use log::{debug, error, info, warn};
 use regex::Regex;
 
 use strum::IntoEnumIterator;
+use systemd::journal_data::Boot;
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";

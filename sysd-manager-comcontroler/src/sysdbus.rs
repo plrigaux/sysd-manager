@@ -7,6 +7,7 @@ mod tests;
 
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    str::FromStr,
     sync::RwLock,
 };
 
@@ -21,7 +22,6 @@ use zbus::{
     names::InterfaceName,
     proxy,
 };
-
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 use crate::{
@@ -173,7 +173,7 @@ pub fn get_unit_file_state(
     let body = message.body();
     let enablement_status: &str = body.deserialize()?;
 
-    Ok(EnablementStatus::from_str(enablement_status))
+    EnablementStatus::from_str(enablement_status)
 }
 
 fn call_systemd_manager_method<B>(
@@ -246,7 +246,7 @@ pub async fn get_unit_file_state_async(
     let body = message.body();
     let enablement_status: &str = body.deserialize()?;
 
-    Ok(EnablementStatus::from_str(enablement_status))
+    EnablementStatus::from_str(enablement_status)
 }
 
 pub async fn list_units_description_and_state_async(
@@ -423,7 +423,8 @@ fn fill_list_unit_files(
             continue;
         };
 
-        let status_code = EnablementStatus::from_str(unit_file.enablement_status);
+        let status_code =
+            EnablementStatus::from_str(unit_file.enablement_status).expect("Always status");
 
         systemd_units.push(SystemdUnitFile {
             full_name: full_name.to_owned(),
@@ -1282,13 +1283,13 @@ pub fn get_unit_active_state(
 }
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
-pub(super) struct UnitProcessDeserialize {
-    pub(super) path: String,
-    pub(super) pid: u32,
-    pub(super) name: String,
+pub(crate) struct UnitProcessDeserialize {
+    pub(crate) path: String,
+    pub(crate) pid: u32,
+    pub(crate) name: String,
 }
 
-pub fn retreive_unit_processes(
+pub(crate) fn retreive_unit_processes(
     dbus_level: UnitDBusLevel,
     unit_name: &str,
 ) -> Result<Vec<UnitProcessDeserialize>, SystemdErrors> {

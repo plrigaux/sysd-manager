@@ -5,11 +5,13 @@ use gettextrs::pgettext;
 use glib::value::ToValue;
 use glib::{self, EnumValue};
 use log::{info, warn};
+use std::str::FromStr;
 use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
 use strum::IntoEnumIterator;
 use zvariant::OwnedValue;
 
+use crate::errors::SystemdErrors;
 use crate::sysdbus::{INTERFACE_SYSTEMD_MANAGER, INTERFACE_SYSTEMD_UNIT};
 
 const MASKED: &str = "masked";
@@ -92,7 +94,7 @@ pub enum EnablementStatus {
 impl EnablementStatus {
     /// Takes the string containing the state information from the dbus message and converts it
     /// into a UnitType by matching the first character.
-    pub fn from_str(enablement_status: &str) -> EnablementStatus {
+    pub fn from_strr(enablement_status: &str) -> EnablementStatus {
         if enablement_status.is_empty() {
             info!("Empty Enablement Status: \"{enablement_status}\"");
             return EnablementStatus::Unknown;
@@ -234,7 +236,7 @@ impl EnablementStatus {
         }
     }
 
-    pub(crate) fn is_runtime(&self) -> bool {
+    pub fn is_runtime(&self) -> bool {
         matches!(
             self,
             EnablementStatus::LinkedRuntime
@@ -253,7 +255,7 @@ impl Display for EnablementStatus {
 impl From<Option<String>> for EnablementStatus {
     fn from(value: Option<String>) -> Self {
         if let Some(str_val) = value {
-            return EnablementStatus::from_str(&str_val);
+            return EnablementStatus::from_str(&str_val).expect("always Status");
         }
         EnablementStatus::Unknown
     }
@@ -261,7 +263,56 @@ impl From<Option<String>> for EnablementStatus {
 
 impl From<&str> for EnablementStatus {
     fn from(value: &str) -> Self {
-        EnablementStatus::from_str(value)
+        EnablementStatus::from_str(value).expect("always Status")
+    }
+}
+
+impl FromStr for EnablementStatus {
+    type Err = SystemdErrors;
+
+    fn from_str(enablement_status: &str) -> Result<Self, Self::Err> {
+        if enablement_status.is_empty() {
+            info!("Empty Enablement Status: \"{enablement_status}\"");
+            return Ok(EnablementStatus::Unknown);
+        }
+
+        let c = enablement_status.chars().next().unwrap();
+
+        let status = match c {
+            'a' => EnablementStatus::Alias,
+            's' => EnablementStatus::Static,
+            'd' => EnablementStatus::Disabled,
+            'e' => {
+                if enablement_status.len() == ENABLED.len() {
+                    EnablementStatus::Enabled
+                } else {
+                    EnablementStatus::EnabledRuntime
+                }
+            }
+            'i' => EnablementStatus::Indirect,
+            'l' => {
+                if enablement_status.len() == LINKED.len() {
+                    EnablementStatus::Linked
+                } else {
+                    EnablementStatus::LinkedRuntime
+                }
+            }
+            'm' => {
+                if enablement_status.len() == MASKED.len() {
+                    EnablementStatus::Masked
+                } else {
+                    EnablementStatus::MaskedRuntime
+                }
+            }
+            'b' => EnablementStatus::Bad,
+            'g' => EnablementStatus::Generated,
+            't' => EnablementStatus::Transient,
+            _ => {
+                warn!("Unknown State: {enablement_status}");
+                EnablementStatus::Unknown
+            }
+        };
+        Ok(status)
     }
 }
 
@@ -324,7 +375,7 @@ impl ActiveState {
         )
     }
 
-    pub(crate) fn glyph_str(&self) -> &str {
+    pub fn glyph_str(&self) -> &str {
         match self {
             ActiveState::Active => "●",
             ActiveState::Reloading => "↻",
@@ -577,7 +628,7 @@ impl KillWho {
         }
     }
 
-    pub(crate) fn description(&self) -> &str {
+    pub fn description(&self) -> &str {
         match self {
             Self::Main => "Only the main unit's process",
             Self::Control => "Only the unit's controled processes",
@@ -817,7 +868,7 @@ impl UnitDBusLevel {
         }
     }
 
-    pub(crate) fn from_short(suffix: &str) -> Self {
+    pub fn from_short(suffix: &str) -> Self {
         match suffix {
             "s" => UnitDBusLevel::System,
             "u" => UnitDBusLevel::UserSession,

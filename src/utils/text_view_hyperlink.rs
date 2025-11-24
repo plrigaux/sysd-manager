@@ -8,10 +8,8 @@ use gtk::{
 };
 use log::{info, warn};
 
-use crate::{
-    systemd::{self, enums::UnitDBusLevel},
-    widget::app_window::AppWindow,
-};
+use crate::systemd::{self, enums::UnitDBusLevel};
+use crate::widget::app_window::AppWindow;
 
 use super::writer::{PROP_UNDERLINE, TAG_DATA_LINK};
 

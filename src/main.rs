@@ -2,11 +2,12 @@ extern crate dotenv;
 extern crate env_logger;
 extern crate gtk;
 extern crate log;
+extern crate systemd;
 
 mod analyze;
 mod consts;
 mod errors;
-mod systemd;
+//mod systemd;
 mod systemd_gui;
 mod utils;
 mod widget;

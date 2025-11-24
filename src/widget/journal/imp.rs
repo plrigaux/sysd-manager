@@ -10,6 +10,7 @@ use gtk::{
         },
     },
 };
+use systemd::journal_data::BOOT_IDX;
 
 use std::{
     cell::{Cell, OnceCell, RefCell},
@@ -23,7 +24,6 @@ use crate::{
     systemd::{
         self, BootFilter,
         data::UnitInfo,
-        journal::BOOT_IDX,
         journal_data::{
             EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo, WhatGrab,
         },
@@ -439,6 +439,7 @@ impl JournalPanelImp {
         let journal_refresh_button = self.journal_refresh_button.downgrade();
         let level = unit.dbus_level();
         let primary_name = unit.primary();
+
         glib::spawn_future_local(async move {
             let journal_panel = upgrade!(journal_panel);
             let journal_refresh_button = upgrade!(journal_refresh_button);
@@ -448,7 +449,16 @@ impl JournalPanelImp {
             let boot_filter2 = boot_filter.clone();
 
             let journal_events: JournalEventChunk = gio::spawn_blocking(move || {
-                match systemd::get_unit_journal(primary_name, level, boot_filter, range) {
+                let message_max_char = PREFERENCES.journal_event_max_size() as usize;
+                let timestamp_style = PREFERENCES.timestamp_style();
+                match systemd::get_unit_journal(
+                    primary_name,
+                    level,
+                    boot_filter,
+                    range,
+                    message_max_char,
+                    timestamp_style,
+                ) {
                     Ok(journal_output) => journal_output,
                     Err(error) => {
                         warn!("Journal Events Error {error:?}");
@@ -590,12 +600,17 @@ impl JournalPanelImp {
         let unit_name = unit.primary();
         let level = unit.dbus_level();
         thread::spawn(move || {
+            let message_max_char = PREFERENCES.journal_event_max_size() as usize;
+            let timestamp_style = PREFERENCES.timestamp_style();
             systemd::get_unit_journal_continuous(
                 unit_name,
                 level,
                 range,
                 journal_continuous_receiver,
                 sender,
+                message_max_char,
+                timestamp_style,
+                super::check_for_new_journal_entry,
             )
         });
     }

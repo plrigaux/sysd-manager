@@ -9,7 +9,10 @@ use std::{collections::HashSet, ops::DerefMut, sync::mpsc::TryRecvError};
 use crate::{
     enums::UnitDBusLevel,
     errors::SystemdErrors,
-    journal_data::{EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo, WhatGrab},
+    journal_data::{
+        BOOT_IDX, Boot, EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo,
+        WhatGrab,
+    },
     time_handling::{TimestampStyle, USEC_PER_SEC},
 };
 use chrono::{Local, Utc};
@@ -34,7 +37,6 @@ const KEY_PRIORITY: &str = "PRIORITY";
 const KEY_PID: &str = "_PID";
 const KEY_COMM: &str = "_COMM";
 
-pub const BOOT_IDX: u8 = 200;
 //pub const EVENT_MAX_ID: u8 = 201;
 
 pub(super) fn get_unit_journal_events(
@@ -144,6 +146,7 @@ fn position_crawler(journal_reader: &mut Journal, range: &EventRange) -> Result<
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn get_unit_journal_events_continuous(
     unit_name: String,
     bus_level: UnitDBusLevel,
@@ -152,6 +155,7 @@ pub fn get_unit_journal_events_continuous(
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
     message_max_char: usize,
     timestamp_style: TimestampStyle,
+    check_for_new_journal_entry: fn(),
 ) -> Result<(), SystemdErrors> {
     info!("Journal Continiuous");
     let mut journal_reader = create_journal_reader(&unit_name, bus_level, BootFilter::Current)?;
@@ -183,10 +187,9 @@ pub fn get_unit_journal_events_continuous(
                         warn!("Send Error: {send_error:?}")
                     }
 
-                    glib::source::idle_add(|| {
-                        //crate::widget::journal::check_for_new_journal_entry();
-                        //TODO fix
-                        //FIXME refac
+                    glib::source::idle_add(move || {
+                        check_for_new_journal_entry(); //TODO validate if best
+
                         glib::ControlFlow::Break
                     });
                     out_list = JournalEventChunk::new_info(
@@ -242,28 +245,6 @@ pub fn get_unit_journal_events_continuous(
         out_list.push(journal_event);
     }
     // Unreachable
-}
-
-pub struct Boot {
-    pub index: i32,
-    pub boot_id: String,
-    pub first: u64,
-    pub last: u64,
-    pub total: i32,
-}
-
-impl Boot {
-    pub fn neg_offset(&self) -> i32 {
-        -(self.total - self.index)
-    }
-
-    pub fn index(&self) -> i32 {
-        self.index
-    }
-
-    pub fn duration(&self) -> u64 {
-        self.last - self.first
-    }
 }
 
 pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {

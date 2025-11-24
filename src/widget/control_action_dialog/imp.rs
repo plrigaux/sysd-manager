@@ -118,7 +118,7 @@ impl EnableUnitDialogImp {
                                 if dialog.imp().run_stop_now_switch.is_active() {
                                     //TODO Check if Reload Units needed
                                     let mode = dialog.imp().run_stop_mode_combo.selected_item();
-                                    let start_mode: StartStopMode = mode.into();
+                                    let start_mode: StartStopMode = object_start_stop_maode(mode);
                                     info!(
                                         "Try to start {unit_name:?} level: {dbus_level:?} mode: {start_mode:?}"
                                     );
@@ -202,7 +202,7 @@ impl EnableUnitDialogImp {
                                     && dialog.imp().run_stop_now_switch.is_active()
                                 {
                                     let mode = dialog.imp().run_stop_mode_combo.selected_item();
-                                    let mode: StartStopMode = mode.into();
+                                    let mode: StartStopMode = object_start_stop_maode(mode);
                                     info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
                                     let stop_results = systemd::stop_unit(
                                         unit.dbus_level(),
@@ -279,7 +279,7 @@ impl EnableUnitDialogImp {
                                     && dialog.imp().run_stop_now_switch.is_active()
                                 {
                                     let mode = dialog.imp().run_stop_mode_combo.selected_item();
-                                    let mode: StartStopMode = mode.into();
+                                    let mode: StartStopMode = object_start_stop_maode(mode);
                                     info!("Stop Unit {:?} mode {:?}", unit.primary(), mode);
                                     let stop_results = systemd::stop_unit(
                                         unit.dbus_level(),
@@ -706,7 +706,7 @@ impl WindowImpl for EnableUnitDialogImp {
         let force = self.force_switch.is_active();
         let run_now = self.run_stop_now_switch.is_active();
         let start_mode = self.run_stop_mode_combo.selected_item();
-        let start_mode: StartStopMode = start_mode.into();
+        let start_mode: StartStopMode = object_start_stop_maode(start_mode);
 
         let settings = self.settings.get().expect("Settings not None");
 
@@ -790,4 +790,16 @@ pub fn after_unit_file_action(
         control.selection_change(Some(&unit));
         Ok::<(), SystemdErrors>(())
     });
+}
+
+fn object_start_stop_maode(value: Option<glib::Object>) -> StartStopMode {
+    let Some(object) = value else {
+        return StartStopMode::default();
+    };
+
+    let enum_list_item = object
+        .downcast::<adw::EnumListItem>()
+        .expect("Needs to be EnumListItem");
+
+    StartStopMode::from(enum_list_item.name().as_str())
 }

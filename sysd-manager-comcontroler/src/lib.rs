@@ -20,6 +20,7 @@ use std::{
 
 use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode, UnitDBusLevel},
+    journal_data::Boot,
     time_handling::TimestampStyle,
 };
 use data::{DisEnAbleUnitFiles, UnitInfo, UnitProcess};
@@ -27,7 +28,6 @@ use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 
 use glib::GString;
-use journal::Boot;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 
@@ -321,6 +321,7 @@ pub fn get_unit_journal(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn get_unit_journal_continuous(
     unit_name: String,
     level: UnitDBusLevel,
@@ -329,6 +330,7 @@ pub fn get_unit_journal_continuous(
     sender: std::sync::mpsc::Sender<JournalEventChunk>,
     message_max_char: usize,
     timestamp_style: TimestampStyle,
+    check_for_new_journal_entry: fn(),
 ) {
     if let Err(err) = journal::get_unit_journal_events_continuous(
         unit_name,
@@ -338,6 +340,7 @@ pub fn get_unit_journal_continuous(
         sender,
         message_max_char,
         timestamp_style,
+        check_for_new_journal_entry,
     ) {
         warn!(
             "Journal TailError type: {:?}  Error: {:?}",

@@ -41,12 +41,12 @@ mod imp {
         },
     };
     use log::{debug, error, info, warn};
+    use systemd::journal_data::Boot;
 
     use super::ListBootsWindow;
     use crate::{
-        systemd::{self, BootFilter, data::UnitInfo, journal::Boot},
+        systemd::{self, BootFilter, data::UnitInfo},
         systemd_gui::new_settings,
-        utils::th::{format_timestamp_relative_duration, get_since_time},
         widget::{InterPanelMessage, app_window::AppWindow, preferences::data::PREFERENCES},
     };
 
@@ -415,19 +415,20 @@ mod imp {
 
         let timestamp_style = PREFERENCES.timestamp_style();
         let bada = move |child: gtk::Label, boot: Ref<Rc<Boot>>| {
-            let time = get_since_time(boot.first, timestamp_style);
+            let time = systemd::time_handling::get_since_time(boot.first, timestamp_style);
             child.set_text(&time);
         };
         bind!(col3factory, bada);
 
         let bada = move |child: gtk::Label, boot: Ref<Rc<Boot>>| {
-            let time = get_since_time(boot.last, timestamp_style);
+            let time = systemd::time_handling::get_since_time(boot.last, timestamp_style);
             child.set_text(&time);
         };
 
         bind!(col4factory, bada);
         let bada = |child: gtk::Label, boot: Ref<Rc<Boot>>| {
-            let duration = format_timestamp_relative_duration(boot.first, boot.last);
+            let duration =
+                systemd::time_handling::format_timestamp_relative_duration(boot.first, boot.last);
             child.set_text(&duration);
         };
         bind!(col5factory, bada);

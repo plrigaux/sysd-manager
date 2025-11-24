@@ -1,6 +1,8 @@
 use gettextrs::pgettext;
 use gio::Settings;
+use systemd::time_handling::TimestampStyle;
 
+use crate::widget::InterPanelMessage;
 use crate::{
     consts::ADWAITA,
     systemd_gui::new_settings,
@@ -17,7 +19,6 @@ use crate::{
         },
     },
 };
-use crate::{utils::th::TimestampStyle, widget::InterPanelMessage};
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
     StringObject, gio,

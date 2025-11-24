@@ -1,5 +1,5 @@
 [workspace]
-members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler", "sysd-manager-fondation"]
+members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler"]
 
 [workspace.package]
 edition = "2024"
@@ -66,6 +66,8 @@ zbus = { version = "5.11", default-features = false, features = [
 tracing = "0.1"
 tracing-subscriber = "0.3"
 tracing-journald = "0.3"
+zvariant = "5"
+
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
@@ -73,7 +75,6 @@ adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
 glib.workspace = true
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
-bitflags = "2.10" #to rem
 chrono.workspace = true
 clap.workspace = true
 constcat.workspace = true
@@ -90,16 +91,13 @@ regex.workspace = true
 serde.workspace = true
 sourceview5 = "0.10"
 strum.workspace = true
-sysd = { version = "0.10", package = "systemd" } #tto
 tokio.workspace = true
 tokio-util.workspace = true
 toml = "0.9"
-zbus.workspace = true
-zbus_macros =  "5"
-zbus_xml = "5"
-zvariant = "5"
-zvariant_derive =  "5"
-zvariant_utils =  "3"
+zvariant.workspace = true
+
+
+systemd = { version = "0.1.0", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
 
 
 [dev-dependencies]
