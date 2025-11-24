@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-10-23 04:02+0000\n"
-"Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
+"PO-Revision-Date: 2025-11-24 13:00+0000\n"
+"Last-Translator: Shijia Zhang <15964984+codgician@users.noreply.github.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -28,13 +28,13 @@ msgstr "SysD 管理器"
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
 msgid "Service manager"
-msgstr "服务经理"
+msgstr "服务管理器"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
-msgstr "一个用户友好的应用程序，用于管理 systemd 单元"
+msgstr "一个用于管理 systemd 单元，用户友好的应用程序"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
@@ -53,22 +53,22 @@ msgstr ""
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
 msgid "Unit Files"
-msgstr ""
+msgstr "服务单元文件"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
 msgid "Unit Dependencies"
-msgstr ""
+msgstr "服务单元依赖"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
 msgid "Unit File"
-msgstr ""
+msgstr "服务单元文件"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
 msgid "Unit Journal"
-msgstr ""
+msgstr "服务单元日志"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -78,12 +78,12 @@ msgstr ""
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Reload All Units"
-msgstr ""
+msgstr "重新加载所有服务单元"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
 msgid "Systemd Info"
-msgstr ""
+msgstr "Systemd 信息"
 
 #: data/interfaces/app_window.ui:24
 msgctxt "menu"
@@ -98,17 +98,17 @@ msgstr ""
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
 msgid "Preferences"
-msgstr ""
+msgstr "偏好设置"
 
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "键盘快捷键"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
 msgid "About"
-msgstr ""
+msgstr "关于"
 
 #: data/interfaces/app_window.ui:75
 msgctxt "title"
@@ -118,12 +118,12 @@ msgstr ""
 #: data/interfaces/app_window.ui:81
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
-msgstr ""
+msgstr "打开搜索栏"
 
 #: data/interfaces/app_window.ui:88
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
-msgstr ""
+msgstr "刷新服务单元列表"
 
 #. button
 #. title dialog
