@@ -1,5 +1,5 @@
 [workspace]
-members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy"]
+members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler", "sysd-manager-fondation"]
 
 [workspace.package]
 edition = "2024"
@@ -38,7 +38,8 @@ path = "src/main.rs"
 [features]
 default = []
 flatpak = []
-#gvariant = ["zvariant/gvariant"]
+
+
 
 [profile.release]
 lto = true
@@ -46,10 +47,17 @@ lto = true
 [workspace.dependencies]
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
+chrono = "0.4"
 dotenv = "0.15"
 env_logger = "0.11"
+gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
+glib = { version = "0", package = "glib", features = ["v2_84"] }
 libc = "0.2"
 log = "0.4"
+regex = "1.12"
+serde = "1.0"
+strum = { version = "0.27", features = ["derive"] }
+tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
 zbus = { version = "5.11", default-features = false, features = [
     "tokio",
@@ -63,10 +71,10 @@ tracing-journald = "0.3"
 pango = { version = "0", package = "pango", features = ["v1_56"] }
 adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
-glib = { version = "0", package = "glib", features = ["v2_84"] }
+glib.workspace = true
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
-bitflags = "2.10"
-chrono = "0.4"
+bitflags = "2.10" #to rem
+chrono.workspace = true
 clap.workspace = true
 constcat.workspace = true
 const_format = "0.2.34"
@@ -75,17 +83,16 @@ env_logger.workspace = true
 formatx = "0.2"
 foreign-types-shared = "0.3.1"
 futures-util = "0.3"
-gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
+gettext-rs.workspace = true
 libc.workspace = true
 log.workspace = true
-regex = "1.12"
-serde = "1.0"
-#serde = { version = "1.0", features = ["derive"] }
+regex.workspace = true
+serde.workspace = true
 sourceview5 = "0.10"
-strum = { version = "0.27", features = ["derive"] }
-sysd = { version = "0.10", package = "systemd" }
+strum.workspace = true
+sysd = { version = "0.10", package = "systemd" } #tto
 tokio.workspace = true
-tokio-util = "0.7"
+tokio-util.workspace = true
 toml = "0.9"
 zbus.workspace = true
 zbus_macros =  "5"

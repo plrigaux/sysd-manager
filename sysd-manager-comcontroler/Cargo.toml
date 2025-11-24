@@ -1,0 +1,36 @@
+[package]
+name = "sysd-manager-comcontroler"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+
+[features]
+default = []
+flatpak = []
+
+[dependencies]
+bitflags = "2.10"
+chrono.workspace = true
+env_logger.workspace = true
+futures-util = "0.3"
+gettext-rs.workspace = true
+glib.workspace = true
+libc.workspace = true
+log.workspace = true
+regex.workspace = true
+serde.workspace = true
+strum.workspace = true
+sysd = { version = "0.10", package = "systemd" } 
+tokio.workspace = true
+tokio-util.workspace = true
+zbus.workspace = true
+zbus_macros =  "5"
+zbus_xml = "5"
+zvariant = "5"
+zvariant_derive =  "5"
+zvariant_utils =  "3"

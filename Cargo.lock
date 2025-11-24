@@ -1789,6 +1789,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "sysd-manager-comcontroler"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "chrono",
+ "env_logger",
+ "futures-util",
+ "gettext-rs",
+ "glib",
+ "libc",
+ "log",
+ "regex",
+ "serde",
+ "strum",
+ "systemd",
+ "tokio",
+ "tokio-util",
+ "zbus",
+ "zbus_macros",
+ "zbus_xml",
+ "zvariant",
+ "zvariant_derive",
+ "zvariant_utils",
+]
+
+[[package]]
+name = "sysd-manager-fondation"
+version = "0.1.0"
+
+[[package]]
 name = "sysd-manager-proxy"
 version = "2.8.1"
 dependencies = [

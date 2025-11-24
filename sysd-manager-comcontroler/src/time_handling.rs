@@ -1,14 +1,12 @@
 use chrono::{DateTime, Local, TimeDelta, TimeZone, Utc};
 use gettextrs::pgettext;
-use gtk::glib;
+use glib;
 use strum::EnumIter;
 
 use std::{
     ffi::CStr,
     fmt::{Display, Write},
 };
-
-use crate::consts::U64MAX;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, EnumIter)]
 pub enum TimestampStyle {
@@ -362,7 +360,7 @@ fn now(clock_id: i32) -> u64 {
 
     time.tv_sec as u64 * USEC_PER_SEC + time.tv_nsec as u64 / NSEC_PER_USEC
 }
-
+pub const U64MAX: u64 = 18_446_744_073_709_551_615; //FIXME define only onec
 pub fn format_timespan(mut duration: u64, accuracy: u64) -> String {
     let mut out = String::with_capacity(64);
 
