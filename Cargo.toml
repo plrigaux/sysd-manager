@@ -36,10 +36,8 @@ name = "sysd-manager"
 path = "src/main.rs"
 
 [features]
-default = []
-flatpak = []
-
-
+default = ["systemd/default"]
+flatpak = ["systemd/flatpak"]
 
 [profile.release]
 lto = true
@@ -59,15 +57,15 @@ serde = "1.0"
 strum = { version = "0.27", features = ["derive"] }
 tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
-zbus = { version = "5.11", default-features = false, features = [
-    "tokio",
-    "blocking-api",
-] }
+
 tracing = "0.1"
 tracing-subscriber = "0.3"
 tracing-journald = "0.3"
 zvariant = "5"
-
+zbus = { version = "5.11", default-features = false, features = [
+    "tokio",
+    "blocking-api",
+] }
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
@@ -97,7 +95,7 @@ toml = "0.9"
 zvariant.workspace = true
 
 
-systemd = { version = "0.1.0", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
+systemd = { version = "0.1.0", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" , optional = true }
 
 
 [dev-dependencies]

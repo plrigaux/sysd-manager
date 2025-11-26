@@ -587,6 +587,7 @@ fn test_queue_signal_unit() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 pub(super) fn test_unit_clean() -> Result<(), SystemdErrors> {
+    init();
     let handle_answer = |_method: &str, _return_message: &Message| {
         info!("Clean Unit SUCCESS");
 
@@ -595,13 +596,18 @@ pub(super) fn test_unit_clean() -> Result<(), SystemdErrors> {
     let path = unit_dbus_path_from_name(TEST_SERVICE);
     let what = ["logs"];
 
-    send_unit_message(
+    let r = send_unit_message(
         UnitDBusLevel::System,
         "Clean",
         &(&what),
         handle_answer,
         &path,
-    )
+    );
+
+    if let Err(ref e) = r {
+        error!("{e:?}");
+    }
+    r
 }
 
 fn send_unit_message<T, U>(
