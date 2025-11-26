@@ -1,12 +1,11 @@
 use log::info;
 use zbus::interface;
-
-pub struct Greeter {
+pub struct SysDManagerProxy {
     pub count: u64,
 }
 
-#[interface(name = "org.zbus.MyGreeter1")]
-impl Greeter {
+#[interface(name = "io.github.plrigaux.SysDManager")]
+impl SysDManagerProxy {
     // Can be `async` as well.
     pub async fn say_hello(&mut self, name: &str) -> String {
         let id = unsafe { libc::getegid() };
