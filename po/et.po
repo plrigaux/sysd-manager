@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-11-24 01:51+0000\n"
+"PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/et/>\n"
@@ -179,12 +179,14 @@ msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
 "necessary"
 msgstr ""
+"Määra, kas teistele üksustele viitavad sümbollingid peaks vajadusel "
+"asendatama"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:66
 msgctxt "enable unit file"
 msgid "Force"
-msgstr ""
+msgstr "Käivita tegevus sundkorras"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:71
@@ -193,6 +195,8 @@ msgid ""
 "Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/"
 "system.attached"
 msgstr ""
+"Lisa sümbollingid kaustadesse /etc/systemd/system.attached ja /run/systemd/"
+"system.attached või eemalda nad sealt"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:73
@@ -204,7 +208,7 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:87
 msgctxt "enable unit file"
 msgid "Start Unit just after being enabled"
-msgstr ""
+msgstr "Käivita üksus kohe peale sisselülitamist"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:88
@@ -234,7 +238,7 @@ msgstr "Lähtesta"
 #: data/interfaces/control_action_dialog.ui:114
 msgctxt "enable unit file"
 msgid "Enable"
-msgstr "Luba"
+msgstr "Lülita sisse"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
@@ -250,13 +254,13 @@ msgstr "Värskenda andmeid"
 #: data/interfaces/journal_panel.ui:27
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
-msgstr ""
+msgstr "Kustuta kuvatud süsteemipäeviku kirjed ja laadi nad uuesti"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:38
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr ""
+msgstr "Näita süsteemipäeviku uusi kirjeid vastavalt nende lisandumisele"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:54
@@ -411,7 +415,7 @@ msgstr "Peida"
 #: data/interfaces/mask_unit_dialog.ui:27
 msgctxt "mask"
 msgid "To mask temporarily until the next system reboot"
-msgstr ""
+msgstr "Peida üksus ajutiselt kuni järgmise taaskäivituseni"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:28
@@ -485,7 +489,7 @@ msgstr "Eelistatud kujundus"
 #: data/interfaces/preferences.ui:29
 msgctxt "preference"
 msgid "Application's division orientation mode"
-msgstr ""
+msgstr "Rakenduse paanide paigutuse viis"
 
 #. row
 #: data/interfaces/preferences.ui:30
@@ -568,7 +572,7 @@ msgstr "Üksuse kirjeldus"
 #: data/interfaces/preferences.ui:103
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
-msgstr ""
+msgstr "Muura üksust kirjeldav pikk tekst mitmele reale"
 
 #. title
 #: data/interfaces/preferences.ui:104
@@ -835,6 +839,8 @@ msgstr "_Eelseadistus ➚"
 msgctxt "control"
 msgid "Enable or Disable one or more unit files according to the preset policy"
 msgstr ""
+"Lülita üks või enam üksusefaili sisse/välja vastavalt eelseadistatud "
+"reeglitele"
 
 #. button
 #: data/interfaces/side_control_panel.ui:189
@@ -1276,30 +1282,32 @@ msgid ""
 "The unit file has been created dynamically with the runtime API. Transient "
 "units may not be enabled."
 msgstr ""
+"See üksuse fail on loodud dünaamiliselt käitusaegse API poolt. Selliseid "
+"üksusi ei saa sisse lülitada."
 
 #. menu option
 #: src/systemd/enums.rs:632
 msgctxt "dependency"
 msgid "Forward"
-msgstr ""
+msgstr "Pärisuunas"
 
 #. menu option
 #: src/systemd/enums.rs:634
 msgctxt "dependency"
 msgid "Reverse"
-msgstr ""
+msgstr "Tagurpidi suunas"
 
 #. menu option
 #: src/systemd/enums.rs:636
 msgctxt "dependency"
 msgid "After"
-msgstr ""
+msgstr "Pärast"
 
 #. menu option
 #: src/systemd/enums.rs:638
 msgctxt "dependency"
 msgid "Before"
-msgstr ""
+msgstr "Enne"
 
 #. menu option
 #: src/systemd/enums.rs:812
@@ -1362,6 +1370,9 @@ msgid ""
 "Flatpack.\n"
 "Please install it to enable all features."
 msgstr ""
+"Kui kasutad seda rakendust flatpakina, siis peab <b>flatpak-spawn</b> olema "
+"paigaldatud.\n"
+"Et täisfunktsionaalsus toimiks, palun paigalda see rakendus."
 
 #: src/systemd/errors.rs:57
 msgctxt "error"
@@ -1369,6 +1380,8 @@ msgid ""
 "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
 "interface when the program is a Flatpak."
 msgstr ""
+"Kui rakendus on paigaldatud flatpakina, siis vajab ta õigusi suhelda "
+"<b>org.freedesktop.Flatpak</b> D-Bus'i liidesega."
 
 #. time style option
 #: src/utils/time_handling.rs:38
