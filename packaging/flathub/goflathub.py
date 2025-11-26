@@ -234,7 +234,7 @@ def lint():
             "repo",
             "repo",
         ],
-        cwd=FLATPACK_BUILD_DIR
+        cwd=FLATPACK_BUILD_DIR,
     )
 
 
@@ -292,6 +292,18 @@ def diag():
     flatpak list"""
 
 
+def ln(file: str):
+
+    bcommon.cmd_run(
+        [
+            "ln",
+            "-svfn",
+            f"../sysd-manager/{file}",
+            f"{FLATPACK_BUILD_DIR}/{file}",
+        ]
+    )
+
+
 def set_required_files(from_git: bool):
     # https://docs.flathub.org/docs/for-app-authors/requirements/#required-files
     print(f"{color.BOLD}Add required files for {color.CYAN}Flathub{color.END}")
@@ -311,12 +323,24 @@ def set_required_files(from_git: bool):
             "build.rs",
             "screenshots",
             "po",
-            "sysd-manager-translating", 
-            "transtools", 
+            "sysd-manager-translating",
+            "sysd-manager-proxy",
+            "sysd-manager-comcontroler",
+            "transtools",
             "tiny_daemon",
             f"{FLATPACK_BUILD_DIR}",
         ]
     )
+    
+    """     ln("src")
+    ln("data")
+    ln("screenshots")
+    ln("po")
+    ln("sysd-manager-translating")
+    ln("sysd-manager-proxy")
+    ln("sysd-manager-comcontroler")
+    ln("transtools")
+    ln("tiny_daemon") """
 
     set_manifest(from_git, FLATPACK_BUILD_DIR)
 
@@ -406,16 +430,20 @@ def deploy():
     print(f"{color.BOLD}Set files for deployment on {color.CYAN}Flathub{color.END}")
 
     generate(FLATHUB_DIR)
-    
-    bcommon.cmd_run(["git", "config", "pull.rebase", "true"], cwd=FLATHUB_DIR, on_fail_exit=False)
+
+    bcommon.cmd_run(
+        ["git", "config", "pull.rebase", "true"], cwd=FLATHUB_DIR, on_fail_exit=False
+    )
     bcommon.cmd_run(["git", "pull"], cwd=FLATHUB_DIR, on_fail_exit=False)
 
     set_manifest(True, FLATHUB_DIR)
 
     version = bcommon.get_version_tag()
-   
-    bcommon.cmd_run(["git", "commit", "-a", "-m", version], cwd=FLATHUB_DIR, on_fail_exit=False)
-        
+
+    bcommon.cmd_run(
+        ["git", "commit", "-a", "-m", version], cwd=FLATHUB_DIR, on_fail_exit=False
+    )
+
     bcommon.cmd_run(["git", "push"], cwd=FLATHUB_DIR)
 
 
