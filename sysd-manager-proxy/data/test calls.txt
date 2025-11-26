@@ -1,0 +1,8 @@
+
+
+dbus-send --system --print-reply --dest=org.zbus.MyGreeter /org/zbus/MyGreeter org.freedesktop.DBus.Introspectable.Introspect
+
+
+busctl --system call io.github.plrigaux.SysDManager /io/github/plrigaux/SysDManager io.github.plrigaux.SysDManager MyUserId
+
+dbus-send --system --print-reply --dest=io.github.plrigaux.SysDManager  /io/github/plrigaux/SysDManager io.github.plrigaux.SysDManager.MyUserId

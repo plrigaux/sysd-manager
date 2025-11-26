@@ -45,7 +45,7 @@ async fn install() -> Result<(), Box<dyn Error>> {
     info!("The current directory is {}", path.display());
 
     let mut src = PathBuf::from("data");
-    src.push("io.github.plrigaux.sysd-manager.conf");
+    src.push("io.github.plrigaux.SysDManager.conf");
 
     let dst = PathBuf::from("/usr/share/dbus-1/system.d");
     //   dst.push("io.github.plrigaux.sysd-manager.conf");
@@ -77,8 +77,8 @@ async fn serve_proxy() -> Result<(), Box<dyn Error>> {
     info!("User id {id}");
     let greeter = SysDManagerProxy { count: 0 };
     let _conn = connection::Builder::system()?
-        .name("org.zbus.MyGreeter")?
-        .serve_at("/org/zbus/MyGreeter", greeter)?
+        .name("io.github.plrigaux.SysDManager")?
+        .serve_at("/io/github/plrigaux/SysDManager", greeter)?
         .build()
         .await?;
 
