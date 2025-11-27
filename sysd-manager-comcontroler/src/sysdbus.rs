@@ -11,6 +11,7 @@ use std::{
     sync::RwLock,
 };
 
+use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
 use serde::Deserialize;
@@ -518,7 +519,7 @@ pub(super) fn restart_unit(
 pub(super) fn enable_unit_files(
     level: UnitDBusLevel,
     unit_names_or_files: &[&str],
-    flags: DisEnableFlags,
+    flags: BitFlags<DisEnableFlags>,
 ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
     fn handle_answer(
         _method: &str,
@@ -536,7 +537,7 @@ pub(super) fn enable_unit_files(
     send_disenable_message(
         level,
         METHOD_ENABLE_UNIT_FILES,
-        &(unit_names_or_files, flags.as_u64()),
+        &(unit_names_or_files, flags.bits_c() as u64),
         handle_answer,
     )
 }
@@ -544,7 +545,7 @@ pub(super) fn enable_unit_files(
 pub(super) fn disable_unit_files(
     level: UnitDBusLevel,
     unit_names_or_files: &[&str],
-    flags: DisEnableFlags,
+    flags: BitFlags<DisEnableFlags>,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     fn handle_answer(
         _method: &str,
@@ -562,7 +563,7 @@ pub(super) fn disable_unit_files(
     send_disenable_message(
         level,
         METHOD_DISABLE_UNIT_FILES,
-        &(unit_names_or_files, flags.as_u64()),
+        &(unit_names_or_files, flags.bits_c() as u64),
         handle_answer,
     )
 }

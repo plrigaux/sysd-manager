@@ -48,6 +48,7 @@ constcat = "0.6"
 chrono = "0.4"
 dotenv = "0.15"
 env_logger = "0.11"
+enumflags2 = "0.7"
 gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
 glib = { version = "0", package = "glib", features = ["v2_84"] }
 libc = "0.2"
@@ -79,6 +80,7 @@ constcat.workspace = true
 const_format = "0.2.34"
 dotenv.workspace = true
 env_logger.workspace = true
+enumflags2.workspace = true
 formatx = "0.2"
 foreign-types-shared = "0.3.1"
 futures-util = "0.3"

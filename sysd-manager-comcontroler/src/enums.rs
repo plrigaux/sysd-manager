@@ -1,6 +1,8 @@
 /* use super::sysdbus::INTERFACE_SYSTEMD_MANAGER;
 use super::sysdbus::INTERFACE_SYSTEMD_UNIT; */
-use bitflags::bitflags;
+
+use enumflags2::_internal::RawBitFlags;
+use enumflags2::bitflags;
 use gettextrs::pgettext;
 use glib::value::ToValue;
 use glib::{self, EnumValue};
@@ -915,13 +917,13 @@ impl From<&str> for UnitDBusLevel {
     }
 }
 
-bitflags! {
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    pub struct DisEnableFlags : u8{
-      const SD_SYSTEMD_UNIT_RUNTIME  = 1;
-      const SD_SYSTEMD_UNIT_FORCE    = 1 << 1;
-      const SD_SYSTEMD_UNIT_PORTABLE = 1 << 2;
-    }
+#[bitflags]
+#[repr(u8)]
+#[derive(Copy, Clone)]
+pub enum DisEnableFlags {
+    SdSystemdUnitRuntime = 1,
+    SdSystemdUnitForce = 1 << 1,
+    SdSystemdUnitPortable = 1 << 2,
 }
 
 impl DisEnableFlags {

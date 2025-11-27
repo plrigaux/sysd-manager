@@ -14,8 +14,8 @@ default = []
 flatpak = []
 
 [dependencies]
-bitflags = "2.10"
 chrono.workspace = true
+enumflags2.workspace = true
 env_logger.workspace = true
 futures-util = "0.3"
 gettext-rs.workspace = true

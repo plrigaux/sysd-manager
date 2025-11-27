@@ -2,11 +2,9 @@ mod install;
 use clap::{Parser, Subcommand};
 use std::{error::Error, future::pending};
 use sysd_manager_proxy_lib::SysDManagerProxy;
-use sysd_manager_proxy_lib::auth;
 use sysd_manager_proxy_lib::init_authority;
 use tracing::{error, info};
 use zbus::connection;
-use zbus_polkit::policykit1::*;
 
 /// General purpose greet/farewell messaging.
 #[derive(Parser)]
@@ -48,9 +46,9 @@ async fn serve_proxy() -> Result<(), Box<dyn Error>> {
     let id = unsafe { libc::getegid() };
 
     init_authority().await?;
-    let auth = auth();
+    /*  let auth = auth(); */
     let proxy = SysDManagerProxy::new()?;
-    let result = auth
+    /*   let result = auth
         .check_authorization(
             &proxy.subject,
             "io.github.plrigaux.SysDManager",
@@ -60,7 +58,7 @@ async fn serve_proxy() -> Result<(), Box<dyn Error>> {
         )
         .await?;
 
-    info!("Polkit {result:?}");
+    info!("Polkit {result:?}"); */
 
     info!("User id {id}");
     //let greeter = SysDManagerProxy { count: 0 };

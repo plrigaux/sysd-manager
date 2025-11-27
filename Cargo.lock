@@ -1898,6 +1898,7 @@ dependencies = [
  "const_format",
  "constcat",
  "dotenv",
+ "enumflags2",
  "env_logger",
  "foreign-types-shared",
  "formatx",
@@ -1927,8 +1928,8 @@ dependencies = [
 name = "sysd-manager-comcontroler"
 version = "0.1.0"
 dependencies = [
- "bitflags",
  "chrono",
+ "enumflags2",
  "env_logger",
  "futures-util",
  "gettext-rs",
@@ -1956,6 +1957,7 @@ dependencies = [
  "clap",
  "constcat",
  "dotenv",
+ "enumflags2",
  "env_logger",
  "libc",
  "log",

@@ -24,6 +24,7 @@ use crate::{
     time_handling::TimestampStyle,
 };
 use data::{DisEnAbleUnitFiles, UnitInfo, UnitProcess};
+use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 
@@ -186,13 +187,13 @@ pub fn disenable_unit_file(
             let res = sysdbus::enable_unit_files(
                 level,
                 &[primary_name],
-                DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
+                DisEnableFlags::SdSystemdUnitForce.into(),
             )?;
             DisEnableUnitFilesOutput::Enable(res)
         }
         _ => {
-            let flags = if enable_status.is_runtime() {
-                DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
+            let flags: BitFlags<DisEnableFlags> = if enable_status.is_runtime() {
+                DisEnableFlags::SdSystemdUnitRuntime.into()
             } else {
                 DisEnableFlags::empty()
             };
@@ -208,7 +209,7 @@ pub fn disenable_unit_file(
 pub fn enable_unit_file(
     level: UnitDBusLevel,
     unit_file: &str,
-    flags: DisEnableFlags,
+    flags: BitFlags<DisEnableFlags>,
 ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
     sysdbus::enable_unit_files(level, &[unit_file], flags)
 }
@@ -216,7 +217,7 @@ pub fn enable_unit_file(
 pub fn disable_unit_files(
     level: UnitDBusLevel,
     unit_file: &str,
-    flags: DisEnableFlags,
+    flags: BitFlags<DisEnableFlags>,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     sysdbus::disable_unit_files(level, &[unit_file], flags)
 }

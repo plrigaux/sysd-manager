@@ -1,12 +1,11 @@
-use tokio::net::TcpStream;
-use zvariant::Value;
-
+use super::*;
 use crate::{
     SystemdUnitFile,
     enums::{DependencyType, StartStopMode},
 };
-
-use super::*;
+use enumflags2::BitFlag;
+use tokio::net::TcpStream;
+use zvariant::Value;
 
 pub const TEST_SERVICE: &str = "tiny_daemon.service";
 
@@ -212,7 +211,7 @@ fn test_enable_unit_files() -> Result<(), SystemdErrors> {
     let _res = enable_unit_files(
         UnitDBusLevel::System,
         &[TEST_SERVICE],
-        DisEnableFlags::SD_SYSTEMD_UNIT_FORCE,
+        DisEnableFlags::SdSystemdUnitForce.into(),
     )?;
 
     Ok(())
@@ -225,7 +224,7 @@ fn test_disable_unit_files() -> Result<(), SystemdErrors> {
     let _res = disable_unit_files(
         UnitDBusLevel::System,
         &[TEST_SERVICE],
-        DisEnableFlags::empty(),
+        DisEnableFlags::empty().into(),
     )?;
 
     Ok(())

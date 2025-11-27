@@ -1,4 +1,5 @@
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use enumflags2::BitFlag;
 use gio::glib::BoolError;
 use gtk::{
     glib::{self},
@@ -159,18 +160,19 @@ impl EnableUnitDialogImp {
                     }
                 };
 
+                //let mut flags = BitFlags<DisEnableFlags>::empty();
                 let mut flags = DisEnableFlags::empty();
 
                 if force {
-                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_FORCE
+                    flags |= DisEnableFlags::SdSystemdUnitForce
                 }
 
                 if self.portable_switch.is_active() {
-                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_PORTABLE
+                    flags |= DisEnableFlags::SdSystemdUnitPortable
                 }
 
                 if runtime {
-                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
+                    flags |= DisEnableFlags::SdSystemdUnitRuntime
                 }
 
                 let lambda = move |_params: Option<(UnitDBusLevel, String)>| {
@@ -235,15 +237,15 @@ impl EnableUnitDialogImp {
                 let mut flags = DisEnableFlags::empty();
 
                 if force {
-                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_FORCE
+                    flags |= DisEnableFlags::SdSystemdUnitForce
                 }
 
                 if self.portable_switch.is_active() {
-                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_PORTABLE
+                    flags |= DisEnableFlags::SdSystemdUnitPortable
                 }
 
                 if runtime {
-                    flags |= DisEnableFlags::SD_SYSTEMD_UNIT_RUNTIME
+                    flags |= DisEnableFlags::SdSystemdUnitRuntime
                 }
 
                 let lambda = move |params: Option<(UnitDBusLevel, String)>| {
