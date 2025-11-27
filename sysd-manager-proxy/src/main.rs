@@ -4,6 +4,7 @@ use std::{error::Error, future::pending};
 use sysd_manager_proxy_lib::SysDManagerProxy;
 use sysd_manager_proxy_lib::init_authority;
 use tracing::{error, info};
+use tracing_subscriber::fmt;
 use zbus::connection;
 
 /// General purpose greet/farewell messaging.
@@ -24,7 +25,16 @@ enum CommandArg {
 // Although we use `tokio` here, you can use any async runtime of choice.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    tracing_subscriber::fmt().init();
+    let timer = time::format_description::parse(
+        "[year]-[month padding:zero]-[day padding:zero] [hour]:[minute]:[second].[subsecond digits:2]",
+    )
+    .expect("Invalid time format");
+
+    let time_offset = time::UtcOffset::current_local_offset().unwrap_or(time::UtcOffset::UTC);
+
+    let timer = fmt::time::OffsetTime::new(time_offset, timer);
+    tracing_subscriber::fmt().with_timer(timer).init();
+    //tracing_subscriber::fmt().init();
 
     let args = Args::parse();
 

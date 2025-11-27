@@ -34,3 +34,4 @@ tracing-subscriber.workspace = true
 tracing-journald.workspace = true
 zbus_polkit = "5"
 enumflags2.workspace = true
+time = { version = "0.3", features = ["formatting", "local-offset"] }

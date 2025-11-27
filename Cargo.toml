@@ -60,7 +60,7 @@ tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
 
 tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing-subscriber = { version="0.3", features = ["fmt", "time"]}
 tracing-journald = "0.3"
 zvariant = "5"
 zbus = { version = "5.11", default-features = false, features = [

@@ -224,7 +224,7 @@ fn test_disable_unit_files() -> Result<(), SystemdErrors> {
     let _res = disable_unit_files(
         UnitDBusLevel::System,
         &[TEST_SERVICE],
-        DisEnableFlags::empty().into(),
+        DisEnableFlags::empty(),
     )?;
 
     Ok(())
