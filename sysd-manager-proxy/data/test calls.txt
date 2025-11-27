@@ -6,3 +6,6 @@ dbus-send --system --print-reply --dest=org.zbus.MyGreeter /org/zbus/MyGreeter o
 busctl --system call io.github.plrigaux.SysDManager /io/github/plrigaux/SysDManager io.github.plrigaux.SysDManager MyUserId
 
 dbus-send --system --print-reply --dest=io.github.plrigaux.SysDManager  /io/github/plrigaux/SysDManager io.github.plrigaux.SysDManager.MyUserId
+
+
+gdbus introspect --system --dest org.freedesktop.PolicyKit1 --object-path /org/freedesktop/PolicyKit1/Autority

@@ -1,9 +1,12 @@
+mod install;
 use clap::{Parser, Subcommand};
-use std::{env, error::Error, future::pending, path::PathBuf};
+use std::{error::Error, future::pending};
 use sysd_manager_proxy_lib::SysDManagerProxy;
-use tokio::process::Command;
+use sysd_manager_proxy_lib::auth;
+use sysd_manager_proxy_lib::init_authority;
 use tracing::{error, info};
 use zbus::connection;
+use zbus_polkit::policykit1::*;
 
 /// General purpose greet/farewell messaging.
 #[derive(Parser)]
@@ -17,6 +20,7 @@ struct Args {
 enum CommandArg {
     Serve,
     Install,
+    Clean,
 }
 
 // Although we use `tokio` here, you can use any async runtime of choice.
@@ -27,7 +31,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
     let result = match args.cmd {
-        Some(CommandArg::Install) => install().await,
+        Some(CommandArg::Install) => install::install().await,
+        Some(CommandArg::Clean) => install::clean().await,
         Some(CommandArg::Serve) => serve_proxy().await,
         None => serve_proxy().await,
     };
@@ -39,46 +44,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn install() -> Result<(), Box<dyn Error>> {
-    info!("Install proxy");
-    let path = env::current_dir()?;
-    info!("The current directory is {}", path.display());
-
-    let mut src = PathBuf::from("data");
-    src.push("io.github.plrigaux.SysDManager.conf");
-
-    let dst = PathBuf::from("/usr/share/dbus-1/system.d");
-    //   dst.push("io.github.plrigaux.sysd-manager.conf");
-
-    info!("Copying {} --> {}", src.display(), dst.display());
-    //fs::copy(src, dst).await?;
-
-    let x = Command::new("sudo")
-        .arg("install")
-        .arg("-v")
-        .arg("-Dm644")
-        .arg(src)
-        .arg("-t")
-        .arg(dst)
-        .output()
-        .await?;
-
-    if x.status.success() {
-        for l in String::from_utf8_lossy(&x.stdout).lines() {
-            info!("{l}");
-        }
-    }
-
-    Ok(())
-}
-
 async fn serve_proxy() -> Result<(), Box<dyn Error>> {
     let id = unsafe { libc::getegid() };
+
+    init_authority().await?;
+    let auth = auth();
+    let proxy = SysDManagerProxy::new()?;
+    let result = auth
+        .check_authorization(
+            &proxy.subject,
+            "io.github.plrigaux.SysDManager",
+            &std::collections::HashMap::new(),
+            CheckAuthorizationFlags::AllowUserInteraction.into(),
+            "",
+        )
+        .await?;
+
+    info!("Polkit {result:?}");
+
     info!("User id {id}");
-    let greeter = SysDManagerProxy { count: 0 };
+    //let greeter = SysDManagerProxy { count: 0 };
     let _conn = connection::Builder::system()?
         .name("io.github.plrigaux.SysDManager")?
-        .serve_at("/io/github/plrigaux/SysDManager", greeter)?
+        .serve_at("/io/github/plrigaux/SysDManager", proxy)?
         .build()
         .await?;
 
