@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-21 19:56-0500\n"
-"PO-Revision-Date: 2025-11-27 08:01+0000\n"
+"PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/ru/>\n"
@@ -66,7 +66,7 @@ msgstr "Зависимости юнита"
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
 msgid "Unit File"
-msgstr "Юнит-файл"
+msgstr "Юнит-Файл"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
@@ -76,7 +76,7 @@ msgstr "Журнал юнита"
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
 msgid "Analyze Blame"
-msgstr "Анализ задержек"
+msgstr "Анализ задержки"
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
@@ -1069,12 +1069,12 @@ msgstr "Полученные юнит-файлы"
 #: data/interfaces/unit_list_panel.ui:72
 msgctxt "list tooltip"
 msgid "Units displayed"
-msgstr "Отображённые юниты"
+msgstr "Отображаемые юниты"
 
 #: data/interfaces/unit_list_panel.ui:77
 msgctxt "list info"
 msgid "Units Displayed"
-msgstr "Отображаемые юниты"
+msgstr "Отображаемые Юниты"
 
 #: data/interfaces/unit_list_panel.ui:87
 msgctxt "list info tooltip"
@@ -1192,7 +1192,7 @@ msgstr "Скопировать все свойства в буфер обмен�
 #: src/analyze/mod.rs:28
 msgctxt "analyse blame"
 msgid "Analyse Blame"
-msgstr "Анализ задержки"
+msgstr "Анализ задержек"
 
 #. label total
 #: src/analyze/mod.rs:48
@@ -1250,9 +1250,9 @@ msgid ""
 "in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in "
 "<span fgcolor='#62a0ea'>/run/systemd/system/</span>)."
 msgstr ""
-"Включён через симлинки <span fgcolor='#62a0ea'>.wants/</span>, <span "
-"fgcolor='#62a0ea'>.requires/</span> или <u>Alias=</u> (постоянно в <span "
-"fgcolor='#62a0ea'>/etc/systemd/system/</span> или временно в <span "
+"Включен через символические ссылки <span fgcolor='#62a0ea'>.wants/</span>, "
+"<span fgcolor='#62a0ea'>.requires/</span> или <u>Alias=</u> (постоянно в "
+"<span fgcolor='#62a0ea'>/etc/systemd/system/</span> или временно в <span "
 "fgcolor='#62a0ea'>/run/systemd/system/</span>)."
 
 #: src/systemd/enums.rs:188
@@ -1565,7 +1565,7 @@ msgstr "Замаскировать"
 #: src/widget/control_action_dialog/mod.rs:94
 msgctxt "action unit file"
 msgid "Start"
-msgstr "Запустить"
+msgstr "Запуск"
 
 #: src/widget/control_action_dialog/mod.rs:97
 msgctxt "action unit file"
@@ -1683,7 +1683,7 @@ msgstr "Сигнал в реальном времени"
 #: src/widget/kill_panel/imp.rs:239
 msgctxt "kill"
 msgid "Send a Kill Signal to Unit"
-msgstr "Отправить юниту сигнал завершения"
+msgstr "Отправить kill-сигнал юниту"
 
 #: src/widget/kill_panel/imp.rs:308
 #, rust-format
@@ -2061,7 +2061,7 @@ msgstr "Включить юнит {}"
 #: src/widget/unit_control_panel/enums.rs:23
 msgctxt "toast"
 msgid "start"
-msgstr "запуск"
+msgstr "запустить"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:25
