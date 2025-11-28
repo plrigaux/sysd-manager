@@ -25,14 +25,9 @@ enum CommandArg {
 // Although we use `tokio` here, you can use any async runtime of choice.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let timer = time::format_description::parse(
-        "[year]-[month padding:zero]-[day padding:zero] [hour]:[minute]:[second].[subsecond digits:2]",
-    )
-    .expect("Invalid time format");
+    let timer = fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
+    //let timer = fmt::time::ChronoLocal::rfc_3339();
 
-    let time_offset = time::UtcOffset::current_local_offset().unwrap_or(time::UtcOffset::UTC);
-
-    let timer = fmt::time::OffsetTime::new(time_offset, timer);
     tracing_subscriber::fmt().with_timer(timer).init();
     //tracing_subscriber::fmt().init();
 

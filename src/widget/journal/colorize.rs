@@ -501,6 +501,7 @@ impl Underline {
 mod tests {
 
     use gtk::gdk;
+    use systemd::test_utils::init_logs;
 
     use super::*;
 
@@ -888,17 +889,9 @@ Oct 10 02:02:44 tiny_daemon[338370]: [2m2025-10-10T06:02:44.657956Z[0m [32m I
         assert!(found_hyperlink, "Hyperlink token not found");
     }
 
-    fn init() {
-        let _ = env_logger::builder()
-            .target(env_logger::Target::Stdout)
-            .filter_level(log::LevelFilter::Debug)
-            .is_test(true)
-            .try_init();
-    }
-
     #[test]
     fn test_multi_lines() {
-        init();
+        init_logs();
         let s = r#"JS ERROR: Error: Impossible to remove untracked message
 _removeMessage@resource:///org/gnome/shell/ui/messageList.js:1599:19
 _removePlayer@resource:///org/gnome/shell/ui/messageList.js:1773:14

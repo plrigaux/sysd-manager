@@ -1,5 +1,4 @@
 extern crate dotenv;
-extern crate env_logger;
 extern crate gtk;
 extern crate log;
 extern crate systemd;
@@ -7,7 +6,6 @@ extern crate systemd;
 mod analyze;
 mod consts;
 mod errors;
-//mod systemd;
 mod systemd_gui;
 mod utils;
 mod widget;
@@ -42,7 +40,10 @@ use widget::{
 const DOMAIN_NAME: &str = "sysd-manager";
 fn main() -> glib::ExitCode {
     dotenv().ok();
-    env_logger::init();
+    // env_logger::init();
+
+    let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
+    tracing_subscriber::fmt().with_timer(timer).init();
 
     let (unit, test, level) = handle_args();
 

@@ -5,6 +5,7 @@ pub mod errors;
 mod journal;
 pub mod journal_data;
 pub mod sysdbus;
+pub mod test_utils;
 pub mod time_handling;
 
 use std::{

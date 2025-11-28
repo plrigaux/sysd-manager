@@ -476,12 +476,10 @@ impl UnitFilePanelImp {
                 .and_downcast_ref::<gio::SimpleAction>()
             {
                 let b = action.is_enabled();
-                warn!("create_drop_in_file_runtime {}", b);
+                info!("create_drop_in_file_runtime {}", b);
             } else {
                 warn!("No action {}", "create_drop_in_file_runtime");
             }
-
-            warn!("actions {:?}", app_window.list_actions());
         }
 
         /* let dialog = flatpak::new("/home/pier/school.txt");

@@ -47,7 +47,6 @@ clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
 chrono = "0.4"
 dotenv = "0.15"
-env_logger = "0.11"
 enumflags2 = "0.7"
 gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
 glib = { version = "0", package = "glib", features = ["v2_84"] }
@@ -58,9 +57,8 @@ serde = "1.0"
 strum = { version = "0.27", features = ["derive"] }
 tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
-
 tracing = "0.1"
-tracing-subscriber = { version="0.3", features = ["fmt", "time"]}
+tracing-subscriber = { version="0.3", features = ["fmt", "chrono"]}
 tracing-journald = "0.3"
 zvariant = "5"
 zbus = { version = "5.11", default-features = false, features = [
@@ -74,12 +72,12 @@ adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
 glib.workspace = true
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
+
 chrono.workspace = true
 clap.workspace = true
 constcat.workspace = true
 const_format = "0.2.34"
 dotenv.workspace = true
-env_logger.workspace = true
 enumflags2.workspace = true
 formatx = "0.2"
 foreign-types-shared = "0.3.1"
@@ -90,17 +88,18 @@ log.workspace = true
 regex.workspace = true
 serde.workspace = true
 sourceview5 = "0.10"
+systemd = { version = "0.1.0", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" , optional = true }
 strum.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 toml = "0.9"
 zvariant.workspace = true
-
-
-systemd = { version = "0.1.0", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" , optional = true }
-
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-journald.workspace = true
 
 [dev-dependencies]
+
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"

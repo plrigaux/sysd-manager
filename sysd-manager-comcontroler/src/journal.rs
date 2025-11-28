@@ -496,17 +496,9 @@ mod tests {
 
     use sysd::journal;
 
-    use crate::time_handling::get_since_time;
+    use crate::{test_utils::init_logs, time_handling::get_since_time};
 
     use super::*;
-
-    fn init() {
-        let _ = env_logger::builder()
-            .target(env_logger::Target::Stdout)
-            .filter_level(log::LevelFilter::Debug)
-            .is_test(true)
-            .try_init();
-    }
 
     #[test]
     fn test_truncate() {
@@ -528,7 +520,7 @@ mod tests {
 
     #[test]
     fn test_truncate3() {
-        init();
+        init_logs();
         let s = "Löwe 老虎 Léopard".to_string();
 
         let new_s = truncate(s.clone(), 8);

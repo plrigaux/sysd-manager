@@ -1,4 +1,5 @@
 use super::*;
+use crate::test_utils::init_logs;
 use crate::{
     SystemdUnitFile,
     enums::{DependencyType, StartStopMode},
@@ -6,16 +7,7 @@ use crate::{
 use enumflags2::BitFlag;
 use tokio::net::TcpStream;
 use zvariant::Value;
-
 pub const TEST_SERVICE: &str = "tiny_daemon.service";
-
-fn init() {
-    let _ = env_logger::builder()
-        .target(env_logger::Target::Stdout)
-        .filter_level(log::LevelFilter::Debug)
-        .is_test(true)
-        .try_init();
-}
 
 #[ignore = "need a connection to a service"]
 #[test]
@@ -27,7 +19,7 @@ fn stop_service_test() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_get_unit_file_state() {
-    init();
+    init_logs();
     let file1: &str = TEST_SERVICE;
 
     let status = get_unit_file_state(UnitDBusLevel::System, file1);
@@ -37,7 +29,7 @@ fn test_get_unit_file_state() {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let level = UnitDBusLevel::System;
     let connection = get_connection(level).await?;
@@ -56,7 +48,7 @@ async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_list_unit_files_remote() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let stream = TcpStream::connect("192.168.0.114:22").await?;
     // let stream = UnixStream::connect("plr@192.168.0.114").await?;
@@ -81,7 +73,7 @@ async fn test_list_unit_files_remote() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_list_unit_files_system_raw() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let level = UnitDBusLevel::System;
     let connection = get_connection(level).await?;
@@ -159,7 +151,7 @@ fn test_list_units() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let unit_file: &str = "tiny_daemon.service";
 
     let connection = get_blocking_connection(UnitDBusLevel::System)?;
@@ -192,7 +184,7 @@ pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let btree_map = fetch_system_unit_info(
         UnitDBusLevel::System,
@@ -207,7 +199,7 @@ pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_enable_unit_files() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let _res = enable_unit_files(
         UnitDBusLevel::System,
         &[TEST_SERVICE],
@@ -220,7 +212,7 @@ fn test_enable_unit_files() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_disable_unit_files() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let _res = disable_unit_files(
         UnitDBusLevel::System,
         &[TEST_SERVICE],
@@ -233,7 +225,7 @@ fn test_disable_unit_files() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_info() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let path = unit_dbus_path_from_name(TEST_SERVICE);
 
@@ -247,7 +239,7 @@ fn test_fetch_info() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_system_info() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let map = fetch_system_info(UnitDBusLevel::System)?;
 
@@ -258,7 +250,7 @@ fn test_fetch_system_info() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_unit() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let unit = fetch_unit(UnitDBusLevel::System, TEST_SERVICE)?;
 
@@ -269,7 +261,7 @@ fn test_fetch_unit() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_unit_user_session() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE)?;
 
@@ -280,7 +272,7 @@ fn test_fetch_unit_user_session() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_unit_wrong_bus() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE)?;
 
@@ -291,7 +283,7 @@ fn test_fetch_unit_wrong_bus() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_unit_dependencies() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let path = unit_dbus_path_from_name(TEST_SERVICE);
     let res = unit_get_dependencies(
@@ -309,7 +301,7 @@ fn test_fetch_unit_dependencies() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_unit_reverse_dependencies() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let path = unit_dbus_path_from_name(TEST_SERVICE);
     let res = unit_get_dependencies(
@@ -327,7 +319,7 @@ fn test_fetch_unit_reverse_dependencies() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_fetch_unit_fail_wrong_name() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let fake = format!("{TEST_SERVICE}_fake");
     match fetch_unit(UnitDBusLevel::System, &fake) {
@@ -398,7 +390,7 @@ async fn get_unit_list_test(level: UnitDBusLevel) -> Result<Vec<LUnit>, SystemdE
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_unit_list_system() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let _map = get_unit_list_test(UnitDBusLevel::System).await?;
     Ok(())
 }
@@ -406,7 +398,7 @@ async fn test_get_unit_list_system() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_unit_list_user() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let _map = get_unit_list_test(UnitDBusLevel::UserSession).await?;
     Ok(())
 }
@@ -426,7 +418,7 @@ async fn get_unit_file_list_test(
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_unit_file_list_system() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let _map = get_unit_file_list_test(UnitDBusLevel::System).await?;
     Ok(())
 }
@@ -434,7 +426,7 @@ async fn test_get_unit_file_list_system() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_unit_file_list_user() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let _map = get_unit_list_test(UnitDBusLevel::UserSession).await?;
     Ok(())
 }
@@ -442,7 +434,7 @@ async fn test_get_unit_file_list_user() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_list() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let connection = get_connection(UnitDBusLevel::System).await?;
 
     let connection2 = get_connection(UnitDBusLevel::UserSession).await?;
@@ -518,7 +510,7 @@ async fn test_get_list2() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_get_properties() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let connection = get_blocking_connection(UnitDBusLevel::System)?;
 
     let object_path = unit_dbus_path_from_name(TEST_SERVICE);
@@ -564,7 +556,7 @@ fn test_get_properties() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_kill_unit() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let unit_name: &str = TEST_SERVICE;
 
     kill_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 1)
@@ -573,7 +565,7 @@ fn test_kill_unit() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_queue_signal_unit() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let unit_name: &str = TEST_SERVICE;
     let val: i32 = libc::SIGRTMIN();
     let val2 = libc::SIGRTMAX();
@@ -586,7 +578,7 @@ fn test_queue_signal_unit() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 pub(super) fn test_unit_clean() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let handle_answer = |_method: &str, _return_message: &Message| {
         info!("Clean Unit SUCCESS");
 
@@ -685,7 +677,7 @@ where
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_mask_unit_file() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let unit_name: &str = TEST_SERVICE;
 
     mask_unit_files(UnitDBusLevel::System, &[unit_name], false, false)?;
@@ -696,7 +688,7 @@ fn test_mask_unit_file() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_mask_unit_file2() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let unit_file_name: &str = "/etc/systemd/system/tiny_daemon.service";
 
     mask_unit_files(UnitDBusLevel::System, &[unit_file_name], false, false)?;
@@ -707,7 +699,7 @@ fn test_mask_unit_file2() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
     let unit_name: &str = TEST_SERVICE;
 
     unmask_unit_files(UnitDBusLevel::System, &[unit_name], false)?;
@@ -718,7 +710,7 @@ fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_introspect() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let result: Result<(), SystemdErrors> = {
         let connection = get_blocking_connection(UnitDBusLevel::System)?;
@@ -772,7 +764,7 @@ fn test_introspect() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_introspect2() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     fn sub() -> Result<(), SystemdErrors> {
         let connection = get_blocking_connection(UnitDBusLevel::System)?;
@@ -810,7 +802,7 @@ fn test_introspect2() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_introspect3() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let map = fetch_unit_interface_properties().await?;
 
@@ -824,7 +816,7 @@ async fn test_introspect3() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_introspect_types() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let map = fetch_unit_interface_properties().await?;
     /*
@@ -854,7 +846,7 @@ async fn test_introspect_types() -> Result<(), SystemdErrors> {
 #[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_properties2() -> Result<(), SystemdErrors> {
-    init();
+    init_logs();
 
     let connection = get_connection(UnitDBusLevel::System).await?;
 

@@ -16,7 +16,6 @@ flatpak = []
 [dependencies]
 chrono.workspace = true
 enumflags2.workspace = true
-env_logger.workspace = true
 futures-util = "0.3"
 gettext-rs.workspace = true
 glib.workspace = true
@@ -28,9 +27,12 @@ strum.workspace = true
 sysd = { version = "0.10", package = "systemd" } 
 tokio.workspace = true
 tokio-util.workspace = true
+tracing-subscriber.workspace = true
 zbus.workspace = true
 zbus_macros =  "5"
 zbus_xml = "5"
 zvariant.workspace = true
 zvariant_derive =  "5"
 zvariant_utils =  "3"
+
+

@@ -6,6 +6,7 @@ use clap::Parser;
 use clap::Subcommand;
 use log::error;
 use log::{info, warn};
+use tracing_subscriber::filter::LevelFilter;
 use translating::DESKTOP_FILE_PATH;
 use translating::MAIN_PROG;
 use translating::METAINFO_FILE_PATH;
@@ -75,13 +76,9 @@ enum Commands {
 
 fn main() {
     // Force log level
-    if let Err(err) = env_logger::builder()
-        .target(env_logger::Target::Stdout)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init()
-    {
-        eprintln!("Logger error {err:?}")
-    }
+    tracing_subscriber::fmt()
+        .with_max_level(LevelFilter::DEBUG)
+        .init();
 
     info!("Tanslation tool!");
 
