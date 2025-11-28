@@ -3,16 +3,17 @@ Description=A proxy to enable SysD Manager features
 After=network.target
 
 [Service]
-SyslogIdentifier=SERVICE_ID
+SyslogIdentifier={SERVICE_ID}
 Restart=always
 RestartSec=5
 Type=simple
 User=root
 Group=root
-ExecStart=EXECUTABLE
+ExecStart={EXECUTABLE}
 ExecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=5
-LogsDirectory=log/SERVICE_ID
+LogsDirectory=log/{SERVICE_ID}
+{ENVIRONMENT}
 
 [Install]
 WantedBy=multi-user.target

@@ -4,35 +4,61 @@ use log::warn;
 use tokio::{fs, process::Command};
 use tracing::info;
 
+use crate::consts::*;
+
 const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
 const SERVICE_DIR: &str = "/usr/lib/systemd/system";
 
-pub async fn install() -> Result<(), Box<dyn Error>> {
+pub async fn install(is_dev: bool) -> Result<(), Box<dyn Error>> {
     info!("Install proxy");
     let path = env::current_dir()?;
     info!("The current directory is {}", path.display());
 
+    let (bus_name, interface, destination, service_id) = if is_dev {
+        (
+            DBUS_NAME_DEV,
+            DBUS_INTERFACE,
+            DBUS_DESTINATION_DEV,
+            "sysd-manager-proxy-dev",
+        )
+    } else {
+        (
+            DBUS_NAME,
+            DBUS_INTERFACE,
+            DBUS_DESTINATION,
+            "sysd-manager-proxy",
+        )
+    };
+
     let src_base = PathBuf::from("data");
     let src = src_base.join("io.github.plrigaux.SysDManager.conf");
-    let dst = PathBuf::from(SYSTEMD_DIR);
-    install_file(&src, &dst, true).await?;
+    let mut dst = PathBuf::from(SYSTEMD_DIR).join(bus_name);
+    dst.add_extension("conf");
+    install_file(&src, &dst, false).await?;
+
+    let mut map = BTreeMap::new();
+
+    map.insert("BUS_NAME", bus_name);
+    map.insert("DESTINATION", destination);
+    map.insert("INTERFACE", interface);
+
+    install_edit_file(&map, dst).await?;
 
     let src = src_base.join("io.github.plrigaux.SysDManager.policy");
     let dst = PathBuf::from(ACTION_DIR);
     install_file(&src, &dst, true).await?;
 
     let src = src_base.join("sysd-manager-proxy.service");
-    let dst = PathBuf::from(SERVICE_DIR).join("sysd-manager-proxy-dev.service");
+    let mut dst = PathBuf::from(SERVICE_DIR).join(service_id);
+    dst.add_extension("service");
 
     install_file(&src, &dst, false).await?;
 
-    let mut map = BTreeMap::new();
-
-    let exec = std::env::current_exe().expect("suppose to exist");
-    let exec = exec.to_string_lossy().to_string();
-    map.insert("EXECUTABLE", exec);
-    map.insert("SERVICE_ID", "sysd-manager-proxy-dev".to_string());
+    let exec = std::env::current_exe().expect("supposed to exist");
+    let exec = exec.to_string_lossy();
+    map.insert("EXECUTABLE", exec.as_ref());
+    map.insert("SERVICE_ID", service_id);
 
     install_edit_file(&map, dst).await?;
 
@@ -40,7 +66,7 @@ pub async fn install() -> Result<(), Box<dyn Error>> {
 }
 
 async fn install_edit_file(
-    map: &BTreeMap<&str, String>,
+    map: &BTreeMap<&str, &str>,
     dst: PathBuf,
 ) -> Result<(), Box<dyn Error + 'static>> {
     info!("Edit file -- {}", dst.display());
@@ -50,7 +76,7 @@ async fn install_edit_file(
 
     for (k, v) in map {
         cmd.arg("-e");
-        cmd.arg(format!("s/{k}/{}/", v.replace("/", r"\/")));
+        cmd.arg(format!("s/{{{k}}}/{}/", v.replace("/", r"\/")));
     }
 
     let output = cmd.arg(dst).output().await?;
@@ -89,12 +115,13 @@ pub async fn clean() -> Result<(), Box<dyn Error>> {
         let mut entries = fs::read_dir(dir).await?;
         while let Some(entry) = entries.next_entry().await? {
             let p = entry.path();
-            if let Some(file_name) = p.file_name()
-                && file_name
-                    .to_string_lossy()
-                    .starts_with("io.github.plrigaux.")
-            {
-                path_to_clean.push(p);
+            if let Some(file_name) = p.file_name() {
+                let fname = file_name.to_string_lossy();
+                if fname.starts_with("io.github.plrigaux.SysDM")
+                    || fname.starts_with("sysd-manager-proxy")
+                {
+                    path_to_clean.push(p);
+                }
             }
         }
     }

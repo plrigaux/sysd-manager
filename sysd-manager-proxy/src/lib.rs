@@ -1,9 +1,12 @@
+mod sysdcom;
 use std::{collections::HashMap, sync::OnceLock};
 
 use enumflags2::BitFlags;
 use log::{debug, info, warn};
+use tokio::sync::OnceCell;
 use zbus::{Connection, ObjectServer, interface, message::Header, object_server::SignalEmitter};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
+
 static AUTHORITY: OnceLock<AuthorityProxy> = OnceLock::new();
 
 pub async fn init_authority() -> Result<(), zbus::Error> {
@@ -25,6 +28,22 @@ pub fn auth() -> &'static AuthorityProxy<'static> {
 pub fn map() -> &'static HashMap<&'static str, &'static str> {
     static MAP: OnceLock<HashMap<&str, &str>> = OnceLock::new();
     MAP.get_or_init(HashMap::new)
+}
+
+static SYS_PROXY: OnceCell<sysdcom::SysDManagerComLinkProxy> = OnceCell::const_new();
+
+async fn system_proxy() -> Result<&'static sysdcom::SysDManagerComLinkProxy<'static>, zbus::Error> {
+    SYS_PROXY
+        .get_or_try_init(
+            async || -> Result<sysdcom::SysDManagerComLinkProxy, zbus::Error> {
+                let connection = Connection::system().await?;
+                let proxy = sysdcom::SysDManagerComLinkProxy::builder(&connection)
+                    .build()
+                    .await?;
+                Ok(proxy)
+            },
+        )
+        .await
 }
 
 pub struct SysDManagerProxy {
@@ -122,5 +141,11 @@ impl SysDManagerProxy {
         } else {
             Err(zbus::fdo::Error::Failed(format!("{val} not even!")))
         }
+    }
+
+    async fn clean_unit(&self, unit_name: &str, what: Vec<&str>) -> zbus::fdo::Result<()> {
+        let proxy = system_proxy().await?;
+        proxy.clean_unit(unit_name, &what).await?;
+        Ok(())
     }
 }
