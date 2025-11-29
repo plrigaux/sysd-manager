@@ -1,6 +1,7 @@
 use log::info;
 use sysd_manager_proxy_lib::consts;
-use zbus::{names::OwnedErrorName, proxy};
+use test_base::init_logs;
+use zbus::proxy;
 
 /* pub const DBUS_NAME: &str = "io.github.plrigaux.SysDManager";
 pub const DBUS_NAME_DEV: &str = concat!(DBUS_NAME, "Dev");
@@ -37,10 +38,6 @@ async fn system_proxy<'a>() -> zbus::Result<SysDProxyTesterProxy<'a>> {
     Ok(proxy)
 }
 
-fn init_logs() {
-    let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
-    tracing_subscriber::fmt().with_timer(timer).init();
-}
 /* async fn session() -> zbus::Result<zbus::Connection> {
     zbus::Connection::session().await
 } */
@@ -85,7 +82,7 @@ async fn test_even_ping_fail() -> zbus::Result<()> {
             panic!("Should not succeed, got {}", val);
         }
         Err(zbus::Error::MethodError(a, _b, _c)) => {
-            let inner = a.inner();
+            let inner: &zbus::names::ErrorName<'_> = a.inner();
             info!("Expected error received: {}", inner);
         }
         Err(e) => {

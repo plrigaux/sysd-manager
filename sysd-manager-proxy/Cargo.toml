@@ -4,10 +4,10 @@ version = "2.8.1"
 authors = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-keywords = ["xtext"]
+keywords = ["systemd", "dbus", "polkit", "linux"]
 license = { workspace = true }
 readme = "README.md"
-description = "Simple lib used by sysd-manager to generate mo file"
+description = "Simple lib used by sysd-manager to perform privileged operations via polkit over D-Bus."
 repository = { workspace = true }
 
 
@@ -35,3 +35,4 @@ zbus_polkit = "5"
 enumflags2.workspace = true
 
 [dev-dependencies]
+test-base.workspace = true

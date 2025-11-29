@@ -1,13 +1,13 @@
 use super::*;
-use crate::test_utils::init_logs;
+
 use crate::{
     SystemdUnitFile,
     enums::{DependencyType, StartStopMode},
 };
 use enumflags2::BitFlag;
+use test_base::{TEST_SERVICE, init_logs};
 use tokio::net::TcpStream;
 use zvariant::Value;
-pub const TEST_SERVICE: &str = "tiny_daemon.service";
 
 #[ignore = "need a connection to a service"]
 #[test]

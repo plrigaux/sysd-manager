@@ -501,7 +501,7 @@ impl Underline {
 mod tests {
 
     use gtk::gdk;
-    use systemd::test_utils::init_logs;
+    use test_base::init_logs;
 
     use super::*;
 

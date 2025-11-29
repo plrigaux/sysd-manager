@@ -6,6 +6,8 @@ rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Communication controller for sysd-manager."
+keywords = ["dbus", "sysd-manager"]
 
 [lib]
 
@@ -29,10 +31,11 @@ tokio.workspace = true
 tokio-util.workspace = true
 tracing-subscriber.workspace = true
 zbus.workspace = true
-zbus_macros =  "5"
 zbus_xml = "5"
 zvariant.workspace = true
 zvariant_derive =  "5"
 zvariant_utils =  "3"
 
 
+[dev-dependencies]
+test-base.workspace = true

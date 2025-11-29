@@ -1,0 +1,15 @@
+[package]
+name = "sysd-manager-test-base"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Test utilities for sysd-manager."
+keywords = ["test", "utilities", "sysd-manager"]
+
+[dependencies]
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-journald.workspace = true

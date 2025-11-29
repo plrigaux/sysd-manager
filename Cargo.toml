@@ -1,5 +1,5 @@
 [workspace]
-members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler"]
+members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler", "sysd-manager-test-base"]
 
 [workspace.package]
 edition = "2024"
@@ -55,6 +55,7 @@ log = "0.4"
 regex = "1.12"
 serde = "1.0"
 strum = { version = "0.27", features = ["derive"] }
+test-base = { version = "0.1", path = "./sysd-manager-test-base", package = "sysd-manager-test-base" }
 tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
@@ -99,7 +100,7 @@ tracing-subscriber.workspace = true
 tracing-journald.workspace = true
 
 [dev-dependencies]
-
+test-base.workspace = true
 
 [build-dependencies]
 #glib-build-tools = "0.19.0"

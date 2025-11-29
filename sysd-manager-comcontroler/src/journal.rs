@@ -495,8 +495,9 @@ mod tests {
     use std::{path::Path, time::UNIX_EPOCH};
 
     use sysd::journal;
+    use test_base::init_logs;
 
-    use crate::{test_utils::init_logs, time_handling::get_since_time};
+    use crate::time_handling::get_since_time;
 
     use super::*;
 
