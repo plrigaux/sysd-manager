@@ -1,16 +1,14 @@
-mod consts;
 mod install;
 use clap::{Parser, Subcommand};
 use std::borrow::Cow;
 use std::env;
 use std::{error::Error, future::pending};
 use sysd_manager_proxy_lib::SysDManagerProxy;
+use sysd_manager_proxy_lib::consts::*;
 use sysd_manager_proxy_lib::init_authority;
 use tracing::{debug, error, info};
 use tracing_subscriber::fmt;
 use zbus::connection;
-
-use crate::consts::{DBUS_NAME, DBUS_NAME_DEV, DBUS_PATH, DBUS_PATH_DEV};
 
 /// General purpose greet/farewell messaging.
 #[derive(Parser)]
@@ -18,6 +16,10 @@ use crate::consts::{DBUS_NAME, DBUS_NAME_DEV, DBUS_PATH, DBUS_PATH_DEV};
 struct Args {
     #[command(subcommand)]
     cmd: Option<CommandArg>,
+
+    /// Development mode
+    #[arg(short, long, default_value_t = false)]
+    dev: bool,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -36,6 +38,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     tracing_subscriber::fmt().with_timer(timer).init();
     //tracing_subscriber::fmt().init();
 
+    debug!("Args {:?}", std::env::args_os());
     let args = Args::parse();
 
     let is_dev = if env::var("CARGO").is_ok() {
@@ -44,6 +47,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     } else {
         false
     };
+
+    let is_dev = is_dev || args.dev;
+
+    if is_dev {
+        info!("Serve in Development Mode");
+    } else {
+        info!("Serve in Production Mode");
+    }
 
     let result = match args.cmd {
         Some(CommandArg::Install) => install::install(is_dev).await,
@@ -75,6 +86,9 @@ async fn serve_proxy(is_dev: bool) -> Result<(), Box<dyn Error>> {
 
     let dbus_name = get_env("DBUS_NAME", default_name);
     let dbus_path = get_env("DBUS_PATH", default_path);
+
+    info!("DBus name {dbus_name}");
+    info!("DBus path {dbus_path}");
 
     let _conn = connection::Builder::system()?
         .name(dbus_name)?

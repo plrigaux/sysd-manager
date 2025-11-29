@@ -3,7 +3,7 @@ members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manage
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.89"
+rust-version = "1.91"
 authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"

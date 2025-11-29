@@ -1,10 +1,9 @@
 use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
 
 use log::warn;
+use sysd_manager_proxy_lib::consts::*;
 use tokio::{fs, process::Command};
 use tracing::info;
-
-use crate::consts::*;
 
 const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
@@ -42,6 +41,7 @@ pub async fn install(is_dev: bool) -> Result<(), Box<dyn Error>> {
     map.insert("BUS_NAME", bus_name);
     map.insert("DESTINATION", destination);
     map.insert("INTERFACE", interface);
+    map.insert("ENVIRONMENT", "");
 
     install_edit_file(&map, dst).await?;
 
@@ -56,8 +56,14 @@ pub async fn install(is_dev: bool) -> Result<(), Box<dyn Error>> {
     install_file(&src, &dst, false).await?;
 
     let exec = std::env::current_exe().expect("supposed to exist");
-    let exec = exec.to_string_lossy();
-    map.insert("EXECUTABLE", exec.as_ref());
+    let mut exec = exec.to_string_lossy();
+
+    if is_dev {
+        let cmd = format!("{} --dev", exec);
+        exec = std::borrow::Cow::Owned(cmd);
+    }
+
+    map.insert("EXECUTABLE", &exec);
     map.insert("SERVICE_ID", service_id);
 
     install_edit_file(&map, dst).await?;
