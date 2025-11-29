@@ -5,8 +5,8 @@ pub mod errors;
 mod journal;
 pub mod journal_data;
 pub mod sysdbus;
-
 pub mod time_handling;
+mod to_proxy;
 
 use std::{
     any::Any,

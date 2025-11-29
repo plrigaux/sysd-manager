@@ -42,6 +42,7 @@ async fn system_proxy<'a>() -> zbus::Result<SysDProxyTesterProxy<'a>> {
     zbus::Connection::session().await
 } */
 
+#[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_sysd_proxy_tester() -> zbus::Result<()> {
     init_logs();
@@ -50,6 +51,7 @@ async fn test_sysd_proxy_tester() -> zbus::Result<()> {
     Ok(())
 }
 
+#[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_get_user_id() -> zbus::Result<()> {
     init_logs();
@@ -61,6 +63,7 @@ async fn test_get_user_id() -> zbus::Result<()> {
     Ok(())
 }
 
+#[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_even_ping() -> zbus::Result<()> {
     init_logs();
@@ -72,6 +75,7 @@ async fn test_even_ping() -> zbus::Result<()> {
     Ok(())
 }
 
+#[ignore = "need a connection to a service"]
 #[tokio::test]
 async fn test_even_ping_fail() -> zbus::Result<()> {
     init_logs();

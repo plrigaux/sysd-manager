@@ -1,5 +1,5 @@
 [workspace]
-members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler", "sysd-manager-test-base"]
+members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler", "sysd-manager-test-base", "sysd-manager-base"]
 
 [workspace.package]
 edition = "2024"
@@ -43,6 +43,7 @@ flatpak = ["systemd/flatpak"]
 lto = true
 
 [workspace.dependencies]
+base = { version = "0.1", path = "./sysd-manager-base", package = "sysd-manager-base" }
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
 chrono = "0.4"
@@ -74,6 +75,7 @@ gio = { version = "0", package = "gio", features = ["v2_84"] }
 glib.workspace = true
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
 
+base.workspace = true
 chrono.workspace = true
 clap.workspace = true
 constcat.workspace = true

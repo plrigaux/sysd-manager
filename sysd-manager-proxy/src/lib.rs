@@ -145,7 +145,22 @@ impl SysDManagerProxy {
 
     async fn clean_unit(&self, unit_name: &str, what: Vec<&str>) -> zbus::fdo::Result<()> {
         let proxy = system_proxy().await?;
+        self.check_autorisation().await?;
         proxy.clean_unit(unit_name, &what).await?;
+        Ok(())
+    }
+
+    async fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()> {
+        let proxy = system_proxy().await?;
+        self.check_autorisation().await?;
+        proxy.freeze_unit(unit_name).await?;
+        Ok(())
+    }
+
+    async fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()> {
+        let proxy = system_proxy().await?;
+        self.check_autorisation().await?;
+        proxy.thaw_unit(unit_name).await?;
         Ok(())
     }
 }

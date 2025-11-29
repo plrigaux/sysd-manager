@@ -1908,6 +1908,7 @@ dependencies = [
  "serde",
  "sourceview5",
  "strum",
+ "sysd-manager-base",
  "sysd-manager-comcontroler",
  "sysd-manager-test-base",
  "sysd-manager-translating",
@@ -1919,6 +1920,10 @@ dependencies = [
  "tracing-subscriber",
  "zvariant",
 ]
+
+[[package]]
+name = "sysd-manager-base"
+version = "0.1.0"
 
 [[package]]
 name = "sysd-manager-comcontroler"
@@ -1934,6 +1939,7 @@ dependencies = [
  "regex",
  "serde",
  "strum",
+ "sysd-manager-base",
  "sysd-manager-test-base",
  "systemd",
  "tokio",

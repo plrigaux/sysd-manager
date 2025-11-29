@@ -7,4 +7,6 @@ use zbus::proxy;
 )]
 pub trait SysDManagerComLink {
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
+    fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
 }

@@ -112,8 +112,8 @@ fn build_blocking_connection(level: UnitDBusLevel) -> Result<Connection, Systemd
 pub static CON_ASYNC_SYST: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 
-async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
-    let lock = match level {
+pub async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
+    let lock: &RwLock<Option<zbus::Connection>> = match level {
         UnitDBusLevel::UserSession => &CON_ASYNC_USER,
         _ => &CON_ASYNC_SYST,
     };
