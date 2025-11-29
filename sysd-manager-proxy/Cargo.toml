@@ -21,6 +21,7 @@ name = "sysd-manager-proxy"
 path = "src/main.rs"
 
 [dependencies]
+base.workspace = true
 clap.workspace = true
 constcat.workspace = true
 libc.workspace = true

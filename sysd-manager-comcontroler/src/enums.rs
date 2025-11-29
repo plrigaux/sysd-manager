@@ -887,12 +887,22 @@ impl UnitDBusLevel {
         let level_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
         level_value.value()
     }
+
+    pub fn index(&self) -> u8 {
+        match self {
+            UnitDBusLevel::System => 0,
+            UnitDBusLevel::UserSession => 1,
+            UnitDBusLevel::Both => 2,
+        }
+    }
 }
 
 impl From<u8> for UnitDBusLevel {
     fn from(level: u8) -> Self {
         match level {
             0 => UnitDBusLevel::System,
+            1 => UnitDBusLevel::UserSession,
+            2 => UnitDBusLevel::Both,
             _ => UnitDBusLevel::UserSession,
         }
     }

@@ -1962,6 +1962,7 @@ dependencies = [
  "enumflags2",
  "libc",
  "log",
+ "sysd-manager-base",
  "sysd-manager-test-base",
  "tokio",
  "tracing",

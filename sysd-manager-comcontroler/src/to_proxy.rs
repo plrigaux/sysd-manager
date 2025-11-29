@@ -1,12 +1,7 @@
+#![allow(dead_code)]
 use zbus::proxy;
 
 use crate::{enums::UnitDBusLevel, errors::SystemdErrors, sysdbus::get_connection};
-
-macro_rules! pizza {
-    () => {
-        "pizza"
-    };
-}
 
 #[proxy(
     interface = "io.github.plrigaux.SysDManager",
@@ -14,9 +9,12 @@ macro_rules! pizza {
     default_path = "/io/github/plrigaux/SysDManager"
 )]
 pub trait SysDManagerComLink {
-    fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
-    fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
-    fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn clean_unit(&self, bus: u8, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
+    fn freeze_unit(&self, bus: u8, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn thaw_unit(&self, bus: u8, unit_name: &str) -> zbus::fdo::Result<()>;
+
+    fn create_dropin(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<String>;
+    fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<String>;
 }
 
 ///1 Ensure that the  proxy is up and running
@@ -26,11 +24,15 @@ fn ensure_proxy_up() {
     //TODO
 }
 
-async fn clean_unit(unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {
+async fn clean_unit(
+    bus: UnitDBusLevel,
+    unit_name: &str,
+    what: &[&str],
+) -> Result<(), SystemdErrors> {
     let connection = get_connection(UnitDBusLevel::System).await?;
     let proxy = SysDManagerComLinkProxy::builder(&connection)
         .build()
         .await?;
-    proxy.clean_unit(unit_name, what).await?;
+    proxy.clean_unit(bus.index(), unit_name, what).await?;
     Ok(())
 }

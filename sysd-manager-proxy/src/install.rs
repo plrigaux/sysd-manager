@@ -1,5 +1,6 @@
 use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
 
+use base::{PROXY_SERVICE, PROXY_SERVICE_DEV};
 use log::warn;
 use sysd_manager_proxy_lib::consts::*;
 use tokio::{fs, process::Command};
@@ -19,15 +20,10 @@ pub async fn install(is_dev: bool) -> Result<(), Box<dyn Error>> {
             DBUS_NAME_DEV,
             DBUS_INTERFACE,
             DBUS_DESTINATION_DEV,
-            "sysd-manager-proxy-dev",
+            PROXY_SERVICE_DEV,
         )
     } else {
-        (
-            DBUS_NAME,
-            DBUS_INTERFACE,
-            DBUS_DESTINATION,
-            "sysd-manager-proxy",
-        )
+        (DBUS_NAME, DBUS_INTERFACE, DBUS_DESTINATION, PROXY_SERVICE)
     };
 
     let src_base = PathBuf::from("data");
