@@ -8,7 +8,7 @@ mod tests;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     str::FromStr,
-    sync::RwLock,
+    sync::{OnceLock, RwLock},
 };
 
 use base::{PROXY_SERVICE, PROXY_SERVICE_DEV, RunMode};
@@ -79,6 +79,12 @@ pub static BLK_CON_USER: RwLock<Option<Connection>> = RwLock::new(None);
 pub static CON_ASYNC_SYST: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 
+struct RunContext {
+    run_mode: RunMode,
+}
+
+static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
+
 pub fn init(run_mode: RunMode) {
     let unit_name = if run_mode == RunMode::Development {
         info!("Init Dbus in Development Mode");
@@ -88,12 +94,33 @@ pub fn init(run_mode: RunMode) {
         PROXY_SERVICE
     };
 
+    RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
+
     let unit_name = format!("{}.service", unit_name);
 
     match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
         Ok(job_id) => info!("Started unit {unit_name}, job id {job_id}"),
         Err(error) => {
             error!("Error starting unit {unit_name}: {error:?}");
+        }
+    }
+}
+
+pub fn shut_down() {
+    if let Some(context) = RUN_CONTEXT.get() {
+        let unit_name = if context.run_mode == RunMode::Development {
+            PROXY_SERVICE_DEV
+        } else {
+            PROXY_SERVICE
+        };
+
+        let unit_name = format!("{}.service", unit_name);
+
+        match stop_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
+            Ok(job_id) => info!("Stopped unit {unit_name}, job id {job_id}"),
+            Err(error) => {
+                error!("Error stopping unit {unit_name}: {error:?}");
+            }
         }
     }
 }

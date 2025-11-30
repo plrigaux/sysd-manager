@@ -91,6 +91,10 @@ pub fn init(run_mode: RunMode) {
     sysdbus::init(run_mode);
 }
 
+pub fn shut_down() {
+    sysdbus::shut_down();
+}
+
 pub fn get_unit_file_state(
     level: UnitDBusLevel,
     primary_name: &str,
