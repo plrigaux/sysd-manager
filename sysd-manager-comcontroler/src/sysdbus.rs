@@ -1,5 +1,7 @@
 //! Dbus abstraction
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
+pub(super) mod dbus_proxies;
+mod to_proxy;
 pub(super) mod watcher;
 
 #[cfg(test)]
@@ -34,6 +36,7 @@ use crate::{
         StartStopMode, UnitDBusLevel, UnitType,
     },
     errors::SystemdErrors,
+    sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
@@ -353,42 +356,6 @@ pub async fn complete_unit_information(
         }
     }
     Ok(ouput)
-}
-
-#[proxy(
-    interface = "org.freedesktop.systemd1.Unit",
-    default_service = "org.freedesktop.systemd1"
-)]
-trait ZUnitInfo {
-    #[zbus(property)]
-    fn id(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn description(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn load_state(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn active_state(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn sub_state(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn following(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn fragment_path(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn unit_file_state(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn unit_file_preset(&self) -> Result<String, zbus::Error>;
-
-    #[zbus(property)]
-    fn drop_in_paths(&self) -> Result<Vec<String>, zbus::Error>;
 }
 
 macro_rules! get_completing_info {
