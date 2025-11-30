@@ -24,6 +24,7 @@ use crate::{
     journal_data::Boot,
     time_handling::TimestampStyle,
 };
+use base::RunMode;
 use data::{DisEnAbleUnitFiles, UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
@@ -84,6 +85,10 @@ const FLATPAK_SPAWN: &str = "flatpak-spawn";
 pub fn runtime() -> &'static Runtime {
     static RUNTIME: OnceLock<Runtime> = OnceLock::new();
     RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
+}
+
+pub fn init(run_mode: RunMode) {
+    sysdbus::init(run_mode);
 }
 
 pub fn get_unit_file_state(

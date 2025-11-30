@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
 
-use base::{PROXY_SERVICE, PROXY_SERVICE_DEV};
+use base::{PROXY_SERVICE, PROXY_SERVICE_DEV, RunMode};
 use log::warn;
 use sysd_manager_proxy_lib::consts::*;
 use tokio::{fs, process::Command};
@@ -10,12 +10,12 @@ const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
 const SERVICE_DIR: &str = "/usr/lib/systemd/system";
 
-pub async fn install(is_dev: bool) -> Result<(), Box<dyn Error>> {
+pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("Install proxy");
     let path = env::current_dir()?;
     info!("The current directory is {}", path.display());
 
-    let (bus_name, interface, destination, service_id) = if is_dev {
+    let (bus_name, interface, destination, service_id) = if run_mode == RunMode::Development {
         (
             DBUS_NAME_DEV,
             DBUS_INTERFACE,
@@ -54,8 +54,8 @@ pub async fn install(is_dev: bool) -> Result<(), Box<dyn Error>> {
     let exec = std::env::current_exe().expect("supposed to exist");
     let mut exec = exec.to_string_lossy();
 
-    if is_dev {
-        let cmd = format!("{} --dev", exec);
+    if run_mode == RunMode::Development {
+        let cmd = format!("{} -d", exec);
         exec = std::borrow::Cow::Owned(cmd);
     }
 
@@ -108,21 +108,22 @@ async fn install_file(
     Ok(())
 }
 
-pub async fn clean() -> Result<(), Box<dyn Error>> {
+pub async fn clean(_run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("Clean proxy files");
 
     let mut path_to_clean = Vec::new();
 
+    //TODO: use run_mode to clean only relevant files
     for dir in [SYSTEMD_DIR, ACTION_DIR] {
         let mut entries = fs::read_dir(dir).await?;
         while let Some(entry) = entries.next_entry().await? {
-            let p = entry.path();
-            if let Some(file_name) = p.file_name() {
+            let path = entry.path();
+            if let Some(file_name) = path.file_name() {
                 let fname = file_name.to_string_lossy();
                 if fname.starts_with("io.github.plrigaux.SysDM")
                     || fname.starts_with("sysd-manager-proxy")
                 {
-                    path_to_clean.push(p);
+                    path_to_clean.push(path);
                 }
             }
         }

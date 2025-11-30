@@ -1924,6 +1924,11 @@ dependencies = [
 [[package]]
 name = "sysd-manager-base"
 version = "0.1.0"
+dependencies = [
+ "tracing",
+ "tracing-journald",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "sysd-manager-comcontroler"

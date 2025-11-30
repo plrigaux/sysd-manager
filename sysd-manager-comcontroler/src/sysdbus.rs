@@ -11,6 +11,7 @@ use std::{
     sync::RwLock,
 };
 
+use base::{PROXY_SERVICE, PROXY_SERVICE_DEV, RunMode};
 use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
@@ -75,6 +76,27 @@ struct LUnitFiles<'a> {
 
 pub static BLK_CON_SYST: RwLock<Option<Connection>> = RwLock::new(None);
 pub static BLK_CON_USER: RwLock<Option<Connection>> = RwLock::new(None);
+pub static CON_ASYNC_SYST: RwLock<Option<zbus::Connection>> = RwLock::new(None);
+pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
+
+pub fn init(run_mode: RunMode) {
+    let unit_name = if run_mode == RunMode::Development {
+        info!("Init Dbus in Development Mode");
+        PROXY_SERVICE_DEV
+    } else {
+        info!("Init Dbus in Normal Mode");
+        PROXY_SERVICE
+    };
+
+    let unit_name = format!("{}.service", unit_name);
+
+    match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
+        Ok(job_id) => info!("Started unit {unit_name}, job id {job_id}"),
+        Err(error) => {
+            error!("Error starting unit {unit_name}: {error:?}");
+        }
+    }
+}
 
 fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
     let lock = match level {
@@ -108,9 +130,6 @@ fn build_blocking_connection(level: UnitDBusLevel) -> Result<Connection, Systemd
 
     Ok(connection)
 }
-
-pub static CON_ASYNC_SYST: RwLock<Option<zbus::Connection>> = RwLock::new(None);
-pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 
 pub async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
     let lock: &RwLock<Option<zbus::Connection>> = match level {

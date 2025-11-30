@@ -1,4 +1,5 @@
 mod install;
+use base::RunMode;
 use clap::{Parser, Subcommand};
 use std::borrow::Cow;
 use std::env;
@@ -20,6 +21,10 @@ struct Args {
     /// Development mode
     #[arg(short, long, default_value_t = false)]
     dev: bool,
+
+    /// Normal mode
+    #[arg(short, long, default_value_t = false)]
+    normal: bool,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -41,26 +46,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
     debug!("Args {:?}", std::env::args_os());
     let args = Args::parse();
 
-    let is_dev = if env::var("CARGO").is_ok() {
-        info!("The program is being run by cargo. --> Assume DEV");
-        true
-    } else {
-        false
-    };
+    let run_mode = RunMode::from_flags(args.dev, args.normal);
 
-    let is_dev = is_dev || args.dev;
-
-    if is_dev {
+    if run_mode == RunMode::Development {
         info!("Serve in Development Mode");
     } else {
         info!("Serve in Production Mode");
     }
 
     let result = match args.cmd {
-        Some(CommandArg::Install) => install::install(is_dev).await,
-        Some(CommandArg::Clean) => install::clean().await,
-        Some(CommandArg::Serve) => serve_proxy(is_dev).await,
-        None => serve_proxy(is_dev).await,
+        Some(CommandArg::Install) => install::install(run_mode).await,
+        Some(CommandArg::Clean) => install::clean(run_mode).await,
+        Some(CommandArg::Serve) => serve_proxy(run_mode).await,
+        None => serve_proxy(run_mode).await,
     };
 
     if let Err(error) = result {
@@ -70,7 +68,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn serve_proxy(is_dev: bool) -> Result<(), Box<dyn Error>> {
+async fn serve_proxy(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     init_authority().await?;
     /*  let auth = auth(); */
     let proxy = SysDManagerProxy::new()?;
@@ -78,7 +76,7 @@ async fn serve_proxy(is_dev: bool) -> Result<(), Box<dyn Error>> {
     let id = unsafe { libc::getegid() };
     info!("User id {id}");
 
-    let (default_name, default_path) = if is_dev {
+    let (default_name, default_path) = if run_mode == RunMode::Development {
         (DBUS_NAME_DEV, DBUS_PATH_DEV)
     } else {
         (DBUS_NAME, DBUS_PATH)

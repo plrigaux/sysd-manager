@@ -13,6 +13,7 @@ mod widget;
 use std::env;
 
 use adw::prelude::AdwApplicationExt;
+use base::RunMode;
 use clap::{Parser, command};
 
 use gettextrs::gettext;
@@ -45,7 +46,7 @@ fn main() -> glib::ExitCode {
     let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
     tracing_subscriber::fmt().with_timer(timer).init();
 
-    let (unit, test, level) = handle_args();
+    let (unit, test, level, run_mode) = handle_args();
 
     if let Some(test) = test {
         info!("End test");
@@ -103,6 +104,8 @@ fn main() -> glib::ExitCode {
     {
         info!("Flatpak version");
     }
+
+    systemd::init(run_mode);
 
     if let Err(e) = gio::resources_register_include!("sysd-manager.gresource") {
         warn!("Failed to register resources. Error: {e:?}");
@@ -217,10 +220,20 @@ struct Args {
     /// Test some api call
     #[arg(short, long)]
     test: Option<String>,
+
+    /// Development mode (uses dev proxy service)
+    #[arg(short, long, default_value_t = false)]
+    dev: bool,
+
+    /// Normal mode (uses normal proxy service)
+    #[arg(short, long, default_value_t = false)]
+    normal: bool,
 }
 
-fn handle_args() -> (Option<UnitInfo>, Option<String>, UnitDBusLevel) {
+fn handle_args() -> (Option<UnitInfo>, Option<String>, UnitDBusLevel, RunMode) {
     let args = Args::parse();
+
+    let run_mode = RunMode::from_flags(args.dev, args.normal);
 
     let test = args.test;
 
@@ -243,14 +256,14 @@ fn handle_args() -> (Option<UnitInfo>, Option<String>, UnitDBusLevel) {
     }
 
     let Some(unit_name) = args.unit else {
-        return (None, test, unit_level);
+        return (None, test, unit_level, run_mode);
     };
 
     match systemd::fetch_unit(unit_level, &unit_name) {
-        Ok(unit) => (Some(unit), test, unit_level),
+        Ok(unit) => (Some(unit), test, unit_level, run_mode),
         Err(e) => {
             warn!("Cli unit: {e:?}");
-            (None, None, unit_level)
+            (None, None, unit_level, run_mode)
         }
     }
 }
