@@ -1925,6 +1925,7 @@ dependencies = [
 name = "sysd-manager-base"
 version = "0.1.0"
 dependencies = [
+ "constcat",
  "tracing",
  "tracing-journald",
  "tracing-subscriber",
@@ -1962,7 +1963,6 @@ name = "sysd-manager-proxy"
 version = "2.8.1"
 dependencies = [
  "clap",
- "constcat",
  "dotenv",
  "enumflags2",
  "libc",

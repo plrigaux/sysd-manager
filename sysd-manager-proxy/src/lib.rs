@@ -1,4 +1,3 @@
-pub mod consts;
 mod sysdcom;
 use enumflags2::BitFlags;
 use log::{debug, info, warn};

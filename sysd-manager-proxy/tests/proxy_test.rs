@@ -1,5 +1,6 @@
+use base::consts::DBUS_DESTINATION_DEV;
 use log::info;
-use sysd_manager_proxy_lib::consts;
+
 use test_base::init_logs;
 use zbus::proxy;
 
@@ -31,7 +32,7 @@ async fn system() -> zbus::Result<zbus::Connection> {
 async fn system_proxy<'a>() -> zbus::Result<SysDProxyTesterProxy<'a>> {
     let conn = system().await?;
     let proxy = SysDProxyTesterProxy::builder(&conn)
-        .destination(consts::DBUS_DESTINATION_DEV)?
+        .destination(DBUS_DESTINATION_DEV)?
         .build()
         .await?;
 

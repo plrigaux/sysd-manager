@@ -8,6 +8,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+constcat.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-journald.workspace = true

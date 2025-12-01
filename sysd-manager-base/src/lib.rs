@@ -1,9 +1,8 @@
+pub mod consts;
+
 use std::env;
 
 use tracing::info;
-
-pub const PROXY_SERVICE: &str = "sysd-manager-proxy";
-pub const PROXY_SERVICE_DEV: &str = "sysd-manager-proxy-dev";
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum RunMode {

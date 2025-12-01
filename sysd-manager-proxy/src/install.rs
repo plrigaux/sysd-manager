@@ -1,8 +1,8 @@
 use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
 
-use base::{PROXY_SERVICE, PROXY_SERVICE_DEV, RunMode};
+use base::{RunMode, consts::*};
 use log::warn;
-use sysd_manager_proxy_lib::consts::*;
+
 use tokio::{fs, process::Command};
 use tracing::info;
 

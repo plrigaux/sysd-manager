@@ -24,15 +24,28 @@ fn ensure_proxy_up() {
     //TODO
 }
 
+async fn get_proxy<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErrors> {
+    let (path, destination) = super::RUN_CONTEXT
+        .get()
+        .expect("Supposed to be init")
+        .path_destination();
+    let connection = get_connection(UnitDBusLevel::System).await?;
+    let proxy = SysDManagerComLinkProxy::builder(&connection)
+        .path(path)?
+        .destination(destination)?
+        .build()
+        .await?;
+
+    Ok(proxy)
+}
+
 async fn clean_unit(
     bus: UnitDBusLevel,
     unit_name: &str,
     what: &[&str],
 ) -> Result<(), SystemdErrors> {
-    let connection = get_connection(UnitDBusLevel::System).await?;
-    let proxy = SysDManagerComLinkProxy::builder(&connection)
-        .build()
-        .await?;
+    let proxy = get_proxy().await?;
+
     proxy.clean_unit(bus.index(), unit_name, what).await?;
     Ok(())
 }

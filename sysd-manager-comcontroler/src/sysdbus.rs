@@ -13,7 +13,7 @@ use std::{
     sync::{OnceLock, RwLock},
 };
 
-use base::{PROXY_SERVICE, PROXY_SERVICE_DEV, RunMode};
+use base::{RunMode, consts::*};
 use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
@@ -24,7 +24,6 @@ use zbus::{
     blocking::{Connection, MessageIterator, Proxy, fdo},
     message::Flags,
     names::InterfaceName,
-    proxy,
 };
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
@@ -84,6 +83,16 @@ pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 
 struct RunContext {
     run_mode: RunMode,
+}
+
+impl RunContext {
+    fn path_destination(&self) -> (&'static str, &'static str) {
+        if self.run_mode == RunMode::Development {
+            (DBUS_PATH_DEV, DBUS_NAME_DEV)
+        } else {
+            (DBUS_PATH, DBUS_NAME)
+        }
+    }
 }
 
 static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();

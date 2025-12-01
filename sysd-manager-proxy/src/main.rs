@@ -1,11 +1,11 @@
 mod install;
-use base::RunMode;
+use base::{RunMode, consts::*};
 use clap::{Parser, Subcommand};
 use std::borrow::Cow;
 use std::env;
 use std::{error::Error, future::pending};
 use sysd_manager_proxy_lib::SysDManagerProxy;
-use sysd_manager_proxy_lib::consts::*;
+
 use sysd_manager_proxy_lib::init_authority;
 use tracing::{debug, error, info};
 use tracing_subscriber::fmt;
