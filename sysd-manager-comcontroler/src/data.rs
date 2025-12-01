@@ -1,7 +1,8 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use super::{SystemdUnitFile, UpdatedUnitInfo, enums::UnitDBusLevel};
+use super::{SystemdUnitFile, UpdatedUnitInfo};
 
+use base::enums::UnitDBusLevel;
 use glib::{self, subclass::types::ObjectSubclassIsExt};
 
 use serde::Deserialize;
@@ -52,6 +53,7 @@ impl UnitInfo {
 mod imp {
     use std::cell::RefCell;
 
+    use base::enums::UnitDBusLevel;
     use glib::{
         self,
         object::ObjectExt,
@@ -60,7 +62,7 @@ mod imp {
 
     use crate::{
         SystemdUnitFile, UpdatedUnitInfo,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
+        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitType},
     };
 
     #[derive(Debug, glib::Properties, Default)]

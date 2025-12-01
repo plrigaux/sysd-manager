@@ -14,22 +14,17 @@ use gtk::{
     },
 };
 
-use log::{debug, warn};
-
 use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
     format2,
-    systemd::{
-        self,
-        data::UnitInfo,
-        enums::{KillWho, UnitDBusLevel},
-        errors::SystemdErrors,
-    },
+    systemd::{self, data::UnitInfo, enums::KillWho, errors::SystemdErrors},
     widget::{
         InterPanelMessage,
         unit_control_panel::{UnitControlPanel, side_control_panel::SideControlPanel},
     },
 };
+use base::enums::UnitDBusLevel;
+use log::{debug, warn};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/kill_panel.ui")]

@@ -9,6 +9,9 @@ repository.workspace = true
 
 [dependencies]
 constcat.workspace = true
+gettext-rs.workspace = true
+glib.workspace = true
+strum.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-journald.workspace = true

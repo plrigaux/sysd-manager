@@ -19,11 +19,12 @@ use std::{
 };
 
 use crate::{
-    enums::{ActiveState, EnablementStatus, LoadState, StartStopMode, UnitDBusLevel},
+    enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     journal_data::Boot,
+    sysdbus::to_proxy,
     time_handling::TimestampStyle,
 };
-use base::RunMode;
+use base::{RunMode, enums::UnitDBusLevel};
 use data::{DisEnAbleUnitFiles, UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
@@ -621,7 +622,7 @@ pub fn kill_unit(
 
 pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
     if let Some((level, primary_name)) = params {
-        sysdbus::freeze_unit(level, &primary_name)
+        to_proxy::freeze_unit(level, &primary_name)
     } else {
         Err(SystemdErrors::NoUnit)
     }
@@ -629,7 +630,7 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
 
 pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
     if let Some((level, primary_name)) = params {
-        sysdbus::thaw_unit(level, &primary_name)
+        to_proxy::thaw_unit(level, &primary_name)
     } else {
         Err(SystemdErrors::NoUnit)
     }
@@ -655,7 +656,7 @@ pub fn queue_signal_unit(
 
 pub fn clean_unit(
     level: UnitDBusLevel,
-    primary_name: &str,
+    unit_name: &str,
     what: &[String],
 ) -> Result<(), SystemdErrors> {
     //just send all if seleted
@@ -670,7 +671,8 @@ pub fn clean_unit(
         what.iter().map(|s| s.as_str()).collect()
     };
 
-    sysdbus::clean_unit(level, primary_name, &clean_what)
+    to_proxy::clean_unit(level, unit_name, &clean_what)
+    //sysdbus::clean_unit(level, primary_name, &clean_what)
 }
 
 pub fn mask_unit_files(

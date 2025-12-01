@@ -1,17 +1,13 @@
 use gettextrs::pgettext;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
+use super::{InterPanelMessage, app_window::AppWindow};
 use crate::{
     format2,
-    systemd::{
-        data::UnitInfo,
-        enums::{StartStopMode, UnitDBusLevel},
-        errors::SystemdErrors,
-    },
+    systemd::{data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     widget::unit_control_panel::enums::UnitContolType,
 };
-
-use super::{InterPanelMessage, app_window::AppWindow};
+use base::enums::UnitDBusLevel;
 
 mod controls;
 pub mod enums;

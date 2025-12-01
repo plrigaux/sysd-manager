@@ -12,13 +12,16 @@ use gtk::{
 };
 use log::{debug, info, warn};
 
+use super::{
+    UnitControlPanel, controls, enums::UnitContolType, side_control_panel::SideControlPanel,
+};
 use crate::{
     consts::{DESTRUCTIVE_ACTION, SUGGESTED_ACTION},
     format2,
     systemd::{
         self,
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, StartStopMode, UnitDBusLevel},
+        enums::{ActiveState, EnablementStatus, StartStopMode},
         errors::SystemdErrors,
     },
     utils::{
@@ -31,10 +34,7 @@ use crate::{
         unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
 };
-
-use super::{
-    UnitControlPanel, controls, enums::UnitContolType, side_control_panel::SideControlPanel,
-};
+use base::enums::UnitDBusLevel;
 use strum::IntoEnumIterator;
 
 const TTT_HIDE: &str = "Hide sidebar";

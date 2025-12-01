@@ -1,7 +1,7 @@
 //! Dbus abstraction
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
 pub(super) mod dbus_proxies;
-mod to_proxy;
+pub(super) mod to_proxy;
 pub(super) mod watcher;
 
 #[cfg(test)]
@@ -13,7 +13,7 @@ use std::{
     sync::{OnceLock, RwLock},
 };
 
-use base::{RunMode, consts::*};
+use base::{RunMode, consts::*, enums::UnitDBusLevel};
 use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
@@ -32,7 +32,7 @@ use crate::{
     data::{DisEnAbleUnitFiles, EnableUnitFilesReturn, LUnit, UnitInfo},
     enums::{
         ActiveState, DependencyType, DisEnableFlags, EnablementStatus, KillWho, LoadState,
-        StartStopMode, UnitDBusLevel, UnitType,
+        StartStopMode, UnitType,
     },
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
@@ -54,7 +54,7 @@ const METHOD_RESTART_UNIT: &str = "RestartUnit";
 const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
-const METHOD_CLEAN_UNIT: &str = "CleanUnit";
+//const METHOD_CLEAN_UNIT: &str = "CleanUnit";
 const METHOD_MASK_UNIT_FILES: &str = "MaskUnitFiles";
 const METHOD_UNMASK_UNIT_FILES: &str = "UnmaskUnitFiles";
 const METHOD_GET_UNIT: &str = "GetUnit";
@@ -714,7 +714,7 @@ pub(super) fn kill_unit(
     )
 }
 
-pub(super) fn freeze_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+/* pub(super) fn freeze_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
     let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
         info!("Freeze Unit {unit_name} SUCCESS");
         Ok(())
@@ -731,7 +731,7 @@ pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), Sys
 
     send_disenable_message(level, METHOD_THAW_UNIT, &(unit_name), handler)
 }
-
+ */
 pub(super) fn preset_unit_file(
     level: UnitDBusLevel,
     files: &[&str],
@@ -837,7 +837,7 @@ pub(super) fn queue_signal_unit(
     )
 }
 
-pub(super) fn clean_unit(
+/* pub(super) fn clean_unit(
     level: UnitDBusLevel,
     unit_name: &str,
     what: &[&str],
@@ -849,7 +849,7 @@ pub(super) fn clean_unit(
     };
 
     send_disenable_message(level, METHOD_CLEAN_UNIT, &(unit_name, what), handle_answer)
-}
+} */
 
 pub(super) fn mask_unit_files(
     level: UnitDBusLevel,

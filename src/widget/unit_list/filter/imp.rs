@@ -21,14 +21,10 @@ use gtk::{
     },
 };
 
-use log::{debug, error, info, warn};
-use strum::IntoEnumIterator;
-
 use crate::{
     consts::{ALL_FILTER_KEY, CLASS_WARNING, FLAT},
     systemd::enums::{
-        ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType,
-        UnitDBusLevel, UnitType,
+        ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType, UnitType,
     },
     upgrade, upgrade_continue,
     widget::unit_list::{
@@ -42,6 +38,9 @@ use crate::{
         },
     },
 };
+use base::enums::UnitDBusLevel;
+use log::{debug, error, info, warn};
+use strum::IntoEnumIterator;
 
 type UnitFilterList = RefCell<Vec<Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 

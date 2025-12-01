@@ -2,22 +2,9 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use gettextrs::pgettext;
 
-use gtk::{
-    gio::{self, MENU_ATTRIBUTE_TARGET},
-    glib::{self, Variant, VariantTy},
-    prelude::*,
-    subclass::prelude::*,
-};
-use log::{error, warn};
-
 use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
-    systemd::{
-        self,
-        data::UnitInfo,
-        enums::{StartStopMode, UnitDBusLevel},
-        errors::SystemdErrors,
-    },
+    systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -27,6 +14,14 @@ use crate::{
         unit_control_panel::{UnitControlPanel, work_around_dialog},
     },
 };
+use base::enums::UnitDBusLevel;
+use gtk::{
+    gio::{self, MENU_ATTRIBUTE_TARGET},
+    glib::{self, Variant, VariantTy},
+    prelude::*,
+    subclass::prelude::*,
+};
+use log::{error, warn};
 
 use super::SideControlPanel;
 use strum::IntoEnumIterator;

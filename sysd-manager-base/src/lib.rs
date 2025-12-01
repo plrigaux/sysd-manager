@@ -1,4 +1,5 @@
 pub mod consts;
+pub mod enums;
 
 use std::env;
 

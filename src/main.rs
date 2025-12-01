@@ -25,10 +25,10 @@ use gtk::{
     prelude::*,
 };
 
-use log::{debug, info, warn};
-
+use base::enums::UnitDBusLevel;
 use dotenv::dotenv;
-use systemd::{data::UnitInfo, enums::UnitDBusLevel};
+use log::{debug, info, warn};
+use systemd::data::UnitInfo;
 use systemd_gui::{APP_ID, new_settings};
 use widget::{
     app_window::{AppWindow, menu},

@@ -1,11 +1,11 @@
 mod sysdcom;
+use base::enums::UnitDBusLevel;
 use enumflags2::BitFlags;
 use log::{debug, info, warn};
 use std::{collections::HashMap, sync::OnceLock};
 use tokio::sync::OnceCell;
 use zbus::{Connection, ObjectServer, interface, message::Header, object_server::SignalEmitter};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
-
 static AUTHORITY: OnceLock<AuthorityProxy> = OnceLock::new();
 
 pub async fn init_authority() -> Result<(), zbus::Error> {
@@ -30,6 +30,7 @@ pub fn map() -> &'static HashMap<&'static str, &'static str> {
 }
 
 static SYS_PROXY: OnceCell<sysdcom::SysDManagerComLinkProxy> = OnceCell::const_new();
+static SES_PROXY: OnceCell<sysdcom::SysDManagerComLinkProxy> = OnceCell::const_new();
 
 async fn system_proxy() -> Result<&'static sysdcom::SysDManagerComLinkProxy<'static>, zbus::Error> {
     SYS_PROXY
@@ -43,6 +44,30 @@ async fn system_proxy() -> Result<&'static sysdcom::SysDManagerComLinkProxy<'sta
             },
         )
         .await
+}
+
+async fn session_proxy() -> Result<&'static sysdcom::SysDManagerComLinkProxy<'static>, zbus::Error>
+{
+    SES_PROXY
+        .get_or_try_init(
+            async || -> Result<sysdcom::SysDManagerComLinkProxy, zbus::Error> {
+                let connection = Connection::session().await?;
+                let proxy = sysdcom::SysDManagerComLinkProxy::builder(&connection)
+                    .build()
+                    .await?;
+                Ok(proxy)
+            },
+        )
+        .await
+}
+
+async fn get_proxy(
+    dbus_level: UnitDBusLevel,
+) -> Result<&'static sysdcom::SysDManagerComLinkProxy<'static>, zbus::Error> {
+    match dbus_level {
+        UnitDBusLevel::UserSession => session_proxy().await,
+        _ => system_proxy().await,
+    }
 }
 
 pub struct SysDManagerProxy {
@@ -142,24 +167,42 @@ impl SysDManagerProxy {
         }
     }
 
-    async fn clean_unit(&self, unit_name: &str, what: Vec<&str>) -> zbus::fdo::Result<()> {
-        let proxy = system_proxy().await?;
+    async fn clean_unit(
+        &self,
+        dbus: u8,
+        unit_name: &str,
+        what: Vec<&str>,
+    ) -> zbus::fdo::Result<()> {
+        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
         self.check_autorisation().await?;
-        proxy.clean_unit(unit_name, &what).await?;
+
+        info!("clean_unit {} {:?}", unit_name, what);
+        proxy
+            .clean_unit(unit_name, &what)
+            .await
+            .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))?;
         Ok(())
     }
 
-    async fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()> {
-        let proxy = system_proxy().await?;
+    async fn freeze_unit(&self, dbus: u8, unit_name: &str) -> zbus::fdo::Result<()> {
+        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
         self.check_autorisation().await?;
-        proxy.freeze_unit(unit_name).await?;
+        info!("freeze_unit {}", unit_name);
+        proxy
+            .freeze_unit(unit_name)
+            .await
+            .inspect_err(|e| warn!("Error while calling freeze_unit on sysdbus proxy: {:?}", e))?;
         Ok(())
     }
 
-    async fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()> {
-        let proxy = system_proxy().await?;
+    async fn thaw_unit(&self, dbus: u8, unit_name: &str) -> zbus::fdo::Result<()> {
+        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
         self.check_autorisation().await?;
-        proxy.thaw_unit(unit_name).await?;
+        info!("thaw_unit {}", unit_name);
+        proxy
+            .thaw_unit(unit_name)
+            .await
+            .inspect_err(|e| warn!("Error while calling thaw_unit on sysdbus proxy: {:?}", e))?;
         Ok(())
     }
 }

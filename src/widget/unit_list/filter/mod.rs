@@ -11,10 +11,11 @@ use gtk::{
 
 use strum::{EnumIter, IntoEnumIterator};
 
+use super::UnitListPanel;
 use crate::{
     systemd::{
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitDBusLevel, UnitType},
+        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitType},
     },
     widget::unit_list::{
         COL_ID_UNIT,
@@ -23,8 +24,7 @@ use crate::{
         },
     },
 };
-
-use super::UnitListPanel;
+use base::enums::UnitDBusLevel;
 
 // ANCHOR: mod
 glib::wrapper! {

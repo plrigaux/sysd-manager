@@ -1,4 +1,19 @@
+use crate::{
+    systemd::{
+        self,
+        data::{DisEnAbleUnitFiles, EnableUnitFilesReturn, UnitInfo},
+        enums::{DisEnableFlags, StartStopMode},
+        errors::SystemdErrors,
+    },
+    systemd_gui,
+    widget::{
+        app_window::AppWindow,
+        control_action_dialog::ControlActionType,
+        unit_control_panel::{UnitControlPanel, enums::UnitContolType},
+    },
+};
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use base::enums::UnitDBusLevel;
 use enumflags2::BitFlag;
 use gio::glib::BoolError;
 use gtk::{
@@ -14,21 +29,6 @@ use gtk::{
 use log::{info, warn};
 use std::cell::OnceCell;
 use strum::IntoEnumIterator;
-
-use crate::{
-    systemd::{
-        self,
-        data::{DisEnAbleUnitFiles, EnableUnitFilesReturn, UnitInfo},
-        enums::{DisEnableFlags, StartStopMode, UnitDBusLevel},
-        errors::SystemdErrors,
-    },
-    systemd_gui,
-    widget::{
-        app_window::AppWindow,
-        control_action_dialog::ControlActionType,
-        unit_control_panel::{UnitControlPanel, enums::UnitContolType},
-    },
-};
 
 use super::ControlActionDialog;
 

@@ -1,9 +1,10 @@
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::{
-    systemd::{data::UnitInfo, enums::UnitDBusLevel, errors::SystemdErrors},
+    systemd::{data::UnitInfo, errors::SystemdErrors},
     widget::{InterPanelMessage, app_window::AppWindow},
 };
+use base::enums::UnitDBusLevel;
 
 use super::UnitControlPanel;
 

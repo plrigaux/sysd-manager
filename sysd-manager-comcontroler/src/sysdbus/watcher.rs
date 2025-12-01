@@ -1,12 +1,10 @@
+use base::enums::UnitDBusLevel;
 use log::{debug, info, warn};
 use tokio::sync::mpsc;
 use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
-use crate::{
-    SystemdSignal, SystemdSignalRow, enums::UnitDBusLevel, errors::SystemdErrors,
-    sysdbus::get_connection,
-};
+use crate::{SystemdSignal, SystemdSignalRow, errors::SystemdErrors, sysdbus::get_connection};
 use futures_util::stream::StreamExt;
 
 #[proxy(

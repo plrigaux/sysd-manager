@@ -7,7 +7,6 @@ use std::{collections::HashSet, ops::DerefMut, sync::mpsc::TryRecvError};
 /// https://www.freedesktop.org/software/systemd/man/latest/sd_journal_open.html
 ///
 use crate::{
-    enums::UnitDBusLevel,
     errors::SystemdErrors,
     journal_data::{
         BOOT_IDX, Boot, EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo,
@@ -15,6 +14,7 @@ use crate::{
     },
     time_handling::{TimestampStyle, USEC_PER_SEC},
 };
+use base::enums::UnitDBusLevel;
 use chrono::{Local, Utc};
 use log::{debug, info, trace, warn};
 use sysd::{Journal, id128::Id128, journal::OpenOptions};

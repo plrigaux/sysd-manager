@@ -1,5 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
+use crate::systemd::{self};
+use crate::widget::app_window::AppWindow;
+use base::enums::UnitDBusLevel;
 use gtk::{
     gdk, gio,
     glib::{self, Value},
@@ -7,9 +10,6 @@ use gtk::{
     prelude::*,
 };
 use log::{info, warn};
-
-use crate::systemd::{self, enums::UnitDBusLevel};
-use crate::widget::app_window::AppWindow;
 
 use super::writer::{PROP_UNDERLINE, TAG_DATA_LINK};
 

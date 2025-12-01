@@ -13,23 +13,23 @@ use gtk::{
     },
 };
 
-use std::{
-    cell::{Cell, RefCell},
-    collections::{BTreeSet, HashSet},
-    rc::Rc,
-};
-
 use crate::{
     systemd::{
         self, Dependency,
         data::UnitInfo,
-        enums::{DependencyType, UnitDBusLevel, UnitType},
+        enums::{DependencyType, UnitType},
     },
     utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
     widget::{
         app_window::AppWindow,
         menu_button::{ExMenuButton, OnClose},
     },
+};
+use base::enums::UnitDBusLevel;
+use std::{
+    cell::{Cell, RefCell},
+    collections::{BTreeSet, HashSet},
+    rc::Rc,
 };
 
 use crate::{

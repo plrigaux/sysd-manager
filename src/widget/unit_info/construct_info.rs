@@ -2,17 +2,17 @@ use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 
 use crate::consts::U64MAX;
-use crate::systemd::enums::{LoadState, Preset, UnitDBusLevel};
-
 use crate::systemd::{
     self,
     data::{UnitInfo, UnitProcess},
+    enums::{LoadState, Preset},
 };
 use crate::utils::writer::{
     HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE,
     SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
 };
 use crate::widget::preferences::data::PREFERENCES;
+use base::enums::UnitDBusLevel;
 
 use log::{debug, warn};
 use systemd::swrite;

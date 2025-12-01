@@ -17,21 +17,16 @@ use gtk::{
 };
 use strum::IntoEnumIterator;
 
-use log::{info, warn};
-
 use crate::{
-    systemd::{
-        self,
-        data::UnitInfo,
-        enums::{CleanOption, UnitDBusLevel},
-        errors::SystemdErrors,
-    },
+    systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
         unit_control_panel::{UnitControlPanel, work_around_dialog},
     },
 };
+use base::enums::UnitDBusLevel;
+use log::{info, warn};
 
 use super::CleanUnitDialog;
 

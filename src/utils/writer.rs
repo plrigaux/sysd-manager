@@ -4,13 +4,9 @@ use glib::Quark;
 use gtk::{glib::translate::IntoGlib, pango, prelude::*};
 use log::debug;
 
-use crate::systemd::{
-    self,
-    enums::{ActiveState, UnitDBusLevel},
-    generate_file_uri,
-};
-
 use super::palette::{blue, green, grey, red, yellow};
+use crate::systemd::{self, enums::ActiveState, generate_file_uri};
+use base::enums::UnitDBusLevel;
 
 pub struct UnitInfoWriter {
     pub buffer: gtk::TextBuffer,

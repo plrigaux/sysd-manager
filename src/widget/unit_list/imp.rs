@@ -10,28 +10,12 @@ use std::{
     time::Duration,
 };
 
-use gtk::{
-    Adjustment, TemplateChild,
-    gio::{self, glib::VariantTy},
-    glib::{self, Properties, Quark},
-    prelude::*,
-    subclass::{
-        box_::BoxImpl,
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetImpl,
-        },
-    },
-};
-use zvariant::{OwnedValue, Value};
-
 use crate::{
     consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
     systemd::{
         self, SystemdUnitFile,
         data::{UnitInfo, convert_to_string},
-        enums::{LoadState, UnitDBusLevel, UnitType},
+        enums::{LoadState, UnitType},
         errors::SystemdErrors,
     },
     systemd_gui,
@@ -62,7 +46,23 @@ use crate::{
         },
     },
 };
+use base::enums::UnitDBusLevel;
+use gtk::{
+    Adjustment, TemplateChild,
+    gio::{self, glib::VariantTy},
+    glib::{self, Properties, Quark},
+    prelude::*,
+    subclass::{
+        box_::BoxImpl,
+        prelude::*,
+        widget::{
+            CompositeTemplateCallbacksClass, CompositeTemplateClass,
+            CompositeTemplateInitializingExt, WidgetImpl,
+        },
+    },
+};
 use log::{debug, error, info, warn};
+use zvariant::{OwnedValue, Value};
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 struct UnitKey {

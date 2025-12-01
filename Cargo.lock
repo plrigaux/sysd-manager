@@ -1926,6 +1926,9 @@ name = "sysd-manager-base"
 version = "0.1.0"
 dependencies = [
  "constcat",
+ "gettext-rs",
+ "glib",
+ "strum",
  "tracing",
  "tracing-journald",
  "tracing-subscriber",
