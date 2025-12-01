@@ -6,7 +6,7 @@ NC='\033[0m'
 BBCYAN='\033[1;96m'
 
 PROGRAM="${BBCYAN}SysD Manager${NC}"
-
+PROXY_BIN="sysd-manager-proxy"
 
 if [ $# -eq 0 ]; then
     TARGET="release"
@@ -30,13 +30,19 @@ cargo run -p transtools -- packfiles
 echo ""
 echo Installing files
 echo ""
-sudo install -Dm755 "${REL_PATH}/target/${TARGET}/sysd-manager" -t "/usr/bin"
-sudo install -Dm644 "${REL_PATH}/target/loc/io.github.plrigaux.sysd-manager.desktop" -t "/usr/share/applications"
-sudo install -Dm644 "${REL_PATH}/target/loc/io.github.plrigaux.sysd-manager.metainfo.xml" -t "/app/share/metainfo"
-sudo install -Dm644 "${REL_PATH}/data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg" -t "/usr/share/icons/hicolor/scalable/apps/"
-sudo install -Dm644 "${REL_PATH}/data/schemas/io.github.plrigaux.sysd-manager.gschema.xml" -t "/usr/share/glib-2.0/schemas"   
+sudo install -vDm755 "${REL_PATH}/target/${TARGET}/sysd-manager" -t "/usr/bin"
+sudo install -vDm644 "${REL_PATH}/target/loc/io.github.plrigaux.sysd-manager.desktop" -t "/usr/share/applications"
+sudo install -vDm644 "${REL_PATH}/target/loc/io.github.plrigaux.sysd-manager.metainfo.xml" -t "/app/share/metainfo"
+sudo install -vDm644 "${REL_PATH}/data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg" -t "/usr/share/icons/hicolor/scalable/apps/"
+sudo install -vDm644 "${REL_PATH}/data/schemas/io.github.plrigaux.sysd-manager.gschema.xml" -t "/usr/share/glib-2.0/schemas"   
 sudo cp -r -v "${REL_PATH}/target/locale"  "/usr/share/" 
 #sudo install -Dm644 "data/applications/org.freedesktop.policykit.sysd-manager.policy" -t "/usr/share/polkit-1/actions/"
+
+echo -e Installing $PROGRAM Proxy  
+cargo build $BUILD_ARG --manifest-path ${REL_PATH}/${PROXY_BIN}/Cargo.toml
+sudo install -vDm755 "${REL_PATH}/target/${TARGET}/${PROXY_BIN}" -t "/usr/bin"
+echo -e Executing Install srcipt
+/usr/bin/sysd-manager-proxy install
 
 echo -e Compiling ${BOLD}Schemas${NC} 
 echo ""

@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
 use base::{RunMode, consts::*};
 
 use tokio::{fs, process::Command};
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
@@ -28,11 +28,22 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
         error!("sub_install should not be called with RunMode::Both");
         return Err("Invalid RunMode::Both for sub_install".into());
     }
-
     let path = env::current_dir()?;
     info!("The current directory is {}", path.display());
 
-    if run_mode == RunMode::Normal {
+    let mut normalized_path = PathBuf::new();
+    for token in path.iter() {
+        normalized_path.push(token);
+        if token == "sysd-manager" {
+            break;
+        } else {
+            debug!("{:?}", token)
+        }
+    }
+
+    info!("The base directory is {}", normalized_path.display());
+
+    /*     if run_mode == RunMode::Normal {
         let src = PathBuf::from("../target/release").join(BIN_NAME);
         if !src.exists() {
             let msg = format!(
@@ -43,7 +54,7 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
         }
         let dst = PathBuf::from(BIN_DIR).join(BIN_NAME);
         install_file_exec(&src, &dst, false).await?;
-    }
+    } */
 
     let (bus_name, interface, destination, service_id) = if run_mode == RunMode::Development {
         (
@@ -56,8 +67,9 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
         (DBUS_NAME, DBUS_INTERFACE, DBUS_DESTINATION, PROXY_SERVICE)
     };
 
-    let src_base = PathBuf::from("data");
-    let src = src_base.join("io.github.plrigaux.SysDManager.conf");
+    let src_sysd_path = normalized_path.join("sysd-manager-proxy");
+    let src_data = src_sysd_path.join("data");
+    let src = src_data.join("io.github.plrigaux.SysDManager.conf");
     let mut dst = PathBuf::from(SYSTEMD_DIR).join(bus_name);
     dst.add_extension("conf");
     install_file(&src, &dst, false).await?;
@@ -71,11 +83,11 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 
     install_edit_file(&map, dst).await?;
 
-    let src = src_base.join("io.github.plrigaux.SysDManager.policy");
+    let src = src_data.join("io.github.plrigaux.SysDManager.policy");
     let dst = PathBuf::from(ACTION_DIR);
     install_file(&src, &dst, true).await?;
 
-    let src = src_base.join("sysd-manager-proxy.service");
+    let src = src_data.join("sysd-manager-proxy.service");
     let mut dst = PathBuf::from(SERVICE_DIR).join(service_id);
     dst.add_extension("service");
 
@@ -133,6 +145,7 @@ async fn install_file(
     install_file_mode(src, dst, dst_is_dir, "644").await
 }
 
+#[allow(dead_code)]
 async fn install_file_exec(
     src: &PathBuf,
     dst: &PathBuf,
@@ -158,8 +171,7 @@ async fn install_file_mode(
 
     let output = Command::new("sudo")
         .arg("install")
-        .arg("-v")
-        .arg(format!("-Dm{}", mode))
+        .arg(format!("-vDm{}", mode))
         .arg(src)
         .arg(dir_arg)
         .arg(dst)
@@ -169,29 +181,74 @@ async fn install_file_mode(
     Ok(())
 }
 
+enum Pattern {
+    Equals(String),
+    Start(String),
+}
+
+struct Clean {
+    dir: String,
+    patterns: Vec<Pattern>,
+}
+
 pub async fn clean(_run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("Clean proxy files");
 
-    let mut path_to_clean = Vec::new();
+    let mut to_clean = Vec::new();
+    let clean = Clean {
+        dir: SYSTEMD_DIR.to_string(),
+        patterns: vec![Pattern::Start("io.github.plrigaux.SysDM".to_string())],
+    };
 
+    to_clean.push(clean);
+
+    let clean = Clean {
+        dir: ACTION_DIR.to_string(),
+        patterns: vec![Pattern::Equals(
+            "io.github.plrigaux.SysDManager.policy".to_string(),
+        )],
+    };
+
+    to_clean.push(clean);
+
+    let clean = Clean {
+        dir: SERVICE_DIR.to_string(),
+        patterns: vec![Pattern::Start("sysd-manager-proxy".to_string())],
+    };
+    to_clean.push(clean);
+
+    let mut paths_to_clean = Vec::new();
     //TODO: use run_mode to clean only relevant files
-    for dir in [SYSTEMD_DIR, ACTION_DIR] {
-        let mut entries = fs::read_dir(dir).await?;
+    for clean in to_clean {
+        let mut entries = fs::read_dir(clean.dir).await?;
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
-            if let Some(file_name) = path.file_name() {
-                let fname = file_name.to_string_lossy();
-                if fname.starts_with("io.github.plrigaux.SysDM")
-                    || fname.starts_with("sysd-manager-proxy")
-                {
-                    path_to_clean.push(path);
+
+            for pattern in &clean.patterns {
+                match pattern {
+                    Pattern::Equals(s) => {
+                        if let Some(file_name) = path.file_name() {
+                            let fname = file_name.to_string_lossy();
+                            if fname == *s {
+                                paths_to_clean.push(path.clone());
+                            }
+                        }
+                    }
+                    Pattern::Start(s) => {
+                        if let Some(file_name) = path.file_name() {
+                            let fname = file_name.to_string_lossy();
+                            if fname.starts_with(s) {
+                                paths_to_clean.push(path.clone());
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    info!("{} file to clean", path_to_clean.len());
-    for path in path_to_clean {
+    info!("{} file to clean", paths_to_clean.len());
+    for path in paths_to_clean {
         let output = Command::new("sudo")
             .arg("rm")
             .arg("-v")
