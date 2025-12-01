@@ -1,19 +1,49 @@
 use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
 
 use base::{RunMode, consts::*};
-use log::warn;
 
 use tokio::{fs, process::Command};
-use tracing::info;
+use tracing::{error, info, warn};
 
 const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
 const SERVICE_DIR: &str = "/usr/lib/systemd/system";
+const BIN_DIR: &str = "/usr/bin";
+const BIN_NAME: &str = "sysd-manager-proxy";
 
 pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
-    info!("Install proxy");
+    info!("Install proxy mode {:?}", run_mode);
+
+    if run_mode == RunMode::Both {
+        self::sub_install(RunMode::Development).await?;
+        self::sub_install(RunMode::Normal).await?;
+    } else {
+        self::sub_install(run_mode).await?;
+    }
+    Ok(())
+}
+
+async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
+    if run_mode == RunMode::Both {
+        error!("sub_install should not be called with RunMode::Both");
+        return Err("Invalid RunMode::Both for sub_install".into());
+    }
+
     let path = env::current_dir()?;
     info!("The current directory is {}", path.display());
+
+    if run_mode == RunMode::Normal {
+        let src = PathBuf::from("../target/release").join(BIN_NAME);
+        if !src.exists() {
+            let msg = format!(
+                "Binary file {} does not exist. Did you build the project in release mode?",
+                src.display()
+            );
+            return Err(msg.into());
+        }
+        let dst = PathBuf::from(BIN_DIR).join(BIN_NAME);
+        install_file_exec(&src, &dst, false).await?;
+    }
 
     let (bus_name, interface, destination, service_id) = if run_mode == RunMode::Development {
         (
@@ -51,13 +81,22 @@ pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 
     install_file(&src, &dst, false).await?;
 
-    let exec = std::env::current_exe().expect("supposed to exist");
-    let mut exec = exec.to_string_lossy();
+    let exec = match run_mode {
+        RunMode::Normal => {
+            let dst = PathBuf::from(BIN_DIR).join(BIN_NAME);
+            let s = dst.to_string_lossy();
+            s.into_owned()
+        }
+        RunMode::Development => {
+            let exec = std::env::current_exe().expect("supposed to exist");
+            let exec = exec.to_string_lossy();
 
-    if run_mode == RunMode::Development {
-        let cmd = format!("{} -d", exec);
-        exec = std::borrow::Cow::Owned(cmd);
-    }
+            format!("{} -d", exec)
+        }
+        _ => {
+            return Err("Invalid RunMode::Both for sub_install".into());
+        }
+    };
 
     map.insert("EXECUTABLE", &exec);
     map.insert("SERVICE_ID", service_id);
@@ -91,14 +130,36 @@ async fn install_file(
     dst: &PathBuf,
     dst_is_dir: bool,
 ) -> Result<(), Box<dyn Error + 'static>> {
-    info!("Copying {} --> {}", src.display(), dst.display());
+    install_file_mode(src, dst, dst_is_dir, "644").await
+}
+
+async fn install_file_exec(
+    src: &PathBuf,
+    dst: &PathBuf,
+    dst_is_dir: bool,
+) -> Result<(), Box<dyn Error + 'static>> {
+    install_file_mode(src, dst, dst_is_dir, "755").await
+}
+
+async fn install_file_mode(
+    src: &PathBuf,
+    dst: &PathBuf,
+    dst_is_dir: bool,
+    mode: &str,
+) -> Result<(), Box<dyn Error + 'static>> {
+    info!(
+        "Installing {} --> {} with mode {}",
+        src.display(),
+        dst.display(),
+        mode
+    );
 
     let dir_arg = if dst_is_dir { "-t" } else { "-T" };
 
     let output = Command::new("sudo")
         .arg("install")
         .arg("-v")
-        .arg("-Dm644")
+        .arg(format!("-Dm{}", mode))
         .arg(src)
         .arg(dir_arg)
         .arg(dst)
