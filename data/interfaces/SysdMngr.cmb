@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
   <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="1cdc270162d0c95ec2b33a2aad16e95243ee8de7eaef0a97d0a241f9d1c721fc"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="2e7e075384a4fffadc8babad4bdf1e8e6c6c5c3e4e9c1502effdc88269610f24"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="b51b8de5883468c775b38876e7f9e5e4b06c3e17a2c94cf191dd903befa8a3c5"/>
-  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="b094fddc01f1171863d19982c51a18b9b0af9f85d73fdb27dd65df41404564cd"/>
+  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="0c6cce3a178a61760b46e15d290ec8463ac75ac8f73e68482bb5f04ceca404bf"/>
   <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="7381d9cffa2c5ea5c0b5d683b1ebb46f8dc04e1e9877c9749a2ab480da8cc156"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="494ba469fc1ba0d3bcf680f3082fecd5cf3c0c3a237ea806f450c0c52778afb5"/>
@@ -14,7 +14,7 @@
   <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="17963c3c244a657450834c03c3b7f2f2da08e72a3fa3bedfab48d6df1a5cc4c9"/>
   <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="57f6dbe8c3b9fbb1e6670c221cb356134182019c121510af5dffaff833cad4a3"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
-  <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="01ca43632b58ccaee2ce1f2ca666781818f5d3bc200b0a85a9f4b2f58ba60b1c"/>
+  <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="fe1f948e1c756fa98c98b7b82ad0a6b1f00fde8db27507f9af13ebc270ba8e65"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="801d1758e8e6f10d76a13132793a7467e1b7f6ee572488a3125cd7664759fca6"/>
   <ui filename="shortcuts.ui" sha256="c352f6a082865f27b9c96d5e56e70215ac80aa5b19792f4a5e0e8d6816a1d545"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
@@ -30,7 +30,7 @@
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="2bb84a7e483c1f0c516d6127448d3dcb5948fcf98285fe962138e1bc8f4e16df">
+  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="264583702d6dfd970b2c8c5591e8b670c456183fd49cc58b44b6237c73c6300a">
     <requires>UnitPropertiesSelectionPanel</requires>
   </ui>
   <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="432aa9589656bd2c5461ff299b33d61188f2d7202e24396d30525fd1d5774dc5">

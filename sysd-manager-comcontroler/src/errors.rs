@@ -19,6 +19,7 @@ pub enum SystemdErrors {
     Custom(String),
     IoError(std::io::Error),
     Utf8Error(FromUtf8Error),
+    Fmt(std::fmt::Error),
     ZMethodError(String, String, String),
     CmdNoFlatpakSpawn,
     CmdNoFreedesktopFlatpakPermission(Option<String>, Option<String>),
@@ -200,5 +201,11 @@ impl From<tokio::task::JoinError> for SystemdErrors {
 impl From<zbus_xml::Error> for SystemdErrors {
     fn from(value: zbus_xml::Error) -> Self {
         SystemdErrors::ZXml(value)
+    }
+}
+
+impl From<std::fmt::Error> for SystemdErrors {
+    fn from(value: std::fmt::Error) -> Self {
+        SystemdErrors::Fmt(value)
     }
 }

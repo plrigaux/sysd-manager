@@ -2,10 +2,10 @@ use std::cell::{Cell, OnceCell, RefCell};
 
 use adw::prelude::AdwDialogExt;
 use gettextrs::pgettext;
-use gio::SimpleAction;
 use gtk::{
     TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
+    gio::SimpleAction,
     glib,
     prelude::*,
     subclass::{
@@ -17,9 +17,6 @@ use gtk::{
         },
     },
 };
-
-use log::{debug, info, warn};
-use sourceview5::{Buffer, prelude::*};
 
 use crate::{
     consts::{ADWAITA, SUGGESTED_ACTION},
@@ -33,6 +30,9 @@ use crate::{
         preferences::{data::PREFERENCES, style_scheme::style_schemes},
     },
 };
+use log::{debug, info, warn};
+use sourceview5::{Buffer, prelude::*};
+use std::fmt::Write;
 
 use super::flatpak;
 
@@ -459,17 +459,56 @@ impl UnitFilePanelImp {
                 })
                 .build();
 
-            let create_drop_in_file_runtime =
+            let create_drop_in_file_runtime = {
+                let unit_file_panel = self.obj().clone();
                 gio::ActionEntry::builder("create_drop_in_file_runtime")
                     .activate(
                         move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
                             info!("call create_drop_in_file_runtime");
                             _b.is_enabled();
+                            unit_file_panel.imp().create_drop_in_file(true);
                         },
                     )
-                    .build();
+                    .build()
+            };
+            let create_drop_in_file_permanent = {
+                let unit_file_panel = self.obj().clone();
+                gio::ActionEntry::builder("create_drop_in_file_permanent")
+                    .activate(
+                        move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                            info!("call create_drop_in_file_permanent");
+                            _b.is_enabled();
+                            unit_file_panel.imp().create_drop_in_file(false);
+                        },
+                    )
+                    .build()
+            };
 
-            app_window.add_action_entries([rename_drop_in_file, create_drop_in_file_runtime]);
+            let revert_drop_in_file_only = gio::ActionEntry::builder("revert_drop_in_file_only")
+                .activate(
+                    move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                        info!("call revert_drop_in_file_only");
+                        _b.is_enabled();
+                    },
+                )
+                .build();
+
+            let revert_unit_file_full = gio::ActionEntry::builder("revert_unit_file_full")
+                .activate(
+                    move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                        info!("call revert_unit_file_full");
+                        _b.is_enabled();
+                    },
+                )
+                .build();
+
+            app_window.add_action_entries([
+                rename_drop_in_file,
+                create_drop_in_file_runtime,
+                create_drop_in_file_permanent,
+                revert_drop_in_file_only,
+                revert_unit_file_full,
+            ]);
 
             if let Some(action) = app_window
                 .lookup_action("create_drop_in_file_runtime")
@@ -492,6 +531,81 @@ impl UnitFilePanelImp {
         if self.visible_on_page.get() {
             self.set_file_content_init()
         }
+    }
+
+    fn create_drop_in_file(&self, runtime: bool) {
+        info!("create_drop_in_file called runtime {runtime}");
+
+        //get the file content
+        let binding = self.unit.borrow();
+        let Some(unit) = binding.as_ref() else {
+            warn!("no unit file");
+            return;
+        };
+
+        let file_path = unit.file_path();
+        let primary = unit.primary();
+        let file_content = systemd::get_unit_file_info(file_path.as_deref(), &primary)
+            .unwrap_or_else(|e| {
+                warn!("get_unit_file_info Error: {e:?}");
+                "".to_owned()
+            });
+
+        let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime);
+        let uri = generate_file_uri(&drop_in_file_path);
+
+        self.file_link.set_uri(&uri);
+        self.file_link.set_label(&drop_in_file_path);
+
+        let new_file_content = self
+            .set_dropin_file_format(file_path, primary, file_content, runtime)
+            .inspect_err(|e| warn!("some error {:?}", e))
+            .unwrap_or_default();
+
+        self.set_editor_text(&new_file_content);
+        //format the file
+
+        //display
+    }
+
+    fn create_drop_in_file_path(primary: &str, runtime: bool) -> String {
+        let prefix = if runtime { "run" } else { "etc" };
+        format!("/{}/systemd/system/{}.d/override.conf", prefix, primary)
+    }
+
+    fn set_dropin_file_format(
+        &self,
+        file_path: Option<String>,
+        primary: String,
+        file_content: String,
+        runtime: bool,
+    ) -> Result<String, SystemdErrors> {
+        let mut new_file_content = String::with_capacity(file_content.len() * 2);
+
+        writeln!(
+            new_file_content,
+            "### Editing {}",
+            Self::create_drop_in_file_path(&primary, runtime)
+        )?;
+
+        writeln!(
+            new_file_content,
+            "### Anything between here and the comment below will become the contents of the drop-in file"
+        )?;
+        new_file_content.push_str("\n\n\n");
+        writeln!(
+            new_file_content,
+            "### Edits below this comment will be discarded"
+        )?;
+        new_file_content.push('\n');
+        writeln!(new_file_content, "### {}", file_path.unwrap_or_default())?;
+        for line in file_content.lines() {
+            new_file_content.push_str("# ");
+            new_file_content.push_str(line);
+            new_file_content.push('\n');
+        }
+
+        Ok(new_file_content)
     }
 
     pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
