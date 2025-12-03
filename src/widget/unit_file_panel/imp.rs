@@ -573,6 +573,14 @@ impl UnitFilePanelImp {
             });
 
         let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime);
+        {
+            self.drop_in_files
+                .borrow_mut()
+                .push(drop_in_file_path.clone());
+        }
+        self.set_dropins();
+        self.file_dropin_selector
+            .set_active(self.file_dropin_selector.n_toggles() - 1);
 
         self.file_status
             .replace(Some(UnitFileStatus::Create(drop_in_file_path.clone())));
