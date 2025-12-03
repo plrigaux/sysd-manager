@@ -39,9 +39,25 @@ use super::flatpak;
 const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
 
+#[derive(PartialEq, Copy, Clone)]
 enum UnitFileStatus {
-    Create(String),
-    Edit(String),
+    Create,
+    Edit,
+}
+
+#[derive(Clone)]
+struct FileNav {
+    file_path: String,
+    id: String,
+    status: UnitFileStatus,
+    is_drop_in: bool,
+}
+
+const UNIT_FILE_ID: &str = "unit file";
+impl FileNav {
+    fn is_file(&self) -> bool {
+        self.id == UNIT_FILE_ID
+    }
 }
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -79,12 +95,11 @@ pub struct UnitFilePanelImp {
 
     unit_dependencies_loaded: Cell<bool>,
 
-    drop_in_files: RefCell<Vec<String>>,
+    all_files: RefCell<Vec<FileNav>>,
 
     file_content_selected_index: Cell<u32>,
-
     //file_displayed: RefCell<Option<String>>,
-    file_status: RefCell<Option<UnitFileStatus>>,
+    //file_status: RefCell<Option<UnitFileStatus>>,
 }
 
 macro_rules! get_buffer {
@@ -123,18 +138,25 @@ impl UnitFilePanelImp {
         let end = buffer.end_iter();
         let text = buffer.text(&start, &end, true);
 
-        let file_status = self.file_status.borrow();
-
-        let file_path = match file_status.as_ref() {
-            Some(UnitFileStatus::Create(file_path)) => file_path,
-            Some(UnitFileStatus::Edit(file_path)) => file_path,
-            None => {
-                warn!("No file path to save");
-                return;
-            }
+        let binding = self.all_files.borrow();
+        let Some(file_nav) = binding
+            .get(self.file_content_selected_index.get() as usize)
+            .cloned()
+        else {
+            warn!("No file path to save");
+            return;
         };
 
-        match systemd::save_text_to_file(file_path, &text) {
+        if file_nav.status == UnitFileStatus::Create {
+            warn!("File in create mode, not able to save Now");
+            self.add_toast_message(
+                "File in create mode, please edit the file path before saving!",
+                false,
+            );
+            return;
+        }
+
+        match systemd::save_text_to_file(&file_nav.file_path, &text) {
             Ok((file_path, _bytes_written)) => {
                 button.remove_css_class(SUGGESTED_ACTION);
 
@@ -250,10 +272,9 @@ impl UnitFilePanelImp {
                     .expect("The channel needs to be open.")
             });
 
-            match receiver.await.expect("Tokio receiver works") {
+            match receiver.await.expect("Tokio receiver to work well") {
                 Ok(drop_in_files) => {
-                    unit_file_panel.imp().drop_in_files.replace(drop_in_files);
-                    unit_file_panel.imp().set_dropins();
+                    unit_file_panel.imp().set_dropins(&drop_in_files);
                 }
                 Err(err) => {
                     warn!("Fail to update Unit info {err:?}");
@@ -261,47 +282,60 @@ impl UnitFilePanelImp {
             };
         });
 
-        let file_path = unit.file_path();
         let primary = unit.primary();
-        self.display_unit_file_content(file_path, &primary);
+
+        self.set_dropins(&[]);
+        self.display_unit_file_content(None, &primary);
     }
 
-    fn display_unit_file_content(&self, file_path: Option<String>, primary: &str) {
-        let (file_content, file_path) = if let Some(file_path) = file_path {
-            self.file_status
-                .replace(Some(UnitFileStatus::Edit(file_path.clone())));
+    fn display_unit_file_content(&self, file_nav: Option<&FileNav>, primary: &str) {
+        match file_nav {
+            Some(file_nav) => {
+                let file_content = systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
+                    .unwrap_or_else(|e| {
+                        warn!("get_unit_file_info Error: {e:?}");
+                        "".to_owned()
+                    });
 
-            let content = systemd::get_unit_file_info(Some(file_path.as_str()), primary)
-                .unwrap_or_else(|e| {
-                    warn!("get_unit_file_info Error: {e:?}");
-                    "".to_owned()
-                });
-            (content, file_path)
-        } else {
-            self.file_status.replace(None);
-            (String::new(), String::new())
+                self.fill_gui_content(file_content, &file_nav.file_path);
+            }
+            None => {
+                let all_files = self.all_files.borrow();
+
+                if all_files.is_empty() {
+                    self.fill_gui_content(String::new(), "");
+                    return;
+                }
+
+                let file_nav = all_files.first().expect("vector should not be empty");
+
+                let file_content = systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
+                    .unwrap_or_else(|e| {
+                        warn!("get_unit_file_info Error: {e:?}");
+                        "".to_owned()
+                    });
+
+                self.fill_gui_content(file_content, &file_nav.file_path);
+            }
         };
-
-        self.fill_gui_content(file_content, file_path);
     }
 
-    fn fill_gui_content(&self, file_content: String, file_path: String) {
-        let uri = generate_file_uri(&file_path);
+    fn fill_gui_content(&self, file_content: String, file_path: &str) {
+        let uri = generate_file_uri(file_path);
 
         self.file_link.set_uri(&uri);
 
-        self.file_link.set_label(&file_path);
+        self.file_link.set_label(file_path);
 
         self.set_editor_text(&file_content);
     }
 
     fn display_unit_drop_in_file_content(&self, drop_in_index: u32) {
-        let drop_in_files = self.drop_in_files.borrow();
-
-        let Some(file_path) = drop_in_files.get(drop_in_index as usize) else {
+        let binding = self.all_files.borrow();
+        let Some(file_nav) = binding.get(drop_in_index as usize) else {
             warn!(
                 "Drop in index out of bound requested: {drop_in_index} max: {}",
-                drop_in_files.len()
+                self.all_files.borrow().len()
             );
             self.set_editor_text("");
             return;
@@ -309,46 +343,71 @@ impl UnitFilePanelImp {
 
         let unit = get_unit!(self);
         let primary = unit.primary();
-        self.display_unit_file_content(Some(file_path.to_owned()), &primary);
+        self.display_unit_file_content(Some(file_nav), &primary);
     }
 
-    fn set_dropins(&self) {
-        let drop_in_files = self.drop_in_files.borrow();
-        self.file_dropin_selector.remove_all();
+    fn set_dropins(&self, drop_in_files: &[String]) {
+        {
+            let mut all_files = self.all_files.borrow_mut();
+            all_files.clear();
 
-        if drop_in_files.is_empty() {
-            self.file_dropin_selector.set_visible(false);
-            return;
+            if let Some(file_path) = get_unit!(self).file_path() {
+                let fnav = FileNav {
+                    file_path,
+                    id: UNIT_FILE_ID.to_string(),
+                    status: UnitFileStatus::Edit,
+                    is_drop_in: false,
+                };
+                all_files.push(fnav);
+            }
+
+            for (idx, drop_in_file) in drop_in_files.iter().enumerate() {
+                let name = format!("dropin {idx}");
+
+                let fnav = FileNav {
+                    file_path: drop_in_file.clone(),
+                    id: name,
+                    status: UnitFileStatus::Edit,
+                    is_drop_in: true,
+                };
+                all_files.push(fnav);
+            }
         }
+        self.set_drop_ins_selector();
+    }
 
-        self.file_dropin_selector.set_visible(true);
+    fn set_drop_ins_selector(&self) {
+        self.file_dropin_selector.remove_all();
+        let all_files = self.all_files.borrow();
+        let all_files_len = all_files.len();
+        let mut idx = 1;
 
-        //Unit file / Drop-Ins selector
-        let label_text = pgettext("file", "Unit File");
-
-        let toggle = adw::Toggle::builder()
-            .label(label_text)
-            .name("file")
-            .build();
-        self.file_dropin_selector.add(toggle);
-
-        for (idx, drop_in_file) in drop_in_files.iter().enumerate() {
-            //Unit file / Drop-Ins selector
-            let label_text = pgettext("file", "Drop In");
-
-            let label = if drop_in_files.len() > 1 {
-                format!("{label_text} {idx}")
+        for file_nav in all_files.iter() {
+            let label_text = if file_nav.is_file() {
+                pgettext("file", "Unit File")
             } else {
-                label_text
+                let label_text = pgettext("file", "Drop In");
+
+                if all_files_len > 2 {
+                    let label = format!("{label_text} {idx}");
+                    idx += 1;
+                    label
+                } else {
+                    label_text
+                }
             };
 
             let toggle = adw::Toggle::builder()
-                .label(label)
-                .name(format!("dropin {idx}"))
-                .tooltip(drop_in_file)
+                .label(&label_text)
+                .name(&file_nav.id)
+                .tooltip(file_nav.file_path.clone())
                 .build();
             self.file_dropin_selector.add(toggle);
         }
+
+        let visible = all_files_len > 1;
+
+        self.file_dropin_selector.set_visible(visible);
 
         self.set_visible_child_panel();
     }
@@ -360,12 +419,7 @@ impl UnitFilePanelImp {
 
         self.file_content_selected_index.set(selected_index);
 
-        if selected_index == 0 {
-            let unit = get_unit!(self);
-            self.display_unit_file_content(unit.file_path(), &unit.primary());
-        } else {
-            self.display_unit_drop_in_file_content(selected_index - 1);
-        }
+        self.display_unit_drop_in_file_content(selected_index);
     }
 
     fn set_editor_text(&self, file_content: &str) {
@@ -383,9 +437,7 @@ impl UnitFilePanelImp {
     }
 
     fn set_visible_child_panel(&self) {
-        let file_path = self.unit.borrow().as_ref().and_then(|u| u.file_path());
-
-        let panel = if file_path.is_none() && self.drop_in_files.borrow().is_empty() {
+        let panel = if self.all_files.borrow().is_empty() {
             PANEL_EMPTY
         } else {
             PANEL_FILE
@@ -574,23 +626,29 @@ impl UnitFilePanelImp {
 
         let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime);
         {
-            self.drop_in_files
-                .borrow_mut()
-                .push(drop_in_file_path.clone());
+            self.create_drop_in_nav(&drop_in_file_path);
         }
-        self.set_dropins();
+        self.set_drop_ins_selector();
         self.file_dropin_selector
             .set_active(self.file_dropin_selector.n_toggles() - 1);
-
-        self.file_status
-            .replace(Some(UnitFileStatus::Create(drop_in_file_path.clone())));
 
         let new_file_content = self
             .set_dropin_file_format(file_path, primary, file_content, runtime)
             .inspect_err(|e| warn!("some error {:?}", e))
             .unwrap_or_default();
 
-        self.fill_gui_content(new_file_content, drop_in_file_path);
+        self.fill_gui_content(new_file_content, &drop_in_file_path);
+    }
+
+    fn create_drop_in_nav(&self, drop_in_file_path: &str) {
+        let fnav = FileNav {
+            file_path: drop_in_file_path.to_string(),
+            id: "create drop".to_string(),
+            status: UnitFileStatus::Create,
+            is_drop_in: true,
+        };
+
+        self.all_files.borrow_mut().push(fnav);
     }
 
     fn create_drop_in_file_path(primary: &str, runtime: bool) -> String {
@@ -617,13 +675,22 @@ impl UnitFilePanelImp {
 
         writeln!(
             new_file_content,
-            "### {}",
+            "### {} {}",
+            // Create Drop in file name
+            pgettext("file", "Note: you can change the file name"),
+            Self::create_drop_in_file_path(&primary, runtime)
+        )?;
+
+        writeln!(
+            new_file_content,
+            "###\n### {}",
             // Create Drop in description
             pgettext(
                 "file",
                 "Anything between here and the comment below will become the contents of the drop-in file"
             )
         )?;
+
         new_file_content.push_str("\n\n\n");
         writeln!(
             new_file_content,
@@ -716,7 +783,7 @@ impl ObjectImpl for UnitFilePanelImp {
 
                 let unit_file_panel = upgrade!(unit_file_panel);
 
-                let allow_save_condition = unit_file_panel.imp().file_status.borrow().is_some(); //TODO check is the text has really changed
+                let allow_save_condition = !unit_file_panel.imp().all_files.borrow().is_empty(); //TODO check is the text has really changed
                 save_button.set_sensitive(allow_save_condition);
             });
         }
