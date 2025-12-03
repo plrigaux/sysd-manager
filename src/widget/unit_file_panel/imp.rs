@@ -39,6 +39,11 @@ use super::flatpak;
 const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
 
+enum UnitFileStatus {
+    Create(String),
+    Edit(String),
+}
+
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
 pub struct UnitFilePanelImp {
@@ -59,7 +64,7 @@ pub struct UnitFilePanelImp {
     panel_file_stack: TemplateChild<adw::ViewStack>,
 
     #[template_child]
-    file_dropin_selector: TemplateChild<adw::ToggleGroup>,
+    file_dropin_selector: TemplateChild<adw::ToggleGroup>, //TODOa handle create one
 
     #[template_child]
     unit_file_menu: TemplateChild<gio::MenuModel>,
@@ -78,7 +83,8 @@ pub struct UnitFilePanelImp {
 
     file_content_selected_index: Cell<u32>,
 
-    file_displayed: RefCell<Option<String>>,
+    //file_displayed: RefCell<Option<String>>,
+    file_status: RefCell<Option<UnitFileStatus>>,
 }
 
 macro_rules! get_buffer {
@@ -110,15 +116,22 @@ impl UnitFilePanelImp {
             .get()
             .expect("expect sourceview5::View")
             .buffer();
+
+        //create or edit the file
+
         let start = buffer.start_iter();
         let end = buffer.end_iter();
         let text = buffer.text(&start, &end, true);
 
-        let file_path = self.file_displayed.borrow();
+        let file_status = self.file_status.borrow();
 
-        let Some(file_path) = file_path.as_deref() else {
-            warn!("No file path to save");
-            return;
+        let file_path = match file_status.as_ref() {
+            Some(UnitFileStatus::Create(file_path)) => file_path,
+            Some(UnitFileStatus::Edit(file_path)) => file_path,
+            None => {
+                warn!("No file path to save");
+                return;
+            }
         };
 
         match systemd::save_text_to_file(file_path, &text) {
@@ -254,22 +267,30 @@ impl UnitFilePanelImp {
     }
 
     fn display_unit_file_content(&self, file_path: Option<String>, primary: &str) {
-        self.file_displayed.replace(file_path);
+        let (file_content, file_path) = if let Some(file_path) = file_path {
+            self.file_status
+                .replace(Some(UnitFileStatus::Edit(file_path.clone())));
 
-        let binding = self.file_displayed.borrow();
-        let file_path = binding.as_deref();
-        let file_content = systemd::get_unit_file_info(file_path, primary).unwrap_or_else(|e| {
-            warn!("get_unit_file_info Error: {e:?}");
-            "".to_owned()
-        });
+            let content = systemd::get_unit_file_info(Some(file_path.as_str()), primary)
+                .unwrap_or_else(|e| {
+                    warn!("get_unit_file_info Error: {e:?}");
+                    "".to_owned()
+                });
+            (content, file_path)
+        } else {
+            self.file_status.replace(None);
+            (String::new(), String::new())
+        };
 
-        let file_path = file_path.unwrap_or_default();
+        self.fill_gui_content(file_content, file_path);
+    }
 
-        let uri = generate_file_uri(file_path);
+    fn fill_gui_content(&self, file_content: String, file_path: String) {
+        let uri = generate_file_uri(&file_path);
 
         self.file_link.set_uri(&uri);
 
-        self.file_link.set_label(file_path);
+        self.file_link.set_label(&file_path);
 
         self.set_editor_text(&file_content);
     }
@@ -552,20 +573,16 @@ impl UnitFilePanelImp {
             });
 
         let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime);
-        let uri = generate_file_uri(&drop_in_file_path);
 
-        self.file_link.set_uri(&uri);
-        self.file_link.set_label(&drop_in_file_path);
+        self.file_status
+            .replace(Some(UnitFileStatus::Create(drop_in_file_path.clone())));
 
         let new_file_content = self
             .set_dropin_file_format(file_path, primary, file_content, runtime)
             .inspect_err(|e| warn!("some error {:?}", e))
             .unwrap_or_default();
 
-        self.set_editor_text(&new_file_content);
-        //format the file
-
-        //display
+        self.fill_gui_content(new_file_content, drop_in_file_path);
     }
 
     fn create_drop_in_file_path(primary: &str, runtime: bool) -> String {
@@ -584,18 +601,27 @@ impl UnitFilePanelImp {
 
         writeln!(
             new_file_content,
-            "### Editing {}",
+            "### {} {}",
+            // Create Drop in file name
+            pgettext("file", "Editing"),
             Self::create_drop_in_file_path(&primary, runtime)
         )?;
 
         writeln!(
             new_file_content,
-            "### Anything between here and the comment below will become the contents of the drop-in file"
+            "### {}",
+            // Create Drop in description
+            pgettext(
+                "file",
+                "Anything between here and the comment below will become the contents of the drop-in file"
+            )
         )?;
         new_file_content.push_str("\n\n\n");
         writeln!(
             new_file_content,
-            "### Edits below this comment will be discarded"
+            "### {}",
+            // Create Drop in file footer
+            pgettext("file", "Edits below this comment will be discarded")
         )?;
         new_file_content.push('\n');
         writeln!(new_file_content, "### {}", file_path.unwrap_or_default())?;
@@ -682,7 +708,7 @@ impl ObjectImpl for UnitFilePanelImp {
 
                 let unit_file_panel = upgrade!(unit_file_panel);
 
-                let allow_save_condition = unit_file_panel.imp().file_displayed.borrow().is_some(); //TODO check is the text has really changed
+                let allow_save_condition = unit_file_panel.imp().file_status.borrow().is_some(); //TODO check is the text has really changed
                 save_button.set_sensitive(allow_save_condition);
             });
         }
