@@ -1,4 +1,7 @@
-use std::cell::{Cell, OnceCell, RefCell};
+use std::{
+    cell::{Cell, OnceCell, RefCell},
+    path::PathBuf,
+};
 
 use adw::prelude::AdwDialogExt;
 use gettextrs::pgettext;
@@ -56,7 +59,7 @@ struct FileNav {
 const UNIT_FILE_ID: &str = "unit file";
 impl FileNav {
     fn is_file(&self) -> bool {
-        self.id == UNIT_FILE_ID
+        !self.is_drop_in
     }
 }
 
@@ -653,7 +656,25 @@ impl UnitFilePanelImp {
 
     fn create_drop_in_file_path(primary: &str, runtime: bool) -> String {
         let prefix = if runtime { "run" } else { "etc" };
-        format!("/{}/systemd/system/{}.d/override.conf", prefix, primary)
+        let path = format!("/{}/systemd/system/{}.d/override.conf", prefix, primary);
+        let p = PathBuf::from(path.clone());
+
+        if p.exists() {
+            let mut idx = 1;
+            loop {
+                let path = format!(
+                    "/{}/systemd/system/{}.d/override-{}.conf",
+                    prefix, primary, idx
+                );
+                let p = PathBuf::from(&path);
+                if !p.exists() {
+                    return path;
+                }
+                idx += 1;
+            }
+        } else {
+            path
+        }
     }
 
     fn set_dropin_file_format(
