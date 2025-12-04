@@ -979,3 +979,13 @@ pub async fn fetch_unit_properties(
 ) -> Result<OwnedValue, SystemdErrors> {
     sysdbus::fetch_unit_properties(level, path, property_interface, property).await
 }
+
+pub async fn careate_drop_in(
+    level: UnitDBusLevel,
+    runtime: bool,
+    unit_name: &str,
+    file_name: &str,
+    content: &str,
+) -> Result<(), SystemdErrors> {
+    to_proxy::create_drop_in(level, runtime, unit_name, file_name, content).await
+}

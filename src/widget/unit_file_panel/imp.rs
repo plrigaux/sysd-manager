@@ -55,6 +55,7 @@ struct FileNav {
     id: String,
     status: UnitFileStatus,
     is_drop_in: bool,
+    is_runtime: bool,
 }
 
 const UNIT_FILE_ID: &str = "unit file";
@@ -63,6 +64,8 @@ impl FileNav {
         !self.is_drop_in
     }
 }
+
+const DEFAULT_DROP_IN_FILE_NAME: &str = "override";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -152,55 +155,96 @@ impl UnitFilePanelImp {
         };
 
         if file_nav.status == UnitFileStatus::Create {
-            let cleaned_text = Self::clean_create_text(&unit.primary(), text.as_str());
-            println!("Cleaned text:\n\n{}", cleaned_text);
-            warn!("File in create mode, not able to save at the moment");
-            self.add_toast_message(
-                "File in create mode, please edit the file path before saving!",
-                false,
-            );
-            return;
-        }
+            let (cleaned_text, file_name) = Self::clean_create_text(&unit.primary(), text.as_str());
 
-        match systemd::save_text_to_file(&file_nav.file_path, &text) {
-            Ok((file_path, _bytes_written)) => {
-                button.remove_css_class(SUGGESTED_ACTION);
+            let level = unit.dbus_level();
 
-                //File saving success message
-                let msg = pgettext("file", "File {} saved successfully!");
-                let file_path_format = format!("<u>{file_path}</u>");
-                let msg = format2!(msg, file_path_format);
+            let file_name = if let Some(file_name) = file_name {
+                file_name
+            } else {
+                DEFAULT_DROP_IN_FILE_NAME.to_owned()
+            };
 
-                self.add_toast_message(&msg, true);
-            }
-            Err(error) => {
-                warn!(
-                    "Unit {:?}, Unable to save file: {:?}, Error {:?}",
-                    unit.primary(),
-                    unit.file_path(),
-                    error
-                );
+            let unit_name = unit.primary();
+            let file_panel = self.obj().clone();
+            glib::spawn_future_local(async move {
+                let (sender, receiver) = tokio::sync::oneshot::channel();
+                systemd::runtime().spawn(async move {
+                    let response = systemd::careate_drop_in(
+                        level,
+                        file_nav.is_runtime,
+                        &unit_name,
+                        &file_name,
+                        &cleaned_text,
+                    )
+                    .await;
 
-                match error {
-                    SystemdErrors::CmdNoFreedesktopFlatpakPermission(command_line, file_path) => {
-                        let dialog = flatpak::new(command_line, file_path);
-                        let window = self.app_window.get().expect("AppWindow supposed to be set");
+                    info!("{:?}", response);
 
-                        dialog.present(Some(window));
+                    sender
+                        .send(response)
+                        .expect("The channel needs to be open.");
+                });
+
+                let msg = match receiver.await.expect("Tokio receiver works") {
+                    Ok(_) => "Good".to_owned(),
+                    Err(err) => {
+                        let msg = "Fail to create Drop in".to_owned();
+                        warn!("{} {:?}", msg, err);
+                        msg
                     }
+                };
 
-                    SystemdErrors::NotAuthorized => {
-                        self.add_toast_message(
-                            "Not able to save file, permission not granted!",
-                            false,
-                        );
-                    }
-                    _ => {
-                        self.add_toast_message("Not able to save file, an error happened!", false);
+                file_panel.imp().add_toast_message(&msg, false);
+            });
+        } else {
+            match systemd::save_text_to_file(&file_nav.file_path, &text) {
+                Ok((file_path, _bytes_written)) => {
+                    button.remove_css_class(SUGGESTED_ACTION);
+
+                    //File saving success message
+                    let msg = pgettext("file", "File {} saved successfully!");
+                    let file_path_format = format!("<u>{file_path}</u>");
+                    let msg = format2!(msg, file_path_format);
+
+                    self.add_toast_message(&msg, true);
+                }
+                Err(error) => {
+                    warn!(
+                        "Unit {:?}, Unable to save file: {:?}, Error {:?}",
+                        unit.primary(),
+                        unit.file_path(),
+                        error
+                    );
+
+                    match error {
+                        SystemdErrors::CmdNoFreedesktopFlatpakPermission(
+                            command_line,
+                            file_path,
+                        ) => {
+                            let dialog = flatpak::new(command_line, file_path);
+                            let window =
+                                self.app_window.get().expect("AppWindow supposed to be set");
+
+                            dialog.present(Some(window));
+                        }
+
+                        SystemdErrors::NotAuthorized => {
+                            self.add_toast_message(
+                                "Not able to save file, permission not granted!",
+                                false,
+                            );
+                        }
+                        _ => {
+                            self.add_toast_message(
+                                "Not able to save file, an error happened!",
+                                false,
+                            );
+                        }
                     }
                 }
-            }
-        };
+            };
+        }
     }
 }
 
@@ -217,12 +261,14 @@ macro_rules! get_unit {
 }
 
 impl UnitFilePanelImp {
-    fn clean_create_text(unit_name: &str, text: &str) -> String {
+    fn clean_create_text(unit_name: &str, text: &str) -> (String, Option<String>) {
         let mut cleaned_text = String::new();
 
         let re_str = format!(r"/(run|etc)/systemd/system/{}.d/(.+).conf$", unit_name);
-        let re = Regex::new(&re_str).unwrap();
+        let re = Regex::new(&re_str).expect("Valid RegEx");
         let mut content = false;
+        let mut file_name: Option<_> = None;
+
         for line in text.lines() {
             if !line.starts_with("###") {
                 content = true;
@@ -237,20 +283,11 @@ impl UnitFilePanelImp {
             } else if content {
                 break;
             } else if let Some(caps) = re.captures(line) {
-                /*         let prefix = &caps[1];
-                let filename = &caps[2];
-                let formatted_line = format!(
-                    "[{}/systemd/system/{}.d/{}.conf]",
-                    prefix, "sysd-manager-proxy-dev", filename
-                ); */
-
-                let formatted_line = &caps[0];
-
-                println!("Formatted line: {}", formatted_line);
+                file_name = Some(caps[2].to_string());
             }
         }
 
-        cleaned_text
+        (cleaned_text, file_name)
     }
 
     fn add_toast_message(&self, message: &str, markup: bool) {
@@ -400,6 +437,7 @@ impl UnitFilePanelImp {
                     id: UNIT_FILE_ID.to_string(),
                     status: UnitFileStatus::Edit,
                     is_drop_in: false,
+                    is_runtime: false, //TODO find out real status
                 };
                 all_files.push(fnav);
             }
@@ -412,6 +450,7 @@ impl UnitFilePanelImp {
                     id: name,
                     status: UnitFileStatus::Edit,
                     is_drop_in: true,
+                    is_runtime: false, //TODO find out real status
                 };
                 all_files.push(fnav);
             }
@@ -669,7 +708,7 @@ impl UnitFilePanelImp {
 
         let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime);
         {
-            self.create_drop_in_nav(&drop_in_file_path);
+            self.create_drop_in_nav(&drop_in_file_path, runtime);
         }
         self.set_drop_ins_selector();
         self.file_dropin_selector
@@ -683,12 +722,13 @@ impl UnitFilePanelImp {
         self.fill_gui_content(new_file_content, &drop_in_file_path);
     }
 
-    fn create_drop_in_nav(&self, drop_in_file_path: &str) {
+    fn create_drop_in_nav(&self, drop_in_file_path: &str, runtime: bool) {
         let fnav = FileNav {
             file_path: drop_in_file_path.to_string(),
             id: "create drop".to_string(),
             status: UnitFileStatus::Create,
             is_drop_in: true,
+            is_runtime: runtime,
         };
 
         self.all_files.borrow_mut().push(fnav);
@@ -696,15 +736,18 @@ impl UnitFilePanelImp {
 
     fn create_drop_in_file_path(primary: &str, runtime: bool) -> String {
         let prefix = if runtime { "run" } else { "etc" };
-        let path = format!("/{}/systemd/system/{}.d/override.conf", prefix, primary);
+        let path = format!(
+            "/{}/systemd/system/{}.d/{}.conf",
+            prefix, primary, DEFAULT_DROP_IN_FILE_NAME
+        );
         let p = PathBuf::from(path.clone());
 
         if p.exists() {
             let mut idx = 1;
             loop {
                 let path = format!(
-                    "/{}/systemd/system/{}.d/override-{}.conf",
-                    prefix, primary, idx
+                    "/{}/systemd/system/{}.d/{}-{}.conf",
+                    prefix, primary, DEFAULT_DROP_IN_FILE_NAME, idx
                 );
                 let p = PathBuf::from(&path);
                 if !p.exists() {

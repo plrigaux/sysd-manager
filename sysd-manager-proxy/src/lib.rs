@@ -1,9 +1,10 @@
+mod file;
 mod sysdcom;
 use base::enums::UnitDBusLevel;
 use enumflags2::BitFlags;
 use log::{debug, info, warn};
 use std::{collections::HashMap, sync::OnceLock};
-use tokio::sync::OnceCell;
+use tokio::{runtime, sync::OnceCell};
 use zbus::{Connection, ObjectServer, interface, message::Header, object_server::SignalEmitter};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
 static AUTHORITY: OnceLock<AuthorityProxy> = OnceLock::new();
@@ -118,11 +119,15 @@ impl SysDManagerProxy {
 
 #[interface(name = "io.github.plrigaux.SysDManager", introspection_docs = true)]
 impl SysDManagerProxy {
-    pub async fn create_dropin(&mut self, file_name: &str, _content: &str) -> String {
-        let id = unsafe { libc::getegid() };
-        info!("id {}", id);
-
-        format!("Create DropIn {:?}!", file_name)
+    pub async fn create_drop_in(
+        &mut self,
+        dbus: u8,
+        runtime: bool,
+        unit_name: &str,
+        file_name: &str,
+        content: &str,
+    ) {
+        file::create_drop_in(dbus, runtime, unit_name, file_name, content).await
     }
 
     pub async fn save_file(&mut self, file_name: &str, _content: &str) -> String {
