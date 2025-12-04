@@ -4,6 +4,7 @@ pub mod enums;
 pub mod errors;
 mod journal;
 pub mod journal_data;
+pub mod manager;
 pub mod sysdbus;
 pub mod time_handling;
 
@@ -88,7 +89,13 @@ pub fn runtime() -> &'static Runtime {
 }
 
 pub fn init(run_mode: RunMode) {
-    sysdbus::init(run_mode);
+    let _ = sysdbus::init(run_mode).inspect_err(|e| error!("Some err {e:?}"));
+}
+
+pub async fn init_async(run_mode: RunMode) {
+    let _ = sysdbus::init_async(run_mode)
+        .await
+        .inspect_err(|e| error!("Some err {e:?}"));
 }
 
 pub fn shut_down() {

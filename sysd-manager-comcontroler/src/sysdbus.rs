@@ -6,11 +6,14 @@ pub(super) mod watcher;
 
 #[cfg(test)]
 mod tests;
+//use futures_lite::stream::StreamExt;
 
+use futures_util::TryStreamExt;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     str::FromStr,
     sync::{OnceLock, RwLock},
+    time::Duration,
 };
 
 use base::{RunMode, consts::*, enums::UnitDBusLevel};
@@ -19,8 +22,9 @@ use log::{debug, error, info, trace, warn};
 
 use serde::Deserialize;
 
+use tokio::time::sleep;
 use zbus::{
-    Message,
+    Message, MessageStream,
     blocking::{Connection, MessageIterator, Proxy, fdo},
     message::Flags,
     names::InterfaceName,
@@ -35,6 +39,7 @@ use crate::{
         StartStopMode, UnitType,
     },
     errors::SystemdErrors,
+    manager::ManagerProxy,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
 
@@ -97,25 +102,87 @@ impl RunContext {
 
 static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
 
-pub fn init(run_mode: RunMode) {
+pub fn init(run_mode: RunMode) -> Result<(), SystemdErrors> {
     let unit_name = if run_mode == RunMode::Development {
         info!("Init Dbus in Development Mode");
-        PROXY_SERVICE_DEV
+        format!("{}.service", PROXY_SERVICE_DEV)
     } else {
         info!("Init Dbus in Normal Mode");
-        PROXY_SERVICE
+        format!("{}.service", PROXY_SERVICE)
     };
 
     RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
 
-    let unit_name = format!("{}.service", unit_name);
+    /*  let connection = get_connection(UnitDBusLevel::System).await?;
+       let manager_proxy = ManagerProxy::builder(&connection).build().await?;
+    */
+    for tries in 0..5 {
+        // match manager_proxy.start_unit(&unit_name, "fail").await {
+        //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
+        match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
+            Ok(job_id) => {
+                info!("Started unit {unit_name}, job id {job_id}");
+                break;
+            }
+            Err(error) => {
+                error!("Error starting unit {unit_name}: {error:?}");
+                if tries >= 3 {
+                    error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
+                    break;
+                }
+            }
+        }
+    }
 
+    Ok(())
+}
+
+pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
+    let unit_name = if run_mode == RunMode::Development {
+        info!("Init Dbus in Development Mode");
+        format!("{}.service", PROXY_SERVICE_DEV)
+    } else {
+        info!("Init Dbus in Normal Mode");
+        format!("{}.service", PROXY_SERVICE)
+    };
+
+    RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
+
+    /*  let connection = get_connection(UnitDBusLevel::System).await?;
+       let manager_proxy = ManagerProxy::builder(&connection).build().await?;
+    */
+    for tries in 0..5 {
+        // match manager_proxy.start_unit(&unit_name, "fail").await {
+        //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
+        match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
+            Ok(job_id) => {
+                info!("Started unit {unit_name}, job id {job_id}");
+                break;
+            }
+            Err(error) => {
+                error!("Error starting unit {unit_name}: {error:?}");
+                if tries >= 3 {
+                    error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
+                    break;
+                }
+                sleep(Duration::from_millis(1000)).await;
+                // init(run_mode, tries + 1) // Retry
+            }
+        }
+    }
+    /*
     match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
         Ok(job_id) => info!("Started unit {unit_name}, job id {job_id}"),
         Err(error) => {
             error!("Error starting unit {unit_name}: {error:?}");
+            if tries >= 3 {
+                error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
+                return;
+            }
+            init(run_mode, tries + 1); // Retry
         }
-    }
+    } */
+    Ok(())
 }
 
 pub fn shut_down() {
@@ -496,18 +563,61 @@ pub(super) fn start_unit(
     )
 }
 
+/// Takes a unit name as input and attempts to start it
+pub(super) async fn start_unit_async(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    mode: StartStopMode,
+) -> Result<String, SystemdErrors> {
+    send_disenable_message_async(
+        level,
+        METHOD_START_UNIT,
+        &(unit_name, mode.as_str()),
+        handle_start_stop_answer,
+    )
+    .await
+}
+
 fn handle_start_stop_answer(
     method: &str,
     return_message: &Message,
 ) -> Result<String, SystemdErrors> {
     let body = return_message.body();
+    let header = return_message.header();
 
-    let job_path: zvariant::ObjectPath = body.deserialize()?;
+    info!("Header {:?}", header);
+    info!("Return message body {:?}", body);
+    info!("Return message signature {:?}", body.signature());
 
-    let created_job_object = job_path.to_string();
-    info!("{method} SUCCESS, response job id {created_job_object}");
+    match body.signature() {
+        zvariant::Signature::Unit => {
+            let job_path: u8 = body.deserialize().inspect_err(|e| {
+                warn!("deserialize error on call {} {:?}", method, e);
 
-    Ok(created_job_object)
+                /*    let a = body.deserialize();
+                info!("Trying again deserializing {:?}", a); */
+            })?;
+
+            let created_job_object = job_path.to_string();
+            info!("{method} SUCCESS, response job id {created_job_object}");
+
+            Ok(created_job_object)
+        }
+
+        _ => {
+            let job_path: zvariant::ObjectPath = body.deserialize().inspect_err(|e| {
+                error!("deserialize error on call {} {:?}", method, e);
+
+                /*    let a = body.deserialize();
+                info!("Trying again deserializing {:?}", a); */
+            })?;
+
+            let created_job_object = job_path.to_string();
+            info!("{method} SUCCESS, response job id {created_job_object}");
+
+            Ok(created_job_object)
+        }
+    }
 }
 
 /// Takes a unit name as input and attempts to stop it.
@@ -616,6 +726,82 @@ where
     for message_res in message_it {
         debug!("Message response {message_res:?}");
         let return_message = message_res?;
+
+        match return_message.message_type() {
+            zbus::message::Type::MethodReturn => {
+                info!("{method} Response");
+                let result = handler(method, &return_message);
+                return result;
+            }
+            zbus::message::Type::MethodCall => {
+                warn!("Not supposed to happen: {return_message:?}");
+                break;
+            }
+            zbus::message::Type::Error => {
+                let zb_error = zbus::Error::from(return_message);
+
+                {
+                    match zb_error {
+                        zbus::Error::MethodError(
+                            ref owned_error_name,
+                            ref details,
+                            ref message,
+                        ) => {
+                            warn!(
+                                "Method error: {}\nDetails: {}\n{:?}",
+                                owned_error_name.as_str(),
+                                details.as_ref().map(|s| s.as_str()).unwrap_or_default(),
+                                message
+                            )
+                        }
+                        _ => warn!("Bus error: {zb_error:?}"),
+                    }
+                }
+                let error = SystemdErrors::from((zb_error, method));
+                return Err(error);
+            }
+            zbus::message::Type::Signal => {
+                info!("Signal: {return_message:?}");
+                continue;
+            }
+        }
+    }
+
+    let msg = format!("{method:?} ????, response supposed to be Unreachable");
+    warn!("{msg}");
+    Err(SystemdErrors::Malformed(
+        msg,
+        "sequences of messages".to_owned(),
+    ))
+}
+
+async fn send_disenable_message_async<T, U>(
+    level: UnitDBusLevel,
+    method: &str,
+    body: &T,
+    handler: impl Fn(&str, &Message) -> Result<U, SystemdErrors>,
+) -> Result<U, SystemdErrors>
+where
+    T: serde::ser::Serialize + DynamicType + std::fmt::Debug,
+    U: std::fmt::Debug,
+{
+    info!("Try to {method}, message body: {:?}", body);
+    let message = Message::method_call(PATH_SYSTEMD, method)?
+        .with_flags(Flags::AllowInteractiveAuth)?
+        .destination(DESTINATION_SYSTEMD)?
+        .interface(INTERFACE_SYSTEMD_MANAGER)?
+        .build(body)?;
+
+    let connection = get_connection(level).await?;
+
+    connection.send(&message).await?;
+
+    let mut message_it = MessageStream::from(connection);
+
+    while let Some(message_res) = message_it.try_next().await? {
+        // for message_res in message_it. {
+        debug!("Message response {message_res:?}");
+        let return_message = message_res;
 
         match return_message.message_type() {
             zbus::message::Type::MethodReturn => {

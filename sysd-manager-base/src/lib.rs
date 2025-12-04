@@ -5,7 +5,7 @@ use std::env;
 
 use tracing::info;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum RunMode {
     Normal,
     Development,

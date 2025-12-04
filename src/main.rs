@@ -104,7 +104,10 @@ fn main() -> glib::ExitCode {
     {
         info!("Flatpak version");
     }
-
+    /*     crate::systemd::runtime().spawn(async move {
+           systemd::init_async(run_mode).await;
+       });
+    */
     systemd::init(run_mode);
 
     if let Err(e) = gio::resources_register_include!("sysd-manager.gresource") {
