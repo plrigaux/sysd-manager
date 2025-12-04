@@ -209,3 +209,15 @@ impl From<std::fmt::Error> for SystemdErrors {
         SystemdErrors::Fmt(value)
     }
 }
+
+impl From<String> for SystemdErrors {
+    fn from(value: String) -> Self {
+        SystemdErrors::Custom(value)
+    }
+}
+
+impl From<&str> for SystemdErrors {
+    fn from(value: &str) -> Self {
+        value.to_owned().into()
+    }
+}

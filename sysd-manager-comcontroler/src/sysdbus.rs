@@ -39,7 +39,6 @@ use crate::{
         StartStopMode, UnitType,
     },
     errors::SystemdErrors,
-    manager::ManagerProxy,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
 
@@ -113,12 +112,7 @@ pub fn init(run_mode: RunMode) -> Result<(), SystemdErrors> {
 
     RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
 
-    /*  let connection = get_connection(UnitDBusLevel::System).await?;
-       let manager_proxy = ManagerProxy::builder(&connection).build().await?;
-    */
     for tries in 0..5 {
-        // match manager_proxy.start_unit(&unit_name, "fail").await {
-        //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
         match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
             Ok(job_id) => {
                 info!("Started unit {unit_name}, job id {job_id}");
@@ -154,7 +148,7 @@ pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
     for tries in 0..5 {
         // match manager_proxy.start_unit(&unit_name, "fail").await {
         //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
-        match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
+        match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
             Ok(job_id) => {
                 info!("Started unit {unit_name}, job id {job_id}");
                 break;
@@ -170,18 +164,7 @@ pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
             }
         }
     }
-    /*
-    match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
-        Ok(job_id) => info!("Started unit {unit_name}, job id {job_id}"),
-        Err(error) => {
-            error!("Error starting unit {unit_name}: {error:?}");
-            if tries >= 3 {
-                error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
-                return;
-            }
-            init(run_mode, tries + 1); // Retry
-        }
-    } */
+
     Ok(())
 }
 
@@ -583,32 +566,24 @@ fn handle_start_stop_answer(
     return_message: &Message,
 ) -> Result<String, SystemdErrors> {
     let body = return_message.body();
-    let header = return_message.header();
 
-    info!("Header {:?}", header);
-    info!("Return message body {:?}", body);
-    info!("Return message signature {:?}", body.signature());
+    debug!("Header {:?}", return_message.header());
+    debug!(
+        "Return message signature {:?} body {:?}",
+        body.signature(),
+        body
+    );
 
     match body.signature() {
+        //In some cases (mostly at program startup), systemd returns an empty signature
         zvariant::Signature::Unit => {
-            let bytes = body.data().bytes();
-
-            let my_string = String::from_utf8_lossy(bytes);
-
-            warn!("Weird str {:?} byte length {}", my_string, bytes.len());
-
-            /*    let a = body.deserialize();
-            info!("Trying again deserializing {:?}", a); */
-
-            Ok(my_string.to_string())
+            Err("Method call failed, unexpected signature 'Unit' (empty)".into())
         }
 
         _ => {
+            // Expected signature is 'o' (object path)
             let job_path: zvariant::ObjectPath = body.deserialize().inspect_err(|e| {
                 error!("deserialize error on call {} {:?}", method, e);
-
-                /*    let a = body.deserialize();
-                info!("Trying again deserializing {:?}", a); */
             })?;
 
             let created_job_object = job_path.to_string();
