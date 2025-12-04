@@ -88,10 +88,10 @@ pub fn runtime() -> &'static Runtime {
     RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
 }
 
-pub fn init(run_mode: RunMode) {
+/* pub fn init(run_mode: RunMode) {
     let _ = sysdbus::init(run_mode).inspect_err(|e| error!("Some err {e:?}"));
 }
-
+ */
 pub async fn init_async(run_mode: RunMode) {
     let _ = sysdbus::init_async(run_mode)
         .await
