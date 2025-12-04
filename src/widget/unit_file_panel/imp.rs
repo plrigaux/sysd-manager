@@ -20,6 +20,7 @@ use gtk::{
         },
     },
 };
+use regex::Regex;
 
 use crate::{
     consts::{ADWAITA, SUGGESTED_ACTION},
@@ -151,7 +152,9 @@ impl UnitFilePanelImp {
         };
 
         if file_nav.status == UnitFileStatus::Create {
-            warn!("File in create mode, not able to save Now");
+            let cleaned_text = Self::clean_create_text(&unit.primary(), text.as_str());
+            println!("Cleaned text:\n\n{}", cleaned_text);
+            warn!("File in create mode, not able to save at the moment");
             self.add_toast_message(
                 "File in create mode, please edit the file path before saving!",
                 false,
@@ -212,7 +215,44 @@ macro_rules! get_unit {
         unit.clone()
     }};
 }
+
 impl UnitFilePanelImp {
+    fn clean_create_text(unit_name: &str, text: &str) -> String {
+        let mut cleaned_text = String::new();
+
+        let re_str = format!(r"/(run|etc)/systemd/system/{}.d/(.+).conf$", unit_name);
+        let re = Regex::new(&re_str).unwrap();
+        let mut content = false;
+        for line in text.lines() {
+            if !line.starts_with("###") {
+                content = true;
+
+                let trimmed_line = line.trim_end();
+                cleaned_text.push_str(trimmed_line);
+
+                if content {
+                    // New section starts, add a newline before it
+                    writeln!(cleaned_text).expect("Writing to string should work");
+                }
+            } else if content {
+                break;
+            } else if let Some(caps) = re.captures(line) {
+                /*         let prefix = &caps[1];
+                let filename = &caps[2];
+                let formatted_line = format!(
+                    "[{}/systemd/system/{}.d/{}.conf]",
+                    prefix, "sysd-manager-proxy-dev", filename
+                ); */
+
+                let formatted_line = &caps[0];
+
+                println!("Formatted line: {}", formatted_line);
+            }
+        }
+
+        cleaned_text
+    }
+
     fn add_toast_message(&self, message: &str, markup: bool) {
         if let Some(app_window) = self.app_window.get() {
             app_window.add_toast_message(message, markup);
