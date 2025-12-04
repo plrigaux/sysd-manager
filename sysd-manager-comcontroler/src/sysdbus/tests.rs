@@ -898,3 +898,28 @@ async fn test_power_off() -> Result<(), SystemdErrors> {
     power_off_async(connection).await?;
     Ok(())
 }
+
+
+#[test]
+fn test_bytes_msg() {
+    init_logs();
+    let bytes: [u8; 80] = [
+        108, 2, 1, 1, 0, 0, 0, 0, 255, 255, 255, 255, 62, 0, 0, 0, 5, 1, 117, 0, 8, 0, 0, 0, 7, 1,
+        115, 0, 20, 0, 0, 0, 111, 114, 103, 46, 102, 114, 101, 101, 100, 101, 115, 107, 116, 111,
+        112, 46, 68, 66, 117, 115, 0, 0, 0, 0, 6, 1, 115, 0, 6, 0, 0, 0, 58, 49, 46, 51, 52, 53, 0,
+        0, 8, 1, 103, 0, 0, 0, 0, 0,
+    ];
+    info!("String: {}", "ASDFASDFAF");
+    let s = String::from_utf8_lossy(&bytes);
+    info!("String: {}", s);
+    info!("String: {}", s);
+    info!("String: {}", s);
+    info!("String: {}", s);
+}
+
+#[test]
+fn test_bytes_msg2() {
+    init_logs();
+
+    info!("String: {}", "ASDFASDFAF");
+}

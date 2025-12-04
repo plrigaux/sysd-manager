@@ -591,17 +591,16 @@ fn handle_start_stop_answer(
 
     match body.signature() {
         zvariant::Signature::Unit => {
-            let job_path: u8 = body.deserialize().inspect_err(|e| {
-                warn!("deserialize error on call {} {:?}", method, e);
+            let bytes = body.data().bytes();
 
-                /*    let a = body.deserialize();
-                info!("Trying again deserializing {:?}", a); */
-            })?;
+            let my_string = String::from_utf8_lossy(bytes);
 
-            let created_job_object = job_path.to_string();
-            info!("{method} SUCCESS, response job id {created_job_object}");
+            warn!("Weird str {:?} byte length {}", my_string, bytes.len());
 
-            Ok(created_job_object)
+            /*    let a = body.deserialize();
+            info!("Trying again deserializing {:?}", a); */
+
+            Ok(my_string.to_string())
         }
 
         _ => {
