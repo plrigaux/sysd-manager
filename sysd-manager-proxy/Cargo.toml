@@ -33,6 +33,7 @@ tracing-subscriber.workspace = true
 tracing-journald.workspace = true
 zbus_polkit = "5"
 enumflags2.workspace = true
+futures-util = "0.3"
 
 [dev-dependencies]
 test-base.workspace = true

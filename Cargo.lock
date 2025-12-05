@@ -1968,6 +1968,7 @@ dependencies = [
  "clap",
  "dotenv",
  "enumflags2",
+ "futures-util",
  "libc",
  "log",
  "sysd-manager-base",

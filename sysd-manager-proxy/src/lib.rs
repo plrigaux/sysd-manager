@@ -1,13 +1,16 @@
 mod file;
 mod sysdcom;
-use base::enums::UnitDBusLevel;
-use enumflags2::BitFlags;
+use base::{RunMode, consts::*, enums::UnitDBusLevel};
+
 use log::{debug, info, warn};
-use std::{collections::HashMap, sync::OnceLock};
+use std::{borrow::Cow, collections::HashMap, env, error::Error, sync::OnceLock};
 use tokio::sync::OnceCell;
-use zbus::{Connection, ObjectServer, interface, message::Header, object_server::SignalEmitter};
+use zbus::{
+    Connection, ObjectServer, connection, interface, message::Header, object_server::SignalEmitter,
+};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
 static AUTHORITY: OnceLock<AuthorityProxy> = OnceLock::new();
+static CONNECTION: OnceLock<Connection> = OnceLock::new();
 
 pub async fn init_authority() -> Result<(), zbus::Error> {
     let connection = Connection::system().await?;
@@ -20,9 +23,53 @@ pub async fn init_authority() -> Result<(), zbus::Error> {
     AUTHORITY.get_or_init(|| proxy);
     Ok(())
 }
+fn get_env<'a>(key: &str, default: &'a str) -> Cow<'a, str> {
+    match env::var(key) {
+        Ok(val) => {
+            info!("Key {key}, Value {val}");
+            Cow::Owned(val)
+        }
+        Err(e) => {
+            debug!("Env error {e:?}");
+            info!("Key {key}, Use default value {default}");
+            Cow::Borrowed(default)
+        }
+    }
+}
+pub async fn init_connection(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
+    let proxy = SysDManagerProxy::new()?;
+
+    let id = unsafe { libc::getegid() };
+    info!("User id {id}");
+
+    let (default_name, default_path) = if run_mode == RunMode::Development {
+        (DBUS_NAME_DEV, DBUS_PATH_DEV)
+    } else {
+        (DBUS_NAME, DBUS_PATH)
+    };
+
+    let dbus_name = get_env("DBUS_NAME", default_name);
+    let dbus_path = get_env("DBUS_PATH", default_path);
+
+    info!("DBus name {dbus_name}");
+    info!("DBus path {dbus_path}");
+
+    let connection = connection::Builder::system()?
+        .name(dbus_name)?
+        .serve_at(dbus_path, proxy)?
+        .build()
+        .await?;
+
+    CONNECTION.get_or_init(|| connection);
+    Ok(())
+}
 
 pub fn auth() -> &'static AuthorityProxy<'static> {
     AUTHORITY.get().expect("REASON")
+}
+
+pub fn conn() -> &'static Connection {
+    CONNECTION.get().expect("REASON")
 }
 
 pub fn map() -> &'static HashMap<&'static str, &'static str> {
@@ -71,26 +118,26 @@ async fn get_proxy(
     }
 }
 
-pub struct SysDManagerProxy {
-    pub subject: Subject,
-    flag: BitFlags<CheckAuthorizationFlags>, //pub test: usize,
-}
+pub struct SysDManagerProxy {}
 
 impl SysDManagerProxy {
     pub fn new() -> Result<Self, zbus_polkit::Error> {
-        let subject = Subject::new_for_owner(std::process::id(), None, None)?;
-        let flag = CheckAuthorizationFlags::AllowUserInteraction.into();
-        Ok(SysDManagerProxy { subject, flag })
+        Ok(SysDManagerProxy {})
     }
 
-    async fn check_autorisation(&self) -> Result<(), zbus::fdo::Error> {
+    async fn check_autorisation(&self, header: Header<'_>) -> Result<(), zbus::fdo::Error> {
         let autority = AUTHORITY.get().expect("REASON");
+
+        let subject = Subject::new_for_message_header(&header).map_err(|err| {
+            warn!("Subject new_for_message_header{:?}", err);
+            zbus::fdo::Error::AccessDenied("PolKit Subject".to_owned())
+        })?;
         let authorization_result = autority
             .check_authorization(
-                &self.subject,
+                &subject,
                 "io.github.plrigaux.SysDManager",
                 map(),
-                self.flag,
+                CheckAuthorizationFlags::AllowUserInteraction.into(),
                 "",
             )
             .await;
@@ -109,7 +156,7 @@ impl SysDManagerProxy {
                 }
             }
             Err(e) => {
-                warn!("check_autorisation {:?}", e);
+                warn!("check_authorization {:?}", e);
                 let err: zbus::fdo::Error = e.into();
                 Err(err)
             }
@@ -121,30 +168,41 @@ impl SysDManagerProxy {
 impl SysDManagerProxy {
     pub async fn create_drop_in(
         &mut self,
+        #[zbus(header)] header: Header<'_>,
         dbus: u8,
         runtime: bool,
         unit_name: &str,
         file_name: &str,
         content: &str,
     ) -> zbus::fdo::Result<()> {
-        self.check_autorisation().await?;
+        //self.
+        self.check_autorisation(header).await?;
+
+        //   self.get_all(object_server, connection, header, emitter)
         file::create_drop_in(dbus, runtime, unit_name, file_name, content).await
     }
 
     pub async fn save_file(
         &mut self,
+        #[zbus(header)] header: Header<'_>,
         dbus: u8,
         file_path: &str,
         content: &str,
     ) -> zbus::fdo::Result<()> {
-        self.check_autorisation().await?;
+        self.check_autorisation(header).await?;
         file::save(dbus, file_path, content).await
     }
 
-    pub async fn my_user_id(&mut self) -> u32 {
+    pub async fn my_user_id(
+        &mut self,
+        #[zbus(header)] header: Header<'_>,
+    ) -> zbus::fdo::Result<u32> {
+        self.check_autorisation(header).await?;
+
         let id = unsafe { libc::getegid() };
-        info!("id {}", id);
-        id
+        info!("ids {}", id);
+
+        Ok(id)
     }
     // "Bye" signal (note: no implementation body).
     #[zbus(signal)]
@@ -166,9 +224,13 @@ impl SysDManagerProxy {
         Ok(())
     }
 
-    async fn even_ping(&mut self, val: u32) -> zbus::fdo::Result<u32> {
+    async fn even_ping(
+        &mut self,
+        #[zbus(header)] header: Header<'_>,
+        val: u32,
+    ) -> zbus::fdo::Result<u32> {
         info!("even_ping {val}");
-        self.check_autorisation().await?;
+        self.check_autorisation(header).await?;
         if val.is_multiple_of(2) {
             Ok(val)
         } else {
@@ -178,11 +240,12 @@ impl SysDManagerProxy {
 
     async fn clean_unit(
         &self,
+        #[zbus(header)] header: Header<'_>,
         dbus: u8,
         unit_name: &str,
         what: Vec<&str>,
     ) -> zbus::fdo::Result<()> {
-        self.check_autorisation().await?;
+        self.check_autorisation(header).await?;
         let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
 
         info!("clean_unit {} {:?}", unit_name, what);
@@ -193,9 +256,14 @@ impl SysDManagerProxy {
         Ok(())
     }
 
-    async fn freeze_unit(&self, dbus: u8, unit_name: &str) -> zbus::fdo::Result<()> {
+    async fn freeze_unit(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        dbus: u8,
+        unit_name: &str,
+    ) -> zbus::fdo::Result<()> {
         let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
-        self.check_autorisation().await?;
+        self.check_autorisation(header).await?;
         info!("freeze_unit {}", unit_name);
         proxy
             .freeze_unit(unit_name)
@@ -204,9 +272,14 @@ impl SysDManagerProxy {
         Ok(())
     }
 
-    async fn thaw_unit(&self, dbus: u8, unit_name: &str) -> zbus::fdo::Result<()> {
+    async fn thaw_unit(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        dbus: u8,
+        unit_name: &str,
+    ) -> zbus::fdo::Result<()> {
         let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
-        self.check_autorisation().await?;
+        self.check_autorisation(header).await?;
         info!("thaw_unit {}", unit_name);
         proxy
             .thaw_unit(unit_name)

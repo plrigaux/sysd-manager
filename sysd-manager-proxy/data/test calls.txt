@@ -4,6 +4,7 @@ dbus-send --system --print-reply --dest=org.zbus.MyGreeter /org/zbus/MyGreeter o
 
 
 busctl --system call io.github.plrigaux.SysDManager /io/github/plrigaux/SysDManager io.github.plrigaux.SysDManager MyUserId
+busctl --system call io.github.plrigaux.SysDManagerDev /io/github/plrigaux/SysDManagerDev io.github.plrigaux.SysDManager MyUserId
 
 dbus-send --system --print-reply --dest=io.github.plrigaux.SysDManager  /io/github/plrigaux/SysDManager io.github.plrigaux.SysDManager.MyUserId
 

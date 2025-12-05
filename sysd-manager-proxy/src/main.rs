@@ -1,15 +1,15 @@
 mod install;
 use base::{RunMode, consts::*};
 use clap::{Parser, Subcommand};
-use std::borrow::Cow;
-use std::env;
-use std::{error::Error, future::pending};
-use sysd_manager_proxy_lib::SysDManagerProxy;
 
+use std::{error::Error, future::pending};
+use sysd_manager_proxy_lib::init_connection;
+
+use futures_util::stream::TryStreamExt;
 use sysd_manager_proxy_lib::init_authority;
-use tracing::{debug, error, info};
+use tracing::{Level, debug, error, info};
 use tracing_subscriber::fmt;
-use zbus::connection;
+use zbus::Connection;
 
 /// General purpose greet/farewell messaging.
 #[derive(Parser)]
@@ -32,6 +32,7 @@ enum CommandArg {
     Serve,
     Install,
     Clean,
+    Test,
 }
 
 // Although we use `tokio` here, you can use any async runtime of choice.
@@ -40,7 +41,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let timer = fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
     //let timer = fmt::time::ChronoLocal::rfc_3339();
 
-    tracing_subscriber::fmt().with_timer(timer).init();
+    tracing_subscriber::fmt()
+        .with_timer(timer)
+        .with_max_level(Level::DEBUG)
+        .with_line_number(true)
+        .init();
     //tracing_subscriber::fmt().init();
 
     debug!("Args {:?}", std::env::args_os());
@@ -58,6 +63,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Some(CommandArg::Install) => install::install(run_mode).await,
         Some(CommandArg::Clean) => install::clean(run_mode).await,
         Some(CommandArg::Serve) => serve_proxy(run_mode).await,
+        Some(CommandArg::Test) => test(run_mode).await,
         None => serve_proxy(run_mode).await,
     };
 
@@ -70,29 +76,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 async fn serve_proxy(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     init_authority().await?;
-    /*  let auth = auth(); */
-    let proxy = SysDManagerProxy::new()?;
-
-    let id = unsafe { libc::getegid() };
-    info!("User id {id}");
-
-    let (default_name, default_path) = if run_mode == RunMode::Development {
-        (DBUS_NAME_DEV, DBUS_PATH_DEV)
-    } else {
-        (DBUS_NAME, DBUS_PATH)
-    };
-
-    let dbus_name = get_env("DBUS_NAME", default_name);
-    let dbus_path = get_env("DBUS_PATH", default_path);
-
-    info!("DBus name {dbus_name}");
-    info!("DBus path {dbus_path}");
-
-    let _conn = connection::Builder::system()?
-        .name(dbus_name)?
-        .serve_at(dbus_path, proxy)?
-        .build()
-        .await?;
+    init_connection(run_mode).await?;
 
     // Do other things or go to wait forever
     pending::<()>().await;
@@ -100,16 +84,46 @@ async fn serve_proxy(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn get_env<'a>(key: &str, default: &'a str) -> Cow<'a, str> {
-    match env::var(key) {
-        Ok(val) => {
-            info!("Key {key}, Value {val}");
-            Cow::Owned(val)
-        }
-        Err(e) => {
-            debug!("Env error {e:?}");
-            info!("Key {key}, Use default value {default}");
-            Cow::Borrowed(default)
+async fn test(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
+    info!("TEST server");
+    debug!("TEST server");
+    let (default_name, _default_path) = if run_mode == RunMode::Development {
+        (DBUS_NAME_DEV, DBUS_PATH_DEV)
+    } else {
+        (DBUS_NAME, DBUS_PATH)
+    };
+    let connection = Connection::session().await?;
+    let mut stream = zbus::MessageStream::from(&connection);
+    connection.request_name(default_name).await?;
+
+    while let Some(msg) = stream.try_next().await? {
+        let msg_header = msg.header();
+        debug!("MH {:?}", msg_header);
+
+        match msg_header.message_type() {
+            zbus::message::Type::MethodCall => {
+                // real code would check msg_header path(), interface() and member()
+                // handle invalid calls, introspection, errors etc
+                let header = msg.header();
+
+                let dest = header.destination();
+
+                info!("destination {:?}", dest);
+
+                let sender = header.sender();
+
+                info!("destination {:?}", sender);
+                //let arg: &str = body.deserialize()?;
+
+                connection
+                    .reply(&header, &(format!("Hello {}!", "arg")))
+                    .await?;
+
+                break;
+            }
+            _ => continue,
         }
     }
+
+    Ok(())
 }
