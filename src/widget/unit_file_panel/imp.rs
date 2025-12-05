@@ -42,6 +42,7 @@ use super::flatpak;
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
+const DEFAULT_DROP_IN_FILE_NAME: &str = "override";
 
 #[derive(PartialEq, Copy, Clone)]
 enum UnitFileStatus {
@@ -64,8 +65,6 @@ impl FileNav {
         !self.is_drop_in
     }
 }
-
-const DEFAULT_DROP_IN_FILE_NAME: &str = "override";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -154,10 +153,11 @@ impl UnitFilePanelImp {
             return;
         };
 
+        let file_panel = self.obj().clone();
+        let level = unit.dbus_level();
+        let unit_name = unit.primary();
         if file_nav.status == UnitFileStatus::Create {
             let (cleaned_text, file_name) = Self::clean_create_text(&unit.primary(), text.as_str());
-
-            let level = unit.dbus_level();
 
             let file_name = if let Some(file_name) = file_name {
                 file_name
@@ -165,8 +165,6 @@ impl UnitFilePanelImp {
                 DEFAULT_DROP_IN_FILE_NAME.to_owned()
             };
 
-            let unit_name = unit.primary();
-            let file_panel = self.obj().clone();
             glib::spawn_future_local(async move {
                 let (sender, receiver) = tokio::sync::oneshot::channel();
                 systemd::runtime().spawn(async move {
@@ -187,10 +185,13 @@ impl UnitFilePanelImp {
                 });
 
                 let msg = match receiver.await.expect("Tokio receiver works") {
-                    Ok(_) => "Good".to_owned(),
+                    Ok(_) => {
+                        //Toast one carete success
+                        pgettext("file", "Good")
+                    }
                     Err(err) => {
-                        let msg = "Fail to create Drop in".to_owned();
-                        warn!("{} {:?}", msg, err);
+                        let msg = pgettext("file", "Fail to create Drop in");
+                        warn!("Fail to create Drop in {:?}", err);
                         msg
                     }
                 };
@@ -198,7 +199,66 @@ impl UnitFilePanelImp {
                 file_panel.imp().add_toast_message(&msg, false);
             });
         } else {
-            match systemd::save_text_to_file(&file_nav.file_path, &text) {
+            let file_path = file_nav.file_path.clone();
+            let file_path1 = file_path.clone();
+            glib::spawn_future_local(async move {
+                let (sender, receiver) = tokio::sync::oneshot::channel();
+                systemd::runtime().spawn(async move {
+                    let response = systemd::save_file(level, &file_path, &text).await;
+
+                    info!("{:?}", response);
+
+                    sender
+                        .send(response)
+                        .expect("The channel needs to be open.");
+                });
+
+                let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
+                    Ok(_) => {
+                        //button.remove_css_class(SUGGESTED_ACTION);
+
+                        //File saving success message
+                        let msg = pgettext("file", "File {} saved successfully!");
+                        let file_path_format = format!("<u>{}</u>", file_nav.file_path);
+                        let msg = format2!(msg, file_path_format);
+
+                        (msg, true)
+                    }
+                    Err(error) => {
+                        warn!(
+                            "Unit {:?}, Unable to save file: {:?}, Error {:?}",
+                            unit_name, file_path1, error
+                        );
+
+                        match error {
+                            /*                             SystemdErrors::CmdNoFreedesktopFlatpakPermission(
+                                                           command_line,
+                                                           file_path,
+                                                       ) => {
+                                                           let dialog = flatpak::new(command_line, file_path);
+                                                           let window =
+                                                               self.app_window.get().expect("AppWindow supposed to be set");
+
+                                                           dialog.present(Some(window));
+                                                       }
+                            */
+                            SystemdErrors::NotAuthorized => (
+                                pgettext("file", "Not able to save file, permission not granted!"),
+                                false,
+                            ),
+
+                            _ => (
+                                pgettext("file", "Not able to save file, an error happened!"),
+                                false,
+                            ),
+                        }
+                    }
+                };
+
+                file_panel.imp().add_toast_message(&msg, use_mark_up);
+            });
+
+            /*   match systemd::save_text_to_file(&file_nav.file_path, &text) {
                 Ok((file_path, _bytes_written)) => {
                     button.remove_css_class(SUGGESTED_ACTION);
 
@@ -243,7 +303,7 @@ impl UnitFilePanelImp {
                         }
                     }
                 }
-            };
+            }; */
         }
     }
 }

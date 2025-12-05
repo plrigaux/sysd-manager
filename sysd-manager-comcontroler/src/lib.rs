@@ -989,3 +989,11 @@ pub async fn careate_drop_in(
 ) -> Result<(), SystemdErrors> {
     to_proxy::create_drop_in(level, runtime, unit_name, file_name, content).await
 }
+
+pub async fn save_file(
+    level: UnitDBusLevel,
+    file_path: &str,
+    content: &str,
+) -> Result<(), SystemdErrors> {
+    to_proxy::save_file(level, file_path, content).await
+}

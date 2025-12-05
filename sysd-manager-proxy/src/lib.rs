@@ -4,7 +4,7 @@ use base::enums::UnitDBusLevel;
 use enumflags2::BitFlags;
 use log::{debug, info, warn};
 use std::{collections::HashMap, sync::OnceLock};
-use tokio::{runtime, sync::OnceCell};
+use tokio::sync::OnceCell;
 use zbus::{Connection, ObjectServer, interface, message::Header, object_server::SignalEmitter};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
 static AUTHORITY: OnceLock<AuthorityProxy> = OnceLock::new();
@@ -126,15 +126,19 @@ impl SysDManagerProxy {
         unit_name: &str,
         file_name: &str,
         content: &str,
-    ) {
+    ) -> zbus::fdo::Result<()> {
+        self.check_autorisation().await?;
         file::create_drop_in(dbus, runtime, unit_name, file_name, content).await
     }
 
-    pub async fn save_file(&mut self, file_name: &str, _content: &str) -> String {
-        let id = unsafe { libc::getegid() };
-        info!("id {}", id);
-
-        format!("Create DropIn {:?}!", file_name)
+    pub async fn save_file(
+        &mut self,
+        dbus: u8,
+        file_path: &str,
+        content: &str,
+    ) -> zbus::fdo::Result<()> {
+        self.check_autorisation().await?;
+        file::save(dbus, file_path, content).await
     }
 
     pub async fn my_user_id(&mut self) -> u32 {
@@ -178,8 +182,8 @@ impl SysDManagerProxy {
         unit_name: &str,
         what: Vec<&str>,
     ) -> zbus::fdo::Result<()> {
-        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
         self.check_autorisation().await?;
+        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
 
         info!("clean_unit {} {:?}", unit_name, what);
         proxy

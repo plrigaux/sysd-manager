@@ -25,7 +25,7 @@ pub trait SysDManagerComLink {
         file_name: &str,
         content: &str,
     ) -> zbus::fdo::Result<()>;
-    fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<()>;
+    fn save_file(&mut self, bus: u8, file_name: &str, content: &str) -> zbus::fdo::Result<()>;
 }
 
 ///1 Ensure that the  proxy is up and running
@@ -93,6 +93,18 @@ pub(crate) async fn create_drop_in(
     let mut proxy = get_proxy_async().await?;
     proxy
         .create_drop_in(level.index(), runtime, unit_name, file_name, content)
-        .await?;
-    Ok(())
+        .await
+        .map_err(|e| e.into())
+}
+
+pub async fn save_file(
+    level: UnitDBusLevel,
+    file_path: &str,
+    content: &str,
+) -> Result<(), SystemdErrors> {
+    let mut proxy = get_proxy_async().await?;
+    proxy
+        .save_file(level.index(), file_path, content)
+        .await
+        .map_err(|e| e.into())
 }
