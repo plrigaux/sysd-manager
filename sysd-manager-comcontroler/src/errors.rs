@@ -38,6 +38,7 @@ pub enum SystemdErrors {
     ZUnitMasked(String, String),
     ZVariantError(zvariant::Error),
     ZBusFdoError(zbus::fdo::Error),
+    ZFdoServiceUnknowm(String),
     ZXml(zbus_xml::Error),
 }
 
@@ -175,7 +176,10 @@ impl From<zbus::Error> for SystemdErrors {
 
 impl From<zbus::fdo::Error> for SystemdErrors {
     fn from(error: zbus::fdo::Error) -> Self {
-        SystemdErrors::ZBusFdoError(error)
+        match error {
+            zbus::fdo::Error::ServiceUnknown(s) => SystemdErrors::ZFdoServiceUnknowm(s),
+            _ => SystemdErrors::ZBusFdoError(error),
+        }
     }
 }
 

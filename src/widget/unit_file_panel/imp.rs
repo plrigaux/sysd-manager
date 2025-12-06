@@ -21,6 +21,7 @@ use gtk::{
     },
 };
 use regex::Regex;
+use tokio::sync::oneshot::Receiver;
 
 use crate::{
     consts::{ADWAITA, SUGGESTED_ACTION},
@@ -156,6 +157,7 @@ impl UnitFilePanelImp {
         let file_panel = self.obj().clone();
         let level = unit.dbus_level();
         let unit_name = unit.primary();
+        let unit_name2 = unit.primary();
         if file_nav.status == UnitFileStatus::Create {
             let (cleaned_text, file_name) = Self::clean_create_text(&unit.primary(), text.as_str());
 
@@ -184,127 +186,89 @@ impl UnitFilePanelImp {
                         .expect("The channel needs to be open.");
                 });
 
-                let msg = match receiver.await.expect("Tokio receiver works") {
-                    Ok(_) => {
-                        //Toast one carete success
-                        pgettext("file", "Good")
-                    }
-                    Err(err) => {
-                        let msg = pgettext("file", "Fail to create Drop in");
-                        warn!("Fail to create Drop in {:?}", err);
-                        msg
-                    }
-                };
-
-                file_panel.imp().add_toast_message(&msg, false);
+                file_panel
+                    .imp()
+                    .handle_save_response(
+                        receiver,
+                        file_nav.status,
+                        &file_nav.file_path,
+                        &unit_name2,
+                    )
+                    .await;
             });
         } else {
             let file_path = file_nav.file_path.clone();
-            let file_path1 = file_path.clone();
             glib::spawn_future_local(async move {
                 let (sender, receiver) = tokio::sync::oneshot::channel();
                 systemd::runtime().spawn(async move {
                     let response = systemd::save_file(level, &file_path, &text).await;
-
-                    info!("{:?}", response);
 
                     sender
                         .send(response)
                         .expect("The channel needs to be open.");
                 });
 
-                let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
-                    Ok(_) => {
-                        //button.remove_css_class(SUGGESTED_ACTION);
-
-                        //File saving success message
-                        let msg = pgettext("file", "File {} saved successfully!");
-                        let file_path_format = format!("<u>{}</u>", file_nav.file_path);
-                        let msg = format2!(msg, file_path_format);
-
-                        (msg, true)
-                    }
-                    Err(error) => {
-                        warn!(
-                            "Unit {:?}, Unable to save file: {:?}, Error {:?}",
-                            unit_name, file_path1, error
-                        );
-
-                        match error {
-                            /*                             SystemdErrors::CmdNoFreedesktopFlatpakPermission(
-                                                           command_line,
-                                                           file_path,
-                                                       ) => {
-                                                           let dialog = flatpak::new(command_line, file_path);
-                                                           let window =
-                                                               self.app_window.get().expect("AppWindow supposed to be set");
-
-                                                           dialog.present(Some(window));
-                                                       }
-                            */
-                            SystemdErrors::NotAuthorized => (
-                                pgettext("file", "Not able to save file, permission not granted!"),
-                                false,
-                            ),
-
-                            _ => (
-                                pgettext("file", "Not able to save file, an error happened!"),
-                                false,
-                            ),
-                        }
-                    }
-                };
-
-                file_panel.imp().add_toast_message(&msg, use_mark_up);
+                file_panel
+                    .imp()
+                    .handle_save_response(
+                        receiver,
+                        file_nav.status,
+                        &file_nav.file_path,
+                        &unit_name2,
+                    )
+                    .await;
             });
-
-            /*   match systemd::save_text_to_file(&file_nav.file_path, &text) {
-                Ok((file_path, _bytes_written)) => {
-                    button.remove_css_class(SUGGESTED_ACTION);
-
-                    //File saving success message
-                    let msg = pgettext("file", "File {} saved successfully!");
-                    let file_path_format = format!("<u>{file_path}</u>");
-                    let msg = format2!(msg, file_path_format);
-
-                    self.add_toast_message(&msg, true);
-                }
-                Err(error) => {
-                    warn!(
-                        "Unit {:?}, Unable to save file: {:?}, Error {:?}",
-                        unit.primary(),
-                        unit.file_path(),
-                        error
-                    );
-
-                    match error {
-                        SystemdErrors::CmdNoFreedesktopFlatpakPermission(
-                            command_line,
-                            file_path,
-                        ) => {
-                            let dialog = flatpak::new(command_line, file_path);
-                            let window =
-                                self.app_window.get().expect("AppWindow supposed to be set");
-
-                            dialog.present(Some(window));
-                        }
-
-                        SystemdErrors::NotAuthorized => {
-                            self.add_toast_message(
-                                "Not able to save file, permission not granted!",
-                                false,
-                            );
-                        }
-                        _ => {
-                            self.add_toast_message(
-                                "Not able to save file, an error happened!",
-                                false,
-                            );
-                        }
-                    }
-                }
-            }; */
         }
+    }
+
+    async fn handle_save_response(
+        &self,
+        receiver: Receiver<Result<(), SystemdErrors>>,
+        _status: UnitFileStatus,
+        file_path: &str,
+        unit_name: &str,
+    ) {
+        let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
+            Ok(_) => {
+                let msg = pgettext("file", "File {} saved successfully!");
+                let file_path_format = format!("<u>{}</u>", file_path);
+                let msg = format2!(msg, file_path_format);
+
+                (msg, true)
+            }
+            Err(error) => {
+                warn!(
+                    "Unit {:?}, Unable to save file: {:?}, Error {:?}",
+                    unit_name, file_path, error
+                );
+
+                match error {
+                    SystemdErrors::NotAuthorized => (
+                        pgettext("file", "Not able to save file, permission not granted!"),
+                        false,
+                    ),
+                    SystemdErrors::ZFdoServiceUnknowm(_s) => {
+                        // Service Name
+                        // Action Start it or install it
+                        let dialog = flatpak::new(None, Some(file_path.to_owned()));
+                        let window = self.app_window.get().expect("AppWindow supposed to be set");
+
+                        dialog.present(Some(window));
+                        (
+                            pgettext("file", "Not able to save file, permission not granted!"),
+                            false,
+                        )
+                    }
+
+                    _ => (
+                        pgettext("file", "Not able to save file, an error happened!"),
+                        false,
+                    ),
+                }
+            }
+        };
+
+        self.add_toast_message(&msg, use_mark_up);
     }
 }
 
@@ -680,8 +644,10 @@ impl UnitFilePanelImp {
                     .activate(
                         move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
                             info!("call create_drop_in_file_runtime");
-                            _b.is_enabled();
-                            unit_file_panel.imp().create_drop_in_file(true);
+                            let _ = unit_file_panel
+                                .imp()
+                                .create_drop_in_file(true)
+                                .inspect_err(|e| warn!("{e:?}"));
                         },
                     )
                     .build()
@@ -692,8 +658,10 @@ impl UnitFilePanelImp {
                     .activate(
                         move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
                             info!("call create_drop_in_file_permanent");
-                            _b.is_enabled();
-                            unit_file_panel.imp().create_drop_in_file(false);
+                            let _ = unit_file_panel
+                                .imp()
+                                .create_drop_in_file(false)
+                                .inspect_err(|e| warn!("{e:?}"));
                         },
                     )
                     .build()
@@ -748,14 +716,14 @@ impl UnitFilePanelImp {
         }
     }
 
-    fn create_drop_in_file(&self, runtime: bool) {
+    fn create_drop_in_file(&self, runtime: bool) -> Result<(), SystemdErrors> {
         info!("create_drop_in_file called runtime {runtime}");
 
         //get the file content
         let binding = self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
             warn!("no unit file");
-            return;
+            return Ok(());
         };
 
         let file_path = unit.file_path();
@@ -766,7 +734,16 @@ impl UnitFilePanelImp {
                 "".to_owned()
             });
 
-        let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime);
+        let user = match unit.dbus_level() {
+            base::enums::UnitDBusLevel::System => false,
+            base::enums::UnitDBusLevel::UserSession => true,
+            base::enums::UnitDBusLevel::Both => {
+                info!("We assume User Session Bus");
+                true
+            }
+        };
+
+        let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime, user)?;
         {
             self.create_drop_in_nav(&drop_in_file_path, runtime);
         }
@@ -775,11 +752,12 @@ impl UnitFilePanelImp {
             .set_active(self.file_dropin_selector.n_toggles() - 1);
 
         let new_file_content = self
-            .set_dropin_file_format(file_path, primary, file_content, runtime)
+            .set_dropin_file_format(file_path, file_content, &drop_in_file_path)
             .inspect_err(|e| warn!("some error {:?}", e))
             .unwrap_or_default();
 
         self.fill_gui_content(new_file_content, &drop_in_file_path);
+        Ok(())
     }
 
     fn create_drop_in_nav(&self, drop_in_file_path: &str, runtime: bool) {
@@ -794,38 +772,51 @@ impl UnitFilePanelImp {
         self.all_files.borrow_mut().push(fnav);
     }
 
-    fn create_drop_in_file_path(primary: &str, runtime: bool) -> String {
-        let prefix = if runtime { "run" } else { "etc" };
-        let path = format!(
-            "/{}/systemd/system/{}.d/{}.conf",
-            prefix, primary, DEFAULT_DROP_IN_FILE_NAME
-        );
-        let p = PathBuf::from(path.clone());
+    fn create_drop_in_file_path(
+        primary: &str,
+        runtime: bool,
+        user: bool,
+    ) -> Result<String, SystemdErrors> {
+        let path = match (runtime, user) {
+            (true, false) => format!("/run/systemd/system/{}.d", primary),
+            (false, false) => format!("/etc/systemd/system/{}.d", primary),
+            (true, true) => {
+                let id = unsafe { libc::getuid() };
+                format!("/run/user/{id}/systemd/user/{}.d", primary)
+            }
+            (false, true) => {
+                let home_dir = std::env::home_dir().ok_or(SystemdErrors::Custom(
+                    "No HOME found to create drop-in".to_string(),
+                ))?;
+                format!("{}/.config/systemd/user/{}.d", home_dir.display(), primary)
+            }
+        };
+
+        let path_dir = PathBuf::from(&path);
+        let mut p = path_dir.join(DEFAULT_DROP_IN_FILE_NAME);
+        p.set_extension("conf");
 
         if p.exists() {
             let mut idx = 1;
             loop {
-                let path = format!(
-                    "/{}/systemd/system/{}.d/{}-{}.conf",
-                    prefix, primary, DEFAULT_DROP_IN_FILE_NAME, idx
-                );
-                let p = PathBuf::from(&path);
+                let p = path_dir.join(format!("{}-{}.conf", DEFAULT_DROP_IN_FILE_NAME, idx));
+
                 if !p.exists() {
-                    return path;
+                    return Ok(p.to_string_lossy().to_string());
                 }
                 idx += 1;
             }
         } else {
-            path
+            Ok(path)
         }
     }
 
     fn set_dropin_file_format(
         &self,
         file_path: Option<String>,
-        primary: String,
+
         file_content: String,
-        runtime: bool,
+        drop_in_file_path: &str,
     ) -> Result<String, SystemdErrors> {
         let mut new_file_content = String::with_capacity(file_content.len() * 2);
 
@@ -834,15 +825,14 @@ impl UnitFilePanelImp {
             "### {} {}",
             // Create Drop in file name
             pgettext("file", "Editing"),
-            Self::create_drop_in_file_path(&primary, runtime)
+            drop_in_file_path
         )?;
 
         writeln!(
             new_file_content,
-            "### {} {}",
+            "### {}",
             // Create Drop in file name
-            pgettext("file", "Note: you can change the file name"),
-            Self::create_drop_in_file_path(&primary, runtime)
+            pgettext("file", "Note: you can change the file name")
         )?;
 
         writeln!(

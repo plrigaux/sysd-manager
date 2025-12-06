@@ -42,14 +42,14 @@ pub async fn init_connection(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     let id = unsafe { libc::getegid() };
     info!("User id {id}");
 
-    let (default_name, default_path) = if run_mode == RunMode::Development {
-        (DBUS_NAME_DEV, DBUS_PATH_DEV)
+    let default_name = if run_mode == RunMode::Development {
+        DBUS_NAME_DEV
     } else {
-        (DBUS_NAME, DBUS_PATH)
+        DBUS_NAME
     };
 
     let dbus_name = get_env("DBUS_NAME", default_name);
-    let dbus_path = get_env("DBUS_PATH", default_path);
+    let dbus_path = get_env("DBUS_PATH", DBUS_PATH);
 
     info!("DBus name {dbus_name}");
     info!("DBus path {dbus_path}");

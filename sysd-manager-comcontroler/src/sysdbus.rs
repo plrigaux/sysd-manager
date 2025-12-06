@@ -90,11 +90,11 @@ struct RunContext {
 }
 
 impl RunContext {
-    fn path_destination(&self) -> (&'static str, &'static str) {
+    fn path_destination(&self) -> &'static str {
         if self.run_mode == RunMode::Development {
-            (DBUS_PATH_DEV, DBUS_NAME_DEV)
+            DBUS_NAME_DEV
         } else {
-            (DBUS_PATH, DBUS_NAME)
+            DBUS_NAME
         }
     }
 }

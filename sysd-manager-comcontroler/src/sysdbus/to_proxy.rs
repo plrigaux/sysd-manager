@@ -36,13 +36,13 @@ fn ensure_proxy_up() {
 }
 
 fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors> {
-    let (path, destination) = super::RUN_CONTEXT
+    let destination = super::RUN_CONTEXT
         .get()
         .expect("Supposed to be init")
         .path_destination();
     let connection = get_blocking_connection(UnitDBusLevel::System)?;
     let proxy = SysDManagerComLinkProxyBlocking::builder(&connection)
-        .path(path)?
+        // .path(path)?
         .destination(destination)?
         .build()?;
 
@@ -50,13 +50,13 @@ fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors>
 }
 
 async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErrors> {
-    let (path, destination) = super::RUN_CONTEXT
+    let destination = super::RUN_CONTEXT
         .get()
         .expect("Supposed to be init")
         .path_destination();
     let connection = get_connection(UnitDBusLevel::System).await?;
     let proxy = SysDManagerComLinkProxy::builder(&connection)
-        .path(path)?
+        //.path(path)?
         .destination(destination)?
         .build()
         .await?;
