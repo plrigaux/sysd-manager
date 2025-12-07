@@ -132,15 +132,9 @@ pub fn init(run_mode: RunMode) -> Result<(), SystemdErrors> {
 }
 
 pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
-    let unit_name = if run_mode == RunMode::Development {
-        info!("Init Dbus in Development Mode");
-        format!("{}.service", PROXY_SERVICE_DEV)
-    } else {
-        info!("Init Dbus in Normal Mode");
-        format!("{}.service", PROXY_SERVICE)
-    };
-
     RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
+
+    let unit_name = proxy_service_name().unwrap();
 
     /*  let connection = get_connection(UnitDBusLevel::System).await?;
        let manager_proxy = ManagerProxy::builder(&connection).build().await?;
@@ -168,7 +162,7 @@ pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-pub fn shut_down() {
+pub fn proxy_service_name() -> Option<String> {
     if let Some(context) = RUN_CONTEXT.get() {
         let unit_name = if context.run_mode == RunMode::Development {
             PROXY_SERVICE_DEV
@@ -177,7 +171,14 @@ pub fn shut_down() {
         };
 
         let unit_name = format!("{}.service", unit_name);
+        Some(unit_name)
+    } else {
+        None
+    }
+}
 
+pub fn shut_down() {
+    if let Some(unit_name) = proxy_service_name() {
         match stop_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
             Ok(job_id) => info!("Stopped unit {unit_name}, job id {job_id}"),
             Err(error) => {

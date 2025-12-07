@@ -21,6 +21,7 @@ use gtk::{
     },
 };
 use regex::Regex;
+use systemd::sysdbus::proxy_service_name;
 use tokio::sync::oneshot::Receiver;
 
 use crate::{
@@ -224,13 +225,16 @@ impl UnitFilePanelImp {
     async fn handle_save_response(
         &self,
         receiver: Receiver<Result<(), SystemdErrors>>,
-        _status: UnitFileStatus,
+        status: UnitFileStatus,
         file_path: &str,
         unit_name: &str,
     ) {
         let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
             Ok(_) => {
-                let msg = pgettext("file", "File {} saved successfully!");
+                let msg = match status {
+                    UnitFileStatus::Create => pgettext("file", "File {} created successfully!"),
+                    UnitFileStatus::Edit => pgettext("file", "File {} saved successfully!"),
+                };
                 let file_path_format = format!("<u>{}</u>", file_path);
                 let msg = format2!(msg, file_path_format);
 
@@ -250,7 +254,8 @@ impl UnitFilePanelImp {
                     SystemdErrors::ZFdoServiceUnknowm(_s) => {
                         // Service Name
                         // Action Start it or install it
-                        let dialog = flatpak::new(None, Some(file_path.to_owned()));
+                        let service_name = proxy_service_name();
+                        let dialog = flatpak::proxy_service_not_started(service_name.as_deref());
                         let window = self.app_window.get().expect("AppWindow supposed to be set");
 
                         dialog.present(Some(window));

@@ -38,7 +38,7 @@ pub async fn create_drop_in(
 
 fn transform_error(result: Result<(), std::io::Error>) -> Result<(), zbus::fdo::Error> {
     match result {
-        Ok(_) => Ok(()),
+        Ok(a) => Ok(a),
         Err(err) => {
             warn!("create_drop_in {err:?}");
             match err.kind() {

@@ -1,4 +1,4 @@
-use adw::prelude::AdwDialogExt;
+use adw::prelude::{AdwDialogExt, AlertDialogExt, AlertDialogExtManual};
 use gettextrs::pgettext;
 use gtk::prelude::{BoxExt, ButtonExt, WidgetExt};
 
@@ -23,6 +23,34 @@ pub fn new(command_line: Option<String>, file_link: Option<String>) -> adw::Dial
             dialog.close();
         });
     }
+    dialog
+}
+
+pub fn proxy_service_not_started (service_name: Option<&str>) -> adw::AlertDialog {
+    let dialog = adw::AlertDialog::builder().heading("Operation Failed").body("Failed to perform action. The proxy service might be inactive.\nPlease install and start the following service")
+   .can_close(true).build();
+
+dialog.add_responses(&[ ("cancel",  "_Cancel"),                               
+                                  ("save",    "_Save"),
+ ]);
+
+
+ if let  Some(service_name) =service_name {
+ let label =gtk::Label::builder().label(service_name).selectable(true).build();
+
+ dialog.set_extra_child(Some(&label));
+ }
+
+ dialog.set_response_appearance("discard", 
+adw::ResponseAppearance::Destructive);
+  dialog.set_response_appearance("save", adw::ResponseAppearance::Suggested);
+  dialog.set_default_response(Some("save"));
+  dialog.set_close_response("cancel");
+
+dialog.set_margin_top(5);
+dialog.set_margin_start(5);
+dialog.set_can_close(true);
+
     dialog
 }
 
@@ -112,3 +140,5 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
 
     content
 }
+
+
