@@ -1,10 +1,11 @@
 use adw::prelude::{AdwDialogExt, AlertDialogExt, AlertDialogExtManual};
+
 use gettextrs::pgettext;
-use gtk::prelude::{BoxExt, ButtonExt, WidgetExt};
+use gtk::prelude::{BoxExt, WidgetExt};
 
 use crate::format2;
 
-pub fn new(command_line: Option<String>, file_link: Option<String>) -> adw::Dialog {
+/* pub fn new(command_line: Option<String>, file_link: Option<String>) -> adw::Dialog {
     let content = inner_msg(command_line, file_link);
 
     let close_button = gtk::Button::builder()
@@ -25,31 +26,40 @@ pub fn new(command_line: Option<String>, file_link: Option<String>) -> adw::Dial
     }
     dialog
 }
+ */
+pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog {
+    //TODO tranlate
+    let body = "Failed to perform action. The proxy service might be inactive.\nPlease install and start the following service";
 
-pub fn proxy_service_not_started (service_name: Option<&str>) -> adw::AlertDialog {
-    let dialog = adw::AlertDialog::builder().heading("Operation Failed").body("Failed to perform action. The proxy service might be inactive.\nPlease install and start the following service")
-   .can_close(true).build();
+    //TODO tranlate
+    let header = "Operation Failed";
 
-dialog.add_responses(&[ ("cancel",  "_Cancel"),                               
-                                  ("save",    "_Save"),
- ]);
+    let dialog = adw::AlertDialog::builder()
+        .heading(header)
+        .body(body)
+        .can_close(true)
+        .build();
 
+    //TODO tranlate
+    dialog.add_responses(&[("cancel", "_Cancel"), ("save", "_Save")]);
 
- if let  Some(service_name) =service_name {
- let label =gtk::Label::builder().label(service_name).selectable(true).build();
+    if let Some(service_name) = service_name {
+        let label = gtk::Label::builder()
+            .label(service_name)
+            .selectable(true)
+            .build();
 
- dialog.set_extra_child(Some(&label));
- }
+        dialog.set_extra_child(Some(&label));
+    }
 
- dialog.set_response_appearance("discard", 
-adw::ResponseAppearance::Destructive);
-  dialog.set_response_appearance("save", adw::ResponseAppearance::Suggested);
-  dialog.set_default_response(Some("save"));
-  dialog.set_close_response("cancel");
+    dialog.set_response_appearance("discard", adw::ResponseAppearance::Destructive);
+    dialog.set_response_appearance("save", adw::ResponseAppearance::Suggested);
+    dialog.set_default_response(Some("save"));
+    dialog.set_close_response("cancel");
 
-dialog.set_margin_top(5);
-dialog.set_margin_start(5);
-dialog.set_can_close(true);
+    dialog.set_margin_top(5);
+    dialog.set_margin_start(5);
+    dialog.set_can_close(true);
 
     dialog
 }
@@ -85,7 +95,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
 
     let description2 = gtk::Label::builder()
     .selectable(true)
-    .label(        
+    .label(
         //flatpak permision error dialog line 2
         pgettext("unit file", "<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program."))
     .use_markup(true)
@@ -112,15 +122,17 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
         format2!(
             //flatpak permision error dialog option 2
             pgettext(
-                "unit file", "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor."
+                "unit file",
+                "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor."
             ),
             file_link
         )
     } else if let Some(cmd) = command_line {
         format2!(
-              //flatpak permision error dialog option 3
+            //flatpak permision error dialog option 3
             pgettext(
-                "unit file", "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
+                "unit file",
+                "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
             ),
             cmd
         )
@@ -140,5 +152,3 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
 
     content
 }
-
-

@@ -2,6 +2,7 @@ pub mod analyze;
 pub mod data;
 pub mod enums;
 pub mod errors;
+mod file;
 mod journal;
 pub mod journal_data;
 pub mod manager;
@@ -980,14 +981,21 @@ pub async fn fetch_unit_properties(
     sysdbus::fetch_unit_properties(level, path, property_interface, property).await
 }
 
-pub async fn careate_drop_in(
+pub async fn create_drop_in(
     level: UnitDBusLevel,
     runtime: bool,
     unit_name: &str,
     file_name: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
-    to_proxy::create_drop_in(level, runtime, unit_name, file_name, content).await
+    match level {
+        UnitDBusLevel::System => {
+            to_proxy::create_drop_in(runtime, unit_name, file_name, content).await
+        }
+        UnitDBusLevel::UserSession | UnitDBusLevel::Both => {
+            file::create_drop_in(runtime, unit_name, file_name, content).await
+        }
+    }
 }
 
 pub async fn save_file(

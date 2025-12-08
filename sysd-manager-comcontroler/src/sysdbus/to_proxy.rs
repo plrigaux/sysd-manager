@@ -19,7 +19,6 @@ pub trait SysDManagerComLink {
 
     fn create_drop_in(
         &mut self,
-        bus: u8,
         runtime: bool,
         unit_name: &str,
         file_name: &str,
@@ -84,7 +83,6 @@ pub fn thaw_unit(bus: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdError
 }
 
 pub(crate) async fn create_drop_in(
-    level: UnitDBusLevel,
     runtime: bool,
     unit_name: &str,
     file_name: &str,
@@ -92,7 +90,7 @@ pub(crate) async fn create_drop_in(
 ) -> Result<(), SystemdErrors> {
     let mut proxy = get_proxy_async().await?;
     proxy
-        .create_drop_in(level.index(), runtime, unit_name, file_name, content)
+        .create_drop_in(runtime, unit_name, file_name, content)
         .await
         .map_err(|e| e.into())
 }

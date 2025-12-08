@@ -4,6 +4,7 @@ use std::{
 };
 
 use adw::prelude::AdwDialogExt;
+use base::file::create_drop_in_path_dir;
 use gettextrs::pgettext;
 use gtk::{
     TemplateChild,
@@ -171,7 +172,7 @@ impl UnitFilePanelImp {
             glib::spawn_future_local(async move {
                 let (sender, receiver) = tokio::sync::oneshot::channel();
                 systemd::runtime().spawn(async move {
-                    let response = systemd::careate_drop_in(
+                    let response = systemd::create_drop_in(
                         level,
                         file_nav.is_runtime,
                         &unit_name,
@@ -782,20 +783,7 @@ impl UnitFilePanelImp {
         runtime: bool,
         user: bool,
     ) -> Result<String, SystemdErrors> {
-        let path = match (runtime, user) {
-            (true, false) => format!("/run/systemd/system/{}.d", primary),
-            (false, false) => format!("/etc/systemd/system/{}.d", primary),
-            (true, true) => {
-                let id = unsafe { libc::getuid() };
-                format!("/run/user/{id}/systemd/user/{}.d", primary)
-            }
-            (false, true) => {
-                let home_dir = std::env::home_dir().ok_or(SystemdErrors::Custom(
-                    "No HOME found to create drop-in".to_string(),
-                ))?;
-                format!("{}/.config/systemd/user/{}.d", home_dir.display(), primary)
-            }
-        };
+        let path = create_drop_in_path_dir(primary, runtime, user)?;
 
         let path_dir = PathBuf::from(&path);
         let mut p = path_dir.join(DEFAULT_DROP_IN_FILE_NAME);

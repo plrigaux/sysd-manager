@@ -169,7 +169,6 @@ impl SysDManagerProxy {
     pub async fn create_drop_in(
         &mut self,
         #[zbus(header)] header: Header<'_>,
-        dbus: u8,
         runtime: bool,
         unit_name: &str,
         file_name: &str,
@@ -179,18 +178,18 @@ impl SysDManagerProxy {
         self.check_autorisation(header).await?;
 
         //   self.get_all(object_server, connection, header, emitter)
-        file::create_drop_in(dbus, runtime, unit_name, file_name, content).await
+        file::create_drop_in(runtime, unit_name, file_name, content).await
     }
 
     pub async fn save_file(
         &mut self,
         #[zbus(header)] header: Header<'_>,
-        dbus: u8,
+
         file_path: &str,
         content: &str,
-    ) -> zbus::fdo::Result<()> {
+    ) -> zbus::fdo::Result<u64> {
         self.check_autorisation(header).await?;
-        file::save(dbus, file_path, content).await
+        file::save(file_path, content).await
     }
 
     pub async fn my_user_id(
