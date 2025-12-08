@@ -39,6 +39,7 @@ pub enum SystemdErrors {
     ZVariantError(zvariant::Error),
     ZBusFdoError(zbus::fdo::Error),
     ZFdoServiceUnknowm(String),
+    ZFdoZError(String),
     ZXml(zbus_xml::Error),
 }
 
@@ -156,6 +157,9 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
                         };
                         SystemdErrors::ZUnitMasked(method.to_owned(), message)
                     }
+                    "org.freedesktop.zbus.Error" => {
+                        SystemdErrors::ZUnitMasked(method.to_owned(), message)
+                    }
                     _ => {
                         SystemdErrors::ZMethodError(method.to_owned(), err_code.to_owned(), message)
                     }
@@ -178,6 +182,7 @@ impl From<zbus::fdo::Error> for SystemdErrors {
     fn from(error: zbus::fdo::Error) -> Self {
         match error {
             zbus::fdo::Error::ServiceUnknown(s) => SystemdErrors::ZFdoServiceUnknowm(s),
+            zbus::fdo::Error::ZBus(err) => err.into(),
             _ => SystemdErrors::ZBusFdoError(error),
         }
     }
