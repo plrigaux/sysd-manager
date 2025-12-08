@@ -16,7 +16,7 @@ use std::{
     time::Duration,
 };
 
-use base::{RunMode, consts::*, enums::UnitDBusLevel};
+use base::{RunMode, consts::*, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
 use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
@@ -33,7 +33,7 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
-    data::{DisEnAbleUnitFiles, EnableUnitFilesReturn, LUnit, UnitInfo},
+    data::{EnableUnitFilesReturn, LUnit, UnitInfo},
     enums::{
         ActiveState, DependencyType, DisEnableFlags, EnablementStatus, KillWho, LoadState,
         StartStopMode, UnitType,
@@ -188,7 +188,7 @@ pub fn shut_down() {
     }
 }
 
-fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
+pub(crate) fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
     let lock = match level {
         UnitDBusLevel::UserSession => &BLK_CON_USER,
         _ => &BLK_CON_SYST,

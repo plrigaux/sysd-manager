@@ -1,3 +1,4 @@
+use base::proxy::DisEnAbleUnitFiles;
 use zbus::proxy;
 
 #[proxy(
@@ -6,7 +7,11 @@ use zbus::proxy;
     default_path = "/org/freedesktop/systemd1"
 )]
 pub trait SysDManagerComLink {
-    fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
+    fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::fdo::Result<()>;
     fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
     fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn revert_unit_files(
+        &self,
+        unit_names: &Vec<String>,
+    ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
 }

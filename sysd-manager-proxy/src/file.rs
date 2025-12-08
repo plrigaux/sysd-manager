@@ -8,12 +8,15 @@ pub async fn create_drop_in(
     file_name: &str,
     content: &str,
 ) -> zbus::fdo::Result<()> {
-    info!("Creating Drop-in: unit {unit_name:?} runtime {runtime:?}, file_name {file_name:?}");
+    info!(
+        "Creating Drop-in: unit {unit_name:?} runtime {runtime:?}, file_name {file_name:?} , content {} bytes",
+        content.len()
+    );
 
-    let file_path = create_drop_in_path_file(unit_name, runtime, true, file_name)
+    let file_path = create_drop_in_path_file(unit_name, runtime, false, file_name)
         .map_err(|err| zbus::fdo::Error::Failed(err.to_string()))?;
 
-    let result = create_drop_in_io(&file_path, content).await;
+    let result = create_drop_in_io(&file_path, content, false).await;
 
     transform_error(result)
 }

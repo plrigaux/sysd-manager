@@ -1929,11 +1929,13 @@ dependencies = [
  "gettext-rs",
  "glib",
  "libc",
+ "serde",
  "strum",
  "tokio",
  "tracing",
  "tracing-journald",
  "tracing-subscriber",
+ "zvariant",
 ]
 
 [[package]]

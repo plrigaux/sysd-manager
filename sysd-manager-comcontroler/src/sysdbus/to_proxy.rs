@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use base::enums::UnitDBusLevel;
+use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
 use zbus::proxy;
 
 use crate::{
@@ -13,9 +13,9 @@ use crate::{
     default_path = "/io/github/plrigaux/SysDManager"
 )]
 pub trait SysDManagerComLink {
-    fn clean_unit(&self, bus: u8, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
-    fn freeze_unit(&self, bus: u8, unit_name: &str) -> zbus::fdo::Result<()>;
-    fn thaw_unit(&self, bus: u8, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
+    fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
 
     fn create_drop_in(
         &mut self,
@@ -24,7 +24,12 @@ pub trait SysDManagerComLink {
         file_name: &str,
         content: &str,
     ) -> zbus::fdo::Result<()>;
-    fn save_file(&mut self, bus: u8, file_name: &str, content: &str) -> zbus::fdo::Result<()>;
+    fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
+
+    fn revert_unit_files(
+        &mut self,
+        file_names: &[&str],
+    ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
 }
 
 ///1 Ensure that the  proxy is up and running
@@ -63,22 +68,22 @@ async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErr
     Ok(proxy)
 }
 
-pub fn clean_unit(bus: UnitDBusLevel, unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {
+pub fn clean_unit(unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {
     let proxy = get_proxy()?;
 
-    proxy.clean_unit(bus.index(), unit_name, what)?;
+    proxy.clean_unit(unit_name, what)?;
     Ok(())
 }
 
-pub fn freeze_unit(bus: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+pub fn freeze_unit(unit_name: &str) -> Result<(), SystemdErrors> {
     let proxy = get_proxy()?;
-    proxy.freeze_unit(bus.index(), unit_name)?;
+    proxy.freeze_unit(unit_name)?;
     Ok(())
 }
 
-pub fn thaw_unit(bus: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
-    let proxy = get_proxy()?;
-    proxy.thaw_unit(bus.index(), unit_name)?;
+pub fn thaw_unit(unit_name: &str) -> Result<(), SystemdErrors> {
+    let proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    proxy.thaw_unit(unit_name)?;
     Ok(())
 }
 
@@ -95,14 +100,20 @@ pub(crate) async fn create_drop_in(
         .map_err(|e| e.into())
 }
 
-pub async fn save_file(
-    level: UnitDBusLevel,
-    file_path: &str,
-    content: &str,
-) -> Result<(), SystemdErrors> {
+pub async fn save_file(file_path: &str, content: &str) -> Result<u64, SystemdErrors> {
     let mut proxy = get_proxy_async().await?;
     proxy
-        .save_file(level.index(), file_path, content)
+        .save_file(file_path, content)
+        .await
+        .map_err(|e| e.into())
+}
+
+pub async fn revert_unit_files(
+    unit_names: &[&str],
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    let mut proxy = get_proxy_async().await?;
+    proxy
+        .revert_unit_files(unit_names)
         .await
         .map_err(|e| e.into())
 }

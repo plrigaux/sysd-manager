@@ -2,7 +2,7 @@ use std::{cmp::Ordering, fmt::Debug};
 
 use super::{SystemdUnitFile, UpdatedUnitInfo};
 
-use base::enums::UnitDBusLevel;
+use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
 use glib::{self, subclass::types::ObjectSubclassIsExt};
 
 use serde::Deserialize;
@@ -247,14 +247,6 @@ impl PartialOrd for UnitProcess {
     fn partial_cmp(&self, other: &UnitProcess) -> Option<Ordering> {
         Some(self.cmp(other))
     }
-}
-
-#[derive(Debug, Type, Deserialize)]
-#[allow(unused)]
-pub struct DisEnAbleUnitFiles {
-    pub change_type: String,
-    pub file_name: String,
-    pub destination: String,
 }
 
 #[derive(Debug, Type, Deserialize)]

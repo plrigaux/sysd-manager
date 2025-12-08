@@ -1,7 +1,7 @@
 use crate::{
     systemd::{
         self,
-        data::{DisEnAbleUnitFiles, EnableUnitFilesReturn, UnitInfo},
+        data::{EnableUnitFilesReturn, UnitInfo},
         enums::{DisEnableFlags, StartStopMode},
         errors::SystemdErrors,
     },
@@ -13,7 +13,7 @@ use crate::{
     },
 };
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
-use base::enums::UnitDBusLevel;
+use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
 use enumflags2::BitFlag;
 use gio::glib::BoolError;
 use gtk::{

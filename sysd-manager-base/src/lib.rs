@@ -1,6 +1,7 @@
 pub mod consts;
 pub mod enums;
 pub mod file;
+pub mod proxy;
 
 use std::env;
 

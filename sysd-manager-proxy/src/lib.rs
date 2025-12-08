@@ -1,6 +1,6 @@
 mod file;
 mod sysdcom;
-use base::{RunMode, consts::*, enums::UnitDBusLevel};
+use base::{RunMode, consts::*, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
 
 use log::{debug, info, warn};
 use std::{borrow::Cow, collections::HashMap, env, error::Error, sync::OnceLock};
@@ -99,10 +99,13 @@ async fn session_proxy() -> Result<&'static sysdcom::SysDManagerComLinkProxy<'st
     SES_PROXY
         .get_or_try_init(
             async || -> Result<sysdcom::SysDManagerComLinkProxy, zbus::Error> {
+                debug!("Getting session conn");
                 let connection = Connection::session().await?;
+                debug!("Got session conn");
                 let proxy = sysdcom::SysDManagerComLinkProxy::builder(&connection)
                     .build()
                     .await?;
+                debug!("Got proxy");
                 Ok(proxy)
             },
         )
@@ -240,50 +243,75 @@ impl SysDManagerProxy {
     async fn clean_unit(
         &self,
         #[zbus(header)] header: Header<'_>,
-        dbus: u8,
+
         unit_name: &str,
         what: Vec<&str>,
     ) -> zbus::fdo::Result<()> {
         self.check_autorisation(header).await?;
-        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
+        let proxy = get_proxy(UnitDBusLevel::System).await?;
 
         info!("clean_unit {} {:?}", unit_name, what);
         proxy
             .clean_unit(unit_name, &what)
             .await
-            .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))?;
-        Ok(())
+            .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))
     }
 
     async fn freeze_unit(
         &self,
         #[zbus(header)] header: Header<'_>,
-        dbus: u8,
+
         unit_name: &str,
     ) -> zbus::fdo::Result<()> {
-        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
+        let proxy = get_proxy(UnitDBusLevel::System).await?;
         self.check_autorisation(header).await?;
         info!("freeze_unit {}", unit_name);
         proxy
             .freeze_unit(unit_name)
             .await
-            .inspect_err(|e| warn!("Error while calling freeze_unit on sysdbus proxy: {:?}", e))?;
-        Ok(())
+            .inspect_err(|e| warn!("Error while calling freeze_unit on sysdbus proxy: {:?}", e))
     }
 
     async fn thaw_unit(
         &self,
         #[zbus(header)] header: Header<'_>,
-        dbus: u8,
+
         unit_name: &str,
     ) -> zbus::fdo::Result<()> {
-        let proxy = get_proxy(UnitDBusLevel::from(dbus)).await?;
+        let proxy = get_proxy(UnitDBusLevel::System).await?;
         self.check_autorisation(header).await?;
         info!("thaw_unit {}", unit_name);
         proxy
             .thaw_unit(unit_name)
             .await
-            .inspect_err(|e| warn!("Error while calling thaw_unit on sysdbus proxy: {:?}", e))?;
-        Ok(())
+            .inspect_err(|e| warn!("Error while calling thaw_unit on sysdbus proxy: {:?}", e))
+    }
+
+    async fn revert_unit_files(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        file_names: Vec<String>,
+    ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>> {
+        info!("Revert_unit_files  {:?}", file_names);
+
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy(UnitDBusLevel::System).await?;
+
+        debug!("Proxy {:?}", proxy);
+        self.check_autorisation(header).await?;
+        debug!("Autorize ",);
+
+        match proxy.revert_unit_files(&file_names).await {
+            Ok(vec) => {
+                info!("revert_unit_files {:?} --> {:?}", file_names, vec);
+                Ok(vec)
+            }
+            Err(err) => {
+                warn!(
+                    "Error while calling revert_unit_files on sysdbus proxy: {:?}",
+                    err
+                );
+                Err(err)
+            }
+        }
     }
 }

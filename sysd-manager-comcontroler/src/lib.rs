@@ -11,28 +11,30 @@ pub mod time_handling;
 
 use std::{
     any::Any,
-    borrow::Cow,
     collections::{BTreeMap, BTreeSet, HashMap},
-    fs::{self, File},
-    io::{ErrorKind, Read, Write},
-    process::{Command, Stdio},
+    fs::File,
+    io::Read,
+    process::Command,
     sync::OnceLock,
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
+    file::{flatpak_host_file_path, save_text_to_file},
     journal_data::Boot,
-    sysdbus::to_proxy,
+    sysdbus::{
+        dbus_proxies::{Systemd1ManagerProxy, Systemd1ManagerProxyBlocking},
+        get_blocking_connection, get_connection, to_proxy,
+    },
     time_handling::TimestampStyle,
 };
-use base::{RunMode, enums::UnitDBusLevel};
-use data::{DisEnAbleUnitFiles, UnitInfo, UnitProcess};
+use base::{RunMode, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use data::{UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 
-use glib::GString;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 
@@ -449,137 +451,6 @@ pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &s
     cmd
 }
 
-pub fn save_text_to_file(
-    file_path: &str,
-    text: &GString,
-) -> Result<(String, usize), SystemdErrors> {
-    let host_file_path = flatpak_host_file_path(file_path);
-    info!("Try to save content on File: {host_file_path}");
-    match write_on_disk(text, &host_file_path) {
-        Ok(bytes_written) => Ok((file_path.to_owned(), bytes_written)),
-        Err(error) => {
-            if let SystemdErrors::IoError(ref err) = error {
-                match err.kind() {
-                    ErrorKind::PermissionDenied => {
-                        info!("Some error : {err}, try executing command as another user");
-                        write_with_priviledge(file_path, host_file_path, text)
-                            .map(|bytes_written| (file_path.to_owned(), bytes_written))
-                    }
-                    _ => {
-                        warn!("Unable to open file: {err:?}");
-                        Err(error)
-                    }
-                }
-            } else {
-                Err(error)
-            }
-        }
-    }
-}
-
-fn write_on_disk(text: &GString, file_path: &str) -> Result<usize, SystemdErrors> {
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open(file_path)?;
-
-    let test_bytes = text.as_bytes();
-    file.write_all(test_bytes)?;
-    file.flush()?;
-
-    let bytes_written = test_bytes.len();
-    info!("{bytes_written} bytes writen on File: {file_path}");
-    Ok(bytes_written)
-}
-
-fn write_with_priviledge(
-    file_path: &str,
-    _host_file_path: Cow<'_, str>,
-    text: &GString,
-) -> Result<usize, SystemdErrors> {
-    let prog_n_args = &["pkexec", "tee", "tee", file_path];
-    let mut cmd = commander(prog_n_args, None);
-    let mut child = cmd
-        .stdin(Stdio::piped())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .map_err(|error| SystemdErrors::create_command_error(&cmd, error))?;
-
-    let child_stdin = match child.stdin.as_mut() {
-        Some(cs) => cs,
-        None => {
-            return Err(SystemdErrors::Custom(
-                "Unable to write to file: No stdin".to_owned(),
-            ));
-        }
-    };
-
-    let bytes = text.as_bytes();
-    let bytes_written = bytes.len();
-
-    match child_stdin.write_all(bytes) {
-        Ok(()) => {
-            info!("Write content as root on {file_path}");
-        }
-        Err(error) => return Err(SystemdErrors::IoError(error)),
-    };
-
-    match child.wait() {
-        Ok(exit_status) => {
-            info!("Subprocess exit status: {exit_status:?}");
-            if !exit_status.success() {
-                let code = exit_status.code();
-                warn!("Subprocess exit code: {code:?}");
-
-                let Some(code) = code else {
-                    return Err(SystemdErrors::Custom(
-                        "Subprocess exit code: None".to_owned(),
-                    ));
-                };
-
-                let subprocess_error = match code {
-                    1 => {
-                        if cfg!(feature = "flatpak") {
-                            let vec = prog_n_args
-                                .iter()
-                                .map(|s| s.to_string())
-                                .collect::<Vec<String>>()
-                                .join(" ");
-                            SystemdErrors::CmdNoFreedesktopFlatpakPermission(
-                                Some(vec),
-                                Some(file_path.to_string()),
-                            )
-                        } else {
-                            SystemdErrors::Custom(format!("Subprocess exit code: {code}"))
-                        }
-                    }
-                    126 | 127 => return Err(SystemdErrors::NotAuthorized),
-                    _ => SystemdErrors::Custom(format!("Subprocess exit code: {code}")),
-                };
-                return Err(subprocess_error);
-            }
-        }
-        Err(error) => {
-            //warn!("Failed to wait suprocess: {:?}", error);
-            return Err(SystemdErrors::IoError(error));
-        }
-    };
-
-    Ok(bytes_written)
-}
-
-/// To be able to acces the Flatpack mounted files.
-/// Limit to /usr for the least access principle
-pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
-    if cfg!(feature = "flatpak") && (file_path.starts_with("/usr") || file_path.starts_with("/etc"))
-    {
-        Cow::from(format!("/run/host{file_path}"))
-    } else {
-        Cow::from(file_path)
-    }
-}
-
 pub fn generate_file_uri(file_path: &str) -> String {
     let flatpak_host_file_path = flatpak_host_file_path(file_path);
     format!("file://{flatpak_host_file_path}")
@@ -630,7 +501,15 @@ pub fn kill_unit(
 
 pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
     if let Some((level, primary_name)) = params {
-        to_proxy::freeze_unit(level, &primary_name)
+        match level {
+            UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::freeze_unit(&primary_name),
+            UnitDBusLevel::UserSession => {
+                let conn = get_blocking_connection(UnitDBusLevel::UserSession)?;
+                let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+                proxy.freeze_unit(&primary_name)?;
+                Ok(())
+            }
+        }
     } else {
         Err(SystemdErrors::NoUnit)
     }
@@ -638,7 +517,15 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
 
 pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
     if let Some((level, primary_name)) = params {
-        to_proxy::thaw_unit(level, &primary_name)
+        match level {
+            UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::thaw_unit(&primary_name),
+            UnitDBusLevel::UserSession => {
+                let conn = get_blocking_connection(UnitDBusLevel::UserSession)?;
+                let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+                proxy.thaw_unit(&primary_name)?;
+                Ok(())
+            }
+        }
     } else {
         Err(SystemdErrors::NoUnit)
     }
@@ -679,8 +566,15 @@ pub fn clean_unit(
         what.iter().map(|s| s.as_str()).collect()
     };
 
-    to_proxy::clean_unit(level, unit_name, &clean_what)
-    //sysdbus::clean_unit(level, primary_name, &clean_what)
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::clean_unit(unit_name, &clean_what),
+        UnitDBusLevel::UserSession => {
+            let conn = get_blocking_connection(UnitDBusLevel::UserSession)?;
+            let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+            proxy.clean_unit(unit_name, &clean_what)?;
+            Ok(())
+        }
+    }
 }
 
 pub fn mask_unit_files(
@@ -999,9 +893,35 @@ pub async fn create_drop_in(
 }
 
 pub async fn save_file(
-    level: UnitDBusLevel,
+    _level: UnitDBusLevel,
     file_path: &str,
     content: &str,
-) -> Result<(), SystemdErrors> {
-    to_proxy::save_file(level, file_path, content).await
+) -> Result<u64, SystemdErrors> {
+    info!("Saving file {file_path:?}");
+    if file_path.starts_with("/usr/lib")
+        || file_path.starts_with("/run/lib")
+        || file_path.starts_with("/etc/lib")
+    {
+        to_proxy::save_file(file_path, content).await
+    } else {
+        save_text_to_file(file_path, content).await
+    }
+}
+
+pub async fn revert_unit_file_full(
+    level: UnitDBusLevel,
+    unit_name: &str,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    info!("Reverting unit file {unit_name:?}");
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            to_proxy::revert_unit_files(&[unit_name]).await
+        }
+        UnitDBusLevel::UserSession => {
+            let conn = get_connection(level).await?;
+            let mut proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
+            let response = proxy.revert_unit_files(&[unit_name]).await?;
+            Ok(response)
+        }
+    }
 }

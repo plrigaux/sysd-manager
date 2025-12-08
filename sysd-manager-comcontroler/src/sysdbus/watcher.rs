@@ -1,55 +1,20 @@
 use base::enums::UnitDBusLevel;
 use log::{debug, info, warn};
 use tokio::sync::mpsc;
-use zbus::proxy;
-use zvariant::OwnedObjectPath;
 
-use crate::{SystemdSignal, SystemdSignalRow, errors::SystemdErrors, sysdbus::get_connection};
+use crate::{
+    SystemdSignal, SystemdSignalRow,
+    errors::SystemdErrors,
+    sysdbus::{
+        dbus_proxies::{
+            JobNewArgs, JobNewStream, JobRemovedArgs, JobRemovedStream, ReloadingArgs,
+            ReloadingStream, StartupFinishedArgs, StartupFinishedStream, Systemd1ManagerProxy,
+            UnitFilesChangedStream, UnitNewArgs, UnitNewStream, UnitRemovedArgs, UnitRemovedStream,
+        },
+        get_connection,
+    },
+};
 use futures_util::stream::StreamExt;
-
-#[proxy(
-    default_service = "org.freedesktop.systemd1",
-    default_path = "/org/freedesktop/systemd1",
-    interface = "org.freedesktop.systemd1.Manager"
-)]
-trait Systemd1Manager {
-    // Defines signature for D-Bus signal named `JobNew`
-    #[zbus(signal)]
-    fn unit_new(&self, id: String, unit: OwnedObjectPath) -> zbus::Result<()>;
-
-    #[zbus(signal)]
-    fn unit_removed(&self, id: String, unit: OwnedObjectPath) -> zbus::Result<()>;
-
-    // Defines signature for D-Bus signal named `JobNew`
-    #[zbus(signal)]
-    fn job_new(&self, id: u32, job: OwnedObjectPath, unit: String) -> zbus::Result<()>;
-
-    #[zbus(signal)]
-    fn job_removed(
-        &self,
-        id: u32,
-        job: OwnedObjectPath,
-        unit: String,
-        result: String,
-    ) -> zbus::Result<()>;
-
-    #[zbus(signal)]
-    fn startup_finished(
-        &self,
-        firmware: u64,
-        loader: u64,
-        kernel: u64,
-        initrd: u64,
-        userspace: u64,
-        total: u64,
-    ) -> zbus::Result<()>;
-
-    #[zbus(signal)]
-    fn unit_files_changed(&self) -> zbus::Result<()>;
-
-    #[zbus(signal)]
-    fn reloading(&self, active: bool) -> zbus::Result<()>;
-}
 
 pub async fn watch_systemd_signals(
     systemd_signal_sender: mpsc::Sender<SystemdSignalRow>,

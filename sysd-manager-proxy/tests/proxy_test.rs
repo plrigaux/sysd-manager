@@ -1,4 +1,4 @@
-use base::consts::DBUS_DESTINATION_DEV;
+use base::{consts::DBUS_DESTINATION_DEV, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
 use log::info;
 
 use test_base::init_logs;
@@ -15,7 +15,7 @@ pub const DBUS_PATH_DEV: &str = concat!(DBUS_PATH, "Dev"); */
 #[proxy(
     interface = "io.github.plrigaux.SysDManager",
     default_service = "io.github.plrigaux.SysDManagerDev",
-    default_path = "/io/github/plrigaux/SysDManagerDev"
+    default_path = "/io/github/plrigaux/SysDManager"
 )]
 pub trait SysDProxyTester {
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
@@ -23,6 +23,12 @@ pub trait SysDProxyTester {
     fn my_user_id(&self) -> zbus::Result<u32>;
 
     fn even_ping(&self, val: u32) -> zbus::Result<u32>;
+
+    fn revert_unit_files(
+        &self,
+        bus: u8,
+        unit_names: &[&str],
+    ) -> zbus::Result<Vec<DisEnAbleUnitFiles>>;
 }
 
 async fn system() -> zbus::Result<zbus::Connection> {
@@ -97,3 +103,29 @@ async fn test_even_ping_fail() -> zbus::Result<()> {
 
     Ok(())
 }
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_revert_unit_files() -> zbus::Result<()> {
+    init_logs();
+    let proxy = system_proxy().await?;
+
+    match proxy
+        .revert_unit_files(
+            UnitDBusLevel::UserSession.index(),
+            &["tiny_plr_deamon.service"],
+        )
+        .await
+    {
+        Ok(val) => {
+            panic!("Should not succeed, got {:?}", val);
+        }
+
+        Err(e) => {
+            info!("Expected error received: {}", e);
+        }
+    }
+
+    Ok(())
+}
+//"tiny_plr_deamon.service

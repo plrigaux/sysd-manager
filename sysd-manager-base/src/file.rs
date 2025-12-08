@@ -14,8 +14,10 @@ pub fn create_drop_in_path_dir(
         (true, false) => format!("/run/systemd/system/{}.d", unit_name),
         (false, false) => format!("/etc/systemd/system/{}.d", unit_name),
         (true, true) => {
-            let id = unsafe { libc::getuid() };
-            format!("/run/user/{id}/systemd/user/{}.d", unit_name)
+            let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
+                .unwrap_or_else(|_| format!("/run/user/{}", unsafe { libc::getuid() }));
+
+            format!("{runtime_dir}/systemd/user/{}.d", unit_name)
         }
         (false, true) => {
             let home_dir = std::env::home_dir().ok_or(Box::<dyn Error>::from(
@@ -43,7 +45,11 @@ pub fn create_drop_in_path_file(
     Ok(path)
 }
 
-pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(), std::io::Error> {
+pub async fn create_drop_in_io(
+    file_path_str: &str,
+    content: &str,
+    user: bool,
+) -> Result<(), std::io::Error> {
     if file_path_str.contains("../") {
         let err = std::io::Error::new(
             std::io::ErrorKind::InvalidData,
@@ -66,7 +72,11 @@ pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(),
 
     if !unit_drop_in_dir.exists() {
         info!("Creating dir {}", unit_drop_in_dir.display());
-        fs::create_dir(&unit_drop_in_dir).await?;
+        if user {
+            fs::create_dir_all(&unit_drop_in_dir).await?;
+        } else {
+            fs::create_dir(&unit_drop_in_dir).await?;
+        }
     }
 
     //Save content

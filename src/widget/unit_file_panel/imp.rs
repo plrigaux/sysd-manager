@@ -223,15 +223,15 @@ impl UnitFilePanelImp {
         }
     }
 
-    async fn handle_save_response(
+    async fn handle_save_response<T>(
         &self,
-        receiver: Receiver<Result<(), SystemdErrors>>,
+        receiver: Receiver<Result<T, SystemdErrors>>,
         status: UnitFileStatus,
         file_path: &str,
         unit_name: &str,
     ) {
         let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
-            Ok(_) => {
+            Ok(_a) => {
                 let msg = match status {
                     UnitFileStatus::Create => pgettext("file", "File {} created successfully!"),
                     UnitFileStatus::Edit => pgettext("file", "File {} saved successfully!"),
@@ -682,14 +682,20 @@ impl UnitFilePanelImp {
                 )
                 .build();
 
-            let revert_unit_file_full = gio::ActionEntry::builder("revert_unit_file_full")
-                .activate(
-                    move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
-                        info!("call revert_unit_file_full");
-                        _b.is_enabled();
-                    },
-                )
-                .build();
+            let revert_unit_file_full = {
+                let unit_file_panel = self.obj().clone();
+                gio::ActionEntry::builder("revert_unit_file_full")
+                    .activate(
+                        move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                            info!("call revert_unit_file_full");
+                            let _ = unit_file_panel
+                                .imp()
+                                .revert_unit_file_full()
+                                .inspect_err(|e| warn!("{e:?}"));
+                        },
+                    )
+                    .build()
+            };
 
             app_window.add_action_entries([
                 rename_drop_in_file,
@@ -750,14 +756,14 @@ impl UnitFilePanelImp {
         };
 
         let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime, user)?;
-        {
-            self.create_drop_in_nav(&drop_in_file_path, runtime);
-        }
+
+        self.create_drop_in_nav(&drop_in_file_path, runtime);
+
         self.set_drop_ins_selector();
         self.file_dropin_selector
             .set_active(self.file_dropin_selector.n_toggles() - 1);
 
-        let new_file_content = self
+        let new_file_content: String = self
             .set_dropin_file_format(file_path, file_content, &drop_in_file_path)
             .inspect_err(|e| warn!("some error {:?}", e))
             .unwrap_or_default();
@@ -783,9 +789,9 @@ impl UnitFilePanelImp {
         runtime: bool,
         user: bool,
     ) -> Result<String, SystemdErrors> {
-        let path = create_drop_in_path_dir(primary, runtime, user)?;
+        let path_dir = create_drop_in_path_dir(primary, runtime, user)?;
 
-        let path_dir = PathBuf::from(&path);
+        let path_dir = PathBuf::from(&path_dir);
         let mut p = path_dir.join(DEFAULT_DROP_IN_FILE_NAME);
         p.set_extension("conf");
 
@@ -800,7 +806,7 @@ impl UnitFilePanelImp {
                 idx += 1;
             }
         } else {
-            Ok(path)
+            Ok(p.to_string_lossy().to_string())
         }
     }
 
@@ -872,6 +878,79 @@ impl UnitFilePanelImp {
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             _ => {}
         }
+    }
+
+    fn revert_unit_file_full(&self) -> Result<(), SystemdErrors> {
+        let binding = self.unit.borrow();
+        let Some(unit) = binding.as_ref() else {
+            return Err(SystemdErrors::NoUnit);
+        };
+
+        let file_panel = self.obj().clone();
+        let level = unit.dbus_level();
+        let unit_name = unit.primary();
+        glib::spawn_future_local(async move {
+            let unit_name2 = unit_name.clone();
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+            systemd::runtime().spawn(async move {
+                let response = systemd::revert_unit_file_full(level, &unit_name).await;
+
+                info!("revert_unit_file_full results {:?}", response);
+
+                sender
+                    .send(response)
+                    .expect("The channel needs to be open.");
+            });
+
+            let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
+                Ok(_a) => {
+                    let msg = pgettext("file", "Unit {} reverted successfully!");
+                    let file_path_format = format!("<b>{}</b>", unit_name2);
+                    let msg = format2!(msg, file_path_format);
+                    file_panel.imp().set_file_content_init();
+                    (msg, true)
+                }
+                Err(error) => {
+                    warn!("Unit {:?}, Unable to revert {:?}", unit_name2, error);
+
+                    match error {
+                        SystemdErrors::NotAuthorized => (
+                            pgettext("file", "Not able to save file, permission not granted!"),
+                            false,
+                        ),
+                        SystemdErrors::ZFdoServiceUnknowm(_s) => {
+                            // Service Name
+                            // Action Start it or install it
+                            let service_name = proxy_service_name();
+                            let dialog =
+                                flatpak::proxy_service_not_started(service_name.as_deref());
+                            let window = file_panel
+                                .imp()
+                                .app_window
+                                .get()
+                                .expect("AppWindow supposed to be set");
+
+                            dialog.present(Some(window));
+                            (
+                                pgettext(
+                                    "file",
+                                    "Not able to reverted unit, permission not granted!",
+                                ),
+                                false,
+                            )
+                        }
+
+                        _ => (
+                            pgettext("file", "Not able to reverted unit, an error happened!"),
+                            false,
+                        ),
+                    }
+                }
+            };
+
+            file_panel.imp().add_toast_message(&msg, use_mark_up);
+        });
+        Ok(())
     }
 }
 
@@ -947,7 +1026,7 @@ impl ObjectImpl for UnitFilePanelImp {
 
         self.file_dropin_selector.connect_n_toggles_notify(|tg| {
             let selected = tg.active();
-            info!("selected file {selected}");
+            debug!("selected file {selected}");
         });
 
         let unit_file_panel = self.obj().clone();
@@ -957,7 +1036,7 @@ impl ObjectImpl for UnitFilePanelImp {
                 return;
             }
 
-            info!("unit file or drop in: {selected}");
+            debug!("unit file or drop in: {selected}");
             unit_file_panel
                 .imp()
                 .file_dropin_selector_activate(selected)
