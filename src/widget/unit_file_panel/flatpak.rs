@@ -4,29 +4,8 @@ use gettextrs::pgettext;
 use gtk::prelude::{BoxExt, WidgetExt};
 
 use crate::format2;
+pub(super) const PROCEED: &str = "proceed";
 
-/* pub fn new(command_line: Option<String>, file_link: Option<String>) -> adw::Dialog {
-    let content = inner_msg(command_line, file_link);
-
-    let close_button = gtk::Button::builder()
-        .label("Close")
-        .margin_bottom(5)
-        .margin_top(20)
-        .halign(gtk::Align::Center)
-        .build();
-
-    content.append(&close_button);
-
-    let dialog = adw::Dialog::builder().child(&content).build();
-    {
-        let dialog = dialog.clone();
-        close_button.connect_clicked(move |_b| {
-            dialog.close();
-        });
-    }
-    dialog
-}
- */
 pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog {
     //TODO tranlate
     let body = "Failed to perform action. The proxy service might be inactive.\nPlease install and start the following service";
@@ -60,6 +39,30 @@ pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog
     dialog.set_margin_top(5);
     dialog.set_margin_start(5);
     dialog.set_can_close(true);
+
+    dialog
+}
+
+pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
+    //TODO tranlate
+    let body = format!("You are about to clear the Drop-ins for unit <b>{unit_name}<b>");
+
+    //TODO tranlate
+    let header = "Warning!";
+
+    let dialog = adw::AlertDialog::builder()
+        .heading(header)
+        .body(body)
+        .can_close(true)
+        .build();
+
+    //TODO tranlate
+    dialog.add_responses(&[("cancel", "_Cancel"), ("proceed", "_Proceed")]);
+
+    dialog.set_response_appearance(PROCEED, adw::ResponseAppearance::Destructive);
+    dialog.set_response_appearance("cancel", adw::ResponseAppearance::Suggested);
+    dialog.set_default_response(Some("cancel"));
+    dialog.set_close_response("cancel");
 
     dialog
 }

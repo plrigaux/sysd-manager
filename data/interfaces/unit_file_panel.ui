@@ -89,31 +89,19 @@
   </template>
   <menu id="unit_file_menu">
     <submenu>
-      <attribute name="label">Create Drop-in</attribute>
+      <attribute name="label" translatable="yes">Create Drop-in</attribute>
       <item>
         <attribute name="action">win.create_drop_in_file_runtime</attribute>
-        <attribute name="label">Runtime</attribute>
+        <attribute name="label" translatable="yes">Runtime</attribute>
       </item>
       <item>
         <attribute name="action">win.create_drop_in_file_permanent</attribute>
-        <attribute name="label">Permanent</attribute>
-      </item>
-    </submenu>
-    <submenu>
-      <attribute name="label">Revert</attribute>
-      <item>
-        <attribute name="action">win.revert_unit_file_full</attribute>
-        <attribute name="label">Full</attribute>
-      </item>
-      <item>
-        <attribute name="action">win.revert_drop_in_file_only</attribute>
-        <attribute name="label">Drop-in Only</attribute>
+        <attribute name="label" translatable="yes">Permanent</attribute>
       </item>
     </submenu>
     <item>
-      <attribute name="action">win.rename_drop_in_file</attribute>
-      <attribute name="icon">address-book-new</attribute>
-      <attribute name="label">Rename Drop-in File</attribute>
+      <attribute name="action">win.revert_unit_file_full</attribute>
+      <attribute name="label" translatable="yes">Revert Drop-in</attribute>
     </item>
   </menu>
 </interface>

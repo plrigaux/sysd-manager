@@ -607,7 +607,7 @@ impl UnitControlPanelImpl {
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
         if let Some(app_window) = self.app_window.get() {
-            app_window.add_toast_message(message, use_markup);
+            app_window.add_toast_message(message, use_markup, None);
         }
     }
 

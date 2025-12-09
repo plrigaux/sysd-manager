@@ -12,8 +12,8 @@
         <attribute name="label" translatable="yes" context="menu">Analyze Blame</attribute>
       </item>
       <item>
-        <attribute name="action">app.reload_all_units</attribute>
-        <attribute name="label" translatable="yes" context="menu">Reload All Units</attribute>
+        <attribute name="action">app.daemon-reload</attribute>
+        <attribute name="label" translatable="yes" context="menu">Deamon Reload</attribute>
       </item>
       <item>
         <attribute name="action">app.systemd_info</attribute>

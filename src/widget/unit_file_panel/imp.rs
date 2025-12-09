@@ -3,7 +3,7 @@ use std::{
     path::PathBuf,
 };
 
-use adw::prelude::AdwDialogExt;
+use adw::prelude::{AdwDialogExt, AlertDialogExt};
 use base::file::create_drop_in_path_dir;
 use gettextrs::pgettext;
 use gtk::{
@@ -26,7 +26,7 @@ use systemd::sysdbus::proxy_service_name;
 use tokio::sync::oneshot::Receiver;
 
 use crate::{
-    consts::{ADWAITA, SUGGESTED_ACTION},
+    consts::{ADWAITA, APP_ACTION_DAEMON_RELOAD, SUGGESTED_ACTION},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     upgrade,
@@ -35,6 +35,7 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::{data::PREFERENCES, style_scheme::style_schemes},
+        unit_file_panel::flatpak::PROCEED,
     },
 };
 use log::{debug, info, warn};
@@ -230,7 +231,7 @@ impl UnitFilePanelImp {
         file_path: &str,
         unit_name: &str,
     ) {
-        let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
+        let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
             Ok(_a) => {
                 let msg = match status {
                     UnitFileStatus::Create => pgettext("file", "File {} created successfully!"),
@@ -239,7 +240,7 @@ impl UnitFilePanelImp {
                 let file_path_format = format!("<u>{}</u>", file_path);
                 let msg = format2!(msg, file_path_format);
 
-                (msg, true)
+                (msg, true, Some(APP_ACTION_DAEMON_RELOAD))
             }
             Err(error) => {
                 warn!(
@@ -251,6 +252,7 @@ impl UnitFilePanelImp {
                     SystemdErrors::NotAuthorized => (
                         pgettext("file", "Not able to save file, permission not granted!"),
                         false,
+                        None,
                     ),
                     SystemdErrors::ZFdoServiceUnknowm(_s) => {
                         // Service Name
@@ -263,18 +265,20 @@ impl UnitFilePanelImp {
                         (
                             pgettext("file", "Not able to save file, permission not granted!"),
                             false,
+                            None,
                         )
                     }
 
                     _ => (
                         pgettext("file", "Not able to save file, an error happened!"),
                         false,
+                        None,
                     ),
                 }
             }
         };
 
-        self.add_toast_message(&msg, use_mark_up);
+        self.add_toast_message(&msg, use_mark_up, action);
     }
 }
 
@@ -320,9 +324,9 @@ impl UnitFilePanelImp {
         (cleaned_text, file_name)
     }
 
-    fn add_toast_message(&self, message: &str, markup: bool) {
+    fn add_toast_message(&self, message: &str, markup: bool, action_name: Option<&str>) {
         if let Some(app_window) = self.app_window.get() {
-            app_window.add_toast_message(message, markup);
+            app_window.add_toast_message(message, markup, action_name);
         }
     }
 
@@ -885,10 +889,34 @@ impl UnitFilePanelImp {
         let Some(unit) = binding.as_ref() else {
             return Err(SystemdErrors::NoUnit);
         };
+        let unit_name = unit.primary();
+        let file_panel = self.obj().clone();
+        let dialog = flatpak::revert_drop_in_alert(&unit_name);
+        dialog.connect_response(None, move |_dialog, response| {
+            info!("Response {response}");
+
+            if response == PROCEED {
+                let _ = file_panel.imp().revert_unit_file_full_action();
+            }
+        });
+
+        let window = self.app_window.get().expect("AppWindow supposed to be set");
+
+        dialog.present(Some(window));
+
+        Ok(())
+    }
+
+    fn revert_unit_file_full_action(&self) -> Result<(), SystemdErrors> {
+        let binding = self.unit.borrow();
+        let Some(unit) = binding.as_ref() else {
+            return Err(SystemdErrors::NoUnit);
+        };
 
         let file_panel = self.obj().clone();
         let level = unit.dbus_level();
         let unit_name = unit.primary();
+
         glib::spawn_future_local(async move {
             let unit_name2 = unit_name.clone();
             let (sender, receiver) = tokio::sync::oneshot::channel();
@@ -902,13 +930,13 @@ impl UnitFilePanelImp {
                     .expect("The channel needs to be open.");
             });
 
-            let (msg, use_mark_up) = match receiver.await.expect("Tokio receiver works") {
+            let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
                 Ok(_a) => {
                     let msg = pgettext("file", "Unit {} reverted successfully!");
-                    let file_path_format = format!("<b>{}</b>", unit_name2);
+                    let file_path_format = format!("<unit>{}</unit>", unit_name2);
                     let msg = format2!(msg, file_path_format);
                     file_panel.imp().set_file_content_init();
-                    (msg, true)
+                    (msg, true, Some(APP_ACTION_DAEMON_RELOAD))
                 }
                 Err(error) => {
                     warn!("Unit {:?}, Unable to revert {:?}", unit_name2, error);
@@ -917,6 +945,7 @@ impl UnitFilePanelImp {
                         SystemdErrors::NotAuthorized => (
                             pgettext("file", "Not able to save file, permission not granted!"),
                             false,
+                            None,
                         ),
                         SystemdErrors::ZFdoServiceUnknowm(_s) => {
                             // Service Name
@@ -937,18 +966,22 @@ impl UnitFilePanelImp {
                                     "Not able to reverted unit, permission not granted!",
                                 ),
                                 false,
+                                None,
                             )
                         }
 
                         _ => (
                             pgettext("file", "Not able to reverted unit, an error happened!"),
                             false,
+                            None,
                         ),
                     }
                 }
             };
 
-            file_panel.imp().add_toast_message(&msg, use_mark_up);
+            file_panel
+                .imp()
+                .add_toast_message(&msg, use_mark_up, action);
         });
         Ok(())
     }

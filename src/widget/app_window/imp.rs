@@ -553,7 +553,12 @@ impl AppWindowImpl {
         red(self.is_dark.get()).get_color()
     }
 
-    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
+    pub(super) fn add_toast_message(
+        &self,
+        message: &str,
+        use_markup: bool,
+        action_name: Option<&str>,
+    ) {
         let msg = if use_markup {
             let out = self.replace_tags(message);
             Cow::from(out)
@@ -565,6 +570,14 @@ impl AppWindowImpl {
             .title(msg)
             .use_markup(use_markup)
             .build();
+
+        info!("Toast action {action_name:?}");
+
+        if let Some(action_name) = action_name {
+            toast.set_action_name(Some(action_name));
+            toast.set_button_label(Some("_Action"));
+        }
+
         self.toast_overlay.add_toast(toast)
     }
 

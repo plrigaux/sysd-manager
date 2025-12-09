@@ -9,6 +9,7 @@ use log::info;
 use log::warn;
 
 use crate::analyze::build_analyze_window;
+use crate::consts::ACTION_DAEMON_RELOAD;
 use crate::systemd;
 use crate::systemd_gui::APP_ID;
 use crate::widget::app_window::AppWindow;
@@ -120,7 +121,7 @@ pub fn on_startup(app: &adw::Application) {
         .build();
 
     let reload_all_units: gio::ActionEntry<adw::Application> =
-        gio::ActionEntry::builder("reload_all_units")
+        gio::ActionEntry::builder(ACTION_DAEMON_RELOAD)
             .activate(|application: &adw::Application, simple_action, _variant| {
                 let simple_action = simple_action.clone();
                 let application = application.clone();
@@ -140,8 +141,8 @@ pub fn on_startup(app: &adw::Application) {
                             add_toast(&application, "All units relaoded!");
                         }
                         Err(e) => {
-                            error!("Roload failed {e:?}");
-                            add_toast(&application, "Reload failed!");
+                            error!("Daemon Reload failed {e:?}");
+                            add_toast(&application, "Daemon Reload failed!"); //TODO translate
                         }
                     }
                 });
@@ -165,7 +166,7 @@ fn add_toast(application: &adw::Application, toast_msg: &str) {
         let app_win_op: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
 
         if let Some(app_win) = app_win_op {
-            app_win.add_toast_message(toast_msg, false);
+            app_win.add_toast_message(toast_msg, false, None);
         }
     }
 }
