@@ -10,15 +10,17 @@ readme = "README.md"
 description = "Simple lib used by sysd-manager to perform privileged operations via polkit over D-Bus."
 repository = { workspace = true }
 
-
 [lib]
 name = "sysd_manager_proxy_lib"
 path = "src/lib.rs"
 
-
 [[bin]]
 name = "sysd-manager-proxy"
 path = "src/main.rs"
+
+[features]
+default = []
+flatpak = []
 
 [dependencies]
 base.workspace = true
