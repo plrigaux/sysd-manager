@@ -43,19 +43,6 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 
     info!("The base directory is {}", normalized_path.display());
 
-    /*     if run_mode == RunMode::Normal {
-        let src = PathBuf::from("../target/release").join(BIN_NAME);
-        if !src.exists() {
-            let msg = format!(
-                "Binary file {} does not exist. Did you build the project in release mode?",
-                src.display()
-            );
-            return Err(msg.into());
-        }
-        let dst = PathBuf::from(BIN_DIR).join(BIN_NAME);
-        install_file_exec(&src, &dst, false).await?;
-    } */
-
     let (bus_name, interface, destination, service_id) = if run_mode == RunMode::Development {
         (
             DBUS_NAME_DEV,

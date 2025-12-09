@@ -847,13 +847,18 @@ fn get_unit_object_path_connection(
     Ok(object_path.to_owned())
 }
 
-pub fn reload_all_units(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
+pub fn reload_all_units(_level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     //let handler_cloned: = handler;
 
-    send_disenable_message(level, METHOD_RELOAD, &(), move |method, _message| {
+    /*   let proxy = systemd_manager();
+    proxy.reload()?; */
+
+    to_proxy::reload()
+
+    /*     send_disenable_message(level, METHOD_RELOAD, &(), move |method, _message| {
         info!("{method} SUCCESS");
         Ok(())
-    })
+    }) */
 }
 
 pub(super) fn kill_unit(

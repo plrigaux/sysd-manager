@@ -41,8 +41,8 @@ impl AppWindow {
         self.imp().set_inter_message(action);
     }
 
-    pub fn add_toast_message(&self, message: &str, markup: bool, action_name: Option<&str>) {
-        self.imp().add_toast_message(message, markup, action_name);
+    pub fn add_toast_message(&self, message: &str, markup: bool, action: Option<(&str, &str)>) {
+        self.imp().add_toast_message(message, markup, action);
     }
 
     pub fn selected_unit(&self) -> Option<UnitInfo> {

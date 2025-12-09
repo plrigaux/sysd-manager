@@ -16,6 +16,7 @@ pub trait SysDManagerComLink {
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
     fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
     fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn reload(&self) -> zbus::fdo::Result<()>;
 
     fn create_drop_in(
         &mut self,
@@ -84,6 +85,12 @@ pub fn freeze_unit(unit_name: &str) -> Result<(), SystemdErrors> {
 pub fn thaw_unit(unit_name: &str) -> Result<(), SystemdErrors> {
     let proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
     proxy.thaw_unit(unit_name)?;
+    Ok(())
+}
+
+pub fn reload() -> Result<(), SystemdErrors> {
+    let proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    proxy.reload()?;
     Ok(())
 }
 

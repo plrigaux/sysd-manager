@@ -157,7 +157,7 @@ pub fn get_unit_journal_events_continuous(
     timestamp_style: TimestampStyle,
     check_for_new_journal_entry: fn(),
 ) -> Result<(), SystemdErrors> {
-    info!("Journal Continiuous");
+    info!("Journal Continuous");
     let mut journal_reader = create_journal_reader(&unit_name, bus_level, BootFilter::Current)?;
 
     let default = "NONE".to_string();

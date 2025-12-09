@@ -24,8 +24,8 @@ use crate::{
     file::{flatpak_host_file_path, save_text_to_file},
     journal_data::Boot,
     sysdbus::{
-        dbus_proxies::{Systemd1ManagerProxy, Systemd1ManagerProxyBlocking},
-        get_blocking_connection, get_connection, to_proxy,
+        dbus_proxies::{systemd_manager, systemd_manager_async},
+        to_proxy,
     },
     time_handling::TimestampStyle,
 };
@@ -504,8 +504,7 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
         match level {
             UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::freeze_unit(&primary_name),
             UnitDBusLevel::UserSession => {
-                let conn = get_blocking_connection(UnitDBusLevel::UserSession)?;
-                let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+                let proxy = systemd_manager();
                 proxy.freeze_unit(&primary_name)?;
                 Ok(())
             }
@@ -520,8 +519,7 @@ pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdE
         match level {
             UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::thaw_unit(&primary_name),
             UnitDBusLevel::UserSession => {
-                let conn = get_blocking_connection(UnitDBusLevel::UserSession)?;
-                let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+                let proxy = systemd_manager();
                 proxy.thaw_unit(&primary_name)?;
                 Ok(())
             }
@@ -569,8 +567,7 @@ pub fn clean_unit(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::clean_unit(unit_name, &clean_what),
         UnitDBusLevel::UserSession => {
-            let conn = get_blocking_connection(UnitDBusLevel::UserSession)?;
-            let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+            let proxy = systemd_manager();
             proxy.clean_unit(unit_name, &clean_what)?;
             Ok(())
         }
@@ -918,8 +915,7 @@ pub async fn revert_unit_file_full(
             to_proxy::revert_unit_files(&[unit_name]).await
         }
         UnitDBusLevel::UserSession => {
-            let conn = get_connection(level).await?;
-            let mut proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
+            let proxy = systemd_manager_async().await?;
             let response = proxy.revert_unit_files(&[unit_name]).await?;
             Ok(response)
         }

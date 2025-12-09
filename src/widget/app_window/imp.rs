@@ -557,7 +557,7 @@ impl AppWindowImpl {
         &self,
         message: &str,
         use_markup: bool,
-        action_name: Option<&str>,
+        action: Option<(&str, &str)>,
     ) {
         let msg = if use_markup {
             let out = self.replace_tags(message);
@@ -571,11 +571,10 @@ impl AppWindowImpl {
             .use_markup(use_markup)
             .build();
 
-        info!("Toast action {action_name:?}");
-
-        if let Some(action_name) = action_name {
+        if let Some((action_name, button_label)) = action {
+            info!("Toast action {action:?}");
             toast.set_action_name(Some(action_name));
-            toast.set_button_label(Some("_Action"));
+            toast.set_button_label(Some(button_label));
         }
 
         self.toast_overlay.add_toast(toast)

@@ -260,7 +260,6 @@ impl SysDManagerProxy {
     async fn freeze_unit(
         &self,
         #[zbus(header)] header: Header<'_>,
-
         unit_name: &str,
     ) -> zbus::fdo::Result<()> {
         let proxy = get_proxy(UnitDBusLevel::System).await?;
@@ -275,7 +274,6 @@ impl SysDManagerProxy {
     async fn thaw_unit(
         &self,
         #[zbus(header)] header: Header<'_>,
-
         unit_name: &str,
     ) -> zbus::fdo::Result<()> {
         let proxy = get_proxy(UnitDBusLevel::System).await?;
@@ -298,8 +296,7 @@ impl SysDManagerProxy {
 
         debug!("Proxy {:?}", proxy);
         self.check_autorisation(header).await?;
-        debug!("Autorize ",);
-
+        debug!("Polkit autorized");
         match proxy.revert_unit_files(&file_names).await {
             Ok(vec) => {
                 info!("revert_unit_files {:?} --> {:?}", file_names, vec);
@@ -313,5 +310,16 @@ impl SysDManagerProxy {
                 Err(err)
             }
         }
+    }
+
+    async fn reload(&self, #[zbus(header)] header: Header<'_>) -> zbus::fdo::Result<()> {
+        info!("Reload");
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy(UnitDBusLevel::System).await?;
+        self.check_autorisation(header).await?;
+        debug!("Polkit autorized");
+        proxy
+            .reload()
+            .await
+            .inspect_err(|e| warn!("Error while calling reload on sysdbus proxy: {:?}", e))
     }
 }

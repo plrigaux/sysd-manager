@@ -3,7 +3,7 @@ use adw::prelude::{AdwDialogExt, AlertDialogExt, AlertDialogExtManual};
 use gettextrs::pgettext;
 use gtk::prelude::{BoxExt, WidgetExt};
 
-use crate::format2;
+use crate::{format2, widget::unit_file_panel::FILE_CONTEXT};
 pub(super) const PROCEED: &str = "proceed";
 
 pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog {
@@ -45,7 +45,7 @@ pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog
 
 pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
     //TODO tranlate
-    let body = format!("You are about to clear the Drop-ins for unit <b>{unit_name}<b>");
+    let body = format!("You are about to clear the Drop-ins for unit <b>{unit_name}</b>");
 
     //TODO tranlate
     let header = "Warning!";
@@ -54,6 +54,7 @@ pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
         .heading(header)
         .body(body)
         .can_close(true)
+        .body_use_markup(true)
         .build();
 
     //TODO tranlate
@@ -81,7 +82,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
         .css_classes(["title-1"])
         .label(
             //flatpak permision error dialog title
-            pgettext("unit file", "Flatpak permission needed!"),
+            pgettext(FILE_CONTEXT, "Flatpak permission needed!"),
         )
         .build();
 
@@ -91,7 +92,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
     .selectable(true)
     .label(
         //flatpak permision error dialog line 1
-        pgettext("unit file", "To save this file content, it requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged as a Flatpak."))
+        pgettext(FILE_CONTEXT, "To save this file content, it requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged as a Flatpak."))
     .use_markup(true)
     .wrap(true)
     .build();
@@ -100,7 +101,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
     .selectable(true)
     .label(
         //flatpak permision error dialog line 2
-        pgettext("unit file", "<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program."))
+        pgettext(FILE_CONTEXT, "<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program."))
     .use_markup(true)
     .margin_top(15)
     .wrap(true)
@@ -125,7 +126,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
         format2!(
             //flatpak permision error dialog option 2
             pgettext(
-                "unit file",
+                FILE_CONTEXT,
                 "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor."
             ),
             file_link
@@ -134,7 +135,7 @@ pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk
         format2!(
             //flatpak permision error dialog option 3
             pgettext(
-                "unit file",
+                FILE_CONTEXT,
                 "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
             ),
             cmd

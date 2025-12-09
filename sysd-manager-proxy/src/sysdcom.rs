@@ -14,4 +14,5 @@ pub trait SysDManagerComLink {
         &self,
         unit_names: &Vec<String>,
     ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+    fn reload(&self) -> zbus::fdo::Result<()>;
 }

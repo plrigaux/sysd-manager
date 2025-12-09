@@ -91,12 +91,12 @@
     <submenu>
       <attribute name="label" translatable="yes">Create Drop-in</attribute>
       <item>
-        <attribute name="action">win.create_drop_in_file_runtime</attribute>
-        <attribute name="label" translatable="yes">Runtime</attribute>
-      </item>
-      <item>
         <attribute name="action">win.create_drop_in_file_permanent</attribute>
         <attribute name="label" translatable="yes">Permanent</attribute>
+      </item>
+      <item>
+        <attribute name="action">win.create_drop_in_file_runtime</attribute>
+        <attribute name="label" translatable="yes">Runtime</attribute>
       </item>
     </submenu>
     <item>

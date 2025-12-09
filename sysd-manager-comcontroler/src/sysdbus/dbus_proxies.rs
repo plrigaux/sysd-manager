@@ -1,6 +1,15 @@
+use std::sync::LazyLock;
+
 use base::proxy::DisEnAbleUnitFiles;
+use log::error;
+use tokio::sync::OnceCell;
 use zbus::proxy;
 use zvariant::OwnedObjectPath;
+
+use crate::{
+    errors::SystemdErrors,
+    sysdbus::{get_blocking_connection, get_connection},
+};
 
 #[proxy(
     interface = "org.freedesktop.systemd1.Unit",
@@ -94,8 +103,32 @@ pub(crate) trait Systemd1Manager {
     ) -> zbus::fdo::Result<()>;
     fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
 
-    fn revert_unit_files(
-        &mut self,
-        file_names: &[&str],
-    ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+    fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+    fn reload(&self) -> zbus::fdo::Result<()>;
+}
+
+static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
+
+fn asdf() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors> {
+    let conn = get_blocking_connection(base::enums::UnitDBusLevel::System)?;
+    let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+    Ok(proxy)
+}
+
+static SYSTEM_MANAGER_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> =
+    LazyLock::new(|| asdf().inspect_err(|e| error!("{e:?}")).unwrap());
+
+pub fn systemd_manager<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
+    (&*SYSTEM_MANAGER_BLOCKING) as _
+}
+
+pub async fn systemd_manager_async() -> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors>
+{
+    SYSTEM_MANAGER
+        .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {
+            let conn = get_connection(base::enums::UnitDBusLevel::System).await?;
+            let proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
+            Ok(proxy)
+        })
+        .await
 }
