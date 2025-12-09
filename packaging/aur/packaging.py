@@ -27,7 +27,8 @@ def main():
             "clean",
             "make",
             "genpush",
-            "check"
+            "check",
+            "install"
         ],
         help="action to perform",)
     
@@ -55,6 +56,8 @@ def main():
             generate_and_push(release)
         case "check":
             check_package()
+        case "install":
+            install()
 
 
 def create_pkgbuild(release=None):
@@ -132,6 +135,14 @@ def generate_sourceinfo():
     with open(f'{AUR_OUT_DIR}/.SRCINFO', "w") as srcinfo_file:
         print("WRITE .SRCINFO")
         srcinfo_file.write(printsrcinfo)     
+
+def install():
+    cmd = ["makepkg", "--install"]  
+    printsrcinfo = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
+    
+    with open(f'{AUR_OUT_DIR}/.SRCINFO', "w") as srcinfo_file:
+        print("WRITE .SRCINFO")
+        srcinfo_file.write(printsrcinfo) 
 
 
 def gen_pkfile(release=None): 

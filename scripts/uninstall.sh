@@ -14,6 +14,7 @@ echo ""
 echo Removing files
 echo ""
 sudo rm "/usr/bin/sysd-manager" 
+sudo rm "/usr/bin/sysd-manager-proxy" 
 sudo rm "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop" 
 sudo rm "/usr/share/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml"
 sudo rm "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg"
