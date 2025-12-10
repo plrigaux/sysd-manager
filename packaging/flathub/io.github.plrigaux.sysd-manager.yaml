@@ -34,7 +34,7 @@ modules:
       CARGO_HOME: /run/build/sysd-manager/cargo
   build-commands:
   - cargo --offline fetch --manifest-path Cargo.toml --verbose
-  - cargo --offline build --release --verbose --features flatpak
+  - cargo --offline build --release --features flatpak
   - echo ""
   - echo Generating files
   - echo ""

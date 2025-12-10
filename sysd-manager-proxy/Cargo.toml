@@ -9,6 +9,7 @@ license = { workspace = true }
 readme = "README.md"
 description = "Simple lib used by sysd-manager to perform privileged operations via polkit over D-Bus."
 repository = { workspace = true }
+build = "build.rs"
 
 [lib]
 name = "sysd_manager_proxy_lib"
@@ -25,17 +26,19 @@ flatpak = []
 [dependencies]
 base.workspace = true
 clap.workspace = true
+dotenv.workspace = true
+enumflags2.workspace = true
+futures-util = "0.3"
+gio.workspace = true
+glib.workspace = true
 libc.workspace = true
 log.workspace = true
 tokio.workspace = true
-zbus.workspace = true
-dotenv.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-journald.workspace = true
+zbus.workspace = true
 zbus_polkit = "5"
-enumflags2.workspace = true
-futures-util = "0.3"
 
 [dev-dependencies]
 test-base.workspace = true

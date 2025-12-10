@@ -20,15 +20,16 @@ description = "Application to empower user to manage their <b>systemd units</b> 
 keywords = ["gtk4", "linux", "systemd"]
 rust-version = { workspace = true }
 
-include = [
-    "build.rs",
-    "/src",
-    "LICENSE",
-    "README.md",
-    "/data",
-    "!/**/meson.build",
-    "/po",
-]
+
+#include = [
+#    "build.rs",
+#    "/src",
+#    "LICENSE",
+#    "README.md",
+#    "/data",
+#    "!/**/meson.build",
+#    "/po",
+#]
 default-run = "sysd-manager"
 
 [[bin]]
@@ -50,6 +51,7 @@ chrono = "0.4"
 dotenv = "0.15"
 enumflags2 = "0.7"
 gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
+gio = { version = "0", package = "gio", features = ["v2_84"] }
 glib = { version = "0", package = "glib", features = ["v2_84"] }
 libc = "0.2"
 log = "0.4"
@@ -71,7 +73,7 @@ zbus = { version = "5.11", default-features = false, features = [
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
 adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
-gio = { version = "0", package = "gio", features = ["v2_84"] }
+gio.workspace = true
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
 glib.workspace = true
 

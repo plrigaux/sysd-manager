@@ -29,6 +29,13 @@ fn main() {
         "sysd-manager.gresource",
     );
 
+    #[cfg(feature = "flatpak")]
+    compile_resources(
+        &["sysd-manager-proxy/data"],
+        "sysd-manager-proxy/data/resources.gresource.xml",
+        "sysd-manager-proxy.gresource",
+    );
+
     compile_schema();
 
     if let Err(error) = generate_notes() {

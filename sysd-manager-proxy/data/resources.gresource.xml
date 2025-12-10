@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/io/github/plrigaux/sysd-manager/">
+    <file compressed="true">io.github.plrigaux.SysDManager.conf</file>
+    <file compressed="true">io.github.plrigaux.SysDManager.policy</file>
+    <file compressed="true">sysd-manager-proxy.service</file>
+ 
+  </gresource>
+</gresources>

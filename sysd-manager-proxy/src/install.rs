@@ -1,6 +1,19 @@
-use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
+//#[cfg(feature = "flatpak")]
+extern crate gio;
+
+use std::{
+    collections::BTreeMap,
+    env,
+    error::Error,
+    path::{Path, PathBuf},
+};
 
 use base::{RunMode, consts::*};
+
+use gio::{
+    OutputStreamSpliceFlags, ResourceLookupFlags,
+    prelude::{FileExt, IOStreamExt, OutputStreamExt},
+};
 
 use tokio::{fs, process::Command};
 use tracing::{debug, error, info, warn};
@@ -8,6 +21,9 @@ use tracing::{debug, error, info, warn};
 const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
 const SERVICE_DIR: &str = "/usr/lib/systemd/system";
+const POLICY_FILE: &str = "io.github.plrigaux.SysDManager.policy";
+const SERVICE_FILE: &str = "sysd-manager-proxy.service";
+const DBUSCONF_FILE: &str = "io.github.plrigaux.SysDManager.conf";
 
 pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("Install proxy mode {:?}", run_mode);
@@ -22,6 +38,11 @@ pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 }
 
 async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
+    #[cfg(feature = "flatpak")]
+    if let Err(e) = gio::resources_register_include!("sysd-manager-proxy.gresource") {
+        warn!("Failed to register resources. Error: {e:?}");
+    }
+
     if run_mode == RunMode::Both {
         error!("sub_install should not be called with RunMode::Both");
         return Err("Invalid RunMode::Both for sub_install".into());
@@ -52,9 +73,14 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
         (DBUS_NAME, DBUS_INTERFACE, DBUS_DESTINATION, PROXY_SERVICE)
     };
 
-    let src_sysd_path = normalized_path.join("sysd-manager-proxy");
-    let src_data = src_sysd_path.join("data");
-    let src = src_data.join("io.github.plrigaux.SysDManager.conf");
+    let base_path = if cfg!(feature = "flatpak") {
+        PathBuf::from("/io/github/plrigaux/sysd-manager")
+    } else {
+        let src_sysd_path = normalized_path.join("sysd-manager-proxy");
+        src_sysd_path.join("data")
+    };
+
+    let src = source_path(&base_path, DBUSCONF_FILE)?;
     let mut dst = PathBuf::from(SYSTEMD_DIR).join(bus_name);
     dst.add_extension("conf");
     install_file(&src, &dst, false).await?;
@@ -69,12 +95,13 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     install_edit_file(&map, dst).await?;
 
     info!("Installing Polkit Policy");
-    let src = src_data.join("io.github.plrigaux.SysDManager.policy");
+    let src = source_path(&base_path, POLICY_FILE)?;
     let dst = PathBuf::from(ACTION_DIR);
     install_file(&src, &dst, true).await?;
 
     info!("Installing Service");
-    let src = src_data.join("sysd-manager-proxy.service");
+
+    let src = source_path(&base_path, SERVICE_FILE)?;
     let mut service_file_path = PathBuf::from(SERVICE_DIR).join(service_id);
     service_file_path.add_extension("service");
 
@@ -114,6 +141,38 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     install_edit_file(&map, service_file_path).await?;
 
     Ok(())
+}
+
+fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let src_path = base_path.join(file_name);
+
+    #[cfg(feature = "flatpak")]
+    {
+        let stream = gio::functions::resources_open_stream(
+            &src_path.to_string_lossy(),
+            ResourceLookupFlags::NONE,
+        )?;
+
+        let path = PathBuf::from(format!("XXXXXX{}", POLICY_FILE));
+        let (file, ios_stream) = gio::File::new_tmp(Some(&path)).unwrap();
+
+        let tmp_path = file.path().ok_or(Box::<dyn Error>::from("No file path"))?;
+        info!("temp file path {:?}", tmp_path);
+
+        let os_strem = ios_stream.output_stream();
+        os_strem
+            .splice(
+                &stream,
+                OutputStreamSpliceFlags::NONE,
+                None::<&gio::Cancellable>,
+            )
+            .unwrap();
+
+        Ok(tmp_path)
+    }
+
+    #[cfg(not(feature = "flatpak"))]
+    Ok(src_path)
 }
 
 async fn install_edit_file(
@@ -269,5 +328,44 @@ fn ouput_to_screen(x: std::process::Output) {
         for l in String::from_utf8_lossy(&x.stderr).lines() {
             warn!("{l}");
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::path::PathBuf;
+
+    use crate::install::gio::prelude::FileExt;
+    use gio::OutputStreamSpliceFlags;
+    use gio::ResourceLookupFlags;
+    use gio::prelude::IOStreamExt;
+    use gio::prelude::OutputStreamExt;
+    use log::info;
+    use test_base::init_logs;
+
+    #[test]
+    fn test_getresource_data() {
+        init_logs();
+        gio::resources_register_include!("sysd-manager-proxy.gresource").unwrap();
+
+        let stream = gio::functions::resources_open_stream(
+            "/io/github/plrigaux/sysd-manager/io.github.plrigaux.SysDManager.conf",
+            ResourceLookupFlags::NONE,
+        )
+        .unwrap();
+
+        let path = PathBuf::from("XXXXXXvalue.txt");
+        let (file, ios_stream) = gio::File::new_tmp(Some(&path)).unwrap();
+
+        info!("fp {:?}", file.path());
+
+        let os_strem = ios_stream.output_stream();
+        os_strem
+            .splice(
+                &stream,
+                OutputStreamSpliceFlags::NONE,
+                None::<&gio::Cancellable>,
+            )
+            .unwrap();
     }
 }
