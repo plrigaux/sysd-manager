@@ -14,7 +14,7 @@ use std::env;
 
 use adw::prelude::AdwApplicationExt;
 use base::RunMode;
-use clap::{Parser, command};
+use clap::{Parser, Subcommand, command};
 
 use gettextrs::gettext;
 use gio::glib::translate::FromGlib;
@@ -46,16 +46,32 @@ fn main() -> glib::ExitCode {
     let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
     tracing_subscriber::fmt().with_timer(timer).init();
 
-    let (unit, test, level, run_mode) = handle_args();
+    let (unit, command, level, run_mode) = handle_args();
 
-    if let Some(test) = test {
-        info!("End test");
+    match command {
+        Some(Command::Test { test }) => {
+            info!("End test");
 
-        systemd::runtime().block_on(async move {
-            systemd::test(&test, level).await;
-        });
+            systemd::runtime().block_on(async move {
+                systemd::test(&test, level).await;
+            });
 
-        return gtk::glib::ExitCode::SUCCESS;
+            return gtk::glib::ExitCode::SUCCESS;
+        }
+
+        Some(Command::Install) => {
+            info!("Install");
+
+            return gtk::glib::ExitCode::SUCCESS;
+        }
+
+        #[cfg(feature = "flatpak")]
+        Some(Command::Proxy) => {
+            info!("Install");
+
+            return gtk::glib::ExitCode::SUCCESS;
+        }
+        None => {}
     }
 
     info!("LANGUAGE {:?}", env::var("LANGUAGE"));
@@ -221,10 +237,6 @@ struct Args {
     #[arg(short, long)]
     system: bool,
 
-    /// Test some api call
-    #[arg(short, long)]
-    test: Option<String>,
-
     /// Development mode (uses dev proxy service)
     #[arg(short, long, default_value_t = false)]
     dev: bool,
@@ -232,14 +244,32 @@ struct Args {
     /// Normal mode (uses normal proxy service)
     #[arg(short, long, default_value_t = false)]
     normal: bool,
+
+    #[command(subcommand)]
+    command: Option<Command>,
 }
 
-fn handle_args() -> (Option<UnitInfo>, Option<String>, UnitDBusLevel, RunMode) {
+/// Doc comment
+#[derive(Subcommand, Debug, Clone, PartialEq)]
+enum Command {
+    /// Install Flatpak
+    Install,
+
+    /// Test some api call
+    Test {
+        #[arg( default_value_t = ("null").to_string())]
+        test: String,
+    },
+
+    /// Run has proxy
+    #[cfg(feature = "flatpak")]
+    Proxy,
+}
+
+fn handle_args() -> (Option<UnitInfo>, Option<Command>, UnitDBusLevel, RunMode) {
     let args = Args::parse();
 
     let run_mode = RunMode::from_flags(args.dev, args.normal);
-
-    let test = args.test;
 
     let current_level = PREFERENCES.dbus_level();
 
@@ -260,11 +290,11 @@ fn handle_args() -> (Option<UnitInfo>, Option<String>, UnitDBusLevel, RunMode) {
     }
 
     let Some(unit_name) = args.unit else {
-        return (None, test, unit_level, run_mode);
+        return (None, args.command, unit_level, run_mode);
     };
 
     match systemd::fetch_unit(unit_level, &unit_name) {
-        Ok(unit) => (Some(unit), test, unit_level, run_mode),
+        Ok(unit) => (Some(unit), args.command, unit_level, run_mode),
         Err(e) => {
             warn!("Cli unit: {e:?}");
             (None, None, unit_level, run_mode)

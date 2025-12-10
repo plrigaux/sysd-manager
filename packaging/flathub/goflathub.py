@@ -328,6 +328,10 @@ def set_required_files(from_git: bool):
             "sysd-manager-comcontroler",
             "transtools",
             "tiny_daemon",
+            "sysd-manager-proxy",
+            "sysd-manager-comcontroler", 
+            "sysd-manager-test-base", 
+            "sysd-manager-base",            
             f"{FLATPACK_BUILD_DIR}",
         ]
     )
