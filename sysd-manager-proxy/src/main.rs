@@ -2,13 +2,11 @@ mod install;
 use base::{RunMode, consts::*};
 use clap::{Parser, Subcommand};
 
-use std::{error::Error, future::pending};
-use sysd_manager_proxy_lib::init_connection;
+use std::error::Error;
+use sysd_manager_proxy_lib::{init_tracing, serve_proxy};
 
 use futures_util::stream::TryStreamExt;
-use sysd_manager_proxy_lib::init_authority;
-use tracing::{Level, debug, error, info};
-use tracing_subscriber::fmt;
+use tracing::{debug, error, info};
 use zbus::Connection;
 
 /// General purpose greet/farewell messaging.
@@ -38,15 +36,7 @@ enum CommandArg {
 // Although we use `tokio` here, you can use any async runtime of choice.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let timer = fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
-    //let timer = fmt::time::ChronoLocal::rfc_3339();
-
-    tracing_subscriber::fmt()
-        .with_timer(timer)
-        .with_max_level(Level::DEBUG)
-        .with_line_number(true)
-        .init();
-    //tracing_subscriber::fmt().init();
+    init_tracing();
 
     debug!("Args {:?}", std::env::args_os());
     let args = Args::parse();
@@ -70,16 +60,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Err(error) = result {
         error!("{:?}", error);
     }
-
-    Ok(())
-}
-
-async fn serve_proxy(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
-    init_authority().await?;
-    init_connection(run_mode).await?;
-
-    // Do other things or go to wait forever
-    pending::<()>().await;
 
     Ok(())
 }

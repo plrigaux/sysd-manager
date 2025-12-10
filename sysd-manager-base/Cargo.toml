@@ -7,6 +7,10 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[features]
+default = []
+flatpak = []
+
 [dependencies]
 constcat.workspace = true
 gettext-rs.workspace = true

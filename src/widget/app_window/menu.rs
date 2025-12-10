@@ -1,5 +1,6 @@
 use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
+use base::consts::APP_ID;
 use gettextrs::gettext;
 use gtk::glib;
 use gtk::prelude::*;
@@ -11,7 +12,6 @@ use log::warn;
 use crate::analyze::build_analyze_window;
 use crate::consts::ACTION_DAEMON_RELOAD;
 use crate::systemd;
-use crate::systemd_gui::APP_ID;
 use crate::widget::app_window::AppWindow;
 use crate::widget::info_window;
 use crate::widget::preferences::PreferencesDialog;

@@ -6,6 +6,8 @@ extern crate systemd;
 mod analyze;
 mod consts;
 mod errors;
+#[cfg(feature = "flatpak")]
+mod flatpak;
 mod systemd_gui;
 mod utils;
 mod widget;
@@ -13,7 +15,7 @@ mod widget;
 use std::env;
 
 use adw::prelude::AdwApplicationExt;
-use base::RunMode;
+use base::{RunMode, consts::APP_ID};
 use clap::{Parser, Subcommand, command};
 
 use gettextrs::gettext;
@@ -29,7 +31,7 @@ use base::enums::UnitDBusLevel;
 use dotenv::dotenv;
 use log::{debug, info, warn};
 use systemd::data::UnitInfo;
-use systemd_gui::{APP_ID, new_settings};
+use systemd_gui::new_settings;
 use widget::{
     app_window::{AppWindow, menu},
     preferences::{
@@ -59,16 +61,17 @@ fn main() -> glib::ExitCode {
             return gtk::glib::ExitCode::SUCCESS;
         }
 
+        #[cfg(feature = "flatpak")]
         Some(Command::Install) => {
             info!("Install");
-
+            flatpak::install_flatpak_proxy();
             return gtk::glib::ExitCode::SUCCESS;
         }
 
         #[cfg(feature = "flatpak")]
         Some(Command::Proxy) => {
             info!("Install");
-
+            flatpak::run_flatpak_proxy();
             return gtk::glib::ExitCode::SUCCESS;
         }
         None => {}
@@ -252,7 +255,8 @@ struct Args {
 /// Doc comment
 #[derive(Subcommand, Debug, Clone, PartialEq)]
 enum Command {
-    /// Install Flatpak
+    /// Install Flatpak proxy files
+    #[cfg(feature = "flatpak")]
     Install,
 
     /// Test some api call
@@ -261,7 +265,7 @@ enum Command {
         test: String,
     },
 
-    /// Run has proxy
+    /// Run has proxy (used in flatpak distrubution)
     #[cfg(feature = "flatpak")]
     Proxy,
 }

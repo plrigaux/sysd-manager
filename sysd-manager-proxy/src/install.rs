@@ -8,8 +8,6 @@ use tracing::{debug, error, info, warn};
 const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
 const SERVICE_DIR: &str = "/usr/lib/systemd/system";
-const BIN_DIR: &str = "/usr/bin";
-const BIN_NAME: &str = "sysd-manager-proxy";
 
 pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("Install proxy mode {:?}", run_mode);
@@ -70,21 +68,34 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 
     install_edit_file(&map, dst).await?;
 
+    info!("Installing Polkit Policy");
     let src = src_data.join("io.github.plrigaux.SysDManager.policy");
     let dst = PathBuf::from(ACTION_DIR);
     install_file(&src, &dst, true).await?;
 
+    info!("Installing Service");
     let src = src_data.join("sysd-manager-proxy.service");
-    let mut dst = PathBuf::from(SERVICE_DIR).join(service_id);
-    dst.add_extension("service");
+    let mut service_file_path = PathBuf::from(SERVICE_DIR).join(service_id);
+    service_file_path.add_extension("service");
 
-    install_file(&src, &dst, false).await?;
+    install_file(&src, &service_file_path, false).await?;
 
     let exec = match run_mode {
         RunMode::Normal => {
-            let dst = PathBuf::from(BIN_DIR).join(BIN_NAME);
-            let s = dst.to_string_lossy();
-            s.into_owned()
+            //  cmd = ["flatpak", "run", APP_ID]
+            #[cfg(feature = "flatpak")]
+            {
+                format!("/usr/bin/flatpak run {} proxy", APP_ID)
+            }
+
+            #[cfg(not(feature = "flatpak"))]
+            {
+                const BIN_DIR: &str = "/usr/bin";
+                const BIN_NAME: &str = "sysd-manager-proxy";
+                let dst = PathBuf::from(BIN_DIR).join(BIN_NAME);
+                let s = dst.to_string_lossy();
+                s.into_owned()
+            }
         }
         RunMode::Development => {
             let exec = std::env::current_exe().expect("supposed to exist");
@@ -100,7 +111,7 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     map.insert("EXECUTABLE", &exec);
     map.insert("SERVICE_ID", service_id);
 
-    install_edit_file(&map, dst).await?;
+    install_edit_file(&map, service_file_path).await?;
 
     Ok(())
 }

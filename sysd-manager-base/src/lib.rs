@@ -16,7 +16,11 @@ pub enum RunMode {
 
 impl RunMode {
     pub fn from_flags(dev: bool, normal: bool) -> Self {
+        #[cfg(not(feature = "flatpak"))]
         let cargo_in_use = env::var("CARGO");
+
+        #[cfg(feature = "flatpak")]
+        let cargo_in_use: Result<String, env::VarError> = Ok("flatpack".to_string());
 
         match (dev, normal, cargo_in_use) {
             (true, true, _) => RunMode::Both,
