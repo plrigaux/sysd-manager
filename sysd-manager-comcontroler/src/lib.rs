@@ -310,12 +310,13 @@ fn file_open_get_content(
     let file_path = flatpak_host_file_path(file_path);
 
     info!(
-        "Fetching file content Unit: {} File: {file_path}",
-        unit_primary_name
+        "Fetching file content Unit: {} File: {}",
+        unit_primary_name,
+        file_path.display()
     );
 
-    let mut file = File::open(file_path.as_ref()).map_err(|e| {
-        warn!("Can't open file \"{file_path}\", reason: {e}");
+    let mut file = File::open(&file_path).map_err(|e| {
+        warn!("Can't open file \"{}\", reason: {e}", file_path.display());
         SystemdErrors::IoError(e)
     })?;
 
@@ -428,7 +429,7 @@ pub fn commander_output(
 
 pub fn generate_file_uri(file_path: &str) -> String {
     let flatpak_host_file_path = flatpak_host_file_path(file_path);
-    format!("file://{flatpak_host_file_path}")
+    format!("file://{}", flatpak_host_file_path.display())
 }
 
 pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {

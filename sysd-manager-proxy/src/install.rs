@@ -108,7 +108,7 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("Installing Service");
 
     let src = source_path(&base_path, SERVICE_FILE)?;
-    let mut service_file_path = PathBuf::from(SERVICE_DIR).join(service_id);
+    let mut service_file_path = PathBuf::from_iter([SERVICE_DIR, service_id].iter());
     service_file_path.add_extension("service");
 
     install_file(&src, &service_file_path, false).await?;
@@ -125,9 +125,7 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
             {
                 const BIN_DIR: &str = "/usr/bin";
                 const BIN_NAME: &str = "sysd-manager-proxy";
-                let dst = PathBuf::from(BIN_DIR).join(BIN_NAME);
-                let s = dst.to_string_lossy();
-                s.into_owned()
+                String::from_iter([BIN_DIR, "/", BIN_NAME])
             }
         }
         RunMode::Development => {
@@ -380,5 +378,14 @@ mod test {
                 None::<&gio::Cancellable>,
             )
             .unwrap();
+    }
+
+    #[test]
+    fn test_string() {
+        let k = "A";
+        let v = "B";
+        let x = format!(r#"s/{{{k}}}/{}/"#, v.replace("/", r"\/"));
+
+        assert_eq!(x, "s/{A}/B/")
     }
 }

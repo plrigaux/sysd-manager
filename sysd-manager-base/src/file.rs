@@ -3,7 +3,6 @@ use std::ffi::OsStr;
 #[cfg(feature = "flatpak")]
 use std::ffi::OsStr;
 use std::{
-    borrow::Cow,
     error::Error,
     io,
     path::{Path, PathBuf},
@@ -207,17 +206,17 @@ pub fn test_flatpak_spawn() -> Result<(), io::Error> {
 
 /// To be able to acces the Flatpack mounted files.
 /// Limit to /usr for the least access principle
-pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
+pub fn flatpak_host_file_path(file_path: &str) -> PathBuf {
     #[cfg(feature = "flatpak")]
     {
         let in_flatpack = std::env::var("FLATPAK_ID").is_ok();
         if in_flatpack && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
-            Cow::from(format!("/run/host{file_path}"))
+            PathBuf::from_iter(["/run/host", file_path])
         } else {
-            Cow::from(file_path)
+            PathBuf::from(file_path)
         }
     }
 
     #[cfg(not(feature = "flatpak"))]
-    Cow::from(file_path)
+    PathBuf::from(file_path)
 }

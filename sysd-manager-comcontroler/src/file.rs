@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::{borrow::Cow, io::ErrorKind, process::Stdio};
 
 use crate::{commander, errors::SystemdErrors};
@@ -22,7 +23,7 @@ pub(crate) async fn create_drop_in(
 
 pub async fn save_text_to_file(file_path: &str, text: &str) -> Result<u64, SystemdErrors> {
     let host_file_path = flatpak_host_file_path(file_path);
-    info!("Try to save content on File: {host_file_path}");
+    info!("Try to save content on File: {}", host_file_path.display());
     match write_on_disk(text, &host_file_path).await {
         Ok(bytes_written) => Ok(bytes_written as u64),
         Err(error) => {
@@ -30,7 +31,7 @@ pub async fn save_text_to_file(file_path: &str, text: &str) -> Result<u64, Syste
                 match err.kind() {
                     ErrorKind::PermissionDenied => {
                         info!("Some error : {err}, try executing command as another user");
-                        write_with_priviledge(file_path, host_file_path, text).await
+                        write_with_priviledge(file_path, &host_file_path, text).await
                     }
                     _ => {
                         warn!("Unable to open file: {err:?}");
@@ -44,7 +45,7 @@ pub async fn save_text_to_file(file_path: &str, text: &str) -> Result<u64, Syste
     }
 }
 
-async fn write_on_disk(text: &str, file_path: &str) -> Result<usize, SystemdErrors> {
+async fn write_on_disk(text: &str, file_path: &Path) -> Result<usize, SystemdErrors> {
     let mut file = fs::OpenOptions::new()
         .write(true)
         .truncate(true)
@@ -56,13 +57,16 @@ async fn write_on_disk(text: &str, file_path: &str) -> Result<usize, SystemdErro
     file.flush().await?;
 
     let bytes_written = test_bytes.len();
-    info!("{bytes_written} bytes writen on File: {file_path}");
+    info!(
+        "{bytes_written} bytes writen on File: {}",
+        file_path.display()
+    );
     Ok(bytes_written)
 }
 
 async fn write_with_priviledge(
     file_path: &str,
-    _host_file_path: Cow<'_, str>,
+    _host_file_path: &Path,
     text: &str,
 ) -> Result<u64, SystemdErrors> {
     let prog_n_args = args!["pkexec", "tee", "tee", file_path];
