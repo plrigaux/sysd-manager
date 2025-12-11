@@ -7,7 +7,7 @@ pub struct Analyze {
 }
 
 /// Returns the results of `systemd-analyze blame`
-pub fn blame() -> Result<Vec<Analyze>, SystemdErrors> {
+pub async fn blame() -> Result<Vec<Analyze>, SystemdErrors> {
     let cmd = ["systemd-analyze", "blame"];
     let command_output = super::commander_output(&cmd, None)?.stdout;
 

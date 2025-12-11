@@ -1,8 +1,19 @@
-use std::path::Path;
-use std::{error::Error, path::PathBuf};
-
+#[cfg(not(feature = "flatpak"))]
+use std::ffi::OsStr;
+#[cfg(feature = "flatpak")]
+use std::ffi::OsStr;
+use std::{
+    borrow::Cow,
+    error::Error,
+    io,
+    path::{Path, PathBuf},
+};
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
+#[cfg(not(feature = "flatpak"))]
+use tokio::process::Command;
+#[cfg(feature = "flatpak")]
+use tokio::process::Command;
 use tracing::info;
 
 pub fn create_drop_in_path_dir(
@@ -110,4 +121,103 @@ pub async fn save_io(
     let bytes_written = test_bytes.len();
 
     Ok(bytes_written as u64)
+}
+
+#[macro_export]
+macro_rules! args {
+    ($($a:expr),*) => {
+        [
+            $(AsRef::<OsStr>::as_ref(&$a),)*
+        ]
+    }
+}
+
+pub const FLATPAK_SPAWN: &str = "flatpak-spawn";
+
+/*     pub fn args<I, S>(&mut self, args: I) -> &mut Command
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>, */
+
+#[cfg(feature = "flatpak")]
+pub fn commander<I, S>(prog_n_args: I, environment_variables: Option<&[(&str, &str)]>) -> Command
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    let mut cmd = Command::new(FLATPAK_SPAWN);
+    cmd.arg("--host");
+    cmd.args(prog_n_args);
+
+    if let Some(envs) = environment_variables {
+        for env in envs {
+            cmd.arg(format!("--env={}={}", env.0, env.1));
+        }
+    }
+
+    cmd
+}
+
+#[cfg(not(feature = "flatpak"))]
+pub fn commander<I, S>(prog_n_args: I, environment_variables: Option<&[(&str, &str)]>) -> Command
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    let mut it = prog_n_args.into_iter();
+    let mut cmd = Command::new(it.next().unwrap());
+
+    for arg in it {
+        cmd.arg(arg);
+    }
+
+    if let Some(envs) = environment_variables {
+        for env in envs {
+            cmd.env(env.0, env.1);
+        }
+    }
+
+    cmd
+}
+
+pub fn commander_blocking<I, S>(
+    prog_n_args: I,
+    environment_variables: Option<&[(&str, &str)]>,
+) -> std::process::Command
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    commander(prog_n_args, environment_variables).into_std()
+}
+
+pub fn test_flatpak_spawn() -> Result<(), io::Error> {
+    #[cfg(feature = "flatpak")]
+    {
+        info!("test_flatpak_spawn");
+        std::process::Command::new(FLATPAK_SPAWN)
+            .arg("--help")
+            .output()
+            .map(|_o| ())
+    }
+
+    #[cfg(not(feature = "flatpak"))]
+    Ok(())
+}
+
+/// To be able to acces the Flatpack mounted files.
+/// Limit to /usr for the least access principle
+pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
+    #[cfg(feature = "flatpak")]
+    {
+        let in_flatpack = std::env::var("FLATPAK_ID").is_ok();
+        if in_flatpack && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
+            Cow::from(format!("/run/host{file_path}"))
+        } else {
+            Cow::from(file_path)
+        }
+    }
+
+    #[cfg(not(feature = "flatpak"))]
+    Cow::from(file_path)
 }

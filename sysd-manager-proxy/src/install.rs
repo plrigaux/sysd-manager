@@ -5,11 +5,13 @@ use std::{
     collections::BTreeMap,
     env,
     error::Error,
+    ffi::OsStr,
     path::{Path, PathBuf},
 };
 
-use base::{RunMode, consts::*};
+use base::{RunMode, args, consts::*, file::commander};
 
+#[cfg(feature = "flatpak")]
 use gio::{
     OutputStreamSpliceFlags, ResourceLookupFlags,
     prelude::{FileExt, IOStreamExt, OutputStreamExt},
@@ -41,6 +43,10 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "flatpak")]
     if let Err(e) = gio::resources_register_include!("sysd-manager-proxy.gresource") {
         warn!("Failed to register resources. Error: {e:?}");
+    }
+
+    for (key, value) in std::env::vars() {
+        println!("{}: {}", key, value);
     }
 
     if run_mode == RunMode::Both {
@@ -181,15 +187,15 @@ async fn install_edit_file(
 ) -> Result<(), Box<dyn Error + 'static>> {
     info!("Edit file -- {}", dst.display());
 
-    let mut cmd = Command::new("sudo");
-    cmd.arg("sed").arg("-i");
+    let mut command = commander(args!("sudo", "sed", "-i"), None);
 
     for (k, v) in map {
-        cmd.arg("-e");
-        cmd.arg(format!("s/{{{k}}}/{}/", v.replace("/", r"\/")));
+        command.args(args!("-e", format!("s/{{{k}}}/{}/", v.replace("/", r"\/"))));
     }
+    command.arg(dst);
 
-    let output = cmd.arg(dst).output().await?;
+    let output = command.output().await?;
+
     ouput_to_screen(output);
     Ok(())
 }
@@ -226,14 +232,19 @@ async fn install_file_mode(
 
     let dir_arg = if dst_is_dir { "-t" } else { "-T" };
 
-    let output = Command::new("sudo")
-        .arg("install")
-        .arg(format!("-vDm{}", mode))
-        .arg(src)
-        .arg(dir_arg)
-        .arg(dst)
-        .output()
-        .await?;
+    let output = commander(
+        args!(
+            "sudo",
+            "install",
+            format!("-vDm{}", mode),
+            src,
+            dir_arg,
+            dst
+        ),
+        None,
+    )
+    .output()
+    .await?;
     ouput_to_screen(output);
     Ok(())
 }
@@ -346,6 +357,8 @@ mod test {
     #[test]
     fn test_getresource_data() {
         init_logs();
+
+        #[cfg(feature = "flatpak")]
         gio::resources_register_include!("sysd-manager-proxy.gresource").unwrap();
 
         let stream = gio::functions::resources_open_stream(

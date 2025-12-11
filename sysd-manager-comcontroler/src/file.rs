@@ -1,12 +1,12 @@
 use std::{borrow::Cow, io::ErrorKind, process::Stdio};
 
 use crate::{commander, errors::SystemdErrors};
-use base::file::{create_drop_in_io, create_drop_in_path_file};
+use base::args;
+use base::file::{create_drop_in_io, create_drop_in_path_file, flatpak_host_file_path};
 use log::{info, warn};
-use std::io::Write;
+use std::ffi::OsStr;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
-
 pub(crate) async fn create_drop_in(
     runtime: bool,
     unit_name: &str,
@@ -20,17 +20,6 @@ pub(crate) async fn create_drop_in(
     Ok(())
 }
 
-/// To be able to acces the Flatpack mounted files.
-/// Limit to /usr for the least access principle
-pub fn flatpak_host_file_path(file_path: &str) -> Cow<'_, str> {
-    if cfg!(feature = "flatpak") && (file_path.starts_with("/usr") || file_path.starts_with("/etc"))
-    {
-        Cow::from(format!("/run/host{file_path}"))
-    } else {
-        Cow::from(file_path)
-    }
-}
-
 pub async fn save_text_to_file(file_path: &str, text: &str) -> Result<u64, SystemdErrors> {
     let host_file_path = flatpak_host_file_path(file_path);
     info!("Try to save content on File: {host_file_path}");
@@ -41,7 +30,7 @@ pub async fn save_text_to_file(file_path: &str, text: &str) -> Result<u64, Syste
                 match err.kind() {
                     ErrorKind::PermissionDenied => {
                         info!("Some error : {err}, try executing command as another user");
-                        write_with_priviledge(file_path, host_file_path, text)
+                        write_with_priviledge(file_path, host_file_path, text).await
                     }
                     _ => {
                         warn!("Unable to open file: {err:?}");
@@ -71,19 +60,22 @@ async fn write_on_disk(text: &str, file_path: &str) -> Result<usize, SystemdErro
     Ok(bytes_written)
 }
 
-fn write_with_priviledge(
+async fn write_with_priviledge(
     file_path: &str,
     _host_file_path: Cow<'_, str>,
     text: &str,
 ) -> Result<u64, SystemdErrors> {
-    let prog_n_args = &["pkexec", "tee", "tee", file_path];
+    let prog_n_args = args!["pkexec", "tee", "tee", file_path];
     let mut cmd = commander(prog_n_args, None);
+
     let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
-        .map_err(|error| SystemdErrors::create_command_error(&cmd, error))?;
+        .map_err(|error: std::io::Error| {
+            SystemdErrors::create_command_error(cmd.as_std(), error)
+        })?;
 
     let child_stdin = match child.stdin.as_mut() {
         Some(cs) => cs,
@@ -97,14 +89,14 @@ fn write_with_priviledge(
     let bytes = text.as_bytes();
     let bytes_written = bytes.len();
 
-    match child_stdin.write_all(bytes) {
+    match child_stdin.write_all(bytes).await {
         Ok(()) => {
             info!("Write content as root on {file_path}");
         }
         Err(error) => return Err(SystemdErrors::IoError(error)),
     };
 
-    match child.wait() {
+    match child.wait().await {
         Ok(exit_status) => {
             info!("Subprocess exit status: {exit_status:?}");
             if !exit_status.success() {
@@ -122,8 +114,8 @@ fn write_with_priviledge(
                         if cfg!(feature = "flatpak") {
                             let vec = prog_n_args
                                 .iter()
-                                .map(|s| s.to_string())
-                                .collect::<Vec<String>>()
+                                .map(|s| s.to_string_lossy())
+                                .collect::<Vec<Cow<'_, str>>>()
                                 .join(" ");
                             SystemdErrors::CmdNoFreedesktopFlatpakPermission(
                                 Some(vec),

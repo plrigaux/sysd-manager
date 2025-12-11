@@ -152,7 +152,7 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
         let stack = stack.clone();
 
         glib::spawn_future_local(async move {
-            let units_rep = gio::spawn_blocking(move || match analyze::blame() {
+            let units_rep = gio::spawn_blocking(async move || match analyze::blame().await {
                 Ok(units) => Ok(units),
                 Err(error) => {
                     warn!("Analyse blame Error {error:?}");
@@ -165,7 +165,7 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
             list_store.remove_all();
             let mut time_full = 0;
 
-            match units_rep {
+            match units_rep.await {
                 Ok(units) => {
                     for value in units {
                         time_full = value.time;

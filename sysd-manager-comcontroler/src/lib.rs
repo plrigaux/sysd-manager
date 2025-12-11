@@ -14,14 +14,13 @@ use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
     fs::File,
     io::Read,
-    process::Command,
     sync::OnceLock,
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
-    file::{flatpak_host_file_path, save_text_to_file},
+    file::save_text_to_file,
     journal_data::Boot,
     sysdbus::{
         dbus_proxies::{systemd_manager, systemd_manager_async},
@@ -29,7 +28,12 @@ use crate::{
     },
     time_handling::TimestampStyle,
 };
-use base::{RunMode, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    RunMode,
+    enums::UnitDBusLevel,
+    file::{commander, commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
+    proxy::DisEnAbleUnitFiles,
+};
 use data::{UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
@@ -83,8 +87,6 @@ impl UpdatedUnitInfo {
         }
     }
 }
-
-const FLATPAK_SPAWN: &str = "flatpak-spawn";
 
 pub fn runtime() -> &'static Runtime {
     static RUNTIME: OnceLock<Runtime> = OnceLock::new();
@@ -385,7 +387,7 @@ pub fn commander_output(
     prog_n_args: &[&str],
     environment_variables: Option<&[(&str, &str)]>,
 ) -> Result<std::process::Output, SystemdErrors> {
-    match commander(prog_n_args, environment_variables).output() {
+    match commander_blocking(prog_n_args, environment_variables).output() {
         Ok(output) => {
             if cfg!(feature = "flatpak") {
                 info!("Journal status: {}", output.status);
@@ -410,45 +412,18 @@ pub fn commander_output(
             }
             Ok(output)
         }
-        Err(err) => match test_flatpak_spawn() {
-            Ok(()) => Err(SystemdErrors::IoError(err)),
-            Err(e1) => Err(e1),
-        },
-    }
-}
+        Err(err) => {
+            error!("commander_output {err}");
 
-#[cfg(feature = "flatpak")]
-pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
-    let mut cmd = Command::new(FLATPAK_SPAWN);
-    cmd.arg("--host");
-    for v in prog_n_args {
-        cmd.arg(v);
-    }
-
-    if let Some(envs) = environment_variables {
-        for env in envs {
-            cmd.arg(format!("--env={}={}", env.0, env.1));
+            match test_flatpak_spawn() {
+                Ok(()) => Err(SystemdErrors::IoError(err)),
+                Err(e1) => {
+                    error!("commander_output e1 {e1}");
+                    Err(SystemdErrors::CmdNoFlatpakSpawn)
+                }
+            }
         }
     }
-
-    cmd
-}
-
-#[cfg(not(feature = "flatpak"))]
-pub fn commander(prog_n_args: &[&str], environment_variables: Option<&[(&str, &str)]>) -> Command {
-    let mut cmd = Command::new(prog_n_args[0]);
-
-    for arg in prog_n_args.iter().skip(1) {
-        cmd.arg(arg);
-    }
-
-    if let Some(envs) = environment_variables {
-        for env in envs {
-            cmd.env(env.0, env.1);
-        }
-    }
-
-    cmd
 }
 
 pub fn generate_file_uri(file_path: &str) -> String {
@@ -616,33 +591,6 @@ pub fn link_unit_files(
     force: bool,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     sysdbus::link_unit_files(dbus_level, &[unit_file], runtime, force)
-}
-
-pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
-    if cfg!(feature = "flatpak") {
-        return Ok(());
-    }
-
-    info!("test_flatpak_spawn");
-    match Command::new(FLATPAK_SPAWN).arg("--help").output() {
-        Ok(_output) => {}
-        Err(_err) => {
-            /*
-             let message = "Program flatpack-spawn needed!";
-             warn!("{message}");
-             let message_detail = "The program flatpack-spawn is needed if you use the application from Flatpack. Please install it to enable all features";
-             warn!("{message_detail}");
-
-            let alert = gtk::AlertDialog::builder()
-                 .message(message)
-                 .detail(message_detail)
-                 .build();
-
-             alert.show(None::<&gtk::Window>); */
-            return Err(SystemdErrors::CmdNoFlatpakSpawn);
-        }
-    }
-    Ok(())
 }
 
 pub fn reload_all_units() -> Result<(), SystemdErrors> {
