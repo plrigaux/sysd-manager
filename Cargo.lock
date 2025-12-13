@@ -1932,6 +1932,7 @@ dependencies = [
  "libc",
  "serde",
  "strum",
+ "sysd-manager-test-base",
  "tokio",
  "tracing",
  "tracing-journald",

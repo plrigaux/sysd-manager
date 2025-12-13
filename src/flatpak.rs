@@ -13,7 +13,7 @@ pub(super) fn install_flatpak_proxy() {
 pub(super) fn run_flatpak_proxy() {
     runtime().block_on(async {
         if let Err(err) = serve_proxy(base::RunMode::Normal).await {
-            error!("Installation error: {err:?}")
+            error!("Sysd Manager Proxy error: {err:?}")
         }
     });
 }

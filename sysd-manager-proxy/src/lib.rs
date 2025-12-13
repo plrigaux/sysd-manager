@@ -14,6 +14,7 @@ static AUTHORITY: OnceLock<AuthorityProxy> = OnceLock::new();
 static CONNECTION: OnceLock<Connection> = OnceLock::new();
 
 pub async fn init_authority() -> Result<(), zbus::Error> {
+    info!("Init Proxy Authority");
     let connection = Connection::system().await?;
     let proxy = AuthorityProxy::new(&connection).await?;
 

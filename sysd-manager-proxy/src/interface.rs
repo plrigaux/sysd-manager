@@ -169,6 +169,8 @@ impl SysDManagerProxy {
 static CONNECTION: OnceLock<Connection> = OnceLock::new();
 
 pub async fn init_serve_connection(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
+    info!("Init Proxy");
+
     let proxy = SysDManagerProxy::new()?;
 
     let id = unsafe { libc::getegid() };
@@ -176,6 +178,8 @@ pub async fn init_serve_connection(run_mode: RunMode) -> Result<(), Box<dyn Erro
 
     let default_name = if run_mode == RunMode::Development {
         DBUS_NAME_DEV
+    } else if cfg!(feature = "flatpak") {
+        DBUS_NAME_FLATPAK
     } else {
         DBUS_NAME
     };

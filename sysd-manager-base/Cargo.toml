@@ -23,3 +23,7 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-journald.workspace = true
 zvariant.workspace = true
+
+
+[dev-dependencies]
+test-base.workspace = true

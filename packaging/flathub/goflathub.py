@@ -315,6 +315,7 @@ def set_required_files(from_git: bool):
     bcommon.cmd_run(
         [
             "cp",
+           # "-u",
             "-r",
             "Cargo.toml",
             CARGO_LOCK,
@@ -329,13 +330,13 @@ def set_required_files(from_git: bool):
             "transtools",
             "tiny_daemon",
             "sysd-manager-proxy",
-            "sysd-manager-comcontroler", 
-            "sysd-manager-test-base", 
-            "sysd-manager-base",            
+            "sysd-manager-comcontroler",
+            "sysd-manager-test-base",
+            "sysd-manager-base",
             f"{FLATPACK_BUILD_DIR}",
         ]
     )
-    
+
     """     ln("src")
     ln("data")
     ln("screenshots")

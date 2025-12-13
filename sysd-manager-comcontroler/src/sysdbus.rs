@@ -90,12 +90,12 @@ struct RunContext {
 }
 
 impl RunContext {
-    fn path_destination(&self) -> &'static str {
-        if self.run_mode == RunMode::Development {
-            DBUS_NAME_DEV
-        } else {
-            DBUS_NAME
-        }
+    fn destination_address(&self) -> &str {
+        self.run_mode.bus_name()
+    }
+
+    fn proxy_service_name(&self) -> String {
+        self.run_mode.proxy_service_name()
     }
 }
 
@@ -163,18 +163,9 @@ pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
 }
 
 pub fn proxy_service_name() -> Option<String> {
-    if let Some(context) = RUN_CONTEXT.get() {
-        let unit_name = if context.run_mode == RunMode::Development {
-            PROXY_SERVICE_DEV
-        } else {
-            PROXY_SERVICE
-        };
-
-        let unit_name = format!("{}.service", unit_name);
-        Some(unit_name)
-    } else {
-        None
-    }
+    RUN_CONTEXT
+        .get()
+        .map(|context| context.proxy_service_name())
 }
 
 pub fn shut_down() {

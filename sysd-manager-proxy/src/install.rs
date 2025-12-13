@@ -1,4 +1,4 @@
-//#[cfg(feature = "flatpak")]
+#[cfg(feature = "flatpak")]
 extern crate gio;
 
 use std::{
@@ -9,7 +9,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use base::{RunMode, args, consts::*, file::commander};
+use base::{
+    RunMode, args,
+    consts::*,
+    file::{commander, flatpak_host_file_path},
+};
 
 #[cfg(feature = "flatpak")]
 use gio::{
@@ -68,57 +72,36 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 
     info!("The base directory is {}", normalized_path.display());
 
-    let (bus_name, interface, destination, service_id) = if run_mode == RunMode::Development {
-        (
-            DBUS_NAME_DEV,
-            DBUS_INTERFACE,
-            DBUS_DESTINATION_DEV,
-            PROXY_SERVICE_DEV,
-        )
+    let (interface, destination) = if run_mode == RunMode::Development {
+        (DBUS_INTERFACE, DBUS_DESTINATION_DEV)
     } else {
-        (DBUS_NAME, DBUS_INTERFACE, DBUS_DESTINATION, PROXY_SERVICE)
+        (DBUS_INTERFACE, DBUS_DESTINATION)
     };
 
     let base_path = if cfg!(feature = "flatpak") {
         PathBuf::from("/io/github/plrigaux/sysd-manager")
     } else {
-        let src_sysd_path = normalized_path.join("sysd-manager-proxy");
-        src_sysd_path.join("data")
+        let mut src_sysd_path = normalized_path.join("sysd-manager-proxy");
+        src_sysd_path.push("data");
+        src_sysd_path
     };
-
-    let src = source_path(&base_path, DBUSCONF_FILE)?;
-    let mut dst = PathBuf::from(SYSTEMD_DIR).join(bus_name);
-    dst.add_extension("conf");
-    install_file(&src, &dst, false).await?;
 
     let mut map = BTreeMap::new();
 
-    map.insert("BUS_NAME", bus_name);
+    map.insert("BUS_NAME", run_mode.bus_name());
     map.insert("DESTINATION", destination);
     map.insert("INTERFACE", interface);
     map.insert("ENVIRONMENT", "");
-
-    install_edit_file(&map, dst).await?;
-
-    info!("Installing Polkit Policy");
-    let src = source_path(&base_path, POLICY_FILE)?;
-    let dst = PathBuf::from(ACTION_DIR);
-    install_file(&src, &dst, true).await?;
-
-    info!("Installing Service");
-
-    let src = source_path(&base_path, SERVICE_FILE)?;
-    let mut service_file_path = PathBuf::from_iter([SERVICE_DIR, service_id].iter());
-    service_file_path.add_extension("service");
-
-    install_file(&src, &service_file_path, false).await?;
 
     let exec = match run_mode {
         RunMode::Normal => {
             //  cmd = ["flatpak", "run", APP_ID]
             #[cfg(feature = "flatpak")]
             {
-                format!("/usr/bin/flatpak run {} proxy", APP_ID)
+                format!(
+                    "/usr/bin/flatpak --system-talk-name=org.freedesktop.PolicyKit1 --system-own-name={} run {} proxy",
+                    DBUS_NAME_FLATPAK, APP_ID
+                )
             }
 
             #[cfg(not(feature = "flatpak"))]
@@ -139,11 +122,44 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
         }
     };
 
+    let src = source_path(&base_path, DBUSCONF_FILE)?;
+    let mut dst = PathBuf::from_iter(args!(
+        flatpak_host_file_path(SYSTEMD_DIR),
+        run_mode.bus_name()
+    ));
+    dst.add_extension("conf");
+
+    let mut content = String::new();
+    install_file(&src, &dst, false, &mut content).await?;
+    install_edit_file(&map, dst, &mut content).await?;
+
+    info!("Installing Polkit Policy");
+    let src = source_path(&base_path, POLICY_FILE)?;
+    let dst = flatpak_host_file_path(ACTION_DIR);
+    install_file(&src, &dst, true, &mut content).await?;
+
+    info!("Installing Service");
+
+    let src = source_path(&base_path, SERVICE_FILE)?;
+    let service_file_path = PathBuf::from_iter(args![
+        flatpak_host_file_path(SERVICE_DIR),
+        run_mode.proxy_service_name()
+    ]);
+
     map.insert("EXECUTABLE", &exec);
-    map.insert("SERVICE_ID", service_id);
+    map.insert("SERVICE_ID", run_mode.proxy_service_id());
+    install_file(&src, &service_file_path, false, &mut content).await?;
+    install_edit_file(&map, service_file_path, &mut content).await?;
 
-    install_edit_file(&map, service_file_path).await?;
+    let script_file = create_script(&content).await?;
 
+    content.push_str("echo End of script");
+
+    let output = commander(args!(sudo(), "sh", script_file), None)
+        .output()
+        .await?;
+
+    ouput_to_screen(output);
     Ok(())
 }
 
@@ -152,6 +168,8 @@ fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Err
 
     #[cfg(feature = "flatpak")]
     {
+        use base::file::inside_flatpak;
+
         let stream = gio::functions::resources_open_stream(
             &src_path.to_string_lossy(),
             ResourceLookupFlags::NONE,
@@ -160,7 +178,7 @@ fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Err
         let path = PathBuf::from(format!("XXXXXX{}", POLICY_FILE));
         let (file, ios_stream) = gio::File::new_tmp(Some(&path)).unwrap();
 
-        let tmp_path = file.path().ok_or(Box::<dyn Error>::from("No file path"))?;
+        let mut tmp_path = file.path().ok_or(Box::<dyn Error>::from("No file path"))?;
         info!("temp file path {:?}", tmp_path);
 
         let os_strem = ios_stream.output_stream();
@@ -172,6 +190,22 @@ fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Err
             )
             .unwrap();
 
+        /*         /run/user/1000/.flatpak/io.github.plrigaux.sysd-manager/tmp
+        /run/user/USERID/.flatpak/FLATPAK_ID/tmp/ */
+
+        if inside_flatpak()
+            && let Ok(run_time_dir) = env::var("XDG_RUNTIME_DIR")
+            && let Ok(flatpak_id) = env::var("FLATPAK_ID")
+        {
+            tmp_path = PathBuf::from_iter(args![
+                run_time_dir,
+                ".flatpak",
+                flatpak_id,
+                tmp_path.strip_prefix("/").expect("tmp_path not empty")
+            ]);
+            debug!("flatpack tmp dir {}", tmp_path.display());
+        }
+
         Ok(tmp_path)
     }
 
@@ -182,44 +216,62 @@ fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Err
 async fn install_edit_file(
     map: &BTreeMap<&str, &str>,
     dst: PathBuf,
+    content: &mut String,
 ) -> Result<(), Box<dyn Error + 'static>> {
     info!("Edit file -- {}", dst.display());
 
-    let mut command = commander(args!("sudo", "sed", "-i"), None);
+    let mut s = vec!["sed".to_string(), "-i".to_string()];
+
+    //let mut command = commander(args!(sudo(), "sed", "-i"), None);
 
     for (k, v) in map {
-        command.args(args!("-e", format!("s/{{{k}}}/{}/", v.replace("/", r"\/"))));
+        s.push("-e".to_string());
+        s.push(format!(
+            "s/{{{k}}}/{}/",
+            v.replace("/", r"\\/").replace(" ", r"\ ")
+        ));
+        // command.args(args!("-e", );
     }
-    command.arg(dst);
+    s.push(dst.to_string_lossy().to_string());
 
-    let output = command.output().await?;
+    //command.arg(dst);
 
-    ouput_to_screen(output);
+    content.push_str(&s.join(" "));
+    content.push('\n');
+    /*  let output = command.output().await?;
+
+    ouput_to_screen(output); */
     Ok(())
 }
 
 async fn install_file(
-    src: &PathBuf,
-    dst: &PathBuf,
+    src: &Path,
+    dst: &Path,
     dst_is_dir: bool,
+    content: &mut String,
 ) -> Result<(), Box<dyn Error + 'static>> {
-    install_file_mode(src, dst, dst_is_dir, "644").await
+    install_file_mode(src, dst, dst_is_dir, "644", content).await
 }
 
-#[allow(dead_code)]
-async fn install_file_exec(
-    src: &PathBuf,
-    dst: &PathBuf,
-    dst_is_dir: bool,
-) -> Result<(), Box<dyn Error + 'static>> {
-    install_file_mode(src, dst, dst_is_dir, "755").await
+fn sudo() -> &'static str {
+    #[cfg(feature = "flatpak")]
+    {
+        "pkexec"
+    }
+
+    #[cfg(not(feature = "flatpak"))]
+    {
+        "sudo"
+    }
 }
 
 async fn install_file_mode(
-    src: &PathBuf,
-    dst: &PathBuf,
+    src: &Path,
+    dst: &Path,
     dst_is_dir: bool,
     mode: &str,
+    //  map: Option<&BTreeMap<&str, &str>>,
+    content: &mut String,
 ) -> Result<(), Box<dyn Error + 'static>> {
     info!(
         "Installing {} --> {} with mode {}",
@@ -230,20 +282,41 @@ async fn install_file_mode(
 
     let dir_arg = if dst_is_dir { "-t" } else { "-T" };
 
-    let output = commander(
-        args!(
-            "sudo",
-            "install",
-            format!("-vDm{}", mode),
-            src,
-            dir_arg,
-            dst
-        ),
-        None,
-    )
-    .output()
-    .await?;
-    ouput_to_screen(output);
+    /*     let mut command = commander(
+           args!(
+               sudo(),
+               "install",
+               format!("-vDm{}", mode),
+               src,
+               dir_arg,
+               dst
+           ),
+           None,
+       );
+    */
+    let s = [
+        //     sudo(),
+        "install",
+        &format!("-vDm{}", mode),
+        &src.to_string_lossy(),
+        dir_arg,
+        &dst.to_string_lossy(),
+    ]
+    .join(" ");
+
+    content.push_str(&s);
+    content.push('\n');
+
+    /*     if let Some(map) = map {
+        command.args(["&&", "sed", "-i"]);
+        for (k, v) in map {
+            command.args(args!("-e", format!("s/{{{k}}}/{}/", v.replace("/", r"\/"))));
+        }
+        command.arg(dst);
+    }
+
+    let output = command.output().await?;
+    ouput_to_screen(output); */
     Ok(())
 }
 
@@ -327,15 +400,37 @@ pub async fn clean(_run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn ouput_to_screen(x: std::process::Output) {
-    if x.status.success() {
-        for l in String::from_utf8_lossy(&x.stdout).lines() {
+use tokio::io::AsyncWriteExt;
+async fn create_script(content: &str) -> Result<PathBuf, std::io::Error> {
+    let mut file_path = env::temp_dir();
+
+    file_path.push("sysd-manager-install.sh");
+
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(&file_path)
+        .await?;
+
+    file.write_all(b"#!/bin/bash\n\n").await?;
+
+    file.write_all(content.as_bytes()).await?;
+
+    info!("Script created to {}", file_path.display());
+
+    Ok(file_path)
+}
+
+fn ouput_to_screen(output: std::process::Output) {
+    if output.status.success() {
+        for l in String::from_utf8_lossy(&output.stdout).lines() {
             info!("{l}");
         }
     } else {
-        warn!("Exit code {:?}", x.status.code());
-        for l in String::from_utf8_lossy(&x.stderr).lines() {
-            warn!("{l}");
+        warn!("Exit code {:?}", output.status.code());
+        for line in String::from_utf8_lossy(&output.stderr).lines() {
+            warn!("{line}");
         }
     }
 }

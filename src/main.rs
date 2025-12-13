@@ -70,7 +70,7 @@ fn main() -> glib::ExitCode {
 
         #[cfg(feature = "flatpak")]
         Some(Command::Proxy) => {
-            info!("Install");
+            info!("Proxy");
             flatpak::run_flatpak_proxy();
             return gtk::glib::ExitCode::SUCCESS;
         }

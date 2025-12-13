@@ -1,19 +1,16 @@
-#[cfg(not(feature = "flatpak"))]
-use std::ffi::OsStr;
-#[cfg(feature = "flatpak")]
 use std::ffi::OsStr;
 use std::{
     error::Error,
     io,
     path::{Path, PathBuf},
+    sync::OnceLock,
 };
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
-#[cfg(not(feature = "flatpak"))]
 use tokio::process::Command;
-#[cfg(feature = "flatpak")]
-use tokio::process::Command;
-use tracing::info;
+
+#[allow(unused_imports)]
+use tracing::{error, info, warn};
 
 pub fn create_drop_in_path_dir(
     unit_name: &str,
@@ -131,7 +128,41 @@ macro_rules! args {
     }
 }
 
+#[macro_export]
+macro_rules! vs {
+    ($($a:expr),*) => {
+        [
+            $(AsRef::<String>::as_ref(&$a),)*
+        ]
+    }
+}
+
 pub const FLATPAK_SPAWN: &str = "flatpak-spawn";
+
+pub static INSIDE_FLATPAK: OnceLock<bool> = OnceLock::new();
+
+#[macro_export]
+macro_rules! inside_flatpak {
+    () => {
+        *INSIDE_FLATPAK.get_or_init(|| {
+            #[cfg(not(feature = "flatpak"))]
+            warn!("Not supposed to be called");
+
+            let in_flatpak = std::env::var("FLATPAK_ID").is_ok();
+
+            #[cfg(feature = "flatpak")]
+            if !in_flatpak {
+                warn!("Your run the flatpak compilation, but you aren't running inside a Flatpak");
+            }
+
+            in_flatpak
+        })
+    };
+}
+
+pub fn inside_flatpak() -> bool {
+    inside_flatpak!()
+}
 
 /*     pub fn args<I, S>(&mut self, args: I) -> &mut Command
 where
@@ -144,6 +175,10 @@ where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
+    if !inside_flatpak!() {
+        error!("Command call might not work because you are not running inside a Flatpak")
+    }
+
     let mut cmd = Command::new(FLATPAK_SPAWN);
     cmd.arg("--host");
     cmd.args(prog_n_args);
@@ -209,14 +244,68 @@ pub fn test_flatpak_spawn() -> Result<(), io::Error> {
 pub fn flatpak_host_file_path(file_path: &str) -> PathBuf {
     #[cfg(feature = "flatpak")]
     {
-        let in_flatpack = std::env::var("FLATPAK_ID").is_ok();
-        if in_flatpack && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
+        if inside_flatpak!()
+        //&& (file_path.starts_with("/usr") || file_path.starts_with("/etc"))
+        {
+            let file_path = if let Some(stripped) = file_path.strip_prefix('/') {
+                stripped
+            } else {
+                file_path
+            };
             PathBuf::from_iter(["/run/host", file_path])
         } else {
-            PathBuf::from(file_path)
+            PathBuf::from(&file_path)
         }
     }
 
     #[cfg(not(feature = "flatpak"))]
     PathBuf::from(file_path)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use test_base::init_logs;
+
+    pub fn flatpak_host_file_path_t(file_path: &str) -> PathBuf {
+        let file_path = if let Some(stripped) = file_path.strip_prefix('/') {
+            stripped
+        } else {
+            file_path
+        };
+        PathBuf::from_iter(["/run/host", file_path])
+    }
+
+    pub fn flatpak_host_file_path_t2(file_path: &str) -> PathBuf {
+        PathBuf::from("/run/host").join(file_path)
+    }
+
+    #[test]
+    fn test_fp() {
+        init_logs();
+
+        let src = PathBuf::from("/tmp");
+        let a = flatpak_host_file_path(&src.to_string_lossy());
+        warn!("{} exists {}", a.display(), a.exists());
+        warn!("{} exists {}", src.display(), src.exists());
+    }
+
+    #[test]
+    fn test_fp2() {
+        init_logs();
+
+        let src = PathBuf::from("/tmp");
+        let a = flatpak_host_file_path_t(&src.to_string_lossy());
+        warn!("{} exists {}", a.display(), a.exists());
+        warn!("{} exists {}", src.display(), src.exists());
+
+        let b = flatpak_host_file_path_t("test");
+        warn!("{} exists {}", b.display(), b.exists());
+
+        let b = flatpak_host_file_path_t("/test");
+        warn!("{} exists {}", b.display(), b.exists());
+
+        let b = flatpak_host_file_path_t2("/test");
+        warn!("{} exists {}", b.display(), b.exists());
+    }
 }
