@@ -38,7 +38,7 @@ path = "src/main.rs"
 
 [features]
 default = ["systemd/default"]
-flatpak = ["systemd/flatpak", "sm-proxy/flatpak", "base/flatpak"]
+flatpak = ["systemd/flatpak", "base/flatpak"]
 
 [profile.release]
 lto = true
@@ -92,7 +92,6 @@ libc.workspace = true
 log.workspace = true
 regex.workspace = true
 serde.workspace = true
-sm-proxy = { version = "2.8", path = "./sysd-manager-proxy", package = "sysd-manager-proxy" }
 sourceview5 = "0.10"
 systemd = { version = "0.1", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" , optional = true }
 strum.workspace = true

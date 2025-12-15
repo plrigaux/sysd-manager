@@ -1910,7 +1910,6 @@ dependencies = [
  "strum",
  "sysd-manager-base",
  "sysd-manager-comcontroler",
- "sysd-manager-proxy",
  "sysd-manager-test-base",
  "sysd-manager-translating",
  "tokio",

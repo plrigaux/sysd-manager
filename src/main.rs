@@ -6,8 +6,6 @@ extern crate systemd;
 mod analyze;
 mod consts;
 mod errors;
-#[cfg(feature = "flatpak")]
-mod flatpak;
 mod systemd_gui;
 mod utils;
 mod widget;
@@ -61,19 +59,7 @@ fn main() -> glib::ExitCode {
             return gtk::glib::ExitCode::SUCCESS;
         }
 
-        #[cfg(feature = "flatpak")]
-        Some(Command::Install) => {
-            info!("Install");
-            flatpak::install_flatpak_proxy();
-            return gtk::glib::ExitCode::SUCCESS;
-        }
-
-        #[cfg(feature = "flatpak")]
-        Some(Command::Proxy) => {
-            info!("Proxy");
-            flatpak::run_flatpak_proxy();
-            return gtk::glib::ExitCode::SUCCESS;
-        }
+        Some(_) => {}
         None => {}
     }
 

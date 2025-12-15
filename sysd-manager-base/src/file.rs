@@ -68,18 +68,15 @@ pub async fn create_drop_in_io(
 
     let file_path = PathBuf::from(file_path_str);
 
-    let Some(unit_drop_in_dir) = file_path.parent() else {
-        let err = std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Parent dir of file {:?} is invalid", file_path_str),
-        );
-
-        return Err(err);
-    };
+    let unit_drop_in_dir = file_path.parent().ok_or(std::io::Error::new(
+        std::io::ErrorKind::InvalidData,
+        format!("Parent dir of file {:?} is invalid", file_path_str),
+    ))?;
 
     if !unit_drop_in_dir.exists() {
         info!("Creating dir {}", unit_drop_in_dir.display());
         if user {
+            //TODO ????????????
             fs::create_dir_all(&unit_drop_in_dir).await?;
         } else {
             fs::create_dir(&unit_drop_in_dir).await?;
@@ -245,7 +242,9 @@ pub fn flatpak_host_file_path(file_path: &str) -> PathBuf {
     #[cfg(feature = "flatpak")]
     {
         if inside_flatpak!()
-        //&& (file_path.starts_with("/usr") || file_path.starts_with("/etc"))
+            && (file_path.starts_with("/usr")
+                || file_path.starts_with("/etc")
+                || file_path.starts_with("/run"))
         {
             let file_path = if let Some(stripped) = file_path.strip_prefix('/') {
                 stripped

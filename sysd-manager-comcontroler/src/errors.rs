@@ -27,6 +27,7 @@ pub enum SystemdErrors {
     NoFilePathforUnit(String),
     Malformed(String, String),
     NotAuthorized,
+    NotAuthorizedAuthentificationDismissed,
     NoUnit,
     SystemCtlError(String),
     Tokio,

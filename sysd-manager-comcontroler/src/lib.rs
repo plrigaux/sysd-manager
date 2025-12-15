@@ -22,12 +22,12 @@ use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     file::save_text_to_file,
     journal_data::Boot,
-    sysdbus::{
-        dbus_proxies::{systemd_manager, systemd_manager_async},
-        to_proxy,
-    },
+    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_async},
     time_handling::TimestampStyle,
 };
+
+#[cfg(not(feature = "flatpak"))]
+use crate::sysdbus::to_proxy;
 use base::{
     RunMode,
     enums::UnitDBusLevel,
@@ -476,8 +476,9 @@ pub fn kill_unit(
 }
 
 pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
-    if let Some((level, primary_name)) = params {
-        match level {
+    if let Some((_level, primary_name)) = params {
+        #[cfg(not(feature = "flatpak"))]
+        match _level {
             UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::freeze_unit(&primary_name),
             UnitDBusLevel::UserSession => {
                 let proxy = systemd_manager();
@@ -485,20 +486,35 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
                 Ok(())
             }
         }
+
+        #[cfg(feature = "flatpak")]
+        {
+            let proxy = systemd_manager();
+            proxy.freeze_unit(&primary_name)?;
+            Ok(())
+        }
     } else {
         Err(SystemdErrors::NoUnit)
     }
 }
 
 pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
-    if let Some((level, primary_name)) = params {
-        match level {
+    if let Some((_level, primary_name)) = params {
+        #[cfg(not(feature = "flatpak"))]
+        match _level {
             UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::thaw_unit(&primary_name),
             UnitDBusLevel::UserSession => {
                 let proxy = systemd_manager();
                 proxy.thaw_unit(&primary_name)?;
                 Ok(())
             }
+        }
+
+        #[cfg(feature = "flatpak")]
+        {
+            let proxy = systemd_manager();
+            proxy.thaw_unit(&primary_name)?;
+            Ok(())
         }
     } else {
         Err(SystemdErrors::NoUnit)
@@ -524,7 +540,7 @@ pub fn queue_signal_unit(
 }
 
 pub fn clean_unit(
-    level: UnitDBusLevel,
+    _level: UnitDBusLevel,
     unit_name: &str,
     what: &[String],
 ) -> Result<(), SystemdErrors> {
@@ -540,13 +556,21 @@ pub fn clean_unit(
         what.iter().map(|s| s.as_str()).collect()
     };
 
-    match level {
+    #[cfg(not(feature = "flatpak"))]
+    match _level {
         UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::clean_unit(unit_name, &clean_what),
         UnitDBusLevel::UserSession => {
             let proxy = systemd_manager();
             proxy.clean_unit(unit_name, &clean_what)?;
             Ok(())
         }
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        let proxy = systemd_manager();
+        proxy.clean_unit(unit_name, &clean_what)?;
+        Ok(())
     }
 }
 
@@ -822,19 +846,25 @@ pub async fn fetch_unit_properties(
 }
 
 pub async fn create_drop_in(
-    level: UnitDBusLevel,
+    _level: UnitDBusLevel,
     runtime: bool,
     unit_name: &str,
     file_name: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
-    match level {
+    #[cfg(not(feature = "flatpak"))]
+    match _level {
         UnitDBusLevel::System => {
             to_proxy::create_drop_in(runtime, unit_name, file_name, content).await
         }
         UnitDBusLevel::UserSession | UnitDBusLevel::Both => {
             file::create_drop_in(runtime, unit_name, file_name, content).await
         }
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        file::create_drop_in(runtime, unit_name, file_name, content).await
     }
 }
 
@@ -844,6 +874,8 @@ pub async fn save_file(
     content: &str,
 ) -> Result<u64, SystemdErrors> {
     info!("Saving file {file_path:?}");
+
+    #[cfg(not(feature = "flatpak"))]
     if file_path.starts_with("/usr/lib")
         || file_path.starts_with("/run/lib")
         || file_path.starts_with("/etc/lib")
@@ -852,14 +884,19 @@ pub async fn save_file(
     } else {
         save_text_to_file(file_path, content).await
     }
+
+    #[cfg(feature = "flatpak")]
+    save_text_to_file(file_path, content).await
 }
 
 pub async fn revert_unit_file_full(
-    level: UnitDBusLevel,
+    _level: UnitDBusLevel,
     unit_name: &str,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     info!("Reverting unit file {unit_name:?}");
-    match level {
+
+    #[cfg(not(feature = "flatpak"))]
+    match _level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             to_proxy::revert_unit_files(&[unit_name]).await
         }
@@ -868,5 +905,12 @@ pub async fn revert_unit_file_full(
             let response = proxy.revert_unit_files(&[unit_name]).await?;
             Ok(response)
         }
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        let proxy = systemd_manager_async().await?;
+        let response = proxy.revert_unit_files(&[unit_name]).await?;
+        Ok(response)
     }
 }
