@@ -1,6 +1,7 @@
 use std::{
     cell::{Cell, OnceCell, RefCell},
-    path::PathBuf,
+    ffi::OsStr,
+    path::Path,
 };
 
 use adw::prelude::{AdwDialogExt, AlertDialogExt};
@@ -68,6 +69,12 @@ impl FileNav {
     fn is_file(&self) -> bool {
         !self.is_drop_in
     }
+
+    fn file_stem(&self) -> Option<&str> {
+        Path::new(&self.file_path)
+            .file_stem()
+            .and_then(OsStr::to_str)
+    }
 }
 
 #[derive(Default, gtk::CompositeTemplate)]
@@ -105,7 +112,7 @@ pub struct UnitFilePanelImp {
 
     unit_dependencies_loaded: Cell<bool>,
 
-    all_files: RefCell<Vec<FileNav>>,
+    all_unit_files: RefCell<Vec<FileNav>>,
 
     file_content_selected_index: Cell<u32>,
     //file_displayed: RefCell<Option<String>>,
@@ -148,7 +155,7 @@ impl UnitFilePanelImp {
         let end = buffer.end_iter();
         let text = buffer.text(&start, &end, true);
 
-        let binding = self.all_files.borrow();
+        let binding = self.all_unit_files.borrow();
         let Some(file_nav) = binding
             .get(self.file_content_selected_index.get() as usize)
             .cloned()
@@ -162,13 +169,15 @@ impl UnitFilePanelImp {
         let unit_name = unit.primary();
         let unit_name2 = unit.primary();
         if file_nav.status == UnitFileStatus::Create {
-            let (cleaned_text, file_name) = Self::clean_create_text(&unit.primary(), text.as_str());
+            let (cleaned_text, file_stem) = Self::clean_create_text(&unit.primary(), text.as_str());
 
-            let file_name = if let Some(file_name) = file_name {
-                file_name
+            let file_stem = if let Some(file_stem) = file_stem {
+                file_stem
             } else {
                 DEFAULT_DROP_IN_FILE_NAME.to_owned()
             };
+
+            let unique_drop_in_stem = self.unique_drop_in_stem(&file_stem);
 
             glib::spawn_future_local(async move {
                 let (sender, receiver) = tokio::sync::oneshot::channel();
@@ -177,7 +186,7 @@ impl UnitFilePanelImp {
                         level,
                         file_nav.is_runtime,
                         &unit_name,
-                        &file_name,
+                        &unique_drop_in_stem,
                         &cleaned_text,
                     )
                     .await;
@@ -422,7 +431,7 @@ impl UnitFilePanelImp {
                 self.fill_gui_content(file_content, &file_nav.file_path);
             }
             None => {
-                let all_files = self.all_files.borrow();
+                let all_files = self.all_unit_files.borrow();
 
                 if all_files.is_empty() {
                     self.fill_gui_content(String::new(), "");
@@ -453,11 +462,11 @@ impl UnitFilePanelImp {
     }
 
     fn display_unit_drop_in_file_content(&self, drop_in_index: u32) {
-        let binding = self.all_files.borrow();
+        let binding = self.all_unit_files.borrow();
         let Some(file_nav) = binding.get(drop_in_index as usize) else {
             warn!(
                 "Drop in index out of bound requested: {drop_in_index} max: {}",
-                self.all_files.borrow().len()
+                self.all_unit_files.borrow().len()
             );
             self.set_editor_text("");
             return;
@@ -470,7 +479,7 @@ impl UnitFilePanelImp {
 
     fn set_dropins(&self, drop_in_files: &[String]) {
         {
-            let mut all_files = self.all_files.borrow_mut();
+            let mut all_files = self.all_unit_files.borrow_mut();
             all_files.clear();
 
             if let Some(file_path) = get_unit!(self).file_path() {
@@ -502,7 +511,7 @@ impl UnitFilePanelImp {
 
     fn set_drop_ins_selector(&self) {
         self.file_dropin_selector.remove_all();
-        let all_files = self.all_files.borrow();
+        let all_files = self.all_unit_files.borrow();
         let all_files_len = all_files.len();
         let mut idx = 1;
 
@@ -561,7 +570,7 @@ impl UnitFilePanelImp {
     }
 
     fn set_visible_child_panel(&self) {
-        let panel = if self.all_files.borrow().is_empty() {
+        let panel = if self.all_unit_files.borrow().is_empty() {
             PANEL_EMPTY
         } else {
             PANEL_FILE
@@ -767,7 +776,7 @@ impl UnitFilePanelImp {
             }
         };
 
-        let drop_in_file_path = Self::create_drop_in_file_path(&primary, runtime, user)?;
+        let drop_in_file_path = self.create_drop_in_file_path(&primary, runtime, user)?;
 
         self.create_drop_in_nav(&drop_in_file_path, runtime);
 
@@ -793,33 +802,60 @@ impl UnitFilePanelImp {
             is_runtime: runtime,
         };
 
-        self.all_files.borrow_mut().push(fnav);
+        self.all_unit_files.borrow_mut().push(fnav);
     }
 
     fn create_drop_in_file_path(
+        &self,
         primary: &str,
         runtime: bool,
-        user: bool,
+        user_session: bool,
     ) -> Result<String, SystemdErrors> {
-        let path_dir = create_drop_in_path_dir(primary, runtime, user)?;
+        let mut path_dir = create_drop_in_path_dir(primary, runtime, user_session)?;
 
-        let path_dir = PathBuf::from(&path_dir);
-        let mut p = path_dir.join(DEFAULT_DROP_IN_FILE_NAME);
-        p.set_extension("conf");
+        let drop_in_stem = self.unique_drop_in_stem(DEFAULT_DROP_IN_FILE_NAME);
+        path_dir.push('/');
+        path_dir.push_str(&drop_in_stem);
+        path_dir.push_str(".conf");
 
-        if p.exists() {
-            let mut idx = 1;
-            loop {
-                let p = path_dir.join(format!("{}-{}.conf", DEFAULT_DROP_IN_FILE_NAME, idx));
+        Ok(path_dir)
+    }
 
-                if !p.exists() {
-                    return Ok(p.to_string_lossy().to_string());
-                }
+    fn unique_drop_in_stem(&self, file_stem: &str) -> String {
+        let all_unit_files = self.all_unit_files.borrow();
+
+        let (file_stem, mut idx) = Self::grab_index(file_stem);
+
+        loop {
+            let file_stem = if idx == 0 {
+                file_stem.to_string()
+            } else {
+                format!("{}-{}", file_stem, idx)
+            };
+
+            if all_unit_files.iter().any(|f| {
+                f.is_drop_in
+                    && f.status != UnitFileStatus::Create
+                    && f.file_stem() == Some(&file_stem)
+            }) {
                 idx += 1;
+                continue;
             }
-        } else {
-            Ok(p.to_string_lossy().to_string())
+            return file_stem;
         }
+    }
+
+    fn grab_index(file_stem: &str) -> (&str, u32) {
+        let re = Regex::new(r"-(\d+)$").expect("Valid RegEx");
+
+        if let Some(caps) = re.captures(file_stem) {
+            let start = caps.get_match().start();
+
+            if let Ok(num) = caps[1].parse::<u32>() {
+                return (&file_stem[0..start], num + 1);
+            }
+        }
+        (file_stem, 0)
     }
 
     fn set_dropin_file_format(
@@ -943,7 +979,12 @@ impl UnitFilePanelImp {
                     let msg = pgettext(FILE_CONTEXT, "Unit {} reverted successfully!");
                     let file_path_format = format!("<unit>{}</unit>", unit_name2);
                     let msg = format2!(msg, file_path_format);
-                    file_panel.imp().set_file_content_init();
+
+                    //file_panel.imp().set_file_content_init(); //because it need relaod
+
+                    //suposed to have no drop-ins
+                    file_panel.imp().set_dropins(&[]);
+
                     (msg, true, Some((APP_ACTION_DAEMON_RELOAD, "Daemon Reload"))) //TODO translate
                 }
                 Err(error) => {
@@ -1056,7 +1097,8 @@ impl ObjectImpl for UnitFilePanelImp {
 
                 let unit_file_panel = upgrade!(unit_file_panel);
 
-                let allow_save_condition = !unit_file_panel.imp().all_files.borrow().is_empty(); //TODO check is the text has really changed
+                let allow_save_condition =
+                    !unit_file_panel.imp().all_unit_files.borrow().is_empty(); //TODO check is the text has really changed
                 save_button.set_sensitive(allow_save_condition);
             });
         }
@@ -1092,3 +1134,124 @@ impl ObjectImpl for UnitFilePanelImp {
 }
 impl WidgetImpl for UnitFilePanelImp {}
 impl BoxImpl for UnitFilePanelImp {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_grab_index_with_no_suffix() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("override");
+        assert_eq!(stem, "override");
+        assert_eq!(idx, 0);
+    }
+
+    #[test]
+    fn test_grab_index_with_single_digit() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("override-1");
+        assert_eq!(stem, "override");
+        assert_eq!(idx, 2);
+    }
+
+    #[test]
+    fn test_grab_index_with_multiple_digits() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("override-42");
+        assert_eq!(stem, "override");
+        assert_eq!(idx, 43);
+    }
+
+    #[test]
+    fn test_grab_index_with_multiple_hyphens() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("my-override-5");
+        assert_eq!(stem, "my-override");
+        assert_eq!(idx, 6);
+    }
+
+    #[test]
+    fn test_grab_index_with_trailing_hyphen() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("override-");
+        assert_eq!(stem, "override-");
+        assert_eq!(idx, 0);
+    }
+
+    #[test]
+    fn test_grab_index_with_non_numeric_suffix() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("override-abc");
+        assert_eq!(stem, "override-abc");
+        assert_eq!(idx, 0);
+    }
+
+    #[test]
+    fn test_grab_index_with_zero() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("override-0");
+        assert_eq!(stem, "override");
+        assert_eq!(idx, 1);
+    }
+
+    #[test]
+    fn test_grab_index_with_large_number() {
+        let (stem, idx) = UnitFilePanelImp::grab_index("override-999");
+        assert_eq!(stem, "override");
+        assert_eq!(idx, 1000);
+    }
+
+    #[test]
+    fn test_file_nav_is_file() {
+        let fnav = FileNav {
+            file_path: "/etc/systemd/system/test.service".to_string(),
+            id: "unit file".to_string(),
+            status: UnitFileStatus::Edit,
+            is_drop_in: false,
+            is_runtime: false,
+        };
+        assert!(fnav.is_file());
+    }
+
+    #[test]
+    fn test_file_nav_is_drop_in() {
+        let fnav = FileNav {
+            file_path: "/etc/systemd/system/test.service.d/override.conf".to_string(),
+            id: "dropin 1".to_string(),
+            status: UnitFileStatus::Edit,
+            is_drop_in: true,
+            is_runtime: false,
+        };
+        assert!(!fnav.is_file());
+    }
+
+    #[test]
+    fn test_file_nav_file_stem_regular_file() {
+        let fnav = FileNav {
+            file_path: "/etc/systemd/system/test.service".to_string(),
+            id: "unit file".to_string(),
+            status: UnitFileStatus::Edit,
+            is_drop_in: false,
+            is_runtime: false,
+        };
+        assert_eq!(fnav.file_stem(), Some("test"));
+    }
+
+    #[test]
+    fn test_file_nav_file_stem_drop_in() {
+        let fnav = FileNav {
+            file_path: "/etc/systemd/system/test.service.d/override.conf".to_string(),
+            id: "dropin 1".to_string(),
+            status: UnitFileStatus::Edit,
+            is_drop_in: true,
+            is_runtime: false,
+        };
+        assert_eq!(fnav.file_stem(), Some("override"));
+    }
+
+    #[test]
+    fn test_file_nav_file_stem_no_extension() {
+        let fnav = FileNav {
+            file_path: "/etc/systemd/system/test".to_string(),
+            id: "test".to_string(),
+            status: UnitFileStatus::Edit,
+            is_drop_in: false,
+            is_runtime: false,
+        };
+        assert_eq!(fnav.file_stem(), Some("test"));
+    }
+}

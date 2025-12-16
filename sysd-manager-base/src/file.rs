@@ -52,11 +52,7 @@ pub fn create_drop_in_path_file(
     Ok(path)
 }
 
-pub async fn create_drop_in_io(
-    file_path_str: &str,
-    content: &str,
-    user: bool,
-) -> Result<(), std::io::Error> {
+pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(), std::io::Error> {
     if file_path_str.contains("../") {
         let err = std::io::Error::new(
             std::io::ErrorKind::InvalidData,
@@ -75,12 +71,8 @@ pub async fn create_drop_in_io(
 
     if !unit_drop_in_dir.exists() {
         info!("Creating dir {}", unit_drop_in_dir.display());
-        if user {
-            //TODO ????????????
-            fs::create_dir_all(&unit_drop_in_dir).await?;
-        } else {
-            fs::create_dir(&unit_drop_in_dir).await?;
-        }
+
+        fs::create_dir_all(&unit_drop_in_dir).await?;
     }
 
     //Save content
@@ -241,16 +233,8 @@ pub fn test_flatpak_spawn() -> Result<(), io::Error> {
 pub fn flatpak_host_file_path(file_path: &str) -> PathBuf {
     #[cfg(feature = "flatpak")]
     {
-        if inside_flatpak!()
-            && (file_path.starts_with("/usr")
-                || file_path.starts_with("/etc")
-                || file_path.starts_with("/run"))
-        {
-            let file_path = if let Some(stripped) = file_path.strip_prefix('/') {
-                stripped
-            } else {
-                file_path
-            };
+        if inside_flatpak!() && (file_path.starts_with("/usr") || file_path.starts_with("/etc")) {
+            let file_path = file_path.strip_prefix('/').unwrap_or(file_path);
             PathBuf::from_iter(["/run/host", file_path])
         } else {
             PathBuf::from(&file_path)

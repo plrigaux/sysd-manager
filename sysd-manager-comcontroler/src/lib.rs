@@ -876,9 +876,9 @@ pub async fn save_file(
     info!("Saving file {file_path:?}");
 
     #[cfg(not(feature = "flatpak"))]
-    if file_path.starts_with("/usr/lib")
-        || file_path.starts_with("/run/lib")
-        || file_path.starts_with("/etc/lib")
+    if file_path.starts_with("/usr")
+        || file_path.starts_with("/run")
+        || file_path.starts_with("/etc")
     {
         to_proxy::save_file(file_path, content).await
     } else {

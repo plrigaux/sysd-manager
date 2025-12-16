@@ -19,7 +19,7 @@ pub(crate) async fn create_drop_in(
     let file_path = create_drop_in_path_file(unit_name, runtime, true, file_name)?;
 
     #[cfg(not(feature = "flatpak"))]
-    create_drop_in_io(&file_path, content, true).await?;
+    create_drop_in_io(&file_path, content).await?;
 
     #[cfg(feature = "flatpak")]
     create_drop_in_script(&file_path, content).await?;

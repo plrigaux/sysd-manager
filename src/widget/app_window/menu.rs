@@ -197,6 +197,9 @@ Priit Jõerüüt <hwlate@joeruut.com>",
         )
         .build();
 
+    #[cfg(feature = "flatpak")]
+    about.set_version(&format!("{} (Flatpak)", VERSION));
+
     about.add_acknowledgement_section(
         //about dialogue
         Some(&gettext("Thank you for your support")),
