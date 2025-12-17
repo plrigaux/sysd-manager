@@ -22,7 +22,7 @@ use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     file::save_text_to_file,
     journal_data::Boot,
-    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_async},
+    sysdbus::dbus_proxies::systemd_manager,
     time_handling::TimestampStyle,
 };
 
@@ -260,22 +260,23 @@ pub fn get_unit_file_info(
         return Ok(String::new());
     };
 
-    if cfg!(feature = "flatpak") {
+    #[cfg(feature = "flatpak")]
+    {
         flatpak_file_open_get_content(file_path, unit_primary_name)
-    } else {
-        //#[cfg(not(feature = "flatpak"))]
-        file_open_get_content(file_path, unit_primary_name)
     }
+
+    #[cfg(not(feature = "flatpak"))]
+    file_open_get_content(file_path, unit_primary_name)
 }
 
 fn flatpak_file_open_get_content(
     file_path: &str,
     unit_primary_name: &str,
 ) -> Result<String, SystemdErrors> {
-    match file_open_get_content(file_path, unit_primary_name) {
-        Ok(content) => Ok(content),
-        Err(_) => file_open_get_content_cat(file_path, unit_primary_name),
-    }
+    file_open_get_content(file_path, unit_primary_name).or_else(|e| {
+        info!("Trying to fetch file content through 'cat' command, because {e:?}");
+        file_open_get_content_cat(file_path, unit_primary_name)
+    })
 }
 
 fn file_open_get_content_cat(
@@ -287,19 +288,9 @@ fn file_open_get_content_cat(
         unit_primary_name
     );
     //Use the REAL path because try to acceess through the 'cat' command
-    match commander_output(&["cat", file_path], None) {
-        Ok(cat_output) => match String::from_utf8(cat_output.stdout) {
-            Ok(content) => Ok(content),
-            Err(e) => {
-                warn!("Can't retreive contnent: {e:?}");
-                Err(SystemdErrors::Custom("Utf8Error".to_owned()))
-            }
-        },
-        Err(e) => {
-            error!("Can't open file \"{file_path}\" with 'cat' command, reason: {e:?}");
-            Err(e)
-        }
-    }
+    commander_output(&["cat", file_path], None)
+        .map(|cat_output| String::from_utf8_lossy(&cat_output.stdout).to_string())
+        .inspect_err(|e| warn!("Can't open file {file_path:?} with 'cat' command, reason: {e:?}"))
 }
 
 fn file_open_get_content(
@@ -618,8 +609,8 @@ pub fn link_unit_files(
     sysdbus::link_unit_files(dbus_level, &[unit_file], runtime, force)
 }
 
-pub fn reload_all_units() -> Result<(), SystemdErrors> {
-    sysdbus::reload_all_units(UnitDBusLevel::System) //I assume system tbd
+pub async fn reload_all_units() -> Result<(), SystemdErrors> {
+    sysdbus::reload_all_units().await
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -846,25 +837,27 @@ pub async fn fetch_unit_properties(
 }
 
 pub async fn create_drop_in(
-    _level: UnitDBusLevel,
+    level: UnitDBusLevel,
     runtime: bool,
     unit_name: &str,
     file_name: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
+    let user_session = match level {
+        UnitDBusLevel::System => false,
+        UnitDBusLevel::UserSession | UnitDBusLevel::Both => true,
+    };
+
     #[cfg(not(feature = "flatpak"))]
-    match _level {
-        UnitDBusLevel::System => {
-            to_proxy::create_drop_in(runtime, unit_name, file_name, content).await
-        }
-        UnitDBusLevel::UserSession | UnitDBusLevel::Both => {
-            file::create_drop_in(runtime, unit_name, file_name, content).await
-        }
+    if user_session {
+        file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
+    } else {
+        to_proxy::create_drop_in(runtime, unit_name, file_name, content).await
     }
 
     #[cfg(feature = "flatpak")]
     {
-        file::create_drop_in(runtime, unit_name, file_name, content).await
+        file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
     }
 }
 
@@ -890,27 +883,10 @@ pub async fn save_file(
 }
 
 pub async fn revert_unit_file_full(
-    _level: UnitDBusLevel,
+    level: UnitDBusLevel,
     unit_name: &str,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     info!("Reverting unit file {unit_name:?}");
 
-    #[cfg(not(feature = "flatpak"))]
-    match _level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => {
-            to_proxy::revert_unit_files(&[unit_name]).await
-        }
-        UnitDBusLevel::UserSession => {
-            let proxy = systemd_manager_async().await?;
-            let response = proxy.revert_unit_files(&[unit_name]).await?;
-            Ok(response)
-        }
-    }
-
-    #[cfg(feature = "flatpak")]
-    {
-        let proxy = systemd_manager_async().await?;
-        let response = proxy.revert_unit_files(&[unit_name]).await?;
-        Ok(response)
-    }
+    sysdbus::revert_unit_file_full(level, unit_name).await
 }

@@ -14,7 +14,7 @@ use std::env;
 
 use adw::prelude::AdwApplicationExt;
 use base::{RunMode, consts::APP_ID};
-use clap::{Parser, Subcommand, command};
+use clap::{Parser, Subcommand};
 
 use gettextrs::gettext;
 use gio::glib::translate::FromGlib;
@@ -44,7 +44,10 @@ fn main() -> glib::ExitCode {
     // env_logger::init();
 
     let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
-    tracing_subscriber::fmt().with_timer(timer).init();
+    tracing_subscriber::fmt()
+        .with_timer(timer)
+        .with_line_number(true)
+        .init();
 
     let (unit, command, level, run_mode) = handle_args();
 

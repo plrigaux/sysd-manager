@@ -31,6 +31,7 @@ use zbus::{
 };
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
+use crate::sysdbus::dbus_proxies::systemd_manager_async;
 use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
     data::{EnableUnitFilesReturn, LUnit, UnitInfo},
@@ -41,7 +42,6 @@ use crate::{
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
-
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 pub(super) const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
@@ -838,18 +838,56 @@ fn get_unit_object_path_connection(
     Ok(object_path.to_owned())
 }
 
-pub fn reload_all_units(_level: UnitDBusLevel) -> Result<(), SystemdErrors> {
-    //let handler_cloned: = handler;
+pub async fn reload_all_units() -> Result<(), SystemdErrors> {
+    #[cfg(not(feature = "flatpak"))]
+    {
+        to_proxy::reload().await
+    }
 
-    /*   let proxy = systemd_manager();
-    proxy.reload()?; */
+    #[cfg(feature = "flatpak")]
+    {
+        let proxy = systemd_manager_async(UnitDBusLevel::System).await?;
 
-    to_proxy::reload()
-
-    /*     send_disenable_message(level, METHOD_RELOAD, &(), move |method, _message| {
-        info!("{method} SUCCESS");
+        proxy.reload().await?;
         Ok(())
-    }) */
+        /*
+        fn handle_answer(_method: &str, return_message: &Message) -> Result<(), SystemdErrors> {
+            let body = return_message.body();
+
+            info!("Reload unit files {:?}", body.signature());
+
+            Ok(())
+        }
+
+        send_disenable_message_async(UnitDBusLevel::System, METHOD_RELOAD, &(), handle_answer).await
+        */
+    }
+}
+
+pub async fn revert_unit_file_full(
+    level: UnitDBusLevel,
+    unit_name: &str,
+) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    info!("Reverting unit file {unit_name:?}");
+
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            to_proxy::revert_unit_files(&[unit_name]).await
+        }
+        UnitDBusLevel::UserSession => {
+            let proxy = systemd_manager_async(level).await?;
+            let response = proxy.revert_unit_files(&[unit_name]).await?;
+            Ok(response)
+        }
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        let proxy = systemd_manager_async(level).await?;
+        let response = proxy.revert_unit_files(&[unit_name]).await?;
+        Ok(response)
+    }
 }
 
 pub(super) fn kill_unit(

@@ -15,9 +15,9 @@ use tracing::{error, info, warn};
 pub fn create_drop_in_path_dir(
     unit_name: &str,
     runtime: bool,
-    user: bool,
+    user_session: bool,
 ) -> Result<String, Box<dyn Error + 'static>> {
-    let path = match (runtime, user) {
+    let path = match (runtime, user_session) {
         (true, false) => format!("/run/systemd/system/{}.d", unit_name),
         (false, false) => format!("/etc/systemd/system/{}.d", unit_name),
         (true, true) => {
@@ -43,12 +43,17 @@ pub fn create_drop_in_path_dir(
 pub fn create_drop_in_path_file(
     unit_name: &str,
     runtime: bool,
-    user: bool,
+    user_session: bool,
     file_name: &str,
 ) -> Result<String, Box<dyn Error + 'static>> {
-    let path_dir = create_drop_in_path_dir(unit_name, runtime, user)?;
+    let path_dir = create_drop_in_path_dir(unit_name, runtime, user_session)?;
 
     let path = format!("{path_dir}/{file_name}.conf");
+
+    info!(
+        "Creating drop-in path for unit: {}, runtime: {}, user: {} -> path {}",
+        unit_name, runtime, user_session, path
+    );
     Ok(path)
 }
 

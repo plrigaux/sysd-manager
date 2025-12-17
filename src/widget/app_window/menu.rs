@@ -135,14 +135,17 @@ pub fn on_startup(app: &adw::Application) {
 
                     simple_action.set_enabled(true);
 
-                    match res {
+                    match res.await {
+                        //TODO ??? await
                         Ok(_) => {
                             info!("All units relaoded!");
-                            add_toast(&application, "All units relaoded!");
+                            let msg = gettext("All units relaoded!");
+                            add_toast(&application, &msg);
                         }
                         Err(e) => {
                             error!("Daemon Reload failed {e:?}");
-                            add_toast(&application, "Daemon Reload failed!"); //TODO translate
+                            let msg = gettext("Daemon Reload failed!");
+                            add_toast(&application, &msg); //TODO make red
                         }
                     }
                 });

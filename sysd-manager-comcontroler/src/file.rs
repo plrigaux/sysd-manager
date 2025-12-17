@@ -12,11 +12,12 @@ use tokio::{
 
 pub(crate) async fn create_drop_in(
     runtime: bool,
+    user_session: bool,
     unit_name: &str,
     file_name: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
-    let file_path = create_drop_in_path_file(unit_name, runtime, true, file_name)?;
+    let file_path = create_drop_in_path_file(unit_name, runtime, user_session, file_name)?;
 
     #[cfg(not(feature = "flatpak"))]
     create_drop_in_io(&file_path, content).await?;
@@ -78,21 +79,21 @@ async fn write_with_priviledge(file_path: &str, text: &str) -> Result<u64, Syste
 }
 
 async fn create_drop_in_script(file_path: &str, content: &str) -> Result<u64, SystemdErrors> {
-    let file_path = flatpak_host_file_path(file_path);
+    //let file_path = flatpak_host_file_path(file_path);
 
-    let file_path_str = file_path.to_string_lossy();
+    //let file_path_str = file_path.to_string_lossy();
 
-    let dir_name = file_path.parent().ok_or(std::io::Error::new(
+    let dir_name = Path::new(file_path).parent().ok_or(std::io::Error::new(
         std::io::ErrorKind::InvalidData,
-        format!("Parent dir of file {:?} is invalid", file_path_str),
+        format!("Parent dir of file {:?} is invalid", file_path),
     ))?;
 
     let mut script = String::new();
 
     writeln!(script, "echo Start script")?;
-    writeln!(script, "echo Create drop-in at {}", file_path_str)?;
+    writeln!(script, "echo Create drop-in at {}", file_path)?;
     writeln!(script, "mkdir -vp {}", dir_name.to_string_lossy())?;
-    writeln!(script, "cat > {} <<- EOM", file_path_str)?;
+    writeln!(script, "cat > {} <<- EOM", file_path)?;
     writeln!(script, "{}", content)?;
     writeln!(script, "EOM")?;
     writeln!(script, "echo End Script")?;

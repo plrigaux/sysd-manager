@@ -135,7 +135,7 @@ macro_rules! get_buffer {
 impl UnitFilePanelImp {
     #[template_callback]
     fn save_file(&self, button: &gtk::Button) {
-        info!("button {button:?}");
+        debug!("button {button:?}");
 
         let binding = self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
@@ -191,8 +191,6 @@ impl UnitFilePanelImp {
                     )
                     .await;
 
-                    info!("{:?}", response);
-
                     sender
                         .send(response)
                         .expect("The channel needs to be open.");
@@ -212,8 +210,13 @@ impl UnitFilePanelImp {
             let file_path = file_nav.file_path.clone();
             glib::spawn_future_local(async move {
                 let (sender, receiver) = tokio::sync::oneshot::channel();
+
+                let content = remove_trailing_newlines(&text)
+                    .inspect_err(|e| warn!("{e:?}"))
+                    .unwrap_or(text.to_string());
+
                 systemd::runtime().spawn(async move {
-                    let response = systemd::save_file(level, &file_path, &text).await;
+                    let response = systemd::save_file(level, &file_path, &content).await;
 
                     sender
                         .send(response)
@@ -337,6 +340,10 @@ impl UnitFilePanelImp {
                 file_name = Some(caps[2].to_string());
             }
         }
+
+        cleaned_text = remove_trailing_newlines(&cleaned_text)
+            .inspect_err(|e| warn!("{e:?}"))
+            .unwrap_or(cleaned_text);
 
         (cleaned_text, file_name)
     }
@@ -1135,6 +1142,11 @@ impl ObjectImpl for UnitFilePanelImp {
 impl WidgetImpl for UnitFilePanelImp {}
 impl BoxImpl for UnitFilePanelImp {}
 
+fn remove_trailing_newlines(text: &str) -> Result<String, regex::Error> {
+    let re = Regex::new(r"[\n]+$")?;
+    Ok(re.replace(text, "\n").to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1253,5 +1265,13 @@ mod tests {
             is_runtime: false,
         };
         assert_eq!(fnav.file_stem(), Some("test"));
+    }
+
+    #[test]
+    fn test_remove_trailing_newlines() {
+        let text = "line one\n\nline two\n\n\n";
+        let cleaned: String = remove_trailing_newlines(text).unwrap();
+        println!("{cleaned}");
+        assert_eq!(cleaned, "line one\n\nline two\n");
     }
 }

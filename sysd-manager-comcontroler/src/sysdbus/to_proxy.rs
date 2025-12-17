@@ -88,9 +88,9 @@ pub fn thaw_unit(unit_name: &str) -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-pub fn reload() -> Result<(), SystemdErrors> {
-    let proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
-    proxy.reload()?;
+pub async fn reload() -> Result<(), SystemdErrors> {
+    let proxy = get_proxy_async().await?;
+    proxy.reload().await?;
     Ok(())
 }
 
