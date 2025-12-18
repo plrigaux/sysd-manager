@@ -899,7 +899,6 @@ async fn test_power_off() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-
 #[test]
 fn test_bytes_msg() {
     init_logs();
