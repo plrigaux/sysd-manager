@@ -23,12 +23,16 @@ pub(crate) async fn create_drop_in(
     create_drop_in_io(&file_path, content).await?;
 
     #[cfg(feature = "flatpak")]
-    create_drop_in_script(&file_path, content).await?;
+    create_drop_in_script(&file_path, content, user_session).await?;
 
     Ok(())
 }
 
-pub async fn save_text_to_file(file_path: &str, text: &str) -> Result<u64, SystemdErrors> {
+pub async fn save_text_to_file(
+    file_path: &str,
+    text: &str,
+    user_session: bool,
+) -> Result<u64, SystemdErrors> {
     let host_file_path = flatpak_host_file_path(file_path);
     info!("Try to save content on File: {}", host_file_path.display());
     match write_on_disk(text, &host_file_path).await {
@@ -36,7 +40,7 @@ pub async fn save_text_to_file(file_path: &str, text: &str) -> Result<u64, Syste
         Err(error) => {
             if let SystemdErrors::IoError(ref err) = error {
                 match err.kind() {
-                    ErrorKind::PermissionDenied => {
+                    ErrorKind::PermissionDenied if !user_session => {
                         info!("Some error : {err}, try executing command as another user");
                         write_with_priviledge(file_path, text).await
                     }
@@ -78,7 +82,11 @@ async fn write_with_priviledge(file_path: &str, text: &str) -> Result<u64, Syste
     Ok(input.len() as u64)
 }
 
-async fn create_drop_in_script(file_path: &str, content: &str) -> Result<u64, SystemdErrors> {
+async fn create_drop_in_script(
+    file_path: &str,
+    content: &str,
+    user_session: bool,
+) -> Result<u64, SystemdErrors> {
     //let file_path = flatpak_host_file_path(file_path);
 
     //let file_path_str = file_path.to_string_lossy();
@@ -98,9 +106,17 @@ async fn create_drop_in_script(file_path: &str, content: &str) -> Result<u64, Sy
     writeln!(script, "EOM")?;
     writeln!(script, "echo End Script")?;
 
-    script_with_priviledge(&script)
-        .await
-        .map(|_| content.len() as u64)
+    let r = if user_session {
+        script_as_user(&script).await
+    } else {
+        script_with_priviledge(&script).await
+    };
+    r.map(|_| content.len() as u64)
+}
+
+async fn script_as_user(script: &str) -> Result<(), SystemdErrors> {
+    let prog_n_args = args!["sh"];
+    execute_command(script.as_bytes(), &prog_n_args).await
 }
 
 async fn script_with_priviledge(script: &str) -> Result<(), SystemdErrors> {
@@ -193,13 +209,16 @@ async fn execute_command(input: &[u8], prog_n_args: &[&OsStr]) -> Result<(), Sys
 mod tests {
     use super::*;
     use std::fmt::Write;
+    use std::process::Stdio;
     use std::{fs, path::PathBuf};
     use test_base::init_logs;
     use tokio::io::AsyncBufReadExt;
+    use tokio::io::AsyncWriteExt;
     use tokio::io::BufReader;
 
     use crate::{errors::SystemdErrors, file::write_with_priviledge};
 
+    #[ignore = "writes file with priviledge"]
     #[tokio::test]
     async fn test_write_with_prvi() -> Result<(), SystemdErrors> {
         init_logs();
@@ -222,6 +241,7 @@ mod tests {
         println!("{:?}", fs::canonicalize(&solardir));
     }
 
+    #[ignore = "writes file with priviledge"]
     #[tokio::test]
     async fn test_script() -> Result<(), SystemdErrors> {
         init_logs();
@@ -252,6 +272,7 @@ mod tests {
         Ok(())
     }
 
+    #[ignore = "writes file with priviledge"]
     #[tokio::test]
     async fn test_create_drop_in_script() -> Result<(), SystemdErrors> {
         init_logs();
@@ -268,13 +289,34 @@ mod tests {
         let content =
             "thet is a test \n abigeg test\n ffffffffffffffffffffffffff\n aaaaaaaaaaaaaaa";
 
-        create_drop_in_script(&file_name, content).await?;
+        create_drop_in_script(&file_name, content, false).await?;
 
         Ok(())
     }
 
-    use std::process::Stdio;
-    use tokio::io::AsyncWriteExt;
+    #[ignore = "writes file with priviledge"]
+    #[tokio::test]
+    async fn test_create_drop_in_script_user() -> Result<(), SystemdErrors> {
+        init_logs();
+
+        let path = PathBuf::from(".");
+        let mut dir_name = fs::canonicalize(&path)?;
+        dir_name.push("test_dir_user.d");
+
+        let file_name = "test_out_user.txt";
+        let file_name = dir_name.join(file_name);
+        let file_name = file_name.to_string_lossy();
+        info!("{}", file_name);
+
+        let content =
+            "thet is a test \n abigeg test\n ffffffffffffffffffffffffff\n aaaaaaaaaaaaaaa";
+
+        create_drop_in_script(&file_name, content, true).await?;
+
+        Ok(())
+    }
+
+    #[ignore = "writes file with priviledge"]
     #[tokio::test]
     async fn test_sort() -> Result<(), Box<dyn std::error::Error>> {
         init_logs();

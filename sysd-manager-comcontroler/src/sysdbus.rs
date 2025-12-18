@@ -838,30 +838,13 @@ fn get_unit_object_path_connection(
     Ok(object_path.to_owned())
 }
 
-pub async fn reload_all_units() -> Result<(), SystemdErrors> {
-    #[cfg(not(feature = "flatpak"))]
-    {
-        to_proxy::reload().await
-    }
+pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
+    // to_proxy::reload().await
 
-    #[cfg(feature = "flatpak")]
-    {
-        let proxy = systemd_manager_async(UnitDBusLevel::System).await?;
+    let proxy = systemd_manager_async(level).await?;
 
-        proxy.reload().await?;
-        Ok(())
-        /*
-        fn handle_answer(_method: &str, return_message: &Message) -> Result<(), SystemdErrors> {
-            let body = return_message.body();
-
-            info!("Reload unit files {:?}", body.signature());
-
-            Ok(())
-        }
-
-        send_disenable_message_async(UnitDBusLevel::System, METHOD_RELOAD, &(), handle_answer).await
-        */
-    }
+    proxy.reload().await?;
+    Ok(())
 }
 
 pub async fn revert_unit_file_full(
@@ -876,7 +859,7 @@ pub async fn revert_unit_file_full(
             to_proxy::revert_unit_files(&[unit_name]).await
         }
         UnitDBusLevel::UserSession => {
-            let proxy = systemd_manager_async(level).await?;
+            let proxy = systemd_manager_async(UnitDBusLevel::UserSession).await?;
             let response = proxy.revert_unit_files(&[unit_name]).await?;
             Ok(response)
         }

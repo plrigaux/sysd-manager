@@ -12,7 +12,7 @@ use tokio::process::Command;
 #[allow(unused_imports)]
 use tracing::{error, info, warn};
 
-pub fn create_drop_in_path_dir(
+pub fn determine_drop_in_path_dir(
     unit_name: &str,
     runtime: bool,
     user_session: bool,
@@ -46,7 +46,7 @@ pub fn create_drop_in_path_file(
     user_session: bool,
     file_name: &str,
 ) -> Result<String, Box<dyn Error + 'static>> {
-    let path_dir = create_drop_in_path_dir(unit_name, runtime, user_session)?;
+    let path_dir = determine_drop_in_path_dir(unit_name, runtime, user_session)?;
 
     let path = format!("{path_dir}/{file_name}.conf");
 

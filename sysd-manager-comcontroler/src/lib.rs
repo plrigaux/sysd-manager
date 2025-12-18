@@ -609,8 +609,8 @@ pub fn link_unit_files(
     sysdbus::link_unit_files(dbus_level, &[unit_file], runtime, force)
 }
 
-pub async fn reload_all_units() -> Result<(), SystemdErrors> {
-    sysdbus::reload_all_units().await
+pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
+    sysdbus::daemon_reload(level).await
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -868,18 +868,18 @@ pub async fn save_file(
 ) -> Result<u64, SystemdErrors> {
     info!("Saving file {file_path:?}");
 
+    let user_session = file_path.starts_with("/usr") || file_path.starts_with("/etc");
+    //  || !file_path.starts_with("/run/user");
+
     #[cfg(not(feature = "flatpak"))]
-    if file_path.starts_with("/usr")
-        || file_path.starts_with("/run")
-        || file_path.starts_with("/etc")
-    {
-        to_proxy::save_file(file_path, content).await
+    if user_session {
+        save_text_to_file(file_path, content, user_session).await
     } else {
-        save_text_to_file(file_path, content).await
+        to_proxy::save_file(file_path, content).await
     }
 
     #[cfg(feature = "flatpak")]
-    save_text_to_file(file_path, content).await
+    save_text_to_file(file_path, content, user_session).await
 }
 
 pub async fn revert_unit_file_full(

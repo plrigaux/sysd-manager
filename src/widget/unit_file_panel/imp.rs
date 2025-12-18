@@ -5,7 +5,7 @@ use std::{
 };
 
 use adw::prelude::{AdwDialogExt, AlertDialogExt};
-use base::file::create_drop_in_path_dir;
+use base::file::determine_drop_in_path_dir;
 use gettextrs::pgettext;
 use gtk::{
     TemplateChild,
@@ -818,7 +818,7 @@ impl UnitFilePanelImp {
         runtime: bool,
         user_session: bool,
     ) -> Result<String, SystemdErrors> {
-        let mut path_dir = create_drop_in_path_dir(primary, runtime, user_session)?;
+        let mut path_dir = determine_drop_in_path_dir(primary, runtime, user_session)?;
 
         let drop_in_stem = self.unique_drop_in_stem(DEFAULT_DROP_IN_FILE_NAME);
         path_dir.push('/');

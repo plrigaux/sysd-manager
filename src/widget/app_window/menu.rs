@@ -1,7 +1,9 @@
 use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
 use base::consts::APP_ID;
+use base::enums::UnitDBusLevel;
 use gettextrs::gettext;
+
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{gio, prelude::ActionMapExtManual};
@@ -15,7 +17,10 @@ use crate::systemd;
 use crate::widget::app_window::AppWindow;
 use crate::widget::info_window;
 use crate::widget::preferences::PreferencesDialog;
+use crate::widget::preferences::data::DbusLevel;
+use crate::widget::preferences::data::PREFERENCES;
 use crate::widget::signals_dialog::SignalsWindow;
+use adw::prelude::*;
 
 pub const APP_TITLE: &str = "SysD Manager";
 
@@ -57,6 +62,7 @@ pub fn on_startup(app: &adw::Application) {
                             .build();
 
                         alert.add_response("close", "Close");
+
                         let firt_window = wins.first();
                         alert.present(firt_window);
                     }
@@ -120,35 +126,46 @@ pub fn on_startup(app: &adw::Application) {
         })
         .build();
 
-    let reload_all_units: gio::ActionEntry<adw::Application> =
+    let daemon_reload_all_units: gio::ActionEntry<adw::Application> =
         gio::ActionEntry::builder(ACTION_DAEMON_RELOAD)
             .activate(|application: &adw::Application, simple_action, _variant| {
                 let simple_action = simple_action.clone();
                 let application = application.clone();
 
-                glib::spawn_future_local(async move {
-                    simple_action.set_enabled(false);
+                let Some(app_win_op) = application
+                    .active_window()
+                    .and_downcast_ref::<AppWindow>()
+                    .cloned()
+                else {
+                    error!("Not an AppWindow");
+                    return;
+                };
 
-                    let res = gio::spawn_blocking(systemd::reload_all_units)
-                        .await
-                        .expect("Task needs to finish successfully.");
-
-                    simple_action.set_enabled(true);
-
-                    match res.await {
-                        //TODO ??? await
-                        Ok(_) => {
-                            info!("All units relaoded!");
-                            let msg = gettext("All units relaoded!");
-                            add_toast(&application, &msg);
-                        }
-                        Err(e) => {
-                            error!("Daemon Reload failed {e:?}");
-                            let msg = gettext("Daemon Reload failed!");
-                            add_toast(&application, &msg); //TODO make red
-                        }
+                match PREFERENCES.dbus_level() {
+                    DbusLevel::UserSession => {
+                        daemon_relaod(simple_action, app_win_op, UnitDBusLevel::UserSession)
                     }
-                });
+                    DbusLevel::System => {
+                        daemon_relaod(simple_action, app_win_op, UnitDBusLevel::System)
+                    }
+                    DbusLevel::SystemAndSession => {
+                        let body = "Need to determine the bus to use for daemon reload.\nPlease select either <b>System</b> or <b>User Session</b> bus.";
+                        let alert = adw::AlertDialog::builder()
+                            .heading("Select bus")
+                            .body_use_markup(true)
+                            .body(body)
+                            .close_response("close")
+                            .build();
+
+                        alert.add_responses(&[("system", "_System"), ("user", "User Session")]);
+
+                        alert.connect_response(None, move |_dialog, response| {
+                            info!("Response {response}");
+                        });
+
+                        alert.present(Some(&app_win_op));
+                    }
+                }
             })
             .build();
 
@@ -159,19 +176,43 @@ pub fn on_startup(app: &adw::Application) {
         analyze_blame,
         systemd_info,
         preferences,
-        reload_all_units,
+        daemon_reload_all_units,
         signals,
     ]);
 }
 
-fn add_toast(application: &adw::Application, toast_msg: &str) {
-    if let Some(win) = application.active_window() {
-        let app_win_op: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+fn daemon_relaod(
+    simple_action: gio::SimpleAction,
+    app_win_op: AppWindow,
+    dbus_level: UnitDBusLevel,
+) {
+    glib::spawn_future_local(async move {
+        simple_action.set_enabled(false);
 
-        if let Some(app_win) = app_win_op {
-            app_win.add_toast_message(toast_msg, false, None);
+        let res = gio::spawn_blocking(async move || systemd::daemon_reload(dbus_level).await)
+            .await
+            .expect("Task needs to finish successfully.");
+
+        simple_action.set_enabled(true);
+
+        match res.await {
+            //TODO ??? await
+            Ok(_) => {
+                info!("All units relaoded!");
+                let msg = gettext("All units relaoded!");
+                add_toast(&app_win_op, &msg);
+            }
+            Err(e) => {
+                error!("Daemon Reload failed {e:?}");
+                let msg = gettext("Daemon Reload failed!");
+                add_toast(&app_win_op, &msg); //TODO make red
+            }
         }
-    }
+    });
+}
+
+fn add_toast(app_window: &AppWindow, toast_msg: &str) {
+    app_window.add_toast_message(toast_msg, false, None);
 }
 
 fn create_about() -> adw::AboutDialog {

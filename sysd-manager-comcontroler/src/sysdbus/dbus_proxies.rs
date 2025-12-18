@@ -145,7 +145,7 @@ pub async fn systemd_manager_async(
         UnitDBusLevel::UserSession => {
             SYSTEM_MANAGER_USER_SESSION
                 .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {
-                    let conn = get_connection(level).await?;
+                    let conn = get_connection(UnitDBusLevel::UserSession).await?;
                     let proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
                     Ok(proxy)
                 })
