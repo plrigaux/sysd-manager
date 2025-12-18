@@ -837,17 +837,12 @@ pub async fn fetch_unit_properties(
 }
 
 pub async fn create_drop_in(
-    level: UnitDBusLevel,
+    user_session: bool,
     runtime: bool,
     unit_name: &str,
     file_name: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
-    let user_session = match level {
-        UnitDBusLevel::System => false,
-        UnitDBusLevel::UserSession | UnitDBusLevel::Both => true,
-    };
-
     #[cfg(not(feature = "flatpak"))]
     if user_session {
         file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
@@ -862,14 +857,14 @@ pub async fn create_drop_in(
 }
 
 pub async fn save_file(
-    _level: UnitDBusLevel,
+    level: UnitDBusLevel,
     file_path: &str,
     content: &str,
 ) -> Result<u64, SystemdErrors> {
     info!("Saving file {file_path:?}");
 
-    let user_session = file_path.starts_with("/usr") || file_path.starts_with("/etc");
-    //  || !file_path.starts_with("/run/user");
+    let user_session = level.user_session();
+    //TODO check the case of /run
 
     #[cfg(not(feature = "flatpak"))]
     if user_session {

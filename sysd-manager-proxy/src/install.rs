@@ -44,11 +44,6 @@ pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 }
 
 async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
-    #[cfg(feature = "flatpak")]
-    if let Err(e) = gio::resources_register_include!("sysd-manager-proxy.gresource") {
-        warn!("Failed to register resources. Error: {e:?}");
-    }
-
     for (key, value) in std::env::vars() {
         println!("{}: {}", key, value);
     }
@@ -437,43 +432,6 @@ fn ouput_to_screen(output: std::process::Output) {
 
 #[cfg(test)]
 mod test {
-    use std::path::PathBuf;
-
-    use crate::install::gio::prelude::FileExt;
-    use gio::OutputStreamSpliceFlags;
-    use gio::ResourceLookupFlags;
-    use gio::prelude::IOStreamExt;
-    use gio::prelude::OutputStreamExt;
-    use log::info;
-    use test_base::init_logs;
-
-    #[test]
-    fn test_getresource_data() {
-        init_logs();
-
-        #[cfg(feature = "flatpak")]
-        gio::resources_register_include!("sysd-manager-proxy.gresource").unwrap();
-
-        let stream = gio::functions::resources_open_stream(
-            "/io/github/plrigaux/sysd-manager/io.github.plrigaux.SysDManager.conf",
-            ResourceLookupFlags::NONE,
-        )
-        .unwrap();
-
-        let path = PathBuf::from("XXXXXXvalue.txt");
-        let (file, ios_stream) = gio::File::new_tmp(Some(&path)).unwrap();
-
-        info!("fp {:?}", file.path());
-
-        let os_strem = ios_stream.output_stream();
-        os_strem
-            .splice(
-                &stream,
-                OutputStreamSpliceFlags::NONE,
-                None::<&gio::Cancellable>,
-            )
-            .unwrap();
-    }
 
     #[test]
     fn test_string() {

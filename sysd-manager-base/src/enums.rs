@@ -26,6 +26,17 @@ impl UnitDBusLevel {
         }
     }
 
+    pub fn normalize(&self) -> Self {
+        match self {
+            UnitDBusLevel::Both => UnitDBusLevel::System,
+            bus => *bus,
+        }
+    }
+
+    pub fn user_session(&self) -> bool {
+        matches!(self, UnitDBusLevel::UserSession)
+    }
+
     pub fn as_str(&self) -> &'static str {
         let level_value: &glib::EnumValue = self.to_value().get().expect("it's an enum");
         level_value.name()

@@ -854,15 +854,12 @@ pub async fn revert_unit_file_full(
     info!("Reverting unit file {unit_name:?}");
 
     #[cfg(not(feature = "flatpak"))]
-    match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => {
-            to_proxy::revert_unit_files(&[unit_name]).await
-        }
-        UnitDBusLevel::UserSession => {
-            let proxy = systemd_manager_async(UnitDBusLevel::UserSession).await?;
-            let response = proxy.revert_unit_files(&[unit_name]).await?;
-            Ok(response)
-        }
+    if level.user_session() {
+        let proxy = systemd_manager_async(UnitDBusLevel::UserSession).await?;
+        let response = proxy.revert_unit_files(&[unit_name]).await?;
+        Ok(response)
+    } else {
+        to_proxy::revert_unit_files(&[unit_name]).await
     }
 
     #[cfg(feature = "flatpak")]

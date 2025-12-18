@@ -32,7 +32,9 @@ use gtk::{
         prelude::{ActionMapExtManual, SettingsExt},
     },
     glib::{self, VariantTy},
-    prelude::{GtkApplicationExt, GtkWindowExt, OrientableExt, ToggleButtonExt, WidgetExt},
+    prelude::{
+        GtkApplicationExt, GtkWindowExt, OrientableExt, ToVariant, ToggleButtonExt, WidgetExt,
+    },
 };
 use log::{debug, error, info, warn};
 use regex::Regex;
@@ -557,7 +559,7 @@ impl AppWindowImpl {
         &self,
         message: &str,
         use_markup: bool,
-        action: Option<(&str, &str)>,
+        action: Option<(&str, &str, bool)>,
     ) {
         let msg = if use_markup {
             let out = self.replace_tags(message);
@@ -571,9 +573,10 @@ impl AppWindowImpl {
             .use_markup(use_markup)
             .build();
 
-        if let Some((action_name, button_label)) = action {
-            info!("Toast action {action:?}");
+        if let Some((action_name, button_label, user_session)) = action {
+            info!("Toast action {action:?} user_session {user_session}");
             toast.set_action_name(Some(action_name));
+            toast.set_action_target_value(Some(&user_session.to_variant()));
             toast.set_button_label(Some(button_label));
         }
 

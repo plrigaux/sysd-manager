@@ -41,7 +41,12 @@ impl AppWindow {
         self.imp().set_inter_message(action);
     }
 
-    pub fn add_toast_message(&self, message: &str, markup: bool, action: Option<(&str, &str)>) {
+    pub fn add_toast_message(
+        &self,
+        message: &str,
+        markup: bool,
+        action: Option<(&str, &str, bool)>,
+    ) {
         self.imp().add_toast_message(message, markup, action);
     }
 

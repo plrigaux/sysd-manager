@@ -16,7 +16,10 @@ pub const ACTION_LIST_BOOT: &str = "list_boots";
 pub const APP_ACTION_LIST_BOOT: &str = concat!(APP, ACTION_LIST_BOOT);
 
 pub const ACTION_DAEMON_RELOAD: &str = "daemon-reload";
-pub const APP_ACTION_DAEMON_RELOAD: &str = concat!(APP, ACTION_DAEMON_RELOAD);
+//pub const APP_ACTION_DAEMON_RELOAD: &str = concat!(APP, ACTION_DAEMON_RELOAD);
+
+pub const ACTION_DAEMON_RELOAD_BUS: &str = "daemon-reload-bus";
+pub const APP_ACTION_DAEMON_RELOAD_BUS: &str = concat!(APP, ACTION_DAEMON_RELOAD_BUS);
 
 pub const ACTION_PROPERTIES_SELECTOR: &str = "properties_selector";
 pub const APP_ACTION_PROPERTIES_SELECTOR: &str = concat!(APP, ACTION_PROPERTIES_SELECTOR);

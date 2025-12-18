@@ -27,7 +27,7 @@ use systemd::sysdbus::proxy_service_name;
 use tokio::sync::oneshot::Receiver;
 
 use crate::{
-    consts::{ADWAITA, APP_ACTION_DAEMON_RELOAD, SUGGESTED_ACTION},
+    consts::{ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SUGGESTED_ACTION},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     upgrade,
@@ -168,6 +168,7 @@ impl UnitFilePanelImp {
         let level = unit.dbus_level();
         let unit_name = unit.primary();
         let unit_name2 = unit.primary();
+        let user_session = level.user_session();
         if file_nav.status == UnitFileStatus::Create {
             let (cleaned_text, file_stem) = Self::clean_create_text(&unit.primary(), text.as_str());
 
@@ -183,7 +184,7 @@ impl UnitFilePanelImp {
                 let (sender, receiver) = tokio::sync::oneshot::channel();
                 systemd::runtime().spawn(async move {
                     let response = systemd::create_drop_in(
-                        level,
+                        user_session,
                         file_nav.is_runtime,
                         &unit_name,
                         &unique_drop_in_stem,
@@ -203,6 +204,7 @@ impl UnitFilePanelImp {
                         file_nav.status,
                         &file_nav.file_path,
                         &unit_name2,
+                        user_session,
                     )
                     .await;
             });
@@ -230,6 +232,7 @@ impl UnitFilePanelImp {
                         file_nav.status,
                         &file_nav.file_path,
                         &unit_name2,
+                        user_session,
                     )
                     .await;
             });
@@ -242,6 +245,7 @@ impl UnitFilePanelImp {
         status: UnitFileStatus,
         file_path: &str,
         unit_name: &str,
+        user_session: bool,
     ) {
         let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
             Ok(_a) => {
@@ -254,7 +258,11 @@ impl UnitFilePanelImp {
                 let file_path_format = format!("<u>{}</u>", file_path);
                 let msg = format2!(msg, file_path_format);
 
-                (msg, true, Some((APP_ACTION_DAEMON_RELOAD, "Reload Deamon")))
+                (
+                    msg,
+                    true,
+                    Some((APP_ACTION_DAEMON_RELOAD_BUS, "Reload Deamon", user_session)),
+                )
             }
             Err(error) => {
                 warn!(
@@ -348,7 +356,7 @@ impl UnitFilePanelImp {
         (cleaned_text, file_name)
     }
 
-    fn add_toast_message(&self, message: &str, markup: bool, action: Option<(&str, &str)>) {
+    fn add_toast_message(&self, message: &str, markup: bool, action: Option<(&str, &str, bool)>) {
         if let Some(app_window) = self.app_window.get() {
             app_window.add_toast_message(message, markup, action);
         }
@@ -701,15 +709,6 @@ impl UnitFilePanelImp {
                     .build()
             };
 
-            let revert_drop_in_file_only = gio::ActionEntry::builder("revert_drop_in_file_only")
-                .activate(
-                    move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
-                        info!("call revert_drop_in_file_only");
-                        _b.is_enabled();
-                    },
-                )
-                .build();
-
             let revert_unit_file_full = {
                 let unit_file_panel = self.obj().clone();
                 gio::ActionEntry::builder("revert_unit_file_full")
@@ -729,7 +728,6 @@ impl UnitFilePanelImp {
                 rename_drop_in_file,
                 create_drop_in_file_runtime,
                 create_drop_in_file_permanent,
-                revert_drop_in_file_only,
                 revert_unit_file_full,
             ]);
 
@@ -774,16 +772,9 @@ impl UnitFilePanelImp {
                 "".to_owned()
             });
 
-        let user = match unit.dbus_level() {
-            base::enums::UnitDBusLevel::System => false,
-            base::enums::UnitDBusLevel::UserSession => true,
-            base::enums::UnitDBusLevel::Both => {
-                info!("We assume User Session Bus");
-                true
-            }
-        };
+        let user_session = unit.dbus_level().user_session();
 
-        let drop_in_file_path = self.create_drop_in_file_path(&primary, runtime, user)?;
+        let drop_in_file_path = self.create_drop_in_file_path(&primary, runtime, user_session)?;
 
         self.create_drop_in_nav(&drop_in_file_path, runtime);
 
@@ -992,7 +983,15 @@ impl UnitFilePanelImp {
                     //suposed to have no drop-ins
                     file_panel.imp().set_dropins(&[]);
 
-                    (msg, true, Some((APP_ACTION_DAEMON_RELOAD, "Daemon Reload"))) //TODO translate
+                    (
+                        msg,
+                        true,
+                        Some((
+                            APP_ACTION_DAEMON_RELOAD_BUS,
+                            "Daemon Reload",
+                            level.user_session(),
+                        )),
+                    ) //TODO translate
                 }
                 Err(error) => {
                     warn!("Unit {:?}, Unable to revert {:?}", unit_name2, error);
