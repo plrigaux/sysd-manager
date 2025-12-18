@@ -1,27 +1,26 @@
-use adw::DialogPresentationMode;
-use adw::prelude::AdwDialogExt;
-use adw::prelude::AlertDialogExt;
+use adw::prelude::*;
 use base::consts::APP_ID;
 use base::enums::UnitDBusLevel;
 use gettextrs::gettext;
 
 use gtk::glib;
-use gtk::prelude::*;
 use gtk::{gio, prelude::ActionMapExtManual};
-use log::error;
-use log::info;
-use log::warn;
+use log::{error, info, warn};
 
-use crate::analyze::build_analyze_window;
-use crate::consts::ACTION_DAEMON_RELOAD;
-use crate::systemd;
-use crate::widget::app_window::AppWindow;
-use crate::widget::info_window;
-use crate::widget::preferences::PreferencesDialog;
-use crate::widget::preferences::data::DbusLevel;
-use crate::widget::preferences::data::PREFERENCES;
-use crate::widget::signals_dialog::SignalsWindow;
-use adw::prelude::*;
+use crate::{
+    analyze::build_analyze_window,
+    consts::ACTION_DAEMON_RELOAD,
+    systemd,
+    widget::{
+        app_window::AppWindow,
+        info_window,
+        preferences::{
+            PreferencesDialog,
+            data::{DbusLevel, PREFERENCES},
+        },
+        signals_dialog::SignalsWindow,
+    },
+};
 
 pub const APP_TITLE: &str = "SysD Manager";
 
