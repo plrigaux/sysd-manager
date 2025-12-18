@@ -1,3 +1,4 @@
+use adw::DialogPresentationMode;
 use adw::prelude::AdwDialogExt;
 use adw::prelude::AlertDialogExt;
 use base::consts::APP_ID;
@@ -149,20 +150,52 @@ pub fn on_startup(app: &adw::Application) {
                         daemon_relaod(simple_action, app_win_op, UnitDBusLevel::System)
                     }
                     DbusLevel::SystemAndSession => {
-                        let body = "Need to determine the bus to use for daemon reload.\nPlease select either <b>System</b> or <b>User Session</b> bus.";
+                        const SYSTEM: &str = "system";
+                        const USER: &str = "user";
+                        const CLOSE: &str = "zclose";
+
+                        let body = "Need to determine the bus to use for daemon reload.\n\
+                        Please select either <b>System</b> or <b>User Session</b> bus.";
+
                         let alert = adw::AlertDialog::builder()
                             .heading("Select bus")
                             .body_use_markup(true)
                             .body(body)
-                            .close_response("close")
+                            .close_response(CLOSE)
+                            .can_close(true)
                             .build();
 
-                        alert.add_responses(&[("system", "_System"), ("user", "User Session")]);
+                        alert.add_responses(&[
+                            (CLOSE, "_Cancel"),
+                            (SYSTEM, "_System"),
+                            (USER, "_User Session"),
+                        ]);
 
-                        alert.connect_response(None, move |_dialog, response| {
-                            info!("Response {response}");
-                        });
+                        alert.set_response_appearance(SYSTEM, adw::ResponseAppearance::Suggested);
+                        alert.set_response_appearance(USER, adw::ResponseAppearance::Suggested);
 
+                        {
+                            let win = app_win_op.clone();
+                            alert.connect_response(None, move |_dialog, response| {
+                                info!("Response {response}");
+
+                                match response {
+                                    SYSTEM => daemon_relaod(
+                                        simple_action.clone(),
+                                        win.clone(),
+                                        UnitDBusLevel::System,
+                                    ),
+                                    USER => daemon_relaod(
+                                        simple_action.clone(),
+                                        win.clone(),
+                                        UnitDBusLevel::UserSession,
+                                    ),
+                                    _ => {
+                                        warn!("Dialog response not handled: {response}");
+                                    }
+                                }
+                            });
+                        }
                         alert.present(Some(&app_win_op));
                     }
                 }
