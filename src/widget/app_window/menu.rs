@@ -154,8 +154,8 @@ pub fn on_startup(app: &adw::Application) {
                         const USER: &str = "user";
                         const CLOSE: &str = "zclose";
 
-                        let body = "Need to determine the bus to use for daemon reload.\n\
-                        Please select either <b>System</b> or <b>User Session</b> bus.";
+                        let body = "Need to determine the bus to use for daemon reload.\n\n\
+                        Please select either <b>System</b> or <b>User\u{00A0}Session</b> bus.";
 
                         let alert = adw::AlertDialog::builder()
                             .heading("Select bus")
@@ -167,8 +167,8 @@ pub fn on_startup(app: &adw::Application) {
 
                         alert.add_responses(&[
                             (CLOSE, "_Cancel"),
-                            (SYSTEM, "_System"),
                             (USER, "_User Session"),
+                            (SYSTEM, "_System"),
                         ]);
 
                         alert.set_response_appearance(SYSTEM, adw::ResponseAppearance::Suggested);
