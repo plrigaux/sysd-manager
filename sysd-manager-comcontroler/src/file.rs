@@ -4,7 +4,7 @@ use base::args;
 use base::file::create_drop_in_io;
 use base::file::{create_drop_in_path_file, flatpak_host_file_path};
 use log::{debug, error, info, warn};
-use std::{ffi::OsStr, fmt::Write, io::ErrorKind, path::Path, process::Stdio};
+use std::{ffi::OsStr, fmt::Write, path::Path, process::Stdio};
 use tokio::{
     fs,
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
@@ -34,8 +34,20 @@ pub async fn save_text_to_file(
     user_session: bool,
 ) -> Result<u64, SystemdErrors> {
     let host_file_path = flatpak_host_file_path(file_path);
-    info!("Try to save content on File: {}", host_file_path.display());
-    match write_on_disk(text, &host_file_path).await {
+    info!(
+        "Try to save content on File: {} with priviledge {}",
+        host_file_path.display(),
+        !user_session
+    );
+
+    if user_session {
+        write_on_disk(&host_file_path, text).await
+    //TODO ask if want to force with  priviledge
+    } else {
+        write_with_priviledge(&host_file_path, text).await
+    }
+
+    /*    match write_on_disk(text, &host_file_path).await {
         Ok(bytes_written) => Ok(bytes_written),
         Err(error) => {
             if let SystemdErrors::IoError(ref err) = error {
@@ -53,10 +65,10 @@ pub async fn save_text_to_file(
                 Err(error)
             }
         }
-    }
+    } */
 }
 
-async fn write_on_disk(text: &str, file_path: &Path) -> Result<u64, SystemdErrors> {
+async fn write_on_disk(file_path: &Path, text: &str) -> Result<u64, SystemdErrors> {
     let mut file = fs::OpenOptions::new()
         .write(true)
         .truncate(true)
@@ -75,7 +87,7 @@ async fn write_on_disk(text: &str, file_path: &Path) -> Result<u64, SystemdError
     Ok(bytes_written as u64)
 }
 
-async fn write_with_priviledge(file_path: &str, text: &str) -> Result<u64, SystemdErrors> {
+async fn write_with_priviledge(file_path: &Path, text: &str) -> Result<u64, SystemdErrors> {
     let prog_n_args = args!["pkexec", "tee", file_path];
     let input = text.as_bytes();
     execute_command(input, &prog_n_args).await?;
@@ -225,7 +237,7 @@ mod tests {
 
         let p = PathBuf::from(".").canonicalize()?.join("test.txt");
 
-        let r = write_with_priviledge(&p.to_string_lossy(), "Some text for a test 2").await?;
+        let r = write_with_priviledge(&p, "Some text for a test 2").await?;
 
         info!("Bytes written: {}", r);
 

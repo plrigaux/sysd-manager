@@ -260,15 +260,10 @@ pub fn get_unit_file_info(
         return Ok(String::new());
     };
 
-    #[cfg(feature = "flatpak")]
-    {
-        flatpak_file_open_get_content(file_path, unit_primary_name)
-    }
-
-    #[cfg(not(feature = "flatpak"))]
     file_open_get_content(file_path, unit_primary_name)
 }
 
+#[allow(unused)]
 fn flatpak_file_open_get_content(
     file_path: &str,
     unit_primary_name: &str,
@@ -307,7 +302,11 @@ fn file_open_get_content(
     );
 
     let mut file = File::open(&file_path).map_err(|e| {
-        warn!("Can't open file \"{}\", reason: {e}", file_path.display());
+        warn!(
+            "Can't open file \"{}\", reason: {e} {:?}",
+            file_path.display(),
+            e.kind()
+        );
         SystemdErrors::IoError(e)
     })?;
 
@@ -382,7 +381,7 @@ pub fn commander_output(
     match commander_blocking(prog_n_args, environment_variables).output() {
         Ok(output) => {
             if cfg!(feature = "flatpak") {
-                info!("Journal status: {}", output.status);
+                info!("Command Exit status: {}", output.status);
 
                 if !output.status.success() {
                     warn!("Flatpak mode, command line did not succeed, please investigate.");

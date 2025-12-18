@@ -4,28 +4,6 @@ use std::{
     path::Path,
 };
 
-use adw::prelude::{AdwDialogExt, AlertDialogExt};
-use base::file::determine_drop_in_path_dir;
-use gettextrs::pgettext;
-use gtk::{
-    TemplateChild,
-    ffi::GTK_INVALID_LIST_POSITION,
-    gio::SimpleAction,
-    glib,
-    prelude::*,
-    subclass::{
-        box_::BoxImpl,
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
-        },
-    },
-};
-use regex::Regex;
-use systemd::sysdbus::proxy_service_name;
-use tokio::sync::oneshot::Receiver;
-
 use crate::{
     consts::{ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SUGGESTED_ACTION},
     format2,
@@ -39,9 +17,29 @@ use crate::{
         unit_file_panel::{FILE_CONTEXT, flatpak::PROCEED},
     },
 };
+use adw::prelude::*;
+use base::file::determine_drop_in_path_dir;
+use gettextrs::pgettext;
+use gtk::{
+    TemplateChild,
+    ffi::GTK_INVALID_LIST_POSITION,
+    gio::SimpleAction,
+    glib,
+    subclass::{
+        box_::BoxImpl,
+        prelude::*,
+        widget::{
+            CompositeTemplateCallbacksClass, CompositeTemplateClass,
+            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
+        },
+    },
+};
 use log::{debug, info, warn};
+use regex::Regex;
 use sourceview5::{Buffer, prelude::*};
 use std::fmt::Write;
+use systemd::sysdbus::proxy_service_name;
+use tokio::sync::oneshot::Receiver;
 
 use super::flatpak;
 
@@ -297,6 +295,36 @@ impl UnitFilePanelImp {
                         )
                     }
 
+                    SystemdErrors::CmdNoFreedesktopFlatpakPermission(_, _) => {
+                        //TODO tranlate
+                        let body = "You need to jailbreak your Flatpak application to be able to save files on the host system.\n\n\
+                            Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">link</a> to know how to aquire needed permission.";
+
+                        let header = pgettext(FILE_CONTEXT, "Missing Flatpak Permission!");
+
+                        let dialog = adw::AlertDialog::builder()
+                            .heading(header)
+                            .body(body)
+                            .can_close(true)
+                            .body_use_markup(true)
+                            .close_response("close")
+                            .default_response("close")
+                            .build();
+
+                        //TODO tranlate
+                        dialog.add_responses(&[("close", &pgettext(FILE_CONTEXT, "_Cancel"))]);
+
+                        dialog.present(self.app_window.get());
+                        (
+                            pgettext(
+                                FILE_CONTEXT,
+                                "Not able to save file, Flatpak permission not granted!",
+                            ),
+                            false,
+                            None,
+                        )
+                    }
+
                     _ => (
                         pgettext(FILE_CONTEXT, "Not able to save file, an error happened!"),
                         false,
@@ -437,13 +465,7 @@ impl UnitFilePanelImp {
     fn display_unit_file_content(&self, file_nav: Option<&FileNav>, primary: &str) {
         match file_nav {
             Some(file_nav) => {
-                let file_content = systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
-                    .unwrap_or_else(|e| {
-                        warn!("get_unit_file_info Error: {e:?}");
-                        "".to_owned()
-                    });
-
-                self.fill_gui_content(file_content, &file_nav.file_path);
+                self.display_unit_file_content2(primary, file_nav);
             }
             None => {
                 let all_files = self.all_unit_files.borrow();
@@ -455,15 +477,36 @@ impl UnitFilePanelImp {
 
                 let file_nav = all_files.first().expect("vector should not be empty");
 
-                let file_content = systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
-                    .unwrap_or_else(|e| {
-                        warn!("get_unit_file_info Error: {e:?}");
-                        "".to_owned()
-                    });
-
-                self.fill_gui_content(file_content, &file_nav.file_path);
+                self.display_unit_file_content2(primary, file_nav);
             }
         };
+    }
+
+    fn display_unit_file_content2(&self, primary: &str, file_nav: &FileNav) {
+        let file_content = systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
+            .unwrap_or_else(|e| {
+                warn!("get_unit_file_info Error: {e:?}");
+
+                let mut body = String::new();
+
+                #[cfg(feature = "flatpak")]
+                {
+                    body.push_str(
+                        "You need to jailbreak your Flatpak \
+                application to be able to save files on the host system.\n\n",
+                    );
+
+                    //TODO add link tag
+                    body.push_str(
+                        "Follow the link https://github.com/plrigaux/sysd-manager/wiki/Flatpak \
+                to know how to acquire needed permissions.",
+                    );
+                }
+
+                body
+            });
+
+        self.fill_gui_content(file_content, &file_nav.file_path);
     }
 
     fn fill_gui_content(&self, file_content: String, file_path: &str) {
