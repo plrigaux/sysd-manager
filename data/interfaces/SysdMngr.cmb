@@ -12,7 +12,7 @@
   <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="d4c8413f9c91bf3a276c0658697e27e8accd7c96d32f9a1e97466164af3d5b2a"/>
   <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="4a993bd68b2994e7209b10c397491e743f78620804c4ea34225168697e8e64d3"/>
   <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="17963c3c244a657450834c03c3b7f2f2da08e72a3fa3bedfab48d6df1a5cc4c9"/>
-  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="57f6dbe8c3b9fbb1e6670c221cb356134182019c121510af5dffaff833cad4a3"/>
+  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="51853d9a5846b46d2aa64a9798e2e596a3a7190f05ff1fead354477ded924d11"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="fe1f948e1c756fa98c98b7b82ad0a6b1f00fde8db27507f9af13ebc270ba8e65"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="801d1758e8e6f10d76a13132793a7467e1b7f6ee572488a3125cd7664759fca6"/>
@@ -24,7 +24,7 @@
   <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="fc9f5293a9199d43666794072a191f2785eaef88c42e2f0c0d8046f6716538f2"/>
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="bc632f6a17915b3f4c85d5fc72b771840b3799a92851f8638410a98ea9f62d5c"/>
   <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="7ee53b03dfb9316d44ff7f1eccb32f17d63fa85e7e71d9b62a63bd4de281d0f3"/>
-  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="86a246e1f59550f6ffd525253c849e75b487b5a44ef4e9782adb6715c31f5194">
+  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="1a73d27f64d68f3511a2e76ec2eb8e2c38db179cc362051f4767fe317b19a376">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>

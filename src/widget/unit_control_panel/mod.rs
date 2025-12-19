@@ -57,10 +57,6 @@ impl UnitControlPanel {
         self.imp().set_inter_message(action);
     }
 
-    pub fn unlink_child(&self, is_signal: bool) {
-        self.imp().unlink_child(is_signal);
-    }
-
     pub(super) fn call_method<T>(
         &self,
         method_name: &str,

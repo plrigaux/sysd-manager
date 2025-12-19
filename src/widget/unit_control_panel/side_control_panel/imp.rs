@@ -1,6 +1,7 @@
 use std::cell::{Cell, OnceCell, RefCell};
 
 use gettextrs::pgettext;
+use glib::WeakRef;
 
 use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
@@ -21,7 +22,7 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
-use log::{error, warn};
+use log::{error, info, warn};
 
 use super::SideControlPanel;
 use strum::IntoEnumIterator;
@@ -31,8 +32,6 @@ use strum::IntoEnumIterator;
 #[properties(wrapper_type = super::SideControlPanel)]
 pub struct SideControlPanelImpl {
     app_window: OnceCell<AppWindow>,
-
-    current_unit: RefCell<Option<UnitInfo>>,
 
     #[property(get, set)]
     pub start_mode: RefCell<String>,
@@ -44,10 +43,13 @@ pub struct SideControlPanelImpl {
     #[template_child]
     reload_unit_button: TemplateChild<adw::SplitButton>,
 
+    #[template_child]
+    clean_button: TemplateChild<gtk::Button>,
+
     kill_signal_window: RefCell<Option<KillPanel>>,
     queue_signal_window: RefCell<Option<KillPanel>>,
 
-    parent: OnceCell<UnitControlPanel>,
+    parent: RefCell<WeakRef<UnitControlPanel>>,
 
     is_dark: Cell<bool>,
 }
@@ -108,26 +110,30 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn freeze_button_clicked(&self, button: &gtk::Button) {
-        self.parent().call_method(
-            //action name
-            &pgettext("action", "Freeze"),
-            true,
-            button,
-            systemd::freeze_unit,
-            Self::lambda_out,
-        )
+        if let Some(parent) = self.parent() {
+            parent.call_method(
+                //action name
+                &pgettext("action", "Freeze"),
+                true,
+                button,
+                systemd::freeze_unit,
+                Self::lambda_out,
+            )
+        }
     }
 
     #[template_callback]
     fn thaw_button_clicked(&self, button: &gtk::Button) {
-        self.parent().call_method(
-            //action name
-            &pgettext("action", "Thaw"),
-            true,
-            button,
-            systemd::thaw_unit,
-            Self::lambda_out,
-        )
+        if let Some(parent) = self.parent() {
+            parent.call_method(
+                //action name
+                &pgettext("action", "Thaw"),
+                true,
+                button,
+                systemd::thaw_unit,
+                Self::lambda_out,
+            )
+        }
     }
 
     #[template_callback]
@@ -152,52 +158,58 @@ impl SideControlPanelImpl {
             }
         };
 
-        self.parent().call_method(
-            //action name
-            &pgettext("action", "Reload"),
-            true,
-            button,
-            lambda,
-            Self::lambda_out,
-        )
+        if let Some(parent) = self.parent() {
+            parent.call_method(
+                //action name
+                &pgettext("action", "Reload"),
+                true,
+                button,
+                lambda,
+                Self::lambda_out,
+            )
+        }
     }
 
     #[template_callback]
     fn clean_button_clicked(&self, _button: &gtk::Widget) {
-        let unit_binding = self.current_unit.borrow();
+        let unit_binding = self.current_unit();
         let app_window = self.app_window.get();
         let parent = self.parent();
 
-        let clean_dialog = CleanUnitDialog::new(
-            unit_binding.as_ref(),
-            self.is_dark.get(),
-            app_window,
-            parent,
-        );
+        if let Some(parent) = parent {
+            let clean_dialog = CleanUnitDialog::new(
+                unit_binding.as_ref(),
+                self.is_dark.get(),
+                app_window,
+                &parent,
+            );
 
-        clean_dialog.set_transient_for(app_window);
-        //clean_dialog.set_modal(true);
+            clean_dialog.set_transient_for(app_window);
+            //clean_dialog.set_modal(true);
 
-        clean_dialog.present();
+            clean_dialog.present();
+        }
     }
 
     #[template_callback]
     fn enable_unit_button_clicked(&self, _button: &gtk::Widget) {
         let app_window = self.app_window.get();
-        let parent = self.parent();
-        let unit_binding = self.current_unit.borrow();
 
-        let enable_unit_dialog = ControlActionDialog::new(
-            unit_binding.as_ref(),
-            app_window,
-            parent,
-            ControlActionType::EnableUnitFiles,
-        );
+        let unit_binding = self.current_unit();
 
-        enable_unit_dialog.set_transient_for(app_window);
-        //clean_dialog.set_modal(true);
+        if let Some(parent) = self.parent() {
+            let enable_unit_dialog = ControlActionDialog::new(
+                unit_binding.as_ref(),
+                app_window,
+                &parent,
+                ControlActionType::EnableUnitFiles,
+            );
 
-        enable_unit_dialog.present();
+            enable_unit_dialog.set_transient_for(app_window);
+            //clean_dialog.set_modal(true);
+
+            enable_unit_dialog.present();
+        }
     }
 
     #[template_callback]
@@ -226,19 +238,21 @@ impl SideControlPanelImpl {
     }
 
     fn show_dialog(&self, action: ControlActionType) {
-        let unit_binding = self.current_unit.borrow();
+        let unit_binding = self.current_unit();
         let app_window = self.app_window.get();
-        let parent = self.parent();
 
-        let dialog = ControlActionDialog::new(unit_binding.as_ref(), app_window, parent, action);
-        dialog.set_transient_for(app_window);
+        if let Some(parent) = self.parent() {
+            let dialog =
+                ControlActionDialog::new(unit_binding.as_ref(), app_window, &parent, action);
+            dialog.set_transient_for(app_window);
 
-        dialog.present();
+            dialog.present();
+        }
     }
 
     #[template_callback]
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
-        let Some(unit) = self.parent().current_unit() else {
+        let Some(unit) = self.parent().and_then(|p| p.current_unit()) else {
             error!("No unit");
             return;
         };
@@ -253,20 +267,27 @@ impl SideControlPanelImpl {
             }
         };
 
-        self.parent().call_method(
-            //action name
-            &pgettext("action", "Unmask"),
-            true,
-            button,
-            lambda,
-            crate::widget::control_action_dialog::imp::after_unit_file_action,
-        );
+        if let Some(parent) = self.parent() {
+            parent.call_method(
+                //action name
+                &pgettext("action", "Unmask"),
+                true,
+                button,
+                lambda,
+                crate::widget::control_action_dialog::imp::after_unit_file_action,
+            )
+        }
     }
 }
 
 impl SideControlPanelImpl {
-    pub(super) fn parent(&self) -> &UnitControlPanel {
-        self.parent.get().expect("Parent not supposed to be None")
+    pub(super) fn parent(&self) -> Option<UnitControlPanel> {
+        let borrow = self.parent.borrow();
+        borrow.upgrade()
+    }
+
+    fn current_unit(&self) -> Option<UnitInfo> {
+        self.parent().and_then(|p| p.current_unit())
     }
 
     pub(super) fn reload_unit_mode_changed(&self, mode: StartStopMode) {
@@ -307,15 +328,8 @@ impl SideControlPanelImpl {
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
-        match *action {
-            InterPanelMessage::UnitChange(unit) => {
-                #[allow(clippy::map_clone)]
-                self.current_unit.replace(unit.map(|u| u.clone()));
-            }
-            InterPanelMessage::IsDark(is_dark) => {
-                self.is_dark.set(is_dark);
-            }
-            _ => (),
+        if let InterPanelMessage::IsDark(is_dark) = *action {
+            self.is_dark.set(is_dark);
         }
 
         let kill_signal_window = self.kill_signal_window.borrow();
@@ -334,12 +348,11 @@ impl SideControlPanelImpl {
         window_cell: &RefCell<Option<KillPanel>>,
         new_kill_window_fn: fn(Option<&UnitInfo>, bool, &SideControlPanel) -> KillPanel,
     ) {
-        let binding = self.current_unit.borrow();
+        let unit = self.current_unit();
         let create_new = {
             let kill_signal_window = window_cell.borrow();
             if let Some(kill_signal_window) = kill_signal_window.as_ref() {
-                kill_signal_window
-                    .set_inter_message(&InterPanelMessage::UnitChange(binding.as_ref()));
+                kill_signal_window.set_inter_message(&InterPanelMessage::UnitChange(unit.as_ref()));
                 kill_signal_window
                     .set_inter_message(&InterPanelMessage::IsDark(self.is_dark.get()));
 
@@ -360,7 +373,7 @@ impl SideControlPanelImpl {
 
         if create_new {
             let kill_signal_window =
-                new_kill_window_fn(binding.as_ref(), self.is_dark.get(), &self.obj());
+                new_kill_window_fn(unit.as_ref(), self.is_dark.get(), &self.obj());
             kill_signal_window.present();
 
             window_cell.replace(Some(kill_signal_window));
@@ -375,8 +388,19 @@ impl SideControlPanelImpl {
         }
     }
 
-    pub(super) fn set_parent(&self, parent: &UnitControlPanel) {
-        let _ = self.parent.set(parent.clone());
+    pub fn more_action_popover_shown(
+        &self,
+        parent: &UnitControlPanel,
+        unit_option: Option<UnitInfo>,
+    ) {
+        let weak = parent.downgrade();
+        let _ = self.parent.replace(weak);
+
+        if let Some(unit) = unit_option {
+            let state = unit.active_state();
+            info!("Unit active state: {:?}", state);
+            self.clean_button.set_sensitive(state.is_inactive());
+        }
     }
 }
 

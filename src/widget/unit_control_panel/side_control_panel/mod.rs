@@ -17,9 +17,9 @@ glib::wrapper! {
 }
 
 impl SideControlPanel {
-    pub fn new(parent: &UnitControlPanel) -> Self {
+    pub fn new() -> Self {
         let obj: SideControlPanel = glib::Object::new();
-        obj.imp().set_parent(parent);
+
         obj
     }
 
@@ -36,7 +36,9 @@ impl SideControlPanel {
     }
 
     pub fn add_toast_message(&self, message: &str, use_markup: bool) {
-        self.imp().parent().add_toast_message(message, use_markup);
+        if let Some(parent) = self.imp().parent() {
+            parent.add_toast_message(message, use_markup);
+        }
     }
 
     pub fn call_method(
@@ -50,12 +52,22 @@ impl SideControlPanel {
         return_handle: impl Fn(&str, Option<&UnitInfo>, Result<(), SystemdErrors>, &UnitControlPanel)
         + 'static,
     ) {
-        self.imp().parent().call_method(
-            method_name,
-            need_selected_unit,
-            button,
-            systemd_method,
-            return_handle,
-        );
+        if let Some(parent) = self.imp().parent() {
+            parent.call_method(
+                method_name,
+                need_selected_unit,
+                button,
+                systemd_method,
+                return_handle,
+            );
+        }
+    }
+
+    pub fn more_action_popover_shown(
+        &self,
+        parent: &UnitControlPanel,
+        unit_option: Option<UnitInfo>,
+    ) {
+        self.imp().more_action_popover_shown(parent, unit_option);
     }
 }

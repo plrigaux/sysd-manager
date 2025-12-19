@@ -69,7 +69,7 @@ pub struct UnitControlPanelImpl {
     restart_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
-    side_overlay: TemplateChild<gtk::Popover>,
+    more_action_popover: TemplateChild<gtk::Popover>,
 
     #[template_child]
     start_modes: TemplateChild<gtk::Box>,
@@ -84,8 +84,7 @@ pub struct UnitControlPanelImpl {
     unit_panel_stack: TemplateChild<adw::ViewStack>,
 
     app_window: OnceCell<AppWindow>,
-    side_panel: OnceCell<SideControlPanel>,
-
+    //more_action_panel: OnceCell<SideControlPanel>,
     current_unit: RefCell<Option<UnitInfo>>,
 
     search_bar: RefCell<gtk::SearchBar>,
@@ -141,11 +140,11 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
 
-        if let Some(side_panel) = self.side_panel.get() {
+        /*         if let Some(side_panel) = self.more_action_panel.get() {
             side_panel.set_app_window(app_window);
         } else {
             warn!("Side Panel Should not be None");
-        }
+        } */
 
         self.app_window
             .set(app_window.clone())
@@ -501,12 +500,12 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.set_inter_message(action);
         self.unit_journal_panel.set_inter_message(action);
 
-        let Some(side_panel) = self.side_panel.get() else {
+        /*   let Some(side_panel) = self.more_action_panel.get() else {
             warn!("Side Panel Should not be None");
             return;
         };
 
-        side_panel.set_inter_message(action);
+        side_panel.set_inter_message(action); */
     }
 
     //TODO bind to the property
@@ -583,13 +582,13 @@ impl UnitControlPanelImpl {
             .set_visible_child_name("definition_file_page");
     }
 
-    pub fn unlink_child(&self, is_signal: bool) {
-        let Some(side_panel) = self.side_panel.get() else {
+    /*     pub fn unlink_child(&self, is_signal: bool) {
+        let Some(side_panel) = self.more_action_panel.get() else {
             warn!("Side Panel Should not be None");
             return;
         };
         side_panel.unlink_child(is_signal);
-    }
+    } */
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
         if let Some(app_window) = self.app_window.get() {
@@ -707,6 +706,12 @@ impl UnitControlPanelImpl {
     pub(super) fn current_unit(&self) -> Option<UnitInfo> {
         self.current_unit.borrow().clone()
     }
+
+    fn more_action_popover_shown(&self, side_panel: &SideControlPanel) {
+        let unit_option = self.current_unit();
+
+        side_panel.more_action_popover_shown(&self.obj(), unit_option);
+    }
 }
 
 #[glib::derived_properties]
@@ -784,10 +789,18 @@ impl ObjectImpl for UnitControlPanelImpl {
             FONT_CONTEXT.set_font_description(font_description);
         }
 
-        let sidebar = SideControlPanel::new(&self.obj());
+        let more_action_panel = SideControlPanel::new();
 
-        self.side_overlay.set_child(Some(&sidebar));
-        let _ = self.side_panel.set(sidebar);
+        self.more_action_popover.set_child(Some(&more_action_panel));
+        //let _ = self.more_action_panel.set(more_action_panel);
+
+        let a = self.obj().clone();
+        let more_action_panel = more_action_panel.clone();
+        self.more_action_popover.connect_show(move |_popover| {
+            info!("More action popover shown");
+
+            a.imp().more_action_popover_shown(&more_action_panel);
+        });
 
         /*         self.show_more_button
         .bind_property::<gtk::Popover>("active", self.side_overlay.as_ref(), "collapsed")
