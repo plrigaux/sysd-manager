@@ -10,7 +10,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "2.9.6"
+version = "2.10.0"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -44,7 +44,9 @@ flatpak = ["systemd/flatpak", "base/flatpak"]
 lto = true
 
 [workspace.dependencies]
-base = { version = "0.1", path = "./sysd-manager-base", package = "sysd-manager-base" }
+base = { version = "2.10", path = "./sysd-manager-base", package = "sysd-manager-base" }
+systemd = { version = "2.10", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler"  }
+
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
 chrono = "0.4"
@@ -71,6 +73,8 @@ zbus = { version = "5.11", default-features = false, features = [
 ] }
 
 [dependencies]
+
+
 pango = { version = "0", package = "pango", features = ["v1_56"] }
 adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
 gio.workspace = true
@@ -93,8 +97,8 @@ log.workspace = true
 regex.workspace = true
 serde.workspace = true
 sourceview5 = "0.10"
-systemd = { version = "0.1", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" , optional = true }
 strum.workspace = true
+systemd.workspace = true
 tokio.workspace = true
 tracing-journald.workspace = true
 tokio-util.workspace = true
