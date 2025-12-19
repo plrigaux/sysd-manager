@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager-proxy"
-version = "2.8.1"
+version = "2.10.1"
 authors = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
@@ -19,7 +19,9 @@ path = "src/lib.rs"
 name = "sysd-manager-proxy"
 path = "src/main.rs"
 
-
+[features]
+default = []
+flatpak = []
 
 [dependencies]
 base.workspace = true
