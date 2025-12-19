@@ -1974,7 +1974,6 @@ dependencies = [
  "dotenv",
  "enumflags2",
  "futures-util",
- "gio",
  "glib",
  "libc",
  "log",

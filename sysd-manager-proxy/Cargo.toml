@@ -19,9 +19,7 @@ path = "src/lib.rs"
 name = "sysd-manager-proxy"
 path = "src/main.rs"
 
-[features]
-default = []
-flatpak = []
+
 
 [dependencies]
 base.workspace = true
@@ -29,7 +27,6 @@ clap.workspace = true
 dotenv.workspace = true
 enumflags2.workspace = true
 futures-util = "0.3"
-gio.workspace = true
 glib.workspace = true
 libc.workspace = true
 log.workspace = true

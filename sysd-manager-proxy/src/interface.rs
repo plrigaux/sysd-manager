@@ -178,8 +178,6 @@ pub async fn init_serve_connection(run_mode: RunMode) -> Result<(), Box<dyn Erro
 
     let default_name = if run_mode == RunMode::Development {
         DBUS_NAME_DEV
-    } else if cfg!(feature = "flatpak") {
-        DBUS_NAME_FLATPAK
     } else {
         DBUS_NAME
     };

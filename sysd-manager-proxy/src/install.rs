@@ -1,6 +1,3 @@
-#[cfg(feature = "flatpak")]
-extern crate gio;
-
 use std::{
     collections::BTreeMap,
     env,
@@ -13,12 +10,6 @@ use base::{
     RunMode, args,
     consts::*,
     file::{commander, flatpak_host_file_path},
-};
-
-#[cfg(feature = "flatpak")]
-use gio::{
-    OutputStreamSpliceFlags, ResourceLookupFlags,
-    prelude::{FileExt, IOStreamExt, OutputStreamExt},
 };
 
 use tokio::{fs, process::Command};
@@ -73,13 +64,8 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
         (DBUS_INTERFACE, DBUS_DESTINATION)
     };
 
-    let base_path = if cfg!(feature = "flatpak") {
-        PathBuf::from("/io/github/plrigaux/sysd-manager")
-    } else {
-        let mut src_sysd_path = normalized_path.join("sysd-manager-proxy");
-        src_sysd_path.push("data");
-        src_sysd_path
-    };
+    let mut base_path = normalized_path.join("sysd-manager-proxy");
+    base_path.push("data");
 
     let mut map = BTreeMap::new();
 
@@ -91,20 +77,10 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     let exec = match run_mode {
         RunMode::Normal => {
             //  cmd = ["flatpak", "run", APP_ID]
-            #[cfg(feature = "flatpak")]
-            {
-                format!(
-                    "/usr/bin/flatpak --system-talk-name=org.freedesktop.PolicyKit1 --system-own-name={} run {} proxy",
-                    DBUS_NAME_FLATPAK, APP_ID
-                )
-            }
 
-            #[cfg(not(feature = "flatpak"))]
-            {
-                const BIN_DIR: &str = "/usr/bin";
-                const BIN_NAME: &str = "sysd-manager-proxy";
-                String::from_iter([BIN_DIR, "/", BIN_NAME])
-            }
+            const BIN_DIR: &str = "/usr/bin";
+            const BIN_NAME: &str = "sysd-manager-proxy";
+            String::from_iter([BIN_DIR, "/", BIN_NAME])
         }
         RunMode::Development => {
             let exec = std::env::current_exe().expect("supposed to exist");
@@ -161,7 +137,7 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Error>> {
     let src_path = base_path.join(file_name);
 
-    #[cfg(feature = "flatpak")]
+    /*     #[cfg(feature = "flatpak")]
     {
         use base::file::inside_flatpak;
 
@@ -202,9 +178,8 @@ fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Err
         }
 
         Ok(tmp_path)
-    }
+    } */
 
-    #[cfg(not(feature = "flatpak"))]
     Ok(src_path)
 }
 
@@ -249,15 +224,7 @@ async fn install_file(
 }
 
 fn sudo() -> &'static str {
-    #[cfg(feature = "flatpak")]
-    {
-        "pkexec"
-    }
-
-    #[cfg(not(feature = "flatpak"))]
-    {
-        "sudo"
-    }
+    "sudo"
 }
 
 async fn install_file_mode(
