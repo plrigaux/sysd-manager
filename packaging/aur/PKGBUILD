@@ -65,7 +65,7 @@ package() {
 	PROGRAM="${BBCYAN}SysD Manager${NC}"
 	echo -e Installing $PROGRAM Proxy  
 
-	sudo install -vDm755 "./target/release/sysd-manager-proxy" -t "$pkgdir/usr/bin"
+	install -vDm755 "./target/release/sysd-manager-proxy" -t "$pkgdir/usr/bin"
 	echo -e Executing Install srcipt
 	#/usr/bin/sysd-manager-proxy install
 
