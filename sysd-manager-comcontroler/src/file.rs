@@ -4,11 +4,14 @@ use base::args;
 use base::file::create_drop_in_io;
 use base::file::{create_drop_in_path_file, flatpak_host_file_path};
 use log::{debug, error, info, warn};
-use std::{ffi::OsStr, fmt::Write, path::Path, process::Stdio};
+use std::{ffi::OsStr, path::Path, process::Stdio};
 use tokio::{
     fs,
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
 };
+
+#[cfg(feature = "flatpak")]
+use std::fmt::Write;
 
 pub(crate) async fn create_drop_in(
     runtime: bool,
@@ -94,6 +97,7 @@ async fn write_with_priviledge(file_path: &Path, text: &str) -> Result<u64, Syst
     Ok(input.len() as u64)
 }
 
+#[cfg(feature = "flatpak")]
 async fn create_drop_in_script(
     file_path: &str,
     content: &str,
@@ -126,11 +130,13 @@ async fn create_drop_in_script(
     r.map(|_| content.len() as u64)
 }
 
+#[cfg(feature = "flatpak")]
 async fn script_as_user(script: &str) -> Result<(), SystemdErrors> {
     let prog_n_args = args!["sh"];
     execute_command(script.as_bytes(), &prog_n_args).await
 }
 
+#[cfg(feature = "flatpak")]
 async fn script_with_priviledge(script: &str) -> Result<(), SystemdErrors> {
     let prog_n_args = args!["pkexec", "sh"];
     execute_command(script.as_bytes(), &prog_n_args).await
@@ -220,13 +226,15 @@ async fn execute_command(input: &[u8], prog_n_args: &[&OsStr]) -> Result<(), Sys
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fmt::Write;
     use std::process::Stdio;
     use std::{fs, path::PathBuf};
     use test_base::init_logs;
     use tokio::io::AsyncBufReadExt;
     use tokio::io::AsyncWriteExt;
     use tokio::io::BufReader;
+
+    #[cfg(feature = "flatpak")]
+    use std::fmt::Write;
 
     use crate::{errors::SystemdErrors, file::write_with_priviledge};
 
@@ -253,6 +261,7 @@ mod tests {
         println!("{:?}", fs::canonicalize(&solardir));
     }
 
+    #[cfg(feature = "flatpak")]
     #[ignore = "writes file with priviledge"]
     #[tokio::test]
     async fn test_script() -> Result<(), SystemdErrors> {
@@ -284,6 +293,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(feature = "flatpak")]
     #[ignore = "writes file with priviledge"]
     #[tokio::test]
     async fn test_create_drop_in_script() -> Result<(), SystemdErrors> {
@@ -306,6 +316,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(feature = "flatpak")]
     #[ignore = "writes file with priviledge"]
     #[tokio::test]
     async fn test_create_drop_in_script_user() -> Result<(), SystemdErrors> {

@@ -343,7 +343,7 @@ macro_rules! get_unit {
         let binding = $self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
             warn!("No unit to present");
-            $self.set_editor_text("");
+            $self.set_editor_text("", false);
             return;
         };
         unit.clone()
@@ -471,7 +471,7 @@ impl UnitFilePanelImp {
                 let all_files = self.all_unit_files.borrow();
 
                 if all_files.is_empty() {
-                    self.fill_gui_content(String::new(), "");
+                    self.fill_gui_content(String::new(), false, "");
                     return;
                 }
 
@@ -483,40 +483,38 @@ impl UnitFilePanelImp {
     }
 
     fn display_unit_file_content2(&self, primary: &str, file_nav: &FileNav) {
-        let file_content = systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
-            .unwrap_or_else(|e| {
-                warn!("get_unit_file_info Error: {e:?}");
+        let (file_content, is_error_msg) =
+            systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
+                .map(|content| (content, false))
+                .unwrap_or_else(|e| {
+                    warn!("get_unit_file_info Error: {e:?}");
 
-                let mut body = String::new();
+                    #[cfg(feature = "flatpak")]
+                    {
+                        let mut body = String::new();
+                        body.push_str("You miss a permission to be able to read the file.\n\n");
+                        body.push_str(
+                            "To know how to acquire needed permissions, follow this link:\n\n\
+                         https://github.com/plrigaux/sysd-manager/wiki/Flatpak",
+                        );
+                        (body, true)
+                    }
 
-                #[cfg(feature = "flatpak")]
-                {
-                    body.push_str(
-                        "You need to jailbreak your Flatpak \
-                application to be able to save files on the host system.\n\n",
-                    );
+                    #[cfg(not(feature = "flatpak"))]
+                    (String::new(), true)
+                });
 
-                    //TODO add link tag
-                    body.push_str(
-                        "Follow the link https://github.com/plrigaux/sysd-manager/wiki/Flatpak \
-                to know how to acquire needed permissions.",
-                    );
-                }
-
-                body
-            });
-
-        self.fill_gui_content(file_content, &file_nav.file_path);
+        self.fill_gui_content(file_content, is_error_msg, &file_nav.file_path);
     }
 
-    fn fill_gui_content(&self, file_content: String, file_path: &str) {
+    fn fill_gui_content(&self, file_content: String, is_error_msg: bool, file_path: &str) {
         let uri = generate_file_uri(file_path);
 
         self.file_link.set_uri(&uri);
 
         self.file_link.set_label(file_path);
 
-        self.set_editor_text(&file_content);
+        self.set_editor_text(&file_content, is_error_msg);
     }
 
     fn display_unit_drop_in_file_content(&self, drop_in_index: u32) {
@@ -526,7 +524,7 @@ impl UnitFilePanelImp {
                 "Drop in index out of bound requested: {drop_in_index} max: {}",
                 self.all_unit_files.borrow().len()
             );
-            self.set_editor_text("");
+            self.set_editor_text("", false);
             return;
         };
 
@@ -613,12 +611,19 @@ impl UnitFilePanelImp {
         self.display_unit_drop_in_file_content(selected_index);
     }
 
-    fn set_editor_text(&self, file_content: &str) {
-        let buf = self
-            .unit_file_text
-            .get()
-            .expect("expect sourceview5::View")
-            .buffer();
+    fn set_editor_text(&self, file_content: &str, is_error_msg: bool) {
+        let view = self.unit_file_text.get().expect("expect sourceview5::View");
+        let buf = view.buffer();
+
+        if let Some(buffer) = buf.downcast_ref::<Buffer>() {
+            if is_error_msg {
+                buffer.set_language(None);
+            } else if buffer.language().is_none()
+                && let Some(ref language) = sourceview5::LanguageManager::new().language("ini")
+            {
+                buffer.set_language(Some(language));
+            }
+        }
 
         buf.set_text(""); //To clear current
         buf.set_text(file_content);
@@ -830,7 +835,7 @@ impl UnitFilePanelImp {
             .inspect_err(|e| warn!("some error {:?}", e))
             .unwrap_or_default();
 
-        self.fill_gui_content(new_file_content, &drop_in_file_path);
+        self.fill_gui_content(new_file_content, false, &drop_in_file_path);
         Ok(())
     }
 

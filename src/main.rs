@@ -51,6 +51,7 @@ fn main() -> glib::ExitCode {
 
     let (unit, command, level, run_mode) = handle_args();
 
+    #[allow(clippy::single_match)]
     match command {
         Some(Command::Test { test }) => {
             info!("End test");
@@ -62,8 +63,7 @@ fn main() -> glib::ExitCode {
             return gtk::glib::ExitCode::SUCCESS;
         }
 
-        Some(_) => {}
-        None => {}
+        _ => {}
     }
 
     info!("LANGUAGE {:?}", env::var("LANGUAGE"));
