@@ -1884,7 +1884,7 @@ checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 
 [[package]]
 name = "sysd-manager"
-version = "2.10.3"
+version = "2.10.4"
 dependencies = [
  "chrono",
  "clap",
