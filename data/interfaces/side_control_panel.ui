@@ -5,10 +5,10 @@
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.4"/>
   <template class="SideControlPanel" parent="GtkBox">
-    <child>
-      <object class="GtkScrolledWindow">
+   <!--  <child>
+      <object class="GtkScrolledWindow"> 
         <property name="child">
-          <object class="GtkBox">
+          <object class="GtkBox">-->
             <property name="margin-end">5</property>
             <property name="margin-start">5</property>
             <property name="orientation">vertical</property>
@@ -208,11 +208,11 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
                 </child>
               </object>
             </child>
-          </object>
+      <!--    </object>
         </property>
         <property name="hexpand">True</property>
         <property name="hscrollbar-policy">never</property>
       </object>
-    </child>
+     </child> -->
   </template>
 </interface>

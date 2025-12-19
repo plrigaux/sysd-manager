@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name unit_control_panel.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -102,13 +102,18 @@
             <property name="halign">end</property>
             <property name="hexpand">True</property>
             <child>
-              <object class="GtkToggleButton" id="show_more_button">
-                <signal name="toggled" handler="show_more_button_clicked" swapped="yes"/>
+              <object class="GtkMenuButton" id="show_more_button">
+                <property name="label">test</property>
+                <property name="popover">
+                  <object class="GtkPopover" id="side_overlay"/>
+                </property>
+                <property name="tooltip-text" translatable="yes"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="can-shrink">True</property>
                     <property name="icon-name">dock-right-symbolic</property>
                     <property name="label" translatable="yes" context="controls menu">_More ...</property>
+                    <property name="tooltip-text" translatable="yes" context="control tooltip">More unit actions</property>
                     <property name="use-underline">True</property>
                   </object>
                 </child>
@@ -119,72 +124,66 @@
       </object>
     </child>
     <child>
-      <object class="AdwOverlaySplitView" id="side_overlay">
+      <!--       <object class="AdwOverlaySplitView" id="side_overlay">
         <property name="collapsed">True</property>
-        <property name="content">
-          <object class="GtkBox">
-            <property name="orientation">vertical</property>
+        <property name="content"> -->
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwViewSwitcher">
+            <property name="css-classes">separator</property>
+            <property name="margin-bottom">5</property>
+            <property name="margin-end">5</property>
+            <property name="policy">wide</property>
+            <property name="stack">unit_panel_stack</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwViewStack" id="unit_panel_stack">
+            <property name="vexpand">True</property>
+            <property name="vexpand-set">True</property>
             <child>
-              <object class="AdwViewSwitcher">
-                <property name="css-classes">separator</property>
-                <property name="margin-bottom">5</property>
-                <property name="margin-end">5</property>
-                <property name="policy">wide</property>
-                <property name="stack">unit_panel_stack</property>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="UnitInfoPanel" id="unit_info_panel"/>
+                </property>
+                <property name="icon-name">emblem-documents-symbolic</property>
+                <property name="name">info_page</property>
+                <property name="title" translatable="yes" context="controls tab">Unit Info</property>
               </object>
             </child>
             <child>
-              <object class="AdwViewStack" id="unit_panel_stack">
-                <property name="vexpand">True</property>
-                <property name="vexpand-set">True</property>
-                <child>
-                  <object class="AdwViewStackPage">
-                    <property name="child">
-                      <object class="UnitInfoPanel" id="unit_info_panel"/>
-                    </property>
-                    <property name="icon-name">emblem-documents-symbolic</property>
-                    <property name="name">info_page</property>
-                    <property name="title" translatable="yes" context="controls tab">Unit Info</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwViewStackPage">
-                    <property name="child">
-                      <object class="UnitDependenciesPanel" id="unit_dependencies_panel"/>
-                    </property>
-                    <property name="icon-name">view-list-symbolic</property>
-                    <property name="name">dependencies_page</property>
-                    <property name="title" translatable="yes" context="controls tab">Dependencies</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwViewStackPage">
-                    <property name="child">
-                      <object class="UnitFilePanel" id="unit_file_panel"/>
-                    </property>
-                    <property name="icon-name">text-x-generic-symbolic</property>
-                    <property name="name">definition_file_page</property>
-                    <property name="title" translatable="yes" context="controls tab">File</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwViewStackPage">
-                    <property name="child">
-                      <object class="JournalPanel" id="unit_journal_panel"/>
-                    </property>
-                    <property name="icon-name">format-justify-fill</property>
-                    <property name="name">journal_page</property>
-                    <property name="title" translatable="yes" context="controls tab">Journal</property>
-                  </object>
-                </child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="UnitDependenciesPanel" id="unit_dependencies_panel"/>
+                </property>
+                <property name="icon-name">view-list-symbolic</property>
+                <property name="name">dependencies_page</property>
+                <property name="title" translatable="yes" context="controls tab">Dependencies</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="UnitFilePanel" id="unit_file_panel"/>
+                </property>
+                <property name="icon-name">text-x-generic-symbolic</property>
+                <property name="name">definition_file_page</property>
+                <property name="title" translatable="yes" context="controls tab">File</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="JournalPanel" id="unit_journal_panel"/>
+                </property>
+                <property name="icon-name">format-justify-fill</property>
+                <property name="name">journal_page</property>
+                <property name="title" translatable="yes" context="controls tab">Journal</property>
               </object>
             </child>
           </object>
-        </property>
-        <property name="max-sidebar-width">180.0</property>
-        <property name="min-sidebar-width">40.0</property>
-        <property name="sidebar-position">end</property>
-        <property name="vexpand">True</property>
+        </child>
       </object>
     </child>
   </template>

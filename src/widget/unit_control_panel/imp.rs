@@ -37,9 +37,6 @@ use crate::{
 use base::enums::UnitDBusLevel;
 use strum::IntoEnumIterator;
 
-const TTT_HIDE: &str = "Hide sidebar";
-const TTT_SHOW: &str = "Show sidebar";
-
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
 #[properties(wrapper_type = super::UnitControlPanel)]
@@ -66,13 +63,13 @@ pub struct UnitControlPanelImpl {
     stop_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
-    show_more_button: TemplateChild<gtk::ToggleButton>,
+    show_more_button: TemplateChild<gtk::MenuButton>,
 
     #[template_child]
     restart_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
-    side_overlay: TemplateChild<adw::OverlaySplitView>,
+    side_overlay: TemplateChild<gtk::Popover>,
 
     #[template_child]
     start_modes: TemplateChild<gtk::Box>,
@@ -220,17 +217,6 @@ impl UnitControlPanelImpl {
             None,
             Rc::new(Box::new(move || {})),
         );
-    }
-
-    #[template_callback]
-    fn show_more_button_clicked(&self, show_more_button: &gtk::ToggleButton) {
-        let tooltip_text = if show_more_button.is_active() {
-            TTT_HIDE
-        } else {
-            TTT_SHOW
-        };
-
-        show_more_button.set_tooltip_text(Some(tooltip_text));
     }
 
     #[template_callback]
@@ -800,20 +786,14 @@ impl ObjectImpl for UnitControlPanelImpl {
 
         let sidebar = SideControlPanel::new(&self.obj());
 
-        self.side_overlay.set_sidebar(Some(&sidebar));
+        self.side_overlay.set_child(Some(&sidebar));
         let _ = self.side_panel.set(sidebar);
 
-        self.show_more_button
-            .bind_property::<adw::OverlaySplitView>(
-                "active",
-                self.side_overlay.as_ref(),
-                "collapsed",
-            )
-            .bidirectional()
-            .invert_boolean()
-            .build();
-
-        self.show_more_button.set_tooltip_text(Some(TTT_SHOW));
+        /*         self.show_more_button
+        .bind_property::<gtk::Popover>("active", self.side_overlay.as_ref(), "collapsed")
+        .bidirectional()
+        .invert_boolean()
+        .build(); */
     }
 }
 
