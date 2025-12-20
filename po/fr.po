@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-20 15:11-0500\n"
-"PO-Revision-Date: 2025-11-22 01:06+0000\n"
+"PO-Revision-Date: 2025-12-20 20:37+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,13 +17,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 #. Desktop File Name
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
-msgstr "Gestionnaire SysD"
+msgstr ""
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
@@ -77,10 +77,9 @@ msgid "Analyze Blame"
 msgstr "Analyse blâme"
 
 #: data/interfaces/app_window.ui:16
-#, fuzzy
 msgctxt "menu"
 msgid "Daemon Reload"
-msgstr "Recharger"
+msgstr "Recharger la configuration"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -778,7 +777,6 @@ msgstr "_Nettoyer ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:87
-#, fuzzy
 msgctxt "control"
 msgid ""
 "Remove the configuration, state, cache, logs or runtime data of the "
@@ -786,7 +784,8 @@ msgid ""
 "<u>Note:</u> the unit must be <b>inactive</b> to be cleaned."
 msgstr ""
 "Supprimez la configuration, l'état, le cache, les journaux ou les données "
-"d'exécution des unités spécifiées"
+"d'exécution de l'unité spécifiée.\n"
+"<u>Remarque :</u> l'unité doit être <b>inactive</b> pour être nettoyée."
 
 #. button
 #: data/interfaces/side_control_panel.ui:101
@@ -995,10 +994,9 @@ msgid "_More ..."
 msgstr "_Plus ..."
 
 #: data/interfaces/unit_control_panel.ui:116
-#, fuzzy
 msgctxt "control tooltip"
 msgid "More unit actions"
-msgstr "Orientation"
+msgstr "Plus d'actions pour gérer les unités"
 
 #: data/interfaces/unit_control_panel.ui:152
 msgctxt "controls tab"
@@ -1052,11 +1050,11 @@ msgstr "Pas de fichier pour l'unité"
 
 #: data/interfaces/unit_file_panel.ui:92
 msgid "Create Drop-in"
-msgstr ""
+msgstr "Créer un drop-in"
 
 #: data/interfaces/unit_file_panel.ui:95
 msgid "Permanent"
-msgstr ""
+msgstr "Permanent"
 
 #: data/interfaces/unit_file_panel.ui:99
 #, fuzzy
@@ -1065,7 +1063,7 @@ msgstr "Runtime"
 
 #: data/interfaces/unit_file_panel.ui:104
 msgid "Revert Drop-in"
-msgstr ""
+msgstr "Annuler le Drop-in"
 
 #. button
 #: data/interfaces/unit_info_panel.ui:22
@@ -1264,17 +1262,16 @@ msgstr "Le Programme démarre"
 #. instance level user
 #: src/widget/app_window/menu.rs:273
 msgid "user"
-msgstr ""
+msgstr "utilisateur"
 
 #. instance level system
 #: src/widget/app_window/menu.rs:276
-#, fuzzy
 msgid "system"
-msgstr "Système"
+msgstr "système"
 
 #: src/widget/app_window/menu.rs:287
 msgid "Daemon Reload failed!"
-msgstr ""
+msgstr "Recharge la configuration a échouée!"
 
 #. about dialogue
 #: src/widget/app_window/menu.rs:330
@@ -2011,24 +2008,27 @@ msgid ""
 "Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
 "Flatpak\">link</a> to know how to aquire needed permission."
 msgstr ""
+"Vous devez jailbreaker votre application Flatpak pour pouvoir enregistrer "
+"des fichiers sur le système hôte.\n"
+"\n"
+"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
+"lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:77
-#, fuzzy
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
-msgstr "Permission Flatpak nécessaire!"
+msgstr "Permission Flatpak nécessaire !"
 
 #. TODO tranlate
 #: src/widget/unit_file_panel/flatpak.rs:89
 msgctxt "flatpak"
 msgid "_Close"
-msgstr ""
+msgstr "_Fermer"
 
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
-#, fuzzy
 msgid "Daemon Reload"
-msgstr "Recharger"
+msgstr "Recharger la configuration"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
