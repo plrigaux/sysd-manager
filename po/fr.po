@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-20 15:35-0500\n"
-"PO-Revision-Date: 2025-11-22 01:06+0000\n"
+"PO-Revision-Date: 2025-12-20 20:44+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -985,10 +985,9 @@ msgstr "Redémarrer"
 
 #. tooltip on the more... button
 #: data/interfaces/unit_control_panel.ui:107
-#, fuzzy
 msgctxt "control tooltip"
 msgid "More manage unit actions"
-msgstr "Orientation"
+msgstr "Plus d'actions pour gérer les unités"
 
 #: data/interfaces/unit_control_panel.ui:116
 msgctxt "controls menu"
