@@ -37,7 +37,7 @@ pub trait SysDManagerComLink {
 ///2 Tertemine mode
 ///2 Connect to the proxy and return a proxy object
 fn ensure_proxy_up() {
-    //TODO
+    //TODO ensure_proxy_up
 }
 
 fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors> {

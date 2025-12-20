@@ -72,7 +72,7 @@
               <object class="AdwHeaderBar" id="header_bar">
                 <property name="title-widget">
                   <object class="AdwWindowTitle" id="app_title">
-                    <property name="title" translatable="yes" context="title">SysD Manager</property>
+                    <property name="title" translatable="no" context="title">SysD Manager</property>
                   </object>
                 </property>
                 <child>

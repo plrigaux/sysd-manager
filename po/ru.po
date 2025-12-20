@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:11-0500\n"
+"POT-Creation-Date: 2025-12-20 15:35-0500\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -20,7 +20,7 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.15-dev\n"
 
-#. Desktop File Name
+#. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
@@ -112,11 +112,6 @@ msgstr "Комбинации клавиш"
 msgctxt "menu"
 msgid "About"
 msgstr "О приложении"
-
-#: data/interfaces/app_window.ui:75
-msgctxt "title"
-msgid "SysD Manager"
-msgstr "SysD Менеджер"
 
 #: data/interfaces/app_window.ui:81
 msgctxt "top button tooltip"
@@ -978,16 +973,17 @@ msgctxt "controls"
 msgid "Restart"
 msgstr "Перезапустить"
 
-#: data/interfaces/unit_control_panel.ui:115
+#. tooltip on the more... button
+#: data/interfaces/unit_control_panel.ui:107
+#, fuzzy
+msgctxt "control tooltip"
+msgid "More manage unit actions"
+msgstr "Ориентация"
+
+#: data/interfaces/unit_control_panel.ui:116
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Другие действия..."
-
-#: data/interfaces/unit_control_panel.ui:116
-#, fuzzy
-msgctxt "control tooltip"
-msgid "More unit actions"
-msgstr "Ориентация"
 
 #: data/interfaces/unit_control_panel.ui:152
 msgctxt "controls tab"
@@ -2001,7 +1997,7 @@ msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
 msgstr "Требуется разрешение Flatpak!"
 
-#. TODO tranlate
+#. Button label
 #: src/widget/unit_file_panel/flatpak.rs:89
 msgctxt "flatpak"
 msgid "_Close"
@@ -2114,6 +2110,10 @@ msgstr "Очистить фильтр по столбцу"
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Фильтрация"
+
+#~ msgctxt "title"
+#~ msgid "SysD Manager"
+#~ msgstr "SysD Менеджер"
 
 #, fuzzy
 #~ msgctxt "menu"

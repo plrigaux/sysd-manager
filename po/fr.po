@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:11-0500\n"
+"POT-Creation-Date: 2025-12-20 15:35-0500\n"
 "PO-Revision-Date: 2025-11-22 01:06+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.15-dev\n"
 
-#. Desktop File Name
+#. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
@@ -111,11 +111,6 @@ msgstr "Raccourcis clavier"
 msgctxt "menu"
 msgid "About"
 msgstr "À propos"
-
-#: data/interfaces/app_window.ui:75
-msgctxt "title"
-msgid "SysD Manager"
-msgstr "Gestionnaire SysD"
 
 #: data/interfaces/app_window.ui:81
 msgctxt "top button tooltip"
@@ -989,16 +984,17 @@ msgctxt "controls"
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: data/interfaces/unit_control_panel.ui:115
+#. tooltip on the more... button
+#: data/interfaces/unit_control_panel.ui:107
+#, fuzzy
+msgctxt "control tooltip"
+msgid "More manage unit actions"
+msgstr "Orientation"
+
+#: data/interfaces/unit_control_panel.ui:116
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Plus ..."
-
-#: data/interfaces/unit_control_panel.ui:116
-#, fuzzy
-msgctxt "control tooltip"
-msgid "More unit actions"
-msgstr "Orientation"
 
 #: data/interfaces/unit_control_panel.ui:152
 msgctxt "controls tab"
@@ -2018,7 +2014,7 @@ msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
 msgstr "Permission Flatpak nécessaire!"
 
-#. TODO tranlate
+#. Button label
 #: src/widget/unit_file_panel/flatpak.rs:89
 msgctxt "flatpak"
 msgid "_Close"
@@ -2131,6 +2127,10 @@ msgstr "Supprimer les filtres de cette colonne"
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Filtrage"
+
+#~ msgctxt "title"
+#~ msgid "SysD Manager"
+#~ msgstr "Gestionnaire SysD"
 
 #, fuzzy
 #~ msgctxt "menu"

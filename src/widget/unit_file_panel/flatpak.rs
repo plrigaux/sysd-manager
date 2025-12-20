@@ -85,7 +85,7 @@ pub fn flatpak_permision_alert() -> adw::AlertDialog {
         .default_response("close")
         .build();
 
-    //TODO tranlate
+    //Button label
     dialog.add_responses(&[("close", &pgettext("flatpak", "_Close"))]);
     dialog
 }

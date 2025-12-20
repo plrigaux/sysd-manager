@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:11-0500\n"
+"POT-Creation-Date: 2025-12-20 15:35-0500\n"
 "PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.15-dev\n"
 
-#. Desktop File Name
+#. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
@@ -112,11 +112,6 @@ msgstr "Klaviatuuri kiirklahvid"
 msgctxt "menu"
 msgid "About"
 msgstr "Rakenduse teave"
-
-#: data/interfaces/app_window.ui:75
-msgctxt "title"
-msgid "SysD Manager"
-msgstr "SysD haldur"
 
 #: data/interfaces/app_window.ui:81
 msgctxt "top button tooltip"
@@ -962,16 +957,17 @@ msgctxt "controls"
 msgid "Restart"
 msgstr "Käivita uuesti"
 
-#: data/interfaces/unit_control_panel.ui:115
+#. tooltip on the more... button
+#: data/interfaces/unit_control_panel.ui:107
+#, fuzzy
+msgctxt "control tooltip"
+msgid "More manage unit actions"
+msgstr "Paigutus"
+
+#: data/interfaces/unit_control_panel.ui:116
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Veel ..."
-
-#: data/interfaces/unit_control_panel.ui:116
-#, fuzzy
-msgctxt "control tooltip"
-msgid "More unit actions"
-msgstr "Paigutus"
 
 #: data/interfaces/unit_control_panel.ui:152
 msgctxt "controls tab"
@@ -1973,7 +1969,7 @@ msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
 msgstr "Flatpak vajab õigusi!"
 
-#. TODO tranlate
+#. Button label
 #: src/widget/unit_file_panel/flatpak.rs:89
 msgctxt "flatpak"
 msgid "_Close"
@@ -2084,6 +2080,10 @@ msgstr "Tühjenda veergude filter"
 msgctxt "menu"
 msgid "Filtering"
 msgstr ""
+
+#~ msgctxt "title"
+#~ msgid "SysD Manager"
+#~ msgstr "SysD haldur"
 
 #, fuzzy
 #~ msgctxt "menu"
