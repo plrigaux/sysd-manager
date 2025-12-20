@@ -42,6 +42,10 @@ use crate::{
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
+
+#[cfg(not(feature = "flatpak"))]
+use base::consts::*;
+
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 pub(super) const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
