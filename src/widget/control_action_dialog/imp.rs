@@ -7,7 +7,6 @@ use crate::{
     },
     systemd_gui,
     widget::{
-        app_window::AppWindow,
         control_action_dialog::ControlActionType,
         unit_control_panel::{UnitControlPanel, enums::UnitContolType},
     },
@@ -29,6 +28,7 @@ use gtk::{
 use log::{info, warn};
 use std::cell::OnceCell;
 use strum::IntoEnumIterator;
+use tracing::error;
 
 use super::ControlActionDialog;
 
@@ -77,11 +77,7 @@ pub struct EnableUnitDialogImp {
     #[template_child]
     window_title: TemplateChild<adw::WindowTitle>,
 
-    unit: OnceCell<Option<UnitInfo>>,
-
     action_type: OnceCell<ControlActionType>,
-
-    app_window: OnceCell<AppWindow>,
 
     unit_control: OnceCell<UnitControlPanel>,
 
@@ -96,17 +92,16 @@ impl EnableUnitDialogImp {
         let unit_file2 = unit_file.clone();
 
         let dialog = self.obj().clone();
-
-        let app_window = self
-            .app_window
-            .get()
-            .expect("Need app window setted")
-            .clone();
-
         let runtime = self.runtime_switch.is_active();
         let force = self.force_switch.is_active();
 
         let action_type = *self.action_type.get().expect("Value need to be set");
+
+        let Some(app_window) = self.unit_control.get().and_then(|ucp| ucp.app_window()) else {
+            error!("No App window");
+            return;
+        };
+
         match action_type {
             ControlActionType::EnableUnitFiles => {
                 let dbus_level = self.dbus_level_combo.selected();
@@ -183,16 +178,15 @@ impl EnableUnitDialogImp {
                     systemd::enable_unit_file(dbus_level, unit_file2.as_str(), flags)
                 };
 
-                self.unit_control
-                    .get()
-                    .expect("unit_control not None")
-                    .call_method(
-                        &action_type.method_name(),
-                        false,
-                        &button,
-                        lambda,
-                        handling_response_callback,
-                    );
+                let unit_control = self.unit_control.get().expect("unit_control not None");
+
+                unit_control.call_method(
+                    &action_type.method_name(),
+                    false,
+                    &button,
+                    lambda,
+                    handling_response_callback,
+                );
             }
             ControlActionType::DisableUnitFiles => {
                 let handling_response_callback = {
@@ -542,16 +536,14 @@ impl EnableUnitDialogImp {
 
     pub(crate) fn set_app_window(
         &self,
-        app_window: Option<AppWindow>,
-        unit_control: &UnitControlPanel,
-    ) {
-        if let Some(app_window) = app_window {
-            self.app_window
-                .set(app_window)
-                .expect("app_window set once");
-        }
 
+        unit_control: &UnitControlPanel,
+        action_type: super::ControlActionType,
+    ) {
         let _ = self.unit_control.set(unit_control.clone());
+        self.set_action_type(action_type);
+
+        self.set_unit(unit_control.current_unit())
     }
 
     #[template_callback]
@@ -584,7 +576,7 @@ impl EnableUnitDialogImp {
 
     #[template_callback]
     fn use_selected_unit_clicked(&self, _button: gtk::Button) {
-        if let Some(Some(selected_unit)) = self.unit.get() {
+        if let Some(selected_unit) = self.unit_control.get().and_then(|ucp| ucp.current_unit()) {
             self.unit_file_entry.set_text(&selected_unit.primary());
         }
     }
@@ -596,8 +588,8 @@ impl EnableUnitDialogImp {
         self.send_action_button.set_sensitive(!unit_file.is_empty());
     }
 
-    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
-        self.unit.set(unit.cloned()).expect("Unit set Once Only");
+    pub fn set_unit(&self, unit: Option<UnitInfo>) {
+        self.use_selected_unit_button.set_sensitive(unit.is_some());
 
         if let Some(unit) = unit {
             if self.action_type.get().expect("Not None").dialog_subtitle() {
@@ -611,11 +603,9 @@ impl EnableUnitDialogImp {
                 self.send_action_button.set_sensitive(true);
             }
         }
-
-        self.use_selected_unit_button.set_sensitive(unit.is_some());
     }
 
-    pub(crate) fn set_action_type(&self, action_type: super::ControlActionType) {
+    fn set_action_type(&self, action_type: super::ControlActionType) {
         self.action_type.set(action_type).expect("Only set once");
 
         self.window_title.set_title(&action_type.title());

@@ -14,7 +14,7 @@
     <property name="orientation">vertical</property>
     <property name="spacing">5</property>
     <child>
-      <object class="GtkButton">
+      <object class="GtkButton" id="enable_unit_file_button">
         <property name="child">
           <object class="AdwButtonContent">
             <property name="halign">start</property>
@@ -44,7 +44,7 @@
       </object>
     </child>
     <child>
-      <object class="GtkButton">
+      <object class="GtkButton" id="send_kill_button">
         <property name="child">
           <object class="AdwButtonContent">
             <property name="halign">start</property>
@@ -59,7 +59,7 @@
       </object>
     </child>
     <child>
-      <object class="GtkButton">
+      <object class="GtkButton" id="queue_signal_button">
         <property name="child">
           <object class="AdwButtonContent">
             <property name="halign">start</property>
@@ -80,13 +80,12 @@
             <property name="halign">start</property>
             <property name="icon-name">empty-trash-bin-symbolic</property>
             <property name="label" translatable="yes" context="control" comments="button">_Clean ➚</property>
-  
             <property name="use-underline">True</property>
           </object>
         </property>
-                  <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Remove the configuration, state, cache, logs or runtime data of the specified unit. 
-&lt;u&gt;Note:&lt;/u&gt; the unit must be &lt;b&gt;inactive&lt;/b&gt; to be cleaned.</property>
         <property name="css-classes">flat</property>
+        <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Remove the configuration, state, cache, logs or runtime data of the specified unit. 
+&lt;u&gt;Note:&lt;/u&gt; the unit must be &lt;b&gt;inactive&lt;/b&gt; to be cleaned.</property>
         <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
       </object>
     </child>

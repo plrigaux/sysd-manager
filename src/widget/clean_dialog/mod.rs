@@ -5,9 +5,7 @@ use gtk::{
     subclass::prelude::ObjectSubclassIsExt,
 };
 
-use crate::systemd::data::UnitInfo;
-
-use super::{InterPanelMessage, app_window::AppWindow, unit_control_panel::UnitControlPanel};
+use super::unit_control_panel::UnitControlPanel;
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -18,18 +16,10 @@ glib::wrapper! {
 }
 
 impl CleanUnitDialog {
-    pub fn new(
-        unit: Option<&UnitInfo>,
-        is_dark: bool,
-        app_window: Option<AppWindow>,
-        unit_control: &UnitControlPanel,
-    ) -> Self {
+    pub fn new(unit_control_panel: &UnitControlPanel) -> Self {
         let obj: CleanUnitDialog = glib::Object::new();
         let imp = obj.imp();
-        imp.set_app_window(app_window, unit_control);
-
-        imp.set_unit(unit);
-        imp.set_inter_message(&InterPanelMessage::IsDark(is_dark));
+        imp.set_unit_control_panel(unit_control_panel);
 
         obj
     }

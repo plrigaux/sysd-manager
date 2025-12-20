@@ -1,12 +1,9 @@
-use std::{
-    cell::{OnceCell, RefCell},
-    collections::HashMap,
-};
+use std::{cell::OnceCell, collections::HashMap};
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use gettextrs::pgettext;
 use gtk::{
-    glib::{self, property::PropertySet},
+    glib::{self},
     subclass::{
         prelude::*,
         widget::{
@@ -19,11 +16,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
-    widget::{
-        InterPanelMessage,
-        app_window::AppWindow,
-        unit_control_panel::{UnitControlPanel, work_around_dialog},
-    },
+    widget::unit_control_panel::{UnitControlPanel, work_around_dialog},
 };
 use base::enums::UnitDBusLevel;
 use log::{info, warn};
@@ -42,11 +35,7 @@ pub struct CleanDialogImp {
     #[template_child]
     window_title: TemplateChild<adw::WindowTitle>,
 
-    unit: RefCell<Option<UnitInfo>>,
-
     check_buttons: OnceCell<HashMap<String, gtk::CheckButton>>,
-
-    app_window: OnceCell<AppWindow>,
 
     unit_control: OnceCell<UnitControlPanel>,
 }
@@ -109,40 +98,18 @@ impl CleanDialogImp {
             );
     }
 
-    pub(crate) fn set_app_window(
-        &self,
-        app_window: Option<AppWindow>,
-        unit_control: &UnitControlPanel,
-    ) {
-        if let Some(app_window) = app_window {
-            self.app_window
-                .set(app_window)
-                .expect("app_window set once");
-        }
-
+    pub(crate) fn set_unit_control_panel(&self, unit_control: &UnitControlPanel) {
         let _ = self.unit_control.set(unit_control.clone());
-    }
 
-    pub(super) fn set_inter_message(&self, _action: &InterPanelMessage) {}
-
-    pub fn set_unit(&self, unit: Option<&UnitInfo>) {
-        let unit = match unit {
-            Some(u) => u,
+        let sub_title = match unit_control.current_unit() {
+            Some(u) => u.primary(),
             None => {
                 warn!("set unit to None");
-                self.unit.set(None);
-                //dialog subtitle
-                let sub_title = pgettext("clean", "No Unit Selected");
-                self.window_title.set_subtitle(&sub_title);
-                return;
+                pgettext("clean", "No Unit Selected")
             }
         };
 
-        self.unit.set(Some(unit.clone()));
-
-        let label_text = &unit.primary();
-
-        self.window_title.set_subtitle(label_text);
+        self.window_title.set_subtitle(&sub_title);
 
         self.set_send_button_sensitivity();
     }
@@ -152,7 +119,12 @@ impl CleanDialogImp {
     }
 
     fn set_send_button_sensitivity(&self) {
-        if self.unit.borrow().is_none() {
+        if self
+            .unit_control
+            .get()
+            .and_then(|unit_control| unit_control.current_unit())
+            .is_none()
+        {
             self.clean_button.set_sensitive(false);
             return;
         }

@@ -170,17 +170,10 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn clean_button_clicked(&self, _button: &gtk::Widget) {
-        let unit_binding = self.current_unit();
         let app_window = self.app_window();
-        let parent = self.control_panel();
 
-        if let Some(parent) = parent {
-            let clean_dialog = CleanUnitDialog::new(
-                unit_binding.as_ref(),
-                self.is_dark.get(),
-                app_window.clone(),
-                &parent,
-            );
+        if let Some(unit_control_panel) = self.control_panel() {
+            let clean_dialog = CleanUnitDialog::new(&unit_control_panel);
 
             clean_dialog.set_transient_for(app_window.as_ref());
             //clean_dialog.set_modal(true);
@@ -193,15 +186,9 @@ impl SideControlPanelImpl {
     fn enable_unit_button_clicked(&self, _button: &gtk::Widget) {
         let app_window = self.app_window();
 
-        let unit_binding = self.current_unit();
-
-        if let Some(parent) = self.control_panel() {
-            let enable_unit_dialog = ControlActionDialog::new(
-                unit_binding.as_ref(),
-                app_window.clone(),
-                &parent,
-                ControlActionType::EnableUnitFiles,
-            );
+        if let Some(control_panel) = self.control_panel() {
+            let enable_unit_dialog =
+                ControlActionDialog::new(&control_panel, ControlActionType::EnableUnitFiles);
 
             enable_unit_dialog.set_transient_for(app_window.as_ref());
             //clean_dialog.set_modal(true);
@@ -236,16 +223,10 @@ impl SideControlPanelImpl {
     }
 
     fn show_dialog(&self, action: ControlActionType) {
-        let unit_binding = self.current_unit();
         let app_window = self.app_window();
 
         if let Some(parent) = self.control_panel() {
-            let dialog = ControlActionDialog::new(
-                unit_binding.as_ref(),
-                app_window.clone(),
-                &parent,
-                action,
-            );
+            let dialog = ControlActionDialog::new(&parent, action);
             dialog.set_transient_for(app_window.as_ref());
 
             dialog.present();
@@ -254,7 +235,7 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
-        let Some(unit) = self.control_panel().and_then(|p| p.current_unit()) else {
+        let Some(unit) = self.current_unit() else {
             error!("No unit");
             return;
         };
