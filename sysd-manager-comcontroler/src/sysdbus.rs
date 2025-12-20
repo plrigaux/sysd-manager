@@ -16,7 +16,7 @@ use std::{
     time::Duration,
 };
 
-use base::{RunMode, consts::*, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{RunMode, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
 use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
@@ -101,6 +101,7 @@ impl RunContext {
 
 static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
 
+#[cfg(not(feature = "flatpak"))]
 pub fn init(run_mode: RunMode) -> Result<(), SystemdErrors> {
     let unit_name = if run_mode == RunMode::Development {
         info!("Init Dbus in Development Mode");

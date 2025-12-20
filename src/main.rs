@@ -113,6 +113,8 @@ fn main() -> glib::ExitCode {
         info!("Flatpak version");
     }
 
+    debug!("Run mode: {:?}", run_mode);
+    #[cfg(not(feature = "flatpak"))]
     crate::systemd::runtime().spawn(async move {
         systemd::init_async(run_mode).await;
     });

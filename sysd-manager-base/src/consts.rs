@@ -2,10 +2,6 @@ use constcat::concat;
 
 pub const APP_ID: &str = "io.github.plrigaux.sysd-manager";
 
-#[cfg(feature = "flatpak")]
-pub const PROXY_SERVICE: &str = "sysd-manager-proxy-flatpak";
-
-#[cfg(not(feature = "flatpak"))]
 pub const PROXY_SERVICE: &str = "sysd-manager-proxy";
 
 pub const PROXY_SERVICE_DEV: &str = "sysd-manager-proxy-dev";

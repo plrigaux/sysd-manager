@@ -39,17 +39,11 @@ impl RunMode {
     }
 
     pub fn proxy_service_id(&self) -> &str {
-        #[cfg(feature = "flatpak")]
-        let unit_name = crate::consts::PROXY_SERVICE;
-
-        #[cfg(not(feature = "flatpak"))]
-        let unit_name = if *self == RunMode::Development {
+        if *self == RunMode::Development {
             crate::consts::PROXY_SERVICE_DEV
         } else {
             crate::consts::PROXY_SERVICE
-        };
-
-        unit_name
+        }
     }
 
     pub fn bus_name(&self) -> &str {

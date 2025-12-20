@@ -21,7 +21,6 @@ path = "src/main.rs"
 
 [features]
 default = []
-flatpak = []
 
 [dependencies]
 base.workspace = true
