@@ -19,7 +19,7 @@ use crate::{
 };
 use adw::prelude::*;
 use base::file::determine_drop_in_path_dir;
-use gettextrs::pgettext;
+use gettextrs::{gettext, pgettext};
 use gtk::{
     TemplateChild,
     ffi::GTK_INVALID_LIST_POSITION,
@@ -256,10 +256,12 @@ impl UnitFilePanelImp {
                 let file_path_format = format!("<u>{}</u>", file_path);
                 let msg = format2!(msg, file_path_format);
 
+                // Suggest to reload all unit configuation
+                let button_label = gettext("Deamon Reload");
                 (
                     msg,
                     true,
-                    Some((APP_ACTION_DAEMON_RELOAD_BUS, "Reload Deamon", user_session)),
+                    Some((APP_ACTION_DAEMON_RELOAD_BUS, button_label, user_session)),
                 )
             }
             Err(error) => {
@@ -296,24 +298,7 @@ impl UnitFilePanelImp {
                     }
 
                     SystemdErrors::CmdNoFreedesktopFlatpakPermission(_, _) => {
-                        //TODO tranlate
-                        let body = "You need to jailbreak your Flatpak application to be able to save files on the host system.\n\n\
-                            Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">link</a> to know how to aquire needed permission.";
-
-                        let header = pgettext(FILE_CONTEXT, "Missing Flatpak Permission!");
-
-                        let dialog = adw::AlertDialog::builder()
-                            .heading(header)
-                            .body(body)
-                            .can_close(true)
-                            .body_use_markup(true)
-                            .close_response("close")
-                            .default_response("close")
-                            .build();
-
-                        //TODO tranlate
-                        dialog.add_responses(&[("close", &pgettext(FILE_CONTEXT, "_Cancel"))]);
-
+                        let dialog = flatpak::flatpak_permision_alert();
                         dialog.present(self.app_window.get());
                         (
                             pgettext(
@@ -384,7 +369,7 @@ impl UnitFilePanelImp {
         (cleaned_text, file_name)
     }
 
-    fn add_toast_message(&self, message: &str, markup: bool, action: Option<(&str, &str, bool)>) {
+    fn add_toast_message(&self, message: &str, markup: bool, action: Option<(&str, String, bool)>) {
         if let Some(app_window) = self.app_window.get() {
             app_window.add_toast_message(message, markup, action);
         }
@@ -1031,12 +1016,14 @@ impl UnitFilePanelImp {
                     //suposed to have no drop-ins
                     file_panel.imp().set_dropins(&[]);
 
+                    // Suggest to reload all unit configuation
+                    let button_label = gettext("Daemon Reload");
                     (
                         msg,
                         true,
                         Some((
                             APP_ACTION_DAEMON_RELOAD_BUS,
-                            "Daemon Reload",
+                            button_label,
                             level.user_session(),
                         )),
                     ) //TODO translate

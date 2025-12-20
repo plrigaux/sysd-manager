@@ -45,7 +45,7 @@ impl AppWindow {
         &self,
         message: &str,
         markup: bool,
-        action: Option<(&str, &str, bool)>,
+        action: Option<(&str, String, bool)>,
     ) {
         self.imp().add_toast_message(message, markup, action);
     }

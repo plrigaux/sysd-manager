@@ -1,9 +1,8 @@
 use adw::prelude::{AdwDialogExt, AlertDialogExt, AlertDialogExtManual};
 
 use gettextrs::pgettext;
-use gtk::prelude::{BoxExt, WidgetExt};
+use gtk::prelude::WidgetExt;
 
-use crate::{format2, widget::unit_file_panel::FILE_CONTEXT};
 pub(super) const PROCEED: &str = "proceed";
 
 pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog {
@@ -68,91 +67,25 @@ pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
     dialog
 }
 
-pub fn inner_msg(command_line: Option<String>, file_link: Option<String>) -> gtk::Box {
-    let content = gtk::Box::builder()
-        .orientation(gtk::Orientation::Vertical)
-        .spacing(20)
-        .margin_bottom(20)
-        .margin_start(20)
-        .margin_end(20)
-        .margin_top(20)
+pub fn flatpak_permision_alert() -> adw::AlertDialog {
+    let body = pgettext(
+        "flatpak",
+        "You need to jailbreak your Flatpak application to be able to save files on the host system.\n\n\
+                            Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">link</a> to know how to aquire needed permission.",
+    );
+
+    let header = pgettext("flatpak", "Missing Flatpak Permission!");
+
+    let dialog = adw::AlertDialog::builder()
+        .heading(header)
+        .body(body)
+        .can_close(true)
+        .body_use_markup(true)
+        .close_response("close")
+        .default_response("close")
         .build();
 
-    let title = gtk::Label::builder()
-        .css_classes(["title-1"])
-        .label(
-            //flatpak permision error dialog title
-            pgettext(FILE_CONTEXT, "Flatpak permission needed!"),
-        )
-        .build();
-
-    content.append(&title);
-
-    let description1 = gtk::Label::builder()
-    .selectable(true)
-    .label(
-        //flatpak permision error dialog line 1
-        pgettext(FILE_CONTEXT, "To save this file content, it requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus interface when the program is packaged as a Flatpak."))
-    .use_markup(true)
-    .wrap(true)
-    .build();
-
-    let description2 = gtk::Label::builder()
-    .selectable(true)
-    .label(
-        //flatpak permision error dialog line 2
-        pgettext(FILE_CONTEXT, "<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add <b>org.freedesktop.Flatpak</b> and restart the program."))
-    .use_markup(true)
-    .margin_top(15)
-    .wrap(true)
-    .build();
-
-    content.append(&description1);
-    content.append(&description2);
-    //let texture = gtk::gdk::Texture::from_resource("/io/github/plrigaux/sysd-manager/add_permission_dark.mp4");
-
-    let picture = gtk::Video::for_resource(Some(
-        "/io/github/plrigaux/sysd-manager/add_permission_dark.mp4",
-    ));
-
-    picture.set_autoplay(true);
-    picture.set_loop(true);
-    picture.set_height_request(272);
-    picture.set_width_request(576);
-
-    content.append(&picture);
-
-    let lbl = if let Some(file_link) = file_link {
-        format2!(
-            //flatpak permision error dialog option 2
-            pgettext(
-                FILE_CONTEXT,
-                "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another editor."
-            ),
-            file_link
-        )
-    } else if let Some(cmd) = command_line {
-        format2!(
-            //flatpak permision error dialog option 3
-            pgettext(
-                FILE_CONTEXT,
-                "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
-            ),
-            cmd
-        )
-    } else {
-        String::new()
-    };
-
-    let description2 = gtk::Label::builder()
-        .selectable(true)
-        .label(lbl)
-        .use_markup(true)
-        .wrap(true)
-        .xalign(0.0)
-        .build();
-
-    content.append(&description2);
-
-    content
+    //TODO tranlate
+    dialog.add_responses(&[("close", &pgettext("flatpak", "_Close"))]);
+    dialog
 }

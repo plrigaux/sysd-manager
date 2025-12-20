@@ -8,6 +8,7 @@ use crate::{
 
 use std::cell::Ref;
 
+use adw::prelude::AdwDialogExt;
 use gettextrs::pgettext;
 use gtk::{
     Orientation, TextView, Window,
@@ -21,20 +22,20 @@ use log::{info, warn};
 const PAGE_BLAME: &str = "blame";
 
 pub fn build_analyze_window() -> Result<Window, SystemdErrors> {
-    let analyse_box = build_analyze()?;
-
     let window = Window::builder()
         //dialog title
         .title(pgettext("analyse blame", "Analyse Blame"))
         .default_height(600)
         .default_width(600)
-        .child(&analyse_box)
         .build();
+
+    let analyse_box = build_analyze(&window)?;
+    window.set_child(Some(&analyse_box));
 
     Ok(window)
 }
 
-fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
+fn build_analyze(window: &Window) -> Result<gtk::Box, SystemdErrors> {
     // Analyse
     let unit_analyse_box = gtk::Box::builder()
         .orientation(Orientation::Vertical)
@@ -77,7 +78,7 @@ fn build_analyze() -> Result<gtk::Box, SystemdErrors> {
     unit_analyse_box.append(&total_time_label);
     unit_analyse_box.append(&stack);
 
-    fill_store(&store, &total_time_label, &stack);
+    fill_store(&store, &total_time_label, &stack, window);
 
     Ok(unit_analyse_box)
 }
@@ -145,12 +146,18 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
     Ok((analyze_tree, store))
 }
 
-fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack: &adw::ViewStack) {
+fn fill_store(
+    list_store: &gio::ListStore,
+    total_time_label: &gtk::Label,
+    stack: &adw::ViewStack,
+    window: &Window,
+) {
     {
         let list_store = list_store.clone();
         let total_time_label = total_time_label.clone();
         let stack = stack.clone();
 
+        let window = window.clone();
         glib::spawn_future_local(async move {
             let units_rep = gio::spawn_blocking(async move || match analyze::blame().await {
                 Ok(units) => Ok(units),
@@ -188,8 +195,10 @@ fn fill_store(list_store: &gio::ListStore, total_time_label: &gtk::Label, stack:
                     const FLATPACK_PERMISSION: &str = "flatpak_permission";
 
                     match error {
-                        SystemdErrors::CmdNoFreedesktopFlatpakPermission(cmd, _) => {
-                            let dialog = flatpak::inner_msg(cmd, None);
+                        SystemdErrors::CmdNoFreedesktopFlatpakPermission(_, _) => {
+                            let dialog = flatpak::flatpak_permision_alert();
+
+                            dialog.present(Some(&window));
 
                             stack.add_named(&dialog, Some(FLATPACK_PERMISSION));
                             stack.set_visible_child_name(FLATPACK_PERMISSION)
