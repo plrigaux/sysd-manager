@@ -22,7 +22,7 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
-use log::{error, info, warn};
+use log::{error, warn};
 
 use super::SideControlPanel;
 use strum::IntoEnumIterator;
@@ -39,10 +39,31 @@ pub struct SideControlPanelImpl {
     pub restart_mode: RefCell<String>,
 
     #[template_child]
-    reload_unit_button: TemplateChild<adw::SplitButton>,
-
+    enable_unit_file_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    disable_unit_file: TemplateChild<gtk::Button>,
+    #[template_child]
+    send_kill_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    queue_signal_button: TemplateChild<gtk::Button>,
     #[template_child]
     clean_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    freeze_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    thaw_unit_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    mask_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    unmask_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    reload_unit_button: TemplateChild<adw::SplitButton>,
+    #[template_child]
+    preset_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    reenable_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    link_button: TemplateChild<gtk::Button>,
 
     kill_signal_window: RefCell<Option<KillPanel>>,
     queue_signal_window: RefCell<Option<KillPanel>>,
@@ -374,31 +395,24 @@ impl SideControlPanelImpl {
     pub fn more_action_popover_shown(&self) {
         let unit_option = self.current_unit();
 
-        if let Some(unit) = unit_option {
-            self.set_buttons_sensitivity(true);
-
-            let state = unit.active_state();
-            info!("Unit active state: {:?}", state);
-            self.clean_button.set_sensitive(state.is_inactive());
+        let sensitive = if let Some(unit) = unit_option {
+            self.clean_button
+                .set_sensitive(unit.active_state().is_inactive());
+            true
         } else {
-            self.set_buttons_sensitivity(false);
-        }
-    }
+            self.clean_button.set_sensitive(false);
+            false
+        };
 
-    fn set_buttons_sensitivity(&self, sensitive: bool) {
-        let mut child_option = self
-            .clean_button
-            .parent()
-            .and_then(|parent| parent.first_child());
-
-        while let Some(ref child) = child_option {
-            if let Some(button) = child.downcast_ref::<gtk::Button>() {
-                button.set_sensitive(sensitive);
-            } else if let Some(button) = child.downcast_ref::<adw::SplitButton>() {
-                button.set_sensitive(sensitive);
-            }
-            child_option = child.next_sibling();
-        }
+        self.send_kill_button.set_sensitive(sensitive);
+        self.queue_signal_button.set_sensitive(sensitive);
+        self.freeze_button.set_sensitive(sensitive);
+        self.thaw_unit_button.set_sensitive(sensitive);
+        self.mask_button.set_sensitive(sensitive);
+        self.unmask_button.set_sensitive(sensitive);
+        self.reload_unit_button.set_sensitive(sensitive);
+        self.preset_button.set_sensitive(sensitive);
+        self.reenable_button.set_sensitive(sensitive);
     }
 
     fn app_window(&self) -> Option<AppWindow> {
