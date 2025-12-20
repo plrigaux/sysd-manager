@@ -6,7 +6,7 @@ import appimage.build_appimage as aim
 tag.main()
 pacaur.generate_and_push()
 gof.deploy()
-aim.publish()
+#aim.publish()
 
 
 
