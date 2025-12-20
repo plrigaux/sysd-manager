@@ -1,7 +1,7 @@
 use std::cell::{Cell, RefCell};
 
 use gettextrs::pgettext;
-use glib::WeakRef;
+use glib::{WeakRef, property::PropertySet};
 
 use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
@@ -298,7 +298,8 @@ impl SideControlPanelImpl {
         )));
     }
 
-    pub(super) fn set_app_window(&self, app_window: &AppWindow) {
+    pub(super) fn init(&self, unit_control_panel: &UnitControlPanel) {
+        self.control_panel.set(unit_control_panel.downgrade());
         let default_mode = StartStopMode::default();
         self.reload_unit_mode_changed(default_mode);
 
@@ -323,7 +324,9 @@ impl SideControlPanelImpl {
                 .state(default_state)
                 .build();
 
-        app_window.add_action_entries([reload_params_action_entry]);
+        self.app_window()
+            .expect("AppWindow has to be set")
+            .add_action_entries([reload_params_action_entry]);
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
@@ -387,12 +390,8 @@ impl SideControlPanelImpl {
         }
     }
 
-    pub fn more_action_popover_shown(
-        &self,
-        control_panel: &UnitControlPanel,
-        unit_option: Option<UnitInfo>,
-    ) {
-        let _ = self.control_panel.replace(control_panel.downgrade());
+    pub fn more_action_popover_shown(&self) {
+        let unit_option = self.current_unit();
 
         if let Some(unit) = unit_option {
             self.set_buttons_sensitivity(true);

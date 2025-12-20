@@ -84,7 +84,7 @@ pub struct UnitControlPanelImpl {
     unit_panel_stack: TemplateChild<adw::ViewStack>,
 
     app_window: OnceCell<AppWindow>,
-    more_action_panel: OnceCell<SideControlPanel>,
+
     current_unit: RefCell<Option<UnitInfo>>,
 
     search_bar: RefCell<gtk::SearchBar>,
@@ -140,15 +140,27 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
 
-        if let Some(side_panel) = self.more_action_panel.get() {
+        /*         if let Some(side_panel) = self.more_action_panel.get() {
             side_panel.set_app_window(app_window);
         } else {
             warn!("Side Panel Should not be None");
-        }
+        } */
 
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
+
+        let unit_control_panel = self.obj().clone();
+        let more_action_panel = SideControlPanel::new(&unit_control_panel);
+
+        self.more_action_popover.set_child(Some(&more_action_panel));
+
+        let more_action_panel = more_action_panel.clone();
+        self.more_action_popover.connect_show(move |_popover| {
+            info!("More action popover shown");
+
+            more_action_panel.more_action_popover_shown();
+        });
     }
 
     pub fn app_window(&self) -> Option<AppWindow> {
@@ -710,12 +722,6 @@ impl UnitControlPanelImpl {
     pub(super) fn current_unit(&self) -> Option<UnitInfo> {
         self.current_unit.borrow().clone()
     }
-
-    fn more_action_popover_shown(&self, side_panel: &SideControlPanel) {
-        let unit_option = self.current_unit();
-
-        side_panel.more_action_popover_shown(&self.obj(), unit_option);
-    }
 }
 
 #[glib::derived_properties]
@@ -792,7 +798,7 @@ impl ObjectImpl for UnitControlPanelImpl {
 
             FONT_CONTEXT.set_font_description(font_description);
         }
-
+        /*
         let more_action_panel = SideControlPanel::new();
 
         self.more_action_popover.set_child(Some(&more_action_panel));
@@ -804,7 +810,7 @@ impl ObjectImpl for UnitControlPanelImpl {
             info!("More action popover shown");
 
             a.imp().more_action_popover_shown(&more_action_panel);
-        });
+        }); */
 
         /*         self.show_more_button
         .bind_property::<gtk::Popover>("active", self.side_overlay.as_ref(), "collapsed")

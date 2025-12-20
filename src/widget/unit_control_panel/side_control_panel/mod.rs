@@ -2,7 +2,7 @@ use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::{
     systemd::{data::UnitInfo, errors::SystemdErrors},
-    widget::{InterPanelMessage, app_window::AppWindow},
+    widget::InterPanelMessage,
 };
 use base::enums::UnitDBusLevel;
 
@@ -17,14 +17,10 @@ glib::wrapper! {
 }
 
 impl SideControlPanel {
-    pub fn new() -> Self {
+    pub fn new(unit_control_panel: &UnitControlPanel) -> Self {
         let obj: SideControlPanel = glib::Object::new();
-
+        obj.imp().init(unit_control_panel);
         obj
-    }
-
-    pub fn set_app_window(&self, app_window: &AppWindow) {
-        self.imp().set_app_window(app_window);
     }
 
     pub fn unlink_child(&self, is_signal: bool) {
@@ -63,11 +59,7 @@ impl SideControlPanel {
         }
     }
 
-    pub fn more_action_popover_shown(
-        &self,
-        parent: &UnitControlPanel,
-        unit_option: Option<UnitInfo>,
-    ) {
-        self.imp().more_action_popover_shown(parent, unit_option);
+    pub fn more_action_popover_shown(&self) {
+        self.imp().more_action_popover_shown();
     }
 }
