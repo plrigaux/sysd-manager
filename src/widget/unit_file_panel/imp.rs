@@ -257,7 +257,7 @@ impl UnitFilePanelImp {
                 let msg = format2!(msg, file_path_format);
 
                 // Suggest to reload all unit configuation
-                let button_label = gettext("Deamon Reload");
+                let button_label = gettext("Daemon Reload");
                 (
                     msg,
                     true,

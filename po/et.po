@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:08-0500\n"
+"POT-Creation-Date: 2025-12-20 15:11-0500\n"
 "PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -80,7 +80,7 @@ msgstr "Analüüsi ja otsi põhjused"
 #: data/interfaces/app_window.ui:16
 #, fuzzy
 msgctxt "menu"
-msgid "Deamon Reload"
+msgid "Daemon Reload"
 msgstr "Laadi uuesti"
 
 #: data/interfaces/app_window.ui:20
@@ -1980,13 +1980,7 @@ msgid "_Close"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:260
-#, fuzzy
-msgid "Deamon Reload"
-msgstr "Laadi uuesti"
-
-#. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:1020
+#: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Laadi uuesti"
@@ -2090,6 +2084,15 @@ msgstr "Tühjenda veergude filter"
 msgctxt "menu"
 msgid "Filtering"
 msgstr ""
+
+#, fuzzy
+#~ msgctxt "menu"
+#~ msgid "Deamon Reload"
+#~ msgstr "Laadi uuesti"
+
+#, fuzzy
+#~ msgid "Deamon Reload"
+#~ msgstr "Laadi uuesti"
 
 #~ msgctxt "menu"
 #~ msgid "Reload All Units"

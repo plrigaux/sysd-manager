@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:08-0500\n"
+"POT-Creation-Date: 2025-12-20 15:11-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,7 +73,7 @@ msgstr ""
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
-msgid "Deamon Reload"
+msgid "Daemon Reload"
 msgstr ""
 
 #: data/interfaces/app_window.ui:20
@@ -1957,12 +1957,7 @@ msgid "_Close"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:260
-msgid "Deamon Reload"
-msgstr ""
-
-#. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:1020
+#: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
 msgid "Daemon Reload"
 msgstr ""
 

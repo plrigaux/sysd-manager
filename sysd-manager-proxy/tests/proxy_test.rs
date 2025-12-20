@@ -113,7 +113,7 @@ async fn test_revert_unit_files() -> zbus::Result<()> {
     match proxy
         .revert_unit_files(
             UnitDBusLevel::UserSession.index(),
-            &["tiny_plr_deamon.service"],
+            &["tiny_plr_daemon.service"],
         )
         .await
     {
@@ -128,4 +128,3 @@ async fn test_revert_unit_files() -> zbus::Result<()> {
 
     Ok(())
 }
-//"tiny_plr_deamon.service

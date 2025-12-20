@@ -13,7 +13,7 @@
       </item>
       <item>
         <attribute name="action">app.daemon-reload</attribute>
-        <attribute name="label" translatable="yes" context="menu">Deamon Reload</attribute>
+        <attribute name="label" translatable="yes" context="menu">Daemon Reload</attribute>
       </item>
       <item>
         <attribute name="action">app.systemd_info</attribute>

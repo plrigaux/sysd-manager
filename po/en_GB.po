@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:08-0500\n"
+"POT-Creation-Date: 2025-12-20 15:11-0500\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -80,7 +80,7 @@ msgstr "Analyze Blame"
 #: data/interfaces/app_window.ui:16
 #, fuzzy
 msgctxt "menu"
-msgid "Deamon Reload"
+msgid "Daemon Reload"
 msgstr "Reload All Units"
 
 #: data/interfaces/app_window.ui:20
@@ -2057,13 +2057,7 @@ msgid "_Close"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:260
-#, fuzzy
-msgid "Deamon Reload"
-msgstr "Reload All Units"
-
-#. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:1020
+#: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Reload All Units"
@@ -2168,6 +2162,15 @@ msgstr ""
 msgctxt "menu"
 msgid "Filtering"
 msgstr ""
+
+#, fuzzy
+#~ msgctxt "menu"
+#~ msgid "Deamon Reload"
+#~ msgstr "Reload All Units"
+
+#, fuzzy
+#~ msgid "Deamon Reload"
+#~ msgstr "Reload All Units"
 
 #~ msgctxt "menu"
 #~ msgid "Reload All Units"
