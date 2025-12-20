@@ -111,12 +111,12 @@ impl CleanDialogImp {
 
     pub(crate) fn set_app_window(
         &self,
-        app_window: Option<&AppWindow>,
+        app_window: Option<AppWindow>,
         unit_control: &UnitControlPanel,
     ) {
         if let Some(app_window) = app_window {
             self.app_window
-                .set(app_window.clone())
+                .set(app_window)
                 .expect("app_window set once");
         }
 

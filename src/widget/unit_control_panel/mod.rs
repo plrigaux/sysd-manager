@@ -29,6 +29,10 @@ impl UnitControlPanel {
         self.imp().set_overlay(app_window);
     }
 
+    pub fn app_window(&self) -> Option<AppWindow> {
+        self.imp().app_window()
+    }
+
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
         self.imp().add_toast_message(message, use_markup);
     }

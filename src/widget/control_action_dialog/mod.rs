@@ -5,6 +5,7 @@ use gtk::{
     glib::{self},
     subclass::prelude::ObjectSubclassIsExt,
 };
+use tracing::error;
 
 use crate::systemd::data::UnitInfo;
 
@@ -21,12 +22,17 @@ glib::wrapper! {
 impl ControlActionDialog {
     pub fn new(
         unit: Option<&UnitInfo>,
-        app_window: Option<&AppWindow>,
+        app_window: Option<AppWindow>,
         unit_control: &UnitControlPanel,
         action_type: ControlActionType,
     ) -> Self {
         let obj: ControlActionDialog = glib::Object::new();
         let imp = obj.imp();
+
+        if app_window.is_none() {
+            error!("App window is required to create ControlActionDialog");
+        }
+
         imp.set_app_window(app_window, unit_control);
         imp.set_action_type(action_type);
         imp.set_unit(unit);

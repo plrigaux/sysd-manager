@@ -1,4 +1,4 @@
-use std::cell::{Cell, OnceCell, RefCell};
+use std::cell::{Cell, RefCell};
 
 use gettextrs::pgettext;
 use glib::WeakRef;
@@ -31,8 +31,6 @@ use strum::IntoEnumIterator;
 #[template(resource = "/io/github/plrigaux/sysd-manager/side_control_panel.ui")]
 #[properties(wrapper_type = super::SideControlPanel)]
 pub struct SideControlPanelImpl {
-    app_window: OnceCell<AppWindow>,
-
     #[property(get, set)]
     pub start_mode: RefCell<String>,
     #[property(get, set)]
@@ -49,7 +47,7 @@ pub struct SideControlPanelImpl {
     kill_signal_window: RefCell<Option<KillPanel>>,
     queue_signal_window: RefCell<Option<KillPanel>>,
 
-    parent: RefCell<WeakRef<UnitControlPanel>>,
+    control_panel: RefCell<WeakRef<UnitControlPanel>>,
 
     is_dark: Cell<bool>,
 }
@@ -110,7 +108,7 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn freeze_button_clicked(&self, button: &gtk::Button) {
-        if let Some(parent) = self.parent() {
+        if let Some(parent) = self.control_panel() {
             parent.call_method(
                 //action name
                 &pgettext("action", "Freeze"),
@@ -124,7 +122,7 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn thaw_button_clicked(&self, button: &gtk::Button) {
-        if let Some(parent) = self.parent() {
+        if let Some(parent) = self.control_panel() {
             parent.call_method(
                 //action name
                 &pgettext("action", "Thaw"),
@@ -138,7 +136,7 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn reload_unit_button_clicked(&self, button: &adw::SplitButton) {
-        let Some(app_window) = self.app_window.get() else {
+        let Some(app_window) = self.app_window() else {
             warn!("no app window");
             return;
         };
@@ -158,7 +156,7 @@ impl SideControlPanelImpl {
             }
         };
 
-        if let Some(parent) = self.parent() {
+        if let Some(parent) = self.control_panel() {
             parent.call_method(
                 //action name
                 &pgettext("action", "Reload"),
@@ -173,18 +171,18 @@ impl SideControlPanelImpl {
     #[template_callback]
     fn clean_button_clicked(&self, _button: &gtk::Widget) {
         let unit_binding = self.current_unit();
-        let app_window = self.app_window.get();
-        let parent = self.parent();
+        let app_window = self.app_window();
+        let parent = self.control_panel();
 
         if let Some(parent) = parent {
             let clean_dialog = CleanUnitDialog::new(
                 unit_binding.as_ref(),
                 self.is_dark.get(),
-                app_window,
+                app_window.clone(),
                 &parent,
             );
 
-            clean_dialog.set_transient_for(app_window);
+            clean_dialog.set_transient_for(app_window.as_ref());
             //clean_dialog.set_modal(true);
 
             clean_dialog.present();
@@ -193,19 +191,19 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn enable_unit_button_clicked(&self, _button: &gtk::Widget) {
-        let app_window = self.app_window.get();
+        let app_window = self.app_window();
 
         let unit_binding = self.current_unit();
 
-        if let Some(parent) = self.parent() {
+        if let Some(parent) = self.control_panel() {
             let enable_unit_dialog = ControlActionDialog::new(
                 unit_binding.as_ref(),
-                app_window,
+                app_window.clone(),
                 &parent,
                 ControlActionType::EnableUnitFiles,
             );
 
-            enable_unit_dialog.set_transient_for(app_window);
+            enable_unit_dialog.set_transient_for(app_window.as_ref());
             //clean_dialog.set_modal(true);
 
             enable_unit_dialog.present();
@@ -239,12 +237,16 @@ impl SideControlPanelImpl {
 
     fn show_dialog(&self, action: ControlActionType) {
         let unit_binding = self.current_unit();
-        let app_window = self.app_window.get();
+        let app_window = self.app_window();
 
-        if let Some(parent) = self.parent() {
-            let dialog =
-                ControlActionDialog::new(unit_binding.as_ref(), app_window, &parent, action);
-            dialog.set_transient_for(app_window);
+        if let Some(parent) = self.control_panel() {
+            let dialog = ControlActionDialog::new(
+                unit_binding.as_ref(),
+                app_window.clone(),
+                &parent,
+                action,
+            );
+            dialog.set_transient_for(app_window.as_ref());
 
             dialog.present();
         }
@@ -252,7 +254,7 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn unmask_button_clicked(&self, button: &gtk::Widget) {
-        let Some(unit) = self.parent().and_then(|p| p.current_unit()) else {
+        let Some(unit) = self.control_panel().and_then(|p| p.current_unit()) else {
             error!("No unit");
             return;
         };
@@ -267,7 +269,7 @@ impl SideControlPanelImpl {
             }
         };
 
-        if let Some(parent) = self.parent() {
+        if let Some(parent) = self.control_panel() {
             parent.call_method(
                 //action name
                 &pgettext("action", "Unmask"),
@@ -281,13 +283,12 @@ impl SideControlPanelImpl {
 }
 
 impl SideControlPanelImpl {
-    pub(super) fn parent(&self) -> Option<UnitControlPanel> {
-        let borrow = self.parent.borrow();
-        borrow.upgrade()
+    pub(super) fn control_panel(&self) -> Option<UnitControlPanel> {
+        self.control_panel.borrow().upgrade()
     }
 
     fn current_unit(&self) -> Option<UnitInfo> {
-        self.parent().and_then(|p| p.current_unit())
+        self.control_panel().and_then(|p| p.current_unit())
     }
 
     pub(super) fn reload_unit_mode_changed(&self, mode: StartStopMode) {
@@ -298,16 +299,14 @@ impl SideControlPanelImpl {
     }
 
     pub(super) fn set_app_window(&self, app_window: &AppWindow) {
-        self.app_window
-            .set(app_window.clone())
-            .expect("app_window set once");
-
         let default_mode = StartStopMode::default();
         self.reload_unit_mode_changed(default_mode);
 
         let default_state = default_mode.as_str().to_variant();
 
         let side_control = self.obj().clone();
+
+        //FIXME: It has  too move away
         let reload_params_action_entry: gio::ActionEntry<AppWindow> =
             gio::ActionEntry::builder(MENU_ACTION)
                 .activate(move |_app_window: &AppWindow, action, value| {
@@ -356,9 +355,9 @@ impl SideControlPanelImpl {
                 kill_signal_window
                     .set_inter_message(&InterPanelMessage::IsDark(self.is_dark.get()));
 
-                if let Some(app_window) = self.app_window.get() {
+                if let Some(app_window) = self.app_window() {
                     //kill_signal_window.set_application(app_window.application().as_ref());
-                    kill_signal_window.set_transient_for(Some(app_window));
+                    kill_signal_window.set_transient_for(Some(&app_window));
                     kill_signal_window.set_modal(true);
                 } else {
                     warn!("No app_window");
@@ -390,17 +389,40 @@ impl SideControlPanelImpl {
 
     pub fn more_action_popover_shown(
         &self,
-        parent: &UnitControlPanel,
+        control_panel: &UnitControlPanel,
         unit_option: Option<UnitInfo>,
     ) {
-        let weak = parent.downgrade();
-        let _ = self.parent.replace(weak);
+        let _ = self.control_panel.replace(control_panel.downgrade());
 
         if let Some(unit) = unit_option {
+            self.set_buttons_sensitivity(true);
+
             let state = unit.active_state();
             info!("Unit active state: {:?}", state);
             self.clean_button.set_sensitive(state.is_inactive());
+        } else {
+            self.set_buttons_sensitivity(false);
         }
+    }
+
+    fn set_buttons_sensitivity(&self, sensitive: bool) {
+        let mut child_option = self
+            .clean_button
+            .parent()
+            .and_then(|parent| parent.first_child());
+
+        while let Some(ref child) = child_option {
+            if let Some(button) = child.downcast_ref::<gtk::Button>() {
+                button.set_sensitive(sensitive);
+            } else if let Some(button) = child.downcast_ref::<adw::SplitButton>() {
+                button.set_sensitive(sensitive);
+            }
+            child_option = child.next_sibling();
+        }
+    }
+
+    fn app_window(&self) -> Option<AppWindow> {
+        self.control_panel().and_then(|cp| cp.app_window())
     }
 }
 
@@ -409,6 +431,7 @@ impl ObjectImpl for SideControlPanelImpl {
     fn constructed(&self) {
         self.parent_constructed();
 
+        //FIXME: It has  too move away
         let menu = gio::Menu::new();
         for mode in StartStopMode::iter() {
             let item = gio::MenuItem::new(Some(mode.as_str()), Some(WIN_MENU_ACTION));

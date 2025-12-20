@@ -36,7 +36,7 @@ impl SideControlPanel {
     }
 
     pub fn add_toast_message(&self, message: &str, use_markup: bool) {
-        if let Some(parent) = self.imp().parent() {
+        if let Some(parent) = self.imp().control_panel() {
             parent.add_toast_message(message, use_markup);
         }
     }
@@ -52,7 +52,7 @@ impl SideControlPanel {
         return_handle: impl Fn(&str, Option<&UnitInfo>, Result<(), SystemdErrors>, &UnitControlPanel)
         + 'static,
     ) {
-        if let Some(parent) = self.imp().parent() {
+        if let Some(parent) = self.imp().control_panel() {
             parent.call_method(
                 method_name,
                 need_selected_unit,

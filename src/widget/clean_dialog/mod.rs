@@ -21,7 +21,7 @@ impl CleanUnitDialog {
     pub fn new(
         unit: Option<&UnitInfo>,
         is_dark: bool,
-        app_window: Option<&AppWindow>,
+        app_window: Option<AppWindow>,
         unit_control: &UnitControlPanel,
     ) -> Self {
         let obj: CleanUnitDialog = glib::Object::new();

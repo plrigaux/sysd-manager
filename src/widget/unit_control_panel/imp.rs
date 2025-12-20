@@ -84,7 +84,7 @@ pub struct UnitControlPanelImpl {
     unit_panel_stack: TemplateChild<adw::ViewStack>,
 
     app_window: OnceCell<AppWindow>,
-    //more_action_panel: OnceCell<SideControlPanel>,
+    more_action_panel: OnceCell<SideControlPanel>,
     current_unit: RefCell<Option<UnitInfo>>,
 
     search_bar: RefCell<gtk::SearchBar>,
@@ -140,15 +140,19 @@ impl UnitControlPanelImpl {
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
 
-        /*         if let Some(side_panel) = self.more_action_panel.get() {
+        if let Some(side_panel) = self.more_action_panel.get() {
             side_panel.set_app_window(app_window);
         } else {
             warn!("Side Panel Should not be None");
-        } */
+        }
 
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
+    }
+
+    pub fn app_window(&self) -> Option<AppWindow> {
+        self.app_window.get().cloned()
     }
 
     #[template_callback]
@@ -792,7 +796,7 @@ impl ObjectImpl for UnitControlPanelImpl {
         let more_action_panel = SideControlPanel::new();
 
         self.more_action_popover.set_child(Some(&more_action_panel));
-        //let _ = self.more_action_panel.set(more_action_panel);
+        let _ = self.more_action_panel.set(more_action_panel.clone());
 
         let a = self.obj().clone();
         let more_action_panel = more_action_panel.clone();
