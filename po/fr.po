@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-20 15:35-0500\n"
-"PO-Revision-Date: 2025-12-20 20:44+0000\n"
-"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
+"PO-Revision-Date: 2025-12-22 09:00+0000\n"
+"Last-Translator: p-sage <p-sage@users.noreply.hosted.weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -23,7 +23,7 @@ msgstr ""
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
-msgstr ""
+msgstr "SysD Manager"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
@@ -859,7 +859,7 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:190
 msgctxt "control"
 msgid "_Reenable ➚"
-msgstr "_Réactivé ➚"
+msgstr "_Réactiver ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:191
@@ -1053,9 +1053,8 @@ msgid "Permanent"
 msgstr "Permanent"
 
 #: data/interfaces/unit_file_panel.ui:99
-#, fuzzy
 msgid "Runtime"
-msgstr "Runtime"
+msgstr "Durée d'exécution"
 
 #: data/interfaces/unit_file_panel.ui:104
 msgid "Revert Drop-in"
@@ -1937,8 +1936,7 @@ msgstr "{} a échoué. Raison : <span fgcolor='{}'>{}</span>."
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
 msgstr ""
-"Malheureusement, <b>Gestionnaire SysD</b> ne peut pas exécuter l'action <b>{}"
-"</b>."
+"Malheureusement, <b>SysD Manager</b> ne peut pas exécuter l'action <b>{}</b>."
 
 #: src/widget/unit_control_panel/mod.rs:136
 msgctxt "workaround"
