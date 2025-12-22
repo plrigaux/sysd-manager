@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-20 15:35-0500\n"
-"PO-Revision-Date: 2025-11-14 03:10+0000\n"
+"PO-Revision-Date: 2025-12-23 21:00+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
 "manager/translation/pt_BR/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -78,10 +78,9 @@ msgid "Analyze Blame"
 msgstr "Analise a culpa"
 
 #: data/interfaces/app_window.ui:16
-#, fuzzy
 msgctxt "menu"
 msgid "Daemon Reload"
-msgstr "Recarregar"
+msgstr "Recarregar Daemon"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -566,22 +565,21 @@ msgstr "Exibir resumo de totais"
 
 #. group
 #: data/interfaces/preferences.ui:100
-#, fuzzy
 msgctxt "preference"
 msgid "Unit Description"
-msgstr "Descrição"
+msgstr "Descrição da unidade"
 
 #. subtitle
 #: data/interfaces/preferences.ui:103
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
-msgstr ""
+msgstr "Quebrar linhas de texto longas da descrição da unidade"
 
 #. title
 #: data/interfaces/preferences.ui:104
 msgctxt "preference"
 msgid "Wrap unit description text"
-msgstr ""
+msgstr "Envolver texto descritivo da unidade"
 
 #. group
 #: data/interfaces/preferences.ui:111
@@ -774,15 +772,16 @@ msgstr "_Limpo ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:87
-#, fuzzy
 msgctxt "control"
 msgid ""
 "Remove the configuration, state, cache, logs or runtime data of the "
 "specified unit. \n"
 "<u>Note:</u> the unit must be <b>inactive</b> to be cleaned."
 msgstr ""
-"Remova a configuração, o estado, o cache, os registros ou os dados de tempo "
-"de execução da unidade especificada"
+"Remove a configuração, o estado, o cache, os registros ou os dados de tempo "
+"de execução da unidade especificada.\n"
+"\n"
+"<u>Observação:</u> a unidade deve estar <b>inativa</b> para ser limpa."
 
 #. button
 #: data/interfaces/side_control_panel.ui:101
@@ -982,10 +981,9 @@ msgstr "Reiniciar"
 
 #. tooltip on the more... button
 #: data/interfaces/unit_control_panel.ui:107
-#, fuzzy
 msgctxt "control tooltip"
 msgid "More manage unit actions"
-msgstr "Orientação"
+msgstr "Gerenciar mais ações da unidade"
 
 #: data/interfaces/unit_control_panel.ui:116
 msgctxt "controls menu"
@@ -1038,27 +1036,25 @@ msgstr "A  unidade não possui nenhum arquivo associado"
 
 #. title
 #: data/interfaces/unit_file_panel.ui:81
-#, fuzzy
 msgctxt "file"
 msgid "No Unit File"
-msgstr "Arquivo de unidade"
+msgstr "Nenhum arquivo de unidade"
 
 #: data/interfaces/unit_file_panel.ui:92
 msgid "Create Drop-in"
-msgstr ""
+msgstr "Criar Drop-in"
 
 #: data/interfaces/unit_file_panel.ui:95
 msgid "Permanent"
-msgstr ""
+msgstr "Permanente"
 
 #: data/interfaces/unit_file_panel.ui:99
-#, fuzzy
 msgid "Runtime"
 msgstr "Tempo de execução"
 
 #: data/interfaces/unit_file_panel.ui:104
 msgid "Revert Drop-in"
-msgstr ""
+msgstr "Reverter Drop-in"
 
 #. button
 #: data/interfaces/unit_info_panel.ui:22
@@ -1074,7 +1070,6 @@ msgstr "Mostrar todas as _Propriedades"
 
 #. Unit property filter button
 #: data/interfaces/unit_list_filter.ui:51
-#, fuzzy
 msgid "Clear Filters"
 msgstr "Limpar filtros"
 
@@ -1258,17 +1253,16 @@ msgstr "Programa iniciando"
 #. instance level user
 #: src/widget/app_window/menu.rs:273
 msgid "user"
-msgstr ""
+msgstr "usuário"
 
 #. instance level system
 #: src/widget/app_window/menu.rs:276
-#, fuzzy
 msgid "system"
 msgstr "Sistema"
 
 #: src/widget/app_window/menu.rs:287
 msgid "Daemon Reload failed!"
-msgstr ""
+msgstr "Falha ao recarregar o daemon!"
 
 #. about dialogue
 #: src/widget/app_window/menu.rs:330
@@ -2001,24 +1995,27 @@ msgid ""
 "Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
 "Flatpak\">link</a> to know how to aquire needed permission."
 msgstr ""
+"Você precisa desbloquear seu aplicativo Flatpak para poder salvar arquivos "
+"no sistema host.\n"
+"\n"
+"Siga o <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
+"link</a> para saber como obter a permissão necessária."
 
 #: src/widget/unit_file_panel/flatpak.rs:77
-#, fuzzy
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
-msgstr "Permissão para Flatpak necessária!"
+msgstr "Permissão Flatpak ausente!"
 
 #. Button label
 #: src/widget/unit_file_panel/flatpak.rs:89
 msgctxt "flatpak"
 msgid "_Close"
-msgstr ""
+msgstr "_Fechar"
 
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
-#, fuzzy
 msgid "Daemon Reload"
-msgstr "Recarregar"
+msgstr "Recarregar Daemon"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
@@ -2096,35 +2093,31 @@ msgstr ""
 #: src/widget/unit_list/menus.rs:15
 msgctxt "menu"
 msgid "Hide this Column"
-msgstr ""
+msgstr "Ocultar esta coluna"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:23
-#, fuzzy
 msgctxt "menu"
 msgid "Configure columns"
-msgstr "_Configuração"
+msgstr "Configurar colunas"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:34
-#, fuzzy
 msgctxt "menu"
 msgid "Configure Filters"
-msgstr "Limpar filtros"
+msgstr "Configurar filtros"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:42
-#, fuzzy
 msgctxt "menu"
 msgid "Clear Column Filter"
-msgstr "Limpar filtros"
+msgstr "Limpar filtro de coluna"
 
 #. column header menu section
 #: src/widget/unit_list/menus.rs:48
-#, fuzzy
 msgctxt "menu"
 msgid "Filtering"
-msgstr "Filtros"
+msgstr "Filtragem"
 
 #~ msgctxt "title"
 #~ msgid "SysD Manager"
