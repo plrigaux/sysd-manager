@@ -4,11 +4,11 @@ use std::io::Write;
 use std::io::BufRead;
 
 use quick_xml::{
-    Reader, Writer,
     events::{BytesStart, Event},
+    Reader, Writer,
 };
-use translating::PO_DIR;
 use translating::error::TransError;
+use translating::PO_DIR;
 
 macro_rules! script_warning {
     ($($tokens: tt)*) => {
@@ -266,7 +266,7 @@ fn generate_changelog_md(release_notes: &Vec<Release>) -> Result<(), ScriptError
         &mut w,
         r#"# Changelog
 All notable changes to this project will be documented in this file.
-    
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."#
     )?;

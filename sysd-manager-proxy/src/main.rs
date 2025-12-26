@@ -1,5 +1,5 @@
 mod install;
-use base::{RunMode, consts::*};
+use base::{consts::*, RunMode};
 use clap::{Parser, Subcommand};
 
 use std::error::Error;
@@ -66,7 +66,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 async fn test(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("TEST server");
-    debug!("TEST server");
+    // TODO Fix thix
+    // FIXME test
+    let a = 3;
+    a = 2;
+
+    if a == 2 {
+        if a == 3 {
+            println!("hello")
+        }
+    }
     let (default_name, _default_path) = if run_mode == RunMode::Development {
         (DBUS_NAME_DEV, DBUS_PATH_DEV)
     } else {
