@@ -66,11 +66,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 async fn test(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("TEST server");
-    // TODO Fix thix
-    // FIXME test
-    let a = 3;
-    a = 2;
-
+    let a = 10;
     if a == 2 {
         if a == 3 {
             println!("hello")
