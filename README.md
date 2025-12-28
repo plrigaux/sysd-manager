@@ -24,45 +24,56 @@ A user-friendly GUI to manage systemd units
 
 ## ✨ Features
 
-| Feature | Status |
-|---------|--------|
-| Unit file browser with search and filtering | ✅ |
-| Enable or disable a unit | ✅ |
-| Enable a unit in runtime | ✅ |
-| Activate or deactivate a unit | ✅ |
-| View and modify unit file | ✅ |
-| View and navigate unit's dependencies | ✅ |
-| Unit file syntax highlighting | ✅ |
-| Journal file syntax highlighting | ✅ |
-| List of all running units (systemd-analyze blame) | ✅ |
-| Dark and Light style switching | ✅ |
-| Select a unit at program opening via CLI | ✅ |
-| Clean unit like `systemctl clean` | ✅ |
-| Freeze & Thaw unit like `systemctl freeze` and `systemctl thaw`  | ✅ |
-| Multi-language support | ✅ |
-| Real-time journal events update | ✅ |
-| Retrieve list of boot IDs | ✅ |
-| Ability to watch _systemd_ signals | ✅ |
+| Feature                                                         | Category      | Status |
+| --------------------------------------------------------------- | ------------- | ------ |
+| Unit file browser with search and filtering                     | Functionality | ✅     |
+| Browser add remove property                                     | Functionality | ✅     |
+| Enable or disable a unit                                        | Functionality | ✅     |
+| Enable a unit in runtime                                        | Functionality | ✅     |
+| Edit unit file                                                  | Functionality | ✅     |
+| Edit and manage unit drop-ins                                   | Functionality | ✅     |
+| Activate or deactivate a unit                                   | Functionality | ✅     |
+| View and modify unit file                                       | Functionality | ✅     |
+| View and navigate unit's dependencies                           | Functionality | ✅     |
+| Unit file syntax highlighting                                   | UX            | ✅     |
+| Journal event syntax highlighting                               | UX            | ✅     |
+| List of all running units (systemd-analyze blame)               | Functionality | ✅     |
+| Dark and Light style switching                                  | UX            | ✅     |
+| Select a unit at program opening via CLI                        | Functionality | ✅     |
+| Clean unit like `systemctl clean`                               | Functionality | ✅     |
+| Freeze & Thaw unit like `systemctl freeze` and `systemctl thaw` | Functionality | ✅     |
+| Multi-language support                                          | UX            | ✅     |
+| Real-time journal events update                                 | Functionality | ✅     |
+| Retrieve list of boot IDs                                       | Functionality | ✅     |
+| Ability to watch _systemd_ signals                              | UX            | ✅     |
+| Filter units on loaded properties                               | UX            | ✅     |
+| Browser contextual menu                                         | UX            | ✅     |
+| Browser add remove property                                     | UX            | ✅     |
 
-*Need a feature? Contact the author or contribute to the project! If you're stuck, take a look at `systemctl`.*
+_Need a feature? Contact the author or contribute to the project! If you're stuck, take a look at `systemctl`._
 
 ## 📸 Screenshots
 
 <div align="center">
 
 ### Unit Info (Dark)
+
 ![Unit Info Dark](screenshots/unit_info_dark.png)
 
 ### Unit Info (Light)
+
 ![Unit Info Light](screenshots/unit_info.png)
 
 ### Unit Dependencies
+
 ![Unit Dependencies](screenshots/dependencies_dark.png)
 
 ### Unit Files
+
 ![Unit Files](screenshots/unit_file_dark.png)
 
 ### Unit Journal
+
 ![Unit Journal](screenshots/journal_dark.png)
 
 </div>
@@ -70,18 +81,19 @@ A user-friendly GUI to manage systemd units
 ## 🔧 Installation
 
 ### Flathub
+
 <a href="https://flathub.org/apps/io.github.plrigaux.sysd-manager"><img width="200" alt="Download on Flathub" src="https://flathub.org/api/badge?svg"/></a>
 
 ### Arch Linux
 
 <a href="https://aur.archlinux.org/packages/sysd-manager"><img width="200" alt="Download on Flathub" src="https://aur.archlinux.org/static/css/archnavbar/aurlogo.png"/></a>
 
-
 ```bash
 yay -S sysd-manager
 ```
 
 ### AppImage
+
 <a href="https://github.com/plrigaux/sysd-manager/releases/latest"><img width="100" alt="Download latest Appimage release" src="https://docs.appimage.org/_images/appimage.svg"/></a>
 
 ### Build from Source
@@ -94,18 +106,20 @@ yay -S sysd-manager
    - GtkSourceView 5 development library
 
 2. Clone and build:
+
 ```bash
 git clone https://github.com/plrigaux/sysd-manager
-cd sysd-manager/scripts 
+cd sysd-manager/scripts
 sh install.sh
 ```
 
 3. Run:
+
 ```bash
 sysd-manager
 ```
 
-*For a clean removal, execute:* `sh uninstall.sh`
+_For a clean removal, execute:_ `sh uninstall.sh`
 
 ## 🧪 Testing
 
@@ -119,13 +133,9 @@ python install_tiny
 ## 🛣️ Roadmap
 
 Planned features:
-- Filter units on more properties
-   - Save filters
-- Display more properties in the unit browser
-   - Add/Remove columns
-   - Adjust cell viewer according to property types (time)
-- Functionality edit generated file or original
-- Context menu on unit browser row
+
+- Save unit filters
+- Adjust cell viewer according to property types (e.g. display uint as human time)
 - Always administrator mode
 - Continuous UX improvements
 
@@ -139,7 +149,7 @@ Interested in contributing? Contact the project maintainer on [GitHub](https://g
 
 ## 🌐 Internationalization
 
-__SysD Manager__ can be displayed in different languages as long a translation has been provided.
+**SysD Manager** can be displayed in different languages as long a translation has been provided.
 
 <div align="center">
 <a href="https://hosted.weblate.org/engage/sysd-manager/" target="_blank">
@@ -147,58 +157,13 @@ __SysD Manager__ can be displayed in different languages as long a translation h
 </a>
 </div>
 
-
 ### Translators
 
 Translations are generously hosted by [Weblate](https://weblate.org).
-Please help translate __Sysd Manager__ into more languages through the [__Sysd Manager__ Hosted Weblate](https://hosted.weblate.org/engage/sysd-manager/).
+Please help translate **Sysd Manager** into more languages through the [**Sysd Manager** Hosted Weblate](https://hosted.weblate.org/engage/sysd-manager/).
 
-### Developpers and Translator
+_Information for developers to handle translations can be found [here](https://github.com/plrigaux/sysd-manager/wiki/Translation)._
 
-Some tools have been created to help with translation. The following shows the most important ones to help translators
-
-
-<!-- ### Generate POTFILES
-
-To generate the POTFILES file that contains the list of input files to look for to exrtact translatable strings. 
-```
-cargo run -p transtools -- potfiles
-```
-
-_Normally a translator don't have to use this command. Use it only after you created or removed new source files_ -->
-
-#### Generate missing po files or update them
-
-After changes in the source code it's needed to update a po languages file. The following command helps you to perform that.
-```
-cargo run -p transtools -- po -lang <LANG>
-```
-
-_Also useful for adding a new translated language_
-
-#### Extract transalation texts
-
-To extract translation texts form source code and generate a Portable Object Template (pot) file. This is needed __only__ after code changes.
-
-```
-cargo run -p transtools -- extract -lang <LANG>
-```
-
-#### Notes
-
-- To add a new translated language, first add the new language code, respecting ```ll``` or ```ll_LL``` format, in the ```./po/LINGUAS``` files.
-- To test any translated languages, just set the environment variable like this:  ```export LANGUAGE=<language code>```
-<!--
-### Generate Templated
-
-To generate the language template. 
-The xgettext program extracts translatable strings from given input files.
-```
-cargo run -p transtools -- xgettext
-```
-
-_Normally a translator don't have to use this command. Use it only after you created or removed new source files_
--->
 ## 💡 Credits
 
 This project is inspired by the work of Guillaume Gomez: https://github.com/GuillaumeGomez/systemd-manager/
