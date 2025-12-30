@@ -10,7 +10,6 @@ url="https://github.com/plrigaux/sysd-manager"
 license=("GPL-3.0-or-later")
 depends=("gtk4" "libadwaita" "systemd-libs" "gtksourceview5" "gettext")
 makedepends=("cargo" "git")
-install=$pkgname.install
 changelog=CHANGELOG.md
 _commit=
 source=("${pkgname}-${pkgver}.tar.gz::https://github.com/plrigaux/${pkgname}/archive/refs/tags/v${pkgver}.tar.gz")
