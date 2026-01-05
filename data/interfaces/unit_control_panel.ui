@@ -104,7 +104,6 @@
             <child>
               <object class="GtkMenuButton" id="show_more_button">
                 <property name="label">test</property>
-                <property name="tooltip-text" translatable="yes" context="control tooltip" comments="tooltip on the more... button">More manage unit actions</property>
                 <property name="popover">
                   <object class="GtkPopover" id="more_action_popover"/>
                 </property>
