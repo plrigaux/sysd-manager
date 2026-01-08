@@ -137,8 +137,8 @@ impl UnitInfoPanelImp {
             gio::ActionEntry::builder(TEXT_FIND)
                 .activate(
                     move |_app_window: &AppWindow,
-                          simple_action,
-                          variant: Option<&glib::Variant>| {
+                          _simple_action,
+                          _variant: Option<&glib::Variant>| {
                         text_search_bar.set_search_mode(true);
                     },
                 )

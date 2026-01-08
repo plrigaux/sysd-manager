@@ -5,7 +5,9 @@
   <requires lib="gtk" version="4.18"/>
   <template class="TextFind" parent="GtkBox">
     <child>
-      <object class="GtkSearchEntry" id="search_entry"/>
+      <object class="GtkSearchEntry" id="search_entry">
+        <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
+      </object>
     </child>
     <child>
       <object class="GtkBox">

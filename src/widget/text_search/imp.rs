@@ -1,7 +1,13 @@
 use glib::WeakRef;
 use gtk::{glib, prelude::*, subclass::prelude::*};
+use regex::Regex;
+use tracing::{debug, warn};
+
+use crate::upgrade;
 
 use super::TextSearchBar;
+
+const SEARCH_HIGHLIGHT: &str = "search_highlight";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/text_find.ui")]
@@ -27,27 +33,25 @@ pub struct TextSearchBarImp {
 #[gtk::template_callbacks]
 impl TextSearchBarImp {
     #[template_callback]
-    fn on_case_sensitive_toggled(&self, _toggle_button: &gtk::ToggleButton) {
-        /*  if let Some(text_view) = self.text_view.upgrade() {
-            let case_sensitive = toggle_button.is_active();
-            //text_view.set_search_case_sensitive(case_sensitive);
-        } */
+    fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
+        let entry_text: glib::GString = search_entry.text();
+
+        debug!("Search text changed: {}", entry_text);
+
+        self.highlight_text();
     }
 
+    #[template_callback]
+    fn on_case_sensitive_toggled(&self, _toggle_button: &gtk::ToggleButton) {
+        self.highlight_text();
+    }
     #[template_callback]
     fn on_regex_toggled(&self, _toggle_button: &gtk::ToggleButton) {
-        /*  if let Some(text_view) = self.text_view.upgrade() {
-            let is_regex = toggle_button.is_active();
-            //    text_view.set_search_regex(is_regex);
-        } */
+        self.highlight_text();
     }
 
     #[template_callback]
-    fn on_previous_match_clicked(&self, _button: &gtk::Button) {
-        /*  if let Some(text_view) = self.text_view.upgrade() {
-            //   text_view.search_previous();
-        } */
-    }
+    fn on_previous_match_clicked(&self, _button: &gtk::Button) {}
 
     #[template_callback]
     fn on_next_match_clicked(&self, _button: &gtk::Button) {
@@ -64,6 +68,56 @@ impl TextSearchBarImp {
 
     pub(crate) fn grab_focus_on_search_entry(&self) {
         self.search_entry.grab_focus();
+    }
+
+    fn highlight_text(&self) {
+        let entry_text = self.search_entry.text();
+        let text_view = upgrade!(self.text_view);
+
+        let buff = text_view.buffer();
+
+        let start = buff.start_iter();
+        let end = buff.end_iter();
+
+        let tag_table = buff.tag_table();
+
+        let tag = if let Some(tag) = tag_table.lookup(SEARCH_HIGHLIGHT) {
+            // Remove previous highlights
+            buff.remove_tag(&tag, &start, &end);
+            tag
+        } else {
+            let tag = gtk::TextTag::builder()
+                .name(SEARCH_HIGHLIGHT)
+                .background("yellow")
+                .build();
+
+            tag_table.add(&tag);
+            tag
+        };
+
+        let text = buff.text(&start, &end, true);
+        println!("{}", text);
+
+        let regex = if self.case_sensitive_toggle_button.is_active() {
+            entry_text.to_string()
+        } else {
+            format!("(?i){}", entry_text)
+        };
+
+        let re = match Regex::new(&regex) {
+            Ok(re) => re,
+            Err(err) => {
+                warn!("Invalid regex: {}", err);
+                return;
+            }
+        };
+
+        for re_match in re.find_iter(&text) {
+            let match_start = buff.iter_at_offset(re_match.start() as i32);
+            let match_end = buff.iter_at_offset(re_match.end() as i32);
+
+            buff.apply_tag(&tag, &match_start, &match_end);
+        }
     }
 }
 

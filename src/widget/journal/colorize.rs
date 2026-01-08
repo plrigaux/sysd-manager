@@ -405,18 +405,18 @@ impl SelectGraphicRendition {
         tag_table: &gtk::TextTagTable,
         buf: &gtk::TextBuffer,
         start_iter: &gtk::TextIter,
-        iter: &gtk::TextIter,
+        end_iter: &gtk::TextIter,
     ) {
         if let Some(underline) = self.underline {
             let tt = gtk::TextTag::builder().underline(underline.pango()).build();
             tag_table.add(&tt);
-            buf.apply_tag(&tt, start_iter, iter);
+            buf.apply_tag(&tt, start_iter, end_iter);
         }
 
         if let Some(strikeout) = self.strikeout {
             let tt = gtk::TextTag::builder().strikethrough(strikeout).build();
             tag_table.add(&tt);
-            buf.apply_tag(&tt, start_iter, iter);
+            buf.apply_tag(&tt, start_iter, end_iter);
         }
 
         if let Some(_italic) = self.italic {
@@ -432,7 +432,7 @@ impl SelectGraphicRendition {
                 tag
             };
 
-            buf.apply_tag(&tag, start_iter, iter);
+            buf.apply_tag(&tag, start_iter, end_iter);
         }
 
         if let Some(intensity) = self.intensity {
@@ -454,7 +454,7 @@ impl SelectGraphicRendition {
                 tag
             };
 
-            buf.apply_tag(&tt, start_iter, iter);
+            buf.apply_tag(&tt, start_iter, end_iter);
         }
 
         if let Some(color) = self.foreground_color {
@@ -462,7 +462,7 @@ impl SelectGraphicRendition {
                 .foreground_rgba(&color.get_rgba())
                 .build();
             tag_table.add(&tt);
-            buf.apply_tag(&tt, start_iter, iter);
+            buf.apply_tag(&tt, start_iter, end_iter);
         }
 
         if let Some(color) = self.background_color {
@@ -470,7 +470,7 @@ impl SelectGraphicRendition {
                 .background_rgba(&color.get_rgba())
                 .build();
             tag_table.add(&tt);
-            buf.apply_tag(&tt, start_iter, iter);
+            buf.apply_tag(&tt, start_iter, end_iter);
         }
     }
 }
