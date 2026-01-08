@@ -3,6 +3,7 @@ use std::{
     rc::Rc,
 };
 
+use gettextrs::pgettext;
 use gtk::{
     TemplateChild,
     glib::{self},
@@ -32,6 +33,7 @@ use crate::{
     },
 };
 
+const TEXT_FIND: &str = "unit_doc_text_find";
 use super::construct_info::fill_all_info;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
@@ -46,6 +48,9 @@ pub struct UnitInfoPanelImp {
 
     #[template_child]
     unit_info_textview: TemplateChild<gtk::TextView>,
+
+    #[template_child]
+    text_search_bar: TemplateChild<gtk::SearchBar>,
 
     unit: RefCell<Option<UnitInfo>>,
 
@@ -118,17 +123,32 @@ impl UnitInfoPanelImp {
     }
 
     pub(crate) fn register(&self, app_window: &AppWindow) {
-        {
-            let app_window = app_window.clone();
+        let activator = LinkActivator::new(Some(app_window.clone()));
 
-            let activator = LinkActivator::new(Some(app_window));
+        text_view_hyperlink::build_textview_link_platform(
+            &self.unit_info_textview,
+            self.hovering_over_link_tag.clone(),
+            activator,
+        );
 
-            text_view_hyperlink::build_textview_link_platform(
-                &self.unit_info_textview,
-                self.hovering_over_link_tag.clone(),
-                activator,
-            );
-        }
+        let text_search_bar = self.text_search_bar.clone();
+        let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
+            gio::ActionEntry::builder(TEXT_FIND)
+                .activate(
+                    move |_app_window: &AppWindow,
+                          simple_action,
+                          variant: Option<&glib::Variant>| {
+                        println!(
+                            "text_search activated: action={:?}, variant={:?}",
+                            simple_action, variant
+                        );
+
+                        text_search_bar.set_search_mode(true);
+                    },
+                )
+                .build();
+
+        app_window.add_action_entries([daemon_reload_all_units_with_bus]);
     }
 
     pub(super) fn refresh_panels(&self) {
@@ -200,6 +220,18 @@ impl ObjectImpl for UnitInfoPanelImp {
         settings
             .bind(KEY_PREF_UNIT_DESCRIPTION_WRAP, self.obj().as_ref(), "wrap")
             .build();
+
+        let menu = gio::Menu::new();
+
+        // Find in text Menu
+        let menu_label = pgettext("menu", "Find");
+
+        let mut action_name = String::from("win.");
+        action_name.push_str(TEXT_FIND);
+
+        menu.append(Some(&menu_label), Some(&action_name));
+
+        self.unit_info_textview.set_extra_menu(Some(&menu));
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}

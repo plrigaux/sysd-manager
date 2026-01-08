@@ -3,45 +3,39 @@
 <interface>
   <!-- interface-name text_search.ui -->
   <requires lib="gtk" version="4.18"/>
-  <object class="GtkSearchBar">
-    <property name="child">
+  <template class="TextSearch" parent="GtkBox">
+    <child>
+      <object class="GtkSearchEntry" id="search_entry"/>
+    </child>
+    <child>
       <object class="GtkBox">
+        <property name="margin-end">5</property>
+        <property name="margin-start">5</property>
         <child>
-          <object class="GtkSearchEntry" id="search_entry"/>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="margin-end">5</property>
-            <property name="margin-start">5</property>
-            <child>
-              <object class="GtkToggleButton" id="case_sensitive_toggle">
-                <property name="icon-name">uppercase-symbolic</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkToggleButton" id="regex_toggle">
-                <property name="icon-name">regex-symbolic</property>
-              </object>
-            </child>
+          <object class="GtkToggleButton" id="case_sensitive_toggle">
+            <property name="icon-name">uppercase-symbolic</property>
           </object>
         </child>
         <child>
-          <object class="GtkBox">
-            <child>
-              <object class="GtkButton">
-                <property name="icon-name">go-up-symbolic</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="icon-name">go-down-symbolic</property>
-              </object>
-            </child>
+          <object class="GtkToggleButton" id="regex_toggle">
+            <property name="icon-name">regex-symbolic</property>
           </object>
         </child>
       </object>
-    </property>
-    <property name="search-mode-enabled">True</property>
-    <property name="show-close-button">True</property>
-  </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <child>
+          <object class="GtkButton">
+            <property name="icon-name">go-up-symbolic</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="icon-name">go-down-symbolic</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
 </interface>

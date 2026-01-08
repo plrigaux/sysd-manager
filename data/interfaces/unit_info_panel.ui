@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name unit_info_panel.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -53,6 +53,16 @@
             <property name="wrap-mode">word</property>
           </object>
         </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSearchBar" id="text_search_bar">
+        <property name="child">
+          <object class="GtkLabel">
+            <property name="label">test</property>
+          </object>
+        </property>
+        <property name="show-close-button">True</property>
       </object>
     </child>
   </template>
