@@ -29,7 +29,8 @@ use crate::{
         writer::UnitInfoWriter,
     },
     widget::{
-        InterPanelMessage, app_window::AppWindow, preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP,
+        InterPanelMessage, app_window::AppWindow,
+        preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP, text_search::TextSearchBar,
     },
 };
 
@@ -138,11 +139,6 @@ impl UnitInfoPanelImp {
                     move |_app_window: &AppWindow,
                           simple_action,
                           variant: Option<&glib::Variant>| {
-                        println!(
-                            "text_search activated: action={:?}, variant={:?}",
-                            simple_action, variant
-                        );
-
                         text_search_bar.set_search_mode(true);
                     },
                 )
@@ -232,6 +228,10 @@ impl ObjectImpl for UnitInfoPanelImp {
         menu.append(Some(&menu_label), Some(&action_name));
 
         self.unit_info_textview.set_extra_menu(Some(&menu));
+
+        let text_search_bar = TextSearchBar::new(&self.unit_info_textview);
+
+        self.text_search_bar.set_child(Some(&text_search_bar));
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}
