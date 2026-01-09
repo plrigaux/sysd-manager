@@ -53,6 +53,9 @@ pub struct UnitInfoPanelImp {
     #[template_child]
     text_search_bar: TemplateChild<gtk::SearchBar>,
 
+    #[template_child]
+    find_text_button: TemplateChild<gtk::ToggleButton>,
+
     unit: RefCell<Option<UnitInfo>>,
 
     is_dark: Cell<bool>,
@@ -245,6 +248,15 @@ impl ObjectImpl for UnitInfoPanelImp {
         let text_search_bar = TextSearchBar::new(&self.unit_info_textview);
 
         self.text_search_bar.set_child(Some(&text_search_bar));
+
+        self.find_text_button
+            .bind_property::<gtk::SearchBar>(
+                "active",
+                self.text_search_bar.as_ref(),
+                "search-mode-enabled",
+            )
+            .bidirectional()
+            .build();
     }
 }
 impl WidgetImpl for UnitInfoPanelImp {}

@@ -4,8 +4,11 @@
   <!-- interface-name text_search.ui -->
   <requires lib="gtk" version="4.18"/>
   <template class="TextFind" parent="GtkBox">
+    <property name="spacing">5</property>
     <child>
       <object class="GtkSearchEntry" id="search_entry">
+        <property name="search-delay">200</property>
+        <property name="width-request">190</property>
         <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
       </object>
     </child>

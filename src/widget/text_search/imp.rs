@@ -253,7 +253,7 @@ impl TextSearchBarImp {
         let text = buff.text(&start, &end, true);
         let pattern = if self.regex_toggle_button.is_active() {
             if !self.case_sensitive_toggle_button.is_active() {
-                let mut pattern = String::with_capacity(entry_text.len() + 10);
+                let mut pattern = String::with_capacity(entry_text.len() + 5);
                 pattern.push_str("(?i)");
                 pattern.push_str(&entry_text);
                 pattern
@@ -267,7 +267,7 @@ impl TextSearchBarImp {
             }
 
             for c in entry_text.chars() {
-                if matches!(c, '(' | ')' | '\\' | '*' | '[' | ']') {
+                if matches!(c, '(' | ')' | '\\' | '*' | '[' | ']' | '.') {
                     pattern.push('\\');
                 }
                 pattern.push(c);
