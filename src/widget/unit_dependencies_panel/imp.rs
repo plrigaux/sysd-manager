@@ -22,7 +22,7 @@ use crate::{
     utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
     widget::{
         app_window::AppWindow,
-        menu_button::{ExMenuButton, OnClose},
+        menu_button::{ExMenuButton, OnClose}, text_search::TextSearchBar,
     },
 };
 use base::enums::UnitDBusLevel;
@@ -49,6 +49,8 @@ const PANEL_EMPTY: &str = "empty";
 const PANEL_DEPENDENCIES: &str = "dependencies";
 const PANEL_SPINNER: &str = "spinner";
 
+const TEXT_FIND: &str = "unit_dependencies_text_find";
+
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_dependencies_panel.ui")]
 pub struct UnitDependenciesPanelImp {
@@ -63,6 +65,13 @@ pub struct UnitDependenciesPanelImp {
 
     #[template_child]
     controls_box: TemplateChild<gtk::Box>,
+    
+    #[template_child]
+    text_search_bar: TemplateChild<gtk::SearchBar>,
+
+    #[template_child]
+    find_text_button: TemplateChild<gtk::ToggleButton>,
+
 
     // #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
@@ -93,17 +102,35 @@ impl UnitDependenciesPanelImp {
 
 impl UnitDependenciesPanelImp {
     pub(crate) fn register(&self, app_window: &AppWindow) {
-        {
-            let app_window = app_window.clone();
 
-            let activator = LinkActivator::new(Some(app_window));
+        let activator = LinkActivator::new(Some(app_window.clone()));
 
-            text_view_hyperlink::build_textview_link_platform(
-                &self.unit_dependencies_textview,
-                self.hovering_over_link_tag.clone(),
-                activator,
-            );
-        }
+        text_view_hyperlink::build_textview_link_platform(
+            &self.unit_dependencies_textview,
+            self.hovering_over_link_tag.clone(),
+            activator,
+        );
+
+        let text_search_bar = self.text_search_bar.clone();
+        let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
+
+        gio::ActionEntry::builder(TEXT_FIND)
+            .activate(
+                move |_app_window: &AppWindow,
+                _simple_action,
+                _variant: Option<&glib::Variant>| {
+                    text_search_bar.set_search_mode(true);
+                    if let Some(search) =
+                    text_search_bar.child().and_downcast_ref::<TextSearchBar>()
+                    {
+                        search.grab_focus_on_search_entry();
+                    }
+                },
+            )
+            .build();
+
+        app_window.add_action_entries([daemon_reload_all_units_with_bus]);
+
     }
 
     fn set_visible_on_page(&self, visible: bool) {
@@ -374,6 +401,33 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         let dep = self.obj();
         let on_close = OnClose::new_dep(&dep);
         filter_button_unit_type.set_on_close(on_close);
+
+
+        let menu = gio::Menu::new();
+
+        // Find in text Menu
+        let menu_label = pgettext("menu", "Find");
+
+        let mut action_name = String::from("win.");
+        action_name.push_str(TEXT_FIND);
+
+        menu.append(Some(&menu_label), Some(&action_name));
+
+        self.unit_dependencies_textview.set_extra_menu(Some(&menu));
+
+        let text_search_bar = TextSearchBar::new(&self.unit_dependencies_textview);
+
+        self.text_search_bar.set_child(Some(&text_search_bar));
+
+        self.find_text_button
+            .bind_property::<gtk::SearchBar>(
+                "active",
+                self.text_search_bar.as_ref(),
+                "search-mode-enabled",
+            )
+            .bidirectional()
+            .build();
+
     }
 }
 

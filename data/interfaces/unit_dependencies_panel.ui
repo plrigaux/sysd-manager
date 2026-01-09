@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name unit_dependencies_panel.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -8,23 +8,37 @@
     <property name="hexpand">True</property>
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkBox" id="controls_box">
-        <property name="halign">end</property>
+      <object class="GtkBox">
         <property name="margin-bottom">5</property>
         <child>
-          <object class="GtkDropDown" id="dependency_types_dropdown">
-            <property name="margin-end">5</property>
+          <object class="GtkToggleButton" id="find_text_button">
+            <property name="halign">start</property>
+            <property name="icon-name">system-search-symbolic</property>
+            <property name="tooltip-text" translatable="yes">find text</property>
+            <property name="valign">baseline-fill</property>
           </object>
         </child>
         <child>
-          <object class="GtkLabel">
-            <property name="label" translatable="yes" context="dependency" comments="label">plain</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkCheckButton">
-            <property name="margin-end">5</property>
-            <signal name="toggled" handler="plain_option_toggled" swapped="yes"/>
+          <object class="GtkBox" id="controls_box">
+            <property name="halign">end</property>
+            <property name="hexpand">True</property>
+            <property name="hexpand-set">True</property>
+            <child>
+              <object class="GtkDropDown" id="dependency_types_dropdown">
+                <property name="margin-end">5</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes" context="dependency" comments="label">plain</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkCheckButton">
+                <property name="margin-end">5</property>
+                <signal name="toggled" handler="plain_option_toggled" swapped="yes"/>
+              </object>
+            </child>
           </object>
         </child>
       </object>
@@ -56,6 +70,7 @@
               <object class="GtkBox">
                 <property name="hexpand">True</property>
                 <property name="hexpand-set">True</property>
+                <property name="orientation">vertical</property>
                 <property name="vexpand-set">True</property>
                 <child>
                   <object class="GtkScrolledWindow">
@@ -68,6 +83,13 @@
                         <property name="vexpand-set">True</property>
                       </object>
                     </property>
+                    <property name="hexpand">True</property>
+                    <property name="hexpand-set">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSearchBar" id="text_search_bar">
+                    <property name="show-close-button">True</property>
                   </object>
                 </child>
               </object>
