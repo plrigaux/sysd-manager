@@ -5,7 +5,6 @@ use std::{
 
 use gettextrs::pgettext;
 use gtk::{
-    TemplateChild,
     glib::{self},
     prelude::*,
     subclass::{
@@ -16,6 +15,7 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
+    TemplateChild,
 };
 
 use log::{info, warn};
@@ -29,8 +29,8 @@ use crate::{
         writer::UnitInfoWriter,
     },
     widget::{
-        InterPanelMessage, app_window::AppWindow,
-        preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP, text_search::TextSearchBar,
+        app_window::AppWindow, preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP,
+        text_search::TextSearchBar, InterPanelMessage,
     },
 };
 
@@ -108,6 +108,14 @@ impl UnitInfoPanelImp {
         let mut info_writer = UnitInfoWriter::new(buf, start_iter, is_dark);
 
         fill_all_info(unit, &mut info_writer);
+
+        if let Some(search) = self
+            .text_search_bar
+            .child()
+            .and_downcast_ref::<TextSearchBar>()
+        {
+            search.clear_index();
+        }
     }
 
     fn clear(&self) -> gtk::TextBuffer {
@@ -140,6 +148,11 @@ impl UnitInfoPanelImp {
                           _simple_action,
                           _variant: Option<&glib::Variant>| {
                         text_search_bar.set_search_mode(true);
+                        if let Some(search) =
+                            text_search_bar.child().and_downcast_ref::<TextSearchBar>()
+                        {
+                            search.grab_focus_on_search_entry();
+                        }
                     },
                 )
                 .build();

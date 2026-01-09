@@ -20,4 +20,8 @@ impl TextSearchBar {
     pub fn grab_focus_on_search_entry(&self) {
         self.imp().grab_focus_on_search_entry();
     }
+
+    pub fn clear_index(&self) {
+        self.imp().clear_index();
+    }
 }
