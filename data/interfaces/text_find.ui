@@ -11,6 +11,7 @@
     </child>
     <child>
       <object class="GtkBox">
+        <property name="css-classes">linked</property>
         <property name="margin-end">5</property>
         <property name="margin-start">5</property>
         <child>
@@ -28,16 +29,26 @@
       </object>
     </child>
     <child>
+      <object class="GtkLabel" id="search_result_label">
+        <property name="css-classes">dimmed</property>
+        <property name="margin-end">5</property>
+        <property name="margin-start">5</property>
+        <property name="width-request">25</property>
+      </object>
+    </child>
+    <child>
       <object class="GtkBox">
         <child>
           <object class="GtkButton" id="previous_match_button">
             <property name="icon-name">go-up-symbolic</property>
+            <property name="sensitive">False</property>
             <signal name="clicked" handler="on_previous_match_clicked" swapped="yes"/>
           </object>
         </child>
         <child>
           <object class="GtkButton" id="next_match_button">
             <property name="icon-name">go-down-symbolic</property>
+            <property name="sensitive">False</property>
             <signal name="clicked" handler="on_next_match_clicked" swapped="yes"/>
           </object>
         </child>

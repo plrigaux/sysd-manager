@@ -27,6 +27,9 @@ pub struct TextSearchBarImp {
     #[template_child]
     next_match_button: TemplateChild<gtk::Button>,
 
+    #[template_child]
+    search_result_label: TemplateChild<gtk::Label>,
+
     text_view: WeakRef<gtk::TextView>,
 }
 
@@ -95,8 +98,11 @@ impl TextSearchBarImp {
             tag
         };
 
+        if entry_text.is_empty() {
+            return;
+        }
+
         let text = buff.text(&start, &end, true);
-        println!("{}", text);
 
         let regex = if self.case_sensitive_toggle_button.is_active() {
             entry_text.to_string()
@@ -112,12 +118,35 @@ impl TextSearchBarImp {
             }
         };
 
+        //start.forward_search(str, flags, limit)
+        let mut char_start: i32 = 0;
+        let mut byte_start = 0;
+
+        let mut match_num = 0;
         for re_match in re.find_iter(&text) {
-            let match_start = buff.iter_at_offset(re_match.start() as i32);
-            let match_end = buff.iter_at_offset(re_match.end() as i32);
+            let match_start = re_match.start();
+            char_start += text[byte_start..match_start].chars().count() as i32;
+            let re_match_end = re_match.end();
+            let char_end = char_start + text[match_start..re_match_end].chars().count() as i32;
+
+            let match_start = buff.iter_at_offset(char_start);
+            let match_end = buff.iter_at_offset(char_end);
 
             buff.apply_tag(&tag, &match_start, &match_end);
+
+            byte_start = re_match_end;
+            char_start = char_end;
+            match_num += 1;
         }
+
+        let hints = format!("0 of {match_num}");
+
+        self.search_result_label.set_label(&hints);
+
+        let sensitive = match_num > 0;
+
+        self.previous_match_button.set_sensitive(sensitive);
+        self.next_match_button.set_sensitive(sensitive);
     }
 }
 
