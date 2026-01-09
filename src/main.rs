@@ -13,7 +13,7 @@ mod widget;
 use std::env;
 
 use adw::prelude::AdwApplicationExt;
-use base::{RunMode, consts::APP_ID};
+use base::{consts::APP_ID, RunMode};
 use clap::{Parser, Subcommand};
 
 use gettextrs::gettext;
@@ -31,12 +31,14 @@ use log::{debug, info, warn};
 use systemd::data::UnitInfo;
 use systemd_gui::new_settings;
 use widget::{
-    app_window::{AppWindow, menu},
+    app_window::{menu, AppWindow},
     preferences::{
-        PreferencesDialog,
         data::{DbusLevel, KEY_PREF_PREFERRED_COLOR_SCHEME, PREFERENCES},
+        PreferencesDialog,
     },
 };
+
+use crate::systemd_gui::set_is_dark;
 
 const DOMAIN_NAME: &str = "sysd-manager";
 fn main() -> glib::ExitCode {
@@ -191,6 +193,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
         info!("is dark {is_dark}");
 
         window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
+        set_is_dark(is_dark);
 
         style_manager.connect_dark_notify(move |style_manager: &adw::StyleManager| {
             let is_dark = style_manager.is_dark();
@@ -199,6 +202,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
             let resource = css_resource_light_dark(is_dark);
             load_css_ress(resource);
             window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
+            set_is_dark(is_dark);
         });
     }
 

@@ -1,8 +1,32 @@
+use std::sync::RwLock;
+
 use base::consts::APP_ID;
 use gtk::gio::Settings;
+use tracing::error;
 
 pub fn new_settings() -> Settings {
     Settings::new(APP_ID)
+}
+
+static IS_DARK: RwLock<bool> = RwLock::new(false);
+
+pub fn set_is_dark(is_dark: bool) {
+    match IS_DARK.write() {
+        Ok(mut d) => *d = is_dark,
+        Err(err) => {
+            error!("Poisoned {err:?}")
+        }
+    }
+}
+
+pub fn is_dark() -> bool {
+    match IS_DARK.read() {
+        Ok(d) => *d,
+        Err(err) => {
+            error!("Poisoned {err:?}");
+            false
+        }
+    }
 }
 
 #[macro_export]

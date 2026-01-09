@@ -8,7 +8,7 @@ use gtk::{glib, prelude::*, subclass::prelude::*};
 use regex::Regex;
 use tracing::{debug, info, warn};
 
-use crate::upgrade;
+use crate::{systemd_gui::is_dark, upgrade};
 
 use super::TextSearchBar;
 
@@ -124,11 +124,17 @@ impl TextSearchBarImp {
 
             tag_select
         } else {
+            info!("is_dark {}", is_dark());
+            let color = if is_dark() { "#f7d742" } else { "#e5d255" };
             let tag_select = gtk::TextTag::builder()
                 .name(SEARCH_HIGHLIGHT_SELECTED)
-                .background("red")
+                .background(color)
                 //.priority(10)
                 .build();
+
+            if is_dark() {
+                tag_select.set_foreground(Some("#000000"));
+            }
 
             tag_table.add(&tag_select);
             tag_select
@@ -236,9 +242,11 @@ impl TextSearchBarImp {
 
             tag
         } else {
+            let color = if is_dark() { "#8a7826" } else { "#f8e45c" };
+
             let tag = gtk::TextTag::builder()
                 .name(SEARCH_HIGHLIGHT)
-                .background("yellow")
+                .background(color)
                 .build();
 
             tag_table.add(&tag);
