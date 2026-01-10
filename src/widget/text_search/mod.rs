@@ -23,8 +23,8 @@ impl TextSearchBar {
         self.imp().grab_focus_on_search_entry();
     }
 
-    pub fn clear_index(&self) {
-        self.imp().clear_index();
+    pub fn clear_tags(&self) {
+        self.imp().clear_tags();
     }
 
     pub fn find_text(&self) {
@@ -58,15 +58,25 @@ pub fn text_search_construct(
         .bind_property("active", text_search_bar, "search-mode-enabled")
         .bidirectional()
         .build();
+
+    text_search_bar.connect_search_mode_enabled_notify(|search_bar| {
+        if let Some(text_search_bar) = search_bar.child().and_downcast_ref::<TextSearchBar>() {
+            if search_bar.is_search_mode() {
+                text_search_bar.find_text();
+            } else {
+                text_search_bar.clear_tags();
+            }
+        };
+    });
 }
 
-pub fn on_new_text(text_search_bar: &gtk::SearchBar) {
-    if !text_search_bar.is_search_mode() {
+pub fn on_new_text(search_bar: &gtk::SearchBar) {
+    if !search_bar.is_search_mode() {
         return;
     }
 
-    if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
-        search_bar.find_text();
+    if let Some(text_search_bar) = search_bar.child().and_downcast_ref::<TextSearchBar>() {
+        text_search_bar.find_text();
     }
 }
 

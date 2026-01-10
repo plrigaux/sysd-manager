@@ -191,7 +191,11 @@ impl TextSearchBarImp {
         is_next: bool,
     ) -> gtk::TextIter {
         if let Some((start_iter, end_iter)) = self.iter_select.get() {
-            if is_next { end_iter } else { start_iter }
+            if is_next {
+                end_iter
+            } else {
+                start_iter
+            }
         } else {
             let cursor_pos = buff.cursor_position();
             let cursor_visible = text_view.is_cursor_visible();
@@ -219,6 +223,12 @@ impl TextSearchBarImp {
 
     pub(super) fn highlight_text(&self) {
         let entry_text = self.search_entry.text();
+
+        if entry_text.is_empty() {
+            self.clear_index();
+            return;
+        }
+
         let text_view = upgrade!(self.text_view);
 
         let buff = text_view.buffer();
@@ -248,11 +258,6 @@ impl TextSearchBarImp {
             tag_table.add(&tag);
             tag
         };
-
-        if entry_text.is_empty() {
-            self.clear_index();
-            return;
-        }
 
         let text = buff.text(&start, &end, true);
         let pattern = if self.regex_toggle_button.is_active() {
@@ -331,11 +336,31 @@ impl TextSearchBarImp {
         self.next_match_button.set_sensitive(sensitive);
     }
 
-    pub(super) fn clear_index(&self) {
+    fn clear_index(&self) {
         self.iter_select.set(None);
         self.prev_next_senstivity(0);
         self.search_result_label.set_label("");
         self.finds.borrow_mut().clear();
+    }
+
+    pub(super) fn clear_tags(&self) {
+        self.clear_index();
+
+        let text_view = upgrade!(self.text_view);
+
+        let buff = text_view.buffer();
+        let tag_table = buff.tag_table();
+
+        if let Some(tag) = tag_table.lookup(SEARCH_HIGHLIGHT) {
+            let start = buff.start_iter();
+            let end = buff.end_iter();
+            // Remove previous highlights
+            buff.remove_tag(&tag, &start, &end);
+
+            if let Some(tag_hl) = tag_table.lookup(SEARCH_HIGHLIGHT_SELECTED) {
+                buff.remove_tag(&tag_hl, &start, &end);
+            }
+        }
     }
 }
 
