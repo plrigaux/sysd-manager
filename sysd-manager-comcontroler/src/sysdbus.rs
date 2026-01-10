@@ -1508,7 +1508,7 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
 
     async fn connection_testing(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
         let connection = get_connection(level).await?;
-        debug!("Credentials: {:#?}", connection.peer_credentials().await?);
+        debug!("Credentials: {:#?}", connection.peer_creds().await?);
         debug!("Unique name: {:#?}", connection.unique_name());
 
         let con_info = format!("{connection:?}");
