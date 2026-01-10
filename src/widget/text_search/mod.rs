@@ -41,7 +41,7 @@ pub fn text_search_construct(
     let menu = gio::Menu::new();
 
     // Find in text Menu
-    let menu_label = pgettext("menu", "Find Text");
+    let menu_label = pgettext("text_find", "Find Text");
 
     let mut action_name = String::from("win.");
     action_name.push_str(action_name_base);

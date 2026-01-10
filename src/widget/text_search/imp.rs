@@ -3,12 +3,13 @@ use std::{
     collections::BTreeMap,
 };
 
+use gettextrs::pgettext;
 use glib::WeakRef;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 use regex::Regex;
 use tracing::{debug, info, warn};
 
-use crate::{systemd_gui::is_dark, upgrade};
+use crate::{format2, systemd_gui::is_dark, upgrade};
 
 use super::TextSearchBar;
 
@@ -147,7 +148,8 @@ impl TextSearchBarImp {
         let finds = self.finds.borrow();
 
         let idx = finds.get(&start_iter.offset()).unwrap_or(&-1);
-        let search_result = format!("{idx} of {}", finds.len());
+        //find count
+        let search_result = format2!(&pgettext("text_find", "{} of {}"), idx, finds.len());
         self.search_result_label.set_label(&search_result);
     }
 
@@ -322,7 +324,8 @@ impl TextSearchBarImp {
             char_start = char_end;
         }
 
-        let hints = format!("0 of {match_num}");
+        //find count initial
+        let hints = format2!(&pgettext("text_find", "{} of {}"), 0, finds.len());
 
         self.search_result_label.set_label(&hints);
 
