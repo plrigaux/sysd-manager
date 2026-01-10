@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-10 18:39-0500\n"
-"PO-Revision-Date: 2025-12-22 09:00+0000\n"
-"Last-Translator: p-sage <p-sage@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-01-10 23:50+0000\n"
+"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -244,7 +244,7 @@ msgstr "Effacer"
 #: data/interfaces/unit_dependencies_panel.ui:17
 #: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
 msgid "find text"
-msgstr ""
+msgstr "chercher dans le text"
 
 #. button
 #: data/interfaces/journal_panel.ui:28
@@ -955,12 +955,12 @@ msgstr "Session utilisateur"
 #: data/interfaces/text_find.ui:50
 msgctxt "find_text"
 msgid "Previous Match"
-msgstr ""
+msgstr "Match précédent"
 
 #: data/interfaces/text_find.ui:58
 msgctxt "find_text"
 msgid "Match Next"
-msgstr ""
+msgstr "Match suivant"
 
 #: data/interfaces/unit_control_panel.ui:18
 msgctxt "control info"
@@ -1291,7 +1291,7 @@ msgstr "système"
 
 #: src/widget/app_window/menu.rs:287
 msgid "Daemon Reload failed!"
-msgstr "Recharge la configuration a échouée!"
+msgstr "Recharge la configuration a échouée !"
 
 #. about dialogue
 #: src/widget/app_window/menu.rs:330
@@ -1809,13 +1809,13 @@ msgstr "Aucun"
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
-msgstr ""
+msgstr "{} de {}"
 
 #. Find in text Menu
 #: src/widget/text_search/mod.rs:44
 msgctxt "text_find"
 msgid "Find Text"
-msgstr ""
+msgstr "Rechercher dans le texte"
 
 #: src/widget/unit_control_panel/controls.rs:64
 #: src/widget/unit_control_panel/controls.rs:182
