@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-10 17:55-0500\n"
+"POT-Creation-Date: 2026-01-10 18:39-0500\n"
 "PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -911,6 +911,31 @@ msgctxt "signals"
 msgid "Watch Signals"
 msgstr "Jälgi signaale"
 
+#. tooltip
+#: data/interfaces/text_find.ui:23
+#, fuzzy
+msgctxt "find_text"
+msgid "Match Case"
+msgstr "Jälgi signaale"
+
+#. tooltip
+#: data/interfaces/text_find.ui:30
+#, fuzzy
+msgctxt "find_text"
+msgid "Use Regular Expression"
+msgstr "Kasutaja sessioon"
+
+#. tooltip
+#: data/interfaces/text_find.ui:50
+msgctxt "find_text"
+msgid "Previous Match"
+msgstr ""
+
+#: data/interfaces/text_find.ui:58
+msgctxt "find_text"
+msgid "Match Next"
+msgstr ""
+
 #: data/interfaces/unit_control_panel.ui:18
 msgctxt "control info"
 msgid "Enabled"
@@ -1749,9 +1774,17 @@ msgctxt "pref file style"
 msgid "None"
 msgstr "Puudub"
 
+#. find count
+#. find count initial
+#: src/widget/text_search/imp.rs:152 src/widget/text_search/imp.rs:328
+#, rust-format
+msgctxt "text_find"
+msgid "{} of {}"
+msgstr ""
+
 #. Find in text Menu
 #: src/widget/text_search/mod.rs:44
-msgctxt "menu"
+msgctxt "text_find"
 msgid "Find Text"
 msgstr ""
 
@@ -2135,10 +2168,6 @@ msgstr ""
 #~ msgctxt "dependency"
 #~ msgid "Before"
 #~ msgstr "Enne"
-
-#~ msgctxt "dbus"
-#~ msgid "User Session"
-#~ msgstr "Kasutaja sessioon"
 
 #~ msgctxt "clean"
 #~ msgid "_State"
