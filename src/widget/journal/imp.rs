@@ -37,10 +37,12 @@ use crate::{
     },
     widget::{
         InterPanelMessage,
+        app_window::AppWindow,
         journal::colorize::{self, Token},
         preferences::data::{
             KEY_PREF_JOURNAL_DISPLAY_FOLLOW, KEY_PREF_JOURNAL_DISPLAY_ORDER, PREFERENCES,
         },
+        text_search::{self, TextSearchBar},
     },
 };
 
@@ -53,6 +55,8 @@ const DESC: &str = "view-sort-descending";
 
 const KEY_ASCENDING: &str = "Ascending";
 const KEY_DESCENDING: &str = "Descending";
+
+const TEXT_FIND_ACTION: &str = "unit_journal_text_find";
 
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 enum JournalDisplayOrder {
@@ -117,6 +121,12 @@ pub struct JournalPanelImp {
 
     #[template_child]
     continuous_switch: TemplateChild<gtk::Switch>,
+
+    #[template_child]
+    text_search_bar: TemplateChild<gtk::SearchBar>,
+
+    #[template_child]
+    find_text_button: TemplateChild<gtk::ToggleButton>,
 
     visible_on_page: Cell<bool>,
 
@@ -348,6 +358,27 @@ impl JournalPanelImp {
 }
 
 impl JournalPanelImp {
+    pub(super) fn register(&self, app_window: &AppWindow) {
+        let text_search_bar = self.text_search_bar.clone();
+        let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
+            gio::ActionEntry::builder(TEXT_FIND_ACTION)
+                .activate(
+                    move |_app_window: &AppWindow,
+                          _simple_action,
+                          _variant: Option<&glib::Variant>| {
+                        text_search_bar.set_search_mode(true);
+                        if let Some(search) =
+                            text_search_bar.child().and_downcast_ref::<TextSearchBar>()
+                        {
+                            search.grab_focus_on_search_entry();
+                        }
+                    },
+                )
+                .build();
+
+        app_window.add_action_entries([daemon_reload_all_units_with_bus]);
+    }
+
     fn set_visible_on_page(&self, value: bool) {
         debug!("set_visible_on_page val {value}");
         self.visible_on_page.set(value);
@@ -558,6 +589,7 @@ impl JournalPanelImp {
            if panel == PANEL_JOURNAL {
             self.scrolled_window.grab_focus();
         } */
+        text_search::on_new_text(&self.text_search_bar);
     }
 
     fn continuous_entry(&self) {
@@ -698,6 +730,9 @@ impl JournalPanelImp {
         self.journal_text_view.replace(tv);
         self.time_old_new.set(None);
         self.continuous_switch.set_state(false);
+
+        let text_view = self.journal_text_view.borrow();
+        text_search::update_text_view(&self.text_search_bar, &text_view);
     }
 
     fn clean_refresh(&self) {
@@ -766,6 +801,14 @@ impl ObjectImpl for JournalPanelImp {
         let (label, icon) = display_order.label_icon();
         sort_toggle_button_content.set_icon_name(icon);
         sort_toggle_button_content.set_label(label);
+
+        let text_view = self.journal_text_view.borrow();
+        text_search::text_search_construct(
+            &text_view,
+            &self.text_search_bar,
+            &self.find_text_button,
+            TEXT_FIND_ACTION,
+        );
     }
 }
 impl WidgetImpl for JournalPanelImp {}

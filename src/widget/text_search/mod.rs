@@ -1,5 +1,7 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::glib;
+use gettextrs::pgettext;
+use glib::object::{CastNone, ObjectExt};
+use gtk::{glib, prelude::TextViewExt};
 mod imp;
 
 glib::wrapper! {
@@ -23,5 +25,53 @@ impl TextSearchBar {
 
     pub fn clear_index(&self) {
         self.imp().clear_index();
+    }
+
+    pub fn find_text(&self) {
+        self.imp().highlight_text();
+    }
+}
+
+pub fn text_search_construct(
+    text_view: &gtk::TextView,
+    text_search_bar: &gtk::SearchBar,
+    find_text_button: &gtk::ToggleButton,
+    action_name_base: &str,
+) {
+    let menu = gio::Menu::new();
+
+    // Find in text Menu
+    let menu_label = pgettext("menu", "Find Text");
+
+    let mut action_name = String::from("win.");
+    action_name.push_str(action_name_base);
+
+    menu.append(Some(&menu_label), Some(&action_name));
+
+    text_view.set_extra_menu(Some(&menu));
+
+    let text_search_bar_content = TextSearchBar::new(text_view);
+
+    text_search_bar.set_child(Some(&text_search_bar_content));
+
+    find_text_button
+        .bind_property("active", text_search_bar, "search-mode-enabled")
+        .bidirectional()
+        .build();
+}
+
+pub fn on_new_text(text_search_bar: &gtk::SearchBar) {
+    if !text_search_bar.is_search_mode() {
+        return;
+    }
+
+    if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
+        search_bar.find_text();
+    }
+}
+
+pub fn update_text_view(text_search_bar: &gtk::SearchBar, text_view: &gtk::TextView) {
+    if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
+        search_bar.imp().set_text_view(text_view);
     }
 }

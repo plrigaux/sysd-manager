@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit journal panel -->
@@ -13,6 +13,12 @@
         <property name="margin-end">5</property>
         <property name="margin-start">5</property>
         <property name="spacing">5</property>
+        <child>
+          <object class="GtkToggleButton" id="find_text_button">
+            <property name="icon-name">system-search-symbolic</property>
+            <property name="tooltip-text" translatable="yes">find text</property>
+          </object>
+        </child>
         <child>
           <object class="GtkButton" id="journal_refresh_button">
             <property name="child">
@@ -125,6 +131,11 @@
                     <property name="vscrollbar-policy">always</property>
                     <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="yes"/>
                     <signal name="edge-reached" handler="scwin_edge_reached" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSearchBar" id="text_search_bar">
+                    <property name="show-close-button">True</property>
                   </object>
                 </child>
               </object>

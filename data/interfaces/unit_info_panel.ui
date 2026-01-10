@@ -15,6 +15,12 @@
         <property name="margin-start">5</property>
         <property name="spacing">5</property>
         <child>
+          <object class="GtkToggleButton" id="find_text_button">
+            <property name="icon-name">system-search-symbolic</property>
+            <property name="tooltip-text" translatable="yes">find text</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkButton" id="refresh_button">
             <property name="child">
               <object class="AdwButtonContent">
@@ -36,12 +42,6 @@
                 <property name="use-underline">True</property>
               </object>
             </property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleButton" id="find_text_button">
-            <property name="icon-name">system-search-symbolic</property>
-            <property name="tooltip-text" translatable="yes">find text</property>
           </object>
         </child>
       </object>

@@ -14,6 +14,7 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::{data::PREFERENCES, style_scheme::style_schemes},
+        text_search::{self, TextSearchBar, on_new_text},
         unit_file_panel::{FILE_CONTEXT, flatpak::PROCEED},
     },
 };
@@ -75,6 +76,8 @@ impl FileNav {
     }
 }
 
+const TEXT_FIND_ACTION: &str = "unit_file_text_find";
+
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
 pub struct UnitFilePanelImp {
@@ -99,6 +102,12 @@ pub struct UnitFilePanelImp {
 
     #[template_child]
     unit_file_menu: TemplateChild<gio::MenuModel>,
+
+    #[template_child]
+    text_search_bar: TemplateChild<gtk::SearchBar>,
+
+    #[template_child]
+    find_text_button: TemplateChild<gtk::ToggleButton>,
 
     app_window: OnceCell<AppWindow>,
 
@@ -615,6 +624,8 @@ impl UnitFilePanelImp {
 
         self.save_button.set_sensitive(false);
         self.set_visible_child_panel();
+
+        on_new_text(&self.text_search_bar);
     }
 
     fn set_visible_child_panel(&self) {
@@ -727,6 +738,7 @@ impl UnitFilePanelImp {
                     )
                     .build()
             };
+
             let create_drop_in_file_permanent = {
                 let unit_file_panel = self.obj().clone();
                 gio::ActionEntry::builder("create_drop_in_file_permanent")
@@ -779,6 +791,24 @@ impl UnitFilePanelImp {
         let window = self.app_window.get().expect("AppWindow supposed to be set");
 
         dialog.present(Some(window)); */
+        let text_search_bar = self.text_search_bar.clone();
+        let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
+            gio::ActionEntry::builder(TEXT_FIND_ACTION)
+                .activate(
+                    move |_app_window: &AppWindow,
+                          _simple_action,
+                          _variant: Option<&glib::Variant>| {
+                        text_search_bar.set_search_mode(true);
+                        if let Some(search) =
+                            text_search_bar.child().and_downcast_ref::<TextSearchBar>()
+                        {
+                            search.grab_focus_on_search_entry();
+                        }
+                    },
+                )
+                .build();
+
+        app_window.add_action_entries([daemon_reload_all_units_with_bus]);
     }
 
     pub(super) fn refresh_panels(&self) {
@@ -1143,6 +1173,14 @@ impl ObjectImpl for UnitFilePanelImp {
                 save_button.set_sensitive(allow_save_condition);
             });
         }
+
+        let file_text_view = view.upcast_ref::<gtk::TextView>();
+        text_search::text_search_construct(
+            file_text_view,
+            &self.text_search_bar,
+            &self.find_text_button,
+            TEXT_FIND_ACTION,
+        );
 
         self.sourceview5_buffer
             .set(buffer)

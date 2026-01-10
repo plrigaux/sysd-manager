@@ -13,7 +13,7 @@ mod widget;
 use std::env;
 
 use adw::prelude::AdwApplicationExt;
-use base::{consts::APP_ID, RunMode};
+use base::{RunMode, consts::APP_ID};
 use clap::{Parser, Subcommand};
 
 use gettextrs::gettext;
@@ -31,10 +31,10 @@ use log::{debug, info, warn};
 use systemd::data::UnitInfo;
 use systemd_gui::new_settings;
 use widget::{
-    app_window::{menu, AppWindow},
+    app_window::{AppWindow, menu},
     preferences::{
-        data::{DbusLevel, KEY_PREF_PREFERRED_COLOR_SCHEME, PREFERENCES},
         PreferencesDialog,
+        data::{DbusLevel, KEY_PREF_PREFERRED_COLOR_SCHEME, PREFERENCES},
     },
 };
 

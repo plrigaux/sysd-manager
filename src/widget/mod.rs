@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use gtk::pango::FontDescription;
 
-use crate::systemd::{data::UnitInfo, BootFilter};
+use crate::systemd::{BootFilter, data::UnitInfo};
 
 pub mod app_window;
 pub mod clean_dialog;

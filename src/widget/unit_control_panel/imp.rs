@@ -139,6 +139,7 @@ impl UnitControlPanelImpl {
         self.unit_file_panel.register(app_window);
         self.unit_dependencies_panel.register(app_window);
         self.unit_info_panel.register(app_window);
+        self.unit_journal_panel.register(app_window);
 
         /*         if let Some(side_panel) = self.more_action_panel.get() {
             side_panel.set_app_window(app_window);

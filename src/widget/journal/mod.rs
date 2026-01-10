@@ -9,7 +9,7 @@ use std::cell::RefCell;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
-use crate::systemd::journal_data::JournalEventChunk;
+use crate::{systemd::journal_data::JournalEventChunk, widget::app_window::AppWindow};
 
 use super::InterPanelMessage;
 
@@ -31,6 +31,10 @@ impl JournalPanel {
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.imp().set_inter_message(action);
+    }
+
+    pub fn register(&self, app_window: &AppWindow) {
+        self.imp().register(app_window);
     }
 }
 

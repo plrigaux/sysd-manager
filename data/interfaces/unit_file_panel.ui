@@ -24,6 +24,12 @@
                     <property name="margin-start">5</property>
                     <property name="spacing">5</property>
                     <child>
+                      <object class="GtkToggleButton" id="find_text_button">
+                        <property name="icon-name">system-search-symbolic</property>
+                        <property name="tooltip-text" translatable="yes">find text</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="AdwToggleGroup" id="file_dropin_selector">
                         <child>
                           <object class="AdwToggle">
@@ -65,6 +71,11 @@
                   <object class="GtkScrolledWindow" id="unit_file_scrolled_window">
                     <property name="vexpand">True</property>
                     <property name="vexpand-set">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSearchBar" id="text_search_bar">
+                    <property name="show-close-button">True</property>
                   </object>
                 </child>
               </object>

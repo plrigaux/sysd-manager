@@ -3,8 +3,8 @@ use std::{
     rc::Rc,
 };
 
-use gettextrs::pgettext;
 use gtk::{
+    TemplateChild,
     glib::{self},
     prelude::*,
     subclass::{
@@ -15,7 +15,6 @@ use gtk::{
             CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
         },
     },
-    TemplateChild,
 };
 
 use log::{info, warn};
@@ -29,12 +28,14 @@ use crate::{
         writer::UnitInfoWriter,
     },
     widget::{
-        app_window::AppWindow, preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP,
-        text_search::TextSearchBar, InterPanelMessage,
+        InterPanelMessage,
+        app_window::AppWindow,
+        preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP,
+        text_search::{TextSearchBar, on_new_text, text_search_construct},
     },
 };
 
-const TEXT_FIND: &str = "unit_doc_text_find";
+const TEXT_FIND_ACTION: &str = "unit_doc_text_find";
 use super::construct_info::fill_all_info;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
@@ -112,13 +113,7 @@ impl UnitInfoPanelImp {
 
         fill_all_info(unit, &mut info_writer);
 
-        if let Some(search) = self
-            .text_search_bar
-            .child()
-            .and_downcast_ref::<TextSearchBar>()
-        {
-            search.clear_index();
-        }
+        on_new_text(&self.text_search_bar);
     }
 
     fn clear(&self) -> gtk::TextBuffer {
@@ -134,7 +129,7 @@ impl UnitInfoPanelImp {
         self.is_dark.set(is_dark);
     }
 
-    pub(crate) fn register(&self, app_window: &AppWindow) {
+    pub(super) fn register(&self, app_window: &AppWindow) {
         let activator = LinkActivator::new(Some(app_window.clone()));
 
         text_view_hyperlink::build_textview_link_platform(
@@ -145,7 +140,7 @@ impl UnitInfoPanelImp {
 
         let text_search_bar = self.text_search_bar.clone();
         let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
-            gio::ActionEntry::builder(TEXT_FIND)
+            gio::ActionEntry::builder(TEXT_FIND_ACTION)
                 .activate(
                     move |_app_window: &AppWindow,
                           _simple_action,
@@ -233,31 +228,14 @@ impl ObjectImpl for UnitInfoPanelImp {
             .bind(KEY_PREF_UNIT_DESCRIPTION_WRAP, self.obj().as_ref(), "wrap")
             .build();
 
-        let menu = gio::Menu::new();
-
-        // Find in text Menu
-        let menu_label = pgettext("menu", "Find");
-
-        let mut action_name = String::from("win.");
-        action_name.push_str(TEXT_FIND);
-
-        menu.append(Some(&menu_label), Some(&action_name));
-
-        self.unit_info_textview.set_extra_menu(Some(&menu));
-
-        let text_search_bar = TextSearchBar::new(&self.unit_info_textview);
-
-        self.text_search_bar.set_child(Some(&text_search_bar));
-
-        self.find_text_button
-            .bind_property::<gtk::SearchBar>(
-                "active",
-                self.text_search_bar.as_ref(),
-                "search-mode-enabled",
-            )
-            .bidirectional()
-            .build();
+        text_search_construct(
+            &self.unit_info_textview,
+            &self.text_search_bar,
+            &self.find_text_button,
+            TEXT_FIND_ACTION,
+        );
     }
 }
+
 impl WidgetImpl for UnitInfoPanelImp {}
 impl BoxImpl for UnitInfoPanelImp {}

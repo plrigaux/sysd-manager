@@ -22,7 +22,8 @@ use crate::{
     utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
     widget::{
         app_window::AppWindow,
-        menu_button::{ExMenuButton, OnClose}, text_search::TextSearchBar,
+        menu_button::{ExMenuButton, OnClose},
+        text_search::{self, TextSearchBar, on_new_text},
     },
 };
 use base::enums::UnitDBusLevel;
@@ -65,13 +66,12 @@ pub struct UnitDependenciesPanelImp {
 
     #[template_child]
     controls_box: TemplateChild<gtk::Box>,
-    
+
     #[template_child]
     text_search_bar: TemplateChild<gtk::SearchBar>,
 
     #[template_child]
     find_text_button: TemplateChild<gtk::ToggleButton>,
-
 
     // #[property(get, set=Self::set_visible_on_page)]
     visible_on_page: Cell<bool>,
@@ -102,7 +102,6 @@ impl UnitDependenciesPanelImp {
 
 impl UnitDependenciesPanelImp {
     pub(crate) fn register(&self, app_window: &AppWindow) {
-
         let activator = LinkActivator::new(Some(app_window.clone()));
 
         text_view_hyperlink::build_textview_link_platform(
@@ -113,24 +112,22 @@ impl UnitDependenciesPanelImp {
 
         let text_search_bar = self.text_search_bar.clone();
         let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
-
-        gio::ActionEntry::builder(TEXT_FIND)
-            .activate(
-                move |_app_window: &AppWindow,
-                _simple_action,
-                _variant: Option<&glib::Variant>| {
-                    text_search_bar.set_search_mode(true);
-                    if let Some(search) =
-                    text_search_bar.child().and_downcast_ref::<TextSearchBar>()
-                    {
-                        search.grab_focus_on_search_entry();
-                    }
-                },
-            )
-            .build();
+            gio::ActionEntry::builder(TEXT_FIND)
+                .activate(
+                    move |_app_window: &AppWindow,
+                          _simple_action,
+                          _variant: Option<&glib::Variant>| {
+                        text_search_bar.set_search_mode(true);
+                        if let Some(search) =
+                            text_search_bar.child().and_downcast_ref::<TextSearchBar>()
+                        {
+                            search.grab_focus_on_search_entry();
+                        }
+                    },
+                )
+                .build();
 
         app_window.add_action_entries([daemon_reload_all_units_with_bus]);
-
     }
 
     fn set_visible_on_page(&self, visible: bool) {
@@ -197,6 +194,7 @@ impl UnitDependenciesPanelImp {
         let level = unit.dbus_level();
         let primary_name = unit.primary();
         let object_path = unit.object_path();
+        let text_search_bar = self.text_search_bar.clone();
 
         glib::spawn_future_local(async move {
             stack.set_visible_child_name(PANEL_SPINNER);
@@ -260,6 +258,7 @@ impl UnitDependenciesPanelImp {
             }
 
             stack.set_visible_child_name(PANEL_DEPENDENCIES);
+            on_new_text(&text_search_bar);
         });
     }
 
@@ -402,32 +401,12 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         let on_close = OnClose::new_dep(&dep);
         filter_button_unit_type.set_on_close(on_close);
 
-
-        let menu = gio::Menu::new();
-
-        // Find in text Menu
-        let menu_label = pgettext("menu", "Find");
-
-        let mut action_name = String::from("win.");
-        action_name.push_str(TEXT_FIND);
-
-        menu.append(Some(&menu_label), Some(&action_name));
-
-        self.unit_dependencies_textview.set_extra_menu(Some(&menu));
-
-        let text_search_bar = TextSearchBar::new(&self.unit_dependencies_textview);
-
-        self.text_search_bar.set_child(Some(&text_search_bar));
-
-        self.find_text_button
-            .bind_property::<gtk::SearchBar>(
-                "active",
-                self.text_search_bar.as_ref(),
-                "search-mode-enabled",
-            )
-            .bidirectional()
-            .build();
-
+        text_search::text_search_construct(
+            &self.unit_dependencies_textview,
+            &self.text_search_bar,
+            &self.find_text_button,
+            TEXT_FIND,
+        );
     }
 }
 

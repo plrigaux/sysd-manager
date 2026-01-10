@@ -191,11 +191,7 @@ impl TextSearchBarImp {
         is_next: bool,
     ) -> gtk::TextIter {
         if let Some((start_iter, end_iter)) = self.iter_select.get() {
-            if is_next {
-                end_iter
-            } else {
-                start_iter
-            }
+            if is_next { end_iter } else { start_iter }
         } else {
             let cursor_pos = buff.cursor_position();
             let cursor_visible = text_view.is_cursor_visible();
@@ -221,7 +217,7 @@ impl TextSearchBarImp {
         self.search_entry.grab_focus();
     }
 
-    fn highlight_text(&self) {
+    pub(super) fn highlight_text(&self) {
         let entry_text = self.search_entry.text();
         let text_view = upgrade!(self.text_view);
 

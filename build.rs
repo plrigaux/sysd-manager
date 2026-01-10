@@ -4,11 +4,11 @@ use std::io::Write;
 use std::io::BufRead;
 
 use quick_xml::{
-    events::{BytesStart, Event},
     Reader, Writer,
+    events::{BytesStart, Event},
 };
-use translating::error::TransError;
 use translating::PO_DIR;
+use translating::error::TransError;
 
 macro_rules! script_warning {
     ($($tokens: tt)*) => {
