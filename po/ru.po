@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:35-0500\n"
+"POT-Creation-Date: 2026-01-10 17:55-0500\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -240,62 +240,68 @@ msgctxt "extented menu button"
 msgid "Clear"
 msgstr "Сброс"
 
+#: data/interfaces/journal_panel.ui:19
+#: data/interfaces/unit_dependencies_panel.ui:17
+#: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
+msgid "find text"
+msgstr ""
+
 #. button
-#: data/interfaces/journal_panel.ui:22
+#: data/interfaces/journal_panel.ui:28
 msgctxt "journal"
 msgid "Refresh"
 msgstr "Обновить"
 
-#: data/interfaces/journal_panel.ui:27
+#: data/interfaces/journal_panel.ui:33
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Очистить события журнала и заново их загрузить"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:38
+#: data/interfaces/journal_panel.ui:44
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
 "Включить непрерывный вывод новых записей по мере добавления их в журнал"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:54
+#: data/interfaces/journal_panel.ui:60
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Переключить порядок отображения событий"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:60
+#: data/interfaces/journal_panel.ui:66
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Список загрузок системы"
 
 #. button
-#: data/interfaces/journal_panel.ui:65
+#: data/interfaces/journal_panel.ui:71
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Список загрузок"
 
 #. button
-#: data/interfaces/journal_panel.ui:85
+#: data/interfaces/journal_panel.ui:91
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Текущая загрузка"
 
 #. button
-#: data/interfaces/journal_panel.ui:91
+#: data/interfaces/journal_panel.ui:97
 msgctxt "journal"
 msgid "All events"
 msgstr "Все события"
 
 #. title
-#: data/interfaces/journal_panel.ui:98
+#: data/interfaces/journal_panel.ui:104
 msgctxt "journal"
 msgid "Boot id"
 msgstr "ID загрузки"
 
 #. description
-#: data/interfaces/journal_panel.ui:139
+#: data/interfaces/journal_panel.ui:150
 msgctxt "journal"
 msgid ""
 "No journal events!\n"
@@ -305,7 +311,7 @@ msgstr ""
 "Это может быть хорошей новостью. 😉"
 
 #. title
-#: data/interfaces/journal_panel.ui:142
+#: data/interfaces/journal_panel.ui:153
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Событий в журнале нет"
@@ -973,93 +979,86 @@ msgctxt "controls"
 msgid "Restart"
 msgstr "Перезапустить"
 
-#. tooltip on the more... button
-#: data/interfaces/unit_control_panel.ui:107
-#, fuzzy
-msgctxt "control tooltip"
-msgid "More manage unit actions"
-msgstr "Ориентация"
-
-#: data/interfaces/unit_control_panel.ui:116
+#: data/interfaces/unit_control_panel.ui:115
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Другие действия..."
 
-#: data/interfaces/unit_control_panel.ui:152
+#: data/interfaces/unit_control_panel.ui:151
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr "Сведения о юните"
 
-#: data/interfaces/unit_control_panel.ui:162
+#: data/interfaces/unit_control_panel.ui:161
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr "Зависимости"
 
-#: data/interfaces/unit_control_panel.ui:172
+#: data/interfaces/unit_control_panel.ui:171
 msgctxt "controls tab"
 msgid "File"
 msgstr "Файл"
 
-#: data/interfaces/unit_control_panel.ui:182
+#: data/interfaces/unit_control_panel.ui:181
 msgctxt "controls tab"
 msgid "Journal"
 msgstr "Журнал"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:21
+#: data/interfaces/unit_dependencies_panel.ui:33
 msgctxt "dependency"
 msgid "plain"
 msgstr "Без форматирования"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:39
+#: data/interfaces/unit_dependencies_panel.ui:53
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr "Нет зависимостей"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:55
+#: data/interfaces/unit_file_panel.ui:61
 msgctxt "file"
 msgid "Save"
 msgstr "Сохранить"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:79
+#: data/interfaces/unit_file_panel.ui:90
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr "Юнит не связан с файлом"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:81
+#: data/interfaces/unit_file_panel.ui:92
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Нет юнит-файла"
 
-#: data/interfaces/unit_file_panel.ui:92
+#: data/interfaces/unit_file_panel.ui:103
 msgid "Create Drop-in"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:95
+#: data/interfaces/unit_file_panel.ui:106
 msgid "Permanent"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:99
+#: data/interfaces/unit_file_panel.ui:110
 #, fuzzy
 msgid "Runtime"
 msgstr "Время выполнения"
 
-#: data/interfaces/unit_file_panel.ui:104
+#: data/interfaces/unit_file_panel.ui:115
 msgid "Revert Drop-in"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_info_panel.ui:22
+#: data/interfaces/unit_info_panel.ui:28
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr "_Обновить"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:35
+#: data/interfaces/unit_info_panel.ui:41
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Показать все свойства"
@@ -1242,7 +1241,7 @@ msgid "Running units"
 msgstr "Активные юниты"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:109
+#: src/main.rs:111
 msgid "Program starting up"
 msgstr "Запуск программы"
 
@@ -1769,6 +1768,12 @@ msgctxt "pref file style"
 msgid "None"
 msgstr "Нет"
 
+#. Find in text Menu
+#: src/widget/text_search/mod.rs:44
+msgctxt "menu"
+msgid "Find Text"
+msgstr ""
+
 #: src/widget/unit_control_panel/controls.rs:64
 #: src/widget/unit_control_panel/controls.rs:182
 msgctxt "toast"
@@ -1875,20 +1880,20 @@ msgctxt "toast"
 msgid "reloaded"
 msgstr "перезагружен"
 
-#: src/widget/unit_control_panel/imp.rs:318
+#: src/widget/unit_control_panel/imp.rs:319
 msgctxt "toast"
 msgid ""
 "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
 msgstr "Юнит <unit>{}</unit> <{0}>{}</{0}> в режиме <unit>{}</unit>"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:346
+#: src/widget/unit_control_panel/imp.rs:347
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr "Невозможно {} юнит <unit>{}</unit>. Причина: {}"
 
-#: src/widget/unit_control_panel/imp.rs:675
+#: src/widget/unit_control_panel/imp.rs:676
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -1898,13 +1903,13 @@ msgstr ""
 "выполнено успешно"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:683
+#: src/widget/unit_control_panel/imp.rs:684
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} успешно выполнено."
 
-#: src/widget/unit_control_panel/imp.rs:695
+#: src/widget/unit_control_panel/imp.rs:696
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -1915,7 +1920,7 @@ msgstr ""
 "span>. Причина: <span fgcolor='{}'>{}</span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:706
+#: src/widget/unit_control_panel/imp.rs:707
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -1970,13 +1975,13 @@ msgid "Unmask"
 msgstr "Демаскировать"
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:360
+#: src/widget/unit_dependencies_panel/imp.rs:386
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Типы юнитов"
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:365
+#: src/widget/unit_dependencies_panel/imp.rs:391
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr "Фильтровать зависимости по типам"
@@ -2004,7 +2009,7 @@ msgid "_Close"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
+#: src/widget/unit_file_panel/imp.rs:269 src/widget/unit_file_panel/imp.rs:1050
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
@@ -2110,6 +2115,11 @@ msgstr "Очистить фильтр по столбцу"
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Фильтрация"
+
+#, fuzzy
+#~ msgctxt "control tooltip"
+#~ msgid "More manage unit actions"
+#~ msgstr "Ориентация"
 
 #~ msgctxt "title"
 #~ msgid "SysD Manager"

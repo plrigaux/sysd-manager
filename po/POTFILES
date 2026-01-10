@@ -16,6 +16,7 @@ data/interfaces/shortcuts.ui
 data/interfaces/side_control_panel.ui
 data/interfaces/signal_row.ui
 data/interfaces/signals_window.ui
+data/interfaces/text_find.ui
 data/interfaces/unit_control_panel.ui
 data/interfaces/unit_dependencies_panel.ui
 data/interfaces/unit_file_panel.ui
@@ -68,6 +69,8 @@ src/widget/preferences/mod.rs
 src/widget/preferences/style_scheme.rs
 src/widget/signals_dialog/imp.rs
 src/widget/signals_dialog/mod.rs
+src/widget/text_search/imp.rs
+src/widget/text_search/mod.rs
 src/widget/unit_control_panel/controls.rs
 src/widget/unit_control_panel/enums.rs
 src/widget/unit_control_panel/imp.rs

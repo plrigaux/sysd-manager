@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:35-0500\n"
+"POT-Creation-Date: 2026-01-10 17:55-0500\n"
 "PO-Revision-Date: 2025-11-06 03:27+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
@@ -232,61 +232,67 @@ msgctxt "extented menu button"
 msgid "Clear"
 msgstr ""
 
+#: data/interfaces/journal_panel.ui:19
+#: data/interfaces/unit_dependencies_panel.ui:17
+#: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
+msgid "find text"
+msgstr ""
+
 #. button
-#: data/interfaces/journal_panel.ui:22
+#: data/interfaces/journal_panel.ui:28
 msgctxt "journal"
 msgid "Refresh"
 msgstr ""
 
-#: data/interfaces/journal_panel.ui:27
+#: data/interfaces/journal_panel.ui:33
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:38
+#: data/interfaces/journal_panel.ui:44
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:54
+#: data/interfaces/journal_panel.ui:60
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:60
+#: data/interfaces/journal_panel.ui:66
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr ""
 
 #. button
-#: data/interfaces/journal_panel.ui:65
+#: data/interfaces/journal_panel.ui:71
 msgctxt "journal"
 msgid "List Boots"
 msgstr ""
 
 #. button
-#: data/interfaces/journal_panel.ui:85
+#: data/interfaces/journal_panel.ui:91
 msgctxt "journal"
 msgid "Current boot"
 msgstr ""
 
 #. button
-#: data/interfaces/journal_panel.ui:91
+#: data/interfaces/journal_panel.ui:97
 msgctxt "journal"
 msgid "All events"
 msgstr ""
 
 #. title
-#: data/interfaces/journal_panel.ui:98
+#: data/interfaces/journal_panel.ui:104
 msgctxt "journal"
 msgid "Boot id"
 msgstr ""
 
 #. description
-#: data/interfaces/journal_panel.ui:139
+#: data/interfaces/journal_panel.ui:150
 msgctxt "journal"
 msgid ""
 "No journal events!\n"
@@ -294,7 +300,7 @@ msgid ""
 msgstr ""
 
 #. title
-#: data/interfaces/journal_panel.ui:142
+#: data/interfaces/journal_panel.ui:153
 msgctxt "journal"
 msgid "No journal events"
 msgstr ""
@@ -942,91 +948,85 @@ msgctxt "controls"
 msgid "Restart"
 msgstr ""
 
-#. tooltip on the more... button
-#: data/interfaces/unit_control_panel.ui:107
-msgctxt "control tooltip"
-msgid "More manage unit actions"
-msgstr ""
-
-#: data/interfaces/unit_control_panel.ui:116
+#: data/interfaces/unit_control_panel.ui:115
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr ""
 
-#: data/interfaces/unit_control_panel.ui:152
+#: data/interfaces/unit_control_panel.ui:151
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr ""
 
-#: data/interfaces/unit_control_panel.ui:162
+#: data/interfaces/unit_control_panel.ui:161
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr ""
 
-#: data/interfaces/unit_control_panel.ui:172
+#: data/interfaces/unit_control_panel.ui:171
 msgctxt "controls tab"
 msgid "File"
 msgstr ""
 
-#: data/interfaces/unit_control_panel.ui:182
+#: data/interfaces/unit_control_panel.ui:181
 msgctxt "controls tab"
 msgid "Journal"
 msgstr ""
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:21
+#: data/interfaces/unit_dependencies_panel.ui:33
 msgctxt "dependency"
 msgid "plain"
 msgstr ""
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:39
+#: data/interfaces/unit_dependencies_panel.ui:53
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_file_panel.ui:55
+#: data/interfaces/unit_file_panel.ui:61
 msgctxt "file"
 msgid "Save"
 msgstr ""
 
 #. description
-#: data/interfaces/unit_file_panel.ui:79
+#: data/interfaces/unit_file_panel.ui:90
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr ""
 
 #. title
-#: data/interfaces/unit_file_panel.ui:81
+#: data/interfaces/unit_file_panel.ui:92
 msgctxt "file"
 msgid "No Unit File"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:92
+#: data/interfaces/unit_file_panel.ui:103
 msgid "Create Drop-in"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:95
+#: data/interfaces/unit_file_panel.ui:106
 msgid "Permanent"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:99
+#: data/interfaces/unit_file_panel.ui:110
 msgid "Runtime"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:104
+#: data/interfaces/unit_file_panel.ui:115
 msgid "Revert Drop-in"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_info_panel.ui:22
+#: data/interfaces/unit_info_panel.ui:28
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_info_panel.ui:35
+#: data/interfaces/unit_info_panel.ui:41
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr ""
@@ -1207,7 +1207,7 @@ msgid "Running units"
 msgstr ""
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:109
+#: src/main.rs:111
 msgid "Program starting up"
 msgstr ""
 
@@ -1730,6 +1730,12 @@ msgctxt "pref file style"
 msgid "None"
 msgstr ""
 
+#. Find in text Menu
+#: src/widget/text_search/mod.rs:44
+msgctxt "menu"
+msgid "Find Text"
+msgstr ""
+
 #: src/widget/unit_control_panel/controls.rs:64
 #: src/widget/unit_control_panel/controls.rs:182
 msgctxt "toast"
@@ -1832,20 +1838,20 @@ msgctxt "toast"
 msgid "reloaded"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:318
+#: src/widget/unit_control_panel/imp.rs:319
 msgctxt "toast"
 msgid ""
 "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
 msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:346
+#: src/widget/unit_control_panel/imp.rs:347
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:675
+#: src/widget/unit_control_panel/imp.rs:676
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -1853,13 +1859,13 @@ msgid ""
 msgstr ""
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:683
+#: src/widget/unit_control_panel/imp.rs:684
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:695
+#: src/widget/unit_control_panel/imp.rs:696
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -1868,7 +1874,7 @@ msgid ""
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:706
+#: src/widget/unit_control_panel/imp.rs:707
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -1922,13 +1928,13 @@ msgid "Unmask"
 msgstr ""
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:360
+#: src/widget/unit_dependencies_panel/imp.rs:386
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr ""
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:365
+#: src/widget/unit_dependencies_panel/imp.rs:391
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr ""
@@ -1955,7 +1961,7 @@ msgid "_Close"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
+#: src/widget/unit_file_panel/imp.rs:269 src/widget/unit_file_panel/imp.rs:1050
 msgid "Daemon Reload"
 msgstr ""
 

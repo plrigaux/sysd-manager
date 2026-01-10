@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 15:35-0500\n"
+"POT-Creation-Date: 2026-01-10 17:55-0500\n"
 "PO-Revision-Date: 2025-12-22 09:00+0000\n"
 "Last-Translator: p-sage <p-sage@users.noreply.hosted.weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -240,19 +240,25 @@ msgctxt "extented menu button"
 msgid "Clear"
 msgstr "Effacer"
 
+#: data/interfaces/journal_panel.ui:19
+#: data/interfaces/unit_dependencies_panel.ui:17
+#: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
+msgid "find text"
+msgstr ""
+
 #. button
-#: data/interfaces/journal_panel.ui:22
+#: data/interfaces/journal_panel.ui:28
 msgctxt "journal"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: data/interfaces/journal_panel.ui:27
+#: data/interfaces/journal_panel.ui:33
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Effacer les événements du journal et les récupérer à nouveau"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:38
+#: data/interfaces/journal_panel.ui:44
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
@@ -260,43 +266,43 @@ msgstr ""
 "qu'elles sont ajoutées au journal"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:54
+#: data/interfaces/journal_panel.ui:60
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Basculer l'ordre d'affichage des événements"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:60
+#: data/interfaces/journal_panel.ui:66
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Lister les démarrages du système"
 
 #. button
-#: data/interfaces/journal_panel.ui:65
+#: data/interfaces/journal_panel.ui:71
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Lister les démarrage"
 
 #. button
-#: data/interfaces/journal_panel.ui:85
+#: data/interfaces/journal_panel.ui:91
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Démarrage actuel"
 
 #. button
-#: data/interfaces/journal_panel.ui:91
+#: data/interfaces/journal_panel.ui:97
 msgctxt "journal"
 msgid "All events"
 msgstr "Tous les évènements"
 
 #. title
-#: data/interfaces/journal_panel.ui:98
+#: data/interfaces/journal_panel.ui:104
 msgctxt "journal"
 msgid "Boot id"
 msgstr "Id du boot"
 
 #. description
-#: data/interfaces/journal_panel.ui:139
+#: data/interfaces/journal_panel.ui:150
 msgctxt "journal"
 msgid ""
 "No journal events!\n"
@@ -306,7 +312,7 @@ msgstr ""
 "C'est peut être une bonne chose. 😉"
 
 #. title
-#: data/interfaces/journal_panel.ui:142
+#: data/interfaces/journal_panel.ui:153
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Aucun événement de journal"
@@ -983,91 +989,85 @@ msgctxt "controls"
 msgid "Restart"
 msgstr "Redémarrer"
 
-#. tooltip on the more... button
-#: data/interfaces/unit_control_panel.ui:107
-msgctxt "control tooltip"
-msgid "More manage unit actions"
-msgstr "Plus d'actions pour gérer les unités"
-
-#: data/interfaces/unit_control_panel.ui:116
+#: data/interfaces/unit_control_panel.ui:115
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Plus ..."
 
-#: data/interfaces/unit_control_panel.ui:152
+#: data/interfaces/unit_control_panel.ui:151
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr "Information"
 
-#: data/interfaces/unit_control_panel.ui:162
+#: data/interfaces/unit_control_panel.ui:161
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr "Dépendances"
 
-#: data/interfaces/unit_control_panel.ui:172
+#: data/interfaces/unit_control_panel.ui:171
 msgctxt "controls tab"
 msgid "File"
 msgstr "Fichier"
 
-#: data/interfaces/unit_control_panel.ui:182
+#: data/interfaces/unit_control_panel.ui:181
 msgctxt "controls tab"
 msgid "Journal"
 msgstr "Journal"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:21
+#: data/interfaces/unit_dependencies_panel.ui:33
 msgctxt "dependency"
 msgid "plain"
 msgstr "plat"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:39
+#: data/interfaces/unit_dependencies_panel.ui:53
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr "Aucune dépendances"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:55
+#: data/interfaces/unit_file_panel.ui:61
 msgctxt "file"
 msgid "Save"
 msgstr "Enregister"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:79
+#: data/interfaces/unit_file_panel.ui:90
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr "L'unité n'a aucun fichier associé"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:81
+#: data/interfaces/unit_file_panel.ui:92
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Pas de fichier pour l'unité"
 
-#: data/interfaces/unit_file_panel.ui:92
+#: data/interfaces/unit_file_panel.ui:103
 msgid "Create Drop-in"
 msgstr "Créer un drop-in"
 
-#: data/interfaces/unit_file_panel.ui:95
+#: data/interfaces/unit_file_panel.ui:106
 msgid "Permanent"
 msgstr "Permanent"
 
-#: data/interfaces/unit_file_panel.ui:99
+#: data/interfaces/unit_file_panel.ui:110
 msgid "Runtime"
 msgstr "Durée d'exécution"
 
-#: data/interfaces/unit_file_panel.ui:104
+#: data/interfaces/unit_file_panel.ui:115
 msgid "Revert Drop-in"
 msgstr "Annuler le Drop-in"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:22
+#: data/interfaces/unit_info_panel.ui:28
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr "_Rafraîchir"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:35
+#: data/interfaces/unit_info_panel.ui:41
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Afficher tout les propriétés"
@@ -1250,7 +1250,7 @@ msgid "Running units"
 msgstr "Unités en service"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:109
+#: src/main.rs:111
 msgid "Program starting up"
 msgstr "Le Programme démarre"
 
@@ -1778,6 +1778,12 @@ msgctxt "pref file style"
 msgid "None"
 msgstr "Aucun"
 
+#. Find in text Menu
+#: src/widget/text_search/mod.rs:44
+msgctxt "menu"
+msgid "Find Text"
+msgstr ""
+
 #: src/widget/unit_control_panel/controls.rs:64
 #: src/widget/unit_control_panel/controls.rs:182
 msgctxt "toast"
@@ -1884,7 +1890,7 @@ msgctxt "toast"
 msgid "reloaded"
 msgstr "rechargé"
 
-#: src/widget/unit_control_panel/imp.rs:318
+#: src/widget/unit_control_panel/imp.rs:319
 msgctxt "toast"
 msgid ""
 "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
@@ -1892,13 +1898,13 @@ msgstr ""
 "L'unité <unit>{}</unit> a été <{0}>{}</{0}> avec le mode <unit>{}</unit>"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:346
+#: src/widget/unit_control_panel/imp.rs:347
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr "Ne peut {} l'unité <unit>{}</unit>, à cause : {}"
 
-#: src/widget/unit_control_panel/imp.rs:675
+#: src/widget/unit_control_panel/imp.rs:676
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -1908,13 +1914,13 @@ msgstr ""
 "span> réussie"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:683
+#: src/widget/unit_control_panel/imp.rs:684
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} réussi."
 
-#: src/widget/unit_control_panel/imp.rs:695
+#: src/widget/unit_control_panel/imp.rs:696
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -1925,7 +1931,7 @@ msgstr ""
 "{} </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:706
+#: src/widget/unit_control_panel/imp.rs:707
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -1982,13 +1988,13 @@ msgid "Unmask"
 msgstr "Démasquer"
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:360
+#: src/widget/unit_dependencies_panel/imp.rs:386
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Types d'unité"
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:365
+#: src/widget/unit_dependencies_panel/imp.rs:391
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr "Filtrer les dépendances par types"
@@ -2005,8 +2011,8 @@ msgstr ""
 "Vous devez jailbreaker votre application Flatpak pour pouvoir enregistrer "
 "des fichiers sur le système hôte.\n"
 "\n"
-"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
-"lien</a> pour savoir comment obtenir l'autorisation nécessaire."
+"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
+"Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:77
 msgctxt "flatpak"
@@ -2020,7 +2026,7 @@ msgid "_Close"
 msgstr "_Fermer"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:260 src/widget/unit_file_panel/imp.rs:1020
+#: src/widget/unit_file_panel/imp.rs:269 src/widget/unit_file_panel/imp.rs:1050
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
@@ -2125,6 +2131,10 @@ msgstr "Supprimer les filtres de cette colonne"
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Filtrage"
+
+#~ msgctxt "control tooltip"
+#~ msgid "More manage unit actions"
+#~ msgstr "Plus d'actions pour gérer les unités"
 
 #~ msgctxt "title"
 #~ msgid "SysD Manager"
