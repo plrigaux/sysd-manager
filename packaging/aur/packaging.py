@@ -85,6 +85,7 @@ def create_pkgbuild(release=None):
     # set the version
 
     if isinstance(release, int):
+        print("forcing release:", release)
         pkgbuild_text = pkgbuild_text.replace("pkgrel=1\n", f"pkgrel={release}\n")
 
     # put the commit label
