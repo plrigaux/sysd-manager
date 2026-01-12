@@ -30,6 +30,15 @@ impl TextSearchBar {
     pub fn find_text(&self) {
         self.imp().highlight_text();
     }
+
+    pub fn new_added_text(
+        &self,
+        buff: &gtk::TextBuffer,
+        start_iter: gtk::TextIter,
+        end_iter: gtk::TextIter,
+    ) {
+        self.imp().new_added_text(buff, start_iter, end_iter);
+    }
 }
 
 pub fn text_search_construct(
@@ -83,5 +92,16 @@ pub fn on_new_text(search_bar: &gtk::SearchBar) {
 pub fn update_text_view(text_search_bar: &gtk::SearchBar, text_view: &gtk::TextView) {
     if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
         search_bar.imp().set_text_view(text_view);
+    }
+}
+
+pub fn new_added_text(
+    text_search_bar: &gtk::SearchBar,
+    buff: &gtk::TextBuffer,
+    start_iter: gtk::TextIter,
+    end_iter: gtk::TextIter,
+) {
+    if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
+        search_bar.imp().new_added_text(buff, start_iter, end_iter);
     }
 }

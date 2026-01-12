@@ -74,7 +74,7 @@ impl HyperLinkType {
 
 impl UnitInfoWriter {
     pub fn new(buf: gtk::TextBuffer, iter: gtk::TextIter, is_dark: bool) -> Self {
-        UnitInfoWriter {
+        Self {
             buffer: buf,
             text_iterator: iter,
             is_dark,

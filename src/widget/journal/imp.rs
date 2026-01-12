@@ -561,6 +561,13 @@ impl JournalPanelImp {
             (WhatGrab::Older, JournalDisplayOrder::Descending) => text_buffer.start_iter(),
         };
 
+        let mark_l = gtk::TextMark::new(None, true);
+        let mark_r = gtk::TextMark::new(None, false);
+
+        text_buffer.add_mark(&mark_l, &text_iter);
+        text_buffer.add_mark(&mark_r, &text_iter);
+
+        println!("1iter {:?}", text_iter.offset());
         let is_dark = self.is_dark.get();
         let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
         let journal_color = PREFERENCES.journal_colors();
@@ -585,11 +592,13 @@ impl JournalPanelImp {
         //TODO put  a load notification
         //TODO fix PgDown annoying sound
 
-        /*      self.panel_stack.set_visible_child_name(panel);
-           if panel == PANEL_JOURNAL {
-            self.scrolled_window.grab_focus();
-        } */
-        text_search::on_new_text(&self.text_search_bar);
+        println!("2iter {:?}", writer.text_iterator.offset());
+
+        let start_iter = writer.buffer.iter_at_mark(&mark_l);
+        let end_iter = writer.buffer.iter_at_mark(&mark_r);
+        text_search::new_added_text(&self.text_search_bar, &writer.buffer, start_iter, end_iter);
+        writer.buffer.delete_mark(&mark_l);
+        writer.buffer.delete_mark(&mark_r);
     }
 
     fn continuous_entry(&self) {

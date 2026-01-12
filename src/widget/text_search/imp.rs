@@ -45,6 +45,8 @@ pub struct TextSearchBarImp {
     iter_select: Cell<Option<(gtk::TextIter, gtk::TextIter)>>,
 
     finds: RefCell<BTreeMap<i32, i32>>,
+
+    regex: RefCell<Option<Regex>>,
 }
 
 #[gtk::template_callbacks]
@@ -196,11 +198,7 @@ impl TextSearchBarImp {
         is_next: bool,
     ) -> gtk::TextIter {
         if let Some((start_iter, end_iter)) = self.iter_select.get() {
-            if is_next {
-                end_iter
-            } else {
-                start_iter
-            }
+            if is_next { end_iter } else { start_iter }
         } else {
             let cursor_pos = buff.cursor_position();
             let cursor_visible = text_view.is_cursor_visible();
@@ -253,58 +251,48 @@ impl TextSearchBarImp {
 
             tag
         } else {
-            let color = if is_dark() { "#8a7826" } else { "#f8e45c" };
+            Self::new_tag(&tag_table)
+        };
 
-            let tag = gtk::TextTag::builder()
-                .name(SEARCH_HIGHLIGHT)
-                .background(color)
-                .build();
+        self.set_regex(&entry_text);
+        self.apply_tag(&buff, start, end, &tag);
+    }
+    fn new_tag(tag_table: &gtk::TextTagTable) -> gtk::TextTag {
+        let color = if is_dark() { "#8a7826" } else { "#f8e45c" };
 
-            tag_table.add(&tag);
+        let tag = gtk::TextTag::builder()
+            .name(SEARCH_HIGHLIGHT)
+            .background(color)
+            .build();
+
+        tag_table.add(&tag);
+        tag
+    }
+
+    pub(super) fn new_added_text(
+        &self,
+        buff: &gtk::TextBuffer,
+        start_iter: gtk::TextIter,
+        end_iter: gtk::TextIter,
+    ) {
+        let tag_table = buff.tag_table();
+
+        let tag = if let Some(tag) = tag_table.lookup(SEARCH_HIGHLIGHT) {
             tag
-        };
-
-        let text = buff.text(&start, &end, true);
-        let mut pattern = if self.regex_toggle_button.is_active() {
-            if !self.case_sensitive_toggle_button.is_active() {
-                let mut pattern = String::with_capacity(entry_text.len() + 5);
-                pattern.push_str("(?i)");
-                pattern.push_str(&entry_text);
-                pattern
-            } else {
-                entry_text.to_string()
-            }
         } else {
-            let mut pattern = String::with_capacity((entry_text.len() as f32 * 1.5) as usize);
-            if !self.case_sensitive_toggle_button.is_active() {
-                pattern.push_str("(?i)");
-            }
-
-            for c in entry_text.chars() {
-                if matches!(c, '(' | ')' | '\\' | '*' | '[' | ']' | '.') {
-                    pattern.push('\\');
-                }
-                pattern.push(c);
-            }
-            pattern
+            Self::new_tag(&tag_table)
         };
+        self.apply_tag(buff, start_iter, end_iter, &tag);
+    }
 
-        if self.match_whole_word.is_active() {
-            pattern = format!(r#"\b{pattern}\b"#);
-        }
-
-        let re = match Regex::new(&pattern) {
-            Ok(re) => {
-                self.search_entry.remove_css_class("error");
-                re
-            }
-            Err(err) => {
-                warn!("Invalid regex: {}", err);
-                self.prev_next_senstivity(0);
-                self.search_entry.add_css_class("error");
-                return;
-            }
-        };
+    fn apply_tag(
+        &self,
+        buff: &gtk::TextBuffer,
+        start_iter: gtk::TextIter,
+        end_iter: gtk::TextIter,
+        tag: &gtk::TextTag,
+    ) {
+        let text = buff.text(&start_iter, &end_iter, true);
 
         //start.forward_search(str, flags, limit)
         let mut char_start: i32 = 0;
@@ -313,6 +301,12 @@ impl TextSearchBarImp {
         let mut match_num = 0;
         let mut finds = self.finds.borrow_mut();
         finds.clear();
+        let borrow = self.regex.borrow();
+        let Some(re) = borrow.as_ref() else {
+            warn!("Find in text has no pattern");
+            return;
+        };
+
         for re_match in re.find_iter(&text) {
             let match_start = re_match.start();
             char_start += text[byte_start..match_start].chars().count() as i32;
@@ -322,7 +316,7 @@ impl TextSearchBarImp {
             let match_start = buff.iter_at_offset(char_start);
             let match_end = buff.iter_at_offset(char_end);
 
-            buff.apply_tag(&tag, &match_start, &match_end);
+            buff.apply_tag(tag, &match_start, &match_end);
 
             match_num += 1;
             finds.insert(char_start, match_num);
@@ -339,6 +333,47 @@ impl TextSearchBarImp {
         self.prev_next_senstivity(match_num);
     }
 
+    fn set_regex(&self, entry_text: &glib::GString) {
+        let mut pattern = String::with_capacity(entry_text.len() + 15);
+        if !self.case_sensitive_toggle_button.is_active() {
+            pattern.push_str("(?i)");
+        }
+
+        if self.match_whole_word.is_active() {
+            pattern.push_str("\\b");
+        }
+
+        if self.regex_toggle_button.is_active() {
+            pattern.push_str(entry_text);
+        } else {
+            for c in entry_text.chars() {
+                if matches!(c, '(' | ')' | '\\' | '*' | '[' | ']' | '.') {
+                    pattern.push('\\');
+                }
+                pattern.push(c);
+            }
+        }
+
+        if self.match_whole_word.is_active() {
+            pattern.push_str("\\b");
+        }
+
+        let re = match Regex::new(&pattern) {
+            Ok(re) => {
+                self.search_entry.remove_css_class("error");
+                re
+            }
+            Err(err) => {
+                warn!("Invalid regex: {}", err);
+                self.prev_next_senstivity(0);
+                self.search_entry.add_css_class("error");
+                return;
+            }
+        };
+
+        self.regex.replace(Some(re));
+    }
+
     fn prev_next_senstivity(&self, match_num: i32) {
         let sensitive = match_num > 0;
 
@@ -351,6 +386,7 @@ impl TextSearchBarImp {
         self.prev_next_senstivity(0);
         self.search_result_label.set_label("");
         self.finds.borrow_mut().clear();
+        self.regex.replace(None);
     }
 
     pub(super) fn clear_tags(&self) {
