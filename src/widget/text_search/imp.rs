@@ -26,6 +26,9 @@ pub struct TextSearchBarImp {
     case_sensitive_toggle_button: TemplateChild<gtk::ToggleButton>,
 
     #[template_child]
+    match_whole_word: TemplateChild<gtk::ToggleButton>,
+
+    #[template_child]
     regex_toggle_button: TemplateChild<gtk::ToggleButton>,
 
     #[template_child]
@@ -262,7 +265,7 @@ impl TextSearchBarImp {
         };
 
         let text = buff.text(&start, &end, true);
-        let pattern = if self.regex_toggle_button.is_active() {
+        let mut pattern = if self.regex_toggle_button.is_active() {
             if !self.case_sensitive_toggle_button.is_active() {
                 let mut pattern = String::with_capacity(entry_text.len() + 5);
                 pattern.push_str("(?i)");
@@ -285,6 +288,10 @@ impl TextSearchBarImp {
             }
             pattern
         };
+
+        if self.match_whole_word.is_active() {
+            pattern = format!(r#"\b{pattern}\b"#);
+        }
 
         let re = match Regex::new(&pattern) {
             Ok(re) => {

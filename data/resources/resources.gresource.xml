@@ -61,5 +61,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/dock-right-symbolic.svg</file>       
     <file preprocess="xml-stripblanks">icons/scalable/actions/uppercase-symbolic.svg</file>  
     <file preprocess="xml-stripblanks">icons/scalable/actions/regex-symbolic.svg</file>  
+    <file preprocess="xml-stripblanks">icons/scalable/actions/match-whole-word-symbolic.svg</file>  
   </gresource>
 </gresources>

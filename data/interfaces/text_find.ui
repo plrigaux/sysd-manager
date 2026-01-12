@@ -25,6 +25,13 @@
           </object>
         </child>
         <child>
+          <object class="GtkToggleButton" id="match_whole_word">
+            <property name="icon-name">match-whole-word-symbolic</property>
+            <property name="tooltip-text" translatable="yes" context="find_text" comments="tooltip">Match whole word</property>
+            <signal name="toggled" handler="on_regex_toggled" swapped="yes"/>
+          </object>
+        </child>
+        <child>
           <object class="GtkToggleButton" id="regex_toggle_button">
             <property name="icon-name">regex-symbolic</property>
             <property name="tooltip-text" translatable="yes" context="find_text" comments="tooltip">Use Regular Expression</property>
