@@ -158,8 +158,6 @@ impl UnitControlPanelImpl {
 
         let more_action_panel = more_action_panel.clone();
         self.more_action_popover.connect_show(move |_popover| {
-            info!("More action popover shown");
-
             more_action_panel.more_action_popover_shown();
         });
     }

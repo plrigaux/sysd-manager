@@ -40,9 +40,12 @@ mod imp {
         consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
         format2,
         systemd::{data::UnitInfo, enums::EnablementStatus},
-        upgrade,
+        systemd_gui, upgrade,
         utils::palette::blue,
-        widget::{InterPanelMessage, unit_list::UnitListPanel},
+        widget::{
+            preferences::data::KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, unit_list::UnitListPanel,
+            InterPanelMessage,
+        },
     };
 
     macro_rules! unit {
@@ -91,7 +94,10 @@ mod imp {
         reenable_button: TemplateChild<gtk::Button>,
 
         #[template_child]
-        relaod_button: TemplateChild<gtk::Button>,
+        reload_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        totals_summary_button: TemplateChild<gtk::Button>,
 
         pub(super) units_browser: OnceCell<gtk::ColumnView>,
         pub(super) unit_list_panel: OnceCell<UnitListPanel>,
@@ -188,6 +194,29 @@ mod imp {
             unit_list_panel!(self).button_action(&inter_message);
         }
 
+        #[template_callback]
+        fn _clicked(&self, button: gtk::Button) {
+            let unit = unit!(self);
+            let pop_menu = self.obj().clone();
+            let inter_message = InterPanelMessage::ReloadUnit(
+                button,
+                unit,
+                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+            );
+
+            unit_list_panel!(self).button_action(&inter_message);
+        }
+
+        #[template_callback]
+        fn totals_summary_clicked(&self, _button: gtk::Button) {
+            let settings = systemd_gui::new_settings();
+
+            let display_summary = settings.boolean(KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY);
+            let _ = settings
+                .set_boolean(KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, !display_summary)
+                .inspect_err(|err| warn!("Some error {err:?}"));
+        }
+
         fn set_unit(&self, unit: Option<&UnitInfo>) {
             if let Some(unit) = unit {
                 self.unit.replace(Some(unit.clone()));
@@ -242,7 +271,7 @@ mod imp {
                 );
 
                 self.set_tooltip(
-                    &self.relaod_button,
+                    &self.reload_button,
                     blue,
                     &primary_name,
                     &pgettext("controls", "Reload unit {} configuration by calling the <b>ExecReload</b> unit file instruction"),

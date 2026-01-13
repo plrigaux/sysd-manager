@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 12:01-0500\n"
+"POT-Creation-Date: 2026-01-13 16:28-0500\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -962,79 +962,79 @@ msgctxt "find_text"
 msgid "Match Next"
 msgstr ""
 
-#: data/interfaces/unit_control_panel.ui:18
+#: data/interfaces/unit_control_panel.ui:19
 msgctxt "control info"
 msgid "Enabled"
 msgstr "Включен"
 
-#: data/interfaces/unit_control_panel.ui:41
+#: data/interfaces/unit_control_panel.ui:42
 msgctxt "control tooltip"
 msgid "Start unit"
 msgstr "Запустить юнит"
 
 #. The start button
-#: data/interfaces/unit_control_panel.ui:46
+#: data/interfaces/unit_control_panel.ui:47
 msgctxt "controls"
 msgid "_Start"
 msgstr "_Запустить"
 
-#: data/interfaces/unit_control_panel.ui:54
+#: data/interfaces/unit_control_panel.ui:55
 msgctxt "control tooltip"
 msgid "Stop Modes"
 msgstr "Режимы остановки"
 
-#: data/interfaces/unit_control_panel.ui:65
+#: data/interfaces/unit_control_panel.ui:66
 msgctxt "control tooltip"
 msgid "Stop unit"
 msgstr "Остановить юнит"
 
-#: data/interfaces/unit_control_panel.ui:70
+#: data/interfaces/unit_control_panel.ui:71
 msgctxt "controls"
 msgid "S_top"
 msgstr "О_становить"
 
-#: data/interfaces/unit_control_panel.ui:71
+#: data/interfaces/unit_control_panel.ui:72
 msgctxt "controls tooltip"
 msgid "Stop unit"
 msgstr "Остановить юнит"
 
-#: data/interfaces/unit_control_panel.ui:79
+#: data/interfaces/unit_control_panel.ui:80
 msgctxt "control tooltip"
 msgid "Restart Modes"
 msgstr "Режимы перезапуска"
 
-#: data/interfaces/unit_control_panel.ui:90
+#: data/interfaces/unit_control_panel.ui:91
 msgctxt "controls tooltip"
 msgid "Restart unit"
 msgstr "Перезапустить юнит"
 
 #. unit popup menu
-#: data/interfaces/unit_control_panel.ui:95 data/interfaces/unit_pop_menu.ui:64
+#: data/interfaces/unit_control_panel.ui:96 data/interfaces/unit_pop_menu.ui:64
 msgctxt "controls"
 msgid "Restart"
 msgstr "Перезапустить"
 
-#: data/interfaces/unit_control_panel.ui:115
+#: data/interfaces/unit_control_panel.ui:116
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Другие действия..."
 
-#: data/interfaces/unit_control_panel.ui:151
+#: data/interfaces/unit_control_panel.ui:152
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr "Сведения о юните"
 
-#: data/interfaces/unit_control_panel.ui:161
+#: data/interfaces/unit_control_panel.ui:162
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr "Зависимости"
 
-#: data/interfaces/unit_control_panel.ui:171
+#: data/interfaces/unit_control_panel.ui:172
 msgctxt "controls tab"
 msgid "File"
 msgstr "Файл"
 
-#: data/interfaces/unit_control_panel.ui:181
+#: data/interfaces/unit_control_panel.ui:182
 msgctxt "controls tab"
 msgid "Journal"
 msgstr "Журнал"
@@ -1251,6 +1251,13 @@ msgstr "Повторно включить"
 msgctxt "controls"
 msgid "Reload"
 msgstr "Перезагрузить"
+
+#. unit list pop up menu item
+#: data/interfaces/unit_pop_menu.ui:137
+#, fuzzy
+msgctxt "controls"
+msgid "Toggle Totals Summary"
+msgstr "Скрыть общую сводку"
 
 #. Show all properties
 #: data/interfaces/unit_properties.ui:29
@@ -1893,14 +1900,14 @@ msgid "Reenabling"
 msgstr "Повторное включение"
 
 #: src/widget/unit_control_panel/controls.rs:242
-#: src/widget/unit_list/imp/pop_menu.rs:234
+#: src/widget/unit_list/imp/pop_menu.rs:263
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr "Выключить юнит {}"
 
 #: src/widget/unit_control_panel/controls.rs:244
-#: src/widget/unit_list/imp/pop_menu.rs:227
+#: src/widget/unit_list/imp/pop_menu.rs:256
 #, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
@@ -1954,20 +1961,20 @@ msgctxt "toast"
 msgid "reloaded"
 msgstr "перезагружен"
 
-#: src/widget/unit_control_panel/imp.rs:319
+#: src/widget/unit_control_panel/imp.rs:317
 msgctxt "toast"
 msgid ""
 "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
 msgstr "Юнит <unit>{}</unit> <{0}>{}</{0}> в режиме <unit>{}</unit>"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:347
+#: src/widget/unit_control_panel/imp.rs:345
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr "Невозможно {} юнит <unit>{}</unit>. Причина: {}"
 
-#: src/widget/unit_control_panel/imp.rs:676
+#: src/widget/unit_control_panel/imp.rs:674
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -1977,13 +1984,13 @@ msgstr ""
 "выполнено успешно"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:684
+#: src/widget/unit_control_panel/imp.rs:682
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} успешно выполнено."
 
-#: src/widget/unit_control_panel/imp.rs:696
+#: src/widget/unit_control_panel/imp.rs:694
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -1994,7 +2001,7 @@ msgstr ""
 "span>. Причина: <span fgcolor='{}'>{}</span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:707
+#: src/widget/unit_control_panel/imp.rs:705
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -2126,31 +2133,31 @@ msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr "Добавить фильтр по подсостоянию"
 
-#: src/widget/unit_list/imp/pop_menu.rs:206
+#: src/widget/unit_list/imp/pop_menu.rs:235
 #, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
 msgstr "Запустить юнит {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:213
+#: src/widget/unit_list/imp/pop_menu.rs:242
 #, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
 msgstr "Остановить юнит {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:220
+#: src/widget/unit_list/imp/pop_menu.rs:249
 #, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
 msgstr "Перезапустить юнит {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:241
+#: src/widget/unit_list/imp/pop_menu.rs:270
 #, rust-format
 msgctxt "controls"
 msgid "Disable and then Enable unit {}"
 msgstr "Отключить и включить юнит {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:248
+#: src/widget/unit_list/imp/pop_menu.rs:277
 #, rust-format
 msgctxt "controls"
 msgid ""
