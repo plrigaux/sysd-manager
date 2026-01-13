@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-12 22:02-0500\n"
-"PO-Revision-Date: 2026-01-10 23:50+0000\n"
+"PO-Revision-Date: 2026-01-13 03:29+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -246,7 +246,6 @@ msgstr "Effacer"
 #: data/interfaces/journal_panel.ui:19 data/interfaces/text_find.ui:10
 #: data/interfaces/unit_dependencies_panel.ui:17
 #: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
-#, fuzzy
 msgctxt "find_text"
 msgid "Find in Text"
 msgstr "Rechercher dans le texte"
@@ -944,23 +943,21 @@ msgstr "Monitorer les signaux"
 
 #. tooltip
 #: data/interfaces/text_find.ui:24
-#, fuzzy
 msgctxt "find_text"
 msgid "Match Case"
-msgstr "Monitorer les signaux"
+msgstr "Respecte la casse"
 
 #. tooltip
 #: data/interfaces/text_find.ui:31
 msgctxt "find_text"
 msgid "Match Whole Word"
-msgstr ""
+msgstr "Faire correspondre au mot entier"
 
 #. tooltip
 #: data/interfaces/text_find.ui:38
-#, fuzzy
 msgctxt "find_text"
 msgid "Use Regular Expression"
-msgstr "Session utilisateur"
+msgstr "Utilisez une expression régulière"
 
 #. tooltip
 #: data/interfaces/text_find.ui:58
@@ -1824,7 +1821,6 @@ msgstr "{} de {}"
 
 #. Find in text Menu item
 #: src/widget/text_search/mod.rs:48
-#, fuzzy
 msgctxt "text_find"
 msgid "Find in Text"
 msgstr "Rechercher dans le texte"
