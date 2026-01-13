@@ -43,8 +43,8 @@ mod imp {
         systemd_gui, upgrade,
         utils::palette::blue,
         widget::{
-            preferences::data::KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, unit_list::UnitListPanel,
-            InterPanelMessage,
+            InterPanelMessage, preferences::data::KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+            unit_list::UnitListPanel,
         },
     };
 

@@ -1,5 +1,5 @@
 mod install;
-use base::{consts::*, RunMode};
+use base::{RunMode, consts::*};
 use clap::{Parser, Subcommand};
 
 use std::error::Error;
