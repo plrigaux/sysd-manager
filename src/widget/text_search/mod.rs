@@ -44,8 +44,8 @@ impl TextSearchBar {
 fn set_menu_item(text_view: &gtk::TextView, action_name_base: &str) {
     let menu = gio::Menu::new();
 
-    // Find in text Menu
-    let menu_label = pgettext("text_find", "Find Text");
+    // Find in text Menu item
+    let menu_label = pgettext("text_find", "Find in Text");
 
     let mut action_name = String::from("win.");
     action_name.push_str(action_name_base);

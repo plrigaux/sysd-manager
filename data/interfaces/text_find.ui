@@ -7,7 +7,8 @@
     <property name="spacing">5</property>
     <child>
       <object class="GtkSearchEntry" id="search_entry">
-        <property name="search-delay">200</property>
+        <property name="placeholder-text" translatable="yes" context="find_text" comments="place holder text">Find in Text</property>
+        <property name="search-delay">250</property>
         <property name="width-request">190</property>
         <signal name="search-changed" handler="search_entry_changed" swapped="yes"/>
       </object>
@@ -27,7 +28,7 @@
         <child>
           <object class="GtkToggleButton" id="match_whole_word">
             <property name="icon-name">match-whole-word-symbolic</property>
-            <property name="tooltip-text" translatable="yes" context="find_text" comments="tooltip">Match whole word</property>
+            <property name="tooltip-text" translatable="yes" context="find_text" comments="tooltip">Match Whole Word</property>
             <signal name="toggled" handler="on_regex_toggled" swapped="yes"/>
           </object>
         </child>

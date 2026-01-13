@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-10 18:39-0500\n"
+"POT-Creation-Date: 2026-01-12 22:02-0500\n"
 "PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -241,10 +241,14 @@ msgctxt "extented menu button"
 msgid "Clear"
 msgstr "Tühjenda"
 
-#: data/interfaces/journal_panel.ui:19
+#. button tooltip
+#. place holder text
+#. button tooltip
+#: data/interfaces/journal_panel.ui:19 data/interfaces/text_find.ui:10
 #: data/interfaces/unit_dependencies_panel.ui:17
 #: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
-msgid "find text"
+msgctxt "find_text"
+msgid "Find in Text"
 msgstr ""
 
 #. button
@@ -912,26 +916,32 @@ msgid "Watch Signals"
 msgstr "Jälgi signaale"
 
 #. tooltip
-#: data/interfaces/text_find.ui:23
+#: data/interfaces/text_find.ui:24
 #, fuzzy
 msgctxt "find_text"
 msgid "Match Case"
 msgstr "Jälgi signaale"
 
 #. tooltip
-#: data/interfaces/text_find.ui:30
+#: data/interfaces/text_find.ui:31
+msgctxt "find_text"
+msgid "Match Whole Word"
+msgstr ""
+
+#. tooltip
+#: data/interfaces/text_find.ui:38
 #, fuzzy
 msgctxt "find_text"
 msgid "Use Regular Expression"
 msgstr "Kasutaja sessioon"
 
 #. tooltip
-#: data/interfaces/text_find.ui:50
+#: data/interfaces/text_find.ui:58
 msgctxt "find_text"
 msgid "Previous Match"
 msgstr ""
 
-#: data/interfaces/text_find.ui:58
+#: data/interfaces/text_find.ui:66
 msgctxt "find_text"
 msgid "Match Next"
 msgstr ""
@@ -1776,16 +1786,16 @@ msgstr "Puudub"
 
 #. find count
 #. find count initial
-#: src/widget/text_search/imp.rs:152 src/widget/text_search/imp.rs:328
+#: src/widget/text_search/imp.rs:157 src/widget/text_search/imp.rs:332
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
 msgstr ""
 
-#. Find in text Menu
-#: src/widget/text_search/mod.rs:44
+#. Find in text Menu item
+#: src/widget/text_search/mod.rs:48
 msgctxt "text_find"
-msgid "Find Text"
+msgid "Find in Text"
 msgstr ""
 
 #: src/widget/unit_control_panel/controls.rs:64

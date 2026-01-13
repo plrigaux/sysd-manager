@@ -17,7 +17,7 @@
         <child>
           <object class="GtkToggleButton" id="find_text_button">
             <property name="icon-name">system-search-symbolic</property>
-            <property name="tooltip-text" translatable="yes">find text</property>
+            <property name="tooltip-text" translatable="yes" context="find_text" comments="button tooltip">Find in Text</property>
           </object>
         </child>
         <child>
