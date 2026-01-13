@@ -95,6 +95,7 @@ yay -S sysd-manager
 ### AppImage
 
 <a href="https://github.com/plrigaux/sysd-manager/releases/latest"><img width="100" alt="Download latest Appimage release" src="https://docs.appimage.org/_images/appimage.svg"/></a>
+__Currently Broken__
 
 ### Build from Source
 
