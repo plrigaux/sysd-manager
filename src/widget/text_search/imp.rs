@@ -57,16 +57,16 @@ impl TextSearchBarImp {
 
         debug!("Search text changed: {}", entry_text);
 
-        self.highlight_text();
+        self.new_find_in_text();
     }
 
     #[template_callback]
     fn on_case_sensitive_toggled(&self, _toggle_button: &gtk::ToggleButton) {
-        self.highlight_text();
+        self.new_find_in_text();
     }
     #[template_callback]
     fn on_regex_toggled(&self, _toggle_button: &gtk::ToggleButton) {
-        self.highlight_text();
+        self.new_find_in_text();
     }
 
     #[template_callback]
@@ -224,11 +224,11 @@ impl TextSearchBarImp {
         self.search_entry.grab_focus();
     }
 
-    pub(super) fn highlight_text(&self) {
+    pub(super) fn new_find_in_text(&self) {
         let entry_text = self.search_entry.text();
 
         if entry_text.is_empty() {
-            self.clear_index();
+            self.clear_tags();
             return;
         }
 
@@ -255,8 +255,10 @@ impl TextSearchBarImp {
         };
 
         self.set_regex(&entry_text);
+        self.finds.borrow_mut().clear();
         self.apply_tag(&buff, start, end, &tag);
     }
+
     fn new_tag(tag_table: &gtk::TextTagTable) -> gtk::TextTag {
         let color = if is_dark() { "#8a7826" } else { "#f8e45c" };
 
@@ -282,6 +284,7 @@ impl TextSearchBarImp {
         } else {
             Self::new_tag(&tag_table)
         };
+
         self.apply_tag(buff, start_iter, end_iter, &tag);
     }
 
@@ -295,17 +298,17 @@ impl TextSearchBarImp {
         let text = buff.text(&start_iter, &end_iter, true);
 
         //start.forward_search(str, flags, limit)
-        let mut char_start: i32 = 0;
+        let mut char_start: i32 = start_iter.offset();
         let mut byte_start = 0;
 
-        let mut match_num = 0;
-        let mut finds = self.finds.borrow_mut();
-        finds.clear();
         let borrow = self.regex.borrow();
         let Some(re) = borrow.as_ref() else {
             warn!("Find in text has no pattern");
             return;
         };
+
+        let mut finds = self.finds.borrow_mut();
+        let mut match_num = finds.len() as i32;
 
         for re_match in re.find_iter(&text) {
             let match_start = re_match.start();
@@ -387,6 +390,8 @@ impl TextSearchBarImp {
         self.search_result_label.set_label("");
         self.finds.borrow_mut().clear();
         self.regex.replace(None);
+
+        self.finds.borrow_mut().clear();
     }
 
     pub(super) fn clear_tags(&self) {

@@ -567,7 +567,6 @@ impl JournalPanelImp {
         text_buffer.add_mark(&mark_l, &text_iter);
         text_buffer.add_mark(&mark_r, &text_iter);
 
-        println!("1iter {:?}", text_iter.offset());
         let is_dark = self.is_dark.get();
         let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
         let journal_color = PREFERENCES.journal_colors();
@@ -591,8 +590,6 @@ impl JournalPanelImp {
         self.journal_refresh_button.set_sensitive(true);
         //TODO put  a load notification
         //TODO fix PgDown annoying sound
-
-        println!("2iter {:?}", writer.text_iterator.offset());
 
         let start_iter = writer.buffer.iter_at_mark(&mark_l);
         let end_iter = writer.buffer.iter_at_mark(&mark_r);
@@ -741,7 +738,7 @@ impl JournalPanelImp {
         self.continuous_switch.set_state(false);
 
         let text_view = self.journal_text_view.borrow();
-        text_search::update_text_view(&self.text_search_bar, &text_view);
+        text_search::update_text_view(&self.text_search_bar, &text_view, TEXT_FIND_ACTION);
     }
 
     fn clean_refresh(&self) {
