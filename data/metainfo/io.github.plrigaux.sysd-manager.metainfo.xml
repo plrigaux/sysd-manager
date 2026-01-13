@@ -81,6 +81,15 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="2.11.1" date="2026-01-12">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Find text feature on the Unit's Description, File, Dependencies and Journal</li>
+          <li>Find in text can constrain on whole word</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.11.0" date="2026-01-10">
       <description translate="no">
         <p>Added</p>
