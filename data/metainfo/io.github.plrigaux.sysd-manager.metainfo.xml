@@ -75,18 +75,23 @@
   <url type="bugtracker">https://github.com/plrigaux/sysd-manager/issues</url>
   <url type="contribute">https://github.com/plrigaux/sysd-manager/pulls</url>
   <url type="donation">https://github.com/sponsors/plrigaux</url>
+  <url type="vcs-browser">https://github.com/plrigaux/sysd-manager</url>
   <!--
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="2.11.1" date="2026-01-12">
+    <release version="2.11.2" date="2026-01-13">
       <description translate="no">
         <p>Added</p>
         <ul>
           <li>Find text feature on the Unit's Description, File, Dependencies and Journal</li>
-          <li>Find in text can constrain on whole word</li>
+          <li>[2.11.1]Find in text can constrain on whole word</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>[2.11.2]Unit search bar UX improvements (tooltips, icons, sensitivity, ...)</li>
         </ul>
       </description>
     </release>

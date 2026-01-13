@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name unit_list_search.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -10,16 +10,18 @@
     <child>
       <object class="GtkSearchEntry" id="search_entry">
         <property name="hexpand">True</property>
+        <property name="placeholder-text" translatable="yes" context="unit search" comments="Search entry place holder text">Filter Units by their Names</property>
       </object>
     </child>
     <child>
       <object class="GtkButton" id="show_customize_button">
         <property name="action-name">app.properties_selector_general</property>
-        <property name="label" translatable="yes" context="unit search"/>
+        <property name="label" translatable="yes" context="unit search" comments="Button label"/>
+        <property name="tooltip-text" translatable="yes" context="button's tooltips" comments="button's tooltips">Configure displayed Columns</property>
         <child>
           <object class="AdwButtonContent">
             <property name="icon-name">columns-symbolic</property>
-            <property name="label" translatable="yes" context="unit search">Columns</property>
+            <property name="label" translatable="yes" context="unit search" comments="Button label">Columns</property>
           </object>
         </child>
       </object>
@@ -27,7 +29,13 @@
     <child>
       <object class="GtkButton" id="show_filter_button">
         <property name="action-name">win.unit_list_filter_blank</property>
-        <property name="label" translatable="yes" context="unit search">Filters</property>
+        <property name="tooltip-text" translatable="yes" context="unit search" comments="button's tooltips">More filtering Options</property>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="icon-name">funnel-symbolic</property>
+            <property name="label" translatable="yes" context="unit search" comments="Button label">Filters</property>
+          </object>
+        </child>
       </object>
     </child>
     <child>
@@ -35,7 +43,15 @@
         <property name="action-name">win.unit_list_filter_clear</property>
         <property name="action-target">'all'</property>
         <property name="css-classes">flat</property>
-        <property name="label" translatable="yes" context="unit search">Clear Filters</property>
+        <property name="sensitive">False</property>
+        <property name="tooltip-text" translatable="yes" context="unit search" comments="button's tooltips"/>
+        <child>
+          <object class="AdwButtonContent">
+            <property name="icon-name">edit-delete-symbolic</property>
+            <property name="label" translatable="yes" context="unit search" comments="Button label">Clear</property>
+            <property name="tooltip-text" translatable="yes" context="unit search" comments="button's tooltips">Clear applied Filters</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>

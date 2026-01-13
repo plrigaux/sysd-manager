@@ -480,6 +480,15 @@ impl UnitListPanelImp {
         if toggle_button_is_active {
             let s_controls = self.search_controls.get().unwrap();
             s_controls.grab_focus_on_search_entry();
+        
+            let applied_assessors = self
+            .applied_unit_property_filters
+            .get()
+            .expect("applied_assessors not null");
+
+            //TODO report a bug because the adw::ButtonContent doesn't hinerit it's parent
+            //sensitivity when hidden
+            s_controls.set_filter_is_set(!applied_assessors.borrow().is_empty());
         }
     }
 
@@ -685,7 +694,6 @@ impl UnitListPanelImp {
 
         let search_controls = self.search_controls.get().expect("Not Null");
         search_controls
-            .imp()
             .set_filter_is_set(!applied_assessors.borrow().is_empty());
     }
 

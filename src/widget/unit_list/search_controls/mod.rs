@@ -23,12 +23,17 @@ impl UnitListSearchControls {
     pub fn grab_focus_on_search_entry(&self) {
         self.imp().search_entry.grab_focus();
     }
+
+    pub fn set_filter_is_set(&self, filter_is_set: bool) {
+        self.imp().set_filter_is_set(filter_is_set);
+    }
 }
 
 mod imp {
     use std::cell::{Cell, OnceCell};
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
+    use tracing::debug;
 
     use crate::widget::unit_list::UnitListPanel;
 
@@ -45,8 +50,6 @@ mod imp {
 
         #[template_child]
         clear_filters_button: TemplateChild<gtk::Button>,
-
-        filter_is_set: Cell<bool>,
 
         signal_handler_text_changed: OnceCell<glib::SignalHandlerId>,
 
@@ -76,8 +79,29 @@ mod imp {
         }
 
         pub(crate) fn set_filter_is_set(&self, filter_is_set: bool) {
-            self.filter_is_set.set(filter_is_set);
+            debug!("FILTER SET {filter_is_set}");
             self.clear_filters_button.set_sensitive(filter_is_set);
+
+            if let Some(child) = self
+                .clear_filters_button
+                .child()
+                .and_downcast::<adw::ButtonContent>()
+            {
+                child.set_sensitive(filter_is_set);
+            }
+
+            if let Some(child) = self
+                .show_filter_button
+                .child()
+                .and_downcast::<adw::ButtonContent>()
+            {
+                let icon_name = if filter_is_set {
+                    "funnel-symbolic"
+                } else {
+                    "funnel-outline-symbolic"
+                };
+                child.set_icon_name(icon_name);
+            }
         }
     }
 
