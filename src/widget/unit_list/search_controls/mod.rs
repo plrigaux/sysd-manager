@@ -30,7 +30,7 @@ impl UnitListSearchControls {
 }
 
 mod imp {
-    use std::cell::{Cell, OnceCell};
+    use std::cell::OnceCell;
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
     use tracing::debug;
