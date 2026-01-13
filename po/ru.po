@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 22:02-0500\n"
+"POT-Creation-Date: 2026-01-13 12:01-0500\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1170,19 +1170,50 @@ msgctxt "list page title"
 msgid "Something went wrong"
 msgstr "Что-то пошло не так"
 
-#: data/interfaces/unit_list_search.ui:22
+#. Search entry place holder text
+#: data/interfaces/unit_list_search.ui:13
+#, fuzzy
+msgctxt "unit search"
+msgid "Filter Units by their Names"
+msgstr "Фильтровать зависимости по типам"
+
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:20
+#, fuzzy
+msgctxt "button's tooltips"
+msgid "Configure displayed Columns"
+msgstr "Настроить столбцы"
+
+#. Button label
+#: data/interfaces/unit_list_search.ui:24
 msgctxt "unit search"
 msgid "Columns"
 msgstr "Столбцы"
 
-#: data/interfaces/unit_list_search.ui:30
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:32
+msgctxt "unit search"
+msgid "More filtering Options"
+msgstr ""
+
+#. Button label
+#: data/interfaces/unit_list_search.ui:36
 msgctxt "unit search"
 msgid "Filters"
 msgstr "Фильтры"
 
-#: data/interfaces/unit_list_search.ui:38
+#. Button label
+#: data/interfaces/unit_list_search.ui:51
+#, fuzzy
 msgctxt "unit search"
-msgid "Clear Filters"
+msgid "Clear"
+msgstr "Сброс"
+
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:52
+#, fuzzy
+msgctxt "unit search"
+msgid "Clear applied Filters"
 msgstr "Сбросить фильтры"
 
 #. unit popup menu
@@ -2158,6 +2189,10 @@ msgstr "Очистить фильтр по столбцу"
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Фильтрация"
+
+#~ msgctxt "unit search"
+#~ msgid "Clear Filters"
+#~ msgstr "Сбросить фильтры"
 
 #, fuzzy
 #~ msgctxt "control tooltip"

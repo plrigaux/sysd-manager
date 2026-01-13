@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 22:02-0500\n"
+"POT-Creation-Date: 2026-01-13 12:01-0500\n"
 "PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1152,20 +1152,50 @@ msgctxt "list page title"
 msgid "Something went wrong"
 msgstr "Midagi läks valesti"
 
-#: data/interfaces/unit_list_search.ui:22
+#. Search entry place holder text
+#: data/interfaces/unit_list_search.ui:13
+msgctxt "unit search"
+msgid "Filter Units by their Names"
+msgstr ""
+
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:20
+#, fuzzy
+msgctxt "button's tooltips"
+msgid "Configure displayed Columns"
+msgstr "Seadista veerge"
+
+#. Button label
+#: data/interfaces/unit_list_search.ui:24
 msgctxt "unit search"
 msgid "Columns"
 msgstr "Veerud"
 
-#: data/interfaces/unit_list_search.ui:30
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:32
+msgctxt "unit search"
+msgid "More filtering Options"
+msgstr ""
+
+#. Button label
+#: data/interfaces/unit_list_search.ui:36
 msgctxt "unit search"
 msgid "Filters"
 msgstr "Filtrid"
 
-#: data/interfaces/unit_list_search.ui:38
+#. Button label
+#: data/interfaces/unit_list_search.ui:51
+#, fuzzy
 msgctxt "unit search"
-msgid "Clear Filters"
-msgstr "Kustuta filtrid"
+msgid "Clear"
+msgstr "Tühjenda"
+
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:52
+#, fuzzy
+msgctxt "unit search"
+msgid "Clear applied Filters"
+msgstr "Tühjenda filtrid"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:36
@@ -2128,6 +2158,10 @@ msgstr "Tühjenda veergude filter"
 msgctxt "menu"
 msgid "Filtering"
 msgstr ""
+
+#~ msgctxt "unit search"
+#~ msgid "Clear Filters"
+#~ msgstr "Kustuta filtrid"
 
 #, fuzzy
 #~ msgctxt "control tooltip"
