@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-13 16:28-0500\n"
-"PO-Revision-Date: 2026-01-13 17:16+0000\n"
+"PO-Revision-Date: 2026-01-13 21:35+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1257,10 +1257,9 @@ msgstr "Recharger"
 
 #. unit list pop up menu item
 #: data/interfaces/unit_pop_menu.ui:137
-#, fuzzy
 msgctxt "controls"
 msgid "Toggle Totals Summary"
-msgstr "Masquer les totaux"
+msgstr "Afficher/Masquer le résumé des totaux"
 
 #. Show all properties
 #: data/interfaces/unit_properties.ui:29
