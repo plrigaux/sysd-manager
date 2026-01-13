@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 22:02-0500\n"
+"POT-Creation-Date: 2026-01-13 12:01-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1132,19 +1132,46 @@ msgctxt "list page title"
 msgid "Something went wrong"
 msgstr ""
 
-#: data/interfaces/unit_list_search.ui:22
+#. Search entry place holder text
+#: data/interfaces/unit_list_search.ui:13
+msgctxt "unit search"
+msgid "Filter Units by their Names"
+msgstr ""
+
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:20
+msgctxt "button's tooltips"
+msgid "Configure displayed Columns"
+msgstr ""
+
+#. Button label
+#: data/interfaces/unit_list_search.ui:24
 msgctxt "unit search"
 msgid "Columns"
 msgstr ""
 
-#: data/interfaces/unit_list_search.ui:30
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:32
+msgctxt "unit search"
+msgid "More filtering Options"
+msgstr ""
+
+#. Button label
+#: data/interfaces/unit_list_search.ui:36
 msgctxt "unit search"
 msgid "Filters"
 msgstr ""
 
-#: data/interfaces/unit_list_search.ui:38
+#. Button label
+#: data/interfaces/unit_list_search.ui:51
 msgctxt "unit search"
-msgid "Clear Filters"
+msgid "Clear"
+msgstr ""
+
+#. button's tooltips
+#: data/interfaces/unit_list_search.ui:52
+msgctxt "unit search"
+msgid "Clear applied Filters"
 msgstr ""
 
 #. unit popup menu
