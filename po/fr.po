@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-13 12:01-0500\n"
-"PO-Revision-Date: 2026-01-13 03:29+0000\n"
+"PO-Revision-Date: 2026-01-13 17:16+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1179,17 +1179,15 @@ msgstr "Quelque chose s'est mal passé"
 
 #. Search entry place holder text
 #: data/interfaces/unit_list_search.ui:13
-#, fuzzy
 msgctxt "unit search"
 msgid "Filter Units by their Names"
-msgstr "Filtrer les dépendances par types"
+msgstr "Filtrer les unités par leur nom"
 
 #. button's tooltips
 #: data/interfaces/unit_list_search.ui:20
-#, fuzzy
 msgctxt "button's tooltips"
 msgid "Configure displayed Columns"
-msgstr "Configurer les colonnes"
+msgstr "Configurer l'affichage des colonnes"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:24
@@ -1201,7 +1199,7 @@ msgstr "Colonnes"
 #: data/interfaces/unit_list_search.ui:32
 msgctxt "unit search"
 msgid "More filtering Options"
-msgstr ""
+msgstr "Autres options de filtrage"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:36
@@ -1211,17 +1209,15 @@ msgstr "Filtres"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:51
-#, fuzzy
 msgctxt "unit search"
 msgid "Clear"
-msgstr "Effacer"
+msgstr "Enlever"
 
 #. button's tooltips
 #: data/interfaces/unit_list_search.ui:52
-#, fuzzy
 msgctxt "unit search"
 msgid "Clear applied Filters"
-msgstr "Supprimer les filtres"
+msgstr "Enlever les filtres appliqués"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:36
