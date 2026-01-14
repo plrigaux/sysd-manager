@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-14 11:52-0500\n"
-"PO-Revision-Date: 2025-12-23 21:00+0000\n"
+"PO-Revision-Date: 2026-01-15 04:52+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
 "manager/translation/pt_BR/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -248,7 +248,7 @@ msgstr "Claro"
 #: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
 msgctxt "find_text"
 msgid "Find in Text"
-msgstr ""
+msgstr "Encontre em Texto"
 
 #. button
 #: data/interfaces/journal_panel.ui:28
