@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 10:57-0500\n"
+"POT-Creation-Date: 2026-01-14 11:52-0500\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -2135,11 +2135,98 @@ msgctxt "flatpak"
 msgid "_Close"
 msgstr ""
 
+#: src/widget/unit_file_panel/imp.rs:263
+#, rust-format
+msgctxt "file"
+msgid "File {} created successfully!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:265
+#, rust-format
+msgctxt "file"
+msgid "File {} saved successfully!"
+msgstr ""
+
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Reload All Units"
+
+#: src/widget/unit_file_panel/imp.rs:288 src/widget/unit_file_panel/imp.rs:304
+#: src/widget/unit_file_panel/imp.rs:1095
+msgctxt "file"
+msgid "Not able to save file, permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:317
+msgctxt "file"
+msgid "Not able to save file, Flatpak permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:325
+msgctxt "file"
+msgid "Not able to save file, an error happened!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:572
+#, fuzzy
+msgctxt "file"
+msgid "Unit File"
+msgstr "Enable Unit File"
+
+#: src/widget/unit_file_panel/imp.rs:574
+msgctxt "file"
+msgid "Drop In"
+msgstr ""
+
+#. Create Drop in file name
+#: src/widget/unit_file_panel/imp.rs:962
+msgctxt "file"
+msgid "Editing"
+msgstr ""
+
+#. Create Drop in file name
+#: src/widget/unit_file_panel/imp.rs:970
+msgctxt "file"
+msgid "Note: you can change the file name"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:979
+msgctxt "file"
+msgid ""
+"Anything between here and the comment below will become the contents of the "
+"drop-in file"
+msgstr ""
+
+#. Create Drop in file footer
+#: src/widget/unit_file_panel/imp.rs:988
+msgctxt "file"
+msgid "Edits below this comment will be discarded"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:1067
+#, rust-format
+msgctxt "file"
+msgid "Unit {} reverted successfully!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:1116
+msgctxt "file"
+msgid "Not able to reverted unit, permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:1126
+msgctxt "file"
+msgid "Not able to reverted unit, an error happened!"
+msgstr ""
+
+#. Show Line Number Menu Item
+#: src/widget/unit_file_panel/imp.rs:1220
+#, fuzzy
+msgctxt "file"
+msgid "Display Line Numbers"
+msgstr "Display Unit Definition File"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
@@ -2178,6 +2265,54 @@ msgstr ""
 #: src/widget/unit_list/filter/substate.rs:38
 msgctxt "filter"
 msgid "Add filter on sub state"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:230
+#, fuzzy
+msgctxt "list column"
+msgid "Unit"
+msgstr "Mask Unit"
+
+#: src/widget/unit_list/imp/construct.rs:245
+msgctxt "list column"
+msgid "Type"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:260
+msgctxt "list column"
+msgid "Bus"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:275
+#, fuzzy
+msgctxt "list column"
+msgid "State"
+msgstr "_Start"
+
+#: src/widget/unit_list/imp/construct.rs:290
+#, fuzzy
+msgctxt "list column"
+msgid "Preset"
+msgstr "Reset"
+
+#: src/widget/unit_list/imp/construct.rs:305
+msgctxt "list column"
+msgid "Load"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:320
+msgctxt "list column"
+msgid "Active"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:335
+msgctxt "list column"
+msgid "Sub"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:350
+msgctxt "list column"
+msgid "Description"
 msgstr ""
 
 #: src/widget/unit_list/imp/pop_menu.rs:235
@@ -2256,16 +2391,6 @@ msgstr ""
 #~ msgstr "Reload All Units"
 
 #, fuzzy
-#~ msgctxt "clean"
-#~ msgid "_State"
-#~ msgstr "_Start"
-
-#, fuzzy
-#~ msgctxt "file"
-#~ msgid "Unit File"
-#~ msgstr "Enable Unit File"
-
-#, fuzzy
 #~ msgctxt "file"
 #~ msgid "No unit file"
 #~ msgstr "Enable Unit File"
@@ -2277,16 +2402,6 @@ msgstr ""
 
 #, fuzzy
 #~ msgctxt "filter"
-#~ msgid "Preset"
-#~ msgstr "Reset"
-
-#, fuzzy
-#~ msgctxt "list column"
-#~ msgid "Unit"
-#~ msgstr "Mask Unit"
-
-#, fuzzy
-#~ msgctxt "list column"
 #~ msgid "Preset"
 #~ msgstr "Reset"
 

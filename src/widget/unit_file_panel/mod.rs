@@ -1,10 +1,9 @@
 pub mod flatpak;
 mod imp;
 
-use super::{InterPanelMessage, app_window::AppWindow};
+use super::{app_window::AppWindow, InterPanelMessage};
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
-pub const FILE_CONTEXT: &str = "file";
 // ANCHOR: mod
 glib::wrapper! {
     pub struct UnitFilePanel(ObjectSubclass<imp::UnitFilePanelImp>)

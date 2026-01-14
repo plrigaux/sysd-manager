@@ -3,12 +3,12 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
-            COL_ID_UNIT, CustomPropertyId,
             imp::{
                 column_factories::{self, *},
                 construct,
             },
             menus::create_col_menu,
+            CustomPropertyId, COL_ID_UNIT,
         },
         unit_properties_selector::{data_selection::UnitPropertySelection, save},
     },
@@ -213,7 +213,6 @@ where
     v1.into_iter().cmp(v2).into()
 }
 
-const GETTEXT_CONTEXT: &str = "list column";
 fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let mut columns = vec![];
 
@@ -228,7 +227,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(150)
-        .title(pgettext(GETTEXT_CONTEXT, "Unit"))
+        .title(pgettext("list column", "Unit"))
         .build();
     columns.push(unit_col);
 
@@ -243,7 +242,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(82)
-        .title(pgettext(GETTEXT_CONTEXT, "Type"))
+        .title(pgettext("list column", "Type"))
         .build();
     columns.push(type_col);
 
@@ -258,7 +257,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(61)
-        .title(pgettext(GETTEXT_CONTEXT, "Bus"))
+        .title(pgettext("list column", "Bus"))
         .build();
     columns.push(bus_col);
 
@@ -273,7 +272,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(80)
-        .title(pgettext(GETTEXT_CONTEXT, "State"))
+        .title(pgettext("list column", "State"))
         .build();
     columns.push(state_col);
 
@@ -288,7 +287,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(70)
-        .title(pgettext(GETTEXT_CONTEXT, "Preset"))
+        .title(pgettext("list column", "Preset"))
         .build();
     columns.push(preset_col);
 
@@ -303,7 +302,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(80)
-        .title(pgettext(GETTEXT_CONTEXT, "Load"))
+        .title(pgettext("list column", "Load"))
         .build();
     columns.push(load_col);
 
@@ -318,7 +317,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(62)
-        .title(pgettext(GETTEXT_CONTEXT, "Active"))
+        .title(pgettext("list column", "Active"))
         .build();
     columns.push(active_col);
 
@@ -333,7 +332,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .fixed_width(71)
-        .title(pgettext(GETTEXT_CONTEXT, "Sub"))
+        .title(pgettext("list column", "Sub"))
         .build();
     columns.push(sub_col);
 
@@ -348,7 +347,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .factory(&factory)
         .resizable(true)
         .expand(true)
-        .title(pgettext(GETTEXT_CONTEXT, "Description"))
+        .title(pgettext("list column", "Description"))
         .build();
     columns.push(sub_description);
 

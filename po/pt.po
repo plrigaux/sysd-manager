@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 10:57-0500\n"
+"POT-Creation-Date: 2026-01-14 11:52-0500\n"
 "PO-Revision-Date: 2025-08-16 14:02+0000\n"
 "Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/sysd-manager/"
@@ -2117,11 +2117,98 @@ msgctxt "flatpak"
 msgid "_Close"
 msgstr ""
 
+#: src/widget/unit_file_panel/imp.rs:263
+#, fuzzy, rust-format
+msgctxt "file"
+msgid "File {} created successfully!"
+msgstr "{} bem-sucedido."
+
+#: src/widget/unit_file_panel/imp.rs:265
+#, fuzzy, rust-format
+msgctxt "file"
+msgid "File {} saved successfully!"
+msgstr "{} bem-sucedido."
+
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Recarregar"
+
+#: src/widget/unit_file_panel/imp.rs:288 src/widget/unit_file_panel/imp.rs:304
+#: src/widget/unit_file_panel/imp.rs:1095
+msgctxt "file"
+msgid "Not able to save file, permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:317
+msgctxt "file"
+msgid "Not able to save file, Flatpak permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:325
+msgctxt "file"
+msgid "Not able to save file, an error happened!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:572
+#, fuzzy
+msgctxt "file"
+msgid "Unit File"
+msgstr "Ficheiro de unidade"
+
+#: src/widget/unit_file_panel/imp.rs:574
+msgctxt "file"
+msgid "Drop In"
+msgstr ""
+
+#. Create Drop in file name
+#: src/widget/unit_file_panel/imp.rs:962
+msgctxt "file"
+msgid "Editing"
+msgstr ""
+
+#. Create Drop in file name
+#: src/widget/unit_file_panel/imp.rs:970
+msgctxt "file"
+msgid "Note: you can change the file name"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:979
+msgctxt "file"
+msgid ""
+"Anything between here and the comment below will become the contents of the "
+"drop-in file"
+msgstr ""
+
+#. Create Drop in file footer
+#: src/widget/unit_file_panel/imp.rs:988
+msgctxt "file"
+msgid "Edits below this comment will be discarded"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:1067
+#, fuzzy, rust-format
+msgctxt "file"
+msgid "Unit {} reverted successfully!"
+msgstr "{} bem-sucedido."
+
+#: src/widget/unit_file_panel/imp.rs:1116
+msgctxt "file"
+msgid "Not able to reverted unit, permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:1126
+msgctxt "file"
+msgid "Not able to reverted unit, an error happened!"
+msgstr ""
+
+#. Show Line Number Menu Item
+#: src/widget/unit_file_panel/imp.rs:1220
+#, fuzzy
+msgctxt "file"
+msgid "Display Line Numbers"
+msgstr "Exibir o número da linha do ficheiro da unidade"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
@@ -2160,6 +2247,51 @@ msgstr ""
 msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:230
+msgctxt "list column"
+msgid "Unit"
+msgstr "Unidade"
+
+#: src/widget/unit_list/imp/construct.rs:245
+msgctxt "list column"
+msgid "Type"
+msgstr "Tipo"
+
+#: src/widget/unit_list/imp/construct.rs:260
+msgctxt "list column"
+msgid "Bus"
+msgstr "Bus"
+
+#: src/widget/unit_list/imp/construct.rs:275
+msgctxt "list column"
+msgid "State"
+msgstr "Estado"
+
+#: src/widget/unit_list/imp/construct.rs:290
+msgctxt "list column"
+msgid "Preset"
+msgstr "Predefinição"
+
+#: src/widget/unit_list/imp/construct.rs:305
+msgctxt "list column"
+msgid "Load"
+msgstr "Carregar"
+
+#: src/widget/unit_list/imp/construct.rs:320
+msgctxt "list column"
+msgid "Active"
+msgstr "Ativa"
+
+#: src/widget/unit_list/imp/construct.rs:335
+msgctxt "list column"
+msgid "Sub"
+msgstr "Sub"
+
+#: src/widget/unit_list/imp/construct.rs:350
+msgctxt "list column"
+msgid "Description"
+msgstr "Descrição"
 
 #: src/widget/unit_list/imp/pop_menu.rs:235
 #, fuzzy, rust-format
@@ -2494,16 +2626,6 @@ msgstr "Filtros"
 #~ msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
 #~ msgstr "<b>Opção 3:</b> No seu terminal, execute o comando: <u>{}</u>"
 
-#, fuzzy, rust-format
-#~ msgctxt "file"
-#~ msgid "File {} saved successfully!"
-#~ msgstr "{} bem-sucedido."
-
-#, fuzzy
-#~ msgctxt "file"
-#~ msgid "Unit File"
-#~ msgstr "Ficheiro de unidade"
-
 #~ msgctxt "file"
 #~ msgid "File path:"
 #~ msgstr "Caminho do ficheiro:"
@@ -2547,42 +2669,6 @@ msgstr "Filtros"
 #~ msgctxt "preference"
 #~ msgid "Columns Display Parameters"
 #~ msgstr "Parâmetros de exibição de colunas"
-
-#~ msgctxt "list column"
-#~ msgid "Unit"
-#~ msgstr "Unidade"
-
-#~ msgctxt "list column"
-#~ msgid "Type"
-#~ msgstr "Tipo"
-
-#~ msgctxt "list column"
-#~ msgid "Bus"
-#~ msgstr "Bus"
-
-#~ msgctxt "list column"
-#~ msgid "State"
-#~ msgstr "Estado"
-
-#~ msgctxt "list column"
-#~ msgid "Preset"
-#~ msgstr "Predefinição"
-
-#~ msgctxt "list column"
-#~ msgid "Load"
-#~ msgstr "Carregar"
-
-#~ msgctxt "list column"
-#~ msgid "Active"
-#~ msgstr "Ativa"
-
-#~ msgctxt "list column"
-#~ msgid "Sub"
-#~ msgstr "Sub"
-
-#~ msgctxt "list column"
-#~ msgid "Description"
-#~ msgstr "Descrição"
 
 #~ msgctxt "preference column"
 #~ msgid "Show"

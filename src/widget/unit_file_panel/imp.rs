@@ -15,7 +15,7 @@ use crate::{
         app_window::AppWindow,
         preferences::{data::PREFERENCES, style_scheme::style_schemes},
         text_search::{self, TextSearchBar, on_new_text},
-        unit_file_panel::{FILE_CONTEXT, flatpak::PROCEED},
+        unit_file_panel::{ flatpak::PROCEED},
     },
 };
 use adw::prelude::*;
@@ -48,6 +48,9 @@ use super::flatpak;
 const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
 const DEFAULT_DROP_IN_FILE_NAME: &str = "override";
+const UNIT_FILE_ID: &str = "unit_file";
+const TEXT_FIND_ACTION: &str = "unit_file_text_find";
+const UNIT_FILE_LINE_NUMBER_ACTION: &str = "unit_file_line_number";
 
 #[derive(PartialEq, Copy, Clone)]
 enum UnitFileStatus {
@@ -64,7 +67,6 @@ struct FileNav {
     is_runtime: bool,
 }
 
-const UNIT_FILE_ID: &str = "unit file";
 impl FileNav {
     fn is_file(&self) -> bool {
         !self.is_drop_in
@@ -77,8 +79,6 @@ impl FileNav {
     }
 }
 
-const TEXT_FIND_ACTION: &str = "unit_file_text_find";
-const UNIT_FILE_LINE_NUMBER_ACTION: &str = "unit_file_line_number";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -260,9 +260,9 @@ impl UnitFilePanelImp {
             Ok(_a) => {
                 let msg = match status {
                     UnitFileStatus::Create => {
-                        pgettext(FILE_CONTEXT, "File {} created successfully!")
+                        pgettext("file", "File {} created successfully!")
                     }
-                    UnitFileStatus::Edit => pgettext(FILE_CONTEXT, "File {} saved successfully!"),
+                    UnitFileStatus::Edit => pgettext("file", "File {} saved successfully!"),
                 };
                 let file_path_format = format!("<u>{}</u>", file_path);
                 let msg = format2!(msg, file_path_format);
@@ -284,7 +284,7 @@ impl UnitFilePanelImp {
                 match error {
                     SystemdErrors::NotAuthorized => (
                         pgettext(
-                            FILE_CONTEXT,
+                            "file",
                             "Not able to save file, permission not granted!",
                         ),
                         false,
@@ -300,7 +300,7 @@ impl UnitFilePanelImp {
                         dialog.present(Some(window));
                         (
                             pgettext(
-                                FILE_CONTEXT,
+                                "file",
                                 "Not able to save file, permission not granted!",
                             ),
                             false,
@@ -313,7 +313,7 @@ impl UnitFilePanelImp {
                         dialog.present(self.app_window.get());
                         (
                             pgettext(
-                                FILE_CONTEXT,
+                                "file",
                                 "Not able to save file, Flatpak permission not granted!",
                             ),
                             false,
@@ -322,7 +322,7 @@ impl UnitFilePanelImp {
                     }
 
                     _ => (
-                        pgettext(FILE_CONTEXT, "Not able to save file, an error happened!"),
+                        pgettext("file", "Not able to save file, an error happened!"),
                         false,
                         None,
                     ),
@@ -569,9 +569,9 @@ impl UnitFilePanelImp {
 
         for file_nav in all_files.iter() {
             let label_text = if file_nav.is_file() {
-                pgettext(FILE_CONTEXT, "Unit File")
+                pgettext("file", "Unit File")
             } else {
-                let label_text = pgettext(FILE_CONTEXT, "Drop In");
+                let label_text = pgettext("file", "Drop In");
 
                 if all_files_len > 2 {
                     let label = format!("{label_text} {idx}");
@@ -959,7 +959,7 @@ impl UnitFilePanelImp {
             new_file_content,
             "### {} {}",
             // Create Drop in file name
-            pgettext(FILE_CONTEXT, "Editing"),
+            pgettext("file", "Editing"),
             drop_in_file_path
         )?;
 
@@ -967,7 +967,7 @@ impl UnitFilePanelImp {
             new_file_content,
             "### {}",
             // Create Drop in file name
-            pgettext(FILE_CONTEXT, "Note: you can change the file name")
+            pgettext("file", "Note: you can change the file name")
         )?;
 
         writeln!(
@@ -975,7 +975,7 @@ impl UnitFilePanelImp {
             "###\n### {}",
             // Create Drop in description
             pgettext(
-                FILE_CONTEXT,
+                "file",
                 "Anything between here and the comment below will become the contents of the drop-in file"
             )
         )?;
@@ -985,7 +985,7 @@ impl UnitFilePanelImp {
             new_file_content,
             "### {}",
             // Create Drop in file footer
-            pgettext(FILE_CONTEXT, "Edits below this comment will be discarded")
+            pgettext("file", "Edits below this comment will be discarded")
         )?;
         new_file_content.push('\n');
         writeln!(new_file_content, "### {}", file_path.unwrap_or_default())?;
@@ -1064,7 +1064,7 @@ impl UnitFilePanelImp {
 
             let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
                 Ok(_a) => {
-                    let msg = pgettext(FILE_CONTEXT, "Unit {} reverted successfully!");
+                    let msg = pgettext("file", "Unit {} reverted successfully!");
                     let file_path_format = format!("<unit>{}</unit>", unit_name2);
                     let msg = format2!(msg, file_path_format);
 
@@ -1091,7 +1091,7 @@ impl UnitFilePanelImp {
                     match error {
                         SystemdErrors::NotAuthorized => (
                             pgettext(
-                                FILE_CONTEXT,
+                                "file",
                                 "Not able to save file, permission not granted!",
                             ),
                             false,
@@ -1112,7 +1112,7 @@ impl UnitFilePanelImp {
                             dialog.present(Some(window));
                             (
                                 pgettext(
-                                    FILE_CONTEXT,
+                                    "file",
                                     "Not able to reverted unit, permission not granted!",
                                 ),
                                 false,
@@ -1122,7 +1122,7 @@ impl UnitFilePanelImp {
 
                         _ => (
                             pgettext(
-                                FILE_CONTEXT,
+                                "file",
                                 "Not able to reverted unit, an error happened!",
                             ),
                             false,
@@ -1217,7 +1217,7 @@ impl ObjectImpl for UnitFilePanelImp {
         let menu = gio::Menu::new();
 
         // Show Line Number Menu Item
-        let menu_label = pgettext(FILE_CONTEXT, "Show Line Numbers");
+        let menu_label = pgettext("file", "Display Line Numbers");
 
         let mut action_name = String::from("win.");
         action_name.push_str(UNIT_FILE_LINE_NUMBER_ACTION);

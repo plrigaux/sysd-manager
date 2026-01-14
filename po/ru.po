@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 10:57-0500\n"
+"POT-Creation-Date: 2026-01-14 11:52-0500\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -2089,11 +2089,97 @@ msgctxt "flatpak"
 msgid "_Close"
 msgstr ""
 
+#: src/widget/unit_file_panel/imp.rs:263
+#, fuzzy, rust-format
+msgctxt "file"
+msgid "File {} created successfully!"
+msgstr "Файл {} успешно сохранён!"
+
+#: src/widget/unit_file_panel/imp.rs:265
+#, rust-format
+msgctxt "file"
+msgid "File {} saved successfully!"
+msgstr "Файл {} успешно сохранён!"
+
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
+
+#: src/widget/unit_file_panel/imp.rs:288 src/widget/unit_file_panel/imp.rs:304
+#: src/widget/unit_file_panel/imp.rs:1095
+msgctxt "file"
+msgid "Not able to save file, permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:317
+msgctxt "file"
+msgid "Not able to save file, Flatpak permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:325
+msgctxt "file"
+msgid "Not able to save file, an error happened!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:572
+msgctxt "file"
+msgid "Unit File"
+msgstr "Юнит-файл"
+
+#: src/widget/unit_file_panel/imp.rs:574
+msgctxt "file"
+msgid "Drop In"
+msgstr "Drop-In"
+
+#. Create Drop in file name
+#: src/widget/unit_file_panel/imp.rs:962
+msgctxt "file"
+msgid "Editing"
+msgstr ""
+
+#. Create Drop in file name
+#: src/widget/unit_file_panel/imp.rs:970
+msgctxt "file"
+msgid "Note: you can change the file name"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:979
+msgctxt "file"
+msgid ""
+"Anything between here and the comment below will become the contents of the "
+"drop-in file"
+msgstr ""
+
+#. Create Drop in file footer
+#: src/widget/unit_file_panel/imp.rs:988
+msgctxt "file"
+msgid "Edits below this comment will be discarded"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:1067
+#, fuzzy, rust-format
+msgctxt "file"
+msgid "Unit {} reverted successfully!"
+msgstr "Файл {} успешно сохранён!"
+
+#: src/widget/unit_file_panel/imp.rs:1116
+msgctxt "file"
+msgid "Not able to reverted unit, permission not granted!"
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:1126
+msgctxt "file"
+msgid "Not able to reverted unit, an error happened!"
+msgstr ""
+
+#. Show Line Number Menu Item
+#: src/widget/unit_file_panel/imp.rs:1220
+#, fuzzy
+msgctxt "file"
+msgid "Display Line Numbers"
+msgstr "Отображать номера строк юнит-файла"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
@@ -2132,6 +2218,57 @@ msgstr "Добавить"
 msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr "Добавить фильтр по подсостоянию"
+
+#: src/widget/unit_list/imp/construct.rs:230
+#, fuzzy
+msgctxt "list column"
+msgid "Unit"
+msgstr "Юнит"
+
+#: src/widget/unit_list/imp/construct.rs:245
+#, fuzzy
+msgctxt "list column"
+msgid "Type"
+msgstr "Тип"
+
+#: src/widget/unit_list/imp/construct.rs:260
+msgctxt "list column"
+msgid "Bus"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:275
+#, fuzzy
+msgctxt "list column"
+msgid "State"
+msgstr "_состояние"
+
+#: src/widget/unit_list/imp/construct.rs:290
+#, fuzzy
+msgctxt "list column"
+msgid "Preset"
+msgstr "Применить preset-правила"
+
+#: src/widget/unit_list/imp/construct.rs:305
+#, fuzzy
+msgctxt "list column"
+msgid "Load"
+msgstr "Загруженные"
+
+#: src/widget/unit_list/imp/construct.rs:320
+msgctxt "list column"
+msgid "Active"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:335
+msgctxt "list column"
+msgid "Sub"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:350
+#, fuzzy
+msgctxt "list column"
+msgid "Description"
+msgstr "Описание юнита"
 
 #: src/widget/unit_list/imp/pop_menu.rs:235
 #, rust-format
@@ -2336,10 +2473,6 @@ msgstr "Фильтрация"
 #~ msgstr "_рантайм"
 
 #~ msgctxt "clean"
-#~ msgid "_State"
-#~ msgstr "_состояние"
-
-#~ msgctxt "clean"
 #~ msgid "Cac_he"
 #~ msgstr "кэш"
 
@@ -2458,16 +2591,3 @@ msgstr "Фильтрация"
 #~ msgctxt "unit file"
 #~ msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
 #~ msgstr "<b>Вариант 3:</b> Выполните в терминале команду: <u>{}</u>"
-
-#, rust-format
-#~ msgctxt "file"
-#~ msgid "File {} saved successfully!"
-#~ msgstr "Файл {} успешно сохранён!"
-
-#~ msgctxt "file"
-#~ msgid "Unit File"
-#~ msgstr "Юнит-файл"
-
-#~ msgctxt "file"
-#~ msgid "Drop In"
-#~ msgstr "Drop-In"
