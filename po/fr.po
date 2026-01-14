@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-14 11:52-0500\n"
-"PO-Revision-Date: 2026-01-13 21:35+0000\n"
+"PO-Revision-Date: 2026-01-14 17:16+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.15.2\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -2100,16 +2100,16 @@ msgid "_Close"
 msgstr "_Fermer"
 
 #: src/widget/unit_file_panel/imp.rs:263
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
-msgstr "Fichier {} enregistré avec succès!"
+msgstr "Fichier {} créé avec succès !"
 
 #: src/widget/unit_file_panel/imp.rs:265
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
-msgstr "Fichier {} enregistré avec succès!"
+msgstr "Fichier {} enregistré avec succès !"
 
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
@@ -2120,17 +2120,18 @@ msgstr "Recharger la configuration"
 #: src/widget/unit_file_panel/imp.rs:1095
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
-msgstr ""
+msgstr "Impossible d'enregistrer le fichier, autorisation refusée !"
 
 #: src/widget/unit_file_panel/imp.rs:317
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
+"Impossible d'enregistrer le fichier, autorisation Flatpak non accordée !"
 
 #: src/widget/unit_file_panel/imp.rs:325
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
-msgstr ""
+msgstr "Impossible d'enregistrer le fichier, une erreur s'est produite !"
 
 #: src/widget/unit_file_panel/imp.rs:572
 msgctxt "file"
@@ -2146,13 +2147,13 @@ msgstr "Drop In"
 #: src/widget/unit_file_panel/imp.rs:962
 msgctxt "file"
 msgid "Editing"
-msgstr ""
+msgstr "Nom du fichier Drop-in créé"
 
 #. Create Drop in file name
 #: src/widget/unit_file_panel/imp.rs:970
 msgctxt "file"
 msgid "Note: you can change the file name"
-msgstr ""
+msgstr "Remarque : vous pouvez modifier le nom du fichier"
 
 #: src/widget/unit_file_panel/imp.rs:979
 msgctxt "file"
@@ -2160,35 +2161,36 @@ msgid ""
 "Anything between here and the comment below will become the contents of the "
 "drop-in file"
 msgstr ""
+"Tout ce qui se trouve entre ici et le commentaire ci-dessous deviendra le "
+"contenu du fichier de remplacement"
 
 #. Create Drop in file footer
 #: src/widget/unit_file_panel/imp.rs:988
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
-msgstr ""
+msgstr "Les modifications apportées après ce commentaire seront ignorées"
 
 #: src/widget/unit_file_panel/imp.rs:1067
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
-msgstr "Fichier {} enregistré avec succès!"
+msgstr "Fichier {} restaurée avec succès !"
 
 #: src/widget/unit_file_panel/imp.rs:1116
 msgctxt "file"
 msgid "Not able to reverted unit, permission not granted!"
-msgstr ""
+msgstr "Impossible de revenir en arrière, autorisation non accordée !"
 
 #: src/widget/unit_file_panel/imp.rs:1126
 msgctxt "file"
 msgid "Not able to reverted unit, an error happened!"
-msgstr ""
+msgstr "Impossible de revenir en arrière, une erreur s'est produite !"
 
 #. Show Line Number Menu Item
 #: src/widget/unit_file_panel/imp.rs:1220
-#, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
-msgstr "Afficher le numéro de ligne du fichier de l'unité"
+msgstr "Afficher les numéros de ligne"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
