@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 16:28-0500\n"
+"POT-Creation-Date: 2026-01-14 10:57-0500\n"
 "PO-Revision-Date: 2025-12-23 21:00+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
@@ -1855,7 +1855,7 @@ msgid "{} of {}"
 msgstr ""
 
 #. Find in text Menu item
-#: src/widget/text_search/mod.rs:48
+#: src/widget/text_search/mod.rs:46
 msgctxt "text_find"
 msgid "Find in Text"
 msgstr ""
@@ -2100,7 +2100,7 @@ msgid "_Close"
 msgstr "_Fechar"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:269 src/widget/unit_file_panel/imp.rs:1050
+#: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
 msgid "Daemon Reload"
 msgstr "Recarregar Daemon"
 

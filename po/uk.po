@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 16:28-0500\n"
+"POT-Creation-Date: 2026-01-14 10:57-0500\n"
 "PO-Revision-Date: 2025-08-19 16:29+0000\n"
 "Last-Translator: Damglador <vse.stopchanskyi@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1806,7 +1806,7 @@ msgid "{} of {}"
 msgstr ""
 
 #. Find in text Menu item
-#: src/widget/text_search/mod.rs:48
+#: src/widget/text_search/mod.rs:46
 msgctxt "text_find"
 msgid "Find in Text"
 msgstr ""
@@ -2036,7 +2036,7 @@ msgid "_Close"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:269 src/widget/unit_file_panel/imp.rs:1050
+#: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
 msgid "Daemon Reload"
 msgstr ""
 

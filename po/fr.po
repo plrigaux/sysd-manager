@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 16:28-0500\n"
+"POT-Creation-Date: 2026-01-14 10:57-0500\n"
 "PO-Revision-Date: 2026-01-13 21:35+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1853,7 +1853,7 @@ msgid "{} of {}"
 msgstr "{} de {}"
 
 #. Find in text Menu item
-#: src/widget/text_search/mod.rs:48
+#: src/widget/text_search/mod.rs:46
 msgctxt "text_find"
 msgid "Find in Text"
 msgstr "Rechercher dans le texte"
@@ -2100,7 +2100,7 @@ msgid "_Close"
 msgstr "_Fermer"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:269 src/widget/unit_file_panel/imp.rs:1050
+#: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
