@@ -406,6 +406,7 @@ impl ObjectImpl for UnitDependenciesPanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             TEXT_FIND,
+            true,
         );
     }
 }

@@ -41,18 +41,14 @@ impl TextSearchBar {
     }
 }
 
-fn set_menu_item(text_view: &gtk::TextView, action_name_base: &str) {
-    let menu = gio::Menu::new();
-
+pub fn create_menu_item(action_name_base: &str) -> gio::MenuItem {
     // Find in text Menu item
     let menu_label = pgettext("text_find", "Find in Text");
 
     let mut action_name = String::from("win.");
     action_name.push_str(action_name_base);
 
-    menu.append(Some(&menu_label), Some(&action_name));
-
-    text_view.set_extra_menu(Some(&menu));
+    gio::MenuItem::new(Some(&menu_label), Some(&action_name))
 }
 
 pub fn text_search_construct(
@@ -60,11 +56,11 @@ pub fn text_search_construct(
     text_search_bar: &gtk::SearchBar,
     find_text_button: &gtk::ToggleButton,
     action_name_base: &str,
+    add_menu: bool,
 ) {
-    set_menu_item(text_view, action_name_base);
+    add_menu_fn(action_name_base, text_view, add_menu);
 
     let text_search_bar_content = TextSearchBar::new(text_view);
-    set_menu_item(text_view, action_name_base);
 
     text_search_bar.set_child(Some(&text_search_bar_content));
 
@@ -98,11 +94,27 @@ pub fn update_text_view(
     text_search_bar: &gtk::SearchBar,
     text_view: &gtk::TextView,
     action_name_base: &str,
+    add_menu: bool,
 ) {
-    set_menu_item(text_view, action_name_base);
+    add_menu_fn(action_name_base, text_view, add_menu);
+
     if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
         search_bar.imp().set_text_view(text_view);
     }
+}
+fn add_menu_fn(action_name_base: &str, text_view: &gtk::TextView, add_menu: bool) {
+    if !add_menu {
+        return;
+    }
+
+    let menu = gio::Menu::new();
+    let item = create_menu_item(action_name_base);
+    menu.append_item(&item);
+
+    let menu_sec = gio::Menu::new();
+
+    menu_sec.append_section(None, &menu);
+    text_view.set_extra_menu(Some(&menu_sec));
 }
 
 pub fn new_added_text(

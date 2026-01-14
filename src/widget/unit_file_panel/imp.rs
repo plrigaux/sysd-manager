@@ -41,6 +41,7 @@ use sourceview5::{Buffer, prelude::*};
 use std::fmt::Write;
 use systemd::sysdbus::proxy_service_name;
 use tokio::sync::oneshot::Receiver;
+use tracing::error;
 
 use super::flatpak;
 
@@ -77,6 +78,7 @@ impl FileNav {
 }
 
 const TEXT_FIND_ACTION: &str = "unit_file_text_find";
+const UNIT_FILE_LINE_NUMBER_ACTION: &str = "unit_file_line_number";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -717,74 +719,92 @@ impl UnitFilePanelImp {
     }
 
     pub(crate) fn register(&self, app_window: &AppWindow) {
-        if self.app_window.set(app_window.clone()).is_ok() {
-            let rename_drop_in_file = gio::ActionEntry::builder("rename_drop_in_file")
-                .activate(move |_application: &AppWindow, _b, _target_value| {
-                    info!("call rename_drop_in_file");
-                })
-                .build();
+        if let Err(err) = self.app_window.set(app_window.clone()) {
+            error!("Error {:?}", err);
+            return;
+        }
 
-            let create_drop_in_file_runtime = {
-                let unit_file_panel = self.obj().clone();
-                gio::ActionEntry::builder("create_drop_in_file_runtime")
-                    .activate(
-                        move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
-                            info!("call create_drop_in_file_runtime");
-                            let _ = unit_file_panel
-                                .imp()
-                                .create_drop_in_file(true)
-                                .inspect_err(|e| warn!("{e:?}"));
-                        },
-                    )
-                    .build()
-            };
+        let rename_drop_in_file = gio::ActionEntry::builder("rename_drop_in_file")
+            .activate(move |_application: &AppWindow, _b, _target_value| {
+                info!("call rename_drop_in_file");
+            })
+            .build();
 
-            let create_drop_in_file_permanent = {
-                let unit_file_panel = self.obj().clone();
-                gio::ActionEntry::builder("create_drop_in_file_permanent")
-                    .activate(
-                        move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
-                            info!("call create_drop_in_file_permanent");
-                            let _ = unit_file_panel
-                                .imp()
-                                .create_drop_in_file(false)
-                                .inspect_err(|e| warn!("{e:?}"));
-                        },
-                    )
-                    .build()
-            };
+        let create_drop_in_file_runtime = {
+            let unit_file_panel = self.obj().clone();
+            gio::ActionEntry::builder("create_drop_in_file_runtime")
+                .activate(
+                    move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                        info!("call create_drop_in_file_runtime");
+                        let _ = unit_file_panel
+                            .imp()
+                            .create_drop_in_file(true)
+                            .inspect_err(|e| warn!("{e:?}"));
+                    },
+                )
+                .build()
+        };
 
-            let revert_unit_file_full = {
-                let unit_file_panel = self.obj().clone();
-                gio::ActionEntry::builder("revert_unit_file_full")
-                    .activate(
-                        move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
-                            info!("call revert_unit_file_full");
-                            let _ = unit_file_panel
-                                .imp()
-                                .revert_unit_file_full()
-                                .inspect_err(|e| warn!("{e:?}"));
-                        },
-                    )
-                    .build()
-            };
+        let create_drop_in_file_permanent = {
+            let unit_file_panel = self.obj().clone();
+            gio::ActionEntry::builder("create_drop_in_file_permanent")
+                .activate(
+                    move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                        info!("call create_drop_in_file_permanent");
+                        let _ = unit_file_panel
+                            .imp()
+                            .create_drop_in_file(false)
+                            .inspect_err(|e| warn!("{e:?}"));
+                    },
+                )
+                .build()
+        };
 
-            app_window.add_action_entries([
-                rename_drop_in_file,
-                create_drop_in_file_runtime,
-                create_drop_in_file_permanent,
-                revert_unit_file_full,
-            ]);
+        let revert_unit_file_full = {
+            let unit_file_panel = self.obj().clone();
+            gio::ActionEntry::builder("revert_unit_file_full")
+                .activate(
+                    move |_application: &AppWindow, _b: &SimpleAction, _target_value| {
+                        info!("call revert_unit_file_full");
+                        let _ = unit_file_panel
+                            .imp()
+                            .revert_unit_file_full()
+                            .inspect_err(|e| warn!("{e:?}"));
+                    },
+                )
+                .build()
+        };
 
-            if let Some(action) = app_window
-                .lookup_action("create_drop_in_file_runtime")
-                .and_downcast_ref::<gio::SimpleAction>()
-            {
-                let b = action.is_enabled();
-                info!("create_drop_in_file_runtime {}", b);
-            } else {
-                warn!("No action {}", "create_drop_in_file_runtime");
-            }
+        let unit_file_line_number = {
+            let unit_file_panel = self.obj().clone();
+            gio::ActionEntry::builder(UNIT_FILE_LINE_NUMBER_ACTION)
+                .activate(
+                    move |_application: &AppWindow, action: &SimpleAction, _target_value| {
+                        let s = action.state();
+                        info!("call unit_file {:?}", s);
+
+                        if let Some(variant) = s
+                            && let Some(mut line_number) = variant.get::<bool>()
+                        {
+                            line_number = !line_number;
+                            unit_file_panel.imp().set_line_number(line_number);
+                            action.set_state(&line_number.to_variant());
+                        }
+                    },
+                )
+                .state(true.to_variant())
+                .parameter_type(Some(glib::VariantTy::BOOLEAN))
+                .build()
+        };
+
+        if let Some(action) = app_window
+            .lookup_action("create_drop_in_file_runtime")
+            .and_downcast_ref::<gio::SimpleAction>()
+        {
+            let b = action.is_enabled();
+            info!("create_drop_in_file_runtime {}", b);
+        } else {
+            warn!("No action {}", "create_drop_in_file_runtime");
         }
 
         /* let dialog = flatpak::new("/home/pier/school.txt");
@@ -808,7 +828,14 @@ impl UnitFilePanelImp {
                 )
                 .build();
 
-        app_window.add_action_entries([daemon_reload_all_units_with_bus]);
+        app_window.add_action_entries([
+            rename_drop_in_file,
+            create_drop_in_file_runtime,
+            create_drop_in_file_permanent,
+            revert_unit_file_full,
+            unit_file_line_number,
+            daemon_reload_all_units_with_bus,
+        ]);
     }
 
     pub(super) fn refresh_panels(&self) {
@@ -1180,7 +1207,34 @@ impl ObjectImpl for UnitFilePanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             TEXT_FIND_ACTION,
+            false,
         );
+
+        let unit_file_line_number = PREFERENCES.unit_file_line_number();
+        self.set_line_number(unit_file_line_number);
+
+        let ts_item = text_search::create_menu_item(TEXT_FIND_ACTION);
+        let menu = gio::Menu::new();
+
+        // Show Line Number Menu Item
+        let menu_label = pgettext(FILE_CONTEXT, "Show Line Numbers");
+
+        let mut action_name = String::from("win.");
+        action_name.push_str(UNIT_FILE_LINE_NUMBER_ACTION);
+
+        let mi = gio::MenuItem::new(Some(&menu_label), None);
+        mi.set_action_and_target_value(
+            Some(&action_name),
+            Some(&unit_file_line_number.to_variant()),
+        );
+
+        menu.append_item(&mi);
+        menu.append_item(&ts_item);
+
+        let menu_sec = gio::Menu::new();
+        menu_sec.append_section(None, &menu);
+
+        file_text_view.set_extra_menu(Some(&menu_sec));
 
         self.sourceview5_buffer
             .set(buffer)
@@ -1188,10 +1242,6 @@ impl ObjectImpl for UnitFilePanelImp {
         self.unit_file_text
             .set(view)
             .expect("unit_file_text set once");
-
-        let unit_file_line_number = PREFERENCES.unit_file_line_number();
-        self.set_line_number(unit_file_line_number);
-
         self.file_dropin_selector.connect_n_toggles_notify(|tg| {
             let selected = tg.active();
             debug!("selected file {selected}");

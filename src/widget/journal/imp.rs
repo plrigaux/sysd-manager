@@ -738,7 +738,7 @@ impl JournalPanelImp {
         self.continuous_switch.set_state(false);
 
         let text_view = self.journal_text_view.borrow();
-        text_search::update_text_view(&self.text_search_bar, &text_view, TEXT_FIND_ACTION);
+        text_search::update_text_view(&self.text_search_bar, &text_view, TEXT_FIND_ACTION, true);
     }
 
     fn clean_refresh(&self) {
@@ -814,6 +814,7 @@ impl ObjectImpl for JournalPanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             TEXT_FIND_ACTION,
+            false,
         );
     }
 }

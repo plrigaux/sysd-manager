@@ -89,6 +89,7 @@ https://hughsie.github.io/oars/index.html
           <li>Find text feature on the Unit's Description, File, Dependencies and Journal</li>
           <li>[2.11.1]Find in text can constrain on whole word</li>
           <li>[2.11.3]Toggle display total summary option in the unit list popup menu</li>
+          <li>[2.11.4]Menu item to toggle Show Line Numbers on unit file panel.</li>
         </ul>
         <p>Fixed</p>
         <ul>

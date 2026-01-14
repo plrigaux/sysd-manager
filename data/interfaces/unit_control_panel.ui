@@ -12,7 +12,7 @@
     <child>
       <object class="GtkBox">
         <property name="margin-end">5</property>
-        <property name="margin-top">5</property>
+        <property name="margin-top">3</property>
         <property name="spacing">5</property>
         <child>
           <object class="GtkLabel">

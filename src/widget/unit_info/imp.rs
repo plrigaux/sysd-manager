@@ -233,6 +233,7 @@ impl ObjectImpl for UnitInfoPanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             TEXT_FIND_ACTION,
+            true,
         );
     }
 }
