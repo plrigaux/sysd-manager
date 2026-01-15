@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 11:52-0500\n"
+"POT-Creation-Date: 2026-01-14 23:50-0500\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
@@ -240,29 +240,19 @@ msgctxt "extented menu button"
 msgid "Clear"
 msgstr "Claro"
 
-#. button tooltip
-#. place holder text
-#. button tooltip
-#: data/interfaces/journal_panel.ui:19 data/interfaces/text_find.ui:10
-#: data/interfaces/unit_dependencies_panel.ui:17
-#: data/interfaces/unit_file_panel.ui:29 data/interfaces/unit_info_panel.ui:20
-msgctxt "find_text"
-msgid "Find in Text"
-msgstr ""
-
 #. button
-#: data/interfaces/journal_panel.ui:28
+#: data/interfaces/journal_panel.ui:27
 msgctxt "journal"
 msgid "Refresh"
 msgstr "Refrescar"
 
-#: data/interfaces/journal_panel.ui:33
+#: data/interfaces/journal_panel.ui:32
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Borrar eventos del diario y volver a recuperarlos"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:44
+#: data/interfaces/journal_panel.ui:43
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
@@ -270,43 +260,43 @@ msgstr ""
 "diario"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:60
+#: data/interfaces/journal_panel.ui:59
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Alternar el orden de visualización de los eventos"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:66
+#: data/interfaces/journal_panel.ui:65
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Listar los arranques del sistema"
 
 #. button
-#: data/interfaces/journal_panel.ui:71
+#: data/interfaces/journal_panel.ui:70
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Lista de botas"
 
 #. button
-#: data/interfaces/journal_panel.ui:91
+#: data/interfaces/journal_panel.ui:90
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Arranque actual"
 
 #. button
-#: data/interfaces/journal_panel.ui:97
+#: data/interfaces/journal_panel.ui:96
 msgctxt "journal"
 msgid "All events"
 msgstr "Todos los eventos"
 
 #. title
-#: data/interfaces/journal_panel.ui:104
+#: data/interfaces/journal_panel.ui:103
 msgctxt "journal"
 msgid "Boot id"
 msgstr "Identificación de arranque"
 
 #. description
-#: data/interfaces/journal_panel.ui:150
+#: data/interfaces/journal_panel.ui:149
 msgctxt "journal"
 msgid ""
 "No journal events!\n"
@@ -316,7 +306,7 @@ msgstr ""
 "Puede ser algo bueno. 😉"
 
 #. title
-#: data/interfaces/journal_panel.ui:153
+#: data/interfaces/journal_panel.ui:152
 msgctxt "journal"
 msgid "No journal events"
 msgstr "No hay eventos de diario"
@@ -611,37 +601,37 @@ msgid "Line number"
 msgstr "Número de línea"
 
 #. subtitle
-#: data/interfaces/preferences.ui:126
+#: data/interfaces/preferences.ui:125
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr "Estilo de resaltado de archivo de unidad"
 
 #. title
-#: data/interfaces/preferences.ui:127
+#: data/interfaces/preferences.ui:126
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr "Resaltado de texto"
 
 #. subtitle
-#: data/interfaces/preferences.ui:137
+#: data/interfaces/preferences.ui:136
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr "Para ver los registros en color"
 
 #. title
-#: data/interfaces/preferences.ui:138
+#: data/interfaces/preferences.ui:137
 msgctxt "preference"
 msgid "Journal colors"
 msgstr "Colores de la revista"
 
 #. title
-#: data/interfaces/preferences.ui:159
+#: data/interfaces/preferences.ui:158
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr "Tamaño del lote de eventos del diario"
 
 #. subtitle
-#: data/interfaces/preferences.ui:172
+#: data/interfaces/preferences.ui:171
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -651,13 +641,13 @@ msgstr ""
 "<i>De 0 a ilimitado</i>"
 
 #. title
-#: data/interfaces/preferences.ui:175
+#: data/interfaces/preferences.ui:174
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Tamaño máximo del evento del diario"
 
 #. dialog
-#: data/interfaces/preferences.ui:189
+#: data/interfaces/preferences.ui:188
 msgctxt "preference"
 msgid "Preferences"
 msgstr "Preferencias"
@@ -940,6 +930,12 @@ msgctxt "signals"
 msgid "Watch Signals"
 msgstr "Señales de vigilancia"
 
+#. place holder text
+#: data/interfaces/text_find.ui:10
+msgctxt "find_text"
+msgid "Find in Text"
+msgstr ""
+
 #. tooltip
 #: data/interfaces/text_find.ui:24
 #, fuzzy
@@ -1049,61 +1045,61 @@ msgid "Journal"
 msgstr "Diario"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:33
+#: data/interfaces/unit_dependencies_panel.ui:32
 msgctxt "dependency"
 msgid "plain"
 msgstr "plano"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:53
+#: data/interfaces/unit_dependencies_panel.ui:52
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr "Sin dependencias"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:61
+#: data/interfaces/unit_file_panel.ui:60
 msgctxt "file"
 msgid "Save"
 msgstr "Ahorrar"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:90
+#: data/interfaces/unit_file_panel.ui:89
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr "La unidad no tiene ningún archivo asociado"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:92
+#: data/interfaces/unit_file_panel.ui:91
 #, fuzzy
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Archivo de unidad"
 
-#: data/interfaces/unit_file_panel.ui:103
+#: data/interfaces/unit_file_panel.ui:102
 msgid "Create Drop-in"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:106
+#: data/interfaces/unit_file_panel.ui:105
 msgid "Permanent"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:110
+#: data/interfaces/unit_file_panel.ui:109
 #, fuzzy
 msgid "Runtime"
 msgstr "Tiempo de ejecución"
 
-#: data/interfaces/unit_file_panel.ui:115
+#: data/interfaces/unit_file_panel.ui:114
 msgid "Revert Drop-in"
 msgstr ""
 
 #. button
-#: data/interfaces/unit_info_panel.ui:28
+#: data/interfaces/unit_info_panel.ui:27
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr "_Refrescar"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:41
+#: data/interfaces/unit_info_panel.ui:40
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Mostrar todas las _Propiedades"
@@ -1851,7 +1847,7 @@ msgid "Top Bottom"
 msgstr ""
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:430
+#: src/widget/preferences/imp.rs:417
 msgctxt "pref file style"
 msgid "None"
 msgstr ""
@@ -1865,9 +1861,10 @@ msgid "{} of {}"
 msgstr ""
 
 #. Find in text Menu item
-#: src/widget/text_search/mod.rs:46
+#. toggle button tooltip text
+#: src/widget/text_search/mod.rs:54 src/widget/text_search/mod.rs:87
 msgctxt "text_find"
-msgid "Find in Text"
+msgid "Open Find in Text"
 msgstr ""
 
 #: src/widget/unit_control_panel/controls.rs:64
@@ -2067,13 +2064,13 @@ msgid "Unmask"
 msgstr ""
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:386
+#: src/widget/unit_dependencies_panel/imp.rs:371
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr ""
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:391
+#: src/widget/unit_dependencies_panel/imp.rs:376
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr ""
@@ -2099,7 +2096,7 @@ msgctxt "flatpak"
 msgid "_Close"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:263
+#: src/widget/unit_file_panel/imp.rs:264
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
@@ -2112,51 +2109,51 @@ msgid "File {} saved successfully!"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1077
+#: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1039
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Cargado"
 
-#: src/widget/unit_file_panel/imp.rs:288 src/widget/unit_file_panel/imp.rs:304
-#: src/widget/unit_file_panel/imp.rs:1095
+#: src/widget/unit_file_panel/imp.rs:286 src/widget/unit_file_panel/imp.rs:299
+#: src/widget/unit_file_panel/imp.rs:1055
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:317
+#: src/widget/unit_file_panel/imp.rs:311
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:325
+#: src/widget/unit_file_panel/imp.rs:319
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:572
+#: src/widget/unit_file_panel/imp.rs:566
 #, fuzzy
 msgctxt "file"
 msgid "Unit File"
 msgstr "Archivo de unidad"
 
-#: src/widget/unit_file_panel/imp.rs:574
+#: src/widget/unit_file_panel/imp.rs:568
 msgctxt "file"
 msgid "Drop In"
 msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:962
+#: src/widget/unit_file_panel/imp.rs:925
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:970
+#: src/widget/unit_file_panel/imp.rs:933
 msgctxt "file"
 msgid "Note: you can change the file name"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:979
+#: src/widget/unit_file_panel/imp.rs:942
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2164,29 +2161,29 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:988
+#: src/widget/unit_file_panel/imp.rs:951
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1067
+#: src/widget/unit_file_panel/imp.rs:1029
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1116
+#: src/widget/unit_file_panel/imp.rs:1075
 msgctxt "file"
 msgid "Not able to reverted unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1126
+#: src/widget/unit_file_panel/imp.rs:1083
 msgctxt "file"
 msgid "Not able to reverted unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1220
+#: src/widget/unit_file_panel/imp.rs:1182
 #, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
