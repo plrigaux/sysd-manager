@@ -5,166 +5,241 @@
 # SysD Manager
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://raw.githubusercontent.com/plrigaux/sysd-manager/refs/heads/main/LICENSE)
-[![Love SysD Manager? Please consider donating to sustain our activities](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86&style=flat)](https://github.com/sponsors/plrigaux)
+[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=Support&logo=GitHub&color=%23fe8e86&style=flat)](https://github.com/sponsors/plrigaux)
 [![Flathub](https://img.shields.io/flathub/v/io.github.plrigaux.sysd-manager?logo=flathub&logoColor=white&label=Flathub)](https://flathub.org/apps/io.github.plrigaux.sysd-manager)
 
-A user-friendly GUI to manage systemd units
+**A user-friendly graphical interface for managing systemd units**
+
+[Features](#-features) • [Installation](#-installation) • [Screenshots](#-screenshots) • [Contributing](#-contributing)
 
 </div>
 
-## 📋 Description
+---
 
-- Change the enablement and running status of systemd units
-- View and modify unit files with syntax highlighting
-- Check journal logs with syntax highlighting
-- Explore unit dependencies visually
-- And much more!
+## 📋 Overview
 
-> **Disclaimer:** This application is intended for users with less experience with systemd rather than professional system administrators. If you consider yourself an administrator, please refer to `systemctl` and `journalctl` documentation.
+SysD Manager provides an intuitive graphical interface for managing systemd units, making system administration more accessible. The application offers comprehensive functionality for viewing, editing, and controlling systemd services, with features including:
+
+- Enable, disable, start, and stop systemd units
+- View and edit unit files with syntax highlighting
+- Monitor journal logs in real-time
+- Visualize unit dependencies
+- Manage unit drop-ins and configurations
+
+**Note:** This application is designed for users who prefer a graphical interface over command-line tools. System administrators may prefer using `systemctl` and `journalctl` directly.
+
+---
 
 ## ✨ Features
 
-| Feature                                                         | Category      | Status |
-| --------------------------------------------------------------- | ------------- | ------ |
-| Unit file browser with search and filtering                     | Functionality | ✅     |
-| Browser add remove property                                     | Functionality | ✅     |
-| Enable or disable a unit                                        | Functionality | ✅     |
-| Enable a unit in runtime                                        | Functionality | ✅     |
-| Edit unit file                                                  | Functionality | ✅     |
-| Edit and manage unit drop-ins                                   | Functionality | ✅     |
-| Activate or deactivate a unit                                   | Functionality | ✅     |
-| View and modify unit file                                       | Functionality | ✅     |
-| View and navigate unit's dependencies                           | Functionality | ✅     |
-| Unit file syntax highlighting                                   | UX            | ✅     |
-| Journal event syntax highlighting                               | UX            | ✅     |
-| List of all running units (systemd-analyze blame)               | Functionality | ✅     |
-| Dark and Light style switching                                  | UX            | ✅     |
-| Select a unit at program opening via CLI                        | Functionality | ✅     |
-| Clean unit like `systemctl clean`                               | Functionality | ✅     |
-| Freeze & Thaw unit like `systemctl freeze` and `systemctl thaw` | Functionality | ✅     |
-| Multi-language support                                          | UX            | ✅     |
-| Real-time journal events update                                 | Functionality | ✅     |
-| Retrieve list of boot IDs                                       | Functionality | ✅     |
-| Ability to watch _systemd_ signals                              | UX            | ✅     |
-| Filter units on loaded properties                               | UX            | ✅     |
-| Browser contextual menu                                         | UX            | ✅     |
-| Browser add remove property                                     | UX            | ✅     |
+### Core Functionality
 
-_Need a feature? Contact the author or contribute to the project! If you're stuck, take a look at `systemctl`._
+| Feature | Status |
+|---------|--------|
+| Unit file browser with search and filtering | ✅ |
+| Enable/disable units and runtime enablement | ✅ |
+| Start, stop, and restart units | ✅ |
+| Edit unit files and manage drop-ins | ✅ |
+| View and navigate unit dependencies | ✅ |
+| Clean, freeze, and thaw operations | ✅ |
+| Real-time journal monitoring | ✅ |
+| Boot ID retrieval and filtering | ✅ |
+
+### User Experience
+
+| Feature | Status |
+|---------|--------|
+| Syntax highlighting for unit files and journal logs | ✅ |
+| Dark and light theme support | ✅ |
+| Multi-language support | ✅ |
+| Contextual menus and property management | ✅ |
+| System signal monitoring | ✅ |
+| CLI unit selection at startup | ✅ |
+
+---
 
 ## 📸 Screenshots
 
 <div align="center">
 
-### Unit Info (Dark)
+### Unit Information Panel (Dark Theme)
 
 ![Unit Info Dark](screenshots/unit_info_dark.png)
 
-### Unit Info (Light)
+### Unit Information Panel (Light Theme)
 
 ![Unit Info Light](screenshots/unit_info.png)
 
-### Unit Dependencies
+### Dependency Visualization
 
 ![Unit Dependencies](screenshots/dependencies_dark.png)
 
-### Unit Files
+### Unit File Editor
 
 ![Unit Files](screenshots/unit_file_dark.png)
 
-### Unit Journal
+### Journal Viewer
 
 ![Unit Journal](screenshots/journal_dark.png)
 
 </div>
 
+---
+
 ## 🔧 Installation
 
-### Flathub
+### Method 1: Flathub (Recommended)
 
-<a href="https://flathub.org/apps/io.github.plrigaux.sysd-manager"><img width="200" alt="Download on Flathub" src="https://flathub.org/api/badge?svg"/></a>
+The easiest way to install SysD Manager on any Linux distribution.
 
-### Arch Linux
+<a href="https://flathub.org/apps/io.github.plrigaux.sysd-manager">
+  <img width="200" alt="Download on Flathub" src="https://flathub.org/api/badge?svg"/>
+</a>
 
-<a href="https://aur.archlinux.org/packages/sysd-manager"><img width="200" alt="Download on Flathub" src="https://aur.archlinux.org/static/css/archnavbar/aurlogo.png"/></a>
+```bash
+flatpak install flathub io.github.plrigaux.sysd-manager
+```
+
+---
+
+### Method 2: Arch Linux (AUR)
+
+For Arch Linux users, install directly from the Arch User Repository.
+
+<a href="https://aur.archlinux.org/packages/sysd-manager">
+  <img width="200" alt="AUR Package" src="https://aur.archlinux.org/static/css/archnavbar/aurlogo.png"/>
+</a>
 
 ```bash
 yay -S sysd-manager
 ```
 
-### AppImage
+Or using any other AUR helper:
 
-<a href="https://github.com/plrigaux/sysd-manager/releases/latest"><img width="100" alt="Download latest Appimage release" src="https://docs.appimage.org/_images/appimage.svg"/></a>
-__Currently Broken__
+```bash
+paru -S sysd-manager
+```
 
-### Build from Source
+---
 
-1. Install prerequisites:
-   - [Rust](https://www.rust-lang.org/tools/install)
-   - GTK 4 and build essentials ([how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html))
-   - Libadwaita ([how-to](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html))
-   - Systemd development library (`libsystemd-dev`)
-   - GtkSourceView 5 development library
+### Method 3: AppImage
 
-2. Clone and build:
+Portable application that runs on most Linux distributions.
+
+<a href="https://github.com/plrigaux/sysd-manager/releases/latest">
+  <img width="100" alt="Download AppImage" src="https://docs.appimage.org/_images/appimage.svg"/>
+</a>
+
+> **Status:** AppImage builds are currently unavailable. Please use Flathub or build from source.
+
+---
+
+### Method 4: Build from Source
+
+For developers and users who prefer building from source.
+
+#### System Requirements
+
+Ensure the following dependencies are installed on your system:
+
+| Dependency | Package Name (Debian/Ubuntu) | Package Name (Arch) |
+|------------|------------------------------|---------------------|
+| Rust toolchain | `cargo rustc` | `rust` |
+| GTK 4 development files | `libgtk-4-dev` | `gtk4` |
+| Libadwaita development files | `libadwaita-1-dev` | `libadwaita` |
+| Systemd development library | `libsystemd-dev` | `systemd-libs` |
+| GtkSourceView 5 library | `libgtksourceview-5-dev` | `gtksourceview5` |
+| Build essentials | `build-essential` | `base-devel` |
+
+**Additional Resources:**
+- [Rust installation guide](https://www.rust-lang.org/tools/install)
+- [GTK 4 setup guide](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html)
+- [Libadwaita setup guide](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
+
+#### Build Steps
+
+1. Clone the repository:
 
 ```bash
 git clone https://github.com/plrigaux/sysd-manager
 cd sysd-manager/scripts
+```
+
+2. Run the installation script:
+
+```bash
 sh install.sh
 ```
 
-3. Run:
+3. Launch the application:
 
 ```bash
 sysd-manager
 ```
 
-_For a clean removal, execute:_ `sh uninstall.sh`
+#### Uninstall
 
-## 🧪 Testing
+To remove the application:
 
-You can safely test SysD Manager using **tiny_daemon**, a simple web server service included with the project:
+```bash
+cd sysd-manager/scripts
+sh uninstall.sh
+```
+
+---
+
+## Testing
+
+Test SysD Manager safely using the included **tiny_daemon** web server service:
 
 ```bash
 cd packaging
 python install_tiny
 ```
 
-## 🛣️ Roadmap
+---
 
-Planned features:
+## Roadmap
 
-- Save unit filters
-- Adjust cell viewer according to property types (e.g. display uint as human time)
-- Always administrator mode
-- Continuous UX improvements
+Planned enhancements include:
 
-## 📝 Changelog
+- Persistent unit filter configurations
+- Type-aware property display (e.g., human-readable time formats)
+- Administrator mode option
+- Ongoing user experience improvements
 
-All notable changes are documented in the [CHANGELOG](CHANGELOG.md).
+For the complete list of changes, see the [CHANGELOG](CHANGELOG.md).
+
+---
 
 ## 🤝 Contributing
 
-Interested in contributing? Contact the project maintainer on [GitHub](https://github.com/plrigaux/sysd-manager).
+Contributions are welcome. Please contact the project maintainer on [GitHub](https://github.com/plrigaux/sysd-manager) or submit a pull request.
 
-## 🌐 Internationalization
+---
 
-**SysD Manager** can be displayed in different languages as long a translation has been provided.
+## Internationalization
+
+SysD Manager supports multiple languages through community translations.
 
 <div align="center">
 <a href="https://hosted.weblate.org/engage/sysd-manager/" target="_blank">
-<img src="https://hosted.weblate.org/widget/sysd-manager/translation/multi-auto.svg" alt="Status da tradução" style="height:300px;" >
+<img src="https://hosted.weblate.org/widget/sysd-manager/translation/multi-auto.svg" alt="Translation Status" style="height:300px;">
 </a>
 </div>
 
-### Translators
+Translation services are generously hosted by [Weblate](https://weblate.org). To contribute translations, visit the [SysD Manager Hosted Weblate](https://hosted.weblate.org/engage/sysd-manager/) project page.
 
-Translations are generously hosted by [Weblate](https://weblate.org).
-Please help translate **Sysd Manager** into more languages through the [**Sysd Manager** Hosted Weblate](https://hosted.weblate.org/engage/sysd-manager/).
+For developers working with translations, refer to the [Translation Wiki](https://github.com/plrigaux/sysd-manager/wiki/Translation).
 
-_Information for developers to handle translations can be found [here](https://github.com/plrigaux/sysd-manager/wiki/Translation)._
+---
 
-## 💡 Credits
+## Credits
 
 This project is inspired by the work of Guillaume Gomez: https://github.com/GuillaumeGomez/systemd-manager/
+
+---
+
+## License
+
+SysD Manager is licensed under the GNU General Public License v3.0. See [LICENSE](https://raw.githubusercontent.com/plrigaux/sysd-manager/refs/heads/main/LICENSE) for details.
