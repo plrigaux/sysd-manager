@@ -14,7 +14,6 @@
           <object class="GtkToggleButton" id="find_text_button">
             <property name="halign">start</property>
             <property name="icon-name">system-search-symbolic</property>
-            <property name="tooltip-text" translatable="yes" context="find_text" comments="button tooltip">Find in Text</property>
             <property name="valign">baseline-fill</property>
           </object>
         </child>

@@ -15,7 +15,7 @@ use gtk::{
 
 use crate::{
     systemd::{
-        self, Dependency,
+        Dependency,
         data::UnitInfo,
         enums::{DependencyType, UnitType},
     },
@@ -23,7 +23,7 @@ use crate::{
     widget::{
         app_window::AppWindow,
         menu_button::{ExMenuButton, OnClose},
-        text_search::{self, TextSearchBar, on_new_text},
+        text_search::{self, on_new_text},
     },
 };
 use base::enums::UnitDBusLevel;
@@ -50,7 +50,7 @@ const PANEL_EMPTY: &str = "empty";
 const PANEL_DEPENDENCIES: &str = "dependencies";
 const PANEL_SPINNER: &str = "spinner";
 
-const TEXT_FIND: &str = "unit_dependencies_text_find";
+const TEXT_FIND_ACTION: &str = "unit_dependencies_text_find";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_dependencies_panel.ui")]
@@ -110,24 +110,9 @@ impl UnitDependenciesPanelImp {
             activator,
         );
 
-        let text_search_bar = self.text_search_bar.clone();
-        let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
-            gio::ActionEntry::builder(TEXT_FIND)
-                .activate(
-                    move |_app_window: &AppWindow,
-                          _simple_action,
-                          _variant: Option<&glib::Variant>| {
-                        text_search_bar.set_search_mode(true);
-                        if let Some(search) =
-                            text_search_bar.child().and_downcast_ref::<TextSearchBar>()
-                        {
-                            search.grab_focus_on_search_entry();
-                        }
-                    },
-                )
-                .build();
-
-        app_window.add_action_entries([daemon_reload_all_units_with_bus]);
+        let text_search_bar_action_entry =
+            text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
+        app_window.add_action_entries([text_search_bar_action_entry]);
     }
 
     fn set_visible_on_page(&self, visible: bool) {
@@ -405,7 +390,7 @@ impl ObjectImpl for UnitDependenciesPanelImp {
             &self.unit_dependencies_textview,
             &self.text_search_bar,
             &self.find_text_button,
-            TEXT_FIND,
+            TEXT_FIND_ACTION,
             true,
         );
     }

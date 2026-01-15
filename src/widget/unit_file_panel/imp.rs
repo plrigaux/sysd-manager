@@ -17,7 +17,7 @@ use crate::{
             data::{KEY_PREF_UNIT_FILE_LINE_NUMBERS, PREFERENCES},
             style_scheme::style_schemes,
         },
-        text_search::{self, TextSearchBar, on_new_text},
+        text_search::{self, on_new_text},
         unit_file_panel::flatpak::PROCEED,
     },
 };
@@ -764,10 +764,7 @@ impl UnitFilePanelImp {
             gio::ActionEntry::builder(UNIT_FILE_LINE_NUMBER_ACTION)
                 .activate(
                     move |_application: &AppWindow, action: &SimpleAction, _target_value| {
-                        let s = action.state();
-                        info!("call unit_file {:?}", s);
-
-                        if let Some(variant) = s
+                        if let Some(variant) = action.state()
                             && let Some(show_line_number) = variant.get::<bool>()
                         {
                             let show_line_number = !show_line_number;
@@ -791,26 +788,8 @@ impl UnitFilePanelImp {
             warn!("No action {}", "create_drop_in_file_runtime");
         }
 
-        /* let dialog = flatpak::new("/home/pier/school.txt");
-        let window = self.app_window.get().expect("AppWindow supposed to be set");
-
-        dialog.present(Some(window)); */
-        let text_search_bar = self.text_search_bar.clone();
-        let daemon_reload_all_units_with_bus: gio::ActionEntry<AppWindow> =
-            gio::ActionEntry::builder(TEXT_FIND_ACTION)
-                .activate(
-                    move |_app_window: &AppWindow,
-                          _simple_action,
-                          _variant: Option<&glib::Variant>| {
-                        text_search_bar.set_search_mode(true);
-                        if let Some(search) =
-                            text_search_bar.child().and_downcast_ref::<TextSearchBar>()
-                        {
-                            search.grab_focus_on_search_entry();
-                        }
-                    },
-                )
-                .build();
+        let text_search_bar_action_entry =
+            text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
 
         app_window.add_action_entries([
             rename_drop_in_file,
@@ -818,7 +797,7 @@ impl UnitFilePanelImp {
             create_drop_in_file_permanent,
             revert_unit_file_full,
             unit_file_line_number,
-            daemon_reload_all_units_with_bus,
+            text_search_bar_action_entry,
         ]);
     }
 
@@ -1196,7 +1175,7 @@ impl ObjectImpl for UnitFilePanelImp {
             .bind(KEY_PREF_UNIT_FILE_LINE_NUMBERS, &view, "show-line-numbers")
             .build();
 
-        let ts_item = text_search::create_menu_item(TEXT_FIND_ACTION);
+        let ts_item = text_search::create_menu_item(TEXT_FIND_ACTION, &self.text_search_bar);
         let menu = gio::Menu::new();
 
         // Show Line Number Menu Item
