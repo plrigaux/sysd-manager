@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name preferences.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -114,9 +114,8 @@
                         <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display unit file line number</property>
                         <property name="title" translatable="yes" context="preference" comments="title">Line number</property>
                         <child>
-                          <object class="GtkSwitch" id="unit_file_highlight">
+                          <object class="GtkSwitch" id="unit_file_line_numbers">
                             <property name="valign">baseline-center</property>
-                            <signal name="state-set" handler="unit_file_highlighting_state_set" swapped="yes"/>
                           </object>
                         </child>
                       </object>

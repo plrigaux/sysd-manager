@@ -1,7 +1,7 @@
 pub mod flatpak;
 mod imp;
 
-use super::{app_window::AppWindow, InterPanelMessage};
+use super::{InterPanelMessage, app_window::AppWindow};
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 // ANCHOR: mod

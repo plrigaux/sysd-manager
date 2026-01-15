@@ -24,7 +24,7 @@ pub const KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE: &str = "pref-journal-events-batch-
 pub const KEY_PREF_JOURNAL_EVENT_MAX_SIZE: &str = "pref-journal-event-max-size";
 pub const KEY_PREF_JOURNAL_DISPLAY_ORDER: &str = "pref-journal-display-order";
 pub const KEY_PREF_JOURNAL_DISPLAY_FOLLOW: &str = "pref-journal-display-follow";
-pub const KEY_PREF_UNIT_FILE_LINE_NUMBER: &str = "pref-unit-file-line-number";
+pub const KEY_PREF_UNIT_FILE_LINE_NUMBERS: &str = "pref-unit-file-line-numbers";
 pub const KEY_PREF_UNIT_DESCRIPTION_WRAP: &str = "pref-unit-description-wrap";
 pub const KEY_PREF_UNIT_FILE_STYLE_SCHEME: &str = "pref-unit-file-style-scheme";
 pub const KEY_PREF_APP_FIRST_CONNECTION: &str = "pref-app-first-connection";
@@ -259,7 +259,6 @@ pub struct Preferences {
     journal_colors: RwLock<bool>,
     journal_events_batch_size: RwLock<u32>,
     journal_event_max_size: RwLock<u32>,
-    unit_file_line_number: RwLock<bool>,
     unit_file_style_scheme: RwLock<String>,
     app_first_connection: RwLock<bool>,
     timestamp_style: RwLock<TimestampStyle>,
@@ -273,7 +272,6 @@ impl Preferences {
         let journal_colors = settings.boolean(KEY_PREF_JOURNAL_COLORS);
         let journal_events_batch_size = settings.uint(KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE);
         let journal_event_max_size = settings.uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE);
-        let unit_file_colors = settings.boolean(KEY_PREF_UNIT_FILE_LINE_NUMBER);
         let app_first_connection = settings.boolean(KEY_PREF_APP_FIRST_CONNECTION);
         let timestamp_style = settings.string(KEY_PREF_TIMESTAMP_STYLE).into();
         let font_family = settings.string(KEY_PREF_STYLE_TEXT_FONT_FAMILY);
@@ -285,7 +283,6 @@ impl Preferences {
             journal_colors: RwLock::new(journal_colors),
             journal_events_batch_size: RwLock::new(journal_events_batch_size),
             journal_event_max_size: RwLock::new(journal_event_max_size),
-            unit_file_line_number: RwLock::new(unit_file_colors),
             app_first_connection: RwLock::new(app_first_connection),
             timestamp_style: RwLock::new(timestamp_style),
             font_family: RwLock::new(font_family.to_string()),
@@ -308,10 +305,6 @@ impl Preferences {
 
     pub fn journal_event_max_size(&self) -> u32 {
         *self.journal_event_max_size.read().unwrap()
-    }
-
-    pub fn unit_file_line_number(&self) -> bool {
-        *self.unit_file_line_number.read().unwrap()
     }
 
     pub fn is_app_first_connection(&self) -> bool {
@@ -386,16 +379,6 @@ impl Preferences {
 
         let mut journal_colors = self.journal_colors.write().expect("supposed to write");
         *journal_colors = display;
-    }
-
-    pub fn set_unit_file_line_number(&self, display: bool) {
-        info!("set_unit_file_highlighting: {display}");
-
-        let mut unit_file_colors = self
-            .unit_file_line_number
-            .write()
-            .expect("supposed to write");
-        *unit_file_colors = display;
     }
 
     pub fn set_app_first_connection(&self, app_first_connection_new: bool) {

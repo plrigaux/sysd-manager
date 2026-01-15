@@ -88,9 +88,10 @@
             <default>false</default>           
             <summary>Continuously print new entries as they are appended to the journal</summary>            
         </key>
-        <key name="pref-unit-file-line-number" type="b">
+        <key name="pref-unit-file-line-numbers" type="b">
             <default>true</default>
-            <summary>To display unit file highlighted</summary>
+            <summary>To display unit file line numbers</summary>
+            <description>Whether to display line numbers.</description>
         </key>
         <key name="pref-unit-file-style-scheme" type="s">
             <default>"Adwaita"</default>

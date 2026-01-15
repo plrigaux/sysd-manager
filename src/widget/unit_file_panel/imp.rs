@@ -8,14 +8,17 @@ use crate::{
     consts::{ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SUGGESTED_ACTION},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
-    upgrade,
+    systemd_gui, upgrade,
     utils::font_management::set_text_view_font_display,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        preferences::{data::PREFERENCES, style_scheme::style_schemes},
+        preferences::{
+            data::{KEY_PREF_UNIT_FILE_LINE_NUMBERS, PREFERENCES},
+            style_scheme::style_schemes,
+        },
         text_search::{self, TextSearchBar, on_new_text},
-        unit_file_panel::{ flatpak::PROCEED},
+        unit_file_panel::flatpak::PROCEED,
     },
 };
 use adw::prelude::*;
@@ -78,7 +81,6 @@ impl FileNav {
             .and_then(OsStr::to_str)
     }
 }
-
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
@@ -259,9 +261,7 @@ impl UnitFilePanelImp {
         let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
             Ok(_a) => {
                 let msg = match status {
-                    UnitFileStatus::Create => {
-                        pgettext("file", "File {} created successfully!")
-                    }
+                    UnitFileStatus::Create => pgettext("file", "File {} created successfully!"),
                     UnitFileStatus::Edit => pgettext("file", "File {} saved successfully!"),
                 };
                 let file_path_format = format!("<u>{}</u>", file_path);
@@ -283,10 +283,7 @@ impl UnitFilePanelImp {
 
                 match error {
                     SystemdErrors::NotAuthorized => (
-                        pgettext(
-                            "file",
-                            "Not able to save file, permission not granted!",
-                        ),
+                        pgettext("file", "Not able to save file, permission not granted!"),
                         false,
                         None,
                     ),
@@ -299,10 +296,7 @@ impl UnitFilePanelImp {
 
                         dialog.present(Some(window));
                         (
-                            pgettext(
-                                "file",
-                                "Not able to save file, permission not granted!",
-                            ),
+                            pgettext("file", "Not able to save file, permission not granted!"),
                             false,
                             None,
                         )
@@ -650,17 +644,7 @@ impl UnitFilePanelImp {
         self.set_new_style_scheme(Some(&style_scheme_id));
     }
 
-    fn set_line_number(&self, line_number: bool) {
-        if let Some(view) = self.unit_file_text.get() {
-            view.set_show_line_numbers(line_number);
-        }
-    }
-
     fn set_new_style_scheme(&self, style_scheme_id: Option<&str>) {
-        /*         if !PREFERENCES.unit_file_line_number() {
-            style_scheme_id = None
-        } */
-
         info!("Set new style scheme {style_scheme_id:?}");
 
         match style_scheme_id {
@@ -776,7 +760,7 @@ impl UnitFilePanelImp {
         };
 
         let unit_file_line_number = {
-            let unit_file_panel = self.obj().clone();
+            let unit_file_text = self.unit_file_text.get().expect("Need to be set").clone();
             gio::ActionEntry::builder(UNIT_FILE_LINE_NUMBER_ACTION)
                 .activate(
                     move |_application: &AppWindow, action: &SimpleAction, _target_value| {
@@ -784,11 +768,11 @@ impl UnitFilePanelImp {
                         info!("call unit_file {:?}", s);
 
                         if let Some(variant) = s
-                            && let Some(mut line_number) = variant.get::<bool>()
+                            && let Some(show_line_number) = variant.get::<bool>()
                         {
-                            line_number = !line_number;
-                            unit_file_panel.imp().set_line_number(line_number);
-                            action.set_state(&line_number.to_variant());
+                            let show_line_number = !show_line_number;
+                            unit_file_text.set_show_line_numbers(show_line_number);
+                            action.set_state(&show_line_number.to_variant());
                         }
                     },
                 )
@@ -1007,7 +991,6 @@ impl UnitFilePanelImp {
             }
             InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
             InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
-            InterPanelMessage::FileLineNumber(line_number) => self.set_line_number(line_number),
             InterPanelMessage::NewStyleScheme(style_scheme) => {
                 self.set_new_style_scheme(style_scheme)
             }
@@ -1090,10 +1073,7 @@ impl UnitFilePanelImp {
 
                     match error {
                         SystemdErrors::NotAuthorized => (
-                            pgettext(
-                                "file",
-                                "Not able to save file, permission not granted!",
-                            ),
+                            pgettext("file", "Not able to save file, permission not granted!"),
                             false,
                             None,
                         ),
@@ -1121,10 +1101,7 @@ impl UnitFilePanelImp {
                         }
 
                         _ => (
-                            pgettext(
-                                "file",
-                                "Not able to reverted unit, an error happened!",
-                            ),
+                            pgettext("file", "Not able to reverted unit, an error happened!"),
                             false,
                             None,
                         ),
@@ -1210,8 +1187,14 @@ impl ObjectImpl for UnitFilePanelImp {
             false,
         );
 
-        let unit_file_line_number = PREFERENCES.unit_file_line_number();
-        self.set_line_number(unit_file_line_number);
+        let settings = systemd_gui::new_settings();
+
+        let show_line_numbers = settings.boolean(KEY_PREF_UNIT_FILE_LINE_NUMBERS);
+        warn!("show ln {}", show_line_numbers);
+
+        settings
+            .bind(KEY_PREF_UNIT_FILE_LINE_NUMBERS, &view, "show-line-numbers")
+            .build();
 
         let ts_item = text_search::create_menu_item(TEXT_FIND_ACTION);
         let menu = gio::Menu::new();
@@ -1223,10 +1206,7 @@ impl ObjectImpl for UnitFilePanelImp {
         action_name.push_str(UNIT_FILE_LINE_NUMBER_ACTION);
 
         let mi = gio::MenuItem::new(Some(&menu_label), None);
-        mi.set_action_and_target_value(
-            Some(&action_name),
-            Some(&unit_file_line_number.to_variant()),
-        );
+        mi.set_action_and_target_value(Some(&action_name), Some(&show_line_numbers.to_variant()));
 
         menu.append_item(&mi);
         menu.append_item(&ts_item);
@@ -1261,6 +1241,7 @@ impl ObjectImpl for UnitFilePanelImp {
         });
     }
 }
+
 impl WidgetImpl for UnitFilePanelImp {}
 impl BoxImpl for UnitFilePanelImp {}
 

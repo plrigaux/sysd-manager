@@ -32,7 +32,7 @@ use strum::IntoEnumIterator;
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
     KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
-    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBER,
+    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBERS,
     KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
 };
 
@@ -45,7 +45,7 @@ pub struct PreferencesDialogImpl {
     journal_colors: TemplateChild<gtk::Switch>,
 
     #[template_child]
-    unit_file_highlight: TemplateChild<gtk::Switch>,
+    unit_file_line_numbers: TemplateChild<gtk::Switch>,
 
     #[template_child]
     unit_file_style: TemplateChild<adw::ComboRow>,
@@ -107,24 +107,6 @@ impl PreferencesDialogImpl {
         let value32_parse = Self::get_spin_row_value("journal_event_max_size_changed", spin);
 
         PREFERENCES.set_journal_event_max_size(value32_parse);
-    }
-
-    #[template_callback]
-    fn unit_file_highlighting_state_set(&self, state: bool) -> bool {
-        info!("unit_file_highlighting_switch {state}");
-
-        self.unit_file_highlight.set_state(state);
-        PREFERENCES.set_unit_file_line_number(state);
-
-        let parent = self.app_window.borrow();
-        let window = parent.as_ref().map(|w| w.clone());
-
-        if let Some(window) = &window {
-            let action = crate::widget::InterPanelMessage::FileLineNumber(state);
-            window.set_inter_message(&action);
-        }
-
-        true
     }
 
     #[template_callback]
@@ -283,9 +265,12 @@ impl PreferencesDialogImpl {
     }
 
     fn load_preferences_values(&self) {
+        let settings = self.settings();
+
         let journal_colors = PREFERENCES.journal_colors();
-        let unit_file_colors = PREFERENCES.unit_file_line_number();
         let is_app_first_connection = PREFERENCES.is_app_first_connection();
+
+        let unit_file_line_numbers = settings.boolean(KEY_PREF_UNIT_FILE_LINE_NUMBERS);
 
         self.journal_colors.set_state(journal_colors);
         self.journal_colors.set_active(journal_colors);
@@ -297,8 +282,10 @@ impl PreferencesDialogImpl {
         self.journal_event_max_size
             .set_value(journal_event_max_size as f64);
 
-        self.unit_file_highlight.set_state(unit_file_colors);
-        self.unit_file_highlight.set_active(unit_file_colors);
+        self.unit_file_line_numbers
+            .set_state(unit_file_line_numbers);
+        self.unit_file_line_numbers
+            .set_active(unit_file_line_numbers);
 
         self.preference_banner.set_revealed(is_app_first_connection);
 
@@ -356,8 +343,8 @@ You can set the application's Dbus level to <u>System</u> if you want to see all
         let journal_event_max_size = PREFERENCES.journal_event_max_size();
         settings.set_uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE, journal_event_max_size)?;
 
-        let unit_file_colors = PREFERENCES.unit_file_line_number();
-        settings.set_boolean(KEY_PREF_UNIT_FILE_LINE_NUMBER, unit_file_colors)?;
+        let unit_file_line_numbers = self.unit_file_line_numbers.is_active();
+        settings.set_boolean(KEY_PREF_UNIT_FILE_LINE_NUMBERS, unit_file_line_numbers)?;
 
         let unit_file_style_scheme = PREFERENCES.unit_file_style_scheme();
         settings.set_string(KEY_PREF_UNIT_FILE_STYLE_SCHEME, &unit_file_style_scheme)?;

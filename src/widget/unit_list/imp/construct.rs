@@ -3,12 +3,12 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
+            COL_ID_UNIT, CustomPropertyId,
             imp::{
                 column_factories::{self, *},
                 construct,
             },
             menus::create_col_menu,
-            CustomPropertyId, COL_ID_UNIT,
         },
         unit_properties_selector::{data_selection::UnitPropertySelection, save},
     },
