@@ -10,7 +10,7 @@
 
 **A user-friendly graphical interface for managing systemd units**
 
-[Features](#features) • [Installation](#installation) • [Screenshots](#screenshots) • [Contributing](#contributing)
+[Features](#-features) • [Installation](#-installation) • [Screenshots](#-screenshots) • [Contributing](#-contributing)
 
 </div>
 
@@ -30,7 +30,7 @@ SysD Manager provides an intuitive graphical interface for managing systemd unit
 
 ---
 
-## ✨ Features {#features}
+## ✨ Features
 
 ### Core Functionality
 
@@ -58,7 +58,7 @@ SysD Manager provides an intuitive graphical interface for managing systemd unit
 
 ---
 
-## 📸 Screenshots {#screenshots}
+## 📸 Screenshots
 
 <div align="center">
 
@@ -86,7 +86,7 @@ SysD Manager provides an intuitive graphical interface for managing systemd unit
 
 ---
 
-## 🔧 Installation {#installation}
+## 🔧 Installation
 
 ### Method 1: Flathub (Recommended)
 
@@ -212,7 +212,7 @@ For the complete list of changes, see the [CHANGELOG](CHANGELOG.md).
 
 ---
 
-## 🤝 Contributing {#contributing}
+## 🤝 Contributing
 
 Contributions are welcome. Please contact the project maintainer on [GitHub](https://github.com/plrigaux/sysd-manager) or submit a pull request.
 
