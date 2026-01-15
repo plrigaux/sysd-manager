@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-14 23:50-0500\n"
-"PO-Revision-Date: 2025-12-23 21:00+0000\n"
+"PO-Revision-Date: 2026-01-16 21:01+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
 "manager/translation/pt_BR/>\n"
@@ -931,38 +931,36 @@ msgstr "Sinais de relógio"
 #: data/interfaces/text_find.ui:10
 msgctxt "find_text"
 msgid "Find in Text"
-msgstr ""
+msgstr "Localizar no texto"
 
 #. tooltip
 #: data/interfaces/text_find.ui:24
-#, fuzzy
 msgctxt "find_text"
 msgid "Match Case"
-msgstr "Assistir sinais"
+msgstr "Caixa de fósforos"
 
 #. tooltip
 #: data/interfaces/text_find.ui:31
 msgctxt "find_text"
 msgid "Match Whole Word"
-msgstr ""
+msgstr "Combine a palavra inteira"
 
 #. tooltip
 #: data/interfaces/text_find.ui:38
-#, fuzzy
 msgctxt "find_text"
 msgid "Use Regular Expression"
-msgstr "Sessão do usuário"
+msgstr "Utilizar expressão regular"
 
 #. tooltip
 #: data/interfaces/text_find.ui:58
 msgctxt "find_text"
 msgid "Previous Match"
-msgstr ""
+msgstr "Partida anterior"
 
 #: data/interfaces/text_find.ui:66
 msgctxt "find_text"
 msgid "Match Next"
-msgstr ""
+msgstr "Próximo jogo"
 
 #: data/interfaces/unit_control_panel.ui:19
 msgctxt "control info"
@@ -1173,17 +1171,15 @@ msgstr "Algo deu errado"
 
 #. Search entry place holder text
 #: data/interfaces/unit_list_search.ui:13
-#, fuzzy
 msgctxt "unit search"
 msgid "Filter Units by their Names"
-msgstr "Filtrar dependências por tipos"
+msgstr "Unidades de filtro por seus nomes"
 
 #. button's tooltips
 #: data/interfaces/unit_list_search.ui:20
-#, fuzzy
 msgctxt "button's tooltips"
 msgid "Configure displayed Columns"
-msgstr "Configurar colunas"
+msgstr "Configurar colunas exibidas"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:24
@@ -1195,7 +1191,7 @@ msgstr "Colunas"
 #: data/interfaces/unit_list_search.ui:32
 msgctxt "unit search"
 msgid "More filtering Options"
-msgstr ""
+msgstr "Mais opções de filtragem"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:36
@@ -1205,17 +1201,15 @@ msgstr "Filtros"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:51
-#, fuzzy
 msgctxt "unit search"
 msgid "Clear"
 msgstr "Claro"
 
 #. button's tooltips
 #: data/interfaces/unit_list_search.ui:52
-#, fuzzy
 msgctxt "unit search"
 msgid "Clear applied Filters"
-msgstr "Limpar filtros"
+msgstr "Limpar filtros aplicados"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:36
@@ -1255,10 +1249,9 @@ msgstr "Recarregar"
 
 #. unit list pop up menu item
 #: data/interfaces/unit_pop_menu.ui:137
-#, fuzzy
 msgctxt "controls"
 msgid "Toggle Totals Summary"
-msgstr "Ocultar Resumo Total"
+msgstr "Alternar resumo de totais"
 
 #. Show all properties
 #: data/interfaces/unit_properties.ui:29
@@ -1848,14 +1841,14 @@ msgstr "Nenhum"
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
-msgstr ""
+msgstr "{} de {}"
 
 #. Find in text Menu item
 #. toggle button tooltip text
 #: src/widget/text_search/mod.rs:54 src/widget/text_search/mod.rs:87
 msgctxt "text_find"
 msgid "Open Find in Text"
-msgstr ""
+msgstr "Abrir Localizar no texto"
 
 #: src/widget/unit_control_panel/controls.rs:64
 #: src/widget/unit_control_panel/controls.rs:182
@@ -2097,16 +2090,16 @@ msgid "_Close"
 msgstr "_Fechar"
 
 #: src/widget/unit_file_panel/imp.rs:264
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
-msgstr "{} bem-sucedido."
+msgstr "Arquivo {} criado com sucesso!"
 
 #: src/widget/unit_file_panel/imp.rs:265
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
-msgstr "{} bem-sucedido."
+msgstr "Arquivo {} salvo com sucesso!"
 
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1039
@@ -2117,20 +2110,19 @@ msgstr "Recarregar Daemon"
 #: src/widget/unit_file_panel/imp.rs:1055
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
-msgstr ""
+msgstr "Não foi possível salvar o arquivo, permissão não concedida!"
 
 #: src/widget/unit_file_panel/imp.rs:311
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
-msgstr ""
+msgstr "Não foi possível salvar o arquivo. Permissão Flatpak não concedida!"
 
 #: src/widget/unit_file_panel/imp.rs:319
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
-msgstr ""
+msgstr "Não foi possível salvar o arquivo, ocorreu um erro!"
 
 #: src/widget/unit_file_panel/imp.rs:566
-#, fuzzy
 msgctxt "file"
 msgid "Unit File"
 msgstr "Arquivo de unidade"
@@ -2138,19 +2130,19 @@ msgstr "Arquivo de unidade"
 #: src/widget/unit_file_panel/imp.rs:568
 msgctxt "file"
 msgid "Drop In"
-msgstr ""
+msgstr "Apareça"
 
 #. Create Drop in file name
 #: src/widget/unit_file_panel/imp.rs:925
 msgctxt "file"
 msgid "Editing"
-msgstr ""
+msgstr "Edição"
 
 #. Create Drop in file name
 #: src/widget/unit_file_panel/imp.rs:933
 msgctxt "file"
 msgid "Note: you can change the file name"
-msgstr ""
+msgstr "Observação: você pode alterar o nome do arquivo"
 
 #: src/widget/unit_file_panel/imp.rs:942
 msgctxt "file"
@@ -2158,35 +2150,36 @@ msgid ""
 "Anything between here and the comment below will become the contents of the "
 "drop-in file"
 msgstr ""
+"Tudo o que estiver entre este ponto e o comentário abaixo se tornará o "
+"conteúdo do arquivo drop-in"
 
 #. Create Drop in file footer
 #: src/widget/unit_file_panel/imp.rs:951
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
-msgstr ""
+msgstr "As edições abaixo deste comentário serão descartadas"
 
 #: src/widget/unit_file_panel/imp.rs:1029
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
-msgstr "{} bem-sucedido."
+msgstr "Unidade {} revertida com sucesso!"
 
 #: src/widget/unit_file_panel/imp.rs:1075
 msgctxt "file"
 msgid "Not able to reverted unit, permission not granted!"
-msgstr ""
+msgstr "Não foi possível reverter a unidade, permissão não concedida!"
 
 #: src/widget/unit_file_panel/imp.rs:1083
 msgctxt "file"
 msgid "Not able to reverted unit, an error happened!"
-msgstr ""
+msgstr "Não foi possível reverter a unidade, ocorreu um erro!"
 
 #. Show Line Number Menu Item
 #: src/widget/unit_file_panel/imp.rs:1182
-#, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
-msgstr "Exibir o número da linha do arquivo da unidade"
+msgstr "Exibir números de linha"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
