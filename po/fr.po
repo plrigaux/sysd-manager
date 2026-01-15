@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-14 23:50-0500\n"
-"PO-Revision-Date: 2026-01-14 17:16+0000\n"
+"PO-Revision-Date: 2026-01-15 05:01+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1851,10 +1851,9 @@ msgstr "{} de {}"
 #. Find in text Menu item
 #. toggle button tooltip text
 #: src/widget/text_search/mod.rs:54 src/widget/text_search/mod.rs:87
-#, fuzzy
 msgctxt "text_find"
 msgid "Open Find in Text"
-msgstr "Rechercher dans le texte"
+msgstr "Ouvrir rechercher dans le texte"
 
 #: src/widget/unit_control_panel/controls.rs:64
 #: src/widget/unit_control_panel/controls.rs:182
