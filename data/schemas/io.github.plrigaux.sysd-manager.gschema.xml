@@ -237,5 +237,25 @@
             <default>440</default>
             <summary>Unit property selector position</summary>
         </key>
+        <key name="pref-use-proxy-clean" type="b">
+            <default>true</default>
+            <summary>Use the proxy for the Clean calls</summary>
+        </key>
+        <key name="pref-use-proxy-freeze" type="b">
+            <default>true</default>
+            <summary>Use the proxy for the Freeze calls</summary>
+        </key>
+        <key name="pref-use-proxy-thaw" type="b">
+            <default>true</default>
+            <summary>Use the proxy for the Thaw calls</summary>
+        </key>
+        <key name="pref-use-proxy-create-drop-in" type="b">
+            <default>true</default>
+            <summary>Use the proxy for the Create drop in actions</summary>
+        </key>
+        <key name="pref-use-proxy-save-file" type="b">
+            <default>true</default>
+            <summary>Use the proxy for the Save_file actions</summary>
+        </key>
     </schema>
 </schemalist>

@@ -119,14 +119,32 @@ fn systemd_manager_blocking() -> Result<Systemd1ManagerProxyBlocking<'static>, S
     Ok(proxy)
 }
 
+fn systemd_manager_session_blocking() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors>
+{
+    let conn = get_blocking_connection(base::enums::UnitDBusLevel::UserSession)?;
+    let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+    Ok(proxy)
+}
+
 static SYSTEM_MANAGER_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> = LazyLock::new(|| {
     systemd_manager_blocking()
         .inspect_err(|e| error!("{e:?}"))
         .unwrap()
 });
 
+static SYSTEM_MANAGER_SESSION_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> =
+    LazyLock::new(|| {
+        systemd_manager_session_blocking()
+            .inspect_err(|e| error!("{e:?}"))
+            .unwrap()
+    });
+
 pub fn systemd_manager<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
     (&*SYSTEM_MANAGER_BLOCKING) as _
+}
+
+pub fn systemd_manager_session<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
+    (&*SYSTEM_MANAGER_SESSION_BLOCKING) as _
 }
 
 pub async fn systemd_manager_async(

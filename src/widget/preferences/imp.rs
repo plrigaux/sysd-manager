@@ -3,6 +3,10 @@ use gio::Settings;
 use systemd::time_handling::TimestampStyle;
 
 use crate::widget::InterPanelMessage;
+use crate::widget::preferences::data::{
+    KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN, KEY_PREF_USE_PROXY_FREEZE,
+    KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_THAW,
+};
 use crate::{
     consts::ADWAITA,
     systemd_gui::new_settings,
@@ -28,7 +32,9 @@ use gtk::{
 use log::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 use strum::IntoEnumIterator;
-
+//testdfsd fdf
+// dfgsdfgs
+//
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
     KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
@@ -79,6 +85,24 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     unit_description_wrap: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_all_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_clean_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_freeze_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_thaw_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_create_dropin_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_save_file_switch: TemplateChild<adw::SwitchRow>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -289,12 +313,6 @@ impl PreferencesDialogImpl {
 
         self.preference_banner.set_revealed(is_app_first_connection);
 
-        self.preference_banner.set_use_markup(true);
-        self.preference_banner.set_title(
-            "It's your first connection
-You can set the application's Dbus level to <u>System</u> if you want to see all Systemd units.",
-        );
-
         let timestamp_style = PREFERENCES.timestamp_style();
         self.timestamp_style.set_selected(timestamp_style as u32);
 
@@ -454,6 +472,62 @@ impl ObjectImpl for PreferencesDialogImpl {
                 "active",
             )
             .build();
+
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_USE_PROXY_CLEAN,
+                self.proxy_clean_switch.as_ref(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_USE_PROXY_THAW,
+                self.proxy_thaw_switch.as_ref(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_USE_PROXY_FREEZE,
+                self.proxy_freeze_switch.as_ref(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_USE_PROXY_CREATE_DROP_IN,
+                self.proxy_create_dropin_switch.as_ref(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_USE_PROXY_SAVE_FILE,
+                self.proxy_save_file_switch.as_ref(),
+                "active",
+            )
+            .build();
+        {
+            let proxy_clean_switch = self.proxy_clean_switch.clone();
+            let proxy_freeze_switch = self.proxy_freeze_switch.clone();
+            let proxy_thaw_switch = self.proxy_thaw_switch.clone();
+            let proxy_create_dropin_switch = self.proxy_create_dropin_switch.clone();
+            let proxy_save_file = self.proxy_save_file_switch.clone();
+
+            self.proxy_all_switch.connect_active_notify(move |a| {
+                let all_active = a.is_active();
+                proxy_clean_switch.set_active(all_active);
+                proxy_freeze_switch.set_active(all_active);
+                proxy_thaw_switch.set_active(all_active);
+                proxy_create_dropin_switch.set_active(all_active);
+                proxy_save_file.set_active(all_active);
+            });
+        }
     }
 }
 impl WidgetImpl for PreferencesDialogImpl {}

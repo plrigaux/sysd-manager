@@ -14,7 +14,7 @@ use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
     fs::File,
     io::Read,
-    sync::OnceLock,
+    sync::{LazyLock, OnceLock, RwLock},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -22,12 +22,13 @@ use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     file::save_text_to_file,
     journal_data::Boot,
-    sysdbus::dbus_proxies::systemd_manager,
+    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_session},
     time_handling::TimestampStyle,
 };
 
 #[cfg(not(feature = "flatpak"))]
 use crate::sysdbus::to_proxy;
+
 use base::{
     RunMode,
     enums::UnitDBusLevel,
@@ -93,10 +94,69 @@ pub fn runtime() -> &'static Runtime {
     RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
 }
 
-/* pub fn init(run_mode: RunMode) {
-    let _ = sysdbus::init(run_mode).inspect_err(|e| error!("Some err {e:?}"));
+pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(ProxySwitcher::default);
+
+#[derive(Default)]
+pub struct ProxySwitcher {
+    clean: RwLock<bool>,
+    freeze: RwLock<bool>,
+    thaw: RwLock<bool>,
+    create_dropin: RwLock<bool>,
+    save_file: RwLock<bool>,
 }
- */
+
+impl ProxySwitcher {
+    pub fn clean(&self) -> bool {
+        let v = self.clean.read().unwrap();
+        *v
+    }
+
+    pub fn freeze(&self) -> bool {
+        let v = self.freeze.read().unwrap();
+        *v
+    }
+
+    pub fn thaw(&self) -> bool {
+        let v = self.thaw.read().unwrap();
+        *v
+    }
+
+    pub fn create_dropin(&self) -> bool {
+        let v = self.create_dropin.read().unwrap();
+        *v
+    }
+
+    pub fn save_file(&self) -> bool {
+        let v = self.save_file.read().unwrap();
+        *v
+    }
+
+    pub fn set_clean(&self, value: bool) {
+        let mut v = self.clean.write().unwrap();
+        *v = value;
+    }
+
+    pub fn set_freeze(&self, value: bool) {
+        let mut v = self.freeze.write().unwrap();
+        *v = value;
+    }
+
+    pub fn set_thaw(&self, value: bool) {
+        let mut v = self.thaw.write().unwrap();
+        *v = value;
+    }
+
+    pub fn set_create_dropin(&self, value: bool) {
+        let mut v = self.create_dropin.write().unwrap();
+        *v = value;
+    }
+
+    pub fn set_save_file(&self, value: bool) {
+        let mut v = self.save_file.write().unwrap();
+        *v = value;
+    }
+}
+
 pub async fn init_async(run_mode: RunMode) {
     let _ = sysdbus::init_async(run_mode)
         .await
@@ -469,9 +529,17 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
     if let Some((_level, primary_name)) = params {
         #[cfg(not(feature = "flatpak"))]
         match _level {
-            UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::freeze_unit(&primary_name),
+            UnitDBusLevel::System | UnitDBusLevel::Both => {
+                if PROXY_SWITCHER.freeze() {
+                    to_proxy::freeze_unit(&primary_name)
+                } else {
+                    let proxy = systemd_manager();
+                    proxy.freeze_unit(&primary_name)?;
+                    Ok(())
+                }
+            }
             UnitDBusLevel::UserSession => {
-                let proxy = systemd_manager();
+                let proxy = systemd_manager_session();
                 proxy.freeze_unit(&primary_name)?;
                 Ok(())
             }
@@ -489,25 +557,34 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
 }
 
 pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
-    if let Some((_level, primary_name)) = params {
-        #[cfg(not(feature = "flatpak"))]
-        match _level {
-            UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::thaw_unit(&primary_name),
-            UnitDBusLevel::UserSession => {
+    let Some((_level, primary_name)) = params else {
+        return Err(SystemdErrors::NoUnit);
+    };
+
+    #[cfg(not(feature = "flatpak"))]
+    match _level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if PROXY_SWITCHER.thaw() {
+                to_proxy::thaw_unit(&primary_name)
+            } else {
+                //TODO to test
                 let proxy = systemd_manager();
                 proxy.thaw_unit(&primary_name)?;
                 Ok(())
             }
         }
-
-        #[cfg(feature = "flatpak")]
-        {
-            let proxy = systemd_manager();
+        UnitDBusLevel::UserSession => {
+            let proxy = systemd_manager_session();
             proxy.thaw_unit(&primary_name)?;
             Ok(())
         }
-    } else {
-        Err(SystemdErrors::NoUnit)
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        let proxy = systemd_manager();
+        proxy.thaw_unit(&primary_name)?;
+        Ok(())
     }
 }
 
@@ -548,9 +625,17 @@ pub fn clean_unit(
 
     #[cfg(not(feature = "flatpak"))]
     match _level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::clean_unit(unit_name, &clean_what),
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if PROXY_SWITCHER.clean() {
+                to_proxy::clean_unit(unit_name, &clean_what)
+            } else {
+                let proxy = systemd_manager();
+                proxy.clean_unit(unit_name, &clean_what)?;
+                Ok(())
+            }
+        }
         UnitDBusLevel::UserSession => {
-            let proxy = systemd_manager();
+            let proxy = systemd_manager_session();
             proxy.clean_unit(unit_name, &clean_what)?;
             Ok(())
         }
@@ -843,7 +928,7 @@ pub async fn create_drop_in(
     content: &str,
 ) -> Result<(), SystemdErrors> {
     #[cfg(not(feature = "flatpak"))]
-    if user_session {
+    if user_session || !PROXY_SWITCHER.create_dropin() {
         file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
     } else {
         to_proxy::create_drop_in(runtime, unit_name, file_name, content).await
@@ -866,7 +951,7 @@ pub async fn save_file(
     //TODO check the case of /run
 
     #[cfg(not(feature = "flatpak"))]
-    if user_session {
+    if user_session || !PROXY_SWITCHER.save_file() {
         save_text_to_file(file_path, content, user_session).await
     } else {
         to_proxy::save_file(file_path, content).await

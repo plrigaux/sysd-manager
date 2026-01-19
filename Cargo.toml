@@ -1,5 +1,13 @@
 [workspace]
-members = ["transtools", "sysd-manager-translating", "tiny_daemon", "sysd-manager-proxy", "sysd-manager-comcontroler", "sysd-manager-test-base", "sysd-manager-base"]
+members = [
+  "transtools",
+  "sysd-manager-translating",
+  "tiny_daemon",
+  "sysd-manager-proxy",
+  "sysd-manager-comcontroler",
+  "sysd-manager-test-base",
+  "sysd-manager-base",
+]
 
 [workspace.package]
 edition = "2024"
@@ -45,7 +53,7 @@ lto = true
 
 [workspace.dependencies]
 base = { version = "2.10", path = "./sysd-manager-base", package = "sysd-manager-base" }
-systemd = { version = "2.10", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler"  }
+systemd = { version = "2.10", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
 
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
@@ -64,12 +72,12 @@ test-base = { version = "0.1", path = "./sysd-manager-test-base", package = "sys
 tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
-tracing-subscriber = { version="0.3", features = ["fmt", "chrono"]}
+tracing-subscriber = { version = "0.3", features = ["fmt", "chrono"] }
 tracing-journald = "0.3"
 zvariant = "5"
 zbus = { version = "5.11", default-features = false, features = [
-    "tokio",
-    "blocking-api",
+  "tokio",
+  "blocking-api",
 ] }
 
 [dependencies]
@@ -109,8 +117,6 @@ zvariant.workspace = true
 
 [dev-dependencies]
 test-base.workspace = true
-
-
 
 
 [build-dependencies]
