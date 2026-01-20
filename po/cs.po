@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-14 23:50-0500\n"
-"PO-Revision-Date: 2025-11-06 03:27+0000\n"
-"Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
+"PO-Revision-Date: 2026-01-21 11:01+0000\n"
+"Last-Translator: lorduskordus <lorduskordus@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/cs/>\n"
 "Language: cs\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -101,12 +101,12 @@ msgstr ""
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "Klávesové zkratky"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
 msgid "About"
-msgstr ""
+msgstr "O aplikaci"
 
 #: data/interfaces/app_window.ui:81
 msgctxt "top button tooltip"
@@ -1012,13 +1012,13 @@ msgstr ""
 #: data/interfaces/unit_dependencies_panel.ui:52
 msgctxt "dependency"
 msgid "No dependencies"
-msgstr ""
+msgstr "Žádné závislosti"
 
 #. button
 #: data/interfaces/unit_file_panel.ui:60
 msgctxt "file"
 msgid "Save"
-msgstr ""
+msgstr "Uložit"
 
 #. description
 #: data/interfaces/unit_file_panel.ui:89
@@ -1188,25 +1188,25 @@ msgstr ""
 #: data/interfaces/unit_pop_menu.ui:81
 msgctxt "controls"
 msgid "Enable"
-msgstr ""
+msgstr "Povolit"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:95
 msgctxt "controls"
 msgid "Disable"
-msgstr ""
+msgstr "Zakázat"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:109
 msgctxt "controls"
 msgid "Reenable"
-msgstr ""
+msgstr "Znovu povolit"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:126
 msgctxt "controls"
 msgid "Reload"
-msgstr ""
+msgstr "Znovu načíst"
 
 #. unit list pop up menu item
 #: data/interfaces/unit_pop_menu.ui:137
@@ -1218,7 +1218,7 @@ msgstr ""
 #: data/interfaces/unit_properties.ui:29
 msgctxt "unit properties"
 msgid "Show all"
-msgstr ""
+msgstr "Zobrazit vše"
 
 #. Show all properties tooltip
 #: data/interfaces/unit_properties.ui:30
@@ -1230,13 +1230,13 @@ msgstr ""
 #: data/interfaces/unit_properties.ui:55
 msgctxt "unit properties"
 msgid "Unit Properties"
-msgstr ""
+msgstr "Vlastnosti jednotky"
 
 #. Button tooltip-text
 #: data/interfaces/unit_properties.ui:61
 msgctxt "unit properties"
 msgid "Copy all properties to clipboard"
-msgstr ""
+msgstr "Zkopírovat všechny vlastnosti do schránky"
 
 #. dialog title
 #: src/analyze/mod.rs:27
@@ -1248,13 +1248,13 @@ msgstr ""
 #: src/analyze/mod.rs:49
 msgctxt "analyse blame"
 msgid "Total Time:"
-msgstr ""
+msgstr "Celkový čas:"
 
 #. place holder, lees likely to be displaied
 #: src/analyze/mod.rs:58
 msgctxt "analyse blame"
 msgid "seconds ..."
-msgstr ""
+msgstr "sekund ..."
 
 #. column header
 #: src/analyze/mod.rs:133
@@ -1271,17 +1271,17 @@ msgstr ""
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
 #: src/main.rs:111
 msgid "Program starting up"
-msgstr ""
+msgstr "Program se spouští"
 
 #. instance level user
 #: src/widget/app_window/menu.rs:273
 msgid "user"
-msgstr ""
+msgstr "uživatel"
 
 #. instance level system
 #: src/widget/app_window/menu.rs:276
 msgid "system"
-msgstr ""
+msgstr "systém"
 
 #: src/widget/app_window/menu.rs:287
 msgid "Daemon Reload failed!"
@@ -1290,24 +1290,24 @@ msgstr ""
 #. about dialogue
 #: src/widget/app_window/menu.rs:330
 msgid "Thank you for your support"
-msgstr ""
+msgstr "Děkuji za vaši podporu"
 
 #: src/widget/clean_dialog/imp.rs:108
 msgctxt "clean"
 msgid "No Unit Selected"
-msgstr ""
+msgstr "Není vybrána žádná jednotka"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:54
 msgctxt "action unit file"
 msgid "Enable Unit File"
-msgstr ""
+msgstr "Povolit soubor jednotky"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:56
 msgctxt "action unit file"
 msgid "Mask Unit"
-msgstr ""
+msgstr "Maskovat jednotku"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:58
@@ -1319,13 +1319,13 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:60
 msgctxt "action unit file"
 msgid "Reenable Unit File"
-msgstr ""
+msgstr "Znovu povolit soubor jednotky"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:64
 msgctxt "action unit file"
 msgid "Disable Unit File"
-msgstr ""
+msgstr "Zakázat soubor jednotky"
 
 #. Dialog title
 #: src/widget/control_action_dialog/mod.rs:67
@@ -1339,7 +1339,7 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:136
 msgctxt "action unit file"
 msgid "Enable"
-msgstr ""
+msgstr "Povolit"
 
 #. preference group title
 #. Button
@@ -1347,7 +1347,7 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:142
 msgctxt "action unit file"
 msgid "Disable"
-msgstr ""
+msgstr "Zakázat"
 
 #. preference group title
 #. Button
@@ -1355,18 +1355,18 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:138
 msgctxt "action unit file"
 msgid "Mask"
-msgstr ""
+msgstr "Maskovat"
 
 #. second preference group title
 #: src/widget/control_action_dialog/mod.rs:86
 msgctxt "action unit file"
 msgid "Start"
-msgstr ""
+msgstr "Spustit"
 
 #: src/widget/control_action_dialog/mod.rs:89
 msgctxt "action unit file"
 msgid "Stop"
-msgstr ""
+msgstr "Zastavit"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:140
@@ -1378,7 +1378,7 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:144
 msgctxt "action unit file"
 msgid "Reenable"
-msgstr ""
+msgstr "Znovu povolit"
 
 #. Button
 #: src/widget/control_action_dialog/mod.rs:146
@@ -1390,19 +1390,19 @@ msgstr ""
 #: src/widget/control_action_dialog/mod.rs:154
 msgctxt "action unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Spustit nyní"
 
 #. after action subtitle
 #: src/widget/control_action_dialog/mod.rs:156
 msgctxt "action unit file"
 msgid "Start Unit just after being enabled"
-msgstr ""
+msgstr "Spustit jednotku hned po povolení"
 
 #. after action title
 #: src/widget/control_action_dialog/mod.rs:160
 msgctxt "action unit file"
 msgid "Stop now"
-msgstr ""
+msgstr "Zastavit nyní"
 
 #: src/widget/control_action_dialog/mod.rs:164
 msgctxt "action unit file"
@@ -1525,7 +1525,7 @@ msgstr ""
 #: src/widget/kill_panel/imp.rs:451
 msgctxt "kill"
 msgid "Illegal instruction"
-msgstr ""
+msgstr "Nepovolená instrukce"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:459
@@ -1730,67 +1730,67 @@ msgstr ""
 #: src/widget/preferences/data.rs:70
 msgctxt "dbus"
 msgid "System Bus"
-msgstr ""
+msgstr "Systémová sběrnice"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:72
 msgctxt "dbus"
 msgid "System & User Session Bus"
-msgstr ""
+msgstr "Systémová a uživatelská relace sběrnice"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:159
 msgctxt "color scheme"
 msgid "No Preference"
-msgstr ""
+msgstr "Žádná preference"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:161
 msgctxt "color scheme"
 msgid "Prefer Dark"
-msgstr ""
+msgstr "Preferovat tmavý"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:163
 msgctxt "color scheme"
 msgid "Prefer Light"
-msgstr ""
+msgstr "Preferovat světlý"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:165
 msgctxt "color scheme"
 msgid "Force Dark"
-msgstr ""
+msgstr "Vynutit tmavý"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:167
 msgctxt "color scheme"
 msgid "Force Light"
-msgstr ""
+msgstr "Vynutit světlý"
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:213
 msgctxt "pref orientation"
 msgid "Automatic"
-msgstr ""
+msgstr "Automaticky"
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:215
 msgctxt "pref orientation"
 msgid "Side by Side"
-msgstr ""
+msgstr "Vedle sebe"
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:217
 msgctxt "pref orientation"
 msgid "Top Bottom"
-msgstr ""
+msgstr "Pod sebou"
 
 #. unit file no preference style selected
 #: src/widget/preferences/imp.rs:417
 msgctxt "pref file style"
 msgid "None"
-msgstr ""
+msgstr "Žádný"
 
 #. find count
 #. find count initial
@@ -1798,7 +1798,7 @@ msgstr ""
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
-msgstr ""
+msgstr "{} z {}"
 
 #. Find in text Menu item
 #. toggle button tooltip text
@@ -1814,18 +1814,20 @@ msgid ""
 "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
 "been successfully <span fgcolor='{0}'>{}</span>"
 msgstr ""
+"Jednotka <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
+"byla úspěšně <span fgcolor='{0}'>{}</span>"
 
 #. toast message action on fail
 #: src/widget/unit_control_panel/controls.rs:89
 msgctxt "toast"
 msgid "Disabling"
-msgstr ""
+msgstr "Zakazování"
 
 #. toast message action on fail
 #: src/widget/unit_control_panel/controls.rs:93
 msgctxt "toast"
 msgid "Enabling"
-msgstr ""
+msgstr "Povolování"
 
 #: src/widget/unit_control_panel/controls.rs:104
 #: src/widget/unit_control_panel/controls.rs:213
@@ -1839,75 +1841,75 @@ msgstr ""
 #: src/widget/unit_control_panel/controls.rs:176
 msgctxt "toast"
 msgid "Reenable"
-msgstr ""
+msgstr "Znovu povolit"
 
 #. toast message action on fail
 #: src/widget/unit_control_panel/controls.rs:205
 msgctxt "toast"
 msgid "Reenabling"
-msgstr ""
+msgstr "Opětovné povolování"
 
 #: src/widget/unit_control_panel/controls.rs:242
 #: src/widget/unit_list/imp/pop_menu.rs:263
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
-msgstr ""
+msgstr "Zakázat jednotku {}"
 
 #: src/widget/unit_control_panel/controls.rs:244
 #: src/widget/unit_list/imp/pop_menu.rs:256
 #, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
-msgstr ""
+msgstr "Povolit jednotku {}"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:23
 msgctxt "toast"
 msgid "start"
-msgstr ""
+msgstr "spustit"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:25
 msgctxt "toast"
 msgid "stop"
-msgstr ""
+msgstr "zastavit"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:27
 msgctxt "toast"
 msgid "restart"
-msgstr ""
+msgstr "restartovat"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:29
 msgctxt "toast"
 msgid "reload"
-msgstr ""
+msgstr "znovu načíst"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:36
 msgctxt "toast"
 msgid "started"
-msgstr ""
+msgstr "spuštěno"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:38
 msgctxt "toast"
 msgid "stopped"
-msgstr ""
+msgstr "zastaveno"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:40
 msgctxt "toast"
 msgid "restarted"
-msgstr ""
+msgstr "restartováno"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:42
 msgctxt "toast"
 msgid "reloaded"
-msgstr ""
+msgstr "znovu načteno"
 
 #: src/widget/unit_control_panel/imp.rs:317
 msgctxt "toast"
