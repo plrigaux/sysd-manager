@@ -59,13 +59,9 @@ impl LinkActivator {
 
             info!("open unit {:?} at level {}", unit_name, level.short());
 
-            let unit = match systemd::fetch_unit(level, unit_name) {
-                Ok(unit) => Some(unit),
-                Err(e) => {
-                    warn!("Cli unit: {e:?}");
-                    None
-                }
-            };
+            let unit = systemd::fetch_unit(level, unit_name)
+                .inspect_err(|e| warn!("Cli unit: {e:?}"))
+                .ok();
 
             if let Some(app_window) = &self.app {
                 app_window.set_unit(unit.as_ref());

@@ -1929,6 +1929,7 @@ dependencies = [
  "enumflags2",
  "futures-util",
  "gettext-rs",
+ "gio",
  "glib",
  "libc",
  "log",

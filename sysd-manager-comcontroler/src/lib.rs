@@ -31,6 +31,7 @@ use crate::sysdbus::to_proxy;
 
 use base::{
     RunMode,
+    consts::APP_ID,
     enums::UnitDBusLevel,
     file::{commander, commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
     proxy::DisEnAbleUnitFiles,
@@ -40,6 +41,7 @@ use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 
+use gio::prelude::SettingsExt;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 
@@ -94,7 +96,28 @@ pub fn runtime() -> &'static Runtime {
     RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
 }
 
-pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(ProxySwitcher::default);
+pub const KEY_PREF_USE_PROXY_CLEAN: &str = "pref-use-proxy-clean";
+pub const KEY_PREF_USE_PROXY_FREEZE: &str = "pref-use-proxy-freeze";
+pub const KEY_PREF_USE_PROXY_THAW: &str = "pref-use-proxy-thaw";
+pub const KEY_PREF_USE_PROXY_CREATE_DROP_IN: &str = "pref-use-proxy-create-drop-in";
+pub const KEY_PREF_USE_PROXY_SAVE_FILE: &str = "pref-use-proxy-save-file";
+
+pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
+    let ps = ProxySwitcher::default();
+
+    let settings = gio::Settings::new(APP_ID);
+    let val = settings.boolean(KEY_PREF_USE_PROXY_CLEAN);
+    ps.set_clean(val);
+    let val = settings.boolean(KEY_PREF_USE_PROXY_FREEZE);
+    ps.set_freeze(val);
+    let val = settings.boolean(KEY_PREF_USE_PROXY_THAW);
+    ps.set_thaw(val);
+    let val = settings.boolean(KEY_PREF_USE_PROXY_CREATE_DROP_IN);
+    ps.set_create_dropin(val);
+    let val = settings.boolean(KEY_PREF_USE_PROXY_SAVE_FILE);
+    ps.set_save_file(val);
+    ps
+});
 
 #[derive(Default)]
 pub struct ProxySwitcher {
@@ -154,6 +177,10 @@ impl ProxySwitcher {
     pub fn set_save_file(&self, value: bool) {
         let mut v = self.save_file.write().unwrap();
         *v = value;
+    }
+
+    pub fn uses_any_proxy(&self) -> bool {
+        self.clean() || self.freeze() || self.thaw() || self.create_dropin() || self.save_file()
     }
 }
 

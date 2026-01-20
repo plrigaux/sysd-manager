@@ -37,12 +37,6 @@ pub const KEY_PREF_PREFERRED_COLOR_SCHEME: &str = "pref-preferred-color-scheme";
 pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 pub const KEY_PREF_PROP_ORIENTATION_MODE: &str = "pref-window-properties-orientation-vertical";
 
-pub const KEY_PREF_USE_PROXY_CLEAN: &str = "pref-use-proxy-clean";
-pub const KEY_PREF_USE_PROXY_FREEZE: &str = "pref-use-proxy-freeze";
-pub const KEY_PREF_USE_PROXY_THAW: &str = "pref-use-proxy-thaw";
-pub const KEY_PREF_USE_PROXY_CREATE_DROP_IN: &str = "pref-use-proxy-create-drop-in";
-pub const KEY_PREF_USE_PROXY_SAVE_FILE: &str = "pref-use-proxy-save-file";
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
 pub enum DbusLevel {
     #[default]
