@@ -16,7 +16,8 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
         </property>
         <property name="icon-name">preferences-system-symbolic</property>
         <property name="name">main</property>
-        <property name="title">Main</property>
+        <property name="title" translatable="yes" context="preference">_Main</property>
+        <property name="use-underline">True</property>
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes" context="preference" comments="group">General</property>
@@ -193,6 +194,7 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
         <property name="use-underline">True</property>
         <child>
           <object class="AdwPreferencesGroup">
+            <property name="title">SystemD Manager Calls</property>
             <child>
               <object class="AdwSwitchRow" id="proxy_all_switch">
                 <property name="subtitle" translatable="yes">Switch that controls other switches</property>
@@ -203,7 +205,6 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
         </child>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">SystemD Manager Calls</property>
             <child>
               <object class="AdwSwitchRow" id="proxy_clean_switch">
                 <property name="subtitle">Clean method call through proxy</property>
@@ -222,6 +223,12 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
                 <property name="title" translatable="yes" context="preference">Thaw</property>
               </object>
             </child>
+            <child>
+              <object class="AdwSwitchRow" id="proxy_enable_unit_file">
+                <property name="subtitle">&lt;b&gt;Enable&lt;/b&gt; or &lt;b&gt;Disable&lt;/b&gt; Unit file method call through proxy</property>
+                <property name="title" translatable="yes" context="preference">Enable Unit File</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -237,6 +244,24 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
               <object class="AdwSwitchRow" id="proxy_save_file_switch">
                 <property name="subtitle">&lt;b&gt;Save file&lt;/b&gt; through the proxy</property>
                 <property name="title" translatable="yes" context="preference">Save file</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="separate-rows">True</property>
+            <property name="title">Proxy Behaviors</property>
+            <child>
+              <object class="AdwSwitchRow" id="start_proxy_at_startup">
+                <property name="subtitle" translatable="yes">Start the Proxy when starting Sysd Manager </property>
+                <property name="title" translatable="yes" context="preference">Start Proxy at Strat up</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="stop_proxy_at_close">
+                <property name="subtitle">Stop the Proxy when closing Sysd Manager</property>
+                <property name="title" translatable="yes" context="preference">Stop Proxy at Close</property>
               </object>
             </child>
           </object>

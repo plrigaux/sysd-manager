@@ -99,8 +99,11 @@ pub fn runtime() -> &'static Runtime {
 pub const KEY_PREF_USE_PROXY_CLEAN: &str = "pref-use-proxy-clean";
 pub const KEY_PREF_USE_PROXY_FREEZE: &str = "pref-use-proxy-freeze";
 pub const KEY_PREF_USE_PROXY_THAW: &str = "pref-use-proxy-thaw";
+pub const KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE: &str = "pref-use-proxy-enable-unit-file";
 pub const KEY_PREF_USE_PROXY_CREATE_DROP_IN: &str = "pref-use-proxy-create-drop-in";
 pub const KEY_PREF_USE_PROXY_SAVE_FILE: &str = "pref-use-proxy-save-file";
+pub const KEY_PREF_PROXY_START_AT_STARTUP: &str = "pref-proxy-start-at-startup";
+pub const KEY_PREF_PROXY_STOP_AT_CLOSE: &str = "pref-proxy-stop-at-close";
 
 pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
     let ps = ProxySwitcher::default();
@@ -112,9 +115,15 @@ pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
     ps.set_freeze(val);
     let val = settings.boolean(KEY_PREF_USE_PROXY_THAW);
     ps.set_thaw(val);
+    let val = settings.boolean(KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE);
+    ps.set_thaw(val);
     let val = settings.boolean(KEY_PREF_USE_PROXY_CREATE_DROP_IN);
     ps.set_create_dropin(val);
     let val = settings.boolean(KEY_PREF_USE_PROXY_SAVE_FILE);
+    ps.set_save_file(val);
+    let val = settings.boolean(KEY_PREF_PROXY_START_AT_STARTUP);
+    ps.set_create_dropin(val);
+    let val = settings.boolean(KEY_PREF_PROXY_STOP_AT_CLOSE);
     ps.set_save_file(val);
     ps
 });
@@ -124,8 +133,11 @@ pub struct ProxySwitcher {
     clean: RwLock<bool>,
     freeze: RwLock<bool>,
     thaw: RwLock<bool>,
+    enable_unit_file: RwLock<bool>,
     create_dropin: RwLock<bool>,
     save_file: RwLock<bool>,
+    start_at_start_up: RwLock<bool>,
+    stop_at_close: RwLock<bool>,
 }
 
 impl ProxySwitcher {
@@ -144,6 +156,11 @@ impl ProxySwitcher {
         *v
     }
 
+    pub fn enable_unit_file(&self) -> bool {
+        let v = self.enable_unit_file.read().unwrap();
+        *v
+    }
+
     pub fn create_dropin(&self) -> bool {
         let v = self.create_dropin.read().unwrap();
         *v
@@ -151,6 +168,16 @@ impl ProxySwitcher {
 
     pub fn save_file(&self) -> bool {
         let v = self.save_file.read().unwrap();
+        *v
+    }
+
+    pub fn start_at_start_up(&self) -> bool {
+        let v = self.start_at_start_up.read().unwrap();
+        *v
+    }
+
+    pub fn stop_at_close(&self) -> bool {
+        let v = self.stop_at_close.read().unwrap();
         *v
     }
 
@@ -169,6 +196,11 @@ impl ProxySwitcher {
         *v = value;
     }
 
+    pub fn set_enable_unit_file(&self, value: bool) {
+        let mut v = self.enable_unit_file.write().unwrap();
+        *v = value;
+    }
+
     pub fn set_create_dropin(&self, value: bool) {
         let mut v = self.create_dropin.write().unwrap();
         *v = value;
@@ -179,8 +211,23 @@ impl ProxySwitcher {
         *v = value;
     }
 
+    pub fn set_start_at_startup(&self, value: bool) {
+        let mut v = self.start_at_start_up.write().unwrap();
+        *v = value;
+    }
+
+    pub fn set_stop_at_close(&self, value: bool) {
+        let mut v = self.stop_at_close.write().unwrap();
+        *v = value;
+    }
+
     pub fn uses_any_proxy(&self) -> bool {
-        self.clean() || self.freeze() || self.thaw() || self.create_dropin() || self.save_file()
+        self.clean()
+            || self.freeze()
+            || self.thaw()
+            || self.create_dropin()
+            || self.save_file()
+            || self.enable_unit_file()
     }
 }
 
