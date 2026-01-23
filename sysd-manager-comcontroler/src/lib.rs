@@ -34,7 +34,7 @@ use base::{
     consts::APP_ID,
     enums::UnitDBusLevel,
     file::{commander, commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
-    proxy::DisEnAbleUnitFiles,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use data::{UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
@@ -48,7 +48,7 @@ use log::{error, info, warn};
 use tokio::{runtime::Runtime, sync::mpsc};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-use crate::data::{EnableUnitFilesReturn, LUnit};
+use crate::data::LUnit;
 
 #[derive(Default, Clone, PartialEq, Debug)]
 pub enum BootFilter {
@@ -107,24 +107,32 @@ pub const KEY_PREF_PROXY_STOP_AT_CLOSE: &str = "pref-proxy-stop-at-close";
 
 pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
     let ps = ProxySwitcher::default();
-
-    let settings = gio::Settings::new(APP_ID);
-    let val = settings.boolean(KEY_PREF_USE_PROXY_CLEAN);
-    ps.set_clean(val);
-    let val = settings.boolean(KEY_PREF_USE_PROXY_FREEZE);
-    ps.set_freeze(val);
-    let val = settings.boolean(KEY_PREF_USE_PROXY_THAW);
-    ps.set_thaw(val);
-    let val = settings.boolean(KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE);
-    ps.set_thaw(val);
-    let val = settings.boolean(KEY_PREF_USE_PROXY_CREATE_DROP_IN);
-    ps.set_create_dropin(val);
-    let val = settings.boolean(KEY_PREF_USE_PROXY_SAVE_FILE);
-    ps.set_save_file(val);
-    let val = settings.boolean(KEY_PREF_PROXY_START_AT_STARTUP);
-    ps.set_create_dropin(val);
-    let val = settings.boolean(KEY_PREF_PROXY_STOP_AT_CLOSE);
-    ps.set_save_file(val);
+    #[cfg(not(feature = "flatpak"))]
+    {
+        let settings = gio::Settings::new(APP_ID);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_CLEAN);
+        ps.set_clean(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_FREEZE);
+        ps.set_freeze(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_THAW);
+        ps.set_thaw(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE);
+        ps.set_thaw(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_CREATE_DROP_IN);
+        ps.set_create_dropin(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_SAVE_FILE);
+        ps.set_save_file(val);
+        let val = settings.boolean(KEY_PREF_PROXY_START_AT_STARTUP);
+        ps.set_create_dropin(val);
+        let val = settings.boolean(KEY_PREF_PROXY_STOP_AT_CLOSE);
+        ps.set_save_file(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE);
+        ps.set_enable_unit_file(val);
+        let val = settings.boolean(KEY_PREF_PROXY_START_AT_STARTUP);
+        ps.set_start_at_startup(val);
+        let val = settings.boolean(KEY_PREF_PROXY_STOP_AT_CLOSE);
+        ps.set_stop_at_close(val);
+    }
     ps
 });
 
@@ -231,14 +239,15 @@ impl ProxySwitcher {
     }
 }
 
-pub async fn init_async(run_mode: RunMode) {
-    let _ = sysdbus::init_async(run_mode)
-        .await
-        .inspect_err(|e| error!("Some err {e:?}"));
+///Try to Start Proxy
+pub async fn init_proxy_async(run_mode: RunMode) {
+    if let Err(e) = sysdbus::init_proxy_async(run_mode).await {
+        error!("Fail starting Proxy. Error {e:?}");
+    }
 }
 
 pub fn shut_down() {
-    sysdbus::shut_down();
+    sysdbus::shut_down_proxy();
 }
 
 pub fn get_unit_file_state(
@@ -325,28 +334,18 @@ pub fn restart_unit(
     sysdbus::restart_unit(level, primary_name, mode)
 }
 
-#[allow(dead_code)]
-#[derive(Debug)]
-pub enum DisEnableUnitFilesOutput {
-    Enable(EnableUnitFilesReturn),
-    Disable(Vec<DisEnAbleUnitFiles>),
-}
-
 pub fn disenable_unit_file(
     primary_name: &str,
     level: UnitDBusLevel,
     enable_status: EnablementStatus,
     expected_status: EnablementStatus,
-) -> Result<DisEnableUnitFilesOutput, SystemdErrors> {
-    let msg_return = match expected_status {
-        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => {
-            let res = sysdbus::enable_unit_files(
-                level,
-                &[primary_name],
-                DisEnableFlags::SdSystemdUnitForce.into(),
-            )?;
-            DisEnableUnitFilesOutput::Enable(res)
-        }
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    match expected_status {
+        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => enable_unit_file(
+            level,
+            primary_name,
+            DisEnableFlags::SdSystemdUnitForce.into(),
+        ),
         _ => {
             let flags: BitFlags<DisEnableFlags> = if enable_status.is_runtime() {
                 DisEnableFlags::SdSystemdUnitRuntime.into()
@@ -354,28 +353,56 @@ pub fn disenable_unit_file(
                 DisEnableFlags::empty()
             };
 
-            let out = sysdbus::disable_unit_files(level, &[primary_name], flags)?;
-            DisEnableUnitFilesOutput::Disable(out)
+            disable_unit_file(level, primary_name, flags)
         }
-    };
-
-    Ok(msg_return)
+    }
 }
 
 pub fn enable_unit_file(
     level: UnitDBusLevel,
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    sysdbus::enable_unit_files(level, &[unit_file], flags)
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if PROXY_SWITCHER.enable_unit_file() {
+                to_proxy::enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            } else {
+                systemd_manager()
+                    .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+                    .map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => systemd_manager_session()
+            .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into()),
+    }
 }
 
-pub fn disable_unit_files(
+pub fn disable_unit_file(
     level: UnitDBusLevel,
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    sysdbus::disable_unit_files(level, &[unit_file], flags)
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if PROXY_SWITCHER.enable_unit_file() {
+                to_proxy::disable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            } else {
+                systemd_manager()
+                    .disable_unit_files_with_flags_and_install_info(
+                        &[unit_file],
+                        flags.bits_c() as u64,
+                    )
+                    .map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => systemd_manager_session()
+            .disable_unit_files_with_flags_and_install_info(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into()),
+    }
 }
 
 pub async fn fetch_drop_in_paths(
@@ -737,7 +764,7 @@ pub fn preset_unit_files(
     primary_name: &str,
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     sysdbus::preset_unit_file(level, &[primary_name], runtime, force)
 }
 
@@ -746,7 +773,7 @@ pub fn reenable_unit_file(
     primary_name: &str,
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     sysdbus::reenable_unit_file(level, &[primary_name], runtime, force)
 }
 

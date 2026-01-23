@@ -1,6 +1,9 @@
 use std::sync::LazyLock;
 
-use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    enums::UnitDBusLevel,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+};
 use log::error;
 use tokio::sync::OnceCell;
 use zbus::proxy;
@@ -108,6 +111,20 @@ pub(crate) trait Systemd1Manager {
 
     #[zbus(allow_interactive_auth)]
     fn reload(&self) -> zbus::fdo::Result<()>;
+
+    #[zbus(allow_interactive_auth)]
+    fn enable_unit_files_with_flags(
+        &self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+
+    #[zbus(allow_interactive_auth)]
+    fn disable_unit_files_with_flags_and_install_info(
+        &self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
 }
 
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();

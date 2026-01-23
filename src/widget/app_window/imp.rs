@@ -646,7 +646,8 @@ impl WidgetImpl for AppWindowImpl {}
 impl WindowImpl for AppWindowImpl {
     // Save window state right before the window will be closed
     fn close_request(&self) -> glib::Propagation {
-        systemd::sysdbus::shut_down();
+        #[cfg(not(feature = "flatpak"))]
+        systemd::sysdbus::shut_down_proxy();
         // Save window size
         debug!("Close window");
         if let Err(_err) = self.save_window_context() {

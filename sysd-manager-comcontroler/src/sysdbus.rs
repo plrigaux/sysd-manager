@@ -16,7 +16,11 @@ use std::{
     time::Duration,
 };
 
-use base::{RunMode, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    RunMode,
+    enums::UnitDBusLevel,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+};
 use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
@@ -34,7 +38,7 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 use crate::sysdbus::dbus_proxies::systemd_manager_async;
 use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
-    data::{EnableUnitFilesReturn, LUnit, UnitInfo},
+    data::{LUnit, UnitInfo},
     enums::{
         ActiveState, DependencyType, DisEnableFlags, EnablementStatus, KillWho, LoadState,
         StartStopMode, UnitType,
@@ -42,9 +46,6 @@ use crate::{
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
-
-#[cfg(not(feature = "flatpak"))]
-use base::consts::*;
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
@@ -67,7 +68,7 @@ const METHOD_MASK_UNIT_FILES: &str = "MaskUnitFiles";
 const METHOD_UNMASK_UNIT_FILES: &str = "UnmaskUnitFiles";
 const METHOD_GET_UNIT: &str = "GetUnit";
 const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
-const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlags";
+const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlagsAndInstallInfo";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 pub const METHOD_FREEZE_UNIT: &str = "FreezeUnit";
@@ -105,39 +106,18 @@ impl RunContext {
 
 static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
 
+/// Try to start Proxy
 #[cfg(not(feature = "flatpak"))]
-pub fn init(run_mode: RunMode) -> Result<(), SystemdErrors> {
-    let unit_name = if run_mode == RunMode::Development {
-        info!("Init Dbus in Development Mode");
-        format!("{}.service", PROXY_SERVICE_DEV)
-    } else {
-        info!("Init Dbus in Normal Mode");
-        format!("{}.service", PROXY_SERVICE)
-    };
-
+pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
     RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
 
-    for tries in 0..5 {
-        match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
-            Ok(job_id) => {
-                info!("Started unit {unit_name}, job id {job_id}");
-                break;
-            }
-            Err(error) => {
-                error!("Error starting unit {unit_name}: {error:?}");
-                if tries >= 3 {
-                    error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
-                    break;
-                }
-            }
-        }
+    if !crate::PROXY_SWITCHER.start_at_start_up() {
+        info!(
+            "Not starting {} as per user config",
+            run_mode.proxy_service_name()
+        );
+        return Ok(());
     }
-
-    Ok(())
-}
-
-pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
-    RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
 
     let unit_name = proxy_service_name().unwrap();
 
@@ -173,7 +153,16 @@ pub fn proxy_service_name() -> Option<String> {
         .map(|context| context.proxy_service_name())
 }
 
-pub fn shut_down() {
+#[cfg(not(feature = "flatpak"))]
+pub fn shut_down_proxy() {
+    if !crate::PROXY_SWITCHER.stop_at_close() {
+        info!(
+            "Not closing Proxy {:?} as per user configuration",
+            proxy_service_name()
+        );
+        return;
+    }
+
     if let Some(unit_name) = proxy_service_name() {
         match stop_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
             Ok(job_id) => info!("Stopped unit {unit_name}, job id {job_id}"),
@@ -181,6 +170,8 @@ pub fn shut_down() {
                 error!("Error stopping unit {unit_name}: {error:?}");
             }
         }
+    } else {
+        warn!("Fail stoping Proxy, because name not set")
     }
 }
 
@@ -623,14 +614,14 @@ pub(super) fn enable_unit_files(
     level: UnitDBusLevel,
     unit_names_or_files: &[&str],
     flags: BitFlags<DisEnableFlags>,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     fn handle_answer(
         _method: &str,
         return_message: &Message,
-    ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+    ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
         let body = return_message.body();
 
-        let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+        let return_msg = body.deserialize()?;
 
         info!("Enable unit files {return_msg:?}");
 
@@ -649,14 +640,14 @@ pub(super) fn disable_unit_files(
     level: UnitDBusLevel,
     unit_names_or_files: &[&str],
     flags: BitFlags<DisEnableFlags>,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     fn handle_answer(
         _method: &str,
         return_message: &Message,
-    ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
         let body = return_message.body();
 
-        let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
+        let return_msg: DisEnAbleUnitFilesResponse = body.deserialize()?;
 
         info!("Disable unit files {return_msg:?}");
 
@@ -894,39 +885,22 @@ pub(super) fn kill_unit(
     )
 }
 
-/* pub(super) fn freeze_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
-    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Freeze Unit {unit_name} SUCCESS");
-        Ok(())
-    };
-
-    send_disenable_message(level, METHOD_FREEZE_UNIT, &(unit_name), handler)
-}
-
-pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
-    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Thaw Unit {unit_name} SUCCESS");
-        Ok(())
-    };
-
-    send_disenable_message(level, METHOD_THAW_UNIT, &(unit_name), handler)
-}
- */
 pub(super) fn preset_unit_file(
     level: UnitDBusLevel,
     files: &[&str],
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    let handler =
-        |_method: &str, return_message: &Message| -> Result<EnableUnitFilesReturn, SystemdErrors> {
-            let body = return_message.body();
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let handler = |_method: &str,
+                   return_message: &Message|
+     -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+        let body = return_message.body();
 
-            let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+        let return_msg = body.deserialize()?;
 
-            info!("Preset Unit Files {files:?} SUCCESS");
-            Ok(return_msg)
-        };
+        info!("Preset Unit Files {files:?} SUCCESS");
+        Ok(return_msg)
+    };
 
     send_disenable_message(
         level,
@@ -965,16 +939,17 @@ pub(super) fn reenable_unit_file(
     files: &[&str],
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    let handler =
-        |_method: &str, return_message: &Message| -> Result<EnableUnitFilesReturn, SystemdErrors> {
-            let body = return_message.body();
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let handler = |_method: &str,
+                   return_message: &Message|
+     -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+        let body = return_message.body();
 
-            let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+        let return_msg = body.deserialize()?;
 
-            info!("Reenable Unit Files {files:?} SUCCESS");
-            Ok(return_msg)
-        };
+        info!("Reenable Unit Files {files:?} SUCCESS");
+        Ok(return_msg)
+    };
     send_disenable_message(
         level,
         METHOD_REENABLE_UNIT_FILES,

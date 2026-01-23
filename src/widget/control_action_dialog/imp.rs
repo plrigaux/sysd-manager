@@ -1,7 +1,7 @@
 use crate::{
     systemd::{
         self,
-        data::{EnableUnitFilesReturn, UnitInfo},
+        data::UnitInfo,
         enums::{DisEnableFlags, StartStopMode},
         errors::SystemdErrors,
     },
@@ -12,7 +12,10 @@ use crate::{
     },
 };
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
-use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    enums::UnitDBusLevel,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+};
 use enumflags2::BitFlag;
 use gio::glib::BoolError;
 use gtk::{
@@ -109,7 +112,7 @@ impl EnableUnitDialogImp {
                 let handling_response_callback = {
                     move |_method: &str,
                           _unit: Option<&UnitInfo>,
-                          result: Result<EnableUnitFilesReturn, SystemdErrors>,
+                          result: Result<DisEnAbleUnitFilesResponse, SystemdErrors>,
                           control: &UnitControlPanel| {
                         match result {
                             Ok(vec) => {
@@ -192,7 +195,7 @@ impl EnableUnitDialogImp {
                 let handling_response_callback = {
                     move |_method: &str,
                           unit: Option<&UnitInfo>,
-                          result: Result<Vec<DisEnAbleUnitFiles>, SystemdErrors>,
+                          result: Result<DisEnAbleUnitFilesResponse, SystemdErrors>,
                           control: &UnitControlPanel| {
                         match result {
                             Ok(ref vec) => {
@@ -248,7 +251,7 @@ impl EnableUnitDialogImp {
 
                 let lambda = move |params: Option<(UnitDBusLevel, String)>| {
                     if let Some((level, primary_name)) = params {
-                        systemd::disable_unit_files(level, &primary_name, flags)
+                        systemd::disable_unit_file(level, &primary_name, flags)
                     } else {
                         Err(SystemdErrors::NoUnit)
                     }
@@ -327,7 +330,7 @@ impl EnableUnitDialogImp {
                 let handling_response_callback = {
                     move |_method: &str,
                           unit: Option<&UnitInfo>,
-                          result: Result<EnableUnitFilesReturn, SystemdErrors>,
+                          result: Result<DisEnAbleUnitFilesResponse, SystemdErrors>,
                           control: &UnitControlPanel| {
                         match result {
                             Ok(ref vec) => {
@@ -365,7 +368,7 @@ impl EnableUnitDialogImp {
                 let handling_response_callback = {
                     move |_method: &str,
                           unit: Option<&UnitInfo>,
-                          result: Result<EnableUnitFilesReturn, SystemdErrors>,
+                          result: Result<DisEnAbleUnitFilesResponse, SystemdErrors>,
                           control: &UnitControlPanel| {
                         match result {
                             Ok(ref vec) => {

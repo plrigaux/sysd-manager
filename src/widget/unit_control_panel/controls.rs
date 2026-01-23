@@ -98,14 +98,14 @@ pub(super) fn switch_ablement_state_set(
                 let blue = blue(is_dark).get_color();
 
                 let toast_info = format2!(
-                    //toast message on fail
-                    pgettext(
-                        "toast",
-                        "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has failed!"
-                    ),
-                    blue,
+                    //toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
+                    pgettext("toast", "{} unit {} has failed!"),
                     action_str,
-                    unit.primary()
+                    format!(
+                        "<span fgcolor='{}' font_family='monospace' size='larger'>{}</span> ",
+                        blue,
+                        unit.primary()
+                    )
                 );
 
                 warn!("{toast_info} : {error_message}");

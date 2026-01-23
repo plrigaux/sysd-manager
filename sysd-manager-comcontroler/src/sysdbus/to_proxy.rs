@@ -1,5 +1,8 @@
 #![allow(dead_code)]
-use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    enums::UnitDBusLevel,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+};
 use zbus::proxy;
 
 use crate::{
@@ -31,6 +34,18 @@ pub trait SysDManagerComLink {
         &mut self,
         file_names: &[&str],
     ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+
+    fn enable_unit_files_with_flags(
+        &mut self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+
+    fn disable_unit_files_with_flags(
+        &mut self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
 }
 
 ///1 Ensure that the  proxy is up and running
@@ -123,4 +138,24 @@ pub async fn revert_unit_files(
         .revert_unit_files(unit_names)
         .await
         .map_err(|e| e.into())
+}
+
+pub fn enable_unit_files_with_flags(
+    unit_files: &[&str],
+    flags: u64,
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let mut proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    proxy
+        .enable_unit_files_with_flags(unit_files, flags)
+        .map_err(|err| err.into())
+}
+
+pub fn disable_unit_files_with_flags(
+    unit_files: &[&str],
+    flags: u64,
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let mut proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    proxy
+        .disable_unit_files_with_flags(unit_files, flags)
+        .map_err(|err| err.into())
 }
