@@ -9,7 +9,7 @@ use tracing_subscriber::fmt;
 use zbus::{Connection, message::Header};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
 
-use crate::interface::init_serve_connection;
+use crate::interface::{SysDManagerProxySignals, init_serve_connection};
 static AUTHORITY: OnceLock<AuthorityProxy> = OnceLock::new();
 static CONNECTION: OnceLock<Connection> = OnceLock::new();
 
@@ -98,8 +98,14 @@ pub fn init_tracing() {
 
 pub async fn serve_proxy(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     init_authority().await?;
-    init_serve_connection(run_mode).await?;
+    let (connection, path) = init_serve_connection(run_mode).await?;
 
+    connection
+        .object_server()
+        .interface(path)
+        .await?
+        .hello("bob")
+        .await?;
     // Do other things or go to wait forever
     pending::<()>().await;
 

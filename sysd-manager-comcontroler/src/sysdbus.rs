@@ -8,7 +8,6 @@ pub(super) mod watcher;
 mod tests;
 //use futures_lite::stream::StreamExt;
 
-use futures_util::TryStreamExt;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     str::FromStr,
@@ -21,14 +20,13 @@ use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
-use enumflags2::BitFlags;
 use log::{debug, error, info, trace, warn};
 
 use serde::Deserialize;
 
 use tokio::time::sleep;
 use zbus::{
-    Message, MessageStream,
+    Message,
     blocking::{Connection, MessageIterator, Proxy, fdo},
     message::Flags,
     names::InterfaceName,
@@ -40,8 +38,7 @@ use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
     data::{LUnit, UnitInfo},
     enums::{
-        ActiveState, DependencyType, DisEnableFlags, EnablementStatus, KillWho, LoadState,
-        StartStopMode, UnitType,
+        ActiveState, DependencyType, EnablementStatus, KillWho, LoadState, StartStopMode, UnitType,
     },
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
@@ -67,8 +64,8 @@ const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
 const METHOD_MASK_UNIT_FILES: &str = "MaskUnitFiles";
 const METHOD_UNMASK_UNIT_FILES: &str = "UnmaskUnitFiles";
 const METHOD_GET_UNIT: &str = "GetUnit";
-const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
-const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlagsAndInstallInfo";
+// const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
+// const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlagsAndInstallInfo";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 pub const METHOD_FREEZE_UNIT: &str = "FreezeUnit";
@@ -119,32 +116,38 @@ pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
         return Ok(());
     }
 
+    init_proxy_async2().await;
+    Ok(())
+}
+
+pub(crate) async fn init_proxy_async2() -> Result<String, SystemdErrors> {
     let unit_name = proxy_service_name().unwrap();
 
-    /*  let connection = get_connection(UnitDBusLevel::System).await?;
-       let manager_proxy = ManagerProxy::builder(&connection).build().await?;
-    */
+    let manager = systemd_manager_async(UnitDBusLevel::System).await?;
     for tries in 0..5 {
         // match manager_proxy.start_unit(&unit_name, "fail").await {
         //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
-        match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
+        match manager
+            .start_unit(&unit_name, StartStopMode::Fail.as_str())
+            .await
+        {
             Ok(job_id) => {
                 info!("Started unit {unit_name}, job id {job_id}");
-                break;
+                return Ok(job_id.to_string());
             }
             Err(error) => {
                 error!("Error starting unit {unit_name}: {error:?}");
                 if tries >= 3 {
                     error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
-                    break;
+                    return Err(error.into());
                 }
-                sleep(Duration::from_millis(1000)).await;
+                sleep(Duration::from_millis(500)).await;
                 // init(run_mode, tries + 1) // Retry
             }
         }
     }
 
-    Ok(())
+    Err(SystemdErrors::Unreachable)
 }
 
 pub fn proxy_service_name() -> Option<String> {
@@ -534,21 +537,6 @@ pub(super) fn start_unit(
     )
 }
 
-/// Takes a unit name as input and attempts to start it
-pub(super) async fn start_unit_async(
-    level: UnitDBusLevel,
-    unit_name: &str,
-    mode: StartStopMode,
-) -> Result<String, SystemdErrors> {
-    send_disenable_message_async(
-        level,
-        METHOD_START_UNIT,
-        &(unit_name, mode.as_str()),
-        handle_start_stop_answer,
-    )
-    .await
-}
-
 fn handle_start_stop_answer(
     method: &str,
     return_message: &Message,
@@ -610,58 +598,6 @@ pub(super) fn restart_unit(
     )
 }
 
-pub(super) fn enable_unit_files(
-    level: UnitDBusLevel,
-    unit_names_or_files: &[&str],
-    flags: BitFlags<DisEnableFlags>,
-) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    fn handle_answer(
-        _method: &str,
-        return_message: &Message,
-    ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-        let body = return_message.body();
-
-        let return_msg = body.deserialize()?;
-
-        info!("Enable unit files {return_msg:?}");
-
-        Ok(return_msg)
-    }
-
-    send_disenable_message(
-        level,
-        METHOD_ENABLE_UNIT_FILES,
-        &(unit_names_or_files, flags.bits_c() as u64),
-        handle_answer,
-    )
-}
-
-pub(super) fn disable_unit_files(
-    level: UnitDBusLevel,
-    unit_names_or_files: &[&str],
-    flags: BitFlags<DisEnableFlags>,
-) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    fn handle_answer(
-        _method: &str,
-        return_message: &Message,
-    ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-        let body = return_message.body();
-
-        let return_msg: DisEnAbleUnitFilesResponse = body.deserialize()?;
-
-        info!("Disable unit files {return_msg:?}");
-
-        Ok(return_msg)
-    }
-
-    send_disenable_message(
-        level,
-        METHOD_DISABLE_UNIT_FILES,
-        &(unit_names_or_files, flags.bits_c() as u64),
-        handle_answer,
-    )
-}
-
 fn send_disenable_message<T, U>(
     level: UnitDBusLevel,
     method: &str,
@@ -688,82 +624,6 @@ where
     for message_res in message_it {
         debug!("Message response {message_res:?}");
         let return_message = message_res?;
-
-        match return_message.message_type() {
-            zbus::message::Type::MethodReturn => {
-                info!("{method} Response");
-                let result = handler(method, &return_message);
-                return result;
-            }
-            zbus::message::Type::MethodCall => {
-                warn!("Not supposed to happen: {return_message:?}");
-                break;
-            }
-            zbus::message::Type::Error => {
-                let zb_error = zbus::Error::from(return_message);
-
-                {
-                    match zb_error {
-                        zbus::Error::MethodError(
-                            ref owned_error_name,
-                            ref details,
-                            ref message,
-                        ) => {
-                            warn!(
-                                "Method error: {}\nDetails: {}\n{:?}",
-                                owned_error_name.as_str(),
-                                details.as_ref().map(|s| s.as_str()).unwrap_or_default(),
-                                message
-                            )
-                        }
-                        _ => warn!("Bus error: {zb_error:?}"),
-                    }
-                }
-                let error = SystemdErrors::from((zb_error, method));
-                return Err(error);
-            }
-            zbus::message::Type::Signal => {
-                info!("Signal: {return_message:?}");
-                continue;
-            }
-        }
-    }
-
-    let msg = format!("{method:?} ????, response supposed to be Unreachable");
-    warn!("{msg}");
-    Err(SystemdErrors::Malformed(
-        msg,
-        "sequences of messages".to_owned(),
-    ))
-}
-
-async fn send_disenable_message_async<T, U>(
-    level: UnitDBusLevel,
-    method: &str,
-    body: &T,
-    handler: impl Fn(&str, &Message) -> Result<U, SystemdErrors>,
-) -> Result<U, SystemdErrors>
-where
-    T: serde::ser::Serialize + DynamicType + std::fmt::Debug,
-    U: std::fmt::Debug,
-{
-    info!("Try to {method}, message body: {:?}", body);
-    let message = Message::method_call(PATH_SYSTEMD, method)?
-        .with_flags(Flags::AllowInteractiveAuth)?
-        .destination(DESTINATION_SYSTEMD)?
-        .interface(INTERFACE_SYSTEMD_MANAGER)?
-        .build(body)?;
-
-    let connection = get_connection(level).await?;
-
-    connection.send(&message).await?;
-
-    let mut message_it = MessageStream::from(connection);
-
-    while let Some(message_res) = message_it.try_next().await? {
-        // for message_res in message_it. {
-        debug!("Message response {message_res:?}");
-        let return_message = message_res;
 
         match return_message.message_type() {
             zbus::message::Type::MethodReturn => {

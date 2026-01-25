@@ -42,6 +42,7 @@ pub enum SystemdErrors {
     ZFdoServiceUnknowm(String),
     ZFdoZError(String),
     ZXml(zbus_xml::Error),
+    Unreachable,
 }
 
 impl SystemdErrors {

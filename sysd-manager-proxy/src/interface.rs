@@ -5,7 +5,7 @@ use base::{
 };
 
 use log::{debug, info, warn};
-use std::{borrow::Cow, env, error::Error, sync::OnceLock};
+use std::{borrow::Cow, env, error::Error};
 use tokio::sync::OnceCell;
 use zbus::{
     Connection, ObjectServer, connection, interface, message::Header, object_server::SignalEmitter,
@@ -52,9 +52,13 @@ impl SysDManagerProxy {
 
         Ok(id)
     }
+
     // "Bye" signal (note: no implementation body).
     #[zbus(signal)]
     async fn bye(signal_emitter: &SignalEmitter<'_>, message: &str) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    async fn hello(signal_emitter: &SignalEmitter<'_>, message: &str) -> zbus::Result<()>;
 
     // "Quit" method. A method may throw errors.
     async fn quit(
@@ -221,9 +225,9 @@ impl SysDManagerProxy {
     }
 }
 
-static CONNECTION: OnceLock<Connection> = OnceLock::new();
-
-pub async fn init_serve_connection(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
+pub async fn init_serve_connection(
+    run_mode: RunMode,
+) -> Result<(Connection, String), Box<dyn Error>> {
     const VERSION: &str = env!("CARGO_PKG_VERSION");
     info!("Init Proxy version {VERSION}");
 
@@ -246,12 +250,11 @@ pub async fn init_serve_connection(run_mode: RunMode) -> Result<(), Box<dyn Erro
 
     let connection = connection::Builder::system()?
         .name(dbus_name)?
-        .serve_at(dbus_path, proxy)?
+        .serve_at(dbus_path.clone(), proxy)?
         .build()
         .await?;
 
-    CONNECTION.get_or_init(|| connection);
-    Ok(())
+    Ok((connection, dbus_path.to_string()))
 }
 
 fn get_env<'a>(key: &str, default: &'a str) -> Cow<'a, str> {

@@ -83,16 +83,16 @@ pub(super) fn switch_ablement_state_set(
                     _ => format!("{error:?}"),
                 };
 
-                let action_str = match expected_new_status {
+                let (action_str, action_log) = match expected_new_status {
                     EnablementStatus::Disabled => {
                         //toast message action on fail
-                        pgettext("toast", "Disabling")
+                        (pgettext("toast", "Disabling"), "Disabling")
                     }
                     EnablementStatus::Enabled => {
                         //toast message action on fail
-                        pgettext("toast", "Enabling")
+                        (pgettext("toast", "Enabling"), "Enabling")
                     }
-                    _ => "???".to_owned(),
+                    _ => ("???".to_owned(), "???"),
                 };
 
                 let blue = blue(is_dark).get_color();
@@ -108,7 +108,10 @@ pub(super) fn switch_ablement_state_set(
                     )
                 );
 
-                warn!("{toast_info} : {error_message}");
+                warn!(
+                    "{action_log} unit {} has Failed! : {error_message}",
+                    unit.primary()
+                );
 
                 control_panel.add_toast_message(&toast_info, true);
             }

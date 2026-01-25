@@ -1,3 +1,4 @@
+#![allow(unused_must_use)]
 pub mod analyze;
 pub mod data;
 pub mod enums;
@@ -5,7 +6,6 @@ pub mod errors;
 mod file;
 mod journal;
 pub mod journal_data;
-pub mod manager;
 pub mod sysdbus;
 pub mod time_handling;
 
@@ -367,7 +367,11 @@ pub fn enable_unit_file(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if PROXY_SWITCHER.enable_unit_file() {
-                to_proxy::enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+                proxy_call!(
+                    enable_unit_files_with_flags,
+                    &[unit_file],
+                    flags.bits_c() as u64
+                )
             } else {
                 systemd_manager()
                     .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
@@ -389,7 +393,13 @@ pub fn disable_unit_file(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if PROXY_SWITCHER.enable_unit_file() {
-                to_proxy::disable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+                // to_proxy::disable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64);
+
+                proxy_call!(
+                    disable_unit_files_with_flags,
+                    &[unit_file],
+                    flags.bits_c() as u64
+                )
             } else {
                 systemd_manager()
                     .disable_unit_files_with_flags_and_install_info(

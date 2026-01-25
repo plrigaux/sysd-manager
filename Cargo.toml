@@ -52,8 +52,8 @@ flatpak = ["systemd/flatpak", "base/flatpak"]
 lto = true
 
 [workspace.dependencies]
-base = { version = "2.10", path = "./sysd-manager-base", package = "sysd-manager-base" }
-systemd = { version = "2.10", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
+base = { version = "2.12", path = "./sysd-manager-base", package = "sysd-manager-base" }
+systemd = { version = "2.12", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
 
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"

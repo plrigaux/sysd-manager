@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use base::{
     enums::UnitDBusLevel,
-    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse, QueuedJobs},
 };
 use log::error;
 use tokio::sync::OnceCell;
@@ -96,6 +96,9 @@ pub(crate) trait Systemd1Manager {
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
     fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
     fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn start_unit(&self, unit: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    ///returns an array with all currently queued jobs.
+    fn list_jobs(&self) -> zbus::fdo::Result<QueuedJobs>;
 
     fn create_drop_in(
         &mut self,
