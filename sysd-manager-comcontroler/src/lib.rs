@@ -22,7 +22,7 @@ use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     file::save_text_to_file,
     journal_data::Boot,
-    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_async, systemd_manager_session},
+    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_async},
     time_handling::TimestampStyle,
 };
 
@@ -30,10 +30,8 @@ use crate::{
 use crate::sysdbus::to_proxy;
 
 use base::{
-    RunMode,
-    consts::APP_ID,
     enums::UnitDBusLevel,
-    file::{commander, commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
+    file::{commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use data::{UnitInfo, UnitProcess};
@@ -41,7 +39,6 @@ use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 
-use gio::prelude::SettingsExt;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 
@@ -248,21 +245,23 @@ impl ProxySwitcher {
             || self.freeze()
             || self.thaw()
             || self.create_dropin()
+            || self.disable_unit_file()
+            || self.reload()
             || self.save_file()
             || self.enable_unit_file()
-            || self.disable_unit_file()
             || self.revert_unit_file()
-            || self.reload()
     }
 }
 
 ///Try to Start Proxy
+#[cfg(not(feature = "flatpak"))]
 pub async fn init_proxy_async(run_mode: RunMode) {
     if let Err(e) = sysdbus::init_proxy_async(run_mode).await {
         error!("Fail starting Proxy. Error {e:?}");
     }
 }
 
+#[cfg(not(feature = "flatpak"))]
 pub fn shut_down() {
     sysdbus::shut_down_proxy();
 }
@@ -399,6 +398,14 @@ pub fn enable_unit_file(
             .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
             .map_err(|err| err.into()),
     }
+
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+        systemd_manager_blocking(level)
+            .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into())
+    }
 }
 
 pub fn disable_unit_file(
@@ -429,6 +436,13 @@ pub fn disable_unit_file(
         UnitDBusLevel::UserSession => systemd_manager_session()
             .disable_unit_files_with_flags_and_install_info(&[unit_file], flags.bits_c() as u64)
             .map_err(|err| err.into()),
+    }
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+        systemd_manager_blocking(level)
+            .disable_unit_files_with_flags_and_install_info(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into())
     }
 }
 
@@ -685,12 +699,12 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
 }
 
 pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
-    let Some((_level, primary_name)) = params else {
+    let Some((level, primary_name)) = params else {
         return Err(SystemdErrors::NoUnit);
     };
 
     #[cfg(not(feature = "flatpak"))]
-    match _level {
+    match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if PROXY_SWITCHER.thaw() {
                 proxy_call!(thaw_unit, &primary_name)
@@ -709,7 +723,8 @@ pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdE
 
     #[cfg(feature = "flatpak")]
     {
-        let proxy = systemd_manager();
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+        let proxy = systemd_manager_blocking(level);
         proxy.thaw_unit(&primary_name)?;
         Ok(())
     }
@@ -835,8 +850,7 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     #[cfg(feature = "flatpak")]
     {
         let proxy = systemd_manager_async(level).await?;
-        proxy.reload().await?;
-        Ok()
+        proxy.reload().await.map_err(|err| err.into())
     }
 }
 

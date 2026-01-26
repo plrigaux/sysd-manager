@@ -122,8 +122,8 @@ pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
 
 pub(crate) async fn init_proxy_async2() -> Result<String, SystemdErrors> {
     let unit_name = proxy_service_name().unwrap();
-
-    let manager = systemd_manager_async(UnitDBusLevel::System).await?;
+    let level = UnitDBusLevel::System;
+    let manager = systemd_manager_async(level).await?;
     for tries in 0..5 {
         // match manager_proxy.start_unit(&unit_name, "fail").await {
         //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {

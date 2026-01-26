@@ -5,7 +5,7 @@ use base::{
 };
 use futures_util::stream::StreamExt;
 use log::{info, warn};
-use tokio::time::timeout;
+use tokio::time::{Duration, timeout};
 use zbus::proxy;
 
 use crate::{
@@ -122,15 +122,11 @@ pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
     let hello_stream = proxy.receive_hello().await?;
     crate::sysdbus::init_proxy_async2().await?;
 
-    let r = timeout(
-        tokio::time::Duration::from_secs(2),
-        wait_hello(hello_stream),
-    )
-    .await;
+    let timeout_results = timeout(Duration::from_secs(2), wait_hello(hello_stream)).await;
 
-    match r {
+    match timeout_results {
         Ok(rr) => rr?,
-        Err(e) => warn!("Proxy start time up : {}", e),
+        Err(elapsed) => warn!("Proxy start time up : {}", elapsed),
     }
     Ok(())
 }

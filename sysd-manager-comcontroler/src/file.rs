@@ -1,8 +1,8 @@
-use crate::{commander, errors::SystemdErrors};
-use base::args;
+use crate::errors::SystemdErrors;
 #[cfg(not(feature = "flatpak"))]
 use base::file::create_drop_in_io;
 use base::file::{create_drop_in_path_file, flatpak_host_file_path};
+use base::{args, file::commander};
 use log::{debug, error, info, warn};
 use std::{ffi::OsStr, path::Path, process::Stdio};
 use tokio::{
@@ -261,9 +261,9 @@ mod tests {
         println!("{:?}", fs::canonicalize(&solardir));
     }
 
+    #[tokio::test]
     #[cfg(feature = "flatpak")]
     #[ignore = "writes file with priviledge"]
-    #[tokio::test]
     async fn test_script() -> Result<(), SystemdErrors> {
         init_logs();
 
@@ -293,9 +293,8 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(feature = "flatpak")]
-    #[ignore = "writes file with priviledge"]
     #[tokio::test]
+    #[cfg(feature = "flatpak")]
     async fn test_create_drop_in_script() -> Result<(), SystemdErrors> {
         init_logs();
 
@@ -316,9 +315,9 @@ mod tests {
         Ok(())
     }
 
+    #[tokio::test]
     #[cfg(feature = "flatpak")]
     #[ignore = "writes file with priviledge"]
-    #[tokio::test]
     async fn test_create_drop_in_script_user() -> Result<(), SystemdErrors> {
         init_logs();
 

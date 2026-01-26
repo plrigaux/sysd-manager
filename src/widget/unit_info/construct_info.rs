@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, HashMap};
-use std::fmt::Write;
+use std::fmt::{Debug, Write};
 
 use crate::consts::U64MAX;
 use crate::systemd::{
@@ -15,8 +15,11 @@ use crate::widget::preferences::data::PREFERENCES;
 use base::enums::UnitDBusLevel;
 
 use log::{debug, warn};
-use systemd::swrite;
-use systemd::time_handling::{self, TimestampStyle};
+use systemd::{
+    enums::ActiveState,
+    swrite,
+    time_handling::{self, TimestampStyle},
+};
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
@@ -163,24 +166,27 @@ fn fill_active_state(
     timestamp_style: TimestampStyle,
 ) {
     let value = get_value!(map, "ActiveState");
+
     let state = value_to_str(value);
 
+    let state: ActiveState = state.into();
+    unit.set_active_state(state);
     write_key(unit_writer, "Active:");
 
-    let mut state_text = String::from(state);
+    let mut state_text = String::from(state.as_str());
     if let Some(substate) = get_substate(map, unit) {
         state_text.push_str(" (");
         state_text.push_str(substate);
         state_text.push(')');
     }
 
-    if state == "active" {
+    if !state.is_inactive() {
         unit_writer.insert_active(&state_text);
     } else {
         unit_writer.insert(&state_text);
     };
 
-    if let Some(since) = add_since(map, state, timestamp_style) {
+    if let Some(since) = add_since(map, state.as_str(), timestamp_style) {
         unit_writer.insert(&format!(" since {}; {}\n", since.0, since.1));
         fill_duration(unit_writer, map, unit);
     } else {

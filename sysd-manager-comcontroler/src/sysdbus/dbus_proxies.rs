@@ -133,7 +133,7 @@ pub(crate) trait Systemd1Manager {
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
 static SYSTEM_MANAGER_USER_SESSION: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
 
-fn systemd_manager_blocking() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors> {
+fn systemd_manager_blocking_() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors> {
     let conn = get_blocking_connection(base::enums::UnitDBusLevel::System)?;
     let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
     Ok(proxy)
@@ -147,7 +147,7 @@ fn systemd_manager_session_blocking() -> Result<Systemd1ManagerProxyBlocking<'st
 }
 
 static SYSTEM_MANAGER_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> = LazyLock::new(|| {
-    systemd_manager_blocking()
+    systemd_manager_blocking_()
         .inspect_err(|e| error!("{e:?}"))
         .unwrap()
 });
@@ -158,6 +158,13 @@ static SYSTEM_MANAGER_SESSION_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> =
             .inspect_err(|e| error!("{e:?}"))
             .unwrap()
     });
+
+pub fn systemd_manager_blocking<'a>(level: UnitDBusLevel) -> &'a Systemd1ManagerProxyBlocking<'a> {
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => systemd_manager(),
+        UnitDBusLevel::UserSession => systemd_manager_session(),
+    }
+}
 
 pub fn systemd_manager<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
     (&*SYSTEM_MANAGER_BLOCKING) as _

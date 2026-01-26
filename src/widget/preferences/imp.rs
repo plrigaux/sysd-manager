@@ -1,4 +1,3 @@
-use base::enums::UnitDBusLevel;
 use gettextrs::pgettext;
 use gio::Settings;
 use systemd::time_handling::TimestampStyle;
@@ -35,7 +34,6 @@ use gtk::{
 use log::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 use strum::IntoEnumIterator;
-use systemd::PROXY_SWITCHER;
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
@@ -708,17 +706,18 @@ impl ObjectImpl for PreferencesDialogImpl {
             self.proxy_enable_unit_file_switch.set_sensitive(false);
             self.proxy_disable_unit_file_switch.set_sensitive(false);
             self.proxy_create_dropin_switch.set_sensitive(false);
-            self.proxy_reload_switch.set_sensitive(false);
+            self.proxy_reload_daemon_switch.set_sensitive(false);
             self.proxy_save_file_switch.set_sensitive(false);
             self.proxy_revert_unit_file_switch.set_sensitive(false);
-            self.start_at_start_up.set_active(false);
-            self.stop_proxy_at_close.set_active(false);
+            self.start_proxy_at_startup_switch.set_active(false);
+            self.stop_proxy_at_close_switch.set_active(false);
 
             self.proxy_banner.set_revealed(true);
         }
     }
 }
 
+#[cfg(not(feature = "flatpak"))]
 fn find_description_label(node: &gtk::Widget) -> Option<gtk::Label> {
     let id = node.buildable_id();
     if let Some(id) = id
@@ -745,6 +744,7 @@ fn find_description_label(node: &gtk::Widget) -> Option<gtk::Label> {
     None
 }
 
+#[cfg(not(feature = "flatpak"))]
 fn label_link_handler(label: &gtk::Label, pref_dialog: &super::PreferencesDialog) {
     let pref_dialog = pref_dialog.clone();
     label.connect_activate_link(move |_label, uri| {
