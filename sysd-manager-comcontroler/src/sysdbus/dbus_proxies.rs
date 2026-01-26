@@ -93,6 +93,9 @@ pub(crate) trait Systemd1Manager {
     #[zbus(signal)]
     fn reloading(&self, active: bool) -> zbus::Result<()>;
 
+    #[zbus(allow_interactive_auth)]
+    fn reload(&self) -> zbus::fdo::Result<()>;
+
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
     fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
     fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
@@ -111,9 +114,6 @@ pub(crate) trait Systemd1Manager {
 
     #[zbus(allow_interactive_auth)]
     fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
-
-    #[zbus(allow_interactive_auth)]
-    fn reload(&self) -> zbus::fdo::Result<()>;
 
     #[zbus(allow_interactive_auth)]
     fn enable_unit_files_with_flags(

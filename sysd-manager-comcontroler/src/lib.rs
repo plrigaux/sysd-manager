@@ -22,7 +22,7 @@ use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     file::save_text_to_file,
     journal_data::Boot,
-    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_session},
+    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_async, systemd_manager_session},
     time_handling::TimestampStyle,
 };
 
@@ -100,8 +100,11 @@ pub const KEY_PREF_USE_PROXY_CLEAN: &str = "pref-use-proxy-clean";
 pub const KEY_PREF_USE_PROXY_FREEZE: &str = "pref-use-proxy-freeze";
 pub const KEY_PREF_USE_PROXY_THAW: &str = "pref-use-proxy-thaw";
 pub const KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE: &str = "pref-use-proxy-enable-unit-file";
+pub const KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE: &str = "pref-use-proxy-disable-unit-file";
+pub const KEY_PREF_USE_PROXY_RELOAD_DAEMON: &str = "pref-use-proxy-reload-daemon";
 pub const KEY_PREF_USE_PROXY_CREATE_DROP_IN: &str = "pref-use-proxy-create-drop-in";
 pub const KEY_PREF_USE_PROXY_SAVE_FILE: &str = "pref-use-proxy-save-file";
+pub const KEY_PREF_USE_PROXY_REVERT_UNIT_FILE: &str = "pref-use-proxy-revert-unit-file";
 pub const KEY_PREF_PROXY_START_AT_STARTUP: &str = "pref-proxy-start-at-startup";
 pub const KEY_PREF_PROXY_STOP_AT_CLOSE: &str = "pref-proxy-stop-at-close";
 
@@ -117,17 +120,17 @@ pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
         let val = settings.boolean(KEY_PREF_USE_PROXY_THAW);
         ps.set_thaw(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE);
-        ps.set_thaw(val);
+        ps.set_enable_unit_file(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE);
+        ps.set_disable_unit_file(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_RELOAD_DAEMON);
+        ps.set_reload(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_CREATE_DROP_IN);
         ps.set_create_dropin(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_SAVE_FILE);
         ps.set_save_file(val);
-        let val = settings.boolean(KEY_PREF_PROXY_START_AT_STARTUP);
-        ps.set_create_dropin(val);
-        let val = settings.boolean(KEY_PREF_PROXY_STOP_AT_CLOSE);
-        ps.set_save_file(val);
-        let val = settings.boolean(KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE);
-        ps.set_enable_unit_file(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_REVERT_UNIT_FILE);
+        ps.set_revert_unit_file(val);
         let val = settings.boolean(KEY_PREF_PROXY_START_AT_STARTUP);
         ps.set_start_at_startup(val);
         let val = settings.boolean(KEY_PREF_PROXY_STOP_AT_CLOSE);
@@ -142,91 +145,102 @@ pub struct ProxySwitcher {
     freeze: RwLock<bool>,
     thaw: RwLock<bool>,
     enable_unit_file: RwLock<bool>,
+    disable_unit_file: RwLock<bool>,
+    reload: RwLock<bool>,
     create_dropin: RwLock<bool>,
     save_file: RwLock<bool>,
+    revert_unit_file: RwLock<bool>,
     start_at_start_up: RwLock<bool>,
     stop_at_close: RwLock<bool>,
 }
 
 impl ProxySwitcher {
     pub fn clean(&self) -> bool {
-        let v = self.clean.read().unwrap();
-        *v
-    }
-
-    pub fn freeze(&self) -> bool {
-        let v = self.freeze.read().unwrap();
-        *v
-    }
-
-    pub fn thaw(&self) -> bool {
-        let v = self.thaw.read().unwrap();
-        *v
-    }
-
-    pub fn enable_unit_file(&self) -> bool {
-        let v = self.enable_unit_file.read().unwrap();
-        *v
-    }
-
-    pub fn create_dropin(&self) -> bool {
-        let v = self.create_dropin.read().unwrap();
-        *v
-    }
-
-    pub fn save_file(&self) -> bool {
-        let v = self.save_file.read().unwrap();
-        *v
-    }
-
-    pub fn start_at_start_up(&self) -> bool {
-        let v = self.start_at_start_up.read().unwrap();
-        *v
-    }
-
-    pub fn stop_at_close(&self) -> bool {
-        let v = self.stop_at_close.read().unwrap();
-        *v
+        *self.clean.read().unwrap()
     }
 
     pub fn set_clean(&self, value: bool) {
-        let mut v = self.clean.write().unwrap();
-        *v = value;
+        *self.clean.write().unwrap() = value;
+    }
+
+    pub fn freeze(&self) -> bool {
+        *self.freeze.read().unwrap()
     }
 
     pub fn set_freeze(&self, value: bool) {
-        let mut v = self.freeze.write().unwrap();
-        *v = value;
+        *self.freeze.write().unwrap() = value;
+    }
+
+    pub fn thaw(&self) -> bool {
+        *self.thaw.read().unwrap()
     }
 
     pub fn set_thaw(&self, value: bool) {
-        let mut v = self.thaw.write().unwrap();
-        *v = value;
+        *self.thaw.write().unwrap() = value;
+    }
+
+    pub fn enable_unit_file(&self) -> bool {
+        *self.enable_unit_file.read().unwrap()
     }
 
     pub fn set_enable_unit_file(&self, value: bool) {
-        let mut v = self.enable_unit_file.write().unwrap();
-        *v = value;
+        *self.enable_unit_file.write().unwrap() = value;
     }
 
-    pub fn set_create_dropin(&self, value: bool) {
-        let mut v = self.create_dropin.write().unwrap();
-        *v = value;
+    pub fn disable_unit_file(&self) -> bool {
+        *self.disable_unit_file.read().unwrap()
+    }
+
+    pub fn set_disable_unit_file(&self, value: bool) {
+        *self.disable_unit_file.write().unwrap() = value;
+    }
+
+    pub fn save_file(&self) -> bool {
+        *self.save_file.read().unwrap()
     }
 
     pub fn set_save_file(&self, value: bool) {
-        let mut v = self.save_file.write().unwrap();
-        *v = value;
+        *self.save_file.write().unwrap() = value;
+    }
+
+    pub fn create_dropin(&self) -> bool {
+        *self.create_dropin.read().unwrap()
+    }
+
+    pub fn set_create_dropin(&self, value: bool) {
+        *self.create_dropin.write().unwrap() = value;
+    }
+
+    pub fn start_at_start_up(&self) -> bool {
+        *self.start_at_start_up.read().unwrap()
     }
 
     pub fn set_start_at_startup(&self, value: bool) {
-        let mut v = self.start_at_start_up.write().unwrap();
-        *v = value;
+        *self.start_at_start_up.write().unwrap() = value;
+    }
+
+    pub fn stop_at_close(&self) -> bool {
+        *self.stop_at_close.read().unwrap()
     }
 
     pub fn set_stop_at_close(&self, value: bool) {
-        let mut v = self.stop_at_close.write().unwrap();
-        *v = value;
+        *self.stop_at_close.write().unwrap() = value;
+    }
+
+    pub fn revert_unit_file(&self) -> bool {
+        *self.revert_unit_file.read().unwrap()
+    }
+
+    pub fn set_revert_unit_file(&self, value: bool) {
+        *self.revert_unit_file.write().unwrap() = value;
+    }
+
+    pub fn reload(&self) -> bool {
+        *self.reload.read().unwrap()
+    }
+
+    pub fn set_reload(&self, value: bool) {
+        *self.reload.write().unwrap() = value;
     }
 
     pub fn uses_any_proxy(&self) -> bool {
@@ -236,6 +250,9 @@ impl ProxySwitcher {
             || self.create_dropin()
             || self.save_file()
             || self.enable_unit_file()
+            || self.disable_unit_file()
+            || self.revert_unit_file()
+            || self.reload()
     }
 }
 
@@ -642,7 +659,7 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
         match _level {
             UnitDBusLevel::System | UnitDBusLevel::Both => {
                 if PROXY_SWITCHER.freeze() {
-                    to_proxy::freeze_unit(&primary_name)
+                    proxy_call!(freeze_unit, &primary_name)
                 } else {
                     let proxy = systemd_manager();
                     proxy.freeze_unit(&primary_name)?;
@@ -676,9 +693,8 @@ pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdE
     match _level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if PROXY_SWITCHER.thaw() {
-                to_proxy::thaw_unit(&primary_name)
+                proxy_call!(thaw_unit, &primary_name)
             } else {
-                //TODO to test
                 let proxy = systemd_manager();
                 proxy.thaw_unit(&primary_name)?;
                 Ok(())
@@ -738,7 +754,7 @@ pub fn clean_unit(
     match _level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if PROXY_SWITCHER.clean() {
-                to_proxy::clean_unit(unit_name, &clean_what)
+                proxy_call!(clean_unit, unit_name, &clean_what)
             } else {
                 let proxy = systemd_manager();
                 proxy.clean_unit(unit_name, &clean_what)?;
@@ -805,7 +821,23 @@ pub fn link_unit_files(
 }
 
 pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
-    sysdbus::daemon_reload(level).await
+    info!("Reloding Daemon");
+
+    #[cfg(not(feature = "flatpak"))]
+    if level.user_session() || !PROXY_SWITCHER.reload() {
+        let proxy = systemd_manager_async(level).await?;
+        proxy.reload().await?;
+        Ok(())
+    } else {
+        proxy_call_async!(reload)
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        let proxy = systemd_manager_async(level).await?;
+        proxy.reload().await?;
+        Ok()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -1042,7 +1074,7 @@ pub async fn create_drop_in(
     if user_session || !PROXY_SWITCHER.create_dropin() {
         file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
     } else {
-        to_proxy::create_drop_in(runtime, unit_name, file_name, content).await
+        proxy_call_async!(create_drop_in, runtime, unit_name, file_name, content)
     }
 
     #[cfg(feature = "flatpak")]
@@ -1065,7 +1097,7 @@ pub async fn save_file(
     if user_session || !PROXY_SWITCHER.save_file() {
         save_text_to_file(file_path, content, user_session).await
     } else {
-        to_proxy::save_file(file_path, content).await
+        proxy_call_async!(save_file, file_path, content)
     }
 
     #[cfg(feature = "flatpak")]
@@ -1078,5 +1110,19 @@ pub async fn revert_unit_file_full(
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     info!("Reverting unit file {unit_name:?}");
 
-    sysdbus::revert_unit_file_full(level, unit_name).await
+    #[cfg(not(feature = "flatpak"))]
+    if level.user_session() || !PROXY_SWITCHER.revert_unit_file() {
+        let proxy = systemd_manager_async(level).await?;
+        let response = proxy.revert_unit_files(&[unit_name]).await?;
+        Ok(response)
+    } else {
+        proxy_call_async!(revert_unit_files, &[unit_name])
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        let proxy = systemd_manager_async(level).await?;
+        let response = proxy.revert_unit_files(&[unit_name]).await?;
+        Ok(response)
+    }
 }

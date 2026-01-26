@@ -94,7 +94,10 @@ pub struct PreferencesDialogImpl {
     proxy_thaw_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
-    proxy_enable_unit_file: TemplateChild<adw::SwitchRow>,
+    proxy_enable_unit_file_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_disable_unit_file_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     proxy_create_dropin_switch: TemplateChild<adw::SwitchRow>,
@@ -103,10 +106,16 @@ pub struct PreferencesDialogImpl {
     proxy_save_file_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
-    start_proxy_at_startup: TemplateChild<adw::SwitchRow>,
+    proxy_revert_unit_file_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
-    stop_proxy_at_close: TemplateChild<adw::SwitchRow>,
+    proxy_reload_daemon_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    start_proxy_at_startup_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    stop_proxy_at_close_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     proxy_banner: TemplateChild<adw::Banner>,
@@ -488,8 +497,10 @@ impl ObjectImpl for PreferencesDialogImpl {
             use systemd::{
                 KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
                 KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
-                KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE, KEY_PREF_USE_PROXY_FREEZE,
-                KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_THAW,
+                KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE, KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
+                KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELOAD_DAEMON,
+                KEY_PREF_USE_PROXY_REVERT_UNIT_FILE, KEY_PREF_USE_PROXY_SAVE_FILE,
+                KEY_PREF_USE_PROXY_THAW,
             };
 
             use crate::format2;
@@ -521,7 +532,23 @@ impl ObjectImpl for PreferencesDialogImpl {
             settings
                 .bind::<adw::SwitchRow>(
                     KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
-                    self.proxy_enable_unit_file.as_ref(),
+                    self.proxy_enable_unit_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE,
+                    self.proxy_disable_unit_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_RELOAD_DAEMON,
+                    self.proxy_reload_daemon_switch.as_ref(),
                     "active",
                 )
                 .build();
@@ -544,8 +571,16 @@ impl ObjectImpl for PreferencesDialogImpl {
 
             settings
                 .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
+                    self.proxy_revert_unit_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
                     KEY_PREF_PROXY_START_AT_STARTUP,
-                    self.start_proxy_at_startup.as_ref(),
+                    self.start_proxy_at_startup_switch.as_ref(),
                     "active",
                 )
                 .build();
@@ -553,7 +588,7 @@ impl ObjectImpl for PreferencesDialogImpl {
             settings
                 .bind::<adw::SwitchRow>(
                     KEY_PREF_PROXY_STOP_AT_CLOSE,
-                    self.stop_proxy_at_close.as_ref(),
+                    self.stop_proxy_at_close_switch.as_ref(),
                     "active",
                 )
                 .build();
@@ -570,41 +605,65 @@ impl ObjectImpl for PreferencesDialogImpl {
                 PROXY_SWITCHER.set_thaw(switch.is_active());
             });
 
-            self.proxy_enable_unit_file.connect_active_notify(|switch| {
-                PROXY_SWITCHER.set_enable_unit_file(switch.is_active());
-            });
+            self.proxy_enable_unit_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_enable_unit_file(switch.is_active());
+                });
+
+            self.proxy_disable_unit_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_disable_unit_file(switch.is_active());
+                });
+
+            self.proxy_reload_daemon_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_reload(switch.is_active());
+                });
 
             self.proxy_create_dropin_switch
                 .connect_active_notify(|switch| {
                     PROXY_SWITCHER.set_create_dropin(switch.is_active());
                 });
 
+            self.proxy_revert_unit_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_revert_unit_file(switch.is_active());
+                });
+
             self.proxy_save_file_switch.connect_active_notify(|switch| {
                 PROXY_SWITCHER.set_save_file(switch.is_active());
             });
 
-            self.start_proxy_at_startup.connect_active_notify(|switch| {
-                PROXY_SWITCHER.set_start_at_startup(switch.is_active());
-            });
+            self.start_proxy_at_startup_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_start_at_startup(switch.is_active());
+                });
 
-            self.stop_proxy_at_close.connect_active_notify(|switch| {
-                PROXY_SWITCHER.set_stop_at_close(switch.is_active());
-            });
+            self.stop_proxy_at_close_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_stop_at_close(switch.is_active());
+                });
 
             let proxy_clean_switch = self.proxy_clean_switch.clone();
             let proxy_freeze_switch = self.proxy_freeze_switch.clone();
             let proxy_thaw_switch = self.proxy_thaw_switch.clone();
-            let proxy_enable_unit_file = self.proxy_enable_unit_file.clone();
+            let proxy_enable_unit_file = self.proxy_enable_unit_file_switch.clone();
+            let proxy_disable_unit_file = self.proxy_disable_unit_file_switch.clone();
+            let proxy_reload_switch = self.proxy_reload_daemon_switch.clone();
             let proxy_create_dropin_switch = self.proxy_create_dropin_switch.clone();
             let proxy_save_file = self.proxy_save_file_switch.clone();
+            let proxy_revert_unit_file_switch = self.proxy_revert_unit_file_switch.clone();
 
             let group_of_switches = [
                 proxy_clean_switch,
                 proxy_freeze_switch,
                 proxy_thaw_switch,
                 proxy_enable_unit_file,
+                proxy_disable_unit_file,
+                proxy_reload_switch,
                 proxy_create_dropin_switch,
                 proxy_save_file,
+                proxy_revert_unit_file_switch,
             ];
 
             let sum: usize = group_of_switches
@@ -646,9 +705,12 @@ impl ObjectImpl for PreferencesDialogImpl {
             self.proxy_clean_switch.set_sensitive(false);
             self.proxy_freeze_switch.set_sensitive(false);
             self.proxy_thaw_switch.set_sensitive(false);
-            self.proxy_enable_unit_file.set_sensitive(false);
+            self.proxy_enable_unit_file_switch.set_sensitive(false);
+            self.proxy_disable_unit_file_switch.set_sensitive(false);
             self.proxy_create_dropin_switch.set_sensitive(false);
+            self.proxy_reload_switch.set_sensitive(false);
             self.proxy_save_file_switch.set_sensitive(false);
+            self.proxy_revert_unit_file_switch.set_sensitive(false);
             self.start_at_start_up.set_active(false);
             self.stop_proxy_at_close.set_active(false);
 

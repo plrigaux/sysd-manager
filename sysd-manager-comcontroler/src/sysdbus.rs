@@ -703,29 +703,6 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-pub async fn revert_unit_file_full(
-    level: UnitDBusLevel,
-    unit_name: &str,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    info!("Reverting unit file {unit_name:?}");
-
-    #[cfg(not(feature = "flatpak"))]
-    if level.user_session() {
-        let proxy = systemd_manager_async(UnitDBusLevel::UserSession).await?;
-        let response = proxy.revert_unit_files(&[unit_name]).await?;
-        Ok(response)
-    } else {
-        to_proxy::revert_unit_files(&[unit_name]).await
-    }
-
-    #[cfg(feature = "flatpak")]
-    {
-        let proxy = systemd_manager_async(level).await?;
-        let response = proxy.revert_unit_files(&[unit_name]).await?;
-        Ok(response)
-    }
-}
-
 pub(super) fn kill_unit(
     level: UnitDBusLevel,
     unit_name: &str,

@@ -3,6 +3,7 @@ use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
+use futures_util::stream::StreamExt;
 use log::{info, warn};
 use tokio::time::timeout;
 use zbus::proxy;
@@ -32,10 +33,7 @@ pub trait SysDManagerComLink {
     ) -> zbus::fdo::Result<()>;
     fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
 
-    fn revert_unit_files(
-        &mut self,
-        file_names: &[&str],
-    ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+    fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
 
     fn enable_unit_files_with_flags(
         &mut self,
@@ -119,8 +117,7 @@ fn extract_job_id(job: &str) -> Option<u32> {
         .and_then(|(_, id)| id.parse::<u32>().ok())
 }
 
-use futures_util::stream::StreamExt;
-async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
+pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
     let proxy = get_proxy_async().await?;
     let hello_stream = proxy.receive_hello().await?;
     crate::sysdbus::init_proxy_async2().await?;
@@ -171,6 +168,26 @@ macro_rules! proxy_call {
     }
 }
 
+#[macro_export]
+macro_rules! proxy_call_async {
+    ($f:ident) => {
+        proxy_call_async!($f,)
+    };
+
+    ($f:ident, $($p:expr),*) => {
+        match $crate::to_proxy::$f($($p),*).await {
+            Ok(ok) => Ok(ok),
+            Err(SystemdErrors::ZFdoServiceUnknowm(s)) => {
+                warn!("ServiceUnkown: {}", s);
+                $crate::to_proxy::lazy_start_proxy_async();
+
+                $crate::to_proxy::$f($($p),*).await
+            },
+            Err(err) => Err(err)
+        }
+    }
+}
+
 pub(crate) async fn create_drop_in(
     runtime: bool,
     unit_name: &str,
@@ -195,7 +212,7 @@ pub async fn save_file(file_path: &str, content: &str) -> Result<u64, SystemdErr
 pub async fn revert_unit_files(
     unit_names: &[&str],
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    let mut proxy = get_proxy_async().await?;
+    let proxy = get_proxy_async().await?;
     proxy
         .revert_unit_files(unit_names)
         .await

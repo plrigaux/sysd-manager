@@ -249,6 +249,18 @@
             <default>true</default>
             <summary>Use the proxy for the Thaw calls</summary>
         </key>
+        <key name="pref-use-proxy-enable-unit-file" type="b">
+            <default>true</default>
+            <summary>Use the proxy for Enabling Unit Files</summary>
+        </key>
+        <key name="pref-use-proxy-disable-unit-file" type="b">
+            <default>true</default>
+            <summary>Use the proxy for Disabling Unit Files</summary>
+        </key>
+        <key name="pref-use-proxy-reload-daemon" type="b">
+            <default>true</default>
+            <summary>Use Proxy to Reload Systemd Manager Configuration</summary>
+        </key>
         <key name="pref-use-proxy-create-drop-in" type="b">
             <default>true</default>
             <summary>Use the proxy for the Create drop in actions</summary>
@@ -257,9 +269,9 @@
             <default>true</default>
             <summary>Use the proxy for the Save_file actions</summary>
         </key>
-        <key name="pref-use-proxy-enable-unit-file" type="b">
+        <key name="pref-use-proxy-revert-unit-file" type="b">
             <default>true</default>
-            <summary>Use the proxy for Enabling or Disabling Unit Files</summary>
+            <summary>Use Proxy to Revert Unit File to its vendor version</summary>
         </key>
         <key name="pref-proxy-start-at-startup" type="b">
             <default>true</default>
