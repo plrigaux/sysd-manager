@@ -272,7 +272,7 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
             <property name="title" translatable="yes" context="preference">Proxy Behaviors</property>
             <child>
               <object class="AdwSwitchRow" id="start_proxy_at_startup_switch">
-                <property name="subtitle" translatable="yes">Start the Proxy when starting Sysd Manager </property>
+                <property name="subtitle" translatable="yes">Start the Proxy when starting Sysd Manager</property>
                 <property name="title" translatable="yes" context="preference">Start Proxy at Start up</property>
               </object>
             </child>
