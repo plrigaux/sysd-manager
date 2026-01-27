@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2026-01-15 05:01+0000\n"
+"PO-Revision-Date: 2026-01-27 16:16+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -786,7 +786,7 @@ msgstr "Comportements du Proxy"
 
 #: data/interfaces/preferences.ui:275
 msgid "Start the Proxy when starting Sysd Manager"
-msgstr ""
+msgstr "Démarrez le Proxy au démarrage de Sysd Manager"
 
 #: data/interfaces/preferences.ui:276
 msgctxt "preference"
