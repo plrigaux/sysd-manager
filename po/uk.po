@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 23:50-0500\n"
+"POT-Creation-Date: 2026-01-27 10:31-0500\n"
 "PO-Revision-Date: 2025-08-19 16:29+0000\n"
 "Last-Translator: Damglador <vse.stopchanskyi@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -459,163 +459,177 @@ msgctxt "mask"
 msgid "Mask Unit"
 msgstr ""
 
+#. First connection message
+#: data/interfaces/preferences.ui:12
+msgctxt "preference"
+msgid ""
+"It's your first connection\n"
+"You can set the application's Dbus level to <u>System</u> if you want to see "
+"all Systemd units."
+msgstr ""
+
+#: data/interfaces/preferences.ui:19
+msgctxt "preference"
+msgid "_Main"
+msgstr ""
+
 #. group
-#: data/interfaces/preferences.ui:21
+#: data/interfaces/preferences.ui:23
 msgctxt "preference"
 msgid "General"
 msgstr ""
 
 #. row
-#: data/interfaces/preferences.ui:24
+#: data/interfaces/preferences.ui:26
 msgctxt "preference"
 msgid "Preferred Color Scheme"
 msgstr ""
 
 #. row subtitle
-#: data/interfaces/preferences.ui:29
+#: data/interfaces/preferences.ui:31
 msgctxt "preference"
 msgid "Application's division orientation mode"
 msgstr ""
 
 #. row
-#: data/interfaces/preferences.ui:30
+#: data/interfaces/preferences.ui:32
 msgctxt "preference"
 msgid "Orientation"
 msgstr ""
 
 #. row
-#: data/interfaces/preferences.ui:35
+#: data/interfaces/preferences.ui:37
 msgctxt "preference"
 msgid "Change the format of printed timestamps"
 msgstr ""
 
 #. row
-#: data/interfaces/preferences.ui:36
+#: data/interfaces/preferences.ui:38
 msgctxt "preference"
 msgid "Timestamp style"
 msgstr ""
 
 #. row
-#: data/interfaces/preferences.ui:41
+#: data/interfaces/preferences.ui:43
 msgctxt "preference"
 msgid "The Monospace Font"
 msgstr ""
 
 #. row
-#: data/interfaces/preferences.ui:42
+#: data/interfaces/preferences.ui:44
 msgctxt "preference"
 msgid "Text font"
 msgstr ""
 
-#: data/interfaces/preferences.ui:46
+#: data/interfaces/preferences.ui:48
 msgctxt "preference"
 msgid "Default"
 msgstr ""
 
 #. button
-#: data/interfaces/preferences.ui:54
+#: data/interfaces/preferences.ui:56
 msgctxt "preference"
 msgid "Select Font"
 msgstr ""
 
 #. group
-#: data/interfaces/preferences.ui:65
+#: data/interfaces/preferences.ui:67
 msgctxt "preference"
 msgid "Unit List"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:68
+#: data/interfaces/preferences.ui:70
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:69
+#: data/interfaces/preferences.ui:71
 msgctxt "preference"
 msgid "Display Colors"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:74
+#: data/interfaces/preferences.ui:76
 msgctxt "preference"
 msgid "Display different totals regarding retrieved units"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:75
+#: data/interfaces/preferences.ui:77
 msgctxt "preference"
 msgid "Display Totals Summary"
 msgstr ""
 
 #. group
-#: data/interfaces/preferences.ui:100
+#: data/interfaces/preferences.ui:102
 msgctxt "preference"
 msgid "Unit Description"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:103
+#: data/interfaces/preferences.ui:105
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:104
+#: data/interfaces/preferences.ui:106
 msgctxt "preference"
 msgid "Wrap unit description text"
 msgstr ""
 
 #. group
-#: data/interfaces/preferences.ui:111
+#: data/interfaces/preferences.ui:113
 msgctxt "preference"
 msgid "Unit File"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:114
+#: data/interfaces/preferences.ui:116
 msgctxt "preference"
 msgid "Display unit file line number"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:115
+#: data/interfaces/preferences.ui:117
 msgctxt "preference"
 msgid "Line number"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:125
+#: data/interfaces/preferences.ui:127
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:126
+#: data/interfaces/preferences.ui:128
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:136
+#: data/interfaces/preferences.ui:138
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:137
+#: data/interfaces/preferences.ui:139
 msgctxt "preference"
 msgid "Journal colors"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:158
+#: data/interfaces/preferences.ui:160
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/preferences.ui:171
+#: data/interfaces/preferences.ui:173
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -623,15 +637,146 @@ msgid ""
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:174
+#: data/interfaces/preferences.ui:176
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr ""
 
-#. dialog
-#: data/interfaces/preferences.ui:188
+#: data/interfaces/preferences.ui:193
 msgctxt "preference"
-msgid "Preferences"
+msgid "_Proxy Configuration"
+msgstr ""
+
+#: data/interfaces/preferences.ui:199
+msgid "Switch that controls other switches"
+msgstr ""
+
+#. group title
+#: data/interfaces/preferences.ui:207
+msgctxt "preference"
+msgid "Systemd Manager Method Calls"
+msgstr ""
+
+#: data/interfaces/preferences.ui:210
+msgctxt "preference"
+msgid "<b>Clean</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:211
+msgctxt "preference"
+msgid "Clean"
+msgstr ""
+
+#: data/interfaces/preferences.ui:216
+msgctxt "preference"
+msgid "<b>Freeze</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:217
+msgctxt "preference"
+msgid "Freeze"
+msgstr ""
+
+#: data/interfaces/preferences.ui:222
+msgctxt "preference"
+msgid "<b>Thaw</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:223
+msgctxt "preference"
+msgid "Thaw"
+msgstr ""
+
+#: data/interfaces/preferences.ui:228
+msgctxt "preference"
+msgid "<b>Enable Unit File</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:229
+msgctxt "preference"
+msgid "Enable Unit File"
+msgstr ""
+
+#: data/interfaces/preferences.ui:234
+msgctxt "preference"
+msgid "<b>Disable Unit File</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:235
+msgctxt "preference"
+msgid "Disable Unit File"
+msgstr ""
+
+#: data/interfaces/preferences.ui:240
+msgctxt "preference"
+msgid ""
+"<b>Reload</b> Systemd Manager configuration method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:241
+msgctxt "preference"
+msgid "Reload Daemon"
+msgstr ""
+
+#: data/interfaces/preferences.ui:246
+msgctxt "preference"
+msgid ""
+"<b>Revert Unit Files</b> to their vendor versions method call through the "
+"Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:247
+msgctxt "preference"
+msgid "Revert Unit Files"
+msgstr ""
+
+#: data/interfaces/preferences.ui:254
+msgctxt "preference"
+msgid "Actions"
+msgstr ""
+
+#: data/interfaces/preferences.ui:257
+msgctxt "preference"
+msgid "Create a <b>Drop-in</b> file through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:258
+msgctxt "preference"
+msgid "Create Drop-in"
+msgstr ""
+
+#: data/interfaces/preferences.ui:263
+msgctxt "preference"
+msgid "<b>Save file</b> through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:264
+msgctxt "preference"
+msgid "Save file"
+msgstr ""
+
+#: data/interfaces/preferences.ui:272
+msgctxt "preference"
+msgid "Proxy Behaviors"
+msgstr ""
+
+#: data/interfaces/preferences.ui:275
+msgid "Start the Proxy when starting Sysd Manager "
+msgstr ""
+
+#: data/interfaces/preferences.ui:276
+msgctxt "preference"
+msgid "Start Proxy at Start up"
+msgstr ""
+
+#: data/interfaces/preferences.ui:281
+msgctxt "preference"
+msgid "Stop the Proxy when closing Sysd Manager"
+msgstr ""
+
+#: data/interfaces/preferences.ui:282
+msgctxt "preference"
+msgid "Stop Proxy at Close"
 msgstr ""
 
 #. Section name
@@ -1788,7 +1933,7 @@ msgid "Top Bottom"
 msgstr ""
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:417
+#: src/widget/preferences/imp.rs:452
 msgctxt "pref file style"
 msgid "None"
 msgstr ""
@@ -1809,7 +1954,7 @@ msgid "Open Find in Text"
 msgstr ""
 
 #: src/widget/unit_control_panel/controls.rs:64
-#: src/widget/unit_control_panel/controls.rs:182
+#: src/widget/unit_control_panel/controls.rs:185
 msgctxt "toast"
 msgid ""
 "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
@@ -1828,34 +1973,40 @@ msgctxt "toast"
 msgid "Enabling"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:104
-#: src/widget/unit_control_panel/controls.rs:213
+#. toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
+#: src/widget/unit_control_panel/controls.rs:102
+#, rust-format
+msgctxt "toast"
+msgid "{} unit {} has failed!"
+msgstr ""
+
+#. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
+#: src/widget/unit_control_panel/controls.rs:179
+msgctxt "toast"
+msgid "Reenable"
+msgstr ""
+
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:208
+msgctxt "toast"
+msgid "Reenabling"
+msgstr ""
+
+#: src/widget/unit_control_panel/controls.rs:216
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "has failed!"
 msgstr ""
 
-#. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:176
-msgctxt "toast"
-msgid "Reenable"
-msgstr ""
-
-#. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:205
-msgctxt "toast"
-msgid "Reenabling"
-msgstr ""
-
-#: src/widget/unit_control_panel/controls.rs:242
+#: src/widget/unit_control_panel/controls.rs:245
 #: src/widget/unit_list/imp/pop_menu.rs:263
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:244
+#: src/widget/unit_control_panel/controls.rs:247
 #: src/widget/unit_list/imp/pop_menu.rs:256
 #, rust-format
 msgctxt "controls"

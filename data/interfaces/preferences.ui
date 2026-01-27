@@ -207,38 +207,44 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
             <property name="title" translatable="yes" context="preference" comments="group title">Systemd Manager Method Calls</property>
             <child>
               <object class="AdwSwitchRow" id="proxy_clean_switch">
-                <property name="subtitle" translatable="yes" context="preference">Clean method call through proxy</property>
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Clean&lt;/b&gt; method call through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Clean</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="proxy_freeze_switch">
-                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Freeze&lt;/b&gt; method call through proxy</property>
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Freeze&lt;/b&gt; method call through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Freeze</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="proxy_thaw_switch">
-                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Thaw&lt;/b&gt; method call through proxy</property>
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Thaw&lt;/b&gt; method call through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Thaw</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="proxy_enable_unit_file_switch">
-                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Enable&lt;/b&gt; Unit file method call through proxy</property>
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Enable Unit File&lt;/b&gt; method call through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Enable Unit File</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="proxy_disable_unit_file_switch">
-                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Disable&lt;/b&gt; Unit file method call through proxy</property>
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Disable Unit File&lt;/b&gt; method call through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Disable Unit File</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="proxy_reload_daemon_switch">
-                <property name="subtitle" translatable="yes" context="preference">Reload the systemd manager configuration</property>
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Reload&lt;/b&gt; Systemd Manager configuration method call through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Reload Daemon</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="proxy_revert_unit_file_switch">
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Revert Unit Files&lt;/b&gt; to their vendor versions method call through the Proxy</property>
+                <property name="title" translatable="yes" context="preference">Revert Unit Files</property>
               </object>
             </child>
           </object>
@@ -248,20 +254,14 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
             <property name="title" translatable="yes" context="preference">Actions</property>
             <child>
               <object class="AdwSwitchRow" id="proxy_create_dropin_switch">
-                <property name="subtitle" translatable="yes" context="preference">Create a &lt;b&gt;Drop-in&lt;/b&gt; file through the proxy</property>
+                <property name="subtitle" translatable="yes" context="preference">Create a &lt;b&gt;Drop-in&lt;/b&gt; file through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Create Drop-in</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="proxy_save_file_switch">
-                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Save file&lt;/b&gt; through the proxy</property>
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Save file&lt;/b&gt; through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Save file</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwSwitchRow" id="proxy_revert_unit_file_switch">
-                <property name="subtitle" translatable="yes" context="preference">Revert unit files to their vendor versions</property>
-                <property name="title" translatable="yes" context="preference">Revert Unit Files</property>
               </object>
             </child>
           </object>
