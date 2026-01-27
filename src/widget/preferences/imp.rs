@@ -492,13 +492,13 @@ impl ObjectImpl for PreferencesDialogImpl {
 
         #[cfg(not(feature = "flatpak"))]
         {
-            use systemd::{
+            use systemd::proxy_switcher::{
                 KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
                 KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
                 KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE, KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
                 KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELOAD_DAEMON,
                 KEY_PREF_USE_PROXY_REVERT_UNIT_FILE, KEY_PREF_USE_PROXY_SAVE_FILE,
-                KEY_PREF_USE_PROXY_THAW,
+                KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
             };
 
             use crate::format2;
@@ -699,6 +699,8 @@ impl ObjectImpl for PreferencesDialogImpl {
 
         #[cfg(feature = "flatpak")]
         {
+            //Note the switch are set to active false by default
+
             self.proxy_all_switch.set_sensitive(false);
             self.proxy_clean_switch.set_sensitive(false);
             self.proxy_freeze_switch.set_sensitive(false);
@@ -709,8 +711,8 @@ impl ObjectImpl for PreferencesDialogImpl {
             self.proxy_reload_daemon_switch.set_sensitive(false);
             self.proxy_save_file_switch.set_sensitive(false);
             self.proxy_revert_unit_file_switch.set_sensitive(false);
-            self.start_proxy_at_startup_switch.set_active(false);
-            self.stop_proxy_at_close_switch.set_active(false);
+            self.start_proxy_at_startup_switch.set_sensitive(false);
+            self.stop_proxy_at_close_switch.set_sensitive(false);
 
             self.proxy_banner.set_revealed(true);
         }
@@ -748,6 +750,8 @@ fn find_description_label(node: &gtk::Widget) -> Option<gtk::Label> {
 fn label_link_handler(label: &gtk::Label, pref_dialog: &super::PreferencesDialog) {
     let pref_dialog = pref_dialog.clone();
     label.connect_activate_link(move |_label, uri| {
+        use base::enums::UnitDBusLevel;
+
         info!("link uri: {uri}");
 
         if !uri.starts_with("unit://") {

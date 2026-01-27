@@ -108,7 +108,7 @@ static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
 pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
     RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
 
-    if !crate::PROXY_SWITCHER.start_at_start_up() {
+    if !crate::proxy_switcher::PROXY_SWITCHER.start_at_start_up() {
         info!(
             "Not starting {} as per user config",
             run_mode.proxy_service_name()
@@ -116,7 +116,7 @@ pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
         return Ok(());
     }
 
-    init_proxy_async2().await;
+    init_proxy_async2().await?;
     Ok(())
 }
 
@@ -158,7 +158,7 @@ pub fn proxy_service_name() -> Option<String> {
 
 #[cfg(not(feature = "flatpak"))]
 pub fn shut_down_proxy() {
-    if !crate::PROXY_SWITCHER.stop_at_close() {
+    if !crate::proxy_switcher::PROXY_SWITCHER.stop_at_close() {
         info!(
             "Not closing Proxy {:?} as per user configuration",
             proxy_service_name()

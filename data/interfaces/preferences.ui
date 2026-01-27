@@ -194,17 +194,17 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
         <property name="use-underline">True</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">SystemD Manager Calls</property>
             <child>
               <object class="AdwSwitchRow" id="proxy_all_switch">
                 <property name="subtitle" translatable="yes">Switch that controls other switches</property>
-                <property name="title">All</property>
+                <property name="title">All Actions and Methods</property>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes" context="preference" comments="group title">Systemd Manager Method Calls</property>
             <child>
               <object class="AdwSwitchRow" id="proxy_clean_switch">
                 <property name="subtitle" translatable="yes" context="preference">Clean method call through proxy</property>

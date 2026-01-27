@@ -2,284 +2,281 @@
 <!DOCTYPE schemalist SYSTEM "https://gitlab.gnome.org/GNOME/glib/-/raw/main/gio/gschema.dtd">
 <!-- https://docs.gtk.org/glib/gvariant-format-strings.html -->
 <schemalist>
-    <schema id="io.github.plrigaux.sysd-manager" path="/io/github/plrigaux/sysd-manager/">
-        <key name="window-width" type="i">
-            <default>1280</default>
-            <summary>Default main window width</summary>
-        </key>
-        <key name="window-height" type="i">
-            <default>720</default>
-            <summary>Default main window height</summary>
-        </key>
-        <key name="window-panes-orientation" type="s">
-            <choices>
-                <choice value='horizontal' />
-                <choice value='vertical' />
-            </choices>
-            <default>'horizontal'</default>
-            <summary>Orientation of the two window panes</summary>
-            <description> valid only for the ration between 9.0 / 16.0 and 3.0 / 4.0 </description>
-        </key>
-        <key name="is-maximized" type="b">
-            <default>false</default>
-            <summary>Default main window maximized behaviour</summary>
-        </key>
-        <key name="paned-separator-position" type="i">
-            <default>-1</default>
-            <summary>The position of the separator in pixels, from the left/top.</summary>
-        </key>
-        <key name="unit-properties-window-width" type="i">
-            <default>-1</default>
-            <summary>Unit properties window width</summary>
-        </key>
-        <key name="unit-properties-window-height" type="i">
-            <default>-1</default>
-            <summary>Unit properties window height</summary>
-        </key>
-        <key name="unit-properties-is-maximized" type="b">
-            <default>false</default>
-            <summary>Unit properties window maximized behaviour</summary>
-        </key>
-        <key name="unit-properties-filter-open" type="b">
-            <default>true</default>
-            <summary>Display unit properties filter controls</summary>
-        </key>
-        <key name="unit-properties-fileter-show-all" type="b">
-            <default>true</default>
-            <summary>Show all unit properties (Hide the empty one)</summary>
-        </key>
-        <key name="unit-properties-filter-text" type="s">
-            <default>""</default>
-            <summary>Saved unit properties filter text</summary>
-        </key>
-        <key name="pref-dbus-level" type="s">
-            <choices>
-                <choice value='session' />
-                <choice value='system' />
-                <choice value='system_session' />
-            </choices>
-            <default>'session'</default>
-            <summary>The dbus level scope</summary>
-        </key>
-        <key name="pref-journal-colors" type="b">
-            <default>true</default>
-            <summary>To display journal's logs colors</summary>
-        </key>
-        <key name="pref-journal-events-batch-size" type="u">
-            <default>100</default>
-            <summary>Events number returned by the journal per batch.</summary>
-            <description>The 0 value to disable the limit.</description>
-        </key>
-        <key name="pref-journal-event-max-size" type="u">
-            <default>3000</default>
-            <summary>Limits a journal event maximum characters</summary>
-            <description>Sometime a journal event can be huge and need to be limited to preserve the
+  <schema id="io.github.plrigaux.sysd-manager" path="/io/github/plrigaux/sysd-manager/">
+    <key name="window-width" type="i">
+      <default>1280</default>
+      <summary>Default main window width</summary>
+    </key>
+    <key name="window-height" type="i">
+      <default>720</default>
+      <summary>Default main window height</summary>
+    </key>
+    <key name="window-panes-orientation" type="s">
+      <choices>
+        <choice value="horizontal"/>
+        <choice value="vertical"/>
+      </choices>
+      <default>'horizontal'</default>
+      <summary>Orientation of the two window panes</summary>
+      <description> valid only for the ration between 9.0 / 16.0 and 3.0 / 4.0 </description>
+    </key>
+    <key name="is-maximized" type="b">
+      <default>false</default>
+      <summary>Default main window maximized behaviour</summary>
+    </key>
+    <key name="paned-separator-position" type="i">
+      <default>-1</default>
+      <summary>The position of the separator in pixels, from the left/top.</summary>
+    </key>
+    <key name="unit-properties-window-width" type="i">
+      <default>-1</default>
+      <summary>Unit properties window width</summary>
+    </key>
+    <key name="unit-properties-window-height" type="i">
+      <default>-1</default>
+      <summary>Unit properties window height</summary>
+    </key>
+    <key name="unit-properties-is-maximized" type="b">
+      <default>false</default>
+      <summary>Unit properties window maximized behaviour</summary>
+    </key>
+    <key name="unit-properties-filter-open" type="b">
+      <default>true</default>
+      <summary>Display unit properties filter controls</summary>
+    </key>
+    <key name="unit-properties-fileter-show-all" type="b">
+      <default>true</default>
+      <summary>Show all unit properties (Hide the empty one)</summary>
+    </key>
+    <key name="unit-properties-filter-text" type="s">
+      <default>""</default>
+      <summary>Saved unit properties filter text</summary>
+    </key>
+    <key name="pref-dbus-level" type="s">
+      <choices>
+        <choice value="session"/>
+        <choice value="system"/>
+        <choice value="system_session"/>
+      </choices>
+      <default>'session'</default>
+      <summary>The dbus level scope</summary>
+    </key>
+    <key name="pref-journal-colors" type="b">
+      <default>true</default>
+      <summary>To display journal's logs colors</summary>
+    </key>
+    <key name="pref-journal-events-batch-size" type="u">
+      <default>100</default>
+      <summary>Events number returned by the journal per batch.</summary>
+      <description>The 0 value to disable the limit.</description>
+    </key>
+    <key name="pref-journal-event-max-size" type="u">
+      <default>3000</default>
+      <summary>Limits a journal event maximum characters</summary>
+      <description>Sometime a journal event can be huge and need to be limited to preserve the
                 application's operation. The 0 value to disable the limit.</description>
-        </key>
-        <key name="pref-journal-display-order" type="s">
-            <choices>
-                <choice value='Ascending' />
-                <choice value='Descending' />               
-            </choices>
-            <default>'Descending'</default>           
-            <summary>Journal events display order</summary>            
-        </key>
-        <key name="pref-journal-display-follow" type="b">    
-            <default>false</default>           
-            <summary>Continuously print new entries as they are appended to the journal</summary>            
-        </key>
-        <key name="pref-unit-file-line-numbers" type="b">
-            <default>true</default>
-            <summary>To display unit file line numbers</summary>
-            <description>Whether to display line numbers.</description>
-        </key>
-        <key name="pref-unit-file-style-scheme" type="s">
-            <default>"Adwaita"</default>
-            <summary>Id of the style scheme used to display unit file</summary>
-        </key>
-        <key name="pref-app-first-connection" type="b">
-            <default>true</default>
-            <summary>Check if the first time that the user open the application</summary>
-        </key>
-        <key name="pref-enable-unit-file-mode" type="s">
-            <choices>
-                <choice value='Subprocess call' />
-                <choice value='D-bus call' />
-            </choices>
-            <default>'Subprocess call'</default>
-            <summary>The mode used to enable / disable unit files</summary>
-            <description> Albeit the application wants to use systemd dbus call most of the time, it
+    </key>
+    <key name="pref-journal-display-order" type="s">
+      <choices>
+        <choice value="Ascending"/>
+        <choice value="Descending"/>
+      </choices>
+      <default>'Descending'</default>
+      <summary>Journal events display order</summary>
+    </key>
+    <key name="pref-journal-display-follow" type="b">
+      <default>false</default>
+      <summary>Continuously print new entries as they are appended to the journal</summary>
+    </key>
+    <key name="pref-unit-file-line-numbers" type="b">
+      <default>true</default>
+      <summary>To display unit file line numbers</summary>
+      <description>Whether to display line numbers.</description>
+    </key>
+    <key name="pref-unit-file-style-scheme" type="s">
+      <default>"Adwaita"</default>
+      <summary>Id of the style scheme used to display unit file</summary>
+    </key>
+    <key name="pref-app-first-connection" type="b">
+      <default>true</default>
+      <summary>Check if the first time that the user open the application</summary>
+    </key>
+    <key name="pref-enable-unit-file-mode" type="s">
+      <choices>
+        <choice value="Subprocess call"/>
+        <choice value="D-bus call"/>
+      </choices>
+      <default>'Subprocess call'</default>
+      <summary>The mode used to enable / disable unit files</summary>
+      <description> Albeit the application wants to use systemd dbus call most of the time, it
                 appears that to enable or disable unit file systemd isn't the best solution. The
                 workaround solution is invoke the subprocesses *systemctl* enable or disable unit
                 files. </description>
-        </key>
-        <key name="pref-unit-list-display-colors" type="b">
-            <default>true</default>
-            <summary>Display colors on unit list table cells, according to their content</summary>
-            <description>Currently displaying color as preformance issue i.e. core dumps</description>
-        </key>
-        <key name="pref-timestamp-style" type="s">
-            <choices>
-                <choice value='Pretty' />
-                <choice value='Pretty usec' />
-                <choice value='UTC' />
-                <choice value='UTC usec' />
-                <choice value='Unix' />
-                <choice value='Unix usec' />
-            </choices>
-            <default>'Pretty'</default>
-            <summary>Format of the printed timestamps</summary>
-        </key>
-
-        <key name="pref-style-text-font-family" type="s">
-            <default>''</default>
-            <summary>The font family of unit information, dependencies and file</summary>
-        </key>
-        <key name="pref-style-text-font-size" type="u">
-            <default>0</default>
-            <summary>The font size of unit information, dependencies and file</summary>
-        </key>
-        <key name="pref-preferred-color-scheme" type="i">
-            <default>0</default>
-            <summary>Application Preferred Color Scheme</summary>
-        </key>
-        <key name="pref-window-orientaion-mode" type="s">
-            <choices>
-                <choice value='auto' />
-                <choice value='side-by-side' />
-                <choice value='top-down' />
-            </choices>
-            <default>'auto'</default>
-            <summary>Application panes orientation</summary>
-        </key>
-        <key name="pref-window-properties-orientation-vertical" type="b">       
-            <default>true</default>
-            <summary>Unit property selector window's panes orientation</summary>
-        </key>
-        <key name="pref-unit-list-display-summary" type="b"> 
-            <default>true</default>
-            <summary>Display the unit list summary</summary>
-        </key>
-        <key name="list-boots-window-height" type="i">
-            <default>800</default>
-            <summary>List Boots Window Height</summary>
-        </key>
-        <key name="list-boots-window-width" type="i">
-            <default>1100</default>
-            <summary>List Boots Window Width</summary>
-        </key>
-        <key name="pref-unit-description-wrap" type="b">
-            <summary>Wrap the unit description long text lines</summary>
-            <default>true</default>
-        </key>
-        <key name="save-context-enable-unit-file-force" type="b">
-             <default>false</default>
-        </key>
-        <key name="save-context-enable-unit-file-run-now" type="b">
-             <default>false</default>
-        </key>
-        <key name="save-context-enable-unit-file-runtime" type="b">
-            <default>false</default>
-        </key>
-        <key name="save-context-enable-unit-file-start-mode" type="s">
-            <choices>
-                <choice value='fail' />
-                <choice value='replace' />
-                <choice value='isolate' />
-                <choice value='ignore-dependencies' />
-                <choice value='ignore-requirements' />
-            </choices>
-            <default>'fail'</default>
-        </key>
-
-         <key name="save-context-enable-unit-file-dbus-level" type="s">
-            <choices>
-                <choice value='system' />
-                <choice value='user' />
-            </choices>
-            <default>'system'</default>
-        </key>
-
-        <key name="save-context-mask-unit-force" type="b">
-             <default>false</default>
-        </key>
-        <key name="save-context-mask-unit-stop-now" type="b">
-             <default>false</default>
-        </key>
-        <key name="save-context-mask-unit-runtime" type="b">
-            <default>false</default>
-        </key>
-        <key name="save-context-mask-unit-stop-mode" type="s">
-            <choices>
-                <choice value='fail' />
-                <choice value='replace' />
-                <choice value='isolate' />
-                <choice value='ignore-dependencies' />
-                <choice value='ignore-requirements' />
-            </choices>
-            <default>'fail'</default>
-        </key>
-
-        <key name="signal-window-width" type="i">
-            <default>600</default>
-            <summary>Signal window width</summary>
-        </key>
-
-        <key name="signal-window-height" type="i">
-            <default>700</default>
-            <summary>Signal window height</summary>
-        </key>
-        <key name="unit-property-window-size" type="(ii)">
-            <default>(1100,875)</default>
-            <summary>Unit property selector window Width and Height</summary>
-        </key>
-        <key name="unit-property-paned-separator-position" type="i">
-            <default>440</default>
-            <summary>Unit property selector position</summary>
-        </key>
-        <key name="pref-use-proxy-clean" type="b">
-            <default>true</default>
-            <summary>Use the proxy for the Clean calls</summary>
-        </key>
-        <key name="pref-use-proxy-freeze" type="b">
-            <default>true</default>
-            <summary>Use the proxy for the Freeze calls</summary>
-        </key>
-        <key name="pref-use-proxy-thaw" type="b">
-            <default>true</default>
-            <summary>Use the proxy for the Thaw calls</summary>
-        </key>
-        <key name="pref-use-proxy-enable-unit-file" type="b">
-            <default>true</default>
-            <summary>Use the proxy for Enabling Unit Files</summary>
-        </key>
-        <key name="pref-use-proxy-disable-unit-file" type="b">
-            <default>true</default>
-            <summary>Use the proxy for Disabling Unit Files</summary>
-        </key>
-        <key name="pref-use-proxy-reload-daemon" type="b">
-            <default>true</default>
-            <summary>Use Proxy to Reload Systemd Manager Configuration</summary>
-        </key>
-        <key name="pref-use-proxy-create-drop-in" type="b">
-            <default>true</default>
-            <summary>Use the proxy for the Create drop in actions</summary>
-        </key>
-        <key name="pref-use-proxy-save-file" type="b">
-            <default>true</default>
-            <summary>Use the proxy for the Save_file actions</summary>
-        </key>
-        <key name="pref-use-proxy-revert-unit-file" type="b">
-            <default>true</default>
-            <summary>Use Proxy to Revert Unit File to its vendor version</summary>
-        </key>
-        <key name="pref-proxy-start-at-startup" type="b">
-            <default>true</default>
-            <summary>Start the Proxy when starting Sysd Manager</summary>
-        </key>
-        <key name="pref-proxy-stop-at-close" type="b">
-            <default>true</default>
-            <summary>Stop the Proxy when closing Sysd Manager</summary>
-        </key>
-    </schema>
+    </key>
+    <key name="pref-unit-list-display-colors" type="b">
+      <default>true</default>
+      <summary>Display colors on unit list table cells, according to their content</summary>
+      <description>Currently displaying color as preformance issue i.e. core dumps</description>
+    </key>
+    <key name="pref-timestamp-style" type="s">
+      <choices>
+        <choice value="Pretty"/>
+        <choice value="Pretty usec"/>
+        <choice value="UTC"/>
+        <choice value="UTC usec"/>
+        <choice value="Unix"/>
+        <choice value="Unix usec"/>
+      </choices>
+      <default>'Pretty'</default>
+      <summary>Format of the printed timestamps</summary>
+    </key>
+    <key name="pref-style-text-font-family" type="s">
+      <default>''</default>
+      <summary>The font family of unit information, dependencies and file</summary>
+    </key>
+    <key name="pref-style-text-font-size" type="u">
+      <default>0</default>
+      <summary>The font size of unit information, dependencies and file</summary>
+    </key>
+    <key name="pref-preferred-color-scheme" type="i">
+      <default>0</default>
+      <summary>Application Preferred Color Scheme</summary>
+    </key>
+    <key name="pref-window-orientaion-mode" type="s">
+      <choices>
+        <choice value="auto"/>
+        <choice value="side-by-side"/>
+        <choice value="top-down"/>
+      </choices>
+      <default>'auto'</default>
+      <summary>Application panes orientation</summary>
+    </key>
+    <key name="pref-window-properties-orientation-vertical" type="b">
+      <default>true</default>
+      <summary>Unit property selector window's panes orientation</summary>
+    </key>
+    <key name="pref-unit-list-display-summary" type="b">
+      <default>true</default>
+      <summary>Display the unit list summary</summary>
+    </key>
+    <key name="list-boots-window-height" type="i">
+      <default>800</default>
+      <summary>List Boots Window Height</summary>
+    </key>
+    <key name="list-boots-window-width" type="i">
+      <default>1100</default>
+      <summary>List Boots Window Width</summary>
+    </key>
+    <key name="pref-unit-description-wrap" type="b">
+      <summary>Wrap the unit description long text lines</summary>
+      <default>true</default>
+    </key>
+    <key name="save-context-enable-unit-file-force" type="b">
+      <default>false</default>
+    </key>
+    <key name="save-context-enable-unit-file-run-now" type="b">
+      <default>false</default>
+    </key>
+    <key name="save-context-enable-unit-file-runtime" type="b">
+      <default>false</default>
+    </key>
+    <key name="save-context-enable-unit-file-start-mode" type="s">
+      <choices>
+        <choice value="fail"/>
+        <choice value="replace"/>
+        <choice value="isolate"/>
+        <choice value="ignore-dependencies"/>
+        <choice value="ignore-requirements"/>
+      </choices>
+      <default>'fail'</default>
+    </key>
+    <key name="save-context-enable-unit-file-dbus-level" type="s">
+      <choices>
+        <choice value="system"/>
+        <choice value="user"/>
+      </choices>
+      <default>'system'</default>
+    </key>
+    <key name="save-context-mask-unit-force" type="b">
+      <default>false</default>
+    </key>
+    <key name="save-context-mask-unit-stop-now" type="b">
+      <default>false</default>
+    </key>
+    <key name="save-context-mask-unit-runtime" type="b">
+      <default>false</default>
+    </key>
+    <key name="save-context-mask-unit-stop-mode" type="s">
+      <choices>
+        <choice value="fail"/>
+        <choice value="replace"/>
+        <choice value="isolate"/>
+        <choice value="ignore-dependencies"/>
+        <choice value="ignore-requirements"/>
+      </choices>
+      <default>'fail'</default>
+    </key>
+    <key name="signal-window-width" type="i">
+      <default>600</default>
+      <summary>Signal window width</summary>
+    </key>
+    <key name="signal-window-height" type="i">
+      <default>700</default>
+      <summary>Signal window height</summary>
+    </key>
+    <key name="unit-property-window-size" type="(ii)">
+      <default>(1100,875)</default>
+      <summary>Unit property selector window Width and Height</summary>
+    </key>
+    <key name="unit-property-paned-separator-position" type="i">
+      <default>440</default>
+      <summary>Unit property selector position</summary>
+    </key>
+    <key name="pref-use-proxy-clean" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Clean calls</summary>
+    </key>
+    <key name="pref-use-proxy-freeze" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Freeze calls</summary>
+    </key>
+    <key name="pref-use-proxy-thaw" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Thaw calls</summary>
+    </key>
+    <key name="pref-use-proxy-enable-unit-file" type="b">
+      <default>true</default>
+      <summary>Use the proxy for Enabling Unit Files</summary>
+    </key>
+    <key name="pref-use-proxy-disable-unit-file" type="b">
+      <default>true</default>
+      <summary>Use the proxy for Disabling Unit Files</summary>
+    </key>
+    <key name="pref-use-proxy-reload-daemon" type="b">
+      <default>true</default>
+      <summary>Use Proxy to Reload Systemd Manager Configuration</summary>
+    </key>
+    <key name="pref-use-proxy-create-drop-in" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Create drop in actions</summary>
+    </key>
+    <key name="pref-use-proxy-save-file" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Save_file actions</summary>
+    </key>
+    <key name="pref-use-proxy-revert-unit-file" type="b">
+      <default>true</default>
+      <summary>Use Proxy to Revert Unit File to its vendor version</summary>
+    </key>
+    <key name="pref-proxy-start-at-startup" type="b">
+      <default>false</default>
+      <summary>Start the Proxy when starting Sysd Manager</summary>
+      <description>If it's not started, Syd Manager will automatically try to start the Proxy when required.
+        AKA Lazy Start</description>
+    </key>
+    <key name="pref-proxy-stop-at-close" type="b">
+      <default>true</default>
+      <summary>Stop the Proxy when closing Sysd Manager</summary>
+    </key>
+  </schema>
 </schemalist>
