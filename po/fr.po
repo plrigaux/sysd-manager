@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 10:31-0500\n"
-"PO-Revision-Date: 2026-01-15 05:01+0000\n"
+"PO-Revision-Date: 2026-01-27 16:07+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -480,11 +480,14 @@ msgid ""
 "You can set the application's Dbus level to <u>System</u> if you want to see "
 "all Systemd units."
 msgstr ""
+"Il s'agit de votre première connexion.\n"
+"Vous pouvez définir le niveau Dbus de l'application sur <u>Système</u> si "
+"vous souhaitez afficher toutes les unités Systemd."
 
 #: data/interfaces/preferences.ui:19
 msgctxt "preference"
 msgid "_Main"
-msgstr ""
+msgstr "P_rincipal"
 
 #. group
 #: data/interfaces/preferences.ui:23
@@ -660,28 +663,26 @@ msgid "Journal's event max size"
 msgstr "Taille maximale d'un événement du journal"
 
 #: data/interfaces/preferences.ui:193
-#, fuzzy
 msgctxt "preference"
 msgid "_Proxy Configuration"
-msgstr "_Configuration"
+msgstr "Configuration du _Proxy"
 
 #: data/interfaces/preferences.ui:199
 msgid "Switch that controls other switches"
-msgstr ""
+msgstr "Interrupteur qui commande d'autres interrupteurs"
 
 #. group title
 #: data/interfaces/preferences.ui:207
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
-msgstr ""
+msgstr "Appels de méthodes à Systemd Manager"
 
 #: data/interfaces/preferences.ui:210
 msgctxt "preference"
 msgid "<b>Clean</b> method call through the Proxy"
-msgstr ""
+msgstr "Appel à la méthode <b>Nettoyer</b> via le proxy"
 
 #: data/interfaces/preferences.ui:211
-#, fuzzy
 msgctxt "preference"
 msgid "Clean"
 msgstr "Nettoyer"
@@ -689,10 +690,9 @@ msgstr "Nettoyer"
 #: data/interfaces/preferences.ui:216
 msgctxt "preference"
 msgid "<b>Freeze</b> method call through the Proxy"
-msgstr ""
+msgstr "Appel à la méthode <b>Geler</b> via le proxy"
 
 #: data/interfaces/preferences.ui:217
-#, fuzzy
 msgctxt "preference"
 msgid "Freeze"
 msgstr "Geler"
@@ -700,10 +700,9 @@ msgstr "Geler"
 #: data/interfaces/preferences.ui:222
 msgctxt "preference"
 msgid "<b>Thaw</b> method call through the Proxy"
-msgstr ""
+msgstr "Appel à la méthode <b>Décongeler</b> via le proxy"
 
 #: data/interfaces/preferences.ui:223
-#, fuzzy
 msgctxt "preference"
 msgid "Thaw"
 msgstr "Décongeler"
@@ -711,10 +710,9 @@ msgstr "Décongeler"
 #: data/interfaces/preferences.ui:228
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
-msgstr ""
+msgstr "Appel à la méthode <b>Activer le fichier d'unité</b> via le proxy"
 
 #: data/interfaces/preferences.ui:229
-#, fuzzy
 msgctxt "preference"
 msgid "Enable Unit File"
 msgstr "Activer le fichier d'unité"
@@ -722,25 +720,25 @@ msgstr "Activer le fichier d'unité"
 #: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
-msgstr ""
+msgstr "Appel à la méthode <b>Désactiver le fichier d'unité</b> via le proxy"
 
 #: data/interfaces/preferences.ui:235
-#, fuzzy
 msgctxt "preference"
 msgid "Disable Unit File"
-msgstr "Désactiver le fichier d'unité"
+msgstr "Désactiver le fichier de l'unité"
 
 #: data/interfaces/preferences.ui:240
 msgctxt "preference"
 msgid ""
 "<b>Reload</b> Systemd Manager configuration method call through the Proxy"
 msgstr ""
+"Appel à la méthode <b>Recharger</b> via le proxy pour recharger la "
+"configuration du Systemd Manager"
 
 #: data/interfaces/preferences.ui:241
-#, fuzzy
 msgctxt "preference"
 msgid "Reload Daemon"
-msgstr "Recharger l'unité"
+msgstr "Recharger la Configuration"
 
 #: data/interfaces/preferences.ui:246
 msgctxt "preference"
@@ -748,64 +746,62 @@ msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
 msgstr ""
+"Appel à la méthode <b>Rétablir les fichiers unitaires</b> à leurs versions "
+"fournisseur via le proxy"
 
 #: data/interfaces/preferences.ui:247
-#, fuzzy
 msgctxt "preference"
 msgid "Revert Unit Files"
-msgstr "Prérégler le fichier de l'unité"
+msgstr "Rétablir les fichiers de l'unité"
 
 #: data/interfaces/preferences.ui:254
-#, fuzzy
 msgctxt "preference"
 msgid "Actions"
-msgstr "Activation"
+msgstr "Actions"
 
 #: data/interfaces/preferences.ui:257
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
-msgstr ""
+msgstr "Créez un fichier <b>Drop-in</b> via le proxy"
 
 #: data/interfaces/preferences.ui:258
-#, fuzzy
 msgctxt "preference"
 msgid "Create Drop-in"
-msgstr "Créer un drop-in"
+msgstr "Créer un Drop-in"
 
 #: data/interfaces/preferences.ui:263
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
-msgstr ""
+msgstr "<b>Enregistrer le fichier</b> via le proxy"
 
 #: data/interfaces/preferences.ui:264
-#, fuzzy
 msgctxt "preference"
 msgid "Save file"
-msgstr "Enregister"
+msgstr "Enregistrer"
 
 #: data/interfaces/preferences.ui:272
 msgctxt "preference"
 msgid "Proxy Behaviors"
-msgstr ""
+msgstr "Comportements du Proxy"
 
 #: data/interfaces/preferences.ui:275
 msgid "Start the Proxy when starting Sysd Manager "
-msgstr ""
+msgstr "Démarrez le Proxy au démarrage de Sysd Manager "
 
 #: data/interfaces/preferences.ui:276
 msgctxt "preference"
 msgid "Start Proxy at Start up"
-msgstr ""
+msgstr "Démarrer le Proxy au démarrage"
 
 #: data/interfaces/preferences.ui:281
 msgctxt "preference"
 msgid "Stop the Proxy when closing Sysd Manager"
-msgstr ""
+msgstr "Arrêtez le Proxy lors de la fermeture de Sysd Manager"
 
 #: data/interfaces/preferences.ui:282
 msgctxt "preference"
 msgid "Stop Proxy at Close"
-msgstr ""
+msgstr "Arrêter le proxy à la fermeture"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:14
@@ -2038,7 +2034,7 @@ msgstr "Activation"
 #, rust-format
 msgctxt "toast"
 msgid "{} unit {} has failed!"
-msgstr ""
+msgstr "{} l'unité {} a échouée !"
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
 #: src/widget/unit_control_panel/controls.rs:179
