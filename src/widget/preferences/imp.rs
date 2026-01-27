@@ -2,6 +2,12 @@ use gettextrs::pgettext;
 use gio::Settings;
 use systemd::time_handling::TimestampStyle;
 
+use super::data::{
+    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
+    KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
+    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBERS,
+    KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
+};
 use crate::widget::InterPanelMessage;
 use crate::{
     consts::ADWAITA,
@@ -28,13 +34,6 @@ use gtk::{
 use log::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 use strum::IntoEnumIterator;
-
-use super::data::{
-    KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
-    KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
-    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBERS,
-    KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
-};
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
@@ -79,6 +78,48 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     unit_description_wrap: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_all_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_clean_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_freeze_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_thaw_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_enable_unit_file_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_disable_unit_file_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_create_dropin_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_save_file_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_revert_unit_file_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_reload_daemon_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    start_proxy_at_startup_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    stop_proxy_at_close_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_banner: TemplateChild<adw::Banner>,
+
+    #[template_child]
+    pref_proxy_page: TemplateChild<adw::PreferencesPage>,
 
     app_window: RefCell<Option<AppWindow>>,
 }
@@ -289,12 +330,6 @@ impl PreferencesDialogImpl {
 
         self.preference_banner.set_revealed(is_app_first_connection);
 
-        self.preference_banner.set_use_markup(true);
-        self.preference_banner.set_title(
-            "It's your first connection
-You can set the application's Dbus level to <u>System</u> if you want to see all Systemd units.",
-        );
-
         let timestamp_style = PREFERENCES.timestamp_style();
         self.timestamp_style.set_selected(timestamp_style as u32);
 
@@ -454,8 +489,299 @@ impl ObjectImpl for PreferencesDialogImpl {
                 "active",
             )
             .build();
+
+        #[cfg(not(feature = "flatpak"))]
+        {
+            use systemd::proxy_switcher::{
+                KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
+                KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
+                KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE, KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
+                KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELOAD_DAEMON,
+                KEY_PREF_USE_PROXY_REVERT_UNIT_FILE, KEY_PREF_USE_PROXY_SAVE_FILE,
+                KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
+            };
+
+            use crate::format2;
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_CLEAN,
+                    self.proxy_clean_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_FREEZE,
+                    self.proxy_freeze_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_THAW,
+                    self.proxy_thaw_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
+                    self.proxy_enable_unit_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE,
+                    self.proxy_disable_unit_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_RELOAD_DAEMON,
+                    self.proxy_reload_daemon_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_CREATE_DROP_IN,
+                    self.proxy_create_dropin_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_SAVE_FILE,
+                    self.proxy_save_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
+                    self.proxy_revert_unit_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_PROXY_START_AT_STARTUP,
+                    self.start_proxy_at_startup_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_PROXY_STOP_AT_CLOSE,
+                    self.stop_proxy_at_close_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            self.proxy_clean_switch.connect_active_notify(|switch| {
+                PROXY_SWITCHER.set_clean(switch.is_active());
+            });
+
+            self.proxy_freeze_switch.connect_active_notify(|switch| {
+                PROXY_SWITCHER.set_freeze(switch.is_active());
+            });
+
+            self.proxy_thaw_switch.connect_active_notify(|switch| {
+                PROXY_SWITCHER.set_thaw(switch.is_active());
+            });
+
+            self.proxy_enable_unit_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_enable_unit_file(switch.is_active());
+                });
+
+            self.proxy_disable_unit_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_disable_unit_file(switch.is_active());
+                });
+
+            self.proxy_reload_daemon_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_reload(switch.is_active());
+                });
+
+            self.proxy_create_dropin_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_create_dropin(switch.is_active());
+                });
+
+            self.proxy_revert_unit_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_revert_unit_file(switch.is_active());
+                });
+
+            self.proxy_save_file_switch.connect_active_notify(|switch| {
+                PROXY_SWITCHER.set_save_file(switch.is_active());
+            });
+
+            self.start_proxy_at_startup_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_start_at_startup(switch.is_active());
+                });
+
+            self.stop_proxy_at_close_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_stop_at_close(switch.is_active());
+                });
+
+            let proxy_clean_switch = self.proxy_clean_switch.clone();
+            let proxy_freeze_switch = self.proxy_freeze_switch.clone();
+            let proxy_thaw_switch = self.proxy_thaw_switch.clone();
+            let proxy_enable_unit_file = self.proxy_enable_unit_file_switch.clone();
+            let proxy_disable_unit_file = self.proxy_disable_unit_file_switch.clone();
+            let proxy_reload_switch = self.proxy_reload_daemon_switch.clone();
+            let proxy_create_dropin_switch = self.proxy_create_dropin_switch.clone();
+            let proxy_save_file = self.proxy_save_file_switch.clone();
+            let proxy_revert_unit_file_switch = self.proxy_revert_unit_file_switch.clone();
+
+            let group_of_switches = [
+                proxy_clean_switch,
+                proxy_freeze_switch,
+                proxy_thaw_switch,
+                proxy_enable_unit_file,
+                proxy_disable_unit_file,
+                proxy_reload_switch,
+                proxy_create_dropin_switch,
+                proxy_save_file,
+                proxy_revert_unit_file_switch,
+            ];
+
+            let sum: usize = group_of_switches
+                .iter()
+                .map(|s| if s.is_active() { 1 } else { 0 })
+                .sum();
+            let ratio = sum as f32 / group_of_switches.len() as f32;
+            let all_active = ratio > 0.5;
+            self.proxy_all_switch.set_active(all_active);
+
+            self.proxy_all_switch
+                .connect_active_notify(move |all_switch| {
+                    let all_active = all_switch.is_active();
+                    for switch in group_of_switches.iter() {
+                        switch.set_active(all_active);
+                    }
+                });
+
+            let service = "sysd-manager-proxy.service";
+            let service_style = format!("<b>{service}</b>");
+            let description = pgettext(
+                "preference",
+                format2!(
+                    "List Dbus Messages and Actions that are preformed or not by the {} <a href=\"unit://{}\" >Proxy</a> for privilege elevation purposes.",
+                    service_style,
+                    service
+                ),
+            );
+
+            self.pref_proxy_page.set_description(&description);
+            if let Some(label) = find_description_label(self.pref_proxy_page.as_ref()) {
+                label_link_handler(&label, &self.obj());
+            }
+        }
+
+        #[cfg(feature = "flatpak")]
+        {
+            //Note the switch are set to active false by default
+
+            self.proxy_all_switch.set_sensitive(false);
+            self.proxy_clean_switch.set_sensitive(false);
+            self.proxy_freeze_switch.set_sensitive(false);
+            self.proxy_thaw_switch.set_sensitive(false);
+            self.proxy_enable_unit_file_switch.set_sensitive(false);
+            self.proxy_disable_unit_file_switch.set_sensitive(false);
+            self.proxy_create_dropin_switch.set_sensitive(false);
+            self.proxy_reload_daemon_switch.set_sensitive(false);
+            self.proxy_save_file_switch.set_sensitive(false);
+            self.proxy_revert_unit_file_switch.set_sensitive(false);
+            self.start_proxy_at_startup_switch.set_sensitive(false);
+            self.stop_proxy_at_close_switch.set_sensitive(false);
+
+            self.proxy_banner.set_revealed(true);
+        }
     }
 }
+
+#[cfg(not(feature = "flatpak"))]
+fn find_description_label(node: &gtk::Widget) -> Option<gtk::Label> {
+    let id = node.buildable_id();
+    if let Some(id) = id
+        && id.as_str() == "description"
+        && let Some(label) = node.downcast_ref::<gtk::Label>()
+    {
+        return Some(label.clone());
+    }
+
+    if let Some(child) = node.first_child()
+        && let Some(label) = find_description_label(&child)
+    {
+        return Some(label);
+    }
+
+    let mut sibling = node.next_sibling();
+    while let Some(sibling1) = sibling {
+        let label = find_description_label(&sibling1);
+        if label.is_some() {
+            return label;
+        }
+        sibling = sibling1.next_sibling();
+    }
+    None
+}
+
+#[cfg(not(feature = "flatpak"))]
+fn label_link_handler(label: &gtk::Label, pref_dialog: &super::PreferencesDialog) {
+    let pref_dialog = pref_dialog.clone();
+    label.connect_activate_link(move |_label, uri| {
+        use base::enums::UnitDBusLevel;
+
+        info!("link uri: {uri}");
+
+        if !uri.starts_with("unit://") {
+            return glib::Propagation::Proceed;
+        }
+
+        let Some(unit_name) = uri.strip_prefix("unit://") else {
+            return glib::Propagation::Proceed;
+        };
+
+        let (unit_name, level) = match unit_name.split_once("?") {
+            Some((prefix, suffix)) => (prefix, UnitDBusLevel::from_short(suffix)),
+            None => (unit_name, UnitDBusLevel::System),
+        };
+
+        info!("open unit {:?} at level {}", unit_name, level.short());
+
+        let unit = systemd::fetch_unit(level, unit_name)
+            .inspect_err(|e| warn!("Cli unit: {e:?}"))
+            .ok();
+
+        if let Some(app_window) = pref_dialog.imp().app_window.borrow().as_ref() {
+            app_window.set_unit(unit.as_ref());
+        } else {
+            warn!("app_window missing");
+        }
+        glib::Propagation::Stop
+    });
+}
+
 impl WidgetImpl for PreferencesDialogImpl {}
 //impl WindowImpl for PreferencesDialogImpl {}
 

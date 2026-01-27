@@ -1,4 +1,4 @@
-use base::proxy::DisEnAbleUnitFiles;
+use base::proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse};
 use zbus::proxy;
 
 #[proxy(
@@ -15,4 +15,17 @@ pub trait SysDManagerComLink {
         unit_names: &Vec<String>,
     ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
     fn reload(&self) -> zbus::fdo::Result<()>;
+
+    fn enable_unit_files_with_flags(
+        &self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+
+    #[zbus(allow_interactive_auth)]
+    fn disable_unit_files_with_flags_and_install_info(
+        &self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
 }

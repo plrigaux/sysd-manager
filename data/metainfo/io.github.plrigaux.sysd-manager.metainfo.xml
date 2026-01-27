@@ -80,8 +80,23 @@
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
-  <content_rating type="oars-1.1" />
+  <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.12.0" date="2026-01-27">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Fine tune the Proxy Method Calls and Actions through the Preferences</li>
+          <li>Lazy Start the Proxy</li>
+          <li>Refresh the Unit Status on selection</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Fix Flatpak save file in home directory (make a warning)</li>
+          <li>Password dialog gets overlapped Sysd Manager on every start  https://github.com/plrigaux/sysd-manager/issues/35</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.11.3" date="2026-01-13">
       <description translate="no">
         <p>Added</p>

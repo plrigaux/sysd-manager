@@ -1,6 +1,9 @@
 use std::sync::LazyLock;
 
-use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    enums::UnitDBusLevel,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse, QueuedJobs},
+};
 use log::error;
 use tokio::sync::OnceCell;
 use zbus::proxy;
@@ -90,9 +93,15 @@ pub(crate) trait Systemd1Manager {
     #[zbus(signal)]
     fn reloading(&self, active: bool) -> zbus::Result<()>;
 
+    #[zbus(allow_interactive_auth)]
+    fn reload(&self) -> zbus::fdo::Result<()>;
+
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
     fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
     fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn start_unit(&self, unit: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    ///returns an array with all currently queued jobs.
+    fn list_jobs(&self) -> zbus::fdo::Result<QueuedJobs>;
 
     fn create_drop_in(
         &mut self,
@@ -107,26 +116,63 @@ pub(crate) trait Systemd1Manager {
     fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
 
     #[zbus(allow_interactive_auth)]
-    fn reload(&self) -> zbus::fdo::Result<()>;
+    fn enable_unit_files_with_flags(
+        &self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+
+    #[zbus(allow_interactive_auth)]
+    fn disable_unit_files_with_flags_and_install_info(
+        &self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
 }
 
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
 static SYSTEM_MANAGER_USER_SESSION: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
 
-fn systemd_manager_blocking() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors> {
+fn systemd_manager_blocking_() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors> {
     let conn = get_blocking_connection(base::enums::UnitDBusLevel::System)?;
     let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
     Ok(proxy)
 }
 
+fn systemd_manager_session_blocking() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors>
+{
+    let conn = get_blocking_connection(base::enums::UnitDBusLevel::UserSession)?;
+    let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
+    Ok(proxy)
+}
+
 static SYSTEM_MANAGER_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> = LazyLock::new(|| {
-    systemd_manager_blocking()
+    systemd_manager_blocking_()
         .inspect_err(|e| error!("{e:?}"))
         .unwrap()
 });
 
+static SYSTEM_MANAGER_SESSION_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> =
+    LazyLock::new(|| {
+        systemd_manager_session_blocking()
+            .inspect_err(|e| error!("{e:?}"))
+            .unwrap()
+    });
+
+#[cfg(feature = "flatpak")]
+pub fn systemd_manager_blocking<'a>(level: UnitDBusLevel) -> &'a Systemd1ManagerProxyBlocking<'a> {
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => systemd_manager(),
+        UnitDBusLevel::UserSession => systemd_manager_session(),
+    }
+}
+
 pub fn systemd_manager<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
     (&*SYSTEM_MANAGER_BLOCKING) as _
+}
+
+pub fn systemd_manager_session<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
+    (&*SYSTEM_MANAGER_SESSION_BLOCKING) as _
 }
 
 pub async fn systemd_manager_async(

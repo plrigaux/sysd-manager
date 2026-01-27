@@ -1,5 +1,11 @@
 #![allow(dead_code)]
-use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    enums::UnitDBusLevel,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+};
+use futures_util::stream::StreamExt;
+use log::{info, warn};
+use tokio::time::{Duration, timeout};
 use zbus::proxy;
 
 use crate::{
@@ -27,10 +33,22 @@ pub trait SysDManagerComLink {
     ) -> zbus::fdo::Result<()>;
     fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
 
-    fn revert_unit_files(
+    fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+
+    fn enable_unit_files_with_flags(
         &mut self,
-        file_names: &[&str],
-    ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+
+    fn disable_unit_files_with_flags(
+        &mut self,
+        files: &[&str],
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+
+    #[zbus(signal)]
+    fn hello(msg: String) -> zbus::fdo::Result<()>;
 }
 
 ///1 Ensure that the  proxy is up and running
@@ -94,6 +112,78 @@ pub async fn reload() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
+fn extract_job_id(job: &str) -> Option<u32> {
+    job.rsplit_once('/')
+        .and_then(|(_, id)| id.parse::<u32>().ok())
+}
+
+pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
+    let proxy = get_proxy_async().await?;
+    let hello_stream = proxy.receive_hello().await?;
+    crate::sysdbus::init_proxy_async2().await?;
+
+    let timeout_results = timeout(Duration::from_secs(2), wait_hello(hello_stream)).await;
+
+    match timeout_results {
+        Ok(rr) => rr?,
+        Err(elapsed) => warn!("Proxy start time up : {}", elapsed),
+    }
+    Ok(())
+}
+
+async fn wait_hello(mut hello_stream: HelloStream) -> Result<(), SystemdErrors> {
+    if let Some(msg) = hello_stream.next().await {
+        let args = msg.args()?;
+        info!("Hello Proxy Args {:?}", args);
+    }
+    Ok(())
+}
+
+pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
+    crate::runtime().block_on(async move {
+        warn!("lazy 1");
+        lazy_start_proxy_async().await;
+        warn!("lazy 2");
+    });
+    Ok(())
+}
+
+#[macro_export]
+macro_rules! proxy_call {
+    ($f:ident,$($p:expr),+) => {
+        match $crate::to_proxy::$f($($p),+) {
+            Ok(ok) => Ok(ok),
+            Err(SystemdErrors::ZFdoServiceUnknowm(s)) => {
+                warn!("ServiceUnkown: {}", s);
+                $crate::to_proxy::lazy_start_proxy_block();
+
+                $crate::to_proxy::$f($($p),+)
+            },
+            Err(err) => Err(err)
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! proxy_call_async {
+    ($f:ident) => {
+        proxy_call_async!($f,)
+    };
+
+    ($f:ident, $($p:expr),*) => {
+        match $crate::to_proxy::$f($($p),*).await {
+            Ok(ok) => Ok(ok),
+            Err(SystemdErrors::ZFdoServiceUnknowm(s)) => {
+                warn!("ServiceUnkown: {}", s);
+                $crate::to_proxy::lazy_start_proxy_async();
+
+                $crate::to_proxy::$f($($p),*).await
+            },
+            Err(err) => Err(err)
+        }
+    }
+}
+
 pub(crate) async fn create_drop_in(
     runtime: bool,
     unit_name: &str,
@@ -118,9 +208,29 @@ pub async fn save_file(file_path: &str, content: &str) -> Result<u64, SystemdErr
 pub async fn revert_unit_files(
     unit_names: &[&str],
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    let mut proxy = get_proxy_async().await?;
+    let proxy = get_proxy_async().await?;
     proxy
         .revert_unit_files(unit_names)
         .await
         .map_err(|e| e.into())
+}
+
+pub fn enable_unit_files_with_flags(
+    unit_files: &[&str],
+    flags: u64,
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let mut proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    proxy
+        .enable_unit_files_with_flags(unit_files, flags)
+        .map_err(|err| err.into())
+}
+
+pub fn disable_unit_files_with_flags(
+    unit_files: &[&str],
+    flags: u64,
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let mut proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    proxy
+        .disable_unit_files_with_flags(unit_files, flags)
+        .map_err(|err| err.into())
 }

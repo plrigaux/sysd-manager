@@ -8,7 +8,6 @@ pub(super) mod watcher;
 mod tests;
 //use futures_lite::stream::StreamExt;
 
-use futures_util::TryStreamExt;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     str::FromStr,
@@ -16,15 +15,18 @@ use std::{
     time::Duration,
 };
 
-use base::{RunMode, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
-use enumflags2::BitFlags;
+use base::{
+    RunMode,
+    enums::UnitDBusLevel,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+};
 use log::{debug, error, info, trace, warn};
 
 use serde::Deserialize;
 
 use tokio::time::sleep;
 use zbus::{
-    Message, MessageStream,
+    Message,
     blocking::{Connection, MessageIterator, Proxy, fdo},
     message::Flags,
     names::InterfaceName,
@@ -34,17 +36,13 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 use crate::sysdbus::dbus_proxies::systemd_manager_async;
 use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
-    data::{EnableUnitFilesReturn, LUnit, UnitInfo},
+    data::{LUnit, UnitInfo},
     enums::{
-        ActiveState, DependencyType, DisEnableFlags, EnablementStatus, KillWho, LoadState,
-        StartStopMode, UnitType,
+        ActiveState, DependencyType, EnablementStatus, KillWho, LoadState, StartStopMode, UnitType,
     },
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
-
-#[cfg(not(feature = "flatpak"))]
-use base::consts::*;
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
@@ -66,8 +64,8 @@ const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
 const METHOD_MASK_UNIT_FILES: &str = "MaskUnitFiles";
 const METHOD_UNMASK_UNIT_FILES: &str = "UnmaskUnitFiles";
 const METHOD_GET_UNIT: &str = "GetUnit";
-const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
-const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlags";
+// const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
+// const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlagsAndInstallInfo";
 pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
 pub const METHOD_FREEZE_UNIT: &str = "FreezeUnit";
@@ -105,66 +103,51 @@ impl RunContext {
 
 static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
 
+/// Try to start Proxy
 #[cfg(not(feature = "flatpak"))]
-pub fn init(run_mode: RunMode) -> Result<(), SystemdErrors> {
-    let unit_name = if run_mode == RunMode::Development {
-        info!("Init Dbus in Development Mode");
-        format!("{}.service", PROXY_SERVICE_DEV)
-    } else {
-        info!("Init Dbus in Normal Mode");
-        format!("{}.service", PROXY_SERVICE)
-    };
-
+pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
     RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
 
-    for tries in 0..5 {
-        match start_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
-            Ok(job_id) => {
-                info!("Started unit {unit_name}, job id {job_id}");
-                break;
-            }
-            Err(error) => {
-                error!("Error starting unit {unit_name}: {error:?}");
-                if tries >= 3 {
-                    error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
-                    break;
-                }
-            }
-        }
+    if !crate::proxy_switcher::PROXY_SWITCHER.start_at_start_up() {
+        info!(
+            "Not starting {} as per user config",
+            run_mode.proxy_service_name()
+        );
+        return Ok(());
     }
 
+    init_proxy_async2().await?;
     Ok(())
 }
 
-pub async fn init_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
-    RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
-
+pub(crate) async fn init_proxy_async2() -> Result<String, SystemdErrors> {
     let unit_name = proxy_service_name().unwrap();
-
-    /*  let connection = get_connection(UnitDBusLevel::System).await?;
-       let manager_proxy = ManagerProxy::builder(&connection).build().await?;
-    */
+    let level = UnitDBusLevel::System;
+    let manager = systemd_manager_async(level).await?;
     for tries in 0..5 {
         // match manager_proxy.start_unit(&unit_name, "fail").await {
         //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
-        match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
+        match manager
+            .start_unit(&unit_name, StartStopMode::Fail.as_str())
+            .await
+        {
             Ok(job_id) => {
                 info!("Started unit {unit_name}, job id {job_id}");
-                break;
+                return Ok(job_id.to_string());
             }
             Err(error) => {
                 error!("Error starting unit {unit_name}: {error:?}");
                 if tries >= 3 {
                     error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
-                    break;
+                    return Err(error.into());
                 }
-                sleep(Duration::from_millis(1000)).await;
+                sleep(Duration::from_millis(500)).await;
                 // init(run_mode, tries + 1) // Retry
             }
         }
     }
 
-    Ok(())
+    Err(SystemdErrors::Unreachable)
 }
 
 pub fn proxy_service_name() -> Option<String> {
@@ -173,7 +156,16 @@ pub fn proxy_service_name() -> Option<String> {
         .map(|context| context.proxy_service_name())
 }
 
-pub fn shut_down() {
+#[cfg(not(feature = "flatpak"))]
+pub fn shut_down_proxy() {
+    if !crate::proxy_switcher::PROXY_SWITCHER.stop_at_close() {
+        info!(
+            "Not closing Proxy {:?} as per user configuration",
+            proxy_service_name()
+        );
+        return;
+    }
+
     if let Some(unit_name) = proxy_service_name() {
         match stop_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
             Ok(job_id) => info!("Stopped unit {unit_name}, job id {job_id}"),
@@ -181,6 +173,8 @@ pub fn shut_down() {
                 error!("Error stopping unit {unit_name}: {error:?}");
             }
         }
+    } else {
+        warn!("Fail stoping Proxy, because name not set")
     }
 }
 
@@ -543,21 +537,6 @@ pub(super) fn start_unit(
     )
 }
 
-/// Takes a unit name as input and attempts to start it
-pub(super) async fn start_unit_async(
-    level: UnitDBusLevel,
-    unit_name: &str,
-    mode: StartStopMode,
-) -> Result<String, SystemdErrors> {
-    send_disenable_message_async(
-        level,
-        METHOD_START_UNIT,
-        &(unit_name, mode.as_str()),
-        handle_start_stop_answer,
-    )
-    .await
-}
-
 fn handle_start_stop_answer(
     method: &str,
     return_message: &Message,
@@ -619,58 +598,6 @@ pub(super) fn restart_unit(
     )
 }
 
-pub(super) fn enable_unit_files(
-    level: UnitDBusLevel,
-    unit_names_or_files: &[&str],
-    flags: BitFlags<DisEnableFlags>,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    fn handle_answer(
-        _method: &str,
-        return_message: &Message,
-    ) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-        let body = return_message.body();
-
-        let return_msg: EnableUnitFilesReturn = body.deserialize()?;
-
-        info!("Enable unit files {return_msg:?}");
-
-        Ok(return_msg)
-    }
-
-    send_disenable_message(
-        level,
-        METHOD_ENABLE_UNIT_FILES,
-        &(unit_names_or_files, flags.bits_c() as u64),
-        handle_answer,
-    )
-}
-
-pub(super) fn disable_unit_files(
-    level: UnitDBusLevel,
-    unit_names_or_files: &[&str],
-    flags: BitFlags<DisEnableFlags>,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    fn handle_answer(
-        _method: &str,
-        return_message: &Message,
-    ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-        let body = return_message.body();
-
-        let return_msg: Vec<DisEnAbleUnitFiles> = body.deserialize()?;
-
-        info!("Disable unit files {return_msg:?}");
-
-        Ok(return_msg)
-    }
-
-    send_disenable_message(
-        level,
-        METHOD_DISABLE_UNIT_FILES,
-        &(unit_names_or_files, flags.bits_c() as u64),
-        handle_answer,
-    )
-}
-
 fn send_disenable_message<T, U>(
     level: UnitDBusLevel,
     method: &str,
@@ -697,82 +624,6 @@ where
     for message_res in message_it {
         debug!("Message response {message_res:?}");
         let return_message = message_res?;
-
-        match return_message.message_type() {
-            zbus::message::Type::MethodReturn => {
-                info!("{method} Response");
-                let result = handler(method, &return_message);
-                return result;
-            }
-            zbus::message::Type::MethodCall => {
-                warn!("Not supposed to happen: {return_message:?}");
-                break;
-            }
-            zbus::message::Type::Error => {
-                let zb_error = zbus::Error::from(return_message);
-
-                {
-                    match zb_error {
-                        zbus::Error::MethodError(
-                            ref owned_error_name,
-                            ref details,
-                            ref message,
-                        ) => {
-                            warn!(
-                                "Method error: {}\nDetails: {}\n{:?}",
-                                owned_error_name.as_str(),
-                                details.as_ref().map(|s| s.as_str()).unwrap_or_default(),
-                                message
-                            )
-                        }
-                        _ => warn!("Bus error: {zb_error:?}"),
-                    }
-                }
-                let error = SystemdErrors::from((zb_error, method));
-                return Err(error);
-            }
-            zbus::message::Type::Signal => {
-                info!("Signal: {return_message:?}");
-                continue;
-            }
-        }
-    }
-
-    let msg = format!("{method:?} ????, response supposed to be Unreachable");
-    warn!("{msg}");
-    Err(SystemdErrors::Malformed(
-        msg,
-        "sequences of messages".to_owned(),
-    ))
-}
-
-async fn send_disenable_message_async<T, U>(
-    level: UnitDBusLevel,
-    method: &str,
-    body: &T,
-    handler: impl Fn(&str, &Message) -> Result<U, SystemdErrors>,
-) -> Result<U, SystemdErrors>
-where
-    T: serde::ser::Serialize + DynamicType + std::fmt::Debug,
-    U: std::fmt::Debug,
-{
-    info!("Try to {method}, message body: {:?}", body);
-    let message = Message::method_call(PATH_SYSTEMD, method)?
-        .with_flags(Flags::AllowInteractiveAuth)?
-        .destination(DESTINATION_SYSTEMD)?
-        .interface(INTERFACE_SYSTEMD_MANAGER)?
-        .build(body)?;
-
-    let connection = get_connection(level).await?;
-
-    connection.send(&message).await?;
-
-    let mut message_it = MessageStream::from(connection);
-
-    while let Some(message_res) = message_it.try_next().await? {
-        // for message_res in message_it. {
-        debug!("Message response {message_res:?}");
-        let return_message = message_res;
 
         match return_message.message_type() {
             zbus::message::Type::MethodReturn => {
@@ -852,29 +703,6 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-pub async fn revert_unit_file_full(
-    level: UnitDBusLevel,
-    unit_name: &str,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    info!("Reverting unit file {unit_name:?}");
-
-    #[cfg(not(feature = "flatpak"))]
-    if level.user_session() {
-        let proxy = systemd_manager_async(UnitDBusLevel::UserSession).await?;
-        let response = proxy.revert_unit_files(&[unit_name]).await?;
-        Ok(response)
-    } else {
-        to_proxy::revert_unit_files(&[unit_name]).await
-    }
-
-    #[cfg(feature = "flatpak")]
-    {
-        let proxy = systemd_manager_async(level).await?;
-        let response = proxy.revert_unit_files(&[unit_name]).await?;
-        Ok(response)
-    }
-}
-
 pub(super) fn kill_unit(
     level: UnitDBusLevel,
     unit_name: &str,
@@ -894,39 +722,22 @@ pub(super) fn kill_unit(
     )
 }
 
-/* pub(super) fn freeze_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
-    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Freeze Unit {unit_name} SUCCESS");
-        Ok(())
-    };
-
-    send_disenable_message(level, METHOD_FREEZE_UNIT, &(unit_name), handler)
-}
-
-pub(super) fn thaw_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
-    let handler = |_method: &str, _return_message: &Message| -> Result<(), SystemdErrors> {
-        info!("Thaw Unit {unit_name} SUCCESS");
-        Ok(())
-    };
-
-    send_disenable_message(level, METHOD_THAW_UNIT, &(unit_name), handler)
-}
- */
 pub(super) fn preset_unit_file(
     level: UnitDBusLevel,
     files: &[&str],
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    let handler =
-        |_method: &str, return_message: &Message| -> Result<EnableUnitFilesReturn, SystemdErrors> {
-            let body = return_message.body();
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let handler = |_method: &str,
+                   return_message: &Message|
+     -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+        let body = return_message.body();
 
-            let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+        let return_msg = body.deserialize()?;
 
-            info!("Preset Unit Files {files:?} SUCCESS");
-            Ok(return_msg)
-        };
+        info!("Preset Unit Files {files:?} SUCCESS");
+        Ok(return_msg)
+    };
 
     send_disenable_message(
         level,
@@ -965,16 +776,17 @@ pub(super) fn reenable_unit_file(
     files: &[&str],
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    let handler =
-        |_method: &str, return_message: &Message| -> Result<EnableUnitFilesReturn, SystemdErrors> {
-            let body = return_message.body();
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    let handler = |_method: &str,
+                   return_message: &Message|
+     -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+        let body = return_message.body();
 
-            let return_msg: EnableUnitFilesReturn = body.deserialize()?;
+        let return_msg = body.deserialize()?;
 
-            info!("Reenable Unit Files {files:?} SUCCESS");
-            Ok(return_msg)
-        };
+        info!("Reenable Unit Files {files:?} SUCCESS");
+        Ok(return_msg)
+    };
     send_disenable_message(
         level,
         METHOD_REENABLE_UNIT_FILES,

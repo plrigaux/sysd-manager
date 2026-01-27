@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 23:50-0500\n"
+"POT-Creation-Date: 2026-01-27 11:01-0500\n"
 "PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -469,163 +469,177 @@ msgctxt "mask"
 msgid "Mask Unit"
 msgstr "Peida üksus"
 
+#. First connection message
+#: data/interfaces/preferences.ui:12
+msgctxt "preference"
+msgid ""
+"It's your first connection\n"
+"You can set the application's Dbus level to <u>System</u> if you want to see "
+"all Systemd units."
+msgstr ""
+
+#: data/interfaces/preferences.ui:19
+msgctxt "preference"
+msgid "_Main"
+msgstr ""
+
 #. group
-#: data/interfaces/preferences.ui:21
+#: data/interfaces/preferences.ui:23
 msgctxt "preference"
 msgid "General"
 msgstr "Üldised"
 
 #. row
-#: data/interfaces/preferences.ui:24
+#: data/interfaces/preferences.ui:26
 msgctxt "preference"
 msgid "Preferred Color Scheme"
 msgstr "Eelistatud kujundus"
 
 #. row subtitle
-#: data/interfaces/preferences.ui:29
+#: data/interfaces/preferences.ui:31
 msgctxt "preference"
 msgid "Application's division orientation mode"
 msgstr "Rakenduse paanide paigutuse viis"
 
 #. row
-#: data/interfaces/preferences.ui:30
+#: data/interfaces/preferences.ui:32
 msgctxt "preference"
 msgid "Orientation"
 msgstr "Paigutus"
 
 #. row
-#: data/interfaces/preferences.ui:35
+#: data/interfaces/preferences.ui:37
 msgctxt "preference"
 msgid "Change the format of printed timestamps"
 msgstr "Muuda kuvatavate ajatemplite vormingut"
 
 #. row
-#: data/interfaces/preferences.ui:36
+#: data/interfaces/preferences.ui:38
 msgctxt "preference"
 msgid "Timestamp style"
 msgstr "Ajatempli stiil"
 
 #. row
-#: data/interfaces/preferences.ui:41
+#: data/interfaces/preferences.ui:43
 msgctxt "preference"
 msgid "The Monospace Font"
 msgstr "Fikseeritud paigutusega kirjatüüp"
 
 #. row
-#: data/interfaces/preferences.ui:42
+#: data/interfaces/preferences.ui:44
 msgctxt "preference"
 msgid "Text font"
 msgstr "Teksti kirjatüüp"
 
-#: data/interfaces/preferences.ui:46
+#: data/interfaces/preferences.ui:48
 msgctxt "preference"
 msgid "Default"
 msgstr "Vaikimisi"
 
 #. button
-#: data/interfaces/preferences.ui:54
+#: data/interfaces/preferences.ui:56
 msgctxt "preference"
 msgid "Select Font"
 msgstr "Vali kirjatüüp"
 
 #. group
-#: data/interfaces/preferences.ui:65
+#: data/interfaces/preferences.ui:67
 msgctxt "preference"
 msgid "Unit List"
 msgstr "Üksuste loend"
 
 #. subtitle
-#: data/interfaces/preferences.ui:68
+#: data/interfaces/preferences.ui:70
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:69
+#: data/interfaces/preferences.ui:71
 msgctxt "preference"
 msgid "Display Colors"
 msgstr "Kasuta värve"
 
 #. subtitle
-#: data/interfaces/preferences.ui:74
+#: data/interfaces/preferences.ui:76
 msgctxt "preference"
 msgid "Display different totals regarding retrieved units"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:75
+#: data/interfaces/preferences.ui:77
 msgctxt "preference"
 msgid "Display Totals Summary"
 msgstr ""
 
 #. group
-#: data/interfaces/preferences.ui:100
+#: data/interfaces/preferences.ui:102
 msgctxt "preference"
 msgid "Unit Description"
 msgstr "Üksuse kirjeldus"
 
 #. subtitle
-#: data/interfaces/preferences.ui:103
+#: data/interfaces/preferences.ui:105
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
 msgstr "Muura üksust kirjeldav pikk tekst mitmele reale"
 
 #. title
-#: data/interfaces/preferences.ui:104
+#: data/interfaces/preferences.ui:106
 msgctxt "preference"
 msgid "Wrap unit description text"
 msgstr "Muura üksust kirjeldav tekst"
 
 #. group
-#: data/interfaces/preferences.ui:111
+#: data/interfaces/preferences.ui:113
 msgctxt "preference"
 msgid "Unit File"
 msgstr "Üksuse fail"
 
 #. subtitle
-#: data/interfaces/preferences.ui:114
+#: data/interfaces/preferences.ui:116
 msgctxt "preference"
 msgid "Display unit file line number"
 msgstr "Näita üksusefailis reanumbreid"
 
 #. title
-#: data/interfaces/preferences.ui:115
+#: data/interfaces/preferences.ui:117
 msgctxt "preference"
 msgid "Line number"
 msgstr "Rea number"
 
 #. subtitle
-#: data/interfaces/preferences.ui:125
+#: data/interfaces/preferences.ui:127
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr "Üksusefaili esiletõstmise stiil"
 
 #. title
-#: data/interfaces/preferences.ui:126
+#: data/interfaces/preferences.ui:128
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr "Teksti esiletõstmine"
 
 #. subtitle
-#: data/interfaces/preferences.ui:136
+#: data/interfaces/preferences.ui:138
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr "Kui tahad logisid näha värvilisena"
 
 #. title
-#: data/interfaces/preferences.ui:137
+#: data/interfaces/preferences.ui:139
 msgctxt "preference"
 msgid "Journal colors"
 msgstr "Süsteemipäeviku värvid"
 
 #. title
-#: data/interfaces/preferences.ui:158
+#: data/interfaces/preferences.ui:160
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr "Süsteemipäeviku sündmuse pakkide suurus"
 
 #. subtitle
-#: data/interfaces/preferences.ui:171
+#: data/interfaces/preferences.ui:173
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -635,16 +649,156 @@ msgstr ""
 "<i>0 märgib ülempiiri puudumist</i>"
 
 #. title
-#: data/interfaces/preferences.ui:174
+#: data/interfaces/preferences.ui:176
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Süsteemipäeviku sündmuse maksimumsuurus"
 
-#. dialog
-#: data/interfaces/preferences.ui:188
+#: data/interfaces/preferences.ui:193
+#, fuzzy
 msgctxt "preference"
-msgid "Preferences"
-msgstr "Eelistused"
+msgid "_Proxy Configuration"
+msgstr "_Seadistused"
+
+#: data/interfaces/preferences.ui:199
+msgid "Switch that controls other switches"
+msgstr ""
+
+#. group title
+#: data/interfaces/preferences.ui:207
+msgctxt "preference"
+msgid "Systemd Manager Method Calls"
+msgstr ""
+
+#: data/interfaces/preferences.ui:210
+msgctxt "preference"
+msgid "<b>Clean</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:211
+#, fuzzy
+msgctxt "preference"
+msgid "Clean"
+msgstr "Eemalda"
+
+#: data/interfaces/preferences.ui:216
+msgctxt "preference"
+msgid "<b>Freeze</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:217
+#, fuzzy
+msgctxt "preference"
+msgid "Freeze"
+msgstr "Külmuta"
+
+#: data/interfaces/preferences.ui:222
+msgctxt "preference"
+msgid "<b>Thaw</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:223
+#, fuzzy
+msgctxt "preference"
+msgid "Thaw"
+msgstr "Sulata üles"
+
+#: data/interfaces/preferences.ui:228
+msgctxt "preference"
+msgid "<b>Enable Unit File</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:229
+#, fuzzy
+msgctxt "preference"
+msgid "Enable Unit File"
+msgstr "Lülita üksusefail sisse"
+
+#: data/interfaces/preferences.ui:234
+msgctxt "preference"
+msgid "<b>Disable Unit File</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:235
+#, fuzzy
+msgctxt "preference"
+msgid "Disable Unit File"
+msgstr "Lülita üksus välja"
+
+#: data/interfaces/preferences.ui:240
+msgctxt "preference"
+msgid ""
+"<b>Reload</b> Systemd Manager configuration method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:241
+#, fuzzy
+msgctxt "preference"
+msgid "Reload Daemon"
+msgstr "Laadi üksus uuesti"
+
+#: data/interfaces/preferences.ui:246
+msgctxt "preference"
+msgid ""
+"<b>Revert Unit Files</b> to their vendor versions method call through the "
+"Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:247
+#, fuzzy
+msgctxt "preference"
+msgid "Revert Unit Files"
+msgstr "Üksusefaili eelseadistus"
+
+#: data/interfaces/preferences.ui:254
+msgctxt "preference"
+msgid "Actions"
+msgstr ""
+
+#: data/interfaces/preferences.ui:257
+msgctxt "preference"
+msgid "Create a <b>Drop-in</b> file through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:258
+msgctxt "preference"
+msgid "Create Drop-in"
+msgstr ""
+
+#: data/interfaces/preferences.ui:263
+msgctxt "preference"
+msgid "<b>Save file</b> through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:264
+#, fuzzy
+msgctxt "preference"
+msgid "Save file"
+msgstr "Salvesta"
+
+#: data/interfaces/preferences.ui:272
+msgctxt "preference"
+msgid "Proxy Behaviors"
+msgstr ""
+
+#: data/interfaces/preferences.ui:275
+msgid "Start the Proxy when starting Sysd Manager"
+msgstr ""
+
+#: data/interfaces/preferences.ui:276
+msgctxt "preference"
+msgid "Start Proxy at Start up"
+msgstr ""
+
+#: data/interfaces/preferences.ui:281
+msgctxt "preference"
+msgid "Stop the Proxy when closing Sysd Manager"
+msgstr ""
+
+#: data/interfaces/preferences.ui:282
+msgctxt "preference"
+msgid "Stop Proxy at Close"
+msgstr ""
 
 #. Section name
 #: data/interfaces/shortcuts.ui:14
@@ -1812,7 +1966,7 @@ msgid "Top Bottom"
 msgstr "Paanid asuvad üksteise kohal"
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:417
+#: src/widget/preferences/imp.rs:452
 msgctxt "pref file style"
 msgid "None"
 msgstr "Puudub"
@@ -1833,7 +1987,7 @@ msgid "Open Find in Text"
 msgstr ""
 
 #: src/widget/unit_control_panel/controls.rs:64
-#: src/widget/unit_control_panel/controls.rs:182
+#: src/widget/unit_control_panel/controls.rs:185
 msgctxt "toast"
 msgid ""
 "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
@@ -1852,34 +2006,40 @@ msgctxt "toast"
 msgid "Enabling"
 msgstr "Sisselülitamisel"
 
-#: src/widget/unit_control_panel/controls.rs:104
-#: src/widget/unit_control_panel/controls.rs:213
+#. toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
+#: src/widget/unit_control_panel/controls.rs:102
+#, rust-format
+msgctxt "toast"
+msgid "{} unit {} has failed!"
+msgstr ""
+
+#. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
+#: src/widget/unit_control_panel/controls.rs:179
+msgctxt "toast"
+msgid "Reenable"
+msgstr "Lülita uuesti sisse"
+
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:208
+msgctxt "toast"
+msgid "Reenabling"
+msgstr "Uuesti sisselülitamisel"
+
+#: src/widget/unit_control_panel/controls.rs:216
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "has failed!"
 msgstr ""
 
-#. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:176
-msgctxt "toast"
-msgid "Reenable"
-msgstr "Lülita uuesti sisse"
-
-#. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:205
-msgctxt "toast"
-msgid "Reenabling"
-msgstr "Uuesti sisselülitamisel"
-
-#: src/widget/unit_control_panel/controls.rs:242
+#: src/widget/unit_control_panel/controls.rs:245
 #: src/widget/unit_list/imp/pop_menu.rs:263
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr "Lülita üksus välja: {}"
 
-#: src/widget/unit_control_panel/controls.rs:244
+#: src/widget/unit_control_panel/controls.rs:247
 #: src/widget/unit_list/imp/pop_menu.rs:256
 #, rust-format
 msgctxt "controls"
@@ -2300,6 +2460,10 @@ msgctxt "menu"
 msgid "Filtering"
 msgstr ""
 
+#~ msgctxt "preference"
+#~ msgid "Preferences"
+#~ msgstr "Eelistused"
+
 #~ msgctxt "unit search"
 #~ msgid "Clear Filters"
 #~ msgstr "Kustuta filtrid"
@@ -2361,10 +2525,6 @@ msgstr ""
 #~ msgctxt "clean"
 #~ msgid "_Logs"
 #~ msgstr "_Logid"
-
-#~ msgctxt "clean"
-#~ msgid "_Configuration"
-#~ msgstr "_Seadistused"
 
 #~ msgctxt "clean"
 #~ msgid "_All"

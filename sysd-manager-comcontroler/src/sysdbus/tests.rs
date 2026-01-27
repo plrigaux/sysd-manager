@@ -4,7 +4,6 @@ use crate::{
     SystemdUnitFile,
     enums::{DependencyType, StartStopMode},
 };
-use enumflags2::BitFlag;
 use test_base::{TEST_SERVICE, init_logs};
 use tokio::net::TcpStream;
 use zvariant::Value;
@@ -193,32 +192,6 @@ pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
     )?;
 
     debug!("ALL PARAM: {btree_map:#?}");
-    Ok(())
-}
-
-#[ignore = "need a connection to a service"]
-#[test]
-fn test_enable_unit_files() -> Result<(), SystemdErrors> {
-    init_logs();
-    let _res = enable_unit_files(
-        UnitDBusLevel::System,
-        &[TEST_SERVICE],
-        DisEnableFlags::SdSystemdUnitForce.into(),
-    )?;
-
-    Ok(())
-}
-
-#[ignore = "need a connection to a service"]
-#[test]
-fn test_disable_unit_files() -> Result<(), SystemdErrors> {
-    init_logs();
-    let _res = disable_unit_files(
-        UnitDBusLevel::System,
-        &[TEST_SERVICE],
-        DisEnableFlags::empty(),
-    )?;
-
     Ok(())
 }
 

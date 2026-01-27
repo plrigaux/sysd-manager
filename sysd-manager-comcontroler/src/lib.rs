@@ -1,3 +1,4 @@
+#![allow(unused_must_use)]
 pub mod analyze;
 pub mod data;
 pub mod enums;
@@ -5,7 +6,8 @@ pub mod errors;
 mod file;
 mod journal;
 pub mod journal_data;
-pub mod manager;
+#[cfg(not(feature = "flatpak"))]
+pub mod proxy_switcher;
 pub mod sysdbus;
 pub mod time_handling;
 
@@ -22,17 +24,17 @@ use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     file::save_text_to_file,
     journal_data::Boot,
-    sysdbus::dbus_proxies::systemd_manager,
+    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_async},
     time_handling::TimestampStyle,
 };
 
 #[cfg(not(feature = "flatpak"))]
 use crate::sysdbus::to_proxy;
+
 use base::{
-    RunMode,
     enums::UnitDBusLevel,
-    file::{commander, commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
-    proxy::DisEnAbleUnitFiles,
+    file::{commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use data::{UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
@@ -45,7 +47,7 @@ use log::{error, info, warn};
 use tokio::{runtime::Runtime, sync::mpsc};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-use crate::data::{EnableUnitFilesReturn, LUnit};
+use crate::data::LUnit;
 
 #[derive(Default, Clone, PartialEq, Debug)]
 pub enum BootFilter {
@@ -93,18 +95,17 @@ pub fn runtime() -> &'static Runtime {
     RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
 }
 
-/* pub fn init(run_mode: RunMode) {
-    let _ = sysdbus::init(run_mode).inspect_err(|e| error!("Some err {e:?}"));
-}
- */
-pub async fn init_async(run_mode: RunMode) {
-    let _ = sysdbus::init_async(run_mode)
-        .await
-        .inspect_err(|e| error!("Some err {e:?}"));
+///Try to Start Proxy
+#[cfg(not(feature = "flatpak"))]
+pub async fn init_proxy_async(run_mode: base::RunMode) {
+    if let Err(e) = sysdbus::init_proxy_async(run_mode).await {
+        error!("Fail starting Proxy. Error {e:?}");
+    }
 }
 
+#[cfg(not(feature = "flatpak"))]
 pub fn shut_down() {
-    sysdbus::shut_down();
+    sysdbus::shut_down_proxy();
 }
 
 pub fn get_unit_file_state(
@@ -191,28 +192,18 @@ pub fn restart_unit(
     sysdbus::restart_unit(level, primary_name, mode)
 }
 
-#[allow(dead_code)]
-#[derive(Debug)]
-pub enum DisEnableUnitFilesOutput {
-    Enable(EnableUnitFilesReturn),
-    Disable(Vec<DisEnAbleUnitFiles>),
-}
-
 pub fn disenable_unit_file(
     primary_name: &str,
     level: UnitDBusLevel,
     enable_status: EnablementStatus,
     expected_status: EnablementStatus,
-) -> Result<DisEnableUnitFilesOutput, SystemdErrors> {
-    let msg_return = match expected_status {
-        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => {
-            let res = sysdbus::enable_unit_files(
-                level,
-                &[primary_name],
-                DisEnableFlags::SdSystemdUnitForce.into(),
-            )?;
-            DisEnableUnitFilesOutput::Enable(res)
-        }
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    match expected_status {
+        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => enable_unit_file(
+            level,
+            primary_name,
+            DisEnableFlags::SdSystemdUnitForce.into(),
+        ),
         _ => {
             let flags: BitFlags<DisEnableFlags> = if enable_status.is_runtime() {
                 DisEnableFlags::SdSystemdUnitRuntime.into()
@@ -220,28 +211,80 @@ pub fn disenable_unit_file(
                 DisEnableFlags::empty()
             };
 
-            let out = sysdbus::disable_unit_files(level, &[primary_name], flags)?;
-            DisEnableUnitFilesOutput::Disable(out)
+            disable_unit_file(level, primary_name, flags)
         }
-    };
-
-    Ok(msg_return)
+    }
 }
 
 pub fn enable_unit_file(
     level: UnitDBusLevel,
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
-    sysdbus::enable_unit_files(level, &[unit_file], flags)
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.enable_unit_file() {
+                proxy_call!(
+                    enable_unit_files_with_flags,
+                    &[unit_file],
+                    flags.bits_c() as u64
+                )
+            } else {
+                systemd_manager()
+                    .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+                    .map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+            .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+        systemd_manager_blocking(level)
+            .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into())
+    }
 }
 
-pub fn disable_unit_files(
+pub fn disable_unit_file(
     level: UnitDBusLevel,
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
-) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    sysdbus::disable_unit_files(level, &[unit_file], flags)
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.enable_unit_file() {
+                proxy_call!(
+                    disable_unit_files_with_flags,
+                    &[unit_file],
+                    flags.bits_c() as u64
+                )
+            } else {
+                systemd_manager()
+                    .disable_unit_files_with_flags_and_install_info(
+                        &[unit_file],
+                        flags.bits_c() as u64,
+                    )
+                    .map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+            .disable_unit_files_with_flags_and_install_info(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+        systemd_manager_blocking(level)
+            .disable_unit_files_with_flags_and_install_info(&[unit_file], flags.bits_c() as u64)
+            .map_err(|err| err.into())
+    }
 }
 
 pub async fn fetch_drop_in_paths(
@@ -279,7 +322,7 @@ fn file_open_get_content_cat(
     unit_primary_name: &str,
 ) -> Result<String, SystemdErrors> {
     info!(
-        "Flatpack Fetching file content Unit: {} File \"{file_path}\"",
+        "Flatpak Fetching file content Unit: {} File \"{file_path}\"",
         unit_primary_name
     );
     //Use the REAL path because try to acceess through the 'cat' command
@@ -292,7 +335,7 @@ fn file_open_get_content(
     file_path: &str,
     unit_primary_name: &str,
 ) -> Result<String, SystemdErrors> {
-    //To get the relative path from a Flatpack
+    //To get the relative path from a Flatpak
     let file_path = flatpak_host_file_path(file_path);
 
     info!(
@@ -469,12 +512,18 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
     if let Some((_level, primary_name)) = params {
         #[cfg(not(feature = "flatpak"))]
         match _level {
-            UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::freeze_unit(&primary_name),
-            UnitDBusLevel::UserSession => {
-                let proxy = systemd_manager();
-                proxy.freeze_unit(&primary_name)?;
-                Ok(())
+            UnitDBusLevel::System | UnitDBusLevel::Both => {
+                if proxy_switcher::PROXY_SWITCHER.freeze() {
+                    proxy_call!(freeze_unit, &primary_name)
+                } else {
+                    let proxy = systemd_manager();
+                    proxy.freeze_unit(&primary_name)?;
+                    Ok(())
+                }
             }
+            UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+                .freeze_unit(&primary_name)
+                .map_err(|err| err.into()),
         }
 
         #[cfg(feature = "flatpak")]
@@ -489,25 +538,32 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
 }
 
 pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
-    if let Some((_level, primary_name)) = params {
-        #[cfg(not(feature = "flatpak"))]
-        match _level {
-            UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::thaw_unit(&primary_name),
-            UnitDBusLevel::UserSession => {
+    let Some((level, primary_name)) = params else {
+        return Err(SystemdErrors::NoUnit);
+    };
+
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.thaw() {
+                proxy_call!(thaw_unit, &primary_name)
+            } else {
                 let proxy = systemd_manager();
                 proxy.thaw_unit(&primary_name)?;
                 Ok(())
             }
         }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+            .thaw_unit(&primary_name)
+            .map_err(|err| err.into()),
+    }
 
-        #[cfg(feature = "flatpak")]
-        {
-            let proxy = systemd_manager();
-            proxy.thaw_unit(&primary_name)?;
-            Ok(())
-        }
-    } else {
-        Err(SystemdErrors::NoUnit)
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+        let proxy = systemd_manager_blocking(level);
+        proxy.thaw_unit(&primary_name)?;
+        Ok(())
     }
 }
 
@@ -530,7 +586,7 @@ pub fn queue_signal_unit(
 }
 
 pub fn clean_unit(
-    _level: UnitDBusLevel,
+    level: UnitDBusLevel,
     unit_name: &str,
     what: &[String],
 ) -> Result<(), SystemdErrors> {
@@ -547,20 +603,29 @@ pub fn clean_unit(
     };
 
     #[cfg(not(feature = "flatpak"))]
-    match _level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => to_proxy::clean_unit(unit_name, &clean_what),
-        UnitDBusLevel::UserSession => {
-            let proxy = systemd_manager();
-            proxy.clean_unit(unit_name, &clean_what)?;
-            Ok(())
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.clean() {
+                proxy_call!(clean_unit, unit_name, &clean_what)
+            } else {
+                let proxy = systemd_manager();
+                proxy
+                    .clean_unit(unit_name, &clean_what)
+                    .map_err(|err| err.into())
+            }
         }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+            .clean_unit(unit_name, &clean_what)
+            .map_err(|err| err.into()),
     }
 
     #[cfg(feature = "flatpak")]
     {
-        let proxy = systemd_manager();
-        proxy.clean_unit(unit_name, &clean_what)?;
-        Ok(())
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+
+        systemd_manager_blocking(level)
+            .clean_unit(unit_name, &clean_what)
+            .map_err(|err| err.into())
     }
 }
 
@@ -578,7 +643,7 @@ pub fn preset_unit_files(
     primary_name: &str,
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     sysdbus::preset_unit_file(level, &[primary_name], runtime, force)
 }
 
@@ -587,7 +652,7 @@ pub fn reenable_unit_file(
     primary_name: &str,
     runtime: bool,
     force: bool,
-) -> Result<EnableUnitFilesReturn, SystemdErrors> {
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     sysdbus::reenable_unit_file(level, &[primary_name], runtime, force)
 }
 
@@ -609,7 +674,25 @@ pub fn link_unit_files(
 }
 
 pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
-    sysdbus::daemon_reload(level).await
+    info!("Reloding Daemon");
+
+    #[cfg(not(feature = "flatpak"))]
+    if level.user_session() || !proxy_switcher::PROXY_SWITCHER.reload() {
+        let proxy = systemd_manager_async(level).await?;
+        proxy.reload().await?;
+        Ok(())
+    } else {
+        proxy_call_async!(reload)
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        systemd_manager_async(level)
+            .await?
+            .reload()
+            .await
+            .map_err(|err| err.into())
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -843,10 +926,10 @@ pub async fn create_drop_in(
     content: &str,
 ) -> Result<(), SystemdErrors> {
     #[cfg(not(feature = "flatpak"))]
-    if user_session {
+    if user_session || !proxy_switcher::PROXY_SWITCHER.create_dropin() {
         file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
     } else {
-        to_proxy::create_drop_in(runtime, unit_name, file_name, content).await
+        proxy_call_async!(create_drop_in, runtime, unit_name, file_name, content)
     }
 
     #[cfg(feature = "flatpak")]
@@ -866,10 +949,10 @@ pub async fn save_file(
     //TODO check the case of /run
 
     #[cfg(not(feature = "flatpak"))]
-    if user_session {
+    if user_session || !proxy_switcher::PROXY_SWITCHER.save_file() {
         save_text_to_file(file_path, content, user_session).await
     } else {
-        to_proxy::save_file(file_path, content).await
+        proxy_call_async!(save_file, file_path, content)
     }
 
     #[cfg(feature = "flatpak")]
@@ -882,5 +965,23 @@ pub async fn revert_unit_file_full(
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     info!("Reverting unit file {unit_name:?}");
 
-    sysdbus::revert_unit_file_full(level, unit_name).await
+    #[cfg(not(feature = "flatpak"))]
+    if level.user_session() || !proxy_switcher::PROXY_SWITCHER.revert_unit_file() {
+        systemd_manager_async(level)
+            .await?
+            .revert_unit_files(&[unit_name])
+            .await
+            .map_err(|err| err.into())
+    } else {
+        proxy_call_async!(revert_unit_files, &[unit_name])
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        systemd_manager_async(level)
+            .await?
+            .revert_unit_files(&[unit_name])
+            .await
+            .map_err(|err| err.into())
+    }
 }

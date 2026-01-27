@@ -1,7 +1,11 @@
-use base::{RunMode, consts::*, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::{
+    RunMode,
+    consts::*,
+    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
+};
 
 use log::{debug, info, warn};
-use std::{borrow::Cow, env, error::Error, sync::OnceLock};
+use std::{borrow::Cow, env, error::Error};
 use tokio::sync::OnceCell;
 use zbus::{
     Connection, ObjectServer, connection, interface, message::Header, object_server::SignalEmitter,
@@ -48,9 +52,13 @@ impl SysDManagerProxy {
 
         Ok(id)
     }
+
     // "Bye" signal (note: no implementation body).
     #[zbus(signal)]
     async fn bye(signal_emitter: &SignalEmitter<'_>, message: &str) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    async fn hello(signal_emitter: &SignalEmitter<'_>, message: &str) -> zbus::Result<()>;
 
     // "Quit" method. A method may throw errors.
     async fn quit(
@@ -89,10 +97,11 @@ impl SysDManagerProxy {
         unit_name: &str,
         what: Vec<&str>,
     ) -> zbus::fdo::Result<()> {
-        self.check_autorisation(header).await?;
-        let proxy = get_proxy(UnitDBusLevel::System).await?;
-
         info!("clean_unit {} {:?}", unit_name, what);
+
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
         proxy
             .clean_unit(unit_name, &what)
             .await
@@ -104,9 +113,10 @@ impl SysDManagerProxy {
         #[zbus(header)] header: Header<'_>,
         unit_name: &str,
     ) -> zbus::fdo::Result<()> {
-        let proxy = get_proxy(UnitDBusLevel::System).await?;
-        self.check_autorisation(header).await?;
         info!("freeze_unit {}", unit_name);
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
         proxy
             .freeze_unit(unit_name)
             .await
@@ -118,9 +128,10 @@ impl SysDManagerProxy {
         #[zbus(header)] header: Header<'_>,
         unit_name: &str,
     ) -> zbus::fdo::Result<()> {
-        let proxy = get_proxy(UnitDBusLevel::System).await?;
-        self.check_autorisation(header).await?;
         info!("thaw_unit {}", unit_name);
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
         proxy
             .thaw_unit(unit_name)
             .await
@@ -134,7 +145,7 @@ impl SysDManagerProxy {
     ) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>> {
         info!("Revert_unit_files  {:?}", file_names);
 
-        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy(UnitDBusLevel::System).await?;
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy().await?;
 
         debug!("Proxy {:?}", proxy);
         self.check_autorisation(header).await?;
@@ -156,7 +167,7 @@ impl SysDManagerProxy {
 
     async fn reload(&self, #[zbus(header)] header: Header<'_>) -> zbus::fdo::Result<()> {
         info!("Reload");
-        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy(UnitDBusLevel::System).await?;
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy().await?;
         self.check_autorisation(header).await?;
         debug!("Polkit autorized");
         proxy
@@ -164,12 +175,61 @@ impl SysDManagerProxy {
             .await
             .inspect_err(|e| warn!("Error while calling reload on sysdbus proxy: {:?}", e))
     }
+
+    async fn enable_unit_files_with_flags(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        unit_files: Vec<&str>,
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse> {
+        info!(
+            "enable_unit_files_with_flags {:?} flags {}",
+            unit_files, flags
+        );
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
+        proxy
+            .enable_unit_files_with_flags(&unit_files, flags)
+            .await
+            .inspect_err(|e| {
+                warn!(
+                    "Error while calling disable_unit_files_with_flags on sysdbus proxy: {:?}",
+                    e
+                )
+            })
+    }
+
+    async fn disable_unit_files_with_flags(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        unit_files: Vec<&str>,
+        flags: u64,
+    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse> {
+        info!(
+            "disable_unit_files_with_flags {:?} flags {}",
+            unit_files, flags
+        );
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
+        proxy
+            .disable_unit_files_with_flags_and_install_info(&unit_files, flags)
+            .await
+            .inspect_err(|e| {
+                warn!(
+                    "Error while calling disable_unit_files_with_flags on sysdbus proxy: {:?}",
+                    e
+                )
+            })
+    }
 }
 
-static CONNECTION: OnceLock<Connection> = OnceLock::new();
-
-pub async fn init_serve_connection(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
-    info!("Init Proxy");
+pub async fn init_serve_connection(
+    run_mode: RunMode,
+) -> Result<(Connection, String), Box<dyn Error>> {
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+    info!("Init Proxy version {VERSION}");
 
     let proxy = SysDManagerProxy::new()?;
 
@@ -190,12 +250,11 @@ pub async fn init_serve_connection(run_mode: RunMode) -> Result<(), Box<dyn Erro
 
     let connection = connection::Builder::system()?
         .name(dbus_name)?
-        .serve_at(dbus_path, proxy)?
+        .serve_at(dbus_path.clone(), proxy)?
         .build()
         .await?;
 
-    CONNECTION.get_or_init(|| connection);
-    Ok(())
+    Ok((connection, dbus_path.to_string()))
 }
 
 fn get_env<'a>(key: &str, default: &'a str) -> Cow<'a, str> {
@@ -212,9 +271,7 @@ fn get_env<'a>(key: &str, default: &'a str) -> Cow<'a, str> {
     }
 }
 
-async fn get_proxy(
-    _dbus_level: UnitDBusLevel,
-) -> Result<&'static sysdcom::SysDManagerComLinkProxy<'static>, zbus::Error> {
+async fn get_proxy() -> Result<&'static sysdcom::SysDManagerComLinkProxy<'static>, zbus::Error> {
     system_proxy().await //Only system cause the proxy runs at root so no session
 }
 

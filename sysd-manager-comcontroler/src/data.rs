@@ -2,11 +2,11 @@ use std::{cmp::Ordering, fmt::Debug};
 
 use super::{SystemdUnitFile, UpdatedUnitInfo};
 
-use base::{enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
+use base::enums::UnitDBusLevel;
 use glib::{self, subclass::types::ObjectSubclassIsExt};
 
 use serde::Deserialize;
-use zvariant::{OwnedObjectPath, Type, Value};
+use zvariant::{OwnedObjectPath, Value};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -247,13 +247,6 @@ impl PartialOrd for UnitProcess {
     fn partial_cmp(&self, other: &UnitProcess) -> Option<Ordering> {
         Some(self.cmp(other))
     }
-}
-
-#[derive(Debug, Type, Deserialize)]
-#[allow(unused)]
-pub struct EnableUnitFilesReturn {
-    pub carries_install_info: bool,
-    pub vec: Vec<DisEnAbleUnitFiles>,
 }
 
 #[derive(Deserialize, zvariant::Type, PartialEq, Debug)]

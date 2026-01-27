@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-14 23:50-0500\n"
-"PO-Revision-Date: 2025-12-23 21:00+0000\n"
+"POT-Creation-Date: 2026-01-27 11:01-0500\n"
+"PO-Revision-Date: 2026-01-16 21:01+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
 "manager/translation/pt_BR/>\n"
@@ -472,73 +472,87 @@ msgctxt "mask"
 msgid "Mask Unit"
 msgstr "Unidade de máscara"
 
+#. First connection message
+#: data/interfaces/preferences.ui:12
+msgctxt "preference"
+msgid ""
+"It's your first connection\n"
+"You can set the application's Dbus level to <u>System</u> if you want to see "
+"all Systemd units."
+msgstr ""
+
+#: data/interfaces/preferences.ui:19
+msgctxt "preference"
+msgid "_Main"
+msgstr ""
+
 #. group
-#: data/interfaces/preferences.ui:21
+#: data/interfaces/preferences.ui:23
 msgctxt "preference"
 msgid "General"
 msgstr "Geral"
 
 #. row
-#: data/interfaces/preferences.ui:24
+#: data/interfaces/preferences.ui:26
 msgctxt "preference"
 msgid "Preferred Color Scheme"
 msgstr "Esquema de cores preferido"
 
 #. row subtitle
-#: data/interfaces/preferences.ui:29
+#: data/interfaces/preferences.ui:31
 msgctxt "preference"
 msgid "Application's division orientation mode"
 msgstr "Modo de orientação da divisão do aplicativo"
 
 #. row
-#: data/interfaces/preferences.ui:30
+#: data/interfaces/preferences.ui:32
 msgctxt "preference"
 msgid "Orientation"
 msgstr "Orientação"
 
 #. row
-#: data/interfaces/preferences.ui:35
+#: data/interfaces/preferences.ui:37
 msgctxt "preference"
 msgid "Change the format of printed timestamps"
 msgstr "Alterar o formato dos registros de data e hora impressos"
 
 #. row
-#: data/interfaces/preferences.ui:36
+#: data/interfaces/preferences.ui:38
 msgctxt "preference"
 msgid "Timestamp style"
 msgstr "Estilo de registro de data e hora"
 
 #. row
-#: data/interfaces/preferences.ui:41
+#: data/interfaces/preferences.ui:43
 msgctxt "preference"
 msgid "The Monospace Font"
 msgstr "A fonte monoespaçada"
 
 #. row
-#: data/interfaces/preferences.ui:42
+#: data/interfaces/preferences.ui:44
 msgctxt "preference"
 msgid "Text font"
 msgstr "Fonte do texto"
 
-#: data/interfaces/preferences.ui:46
+#: data/interfaces/preferences.ui:48
 msgctxt "preference"
 msgid "Default"
 msgstr "Padrão"
 
 #. button
-#: data/interfaces/preferences.ui:54
+#: data/interfaces/preferences.ui:56
 msgctxt "preference"
 msgid "Select Font"
 msgstr "Selecionar fonte"
 
 #. group
-#: data/interfaces/preferences.ui:65
+#: data/interfaces/preferences.ui:67
 msgctxt "preference"
 msgid "Unit List"
 msgstr "Lista de unidades"
 
 #. subtitle
-#: data/interfaces/preferences.ui:68
+#: data/interfaces/preferences.ui:70
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
 msgstr ""
@@ -546,91 +560,91 @@ msgstr ""
 "conteúdo."
 
 #. title
-#: data/interfaces/preferences.ui:69
+#: data/interfaces/preferences.ui:71
 msgctxt "preference"
 msgid "Display Colors"
 msgstr "Cores da tela"
 
 #. subtitle
-#: data/interfaces/preferences.ui:74
+#: data/interfaces/preferences.ui:76
 msgctxt "preference"
 msgid "Display different totals regarding retrieved units"
 msgstr "Exibir diferentes totais referentes às unidades recuperadas"
 
 #. title
-#: data/interfaces/preferences.ui:75
+#: data/interfaces/preferences.ui:77
 msgctxt "preference"
 msgid "Display Totals Summary"
 msgstr "Exibir resumo de totais"
 
 #. group
-#: data/interfaces/preferences.ui:100
+#: data/interfaces/preferences.ui:102
 msgctxt "preference"
 msgid "Unit Description"
 msgstr "Descrição da unidade"
 
 #. subtitle
-#: data/interfaces/preferences.ui:103
+#: data/interfaces/preferences.ui:105
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
 msgstr "Quebrar linhas de texto longas da descrição da unidade"
 
 #. title
-#: data/interfaces/preferences.ui:104
+#: data/interfaces/preferences.ui:106
 msgctxt "preference"
 msgid "Wrap unit description text"
 msgstr "Envolver texto descritivo da unidade"
 
 #. group
-#: data/interfaces/preferences.ui:111
+#: data/interfaces/preferences.ui:113
 msgctxt "preference"
 msgid "Unit File"
 msgstr "Arquivo de unidade"
 
 #. subtitle
-#: data/interfaces/preferences.ui:114
+#: data/interfaces/preferences.ui:116
 msgctxt "preference"
 msgid "Display unit file line number"
 msgstr "Exibir o número da linha do arquivo da unidade"
 
 #. title
-#: data/interfaces/preferences.ui:115
+#: data/interfaces/preferences.ui:117
 msgctxt "preference"
 msgid "Line number"
 msgstr "Número da linha"
 
 #. subtitle
-#: data/interfaces/preferences.ui:125
+#: data/interfaces/preferences.ui:127
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr "Estilo de destaque do arquivo de unidade"
 
 #. title
-#: data/interfaces/preferences.ui:126
+#: data/interfaces/preferences.ui:128
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr "Destaque de texto"
 
 #. subtitle
-#: data/interfaces/preferences.ui:136
+#: data/interfaces/preferences.ui:138
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr "Para ver os registros em cores"
 
 #. title
-#: data/interfaces/preferences.ui:137
+#: data/interfaces/preferences.ui:139
 msgctxt "preference"
 msgid "Journal colors"
 msgstr "Cores do jornal"
 
 #. title
-#: data/interfaces/preferences.ui:158
+#: data/interfaces/preferences.ui:160
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr "Tamanho do lote de eventos do periódico"
 
 #. subtitle
-#: data/interfaces/preferences.ui:171
+#: data/interfaces/preferences.ui:173
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -640,16 +654,158 @@ msgstr ""
 "<i>0 a nenhum limite</i>"
 
 #. title
-#: data/interfaces/preferences.ui:174
+#: data/interfaces/preferences.ui:176
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Tamanho máximo do evento do periódico"
 
-#. dialog
-#: data/interfaces/preferences.ui:188
+#: data/interfaces/preferences.ui:193
+#, fuzzy
 msgctxt "preference"
-msgid "Preferences"
-msgstr "Preferências"
+msgid "_Proxy Configuration"
+msgstr "_Configuração"
+
+#: data/interfaces/preferences.ui:199
+msgid "Switch that controls other switches"
+msgstr ""
+
+#. group title
+#: data/interfaces/preferences.ui:207
+msgctxt "preference"
+msgid "Systemd Manager Method Calls"
+msgstr ""
+
+#: data/interfaces/preferences.ui:210
+msgctxt "preference"
+msgid "<b>Clean</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:211
+#, fuzzy
+msgctxt "preference"
+msgid "Clean"
+msgstr "Limpar"
+
+#: data/interfaces/preferences.ui:216
+msgctxt "preference"
+msgid "<b>Freeze</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:217
+#, fuzzy
+msgctxt "preference"
+msgid "Freeze"
+msgstr "Congelar"
+
+#: data/interfaces/preferences.ui:222
+msgctxt "preference"
+msgid "<b>Thaw</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:223
+#, fuzzy
+msgctxt "preference"
+msgid "Thaw"
+msgstr "Descongelamento"
+
+#: data/interfaces/preferences.ui:228
+msgctxt "preference"
+msgid "<b>Enable Unit File</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:229
+#, fuzzy
+msgctxt "preference"
+msgid "Enable Unit File"
+msgstr "Habilitar arquivo de unidade"
+
+#: data/interfaces/preferences.ui:234
+msgctxt "preference"
+msgid "<b>Disable Unit File</b> method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:235
+#, fuzzy
+msgctxt "preference"
+msgid "Disable Unit File"
+msgstr "Desativar arquivo de unidade"
+
+#: data/interfaces/preferences.ui:240
+msgctxt "preference"
+msgid ""
+"<b>Reload</b> Systemd Manager configuration method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:241
+#, fuzzy
+msgctxt "preference"
+msgid "Reload Daemon"
+msgstr "Unidade de recarga"
+
+#: data/interfaces/preferences.ui:246
+msgctxt "preference"
+msgid ""
+"<b>Revert Unit Files</b> to their vendor versions method call through the "
+"Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:247
+#, fuzzy
+msgctxt "preference"
+msgid "Revert Unit Files"
+msgstr "Arquivo de unidade predefinida"
+
+#: data/interfaces/preferences.ui:254
+#, fuzzy
+msgctxt "preference"
+msgid "Actions"
+msgstr "Ativa"
+
+#: data/interfaces/preferences.ui:257
+msgctxt "preference"
+msgid "Create a <b>Drop-in</b> file through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:258
+#, fuzzy
+msgctxt "preference"
+msgid "Create Drop-in"
+msgstr "Criar Drop-in"
+
+#: data/interfaces/preferences.ui:263
+msgctxt "preference"
+msgid "<b>Save file</b> through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:264
+#, fuzzy
+msgctxt "preference"
+msgid "Save file"
+msgstr "Salvar"
+
+#: data/interfaces/preferences.ui:272
+msgctxt "preference"
+msgid "Proxy Behaviors"
+msgstr ""
+
+#: data/interfaces/preferences.ui:275
+msgid "Start the Proxy when starting Sysd Manager"
+msgstr ""
+
+#: data/interfaces/preferences.ui:276
+msgctxt "preference"
+msgid "Start Proxy at Start up"
+msgstr ""
+
+#: data/interfaces/preferences.ui:281
+msgctxt "preference"
+msgid "Stop the Proxy when closing Sysd Manager"
+msgstr ""
+
+#: data/interfaces/preferences.ui:282
+msgctxt "preference"
+msgid "Stop Proxy at Close"
+msgstr ""
 
 #. Section name
 #: data/interfaces/shortcuts.ui:14
@@ -931,38 +1087,36 @@ msgstr "Sinais de relógio"
 #: data/interfaces/text_find.ui:10
 msgctxt "find_text"
 msgid "Find in Text"
-msgstr ""
+msgstr "Localizar no texto"
 
 #. tooltip
 #: data/interfaces/text_find.ui:24
-#, fuzzy
 msgctxt "find_text"
 msgid "Match Case"
-msgstr "Assistir sinais"
+msgstr "Caixa de fósforos"
 
 #. tooltip
 #: data/interfaces/text_find.ui:31
 msgctxt "find_text"
 msgid "Match Whole Word"
-msgstr ""
+msgstr "Combine a palavra inteira"
 
 #. tooltip
 #: data/interfaces/text_find.ui:38
-#, fuzzy
 msgctxt "find_text"
 msgid "Use Regular Expression"
-msgstr "Sessão do usuário"
+msgstr "Utilizar expressão regular"
 
 #. tooltip
 #: data/interfaces/text_find.ui:58
 msgctxt "find_text"
 msgid "Previous Match"
-msgstr ""
+msgstr "Partida anterior"
 
 #: data/interfaces/text_find.ui:66
 msgctxt "find_text"
 msgid "Match Next"
-msgstr ""
+msgstr "Próximo jogo"
 
 #: data/interfaces/unit_control_panel.ui:19
 msgctxt "control info"
@@ -1173,17 +1327,15 @@ msgstr "Algo deu errado"
 
 #. Search entry place holder text
 #: data/interfaces/unit_list_search.ui:13
-#, fuzzy
 msgctxt "unit search"
 msgid "Filter Units by their Names"
-msgstr "Filtrar dependências por tipos"
+msgstr "Unidades de filtro por seus nomes"
 
 #. button's tooltips
 #: data/interfaces/unit_list_search.ui:20
-#, fuzzy
 msgctxt "button's tooltips"
 msgid "Configure displayed Columns"
-msgstr "Configurar colunas"
+msgstr "Configurar colunas exibidas"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:24
@@ -1195,7 +1347,7 @@ msgstr "Colunas"
 #: data/interfaces/unit_list_search.ui:32
 msgctxt "unit search"
 msgid "More filtering Options"
-msgstr ""
+msgstr "Mais opções de filtragem"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:36
@@ -1205,17 +1357,15 @@ msgstr "Filtros"
 
 #. Button label
 #: data/interfaces/unit_list_search.ui:51
-#, fuzzy
 msgctxt "unit search"
 msgid "Clear"
 msgstr "Claro"
 
 #. button's tooltips
 #: data/interfaces/unit_list_search.ui:52
-#, fuzzy
 msgctxt "unit search"
 msgid "Clear applied Filters"
-msgstr "Limpar filtros"
+msgstr "Limpar filtros aplicados"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:36
@@ -1255,10 +1405,9 @@ msgstr "Recarregar"
 
 #. unit list pop up menu item
 #: data/interfaces/unit_pop_menu.ui:137
-#, fuzzy
 msgctxt "controls"
 msgid "Toggle Totals Summary"
-msgstr "Ocultar Resumo Total"
+msgstr "Alternar resumo de totais"
 
 #. Show all properties
 #: data/interfaces/unit_properties.ui:29
@@ -1837,7 +1986,7 @@ msgid "Top Bottom"
 msgstr "Cima Fundo"
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:417
+#: src/widget/preferences/imp.rs:452
 msgctxt "pref file style"
 msgid "None"
 msgstr "Nenhum"
@@ -1848,17 +1997,17 @@ msgstr "Nenhum"
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
-msgstr ""
+msgstr "{} de {}"
 
 #. Find in text Menu item
 #. toggle button tooltip text
 #: src/widget/text_search/mod.rs:54 src/widget/text_search/mod.rs:87
 msgctxt "text_find"
 msgid "Open Find in Text"
-msgstr ""
+msgstr "Abrir Localizar no texto"
 
 #: src/widget/unit_control_panel/controls.rs:64
-#: src/widget/unit_control_panel/controls.rs:182
+#: src/widget/unit_control_panel/controls.rs:185
 msgctxt "toast"
 msgid ""
 "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
@@ -1879,8 +2028,26 @@ msgctxt "toast"
 msgid "Enabling"
 msgstr "Habilitar"
 
-#: src/widget/unit_control_panel/controls.rs:104
-#: src/widget/unit_control_panel/controls.rs:213
+#. toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
+#: src/widget/unit_control_panel/controls.rs:102
+#, rust-format
+msgctxt "toast"
+msgid "{} unit {} has failed!"
+msgstr ""
+
+#. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
+#: src/widget/unit_control_panel/controls.rs:179
+msgctxt "toast"
+msgid "Reenable"
+msgstr "Reativar"
+
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:208
+msgctxt "toast"
+msgid "Reenabling"
+msgstr "Reativando"
+
+#: src/widget/unit_control_panel/controls.rs:216
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -1889,26 +2056,14 @@ msgstr ""
 "{} unidade <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
 "span> falhou!"
 
-#. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:176
-msgctxt "toast"
-msgid "Reenable"
-msgstr "Reativar"
-
-#. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:205
-msgctxt "toast"
-msgid "Reenabling"
-msgstr "Reativando"
-
-#: src/widget/unit_control_panel/controls.rs:242
+#: src/widget/unit_control_panel/controls.rs:245
 #: src/widget/unit_list/imp/pop_menu.rs:263
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr "Desativar unidade {}"
 
-#: src/widget/unit_control_panel/controls.rs:244
+#: src/widget/unit_control_panel/controls.rs:247
 #: src/widget/unit_list/imp/pop_menu.rs:256
 #, rust-format
 msgctxt "controls"
@@ -2097,16 +2252,16 @@ msgid "_Close"
 msgstr "_Fechar"
 
 #: src/widget/unit_file_panel/imp.rs:264
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
-msgstr "{} bem-sucedido."
+msgstr "Arquivo {} criado com sucesso!"
 
 #: src/widget/unit_file_panel/imp.rs:265
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
-msgstr "{} bem-sucedido."
+msgstr "Arquivo {} salvo com sucesso!"
 
 #. Suggest to reload all unit configuation
 #: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1039
@@ -2117,20 +2272,19 @@ msgstr "Recarregar Daemon"
 #: src/widget/unit_file_panel/imp.rs:1055
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
-msgstr ""
+msgstr "Não foi possível salvar o arquivo, permissão não concedida!"
 
 #: src/widget/unit_file_panel/imp.rs:311
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
-msgstr ""
+msgstr "Não foi possível salvar o arquivo. Permissão Flatpak não concedida!"
 
 #: src/widget/unit_file_panel/imp.rs:319
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
-msgstr ""
+msgstr "Não foi possível salvar o arquivo, ocorreu um erro!"
 
 #: src/widget/unit_file_panel/imp.rs:566
-#, fuzzy
 msgctxt "file"
 msgid "Unit File"
 msgstr "Arquivo de unidade"
@@ -2138,19 +2292,19 @@ msgstr "Arquivo de unidade"
 #: src/widget/unit_file_panel/imp.rs:568
 msgctxt "file"
 msgid "Drop In"
-msgstr ""
+msgstr "Apareça"
 
 #. Create Drop in file name
 #: src/widget/unit_file_panel/imp.rs:925
 msgctxt "file"
 msgid "Editing"
-msgstr ""
+msgstr "Edição"
 
 #. Create Drop in file name
 #: src/widget/unit_file_panel/imp.rs:933
 msgctxt "file"
 msgid "Note: you can change the file name"
-msgstr ""
+msgstr "Observação: você pode alterar o nome do arquivo"
 
 #: src/widget/unit_file_panel/imp.rs:942
 msgctxt "file"
@@ -2158,35 +2312,36 @@ msgid ""
 "Anything between here and the comment below will become the contents of the "
 "drop-in file"
 msgstr ""
+"Tudo o que estiver entre este ponto e o comentário abaixo se tornará o "
+"conteúdo do arquivo drop-in"
 
 #. Create Drop in file footer
 #: src/widget/unit_file_panel/imp.rs:951
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
-msgstr ""
+msgstr "As edições abaixo deste comentário serão descartadas"
 
 #: src/widget/unit_file_panel/imp.rs:1029
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
-msgstr "{} bem-sucedido."
+msgstr "Unidade {} revertida com sucesso!"
 
 #: src/widget/unit_file_panel/imp.rs:1075
 msgctxt "file"
 msgid "Not able to reverted unit, permission not granted!"
-msgstr ""
+msgstr "Não foi possível reverter a unidade, permissão não concedida!"
 
 #: src/widget/unit_file_panel/imp.rs:1083
 msgctxt "file"
 msgid "Not able to reverted unit, an error happened!"
-msgstr ""
+msgstr "Não foi possível reverter a unidade, ocorreu um erro!"
 
 #. Show Line Number Menu Item
 #: src/widget/unit_file_panel/imp.rs:1182
-#, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
-msgstr "Exibir o número da linha do arquivo da unidade"
+msgstr "Exibir números de linha"
 
 #: src/widget/unit_list/filter/imp.rs:346
 msgctxt "filter"
@@ -2334,6 +2489,10 @@ msgstr "Limpar filtro de coluna"
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Filtragem"
+
+#~ msgctxt "preference"
+#~ msgid "Preferences"
+#~ msgstr "Preferências"
 
 #~ msgctxt "unit search"
 #~ msgid "Clear Filters"
@@ -2488,10 +2647,6 @@ msgstr "Filtragem"
 #~ msgctxt "clean"
 #~ msgid "_Logs"
 #~ msgstr "_Registros"
-
-#~ msgctxt "clean"
-#~ msgid "_Configuration"
-#~ msgstr "_Configuração"
 
 #~ msgctxt "clean"
 #~ msgid "_File Descriptor Store"
