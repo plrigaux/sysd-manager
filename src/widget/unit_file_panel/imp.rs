@@ -8,7 +8,8 @@ use crate::{
     consts::{ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SUGGESTED_ACTION},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
-    systemd_gui, upgrade,
+    systemd_gui::{self, is_dark},
+    upgrade,
     utils::font_management::set_text_view_font_display,
     widget::{
         InterPanelMessage,
@@ -118,8 +119,6 @@ pub struct UnitFilePanelImp {
     visible_on_page: Cell<bool>,
 
     unit: RefCell<Option<UnitInfo>>,
-
-    is_dark: Cell<bool>,
 
     unit_dependencies_loaded: Cell<bool>,
 
@@ -634,9 +633,7 @@ impl UnitFilePanelImp {
         self.panel_file_stack.set_visible_child_name(panel);
     }
 
-    pub(crate) fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
-
+    fn set_dark(&self, is_dark: bool) {
         let style_scheme_id = PREFERENCES.unit_file_style_scheme();
 
         debug!("File Unit set_dark {is_dark} style_scheme_id {style_scheme_id:?}");
@@ -689,7 +686,7 @@ impl UnitFilePanelImp {
                     }
                 };
 
-                let scheme_id = &style_sheme_st.get_style_scheme_id(self.is_dark.get());
+                let scheme_id = &style_sheme_st.get_style_scheme_id(is_dark());
 
                 if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
                     let buffer = get_buffer!(self);

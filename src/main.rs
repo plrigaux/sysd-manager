@@ -116,10 +116,6 @@ fn main() -> glib::ExitCode {
     }
 
     debug!("Run mode: {:?}", run_mode);
-    #[cfg(not(feature = "flatpak"))]
-    crate::systemd::runtime().spawn(async move {
-        systemd::init_proxy_async(run_mode).await;
-    });
 
     //systemd::init(run_mode);
 
@@ -146,6 +142,12 @@ fn main() -> glib::ExitCode {
 
     app.connect_activate(move |application| {
         build_ui(application, unit.as_ref());
+
+        //Start the Proxy after the app is loaded
+        #[cfg(not(feature = "flatpak"))]
+        crate::systemd::runtime().spawn(async move {
+            systemd::init_proxy_async(run_mode).await;
+        });
     });
 
     //to not transfer args to gtk4
@@ -279,14 +281,8 @@ fn handle_args() -> (Option<UnitInfo>, Option<Command>, UnitDBusLevel, RunMode) 
         (false, false) => (current_level, UnitDBusLevel::System),
     };
 
-    PREFERENCES.set_dbus_level(app_level);
-
-    let current_level = PREFERENCES.dbus_level();
-    debug!("Current level: {current_level:?}");
-    if current_level != app_level {
-        let settings = new_settings();
-        PREFERENCES.save_dbus_level(&settings);
-    }
+    let settings = new_settings();
+    PREFERENCES.set_and_save_dbus_level(app_level, &settings);
 
     let Some(unit_name) = args.unit else {
         return (None, args.command, unit_level, run_mode);

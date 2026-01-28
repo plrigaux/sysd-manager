@@ -28,7 +28,8 @@ use crate::{
             EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo, WhatGrab,
         },
     },
-    systemd_gui, upgrade,
+    systemd_gui::{self},
+    upgrade,
     utils::{
         font_management::set_text_view_font,
         more_colors::{Intensity, TermColor},
@@ -134,8 +135,6 @@ pub struct JournalPanelImp {
 
     //list_store: RefCell<Option<gio::ListStore>>,
     unit: RefCell<Option<UnitInfo>>,
-
-    is_dark: Cell<bool>,
 
     boot_filter: RefCell<BootFilter>,
 
@@ -552,10 +551,9 @@ impl JournalPanelImp {
         text_buffer.add_mark(&mark_l, &text_iter);
         text_buffer.add_mark(&mark_r, &text_iter);
 
-        let is_dark = self.is_dark.get();
-        let mut writer = UnitInfoWriter::new(text_buffer, text_iter, is_dark);
+        let mut writer = UnitInfoWriter::new(text_buffer, text_iter);
         let journal_color = PREFERENCES.journal_colors();
-        let mut journal_filler = JournalFiller::new(is_dark, journal_color);
+        let mut journal_filler = JournalFiller::new(journal_color);
         for journal_event in journal_events.iter() {
             journal_filler.fill_journal_event(journal_event, &mut writer);
         }
@@ -679,7 +677,6 @@ impl JournalPanelImp {
 
     pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match action {
-            InterPanelMessage::IsDark(is_dark) => self.set_dark(*is_dark),
             InterPanelMessage::FontProvider(old, new) => {
                 let text_view = self.journal_text_view.borrow();
                 set_text_view_font(*old, *new, &text_view);
@@ -708,10 +705,6 @@ impl JournalPanelImp {
             self.time_old_new
                 .set(Some((new_oldest_time, new_recent_time)));
         }
-    }
-
-    fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
     }
 
     fn new_text_view(&self) {
@@ -842,16 +835,16 @@ struct JournalFiller {
 }
 
 impl JournalFiller {
-    fn new(is_dark: bool, journal_color: bool) -> Self {
-        let red = TermColor::from(palette::red(is_dark));
+    fn new(journal_color: bool) -> Self {
+        let red = TermColor::from(palette::red());
         let red = [Token::FgColor(red), Token::Intensity(Intensity::Bold)];
 
-        let yellow = TermColor::from(palette::yellow(is_dark));
+        let yellow = TermColor::from(palette::yellow());
         let yellow = [Token::FgColor(yellow), Token::Intensity(Intensity::Bold)];
 
         let bold = [Token::Intensity(Intensity::Bold)];
 
-        let grey = TermColor::from(palette::grey(is_dark));
+        let grey = TermColor::from(palette::grey());
         let grey = [Token::FgColor(grey)];
 
         Self {

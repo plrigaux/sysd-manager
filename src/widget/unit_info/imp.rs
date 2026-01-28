@@ -1,7 +1,4 @@
-use std::{
-    cell::{Cell, RefCell},
-    rc::Rc,
-};
+use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
     TemplateChild,
@@ -59,8 +56,6 @@ pub struct UnitInfoPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    is_dark: Cell<bool>,
-
     #[property(name="wrap", get=Self::get_wrap,set=Self::set_wrap, type = bool)]
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
 }
@@ -107,9 +102,7 @@ impl UnitInfoPanelImp {
         let buf = self.clear();
         let start_iter = buf.start_iter();
 
-        let is_dark = self.is_dark.get();
-
-        let mut info_writer = UnitInfoWriter::new(buf, start_iter, is_dark);
+        let mut info_writer = UnitInfoWriter::new(buf, start_iter);
 
         fill_all_info(unit, &mut info_writer);
 
@@ -123,10 +116,6 @@ impl UnitInfoPanelImp {
 
         buf.set_text(""); // clear text
         buf
-    }
-
-    pub(crate) fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
     }
 
     pub(super) fn register(&self, app_window: &AppWindow) {
@@ -159,7 +148,6 @@ impl UnitInfoPanelImp {
                 set_text_view_font(old, new, &self.unit_info_textview);
                 set_font_context(&self.unit_info_textview);
             }
-            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
 
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             _ => {}

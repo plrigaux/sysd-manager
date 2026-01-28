@@ -5,13 +5,15 @@ use gtk::{glib::translate::IntoGlib, pango, prelude::*};
 use log::debug;
 
 use super::palette::{blue, green, grey, red, yellow};
-use crate::systemd::{self, enums::ActiveState, generate_file_uri};
+use crate::{
+    systemd::{self, enums::ActiveState, generate_file_uri},
+    systemd_gui::is_dark,
+};
 use base::enums::UnitDBusLevel;
 
 pub struct UnitInfoWriter {
     pub buffer: gtk::TextBuffer,
     pub text_iterator: gtk::TextIter,
-    pub is_dark: bool,
 }
 
 //const TAG_NAME_HYPER_LINK: &str = "hyperlink";
@@ -73,11 +75,10 @@ impl HyperLinkType {
 }
 
 impl UnitInfoWriter {
-    pub fn new(buf: gtk::TextBuffer, iter: gtk::TextIter, is_dark: bool) -> Self {
+    pub fn new(buf: gtk::TextBuffer, iter: gtk::TextIter) -> Self {
         Self {
             buffer: buf,
             text_iterator: iter,
-            is_dark,
         }
     }
 
@@ -142,7 +143,7 @@ impl UnitInfoWriter {
         }
     }
 
-    fn create_hyperlink_tag(buf: &gtk::TextBuffer, _is_dark: bool) -> Option<gtk::TextTag> {
+    fn create_hyperlink_tag(buf: &gtk::TextBuffer) -> Option<gtk::TextTag> {
         buf.create_tag(
             None,
             &[
@@ -152,11 +153,11 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_active_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
-        let (color, name) = if is_dark {
-            (green(is_dark), TAG_NAME_ACTIVE_DARK)
+    fn create_active_tag(buf: &gtk::TextBuffer) -> Option<gtk::TextTag> {
+        let (color, name) = if is_dark() {
+            (green(), TAG_NAME_ACTIVE_DARK)
         } else {
-            (green(is_dark), TAG_NAME_ACTIVE)
+            (green(), TAG_NAME_ACTIVE)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -173,40 +174,11 @@ impl UnitInfoWriter {
         )
     }
 
-    /*     fn create_yellow_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
-        let (color, name) = if is_dark {
-            (yellow(is_dark), TAG_NAME_YELLOW_DARK)
+    fn create_red_tag(buf: &gtk::TextBuffer) -> Option<gtk::TextTag> {
+        let (color, name) = if is_dark() {
+            (red(), TAG_NAME_RED_DARK)
         } else {
-            (yellow(is_dark), TAG_NAME_YELLOW)
-        };
-
-        let tag_op = buf.tag_table().lookup(name);
-        if tag_op.is_some() {
-            return tag_op;
-        }
-
-        buf.create_tag(
-            Some(name),
-            &[
-                (PROP_FOREGROUND, &color.get_color().to_value()),
-                (PROP_WEIGHT, &pango::Weight::Bold.into_glib().to_value()),
-            ],
-        )
-    } */
-
-    /*     pub fn red_dark() -> &'static str {
-        Palette::RedErrorDark.get_color()
-    }
-
-    pub fn red_light() -> &'static str {
-        Palette::Red3.get_color()
-    } */
-
-    fn create_red_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
-        let (color, name) = if is_dark {
-            (red(is_dark), TAG_NAME_RED_DARK)
-        } else {
-            (red(is_dark), TAG_NAME_RED)
+            (red(), TAG_NAME_RED)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -223,11 +195,11 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_disable_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
-        let (color, name) = if is_dark {
-            (yellow(is_dark), TAG_NAME_DISABLE_DARK)
+    fn create_disable_tag(buf: &gtk::TextBuffer) -> Option<gtk::TextTag> {
+        let (color, name) = if is_dark() {
+            (yellow(), TAG_NAME_DISABLE_DARK)
         } else {
-            (yellow(is_dark), TAG_NAME_DISABLE)
+            (yellow(), TAG_NAME_DISABLE)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -258,11 +230,11 @@ impl UnitInfoWriter {
         )
     } */
 
-    fn create_grey_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
-        let (color, name) = if is_dark {
-            (grey(is_dark), TAG_NAME_GREY_DARK)
+    fn create_grey_tag(buf: &gtk::TextBuffer) -> Option<gtk::TextTag> {
+        let (color, name) = if is_dark() {
+            (grey(), TAG_NAME_GREY_DARK)
         } else {
-            (grey(is_dark), TAG_NAME_GREY)
+            (grey(), TAG_NAME_GREY)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -276,11 +248,11 @@ impl UnitInfoWriter {
         )
     }
 
-    fn create_status_tag(buf: &gtk::TextBuffer, is_dark: bool) -> Option<gtk::TextTag> {
-        let (color, name) = if is_dark {
-            (blue(is_dark), TAG_NAME_STATUS_DARK)
+    fn create_status_tag(buf: &gtk::TextBuffer) -> Option<gtk::TextTag> {
+        let (color, name) = if is_dark() {
+            (blue(), TAG_NAME_STATUS_DARK)
         } else {
-            (blue(is_dark), TAG_NAME_STATUS)
+            (blue(), TAG_NAME_STATUS)
         };
 
         let tag_op = buf.tag_table().lookup(name);
@@ -300,14 +272,14 @@ impl UnitInfoWriter {
     fn insert_tag(
         &mut self,
         text: &str,
-        create_tag: impl Fn(&gtk::TextBuffer, bool) -> Option<gtk::TextTag>,
+        create_tag: impl Fn(&gtk::TextBuffer) -> Option<gtk::TextTag>,
         link: Option<&str>,
         type_: HyperLinkType,
     ) {
         let start_offset = self.text_iterator.offset();
         self.buffer.insert(&mut self.text_iterator, text);
 
-        let tag = create_tag(&self.buffer, self.is_dark);
+        let tag = create_tag(&self.buffer);
 
         if let Some(tag) = tag {
             if let Some(link) = link {

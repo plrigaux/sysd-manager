@@ -1,5 +1,7 @@
 //https://developer.gnome.org/hig/reference/palette.html#palette
 
+use crate::systemd_gui::is_dark;
+
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum Palette<'a> {
@@ -127,42 +129,49 @@ impl<'a> Palette<'a> {
     }
 }
 
-pub fn grey(is_dark: bool) -> Palette<'static> {
-    if is_dark {
+pub fn grey() -> Palette<'static> {
+    if is_dark() {
         Palette::Light5
     } else {
         Palette::Dark1
     }
 }
 
-pub fn red(is_dark: bool) -> Palette<'static> {
-    if is_dark {
-        Palette::Custom("#ff938c")
+pub fn red() -> Palette<'static> {
+    if is_dark() {
+        dark_red()
     } else {
         Palette::Custom("#c30000")
     }
 }
+pub fn dark_red() -> Palette<'static> {
+    Palette::Blue2
+}
 
-pub fn yellow(is_dark: bool) -> Palette<'static> {
-    if is_dark {
+pub fn yellow() -> Palette<'static> {
+    if is_dark() {
         Palette::Custom("#ffc252")
     } else {
         Palette::Custom("#905400")
     }
 }
 
-pub fn green(is_dark: bool) -> Palette<'static> {
-    if is_dark {
+pub fn green() -> Palette<'static> {
+    if is_dark() {
         Palette::Custom("#78e9ab")
     } else {
         Palette::Custom("#007c3d")
     }
 }
 
-pub fn blue(is_dark: bool) -> Palette<'static> {
-    if is_dark {
-        Palette::Blue2
+pub fn blue() -> Palette<'static> {
+    if is_dark() {
+        dark_blue()
     } else {
         Palette::Blue4
     }
+}
+
+pub fn dark_blue() -> Palette<'static> {
+    Palette::Blue2
 }

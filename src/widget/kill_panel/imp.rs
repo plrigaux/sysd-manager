@@ -49,8 +49,6 @@ pub struct KillPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    is_dark: Cell<bool>,
-
     is_sigqueue: Cell<bool>,
 
     parent: OnceCell<SideControlPanel>,
@@ -180,15 +178,9 @@ impl KillPanelImp {
 }
 
 impl KillPanelImp {
-    pub(super) fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
-    }
-
     pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
-        match *action {
-            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
-            InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
-            _ => (),
+        if let InterPanelMessage::UnitChange(unit) = *action {
+            self.set_unit(unit)
         }
     }
 

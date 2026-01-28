@@ -9,14 +9,13 @@ use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus, errors::Syst
 
 use super::UnitControlPanel;
 use crate::gtk::prelude::*;
-use crate::utils::palette::blue;
+use crate::utils::palette::{blue, dark_blue};
 
 pub(super) fn switch_ablement_state_set(
     control_panel: &UnitControlPanel,
     expected_new_status: EnablementStatus,
     switch: &gtk::Switch,
     unit: &UnitInfo,
-    is_dark: bool,
     call_back: Rc<Box<dyn Fn()>>,
 ) {
     info!(
@@ -30,7 +29,7 @@ pub(super) fn switch_ablement_state_set(
     let current_enabled_status = unit.enable_status();
 
     if expected_new_status == current_enabled_status {
-        set_switch_tooltip(current_enabled_status, switch, &unit.primary(), is_dark);
+        set_switch_tooltip(current_enabled_status, switch, &unit.primary());
         return;
     }
 
@@ -55,7 +54,7 @@ pub(super) fn switch_ablement_state_set(
 
         match enable_result {
             Ok(enablement_status_ret) => {
-                let blue = blue(true).get_color();
+                let blue = dark_blue().get_color();
 
                 let toast_info = format2!(
                     //toast message on success
@@ -95,7 +94,7 @@ pub(super) fn switch_ablement_state_set(
                     _ => ("???".to_owned(), "???"),
                 };
 
-                let blue = blue(is_dark).get_color();
+                let blue = blue().get_color();
 
                 let toast_info = format2!(
                     //toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
@@ -117,7 +116,7 @@ pub(super) fn switch_ablement_state_set(
             }
         }
 
-        handle_switch_sensivity(&switch, &unit, false, is_dark);
+        handle_switch_sensivity(&switch, &unit, false);
 
         call_back()
     });
@@ -127,7 +126,6 @@ pub(super) fn reeenable_unit(
     control_panel: &UnitControlPanel,
     switch: &gtk::Switch,
     unit: &UnitInfo,
-    is_dark: bool,
     call_back: Rc<Box<dyn Fn()>>,
 ) {
     let expected_new_status = unit.enable_status(); //Expect new status
@@ -173,7 +171,7 @@ pub(super) fn reeenable_unit(
 
         match enable_result {
             Ok(enablement_status_ret) => {
-                let blue = blue(true).get_color();
+                let blue = dark_blue().get_color();
 
                 //Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
                 let action_str = pgettext("toast", "Reenable");
@@ -207,7 +205,7 @@ pub(super) fn reeenable_unit(
                 //toast message action on fail
                 let action_str = pgettext("toast", "Reenabling");
 
-                let blue = blue(is_dark).get_color();
+                let blue = blue().get_color();
 
                 let toast_info = format2!(
                     //toast message on fail
@@ -226,19 +224,14 @@ pub(super) fn reeenable_unit(
             }
         }
 
-        handle_switch_sensivity(&switch, &unit, false, is_dark);
+        handle_switch_sensivity(&switch, &unit, false);
 
         call_back()
     });
 }
 
 //TODO do function to more constitency
-fn set_switch_tooltip(
-    enabled: EnablementStatus,
-    switch: &gtk::Switch,
-    unit_name: &str,
-    is_dark: bool,
-) {
+fn set_switch_tooltip(enabled: EnablementStatus, switch: &gtk::Switch, unit_name: &str) {
     let enabled = enabled == EnablementStatus::Enabled;
 
     let action_text = if enabled {
@@ -247,7 +240,7 @@ fn set_switch_tooltip(
         pgettext("controls", "Enable unit {}")
     };
 
-    let blue = blue(is_dark).get_color();
+    let blue = blue().get_color();
     let unit_str = format!(
         "<span fgcolor='{}' font_family='monospace' size='larger' weight='bold'>{}</span>",
         blue, unit_name
@@ -262,7 +255,6 @@ pub(super) fn handle_switch_sensivity(
     switch: &gtk::Switch,
     unit: &UnitInfo,
     check_current_state: bool,
-    is_dark: bool,
 ) {
     let mut unit_file_state = unit.enable_status();
 
@@ -290,10 +282,10 @@ pub(super) fn handle_switch_sensivity(
                 unit.set_enable_status(unit_file_state);
             }
 
-            handle_switch_sensivity_part2(&switch, &unit, unit_file_state, is_dark);
+            handle_switch_sensivity_part2(&switch, &unit, unit_file_state);
         });
     } else {
-        handle_switch_sensivity_part2(switch, unit, unit_file_state, is_dark);
+        handle_switch_sensivity_part2(switch, unit, unit_file_state);
     }
 }
 
@@ -301,7 +293,6 @@ fn handle_switch_sensivity_part2(
     switch: &gtk::Switch,
     unit: &UnitInfo,
     unit_file_state: EnablementStatus,
-    is_dark: bool,
 ) {
     if unit_file_state == EnablementStatus::Enabled
         || unit_file_state == EnablementStatus::EnabledRuntime
@@ -317,7 +308,7 @@ fn handle_switch_sensivity_part2(
         EnablementStatus::Enabled
         | EnablementStatus::EnabledRuntime
         | EnablementStatus::Disabled => {
-            set_switch_tooltip(unit_file_state, switch, &unit.primary(), is_dark);
+            set_switch_tooltip(unit_file_state, switch, &unit.primary());
             true
         }
         _ => {

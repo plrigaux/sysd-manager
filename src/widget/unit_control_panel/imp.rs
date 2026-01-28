@@ -1,5 +1,5 @@
 use std::{
-    cell::{Cell, OnceCell, RefCell},
+    cell::{OnceCell, RefCell},
     rc::Rc,
 };
 
@@ -26,7 +26,7 @@ use crate::{
     },
     utils::{
         font_management::{self, FONT_CONTEXT, create_provider},
-        palette::{blue, red},
+        palette::{dark_blue, dark_red},
     },
     widget::{
         InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
@@ -97,8 +97,6 @@ pub struct UnitControlPanelImpl {
     pub restart_mode: RefCell<String>,
 
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
-
-    is_dark: Cell<bool>,
 }
 
 #[glib::object_subclass]
@@ -191,7 +189,6 @@ impl UnitControlPanelImpl {
             expected_new_status,
             switch,
             &unit,
-            self.is_dark.get(),
             Rc::new(Box::new(|| {})),
         );
 
@@ -391,7 +388,7 @@ impl UnitControlPanelImpl {
             return; */
         }
 
-        controls::handle_switch_sensivity(&self.ablement_switch, unit, true, self.is_dark.get());
+        controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 
         self.start_button.set_sensitive(true);
         self.stop_button.set_sensitive(true);
@@ -412,10 +409,6 @@ impl UnitControlPanelImpl {
         }
     }
 
-    pub(crate) fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
-    }
-
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         match action {
             InterPanelMessage::Font(font_description) => {
@@ -428,10 +421,6 @@ impl UnitControlPanelImpl {
                     self.forward_inter_actions(&new_action);
                 }
                 self.old_font_provider.replace(provider);
-            }
-            InterPanelMessage::IsDark(is_dark) => {
-                self.set_dark(*is_dark);
-                self.forward_inter_actions(action)
             }
             InterPanelMessage::JournalFilterBoot(_) => {
                 self.display_journal_page();
@@ -471,7 +460,6 @@ impl UnitControlPanelImpl {
                     EnablementStatus::Enabled,
                     &self.ablement_switch,
                     unit,
-                    self.is_dark.get(),
                     call_back.clone(),
                 );
             }
@@ -481,7 +469,6 @@ impl UnitControlPanelImpl {
                     EnablementStatus::Disabled,
                     &self.ablement_switch,
                     unit,
-                    self.is_dark.get(),
                     call_back.clone(),
                 );
             }
@@ -491,7 +478,6 @@ impl UnitControlPanelImpl {
                     &self.obj(),
                     &self.ablement_switch,
                     unit,
-                    self.is_dark.get(),
                     call_back.clone(),
                 );
             }
@@ -638,8 +624,7 @@ impl UnitControlPanelImpl {
         };
 
         //TODO investigate
-        let is_dark = true; //self.is_dark.get();
-        let blue = blue(is_dark).get_color();
+        let blue = dark_blue().get_color();
 
         let control_panel: UnitControlPanel = self.obj().clone();
         let button = button.clone();
@@ -684,7 +669,7 @@ impl UnitControlPanelImpl {
                     control_panel.add_toast_message(&msg, true)
                 }
                 Err(ref error) => {
-                    let red = red(is_dark).get_color();
+                    let red = dark_red().get_color();
 
                     let msg = if let Some(ref unit) = unit_option {
                         format2!(

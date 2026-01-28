@@ -157,12 +157,12 @@ pub(super) fn build_preferred_color_scheme(
 
     preferred_color_scheme.set_model(Some(&model));
 
+    let empty: [gtk::Expression; 0] = [];
     let expression = gtk::ClosureExpression::new::<String>(
-        Vec::<gtk::Expression>::new(),
-        glib::RustClosure::new(|values| {
-            let boxed = values[0].get::<glib::BoxedAnyObject>().unwrap();
-            let color_ref: Ref<'_, PreferredColorScheme> = boxed.borrow();
-            Some(color_ref.text().to_value())
+        empty,
+        glib::closure!(|o: glib::BoxedAnyObject| {
+            let color_ref: Ref<'_, PreferredColorScheme> = o.borrow();
+            color_ref.text()
         }),
     );
 

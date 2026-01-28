@@ -78,8 +78,6 @@ pub struct UnitDependenciesPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    is_dark: Cell<bool>,
-
     unit_dependencies_loaded: Cell<bool>,
 
     pub(super) dependency_type: Cell<DependencyType>,
@@ -171,7 +169,6 @@ impl UnitDependenciesPanelImp {
         let unit = unit_ref.clone();
         let textview = self.unit_dependencies_textview.clone();
         let stack = self.unit_dependencies_panel_stack.clone();
-        let dark = self.is_dark.get();
         let mut plain = self.plain.get();
         let unit_type_filter = self.unit_type_filter.borrow().clone();
 
@@ -224,7 +221,7 @@ impl UnitDependenciesPanelImp {
 
             let start_iter = buf.start_iter();
 
-            let mut info_writer = UnitInfoWriter::new(buf, start_iter, dark);
+            let mut info_writer = UnitInfoWriter::new(buf, start_iter);
 
             info_writer.insertln(&dependencies.unit_name);
 
@@ -324,7 +321,6 @@ impl UnitDependenciesPanelImp {
             InterPanelMessage::FontProvider(old, new) => {
                 set_text_view_font(old, new, &self.unit_dependencies_textview)
             }
-            InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
 
             InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
             InterPanelMessage::UnitChange(unit) => {
@@ -332,10 +328,6 @@ impl UnitDependenciesPanelImp {
             }
             _ => {}
         }
-    }
-
-    fn set_dark(&self, is_dark: bool) {
-        self.is_dark.set(is_dark);
     }
 }
 

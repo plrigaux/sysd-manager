@@ -225,8 +225,7 @@ mod imp {
                 self.unit_label.set_label(&primary_name);
                 self.unit_label.set_tooltip_text(Some(&primary_name));
 
-                let is_dark = self.unit_list_panel.get().expect("Sould Be Set").is_dark();
-                let blue = blue(is_dark).get_color();
+                let blue = blue().get_color();
 
                 self.set_tooltip(
                     &self.start_button,

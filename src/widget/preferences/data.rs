@@ -1,7 +1,7 @@
 use gettextrs::pgettext;
+use glib::{self, GString};
 use gtk::{
     gio::Settings,
-    glib::{self, GString},
     pango::{self, FontDescription},
     prelude::SettingsExt,
 };
@@ -37,16 +37,26 @@ pub const KEY_PREF_PREFERRED_COLOR_SCHEME: &str = "pref-preferred-color-scheme";
 pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 pub const KEY_PREF_PROP_ORIENTATION_MODE: &str = "pref-window-properties-orientation-vertical";
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter, glib::Enum)]
+#[enum_type(name = "DbusLevel")]
 pub enum DbusLevel {
     #[default]
-    UserSession = 0,
-    System = 1,
-    SystemAndSession = 2,
+    #[enum_value(name = "session")]
+    UserSession,
+
+    #[enum_value(name = "system")]
+    System,
+    #[enum_value(name = "system_session")]
+    SystemAndSession,
 }
 
 impl DbusLevel {
     pub fn as_str(&self) -> &str {
+        // self.to_value()
+        //     .get::<adw::EnumListItem>()
+        //     .unwrap()
+        //     .name()
+        //     .as_str()
         match self {
             DbusLevel::UserSession => "session",
             DbusLevel::System => "system",
@@ -54,14 +64,6 @@ impl DbusLevel {
         }
     }
 
-    /*     pub fn as_unit_dbus(&self) -> UnitDBusLevel {
-           match self {
-               DbusLevel::UserSession => UnitDBusLevel::UserSession,
-               DbusLevel::System => UnitDBusLevel::System,
-               DbusLevel::SystemAndSession => UnitDBusLevel::System,
-           }
-       }
-    */
     pub fn label(&self) -> String {
         match self {
             //browser dbus option
@@ -90,13 +92,19 @@ impl From<&str> for DbusLevel {
     }
 }
 
-impl From<u32> for DbusLevel {
-    fn from(level: u32) -> Self {
+impl From<i32> for DbusLevel {
+    fn from(level: i32) -> Self {
         match level {
             0 => DbusLevel::UserSession,
             1 => DbusLevel::System,
             _ => DbusLevel::SystemAndSession,
         }
+    }
+}
+
+impl From<u32> for DbusLevel {
+    fn from(level: u32) -> Self {
+        DbusLevel::from(level as i32)
     }
 }
 
@@ -343,7 +351,8 @@ impl Preferences {
         *self_timestamp_style = timestamp_style;
     }
 
-    pub fn save_dbus_level(&self, settings: &Settings) {
+    pub fn set_and_save_dbus_level(&self, level: DbusLevel, settings: &Settings) {
+        self.set_dbus_level(level);
         let level = self.dbus_level();
         match settings.set_string(KEY_DBUS_LEVEL, level.as_str()) {
             Ok(()) => info!(

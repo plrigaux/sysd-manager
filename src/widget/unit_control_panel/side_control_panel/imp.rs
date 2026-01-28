@@ -1,4 +1,4 @@
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 
 use gettextrs::pgettext;
 use glib::{WeakRef, property::PropertySet};
@@ -6,6 +6,7 @@ use glib::{WeakRef, property::PropertySet};
 use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
     systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
+    systemd_gui::is_dark,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -69,8 +70,6 @@ pub struct SideControlPanelImpl {
     queue_signal_window: RefCell<Option<KillPanel>>,
 
     control_panel: RefCell<WeakRef<UnitControlPanel>>,
-
-    is_dark: Cell<bool>,
 }
 
 #[glib::object_subclass]
@@ -332,9 +331,7 @@ impl SideControlPanelImpl {
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
-        if let InterPanelMessage::IsDark(is_dark) = *action {
-            self.is_dark.set(is_dark);
-        }
+        if let InterPanelMessage::IsDark(_is_dark) = *action {}
 
         let kill_signal_window = self.kill_signal_window.borrow();
         if let Some(kill_signal_window) = kill_signal_window.as_ref() {
@@ -357,8 +354,7 @@ impl SideControlPanelImpl {
             let kill_signal_window = window_cell.borrow();
             if let Some(kill_signal_window) = kill_signal_window.as_ref() {
                 kill_signal_window.set_inter_message(&InterPanelMessage::UnitChange(unit.as_ref()));
-                kill_signal_window
-                    .set_inter_message(&InterPanelMessage::IsDark(self.is_dark.get()));
+                kill_signal_window.set_inter_message(&InterPanelMessage::IsDark(is_dark()));
 
                 if let Some(app_window) = self.app_window() {
                     //kill_signal_window.set_application(app_window.application().as_ref());
@@ -376,8 +372,7 @@ impl SideControlPanelImpl {
         };
 
         if create_new {
-            let kill_signal_window =
-                new_kill_window_fn(unit.as_ref(), self.is_dark.get(), &self.obj());
+            let kill_signal_window = new_kill_window_fn(unit.as_ref(), is_dark(), &self.obj());
             kill_signal_window.present();
 
             window_cell.replace(Some(kill_signal_window));

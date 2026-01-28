@@ -26,12 +26,12 @@ use crate::{
     },
 };
 use adw::subclass::prelude::*;
+use glib::{self, VariantTy, types::StaticType};
 use gtk::{
     gio::{
         self,
         prelude::{ActionMapExtManual, SettingsExt},
     },
-    glib::{self, VariantTy},
     prelude::{
         GtkApplicationExt, GtkWindowExt, OrientableExt, ToVariant, ToggleButtonExt, WidgetExt,
     },
@@ -39,7 +39,6 @@ use gtk::{
 use log::{debug, error, info, warn};
 use regex::Regex;
 
-use strum::IntoEnumIterator;
 use systemd::journal_data::Boot;
 
 const WINDOW_WIDTH: &str = "window-width";
@@ -79,12 +78,13 @@ pub struct AppWindowImpl {
     system_session_dropdown: TemplateChild<gtk::DropDown>,
 
     #[template_child]
+    unit_list_view_dropdown: TemplateChild<gtk::DropDown>,
+
+    #[template_child]
     app_title: TemplateChild<adw::WindowTitle>,
 
     #[template_child]
     breakpoint: TemplateChild<adw::Breakpoint>,
-
-    is_dark: Cell<bool>,
 
     orientation_mode: Cell<OrientationMode>,
 
@@ -186,14 +186,21 @@ impl AppWindowImpl {
     }
 
     fn setup_dropdown(&self) {
-        let mut levels_string = Vec::new();
-        for a in DbusLevel::iter() {
-            levels_string.push(a.label());
-        }
+        let model = adw::EnumListModel::new(DbusLevel::static_type());
 
-        let level_str: Vec<&str> = levels_string.iter().map(|x| &**x).collect();
-        let string_list = gtk::StringList::new(&level_str);
-        self.system_session_dropdown.set_model(Some(&string_list));
+        let empty: [gtk::Expression; 0] = [];
+        let expression = gtk::ClosureExpression::new::<String>(
+            empty,
+            glib::closure!(|s: adw::EnumListItem| {
+                let dbus: DbusLevel = s.value().into();
+                dbus.label()
+            }),
+        );
+
+        self.system_session_dropdown
+            .set_expression(Some(expression));
+
+        self.system_session_dropdown.set_model(Some(&model));
 
         {
             let settings = self.settings().clone();
@@ -212,8 +219,7 @@ impl AppWindowImpl {
 
                     debug!("System Session Values Selected idx {idx:?} level {level:?}");
 
-                    PREFERENCES.set_dbus_level(level);
-                    PREFERENCES.save_dbus_level(&settings);
+                    PREFERENCES.set_and_save_dbus_level(level, &settings);
 
                     unit_list_panel.fill_store();
                 });
@@ -370,10 +376,6 @@ impl AppWindowImpl {
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.unit_control_panel.set_inter_message(action);
         self.unit_list_panel.set_inter_message(action);
-
-        if let InterPanelMessage::IsDark(is_dark) = *action {
-            self.is_dark.set(is_dark);
-        }
     }
 
     pub(super) fn build_action(&self, application: &adw::Application) {
@@ -544,15 +546,15 @@ impl AppWindowImpl {
     }
 
     fn blue(&self) -> &str {
-        blue(self.is_dark.get()).get_color()
+        blue().get_color()
     }
 
     fn green(&self) -> &str {
-        green(self.is_dark.get()).get_color()
+        green().get_color()
     }
 
     fn red(&self) -> &str {
-        red(self.is_dark.get()).get_color()
+        red().get_color()
     }
 
     pub(super) fn add_toast_message(

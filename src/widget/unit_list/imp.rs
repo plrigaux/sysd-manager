@@ -138,9 +138,6 @@ pub struct UnitListPanelImp {
 
     app_window: OnceCell<AppWindow>,
 
-    #[property(name = "is-dark", get)]
-    is_dark: Cell<bool>,
-
     // default_column_view_column_list: OnceCell<Vec<gtk::ColumnViewColumn>>,
     current_column_view_column_definition_list: RefCell<Vec<UnitPropertySelection>>,
 
@@ -332,13 +329,13 @@ impl UnitListPanelImp {
             .borrow()
             .set_sorter(None::<&gtk::Sorter>);
 
-        let int_level = PREFERENCES.dbus_level();
+        let dbus_level = PREFERENCES.dbus_level();
 
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
 
-            let (unit_desc, unit_from_files) = match go_fetch_data(int_level).await {
+            let (unit_desc, unit_from_files) = match go_fetch_data(dbus_level).await {
                 Ok(value) => value,
                 Err(err) => {
                     warn!("Fail fetch unit list {err:?}");
@@ -614,11 +611,7 @@ impl UnitListPanelImp {
         self.unit.borrow().clone()
     }
 
-    pub fn set_inter_message(&self, action: &InterPanelMessage) {
-        if let InterPanelMessage::IsDark(is_dark) = action {
-            self.is_dark.set(*is_dark)
-        }
-    }
+    pub fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     fn set_sorter(&self) {
         let sorter = self.units_browser.borrow().sorter();
