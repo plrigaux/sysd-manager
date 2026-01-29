@@ -84,9 +84,9 @@
                 </child>
                 <child type="start">
                   <object class="GtkButton" id="refresh_unit_list_button">
+                    <property name="action-name">win.refresh_unit_list</property>
                     <property name="icon-name">view-refresh</property>
                     <property name="tooltip-text" translatable="yes" context="top button tooltip">Refresh Unit List</property>
-                    <signal name="clicked" handler="refresh_button_clicked" swapped="yes"/>
                   </object>
                 </child>
                 <child type="end">
@@ -103,7 +103,6 @@
                 <child>
                   <object class="GtkMenuButton" id="unit_list_view_menubutton">
                     <property name="label">Views</property>
-                    <property name="visible">False</property>
                   </object>
                 </child>
               </object>

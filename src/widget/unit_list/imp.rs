@@ -11,14 +11,18 @@ use std::{
 };
 
 use crate::{
-    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
+    consts::{
+        ACTION_DEFAULT_UNIT_LIST_VIEW, ACTION_TIMER_UNIT_LIST_VIEW,
+        ACTION_UNIT_FILE_UNIT_LIST_VIEW, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
+        ALL_FILTER_KEY, FILTER_MARK,
+    },
     systemd::{
         self, SystemdUnitFile,
         data::{UnitInfo, convert_to_string},
         enums::{LoadState, UnitType},
         errors::SystemdErrors,
     },
-    systemd_gui,
+    systemd_gui, upgrade,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -47,6 +51,7 @@ use crate::{
     },
 };
 use base::enums::UnitDBusLevel;
+use glib::WeakRef;
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
@@ -123,7 +128,7 @@ pub struct UnitListPanelImp {
 
     search_controls: OnceCell<UnitListSearchControls>,
 
-    refresh_unit_list_button: OnceCell<gtk::Button>,
+    refresh_unit_list_button: WeakRef<gtk::Button>,
 
     unit: RefCell<Option<UnitInfo>>,
 
@@ -211,8 +216,7 @@ impl UnitListPanelImp {
             }); // FOR THE SEARCH
 
         self.refresh_unit_list_button
-            .set(refresh_unit_list_button.clone())
-            .expect("refresh_unit_list_button was already set!");
+            .set(Some(refresh_unit_list_button));
 
         self.fill_store();
 
@@ -282,11 +286,47 @@ impl UnitListPanelImp {
                 .build()
         };
 
+        //  let settings = settings.clone();
+        let default_unit_list_view = {
+            // let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder(ACTION_DEFAULT_UNIT_LIST_VIEW)
+                .activate(move |_application: &AppWindow, _b, _| {})
+                .build()
+        };
+
+        let unit_files_unit_list_view = {
+            // let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder(ACTION_UNIT_FILE_UNIT_LIST_VIEW)
+                .activate(move |_application: &AppWindow, _, _| {})
+                .build()
+        };
+
+        let timer_unit_list_view = {
+            // let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder(ACTION_TIMER_UNIT_LIST_VIEW)
+                .activate(move |_application: &AppWindow, _, _| {})
+                .build()
+        };
+
+        let refresh_unit_list = {
+            let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder("refresh_unit_list")
+                .activate(move |_application: &AppWindow, _, _| {
+                    info!("Action refresh called");
+                    unit_list_panel.imp().fill_store();
+                })
+                .build()
+        };
+
         app_window.add_action_entries([
             action_entry,
             list_filter_action_entry,
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
+            default_unit_list_view,
+            unit_files_unit_list_view,
+            timer_unit_list_view,
+            refresh_unit_list,
         ]);
     }
 
@@ -318,11 +358,7 @@ impl UnitListPanelImp {
         let unit_list = self.obj().clone();
         let units_browser = self.units_browser.borrow().clone();
 
-        let refresh_unit_list_button = self
-            .refresh_unit_list_button
-            .get()
-            .expect("Supposed to be set")
-            .clone();
+        let refresh_unit_list_button = upgrade!(self.refresh_unit_list_button);
 
         //Rem sorting before adding lot of items for performance reasons
         self.unit_list_sort_list_model

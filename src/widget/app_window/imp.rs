@@ -10,6 +10,9 @@ use crate::{
         ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
+        NS_ACTION_ACTIVE_UNIT_LIST_VIEW, NS_ACTION_DEFAULT_UNIT_LIST_VIEW,
+        NS_ACTION_REFRESH_UNIT_LIST, NS_ACTION_TIMER_UNIT_LIST_VIEW,
+        NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW,
     },
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
@@ -167,10 +170,10 @@ impl ObjectImpl for AppWindowImpl {
 
         let menu_views = gio::Menu::new();
 
-        menu_views.append(Some("Default"), Some("win.default_list_view"));
-        menu_views.append(Some("Active Units"), Some("win.default_list_view"));
-        menu_views.append(Some("Unit Files"), Some("win.default_list_view"));
-        menu_views.append(Some("Timer"), Some("win.default_list_view"));
+        menu_views.append(Some("Default"), Some(NS_ACTION_DEFAULT_UNIT_LIST_VIEW));
+        menu_views.append(Some("Active Units"), Some(NS_ACTION_ACTIVE_UNIT_LIST_VIEW));
+        menu_views.append(Some("Unit Files"), Some(NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW));
+        menu_views.append(Some("Timers"), Some(NS_ACTION_TIMER_UNIT_LIST_VIEW));
 
         self.unit_list_view_menubutton
             .set_menu_model(Some(&menu_views));
@@ -214,13 +217,9 @@ impl AppWindowImpl {
 
         {
             let settings = self.settings().clone();
-            let unit_list_panel = self.unit_list_panel.clone();
 
             let level = PREFERENCES.dbus_level();
-            let level_num = level as u32;
-            self.system_session_dropdown.set_selected(level_num);
-            let selected = self.system_session_dropdown.selected();
-            info!("Set system_session_dropdown {level:?} {level_num} selected {selected}");
+            self.system_session_dropdown.set_selected(level as u32);
 
             self.system_session_dropdown
                 .connect_selected_item_notify(move |dropdown| {
@@ -231,7 +230,9 @@ impl AppWindowImpl {
 
                     PREFERENCES.set_and_save_dbus_level(level, &settings);
 
-                    unit_list_panel.fill_store();
+                    if let Err(err) = dropdown.activate_action(NS_ACTION_REFRESH_UNIT_LIST, None) {
+                        warn!("call action {NS_ACTION_REFRESH_UNIT_LIST} error: {err}");
+                    }
                 });
         }
     }
@@ -267,15 +268,6 @@ impl AppWindowImpl {
     fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
         self.unit_list_panel
             .button_search_toggled(toggle_button.is_active());
-    }
-
-    #[template_callback]
-    fn refresh_button_clicked(&self, _button: &gtk::Button) {
-        info!("refresh false");
-        //button.set_sensitive(false);
-        self.unit_list_panel.fill_store();
-        //button.set_sensitive(true);
-        info!("refresh true");
     }
 }
 

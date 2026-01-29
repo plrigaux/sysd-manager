@@ -37,10 +37,6 @@ impl UnitListPanel {
         obj.register_selection_change(app_window, refresh_unit_list_button);
     }
 
-    pub fn fill_store(&self) {
-        self.imp().fill_store()
-    }
-
     pub fn button_search_toggled(&self, toggle_button_is_active: bool) {
         self.imp().button_search_toggled(toggle_button_is_active);
     }
