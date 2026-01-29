@@ -194,8 +194,8 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
         let is_dark = style_manager.is_dark();
         info!("is dark {is_dark}");
 
-        window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
         set_is_dark(is_dark);
+        window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
 
         style_manager.connect_dark_notify(move |style_manager: &adw::StyleManager| {
             let is_dark = style_manager.is_dark();

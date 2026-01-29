@@ -78,7 +78,7 @@ pub struct AppWindowImpl {
     system_session_dropdown: TemplateChild<gtk::DropDown>,
 
     #[template_child]
-    unit_list_view_dropdown: TemplateChild<gtk::DropDown>,
+    unit_list_view_menubutton: TemplateChild<gtk::MenuButton>,
 
     #[template_child]
     app_title: TemplateChild<adw::WindowTitle>,
@@ -164,6 +164,16 @@ impl ObjectImpl for AppWindowImpl {
                 app_window.imp().set_orientation(window_panes_orientation);
             });
         }
+
+        let menu_views = gio::Menu::new();
+
+        menu_views.append(Some("Default"), Some("win.default_list_view"));
+        menu_views.append(Some("Active Units"), Some("win.default_list_view"));
+        menu_views.append(Some("Unit Files"), Some("win.default_list_view"));
+        menu_views.append(Some("Timer"), Some("win.default_list_view"));
+
+        self.unit_list_view_menubutton
+            .set_menu_model(Some(&menu_views));
     }
 }
 

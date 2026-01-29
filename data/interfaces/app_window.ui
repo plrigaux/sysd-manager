@@ -96,10 +96,13 @@
                   </object>
                 </child>
                 <child type="start">
-                  <object class="GtkDropDown" id="system_session_dropdown"/>
+                  <object class="GtkDropDown" id="system_session_dropdown">
+                    <property name="width-request">240</property>
+                  </object>
                 </child>
                 <child>
-                  <object class="GtkDropDown" id="unit_list_view_dropdown">
+                  <object class="GtkMenuButton" id="unit_list_view_menubutton">
+                    <property name="label">Views</property>
                     <property name="visible">False</property>
                   </object>
                 </child>
