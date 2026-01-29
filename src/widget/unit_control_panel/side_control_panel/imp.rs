@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use gettextrs::pgettext;
-use glib::{WeakRef, property::PropertySet};
+use glib::WeakRef;
 
 use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
@@ -69,7 +69,7 @@ pub struct SideControlPanelImpl {
     kill_signal_window: RefCell<Option<KillPanel>>,
     queue_signal_window: RefCell<Option<KillPanel>>,
 
-    control_panel: RefCell<WeakRef<UnitControlPanel>>,
+    control_panel: WeakRef<UnitControlPanel>,
 }
 
 #[glib::object_subclass]
@@ -285,7 +285,7 @@ impl SideControlPanelImpl {
 
 impl SideControlPanelImpl {
     pub(super) fn control_panel(&self) -> Option<UnitControlPanel> {
-        self.control_panel.borrow().upgrade()
+        self.control_panel.upgrade()
     }
 
     fn current_unit(&self) -> Option<UnitInfo> {
@@ -300,7 +300,7 @@ impl SideControlPanelImpl {
     }
 
     pub(super) fn init(&self, unit_control_panel: &UnitControlPanel) {
-        self.control_panel.set(unit_control_panel.downgrade());
+        self.control_panel.set(Some(unit_control_panel));
         let default_mode = StartStopMode::default();
         self.reload_unit_mode_changed(default_mode);
 
