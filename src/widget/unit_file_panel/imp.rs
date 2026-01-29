@@ -775,16 +775,6 @@ impl UnitFilePanelImp {
                 .build()
         };
 
-        if let Some(action) = app_window
-            .lookup_action("create_drop_in_file_runtime")
-            .and_downcast_ref::<gio::SimpleAction>()
-        {
-            let b = action.is_enabled();
-            info!("create_drop_in_file_runtime {}", b);
-        } else {
-            warn!("No action {}", "create_drop_in_file_runtime");
-        }
-
         let text_search_bar_action_entry =
             text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
 
@@ -1166,7 +1156,6 @@ impl ObjectImpl for UnitFilePanelImp {
         let settings = systemd_gui::new_settings();
 
         let show_line_numbers = settings.boolean(KEY_PREF_UNIT_FILE_LINE_NUMBERS);
-        warn!("show ln {}", show_line_numbers);
 
         settings
             .bind(KEY_PREF_UNIT_FILE_LINE_NUMBERS, &view, "show-line-numbers")
