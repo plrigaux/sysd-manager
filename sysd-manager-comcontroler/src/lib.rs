@@ -69,7 +69,7 @@ pub struct SystemdUnitFile {
 #[derive(Debug, Default)]
 pub struct UpdatedUnitInfo {
     pub primary: String,
-    pub object_path: String,
+    // pub object_path: String,
     pub description: Option<String>,
     pub load_state: Option<LoadState>,
     pub sub_state: Option<String>,
@@ -81,11 +81,30 @@ pub struct UpdatedUnitInfo {
 }
 
 impl UpdatedUnitInfo {
-    fn new(primary: String, object_path: String) -> Self {
+    fn new(primary: String) -> Self {
         Self {
             primary,
-            object_path,
             ..Default::default()
+        }
+    }
+}
+
+pub struct CompleteUnitParams {
+    pub level: UnitDBusLevel,
+    pub unit_name: String,
+    pub object_path: String,
+}
+
+impl CompleteUnitParams {
+    pub fn new(unit: &UnitInfo) -> Self {
+        Self::new2(unit.dbus_level(), unit.primary(), unit.object_path())
+    }
+
+    pub fn new2(level: UnitDBusLevel, unit_name: String, path: String) -> Self {
+        Self {
+            level,
+            unit_name,
+            object_path: path,
         }
     }
 }
@@ -139,7 +158,7 @@ pub async fn list_units_description_and_state_async(
 }
 
 pub async fn complete_unit_information(
-    units: Vec<(UnitDBusLevel, String, String)>,
+    units: &[CompleteUnitParams],
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     sysdbus::complete_unit_information(units).await
 }
@@ -149,8 +168,8 @@ pub async fn complete_single_unit_information(
     level: UnitDBusLevel,
     object_path: String,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
-    let units = vec![(level, primary_name, object_path)];
-    sysdbus::complete_unit_information(units).await
+    let units = [CompleteUnitParams::new2(level, primary_name, object_path)];
+    sysdbus::complete_unit_information(&units).await
 }
 
 /// Takes a unit name as input and attempts to start it

@@ -33,7 +33,7 @@ use zbus::{
 };
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
-use crate::sysdbus::dbus_proxies::systemd_manager_async;
+use crate::{CompleteUnitParams, sysdbus::dbus_proxies::systemd_manager_async};
 use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
     data::{LUnit, UnitInfo},
@@ -366,19 +366,19 @@ pub async fn list_units_description_and_state_async(
 }
 
 pub async fn complete_unit_information(
-    units: Vec<(UnitDBusLevel, String, String)>,
+    units: &[CompleteUnitParams],
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     let mut connection_system = None;
     let mut connection_session = None;
 
     let mut ouput = Vec::with_capacity(units.len());
-    for (dbus_level, unit_primary, object_path) in units {
-        let connection = match dbus_level {
+    for params in units.iter() {
+        let connection = match params.level {
             UnitDBusLevel::UserSession => {
                 if let Some(conn) = &connection_session {
                     conn
                 } else {
-                    let conn = get_connection(dbus_level).await?;
+                    let conn = get_connection(params.level).await?;
                     connection_session.get_or_insert(conn) as &zbus::Connection
                 }
             }
@@ -386,14 +386,14 @@ pub async fn complete_unit_information(
                 if let Some(conn) = &connection_system {
                     conn
                 } else {
-                    let conn = get_connection(dbus_level).await?;
+                    let conn = get_connection(params.level).await?;
                     connection_system.get_or_insert(conn) as &zbus::Connection
                 }
             }
         };
 
-        let f2 = get_unit_file_state_async(connection, &unit_primary);
-        let f1 = complete_unit_info(connection, &unit_primary, object_path);
+        let f2 = get_unit_file_state_async(connection, &params.unit_name);
+        let f1 = complete_unit_info(connection, &params.unit_name, &params.object_path);
 
         let (r1, r2) = tokio::join!(f1, f2);
 
@@ -402,7 +402,7 @@ pub async fn complete_unit_information(
                 updated_unit_info.enablement_status = r2.ok();
                 ouput.push(updated_unit_info)
             }
-            Err(error) => warn!("Complete unit \"{unit_primary}\" error {error:?}"),
+            Err(error) => warn!("Complete unit {:?} error {error:?}", params.unit_name),
         }
     }
     Ok(ouput)
@@ -429,15 +429,15 @@ macro_rules! fill_completing_info {
 
 async fn complete_unit_info(
     connection: &zbus::Connection,
-    unit_primary: &String,
-    object_path: String,
+    unit_primary: &str,
+    object_path: &str,
 ) -> Result<UpdatedUnitInfo, SystemdErrors> {
     let unit_info_proxy = ZUnitInfoProxy::builder(connection)
-        .path(object_path.clone())?
+        .path(object_path)?
         .build()
         .await?;
 
-    let mut update = UpdatedUnitInfo::new(unit_primary.to_owned(), object_path);
+    let mut update = UpdatedUnitInfo::new(unit_primary.to_owned());
 
     if let Err(error) = fill_update(unit_info_proxy, &mut update).await {
         debug!("Complete info Error: {error:?}");

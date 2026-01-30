@@ -48,10 +48,14 @@ impl UnitInfo {
     pub fn debug(&self) -> String {
         format!("{:#?}", *self.imp())
     }
+
+    pub fn need_to_be_completed(&self) -> bool {
+        self.imp().need_to_be_completed()
+    }
 }
 
 mod imp {
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
 
     use base::enums::UnitDBusLevel;
     use glib::{
@@ -73,15 +77,15 @@ mod imp {
         #[property(get)]
         display_name: RefCell<String>,
         #[property(get, default)]
-        unit_type: RefCell<UnitType>,
+        unit_type: Cell<UnitType>,
         #[property(get, set)]
         pub(super) description: RefCell<Option<String>>,
 
         #[property(get, set, default)]
-        pub(super) load_state: RefCell<LoadState>,
+        pub(super) load_state: Cell<LoadState>,
 
         #[property(get, set, builder(ActiveState::Unknown))]
-        pub(super) active_state: RefCell<ActiveState>,
+        pub(super) active_state: Cell<ActiveState>,
 
         #[property(get, set)]
         pub(super) sub_state: RefCell<String>,
@@ -94,13 +98,13 @@ mod imp {
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RefCell<Option<String>>,
         #[property(get, set, default)]
-        pub(super) enable_status: RefCell<EnablementStatus>,
+        pub(super) enable_status: Cell<EnablementStatus>,
 
         #[property(get, set, default)]
-        pub(super) dbus_level: RefCell<UnitDBusLevel>,
+        pub(super) dbus_level: Cell<UnitDBusLevel>,
 
         #[property(get, set, default)]
-        pub(super) preset: RefCell<Preset>,
+        pub(super) preset: Cell<Preset>,
     }
 
     #[glib::object_subclass]
@@ -175,7 +179,7 @@ mod imp {
         }
 
         pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
-            self.object_path.replace(Some(update.object_path));
+            // self.object_path.replace(Some(update.object_path));
 
             self.description.replace(update.description);
 
@@ -214,6 +218,11 @@ mod imp {
                 self.object_path.replace(Some(object_path.clone()));
                 object_path
             }
+        }
+
+        pub fn need_to_be_completed(&self) -> bool {
+            self.description.borrow().is_none() || self.preset.get() == Preset::UnSet
+            // || self.load_state.get() == LoadState::Unknown
         }
     }
 }
