@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2025-11-24 13:00+0000\n"
-"Last-Translator: Shijia Zhang <15964984+codgician@users.noreply.github.com>\n"
+"PO-Revision-Date: 2026-02-03 08:00+0000\n"
+"Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -39,7 +39,7 @@ msgstr "一个用于管理 systemd 单元，用户友好的应用程序"
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr "Systemd；Systemctl；服务；日志；"
+msgstr "Systemd;Systemctl;服务;日志;"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
 msgid ""
@@ -73,12 +73,12 @@ msgstr "服务单元日志"
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
 msgid "Analyze Blame"
-msgstr ""
+msgstr "分析启动耗时"
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Daemon Reload"
-msgstr ""
+msgstr "重载所有服务单元"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -88,7 +88,7 @@ msgstr "Systemd 信息"
 #: data/interfaces/app_window.ui:24
 msgctxt "menu"
 msgid "List Boots"
-msgstr ""
+msgstr "列出启动记录"
 
 #: data/interfaces/app_window.ui:28
 msgctxt "menu"
@@ -127,7 +127,7 @@ msgstr "刷新服务单元列表"
 #: src/widget/clean_dialog/imp.rs:93
 msgctxt "clean"
 msgid "Clean"
-msgstr ""
+msgstr "清空"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
@@ -238,24 +238,24 @@ msgstr ""
 #: data/interfaces/journal_panel.ui:27
 msgctxt "journal"
 msgid "Refresh"
-msgstr ""
+msgstr "刷新"
 
 #: data/interfaces/journal_panel.ui:32
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
-msgstr ""
+msgstr "清除并重新加载日志"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:43
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr ""
+msgstr "实时显示新增日志"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:59
 msgctxt "journal"
 msgid "Toggle events display order"
-msgstr ""
+msgstr "切换显示顺序"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:65
@@ -294,12 +294,14 @@ msgid ""
 "No journal events!\n"
 "It can be a good thing. 😉"
 msgstr ""
+"无日志事件！\n"
+"这可能是正常现象。😉"
 
 #. title
 #: data/interfaces/journal_panel.ui:152
 msgctxt "journal"
 msgid "No journal events"
-msgstr ""
+msgstr "无日志事件"
 
 #. group
 #: data/interfaces/kill_panel.ui:20
@@ -396,19 +398,19 @@ msgstr ""
 #: data/interfaces/mask_unit_dialog.ui:75
 msgctxt "mask"
 msgid "Mask"
-msgstr ""
+msgstr "屏蔽"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:27
 msgctxt "mask"
 msgid "To mask temporarily until the next system reboot"
-msgstr ""
+msgstr "临时屏蔽，直到下次系统重启"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:28
 msgctxt "mask"
 msgid "Runtime"
-msgstr ""
+msgstr "临时屏蔽"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:33
@@ -458,7 +460,7 @@ msgstr ""
 #: data/interfaces/mask_unit_dialog.ui:89
 msgctxt "mask"
 msgid "Mask Unit"
-msgstr ""
+msgstr "屏蔽该单元"
 
 #. First connection message
 #: data/interfaces/preferences.ui:12
@@ -691,24 +693,22 @@ msgstr ""
 #: data/interfaces/preferences.ui:228
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用来<b>Enable Unit File</b>"
 
 #: data/interfaces/preferences.ui:229
-#, fuzzy
 msgctxt "preference"
 msgid "Enable Unit File"
-msgstr "服务单元文件"
+msgstr "启用服务单元文件"
 
 #: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用来<b>Disable Unit File</b>"
 
 #: data/interfaces/preferences.ui:235
-#, fuzzy
 msgctxt "preference"
 msgid "Disable Unit File"
-msgstr "服务单元文件"
+msgstr "停用服务单元文件"
 
 #: data/interfaces/preferences.ui:240
 msgctxt "preference"
@@ -729,10 +729,9 @@ msgid ""
 msgstr ""
 
 #: data/interfaces/preferences.ui:247
-#, fuzzy
 msgctxt "preference"
 msgid "Revert Unit Files"
-msgstr "服务单元文件"
+msgstr "重置服务单元文件"
 
 #: data/interfaces/preferences.ui:254
 msgctxt "preference"
