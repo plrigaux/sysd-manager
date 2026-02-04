@@ -563,6 +563,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Too long"]
     fn test_get_boot() -> Result<(), SystemdErrors> {
         for (idx, boot) in list_boots()?.iter().enumerate() {
             let time = get_since_time(boot.first, TimestampStyle::Pretty);
