@@ -51,7 +51,7 @@ pub(super) const INTERFACE_PROPERTIES: &str = "org.freedesktop.DBus.Properties";
 pub(crate) const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
 const METHOD_LIST_UNIT: &str = "ListUnits";
-const METHOD_LIST_UNIT_FILES: &str = "ListUnitFiles";
+// const METHOD_LIST_UNIT_FILES: &str = "ListUnitFiles";
 
 const METHOD_GET: &str = "Get";
 const METHOD_START_UNIT: &str = "StartUnit";
@@ -77,9 +77,9 @@ const METHOD_LINK_UNIT_FILES: &str = "LinkUnitFiles";
 const METHOD_REENABLE_UNIT_FILES: &str = "ReenableUnitFiles";
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
-struct LUnitFiles<'a> {
-    primary_unit_name: &'a str,
-    enablement_status: &'a str,
+struct LUnitFiles {
+    primary_unit_name: String,
+    enablement_status: String,
 }
 
 pub static BLK_CON_SYST: RwLock<Option<Connection>> = RwLock::new(None);
@@ -352,10 +352,8 @@ pub async fn get_unit_file_state_async(
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
 ) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
-    let connection = get_connection(level).await?;
-
-    let t1 = tokio::spawn(list_units_list_async(connection.clone()));
-    let t2 = tokio::spawn(list_unit_files_async(connection, level));
+    let t1 = tokio::spawn(systemd_manager_async(level).await?.list_units());
+    let t2 = tokio::spawn(fill_list_unit_files(level));
 
     let joined = tokio::join!(t1, t2);
 
@@ -472,13 +470,14 @@ async fn fill_update(
     Ok(())
 }
 
-fn fill_list_unit_files(
-    array: Vec<LUnitFiles>,
-    level: UnitDBusLevel,
-) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
-    let mut systemd_units: Vec<SystemdUnitFile> = Vec::with_capacity(array.len());
+async fn fill_list_unit_files(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
+    let fetched_unit_files = systemd_manager_async(level)
+        .await?
+        .list_unit_files()
+        .await?;
+    let mut systemd_units: Vec<SystemdUnitFile> = Vec::with_capacity(fetched_unit_files.len());
 
-    for unit_file in array.iter() {
+    for unit_file in fetched_unit_files.iter() {
         let Some((_prefix, full_name)) = unit_file.primary_unit_name.rsplit_once('/') else {
             error!(
                 "MALFORMED rsplit_once(\"/\") {:?}",
@@ -488,7 +487,7 @@ fn fill_list_unit_files(
         };
 
         let status_code =
-            EnablementStatus::from_str(unit_file.enablement_status).expect("Always status");
+            EnablementStatus::from_str(&unit_file.enablement_status).expect("Always status");
 
         systemd_units.push(SystemdUnitFile {
             full_name: full_name.to_owned(),
@@ -501,27 +500,30 @@ fn fill_list_unit_files(
     Ok(systemd_units)
 }
 
-/// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
-pub async fn list_unit_files_async(
-    connection: zbus::Connection,
-    level: UnitDBusLevel,
-) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
-    let message = call_method_async(
-        &connection,
-        DESTINATION_SYSTEMD,
-        PATH_SYSTEMD,
-        INTERFACE_SYSTEMD_MANAGER,
-        METHOD_LIST_UNIT_FILES,
-        &(),
-    )
-    .await?;
+// Communicates with dbus to obtain a list of unit files and returns them as a `Vec<SystemdUnit>`.
+//#[deprecated]
+// async fn list_unit_files_async(
+//     connection: zbus::Connection,
+//     _level: UnitDBusLevel,
+// ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
+//     let message = call_method_async(
+//         &connection,
+//         DESTINATION_SYSTEMD,
+//         PATH_SYSTEMD,
+//         INTERFACE_SYSTEMD_MANAGER,
+//         METHOD_LIST_UNIT_FILES,
+//         &(),
+//     )
+//     .await?;
 
-    let body = message.body();
+//     let body = message.body();
 
-    let array: Vec<LUnitFiles> = body.deserialize()?;
+//     let _array: Vec<LUnitFiles> = body.deserialize()?;
 
-    fill_list_unit_files(array, level)
-}
+//     // fill_list_unit_files(array, level)
+//     error!("Do not use");
+//     Ok(vec![])
+// }
 
 /// Takes a unit name as input and attempts to start it
 pub(super) fn start_unit(
@@ -1347,8 +1349,7 @@ pub async fn test(test: &str, level: UnitDBusLevel) -> Result<(), SystemdErrors>
             info!("UNIT LIST, bus {level:?} TOTAL: {}", hmap.len());
         }
         "unit_file_list" => {
-            let connection = connection_testing(level).await?;
-            let list = list_unit_files_async(connection, level).await?;
+            let list = fill_list_unit_files(level).await?;
 
             debug!("UNIT FILE LIST, bus {level:?}\n{list:#?}");
             info!("UNIT FILE LIST, bus {level:?} TOTAL: {}", list.len());

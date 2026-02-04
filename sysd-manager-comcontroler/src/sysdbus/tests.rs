@@ -3,6 +3,7 @@ use super::*;
 use crate::{
     SystemdUnitFile,
     enums::{DependencyType, StartStopMode},
+    sysdbus::dbus_proxies::systemd_manager,
 };
 use test_base::{TEST_SERVICE, init_logs};
 use tokio::net::TcpStream;
@@ -32,7 +33,7 @@ async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
 
     let level = UnitDBusLevel::System;
     let connection = get_connection(level).await?;
-    let unit_files = list_unit_files_async(connection, level).await?;
+    let unit_files = fill_list_unit_files(level).await?;
 
     info!("Unit file returned {}", unit_files.len());
 
@@ -57,7 +58,7 @@ async fn test_list_unit_files_remote() -> Result<(), SystemdErrors> {
         .await?;
 
     let level = UnitDBusLevel::System;
-    let unit_files = list_unit_files_async(connection, level).await?;
+    let unit_files = fill_list_unit_files(level).await?;
 
     info!("Unit file returned {}", unit_files.len());
 
@@ -75,20 +76,11 @@ async fn test_list_unit_files_system_raw() -> Result<(), SystemdErrors> {
     init_logs();
 
     let level = UnitDBusLevel::System;
-    let connection = get_connection(level).await?;
-    let message = connection
-        .call_method(
-            Some(DESTINATION_SYSTEMD),
-            PATH_SYSTEMD,
-            Some(INTERFACE_SYSTEMD_MANAGER),
-            METHOD_LIST_UNIT_FILES,
-            &(),
-        )
+
+    let array: Vec<LUnitFiles> = systemd_manager_async(level)
+        .await?
+        .list_unit_files()
         .await?;
-
-    let body = message.body();
-
-    let array: Vec<LUnitFiles> = body.deserialize()?;
 
     for (idx, unit_file) in array.iter().enumerate() {
         debug!(
@@ -381,7 +373,7 @@ async fn get_unit_file_list_test(
 ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let connection = get_connection(level).await?;
 
-    let r = list_unit_files_async(connection, level).await?;
+    let r = fill_list_unit_files(level).await?;
 
     info!("Returned units count: {}", r.len());
 
@@ -415,12 +407,9 @@ async fn test_get_list() -> Result<(), SystemdErrors> {
     use std::time::Instant;
     let now = Instant::now();
     let t1 = tokio::spawn(list_units_list_async(connection.clone()));
-    let t2 = tokio::spawn(list_unit_files_async(connection, UnitDBusLevel::System));
+    let t2 = tokio::spawn(fill_list_unit_files(UnitDBusLevel::System));
     let t3 = tokio::spawn(list_units_list_async(connection2.clone()));
-    let t4 = tokio::spawn(list_unit_files_async(
-        connection2,
-        UnitDBusLevel::UserSession,
-    ));
+    let t4 = tokio::spawn(fill_list_unit_files(UnitDBusLevel::UserSession));
 
     let _asdf = tokio::join!(t1, t2, t3, t4);
 
@@ -445,9 +434,9 @@ async fn test_get_list2() -> Result<(), SystemdErrors> {
     use std::time::Instant;
     let now = Instant::now();
     let t1 = list_units_list_async(connection.clone());
-    let t2 = list_unit_files_async(connection, UnitDBusLevel::System);
+    let t2 = fill_list_unit_files(UnitDBusLevel::System);
     let t3 = list_units_list_async(connection2.clone());
-    let t4 = list_unit_files_async(connection2, UnitDBusLevel::UserSession);
+    let t4 = fill_list_unit_files(UnitDBusLevel::UserSession);
 
     let joined_result = tokio::join!(t1, t2, t3, t4);
 

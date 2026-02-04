@@ -532,6 +532,160 @@ impl UnitListPanelImp {
         });
     }
 
+    fn fill_store_loaded(&self) {
+        let list_store = self.list_store.get().expect("LIST STORE NOT NONE").clone();
+        let main_unit_map_rc = self.units_map.clone();
+        let panel_stack = self.panel_stack.clone();
+        let single_selection = self.single_selection.borrow().clone();
+        let unit_list = self.obj().clone();
+        let units_browser = self.units_browser.borrow().clone();
+
+        let refresh_unit_list_button = upgrade!(self.refresh_unit_list_button);
+
+        //Rem sorting before adding lot of items for performance reasons
+        self.unit_list_sort_list_model
+            .borrow()
+            .set_sorter(None::<&gtk::Sorter>);
+
+        let dbus_level = PREFERENCES.dbus_level();
+
+        glib::spawn_future_local(async move {
+            refresh_unit_list_button.set_sensitive(false);
+            panel_stack.set_visible_child_name("spinner");
+
+            let (loaded_units_map, unit_from_files) = match go_fetch_data(dbus_level).await {
+                Ok(value) => value,
+                Err(err) => {
+                    warn!("Fail fetch unit list {err:?}");
+                    panel_stack.set_visible_child_name("error");
+                    return;
+                }
+            };
+
+            unit_list
+                .imp()
+                .loaded_units_count
+                .set_label(&loaded_units_map.len().to_string());
+            unit_list
+                .imp()
+                .unit_files_number
+                .set_label(&unit_from_files.len().to_string());
+
+            let n_items = list_store.n_items();
+            list_store.remove_all();
+            let mut main_unit_map_rc = main_unit_map_rc.borrow_mut();
+            main_unit_map_rc.clear();
+
+            let mut all_units =
+                HashMap::with_capacity(loaded_units_map.len() + unit_from_files.len());
+
+            for system_unit_file in unit_from_files.into_iter() {
+                if let Some(loaded_unit) = loaded_units_map.get(&system_unit_file.full_name) {
+                    loaded_unit.update_from_unit_file(system_unit_file);
+                } else {
+                    let unit = UnitInfo::from_unit_file(system_unit_file);
+                    list_store.append(&unit);
+                    main_unit_map_rc.insert(UnitKey::new(&unit), unit.clone());
+                    all_units.insert(unit.primary(), unit);
+                }
+            }
+
+            for unit in loaded_units_map.into_values() {
+                list_store.append(&unit);
+                main_unit_map_rc.insert(UnitKey::new(&unit), unit.clone());
+                all_units.insert(unit.primary(), unit);
+            }
+
+            // The sort function needs to be the same of the  first column sorter
+            let sort_func = construct::column_filter_lambda!(primary, dbus_level);
+
+            list_store.sort(sort_func);
+
+            info!("Unit list refreshed! list size {}", list_store.n_items());
+
+            let mut force_selected_index = gtk::INVALID_LIST_POSITION;
+
+            let selected_unit = unit_list.imp().selected_unit();
+            if let Some(selected_unit) = selected_unit {
+                let selected_unit_name = selected_unit.primary();
+
+                debug!(
+                    "LS items-n {} name {}",
+                    list_store.n_items(),
+                    selected_unit_name
+                );
+
+                if let Some(index) = list_store.find_with_equal_func(|object| {
+                    let unit = object
+                        .downcast_ref::<UnitInfo>()
+                        .expect("Needs to be UnitInfo");
+
+                    unit.primary().eq(&selected_unit_name)
+                }) {
+                    info!(
+                        "Force selection to index {index:?} to select unit {selected_unit_name:?}"
+                    );
+                    single_selection.select_item(index, true);
+                    //unit_list.set_force_to_select(index);
+                    force_selected_index = index;
+                }
+            }
+            debug!("IM HERRE");
+            unit_list
+                .imp()
+                .force_selected_index
+                .set(Some(force_selected_index));
+            refresh_unit_list_button.set_sensitive(true);
+            unit_list.imp().set_sorter();
+
+            //cause no scrollwindow v adjustment
+            if n_items > 0 {
+                focus_on_row(&unit_list, &units_browser);
+            }
+            panel_stack.set_visible_child_name("unit_list");
+
+            //Complete unit information
+            glib::spawn_future_local(async move {
+                //let (sender, receiver) = tokio::sync::oneshot::channel();
+
+                let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
+
+                let list: Vec<CompleteUnitParams> = all_units
+                    .values()
+                    .filter(|unit| unit.need_to_be_completed())
+                    .map(CompleteUnitParams::new)
+                    .collect();
+
+                systemd::runtime().spawn(async move {
+                    const BATCH_SIZE: usize = 5;
+                    let mut batch = Vec::with_capacity(BATCH_SIZE);
+                    for (idx, triple) in (1..).zip(list.into_iter()) {
+                        batch.push(triple);
+
+                        if idx % BATCH_SIZE == 0 {
+                            call_complete_unit(&sender, &batch).await;
+                            batch.clear();
+                        }
+                    }
+
+                    call_complete_unit(&sender, &batch).await;
+                });
+
+                while let Some(updates) = receiver.recv().await {
+                    for update in updates {
+                        let Some(unit) = all_units.get(&update.primary) else {
+                            continue;
+                        };
+
+                        unit.update_from_unit_info(update);
+                    }
+                }
+                unit_list.imp().fetch_custom_unit_properties();
+            });
+            //unit_list.imp().fetch_custom_unit_properties();
+        });
+    }
+
     pub(super) fn button_search_toggled(&self, toggle_button_is_active: bool) {
         self.search_bar.set_search_mode(toggle_button_is_active);
 
@@ -1552,6 +1706,91 @@ async fn call_complete_unit(
 }
 
 async fn go_fetch_data(
+    int_level: DbusLevel,
+) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
+    match int_level {
+        DbusLevel::SystemAndSession => {
+            let level_syst = UnitDBusLevel::System;
+            let level_user = UnitDBusLevel::UserSession;
+
+            let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
+            let (sender_user, receiver_user) = tokio::sync::oneshot::channel();
+
+            systemd::runtime().spawn(async move {
+                let t_syst =
+                    tokio::spawn(systemd::list_units_description_and_state_async(level_syst));
+                let t_user =
+                    tokio::spawn(systemd::list_units_description_and_state_async(level_user));
+
+                let joined = tokio::join!(t_syst, t_user);
+
+                sender_syst
+                    .send(joined.0)
+                    .expect("The channel needs to be open.");
+                sender_user
+                    .send(joined.1)
+                    .expect("The channel needs to be open.");
+            });
+
+            let (loaded_unit_system, mut unit_file_system) =
+                receiver_syst.await.expect("Tokio receiver works")??;
+            let (loaded_unit_user, mut unit_file_user) =
+                receiver_user.await.expect("Tokio receiver works")??;
+
+            let mut hmap =
+                HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
+
+            for listed_unit in loaded_unit_user.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            for listed_unit in loaded_unit_system.into_iter() {
+                let level = if let Some(_old_unit) = hmap.get(&listed_unit.primary_unit_name) {
+                    UnitDBusLevel::Both
+                } else {
+                    level_syst
+                };
+
+                let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                hmap.insert(unit.primary(), unit);
+            }
+
+            unit_file_system.append(&mut unit_file_user);
+            Ok((hmap, unit_file_system))
+        }
+
+        dlevel => {
+            let level: UnitDBusLevel = if dlevel == DbusLevel::System {
+                UnitDBusLevel::System
+            } else {
+                UnitDBusLevel::UserSession
+            };
+
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+
+            systemd::runtime().spawn(async move {
+                // let response = systemd::list_units_description_and_state_async().await;
+
+                let response = systemd::list_units_description_and_state_async(level).await;
+                sender
+                    .send(response)
+                    .expect("The channel needs to be open.");
+            });
+
+            let (loaded_unit, unit_files) = receiver.await.expect("Tokio receiver works")?;
+
+            let mut hmap = HashMap::with_capacity(loaded_unit.len());
+            for listed_unit in loaded_unit.into_iter() {
+                let unit = UnitInfo::from_listed_unit(listed_unit, level);
+                hmap.insert(unit.primary(), unit);
+            }
+            Ok((hmap, unit_files))
+        }
+    }
+}
+
+async fn go_fetch_data_loaded(
     int_level: DbusLevel,
 ) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
     match int_level {
