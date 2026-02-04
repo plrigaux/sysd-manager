@@ -1,7 +1,11 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
-use crate::consts::FILTER_MARK;
+use crate::consts::{
+    FILTER_MARK, NS_ACTION_ACTIVE_UNIT_LIST_VIEW, NS_ACTION_DEFAULT_UNIT_LIST_VIEW,
+    NS_ACTION_SOCKET_UNIT_LIST_VIEW, NS_ACTION_TIMER_UNIT_LIST_VIEW,
+    NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW,
+};
 use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
@@ -11,8 +15,10 @@ use crate::widget::unit_properties_selector::data_selection::UnitPropertySelecti
 use super::InterPanelMessage;
 use super::app_window::AppWindow;
 
+use gettextrs::pgettext;
 use gtk::glib;
 use gtk::subclass::prelude::*;
+use strum::IntoEnumIterator;
 
 mod filter;
 mod imp;
@@ -43,10 +49,6 @@ impl UnitListPanel {
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) -> Option<UnitInfo> {
         self.imp().set_unit(unit)
-    }
-
-    pub fn selected_unit(&self) -> Option<UnitInfo> {
-        self.imp().selected_unit()
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
@@ -146,5 +148,58 @@ pub fn get_clean_col_title(title: &str) -> String {
             .collect()
     } else {
         title.trim().to_string()
+    }
+}
+
+#[derive(Debug, Copy, Clone, Default, strum::EnumIter)]
+pub enum UnitListView {
+    #[default]
+    Defaut,
+    ActiveUnit,
+    UnitFiles,
+    Timers,
+    Socket,
+}
+
+impl UnitListView {
+    pub fn menu_items() -> gio::Menu {
+        let menu_views = gio::Menu::new();
+
+        for item in UnitListView::iter() {
+            let (label, action) = item.menu_item();
+            menu_views.append(Some(&label), Some(action));
+        }
+
+        menu_views
+    }
+
+    pub fn menu_item(&self) -> (String, &str) {
+        match self {
+            UnitListView::Defaut => (
+                //List view
+                pgettext("menu", "Default"),
+                NS_ACTION_DEFAULT_UNIT_LIST_VIEW,
+            ),
+            UnitListView::ActiveUnit => (
+                //List view
+                pgettext("menu", "Active Units"),
+                NS_ACTION_ACTIVE_UNIT_LIST_VIEW,
+            ),
+            UnitListView::UnitFiles => (
+                //List view
+                pgettext("menu", "Unit Files"),
+                NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW,
+            ),
+            UnitListView::Timers => (
+                //List view
+                pgettext("menu", "Timers"),
+                NS_ACTION_TIMER_UNIT_LIST_VIEW,
+            ),
+            UnitListView::Socket => (
+                //List view
+                pgettext("menu", "Socket"),
+                NS_ACTION_SOCKET_UNIT_LIST_VIEW,
+            ),
+        }
     }
 }

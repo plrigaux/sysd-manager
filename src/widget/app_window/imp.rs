@@ -10,9 +10,7 @@ use crate::{
         ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
-        NS_ACTION_ACTIVE_UNIT_LIST_VIEW, NS_ACTION_DEFAULT_UNIT_LIST_VIEW,
-        NS_ACTION_REFRESH_UNIT_LIST, NS_ACTION_TIMER_UNIT_LIST_VIEW,
-        NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW,
+        NS_ACTION_REFRESH_UNIT_LIST,
     },
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
@@ -24,7 +22,7 @@ use crate::{
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
         signals_dialog::SignalsWindow,
         unit_control_panel::UnitControlPanel,
-        unit_list::UnitListPanel,
+        unit_list::{UnitListPanel, UnitListView},
         unit_properties_selector::UnitPropertiesSelectorDialog,
     },
 };
@@ -168,12 +166,7 @@ impl ObjectImpl for AppWindowImpl {
             });
         }
 
-        let menu_views = gio::Menu::new();
-
-        menu_views.append(Some("Default"), Some(NS_ACTION_DEFAULT_UNIT_LIST_VIEW));
-        menu_views.append(Some("Active Units"), Some(NS_ACTION_ACTIVE_UNIT_LIST_VIEW));
-        menu_views.append(Some("Unit Files"), Some(NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW));
-        menu_views.append(Some("Timers"), Some(NS_ACTION_TIMER_UNIT_LIST_VIEW));
+        let menu_views = UnitListView::menu_items();
 
         self.unit_list_view_menubutton
             .set_menu_model(Some(&menu_views));

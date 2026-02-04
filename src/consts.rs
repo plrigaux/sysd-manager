@@ -64,3 +64,6 @@ pub const NS_ACTION_TIMER_UNIT_LIST_VIEW: &str = concat!(WIN, ACTION_TIMER_UNIT_
 
 pub const ACTION_REFRESH_UNIT_LIST: &str = "refresh_unit_list";
 pub const NS_ACTION_REFRESH_UNIT_LIST: &str = concat!(WIN, ACTION_REFRESH_UNIT_LIST);
+
+pub const ACTION_SOCKET_UNIT_LIST_VIEW: &str = "socket_unit_list_view";
+pub const NS_ACTION_SOCKET_UNIT_LIST_VIEW: &str = concat!(WIN, ACTION_SOCKET_UNIT_LIST_VIEW);

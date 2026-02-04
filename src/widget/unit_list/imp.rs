@@ -31,7 +31,7 @@ use crate::{
             PREFERENCES,
         },
         unit_list::{
-            COL_ID_UNIT, CustomPropertyId,
+            COL_ID_UNIT, CustomPropertyId, UnitListView,
             filter::{
                 UnitListFilterWindow, custom_bool, custom_num, custom_str, filter_active_state,
                 filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
@@ -148,6 +148,8 @@ pub struct UnitListPanelImp {
     current_column_view_column_definition_list: RefCell<Vec<UnitPropertySelection>>,
 
     default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
+
+    selected_list_view: Cell<UnitListView>,
 }
 
 macro_rules! update_search_entry {
@@ -289,23 +291,38 @@ impl UnitListPanelImp {
 
         //  let settings = settings.clone();
         let default_unit_list_view = {
-            // let unit_list_panel = self.obj().clone();
+            let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_DEFAULT_UNIT_LIST_VIEW)
-                .activate(move |_application: &AppWindow, _b, _| {})
+                .activate(move |_application: &AppWindow, _b, _| {
+                    let panel = unit_list_panel.imp();
+
+                    panel.selected_list_view.set(UnitListView::Defaut);
+                    panel.fill_store();
+                })
                 .build()
         };
 
         let unit_files_unit_list_view = {
-            // let unit_list_panel = self.obj().clone();
+            let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_UNIT_FILE_UNIT_LIST_VIEW)
-                .activate(move |_application: &AppWindow, _, _| {})
+                .activate(move |_application: &AppWindow, _, _| {
+                    let panel = unit_list_panel.imp();
+
+                    panel.selected_list_view.set(UnitListView::UnitFiles);
+                    panel.fill_store();
+                })
                 .build()
         };
 
         let timer_unit_list_view = {
-            // let unit_list_panel = self.obj().clone();
+            let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_TIMER_UNIT_LIST_VIEW)
-                .activate(move |_application: &AppWindow, _, _| {})
+                .activate(move |_application: &AppWindow, _, _| {
+                    let panel = unit_list_panel.imp();
+
+                    panel.selected_list_view.set(UnitListView::Timers);
+                    panel.fill_store();
+                })
                 .build()
         };
 
@@ -351,7 +368,17 @@ impl UnitListPanelImp {
         col_list
     }
 
-    pub(super) fn fill_store(&self) {
+    fn fill_store(&self) {
+        match self.selected_list_view.get() {
+            UnitListView::Defaut => self.fill_store_default(),
+            UnitListView::ActiveUnit => {}
+            UnitListView::UnitFiles => {}
+            UnitListView::Timers => {}
+            UnitListView::Socket => {}
+        }
+    }
+
+    fn fill_store_default(&self) {
         let list_store = self.list_store.get().expect("LIST STORE NOT NONE").clone();
         let main_unit_map_rc = self.units_map.clone();
         let panel_stack = self.panel_stack.clone();
@@ -424,7 +451,7 @@ impl UnitListPanelImp {
 
             let mut force_selected_index = gtk::INVALID_LIST_POSITION;
 
-            let selected_unit = unit_list.selected_unit();
+            let selected_unit = unit_list.imp().selected_unit();
             if let Some(selected_unit) = selected_unit {
                 let selected_unit_name = selected_unit.primary();
 
