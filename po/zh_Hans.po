@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2026-02-03 08:00+0000\n"
+"PO-Revision-Date: 2026-02-04 13:01+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
@@ -53,22 +53,22 @@ msgstr ""
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
 msgid "Unit Files"
-msgstr "服务单元文件"
+msgstr "单元文件"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
 msgid "Unit Dependencies"
-msgstr "服务单元依赖"
+msgstr "单元依赖"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
 msgid "Unit File"
-msgstr "服务单元文件"
+msgstr "单元文件"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
 msgid "Unit Journal"
-msgstr "服务单元日志"
+msgstr "单元日志"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -78,7 +78,7 @@ msgstr "分析启动耗时"
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Daemon Reload"
-msgstr "重载所有服务单元"
+msgstr "重载所有单元配置"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -88,12 +88,12 @@ msgstr "Systemd 信息"
 #: data/interfaces/app_window.ui:24
 msgctxt "menu"
 msgid "List Boots"
-msgstr "列出启动记录"
+msgstr "启动列表"
 
 #: data/interfaces/app_window.ui:28
 msgctxt "menu"
 msgid "Watch Signals"
-msgstr ""
+msgstr "查看信号"
 
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
@@ -118,7 +118,7 @@ msgstr "打开搜索栏"
 #: data/interfaces/app_window.ui:88
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
-msgstr "刷新服务单元列表"
+msgstr "刷新单元列表"
 
 #. button
 #. title dialog
@@ -133,37 +133,37 @@ msgstr "清空"
 #: data/interfaces/control_action_dialog.ui:28
 msgctxt "enable unit file"
 msgid "Unit file"
-msgstr ""
+msgstr "单元文件"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:38
 msgctxt "enable unit file"
 msgid "Use Selected Unit"
-msgstr ""
+msgstr "使用选定的单元"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:46
 msgctxt "enable unit file"
 msgid "Browse for Unit file"
-msgstr ""
+msgstr "浏览单元文件"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:54
 msgctxt "enable unit file"
 msgid "DBus Level"
-msgstr ""
+msgstr "DBus 级别"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:59
 msgctxt "enable unit file"
 msgid "Whether the unit shall be enabled for runtime only"
-msgstr ""
+msgstr "是否仅启用为运行时单元"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:60
 msgctxt "enable unit file"
 msgid "Runtime"
-msgstr ""
+msgstr "运行时"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:65
@@ -171,13 +171,13 @@ msgctxt "enable unit file"
 msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
 "necessary"
-msgstr ""
+msgstr "控制是否在必要时替换指向其他单元的符号链接"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:66
 msgctxt "enable unit file"
 msgid "Force"
-msgstr ""
+msgstr "强制"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:71
@@ -186,53 +186,55 @@ msgid ""
 "Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/"
 "system.attached"
 msgstr ""
+"在/etc/systemd/system.attached 和/run/systemd/system.attached 中添加或移除符"
+"号链接"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:73
 msgctxt "enable unit file"
 msgid "Portable"
-msgstr ""
+msgstr "便携"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:87
 msgctxt "enable unit file"
 msgid "Start Unit just after being enabled"
-msgstr ""
+msgstr "在启用后立即启动单元"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:88
 msgctxt "enable unit file"
 msgid "Run now"
-msgstr ""
+msgstr "立即运行"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:93
 msgctxt "enable unit file"
 msgid "Starting mode options"
-msgstr ""
+msgstr "启动模式选项"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:94
 msgctxt "enable unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "运行模式"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:106
 msgctxt "enable unit file"
 msgid "Reset"
-msgstr ""
+msgstr "重置"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:114
 msgctxt "enable unit file"
 msgid "Enable"
-msgstr ""
+msgstr "启用"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
 msgid "Clear"
-msgstr ""
+msgstr "清空"
 
 #. button
 #: data/interfaces/journal_panel.ui:27
@@ -261,31 +263,31 @@ msgstr "切换显示顺序"
 #: data/interfaces/journal_panel.ui:65
 msgctxt "journal"
 msgid "List the boots of the system"
-msgstr ""
+msgstr "列出系统上的引导日志"
 
 #. button
 #: data/interfaces/journal_panel.ui:70
 msgctxt "journal"
 msgid "List Boots"
-msgstr ""
+msgstr "列出引导日志"
 
 #. button
 #: data/interfaces/journal_panel.ui:90
 msgctxt "journal"
 msgid "Current boot"
-msgstr ""
+msgstr "当前引导"
 
 #. button
 #: data/interfaces/journal_panel.ui:96
 msgctxt "journal"
 msgid "All events"
-msgstr ""
+msgstr "所有引导"
 
 #. title
 #: data/interfaces/journal_panel.ui:103
 msgctxt "journal"
 msgid "Boot id"
-msgstr ""
+msgstr "引导 id"
 
 #. description
 #: data/interfaces/journal_panel.ui:149
@@ -307,90 +309,90 @@ msgstr "无日志事件"
 #: data/interfaces/kill_panel.ui:20
 msgctxt "kill"
 msgid "Parameters"
-msgstr ""
+msgstr "参数"
 
 #. title
 #: data/interfaces/kill_panel.ui:23
 msgctxt "kill"
 msgid "Unix signal"
-msgstr ""
+msgstr "Unix 信号"
 
 #. subtitle
 #: data/interfaces/kill_panel.ui:29
 msgctxt "kill"
 msgid "Unit related processes"
-msgstr ""
+msgstr "单元相关进程"
 
 #. title
 #: data/interfaces/kill_panel.ui:30
 msgctxt "kill"
 msgid "Who to kill"
-msgstr ""
+msgstr "终止对象"
 
 #. title
 #: data/interfaces/kill_panel.ui:37
 msgctxt "kill"
 msgid "Signal Value"
-msgstr ""
+msgstr "信号值"
 
 #. button
 #: data/interfaces/kill_panel.ui:51
 msgctxt "kill"
 msgid "Send"
-msgstr ""
+msgstr "发送"
 
 #. description
 #: data/interfaces/kill_panel.ui:60
 msgctxt "kill"
 msgid "Most common Linux signals"
-msgstr ""
+msgstr "最常见的 Linux 信号"
 
 #. description
 #: data/interfaces/kill_panel.ui:62
 msgctxt "kill"
 msgid "Common Unix signals"
-msgstr ""
+msgstr "常见的 Unix 信号"
 
 #. button
 #: data/interfaces/kill_panel.ui:84
 msgctxt "kill"
 msgid "Send Kill Signal to Unit"
-msgstr ""
+msgstr "向单元发送 Kill 信号"
 
 #: data/interfaces/list_boots.ui:37
 msgctxt "boot list column"
 msgid "Index"
-msgstr ""
+msgstr "序号"
 
 #: data/interfaces/list_boots.ui:44
 msgctxt "boot list column"
 msgid "Offset"
-msgstr ""
+msgstr "偏移"
 
 #: data/interfaces/list_boots.ui:52
 msgctxt "boot list column"
 msgid "Boot Id"
-msgstr ""
+msgstr "引导 Id"
 
 #: data/interfaces/list_boots.ui:60
 msgctxt "boot list column"
 msgid "First Entry"
-msgstr ""
+msgstr "开始时间"
 
 #: data/interfaces/list_boots.ui:68
 msgctxt "boot list column"
 msgid "Last Entry"
-msgstr ""
+msgstr "结束时间"
 
 #: data/interfaces/list_boots.ui:75
 msgctxt "boot list column"
 msgid "Duration"
-msgstr ""
+msgstr "持续时间"
 
 #: data/interfaces/list_boots.ui:105
 msgctxt "boot list dialog"
 msgid "List Boots"
-msgstr ""
+msgstr "列出引导日志"
 
 #. group
 #. button
@@ -410,7 +412,7 @@ msgstr "临时屏蔽，直到下次系统重启"
 #: data/interfaces/mask_unit_dialog.ui:28
 msgctxt "mask"
 msgid "Runtime"
-msgstr "临时屏蔽"
+msgstr "运行时"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:33
@@ -418,43 +420,43 @@ msgctxt "mask"
 msgid ""
 "Controls whether symlinks pointing to other units shall be replaced if "
 "necessary"
-msgstr ""
+msgstr "控制是否在必要时替换指向其他单元的符号链接"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:34
 msgctxt "mask"
 msgid "Force"
-msgstr ""
+msgstr "强制"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:48
 msgctxt "mask"
 msgid "Ensure that the unit will be also stopped"
-msgstr ""
+msgstr "确保该单元也将被停止"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:49
 msgctxt "mask"
 msgid "Stop Now"
-msgstr ""
+msgstr "立即停止"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:54
 msgctxt "mask"
 msgid "Argument for the stoping mode"
-msgstr ""
+msgstr "停止模式的参数"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:55
 msgctxt "mask"
 msgid "Stop mode"
-msgstr ""
+msgstr "停止模式"
 
 #. button
 #: data/interfaces/mask_unit_dialog.ui:67
 msgctxt "mask"
 msgid "Reset"
-msgstr ""
+msgstr "重置"
 
 #. dialog title
 #: data/interfaces/mask_unit_dialog.ui:89
@@ -470,118 +472,121 @@ msgid ""
 "You can set the application's Dbus level to <u>System</u> if you want to see "
 "all Systemd units."
 msgstr ""
+"这是您的首次连接\n"
+"如果您想查看所有 Systemd 单元，可以将应用程序的 D-Bus 级别设置为<u>\"系统\"</"
+"u>。"
 
 #: data/interfaces/preferences.ui:19
 msgctxt "preference"
 msgid "_Main"
-msgstr ""
+msgstr "_主选项"
 
 #. group
 #: data/interfaces/preferences.ui:23
 msgctxt "preference"
 msgid "General"
-msgstr ""
+msgstr "常规"
 
 #. row
 #: data/interfaces/preferences.ui:26
 msgctxt "preference"
 msgid "Preferred Color Scheme"
-msgstr ""
+msgstr "首选配色方案"
 
 #. row subtitle
 #: data/interfaces/preferences.ui:31
 msgctxt "preference"
 msgid "Application's division orientation mode"
-msgstr ""
+msgstr "界面排序方式"
 
 #. row
 #: data/interfaces/preferences.ui:32
 msgctxt "preference"
 msgid "Orientation"
-msgstr ""
+msgstr "界面排序方向"
 
 #. row
 #: data/interfaces/preferences.ui:37
 msgctxt "preference"
 msgid "Change the format of printed timestamps"
-msgstr ""
+msgstr "更改时间戳的显示格式"
 
 #. row
 #: data/interfaces/preferences.ui:38
 msgctxt "preference"
 msgid "Timestamp style"
-msgstr ""
+msgstr "时间戳样式"
 
 #. row
 #: data/interfaces/preferences.ui:43
 msgctxt "preference"
 msgid "The Monospace Font"
-msgstr ""
+msgstr "等宽字体"
 
 #. row
 #: data/interfaces/preferences.ui:44
 msgctxt "preference"
 msgid "Text font"
-msgstr ""
+msgstr "文本字体"
 
 #: data/interfaces/preferences.ui:48
 msgctxt "preference"
 msgid "Default"
-msgstr ""
+msgstr "恢复默认"
 
 #. button
 #: data/interfaces/preferences.ui:56
 msgctxt "preference"
 msgid "Select Font"
-msgstr ""
+msgstr "选择字体"
 
 #. group
 #: data/interfaces/preferences.ui:67
 msgctxt "preference"
 msgid "Unit List"
-msgstr ""
+msgstr "单元列表"
 
 #. subtitle
 #: data/interfaces/preferences.ui:70
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
-msgstr ""
+msgstr "根据内容在单元列表的表格单元格中显示颜色。"
 
 #. title
 #: data/interfaces/preferences.ui:71
 msgctxt "preference"
 msgid "Display Colors"
-msgstr ""
+msgstr "颜色指示"
 
 #. subtitle
 #: data/interfaces/preferences.ui:76
 msgctxt "preference"
 msgid "Display different totals regarding retrieved units"
-msgstr ""
+msgstr "显示已检索单元的统计摘要"
 
 #. title
 #: data/interfaces/preferences.ui:77
 msgctxt "preference"
 msgid "Display Totals Summary"
-msgstr ""
+msgstr "显示统计摘要"
 
 #. group
 #: data/interfaces/preferences.ui:102
 msgctxt "preference"
 msgid "Unit Description"
-msgstr ""
+msgstr "单元描述"
 
 #. subtitle
 #: data/interfaces/preferences.ui:105
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
-msgstr ""
+msgstr "自动换行单元描述的长文本行"
 
 #. title
 #: data/interfaces/preferences.ui:106
 msgctxt "preference"
 msgid "Wrap unit description text"
-msgstr ""
+msgstr "自动换行单元描述"
 
 #. group
 #: data/interfaces/preferences.ui:113
