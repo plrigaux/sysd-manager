@@ -1922,7 +1922,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-comcontroler"
-version = "2.12.0"
+version = "2.12.1"
 dependencies = [
  "chrono",
  "enumflags2",
