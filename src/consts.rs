@@ -51,19 +51,14 @@ pub const FILTER_MARK: char = '⭐';
 pub const ALL_FILTER_KEY: &str = "all";
 
 pub const ACTION_DEFAULT_UNIT_LIST_VIEW: &str = "default_unit_list_view";
-pub const NS_ACTION_DEFAULT_UNIT_LIST_VIEW: &str = concat!(WIN, ACTION_DEFAULT_UNIT_LIST_VIEW);
 
 pub const ACTION_ACTIVE_UNIT_LIST_VIEW: &str = "active_unit_list_view";
-pub const NS_ACTION_ACTIVE_UNIT_LIST_VIEW: &str = concat!(WIN, ACTION_ACTIVE_UNIT_LIST_VIEW);
 
 pub const ACTION_UNIT_FILE_UNIT_LIST_VIEW: &str = "unit_file_unit_list_view";
-pub const NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW: &str = concat!(WIN, ACTION_UNIT_FILE_UNIT_LIST_VIEW);
 
 pub const ACTION_TIMER_UNIT_LIST_VIEW: &str = "timer_unit_list_view";
-pub const NS_ACTION_TIMER_UNIT_LIST_VIEW: &str = concat!(WIN, ACTION_TIMER_UNIT_LIST_VIEW);
 
 pub const ACTION_REFRESH_UNIT_LIST: &str = "refresh_unit_list";
 pub const NS_ACTION_REFRESH_UNIT_LIST: &str = concat!(WIN, ACTION_REFRESH_UNIT_LIST);
 
 pub const ACTION_SOCKET_UNIT_LIST_VIEW: &str = "socket_unit_list_view";
-pub const NS_ACTION_SOCKET_UNIT_LIST_VIEW: &str = concat!(WIN, ACTION_SOCKET_UNIT_LIST_VIEW);

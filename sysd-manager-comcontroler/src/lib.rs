@@ -157,6 +157,10 @@ pub async fn list_units_description_and_state_async(
     sysdbus::list_units_description_and_state_async(level).await
 }
 
+pub async fn list_loaded_units(level: UnitDBusLevel) -> Result<Vec<LUnit>, SystemdErrors> {
+    Ok(systemd_manager_async(level).await?.list_units().await?)
+}
+
 pub async fn complete_unit_information(
     units: &[CompleteUnitParams],
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {

@@ -1,11 +1,7 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
-use crate::consts::{
-    FILTER_MARK, NS_ACTION_ACTIVE_UNIT_LIST_VIEW, NS_ACTION_DEFAULT_UNIT_LIST_VIEW,
-    NS_ACTION_SOCKET_UNIT_LIST_VIEW, NS_ACTION_TIMER_UNIT_LIST_VIEW,
-    NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW,
-};
+use crate::consts::*;
 use crate::systemd::data::UnitInfo;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
@@ -167,39 +163,55 @@ impl UnitListView {
 
         for item in UnitListView::iter() {
             let (label, action) = item.menu_item();
-            menu_views.append(Some(&label), Some(action));
+            menu_views.append(Some(&label), Some(&action));
         }
 
         menu_views
     }
 
-    pub fn menu_item(&self) -> (String, &str) {
+    pub fn menu_item(&self) -> (String, String) {
         match self {
             UnitListView::Defaut => (
                 //List view
                 pgettext("menu", "Default"),
-                NS_ACTION_DEFAULT_UNIT_LIST_VIEW,
+                self.win_action(),
             ),
             UnitListView::ActiveUnit => (
                 //List view
                 pgettext("menu", "Active Units"),
-                NS_ACTION_ACTIVE_UNIT_LIST_VIEW,
+                self.win_action(),
             ),
             UnitListView::UnitFiles => (
                 //List view
                 pgettext("menu", "Unit Files"),
-                NS_ACTION_UNIT_FILE_UNIT_LIST_VIEW,
+                self.win_action(),
             ),
             UnitListView::Timers => (
                 //List view
                 pgettext("menu", "Timers"),
-                NS_ACTION_TIMER_UNIT_LIST_VIEW,
+                self.win_action(),
             ),
             UnitListView::Socket => (
                 //List view
                 pgettext("menu", "Socket"),
-                NS_ACTION_SOCKET_UNIT_LIST_VIEW,
+                self.win_action(),
             ),
         }
+    }
+
+    pub fn action(&self) -> &str {
+        match self {
+            UnitListView::Defaut => ACTION_DEFAULT_UNIT_LIST_VIEW,
+            UnitListView::ActiveUnit => ACTION_ACTIVE_UNIT_LIST_VIEW,
+            UnitListView::UnitFiles => ACTION_UNIT_FILE_UNIT_LIST_VIEW,
+            UnitListView::Timers => ACTION_TIMER_UNIT_LIST_VIEW,
+            UnitListView::Socket => ACTION_SOCKET_UNIT_LIST_VIEW,
+        }
+    }
+
+    pub fn win_action(&self) -> String {
+        let mut s = String::from("win.");
+        s.push_str(self.action());
+        s
     }
 }

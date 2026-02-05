@@ -11,11 +11,7 @@ use std::{
 };
 
 use crate::{
-    consts::{
-        ACTION_DEFAULT_UNIT_LIST_VIEW, ACTION_TIMER_UNIT_LIST_VIEW,
-        ACTION_UNIT_FILE_UNIT_LIST_VIEW, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ALL_FILTER_KEY, FILTER_MARK,
-    },
+    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
     systemd::{
         self, SystemdUnitFile,
         data::{UnitInfo, convert_to_string},
@@ -292,11 +288,25 @@ impl UnitListPanelImp {
         //  let settings = settings.clone();
         let default_unit_list_view = {
             let unit_list_panel = self.obj().clone();
-            gio::ActionEntry::builder(ACTION_DEFAULT_UNIT_LIST_VIEW)
+            let unit_list_view = UnitListView::Defaut;
+            gio::ActionEntry::builder(unit_list_view.action())
                 .activate(move |_application: &AppWindow, _b, _| {
                     let panel = unit_list_panel.imp();
 
-                    panel.selected_list_view.set(UnitListView::Defaut);
+                    panel.selected_list_view.set(unit_list_view);
+                    panel.fill_store();
+                })
+                .build()
+        };
+
+        let loaded_units_list_view = {
+            let unit_list_panel = self.obj().clone();
+            let unit_list_view = UnitListView::ActiveUnit;
+            gio::ActionEntry::builder(unit_list_view.action())
+                .activate(move |_application: &AppWindow, _, _| {
+                    let panel = unit_list_panel.imp();
+
+                    panel.selected_list_view.set(unit_list_view);
                     panel.fill_store();
                 })
                 .build()
@@ -304,11 +314,12 @@ impl UnitListPanelImp {
 
         let unit_files_unit_list_view = {
             let unit_list_panel = self.obj().clone();
-            gio::ActionEntry::builder(ACTION_UNIT_FILE_UNIT_LIST_VIEW)
+            let unit_list_view = UnitListView::UnitFiles;
+            gio::ActionEntry::builder(unit_list_view.action())
                 .activate(move |_application: &AppWindow, _, _| {
                     let panel = unit_list_panel.imp();
 
-                    panel.selected_list_view.set(UnitListView::UnitFiles);
+                    panel.selected_list_view.set(unit_list_view);
                     panel.fill_store();
                 })
                 .build()
@@ -316,11 +327,12 @@ impl UnitListPanelImp {
 
         let timer_unit_list_view = {
             let unit_list_panel = self.obj().clone();
-            gio::ActionEntry::builder(ACTION_TIMER_UNIT_LIST_VIEW)
+            let unit_list_view = UnitListView::Timers;
+            gio::ActionEntry::builder(unit_list_view.action())
                 .activate(move |_application: &AppWindow, _, _| {
                     let panel = unit_list_panel.imp();
 
-                    panel.selected_list_view.set(UnitListView::Timers);
+                    panel.selected_list_view.set(unit_list_view);
                     panel.fill_store();
                 })
                 .build()
@@ -342,6 +354,7 @@ impl UnitListPanelImp {
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
             default_unit_list_view,
+            loaded_units_list_view,
             unit_files_unit_list_view,
             timer_unit_list_view,
             refresh_unit_list,
@@ -371,7 +384,7 @@ impl UnitListPanelImp {
     fn fill_store(&self) {
         match self.selected_list_view.get() {
             UnitListView::Defaut => self.fill_store_default(),
-            UnitListView::ActiveUnit => {}
+            UnitListView::ActiveUnit => self.fill_store_loaded(),
             UnitListView::UnitFiles => {}
             UnitListView::Timers => {}
             UnitListView::Socket => {}
@@ -537,7 +550,7 @@ impl UnitListPanelImp {
         let main_unit_map_rc = self.units_map.clone();
         let panel_stack = self.panel_stack.clone();
         let single_selection = self.single_selection.borrow().clone();
-        let unit_list = self.obj().clone();
+        let unit_list_panel = self.obj().clone();
         let units_browser = self.units_browser.borrow().clone();
 
         let refresh_unit_list_button = upgrade!(self.refresh_unit_list_button);
@@ -553,7 +566,7 @@ impl UnitListPanelImp {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
 
-            let (loaded_units_map, unit_from_files) = match go_fetch_data(dbus_level).await {
+            let loaded_units_map = match go_fetch_data_loaded(dbus_level).await {
                 Ok(value) => value,
                 Err(err) => {
                     warn!("Fail fetch unit list {err:?}");
@@ -562,38 +575,20 @@ impl UnitListPanelImp {
                 }
             };
 
-            unit_list
+            unit_list_panel
                 .imp()
                 .loaded_units_count
                 .set_label(&loaded_units_map.len().to_string());
-            unit_list
-                .imp()
-                .unit_files_number
-                .set_label(&unit_from_files.len().to_string());
+            unit_list_panel.imp().unit_files_number.set_label("");
 
             let n_items = list_store.n_items();
             list_store.remove_all();
             let mut main_unit_map_rc = main_unit_map_rc.borrow_mut();
             main_unit_map_rc.clear();
 
-            let mut all_units =
-                HashMap::with_capacity(loaded_units_map.len() + unit_from_files.len());
-
-            for system_unit_file in unit_from_files.into_iter() {
-                if let Some(loaded_unit) = loaded_units_map.get(&system_unit_file.full_name) {
-                    loaded_unit.update_from_unit_file(system_unit_file);
-                } else {
-                    let unit = UnitInfo::from_unit_file(system_unit_file);
-                    list_store.append(&unit);
-                    main_unit_map_rc.insert(UnitKey::new(&unit), unit.clone());
-                    all_units.insert(unit.primary(), unit);
-                }
-            }
-
             for unit in loaded_units_map.into_values() {
                 list_store.append(&unit);
                 main_unit_map_rc.insert(UnitKey::new(&unit), unit.clone());
-                all_units.insert(unit.primary(), unit);
             }
 
             // The sort function needs to be the same of the  first column sorter
@@ -605,7 +600,7 @@ impl UnitListPanelImp {
 
             let mut force_selected_index = gtk::INVALID_LIST_POSITION;
 
-            let selected_unit = unit_list.imp().selected_unit();
+            let selected_unit = unit_list_panel.imp().selected_unit();
             if let Some(selected_unit) = selected_unit {
                 let selected_unit_name = selected_unit.primary();
 
@@ -631,57 +626,19 @@ impl UnitListPanelImp {
                 }
             }
             debug!("IM HERRE");
-            unit_list
+            unit_list_panel
                 .imp()
                 .force_selected_index
                 .set(Some(force_selected_index));
             refresh_unit_list_button.set_sensitive(true);
-            unit_list.imp().set_sorter();
+            unit_list_panel.imp().set_sorter();
 
             //cause no scrollwindow v adjustment
             if n_items > 0 {
-                focus_on_row(&unit_list, &units_browser);
+                focus_on_row(&unit_list_panel, &units_browser);
             }
             panel_stack.set_visible_child_name("unit_list");
 
-            //Complete unit information
-            glib::spawn_future_local(async move {
-                //let (sender, receiver) = tokio::sync::oneshot::channel();
-
-                let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
-
-                let list: Vec<CompleteUnitParams> = all_units
-                    .values()
-                    .filter(|unit| unit.need_to_be_completed())
-                    .map(CompleteUnitParams::new)
-                    .collect();
-
-                systemd::runtime().spawn(async move {
-                    const BATCH_SIZE: usize = 5;
-                    let mut batch = Vec::with_capacity(BATCH_SIZE);
-                    for (idx, triple) in (1..).zip(list.into_iter()) {
-                        batch.push(triple);
-
-                        if idx % BATCH_SIZE == 0 {
-                            call_complete_unit(&sender, &batch).await;
-                            batch.clear();
-                        }
-                    }
-
-                    call_complete_unit(&sender, &batch).await;
-                });
-
-                while let Some(updates) = receiver.recv().await {
-                    for update in updates {
-                        let Some(unit) = all_units.get(&update.primary) else {
-                            continue;
-                        };
-
-                        unit.update_from_unit_info(update);
-                    }
-                }
-                unit_list.imp().fetch_custom_unit_properties();
-            });
             //unit_list.imp().fetch_custom_unit_properties();
         });
     }
@@ -1792,7 +1749,7 @@ async fn go_fetch_data(
 
 async fn go_fetch_data_loaded(
     int_level: DbusLevel,
-) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
+) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
     match int_level {
         DbusLevel::SystemAndSession => {
             let level_syst = UnitDBusLevel::System;
@@ -1802,10 +1759,8 @@ async fn go_fetch_data_loaded(
             let (sender_user, receiver_user) = tokio::sync::oneshot::channel();
 
             systemd::runtime().spawn(async move {
-                let t_syst =
-                    tokio::spawn(systemd::list_units_description_and_state_async(level_syst));
-                let t_user =
-                    tokio::spawn(systemd::list_units_description_and_state_async(level_user));
+                let t_syst = tokio::spawn(systemd::list_loaded_units(level_syst));
+                let t_user = tokio::spawn(systemd::list_loaded_units(level_user));
 
                 let joined = tokio::join!(t_syst, t_user);
 
@@ -1817,10 +1772,8 @@ async fn go_fetch_data_loaded(
                     .expect("The channel needs to be open.");
             });
 
-            let (loaded_unit_system, mut unit_file_system) =
-                receiver_syst.await.expect("Tokio receiver works")??;
-            let (loaded_unit_user, mut unit_file_user) =
-                receiver_user.await.expect("Tokio receiver works")??;
+            let loaded_unit_system = receiver_syst.await.expect("Tokio receiver works")??;
+            let loaded_unit_user = receiver_user.await.expect("Tokio receiver works")??;
 
             let mut hmap =
                 HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
@@ -1841,8 +1794,7 @@ async fn go_fetch_data_loaded(
                 hmap.insert(unit.primary(), unit);
             }
 
-            unit_file_system.append(&mut unit_file_user);
-            Ok((hmap, unit_file_system))
+            Ok(hmap)
         }
 
         dlevel => {
@@ -1857,20 +1809,20 @@ async fn go_fetch_data_loaded(
             systemd::runtime().spawn(async move {
                 // let response = systemd::list_units_description_and_state_async().await;
 
-                let response = systemd::list_units_description_and_state_async(level).await;
+                let response = systemd::list_loaded_units(level).await;
                 sender
                     .send(response)
                     .expect("The channel needs to be open.");
             });
 
-            let (loaded_unit, unit_files) = receiver.await.expect("Tokio receiver works")?;
+            let loaded_unit = receiver.await.expect("Tokio receiver works")?;
 
             let mut hmap = HashMap::with_capacity(loaded_unit.len());
             for listed_unit in loaded_unit.into_iter() {
                 let unit = UnitInfo::from_listed_unit(listed_unit, level);
                 hmap.insert(unit.primary(), unit);
             }
-            Ok((hmap, unit_files))
+            Ok(hmap)
         }
     }
 }
