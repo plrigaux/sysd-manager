@@ -1058,7 +1058,13 @@ pub fn fetch_system_unit_info_native(
 
     let unit_interface = unit_type.interface();
 
-    let interface_name = InterfaceName::try_from(unit_interface).unwrap();
+    let interface_name = InterfaceName::try_from(unit_interface)
+        .inspect_err(|err| {
+            error!("unit_type {:?}", unit_type);
+            error!("unit_interface {:?}", unit_interface);
+            error!("{:?}", err);
+        })
+        .unwrap();
 
     let mut properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
 

@@ -12,27 +12,33 @@ glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
 }
 
-impl Default for UnitInfo {
-    fn default() -> Self {
-        UnitInfo::new()
-    }
-}
+// impl Default for UnitInfo {
+//     fn default() -> Self {
+//         UnitInfo::new()
+//     }
+// }
 
 impl UnitInfo {
-    fn new() -> Self {
-        let this_object: Self = glib::Object::new();
-        this_object
-    }
+    // fn new() -> Self {
+    //     let this_object: Self = glib::Object::new();
+    //     this_object
+    // }
 
     pub fn from_listed_unit(listed_unit: LUnit, level: UnitDBusLevel) -> Self {
-        let this_object: Self = glib::Object::new();
+        // let this_object: Self = glib::Object::new();
+        let this_object: Self = glib::Object::builder()
+            .property("primary", &listed_unit.primary_unit_name)
+            .build();
         let imp = this_object.imp();
         imp.init_from_listed_unit(listed_unit, level);
         this_object
     }
 
     pub fn from_unit_file(unit_file: SystemdUnitFile) -> Self {
-        let this_object: Self = glib::Object::new();
+        // let this_object: Self = glib::Object::new();
+        let this_object: Self = glib::Object::builder()
+            .property("primary", &unit_file.full_name)
+            .build();
         this_object.imp().init_from_unit_file(unit_file);
         this_object
     }
@@ -55,7 +61,7 @@ impl UnitInfo {
 }
 
 mod imp {
-    use std::cell::{Cell, RefCell};
+    use std::cell::{Cell, OnceCell, RefCell};
 
     use base::enums::UnitDBusLevel;
     use glib::{
@@ -72,11 +78,11 @@ mod imp {
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitInfo)]
     pub struct UnitInfoImpl {
-        #[property(get, set = Self::set_primary )]
-        pub(super) primary: RefCell<String>,
+        #[property(get, construct_only, set = Self::set_primary)]
+        pub(super) primary: OnceCell<String>,
 
         #[property(get = Self::get_display_name, type = String)]
-        display_name: Cell<u32>,
+        display_name: OnceCell<u32>,
 
         #[property(get, default)]
         unit_type: Cell<UnitType>,
@@ -98,7 +104,7 @@ mod imp {
 
         //#[property(get = Self::has_object_path, name = "pathexists", type = bool)]
         #[property(get=Self::get_unit_path, type = String)]
-        pub(super) object_path: RefCell<Option<String>>,
+        pub(super) object_path: OnceCell<String>,
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RefCell<Option<String>>,
         #[property(get, set, default)]
@@ -132,7 +138,7 @@ mod imp {
         ) {
             let active_state: ActiveState = listed_unit.active_state.as_str().into();
 
-            self.set_primary(listed_unit.primary_unit_name);
+            //self.set_primary(listed_unit.primary_unit_name);
             self.active_state.replace(active_state);
 
             let description = if listed_unit.description.is_empty() {
@@ -146,13 +152,13 @@ mod imp {
             self.load_state.replace(load_state);
             self.sub_state.replace(listed_unit.sub_state);
             self.followed_unit.replace(listed_unit.followed_unit);
-            let unit_object_path = Some(listed_unit.unit_object_path.to_string());
-            self.object_path.replace(unit_object_path);
+            // let unit_object_path = Some(listed_unit.unit_object_path.to_string());
+            // self.object_path.replace(unit_object_path);
             self.dbus_level.replace(dbus_level);
         }
 
         pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile) {
-            self.set_primary(unit_file.full_name);
+            // self.set_primary(unit_file.full_name);
             //self.set_active_state(ActiveState::Unknown);
             self.dbus_level.replace(unit_file.level);
             self.file_path.replace(Some(unit_file.file_path));
@@ -164,7 +170,7 @@ mod imp {
             self.enable_status.replace(unit_file.status_code);
         }
 
-        pub fn set_primary(&self, primary: String) {
+        fn set_primary(&self, primary: String) {
             let mut split_char_index = primary.len();
             for (i, c) in primary.chars().rev().enumerate() {
                 if c == '.' {
@@ -177,14 +183,14 @@ mod imp {
             self.display_name.set((split_char_index - 1) as u32);
 
             let unit_type = UnitType::new(&primary[(split_char_index)..]);
-            self.unit_type.replace(unit_type);
+            self.unit_type.set(unit_type);
 
-            self.primary.replace(primary);
+            self.primary.set(primary);
         }
 
         pub fn get_display_name(&self) -> String {
-            let index = self.display_name.get() as usize;
-            let s = &self.primary.borrow()[..index];
+            let index = *self.display_name.get_or_init(|| unreachable!()) as usize;
+            let s = &self.primary.get().expect("Being set")[..index];
             s.to_owned()
         }
 
@@ -220,14 +226,11 @@ mod imp {
         }
 
         fn get_unit_path(&self) -> String {
-            if let Some(a) = &*self.object_path.borrow() {
-                a.clone()
-            } else {
-                let primary = &*self.primary.borrow();
-                let object_path = crate::sysdbus::unit_dbus_path_from_name(primary);
-                self.object_path.replace(Some(object_path.clone()));
-                object_path
-            }
+            let object_path = self.object_path.get_or_init(|| {
+                let primary = self.primary.get_or_init(|| unreachable!());
+                crate::sysdbus::unit_dbus_path_from_name(primary)
+            });
+            object_path.clone()
         }
 
         pub fn need_to_be_completed(&self) -> bool {
