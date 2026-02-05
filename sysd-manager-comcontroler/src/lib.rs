@@ -58,12 +58,12 @@ pub enum BootFilter {
 }
 
 #[derive(Clone, Debug)]
-#[allow(unused)]
+// #[allow(unused)]
 pub struct SystemdUnitFile {
     pub full_name: String,
     pub status_code: EnablementStatus,
     pub level: UnitDBusLevel,
-    pub path: String,
+    pub file_path: String,
 }
 
 #[derive(Debug, Default)]

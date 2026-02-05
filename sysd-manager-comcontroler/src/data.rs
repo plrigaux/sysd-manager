@@ -74,10 +74,13 @@ mod imp {
     pub struct UnitInfoImpl {
         #[property(get, set = Self::set_primary )]
         pub(super) primary: RefCell<String>,
-        #[property(get)]
-        display_name: RefCell<String>,
+
+        #[property(get = Self::get_display_name, type = String)]
+        display_name: Cell<u32>,
+
         #[property(get, default)]
         unit_type: Cell<UnitType>,
+
         #[property(get, set)]
         pub(super) description: RefCell<Option<String>>,
 
@@ -89,6 +92,7 @@ mod imp {
 
         #[property(get, set)]
         pub(super) sub_state: RefCell<String>,
+
         #[property(get)]
         pub(super) followed_unit: RefCell<String>,
 
@@ -151,12 +155,12 @@ mod imp {
             self.set_primary(unit_file.full_name);
             //self.set_active_state(ActiveState::Unknown);
             self.dbus_level.replace(unit_file.level);
-            self.file_path.replace(Some(unit_file.path));
+            self.file_path.replace(Some(unit_file.file_path));
             self.enable_status.replace(unit_file.status_code);
         }
 
         pub(super) fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
-            self.file_path.replace(Some(unit_file.path));
+            self.file_path.replace(Some(unit_file.file_path));
             self.enable_status.replace(unit_file.status_code);
         }
 
@@ -169,13 +173,19 @@ mod imp {
                 }
             }
 
-            let display_name = primary[..split_char_index - 1].to_owned();
-            self.display_name.replace(display_name);
+            // let display_name = primary[..split_char_index - 1].to_owned();
+            self.display_name.set((split_char_index - 1) as u32);
 
             let unit_type = UnitType::new(&primary[(split_char_index)..]);
             self.unit_type.replace(unit_type);
 
             self.primary.replace(primary);
+        }
+
+        pub fn get_display_name(&self) -> String {
+            let index = self.display_name.get() as usize;
+            let s = &self.primary.borrow()[..index];
+            s.to_owned()
         }
 
         pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {

@@ -39,7 +39,7 @@ async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
 
     for (idx, unit_file) in unit_files.iter().enumerate() {
         debug!("{idx} - {}", unit_file.full_name);
-        debug!("{}", unit_file.path);
+        debug!("{}", unit_file.file_path);
     }
 
     Ok(())
@@ -64,7 +64,7 @@ async fn test_list_unit_files_remote() -> Result<(), SystemdErrors> {
 
     for (idx, unit_file) in unit_files.iter().enumerate() {
         debug!("{idx} - {}", unit_file.full_name);
-        debug!("{}", unit_file.path);
+        debug!("{}", unit_file.file_path);
     }
 
     Ok(())

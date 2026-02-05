@@ -475,9 +475,10 @@ async fn fill_list_unit_files(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFil
         .await?
         .list_unit_files()
         .await?;
+
     let mut systemd_units: Vec<SystemdUnitFile> = Vec::with_capacity(fetched_unit_files.len());
 
-    for unit_file in fetched_unit_files.iter() {
+    for unit_file in fetched_unit_files.into_iter() {
         let Some((_prefix, full_name)) = unit_file.primary_unit_name.rsplit_once('/') else {
             error!(
                 "MALFORMED rsplit_once(\"/\") {:?}",
@@ -493,7 +494,7 @@ async fn fill_list_unit_files(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFil
             full_name: full_name.to_owned(),
             status_code,
             level,
-            path: unit_file.primary_unit_name.to_owned(),
+            file_path: unit_file.primary_unit_name,
         });
     }
 

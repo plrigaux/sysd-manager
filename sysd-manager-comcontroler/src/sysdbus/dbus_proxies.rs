@@ -10,7 +10,6 @@ use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
 use crate::{
-    SystemdUnitFile,
     data::LUnit,
     errors::SystemdErrors,
     sysdbus::{LUnitFiles, get_blocking_connection, get_connection},
