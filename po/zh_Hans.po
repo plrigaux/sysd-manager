@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2026-02-04 13:01+0000\n"
+"PO-Revision-Date: 2026-02-05 03:33+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
@@ -592,43 +592,43 @@ msgstr "自动换行单元描述"
 #: data/interfaces/preferences.ui:113
 msgctxt "preference"
 msgid "Unit File"
-msgstr ""
+msgstr "单元文件显示配置"
 
 #. subtitle
 #: data/interfaces/preferences.ui:116
 msgctxt "preference"
 msgid "Display unit file line number"
-msgstr ""
+msgstr "显示单元文件行号"
 
 #. title
 #: data/interfaces/preferences.ui:117
 msgctxt "preference"
 msgid "Line number"
-msgstr ""
+msgstr "显示行号"
 
 #. subtitle
 #: data/interfaces/preferences.ui:127
 msgctxt "preference"
 msgid "Unit file highlight style"
-msgstr ""
+msgstr "单元文件高亮样式"
 
 #. title
 #: data/interfaces/preferences.ui:128
 msgctxt "preference"
 msgid "Text Highlight"
-msgstr ""
+msgstr "文本高亮"
 
 #. subtitle
 #: data/interfaces/preferences.ui:138
 msgctxt "preference"
 msgid "To see the logs in color"
-msgstr ""
+msgstr "以彩色显示日志"
 
 #. title
 #: data/interfaces/preferences.ui:139
 msgctxt "preference"
 msgid "Journal colors"
-msgstr ""
+msgstr "日志颜色"
 
 #. title
 #: data/interfaces/preferences.ui:160
