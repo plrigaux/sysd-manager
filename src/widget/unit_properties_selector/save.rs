@@ -57,6 +57,12 @@ pub struct MyConfig {
     pub columns: Vec<UnitColumn>,
 }
 
+impl MyConfig {
+    pub fn is_empty(&self) -> bool {
+        self.columns.is_empty()
+    }
+}
+
 pub fn save_column_config(columns: Option<&gio::ListModel>, data: &mut [UnitPropertySelection]) {
     order_columns(columns, data);
 
@@ -176,7 +182,14 @@ pub fn load_column_config() -> Option<MyConfig> {
 
     match fs::read_to_string(&config_path) {
         Ok(toml_str) => match toml::from_str::<MyConfig>(&toml_str) {
-            Ok(config) => Some(config),
+            Ok(config) => {
+                if config.is_empty() {
+                    warn!("Loaded config is empty, FALLBACK on default");
+                    None
+                } else {
+                    Some(config)
+                }
+            }
             Err(e) => {
                 error!("Failed to parse TOML from {:?}: {}", config_path, e);
                 None
@@ -245,6 +258,17 @@ mod test {
         assert!(toml_str.contains("id = \"beta\""));
         assert!(toml_str.contains("title = \"Gamma Title\""));
         assert!(toml_str.matches("[").count() >= 4); // At least 4 tables
+    }
+
+    #[test]
+    fn test_toml_save_empty() {
+        let data_list = vec![];
+
+        let config = MyConfig { columns: data_list };
+
+        let toml_str = toml::to_string_pretty(&config).expect("Failed to serialize array to TOML");
+
+        println!("{}", toml_str);
     }
 
     #[test]

@@ -141,7 +141,7 @@ mod imp {
             //self.set_primary(listed_unit.primary_unit_name);
             self.active_state.replace(active_state);
 
-            let description = if listed_unit.description.is_empty() {
+            let description = if !listed_unit.description.is_empty() {
                 Some(listed_unit.description)
             } else {
                 None

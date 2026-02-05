@@ -38,6 +38,7 @@ use crate::{
                 },
             },
             get_clean_col_title,
+            imp::construct::generate_loaded_units_columns,
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::{
@@ -384,7 +385,12 @@ impl UnitListPanelImp {
     fn fill_store(&self) {
         match self.selected_list_view.get() {
             UnitListView::Defaut => self.fill_store_default(),
-            UnitListView::ActiveUnit => self.fill_store_loaded(),
+            UnitListView::ActiveUnit => {
+                let cols = generate_loaded_units_columns(self.display_color.get());
+                self.set_new_columns(cols);
+
+                self.fill_store_loaded()
+            }
             UnitListView::UnitFiles => {}
             UnitListView::Timers => {}
             UnitListView::Socket => {}
@@ -1104,6 +1110,11 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
+        if property_list.is_empty() {
+            warn!("Column list empty, Abort");
+            return;
+        }
+
         let columns_list_model = self.units_browser.borrow().columns();
 
         //Get the current column

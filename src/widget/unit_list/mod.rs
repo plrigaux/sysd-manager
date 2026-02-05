@@ -163,13 +163,13 @@ impl UnitListView {
 
         for item in UnitListView::iter() {
             let (label, action) = item.menu_item();
-            menu_views.append(Some(&label), Some(&action));
+            menu_views.append(Some(&label), Some(action));
         }
 
         menu_views
     }
 
-    pub fn menu_item(&self) -> (String, String) {
+    pub fn menu_item(&self) -> (String, &str) {
         match self {
             UnitListView::Defaut => (
                 //List view
@@ -200,18 +200,16 @@ impl UnitListView {
     }
 
     pub fn action(&self) -> &str {
-        match self {
-            UnitListView::Defaut => ACTION_DEFAULT_UNIT_LIST_VIEW,
-            UnitListView::ActiveUnit => ACTION_ACTIVE_UNIT_LIST_VIEW,
-            UnitListView::UnitFiles => ACTION_UNIT_FILE_UNIT_LIST_VIEW,
-            UnitListView::Timers => ACTION_TIMER_UNIT_LIST_VIEW,
-            UnitListView::Socket => ACTION_SOCKET_UNIT_LIST_VIEW,
-        }
+        &self.win_action()[4..]
     }
 
-    pub fn win_action(&self) -> String {
-        let mut s = String::from("win.");
-        s.push_str(self.action());
-        s
+    pub fn win_action(&self) -> &str {
+        match self {
+            UnitListView::Defaut => "win.default_unit_list_view",
+            UnitListView::ActiveUnit => "win.active_unit_list_view",
+            UnitListView::UnitFiles => "win.unit_file_unit_list_view",
+            UnitListView::Timers => "win.timer_unit_list_view",
+            UnitListView::Socket => "win.socket_unit_list_view",
+        }
     }
 }

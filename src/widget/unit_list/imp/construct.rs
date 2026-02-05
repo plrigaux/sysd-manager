@@ -213,6 +213,9 @@ where
     v1.into_iter().cmp(v2).into()
 }
 
+const SYSDM_STATE: &str = "sysdm-state";
+const SYSDM_PRESET: &str = "sysdm-preset";
+
 fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let mut columns = vec![];
 
@@ -261,7 +264,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .build();
     columns.push(bus_col);
 
-    let id = "sysdm-state";
+    let id = SYSDM_STATE;
     let sorter = create_column_filter!(enable_status);
     let column_menu = create_col_menu(id, false);
     let factory = fac_enable_status(display_color);
@@ -276,7 +279,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .build();
     columns.push(state_col);
 
-    let id = "sysdm-preset";
+    let id = SYSDM_PRESET;
     let sorter = create_column_filter!(preset);
     let column_menu = create_col_menu(id, false);
     let factory = fac_preset(display_color);
@@ -352,4 +355,15 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     columns.push(sub_description);
 
     columns
+}
+
+pub fn generate_loaded_units_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+    generate_default_columns(display_color)
+        .into_iter()
+        .filter(|c| {
+            c.id().map(|s| s.as_str() != SYSDM_STATE).unwrap_or(true)
+                && c.id().map(|s| s.as_str() != SYSDM_PRESET).unwrap_or(true)
+        })
+        .map(UnitPropertySelection::from_column_view_column)
+        .collect()
 }
