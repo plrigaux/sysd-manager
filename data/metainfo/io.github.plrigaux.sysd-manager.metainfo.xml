@@ -94,6 +94,7 @@ https://hughsie.github.io/oars/index.html
         <ul>
           <li>Fix Flatpak save file in home directory (make a warning)</li>
           <li>Password dialog gets overlapped Sysd Manager on every start  https://github.com/plrigaux/sysd-manager/issues/35</li>
+          <li>[2.12.5]Unit's description in some cases was not displayed in the browser</li>
         </ul>
       </description>
     </release>
