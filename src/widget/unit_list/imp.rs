@@ -185,8 +185,6 @@ impl UnitListPanelImp {
         app_window: &AppWindow,
         refresh_unit_list_button: &gtk::Button,
     ) {
-        // let settings = systemd_gui::new_settings();
-
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");
@@ -246,7 +244,6 @@ impl UnitListPanelImp {
         };
 
         let list_filter_action_entry = {
-            //  let settings = settings.clone();
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_UNIT_LIST_FILTER)
                 .activate(move |_application: &AppWindow, _b, target_value| {
@@ -263,7 +260,6 @@ impl UnitListPanelImp {
         };
 
         let list_filter_action_entry_blank = {
-            //  let settings = settings.clone();
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder("unit_list_filter_blank")
                 .activate(move |_application: &AppWindow, _b, _target_value| {
@@ -1514,7 +1510,10 @@ impl ObjectImpl for UnitListPanelImp {
             })
             .build();
 
+        // let view = settings.string(PREF_UNIT_LIST_VIEW);
+        // debug!("VIEW1 : {}", view);
         let view = self.selected_list_view.get();
+        info!("Selected Browser View : {:?}", view);
         let (
             units_browser,
             single_selection,
