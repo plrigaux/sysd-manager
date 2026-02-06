@@ -64,6 +64,7 @@ use gtk::{
     },
 };
 use log::{debug, error, info, warn};
+use strum::IntoEnumIterator;
 use systemd::CompleteUnitParams;
 use zvariant::{OwnedValue, Value};
 
@@ -146,6 +147,7 @@ pub struct UnitListPanelImp {
 
     default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
 
+    #[property(get, set, default)]
     selected_list_view: Cell<UnitListView>,
 }
 
@@ -286,59 +288,6 @@ impl UnitListPanelImp {
                 .build()
         };
 
-        //  let settings = settings.clone();
-        let default_unit_list_view = {
-            let unit_list_panel = self.obj().clone();
-            let unit_list_view = UnitListView::Defaut;
-            gio::ActionEntry::builder(unit_list_view.action())
-                .activate(move |_application: &AppWindow, _b, _| {
-                    let panel = unit_list_panel.imp();
-
-                    panel.selected_list_view.set(unit_list_view);
-                    panel.fill_store();
-                })
-                .build()
-        };
-
-        let loaded_units_list_view = {
-            let unit_list_panel = self.obj().clone();
-            let unit_list_view = UnitListView::ActiveUnit;
-            gio::ActionEntry::builder(unit_list_view.action())
-                .activate(move |_application: &AppWindow, _, _| {
-                    let panel = unit_list_panel.imp();
-
-                    panel.selected_list_view.set(unit_list_view);
-                    panel.fill_store();
-                })
-                .build()
-        };
-
-        let unit_files_unit_list_view = {
-            let unit_list_panel = self.obj().clone();
-            let unit_list_view = UnitListView::UnitFiles;
-            gio::ActionEntry::builder(unit_list_view.action())
-                .activate(move |_application: &AppWindow, _, _| {
-                    let panel = unit_list_panel.imp();
-
-                    panel.selected_list_view.set(unit_list_view);
-                    panel.fill_store();
-                })
-                .build()
-        };
-
-        let timer_unit_list_view = {
-            let unit_list_panel = self.obj().clone();
-            let unit_list_view = UnitListView::Timers;
-            gio::ActionEntry::builder(unit_list_view.action())
-                .activate(move |_application: &AppWindow, _, _| {
-                    let panel = unit_list_panel.imp();
-
-                    panel.selected_list_view.set(unit_list_view);
-                    panel.fill_store();
-                })
-                .build()
-        };
-
         let refresh_unit_list = {
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder("refresh_unit_list")
@@ -349,17 +298,30 @@ impl UnitListPanelImp {
                 .build()
         };
 
-        app_window.add_action_entries([
+        let mut entries = vec![
             action_entry,
             list_filter_action_entry,
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
-            default_unit_list_view,
-            loaded_units_list_view,
-            unit_files_unit_list_view,
-            timer_unit_list_view,
             refresh_unit_list,
-        ]);
+        ];
+
+        for unit_list_view in UnitListView::iter() {
+            let action_entry = {
+                let unit_list_panel = self.obj().clone();
+                gio::ActionEntry::builder(unit_list_view.action())
+                    .activate(move |_application: &AppWindow, _, _| {
+                        let panel = unit_list_panel.imp();
+
+                        unit_list_panel.set_selected_list_view(unit_list_view);
+                        panel.fill_store();
+                    })
+                    .build()
+            };
+            entries.push(action_entry);
+        }
+
+        app_window.add_action_entries(entries);
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -393,7 +355,8 @@ impl UnitListPanelImp {
             }
             UnitListView::UnitFiles => {}
             UnitListView::Timers => {}
-            UnitListView::Socket => {}
+            UnitListView::Sockets => {}
+            UnitListView::Custom => {}
         }
     }
 
@@ -1451,9 +1414,11 @@ impl UnitListPanelImp {
     }
 
     pub(super) fn save_config(&self) {
+        let view = self.selected_list_view.get();
         save::save_column_config(
             Some(&self.units_browser.borrow().columns()),
             &mut self.current_columns_mut(),
+            view,
         );
     }
 }
@@ -1504,13 +1469,41 @@ impl ObjectImpl for UnitListPanelImp {
             )
             .build();
 
-        let unit_list = self.obj().clone();
+        let unit_list_panel = self.obj().clone();
 
         let list_store = gio::ListStore::new::<UnitInfo>();
         self.list_store
             .set(list_store.clone())
             .expect("Set only Once");
 
+        settings
+            .bind(
+                "pref-unit-list-view",
+                &unit_list_panel,
+                "selected-list-view",
+            )
+            .mapping(|f, g| {
+                println!("VALUE {:?}", f);
+                println!("TYPE {:?}", g);
+                let ulv: UnitListView = f.into();
+                println!("ULV {:?}", ulv);
+                let v = ulv.to_value();
+                Some(v)
+            })
+            .set_mapping(|f, g| {
+                println!("VALUE {:?}", f);
+                println!("TYPE {:?}", g);
+                let ulv = f
+                    .get::<UnitListView>()
+                    .inspect_err(|err| warn!("Conv error {:?}", err))
+                    .unwrap_or(UnitListView::Defaut);
+                println!("ULV {:?}", ulv);
+                let v = ulv.id().to_variant();
+                Some(v)
+            })
+            .build();
+
+        let view = self.selected_list_view.get();
         let (
             units_browser,
             single_selection,
@@ -1518,7 +1511,7 @@ impl ObjectImpl for UnitListPanelImp {
             sort_list_model,
             _generated,
             column_view_column_definition_list,
-        ) = construct::construct_column(list_store, self.display_color.get());
+        ) = construct::construct_column(list_store, self.display_color.get(), view);
 
         self.scrolled_window.set_child(Some(&units_browser));
         self.units_browser.replace(units_browser);
@@ -1534,7 +1527,7 @@ impl ObjectImpl for UnitListPanelImp {
         let current_column_view_column_definition_list =
             self.current_column_view_column_definition_list.borrow();
         column_factories::setup_factories(
-            &unit_list,
+            &unit_list_panel,
             &column_view_column_list,
             &current_column_view_column_definition_list,
         );
@@ -1542,16 +1535,16 @@ impl ObjectImpl for UnitListPanelImp {
         settings.connect_changed(
             Some(KEY_PREF_UNIT_LIST_DISPLAY_COLORS),
             move |_settings, _key| {
-                let display_color = unit_list.display_color();
+                let display_color = unit_list_panel.display_color();
                 info!("Change preference setting \"display color\" to {display_color}");
-                let column_view_column_list = unit_list.imp().generate_column_list();
+                let column_view_column_list = unit_list_panel.imp().generate_column_list();
 
-                let current_column_view_column_definition_list = unit_list
+                let current_column_view_column_definition_list = unit_list_panel
                     .imp()
                     .current_column_view_column_definition_list
                     .borrow();
                 column_factories::setup_factories(
-                    &unit_list,
+                    &unit_list_panel,
                     &column_view_column_list,
                     &current_column_view_column_definition_list,
                 );

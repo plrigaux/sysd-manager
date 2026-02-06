@@ -15,6 +15,7 @@ use gettextrs::pgettext;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 use strum::IntoEnumIterator;
+use tracing::warn;
 
 mod filter;
 mod imp;
@@ -147,14 +148,16 @@ pub fn get_clean_col_title(title: &str) -> String {
     }
 }
 
-#[derive(Debug, Copy, Clone, Default, strum::EnumIter)]
+#[derive(Debug, Copy, Clone, Default, strum::EnumIter, glib::Enum)]
+#[enum_type(name = "UnitListView")]
 pub enum UnitListView {
     #[default]
     Defaut,
     ActiveUnit,
     UnitFiles,
     Timers,
-    Socket,
+    Sockets,
+    Custom,
 }
 
 impl UnitListView {
@@ -191,9 +194,14 @@ impl UnitListView {
                 pgettext("menu", "Timers"),
                 self.win_action(),
             ),
-            UnitListView::Socket => (
+            UnitListView::Sockets => (
                 //List view
                 pgettext("menu", "Socket"),
+                self.win_action(),
+            ),
+            UnitListView::Custom => (
+                //List view
+                pgettext("menu", "Custom"),
                 self.win_action(),
             ),
         }
@@ -203,13 +211,76 @@ impl UnitListView {
         &self.win_action()[4..]
     }
 
+    pub fn id(&self) -> &str {
+        let wa = &self.win_action();
+        let len = wa.len();
+        &self.win_action()[4..len - 15]
+    }
+
     pub fn win_action(&self) -> &str {
         match self {
             UnitListView::Defaut => "win.default_unit_list_view",
             UnitListView::ActiveUnit => "win.active_unit_list_view",
             UnitListView::UnitFiles => "win.unit_file_unit_list_view",
-            UnitListView::Timers => "win.timer_unit_list_view",
-            UnitListView::Socket => "win.socket_unit_list_view",
+            UnitListView::Timers => "win.timers_unit_list_view",
+            UnitListView::Sockets => "win.sockets_unit_list_view",
+            UnitListView::Custom => "win.custom_unit_list_view",
         }
+    }
+}
+
+impl From<&glib::Variant> for UnitListView {
+    fn from(value: &glib::Variant) -> Self {
+        let value_str = value
+            .try_get::<String>()
+            .inspect_err(|e| warn!("Variant convertion Error {:?}", e))
+            .unwrap_or("default".to_owned());
+
+        for unit_list_view in UnitListView::iter() {
+            if unit_list_view.id() == value_str {
+                return unit_list_view;
+            }
+        }
+        warn!("Value {value_str:?} has no match for UnitListView, fallback to \"default\"");
+
+        UnitListView::Defaut
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_win_action_returns_correct_strings() {
+        assert_eq!(
+            UnitListView::Defaut.win_action(),
+            "win.default_unit_list_view"
+        );
+        assert_eq!(
+            UnitListView::ActiveUnit.win_action(),
+            "win.active_unit_list_view"
+        );
+        assert_eq!(
+            UnitListView::UnitFiles.win_action(),
+            "win.unit_file_unit_list_view"
+        );
+        assert_eq!(
+            UnitListView::Timers.win_action(),
+            "win.timer_unit_list_view"
+        );
+        assert_eq!(
+            UnitListView::Sockets.win_action(),
+            "win.socket_unit_list_view"
+        );
+    }
+
+    #[test]
+    fn test_id_extracts_correct_substring() {
+        assert_eq!(UnitListView::Defaut.id(), "default");
+        assert_eq!(UnitListView::ActiveUnit.id(), "active");
+        assert_eq!(UnitListView::UnitFiles.id(), "unit_file");
+        assert_eq!(UnitListView::Timers.id(), "timers");
+        assert_eq!(UnitListView::Sockets.id(), "sockets");
     }
 }

@@ -3,7 +3,7 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
-            COL_ID_UNIT, CustomPropertyId,
+            COL_ID_UNIT, CustomPropertyId, UnitListView,
             imp::{
                 column_factories::{self, *},
                 construct,
@@ -20,6 +20,7 @@ use zvariant::Value;
 pub fn construct_column(
     list_store: gio::ListStore,
     display_color: bool,
+    view: UnitListView,
 ) -> (
     gtk::ColumnView,
     gtk::SingleSelection,
@@ -37,7 +38,7 @@ pub fn construct_column(
         .build();
     let column_view = gtk::ColumnView::new(Some(selection_model.clone()));
 
-    let (base_columns, generated) = if let Some(saved_config) = save::load_column_config() {
+    let (base_columns, generated) = if let Some(saved_config) = save::load_column_config(view) {
         let mut list = Vec::with_capacity(saved_config.columns.len());
         for unit_column_config in saved_config.columns {
             let id = unit_column_config.id.clone();

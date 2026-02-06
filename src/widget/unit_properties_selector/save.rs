@@ -1,4 +1,5 @@
 use crate::gtk::prelude::ListModelExtManual;
+use crate::widget::unit_list::UnitListView;
 use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
@@ -63,7 +64,11 @@ impl MyConfig {
     }
 }
 
-pub fn save_column_config(columns: Option<&gio::ListModel>, data: &mut [UnitPropertySelection]) {
+pub fn save_column_config(
+    columns: Option<&gio::ListModel>,
+    data: &mut [UnitPropertySelection],
+    view: UnitListView,
+) {
     order_columns(columns, data);
 
     let data_list: Vec<UnitColumn> = data.iter().map(UnitColumn::from).collect();
@@ -79,7 +84,8 @@ pub fn save_column_config(columns: Option<&gio::ListModel>, data: &mut [UnitProp
         return;
     }
 
-    let config_path = sysd_manager_config_dir.join(UNIT_COLUMNS);
+    let file_name = file_name(view);
+    let config_path = sysd_manager_config_dir.join(file_name);
 
     if let Err(e) = save_to_toml_file(&config, &config_path) {
         error!(
@@ -88,6 +94,13 @@ pub fn save_column_config(columns: Option<&gio::ListModel>, data: &mut [UnitProp
         );
     } else {
         info!("Column config saved to {:?}", config_path);
+    }
+}
+
+fn file_name(view: UnitListView) -> String {
+    match view {
+        UnitListView::Custom => UNIT_COLUMNS.to_owned(),
+        _ => format!("{}_{}", view.id(), UNIT_COLUMNS),
     }
 }
 
@@ -152,14 +165,14 @@ fn get_xdg_config_home() -> String {
     })
 }
 
-pub fn save_to_toml_file(data: &MyConfig, path: &Path) -> std::io::Result<()> {
+fn save_to_toml_file(data: &MyConfig, path: &Path) -> std::io::Result<()> {
     let toml_str = toml::to_string_pretty(data).expect("Failed to serialize data to TOML");
     let mut file = File::create(path)?;
     file.write_all(toml_str.as_bytes())?;
     Ok(())
 }
 
-pub fn load_column_config() -> Option<MyConfig> {
+pub fn load_column_config(view: UnitListView) -> Option<MyConfig> {
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
 
     if !sysd_manager_config_dir.exists() {
@@ -170,7 +183,9 @@ pub fn load_column_config() -> Option<MyConfig> {
         return None;
     }
 
-    let config_path = sysd_manager_config_dir.join(UNIT_COLUMNS);
+    let file_name = file_name(view);
+
+    let config_path = sysd_manager_config_dir.join(file_name);
 
     if !config_path.exists() {
         info!(

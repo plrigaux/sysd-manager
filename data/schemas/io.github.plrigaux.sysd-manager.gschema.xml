@@ -278,5 +278,17 @@
       <default>true</default>
       <summary>Stop the Proxy when closing Sysd Manager</summary>
     </key>
+    <key name="pref-unit-list-view" type="s">
+      <choices>
+        <choice value="default"/>
+        <choice value="active"/>
+        <choice value="unit_file"/>
+        <choice value="timers"/>
+        <choice value="sockets"/>
+        <choice value="custom"/>
+      </choices>
+      <default>'default'</default>
+      <summary>Views of the unit browser</summary>
+    </key>
   </schema>
 </schemalist>
