@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2026-02-05 03:33+0000\n"
+"PO-Revision-Date: 2026-02-06 15:43+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
@@ -98,7 +98,7 @@ msgstr "查看信号"
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
 msgid "Preferences"
-msgstr "偏好设置"
+msgstr "首选项"
 
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
@@ -550,7 +550,7 @@ msgstr "单元列表"
 #: data/interfaces/preferences.ui:70
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
-msgstr "根据内容在单元列表的表格单元格中显示颜色。"
+msgstr "根据内容在单元列表中着色。"
 
 #. title
 #: data/interfaces/preferences.ui:71
@@ -598,7 +598,7 @@ msgstr "单元文件显示配置"
 #: data/interfaces/preferences.ui:116
 msgctxt "preference"
 msgid "Display unit file line number"
-msgstr "显示单元文件行号"
+msgstr "显示单元文件行数"
 
 #. title
 #: data/interfaces/preferences.ui:117
@@ -628,13 +628,13 @@ msgstr "以彩色显示日志"
 #: data/interfaces/preferences.ui:139
 msgctxt "preference"
 msgid "Journal colors"
-msgstr "日志颜色"
+msgstr "日志条目颜色"
 
 #. title
 #: data/interfaces/preferences.ui:160
 msgctxt "preference"
 msgid "Journal's events batch size"
-msgstr ""
+msgstr "日志事件批次大小"
 
 #. subtitle
 #: data/interfaces/preferences.ui:173
@@ -643,77 +643,79 @@ msgid ""
 "Journal's event maximum characters\n"
 "<i>0 to no limit</i>"
 msgstr ""
+"日志事件的最大字符数\n"
+"<i>0 表示无限制</i>"
 
 #. title
 #: data/interfaces/preferences.ui:176
 msgctxt "preference"
 msgid "Journal's event max size"
-msgstr ""
+msgstr "日志事件最大长度"
 
 #: data/interfaces/preferences.ui:193
 msgctxt "preference"
 msgid "_Proxy Configuration"
-msgstr ""
+msgstr "_代理配置"
 
 #: data/interfaces/preferences.ui:199
 msgid "Switch that controls other switches"
-msgstr ""
+msgstr "控制其他开关的总开关"
 
 #. group title
 #: data/interfaces/preferences.ui:207
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
-msgstr ""
+msgstr "Systemd Manager方法调用"
 
 #: data/interfaces/preferences.ui:210
 msgctxt "preference"
 msgid "<b>Clean</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用 <b>清空</b> 方法"
 
 #: data/interfaces/preferences.ui:211
 msgctxt "preference"
 msgid "Clean"
-msgstr ""
+msgstr "清空"
 
 #: data/interfaces/preferences.ui:216
 msgctxt "preference"
 msgid "<b>Freeze</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用 <b>冻结</b> 方法"
 
 #: data/interfaces/preferences.ui:217
 msgctxt "preference"
 msgid "Freeze"
-msgstr ""
+msgstr "冻结"
 
 #: data/interfaces/preferences.ui:222
 msgctxt "preference"
 msgid "<b>Thaw</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用 <b>解冻</b> 方法"
 
 #: data/interfaces/preferences.ui:223
 msgctxt "preference"
 msgid "Thaw"
-msgstr ""
+msgstr "解冻"
 
 #: data/interfaces/preferences.ui:228
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
-msgstr "通过代理调用来<b>Enable Unit File</b>"
+msgstr "通过代理调用来<b>启用单元文件</b>"
 
 #: data/interfaces/preferences.ui:229
 msgctxt "preference"
 msgid "Enable Unit File"
-msgstr "启用服务单元文件"
+msgstr "启用单元文件"
 
 #: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
-msgstr "通过代理调用来<b>Disable Unit File</b>"
+msgstr "通过代理调用来<b>停用单元文件</b>"
 
 #: data/interfaces/preferences.ui:235
 msgctxt "preference"
 msgid "Disable Unit File"
-msgstr "停用服务单元文件"
+msgstr "停用单元文件"
 
 #: data/interfaces/preferences.ui:240
 msgctxt "preference"
