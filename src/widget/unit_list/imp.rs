@@ -1482,24 +1482,18 @@ impl ObjectImpl for UnitListPanelImp {
                 &unit_list_panel,
                 "selected-list-view",
             )
-            .mapping(|f, g| {
-                println!("VALUE {:?}", f);
-                println!("TYPE {:?}", g);
-                let ulv: UnitListView = f.into();
-                println!("ULV {:?}", ulv);
-                let v = ulv.to_value();
-                Some(v)
+            .mapping(|variant, _| {
+                let unit_list_view: UnitListView = variant.into();
+                let value = unit_list_view.to_value();
+                Some(value)
             })
-            .set_mapping(|f, g| {
-                println!("VALUE {:?}", f);
-                println!("TYPE {:?}", g);
-                let ulv = f
+            .set_mapping(|value, _| {
+                let unit_list_view = value
                     .get::<UnitListView>()
                     .inspect_err(|err| warn!("Conv error {:?}", err))
                     .unwrap_or(UnitListView::Defaut);
-                println!("ULV {:?}", ulv);
-                let v = ulv.id().to_variant();
-                Some(v)
+                let variant = unit_list_view.id().to_variant();
+                Some(variant)
             })
             .build();
 
@@ -1555,8 +1549,6 @@ impl ObjectImpl for UnitListPanelImp {
             .applied_unit_property_filters
             .set(Rc::new(RefCell::new(Vec::new())));
 
-        // let search_entry = self.fill_search_bar();
-
         let custom_filter = self.create_custom_filter();
         self.filter_list_model
             .borrow()
@@ -1574,8 +1566,6 @@ impl ObjectImpl for UnitListPanelImp {
             .set(search_controls)
             .expect("Search entry set once");
 
-        /*      self.obj().action_set_enabled("win.col", true); */
-
         {
             let unit_list = self.obj().clone();
             let units_browser = self.units_browser.borrow().clone();
@@ -1583,8 +1573,6 @@ impl ObjectImpl for UnitListPanelImp {
                 .vadjustment()
                 .connect_changed(move |_adjustment| {
                     focus_on_row(&unit_list, &units_browser);
-
-                    //UnitListPanelImp::print_scroll_adj_logs(unit_list.imp())
                 });
         }
 
