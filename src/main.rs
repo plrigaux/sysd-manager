@@ -30,6 +30,7 @@ use dotenv::dotenv;
 use log::{debug, info, warn};
 use systemd::data::UnitInfo;
 use systemd_gui::new_settings;
+use tracing_subscriber::EnvFilter;
 use widget::{
     app_window::{AppWindow, menu},
     preferences::{
@@ -43,12 +44,12 @@ use crate::systemd_gui::set_is_dark;
 const DOMAIN_NAME: &str = "sysd-manager";
 fn main() -> glib::ExitCode {
     dotenv().ok();
-    // env_logger::init();
 
     let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
     tracing_subscriber::fmt()
         .with_timer(timer)
         .with_line_number(true)
+        .with_env_filter(EnvFilter::from_default_env())
         .init();
 
     let (unit, command, level, run_mode) = handle_args();
