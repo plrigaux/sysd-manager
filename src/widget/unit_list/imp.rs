@@ -68,6 +68,7 @@ use strum::IntoEnumIterator;
 use systemd::CompleteUnitParams;
 use zvariant::{OwnedValue, Value};
 
+const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 struct UnitKey {
     level: UnitDBusLevel,
@@ -309,19 +310,37 @@ impl UnitListPanelImp {
         for unit_list_view in UnitListView::iter() {
             let action_entry = {
                 let unit_list_panel = self.obj().clone();
-                gio::ActionEntry::builder(unit_list_view.action())
-                    .activate(move |_application: &AppWindow, _, _| {
+                gio::ActionEntry::builder(UnitListView::base_action())
+                    .activate(move |_application: &AppWindow, action, value| {
+                        let Some(value) = value else {
+                            warn!("{} has no value", UnitListView::base_action());
+                            return;
+                        };
+
+                        debug!("{} target {value:?}", UnitListView::base_action());
                         let panel = unit_list_panel.imp();
 
-                        unit_list_panel.set_selected_list_view(unit_list_view);
+                        action.set_state(value);
+
+                        let view: UnitListView = value.into(); //FIXME Why can't use unit_list_view variable
+                        debug!("new {:?}", view);
+                        unit_list_panel.set_selected_list_view(view);
                         panel.fill_store();
                     })
+                    .state(unit_list_view.id().to_variant())
+                    .parameter_type(Some(glib::VariantTy::STRING))
                     .build()
             };
             entries.push(action_entry);
         }
 
         app_window.add_action_entries(entries);
+
+        let settings = systemd_gui::new_settings();
+        let view = settings.string(PREF_UNIT_LIST_VIEW);
+
+        app_window.change_action_state(UnitListView::base_action(), &view.to_variant());
+        debug!("VIEW : {}", view);
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -345,7 +364,9 @@ impl UnitListPanelImp {
     }
 
     fn fill_store(&self) {
-        match self.selected_list_view.get() {
+        let view = self.selected_list_view.get();
+        debug!("fill store {:?}", view);
+        match view {
             UnitListView::Defaut => self.fill_store_default(),
             UnitListView::ActiveUnit => {
                 let cols = generate_loaded_units_columns(self.display_color.get());
@@ -1477,11 +1498,7 @@ impl ObjectImpl for UnitListPanelImp {
             .expect("Set only Once");
 
         settings
-            .bind(
-                "pref-unit-list-view",
-                &unit_list_panel,
-                "selected-list-view",
-            )
+            .bind(PREF_UNIT_LIST_VIEW, &unit_list_panel, "selected-list-view")
             .mapping(|variant, _| {
                 let unit_list_view: UnitListView = variant.into();
                 let value = unit_list_view.to_value();

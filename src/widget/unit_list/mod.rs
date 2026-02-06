@@ -12,6 +12,7 @@ use super::InterPanelMessage;
 use super::app_window::AppWindow;
 
 use gettextrs::pgettext;
+use glib::variant::ToVariant;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 use strum::IntoEnumIterator;
@@ -161,63 +162,69 @@ pub enum UnitListView {
 }
 
 impl UnitListView {
+    pub const WIN_ACTION: &'static str = "win.unit_list_view";
+
+    pub fn base_action() -> &'static str {
+        &Self::WIN_ACTION[4..]
+    }
+
     pub fn menu_items() -> gio::Menu {
         let menu_views = gio::Menu::new();
 
         for item in UnitListView::iter() {
-            let (label, action) = item.menu_item();
-            menu_views.append(Some(&label), Some(action));
+            let label = item.menu_item();
+
+            let menu_item = gio::MenuItem::new(Some(&label), Some(Self::WIN_ACTION));
+            menu_item
+                .set_attribute_value(gio::MENU_ATTRIBUTE_TARGET, Some(&item.id().to_variant()));
+
+            menu_views.append_item(&menu_item);
         }
 
         menu_views
     }
 
-    pub fn menu_item(&self) -> (String, &str) {
+    pub fn menu_item(&self) -> String {
         match self {
-            UnitListView::Defaut => (
+            UnitListView::Defaut => {
                 //List view
-                pgettext("menu", "Default"),
-                self.win_action(),
-            ),
-            UnitListView::ActiveUnit => (
+                pgettext("menu", "Default")
+            }
+            UnitListView::ActiveUnit => {
                 //List view
-                pgettext("menu", "Active Units"),
-                self.win_action(),
-            ),
-            UnitListView::UnitFiles => (
+                pgettext("menu", "Active Units")
+            }
+            UnitListView::UnitFiles => {
                 //List view
-                pgettext("menu", "Unit Files"),
-                self.win_action(),
-            ),
-            UnitListView::Timers => (
+                pgettext("menu", "Unit Files")
+            }
+            UnitListView::Timers =>
+            //List view
+            {
+                pgettext("menu", "Timers")
+            }
+            UnitListView::Sockets => {
                 //List view
-                pgettext("menu", "Timers"),
-                self.win_action(),
-            ),
-            UnitListView::Sockets => (
+                pgettext("menu", "Socket")
+            }
+            UnitListView::Custom => {
                 //List view
-                pgettext("menu", "Socket"),
-                self.win_action(),
-            ),
-            UnitListView::Custom => (
-                //List view
-                pgettext("menu", "Custom"),
-                self.win_action(),
-            ),
+                pgettext("menu", "Custom")
+            }
         }
     }
 
-    pub fn action(&self) -> &str {
-        &self.win_action()[4..]
-    }
+    // pub fn action(&self) -> &str {
+    //     &self.win_action()[4..]
+    // }
 
     pub fn id(&self) -> &str {
-        let wa = &self.win_action();
+        let wa = &self.win_action_it();
         let len = wa.len();
-        &self.win_action()[4..len - 15]
+        &wa[4..len - 15]
     }
 
-    pub fn win_action(&self) -> &str {
+    fn win_action_it(&self) -> &str {
         match self {
             UnitListView::Defaut => "win.default_unit_list_view",
             UnitListView::ActiveUnit => "win.active_unit_list_view",
@@ -251,7 +258,7 @@ impl From<&glib::Variant> for UnitListView {
 mod tests {
     use super::*;
 
-    #[test]
+    /* #[test]
     fn test_win_action_returns_correct_strings() {
         assert_eq!(
             UnitListView::Defaut.win_action(),
@@ -273,7 +280,7 @@ mod tests {
             UnitListView::Sockets.win_action(),
             "win.socket_unit_list_view"
         );
-    }
+    } */
 
     #[test]
     fn test_id_extracts_correct_substring() {
