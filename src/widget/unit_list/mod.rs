@@ -104,7 +104,7 @@ impl UnitListPanel {
         self.imp().print_scroll_adj_logs();
     }
 
-    pub fn save_config(&self) {
+    pub fn save_column_config(&self) {
         self.imp().save_config();
     }
 }
@@ -117,11 +117,11 @@ pub struct CustomPropertyId<'a> {
 
 impl<'a> CustomPropertyId<'a> {
     pub fn from_str(s: &'a str) -> Self {
-        let Some((t, p)) = s.split_once('@') else {
+        let Some((utype, prop)) = s.split_once('@') else {
             return Self { utype: "", prop: s };
         };
 
-        Self { utype: t, prop: p }
+        Self { utype, prop }
     }
 
     fn generate_quark(&self) -> glib::Quark {

@@ -651,7 +651,7 @@ impl WindowImpl for AppWindowImpl {
             error!("Failed to save window state");
         }
 
-        self.unit_list_panel.save_config();
+        self.unit_list_panel.save_column_config();
 
         self.parent_close_request();
         // Allow to invoke other event handlers

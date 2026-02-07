@@ -17,28 +17,11 @@ use gettextrs::pgettext;
 use log::warn;
 use zvariant::Value;
 
-pub fn construct_column(
-    list_store: gio::ListStore,
+pub fn construct_column_view(
     display_color: bool,
     view: UnitListView,
-) -> (
-    gtk::ColumnView,
-    gtk::SingleSelection,
-    gtk::FilterListModel,
-    gtk::SortListModel,
-    bool,
-    Vec<UnitPropertySelection>,
-) {
-    let sort_list_model = gtk::SortListModel::new(Some(list_store), None::<gtk::Sorter>);
-    let filter_list_model =
-        gtk::FilterListModel::new(Some(sort_list_model.clone()), None::<gtk::Filter>);
-    let selection_model = gtk::SingleSelection::builder()
-        .model(&filter_list_model)
-        .autoselect(false)
-        .build();
-    let column_view = gtk::ColumnView::new(Some(selection_model.clone()));
-
-    let (base_columns, generated) = if let Some(saved_config) = save::load_column_config(view) {
+) -> Vec<UnitPropertySelection> {
+    if let Some(saved_config) = save::load_column_config(view) {
         let mut list = Vec::with_capacity(saved_config.columns.len());
         for unit_column_config in saved_config.columns {
             let id = unit_column_config.id.clone();
@@ -54,36 +37,10 @@ pub fn construct_column(
 
             list.push(prop_selection);
         }
-        (list, false)
+        list
     } else {
-        let default_columns = generate_default_columns(display_color);
-
-        let mut column_view_column_definition_list = Vec::with_capacity(default_columns.len());
-
-        for col in default_columns.iter() {
-            let unit_property_selection: UnitPropertySelection =
-                UnitPropertySelection::from_column_view_column(col.clone());
-            column_view_column_definition_list.push(unit_property_selection);
-        }
-
-        (column_view_column_definition_list, true)
-    };
-
-    for col in base_columns.iter() {
-        column_view.append_column(&col.column());
+        default_column_definition_list(display_color)
     }
-
-    let sorter = column_view.sorter();
-    sort_list_model.set_sorter(sorter.as_ref());
-
-    (
-        column_view,
-        selection_model,
-        filter_list_model,
-        sort_list_model,
-        generated,
-        base_columns,
-    )
 }
 
 macro_rules! compare_units {

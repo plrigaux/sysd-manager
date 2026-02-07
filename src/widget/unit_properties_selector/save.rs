@@ -111,14 +111,8 @@ pub fn order_columns(columns: Option<&gio::ListModel>, data: &mut [UnitPropertyS
 
     let ids: Vec<_> = columns
         .iter::<gtk::ColumnViewColumn>()
-        .filter_map(|r| match r {
-            Ok(c) => Some(c),
-            Err(err) => {
-                warn!("Error: {err:?}");
-                None
-            }
-        })
-        .filter_map(|c| c.id())
+        .filter_map(|result| result.inspect_err(|err| warn!("Error: {err:?}")).ok())
+        .filter_map(|column| column.id())
         .collect();
 
     if ids.len() != data.len() {

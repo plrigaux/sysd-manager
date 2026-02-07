@@ -325,11 +325,11 @@ impl FromStr for EnablementStatus {
 pub enum ActiveState {
     Unknown,
     Active,
+    Activating,
     Reloading,
     #[default]
     Inactive,
     Failed,
-    Activating,
     Deactivating,
     Maintenance,
     Refreshing,
