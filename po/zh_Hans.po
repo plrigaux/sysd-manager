@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2026-02-06 15:43+0000\n"
+"PO-Revision-Date: 2026-02-07 01:52+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
@@ -721,63 +721,63 @@ msgstr "停用单元文件"
 msgctxt "preference"
 msgid ""
 "<b>Reload</b> Systemd Manager configuration method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用来<b>重载</b>所有单元配置"
 
 #: data/interfaces/preferences.ui:241
 msgctxt "preference"
 msgid "Reload Daemon"
-msgstr ""
+msgstr "重载所有单元配置"
 
 #: data/interfaces/preferences.ui:246
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
-msgstr ""
+msgstr "通过代理调用 来<b>恢复单元文件</b> 到其供应商版本"
 
 #: data/interfaces/preferences.ui:247
 msgctxt "preference"
 msgid "Revert Unit Files"
-msgstr "重置服务单元文件"
+msgstr "恢复单元文件"
 
 #: data/interfaces/preferences.ui:254
 msgctxt "preference"
 msgid "Actions"
-msgstr ""
+msgstr "操作"
 
 #: data/interfaces/preferences.ui:257
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
-msgstr ""
+msgstr "通过代理创建 <b>Drop-in</b> 文件"
 
 #: data/interfaces/preferences.ui:258
 msgctxt "preference"
 msgid "Create Drop-in"
-msgstr ""
+msgstr "创建Drop-in 文件"
 
 #: data/interfaces/preferences.ui:263
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
-msgstr ""
+msgstr "通过代理<b>保存文件</b>"
 
 #: data/interfaces/preferences.ui:264
 msgctxt "preference"
 msgid "Save file"
-msgstr ""
+msgstr "保存文件"
 
 #: data/interfaces/preferences.ui:272
 msgctxt "preference"
 msgid "Proxy Behaviors"
-msgstr ""
+msgstr "代理运行行为"
 
 #: data/interfaces/preferences.ui:275
 msgid "Start the Proxy when starting Sysd Manager"
-msgstr ""
+msgstr "启动 Sysd Manager 时启动代理"
 
 #: data/interfaces/preferences.ui:276
 msgctxt "preference"
 msgid "Start Proxy at Start up"
-msgstr ""
+msgstr "在软件启动时启动代理"
 
 #: data/interfaces/preferences.ui:281
 msgctxt "preference"
