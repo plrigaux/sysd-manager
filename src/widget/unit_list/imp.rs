@@ -13,7 +13,7 @@ use std::{
 use crate::{
     consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
     systemd::{
-        self, SystemdUnitFile,
+        SystemdUnitFile,
         data::{UnitInfo, convert_to_string},
         enums::{LoadState, UnitType},
         errors::SystemdErrors,
@@ -38,7 +38,7 @@ use crate::{
                 },
             },
             get_clean_col_title,
-            imp::construct::{default_column_definition_list, generate_loaded_units_columns},
+            imp::construct::construct_column_view,
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::{
@@ -228,7 +228,7 @@ impl UnitListPanelImp {
         self.refresh_unit_list_button
             .set(Some(refresh_unit_list_button));
 
-        self.fill_store();
+        self.fill_store(None);
 
         let units_browser = units_browser!(self).clone();
         let action_entry = {
@@ -299,7 +299,7 @@ impl UnitListPanelImp {
             gio::ActionEntry::builder("refresh_unit_list")
                 .activate(move |_application: &AppWindow, _, _| {
                     info!("Action refresh called");
-                    unit_list_panel.imp().fill_store();
+                    unit_list_panel.imp().fill_store(None);
                 })
                 .build()
         };
@@ -329,8 +329,7 @@ impl UnitListPanelImp {
 
                         let view: UnitListView = value.into(); //FIXME Why can't use unit_list_view variable
                         debug!("new {:?}", view);
-                        unit_list_panel.set_selected_list_view(view);
-                        panel.fill_store();
+                        panel.fill_store(Some(view));
                     })
                     .state(unit_list_view.id().to_variant())
                     .parameter_type(Some(glib::VariantTy::STRING))
@@ -368,28 +367,26 @@ impl UnitListPanelImp {
         col_list
     }
 
-    fn fill_store(&self) {
+    fn fill_store(&self, new_view: Option<UnitListView>) {
+        if let Some(new_view) = new_view {
+            self.save_config();
+
+            self.selected_list_view.set(new_view);
+        }
+
         let view = self.selected_list_view.get();
+
         debug!("fill store {:?}", view);
+
+        let cols = construct_column_view(self.display_color.get(), view);
+        self.set_new_columns(cols);
         match view {
-            UnitListView::Defaut => {
-                let cols = default_column_definition_list(self.display_color.get());
-                save::load_column_config(view);
-                self.set_new_columns(cols);
-                self.fill_store_default()
-            }
-            UnitListView::ActiveUnit => {
-                let cols = generate_loaded_units_columns(self.display_color.get());
-                self.set_new_columns(cols);
-                self.fill_store_loaded()
-            }
+            UnitListView::Defaut => self.fill_store_default(),
+            UnitListView::ActiveUnit => self.fill_store_loaded(),
             UnitListView::UnitFiles => {}
             UnitListView::Timers => {}
             UnitListView::Sockets => {}
-            UnitListView::Custom => {
-                warn!("TODO Load custom");
-                self.fill_store_default()
-            }
+            UnitListView::Custom => self.fill_store_default(),
         }
     }
 
@@ -1507,9 +1504,7 @@ impl ObjectImpl for UnitListPanelImp {
         sort_list_model.set_sorter(sorter.as_ref());
 
         self.scrolled_window.set_child(Some(&column_view));
-        println!("ATK");
         self.units_browser.get_or_init(|| column_view);
-        // .expect_err("units browser shall be set only once");
         self.single_selection.get_or_init(|| single_selection);
         self.filter_list_model.replace(filter_list_model);
         self.unit_list_sort_list_model.replace(sort_list_model);

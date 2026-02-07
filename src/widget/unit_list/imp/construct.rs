@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     gtk::prelude::*,
     systemd::data::UnitInfo,
@@ -21,26 +23,60 @@ pub fn construct_column_view(
     display_color: bool,
     view: UnitListView,
 ) -> Vec<UnitPropertySelection> {
-    if let Some(saved_config) = save::load_column_config(view) {
-        let mut list = Vec::with_capacity(saved_config.columns.len());
-        for unit_column_config in saved_config.columns {
-            let id = unit_column_config.id.clone();
-            let prop_selection = UnitPropertySelection::from_column_config(unit_column_config);
+    let list = build_from_load(display_color, view);
 
-            let column_menu = create_col_menu(&id, prop_selection.is_custom());
-            let column = prop_selection.column();
-            column.set_header_menu(Some(&column_menu));
-
-            let prop_type = prop_selection.prop_type();
-
-            construct::set_column_factory_and_sorter(&column, display_color, prop_type);
-
-            list.push(prop_selection);
+    let default = match view {
+        UnitListView::Defaut => default_column_definition_list(display_color),
+        UnitListView::ActiveUnit => generate_loaded_units_columns(display_color),
+        UnitListView::UnitFiles => todo!(),
+        UnitListView::Timers => todo!(),
+        UnitListView::Sockets => todo!(),
+        UnitListView::Custom => {
+            if list.is_empty() {
+                return default_column_definition_list(display_color);
+            }
+            return list;
         }
-        list
-    } else {
-        default_column_definition_list(display_color)
+    };
+
+    let mut h: HashMap<_, _> = list
+        .into_iter()
+        .filter_map(|c| c.id().map(|id| (id, c)))
+        .collect();
+
+    let mut out = Vec::with_capacity(default.len());
+    for (id, default_up) in default.into_iter().filter_map(|c| c.id().map(|id| (id, c))) {
+        let unit_prop = if let Some(loaded_up) = h.remove(&id) {
+            loaded_up
+        } else {
+            default_up
+        };
+        out.push(unit_prop);
     }
+    out
+}
+
+pub fn build_from_load(display_color: bool, view: UnitListView) -> Vec<UnitPropertySelection> {
+    let Some(saved_config) = save::load_column_config(view) else {
+        return vec![];
+    };
+
+    let mut list = Vec::with_capacity(saved_config.columns.len());
+    for unit_column_config in saved_config.columns {
+        let id = unit_column_config.id.clone();
+        let prop_selection = UnitPropertySelection::from_column_config(unit_column_config);
+
+        let column_menu = create_col_menu(&id, prop_selection.is_custom());
+        let column = prop_selection.column();
+        column.set_header_menu(Some(&column_menu));
+
+        let prop_type = prop_selection.prop_type();
+
+        construct::set_column_factory_and_sorter(&column, display_color, prop_type);
+
+        list.push(prop_selection);
+    }
+    list
 }
 
 macro_rules! compare_units {
@@ -315,7 +351,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     columns
 }
 
-pub fn generate_loaded_units_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+fn generate_loaded_units_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     generate_default_columns(display_color)
         .into_iter()
         .filter(|c| {
