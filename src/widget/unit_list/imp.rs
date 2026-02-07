@@ -65,7 +65,7 @@ use gtk::{
 };
 use log::{debug, error, info, warn};
 use strum::IntoEnumIterator;
-use systemd::CompleteUnitParams;
+use systemd::CompleteUnitPropertiesCallParams;
 use zvariant::{OwnedValue, Value};
 
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
@@ -371,7 +371,7 @@ impl UnitListPanelImp {
         if let Some(new_view) = new_view {
             self.save_config();
 
-            self.selected_list_view.set(new_view);
+            self.obj().set_selected_list_view(new_view);
         }
 
         let view = self.selected_list_view.get();
@@ -507,16 +507,16 @@ impl UnitListPanelImp {
 
                 let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
-                let list: Vec<CompleteUnitParams> = all_units
+                let to_complete_list: Vec<CompleteUnitPropertiesCallParams> = all_units
                     .values()
                     .filter(|unit| unit.need_to_be_completed())
-                    .map(CompleteUnitParams::new)
+                    .map(CompleteUnitPropertiesCallParams::new)
                     .collect();
 
                 systemd::runtime().spawn(async move {
                     const BATCH_SIZE: usize = 5;
                     let mut batch = Vec::with_capacity(BATCH_SIZE);
-                    for (idx, triple) in (1..).zip(list.into_iter()) {
+                    for (idx, triple) in (1..).zip(to_complete_list.into_iter()) {
                         batch.push(triple);
 
                         if idx % BATCH_SIZE == 0 {
@@ -1629,7 +1629,7 @@ impl BoxImpl for UnitListPanelImp {}
 
 async fn call_complete_unit(
     sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
-    batch: &[CompleteUnitParams],
+    batch: &[CompleteUnitPropertiesCallParams],
 ) {
     let updates = systemd::complete_unit_information(batch)
         .await

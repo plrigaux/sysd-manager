@@ -765,9 +765,11 @@ pub fn after_unit_file_action(
         let primary_name = unit.primary();
         let level = unit.dbus_level();
         let object_path = unit.object_path();
+        let status = unit.enable_status();
         crate::systemd::runtime().spawn(async move {
             let response =
-                systemd::complete_single_unit_information(primary_name, level, object_path).await;
+                systemd::complete_single_unit_information(primary_name, level, object_path, status)
+                    .await;
 
             sender
                 .send(response)

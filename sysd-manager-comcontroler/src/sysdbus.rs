@@ -33,7 +33,7 @@ use zbus::{
 };
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
-use crate::{CompleteUnitParams, sysdbus::dbus_proxies::systemd_manager_async};
+use crate::{CompleteUnitPropertiesCallParams, sysdbus::dbus_proxies::systemd_manager_async};
 use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
     data::{LUnit, UnitInfo},
@@ -332,7 +332,12 @@ where
 pub async fn get_unit_file_state_async(
     connection: &zbus::Connection,
     unit_file: &str,
+    status: EnablementStatus,
 ) -> Result<EnablementStatus, SystemdErrors> {
+    if status.has_status() {
+        return Ok(status);
+    }
+
     let message = call_method_async(
         connection,
         DESTINATION_SYSTEMD,
@@ -364,34 +369,14 @@ pub async fn list_units_description_and_state_async(
 }
 
 pub async fn complete_unit_information(
-    units: &[CompleteUnitParams],
+    units: &[CompleteUnitPropertiesCallParams],
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
-    let mut connection_system = None;
-    let mut connection_session = None;
-
     let mut ouput = Vec::with_capacity(units.len());
     for params in units.iter() {
-        let connection = match params.level {
-            UnitDBusLevel::UserSession => {
-                if let Some(conn) = &connection_session {
-                    conn
-                } else {
-                    let conn = get_connection(params.level).await?;
-                    connection_session.get_or_insert(conn) as &zbus::Connection
-                }
-            }
-            _ => {
-                if let Some(conn) = &connection_system {
-                    conn
-                } else {
-                    let conn = get_connection(params.level).await?;
-                    connection_system.get_or_insert(conn) as &zbus::Connection
-                }
-            }
-        };
+        let connection = get_connection(params.level).await?;
 
-        let f2 = get_unit_file_state_async(connection, &params.unit_name);
-        let f1 = complete_unit_info(connection, &params.unit_name, &params.object_path);
+        let f2 = get_unit_file_state_async(&connection, &params.unit_name, params.status);
+        let f1 = complete_unit_info(&connection, &params.unit_name, &params.object_path);
 
         let (r1, r2) = tokio::join!(f1, f2);
 

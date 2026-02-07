@@ -89,22 +89,36 @@ impl UpdatedUnitInfo {
     }
 }
 
-pub struct CompleteUnitParams {
+pub struct CompleteUnitPropertiesCallParams {
     pub level: UnitDBusLevel,
     pub unit_name: String,
     pub object_path: String,
+    pub status: EnablementStatus,
 }
 
-impl CompleteUnitParams {
+impl CompleteUnitPropertiesCallParams {
     pub fn new(unit: &UnitInfo) -> Self {
-        Self::new2(unit.dbus_level(), unit.primary(), unit.object_path())
+        // println!("Has status {:?} {:?}", unit.enable_status(), unit.primary())
+
+        Self::new_params(
+            unit.dbus_level(),
+            unit.primary(),
+            unit.object_path(),
+            unit.enable_status(),
+        )
     }
 
-    pub fn new2(level: UnitDBusLevel, unit_name: String, path: String) -> Self {
+    pub fn new_params(
+        level: UnitDBusLevel,
+        unit_name: String,
+        object_path: String,
+        status: EnablementStatus,
+    ) -> Self {
         Self {
             level,
             unit_name,
-            object_path: path,
+            object_path,
+            status,
         }
     }
 }
@@ -162,7 +176,7 @@ pub async fn list_loaded_units(level: UnitDBusLevel) -> Result<Vec<LUnit>, Syste
 }
 
 pub async fn complete_unit_information(
-    units: &[CompleteUnitParams],
+    units: &[CompleteUnitPropertiesCallParams],
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     sysdbus::complete_unit_information(units).await
 }
@@ -171,8 +185,14 @@ pub async fn complete_single_unit_information(
     primary_name: String,
     level: UnitDBusLevel,
     object_path: String,
+    status: EnablementStatus,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
-    let units = [CompleteUnitParams::new2(level, primary_name, object_path)];
+    let units = [CompleteUnitPropertiesCallParams::new_params(
+        level,
+        primary_name,
+        object_path,
+        status,
+    )];
     sysdbus::complete_unit_information(&units).await
 }
 
@@ -278,10 +298,11 @@ pub fn disable_unit_file(
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    println!("{:?} {} {:?}", level, unit_file, flags.bits_c());
     #[cfg(not(feature = "flatpak"))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
-            if proxy_switcher::PROXY_SWITCHER.enable_unit_file() {
+            if proxy_switcher::PROXY_SWITCHER.disable_unit_file() {
                 proxy_call!(
                     disable_unit_files_with_flags,
                     &[unit_file],

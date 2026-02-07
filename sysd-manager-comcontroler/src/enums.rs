@@ -246,6 +246,10 @@ impl EnablementStatus {
                 | EnablementStatus::EnabledRuntime
         )
     }
+
+    pub fn has_status(&self) -> bool {
+        !matches!(self, EnablementStatus::Unknown)
+    }
 }
 
 impl Display for EnablementStatus {
