@@ -3,10 +3,8 @@ use super::*;
 use crate::{
     SystemdUnitFile,
     enums::{DependencyType, StartStopMode},
-    sysdbus::dbus_proxies::systemd_manager,
 };
 use test_base::{TEST_SERVICE, init_logs};
-use tokio::net::TcpStream;
 use zvariant::Value;
 
 #[ignore = "need a connection to a service"]
@@ -32,7 +30,6 @@ async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
     init_logs();
 
     let level = UnitDBusLevel::System;
-    let connection = get_connection(level).await?;
     let unit_files = fill_list_unit_files(level).await?;
 
     info!("Unit file returned {}", unit_files.len());
@@ -50,13 +47,7 @@ async fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
 async fn test_list_unit_files_remote() -> Result<(), SystemdErrors> {
     init_logs();
 
-    let stream = TcpStream::connect("192.168.0.114:22").await?;
     // let stream = UnixStream::connect("plr@192.168.0.114").await?;
-    let connection = zbus::connection::Builder::tcp_stream(stream)
-        .auth_mechanism(zbus::AuthMechanism::External)
-        .build()
-        .await?;
-
     let level = UnitDBusLevel::System;
     let unit_files = fill_list_unit_files(level).await?;
 
@@ -92,37 +83,61 @@ async fn test_list_unit_files_system_raw() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-/* fn list_unit_files_user_test(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
-    let units = list_unit_files(&get_connection(level)?, level)?;
-
-    info!("Unit file returned {}", units.len());
-
-    Ok(units)
-}
-
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_list_unit_files_user() -> Result<(), SystemdErrors> {
-    init();
-    let units = list_unit_files_user_test(UnitDBusLevel::UserSession)?;
+#[tokio::test]
+async fn test_list_units_by_patterns() -> Result<(), SystemdErrors> {
+    init_logs();
 
-    info!("Unit file returned {}", units.len());
-    let serv = units.iter().find(|ud| ud.full_name == TEST_SERVICE);
+    let array: Vec<LUnit> = systemd_manager_async(UnitDBusLevel::System)
+        .await?
+        .list_units_by_patterns(&["active", "inactive"], &["*.timer"])
+        .await?;
 
-    debug!("{serv:#?}");
+    for (idx, loaded_unit) in array.iter().enumerate() {
+        debug!(
+            "{idx} - {} - {}",
+            loaded_unit.primary_unit_name, loaded_unit.load_state
+        );
+    }
+
     Ok(())
 }
 
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_list_units_late_filter_timer() -> Result<(), SystemdErrors> {
+    init_logs();
+
+    let array: Vec<LUnit> = systemd_manager_async(UnitDBusLevel::System)
+        .await?
+        .list_units()
+        .await?;
+
+    for (idx, loaded_unit) in array
+        .iter()
+        .filter(|lunit| lunit.primary_unit_name.ends_with("timer"))
+        .enumerate()
+    {
+        debug!(
+            "{idx} - {} - {}",
+            loaded_unit.primary_unit_name, loaded_unit.active_state
+        );
+    }
+
+    Ok(())
+}
+
+/*
 #[ignore = "need a connection to a service"]
 #[test]
 fn test_list_unit_files_system() -> Result<(), SystemdErrors> {
-    init();
-    let units = list_unit_files_user_test(UnitDBusLevel::System)?;
+init();
+let units = list_unit_files_user_test(UnitDBusLevel::System)?;
 
-    let serv = units.iter().find(|ud| ud.full_name == TEST_SERVICE);
+let serv = units.iter().find(|ud| ud.full_name == TEST_SERVICE);
 
-    debug!("{serv:#?}");
-    Ok(())
+debug!("{serv:#?}");
+Ok(())
 } */
 
 /*
@@ -371,8 +386,6 @@ async fn test_get_unit_list_user() -> Result<(), SystemdErrors> {
 async fn get_unit_file_list_test(
     level: UnitDBusLevel,
 ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
-    let connection = get_connection(level).await?;
-
     let r = fill_list_unit_files(level).await?;
 
     info!("Returned units count: {}", r.len());
