@@ -36,7 +36,7 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 use crate::{CompleteUnitPropertiesCallParams, sysdbus::dbus_proxies::systemd_manager_async};
 use crate::{
     Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
-    data::{LUnit, UnitInfo},
+    data::{ListedLoadedUnit, UnitInfo},
     enums::{
         ActiveState, DependencyType, EnablementStatus, KillWho, LoadState, StartStopMode, UnitType,
     },
@@ -77,9 +77,18 @@ const METHOD_LINK_UNIT_FILES: &str = "LinkUnitFiles";
 const METHOD_REENABLE_UNIT_FILES: &str = "ReenableUnitFiles";
 
 #[derive(Deserialize, Type, PartialEq, Debug)]
-struct LUnitFiles {
-    primary_unit_name: String,
-    enablement_status: String,
+pub struct ListedUnitFile {
+    pub unit_file_path: String,
+    pub enablement_status: String,
+}
+impl ListedUnitFile {
+    pub fn unit_primary_name(&self) -> &str {
+        let Some((_prefix, full_name)) = self.unit_file_path.rsplit_once('/') else {
+            error!("MALFORMED rsplit_once(\"/\") {:?}", self.unit_file_path,);
+            return &self.unit_file_path;
+        };
+        full_name
+    }
 }
 
 pub static BLK_CON_SYST: RwLock<Option<Connection>> = RwLock::new(None);
@@ -245,7 +254,9 @@ async fn build_connection(level: UnitDBusLevel) -> Result<zbus::Connection, Syst
     Ok(connection)
 }
 
-async fn list_units_list_async(connection: zbus::Connection) -> Result<Vec<LUnit>, SystemdErrors> {
+async fn list_units_list_async(
+    connection: zbus::Connection,
+) -> Result<Vec<ListedLoadedUnit>, SystemdErrors> {
     let message = call_method_async(
         &connection,
         DESTINATION_SYSTEMD,
@@ -258,7 +269,7 @@ async fn list_units_list_async(connection: zbus::Connection) -> Result<Vec<LUnit
 
     let body = message.body();
 
-    let array: Vec<LUnit> = body.deserialize()?;
+    let array: Vec<ListedLoadedUnit> = body.deserialize()?;
 
     Ok(array)
 }
@@ -356,7 +367,7 @@ pub async fn get_unit_file_state_async(
 
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
-) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
+) -> Result<(Vec<ListedLoadedUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
     let t1 = tokio::spawn(systemd_manager_async(level).await?.list_units());
     let t2 = tokio::spawn(fill_list_unit_files(level));
 
@@ -376,7 +387,12 @@ pub async fn complete_unit_information(
         let connection = get_connection(params.level).await?;
 
         let f2 = get_unit_file_state_async(&connection, &params.unit_name, params.status);
-        let f1 = complete_unit_info(&connection, &params.unit_name, &params.object_path);
+        let f1 = complete_unit_info(
+            &connection,
+            &params.unit_name,
+            params.level,
+            &params.object_path,
+        );
 
         let (r1, r2) = tokio::join!(f1, f2);
 
@@ -413,6 +429,7 @@ macro_rules! fill_completing_info {
 async fn complete_unit_info(
     connection: &zbus::Connection,
     unit_primary: &str,
+    level: UnitDBusLevel,
     object_path: &str,
 ) -> Result<UpdatedUnitInfo, SystemdErrors> {
     let unit_info_proxy = ZUnitInfoProxy::builder(connection)
@@ -420,7 +437,7 @@ async fn complete_unit_info(
         .build()
         .await?;
 
-    let mut update = UpdatedUnitInfo::new(unit_primary.to_owned());
+    let mut update = UpdatedUnitInfo::new(unit_primary.to_owned(), level);
 
     if let Err(error) = fill_update(unit_info_proxy, &mut update).await {
         debug!("Complete info Error: {error:?}");
@@ -455,7 +472,9 @@ async fn fill_update(
     Ok(())
 }
 
-async fn fill_list_unit_files(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
+pub async fn fill_list_unit_files(
+    level: UnitDBusLevel,
+) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     let fetched_unit_files = systemd_manager_async(level)
         .await?
         .list_unit_files()
@@ -464,10 +483,10 @@ async fn fill_list_unit_files(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFil
     let mut systemd_units: Vec<SystemdUnitFile> = Vec::with_capacity(fetched_unit_files.len());
 
     for unit_file in fetched_unit_files.into_iter() {
-        let Some((_prefix, full_name)) = unit_file.primary_unit_name.rsplit_once('/') else {
+        let Some((_prefix, full_name)) = unit_file.unit_file_path.rsplit_once('/') else {
             error!(
                 "MALFORMED rsplit_once(\"/\") {:?}",
-                unit_file.primary_unit_name,
+                unit_file.unit_file_path,
             );
             continue;
         };
@@ -479,7 +498,7 @@ async fn fill_list_unit_files(level: UnitDBusLevel) -> Result<Vec<SystemdUnitFil
             full_name: full_name.to_owned(),
             status_code,
             level,
-            file_path: unit_file.primary_unit_name,
+            file_path: unit_file.unit_file_path,
         });
     }
 
@@ -1088,7 +1107,7 @@ pub fn fetch_unit(
     let sub_state = properties_proxy.sub_state().unwrap_or_default();
     let followed_unit = properties_proxy.following().unwrap_or_default();
 
-    let listed_unit = LUnit {
+    let listed_unit = ListedLoadedUnit {
         primary_unit_name: primary,
         description,
         load_state,

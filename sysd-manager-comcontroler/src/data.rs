@@ -1,6 +1,8 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use super::{SystemdUnitFile, UpdatedUnitInfo};
+use crate::sysdbus::ListedUnitFile;
+
+use super::UpdatedUnitInfo;
 
 use base::enums::UnitDBusLevel;
 use glib::{self, subclass::types::ObjectSubclassIsExt};
@@ -12,19 +14,8 @@ glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
 }
 
-// impl Default for UnitInfo {
-//     fn default() -> Self {
-//         UnitInfo::new()
-//     }
-// }
-
 impl UnitInfo {
-    // fn new() -> Self {
-    //     let this_object: Self = glib::Object::new();
-    //     this_object
-    // }
-
-    pub fn from_listed_unit(listed_unit: LUnit, level: UnitDBusLevel) -> Self {
+    pub fn from_listed_unit(listed_unit: ListedLoadedUnit, level: UnitDBusLevel) -> Self {
         // let this_object: Self = glib::Object::new();
         let this_object: Self = glib::Object::builder()
             .property("primary", &listed_unit.primary_unit_name)
@@ -34,20 +25,24 @@ impl UnitInfo {
         this_object
     }
 
-    pub fn from_unit_file(unit_file: SystemdUnitFile) -> Self {
+    pub fn from_unit_file(unit_file: ListedUnitFile, level: UnitDBusLevel) -> Self {
         // let this_object: Self = glib::Object::new();
         let this_object: Self = glib::Object::builder()
-            .property("primary", &unit_file.full_name)
+            .property("primary", unit_file.unit_primary_name())
             .build();
-        this_object.imp().init_from_unit_file(unit_file);
+        this_object.imp().init_from_unit_file(unit_file, level);
         this_object
+    }
+
+    pub fn update_from_listed_unit(&self, listed_unit: ListedLoadedUnit) {
+        self.imp().update_from_listed_unit(listed_unit);
     }
 
     pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
         self.imp().update_from_unit_info(update);
     }
 
-    pub fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
+    pub fn update_from_unit_file(&self, unit_file: ListedUnitFile) {
         self.imp().update_from_unit_file(unit_file);
     }
 
@@ -61,7 +56,10 @@ impl UnitInfo {
 }
 
 mod imp {
-    use std::cell::{Cell, OnceCell, RefCell};
+    use std::{
+        cell::{Cell, OnceCell, RefCell},
+        str::FromStr,
+    };
 
     use base::enums::UnitDBusLevel;
     use glib::{
@@ -71,8 +69,10 @@ mod imp {
     };
 
     use crate::{
-        SystemdUnitFile, UpdatedUnitInfo,
+        UpdatedUnitInfo,
+        data::ListedLoadedUnit,
         enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitType},
+        sysdbus::ListedUnitFile,
     };
 
     #[derive(Debug, glib::Properties, Default)]
@@ -133,9 +133,14 @@ mod imp {
     impl UnitInfoImpl {
         pub(super) fn init_from_listed_unit(
             &self,
-            listed_unit: super::LUnit,
+            listed_unit: super::ListedLoadedUnit,
             dbus_level: UnitDBusLevel,
         ) {
+            self.dbus_level.replace(dbus_level);
+            self.update_from_listed_unit(listed_unit);
+        }
+
+        pub(super) fn update_from_listed_unit(&self, listed_unit: ListedLoadedUnit) {
             let active_state: ActiveState = listed_unit.active_state.as_str().into();
 
             //self.set_primary(listed_unit.primary_unit_name);
@@ -152,22 +157,18 @@ mod imp {
             self.load_state.replace(load_state);
             self.sub_state.replace(listed_unit.sub_state);
             self.followed_unit.replace(listed_unit.followed_unit);
-            // let unit_object_path = Some(listed_unit.unit_object_path.to_string());
-            // self.object_path.replace(unit_object_path);
-            self.dbus_level.replace(dbus_level);
         }
 
-        pub(super) fn init_from_unit_file(&self, unit_file: SystemdUnitFile) {
-            // self.set_primary(unit_file.full_name);
-            //self.set_active_state(ActiveState::Unknown);
-            self.dbus_level.replace(unit_file.level);
-            self.file_path.replace(Some(unit_file.file_path));
-            self.enable_status.replace(unit_file.status_code);
+        pub(super) fn init_from_unit_file(&self, unit_file: ListedUnitFile, level: UnitDBusLevel) {
+            self.dbus_level.replace(level);
+            self.update_from_unit_file(unit_file)
         }
 
-        pub(super) fn update_from_unit_file(&self, unit_file: SystemdUnitFile) {
-            self.file_path.replace(Some(unit_file.file_path));
-            self.enable_status.replace(unit_file.status_code);
+        pub(super) fn update_from_unit_file(&self, unit_file: ListedUnitFile) {
+            self.file_path.replace(Some(unit_file.unit_file_path));
+            let status = EnablementStatus::from_str(&unit_file.enablement_status)
+                .unwrap_or(EnablementStatus::default());
+            self.enable_status.replace(status);
         }
 
         fn set_primary(&self, primary: String) {
@@ -272,7 +273,7 @@ impl PartialOrd for UnitProcess {
 }
 
 #[derive(Deserialize, zvariant::Type, PartialEq, Debug)]
-pub struct LUnit {
+pub struct ListedLoadedUnit {
     pub primary_unit_name: String,
     pub description: String,
     pub load_state: String,

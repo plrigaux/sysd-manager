@@ -10,9 +10,9 @@ use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
 use crate::{
-    data::LUnit,
+    data::ListedLoadedUnit,
     errors::SystemdErrors,
-    sysdbus::{LUnitFiles, get_blocking_connection, get_connection},
+    sysdbus::{ListedUnitFile, get_blocking_connection, get_connection},
 };
 
 #[proxy(
@@ -130,20 +130,20 @@ pub(crate) trait Systemd1Manager {
         flags: u64,
     ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
 
-    fn list_units(&self) -> Result<Vec<LUnit>, zbus::Error>;
-    fn list_units_filtered(&self, states: &[&str]) -> Result<Vec<LUnit>, zbus::Error>;
+    fn list_units(&self) -> Result<Vec<ListedLoadedUnit>, zbus::Error>;
+    fn list_units_filtered(&self, states: &[&str]) -> Result<Vec<ListedLoadedUnit>, zbus::Error>;
     fn list_units_by_patterns(
         &self,
         states: &[&str],
         patterns: &[&str],
-    ) -> Result<Vec<LUnit>, zbus::Error>;
-    fn list_units_by_names(&self, names: &[&str]) -> Result<Vec<LUnit>, zbus::Error>;
-    fn list_unit_files(&self) -> Result<Vec<LUnitFiles>, zbus::Error>;
+    ) -> Result<Vec<ListedLoadedUnit>, zbus::Error>;
+    fn list_units_by_names(&self, names: &[&str]) -> Result<Vec<ListedLoadedUnit>, zbus::Error>;
+    fn list_unit_files(&self) -> Result<Vec<ListedUnitFile>, zbus::Error>;
     fn list_unit_files_by_patterns(
         &self,
         states: &[&str],
         patterns: &[&str],
-    ) -> Result<Vec<LUnitFiles>, zbus::Error>;
+    ) -> Result<Vec<ListedUnitFile>, zbus::Error>;
 }
 
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();

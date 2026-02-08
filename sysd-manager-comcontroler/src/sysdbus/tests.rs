@@ -68,7 +68,7 @@ async fn test_list_unit_files_system_raw() -> Result<(), SystemdErrors> {
 
     let level = UnitDBusLevel::System;
 
-    let array: Vec<LUnitFiles> = systemd_manager_async(level)
+    let array: Vec<ListedUnitFile> = systemd_manager_async(level)
         .await?
         .list_unit_files()
         .await?;
@@ -76,7 +76,7 @@ async fn test_list_unit_files_system_raw() -> Result<(), SystemdErrors> {
     for (idx, unit_file) in array.iter().enumerate() {
         debug!(
             "{idx} - {} - {}",
-            unit_file.enablement_status, unit_file.primary_unit_name
+            unit_file.enablement_status, unit_file.unit_file_path
         );
     }
 
@@ -88,7 +88,7 @@ async fn test_list_unit_files_system_raw() -> Result<(), SystemdErrors> {
 async fn test_list_units_by_patterns() -> Result<(), SystemdErrors> {
     init_logs();
 
-    let array: Vec<LUnit> = systemd_manager_async(UnitDBusLevel::System)
+    let array: Vec<ListedLoadedUnit> = systemd_manager_async(UnitDBusLevel::System)
         .await?
         .list_units_by_patterns(&["active", "inactive"], &["*.timer"])
         .await?;
@@ -108,7 +108,7 @@ async fn test_list_units_by_patterns() -> Result<(), SystemdErrors> {
 async fn test_list_units_late_filter_timer() -> Result<(), SystemdErrors> {
     init_logs();
 
-    let array: Vec<LUnit> = systemd_manager_async(UnitDBusLevel::System)
+    let array: Vec<ListedLoadedUnit> = systemd_manager_async(UnitDBusLevel::System)
         .await?
         .list_units()
         .await?;
@@ -357,7 +357,7 @@ fn test_get_unit_active_state() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-async fn get_unit_list_test(level: UnitDBusLevel) -> Result<Vec<LUnit>, SystemdErrors> {
+async fn get_unit_list_test(level: UnitDBusLevel) -> Result<Vec<ListedLoadedUnit>, SystemdErrors> {
     let connection = get_connection(level).await?;
 
     let r = list_units_list_async(connection).await?;

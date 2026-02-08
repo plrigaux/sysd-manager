@@ -154,7 +154,7 @@ pub fn get_clean_col_title(title: &str) -> String {
 pub enum UnitListView {
     #[default]
     Defaut,
-    ActiveUnit,
+    LoadedUnit,
     UnitFiles,
     Timers,
     Sockets,
@@ -190,7 +190,7 @@ impl UnitListView {
                 //List view
                 pgettext("menu", "Default")
             }
-            UnitListView::ActiveUnit => {
+            UnitListView::LoadedUnit => {
                 //List view
                 pgettext("menu", "Active Units")
             }
@@ -227,7 +227,7 @@ impl UnitListView {
     fn win_action_it(&self) -> &str {
         match self {
             UnitListView::Defaut => "win.default_unit_list_view",
-            UnitListView::ActiveUnit => "win.active_unit_list_view",
+            UnitListView::LoadedUnit => "win.active_unit_list_view",
             UnitListView::UnitFiles => "win.unit_file_unit_list_view",
             UnitListView::Timers => "win.timers_unit_list_view",
             UnitListView::Sockets => "win.sockets_unit_list_view",
@@ -285,7 +285,7 @@ mod tests {
     #[test]
     fn test_id_extracts_correct_substring() {
         assert_eq!(UnitListView::Defaut.id(), "default");
-        assert_eq!(UnitListView::ActiveUnit.id(), "active");
+        assert_eq!(UnitListView::LoadedUnit.id(), "active");
         assert_eq!(UnitListView::UnitFiles.id(), "unit_file");
         assert_eq!(UnitListView::Timers.id(), "timers");
         assert_eq!(UnitListView::Sockets.id(), "sockets");

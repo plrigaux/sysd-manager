@@ -24,7 +24,10 @@ use crate::{
     enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
     file::save_text_to_file,
     journal_data::Boot,
-    sysdbus::dbus_proxies::{systemd_manager, systemd_manager_async},
+    sysdbus::{
+        ListedUnitFile,
+        dbus_proxies::{systemd_manager, systemd_manager_async},
+    },
     time_handling::TimestampStyle,
 };
 
@@ -47,7 +50,7 @@ use log::{error, info, warn};
 use tokio::{runtime::Runtime, sync::mpsc};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-use crate::data::LUnit;
+use crate::data::ListedLoadedUnit;
 
 #[derive(Default, Clone, PartialEq, Debug)]
 pub enum BootFilter {
@@ -78,12 +81,14 @@ pub struct UpdatedUnitInfo {
     pub valid_unit_name: bool,
     pub fragment_path: Option<String>,
     pub enablement_status: Option<EnablementStatus>,
+    pub level: UnitDBusLevel,
 }
 
 impl UpdatedUnitInfo {
-    fn new(primary: String) -> Self {
+    fn new(primary: String, level: UnitDBusLevel) -> Self {
         Self {
             primary,
+            level,
             ..Default::default()
         }
     }
@@ -167,12 +172,43 @@ pub fn get_unit_file_state(
 
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
-) -> Result<(Vec<LUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
+) -> Result<(Vec<ListedLoadedUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
     sysdbus::list_units_description_and_state_async(level).await
 }
 
-pub async fn list_loaded_units(level: UnitDBusLevel) -> Result<Vec<LUnit>, SystemdErrors> {
-    Ok(systemd_manager_async(level).await?.list_units().await?)
+#[derive(Debug)]
+pub enum ListUnitResponse {
+    Loaded(UnitDBusLevel, Vec<ListedLoadedUnit>),
+    File(UnitDBusLevel, Vec<ListedUnitFile>),
+}
+
+impl ListUnitResponse {
+    pub fn r_len(&self) -> (usize, usize) {
+        match self {
+            ListUnitResponse::Loaded(_, items) => (items.len(), 0),
+            ListUnitResponse::File(_, items) => (0, items.len()),
+        }
+    }
+
+    pub fn t_len(&self) -> usize {
+        match self {
+            ListUnitResponse::Loaded(_, lunits) => lunits.len(),
+            ListUnitResponse::File(_, items) => items.len(),
+        }
+    }
+}
+
+pub async fn list_loaded_units(level: UnitDBusLevel) -> Result<ListUnitResponse, SystemdErrors> {
+    let v = systemd_manager_async(level).await?.list_units().await?;
+    Ok(ListUnitResponse::Loaded(level, v))
+}
+
+pub async fn list_unit_files(level: UnitDBusLevel) -> Result<ListUnitResponse, SystemdErrors> {
+    let v = systemd_manager_async(level)
+        .await?
+        .list_unit_files()
+        .await?;
+    Ok(ListUnitResponse::File(level, v))
 }
 
 pub async fn complete_unit_information(
@@ -1028,4 +1064,9 @@ pub async fn revert_unit_file_full(
             .await
             .map_err(|err| err.into())
     }
+}
+pub async fn fill_list_unit_files(
+    level: UnitDBusLevel,
+) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
+    sysdbus::fill_list_unit_files(level).await
 }

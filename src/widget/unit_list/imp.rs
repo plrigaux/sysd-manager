@@ -6,6 +6,7 @@ pub mod pop_menu;
 use std::{
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
     collections::{HashMap, HashSet},
+    hash::Hasher,
     rc::Rc,
     time::Duration,
 };
@@ -13,10 +14,8 @@ use std::{
 use crate::{
     consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
     systemd::{
-        SystemdUnitFile,
         data::{UnitInfo, convert_to_string},
         enums::{LoadState, UnitType},
-        errors::SystemdErrors,
     },
     systemd_gui, upgrade,
     widget::{
@@ -63,13 +62,15 @@ use gtk::{
         },
     },
 };
-use log::{debug, error, info, warn};
+use std::hash::Hash;
 use strum::IntoEnumIterator;
-use systemd::CompleteUnitPropertiesCallParams;
+use systemd::{CompleteUnitPropertiesCallParams, ListUnitResponse};
+use tracing::{debug, error, info, warn};
 use zvariant::{OwnedValue, Value};
 
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct UnitKey {
     level: UnitDBusLevel,
     primary: String,
@@ -77,11 +78,92 @@ struct UnitKey {
 
 impl UnitKey {
     fn new(unit: &UnitInfo) -> Self {
-        Self::new2(unit.dbus_level(), unit.primary())
+        Self::new_string(unit.dbus_level(), unit.primary())
     }
 
-    fn new2(level: UnitDBusLevel, primary: String) -> Self {
+    fn new_string(level: UnitDBusLevel, primary: String) -> Self {
         UnitKey { level, primary }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+struct UnitKeyRef<'a> {
+    level: UnitDBusLevel,
+    primary: &'a str,
+}
+
+trait AsKeyRef {
+    fn as_key_ref(&self) -> UnitKeyRef<'_>;
+}
+
+impl AsKeyRef for UnitKey {
+    fn as_key_ref(&self) -> UnitKeyRef<'_> {
+        UnitKeyRef {
+            level: self.level,
+            primary: self.primary.as_str(),
+        }
+    }
+}
+
+impl<'a> AsKeyRef for UnitKeyRef<'a> {
+    fn as_key_ref(&self) -> UnitKeyRef<'_> {
+        *self
+    }
+}
+
+impl<'a> PartialEq for dyn AsKeyRef + 'a {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_key_ref() == other.as_key_ref()
+    }
+}
+
+impl<'a> Eq for dyn AsKeyRef + 'a {}
+
+impl<'a> Hash for dyn AsKeyRef + 'a {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_key_ref().hash(state);
+    }
+}
+
+impl Hash for UnitKey {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_key_ref().hash(state);
+    }
+}
+
+impl<'a> std::borrow::Borrow<dyn AsKeyRef + 'a> for UnitKey {
+    fn borrow(&self) -> &(dyn AsKeyRef + 'a) {
+        self
+    }
+}
+
+// impl<'a> AsKeyRef for UnitKeyRef<'a> {
+//     fn as_key_ref(&self) -> KeyRef<'_> {
+//         match self {
+//             &Key::String(ref s) => KeyRef::String(s.as_str()),
+//             &Key::Bytes(ref b) => KeyRef::Bytes(&*b),
+//         }
+//     }
+// }
+impl<'a> UnitKeyRef<'a> {
+    fn new(level: UnitDBusLevel, primary: &'a str) -> Self {
+        UnitKeyRef { level, primary }
+    }
+
+    fn key(self) -> UnitKey {
+        UnitKey::new_string(self.level, self.primary.to_owned())
+    }
+}
+
+impl<'a> PartialEq<UnitKey> for UnitKeyRef<'a> {
+    fn eq(&self, other: &UnitKey) -> bool {
+        self.level == other.level && self.primary == other.primary
+    }
+}
+
+impl<'a> PartialEq<UnitKeyRef<'a>> for UnitKey {
+    fn eq(&self, other: &UnitKeyRef<'a>) -> bool {
+        self.level == other.level && self.primary == other.primary
     }
 }
 
@@ -380,24 +462,19 @@ impl UnitListPanelImp {
 
         let cols = construct_column_view(self.display_color.get(), view);
         self.set_new_columns(cols);
-        match view {
-            UnitListView::Defaut => self.fill_store_default(),
-            UnitListView::ActiveUnit => self.fill_store_loaded(),
-            UnitListView::UnitFiles => {}
-            UnitListView::Timers => {}
-            UnitListView::Sockets => {}
-            UnitListView::Custom => self.fill_store_default(),
-        }
+
+        self.fill_browser();
     }
 
-    fn fill_store_default(&self) {
+    fn fill_browser(&self) {
         let list_store = self.list_store.get().expect("LIST STORE NOT NONE").clone();
-        let main_unit_map_rc = self.units_map.clone();
+        let main_unit_map_rc: Rc<RefCell<HashMap<UnitKey, UnitInfo>>> = self.units_map.clone();
         let panel_stack = self.panel_stack.clone();
         let single_selection = single_selection!(self).clone();
         let unit_list = self.obj().clone();
         let units_browser = units_browser!(self).clone();
-
+        let view = self.selected_list_view.get();
+        let dbus_level = PREFERENCES.dbus_level();
         let refresh_unit_list_button = upgrade!(self.refresh_unit_list_button);
 
         //Rem sorting before adding lot of items for performance reasons
@@ -405,53 +482,78 @@ impl UnitListPanelImp {
             .borrow()
             .set_sorter(None::<&gtk::Sorter>);
 
-        let dbus_level = PREFERENCES.dbus_level();
-
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
 
-            let Ok((loaded_units_map, unit_from_files)) = go_fetch_data(dbus_level)
-                .await
-                .inspect_err(|err| warn!("Fail fetch unit list {err:?}"))
-            else {
+            let Ok(retrieved_units) = retrieve_unit_list(dbus_level, view).await else {
                 panel_stack.set_visible_child_name("error");
                 return;
             };
 
-            unit_list
-                .imp()
-                .loaded_units_count
-                .set_label(&loaded_units_map.len().to_string());
-            unit_list
-                .imp()
-                .unit_files_number
-                .set_label(&unit_from_files.len().to_string());
+            let (loaded_count, file_count) = retrieved_units.iter().fold((0, 0), |a, b| {
+                let l = b.r_len();
+                (a.0 + l.0, a.1 + l.1)
+            });
+
+            let loaded_count = if loaded_count == 0 {
+                ""
+            } else {
+                &loaded_count.to_string()
+            };
+
+            let file_count = if file_count == 0 {
+                ""
+            } else {
+                &file_count.to_string()
+            };
+
+            unit_list.imp().loaded_units_count.set_label(loaded_count);
+            unit_list.imp().unit_files_number.set_label(file_count);
 
             let n_items = list_store.n_items();
             list_store.remove_all();
-            let mut main_unit_map_rc = main_unit_map_rc.borrow_mut();
-            main_unit_map_rc.clear();
 
-            let mut all_units =
-                HashMap::with_capacity(loaded_units_map.len() + unit_from_files.len());
+            let total = retrieved_units.iter().fold(0, |acc, i| acc + i.t_len());
+            let mut all_units: HashMap<UnitKey, UnitInfo> = HashMap::with_capacity(total);
 
-            for system_unit_file in unit_from_files.into_iter() {
-                if let Some(loaded_unit) = loaded_units_map.get(&system_unit_file.full_name) {
-                    loaded_unit.update_from_unit_file(system_unit_file);
-                } else {
-                    let unit = UnitInfo::from_unit_file(system_unit_file);
-                    list_store.append(&unit);
-                    main_unit_map_rc.insert(UnitKey::new(&unit), unit.clone());
-                    all_units.insert(unit.primary(), unit);
-                }
+            for system_unit_file in retrieved_units.into_iter() {
+                match system_unit_file {
+                    ListUnitResponse::Loaded(level, lunits) => {
+                        for x in lunits.into_iter() {
+                            let key = UnitKeyRef::new(level, &x.primary_unit_name);
+                            match all_units.get(&key as &dyn AsKeyRef) {
+                                Some(unit) => {
+                                    unit.update_from_listed_unit(x);
+                                }
+                                None => {
+                                    let key = key.key();
+                                    let unit = UnitInfo::from_listed_unit(x, level);
+                                    list_store.append(&unit);
+                                    all_units.insert(key, unit);
+                                }
+                            }
+                        }
+                    }
+                    ListUnitResponse::File(level, items) => {
+                        for x in items {
+                            let key = UnitKeyRef::new(level, x.unit_primary_name());
+                            match all_units.get(&key as &dyn AsKeyRef) {
+                                Some(unit) => {
+                                    unit.update_from_unit_file(x);
+                                }
+                                None => {
+                                    let key = key.key();
+                                    let unit = UnitInfo::from_unit_file(x, level);
+                                    list_store.append(&unit);
+                                    all_units.insert(key, unit);
+                                }
+                            }
+                        }
+                    }
+                };
             }
-
-            for unit in loaded_units_map.into_values() {
-                list_store.append(&unit);
-                main_unit_map_rc.insert(UnitKey::new(&unit), unit.clone());
-                all_units.insert(unit.primary(), unit);
-            }
+            main_unit_map_rc.replace(all_units);
 
             // The sort function needs to be the same of the  first column sorter
             let sort_func = construct::column_filter_lambda!(primary, dbus_level);
@@ -507,7 +609,8 @@ impl UnitListPanelImp {
 
                 let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
-                let to_complete_list: Vec<CompleteUnitPropertiesCallParams> = all_units
+                let to_complete_list: Vec<CompleteUnitPropertiesCallParams> = main_unit_map_rc
+                    .borrow()
                     .values()
                     .filter(|unit| unit.need_to_be_completed())
                     .map(CompleteUnitPropertiesCallParams::new)
@@ -530,113 +633,15 @@ impl UnitListPanelImp {
 
                 while let Some(updates) = receiver.recv().await {
                     for update in updates {
-                        let Some(unit) = all_units.get(&update.primary) else {
-                            continue;
-                        };
+                        let key = UnitKeyRef::new(update.level, &update.primary);
 
-                        unit.update_from_unit_info(update);
+                        if let Some(unit) = main_unit_map_rc.borrow().get(&key as &dyn AsKeyRef) {
+                            unit.update_from_unit_info(update);
+                        };
                     }
                 }
                 unit_list.imp().fetch_custom_unit_properties();
             });
-            //unit_list.imp().fetch_custom_unit_properties();
-        });
-    }
-
-    fn fill_store_loaded(&self) {
-        let list_store = self.list_store.get().expect("LIST STORE NOT NONE").clone();
-        let main_unit_map_rc = self.units_map.clone();
-        let panel_stack = self.panel_stack.clone();
-        let single_selection = single_selection!(self).clone();
-        let unit_list_panel = self.obj().clone();
-        let units_browser = units_browser!(self).clone();
-
-        let refresh_unit_list_button = upgrade!(self.refresh_unit_list_button);
-
-        //Rem sorting before adding lot of items for performance reasons
-        self.unit_list_sort_list_model
-            .borrow()
-            .set_sorter(None::<&gtk::Sorter>);
-
-        let dbus_level = PREFERENCES.dbus_level();
-
-        glib::spawn_future_local(async move {
-            refresh_unit_list_button.set_sensitive(false);
-            panel_stack.set_visible_child_name("spinner");
-
-            let loaded_units_map = match go_fetch_data_loaded(dbus_level).await {
-                Ok(value) => value,
-                Err(err) => {
-                    warn!("Fail fetch unit list {err:?}");
-                    panel_stack.set_visible_child_name("error");
-                    return;
-                }
-            };
-
-            unit_list_panel
-                .imp()
-                .loaded_units_count
-                .set_label(&loaded_units_map.len().to_string());
-            unit_list_panel.imp().unit_files_number.set_label("");
-
-            let n_items = list_store.n_items();
-            list_store.remove_all();
-            let mut main_unit_map_rc = main_unit_map_rc.borrow_mut();
-            main_unit_map_rc.clear();
-
-            for unit in loaded_units_map.into_values() {
-                list_store.append(&unit);
-                main_unit_map_rc.insert(UnitKey::new(&unit), unit.clone());
-            }
-
-            // The sort function needs to be the same of the  first column sorter
-            let sort_func = construct::column_filter_lambda!(primary, dbus_level);
-
-            list_store.sort(sort_func);
-
-            info!("Unit list refreshed! list size {}", list_store.n_items());
-
-            let mut force_selected_index = gtk::INVALID_LIST_POSITION;
-
-            let selected_unit = unit_list_panel.imp().selected_unit();
-            if let Some(selected_unit) = selected_unit {
-                let selected_unit_name = selected_unit.primary();
-
-                debug!(
-                    "LS items-n {} name {}",
-                    list_store.n_items(),
-                    selected_unit_name
-                );
-
-                if let Some(index) = list_store.find_with_equal_func(|object| {
-                    let unit = object
-                        .downcast_ref::<UnitInfo>()
-                        .expect("Needs to be UnitInfo");
-
-                    unit.primary().eq(&selected_unit_name)
-                }) {
-                    info!(
-                        "Force selection to index {index:?} to select unit {selected_unit_name:?}"
-                    );
-                    single_selection.select_item(index, true);
-                    //unit_list.set_force_to_select(index);
-                    force_selected_index = index;
-                }
-            }
-            debug!("IM HERRE");
-            unit_list_panel
-                .imp()
-                .force_selected_index
-                .set(Some(force_selected_index));
-            refresh_unit_list_button.set_sensitive(true);
-            unit_list_panel.imp().set_sorter();
-
-            //cause no scrollwindow v adjustment
-            if n_items > 0 {
-                focus_on_row(&unit_list_panel, &units_browser);
-            }
-            panel_stack.set_visible_child_name("unit_list");
-
             //unit_list.imp().fetch_custom_unit_properties();
         });
     }
@@ -1224,7 +1229,10 @@ impl UnitListPanelImp {
                     }
 
                     if let Err(err) = sender
-                        .send((UnitKey::new2(level, primary_name), property_value_list))
+                        .send((
+                            UnitKey::new_string(level, primary_name),
+                            property_value_list,
+                        ))
                         .await
                     {
                         error!("The channel needs to be open. {err:?}");
@@ -1642,169 +1650,82 @@ async fn call_complete_unit(
         .expect("The channel needs to be open.");
 }
 
-async fn go_fetch_data(
+async fn retrieve_unit_list(
     int_level: DbusLevel,
-) -> Result<(HashMap<String, UnitInfo>, Vec<SystemdUnitFile>), SystemdErrors> {
-    match int_level {
-        DbusLevel::SystemAndSession => {
-            let level_syst = UnitDBusLevel::System;
-            let level_user = UnitDBusLevel::UserSession;
+    view: UnitListView,
+) -> Result<Vec<ListUnitResponse>, bool> {
+    let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
+    systemd::runtime().spawn(async move {
+        let mut handles = Vec::with_capacity(4);
 
-            let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
-            let (sender_user, receiver_user) = tokio::sync::oneshot::channel();
-
-            systemd::runtime().spawn(async move {
-                let t_syst =
-                    tokio::spawn(systemd::list_units_description_and_state_async(level_syst));
-                let t_user =
-                    tokio::spawn(systemd::list_units_description_and_state_async(level_user));
-
-                let joined = tokio::join!(t_syst, t_user);
-
-                sender_syst
-                    .send(joined.0)
-                    .expect("The channel needs to be open.");
-                sender_user
-                    .send(joined.1)
-                    .expect("The channel needs to be open.");
-            });
-
-            let (loaded_unit_system, mut unit_file_system) =
-                receiver_syst.await.expect("Tokio receiver works")??;
-            let (loaded_unit_user, mut unit_file_user) =
-                receiver_user.await.expect("Tokio receiver works")??;
-
-            let mut hmap =
-                HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
-
-            for listed_unit in loaded_unit_user.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
-                hmap.insert(unit.primary(), unit);
+        if matches!(
+            view,
+            UnitListView::Defaut | UnitListView::Custom | UnitListView::LoadedUnit
+        ) {
+            if matches!(int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
+                handles.push(tokio::spawn(systemd::list_loaded_units(
+                    UnitDBusLevel::System,
+                )));
             }
 
-            for listed_unit in loaded_unit_system.into_iter() {
-                let level = if let Some(_old_unit) = hmap.get(&listed_unit.primary_unit_name) {
-                    UnitDBusLevel::Both
-                } else {
-                    level_syst
-                };
-
-                let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                hmap.insert(unit.primary(), unit);
+            if matches!(
+                int_level,
+                DbusLevel::UserSession | DbusLevel::SystemAndSession
+            ) {
+                handles.push(tokio::spawn(systemd::list_loaded_units(
+                    UnitDBusLevel::UserSession,
+                )));
             }
-
-            unit_file_system.append(&mut unit_file_user);
-            Ok((hmap, unit_file_system))
         }
 
-        dlevel => {
-            let level: UnitDBusLevel = if dlevel == DbusLevel::System {
-                UnitDBusLevel::System
-            } else {
-                UnitDBusLevel::UserSession
+        if matches!(
+            view,
+            UnitListView::Defaut | UnitListView::Custom | UnitListView::UnitFiles
+        ) {
+            if matches!(int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
+                handles.push(tokio::spawn(systemd::list_unit_files(
+                    UnitDBusLevel::System,
+                )));
+            }
+
+            if matches!(
+                int_level,
+                DbusLevel::UserSession | DbusLevel::SystemAndSession
+            ) {
+                handles.push(tokio::spawn(systemd::list_unit_files(
+                    UnitDBusLevel::UserSession,
+                )));
+            }
+        }
+
+        let mut results = Vec::with_capacity(handles.len());
+        let mut error = false;
+        for handle in handles {
+            let Ok(r) = handle
+                .await
+                .inspect_err(|err| warn!("Unit List Join Error: {err:?}"))
+            else {
+                error = true;
+                continue;
             };
 
-            let (sender, receiver) = tokio::sync::oneshot::channel();
-
-            systemd::runtime().spawn(async move {
-                // let response = systemd::list_units_description_and_state_async().await;
-
-                let response = systemd::list_units_description_and_state_async(level).await;
-                sender
-                    .send(response)
-                    .expect("The channel needs to be open.");
-            });
-
-            let (loaded_unit, unit_files) = receiver.await.expect("Tokio receiver works")?;
-
-            let mut hmap = HashMap::with_capacity(loaded_unit.len());
-            for listed_unit in loaded_unit.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                hmap.insert(unit.primary(), unit);
-            }
-            Ok((hmap, unit_files))
-        }
-    }
-}
-
-async fn go_fetch_data_loaded(
-    int_level: DbusLevel,
-) -> Result<HashMap<String, UnitInfo>, SystemdErrors> {
-    match int_level {
-        DbusLevel::SystemAndSession => {
-            let level_syst = UnitDBusLevel::System;
-            let level_user = UnitDBusLevel::UserSession;
-
-            let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
-            let (sender_user, receiver_user) = tokio::sync::oneshot::channel();
-
-            systemd::runtime().spawn(async move {
-                let t_syst = tokio::spawn(systemd::list_loaded_units(level_syst));
-                let t_user = tokio::spawn(systemd::list_loaded_units(level_user));
-
-                let joined = tokio::join!(t_syst, t_user);
-
-                sender_syst
-                    .send(joined.0)
-                    .expect("The channel needs to be open.");
-                sender_user
-                    .send(joined.1)
-                    .expect("The channel needs to be open.");
-            });
-
-            let loaded_unit_system = receiver_syst.await.expect("Tokio receiver works")??;
-            let loaded_unit_user = receiver_user.await.expect("Tokio receiver works")??;
-
-            let mut hmap =
-                HashMap::with_capacity(loaded_unit_system.len() + loaded_unit_user.len());
-
-            for listed_unit in loaded_unit_user.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level_user);
-                hmap.insert(unit.primary(), unit);
-            }
-
-            for listed_unit in loaded_unit_system.into_iter() {
-                let level = if let Some(_old_unit) = hmap.get(&listed_unit.primary_unit_name) {
-                    UnitDBusLevel::Both
-                } else {
-                    level_syst
-                };
-
-                let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                hmap.insert(unit.primary(), unit);
-            }
-
-            Ok(hmap)
-        }
-
-        dlevel => {
-            let level: UnitDBusLevel = if dlevel == DbusLevel::System {
-                UnitDBusLevel::System
-            } else {
-                UnitDBusLevel::UserSession
+            let Ok(x) = r.inspect_err(|err| warn!("Unit List Call Error: {err:?}")) else {
+                error = true;
+                continue;
             };
-
-            let (sender, receiver) = tokio::sync::oneshot::channel();
-
-            systemd::runtime().spawn(async move {
-                // let response = systemd::list_units_description_and_state_async().await;
-
-                let response = systemd::list_loaded_units(level).await;
-                sender
-                    .send(response)
-                    .expect("The channel needs to be open.");
-            });
-
-            let loaded_unit = receiver.await.expect("Tokio receiver works")?;
-
-            let mut hmap = HashMap::with_capacity(loaded_unit.len());
-            for listed_unit in loaded_unit.into_iter() {
-                let unit = UnitInfo::from_listed_unit(listed_unit, level);
-                hmap.insert(unit.primary(), unit);
-            }
-            Ok(hmap)
+            results.push(x);
         }
-    }
+
+        let result = if error { Err(error) } else { Ok(results) };
+        sender_syst
+            .send(result)
+            .expect("The channel needs to be open.");
+    });
+
+    receiver_syst.await.unwrap_or_else(|err| {
+        error!("Tokio receiver works, {err:?}");
+        Err(true)
+    })
 }
 
 #[cfg(test)]

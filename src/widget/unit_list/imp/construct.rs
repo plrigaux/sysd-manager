@@ -27,7 +27,7 @@ pub fn construct_column_view(
 
     let default = match view {
         UnitListView::Defaut => default_column_definition_list(display_color),
-        UnitListView::ActiveUnit => generate_loaded_units_columns(display_color),
+        UnitListView::LoadedUnit => generate_loaded_units_columns(display_color),
         UnitListView::UnitFiles => todo!(),
         UnitListView::Timers => todo!(),
         UnitListView::Sockets => todo!(),
