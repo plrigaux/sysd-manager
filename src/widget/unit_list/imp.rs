@@ -1277,7 +1277,11 @@ impl UnitListPanelImp {
                     }
                 });
 
-                construct::set_column_factory_and_sorter(&column, display_color, prop_type);
+                construct::set_column_factory_and_sorter(
+                    &column,
+                    display_color,
+                    prop_type.as_deref(),
+                );
             }
         });
     }
@@ -1650,6 +1654,21 @@ async fn call_complete_unit(
         .expect("The channel needs to be open.");
 }
 
+macro_rules! dbus_call {
+    ($int_level:expr, $handles:expr, $module:ident :: $f:ident) => {{
+        if matches!($int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
+            $handles.push(tokio::spawn($module::$f(UnitDBusLevel::System)));
+        }
+
+        if matches!(
+            $int_level,
+            DbusLevel::UserSession | DbusLevel::SystemAndSession
+        ) {
+            $handles.push(tokio::spawn($module::$f(UnitDBusLevel::UserSession)));
+        }
+    }};
+}
+
 async fn retrieve_unit_list(
     int_level: DbusLevel,
     view: UnitListView,
@@ -1658,23 +1677,16 @@ async fn retrieve_unit_list(
     systemd::runtime().spawn(async move {
         let mut handles = Vec::with_capacity(4);
 
-        if matches!(
-            view,
-            UnitListView::Defaut | UnitListView::Custom | UnitListView::LoadedUnit
-        ) {
-            if matches!(int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
-                handles.push(tokio::spawn(systemd::list_loaded_units(
-                    UnitDBusLevel::System,
-                )));
+        match view {
+            UnitListView::Defaut | UnitListView::Custom | UnitListView::LoadedUnit => {
+                dbus_call!(int_level, handles, systemd::list_loaded_units)
             }
-
-            if matches!(
-                int_level,
-                DbusLevel::UserSession | DbusLevel::SystemAndSession
-            ) {
-                handles.push(tokio::spawn(systemd::list_loaded_units(
-                    UnitDBusLevel::UserSession,
-                )));
+            UnitListView::UnitFiles => {}
+            UnitListView::Timers => {
+                dbus_call!(int_level, handles, systemd::list_loaded_units_timers)
+            }
+            UnitListView::Sockets => {
+                dbus_call!(int_level, handles, systemd::list_loaded_units_sockets)
             }
         }
 
@@ -1682,20 +1694,7 @@ async fn retrieve_unit_list(
             view,
             UnitListView::Defaut | UnitListView::Custom | UnitListView::UnitFiles
         ) {
-            if matches!(int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
-                handles.push(tokio::spawn(systemd::list_unit_files(
-                    UnitDBusLevel::System,
-                )));
-            }
-
-            if matches!(
-                int_level,
-                DbusLevel::UserSession | DbusLevel::SystemAndSession
-            ) {
-                handles.push(tokio::spawn(systemd::list_unit_files(
-                    UnitDBusLevel::UserSession,
-                )));
-            }
+            dbus_call!(int_level, handles, systemd::list_loaded_units);
         }
 
         let mut results = Vec::with_capacity(handles.len());

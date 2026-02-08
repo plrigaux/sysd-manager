@@ -12,7 +12,10 @@ use crate::{
             },
             menus::create_col_menu,
         },
-        unit_properties_selector::{data_selection::UnitPropertySelection, save},
+        unit_properties_selector::{
+            data_selection::UnitPropertySelection,
+            save::{self, UnitColumn},
+        },
     },
 };
 use gettextrs::pgettext;
@@ -25,12 +28,12 @@ pub fn construct_column_view(
 ) -> Vec<UnitPropertySelection> {
     let list = build_from_load(display_color, view);
 
-    let default = match view {
+    let default_column_set = match view {
         UnitListView::Defaut => default_column_definition_list(display_color),
         UnitListView::LoadedUnit => generate_loaded_units_columns(display_color),
-        UnitListView::UnitFiles => todo!(),
-        UnitListView::Timers => todo!(),
-        UnitListView::Sockets => todo!(),
+        UnitListView::UnitFiles => generate_unit_files_columns(display_color),
+        UnitListView::Timers => generate_timers_columns(display_color),
+        UnitListView::Sockets => generate_sockets_columns(display_color),
         UnitListView::Custom => {
             if list.is_empty() {
                 return default_column_definition_list(display_color);
@@ -39,14 +42,17 @@ pub fn construct_column_view(
         }
     };
 
-    let mut h: HashMap<_, _> = list
+    let mut dict: HashMap<_, _> = list
         .into_iter()
         .filter_map(|c| c.id().map(|id| (id, c)))
         .collect();
 
-    let mut out = Vec::with_capacity(default.len());
-    for (id, default_up) in default.into_iter().filter_map(|c| c.id().map(|id| (id, c))) {
-        let unit_prop = if let Some(loaded_up) = h.remove(&id) {
+    let mut out = Vec::with_capacity(default_column_set.len());
+    for (id, default_up) in default_column_set
+        .into_iter()
+        .filter_map(|c| c.id().map(|id| (id, c)))
+    {
+        let unit_prop = if let Some(loaded_up) = dict.remove(&id) {
             loaded_up
         } else {
             default_up
@@ -54,6 +60,54 @@ pub fn construct_column_view(
         out.push(unit_prop);
     }
     out
+}
+
+fn generate_sockets_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+    let mut columns = vec![];
+
+    let unit_col = create_unit_display_name_column(display_color);
+
+    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    let type_col = create_unit_type_column(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(type_col));
+
+    let col = create_unit_active_status_columun(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(col));
+
+    let col = create_socket_listen_column();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    let col = create_unit_description_column(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(col));
+
+    columns
+}
+
+fn generate_timers_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+    let mut columns = vec![];
+
+    let unit_col = create_unit_display_name_column(display_color);
+
+    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    let type_col = create_unit_type_column(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(type_col));
+
+    columns
+}
+
+fn generate_unit_files_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+    let mut columns = vec![];
+
+    let unit_col = create_unit_display_name_column(display_color);
+
+    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    let type_col = create_unit_type_column(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(type_col));
+
+    columns
 }
 
 pub fn build_from_load(display_color: bool, view: UnitListView) -> Vec<UnitPropertySelection> {
@@ -72,7 +126,7 @@ pub fn build_from_load(display_color: bool, view: UnitListView) -> Vec<UnitPrope
 
         let prop_type = prop_selection.prop_type();
 
-        construct::set_column_factory_and_sorter(&column, display_color, prop_type);
+        construct::set_column_factory_and_sorter(&column, display_color, prop_type.as_deref());
 
         list.push(prop_selection);
     }
@@ -127,7 +181,7 @@ pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySe
 pub fn set_column_factory_and_sorter(
     column: &gtk::ColumnViewColumn,
     display_color: bool,
-    prop_type: Option<String>,
+    prop_type: Option<&str>,
 ) {
     let Some(id) = column.id() else {
         warn!("No column id");
@@ -138,16 +192,16 @@ pub fn set_column_factory_and_sorter(
     let custom_id = CustomPropertyId::from_str(id.as_str());
 
     //force data display
-    let factory = column_factories::get_factory_by_id(&custom_id, display_color, &prop_type);
+    let factory = column_factories::get_factory_by_id(&custom_id, display_color, prop_type);
     column.set_factory(factory.as_ref());
 
-    let sorter = get_sorter_by_id(custom_id, &prop_type);
+    let sorter = get_sorter_by_id(custom_id, prop_type);
     column.set_sorter(sorter.as_ref());
 }
 
 pub fn get_sorter_by_id(
     id: CustomPropertyId,
-    prop_type: &Option<String>,
+    prop_type: Option<&str>,
 ) -> Option<gtk::CustomSorter> {
     match id.prop {
         COL_ID_UNIT => Some(create_column_filter!(primary, dbus_level)),
@@ -166,7 +220,7 @@ pub fn get_sorter_by_id(
 
 fn create_custom_property_column_sorter(
     id: CustomPropertyId,
-    prop_type: &Option<String>,
+    prop_type: Option<&str>,
 ) -> Option<gtk::CustomSorter> {
     let key = id.generate_quark();
 
@@ -175,7 +229,7 @@ fn create_custom_property_column_sorter(
         return None;
     };
 
-    let sort_func = match prop_type.as_str() {
+    let sort_func = match prop_type {
         "b" => custom_property_comapre::<bool>,
         "n" => custom_property_comapre::<i16>,
         "q" => custom_property_comapre::<u16>,
@@ -213,34 +267,10 @@ const SYSDM_PRESET: &str = "sysdm-preset";
 fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let mut columns = vec![];
 
-    let id = COL_ID_UNIT;
-    let sorter = create_column_filter!(primary, dbus_level);
-    let column_menu = create_col_menu(id, false);
-    let factory = fac_unit_name(display_color);
-    let unit_col = gtk::ColumnViewColumn::builder()
-        .id(id)
-        .sorter(&sorter)
-        .header_menu(&column_menu)
-        .factory(&factory)
-        .resizable(true)
-        .fixed_width(150)
-        .title(pgettext("list column", "Unit"))
-        .build();
+    let unit_col = create_unit_display_name_column(display_color);
     columns.push(unit_col);
 
-    let id = "sysdm-type";
-    let sorter = create_column_filter!(unit_type);
-    let column_menu = create_col_menu(id, false);
-    let factory = fac_unit_type(display_color);
-    let type_col = gtk::ColumnViewColumn::builder()
-        .id(id)
-        .sorter(&sorter)
-        .header_menu(&column_menu)
-        .factory(&factory)
-        .resizable(true)
-        .fixed_width(82)
-        .title(pgettext("list column", "Type"))
-        .build();
+    let type_col = create_unit_type_column(display_color);
     columns.push(type_col);
 
     let id = "sysdm-bus";
@@ -303,19 +333,7 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .build();
     columns.push(load_col);
 
-    let id = "sysdm-active";
-    let sorter = create_column_filter!(active_state);
-    let column_menu = create_col_menu(id, false);
-    let factory = fac_active(display_color);
-    let active_col = gtk::ColumnViewColumn::builder()
-        .id(id)
-        .sorter(&sorter)
-        .header_menu(&column_menu)
-        .factory(&factory)
-        .resizable(true)
-        .fixed_width(62)
-        .title(pgettext("list column", "Active"))
-        .build();
+    let active_col = create_unit_active_status_columun(display_color);
     columns.push(active_col);
 
     let id = "sysdm-sub";
@@ -333,11 +351,36 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .build();
     columns.push(sub_col);
 
+    let sub_description = create_unit_description_column(display_color);
+    columns.push(sub_description);
+
+    columns
+}
+
+fn create_unit_active_status_columun(display_color: bool) -> gtk::ColumnViewColumn {
+    let id = "sysdm-active";
+    let sorter = create_column_filter!(active_state);
+    let column_menu = create_col_menu(id, false);
+    let factory = fac_active(display_color);
+
+    gtk::ColumnViewColumn::builder()
+        .id(id)
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(62)
+        .title(pgettext("list column", "Active"))
+        .build()
+}
+
+fn create_unit_description_column(display_color: bool) -> gtk::ColumnViewColumn {
     let id = "sysdm-description";
     let sorter = create_column_filter!(description);
     let column_menu = create_col_menu(id, false);
     let factory = fac_descrition(display_color);
-    let sub_description = gtk::ColumnViewColumn::builder()
+
+    gtk::ColumnViewColumn::builder()
         .id(id)
         .sorter(&sorter)
         .header_menu(&column_menu)
@@ -345,10 +388,52 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .resizable(true)
         .expand(true)
         .title(pgettext("list column", "Description"))
-        .build();
-    columns.push(sub_description);
+        .build()
+}
 
-    columns
+fn create_unit_display_name_column(display_color: bool) -> gtk::ColumnViewColumn {
+    let id = COL_ID_UNIT;
+    let sorter = create_column_filter!(primary, dbus_level);
+    let column_menu = create_col_menu(id, false);
+    let factory = fac_unit_name(display_color);
+
+    gtk::ColumnViewColumn::builder()
+        .id(id)
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(150)
+        .title(pgettext("list column", "Unit"))
+        .build()
+}
+
+fn create_unit_type_column(display_color: bool) -> gtk::ColumnViewColumn {
+    let id = "sysdm-type";
+    let sorter = create_column_filter!(unit_type);
+    let column_menu = create_col_menu(id, false);
+    let factory = fac_unit_type(display_color);
+
+    gtk::ColumnViewColumn::builder()
+        .id(id)
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(82)
+        .title(pgettext("list column", "Type"))
+        .build()
+}
+
+fn create_socket_listen_column() -> UnitColumn {
+    let id = "socket@Listen";
+
+    let mut unit_column = UnitColumn::new(id, "a(ss)");
+    unit_column.resizable = true;
+    unit_column.title = Some(pgettext("list column", "Listen"));
+    unit_column.fixed_width = 120;
+
+    unit_column
 }
 
 fn generate_loaded_units_columns(display_color: bool) -> Vec<UnitPropertySelection> {

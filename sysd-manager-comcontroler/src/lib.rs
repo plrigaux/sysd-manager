@@ -203,6 +203,26 @@ pub async fn list_loaded_units(level: UnitDBusLevel) -> Result<ListUnitResponse,
     Ok(ListUnitResponse::Loaded(level, v))
 }
 
+pub async fn list_loaded_units_timers(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    let v = systemd_manager_async(level)
+        .await?
+        .list_units_by_patterns(&[], &["*.timer"])
+        .await?;
+    Ok(ListUnitResponse::Loaded(level, v))
+}
+
+pub async fn list_loaded_units_sockets(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    let v = systemd_manager_async(level)
+        .await?
+        .list_units_by_patterns(&[], &["*.socket"])
+        .await?;
+    Ok(ListUnitResponse::Loaded(level, v))
+}
+
 pub async fn list_unit_files(level: UnitDBusLevel) -> Result<ListUnitResponse, SystemdErrors> {
     let v = systemd_manager_async(level)
         .await?

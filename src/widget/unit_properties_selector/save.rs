@@ -50,6 +50,14 @@ impl UnitColumn {
             prop_type: data.prop_type(),
         }
     }
+
+    pub(crate) fn new(id: &str, arg: &str) -> Self {
+        Self {
+            id: id.to_owned(),
+            prop_type: Some(arg.to_owned()),
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -299,7 +299,7 @@ pub fn setup_factories(
                 });
 
         let custom_id = CustomPropertyId::from_str(id);
-        let factory = get_factory_by_id(&custom_id, display_color, &prop_type);
+        let factory = get_factory_by_id(&custom_id, display_color, prop_type.as_deref());
 
         column.set_factory(factory.as_ref());
     }
@@ -308,7 +308,7 @@ pub fn setup_factories(
 pub fn get_factory_by_id(
     id: &CustomPropertyId,
     display_color: bool,
-    prop_type: &Option<String>,
+    prop_type: Option<&str>,
 ) -> Option<gtk::SignalListItemFactory> {
     match (id.has_defined_type(), id.prop) {
         (true, _) => Some(get_custom_factory(id, display_color, prop_type)),
@@ -532,7 +532,7 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
 pub(super) fn get_custom_factory(
     property_code: &CustomPropertyId,
     display_color: bool,
-    prop_type: &Option<String>,
+    prop_type: Option<&str>,
 ) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
@@ -540,11 +540,11 @@ pub(super) fn get_custom_factory(
     factory.connect_setup(factory_setup);
 
     let Some(prop_type) = prop_type else {
-        error!("NO PROP_TYPE SET");
+        error!("NO PROP_TYPE SET for {:?}", property_code);
         return factory;
     };
 
-    let get_value = match prop_type.as_str() {
+    let get_value = match prop_type {
         "b" => display_custom_property_color_typed::<bool>,
         "n" => display_custom_property_color_typed::<i16>,
         "q" => display_custom_property_color_typed::<u16>,
