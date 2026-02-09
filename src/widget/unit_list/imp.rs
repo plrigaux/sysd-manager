@@ -92,11 +92,11 @@ struct UnitKeyRef<'a> {
     primary: &'a str,
 }
 
-trait AsKeyRef {
+trait UnitKeyInterface {
     fn as_key_ref(&self) -> UnitKeyRef<'_>;
 }
 
-impl AsKeyRef for UnitKey {
+impl UnitKeyInterface for UnitKey {
     fn as_key_ref(&self) -> UnitKeyRef<'_> {
         UnitKeyRef {
             level: self.level,
@@ -105,21 +105,21 @@ impl AsKeyRef for UnitKey {
     }
 }
 
-impl<'a> AsKeyRef for UnitKeyRef<'a> {
+impl<'a> UnitKeyInterface for UnitKeyRef<'a> {
     fn as_key_ref(&self) -> UnitKeyRef<'_> {
         *self
     }
 }
 
-impl<'a> PartialEq for dyn AsKeyRef + 'a {
+impl<'a> PartialEq for dyn UnitKeyInterface + 'a {
     fn eq(&self, other: &Self) -> bool {
         self.as_key_ref() == other.as_key_ref()
     }
 }
 
-impl<'a> Eq for dyn AsKeyRef + 'a {}
+impl<'a> Eq for dyn UnitKeyInterface + 'a {}
 
-impl<'a> Hash for dyn AsKeyRef + 'a {
+impl<'a> Hash for dyn UnitKeyInterface + 'a {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.as_key_ref().hash(state);
     }
@@ -131,8 +131,8 @@ impl Hash for UnitKey {
     }
 }
 
-impl<'a> std::borrow::Borrow<dyn AsKeyRef + 'a> for UnitKey {
-    fn borrow(&self) -> &(dyn AsKeyRef + 'a) {
+impl<'a> std::borrow::Borrow<dyn UnitKeyInterface + 'a> for UnitKey {
+    fn borrow(&self) -> &(dyn UnitKeyInterface + 'a) {
         self
     }
 }
@@ -522,7 +522,7 @@ impl UnitListPanelImp {
                     ListUnitResponse::Loaded(level, lunits) => {
                         for x in lunits.into_iter() {
                             let key = UnitKeyRef::new(level, &x.primary_unit_name);
-                            match all_units.get(&key as &dyn AsKeyRef) {
+                            match all_units.get(&key as &dyn UnitKeyInterface) {
                                 Some(unit) => {
                                     unit.update_from_listed_unit(x);
                                 }
@@ -538,7 +538,7 @@ impl UnitListPanelImp {
                     ListUnitResponse::File(level, items) => {
                         for x in items {
                             let key = UnitKeyRef::new(level, x.unit_primary_name());
-                            match all_units.get(&key as &dyn AsKeyRef) {
+                            match all_units.get(&key as &dyn UnitKeyInterface) {
                                 Some(unit) => {
                                     unit.update_from_unit_file(x);
                                 }
@@ -616,8 +616,9 @@ impl UnitListPanelImp {
                     .map(CompleteUnitPropertiesCallParams::new)
                     .collect();
 
+                //TODO investigate
                 systemd::runtime().spawn(async move {
-                    const BATCH_SIZE: usize = 5;
+                    const BATCH_SIZE: usize = 50;
                     let mut batch = Vec::with_capacity(BATCH_SIZE);
                     for (idx, triple) in (1..).zip(to_complete_list.into_iter()) {
                         batch.push(triple);
@@ -635,11 +636,14 @@ impl UnitListPanelImp {
                     for update in updates {
                         let key = UnitKeyRef::new(update.level, &update.primary);
 
-                        if let Some(unit) = main_unit_map_rc.borrow().get(&key as &dyn AsKeyRef) {
+                        if let Some(unit) =
+                            main_unit_map_rc.borrow().get(&key as &dyn UnitKeyInterface)
+                        {
                             unit.update_from_unit_info(update);
                         };
                     }
                 }
+                //TODO investigate
                 unit_list.imp().fetch_custom_unit_properties();
             });
             //unit_list.imp().fetch_custom_unit_properties();
@@ -1246,6 +1250,7 @@ impl UnitListPanelImp {
                 //info!("Got properties for {:?}", property_value_list);
                 let map_ref = units_map.borrow();
                 let Some(unit) = map_ref.get(&key) else {
+                    debug!("Not found");
                     continue;
                 };
 

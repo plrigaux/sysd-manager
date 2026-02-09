@@ -565,20 +565,29 @@ pub fn generate_file_uri(file_path: &str) -> String {
     format!("file://{}", flatpak_host_file_path.display())
 }
 
-pub fn fetch_system_info() -> Result<BTreeMap<String, String>, SystemdErrors> {
+pub fn fetch_system_info() -> Result<Vec<(UnitType, String, String)>, SystemdErrors> {
     //TODO check with Session (user)
     sysdbus::fetch_system_info(UnitDBusLevel::System)
 }
 
 pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
-) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+) -> Result<Vec<(UnitType, String, OwnedValue)>, SystemdErrors> {
     let level = unit.dbus_level();
     let unit_type: UnitType = unit.unit_type();
-
     let object_path = unit.object_path();
 
     sysdbus::fetch_system_unit_info_native(level, &object_path, unit_type)
+}
+
+pub fn fetch_system_unit_info_native_map(
+    unit: &UnitInfo,
+) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+    let level = unit.dbus_level();
+    let unit_type: UnitType = unit.unit_type();
+    let object_path = unit.object_path();
+
+    sysdbus::fetch_system_unit_info_native_map(level, &object_path, unit_type)
 }
 
 /* fn get_unit_path(unit: &UnitInfo) -> String {

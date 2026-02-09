@@ -1,10 +1,8 @@
 use adw::subclass::window::AdwWindowImpl;
 use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 use log::{debug, error, warn};
-use std::{
-    cell::{OnceCell, RefCell},
-    collections::BTreeMap,
-};
+use std::cell::{OnceCell, RefCell};
+use std::cmp::Ordering;
 
 use crate::consts::U64MAX;
 use crate::systemd;
@@ -68,9 +66,9 @@ impl InfoWindowImp {
                 if let Some(object) = store.item(i)
                     && let Ok(x) = object.downcast::<rowitem::Metadata>()
                 {
-                    data.push_str(&x.col1());
+                    data.push_str(&x.unit_prop());
                     data.push('\t');
-                    data.push_str(&x.col2());
+                    data.push_str(&x.prop_value());
                     data.push('\n')
                 }
             }
@@ -134,17 +132,19 @@ impl InfoWindowImp {
             store.remove_all();
 
             match systemd::fetch_system_unit_info_native(unit) {
-                Ok(map) => {
-                    let mut sorted = BTreeMap::new();
-
-                    for (key, value) in map {
-                        let value = convert_to_string(&value);
-                        sorted.insert(key, value);
-                    }
-
-                    for (idx, (key, (value, empty))) in sorted.into_iter().enumerate() {
+                Ok(mut vec) => {
+                    vec.sort_by(|a, b| {
+                        let c = a.0.cmp(&b.0);
+                        if Ordering::Equal == c {
+                            a.1.cmp(&b.1)
+                        } else {
+                            c
+                        }
+                    });
+                    for (idx, (unit_type, key, value)) in vec.into_iter().enumerate() {
                         //println!("{key} :-: {value}");
-                        let data = rowitem::Metadata::new(idx as u32, key, value, empty);
+                        let (value, empty) = convert_to_string(&value);
+                        let data = rowitem::Metadata::new(idx as u32, unit_type, key, value, empty);
                         store.append(&data);
                     }
                 }
@@ -165,9 +165,9 @@ impl InfoWindowImp {
 
             match systemd::fetch_system_info() {
                 Ok(map) => {
-                    for (idx, (key, value)) in map.into_iter().enumerate() {
+                    for (idx, (unit_type, key, value)) in map.into_iter().enumerate() {
                         //println!("{key} :-: {value}");
-                        let data = rowitem::Metadata::new(idx as u32, key, value, false);
+                        let data = rowitem::Metadata::new(idx as u32, unit_type, key, value, false);
                         store.append(&data);
                     }
                 }
@@ -202,10 +202,10 @@ impl InfoWindowImp {
 
             let texts = text.as_str();
             if text.chars().any(|c| c.is_ascii_uppercase()) {
-                meta.col1().contains(texts) || meta.col2().contains(texts)
+                meta.unit_prop().contains(texts) || meta.prop_value().contains(texts)
             } else {
-                meta.col1().to_ascii_lowercase().contains(texts)
-                    || meta.col2().to_ascii_lowercase().contains(texts)
+                meta.unit_prop().to_ascii_lowercase().contains(texts)
+                    || meta.prop_value().to_ascii_lowercase().contains(texts)
             }
         })
     }
@@ -360,16 +360,18 @@ impl ObjectImpl for InfoWindowImp {
                 let box_ = gtk::Box::new(gtk::Orientation::Horizontal, 15);
 
                 let mut long_text = false;
-                let col1 = meta.col1();
-                let key_label = if col1.chars().count() > WIDTH_CHAR_SIZE {
+                let unit_prop_value = meta.unit_prop();
+                let key_label = if unit_prop_value.chars().count() > WIDTH_CHAR_SIZE {
                     long_text = true;
                     let mut tmp = String::new();
-                    tmp.push_str(&col1[..(WIDTH_CHAR_SIZE - 3)]);
+                    tmp.push_str(&unit_prop_value[..(WIDTH_CHAR_SIZE - 3)]);
                     tmp.push_str("...");
                     tmp
                 } else {
-                    col1
+                    unit_prop_value
                 };
+
+                let unit_type = meta.unit_type().as_str();
 
                 let l1 = gtk::Label::builder()
                     .label(key_label)
@@ -381,15 +383,15 @@ impl ObjectImpl for InfoWindowImp {
                     .build();
 
                 if long_text {
-                    l1.set_tooltip_text(Some(&meta.col1()));
+                    l1.set_tooltip_text(Some(&meta.unit_prop()));
                 }
 
                 let l2 = gtk::Label::builder()
-                    .label(meta.col2())
+                    .label(meta.prop_value())
                     .selectable(true)
                     .build();
 
-                let idx = meta.col0().to_string();
+                let idx = meta.index().to_string();
                 let l0 = gtk::Label::builder()
                     .label(idx)
                     .width_chars(3)
@@ -397,7 +399,16 @@ impl ObjectImpl for InfoWindowImp {
                     .css_classes(["idx"])
                     .build();
 
+                let lt = gtk::Label::builder()
+                    .label(unit_type)
+                    .width_chars(10)
+                    .xalign(0.0)
+                    .single_line_mode(true)
+                    .selectable(true)
+                    .build();
+
                 box_.append(&l0);
+                box_.append(&lt);
                 box_.append(&l1);
                 box_.append(&l2);
 

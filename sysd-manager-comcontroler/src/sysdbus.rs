@@ -963,19 +963,21 @@ fn convert_to_string(value: &zvariant::Value) -> String {
     }
 }
 
-pub fn fetch_system_info(level: UnitDBusLevel) -> Result<BTreeMap<String, String>, SystemdErrors> {
+pub fn fetch_system_info(
+    level: UnitDBusLevel,
+) -> Result<Vec<(UnitType, String, String)>, SystemdErrors> {
     let res = change_p(level);
     warn!("res {res:?}");
     fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager)
 }
 
-pub fn fetch_system_unit_info(
+pub fn fetch_system_unit_info_map(
     level: UnitDBusLevel,
     object_path: &str,
     unit_type: UnitType,
 ) -> Result<BTreeMap<String, String>, SystemdErrors> {
     let properties: HashMap<String, OwnedValue> =
-        fetch_system_unit_info_native(level, object_path, unit_type)?;
+        fetch_system_unit_info_native_map(level, object_path, unit_type)?;
 
     let mut map = BTreeMap::new();
 
@@ -987,6 +989,21 @@ pub fn fetch_system_unit_info(
     }
 
     Ok(map)
+}
+
+pub fn fetch_system_unit_info(
+    level: UnitDBusLevel,
+    object_path: &str,
+    unit_type: UnitType,
+) -> Result<Vec<(UnitType, String, String)>, SystemdErrors> {
+    let properties = fetch_system_unit_info_native(level, object_path, unit_type)?;
+
+    let vec: Vec<_> = properties
+        .into_iter()
+        .map(|(t, p, v)| (t, p, convert_to_string(&v)))
+        .collect();
+
+    Ok(vec)
 }
 
 fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
@@ -1046,7 +1063,7 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     ))
 }
 
-pub fn fetch_system_unit_info_native(
+pub fn fetch_system_unit_info_native_map(
     level: UnitDBusLevel,
     object_path: &str,
     unit_type: UnitType,
@@ -1077,6 +1094,52 @@ pub fn fetch_system_unit_info_native(
 
         let unit_properties: HashMap<String, OwnedValue> =
             properties_proxy.get_all(unit_interface_name)?;
+
+        properties.extend(unit_properties);
+    }
+
+    trace!("properties {properties:?}");
+    Ok(properties)
+}
+
+pub fn fetch_system_unit_info_native(
+    level: UnitDBusLevel,
+    object_path: &str,
+    unit_type: UnitType,
+) -> Result<Vec<(UnitType, String, OwnedValue)>, SystemdErrors> {
+    let connection = get_blocking_connection(level)?;
+
+    debug!("Unit path: {object_path}");
+    let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
+        fdo::PropertiesProxy::builder(&connection)
+            .destination(DESTINATION_SYSTEMD)?
+            .path(object_path)?
+            .build()?;
+
+    let unit_interface = unit_type.interface();
+
+    let interface_name = InterfaceName::try_from(unit_interface)
+        .inspect_err(|err| {
+            error!("unit_type {:?}", unit_type);
+            error!("unit_interface {:?}", unit_interface);
+            error!("{:?}", err);
+        })
+        .unwrap();
+
+    let mut properties: Vec<_> = properties_proxy
+        .get_all(interface_name)?
+        .into_iter()
+        .map(|(k, v)| (unit_type, k, v))
+        .collect();
+
+    if unit_type.extends_unit() {
+        let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
+
+        let unit_properties: Vec<_> = properties_proxy
+            .get_all(unit_interface_name)?
+            .into_iter()
+            .map(|(k, v)| (UnitType::Unit, k, v))
+            .collect();
 
         properties.extend(unit_properties);
     }

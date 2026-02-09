@@ -26,7 +26,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     //let mut unit_info_tokens = Vec::new();
     fill_name_description(unit_writer, unit);
 
-    let map = systemd::fetch_system_unit_info_native(unit).unwrap_or_else(|e| {
+    let map = systemd::fetch_system_unit_info_native_map(unit).unwrap_or_else(|e| {
         warn!("Fails to retrieve Unit info for {:?} {e:?}", unit.primary());
         HashMap::new()
     });
