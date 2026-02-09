@@ -1694,7 +1694,7 @@ async fn retrieve_unit_list(
             view,
             UnitListView::Defaut | UnitListView::Custom | UnitListView::UnitFiles
         ) {
-            dbus_call!(int_level, handles, systemd::list_loaded_units);
+            dbus_call!(int_level, handles, systemd::list_unit_files);
         }
 
         let mut results = Vec::with_capacity(handles.len());

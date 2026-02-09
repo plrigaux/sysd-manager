@@ -39,7 +39,7 @@ impl UnitInfo {
     }
 
     pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
-        self.imp().update_from_unit_info(update);
+        self.imp().update_from_unit_info(self, update);
     }
 
     pub fn update_from_unit_file(&self, unit_file: ListedUnitFile) {
@@ -195,7 +195,7 @@ mod imp {
             s.to_owned()
         }
 
-        pub fn update_from_unit_info(&self, update: UpdatedUnitInfo) {
+        pub fn update_from_unit_info(&self, unit: &super::UnitInfo, update: UpdatedUnitInfo) {
             // self.object_path.replace(Some(update.object_path));
 
             self.description.replace(update.description);
@@ -210,11 +210,11 @@ mod imp {
 
             if let Some(unit_file_preset) = update.unit_file_preset {
                 let preset: Preset = unit_file_preset.into();
-                self.preset.replace(preset);
+                unit.set_preset(preset);
             }
 
             if let Some(load_state) = update.load_state {
-                self.load_state.replace(load_state);
+                unit.set_load_state(load_state);
             }
 
             if let Some(fragment_path) = update.fragment_path {

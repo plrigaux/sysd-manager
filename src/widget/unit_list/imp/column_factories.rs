@@ -508,6 +508,7 @@ pub fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
             let (inscription, unit) = factory_bind_enum!(object, preset);
             preset_text_binding(&inscription, &unit);
         });
+        factory_connect_unbind!(&fac_preset, *BIND_INFO);
     }
     fac_preset
 }
@@ -515,7 +516,7 @@ pub fn fac_preset(display_color: bool) -> gtk::SignalListItemFactory {
 fn preset_text_binding(inscription: &gtk::Inscription, unit: &UnitInfo) {
     let binding = unit
         .bind_property(PRESET_NUM, inscription, TEXT)
-        .transform_to(|_s, preset: Preset| Some(preset.as_str()))
+        .transform_to(|_s, preset: Preset| preset.as_str_op())
         .build();
     store_binding(inscription, *BIND_INFO, binding);
 }

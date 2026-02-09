@@ -107,6 +107,12 @@ fn generate_unit_files_columns(display_color: bool) -> Vec<UnitPropertySelection
     let type_col = create_unit_type_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(type_col));
 
+    let state_col = create_unit_file_state(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(state_col));
+
+    let preset_col = create_unit_file_preset_column(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(preset_col));
+
     columns
 }
 
@@ -288,34 +294,10 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .build();
     columns.push(bus_col);
 
-    let id = SYSDM_STATE;
-    let sorter = create_column_filter!(enable_status);
-    let column_menu = create_col_menu(id, false);
-    let factory = fac_enable_status(display_color);
-    let state_col = gtk::ColumnViewColumn::builder()
-        .id(id)
-        .sorter(&sorter)
-        .header_menu(&column_menu)
-        .factory(&factory)
-        .resizable(true)
-        .fixed_width(80)
-        .title(pgettext("list column", "State"))
-        .build();
+    let state_col = create_unit_file_state(display_color);
     columns.push(state_col);
 
-    let id = SYSDM_PRESET;
-    let sorter = create_column_filter!(preset);
-    let column_menu = create_col_menu(id, false);
-    let factory = fac_preset(display_color);
-    let preset_col = gtk::ColumnViewColumn::builder()
-        .id(id)
-        .sorter(&sorter)
-        .header_menu(&column_menu)
-        .factory(&factory)
-        .resizable(true)
-        .fixed_width(70)
-        .title(pgettext("list column", "Preset"))
-        .build();
+    let preset_col = create_unit_file_preset_column(display_color);
     columns.push(preset_col);
 
     let id = "sysdm-load";
@@ -355,6 +337,40 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     columns.push(sub_description);
 
     columns
+}
+
+fn create_unit_file_preset_column(display_color: bool) -> gtk::ColumnViewColumn {
+    let id = SYSDM_PRESET;
+    let sorter = create_column_filter!(preset);
+    let column_menu = create_col_menu(id, false);
+    let factory = fac_preset(display_color);
+
+    gtk::ColumnViewColumn::builder()
+        .id(id)
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(70)
+        .title(pgettext("list column", "Preset"))
+        .build()
+}
+
+fn create_unit_file_state(display_color: bool) -> gtk::ColumnViewColumn {
+    let id = SYSDM_STATE;
+    let sorter = create_column_filter!(enable_status);
+    let column_menu = create_col_menu(id, false);
+    let factory = fac_enable_status(display_color);
+
+    gtk::ColumnViewColumn::builder()
+        .id(id)
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(80)
+        .title(pgettext("list column", "State"))
+        .build()
 }
 
 fn create_unit_active_status_columun(display_color: bool) -> gtk::ColumnViewColumn {

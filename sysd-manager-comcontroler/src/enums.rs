@@ -42,6 +42,15 @@ impl Preset {
         }
     }
 
+    pub fn as_str_op(&self) -> Option<&'static str> {
+        match self {
+            Preset::UnSet => None,
+            Preset::Ignore => Some("ignored"),
+            Preset::Disabled => Some("disabled"),
+            Preset::Enabled => Some(ENABLED),
+        }
+    }
+
     pub fn label(&self) -> &'static str {
         match self {
             Preset::UnSet => "<i>not set</i>",
