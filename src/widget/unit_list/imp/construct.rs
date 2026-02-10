@@ -94,6 +94,21 @@ fn generate_timers_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     let type_col = create_unit_type_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(type_col));
 
+    let col = create_time_next_time();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    let col = create_time_next_delay();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    let col = create_time_last();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    let col = create_time_passed();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    let col = create_time_activate();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
     columns
 }
 
@@ -447,6 +462,62 @@ fn create_socket_listen_column() -> UnitColumn {
     let mut unit_column = UnitColumn::new(id, "a(ss)");
     unit_column.resizable = true;
     unit_column.title = Some(pgettext("list column", "Listen"));
+    unit_column.fixed_width = 120;
+
+    unit_column
+}
+
+fn create_time_next_time() -> UnitColumn {
+    let id = "custom@TimeNext";
+
+    let mut unit_column = UnitColumn::new(id, "t");
+    unit_column.resizable = true;
+    //Timer
+    unit_column.title = Some(pgettext("list column", "Next"));
+    unit_column.fixed_width = 120;
+
+    unit_column
+}
+
+fn create_time_next_delay() -> UnitColumn {
+    let id = "custom@TimeLeft";
+
+    let mut unit_column = UnitColumn::new(id, "t");
+    unit_column.resizable = true;
+    unit_column.title = Some(pgettext("list column", "Left"));
+    unit_column.fixed_width = 120;
+
+    unit_column
+}
+
+fn create_time_last() -> UnitColumn {
+    let id = "custom@TimeLast";
+
+    let mut unit_column = UnitColumn::new(id, "t");
+    unit_column.resizable = true;
+    unit_column.title = Some(pgettext("list column", "Last"));
+    unit_column.fixed_width = 120;
+
+    unit_column
+}
+
+fn create_time_passed() -> UnitColumn {
+    let id = "custom@TimePassed";
+
+    let mut unit_column = UnitColumn::new(id, "t");
+    unit_column.resizable = true;
+    unit_column.title = Some(pgettext("list column", "Passed"));
+    unit_column.fixed_width = 120;
+
+    unit_column
+}
+
+fn create_time_activate() -> UnitColumn {
+    let id = "unit@Triggers";
+
+    let mut unit_column = UnitColumn::new(id, "as");
+    unit_column.resizable = true;
+    unit_column.title = Some(pgettext("list column", "Activates"));
     unit_column.fixed_width = 120;
 
     unit_column

@@ -150,7 +150,7 @@ impl<'a> UnitKeyRef<'a> {
         UnitKeyRef { level, primary }
     }
 
-    fn key(self) -> UnitKey {
+    fn key_owned(self) -> UnitKey {
         UnitKey::new_string(self.level, self.primary.to_owned())
     }
 }
@@ -436,12 +436,9 @@ impl UnitListPanelImp {
 
         for column_view_column in list_model
             .iter::<gtk::ColumnViewColumn>()
-            .filter_map(|item| match item {
-                Ok(item) => Some(item),
-                Err(err) => {
-                    error!("Expect gtk::ColumnViewColumn> {err:?}");
-                    None
-                }
+            .filter_map(|item| {
+                item.inspect_err(|err| error!("Expect gtk::ColumnViewColumn> {err:?}"))
+                    .ok()
             })
         {
             col_list.push(column_view_column);
@@ -520,34 +517,28 @@ impl UnitListPanelImp {
             for system_unit_file in retrieved_units.into_iter() {
                 match system_unit_file {
                     ListUnitResponse::Loaded(level, lunits) => {
-                        for x in lunits.into_iter() {
-                            let key = UnitKeyRef::new(level, &x.primary_unit_name);
-                            match all_units.get(&key as &dyn UnitKeyInterface) {
-                                Some(unit) => {
-                                    unit.update_from_listed_unit(x);
-                                }
-                                None => {
-                                    let key = key.key();
-                                    let unit = UnitInfo::from_listed_unit(x, level);
-                                    list_store.append(&unit);
-                                    all_units.insert(key, unit);
-                                }
+                        for unit_list in lunits.into_iter() {
+                            let key = UnitKeyRef::new(level, &unit_list.primary_unit_name);
+                            if let Some(unit) = all_units.get(&key as &dyn UnitKeyInterface) {
+                                unit.update_from_listed_unit(unit_list);
+                            } else {
+                                let key = key.key_owned();
+                                let unit = UnitInfo::from_listed_unit(unit_list, level);
+                                list_store.append(&unit);
+                                all_units.insert(key, unit);
                             }
                         }
                     }
                     ListUnitResponse::File(level, items) => {
-                        for x in items {
-                            let key = UnitKeyRef::new(level, x.unit_primary_name());
-                            match all_units.get(&key as &dyn UnitKeyInterface) {
-                                Some(unit) => {
-                                    unit.update_from_unit_file(x);
-                                }
-                                None => {
-                                    let key = key.key();
-                                    let unit = UnitInfo::from_unit_file(x, level);
-                                    list_store.append(&unit);
-                                    all_units.insert(key, unit);
-                                }
+                        for unit_file in items {
+                            let key = UnitKeyRef::new(level, unit_file.unit_primary_name());
+                            if let Some(unit) = all_units.get(&key as &dyn UnitKeyInterface) {
+                                unit.update_from_unit_file(unit_file);
+                            } else {
+                                let key = key.key_owned();
+                                let unit = UnitInfo::from_unit_file(unit_file, level);
+                                list_store.append(&unit);
+                                all_units.insert(key, unit);
                             }
                         }
                     }
