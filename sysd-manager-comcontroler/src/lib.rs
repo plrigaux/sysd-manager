@@ -44,6 +44,7 @@ use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 
+use flagset::{FlagSet, flags};
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 
@@ -92,6 +93,27 @@ impl UpdatedUnitInfo {
             ..Default::default()
         }
     }
+}
+
+flags! {
+    pub enum UnitPropertiesFlags : u8 {
+        EnablementStatus,
+        ActiveStatus,
+        Description,
+        LoadState,
+        SubState,
+        UnitFilePreset,
+        FragmentPath,
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct UnitProperties(pub FlagSet<UnitPropertiesFlags>);
+
+impl UnitProperties {
+    // fn new(flags: impl Into<FlagSet<UnitPropertiesFlags>>) -> UnitProperties {
+    //     UnitProperties(flags.into())
+    // }
 }
 
 pub struct CompleteUnitPropertiesCallParams {
@@ -194,6 +216,25 @@ impl ListUnitResponse {
         match self {
             ListUnitResponse::Loaded(_, lunits) => lunits.len(),
             ListUnitResponse::File(_, items) => items.len(),
+        }
+    }
+    pub fn update_flags(&self) -> FlagSet<UnitPropertiesFlags> {
+        match self {
+            ListUnitResponse::Loaded(_, _) => {
+                UnitPropertiesFlags::EnablementStatus
+                    | UnitPropertiesFlags::Description
+                    | UnitPropertiesFlags::LoadState
+                    | UnitPropertiesFlags::SubState
+                    | UnitPropertiesFlags::UnitFilePreset
+            }
+
+            ListUnitResponse::File(_, _) => {
+                UnitPropertiesFlags::ActiveStatus
+                    | UnitPropertiesFlags::Description
+                    | UnitPropertiesFlags::LoadState
+                    | UnitPropertiesFlags::SubState
+                    | UnitPropertiesFlags::UnitFilePreset
+            }
         }
     }
 }

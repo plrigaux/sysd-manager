@@ -19,6 +19,7 @@ flatpak = []
 base.workspace = true
 chrono.workspace = true
 enumflags2.workspace = true
+flagset.workspace = true
 futures-util = "0.3"
 gettext-rs.workspace = true
 glib.workspace = true

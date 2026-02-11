@@ -8,22 +8,30 @@ pub(super) mod watcher;
 mod tests;
 //use futures_lite::stream::StreamExt;
 
-use std::{
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
-    str::FromStr,
-    sync::{OnceLock, RwLock},
-    time::Duration,
+use crate::{
+    CompleteUnitPropertiesCallParams, Dependency, SystemdUnitFile, UnitPropertyFetch,
+    UpdatedUnitInfo,
+    data::{ListedLoadedUnit, UnitInfo},
+    enums::{
+        ActiveState, DependencyType, EnablementStatus, KillWho, LoadState, StartStopMode, UnitType,
+    },
+    errors::SystemdErrors,
+    sysdbus::dbus_proxies::systemd_manager_async,
+    sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
 };
-
 use base::{
     RunMode,
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use log::{debug, error, info, trace, warn};
-
 use serde::Deserialize;
-
+use std::{
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    str::FromStr,
+    sync::{OnceLock, RwLock},
+    time::Duration,
+};
 use tokio::time::sleep;
 use zbus::{
     Message,
@@ -32,17 +40,6 @@ use zbus::{
     names::InterfaceName,
 };
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
-
-use crate::{CompleteUnitPropertiesCallParams, sysdbus::dbus_proxies::systemd_manager_async};
-use crate::{
-    Dependency, SystemdUnitFile, UnitPropertyFetch, UpdatedUnitInfo,
-    data::{ListedLoadedUnit, UnitInfo},
-    enums::{
-        ActiveState, DependencyType, EnablementStatus, KillWho, LoadState, StartStopMode, UnitType,
-    },
-    errors::SystemdErrors,
-    sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
-};
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
@@ -396,12 +393,11 @@ pub async fn complete_unit_information(
 
         let (r1, r2) = tokio::join!(f1, f2);
 
-        match r1 {
-            Ok(mut updated_unit_info) => {
-                updated_unit_info.enablement_status = r2.ok();
-                ouput.push(updated_unit_info)
-            }
-            Err(error) => warn!("Complete unit {:?} error {error:?}", params.unit_name),
+        if let Ok(mut updated_unit_info) =
+            r1.inspect_err(|error| warn!("Complete unit {:?} error {error:?}", params.unit_name))
+        {
+            updated_unit_info.enablement_status = r2.ok();
+            ouput.push(updated_unit_info)
         }
     }
     Ok(ouput)

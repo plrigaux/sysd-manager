@@ -47,6 +47,7 @@ use crate::{
     },
 };
 use base::enums::UnitDBusLevel;
+use flagset::FlagSet;
 use glib::WeakRef;
 use gtk::{
     Adjustment, TemplateChild,
@@ -64,16 +65,19 @@ use gtk::{
 };
 use std::hash::Hash;
 use strum::IntoEnumIterator;
-use systemd::{CompleteUnitPropertiesCallParams, ListUnitResponse};
+use systemd::{
+    CompleteUnitPropertiesCallParams, ListUnitResponse, UnitProperties, UnitPropertiesFlags,
+};
 use tracing::{debug, error, info, warn};
 use zvariant::{OwnedValue, Value};
 
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone)]
 struct UnitKey {
     level: UnitDBusLevel,
     primary: String,
+    update_properties: Cell<UnitProperties>,
 }
 
 impl UnitKey {
@@ -82,9 +86,35 @@ impl UnitKey {
     }
 
     fn new_string(level: UnitDBusLevel, primary: String) -> Self {
-        UnitKey { level, primary }
+        let f = FlagSet::<UnitPropertiesFlags>::empty();
+        Self::new_string_flags(level, primary, f)
+    }
+
+    fn new_string_flags(
+        level: UnitDBusLevel,
+        primary: String,
+        flags: impl Into<FlagSet<UnitPropertiesFlags>>,
+    ) -> Self {
+        UnitKey {
+            level,
+            primary,
+            update_properties: Cell::new(UnitProperties(flags.into())),
+        }
+    }
+
+    fn intersec(&self, flags: impl Into<FlagSet<UnitPropertiesFlags>>) {
+        let f = self.update_properties.get().0 & flags;
+        self.update_properties.set(UnitProperties(f));
     }
 }
+
+impl PartialEq for UnitKey {
+    fn eq(&self, other: &UnitKey) -> bool {
+        self.level == other.level && self.primary == other.primary
+    }
+}
+
+impl Eq for UnitKey {}
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 struct UnitKeyRef<'a> {
@@ -150,8 +180,8 @@ impl<'a> UnitKeyRef<'a> {
         UnitKeyRef { level, primary }
     }
 
-    fn key_owned(self) -> UnitKey {
-        UnitKey::new_string(self.level, self.primary.to_owned())
+    fn key_owned(self, flags: impl Into<FlagSet<UnitPropertiesFlags>>) -> UnitKey {
+        UnitKey::new_string_flags(self.level, self.primary.to_owned(), flags)
     }
 }
 
@@ -512,17 +542,25 @@ impl UnitListPanelImp {
             list_store.remove_all();
 
             let total = retrieved_units.iter().fold(0, |acc, i| acc + i.t_len());
+
+            #[allow(clippy::mutable_key_type)]
             let mut all_units: HashMap<UnitKey, UnitInfo> = HashMap::with_capacity(total);
 
-            for system_unit_file in retrieved_units.into_iter() {
+            for (system_unit_file, flags) in retrieved_units.into_iter().map(|s| {
+                let f = s.update_flags();
+                (s, f)
+            }) {
                 match system_unit_file {
                     ListUnitResponse::Loaded(level, lunits) => {
                         for unit_list in lunits.into_iter() {
                             let key = UnitKeyRef::new(level, &unit_list.primary_unit_name);
-                            if let Some(unit) = all_units.get(&key as &dyn UnitKeyInterface) {
+                            if let Some((key, unit)) =
+                                all_units.get_key_value(&key as &dyn UnitKeyInterface)
+                            {
+                                key.intersec(flags);
                                 unit.update_from_listed_unit(unit_list);
                             } else {
-                                let key = key.key_owned();
+                                let key = key.key_owned(flags);
                                 let unit = UnitInfo::from_listed_unit(unit_list, level);
                                 list_store.append(&unit);
                                 all_units.insert(key, unit);
@@ -532,10 +570,13 @@ impl UnitListPanelImp {
                     ListUnitResponse::File(level, items) => {
                         for unit_file in items {
                             let key = UnitKeyRef::new(level, unit_file.unit_primary_name());
-                            if let Some(unit) = all_units.get(&key as &dyn UnitKeyInterface) {
+                            if let Some((key, unit)) =
+                                all_units.get_key_value(&key as &dyn UnitKeyInterface)
+                            {
+                                key.intersec(flags);
                                 unit.update_from_unit_file(unit_file);
                             } else {
-                                let key = key.key_owned();
+                                let key = key.key_owned(flags);
                                 let unit = UnitInfo::from_unit_file(unit_file, level);
                                 list_store.append(&unit);
                                 all_units.insert(key, unit);

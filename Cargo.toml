@@ -60,6 +60,7 @@ constcat = "0.6"
 chrono = "0.4"
 dotenv = "0.15"
 enumflags2 = "0.7"
+flagset = "0.4"
 gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
 glib = { version = "0", package = "glib", features = ["v2_84"] }
@@ -92,7 +93,7 @@ adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
 gio.workspace = true
 gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
 glib.workspace = true
-
+flagset.workspace = true
 base.workspace = true
 chrono.workspace = true
 clap.workspace = true
