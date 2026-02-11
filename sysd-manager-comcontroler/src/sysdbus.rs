@@ -16,8 +16,9 @@ use crate::{
         ActiveState, DependencyType, EnablementStatus, KillWho, LoadState, StartStopMode, UnitType,
     },
     errors::SystemdErrors,
-    sysdbus::dbus_proxies::systemd_manager_async,
-    sysdbus::dbus_proxies::{ZUnitInfoProxy, ZUnitInfoProxyBlocking},
+    sysdbus::dbus_proxies::{
+        ZPropertiesProxyBlocking, ZUnitInfoProxy, ZUnitInfoProxyBlocking, systemd_manager_async,
+    },
 };
 use base::{
     RunMode,
@@ -1066,30 +1067,14 @@ pub fn fetch_system_unit_info_native_map(
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
     let connection = get_blocking_connection(level)?;
 
-    debug!("Unit path: {object_path}");
-    let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
-        fdo::PropertiesProxy::builder(&connection)
-            .destination(DESTINATION_SYSTEMD)?
-            .path(object_path)?
-            .build()?;
+    let interface_name = unit_type.interface();
 
-    let unit_interface = unit_type.interface();
-
-    let interface_name = InterfaceName::try_from(unit_interface)
-        .inspect_err(|err| {
-            error!("unit_type {:?}", unit_type);
-            error!("unit_interface {:?}", unit_interface);
-            error!("{:?}", err);
-        })
-        .unwrap();
-
-    let mut properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
+    let mut properties =
+        fetch_unit_interface_all_properties(&connection, object_path, interface_name)?;
 
     if unit_type.extends_unit() {
-        let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
-
-        let unit_properties: HashMap<String, OwnedValue> =
-            properties_proxy.get_all(unit_interface_name)?;
+        let unit_properties =
+            fetch_unit_interface_all_properties(&connection, object_path, INTERFACE_SYSTEMD_UNIT)?;
 
         properties.extend(unit_properties);
     }
@@ -1283,29 +1268,6 @@ fn reteive_dependencies(
 
     //units.remove(parent_unit_name);
     Ok(())
-}
-
-fn fetch_unit_all_properties(
-    connection: &Connection,
-    path: &str,
-) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    let proxy = Proxy::new(
-        connection,
-        DESTINATION_SYSTEMD,
-        path,
-        "org.freedesktop.DBus.Properties",
-    )?;
-
-    let all_properties: HashMap<String, OwnedValue> =
-        match proxy.call("GetAll", &(INTERFACE_SYSTEMD_UNIT)) {
-            Ok(m) => m,
-            Err(e) => {
-                warn!("{e:#?}");
-                return Err(e.into());
-            }
-        };
-
-    Ok(all_properties)
 }
 
 pub(super) fn unit_dbus_path_from_name(name: &str) -> String {
@@ -1506,6 +1468,38 @@ async fn collect_properties(
         map.insert(intf.name().to_string(), list);
     }
     Ok(())
+}
+
+fn fetch_unit_all_properties(
+    connection: &Connection,
+    path: &str,
+) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+    fetch_unit_interface_all_properties(connection, path, INTERFACE_SYSTEMD_UNIT)
+}
+
+fn fetch_unit_interface_all_properties(
+    connection: &Connection,
+    path: &str,
+    interface: &str,
+) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+    let p = ZPropertiesProxyBlocking::builder(connection)
+        .path(path)?
+        .build()?;
+
+    let all_properties = p.get_all(interface)?;
+
+    // let proxy = Proxy::new(connection, DESTINATION_SYSTEMD, path, INTERFACE_PROPERTIES)?;
+
+    // let all_properties: HashMap<String, OwnedValue> =
+    //     match proxy.call("GetAll", &(INTERFACE_SYSTEMD_UNIT)) {
+    //         Ok(m) => m,
+    //         Err(e) => {
+    //             warn!("{e:#?}");
+    //             return Err(e.into());
+    //         }
+    //     };
+
+    Ok(all_properties)
 }
 
 pub async fn fetch_unit_properties(

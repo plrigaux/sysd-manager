@@ -116,9 +116,12 @@ pub struct CustomPropertyId<'a> {
 }
 
 impl<'a> CustomPropertyId<'a> {
-    pub fn from_str(s: &'a str) -> Self {
-        let Some((utype, prop)) = s.split_once('@') else {
-            return Self { utype: "", prop: s };
+    pub fn from_str(str_value: &'a str) -> Self {
+        let Some((utype, prop)) = str_value.split_once('@') else {
+            return Self {
+                utype: "",
+                prop: str_value,
+            };
         };
 
         Self { utype, prop }

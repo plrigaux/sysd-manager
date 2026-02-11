@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{collections::HashMap, sync::LazyLock};
 
 use base::{
     enums::UnitDBusLevel,
@@ -7,13 +7,23 @@ use base::{
 use log::error;
 use tokio::sync::OnceCell;
 use zbus::proxy;
-use zvariant::OwnedObjectPath;
+use zvariant::{OwnedObjectPath, OwnedValue};
 
 use crate::{
     data::ListedLoadedUnit,
     errors::SystemdErrors,
     sysdbus::{ListedUnitFile, get_blocking_connection, get_connection},
 };
+
+#[proxy(
+    interface = "org.freedesktop.DBus.Properties",
+    default_service = "org.freedesktop.systemd1"
+)]
+pub(crate) trait ZProperties {
+    fn get(&self, interface: &str, property_name: &str) -> Result<OwnedValue, zbus::Error>;
+
+    fn get_all(&self, interface: &str) -> Result<HashMap<String, OwnedValue>, zbus::Error>;
+}
 
 #[proxy(
     interface = "org.freedesktop.systemd1.Unit",

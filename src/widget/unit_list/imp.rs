@@ -14,7 +14,7 @@ use std::{
 use crate::{
     consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
     systemd::{
-        data::{UnitInfo, convert_to_string},
+        data::UnitInfo,
         enums::{LoadState, UnitType},
     },
     systemd_gui, upgrade,
@@ -69,7 +69,6 @@ use systemd::{
     CompleteUnitPropertiesCallParams, ListUnitResponse, UnitProperties, UnitPropertiesFlags,
 };
 use tracing::{debug, error, info, warn};
-use zvariant::{OwnedValue, Value};
 
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
 
@@ -552,16 +551,16 @@ impl UnitListPanelImp {
             }) {
                 match system_unit_file {
                     ListUnitResponse::Loaded(level, lunits) => {
-                        for unit_list in lunits.into_iter() {
-                            let key = UnitKeyRef::new(level, &unit_list.primary_unit_name);
+                        for loaded_unit in lunits.into_iter() {
+                            let key = UnitKeyRef::new(level, &loaded_unit.primary_unit_name);
                             if let Some((key, unit)) =
                                 all_units.get_key_value(&key as &dyn UnitKeyInterface)
                             {
                                 key.intersec(flags);
-                                unit.update_from_listed_unit(unit_list);
+                                unit.update_from_loaded_unit(loaded_unit);
                             } else {
                                 let key = key.key_owned(flags);
-                                let unit = UnitInfo::from_listed_unit(unit_list, level);
+                                let unit = UnitInfo::from_listed_unit(loaded_unit, level);
                                 list_store.append(&unit);
                                 all_units.insert(key, unit);
                             }
@@ -596,6 +595,7 @@ impl UnitListPanelImp {
 
             let mut force_selected_index = gtk::INVALID_LIST_POSITION;
 
+            //Handle unit selection
             let selected_unit = unit_list.imp().selected_unit();
             if let Some(selected_unit) = selected_unit {
                 let selected_unit_name = selected_unit.primary();
@@ -621,7 +621,8 @@ impl UnitListPanelImp {
                     force_selected_index = index;
                 }
             }
-            debug!("IM HERRE");
+
+            //Set selection
             unit_list
                 .imp()
                 .force_selected_index
@@ -1168,14 +1169,14 @@ impl UnitListPanelImp {
     }
 
     fn fetch_custom_unit_properties(&self) {
-        info!("!!! Fetching custom unit properties !!!");
         let property_list = self.current_column_view_column_definition_list.borrow();
 
         if property_list.is_empty() {
-            info!("No properties to fetch");
+            info!("No extra properties to fetch");
             return;
         }
 
+        info!("!!! Fetching custom unit properties !!!");
         let current_property_list = property_list.clone();
 
         /*        let list_len = property_list.len();
@@ -1184,6 +1185,7 @@ impl UnitListPanelImp {
         let mut property_list_keys = Vec::with_capacity(current_property_list.len());
         let mut types = HashSet::with_capacity(16);
         let mut is_unit_type = false;
+
         for unit_property in current_property_list.iter() {
             if unit_property.is_custom() {
                 //Add custom factory
@@ -1295,12 +1297,12 @@ impl UnitListPanelImp {
                         panic!("Should never fail");
                     };
 
-                    Self::insert_value(*key, value, unit);
+                    unit.insert_unit_property_value(*key, value);
                 }
             }
             info!("Fetching properties FINISHED");
 
-            //Force the factory to display data
+            //Force the factory to display data by seting the factory after the value set (no data binding)
             for column in units_browser
                 .columns()
                 .iter::<gtk::ColumnViewColumn>()
@@ -1321,94 +1323,6 @@ impl UnitListPanelImp {
                 );
             }
         });
-    }
-
-    fn insert_value(key: Quark, value: Option<OwnedValue>, unit: &UnitInfo) {
-        let Some(value) = value else {
-            unsafe { unit.steal_qdata::<OwnedValue>(key) };
-            return;
-        };
-
-        //let value_ref = &value as &Value;
-        match &value as &Value {
-            Value::Bool(b) => unsafe { unit.set_qdata(key, *b) },
-            Value::U8(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::I16(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::U16(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::I32(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::U32(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::I64(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::U64(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::F64(i) => unsafe { unit.set_qdata(key, *i) },
-            Value::Str(s) => {
-                if s.is_empty() {
-                    unsafe { unit.steal_qdata::<String>(key) };
-                } else {
-                    unsafe { unit.set_qdata(key, s.to_string()) };
-                }
-            }
-            Value::Signature(s) => unsafe { unit.set_qdata(key, s.to_string()) },
-            Value::ObjectPath(op) => unsafe { unit.set_qdata(key, op.to_string()) },
-            Value::Value(v) => unsafe { unit.set_qdata(key, v.to_string()) },
-            Value::Array(a) => {
-                if a.is_empty() {
-                    unsafe { unit.steal_qdata::<String>(key) };
-                } else {
-                    let mut d_str = String::from("");
-
-                    let mut it = a.iter().peekable();
-                    while let Some(mi) = it.next() {
-                        if let Some(v) = convert_to_string(mi) {
-                            d_str.push_str(&v);
-                        }
-                        if it.peek().is_some() {
-                            d_str.push_str(", ");
-                        }
-                    }
-
-                    unsafe { unit.set_qdata(key, d_str) };
-                }
-            }
-            Value::Dict(d) => {
-                let mut it = d.iter().peekable();
-                if it.peek().is_none() {
-                    unsafe { unit.steal_qdata::<String>(key) };
-                } else {
-                    let mut d_str = String::from("{ ");
-
-                    for (mik, miv) in it {
-                        if let Some(k) = convert_to_string(mik) {
-                            d_str.push_str(&k);
-                        }
-                        d_str.push_str(" : ");
-
-                        if let Some(v) = convert_to_string(miv) {
-                            d_str.push_str(&v);
-                        }
-                    }
-                    d_str.push_str(" }");
-
-                    unsafe { unit.set_qdata(key, d_str) };
-                }
-            }
-            Value::Structure(stc) => {
-                let mut it = stc.fields().iter().peekable();
-
-                if it.peek().is_none() {
-                    unsafe { unit.steal_qdata::<String>(key) };
-                } else {
-                    let v: Vec<String> = it
-                        .filter_map(|v| convert_to_string(v))
-                        .filter(|s| !s.is_empty())
-                        .collect();
-                    let d_str = v.join(", ");
-
-                    unsafe { unit.set_qdata(key, d_str) };
-                }
-            }
-            Value::Fd(fd) => unsafe { unit.set_qdata(key, fd.to_string()) },
-            //Value::Maybe(maybe) => (maybe.to_string(), false),
-        }
     }
 
     pub fn print_scroll_adj_logs(&self) {

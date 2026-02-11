@@ -322,7 +322,7 @@ pub fn get_factory_by_id(
         (false, "sysdm-sub") => Some(fac_sub_state(display_color)),
         (false, "sysdm-description") => Some(fac_descrition(display_color)),
         _ => {
-            warn!("What to do. Id {id:?} not handle with factory");
+            warn!("What to do?. Id {id:?} not handle with factory");
             None
         }
     }

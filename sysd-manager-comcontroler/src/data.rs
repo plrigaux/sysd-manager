@@ -5,10 +5,10 @@ use crate::sysdbus::ListedUnitFile;
 use super::UpdatedUnitInfo;
 
 use base::enums::UnitDBusLevel;
-use glib::{self, subclass::types::ObjectSubclassIsExt};
+use glib::{self, Quark, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
 
 use serde::Deserialize;
-use zvariant::{OwnedObjectPath, Value};
+use zvariant::{OwnedObjectPath, OwnedValue, Value};
 
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -34,7 +34,7 @@ impl UnitInfo {
         this_object
     }
 
-    pub fn update_from_listed_unit(&self, listed_unit: ListedLoadedUnit) {
+    pub fn update_from_loaded_unit(&self, listed_unit: ListedLoadedUnit) {
         self.imp().update_from_listed_unit(listed_unit);
     }
 
@@ -52,6 +52,94 @@ impl UnitInfo {
 
     pub fn need_to_be_completed(&self) -> bool {
         self.imp().need_to_be_completed()
+    }
+
+    pub fn insert_unit_property_value(&self, key: Quark, value: Option<OwnedValue>) {
+        let Some(value) = value else {
+            unsafe { self.steal_qdata::<OwnedValue>(key) };
+            return;
+        };
+
+        //let value_ref = &value as &Value;
+        match &value as &Value {
+            Value::Bool(b) => unsafe { self.set_qdata(key, *b) },
+            Value::U8(i) => unsafe { self.set_qdata(key, *i) },
+            Value::I16(i) => unsafe { self.set_qdata(key, *i) },
+            Value::U16(i) => unsafe { self.set_qdata(key, *i) },
+            Value::I32(i) => unsafe { self.set_qdata(key, *i) },
+            Value::U32(i) => unsafe { self.set_qdata(key, *i) },
+            Value::I64(i) => unsafe { self.set_qdata(key, *i) },
+            Value::U64(i) => unsafe { self.set_qdata(key, *i) },
+            Value::F64(i) => unsafe { self.set_qdata(key, *i) },
+            Value::Str(s) => {
+                if s.is_empty() {
+                    unsafe { self.steal_qdata::<String>(key) };
+                } else {
+                    unsafe { self.set_qdata(key, s.to_string()) };
+                }
+            }
+            Value::Signature(s) => unsafe { self.set_qdata(key, s.to_string()) },
+            Value::ObjectPath(op) => unsafe { self.set_qdata(key, op.to_string()) },
+            Value::Value(val) => unsafe { self.set_qdata(key, val.to_string()) },
+            Value::Array(array) => {
+                if array.is_empty() {
+                    unsafe { self.steal_qdata::<String>(key) };
+                } else {
+                    let mut d_str = String::from("");
+
+                    let mut it = array.iter().peekable();
+                    while let Some(mi) = it.next() {
+                        if let Some(str_value) = convert_to_string(mi) {
+                            d_str.push_str(&str_value);
+                        }
+                        if it.peek().is_some() {
+                            d_str.push_str(", ");
+                        }
+                    }
+
+                    unsafe { self.set_qdata(key, d_str) };
+                }
+            }
+            Value::Dict(d) => {
+                let mut it = d.iter().peekable();
+                if it.peek().is_none() {
+                    unsafe { self.steal_qdata::<String>(key) };
+                } else {
+                    let mut d_str = String::from("{ ");
+
+                    for (mik, miv) in it {
+                        if let Some(k) = convert_to_string(mik) {
+                            d_str.push_str(&k);
+                        }
+                        d_str.push_str(" : ");
+
+                        if let Some(v) = convert_to_string(miv) {
+                            d_str.push_str(&v);
+                        }
+                    }
+                    d_str.push_str(" }");
+
+                    unsafe { self.set_qdata(key, d_str) };
+                }
+            }
+            Value::Structure(stc) => {
+                let mut it = stc.fields().iter().peekable();
+
+                if it.peek().is_none() {
+                    unsafe { self.steal_qdata::<String>(key) };
+                } else {
+                    let v: Vec<String> = it
+                        .filter_map(|v| convert_to_string(v))
+                        .filter(|s| !s.is_empty())
+                        .collect();
+                    let d_str = v.join(", ");
+
+                    unsafe { self.set_qdata(key, d_str) };
+                }
+            }
+            Value::Fd(fd) => unsafe { self.set_qdata(key, fd.to_string()) },
+            //Value::Maybe(maybe) => (maybe.to_string(), false),
+        }
     }
 }
 
