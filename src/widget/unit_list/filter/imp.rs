@@ -24,7 +24,7 @@ use gtk::{
 use crate::{
     consts::{ALL_FILTER_KEY, CLASS_WARNING, FLAT},
     systemd::enums::{
-        ActiveState, EnablementStatus, LoadState, NumMatchType, Preset, StrMatchType, UnitType,
+        ActiveState, UnitFileStatus, LoadState, NumMatchType, Preset, StrMatchType, UnitType,
     },
     upgrade, upgrade_continue,
     widget::unit_list::{
@@ -1031,7 +1031,7 @@ fn build_controls(container: &gtk::Box) {
 fn build_enablement_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> (gtk::Box, Vec<FilterWidget>) {
-    build_elem_filter!(filter_container, EnablementStatus::iter(), EnablementStatus)
+    build_elem_filter!(filter_container, UnitFileStatus::iter(), UnitFileStatus)
 }
 
 fn build_load_filter(

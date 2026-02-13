@@ -392,14 +392,11 @@ impl UnitFilePanelImp {
     }
 
     fn set_unit(&self, unit: Option<&UnitInfo>) {
-        let unit = match unit {
-            Some(u) => u,
-            None => {
-                self.file_content_selected_index.set(0);
-                self.unit.replace(None);
-                self.set_file_content_init();
-                return;
-            }
+        let Some(unit) = unit else {
+            self.file_content_selected_index.set(0);
+            self.unit.replace(None);
+            self.set_file_content_init();
+            return;
         };
 
         let old_unit = self.unit.replace(Some(unit.clone()));
@@ -452,22 +449,19 @@ impl UnitFilePanelImp {
     }
 
     fn display_unit_file_content(&self, file_nav: Option<&FileNav>, primary: &str) {
-        match file_nav {
-            Some(file_nav) => {
-                self.display_unit_file_content2(primary, file_nav);
+        if let Some(file_nav) = file_nav {
+            self.display_unit_file_content2(primary, file_nav);
+        } else {
+            let all_files = self.all_unit_files.borrow();
+
+            if all_files.is_empty() {
+                self.fill_gui_content(String::new(), false, "");
+                return;
             }
-            None => {
-                let all_files = self.all_unit_files.borrow();
 
-                if all_files.is_empty() {
-                    self.fill_gui_content(String::new(), false, "");
-                    return;
-                }
+            let file_nav = all_files.first().expect("vector should not be empty");
 
-                let file_nav = all_files.first().expect("vector should not be empty");
-
-                self.display_unit_file_content2(primary, file_nav);
-            }
+            self.display_unit_file_content2(primary, file_nav);
         };
     }
 

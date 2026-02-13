@@ -9,15 +9,17 @@ mod tests;
 //use futures_lite::stream::StreamExt;
 
 use crate::{
-    CompleteUnitPropertiesCallParams, Dependency, SystemdUnitFile, UnitPropertyFetch,
-    UpdatedUnitInfo,
-    data::{ListedLoadedUnit, UnitInfo},
+    CompleteUnitPropertiesCallParams, Dependency, SystemdUnitFile, UnitProperties,
+    UnitPropertiesFlags, UnitPropertyFetch, UpdatedUnitInfo,
+    data::{ListedLoadedUnit, UnitInfo, UnitPropertySetter},
     enums::{
-        ActiveState, DependencyType, EnablementStatus, KillWho, LoadState, StartStopMode, UnitType,
+        ActiveState, DependencyType, KillWho, LoadState, Preset, StartStopMode, UnitFileStatus,
+        UnitType,
     },
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{
-        ZPropertiesProxyBlocking, ZUnitInfoProxy, ZUnitInfoProxyBlocking, systemd_manager_async,
+        ZPropertiesProxy, ZPropertiesProxyBlocking, ZUnitInfoProxy, ZUnitInfoProxyBlocking,
+        systemd_manager_async,
     },
 };
 use base::{
@@ -25,6 +27,7 @@ use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
+use glib::Quark;
 use log::{debug, error, info, trace, warn};
 use serde::Deserialize;
 use std::{
@@ -276,13 +279,13 @@ async fn list_units_list_async(
 pub fn get_unit_file_state(
     level: UnitDBusLevel,
     unit_file: &str,
-) -> Result<EnablementStatus, SystemdErrors> {
+) -> Result<UnitFileStatus, SystemdErrors> {
     let message = call_systemd_manager_method(level, METHOD_GET_UNIT_FILE_STATE, &(unit_file))?;
 
     let body = message.body();
     let enablement_status: &str = body.deserialize()?;
 
-    EnablementStatus::from_str(enablement_status)
+    UnitFileStatus::from_str(enablement_status)
 }
 
 fn call_systemd_manager_method<B>(
@@ -341,8 +344,8 @@ where
 pub async fn get_unit_file_state_async(
     connection: &zbus::Connection,
     unit_file: &str,
-    status: EnablementStatus,
-) -> Result<EnablementStatus, SystemdErrors> {
+    status: UnitFileStatus,
+) -> Result<UnitFileStatus, SystemdErrors> {
     if status.has_status() {
         return Ok(status);
     }
@@ -360,7 +363,7 @@ pub async fn get_unit_file_state_async(
     let body = message.body();
     let enablement_status: &str = body.deserialize()?;
 
-    EnablementStatus::from_str(enablement_status)
+    UnitFileStatus::from_str(enablement_status)
 }
 
 pub async fn list_units_description_and_state_async(
@@ -489,7 +492,7 @@ pub async fn fill_list_unit_files(
         };
 
         let status_code =
-            EnablementStatus::from_str(&unit_file.enablement_status).expect("Always status");
+            UnitFileStatus::from_str(&unit_file.enablement_status).expect("Always status");
 
         systemd_units.push(SystemdUnitFile {
             full_name: full_name.to_owned(),
@@ -1503,6 +1506,95 @@ fn fetch_unit_interface_all_properties(
 }
 
 pub async fn fetch_unit_properties(
+    level: UnitDBusLevel,
+    unit_primary_name: &str,
+    path: &str,
+    unit_properties: UnitProperties,
+    properties: Vec<(UnitType, &String, Quark)>,
+) -> Result<Vec<UnitPropertySetter>, SystemdErrors> {
+    let connection = get_connection(level).await?;
+
+    let proxy = ZUnitInfoProxy::builder(&connection)
+        .path(path)?
+        .build()
+        .await?;
+
+    let mut output = Vec::new();
+    //Compete the prop
+    for prop in unit_properties.0.into_iter() {
+        fetch_managed_property(level, unit_primary_name, &proxy, &mut output, prop)
+            .await
+            .inspect_err(|_err| println!("{:?} {:?}", unit_primary_name, prop))?;
+    }
+
+    // Do the custom
+    if properties.is_empty() {
+        return Ok(output);
+    }
+
+    let proxy = ZPropertiesProxy::builder(&connection)
+        .path(path)?
+        .build()
+        .await?;
+
+    for (unit_type, property, quark) in properties.into_iter() {
+        let interface = unit_type.interface();
+
+        let value = proxy.get(interface, property).await?;
+
+        let custom = UnitPropertySetter::Custom(quark, value);
+        output.push(custom);
+    }
+
+    Ok(output)
+}
+
+async fn fetch_managed_property(
+    level: UnitDBusLevel,
+    unit_primary_name: &str,
+    proxy: &ZUnitInfoProxy<'_>,
+    output: &mut Vec<UnitPropertySetter>,
+    prop: UnitPropertiesFlags,
+) -> Result<(), SystemdErrors> {
+    match prop {
+        UnitPropertiesFlags::EnablementStatus => {
+            let manager_proxy = systemd_manager_async(level).await?;
+            let status: UnitFileStatus = manager_proxy
+                .get_unit_file_state(unit_primary_name)
+                .await?
+                .into();
+            output.push(UnitPropertySetter::EnablementStatus(status));
+        }
+
+        UnitPropertiesFlags::ActiveStatus => {
+            let v: ActiveState = proxy.active_state().await?.into();
+            output.push(UnitPropertySetter::ActiveState(v));
+        }
+        UnitPropertiesFlags::Description => {
+            let v = proxy.description().await?;
+            output.push(UnitPropertySetter::Description(v));
+        }
+        UnitPropertiesFlags::LoadState => {
+            let v: LoadState = proxy.load_state().await?.into();
+            output.push(UnitPropertySetter::LoadState(v));
+        }
+        UnitPropertiesFlags::SubState => {
+            let v = proxy.sub_state().await?;
+            output.push(UnitPropertySetter::SubState(v));
+        }
+        UnitPropertiesFlags::UnitFilePreset => {
+            let v: Preset = proxy.unit_file_preset().await?.into();
+            output.push(UnitPropertySetter::UnitFilePreset(v));
+        }
+        UnitPropertiesFlags::FragmentPath => {
+            let v = proxy.fragment_path().await?;
+            output.push(UnitPropertySetter::FragmentPath(v));
+        }
+    };
+    Ok(())
+}
+
+pub async fn fetch_unit_property(
     level: UnitDBusLevel,
     path: &str,
     property_interface: &str,

@@ -5,7 +5,7 @@ use gtk::{gio, glib};
 use log::{debug, info, warn};
 
 use crate::format2;
-use crate::systemd::{self, data::UnitInfo, enums::EnablementStatus, errors::SystemdErrors};
+use crate::systemd::{self, data::UnitInfo, enums::UnitFileStatus, errors::SystemdErrors};
 
 use super::UnitControlPanel;
 use crate::gtk::prelude::*;
@@ -13,7 +13,7 @@ use crate::utils::palette::{blue, dark_blue};
 
 pub(super) fn switch_ablement_state_set(
     control_panel: &UnitControlPanel,
-    expected_new_status: EnablementStatus,
+    expected_new_status: UnitFileStatus,
     switch: &gtk::Switch,
     unit: &UnitInfo,
     call_back: Rc<Box<dyn Fn()>>,
@@ -73,7 +73,7 @@ pub(super) fn switch_ablement_state_set(
 
                 unit.set_enable_status(expected_new_status);
 
-                switch.set_state(expected_new_status == EnablementStatus::Enabled);
+                switch.set_state(expected_new_status == UnitFileStatus::Enabled);
             }
 
             Err(error) => {
@@ -83,11 +83,11 @@ pub(super) fn switch_ablement_state_set(
                 };
 
                 let (action_str, action_log) = match expected_new_status {
-                    EnablementStatus::Disabled => {
+                    UnitFileStatus::Disabled => {
                         //toast message action on fail
                         (pgettext("toast", "Disabling"), "Disabling")
                     }
-                    EnablementStatus::Enabled => {
+                    UnitFileStatus::Enabled => {
                         //toast message action on fail
                         (pgettext("toast", "Enabling"), "Enabling")
                     }
@@ -152,14 +152,14 @@ pub(super) fn reeenable_unit(
             systemd::disenable_unit_file(
                 &primary_name,
                 level,
-                EnablementStatus::Enabled,
-                EnablementStatus::Disabled,
+                UnitFileStatus::Enabled,
+                UnitFileStatus::Disabled,
             )
             .map(|_ret| {
                 systemd::disenable_unit_file(
                     &primary_name,
                     level,
-                    EnablementStatus::Disabled,
+                    UnitFileStatus::Disabled,
                     expected_new_status,
                 )
             })
@@ -193,7 +193,7 @@ pub(super) fn reeenable_unit(
 
                 unit.set_enable_status(expected_new_status);
 
-                switch.set_state(expected_new_status == EnablementStatus::Enabled);
+                switch.set_state(expected_new_status == UnitFileStatus::Enabled);
             }
 
             Err(error) => {
@@ -231,8 +231,8 @@ pub(super) fn reeenable_unit(
 }
 
 //TODO do function to more constitency
-fn set_switch_tooltip(enabled: EnablementStatus, switch: &gtk::Switch, unit_name: &str) {
-    let enabled = enabled == EnablementStatus::Enabled;
+fn set_switch_tooltip(enabled: UnitFileStatus, switch: &gtk::Switch, unit_name: &str) {
+    let enabled = enabled == UnitFileStatus::Enabled;
 
     let action_text = if enabled {
         pgettext("controls", "Disable unit {}")
@@ -292,10 +292,10 @@ pub(super) fn handle_switch_sensivity(
 fn handle_switch_sensivity_part2(
     switch: &gtk::Switch,
     unit: &UnitInfo,
-    unit_file_state: EnablementStatus,
+    unit_file_state: UnitFileStatus,
 ) {
-    if unit_file_state == EnablementStatus::Enabled
-        || unit_file_state == EnablementStatus::EnabledRuntime
+    if unit_file_state == UnitFileStatus::Enabled
+        || unit_file_state == UnitFileStatus::EnabledRuntime
     {
         switch.set_state(true);
         switch.set_active(true);
@@ -305,9 +305,9 @@ fn handle_switch_sensivity_part2(
     }
 
     let sensitive = match unit_file_state {
-        EnablementStatus::Enabled
-        | EnablementStatus::EnabledRuntime
-        | EnablementStatus::Disabled => {
+        UnitFileStatus::Enabled
+        | UnitFileStatus::EnabledRuntime
+        | UnitFileStatus::Disabled => {
             set_switch_tooltip(unit_file_state, switch, &unit.primary());
             true
         }

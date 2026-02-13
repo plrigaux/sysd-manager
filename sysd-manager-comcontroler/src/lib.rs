@@ -21,7 +21,8 @@ use std::{
 };
 
 use crate::{
-    enums::{ActiveState, EnablementStatus, LoadState, StartStopMode},
+    data::UnitPropertySetter,
+    enums::{ActiveState, LoadState, StartStopMode, UnitFileStatus},
     file::save_text_to_file,
     journal_data::Boot,
     sysdbus::{
@@ -45,6 +46,7 @@ use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 
 use flagset::{FlagSet, flags};
+use glib::Quark;
 use journal_data::{EventRange, JournalEventChunk};
 use log::{error, info, warn};
 
@@ -65,7 +67,7 @@ pub enum BootFilter {
 // #[allow(unused)]
 pub struct SystemdUnitFile {
     pub full_name: String,
-    pub status_code: EnablementStatus,
+    pub status_code: UnitFileStatus,
     pub level: UnitDBusLevel,
     pub file_path: String,
 }
@@ -81,7 +83,7 @@ pub struct UpdatedUnitInfo {
     pub unit_file_preset: Option<String>,
     pub valid_unit_name: bool,
     pub fragment_path: Option<String>,
-    pub enablement_status: Option<EnablementStatus>,
+    pub enablement_status: Option<UnitFileStatus>,
     pub level: UnitDBusLevel,
 }
 
@@ -114,13 +116,14 @@ impl UnitProperties {
     // fn new(flags: impl Into<FlagSet<UnitPropertiesFlags>>) -> UnitProperties {
     //     UnitProperties(flags.into())
     // }
+    //
 }
 
 pub struct CompleteUnitPropertiesCallParams {
     pub level: UnitDBusLevel,
     pub unit_name: String,
     pub object_path: String,
-    pub status: EnablementStatus,
+    pub status: UnitFileStatus,
 }
 
 impl CompleteUnitPropertiesCallParams {
@@ -139,7 +142,7 @@ impl CompleteUnitPropertiesCallParams {
         level: UnitDBusLevel,
         unit_name: String,
         object_path: String,
-        status: EnablementStatus,
+        status: UnitFileStatus,
     ) -> Self {
         Self {
             level,
@@ -171,7 +174,7 @@ pub fn shut_down() {
 pub fn get_unit_file_state(
     level: UnitDBusLevel,
     primary_name: &str,
-) -> Result<EnablementStatus, SystemdErrors> {
+) -> Result<UnitFileStatus, SystemdErrors> {
     sysdbus::get_unit_file_state(level, primary_name)
 }
 
@@ -282,7 +285,7 @@ pub async fn complete_single_unit_information(
     primary_name: String,
     level: UnitDBusLevel,
     object_path: String,
-    status: EnablementStatus,
+    status: UnitFileStatus,
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
     let units = [CompleteUnitPropertiesCallParams::new_params(
         level,
@@ -335,11 +338,11 @@ pub fn restart_unit(
 pub fn disenable_unit_file(
     primary_name: &str,
     level: UnitDBusLevel,
-    enable_status: EnablementStatus,
-    expected_status: EnablementStatus,
+    enable_status: UnitFileStatus,
+    expected_status: UnitFileStatus,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     match expected_status {
-        EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => enable_unit_file(
+        UnitFileStatus::Enabled | UnitFileStatus::EnabledRuntime => enable_unit_file(
             level,
             primary_name,
             DisEnableFlags::SdSystemdUnitForce.into(),
@@ -1061,11 +1064,13 @@ pub async fn fetch_unit_interface_properties()
 
 pub async fn fetch_unit_properties(
     level: UnitDBusLevel,
+    unit_primary_name: &str,
     path: &str,
-    property_interface: &str,
-    property: &str,
-) -> Result<OwnedValue, SystemdErrors> {
-    sysdbus::fetch_unit_properties(level, path, property_interface, property).await
+    unit_properties: UnitProperties,
+    properties: Vec<(UnitType, &String, Quark)>,
+) -> Result<Vec<UnitPropertySetter>, SystemdErrors> {
+    sysdbus::fetch_unit_properties(level, unit_primary_name, path, unit_properties, properties)
+        .await
 }
 
 pub async fn create_drop_in(

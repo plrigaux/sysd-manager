@@ -5,7 +5,7 @@ pub mod pop_menu;
 
 use std::{
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     hash::Hasher,
     rc::Rc,
     time::Duration,
@@ -65,9 +65,7 @@ use gtk::{
 };
 use std::hash::Hash;
 use strum::IntoEnumIterator;
-use systemd::{
-    CompleteUnitPropertiesCallParams, ListUnitResponse, UnitProperties, UnitPropertiesFlags,
-};
+use systemd::{ListUnitResponse, UnitProperties, UnitPropertiesFlags};
 use tracing::{debug, error, info, warn};
 
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
@@ -280,12 +278,6 @@ macro_rules! units_browser {
     ($self:expr) => {
         $self.units_browser.get().unwrap()
     };
-}
-
-struct UnitProperty {
-    interface: String,
-    unit_property: String,
-    unit_type: UnitType,
 }
 
 #[gtk::template_callbacks]
@@ -637,7 +629,7 @@ impl UnitListPanelImp {
             panel_stack.set_visible_child_name("unit_list");
 
             //Complete unit information
-            glib::spawn_future_local(async move {
+            /* glib::spawn_future_local(async move {
                 //let (sender, receiver) = tokio::sync::oneshot::channel();
 
                 let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
@@ -678,8 +670,8 @@ impl UnitListPanelImp {
                 }
                 //TODO investigate
                 unit_list.imp().fetch_custom_unit_properties();
-            });
-            //unit_list.imp().fetch_custom_unit_properties();
+            }); */
+            unit_list.imp().fetch_custom_unit_properties();
         });
     }
 
@@ -1182,56 +1174,37 @@ impl UnitListPanelImp {
         /*        let list_len = property_list.len();
         warn!("Property list size {} ", list_len); */
         let mut property_list_send = Vec::with_capacity(current_property_list.len());
-        let mut property_list_keys = Vec::with_capacity(current_property_list.len());
-        let mut types = HashSet::with_capacity(16);
-        let mut is_unit_type = false;
+        // let mut types = HashSet::with_capacity(16);
 
-        for unit_property in current_property_list.iter() {
-            if unit_property.is_custom() {
-                //Add custom factory
-                let u_prop = unit_property.unit_property();
-                let key = Quark::from_str(&u_prop);
-                property_list_keys.push(key);
-
-                property_list_send.push(UnitProperty {
-                    interface: unit_property.interface(),
-                    unit_property: u_prop,
-                    unit_type: unit_property.unit_type(),
-                });
-            }
-
-            match unit_property.unit_type() {
-                UnitType::Unit => is_unit_type |= true,
-                UnitType::Unknown => { //Do nothing
-                }
-                unit_type => {
-                    types.insert(unit_type);
-                }
-            }
+        for unit_property_selection in current_property_list.iter().filter(|item| item.is_custom())
+        {
+            //Add custom factory
+            let u_prop = unit_property_selection.unit_property();
+            let quark = Quark::from_str(&u_prop);
+            property_list_send.push((unit_property_selection.unit_type(), u_prop, quark));
         }
 
-        if property_list_send.is_empty() {
-            info!("No custom property to fetch");
-            return;
-        }
+        // if property_list_send.is_empty() {
+        //     info!("No custom property to fetch");
+        //     return;
+        // }
 
-        let list_len = property_list_send.len();
         let units_browser = units_browser!(self).clone();
         let units_map = self.units_map.clone();
         let display_color = self.display_color.get();
 
-        //TODO fetch oly new properties look at properties already fetched
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
                 .borrow()
-                .values()
-                .filter(|unit| is_unit_type || types.contains(&unit.unit_type()))
-                .map(|unit| {
+                .iter()
+                // .filter(|unit| is_unit_type || types.contains(&unit.unit_type()))
+                .map(|(key, unit)| {
                     (
                         unit.dbus_level(),
                         unit.primary(),
                         unit.object_path(),
                         unit.unit_type(),
+                        key.update_properties.get(),
                     )
                 })
                 .collect();
@@ -1239,38 +1212,34 @@ impl UnitListPanelImp {
             let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
             systemd::runtime().spawn(async move {
                 info!("Fetching properties START for {} units", units_list.len());
-                for (level, primary_name, object_path, unit_type) in units_list {
-                    let mut property_value_list = vec![None; list_len];
-                    for (index, unit_property) in property_list_send.iter().enumerate() {
-                        if unit_property.unit_type != UnitType::Unit
-                            && unit_type != unit_property.unit_type
-                        {
-                            continue;
-                        }
-                        debug!("Fetch {} {}", primary_name, unit_property.unit_property);
-                        match systemd::fetch_unit_properties(
-                            level,
-                            &object_path,
-                            &unit_property.interface,
-                            &unit_property.unit_property,
-                        )
-                        .await
-                        {
-                            Ok(value) => property_value_list[index] = Some(value),
-                            Err(err) => {
-                                debug!(
-                                    "PROP {} {} {object_path} {err:?}",
-                                    unit_property.interface, unit_property.unit_property
-                                );
-                            }
-                        }
+                for (level, primary_name, object_path, unit_type, update_property_flag) in
+                    units_list
+                {
+                    let mut cleaned_props: Vec<_> = Vec::with_capacity(property_list_send.len());
+                    for (unit_type, property_name, quark) in
+                        property_list_send
+                            .iter()
+                            .filter(|(unit_property_type, _, _)| {
+                                *unit_property_type != UnitType::Unit
+                                    && *unit_property_type != unit_type
+                            })
+                    {
+                        cleaned_props.push((*unit_type, property_name, *quark));
                     }
 
+                    let properties_setter = systemd::fetch_unit_properties(
+                        level,
+                        &primary_name,
+                        &object_path,
+                        update_property_flag,
+                        cleaned_props,
+                    )
+                    .await
+                    .inspect_err(|err| warn!("Some Error : {err:?}"))
+                    .unwrap_or(vec![]);
+
                     if let Err(err) = sender
-                        .send((
-                            UnitKey::new_string(level, primary_name),
-                            property_value_list,
-                        ))
+                        .send((UnitKey::new_string(level, primary_name), properties_setter))
                         .await
                     {
                         error!("The channel needs to be open. {err:?}");
@@ -1288,17 +1257,7 @@ impl UnitListPanelImp {
                     continue;
                 };
 
-                for (index, value) in property_value_list.into_iter().enumerate() {
-                    let Some(key) = property_list_keys.get(index) else {
-                        error!(
-                            "No key for index {index} key len {}",
-                            property_list_keys.len()
-                        );
-                        panic!("Should never fail");
-                    };
-
-                    unit.insert_unit_property_value(*key, value);
-                }
+                unit.fill_property_values(property_value_list);
             }
             info!("Fetching properties FINISHED");
 
@@ -1590,20 +1549,20 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
 
-async fn call_complete_unit(
-    sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
-    batch: &[CompleteUnitPropertiesCallParams],
-) {
-    let updates = systemd::complete_unit_information(batch)
-        .await
-        .inspect_err(|error| warn!("Complete Unit Information Error: {error:?}"))
-        .unwrap_or(vec![]);
+// async fn call_complete_unit(
+//     sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
+//     batch: &[CompleteUnitPropertiesCallParams],
+// ) {
+//     let updates = systemd::complete_unit_information(batch)
+//         .await
+//         .inspect_err(|error| warn!("Complete Unit Information Error: {error:?}"))
+//         .unwrap_or(vec![]);
 
-    sender
-        .send(updates)
-        .await
-        .expect("The channel needs to be open.");
-}
+//     sender
+//         .send(updates)
+//         .await
+//         .expect("The channel needs to be open.");
+// }
 
 macro_rules! dbus_call {
     ($int_level:expr, $handles:expr, $module:ident :: $f:ident) => {{

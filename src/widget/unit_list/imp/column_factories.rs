@@ -14,7 +14,7 @@ use crate::widget::{
 use crate::{
     systemd::{
         data::{UnitInfo, convert_to_string},
-        enums::{ActiveState, EnablementStatus, LoadState, Preset},
+        enums::{ActiveState, UnitFileStatus, LoadState, Preset},
     },
     widget::unit_list::UnitListPanel,
 };
@@ -419,7 +419,7 @@ pub fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
 
             let binding = unit
                 .bind_property(ENABLE_STATUS, &inscription, TEXT)
-                .transform_to(|_, enablement_status: EnablementStatus| {
+                .transform_to(|_, enablement_status: UnitFileStatus| {
                     Some(enablement_status.as_str())
                 })
                 .build();
@@ -428,7 +428,7 @@ pub fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
 
             let binding = unit
                 .bind_property(ENABLE_STATUS, &inscription, CSS_CLASSES)
-                .transform_to(|_, enablement_status: EnablementStatus| {
+                .transform_to(|_, enablement_status: UnitFileStatus| {
                     let css_classes = enablement_css_classes(enablement_status);
                     css_classes.map(|css| css.to_value())
                 })
@@ -454,14 +454,14 @@ pub fn fac_enable_status(display_color: bool) -> gtk::SignalListItemFactory {
     fac_enable_status
 }
 
-fn enablement_css_classes<'a>(enablement_status: EnablementStatus) -> Option<[&'a str; 2]> {
+fn enablement_css_classes<'a>(enablement_status: UnitFileStatus) -> Option<[&'a str; 2]> {
     match enablement_status {
-        EnablementStatus::Bad
-        | EnablementStatus::Disabled
-        | EnablementStatus::Masked
-        | EnablementStatus::MaskedRuntime => Some(["red", "bold"]),
+        UnitFileStatus::Bad
+        | UnitFileStatus::Disabled
+        | UnitFileStatus::Masked
+        | UnitFileStatus::MaskedRuntime => Some(["red", "bold"]),
 
-        EnablementStatus::Alias | EnablementStatus::Enabled | EnablementStatus::EnabledRuntime => {
+        UnitFileStatus::Alias | UnitFileStatus::Enabled | UnitFileStatus::EnabledRuntime => {
             Some(["green", "bold"])
         }
 

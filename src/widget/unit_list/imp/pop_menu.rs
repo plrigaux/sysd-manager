@@ -39,7 +39,7 @@ mod imp {
     use crate::{
         consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
         format2,
-        systemd::{data::UnitInfo, enums::EnablementStatus},
+        systemd::{data::UnitInfo, enums::UnitFileStatus},
         systemd_gui, upgrade,
         utils::palette::blue,
         widget::{
@@ -404,7 +404,7 @@ mod imp {
 
             if matches!(
                 unit.enable_status(),
-                EnablementStatus::Disabled | EnablementStatus::Masked
+                UnitFileStatus::Disabled | UnitFileStatus::Masked
             ) {
                 self.enable_button.set_sensitive(true);
                 self.reenable_button.set_sensitive(false);

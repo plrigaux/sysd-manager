@@ -84,7 +84,7 @@ impl From<String> for Preset {
     Clone, Copy, Debug, PartialEq, Eq, EnumIter, Default, Hash, glib::Enum, PartialOrd, Ord,
 )]
 #[enum_type(name = "EnablementStatus")]
-pub enum EnablementStatus {
+pub enum UnitFileStatus {
     #[default]
     Unknown,
     Alias,
@@ -102,75 +102,75 @@ pub enum EnablementStatus {
     Transient,
 }
 
-impl EnablementStatus {
+impl UnitFileStatus {
     /// Takes the string containing the state information from the dbus message and converts it
     /// into a UnitType by matching the first character.
-    pub fn from_strr(enablement_status: &str) -> EnablementStatus {
+    pub fn from_strr(enablement_status: &str) -> UnitFileStatus {
         if enablement_status.is_empty() {
             info!("Empty Enablement Status: \"{enablement_status}\"");
-            return EnablementStatus::Unknown;
+            return UnitFileStatus::Unknown;
         }
 
         let c = enablement_status.chars().next().unwrap();
 
         match c {
-            'a' => EnablementStatus::Alias,
-            's' => EnablementStatus::Static,
-            'd' => EnablementStatus::Disabled,
+            'a' => UnitFileStatus::Alias,
+            's' => UnitFileStatus::Static,
+            'd' => UnitFileStatus::Disabled,
             'e' => {
                 if enablement_status.len() == ENABLED.len() {
-                    EnablementStatus::Enabled
+                    UnitFileStatus::Enabled
                 } else {
-                    EnablementStatus::EnabledRuntime
+                    UnitFileStatus::EnabledRuntime
                 }
             }
-            'i' => EnablementStatus::Indirect,
+            'i' => UnitFileStatus::Indirect,
             'l' => {
                 if enablement_status.len() == LINKED.len() {
-                    EnablementStatus::Linked
+                    UnitFileStatus::Linked
                 } else {
-                    EnablementStatus::LinkedRuntime
+                    UnitFileStatus::LinkedRuntime
                 }
             }
             'm' => {
                 if enablement_status.len() == MASKED.len() {
-                    EnablementStatus::Masked
+                    UnitFileStatus::Masked
                 } else {
-                    EnablementStatus::MaskedRuntime
+                    UnitFileStatus::MaskedRuntime
                 }
             }
-            'b' => EnablementStatus::Bad,
-            'g' => EnablementStatus::Generated,
-            't' => EnablementStatus::Transient,
+            'b' => UnitFileStatus::Bad,
+            'g' => UnitFileStatus::Generated,
+            't' => UnitFileStatus::Transient,
             _ => {
                 warn!("Unknown State: {enablement_status}");
-                EnablementStatus::Unknown
+                UnitFileStatus::Unknown
             }
         }
     }
 
     pub fn as_str(&self) -> &'static str {
         match self {
-            EnablementStatus::Alias => "alias",
-            EnablementStatus::Bad => "bad",
-            EnablementStatus::Disabled => "disabled",
-            EnablementStatus::Enabled => ENABLED,
-            EnablementStatus::Indirect => "indirect",
-            EnablementStatus::Linked => LINKED,
-            EnablementStatus::Masked => MASKED,
-            EnablementStatus::Static => "static",
-            EnablementStatus::Generated => "generated",
-            EnablementStatus::Transient => "transient",
-            EnablementStatus::EnabledRuntime => "enabled-runtime",
-            EnablementStatus::LinkedRuntime => "linked-runtime",
-            EnablementStatus::MaskedRuntime => "masked-runtime",
-            EnablementStatus::Unknown => "",
+            UnitFileStatus::Alias => "alias",
+            UnitFileStatus::Bad => "bad",
+            UnitFileStatus::Disabled => "disabled",
+            UnitFileStatus::Enabled => ENABLED,
+            UnitFileStatus::Indirect => "indirect",
+            UnitFileStatus::Linked => LINKED,
+            UnitFileStatus::Masked => MASKED,
+            UnitFileStatus::Static => "static",
+            UnitFileStatus::Generated => "generated",
+            UnitFileStatus::Transient => "transient",
+            UnitFileStatus::EnabledRuntime => "enabled-runtime",
+            UnitFileStatus::LinkedRuntime => "linked-runtime",
+            UnitFileStatus::MaskedRuntime => "masked-runtime",
+            UnitFileStatus::Unknown => "",
         }
     }
 
     pub fn label(&self) -> &'static str {
         match self {
-            EnablementStatus::Unknown => "<i>unset</i>",
+            UnitFileStatus::Unknown => "<i>unset</i>",
             _ => self.as_str(),
         }
     }
@@ -178,69 +178,69 @@ impl EnablementStatus {
     pub fn tooltip_info(&self) -> Option<String> {
         match self {
             //tooltip column cell
-            EnablementStatus::Alias => Some(pgettext(
+            UnitFileStatus::Alias => Some(pgettext(
                 "list",
                 "The name is an alias (symlink to another unit file).",
             )),
             //tooltip column cell
-            EnablementStatus::Bad => Some(pgettext(
+            UnitFileStatus::Bad => Some(pgettext(
                 "list",
                 "The unit file is invalid or another error occurred.",
             )),
             //tooltip column cell
-            EnablementStatus::Disabled => Some(pgettext(
+            UnitFileStatus::Disabled => Some(pgettext(
                 "list",
                 "The unit file is not enabled, but contains an [Install] section with installation instructions.",
             )),
             //tooltip column cell
-            EnablementStatus::Enabled => Some(pgettext(
+            UnitFileStatus::Enabled => Some(pgettext(
                 "list",
                 "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).",
             )),
             //tooltip column cell
-            EnablementStatus::Generated => Some(pgettext(
+            UnitFileStatus::Generated => Some(pgettext(
                 "list",
                 "The unit file was generated dynamically via a generator tool. See <b>man systemd.generator(7)</b>. Generated unit files may not be enabled, they are enabled implicitly by their generator.",
             )),
             //tooltip column cell
-            EnablementStatus::Indirect => Some(pgettext(
+            UnitFileStatus::Indirect => Some(pgettext(
                 "list",
                 "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> setting in the [Install] unit file section, listing other unit files that might be enabled, or it has an alias under a different name through a symlink that is not specified in <u>Also=</u>. For template unit files, an instance different than the one specified in <u>DefaultInstance=</u> is enabled.",
             )),
             //tooltip column cell
-            EnablementStatus::Linked => Some(pgettext(
+            UnitFileStatus::Linked => Some(pgettext(
                 "list",
                 "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.",
             )),
             //tooltip column cell
-            EnablementStatus::Masked => Some(pgettext(
+            UnitFileStatus::Masked => Some(pgettext(
                 "list",
                 "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
             )),
             //tooltip column cell
-            EnablementStatus::Static => Some(pgettext(
+            UnitFileStatus::Static => Some(pgettext(
                 "list",
                 "The unit file is not enabled, and has no provisions for enabling in the [Install] unit file section.",
             )),
             //tooltip column cell
-            EnablementStatus::Transient => Some(pgettext(
+            UnitFileStatus::Transient => Some(pgettext(
                 "list",
                 "The unit file has been created dynamically with the runtime API. Transient units may not be enabled.",
             )),
 
-            EnablementStatus::Unknown => None,
+            UnitFileStatus::Unknown => None,
             //tooltip column cell
-            EnablementStatus::EnabledRuntime => Some(pgettext(
+            UnitFileStatus::EnabledRuntime => Some(pgettext(
                 "list",
                 "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>).",
             )),
             //tooltip column cell
-            EnablementStatus::LinkedRuntime => Some(pgettext(
+            UnitFileStatus::LinkedRuntime => Some(pgettext(
                 "list",
                 "Made available through one or more symlinks to the unit file (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file might reside outside of the unit file search path.",
             )),
             //tooltip column cell
-            EnablementStatus::MaskedRuntime => Some(pgettext(
+            UnitFileStatus::MaskedRuntime => Some(pgettext(
                 "list",
                 "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
             )),
@@ -250,81 +250,87 @@ impl EnablementStatus {
     pub fn is_runtime(&self) -> bool {
         matches!(
             self,
-            EnablementStatus::LinkedRuntime
-                | EnablementStatus::MaskedRuntime
-                | EnablementStatus::EnabledRuntime
+            UnitFileStatus::LinkedRuntime
+                | UnitFileStatus::MaskedRuntime
+                | UnitFileStatus::EnabledRuntime
         )
     }
 
     pub fn has_status(&self) -> bool {
-        !matches!(self, EnablementStatus::Unknown)
+        !matches!(self, UnitFileStatus::Unknown)
     }
 }
 
-impl Display for EnablementStatus {
+impl Display for UnitFileStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self.as_str())
     }
 }
 
-impl From<Option<String>> for EnablementStatus {
+impl From<Option<String>> for UnitFileStatus {
     fn from(value: Option<String>) -> Self {
         if let Some(str_val) = value {
-            return EnablementStatus::from_str(&str_val).expect("always Status");
+            return UnitFileStatus::from_str(&str_val).expect("always Status");
         }
-        EnablementStatus::Unknown
+        UnitFileStatus::Unknown
     }
 }
 
-impl From<&str> for EnablementStatus {
+impl From<String> for UnitFileStatus {
+    fn from(value: String) -> Self {
+        UnitFileStatus::from_str(&value).expect("always Status")
+    }
+}
+
+impl From<&str> for UnitFileStatus {
     fn from(value: &str) -> Self {
-        EnablementStatus::from_str(value).expect("always Status")
+        UnitFileStatus::from_str(value).expect("always Status")
     }
 }
 
-impl FromStr for EnablementStatus {
+impl FromStr for UnitFileStatus {
     type Err = SystemdErrors;
 
     fn from_str(enablement_status: &str) -> Result<Self, Self::Err> {
         if enablement_status.is_empty() {
             info!("Empty Enablement Status: \"{enablement_status}\"");
-            return Ok(EnablementStatus::Unknown);
+            return Ok(UnitFileStatus::Unknown);
         }
 
         let c = enablement_status.chars().next().unwrap();
 
         let status = match c {
-            'a' => EnablementStatus::Alias,
-            's' => EnablementStatus::Static,
-            'd' => EnablementStatus::Disabled,
+            'a' => UnitFileStatus::Alias,
+            's' => UnitFileStatus::Static,
+            'd' => UnitFileStatus::Disabled,
             'e' => {
                 if enablement_status.len() == ENABLED.len() {
-                    EnablementStatus::Enabled
+                    UnitFileStatus::Enabled
                 } else {
-                    EnablementStatus::EnabledRuntime
+                    UnitFileStatus::EnabledRuntime
                 }
             }
-            'i' => EnablementStatus::Indirect,
+            'i' => UnitFileStatus::Indirect,
             'l' => {
                 if enablement_status.len() == LINKED.len() {
-                    EnablementStatus::Linked
+                    UnitFileStatus::Linked
                 } else {
-                    EnablementStatus::LinkedRuntime
+                    UnitFileStatus::LinkedRuntime
                 }
             }
             'm' => {
                 if enablement_status.len() == MASKED.len() {
-                    EnablementStatus::Masked
+                    UnitFileStatus::Masked
                 } else {
-                    EnablementStatus::MaskedRuntime
+                    UnitFileStatus::MaskedRuntime
                 }
             }
-            'b' => EnablementStatus::Bad,
-            'g' => EnablementStatus::Generated,
-            't' => EnablementStatus::Transient,
+            'b' => UnitFileStatus::Bad,
+            'g' => UnitFileStatus::Generated,
+            't' => UnitFileStatus::Transient,
             _ => {
                 warn!("Unknown State: {enablement_status}");
-                EnablementStatus::Unknown
+                UnitFileStatus::Unknown
             }
         };
         Ok(status)
@@ -434,6 +440,12 @@ impl ActiveState {
 impl Display for ActiveState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_str())
+    }
+}
+
+impl From<String> for ActiveState {
+    fn from(value: String) -> Self {
+        value.as_str().into()
     }
 }
 
@@ -935,6 +947,12 @@ impl LoadState {
 
     pub fn tooltip_info(&self) -> Option<&str> {
         None
+    }
+}
+
+impl From<String> for LoadState {
+    fn from(value: String) -> Self {
+        Some(value.as_str()).into()
     }
 }
 

@@ -1,6 +1,9 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use crate::sysdbus::ListedUnitFile;
+use crate::{
+    enums::{ActiveState, LoadState, Preset, UnitFileStatus, UnitType},
+    sysdbus::ListedUnitFile,
+};
 
 use super::UpdatedUnitInfo;
 
@@ -54,36 +57,52 @@ impl UnitInfo {
         self.imp().need_to_be_completed()
     }
 
-    pub fn insert_unit_property_value(&self, key: Quark, value: Option<OwnedValue>) {
-        let Some(value) = value else {
-            unsafe { self.steal_qdata::<OwnedValue>(key) };
-            return;
-        };
-
-        //let value_ref = &value as &Value;
-        match &value as &Value {
-            Value::Bool(b) => unsafe { self.set_qdata(key, *b) },
-            Value::U8(i) => unsafe { self.set_qdata(key, *i) },
-            Value::I16(i) => unsafe { self.set_qdata(key, *i) },
-            Value::U16(i) => unsafe { self.set_qdata(key, *i) },
-            Value::I32(i) => unsafe { self.set_qdata(key, *i) },
-            Value::U32(i) => unsafe { self.set_qdata(key, *i) },
-            Value::I64(i) => unsafe { self.set_qdata(key, *i) },
-            Value::U64(i) => unsafe { self.set_qdata(key, *i) },
-            Value::F64(i) => unsafe { self.set_qdata(key, *i) },
-            Value::Str(s) => {
-                if s.is_empty() {
-                    unsafe { self.steal_qdata::<String>(key) };
-                } else {
-                    unsafe { self.set_qdata(key, s.to_string()) };
+    pub fn fill_property_values(&self, property_value_list: Vec<UnitPropertySetter>) {
+        for setter in property_value_list {
+            match setter {
+                UnitPropertySetter::EnablementStatus(unit_file_status) => {
+                    self.set_enable_status(unit_file_status)
+                }
+                UnitPropertySetter::Description(description) => self.set_description(description),
+                UnitPropertySetter::ActiveState(active_state) => {
+                    self.set_active_state(active_state)
+                }
+                UnitPropertySetter::LoadState(load_state) => self.set_load_state(load_state),
+                UnitPropertySetter::FragmentPath(_) => todo!(),
+                UnitPropertySetter::UnitFilePreset(preset) => self.set_preset(preset),
+                UnitPropertySetter::SubState(substate) => self.set_sub_state(substate),
+                UnitPropertySetter::Custom(quark, owned_value) => {
+                    self.insert_unit_property_value(quark, owned_value)
                 }
             }
-            Value::Signature(s) => unsafe { self.set_qdata(key, s.to_string()) },
-            Value::ObjectPath(op) => unsafe { self.set_qdata(key, op.to_string()) },
-            Value::Value(val) => unsafe { self.set_qdata(key, val.to_string()) },
+        }
+    }
+
+    fn insert_unit_property_value(&self, quark: Quark, value: OwnedValue) {
+        //let value_ref = &value as &Value;
+        match &value as &Value {
+            Value::Bool(b) => unsafe { self.set_qdata(quark, *b) },
+            Value::U8(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::I16(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::U16(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::I32(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::U32(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::I64(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::U64(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::F64(i) => unsafe { self.set_qdata(quark, *i) },
+            Value::Str(s) => {
+                if s.is_empty() {
+                    unsafe { self.steal_qdata::<String>(quark) };
+                } else {
+                    unsafe { self.set_qdata(quark, s.to_string()) };
+                }
+            }
+            Value::Signature(s) => unsafe { self.set_qdata(quark, s.to_string()) },
+            Value::ObjectPath(op) => unsafe { self.set_qdata(quark, op.to_string()) },
+            Value::Value(val) => unsafe { self.set_qdata(quark, val.to_string()) },
             Value::Array(array) => {
                 if array.is_empty() {
-                    unsafe { self.steal_qdata::<String>(key) };
+                    unsafe { self.steal_qdata::<String>(quark) };
                 } else {
                     let mut d_str = String::from("");
 
@@ -97,13 +116,13 @@ impl UnitInfo {
                         }
                     }
 
-                    unsafe { self.set_qdata(key, d_str) };
+                    unsafe { self.set_qdata(quark, d_str) };
                 }
             }
             Value::Dict(d) => {
                 let mut it = d.iter().peekable();
                 if it.peek().is_none() {
-                    unsafe { self.steal_qdata::<String>(key) };
+                    unsafe { self.steal_qdata::<String>(quark) };
                 } else {
                     let mut d_str = String::from("{ ");
 
@@ -119,14 +138,14 @@ impl UnitInfo {
                     }
                     d_str.push_str(" }");
 
-                    unsafe { self.set_qdata(key, d_str) };
+                    unsafe { self.set_qdata(quark, d_str) };
                 }
             }
             Value::Structure(stc) => {
                 let mut it = stc.fields().iter().peekable();
 
                 if it.peek().is_none() {
-                    unsafe { self.steal_qdata::<String>(key) };
+                    unsafe { self.steal_qdata::<String>(quark) };
                 } else {
                     let v: Vec<String> = it
                         .filter_map(|v| convert_to_string(v))
@@ -134,10 +153,10 @@ impl UnitInfo {
                         .collect();
                     let d_str = v.join(", ");
 
-                    unsafe { self.set_qdata(key, d_str) };
+                    unsafe { self.set_qdata(quark, d_str) };
                 }
             }
-            Value::Fd(fd) => unsafe { self.set_qdata(key, fd.to_string()) },
+            Value::Fd(fd) => unsafe { self.set_qdata(quark, fd.to_string()) },
             //Value::Maybe(maybe) => (maybe.to_string(), false),
         }
     }
@@ -159,7 +178,7 @@ mod imp {
     use crate::{
         UpdatedUnitInfo,
         data::ListedLoadedUnit,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitType},
+        enums::{ActiveState, LoadState, Preset, UnitFileStatus, UnitType},
         sysdbus::ListedUnitFile,
     };
 
@@ -196,7 +215,7 @@ mod imp {
         #[property(get, set, nullable, default = None)]
         pub(super) file_path: RefCell<Option<String>>,
         #[property(get, set, default)]
-        pub(super) enable_status: Cell<EnablementStatus>,
+        pub(super) enable_status: Cell<UnitFileStatus>,
 
         #[property(get, set, default)]
         pub(super) dbus_level: Cell<UnitDBusLevel>,
@@ -254,8 +273,8 @@ mod imp {
 
         pub(super) fn update_from_unit_file(&self, unit_file: ListedUnitFile) {
             self.file_path.replace(Some(unit_file.unit_file_path));
-            let status = EnablementStatus::from_str(&unit_file.enablement_status)
-                .unwrap_or(EnablementStatus::default());
+            let status = UnitFileStatus::from_str(&unit_file.enablement_status)
+                .unwrap_or(UnitFileStatus::default());
             self.enable_status.replace(status);
         }
 
@@ -455,4 +474,20 @@ pub fn convert_to_string(value: &Value) -> Option<String> {
         Value::Fd(fd) => Some(fd.to_string()),
         //Value::Maybe(maybe) => (maybe.to_string(), false),
     }
+}
+
+pub enum UnitPropertyGetter<'a> {
+    Managed(),
+    Custom(UnitType, &'a str),
+}
+
+pub enum UnitPropertySetter {
+    EnablementStatus(UnitFileStatus),
+    Description(String),
+    ActiveState(ActiveState),
+    LoadState(LoadState),
+    FragmentPath(String),
+    UnitFilePreset(Preset),
+    SubState(String),
+    Custom(Quark, OwnedValue),
 }

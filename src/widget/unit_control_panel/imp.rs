@@ -21,7 +21,7 @@ use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, StartStopMode},
+        enums::{ActiveState, UnitFileStatus, StartStopMode},
         errors::SystemdErrors,
     },
     utils::{
@@ -179,9 +179,9 @@ impl UnitControlPanelImpl {
         let unit = current_unit!(self, true);
 
         let expected_new_status = if switch_new_state {
-            EnablementStatus::Enabled
+            UnitFileStatus::Enabled
         } else {
-            EnablementStatus::Disabled
+            UnitFileStatus::Disabled
         };
 
         controls::switch_ablement_state_set(
@@ -457,7 +457,7 @@ impl UnitControlPanelImpl {
             InterPanelMessage::EnableUnit(unit, call_back) => {
                 controls::switch_ablement_state_set(
                     &self.obj(),
-                    EnablementStatus::Enabled,
+                    UnitFileStatus::Enabled,
                     &self.ablement_switch,
                     unit,
                     call_back.clone(),
@@ -466,7 +466,7 @@ impl UnitControlPanelImpl {
             InterPanelMessage::DisableUnit(unit, call_back) => {
                 controls::switch_ablement_state_set(
                     &self.obj(),
-                    EnablementStatus::Disabled,
+                    UnitFileStatus::Disabled,
                     &self.ablement_switch,
                     unit,
                     call_back.clone(),

@@ -154,6 +154,8 @@ pub(crate) trait Systemd1Manager {
         states: &[&str],
         patterns: &[&str],
     ) -> Result<Vec<ListedUnitFile>, zbus::Error>;
+
+    fn get_unit_file_state(&self, file: &str) -> Result<String, zbus::Error>;
 }
 
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();

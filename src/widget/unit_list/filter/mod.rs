@@ -15,7 +15,7 @@ use super::UnitListPanel;
 use crate::{
     systemd::{
         data::UnitInfo,
-        enums::{ActiveState, EnablementStatus, LoadState, Preset, UnitType},
+        enums::{ActiveState, UnitFileStatus, LoadState, Preset, UnitType},
     },
     widget::unit_list::{
         COL_ID_UNIT,
@@ -84,7 +84,7 @@ pub fn filter_preset(property_assessor: &FilterElementAssessor<Preset>, unit: &U
 }
 
 pub fn filter_enable_status(
-    property_assessor: &FilterElementAssessor<EnablementStatus>,
+    property_assessor: &FilterElementAssessor<UnitFileStatus>,
     unit: &UnitInfo,
 ) -> bool {
     property_assessor.filter_unit_value(&unit.enable_status())
