@@ -1235,7 +1235,7 @@ impl UnitListPanelImp {
                         cleaned_props,
                     )
                     .await
-                    .inspect_err(|err| warn!("Some Error : {err:?}"))
+                    .inspect_err(|err| debug!("Some Error : {err:?}"))
                     .unwrap_or(vec![]);
 
                     if let Err(err) = sender

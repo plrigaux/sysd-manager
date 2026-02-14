@@ -19,7 +19,7 @@ use crate::{
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{
         ZPropertiesProxy, ZPropertiesProxyBlocking, ZUnitInfoProxy, ZUnitInfoProxyBlocking,
-        systemd_manager_async,
+        systemd_manager_async, systemd_manager_blocking,
     },
 };
 use base::{
@@ -58,7 +58,7 @@ const METHOD_GET: &str = "Get";
 const METHOD_START_UNIT: &str = "StartUnit";
 const METHOD_STOP_UNIT: &str = "StopUnit";
 const METHOD_RESTART_UNIT: &str = "RestartUnit";
-const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
+// const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
 //const METHOD_CLEAN_UNIT: &str = "CleanUnit";
@@ -280,12 +280,9 @@ pub fn get_unit_file_state(
     level: UnitDBusLevel,
     unit_file: &str,
 ) -> Result<UnitFileStatus, SystemdErrors> {
-    let message = call_systemd_manager_method(level, METHOD_GET_UNIT_FILE_STATE, &(unit_file))?;
-
-    let body = message.body();
-    let enablement_status: &str = body.deserialize()?;
-
-    UnitFileStatus::from_str(enablement_status)
+    let manager_proxy = systemd_manager_blocking(level);
+    let status: UnitFileStatus = manager_proxy.get_unit_file_state(unit_file)?.into();
+    Ok(status)
 }
 
 fn call_systemd_manager_method<B>(
@@ -341,7 +338,7 @@ where
         .map_err(|e| SystemdErrors::from((e, method)))
 }
 
-pub async fn get_unit_file_state_async(
+/* pub async fn get_unit_file_state_async(
     connection: &zbus::Connection,
     unit_file: &str,
     status: UnitFileStatus,
@@ -364,6 +361,15 @@ pub async fn get_unit_file_state_async(
     let enablement_status: &str = body.deserialize()?;
 
     UnitFileStatus::from_str(enablement_status)
+} */
+
+pub async fn get_unit_file_state_async(
+    level: UnitDBusLevel,
+    file: &str,
+) -> Result<UnitFileStatus, SystemdErrors> {
+    let manager_proxy = systemd_manager_async(level).await?;
+    let status: UnitFileStatus = manager_proxy.get_unit_file_state(file).await?.into();
+    Ok(status)
 }
 
 pub async fn list_units_description_and_state_async(
@@ -387,7 +393,7 @@ pub async fn complete_unit_information(
     for params in units.iter() {
         let connection = get_connection(params.level).await?;
 
-        let f2 = get_unit_file_state_async(&connection, &params.unit_name, params.status);
+        let f2 = get_unit_file_state_async(params.level, &params.unit_name);
         let f1 = complete_unit_info(
             &connection,
             &params.unit_name,
@@ -1524,7 +1530,8 @@ pub async fn fetch_unit_properties(
     for prop in unit_properties.0.into_iter() {
         fetch_managed_property(level, unit_primary_name, &proxy, &mut output, prop)
             .await
-            .inspect_err(|_err| println!("{:?} {:?}", unit_primary_name, prop))?;
+            .inspect_err(|_err| debug!("{:?} {:?}", unit_primary_name, prop))
+            .unwrap_or(());
     }
 
     // Do the custom
@@ -1558,11 +1565,7 @@ async fn fetch_managed_property(
 ) -> Result<(), SystemdErrors> {
     match prop {
         UnitPropertiesFlags::EnablementStatus => {
-            let manager_proxy = systemd_manager_async(level).await?;
-            let status: UnitFileStatus = manager_proxy
-                .get_unit_file_state(unit_primary_name)
-                .await?
-                .into();
+            let status = get_unit_file_state_async(level, unit_primary_name).await?;
             output.push(UnitPropertySetter::EnablementStatus(status));
         }
 

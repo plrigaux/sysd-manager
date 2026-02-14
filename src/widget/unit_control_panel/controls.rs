@@ -266,13 +266,11 @@ pub(super) fn handle_switch_sensivity(
         let level = unit.dbus_level();
         glib::spawn_future_local(async move {
             let current_state = gio::spawn_blocking(move || {
-                match systemd::get_unit_file_state(level, &primary_name) {
-                    Ok(enblement_status) => enblement_status,
-                    Err(err) => {
-                        info!("Get unit state fail! For {:?} : {:?}", primary_name, err);
-                        unit_file_state
-                    }
-                }
+                systemd::get_unit_file_state(level, &primary_name)
+                    .inspect_err(|err| {
+                        info!("Get unit state fail! For {:?} : {:?}", primary_name, err)
+                    })
+                    .unwrap_or(unit_file_state)
             })
             .await
             .expect("Task needs to finish successfully.");
@@ -305,9 +303,7 @@ fn handle_switch_sensivity_part2(
     }
 
     let sensitive = match unit_file_state {
-        UnitFileStatus::Enabled
-        | UnitFileStatus::EnabledRuntime
-        | UnitFileStatus::Disabled => {
+        UnitFileStatus::Enabled | UnitFileStatus::EnabledRuntime | UnitFileStatus::Disabled => {
             set_switch_tooltip(unit_file_state, switch, &unit.primary());
             true
         }

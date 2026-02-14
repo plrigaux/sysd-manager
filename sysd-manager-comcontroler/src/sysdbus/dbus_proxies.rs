@@ -203,6 +203,12 @@ pub fn systemd_manager_session<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
     (&*SYSTEM_MANAGER_SESSION_BLOCKING) as _
 }
 
+pub fn systemd_manager_blocking<'a>(level: UnitDBusLevel) -> &'a Systemd1ManagerProxyBlocking<'a> {
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => systemd_manager(),
+        UnitDBusLevel::UserSession => systemd_manager_session(),
+    }
+}
 pub async fn systemd_manager_async(
     level: UnitDBusLevel,
 ) -> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors> {
