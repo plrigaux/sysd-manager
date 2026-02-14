@@ -117,7 +117,7 @@ tracing-journald.workspace = true
 tokio-util.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
-toml = "0.9"
+toml = "1"
 zvariant.workspace = true
 
 [dev-dependencies]
