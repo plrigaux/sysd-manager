@@ -520,7 +520,7 @@ impl UnitType {
             "snapshot" => UnitType::Snapshot,
             "unit" => UnitType::Unit,
             _ => {
-                warn!("Unknown Unit Type: {unit_type}");
+                warn!("Unknown Unit Type name: {unit_type}");
                 UnitType::Unknown
             }
         }

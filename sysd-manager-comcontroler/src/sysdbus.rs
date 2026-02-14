@@ -1566,7 +1566,7 @@ async fn fetch_managed_property(
     match prop {
         UnitPropertiesFlags::EnablementStatus => {
             let status = get_unit_file_state_async(level, unit_primary_name).await?;
-            output.push(UnitPropertySetter::EnablementStatus(status));
+            output.push(UnitPropertySetter::FileState(status));
         }
 
         UnitPropertiesFlags::ActiveStatus => {

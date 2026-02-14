@@ -60,7 +60,7 @@ impl UnitInfo {
     pub fn fill_property_values(&self, property_value_list: Vec<UnitPropertySetter>) {
         for setter in property_value_list {
             match setter {
-                UnitPropertySetter::EnablementStatus(unit_file_status) => {
+                UnitPropertySetter::FileState(unit_file_status) => {
                     self.set_enable_status(unit_file_status)
                 }
                 UnitPropertySetter::Description(description) => self.set_description(description),
@@ -72,6 +72,7 @@ impl UnitInfo {
                 UnitPropertySetter::UnitFilePreset(preset) => self.set_preset(preset),
                 UnitPropertySetter::SubState(substate) => self.set_sub_state(substate),
                 UnitPropertySetter::Custom(quark, owned_value) => {
+                    println!("cust {:?}", owned_value);
                     self.insert_unit_property_value(quark, owned_value)
                 }
             }
@@ -482,7 +483,7 @@ pub enum UnitPropertyGetter<'a> {
 }
 
 pub enum UnitPropertySetter {
-    EnablementStatus(UnitFileStatus),
+    FileState(UnitFileStatus),
     Description(String),
     ActiveState(ActiveState),
     LoadState(LoadState),

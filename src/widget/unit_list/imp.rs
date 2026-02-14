@@ -52,7 +52,7 @@ use glib::WeakRef;
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
-    glib::{self, Properties, Quark},
+    glib::{self, Properties},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -479,7 +479,7 @@ impl UnitListPanelImp {
         debug!("fill store {:?}", view);
 
         let cols = construct_column_view(self.display_color.get(), view);
-        self.set_new_columns(cols);
+        self.set_new_columns(cols, false);
 
         self.fill_browser();
     }
@@ -1103,7 +1103,11 @@ impl UnitListPanelImp {
         }
     }
 
-    pub(super) fn set_new_columns(&self, property_list: Vec<UnitPropertySelection>) {
+    pub(super) fn set_new_columns(
+        &self,
+        property_list: Vec<UnitPropertySelection>,
+        fetch_custom_props: bool,
+    ) {
         if property_list.is_empty() {
             warn!("Column list empty, Abort");
             return;
@@ -1157,37 +1161,28 @@ impl UnitListPanelImp {
 
         force_expand_on_the_last_visible_column(&columns_list_model);
 
-        self.fetch_custom_unit_properties();
+        if fetch_custom_props {
+            self.fetch_custom_unit_properties();
+        }
     }
 
     fn fetch_custom_unit_properties(&self) {
-        let property_list = self.current_column_view_column_definition_list.borrow();
+        let current_property_list = self.current_column_view_column_definition_list.borrow();
 
-        if property_list.is_empty() {
+        if current_property_list.is_empty() {
             info!("No extra properties to fetch");
             return;
         }
 
         info!("!!! Fetching custom unit properties !!!");
-        let current_property_list = property_list.clone();
+        let current_property_list = current_property_list.clone();
 
-        /*        let list_len = property_list.len();
-        warn!("Property list size {} ", list_len); */
-        let mut property_list_send = Vec::with_capacity(current_property_list.len());
-        // let mut types = HashSet::with_capacity(16);
+        let mut property_list_send = HashMap::with_capacity(current_property_list.len());
 
-        for unit_property_selection in current_property_list.iter().filter(|item| item.is_custom())
-        {
+        for unit_property_selection in current_property_list.iter() {
             //Add custom factory
-            let u_prop = unit_property_selection.unit_property();
-            let quark = Quark::from_str(&u_prop);
-            property_list_send.push((unit_property_selection.unit_type(), u_prop, quark));
+            unit_property_selection.fill_property_fetcher(&mut property_list_send)
         }
-
-        // if property_list_send.is_empty() {
-        //     info!("No custom property to fetch");
-        //     return;
-        // }
 
         let units_browser = units_browser!(self).clone();
         let units_map = self.units_map.clone();
@@ -1213,18 +1208,13 @@ impl UnitListPanelImp {
             systemd::runtime().spawn(async move {
                 info!("Fetching properties START for {} units", units_list.len());
                 for (level, primary_name, object_path, unit_type, update_property_flag) in
-                    units_list
+                    units_list.into_iter()
                 {
                     let mut cleaned_props: Vec<_> = Vec::with_capacity(property_list_send.len());
-                    for (unit_type, property_name, quark) in
-                        property_list_send
-                            .iter()
-                            .filter(|(unit_property_type, _, _)| {
-                                *unit_property_type != UnitType::Unit
-                                    && *unit_property_type != unit_type
-                            })
-                    {
-                        cleaned_props.push((*unit_type, property_name, *quark));
+                    for (unit_type, quark) in property_list_send.iter().filter(|(item, _)| {
+                        item.unit_type != UnitType::Unit && item.unit_type != unit_type
+                    }) {
+                        cleaned_props.push((unit_type.unit_type, &unit_type.property, *quark));
                     }
 
                     let properties_setter = systemd::fetch_unit_properties(
@@ -1238,10 +1228,10 @@ impl UnitListPanelImp {
                     .inspect_err(|err| debug!("Some Error : {err:?}"))
                     .unwrap_or(vec![]);
 
-                    if let Err(err) = sender
+                    let result = sender
                         .send((UnitKey::new_string(level, primary_name), properties_setter))
-                        .await
-                    {
+                        .await;
+                    if let Err(err) = result {
                         error!("The channel needs to be open. {err:?}");
                         break;
                     }
@@ -1249,31 +1239,34 @@ impl UnitListPanelImp {
             });
 
             info!("Fetching properties WAIT");
+            let mut warns = 0;
             while let Some((key, property_value_list)) = receiver.recv().await {
-                //info!("Got properties for {:?}", property_value_list);
+                // info!("Got {} properties for {:?}", property_value_list.len(), key);
                 let map_ref = units_map.borrow();
                 let Some(unit) = map_ref.get(&key) else {
-                    debug!("Not found");
+                    // warn!("UnitKey not Found: {key:?}");
+                    warns += 1;
                     continue;
                 };
 
                 unit.fill_property_values(property_value_list);
             }
+            if warns != 0 {
+                warn!("Unit Keys Failed {warns}");
+            }
+
             info!("Fetching properties FINISHED");
 
-            //Force the factory to display data by seting the factory after the value set (no data binding)
+            //Force the factory to display data by setting the factory after the value set (no data binding)
             for column in units_browser
                 .columns()
                 .iter::<gtk::ColumnViewColumn>()
                 .filter_map(|item| item.ok())
             {
-                let prop_type = current_property_list.iter().find_map(|prop_selection| {
-                    if prop_selection.id() == column.id() {
-                        prop_selection.prop_type()
-                    } else {
-                        None
-                    }
-                });
+                let prop_type = current_property_list
+                    .iter()
+                    .find(|prop_selection| prop_selection.id() == column.id())
+                    .and_then(|prop_selection| prop_selection.prop_type());
 
                 construct::set_column_factory_and_sorter(
                     &column,

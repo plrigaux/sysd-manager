@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::{Debug, Write};
 
-use crate::consts::U64MAX;
+use crate::consts::{NEXT_ELAPSE_USEC_MONOTONIC, NEXT_ELAPSE_USEC_REALTIME, U64MAX};
 use crate::systemd::{
     self,
     data::{UnitInfo, UnitProcess},
@@ -848,10 +848,10 @@ fn fill_trigger(
     }
 
     let next_elapse_realtime = map
-        .get("NextElapseUSecRealtime")
+        .get(NEXT_ELAPSE_USEC_REALTIME)
         .map_or(U64MAX, |v| value_to_u64(v));
     let next_elapse_monotonic = map
-        .get("NextElapseUSecMonotonic")
+        .get(NEXT_ELAPSE_USEC_MONOTONIC)
         .map_or(U64MAX, |v| value_to_u64(v));
 
     let now_realtime = time_handling::now_realtime();

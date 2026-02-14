@@ -1,9 +1,16 @@
+use std::collections::HashMap;
+
 use adw::subclass::prelude::ObjectSubclassIsExt;
 
+use glib::Quark;
 use gtk::glib::{self};
 use log::{debug, info};
 
 use crate::{
+    consts::{
+        NEXT_ELAPSE_USEC_MONOTONIC, NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT,
+        TIMER_TIME_NEXT, TIMER_TIME_PASSED,
+    },
     systemd::enums::UnitType,
     widget::{
         unit_list::{CustomPropertyId, menus::create_col_menu},
@@ -88,10 +95,8 @@ impl UnitPropertySelection {
     }
 
     pub fn from_column_config(unit_column_config: UnitColumn) -> Self {
-        let id = unit_column_config.id;
-
         let column = gtk::ColumnViewColumn::builder()
-            .id(&id)
+            .id(&unit_column_config.id)
             .fixed_width(unit_column_config.fixed_width)
             .expand(unit_column_config.expands)
             .resizable(unit_column_config.resizable)
@@ -162,6 +167,74 @@ impl UnitPropertySelection {
         to.set_title(from.title().as_deref());
         to.set_visible(from.is_visible());
     }
+
+    pub fn fill_property_fetcher(
+        &self,
+        property_list_send: &mut HashMap<DataSelectionItem, Quark>,
+    ) {
+        match (self.is_custom(), self.id().as_deref()) {
+            (true, Some(TIMER_TIME_LAST) | Some(TIMER_TIME_PASSED)) => {
+                let u_prop = "LastTriggerUsec".to_owned();
+                let quark = Quark::from_str(&u_prop);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: self.unit_type(),
+                        property: u_prop,
+                    },
+                    quark,
+                );
+
+                let u_prop = "LastTriggerUsecMonotonic".to_owned();
+                let quark = Quark::from_str(&u_prop);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: self.unit_type(),
+                        property: u_prop,
+                    },
+                    quark,
+                );
+            }
+            (true, Some(TIMER_TIME_NEXT) | Some(TIMER_TIME_LEFT)) => {
+                let u_prop = NEXT_ELAPSE_USEC_MONOTONIC.to_owned();
+                let quark = Quark::from_str(&u_prop);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: self.unit_type(),
+                        property: u_prop,
+                    },
+                    quark,
+                );
+
+                let u_prop = NEXT_ELAPSE_USEC_REALTIME.to_owned();
+                let quark = Quark::from_str(&u_prop);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: self.unit_type(),
+                        property: u_prop,
+                    },
+                    quark,
+                );
+            }
+            (true, _) => {
+                let u_prop = self.unit_property();
+                let quark = Quark::from_str(&u_prop);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: self.unit_type(),
+                        property: u_prop,
+                    },
+                    quark,
+                );
+            }
+            (false, _) => {}
+        }
+    }
+}
+
+#[derive(Eq, Debug, PartialEq, Hash)]
+pub struct DataSelectionItem {
+    pub unit_type: UnitType,
+    pub property: String,
 }
 
 mod imp2 {

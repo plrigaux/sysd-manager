@@ -81,7 +81,7 @@ impl UnitListPanel {
     }
 
     pub fn set_new_columns(&self, list: Vec<UnitPropertySelection>) {
-        self.imp().set_new_columns(list);
+        self.imp().set_new_columns(list, true);
     }
 
     pub fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {

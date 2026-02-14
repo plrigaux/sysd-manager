@@ -7,14 +7,20 @@ use gtk::{
 use log::{error, warn};
 use zvariant::OwnedValue;
 
-use crate::widget::{
-    unit_list::{COL_ID_UNIT, CustomPropertyId},
-    unit_properties_selector::data_selection::UnitPropertySelection,
+use crate::{
+    consts::{
+        NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
+        TIMER_TIME_PASSED,
+    },
+    widget::{
+        unit_list::{COL_ID_UNIT, CustomPropertyId},
+        unit_properties_selector::data_selection::UnitPropertySelection,
+    },
 };
 use crate::{
     systemd::{
         data::{UnitInfo, convert_to_string},
-        enums::{ActiveState, UnitFileStatus, LoadState, Preset},
+        enums::{ActiveState, LoadState, Preset, UnitFileStatus},
     },
     widget::unit_list::UnitListPanel,
 };
@@ -321,6 +327,10 @@ pub fn get_factory_by_id(
         (false, "sysdm-active") => Some(fac_active(display_color)),
         (false, "sysdm-sub") => Some(fac_sub_state(display_color)),
         (false, "sysdm-description") => Some(fac_descrition(display_color)),
+        (false, TIMER_TIME_NEXT) => Some(fac_time_next()),
+        (false, TIMER_TIME_LEFT) => Some(fac_time_left()),
+        (false, TIMER_TIME_PASSED) => Some(fac_time_passed()),
+        (false, TIMER_TIME_LAST) => Some(fac_time_last()),
         _ => {
             warn!("What to do?. Id {id:?} not handle with factory");
             None
@@ -589,4 +599,61 @@ fn display_custom_property(key: Quark, unit: &UnitInfo) -> Option<String> {
     unsafe { unit.qdata::<OwnedValue>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })
         .and_then(|value| convert_to_string(value))
+}
+
+fn fac_time_last() -> gtk::SignalListItemFactory {
+    let time_fac = gtk::SignalListItemFactory::new();
+
+    time_fac.connect_setup(factory_setup);
+    let key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
+    time_fac.connect_bind(move |_factory, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+        inactive_display(&inscription, &unit);
+        let value = display_custom_property_color_typed::<u64>(key, &unit);
+        inscription.set_text(value.as_deref());
+    });
+    time_fac
+}
+
+fn fac_time_passed() -> gtk::SignalListItemFactory {
+    let time_fac = gtk::SignalListItemFactory::new();
+
+    time_fac.connect_setup(factory_setup);
+    let key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
+    time_fac.connect_bind(move |_factory, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+        inactive_display(&inscription, &unit);
+        let value = display_custom_property_color_typed::<u64>(key, &unit);
+        inscription.set_text(value.as_deref());
+    });
+    time_fac
+}
+
+fn fac_time_left() -> gtk::SignalListItemFactory {
+    let time_fac = gtk::SignalListItemFactory::new();
+
+    time_fac.connect_setup(factory_setup);
+    let key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
+    time_fac.connect_bind(move |_factory, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+        inactive_display(&inscription, &unit);
+        let value = display_custom_property_color_typed::<u64>(key, &unit);
+        inscription.set_text(value.as_deref());
+    });
+
+    time_fac
+}
+
+fn fac_time_next() -> gtk::SignalListItemFactory {
+    let time_fac = gtk::SignalListItemFactory::new();
+
+    time_fac.connect_setup(factory_setup);
+    let key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
+    time_fac.connect_bind(move |_factory, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+        inactive_display(&inscription, &unit);
+        let value = display_custom_property_color_typed::<u64>(key, &unit);
+        inscription.set_text(value.as_deref());
+    });
+    time_fac
 }
