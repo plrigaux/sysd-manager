@@ -398,7 +398,7 @@ pub fn disable_unit_file(
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    println!("{:?} {} {:?}", level, unit_file, flags.bits_c());
+    info!("{:?} {} {:?}", level, unit_file, flags.bits_c());
     #[cfg(not(feature = "flatpak"))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
