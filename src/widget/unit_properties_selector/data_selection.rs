@@ -5,6 +5,7 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use glib::Quark;
 use gtk::glib::{self};
 use log::{debug, info};
+use tracing::warn;
 
 use crate::{
     consts::{
@@ -173,48 +174,6 @@ impl UnitPropertySelection {
         property_list_send: &mut HashMap<DataSelectionItem, Quark>,
     ) {
         match (self.is_custom(), self.id().as_deref()) {
-            (true, Some(TIMER_TIME_LAST) | Some(TIMER_TIME_PASSED)) => {
-                let u_prop = "LastTriggerUsec".to_owned();
-                let quark = Quark::from_str(&u_prop);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: self.unit_type(),
-                        property: u_prop,
-                    },
-                    quark,
-                );
-
-                let u_prop = "LastTriggerUsecMonotonic".to_owned();
-                let quark = Quark::from_str(&u_prop);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: self.unit_type(),
-                        property: u_prop,
-                    },
-                    quark,
-                );
-            }
-            (true, Some(TIMER_TIME_NEXT) | Some(TIMER_TIME_LEFT)) => {
-                let u_prop = NEXT_ELAPSE_USEC_MONOTONIC.to_owned();
-                let quark = Quark::from_str(&u_prop);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: self.unit_type(),
-                        property: u_prop,
-                    },
-                    quark,
-                );
-
-                let u_prop = NEXT_ELAPSE_USEC_REALTIME.to_owned();
-                let quark = Quark::from_str(&u_prop);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: self.unit_type(),
-                        property: u_prop,
-                    },
-                    quark,
-                );
-            }
             (true, _) => {
                 let u_prop = self.unit_property();
                 let quark = Quark::from_str(&u_prop);
@@ -226,7 +185,51 @@ impl UnitPropertySelection {
                     quark,
                 );
             }
-            (false, _) => {}
+            (false, Some(TIMER_TIME_LAST) | Some(TIMER_TIME_PASSED)) => {
+                const LASTTRIGGERUSEC: &str = "LastTriggerUSec";
+                let quark = Quark::from_str(LASTTRIGGERUSEC);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: UnitType::Timer,
+                        property: LASTTRIGGERUSEC.to_owned(),
+                    },
+                    quark,
+                );
+
+                const LASTTRIGGERUSECMONOTONIC: &str = "LastTriggerUSecMonotonic";
+                let quark = Quark::from_str(LASTTRIGGERUSECMONOTONIC);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: UnitType::Timer,
+                        property: LASTTRIGGERUSECMONOTONIC.to_owned(),
+                    },
+                    quark,
+                );
+            }
+            (false, Some(TIMER_TIME_NEXT) | Some(TIMER_TIME_LEFT)) => {
+                let u_prop = NEXT_ELAPSE_USEC_MONOTONIC.to_owned();
+                let quark = Quark::from_str(&u_prop);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: UnitType::Timer,
+                        property: u_prop,
+                    },
+                    quark,
+                );
+
+                let u_prop = NEXT_ELAPSE_USEC_REALTIME.to_owned();
+                let quark = Quark::from_str(&u_prop);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: UnitType::Timer,
+                        property: u_prop,
+                    },
+                    quark,
+                );
+            }
+            (false, _) => {
+                warn!("??? {:?} cust {:?}", self.id(), self.is_custom())
+            }
         }
     }
 }

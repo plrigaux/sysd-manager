@@ -1212,11 +1212,13 @@ impl UnitListPanelImp {
                 {
                     let mut cleaned_props: Vec<_> = Vec::with_capacity(property_list_send.len());
                     for (unit_type, quark) in property_list_send.iter().filter(|(item, _)| {
-                        item.unit_type != UnitType::Unit && item.unit_type != unit_type
+                        item.unit_type == UnitType::Unit || item.unit_type == unit_type
                     }) {
                         cleaned_props.push((unit_type.unit_type, &unit_type.property, *quark));
                     }
+                    // println!("orig {:?}", property_list_send);
 
+                    // println!("cleaned {:?}", cleaned_props);
                     let properties_setter = systemd::fetch_unit_properties(
                         level,
                         &primary_name,
@@ -1239,20 +1241,15 @@ impl UnitListPanelImp {
             });
 
             info!("Fetching properties WAIT");
-            let mut warns = 0;
             while let Some((key, property_value_list)) = receiver.recv().await {
                 // info!("Got {} properties for {:?}", property_value_list.len(), key);
                 let map_ref = units_map.borrow();
                 let Some(unit) = map_ref.get(&key) else {
-                    // warn!("UnitKey not Found: {key:?}");
-                    warns += 1;
+                    warn!("UnitKey not Found: {key:?}");
                     continue;
                 };
 
                 unit.fill_property_values(property_value_list);
-            }
-            if warns != 0 {
-                warn!("Unit Keys Failed {warns}");
             }
 
             info!("Fetching properties FINISHED");

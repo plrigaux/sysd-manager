@@ -1,18 +1,20 @@
-use std::sync::LazyLock;
+use std::{sync::LazyLock, u64};
 
 use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
 use log::{error, warn};
+use systemd::time_handling::{self, calc_next_elapse};
 use zvariant::OwnedValue;
 
 use crate::{
     consts::{
-        NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
-        TIMER_TIME_PASSED,
+        NEXT_ELAPSE_USEC_MONOTONIC, NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT,
+        TIMER_TIME_NEXT, TIMER_TIME_PASSED, U64MAX,
     },
     widget::{
+        preferences::data::PREFERENCES,
         unit_list::{COL_ID_UNIT, CustomPropertyId},
         unit_properties_selector::data_selection::UnitPropertySelection,
     },
@@ -556,16 +558,16 @@ pub(super) fn get_custom_factory(
     };
 
     let get_value = match prop_type {
-        "b" => display_custom_property_color_typed::<bool>,
-        "n" => display_custom_property_color_typed::<i16>,
-        "q" => display_custom_property_color_typed::<u16>,
-        "i" => display_custom_property_color_typed::<i32>,
-        "u" => display_custom_property_color_typed::<u32>,
-        "s" => display_custom_property_color_typed::<String>,
-        "x" => display_custom_property_color_typed::<i64>,
-        "t" => display_custom_property_color_typed::<u64>,
+        "b" => get_custom_property_typed::<bool>,
+        "n" => get_custom_property_typed::<i16>,
+        "q" => get_custom_property_typed::<u16>,
+        "i" => get_custom_property_typed::<i32>,
+        "u" => get_custom_property_typed::<u32>,
+        "s" => get_custom_property_typed::<String>,
+        "x" => get_custom_property_typed::<i64>,
+        "t" => get_custom_property_typed::<u64>,
         "v" => display_custom_property,
-        _ => display_custom_property_color_typed::<String>,
+        _ => get_custom_property_typed::<String>,
     };
 
     if display_color {
@@ -586,13 +588,22 @@ pub(super) fn get_custom_factory(
     factory
 }
 
-fn display_custom_property_color_typed<T>(key: Quark, unit: &UnitInfo) -> Option<String>
+fn get_custom_property_typed<T>(key: Quark, unit: &UnitInfo) -> Option<String>
 where
     T: ToString + 'static,
 {
     unsafe { unit.qdata::<T>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })
         .map(|value| value.to_string())
+}
+
+fn get_custom_property_typed_raw<T>(key: Quark, unit: &UnitInfo) -> Option<T>
+where
+    T: Copy + 'static,
+{
+    unsafe { unit.qdata::<T>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .copied()
 }
 
 fn display_custom_property(key: Quark, unit: &UnitInfo) -> Option<String> {
@@ -605,15 +616,33 @@ fn fac_time_last() -> gtk::SignalListItemFactory {
     let time_fac = gtk::SignalListItemFactory::new();
 
     time_fac.connect_setup(factory_setup);
-    let key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
-    time_fac.connect_bind(move |_factory, object| {
-        let (inscription, unit) = factory_bind_pre!(object);
-        inactive_display(&inscription, &unit);
-        let value = display_custom_property_color_typed::<u64>(key, &unit);
-        inscription.set_text(value.as_deref());
-    });
     time_fac
 }
+
+// ///from systemd code
+// fn calc_next_elapse(next_elapse_realtime: Option<u64>, next_elapse_monotonic: Option<u64>) -> u64 {
+//     let now_realtime = time_handling::now_realtime();
+//     let now_monotonic = time_handling::now_monotonic();
+//     if let Some(next_elapse_monotonic) = next_elapse_monotonic
+//         && next_elapse_monotonic != u64::MAX
+//     {
+//         let converted = if next_elapse_monotonic > now_monotonic {
+//             now_realtime + (next_elapse_monotonic - now_monotonic)
+//         } else {
+//             now_realtime - (now_monotonic - next_elapse_monotonic)
+//         };
+
+//         if let Some(next_elapse_realtime) = next_elapse_realtime
+//             && next_elapse_realtime != u64::MAX
+//         {
+//             converted.min(next_elapse_realtime)
+//         } else {
+//             converted
+//         }
+//     } else {
+//         next_elapse_realtime.unwrap_or(u64::MAX)
+//     }
+// }
 
 fn fac_time_passed() -> gtk::SignalListItemFactory {
     let time_fac = gtk::SignalListItemFactory::new();
@@ -623,8 +652,36 @@ fn fac_time_passed() -> gtk::SignalListItemFactory {
     time_fac.connect_bind(move |_factory, object| {
         let (inscription, unit) = factory_bind_pre!(object);
         inactive_display(&inscription, &unit);
-        let value = display_custom_property_color_typed::<u64>(key, &unit);
+        let value = get_custom_property_typed::<u64>(key, &unit);
         inscription.set_text(value.as_deref());
+    });
+    time_fac
+}
+
+fn fac_time_next() -> gtk::SignalListItemFactory {
+    let time_fac = gtk::SignalListItemFactory::new();
+
+    time_fac.connect_setup(factory_setup);
+    let next_elapse_realtime_key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
+    let next_elapse_monotonic_key = Quark::from_str(NEXT_ELAPSE_USEC_MONOTONIC);
+    let timestamp_style = PREFERENCES.timestamp_style();
+    time_fac.connect_bind(move |_factory, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+        inactive_display(&inscription, &unit);
+
+        let next_elapse_realtime =
+            get_custom_property_typed_raw::<u64>(next_elapse_realtime_key, &unit).unwrap_or(U64MAX);
+        let next_elapse_monotonic =
+            get_custom_property_typed_raw::<u64>(next_elapse_monotonic_key, &unit)
+                .unwrap_or(U64MAX);
+
+        let next_elapse = calc_next_elapse(next_elapse_realtime, next_elapse_monotonic);
+        if next_elapse != u64::MAX {
+            let x = time_handling::get_since_and_passed_time(next_elapse, timestamp_style);
+            inscription.set_text(Some(&x.0));
+        } else {
+            inscription.set_text(None);
+        }
     });
     time_fac
 }
@@ -633,27 +690,27 @@ fn fac_time_left() -> gtk::SignalListItemFactory {
     let time_fac = gtk::SignalListItemFactory::new();
 
     time_fac.connect_setup(factory_setup);
-    let key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
+    let next_elapse_realtime_key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
+    let next_elapse_monotonic_key = Quark::from_str(NEXT_ELAPSE_USEC_MONOTONIC);
+    let timestamp_style = PREFERENCES.timestamp_style();
     time_fac.connect_bind(move |_factory, object| {
         let (inscription, unit) = factory_bind_pre!(object);
         inactive_display(&inscription, &unit);
-        let value = display_custom_property_color_typed::<u64>(key, &unit);
-        inscription.set_text(value.as_deref());
+
+        let next_elapse_realtime =
+            get_custom_property_typed_raw::<u64>(next_elapse_realtime_key, &unit).unwrap_or(U64MAX);
+        let next_elapse_monotonic =
+            get_custom_property_typed_raw::<u64>(next_elapse_monotonic_key, &unit)
+                .unwrap_or(U64MAX);
+
+        let next_elapse = calc_next_elapse(next_elapse_realtime, next_elapse_monotonic);
+        if next_elapse != u64::MAX {
+            let x = time_handling::get_since_and_passed_time(next_elapse, timestamp_style);
+            inscription.set_text(Some(&x.1));
+        } else {
+            inscription.set_text(None);
+        }
     });
 
-    time_fac
-}
-
-fn fac_time_next() -> gtk::SignalListItemFactory {
-    let time_fac = gtk::SignalListItemFactory::new();
-
-    time_fac.connect_setup(factory_setup);
-    let key = Quark::from_str(NEXT_ELAPSE_USEC_REALTIME);
-    time_fac.connect_bind(move |_factory, object| {
-        let (inscription, unit) = factory_bind_pre!(object);
-        inactive_display(&inscription, &unit);
-        let value = display_custom_property_color_typed::<u64>(key, &unit);
-        inscription.set_text(value.as_deref());
-    });
     time_fac
 }

@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, fmt::Debug};
 
 use crate::{
-    enums::{ActiveState, LoadState, Preset, UnitFileStatus, UnitType},
+    enums::{ActiveState, LoadState, Preset, UnitFileStatus},
     sysdbus::ListedUnitFile,
 };
 
@@ -10,6 +10,7 @@ use super::UpdatedUnitInfo;
 use base::enums::UnitDBusLevel;
 use glib::{self, Quark, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
 
+use log::trace;
 use serde::Deserialize;
 use zvariant::{OwnedObjectPath, OwnedValue, Value};
 
@@ -72,7 +73,7 @@ impl UnitInfo {
                 UnitPropertySetter::UnitFilePreset(preset) => self.set_preset(preset),
                 UnitPropertySetter::SubState(substate) => self.set_sub_state(substate),
                 UnitPropertySetter::Custom(quark, owned_value) => {
-                    println!("cust {:?}", owned_value);
+                    trace!("DEBUG Custom {:?} {:?}", quark, owned_value);
                     self.insert_unit_property_value(quark, owned_value)
                 }
             }
@@ -477,11 +478,7 @@ pub fn convert_to_string(value: &Value) -> Option<String> {
     }
 }
 
-pub enum UnitPropertyGetter<'a> {
-    Managed(),
-    Custom(UnitType, &'a str),
-}
-
+#[derive(Debug)]
 pub enum UnitPropertySetter {
     FileState(UnitFileStatus),
     Description(String),

@@ -11,10 +11,12 @@ use crate::utils::writer::{
     HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE,
     SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
 };
-use crate::widget::preferences::data::PREFERENCES;
+use crate::widget::{
+    preferences::data::PREFERENCES, unit_info::construct_info::systemd::timestamp_is_set,
+};
 use base::enums::UnitDBusLevel;
-
 use log::{debug, warn};
+use systemd::time_handling::calc_next_elapse;
 use systemd::{
     enums::ActiveState,
     swrite,
@@ -192,12 +194,6 @@ fn fill_active_state(
     } else {
         unit_writer.newline();
     }
-}
-
-macro_rules! timestamp_is_set {
-    ($t:expr) => {
-        $t > 0 && $t != U64MAX
-    };
 }
 
 fn fill_duration(
@@ -854,15 +850,7 @@ fn fill_trigger(
         .get(NEXT_ELAPSE_USEC_MONOTONIC)
         .map_or(U64MAX, |v| value_to_u64(v));
 
-    let now_realtime = time_handling::now_realtime();
-    let now_monotonic = time_handling::now_monotonic();
-
-    let next_elapse = calc_next_elapse(
-        now_realtime,
-        now_monotonic,
-        next_elapse_realtime,
-        next_elapse_monotonic,
-    );
+    let next_elapse = calc_next_elapse(next_elapse_realtime, next_elapse_monotonic);
 
     let trigger_msg = if timestamp_is_set!(next_elapse) {
         let (first, second) =
@@ -874,30 +862,6 @@ fn fill_trigger(
     };
 
     fill_row(unit_writer, "Trigger:", &trigger_msg);
-}
-
-///from systemd
-fn calc_next_elapse(
-    now_realtime: u64,
-    now_monotonic: u64,
-    next_elapse_realtime: u64,
-    next_elapse_monotonic: u64,
-) -> u64 {
-    if timestamp_is_set!(next_elapse_monotonic) {
-        let converted = if next_elapse_monotonic > now_monotonic {
-            now_realtime + (next_elapse_monotonic - now_monotonic)
-        } else {
-            now_realtime - (now_monotonic - next_elapse_monotonic)
-        };
-
-        if timestamp_is_set!(next_elapse_realtime) {
-            converted.min(next_elapse_realtime)
-        } else {
-            converted
-        }
-    } else {
-        next_elapse_realtime
-    }
 }
 
 #[derive(Clone, Value, OwnedValue)]

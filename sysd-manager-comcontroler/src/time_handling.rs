@@ -211,6 +211,13 @@ macro_rules! swrite {
     }}
 }
 
+#[macro_export]
+macro_rules! timestamp_is_set {
+    ($t:expr) => {
+        $t > 0 && $t != U64MAX
+    };
+}
+
 const SEC_PER_MONTH: u64 = 2629800;
 const SEC_PER_YEAR: u64 = 31_557_600;
 pub const USEC_PER_SEC: u64 = 1_000_000;
@@ -458,6 +465,28 @@ fn localtime_or_gmtime_usec(time_usec: i64, utc: bool) -> libc::tm {
         }
 
         *returned_time_struct
+    }
+}
+
+///from systemd
+pub fn calc_next_elapse(next_elapse_realtime: u64, next_elapse_monotonic: u64) -> u64 {
+    let now_realtime = now_realtime();
+    let now_monotonic = now_monotonic();
+
+    if timestamp_is_set!(next_elapse_monotonic) {
+        let converted = if next_elapse_monotonic > now_monotonic {
+            now_realtime + (next_elapse_monotonic - now_monotonic)
+        } else {
+            now_realtime - (now_monotonic - next_elapse_monotonic)
+        };
+
+        if timestamp_is_set!(next_elapse_realtime) {
+            converted.min(next_elapse_realtime)
+        } else {
+            converted
+        }
+    } else {
+        next_elapse_realtime
     }
 }
 

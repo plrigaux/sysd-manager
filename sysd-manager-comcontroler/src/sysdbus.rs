@@ -1547,10 +1547,16 @@ pub async fn fetch_unit_properties(
     for (unit_type, property, quark) in properties.into_iter() {
         let interface = unit_type.interface();
 
-        let value = proxy.get(interface, property).await?;
-
-        let custom = UnitPropertySetter::Custom(quark, value);
-        output.push(custom);
+        match proxy.get(interface, property).await {
+            Ok(value) => {
+                let custom = UnitPropertySetter::Custom(quark, value);
+                output.push(custom);
+            }
+            Err(err) => {
+                warn!("path {path} interface {interface} property {property}");
+                warn!("{err:?}");
+            }
+        };
     }
 
     Ok(output)
