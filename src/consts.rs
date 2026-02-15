@@ -54,9 +54,11 @@ pub const ACTION_REFRESH_UNIT_LIST: &str = "refresh_unit_list";
 
 pub const NS_ACTION_REFRESH_UNIT_LIST: &str = concat!(WIN, ACTION_REFRESH_UNIT_LIST);
 
-pub const NEXT_ELAPSE_USEC_MONOTONIC: &str = "NextElapseUSecMonotonic";
-pub const NEXT_ELAPSE_USEC_REALTIME: &str = "NextElapseUSecRealtime";
+pub const TIME_NEXT_ELAPSE_USEC_MONOTONIC: &str = "NextElapseUSecMonotonic";
+pub const TIME_NEXT_ELAPSE_USEC_REALTIME: &str = "NextElapseUSecRealtime";
 pub const TIMER_TIME_LAST: &str = "timerTimeLast";
 pub const TIMER_TIME_PASSED: &str = "timerTimePassed";
 pub const TIMER_TIME_NEXT: &str = "timerTimeNext";
 pub const TIMER_TIME_LEFT: &str = "timerTimeLeft";
+pub const TIME_LAST_TRIGGER_USEC: &str = "LastTriggerUSec";
+pub const TIME_LAST_TRIGGER_USEC_MONOTONIC: &str = "LastTriggerUSecMonotonic";

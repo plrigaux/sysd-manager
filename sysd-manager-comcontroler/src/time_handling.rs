@@ -236,7 +236,7 @@ const USEC_PER_MINUTE: u64 = SEC_PER_MINUTE * USEC_PER_SEC;
 pub const USEC_PER_MSEC: u64 = 1000;
 pub const NSEC_PER_USEC: u64 = 1_000;
 
-fn format_timestamp_relative_full(timestamp_usec: u64) -> String {
+pub fn format_timestamp_relative_full(timestamp_usec: u64) -> String {
     let since_time = get_date_local(timestamp_usec);
 
     let now = Local::now();

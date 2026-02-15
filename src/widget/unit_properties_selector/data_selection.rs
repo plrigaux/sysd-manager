@@ -9,8 +9,9 @@ use tracing::warn;
 
 use crate::{
     consts::{
-        NEXT_ELAPSE_USEC_MONOTONIC, NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT,
-        TIMER_TIME_NEXT, TIMER_TIME_PASSED,
+        TIME_LAST_TRIGGER_USEC, TIME_LAST_TRIGGER_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
+        TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
+        TIMER_TIME_PASSED,
     },
     systemd::enums::UnitType,
     widget::{
@@ -186,28 +187,26 @@ impl UnitPropertySelection {
                 );
             }
             (false, Some(TIMER_TIME_LAST) | Some(TIMER_TIME_PASSED)) => {
-                const LASTTRIGGERUSEC: &str = "LastTriggerUSec";
-                let quark = Quark::from_str(LASTTRIGGERUSEC);
+                let quark = Quark::from_str(TIME_LAST_TRIGGER_USEC);
                 property_list_send.insert(
                     DataSelectionItem {
                         unit_type: UnitType::Timer,
-                        property: LASTTRIGGERUSEC.to_owned(),
+                        property: TIME_LAST_TRIGGER_USEC.to_owned(),
                     },
                     quark,
                 );
 
-                const LASTTRIGGERUSECMONOTONIC: &str = "LastTriggerUSecMonotonic";
-                let quark = Quark::from_str(LASTTRIGGERUSECMONOTONIC);
+                let quark = Quark::from_str(TIME_LAST_TRIGGER_USEC_MONOTONIC);
                 property_list_send.insert(
                     DataSelectionItem {
                         unit_type: UnitType::Timer,
-                        property: LASTTRIGGERUSECMONOTONIC.to_owned(),
+                        property: TIME_LAST_TRIGGER_USEC_MONOTONIC.to_owned(),
                     },
                     quark,
                 );
             }
             (false, Some(TIMER_TIME_NEXT) | Some(TIMER_TIME_LEFT)) => {
-                let u_prop = NEXT_ELAPSE_USEC_MONOTONIC.to_owned();
+                let u_prop = TIME_NEXT_ELAPSE_USEC_MONOTONIC.to_owned();
                 let quark = Quark::from_str(&u_prop);
                 property_list_send.insert(
                     DataSelectionItem {
@@ -217,7 +216,7 @@ impl UnitPropertySelection {
                     quark,
                 );
 
-                let u_prop = NEXT_ELAPSE_USEC_REALTIME.to_owned();
+                let u_prop = TIME_NEXT_ELAPSE_USEC_REALTIME.to_owned();
                 let quark = Quark::from_str(&u_prop);
                 property_list_send.insert(
                     DataSelectionItem {

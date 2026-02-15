@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    consts::{TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED},
+    consts::{
+        TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME,
+        TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED,
+    },
     gtk::prelude::*,
     systemd::data::UnitInfo,
     widget::{
@@ -235,6 +238,10 @@ pub fn get_sorter_by_id(
         "sysdm-active" => Some(create_column_filter!(active_state)),
         "sysdm-sub" => Some(create_column_filter!(sub_state)),
         "sysdm-description" => Some(create_column_filter!(description)),
+        TIMER_TIME_NEXT | TIMER_TIME_LEFT => create_next_elapse_column_filter(),
+        TIMER_TIME_PASSED | TIMER_TIME_LAST => {
+            create_not_so_custom_property_colum_sorter(TIME_LAST_TRIGGER_USEC, "t")
+        }
 
         _ => create_custom_property_column_sorter(id, prop_type),
     }
@@ -251,6 +258,18 @@ fn create_custom_property_column_sorter(
         return None;
     };
 
+    create_column_sorter(key, prop_type)
+}
+
+fn create_not_so_custom_property_colum_sorter(
+    key_id: &str,
+    col_type: &str,
+) -> Option<gtk::CustomSorter> {
+    let key = glib::Quark::from_str(key_id);
+    create_column_sorter(key, col_type)
+}
+
+fn create_column_sorter(key: glib::Quark, prop_type: &str) -> Option<gtk::CustomSorter> {
     let sort_func = match prop_type {
         "b" => custom_property_comapre::<bool>,
         "n" => custom_property_comapre::<i16>,
@@ -265,6 +284,22 @@ fn create_custom_property_column_sorter(
     };
 
     let sorter = gtk::CustomSorter::new(move |o1, o2| sort_func(o1, o2, key));
+
+    Some(sorter)
+}
+
+fn create_next_elapse_column_filter() -> Option<gtk::CustomSorter> {
+    let next_elapse_realtime_key = glib::Quark::from_str(TIME_NEXT_ELAPSE_USEC_REALTIME);
+    let next_elapse_monotonic_key = glib::Quark::from_str(TIME_NEXT_ELAPSE_USEC_MONOTONIC);
+
+    let sorter = gtk::CustomSorter::new(move |o1, o2| {
+        let next_elapse1 =
+            calculate_next_elapse(next_elapse_realtime_key, next_elapse_monotonic_key, o1);
+        let next_elapse2 =
+            calculate_next_elapse(next_elapse_realtime_key, next_elapse_monotonic_key, o2);
+
+        next_elapse1.cmp(&next_elapse2).into()
+    });
 
     Some(sorter)
 }
