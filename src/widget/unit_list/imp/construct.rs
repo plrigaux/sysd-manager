@@ -9,7 +9,7 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
-            COL_ID_UNIT, CustomPropertyId, UnitListView,
+            COL_ID_UNIT, COL_ID_UNIT_FULL, CustomPropertyId, UnitListView,
             imp::{
                 column_factories::{self, *},
                 construct,
@@ -18,7 +18,7 @@ use crate::{
         },
         unit_properties_selector::{
             data_selection::UnitPropertySelection,
-            save::{self, UnitColumn},
+            save::{self, SortType, UnitColumn},
         },
     },
 };
@@ -57,10 +57,13 @@ pub fn construct_column_view(
         .filter_map(|c| c.id().map(|id| (id, c)))
     {
         let unit_prop = if let Some(loaded_up) = dict.remove(&id) {
+            loaded_up.set_sort(default_up.sort());
             loaded_up
         } else {
             default_up
         };
+
+        unit_prop.column().set_expand(false);
         out.push(unit_prop);
     }
     out
@@ -91,12 +94,8 @@ fn generate_sockets_columns(display_color: bool) -> Vec<UnitPropertySelection> {
 fn generate_timers_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
-    let unit_col = create_unit_display_name_column(display_color);
-
+    let unit_col = create_unit_display_full_name_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(unit_col));
-
-    let type_col = create_unit_type_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(type_col));
 
     let col = create_time_next_time();
     columns.push(UnitPropertySelection::from_column_config(col));
@@ -173,7 +172,8 @@ macro_rules! compare_units {
     }};
 }
 
-macro_rules! column_filter_lambda {
+#[macro_export]
+macro_rules! column_sorter_lambda {
  ($($func:ident),+) => {{
     |obj1: &gtk::glib::Object, obj2: &gtk::glib::Object| {
             let unit1 = obj1
@@ -188,11 +188,9 @@ macro_rules! column_filter_lambda {
  }}
 }
 
-pub(crate) use column_filter_lambda;
-
 macro_rules! create_column_filter {
     ($($func:ident),+) => {{
-        gtk::CustomSorter::new(column_filter_lambda!( $($func),+))
+        gtk::CustomSorter::new(column_sorter_lambda!( $($func),+))
     }};
 }
 
@@ -230,6 +228,7 @@ pub fn get_sorter_by_id(
 ) -> Option<gtk::CustomSorter> {
     match id.prop {
         COL_ID_UNIT => Some(create_column_filter!(primary, dbus_level)),
+        COL_ID_UNIT_FULL => Some(create_column_filter!(primary, dbus_level)),
         "sysdm-type" => Some(create_column_filter!(unit_type)),
         "sysdm-bus" => Some(create_column_filter!(dbus_level)),
         "sysdm-state" => Some(create_column_filter!(enable_status)),
@@ -475,6 +474,23 @@ fn create_unit_display_name_column(display_color: bool) -> gtk::ColumnViewColumn
         .build()
 }
 
+fn create_unit_display_full_name_column(display_color: bool) -> gtk::ColumnViewColumn {
+    let id = COL_ID_UNIT_FULL;
+    let sorter = create_column_filter!(primary, dbus_level);
+    let column_menu = create_col_menu(id, false);
+    let factory = fac_unit_name(display_color);
+
+    gtk::ColumnViewColumn::builder()
+        .id(id)
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(150)
+        .title(pgettext("list column", "Unit"))
+        .build()
+}
+
 fn create_unit_type_column(display_color: bool) -> gtk::ColumnViewColumn {
     let id = "sysdm-type";
     let sorter = create_column_filter!(unit_type);
@@ -509,7 +525,7 @@ fn create_time_next_time() -> UnitColumn {
     //Timer
     unit_column.title = Some(pgettext("list column", "Next"));
     unit_column.fixed_width = 120;
-
+    unit_column.sort = Some(SortType::Asc);
     unit_column
 }
 

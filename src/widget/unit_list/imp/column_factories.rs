@@ -6,6 +6,7 @@ use gtk::{
 };
 use log::{error, warn};
 use systemd::{
+    data::{get_custom_property_to_string, get_custom_property_typed_raw},
     time_handling::{self},
     timestamp_is_set,
 };
@@ -15,7 +16,7 @@ use crate::{
     consts::*,
     widget::{
         preferences::data::PREFERENCES,
-        unit_list::{COL_ID_UNIT, CustomPropertyId},
+        unit_list::{COL_ID_UNIT, COL_ID_UNIT_FULL, CustomPropertyId},
         unit_properties_selector::data_selection::UnitPropertySelection,
     },
 };
@@ -147,6 +148,10 @@ fn inactive_display(widget: &impl IsA<gtk::Widget>, unit: &UnitInfo) {
 
 pub fn fac_unit_name(display_color: bool) -> gtk::SignalListItemFactory {
     common_factory(display_color, UnitInfo::display_name)
+}
+
+pub fn fac_unit_name_full(display_color: bool) -> gtk::SignalListItemFactory {
+    common_factory(display_color, UnitInfo::primary)
 }
 
 fn common_factory(
@@ -321,6 +326,7 @@ pub fn get_factory_by_id(
     match (id.has_defined_type(), id.prop) {
         (true, _) => Some(get_custom_factory(id, display_color, prop_type)),
         (false, COL_ID_UNIT) => Some(fac_unit_name(display_color)),
+        (false, COL_ID_UNIT_FULL) => Some(fac_unit_name_full(display_color)),
         (false, "sysdm-type") => Some(fac_unit_type(display_color)),
         (false, "sysdm-bus") => Some(fac_bus(display_color)),
         (false, "sysdm-state") => Some(fac_enable_status(display_color)),
@@ -558,16 +564,16 @@ pub(super) fn get_custom_factory(
     };
 
     let get_value = match prop_type {
-        "b" => get_custom_property_typed::<bool, glib::Object>,
-        "n" => get_custom_property_typed::<i16, glib::Object>,
-        "q" => get_custom_property_typed::<u16, glib::Object>,
-        "i" => get_custom_property_typed::<i32, glib::Object>,
-        "u" => get_custom_property_typed::<u32, glib::Object>,
-        "x" => get_custom_property_typed::<i64, glib::Object>,
-        "t" => get_custom_property_typed::<u64, glib::Object>,
-        "s" => get_custom_property_typed::<String, glib::Object>,
+        "b" => get_custom_property_to_string::<bool>,
+        "n" => get_custom_property_to_string::<i16>,
+        "q" => get_custom_property_to_string::<u16>,
+        "i" => get_custom_property_to_string::<i32>,
+        "u" => get_custom_property_to_string::<u32>,
+        "x" => get_custom_property_to_string::<i64>,
+        "t" => get_custom_property_to_string::<u64>,
+        "s" => get_custom_property_to_string::<String>,
         "v" => display_custom_property,
-        _ => get_custom_property_typed::<String, glib::Object>,
+        _ => get_custom_property_to_string::<String>,
     };
 
     if display_color {
@@ -586,26 +592,6 @@ pub(super) fn get_custom_factory(
     }
 
     factory
-}
-
-fn get_custom_property_typed<T, O>(key: Quark, unit: &UnitInfo) -> Option<String>
-where
-    T: ToString + 'static,
-    O: ObjectExt,
-{
-    unsafe { unit.qdata::<T>(key) }
-        .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .map(|value| value.to_string())
-}
-
-fn get_custom_property_typed_raw<T, O>(key: Quark, unit: &O) -> Option<T>
-where
-    T: Copy + 'static,
-    O: ObjectExt,
-{
-    unsafe { unit.qdata::<T>(key) }
-        .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .copied()
 }
 
 fn display_custom_property(key: Quark, unit: &UnitInfo) -> Option<String> {

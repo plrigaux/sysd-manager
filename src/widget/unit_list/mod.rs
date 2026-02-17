@@ -24,6 +24,7 @@ pub mod menus;
 mod search_controls;
 
 pub const COL_ID_UNIT: &str = "sysdm-unit";
+pub const COL_ID_UNIT_FULL: &str = "sysdm-unit-full";
 
 glib::wrapper! {
     pub struct UnitListPanel(ObjectSubclass<imp::UnitListPanelImp>)

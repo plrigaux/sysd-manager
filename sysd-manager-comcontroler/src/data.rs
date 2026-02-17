@@ -478,6 +478,25 @@ pub fn convert_to_string(value: &Value) -> Option<String> {
     }
 }
 
+pub fn get_custom_property_to_string<T>(key: Quark, unit: &UnitInfo) -> Option<String>
+where
+    T: ToString + 'static,
+{
+    unsafe { unit.qdata::<T>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .map(|value| value.to_string())
+}
+
+pub fn get_custom_property_typed_raw<T, O>(key: Quark, unit: &O) -> Option<T>
+where
+    T: Copy + 'static,
+    O: ObjectExt,
+{
+    unsafe { unit.qdata::<T>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .copied()
+}
+
 #[derive(Debug)]
 pub enum UnitPropertySetter {
     FileState(UnitFileStatus),

@@ -579,7 +579,7 @@ impl UnitListPanelImp {
             main_unit_map_rc.replace(all_units);
 
             // The sort function needs to be the same of the  first column sorter
-            let sort_func = construct::column_filter_lambda!(primary, dbus_level);
+            let sort_func = column_sorter_lambda!(primary, dbus_level);
 
             list_store.sort(sort_func);
 
@@ -620,7 +620,7 @@ impl UnitListPanelImp {
                 .force_selected_index
                 .set(Some(force_selected_index));
             refresh_unit_list_button.set_sensitive(true);
-            unit_list.imp().set_sorter();
+            // unit_list.imp().set_sorter();
 
             //cause no scrollwindow v adjustment
             if n_items > 0 {
@@ -790,23 +790,35 @@ impl UnitListPanelImp {
     pub fn set_inter_message(&self, _action: &InterPanelMessage) {}
 
     fn set_sorter(&self) {
-        let sorter = units_browser!(self).sorter();
+        let units_browser = units_browser!(self);
+        let sorter = units_browser.sorter();
 
         self.unit_list_sort_list_model
             .borrow()
             .set_sorter(sorter.as_ref());
 
-        let item_out = units_browser!(self)
-            .columns()
-            .item(0)
-            .expect("Expect item x to be not None");
+        let col_def_list = self.current_column_view_column_definition_list.borrow();
 
-        //Sort on first column
-        let first_column = item_out
-            .downcast_ref::<gtk::ColumnViewColumn>()
-            .expect("item.downcast_ref::<gtk::ColumnViewColumn>()");
+        if let Some((idx, col_def)) = col_def_list
+            .iter()
+            .enumerate()
+            .find(|(_, col_def)| col_def.sort() != save::SortType::Unset)
+        {
+            let first_col = units_browser.columns().item(idx as u32);
 
-        units_browser!(self).sort_by_column(Some(first_column), gtk::SortType::Ascending);
+            //Sort on first column
+            let idx_column = first_col.and_downcast_ref::<gtk::ColumnViewColumn>();
+            if let Some(sort_type) = col_def.sort().into() {
+                units_browser.sort_by_column(idx_column, sort_type);
+            }
+        } else {
+            let first_col = units_browser.columns().item(0);
+
+            //Sort on first column
+            let first_column = first_col.and_downcast_ref::<gtk::ColumnViewColumn>();
+
+            units_browser.sort_by_column(first_column, gtk::SortType::Ascending);
+        }
     }
 
     pub(super) fn filter_assessor_change(
@@ -1187,6 +1199,7 @@ impl UnitListPanelImp {
         let units_browser = units_browser!(self).clone();
         let units_map = self.units_map.clone();
         let display_color = self.display_color.get();
+        let panel = self.obj().clone();
 
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
@@ -1271,6 +1284,8 @@ impl UnitListPanelImp {
                     prop_type.as_deref(),
                 );
             }
+
+            panel.imp().set_sorter();
         });
     }
 

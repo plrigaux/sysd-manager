@@ -5,7 +5,6 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use glib::Quark;
 use gtk::glib::{self};
 use log::{debug, info};
-use tracing::warn;
 
 use crate::{
     consts::{
@@ -118,6 +117,8 @@ impl UnitPropertySelection {
 
         p_imp.prop_type.replace(unit_column_config.prop_type);
 
+        this_object.set_sort(unit_column_config.sort.unwrap_or_default());
+
         this_object
     }
 
@@ -227,7 +228,7 @@ impl UnitPropertySelection {
                 );
             }
             (false, _) => {
-                warn!("??? {:?} cust {:?}", self.id(), self.is_custom())
+                // warn!("??? {:?} custom {:?}", self.id(), self.is_custom())
             }
         }
     }
@@ -245,7 +246,10 @@ mod imp2 {
     use glib::GString;
     use gtk::{glib, prelude::*, subclass::prelude::*};
 
-    use crate::{systemd::enums::UnitType, widget::unit_list::get_clean_col_title};
+    use crate::{
+        systemd::enums::UnitType,
+        widget::{unit_list::get_clean_col_title, unit_properties_selector::save::SortType},
+    };
 
     #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::UnitPropertySelection)]
@@ -270,6 +274,8 @@ mod imp2 {
         #[property(name = "interface", get= Self::interface, type = String)]
         #[property(get, default)]
         pub(super) unit_type: Cell<UnitType>,
+        #[property(get, set, default)]
+        pub(super) sort: Cell<SortType>,
     }
 
     impl UnitPropertySelectionImpl {

@@ -3,6 +3,7 @@ use crate::widget::unit_list::UnitListView;
 use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -22,6 +23,7 @@ pub struct UnitColumn {
     pub visible: bool,
     #[serde(rename = "type")]
     pub prop_type: Option<String>,
+    pub sort: Option<SortType>,
 }
 
 impl Default for UnitColumn {
@@ -34,6 +36,7 @@ impl Default for UnitColumn {
             resizable: false,
             visible: true,
             prop_type: None,
+            sort: None,
         }
     }
 }
@@ -48,6 +51,7 @@ impl UnitColumn {
             resizable: data.resizable(),
             visible: data.visible(),
             prop_type: data.prop_type(),
+            sort: None,
         }
     }
 
@@ -56,6 +60,36 @@ impl UnitColumn {
             id: id.to_owned(),
             prop_type: Some(arg.to_owned()),
             ..Default::default()
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Default, PartialEq, Eq, glib::Enum)]
+#[enum_type(name = "SortType")]
+pub enum SortType {
+    #[default]
+    Unset,
+    Asc,
+    Desc,
+}
+
+impl Display for SortType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match &self {
+            SortType::Asc => "Asc",
+            SortType::Desc => "Desc",
+            SortType::Unset => "",
+        };
+        write!(f, "{s}")
+    }
+}
+
+impl From<SortType> for Option<gtk::SortType> {
+    fn from(val: SortType) -> Self {
+        match val {
+            SortType::Unset => None,
+            SortType::Asc => Some(gtk::SortType::Ascending),
+            SortType::Desc => Some(gtk::SortType::Descending),
         }
     }
 }
@@ -252,6 +286,7 @@ mod test {
                 resizable: true,
                 visible: true,
                 prop_type: Some("i".to_string()),
+                sort: Some(SortType::Asc),
             },
             UnitColumn {
                 id: "".to_string(),
