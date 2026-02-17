@@ -339,6 +339,8 @@ pub fn get_factory_by_id(
         (false, TIMER_TIME_LEFT) => Some(fac_time_left()),
         (false, TIMER_TIME_PASSED) => Some(fac_time_passed()),
         (false, TIMER_TIME_LAST) => Some(fac_time_last()),
+        (false, SOCKET_LISTEN_TYPE) => Some(fac_socket_listen_type()),
+        (false, SOCKET_LISTEN) => Some(fac_socket_listen()),
         _ => {
             warn!("What to do?. Id {id:?} not handle with factory");
             None
@@ -704,12 +706,6 @@ fn fac_time_passed() -> gtk::SignalListItemFactory {
             get_custom_property_typed_raw::<u64, UnitInfo>(time_last_trigger_key, &unit)
                 .unwrap_or(U64MAX);
 
-        // let next_elapse = calculate_next_elapse(
-        //     time_last_trigger_key,
-        //     time_last_trigger_monotonic_key,
-        //     &unit,
-        // );
-
         if timestamp_is_set!(time_last_trigger) {
             let time_relative = time_handling::format_timestamp_relative_full(time_last_trigger);
             inscription.set_text(Some(&time_relative));
@@ -718,4 +714,19 @@ fn fac_time_passed() -> gtk::SignalListItemFactory {
         }
     });
     time_fac
+}
+
+fn fac_socket_listen_type() -> gtk::SignalListItemFactory {
+    let socket_fac = gtk::SignalListItemFactory::new();
+
+    socket_fac.connect_setup(factory_setup);
+    socket_fac
+}
+
+fn fac_socket_listen() -> gtk::SignalListItemFactory {
+    let socket_fac = gtk::SignalListItemFactory::new();
+
+    socket_fac.connect_setup(factory_setup);
+
+    socket_fac
 }

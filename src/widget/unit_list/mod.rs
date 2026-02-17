@@ -153,7 +153,7 @@ pub fn get_clean_col_title(title: &str) -> String {
     }
 }
 
-#[derive(Debug, Copy, Clone, Default, strum::EnumIter, glib::Enum)]
+#[derive(Debug, Copy, Clone, Default, strum::EnumIter, glib::Enum, Eq, PartialEq)]
 #[enum_type(name = "UnitListView")]
 pub enum UnitListView {
     #[default]
@@ -261,30 +261,6 @@ impl From<&glib::Variant> for UnitListView {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    /* #[test]
-    fn test_win_action_returns_correct_strings() {
-        assert_eq!(
-            UnitListView::Defaut.win_action(),
-            "win.default_unit_list_view"
-        );
-        assert_eq!(
-            UnitListView::ActiveUnit.win_action(),
-            "win.active_unit_list_view"
-        );
-        assert_eq!(
-            UnitListView::UnitFiles.win_action(),
-            "win.unit_file_unit_list_view"
-        );
-        assert_eq!(
-            UnitListView::Timers.win_action(),
-            "win.timer_unit_list_view"
-        );
-        assert_eq!(
-            UnitListView::Sockets.win_action(),
-            "win.socket_unit_list_view"
-        );
-    } */
 
     #[test]
     fn test_id_extracts_correct_substring() {

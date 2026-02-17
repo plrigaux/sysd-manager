@@ -2,8 +2,9 @@ use std::collections::HashMap;
 
 use crate::{
     consts::{
-        TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME,
-        TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED,
+        SOCKET_LISTEN, SOCKET_LISTEN_TYPE, TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
+        TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
+        TIMER_TIME_PASSED,
     },
     gtk::prelude::*,
     systemd::data::UnitInfo,
@@ -72,21 +73,20 @@ pub fn construct_column_view(
 fn generate_sockets_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
-    let unit_col = create_unit_display_name_column(display_color);
-
+    let unit_col = create_unit_display_full_name_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(unit_col));
-
-    let type_col = create_unit_type_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(type_col));
 
     let col = create_unit_active_status_columun(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(col));
 
+    let col = create_socket_listen_type_column();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
     let col = create_socket_listen_column();
     columns.push(UnitPropertySelection::from_column_config(col));
 
-    let col = create_unit_description_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(col));
+    let col = create_col_activates();
+    columns.push(UnitPropertySelection::from_column_config(col));
 
     columns
 }
@@ -109,7 +109,7 @@ fn generate_timers_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     let col = create_time_passed();
     columns.push(UnitPropertySelection::from_column_config(col));
 
-    let col = create_time_activates();
+    let col = create_col_activates();
     columns.push(UnitPropertySelection::from_column_config(col));
 
     columns
@@ -508,13 +508,20 @@ fn create_unit_type_column(display_color: bool) -> gtk::ColumnViewColumn {
         .build()
 }
 
-fn create_socket_listen_column() -> UnitColumn {
-    let id = "socket@Listen";
+fn create_socket_listen_type_column() -> UnitColumn {
+    let mut unit_column = UnitColumn::new(SOCKET_LISTEN_TYPE, "a(ss)");
+    unit_column.resizable = true;
+    unit_column.title = Some(pgettext("list column", "Listen Type"));
+    unit_column.fixed_width = 120;
 
-    let mut unit_column = UnitColumn::new(id, "a(ss)");
+    unit_column
+}
+
+fn create_socket_listen_column() -> UnitColumn {
+    let mut unit_column = UnitColumn::new(SOCKET_LISTEN, "a(ss)");
     unit_column.resizable = true;
     unit_column.title = Some(pgettext("list column", "Listen"));
-    unit_column.fixed_width = 120;
+    unit_column.fixed_width = 80;
 
     unit_column
 }
@@ -554,7 +561,7 @@ fn create_time_passed() -> UnitColumn {
     unit_column
 }
 
-fn create_time_activates() -> UnitColumn {
+fn create_col_activates() -> UnitColumn {
     let id = "unit@Triggers";
 
     let mut unit_column = UnitColumn::new(id, "as");

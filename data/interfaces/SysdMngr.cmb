@@ -34,7 +34,7 @@
   <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="264583702d6dfd970b2c8c5591e8b670c456183fd49cc58b44b6237c73c6300a">
     <requires>UnitPropertiesSelectionPanel</requires>
   </ui>
-  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="a26bca4683893b3085dc78e169cece76a1dedbc31500fb89179563e172c15e68">
+  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="6568a804822c16d9a5e9a4487274f8cc84590cf251368d355c8b05e6c86c7182">
     <requires>UnitControlPanel</requires>
     <requires>UnitListPanel</requires>
   </ui>

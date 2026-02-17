@@ -14,6 +14,7 @@ use log::trace;
 use serde::Deserialize;
 use zvariant::{OwnedObjectPath, OwnedValue, Value};
 
+const PRIMARY: &str = "primary";
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
 }
@@ -22,17 +23,21 @@ impl UnitInfo {
     pub fn from_listed_unit(listed_unit: ListedLoadedUnit, level: UnitDBusLevel) -> Self {
         // let this_object: Self = glib::Object::new();
         let this_object: Self = glib::Object::builder()
-            .property("primary", &listed_unit.primary_unit_name)
+            .property(PRIMARY, &listed_unit.primary_unit_name)
             .build();
-        let imp = this_object.imp();
-        imp.init_from_listed_unit(listed_unit, level);
+        this_object.init_from_listed_unit(listed_unit, level);
         this_object
+    }
+
+    pub fn init_from_listed_unit(&self, listed_unit: ListedLoadedUnit, level: UnitDBusLevel) {
+        let imp = self.imp();
+        imp.init_from_listed_unit(listed_unit, level);
     }
 
     pub fn from_unit_file(unit_file: ListedUnitFile, level: UnitDBusLevel) -> Self {
         // let this_object: Self = glib::Object::new();
         let this_object: Self = glib::Object::builder()
-            .property("primary", unit_file.unit_primary_name())
+            .property(PRIMARY, unit_file.unit_primary_name())
             .build();
         this_object.imp().init_from_unit_file(unit_file, level);
         this_object
@@ -230,7 +235,7 @@ mod imp {
     impl ObjectSubclass for UnitInfoImpl {
         const NAME: &'static str = "UnitInfo";
         type Type = super::UnitInfo;
-
+        type ParentType = glib::Object;
         fn new() -> Self {
             Default::default()
         }

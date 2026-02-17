@@ -102,7 +102,7 @@
                 </child>
                 <child>
                   <object class="GtkMenuButton" id="unit_list_view_menubutton">
-                    <property name="label">Views</property>
+                    <property name="label" translatable="yes" context="menu" comments="selector of differents units list" >Curated Lists</property>
                   </object>
                 </child>
               </object>

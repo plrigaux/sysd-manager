@@ -65,7 +65,7 @@ use gtk::{
 };
 use std::hash::Hash;
 use strum::IntoEnumIterator;
-use systemd::{ListUnitResponse, UnitProperties, UnitPropertiesFlags};
+use systemd::{ListUnitResponse, UnitProperties, UnitPropertiesFlags, socket_unit::SocketUnitInfo};
 use tracing::{debug, error, info, warn};
 
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
@@ -552,7 +552,15 @@ impl UnitListPanelImp {
                                 unit.update_from_loaded_unit(loaded_unit);
                             } else {
                                 let key = key.key_owned(flags);
-                                let unit = UnitInfo::from_listed_unit(loaded_unit, level);
+                                let unit = if view == UnitListView::Sockets {
+                                    let unit = SocketUnitInfo::from_listed_unit(loaded_unit, level);
+                                    let u: UnitInfo = unit.into();
+                                    u
+                                } else {
+                                    UnitInfo::from_listed_unit(loaded_unit, level)
+                                };
+
+                                //let unit = UnitInfo::from_listed_unit(loaded_unit, level);
                                 list_store.append(&unit);
                                 all_units.insert(key, unit);
                             }

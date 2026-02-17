@@ -8,6 +8,7 @@ mod journal;
 pub mod journal_data;
 #[cfg(not(feature = "flatpak"))]
 pub mod proxy_switcher;
+pub mod socket_unit;
 pub mod sysdbus;
 pub mod time_handling;
 

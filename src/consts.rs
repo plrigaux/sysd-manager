@@ -60,5 +60,7 @@ pub const TIMER_TIME_LAST: &str = "timerTimeLast";
 pub const TIMER_TIME_PASSED: &str = "timerTimePassed";
 pub const TIMER_TIME_NEXT: &str = "timerTimeNext";
 pub const TIMER_TIME_LEFT: &str = "timerTimeLeft";
+pub const SOCKET_LISTEN: &str = "socketListen";
+pub const SOCKET_LISTEN_TYPE: &str = "socketListenType";
 pub const TIME_LAST_TRIGGER_USEC: &str = "LastTriggerUSec";
 pub const TIME_LAST_TRIGGER_USEC_MONOTONIC: &str = "LastTriggerUSecMonotonic";
