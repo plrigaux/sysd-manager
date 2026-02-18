@@ -4,13 +4,13 @@ use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
-use tracing::{error, warn};
 use systemd::{
     data::get_custom_property_typed_raw,
     socket_unit::SocketUnitInfo,
     time_handling::{self},
     timestamp_is_set,
 };
+use tracing::{error, warn};
 
 use crate::{
     consts::*,
@@ -34,6 +34,7 @@ static BIND_CSS2: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("C2"));
 
 const CSS_CLASSES: &str = "css-classes";
 const TEXT: &str = "text";
+pub const PROPERTY_NAME: &str = "socket-listen-idx";
 
 macro_rules! downcast_list_item {
     ($list_item_object:expr) => {{
@@ -747,10 +748,9 @@ fn fac_time_passed() -> gtk::SignalListItemFactory {
     time_fac
 }
 
-const PROPERTY_NAME: &str = "socket-listen-idx";
-
+#[macro_export]
 macro_rules! extract_listen {
-    ($socket_listen: expr, $unit: expr, $param : tt) => {
+    ( $unit: expr,$socket_listen: expr, $param : tt) => {{
         if $unit.has_property(PROPERTY_NAME) {
             if let Some(unit_socket) = $unit.downcast_ref::<SocketUnitInfo>() {
                 let idx = unit_socket.socket_listen_idx();
@@ -767,7 +767,7 @@ macro_rules! extract_listen {
             let listens = $unit.get_custom_property::<Vec<(String, String)>>($socket_listen);
             listens.and_then(|v| v.first()).map(|t| t.$param.as_str())
         }
-    };
+    }};
 }
 
 fn fac_socket_listen_type() -> gtk::SignalListItemFactory {
@@ -777,7 +777,7 @@ fn fac_socket_listen_type() -> gtk::SignalListItemFactory {
     let socket_listen = Quark::from_str(SYSD_SOCKET_LISTEN);
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
-        let value = extract_listen!(socket_listen, unit, 0);
+        let value = extract_listen!(unit, socket_listen, 0);
         inscription.set_text(value);
     });
     socket_fac
@@ -791,7 +791,7 @@ fn fac_socket_listen() -> gtk::SignalListItemFactory {
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
-        let value = extract_listen!(socket_listen, unit, 1);
+        let value = extract_listen!(unit, socket_listen, 1);
         inscription.set_text(value);
     });
 

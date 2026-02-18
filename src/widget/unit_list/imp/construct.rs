@@ -2,10 +2,11 @@ use std::collections::HashMap;
 
 use crate::{
     consts::{
-        SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, TIME_LAST_TRIGGER_USEC,
+        SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, SYSD_SOCKET_LISTEN, TIME_LAST_TRIGGER_USEC,
         TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST,
         TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED,
     },
+    extract_listen,
     gtk::prelude::*,
     systemd::data::UnitInfo,
     widget::{
@@ -24,9 +25,9 @@ use crate::{
     },
 };
 use gettextrs::pgettext;
+use systemd::socket_unit::SocketUnitInfo;
 use tracing::warn;
 use zvariant::Value;
-
 pub fn construct_column_view(
     display_color: bool,
     view: UnitListView,
@@ -241,6 +242,8 @@ pub fn get_sorter_by_id(
         TIMER_TIME_PASSED | TIMER_TIME_LAST => {
             create_not_so_custom_property_colum_sorter(TIME_LAST_TRIGGER_USEC, "t")
         }
+        SOCKET_LISTEN_COL => create_socket_listen_colum_sorter(),
+        SOCKET_LISTEN_TYPE => create_socket_listen_type_colum_sorter(),
 
         _ => create_custom_property_column_sorter(id, prop_type),
     }
@@ -266,6 +269,36 @@ fn create_not_so_custom_property_colum_sorter(
 ) -> Option<gtk::CustomSorter> {
     let key = glib::Quark::from_str(key_id);
     create_column_sorter(key, col_type)
+}
+
+fn create_socket_listen_type_colum_sorter() -> Option<gtk::CustomSorter> {
+    let socket_listen = glib::Quark::from_str(SYSD_SOCKET_LISTEN);
+    let sorter = gtk::CustomSorter::new(move |o1, o2| {
+        let v1 = o1
+            .downcast_ref::<UnitInfo>()
+            .map(|unit| extract_listen!(unit, socket_listen, 0));
+        let v2 = o2
+            .downcast_ref::<UnitInfo>()
+            .map(|unit| extract_listen!(unit, socket_listen, 0));
+        v1.into_iter().cmp(v2).into()
+    });
+
+    Some(sorter)
+}
+
+fn create_socket_listen_colum_sorter() -> Option<gtk::CustomSorter> {
+    let socket_listen = glib::Quark::from_str(SYSD_SOCKET_LISTEN);
+    let sorter = gtk::CustomSorter::new(move |o1, o2| {
+        let v1 = o1
+            .downcast_ref::<UnitInfo>()
+            .map(|unit| extract_listen!(unit, socket_listen, 1));
+        let v2 = o2
+            .downcast_ref::<UnitInfo>()
+            .map(|unit| extract_listen!(unit, socket_listen, 1));
+        v1.into_iter().cmp(v2).into()
+    });
+
+    Some(sorter)
 }
 
 fn create_column_sorter(key: glib::Quark, prop_type: &str) -> Option<gtk::CustomSorter> {
@@ -522,6 +555,7 @@ fn create_socket_listen_column() -> UnitColumn {
     unit_column.resizable = true;
     unit_column.title = Some(pgettext("list column", "Listen"));
     unit_column.fixed_width = 80;
+    unit_column.sort = Some(SortType::Asc);
 
     unit_column
 }
