@@ -13,7 +13,7 @@ use gtk::{
         },
     },
 };
-use log::{debug, info};
+use tracing::{debug, info};
 use tokio::sync::mpsc;
 
 use crate::{

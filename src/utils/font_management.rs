@@ -6,7 +6,7 @@ use gtk::{
     pango::{self, FontDescription},
     prelude::WidgetExt,
 };
-use log::{debug, info, warn};
+use tracing::{debug, info, warn};
 
 pub static FONT_CONTEXT: LazyLock<FontContext> = LazyLock::new(FontContext::default);
 

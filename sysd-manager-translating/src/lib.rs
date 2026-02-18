@@ -1,12 +1,12 @@
 use constcat::concat;
-use log::error;
-use log::info;
 use std::{
     collections::HashSet,
     fs::{self, read_to_string},
     path::PathBuf,
     process::Command,
 };
+use tracing::error;
+use tracing::info;
 
 use crate::error::TransError;
 pub mod error;

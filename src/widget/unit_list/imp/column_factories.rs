@@ -4,7 +4,7 @@ use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
-use log::{error, warn};
+use tracing::{error, warn};
 use systemd::{
     data::get_custom_property_typed_raw,
     socket_unit::SocketUnitInfo,

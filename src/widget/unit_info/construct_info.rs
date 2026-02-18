@@ -15,7 +15,7 @@ use crate::widget::{
     preferences::data::PREFERENCES, unit_info::construct_info::systemd::timestamp_is_set,
 };
 use base::enums::UnitDBusLevel;
-use log::{debug, warn};
+use tracing::{debug, warn};
 use systemd::time_handling::calc_next_elapse;
 use systemd::{
     enums::ActiveState,
@@ -96,7 +96,7 @@ macro_rules! clean_message {
         match $result {
             Ok(ok) => ok,
             Err(e) => {
-                log::warn!("{} {:?}", $log_prefix, e);
+                tracing::warn!("{} {:?}", $log_prefix, e);
                 return $default_return;
             }
         }

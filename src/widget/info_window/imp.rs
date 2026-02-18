@@ -1,8 +1,8 @@
 use adw::subclass::window::AdwWindowImpl;
 use gtk::{gio, glib, prelude::*, subclass::prelude::*};
-use log::{debug, error, warn};
 use std::cell::{OnceCell, RefCell};
 use std::cmp::Ordering;
+use tracing::{debug, error, warn};
 
 use crate::consts::U64MAX;
 use crate::systemd;

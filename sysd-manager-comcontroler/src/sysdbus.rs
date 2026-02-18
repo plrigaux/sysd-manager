@@ -28,7 +28,6 @@ use base::{
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use glib::Quark;
-use log::{debug, error, info, trace, warn};
 use serde::Deserialize;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
@@ -37,6 +36,7 @@ use std::{
     time::Duration,
 };
 use tokio::time::sleep;
+use tracing::{debug, error, info, trace, warn};
 use zbus::{
     Message,
     blocking::{Connection, MessageIterator, Proxy, fdo},

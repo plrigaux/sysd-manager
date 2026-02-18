@@ -54,7 +54,7 @@ mod imp {
         prelude::*,
         subclass::prelude::*,
     };
-    use log::warn;
+    use tracing::warn;
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties_selection_row.ui")]

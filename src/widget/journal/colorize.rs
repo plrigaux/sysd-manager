@@ -3,8 +3,8 @@
 use std::{fmt::Debug, sync::LazyLock};
 
 use gtk::{pango, prelude::TextBufferExt};
-use log::{debug, info, warn};
 use regex::bytes::Regex;
+use tracing::{debug, error, info, warn};
 
 use crate::utils::{
     more_colors::{ColorCodeError, Intensity, TermColor, get_256color},
@@ -37,7 +37,7 @@ static RE: LazyLock<Regex> = LazyLock::new(|| {
         Ok(ok) => ok,
         Err(e) => {
             let error_msg = format!("Regex compile error : {:?}", e);
-            log::error!("{error_msg}");
+            error!("{error_msg}");
             panic!("{error_msg}")
         }
     }

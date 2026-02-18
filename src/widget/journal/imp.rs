@@ -17,7 +17,7 @@ use std::{
     thread,
 };
 
-use log::{debug, error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::{
     consts::{APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING},
@@ -182,11 +182,10 @@ impl JournalPanelImp {
             .expect("settings not none")
             .set_string(KEY_PREF_JOURNAL_DISPLAY_ORDER, display.key())
         {
+            let key = display.key();
             warn!(
-                "Can't set setting key {:?} value {:?} error {:}",
-                KEY_PREF_JOURNAL_DISPLAY_ORDER,
-                display.key(),
-                e
+                "Can't set setting key {:?} value {:?} error {:?}",
+                KEY_PREF_JOURNAL_DISPLAY_ORDER, key, e
             )
         }
 

@@ -1,6 +1,6 @@
 use base::enums::UnitDBusLevel;
-use log::{debug, info, warn};
 use tokio::sync::mpsc;
+use tracing::{debug, info, warn};
 
 use crate::{
     SystemdSignal, SystemdSignalRow,

@@ -1,3 +1,4 @@
+use crate::systemd_gui::new_settings;
 use gettextrs::pgettext;
 use glib::{self, GString};
 use gtk::{
@@ -5,13 +6,10 @@ use gtk::{
     pango::{self, FontDescription},
     prelude::SettingsExt,
 };
-use log::{info, warn};
+use std::sync::{LazyLock, RwLock};
 use strum::EnumIter;
 use systemd::time_handling::TimestampStyle;
-
-use std::sync::{LazyLock, RwLock};
-
-use crate::systemd_gui::new_settings;
+use tracing::{info, warn};
 
 pub static PREFERENCES: LazyLock<Preferences> = LazyLock::new(|| {
     let settings = new_settings();
@@ -383,11 +381,11 @@ impl Preferences {
         *journal_event_max_size = journal_event_max_size_new;
     }
 
-    pub fn set_journal_colors(&self, display: bool) {
-        info!("set_journal_colors: {display}");
+    pub fn set_journal_colors(&self, display_color: bool) {
+        info!("set_journal_colors: {display_color}");
 
         let mut journal_colors = self.journal_colors.write().expect("supposed to write");
-        *journal_colors = display;
+        *journal_colors = display_color;
     }
 
     pub fn set_app_first_connection(&self, app_first_connection_new: bool) {

@@ -19,7 +19,7 @@ use crate::{
     widget::unit_control_panel::{UnitControlPanel, work_around_dialog},
 };
 use base::enums::UnitDBusLevel;
-use log::{info, warn};
+use tracing::{info, warn};
 
 use super::CleanUnitDialog;
 

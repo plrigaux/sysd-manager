@@ -10,7 +10,7 @@ use gtk::{
     glib::{self},
     pango::{self, FontDescription},
 };
-use log::{debug, info, warn};
+use tracing::{debug, info, warn};
 
 use super::{
     UnitControlPanel, controls, enums::UnitContolType, side_control_panel::SideControlPanel,
@@ -21,7 +21,7 @@ use crate::{
     systemd::{
         self,
         data::UnitInfo,
-        enums::{ActiveState, UnitFileStatus, StartStopMode},
+        enums::{ActiveState, StartStopMode, UnitFileStatus},
         errors::SystemdErrors,
     },
     utils::{

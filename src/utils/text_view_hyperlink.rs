@@ -9,7 +9,7 @@ use gtk::{
     pango,
     prelude::*,
 };
-use log::{info, warn};
+use tracing::{info, warn};
 
 use super::writer::{PROP_UNDERLINE, TAG_DATA_LINK};
 

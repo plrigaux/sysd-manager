@@ -3,7 +3,7 @@ mod imp;
 use std::collections::HashSet;
 
 use gtk::FilterChange;
-use log::debug;
+use tracing::debug;
 
 use crate::gtk::prelude::FilterExt;
 use crate::gtk::{glib, subclass::prelude::*};

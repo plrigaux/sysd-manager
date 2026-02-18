@@ -24,7 +24,7 @@ use gtk::{
 use crate::{
     consts::{ALL_FILTER_KEY, CLASS_WARNING, FLAT},
     systemd::enums::{
-        ActiveState, UnitFileStatus, LoadState, NumMatchType, Preset, StrMatchType, UnitType,
+        ActiveState, LoadState, NumMatchType, Preset, StrMatchType, UnitFileStatus, UnitType,
     },
     upgrade, upgrade_continue,
     widget::unit_list::{
@@ -39,7 +39,7 @@ use crate::{
     },
 };
 use base::enums::UnitDBusLevel;
-use log::{debug, error, info, warn};
+use tracing::{debug, error, info, warn};
 use strum::IntoEnumIterator;
 
 type UnitFilterList = RefCell<Vec<Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;

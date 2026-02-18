@@ -4,8 +4,8 @@ use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse, QueuedJobs},
 };
-use log::error;
 use tokio::sync::OnceCell;
+use tracing::error;
 use zbus::proxy;
 use zvariant::{OwnedObjectPath, OwnedValue};
 

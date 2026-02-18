@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use gettextrs::pgettext;
 use gtk::{gio, glib};
-use log::{debug, info, warn};
+use tracing::{debug, info, warn};
 
 use crate::format2;
 use crate::systemd::{self, data::UnitInfo, enums::UnitFileStatus, errors::SystemdErrors};

@@ -1,5 +1,5 @@
 use base::{consts::DBUS_DESTINATION_DEV, enums::UnitDBusLevel, proxy::DisEnAbleUnitFiles};
-use log::info;
+use tracing::info;
 
 use test_base::init_logs;
 use zbus::proxy;

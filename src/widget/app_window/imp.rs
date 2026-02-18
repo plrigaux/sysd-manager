@@ -37,8 +37,8 @@ use gtk::{
         GtkApplicationExt, GtkWindowExt, OrientableExt, ToVariant, ToggleButtonExt, WidgetExt,
     },
 };
-use log::{debug, error, info, warn};
 use regex::Regex;
+use tracing::{debug, error, info, warn};
 
 use systemd::journal_data::Boot;
 

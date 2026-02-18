@@ -24,7 +24,7 @@ use crate::{
     },
 };
 use gettextrs::pgettext;
-use log::warn;
+use tracing::warn;
 use zvariant::Value;
 
 pub fn construct_column_view(

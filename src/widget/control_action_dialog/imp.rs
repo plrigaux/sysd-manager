@@ -28,10 +28,10 @@ use gtk::{
         },
     },
 };
-use log::{info, warn};
 use std::cell::OnceCell;
 use strum::IntoEnumIterator;
 use tracing::error;
+use tracing::{info, warn};
 
 use super::ControlActionDialog;
 
@@ -710,7 +710,7 @@ impl WindowImpl for EnableUnitDialogImp {
         let settings = self.settings.get().expect("Settings not None");
 
         fn settings_error(e: BoolError) {
-            log::error!("Setting error {e:?}");
+            error!("Setting error {e:?}");
         }
 
         let _ = settings

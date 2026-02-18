@@ -4,9 +4,9 @@ use base::{
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 
-use log::{debug, info, warn};
 use std::{borrow::Cow, env, error::Error};
 use tokio::sync::OnceCell;
+use tracing::{debug, info, warn};
 use zbus::{
     Connection, ObjectServer, connection, interface, message::Header, object_server::SignalEmitter,
 };

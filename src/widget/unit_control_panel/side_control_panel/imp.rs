@@ -23,7 +23,7 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
-use log::{error, warn};
+use tracing::{error, warn};
 
 use super::SideControlPanel;
 use strum::IntoEnumIterator;

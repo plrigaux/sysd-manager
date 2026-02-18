@@ -4,8 +4,8 @@ use base::{
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use futures_util::stream::StreamExt;
-use log::{info, warn};
 use tokio::time::{Duration, timeout};
+use tracing::{info, warn};
 use zbus::proxy;
 
 use crate::{

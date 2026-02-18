@@ -65,7 +65,6 @@ gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
 glib = { version = "0", package = "glib", features = ["v2_84"] }
 libc = "0.2"
-log = "0.4"
 regex = "1.12"
 serde = "1.0"
 strum = { version = "0.27", features = ["derive"] }
@@ -106,7 +105,6 @@ foreign-types-shared = "0.3.1"
 futures-util = "0.3"
 gettext-rs.workspace = true
 libc.workspace = true
-log.workspace = true
 regex.workspace = true
 serde.workspace = true
 sourceview5 = "0.10"

@@ -204,7 +204,7 @@ macro_rules! swrite {
     ($out:expr, $($y:expr),+) => {
         // Call `find_min!` on the tail `$y`
         if let Err(e) = write!($out, $($y), +) {
-            log::warn!("swrite error {:?}", e);
+            tracing::warn!("swrite error {:?}", e);
             //fall back
             let s = format!($($y), +);
             $out.push_str(&s);

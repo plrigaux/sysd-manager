@@ -3,12 +3,12 @@ use crate::errors::SystemdErrors;
 use base::file::create_drop_in_io;
 use base::file::{create_drop_in_path_file, flatpak_host_file_path};
 use base::{args, file::commander};
-use log::{debug, error, info, warn};
 use std::{ffi::OsStr, path::Path, process::Stdio};
 use tokio::{
     fs,
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
 };
+use tracing::{debug, error, info, warn};
 
 #[cfg(feature = "flatpak")]
 use std::fmt::Write;

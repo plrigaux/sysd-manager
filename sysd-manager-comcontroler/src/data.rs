@@ -10,8 +10,8 @@ use super::UpdatedUnitInfo;
 use base::enums::UnitDBusLevel;
 use glib::{self, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
 
-use log::warn;
 use serde::Deserialize;
+use tracing::warn;
 use zvariant::{OwnedObjectPath, OwnedValue, Value};
 
 pub const SYSD_SOCKET_LISTEN_IDX: &str = "sysdSocketListenIdx";

@@ -1,7 +1,7 @@
 extern crate dotenv;
 extern crate gtk;
-extern crate log;
 extern crate systemd;
+extern crate tracing;
 
 mod analyze;
 mod consts;
@@ -10,12 +10,12 @@ mod systemd_gui;
 mod utils;
 mod widget;
 
-use std::env;
-
+use crate::systemd_gui::set_is_dark;
 use adw::prelude::AdwApplicationExt;
+use base::enums::UnitDBusLevel;
 use base::{RunMode, consts::APP_ID};
 use clap::{Parser, Subcommand};
-
+use dotenv::dotenv;
 use gettextrs::gettext;
 use gio::glib::translate::FromGlib;
 use gtk::{
@@ -24,12 +24,10 @@ use gtk::{
     glib,
     prelude::*,
 };
-
-use base::enums::UnitDBusLevel;
-use dotenv::dotenv;
-use log::{debug, info, warn};
+use std::env;
 use systemd::data::UnitInfo;
 use systemd_gui::new_settings;
+use tracing::{debug, error, info, warn};
 use tracing_subscriber::EnvFilter;
 use widget::{
     app_window::{AppWindow, menu},
@@ -38,8 +36,6 @@ use widget::{
         data::{DbusLevel, KEY_PREF_PREFERRED_COLOR_SCHEME, PREFERENCES},
     },
 };
-
-use crate::systemd_gui::set_is_dark;
 
 const DOMAIN_NAME: &str = "sysd-manager";
 fn main() -> glib::ExitCode {
@@ -92,19 +88,19 @@ fn main() -> glib::ExitCode {
     info!("bindtextdomain path {path:?}");
 
     match gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
-        Ok(v) => log::info!("bind_textdomain_codeset {v:?}"),
-        Err(error) => log::error!("Unable to set the text domain encoding Error: {error:?}"),
+        Ok(v) => info!("bind_textdomain_codeset {v:?}"),
+        Err(error) => error!("Unable to set the text domain encoding Error: {error:?}"),
     }
 
     // Specify the name of the .mo file to use.
     match gettextrs::textdomain(DOMAIN_NAME) {
-        Ok(v) => log::info!("textdomain {:?}", String::from_utf8_lossy(&v)),
-        Err(error) => log::error!("Unable to switch to the text domain Error: {error:?}"),
+        Ok(v) => info!("textdomain {:?}", String::from_utf8_lossy(&v)),
+        Err(error) => error!("Unable to switch to the text domain Error: {error:?}"),
     }
 
     // Ask gettext for UTF-8 strings. THIS CRATE CAN'T HANDLE NON-UTF-8 DATA!
     if let Err(error) = gettextrs::bind_textdomain_codeset(DOMAIN_NAME, "UTF-8") {
-        log::error!("bind_textdomain_codeset Error: {error:?}");
+        error!("bind_textdomain_codeset Error: {error:?}");
     };
 
     info!("Program starting up");

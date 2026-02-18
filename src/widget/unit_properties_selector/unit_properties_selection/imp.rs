@@ -7,7 +7,7 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
-use log::{error, info, warn};
+use tracing::{error, info, warn};
 
 use crate::widget::{
     unit_list::{UnitListPanel, UnitListView},

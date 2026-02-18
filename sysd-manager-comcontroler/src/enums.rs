@@ -6,11 +6,11 @@ use enumflags2::bitflags;
 use gettextrs::pgettext;
 use glib::value::ToValue;
 use glib::{self, EnumValue};
-use log::{info, warn};
 use std::str::FromStr;
 use std::{cell::RefCell, fmt::Display};
 use strum::EnumIter;
 use strum::IntoEnumIterator;
+use tracing::{info, warn};
 use zvariant::OwnedValue;
 
 use crate::errors::SystemdErrors;

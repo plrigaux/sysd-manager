@@ -39,7 +39,7 @@ use gtk::{
         },
     },
 };
-use log::{debug, info, warn};
+use tracing::{debug, info, warn};
 use regex::Regex;
 use sourceview5::{Buffer, prelude::*};
 use std::fmt::Write;

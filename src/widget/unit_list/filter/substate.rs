@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use gettextrs::pgettext;
 use gio::glib::WeakRef;
-use log::warn;
+use tracing::warn;
 
 use crate::consts::FLAT;
 use crate::gtk::prelude::*;

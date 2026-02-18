@@ -43,7 +43,7 @@ use crate::{
     },
     widget::InterPanelMessage,
 };
-use log::{debug, info, warn};
+use tracing::{debug, info, warn};
 use strum::IntoEnumIterator;
 
 const PANEL_EMPTY: &str = "empty";

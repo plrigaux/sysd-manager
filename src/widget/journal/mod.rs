@@ -8,6 +8,7 @@ pub mod list_boots;
 use std::cell::RefCell;
 
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+use tracing::{info, warn};
 
 use crate::{systemd::journal_data::JournalEventChunk, widget::app_window::AppWindow};
 
@@ -56,7 +57,7 @@ pub fn check_for_new_journal_entry() {
             if let Some((journal_panel, rx)) = &*global.borrow() {
                 match rx.recv() {
                     Ok(journal_events) => {
-                        log::info!(
+                        info!(
                             "New journal_events info: {:?} len {:?}",
                             journal_events.info(),
                             journal_events.len()
@@ -64,7 +65,7 @@ pub fn check_for_new_journal_entry() {
                         journal_panel.imp().append_journal_event(journal_events);
                     }
                     Err(error) => {
-                        log::warn!("Journal recv Error: {error}");
+                        warn!("Journal recv Error: {error}");
                     }
                 }
             }

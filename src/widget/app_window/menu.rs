@@ -6,7 +6,7 @@ use gettextrs::gettext;
 use glib::VariantTy;
 use gtk::glib;
 use gtk::{gio, prelude::ActionMapExtManual};
-use log::{error, info, warn};
+use tracing::{error, info, warn};
 
 use crate::consts::ACTION_DAEMON_RELOAD_BUS;
 use crate::format2;

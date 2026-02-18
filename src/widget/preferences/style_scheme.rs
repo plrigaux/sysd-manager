@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, sync::OnceLock};
 
 use gtk::glib::GString;
-use log::debug;
+use tracing::debug;
 
 #[derive(Debug, Default)]
 pub struct StyleSchemes {

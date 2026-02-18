@@ -1,11 +1,11 @@
-extern crate log;
+extern crate tracing;
 extern crate translating;
 
 use clap::Command;
 use clap::Parser;
 use clap::Subcommand;
-use log::error;
-use log::{info, warn};
+use tracing::error;
+use tracing::{info, warn};
 use tracing_subscriber::filter::LevelFilter;
 use translating::DESKTOP_FILE_PATH;
 use translating::MAIN_PROG;

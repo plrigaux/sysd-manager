@@ -4,7 +4,7 @@ use std::{
 };
 
 use gtk::{glib, prelude::*, subclass::prelude::*};
-use log::debug;
+use tracing::debug;
 
 use super::OnClose;
 

@@ -23,13 +23,12 @@ mod imp {
 
     const WINDOW_HEIGHT: &str = "list-boots-window-height";
     const WINDOW_WIDTH: &str = "list-boots-window-width";
-    use std::{
-        cell::{OnceCell, Ref},
-        collections::HashMap,
-        ops::DerefMut,
-        rc::Rc,
+    use super::ListBootsWindow;
+    use crate::{
+        systemd::{self, BootFilter, data::UnitInfo},
+        systemd_gui::new_settings,
+        widget::{InterPanelMessage, app_window::AppWindow, preferences::data::PREFERENCES},
     };
-
     use adw::subclass::window::AdwWindowImpl;
     use gio::{glib::BoxedAnyObject, prelude::ListModelExt};
     use gtk::{
@@ -40,15 +39,14 @@ mod imp {
             widget::{CompositeTemplateClass, CompositeTemplateInitializingExt, WidgetImpl},
         },
     };
-    use log::{debug, error, info, warn};
-    use systemd::journal_data::Boot;
-
-    use super::ListBootsWindow;
-    use crate::{
-        systemd::{self, BootFilter, data::UnitInfo},
-        systemd_gui::new_settings,
-        widget::{InterPanelMessage, app_window::AppWindow, preferences::data::PREFERENCES},
+    use std::{
+        cell::{OnceCell, Ref},
+        collections::HashMap,
+        ops::DerefMut,
+        rc::Rc,
     };
+    use systemd::journal_data::Boot;
+    use tracing::{debug, error, info, warn};
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/list_boots.ui")]

@@ -25,13 +25,13 @@ gettext-rs.workspace = true
 glib.workspace = true
 gio.workspace = true
 libc.workspace = true
-log.workspace = true
 regex.workspace = true
 serde.workspace = true
 strum.workspace = true
 sysd = { version = "0.10", package = "systemd" }
 tokio.workspace = true
 tokio-util.workspace = true
+tracing.workspace = true
 tracing-subscriber.workspace = true
 zbus.workspace = true
 zbus_xml = "5"

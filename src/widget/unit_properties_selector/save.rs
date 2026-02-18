@@ -1,7 +1,7 @@
 use crate::gtk::prelude::ListModelExtManual;
 use crate::widget::unit_list::UnitListView;
 use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
-use log::{debug, error, info, warn};
+use tracing::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::fs::File;
@@ -350,7 +350,7 @@ mod test {
             resizable = true
             visible = true
 
-            [[column]]         
+            [[column]]
             expands = true
             resizable = true
             visible = true

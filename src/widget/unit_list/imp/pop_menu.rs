@@ -1,4 +1,4 @@
-use log::{debug, warn};
+use tracing::{debug, warn};
 
 use crate::{gtk::subclass::prelude::*, widget::unit_list::UnitListPanel};
 use gtk::prelude::*;
@@ -34,7 +34,7 @@ mod imp {
 
     use gettextrs::pgettext;
     use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};
-    use log::{debug, info, warn};
+    use tracing::{debug, info, warn};
 
     use crate::{
         consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},

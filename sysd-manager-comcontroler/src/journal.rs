@@ -16,7 +16,7 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use chrono::{Local, Utc};
-use log::{debug, info, trace, warn};
+use tracing::{debug, info, trace, warn};
 use sysd::{Journal, id128::Id128, journal::OpenOptions};
 
 use super::BootFilter;

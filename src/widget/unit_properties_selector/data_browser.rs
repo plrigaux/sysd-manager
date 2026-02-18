@@ -3,7 +3,7 @@ use std::{cell::Ref, ops::DerefMut};
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gio::glib::property::PropertySet;
 use gtk::glib::{self};
-use log::warn;
+use tracing::warn;
 
 use crate::systemd::UnitPropertyFetch;
 

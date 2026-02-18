@@ -31,7 +31,7 @@ use gtk::{
     glib::{self, BoolError},
     pango::{self, FontFace},
 };
-use log::{debug, error, info, warn};
+use tracing::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 use strum::IntoEnumIterator;
 
@@ -787,7 +787,7 @@ impl WidgetImpl for PreferencesDialogImpl {}
 
 impl AdwDialogImpl for PreferencesDialogImpl {
     fn closed(&self) {
-        log::info!("Close preferences window");
+        info!("Close preferences window");
 
         PREFERENCES.set_app_first_connection(false);
 

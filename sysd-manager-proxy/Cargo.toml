@@ -30,7 +30,6 @@ enumflags2.workspace = true
 futures-util = "0.3"
 glib.workspace = true
 libc.workspace = true
-log.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

@@ -24,7 +24,7 @@ use crate::{
     },
 };
 use base::enums::UnitDBusLevel;
-use log::{debug, warn};
+use tracing::{debug, warn};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/kill_panel.ui")]

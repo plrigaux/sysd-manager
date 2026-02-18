@@ -49,7 +49,7 @@ use errors::SystemdErrors;
 use flagset::{FlagSet, flags};
 use glib::Quark;
 use journal_data::{EventRange, JournalEventChunk};
-use log::{error, info, warn};
+use tracing::{error, info, warn};
 
 use tokio::{runtime::Runtime, sync::mpsc};
 use zvariant::{OwnedObjectPath, OwnedValue};
@@ -1023,7 +1023,7 @@ pub async fn watch_systemd_signals(
         sysdbus::watcher::watch_systemd_signals(systemd_signal_sender, cancellation_token).await;
 
     if let Err(err) = result {
-        log::error!("Error listening to jobs {err:?}");
+        error!("Error listening to jobs {err:?}");
     }
 }
 

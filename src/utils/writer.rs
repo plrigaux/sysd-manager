@@ -2,7 +2,7 @@ use std::{borrow::Cow, sync::LazyLock};
 
 use glib::Quark;
 use gtk::{glib::translate::IntoGlib, pango, prelude::*};
-use log::debug;
+use tracing::debug;
 
 use super::palette::{blue, green, grey, red, yellow};
 use crate::{
