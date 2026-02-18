@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, fmt::Debug, sync::OnceLock};
+use std::{cmp::Ordering, fmt::Debug};
 
 use crate::{
     enums::{ActiveState, LoadState, Preset, UnitFileStatus},
@@ -8,12 +8,13 @@ use crate::{
 use super::UpdatedUnitInfo;
 
 use base::enums::UnitDBusLevel;
-use glib::{self, Quark, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
+use glib::{self, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
 
-use log::{trace, warn};
+use log::warn;
 use serde::Deserialize;
 use zvariant::{OwnedObjectPath, OwnedValue, Value};
 
+pub const SYSD_SOCKET_LISTEN_IDX: &str = "sysdSocketListenIdx";
 pub const PRIMARY: &str = "primary";
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
@@ -63,7 +64,7 @@ impl UnitInfo {
         self.imp().need_to_be_completed()
     }
 
-    pub fn insert_socket_listen(&self, quark: Quark, value: OwnedValue) -> usize {
+    pub fn insert_socket_listen(&self, quark: glib::Quark, value: OwnedValue) -> usize {
         let mut alen = 0;
         if let Value::Array(array) = &value as &Value {
             let mut new_array = Vec::with_capacity(array.len());
@@ -93,7 +94,7 @@ impl UnitInfo {
         alen
     }
 
-    pub fn insert_unit_property_value(&self, quark: Quark, value: OwnedValue) {
+    pub fn insert_unit_property_value(&self, quark: glib::Quark, value: OwnedValue) {
         //let value_ref = &value as &Value;
         match &value as &Value {
             Value::Bool(b) => unsafe { self.set_qdata(quark, *b) },
@@ -176,7 +177,7 @@ impl UnitInfo {
         }
     }
 
-    pub fn get_custom_property_to_string<T>(&self, key: Quark) -> Option<String>
+    pub fn get_custom_property_to_string<T>(&self, key: glib::Quark) -> Option<String>
     where
         T: ToString + 'static,
     {
@@ -185,18 +186,18 @@ impl UnitInfo {
             .map(|value| value.to_string())
     }
 
-    pub fn get_custom_property<T: 'static>(&self, key: Quark) -> Option<&T> {
+    pub fn get_custom_property<T: 'static>(&self, key: glib::Quark) -> Option<&T> {
         unsafe { self.qdata::<T>(key) }.map(|value_ptr| unsafe { value_ptr.as_ref() })
     }
 
-    pub fn display_custom_property(&self, key: Quark) -> Option<String> {
+    pub fn display_custom_property(&self, key: glib::Quark) -> Option<String> {
         unsafe { self.qdata::<OwnedValue>(key) }
             .map(|value_ptr| unsafe { value_ptr.as_ref() })
             .and_then(|value| convert_to_string(value))
     }
 }
 
-pub fn get_custom_property_typed_raw<T, O>(unit: &O, key: Quark) -> Option<T>
+pub fn get_custom_property_typed_raw<T, O>(unit: &O, key: glib::Quark) -> Option<T>
 where
     T: Copy + 'static,
     O: ObjectExt,
@@ -529,5 +530,5 @@ pub enum UnitPropertySetter {
     FragmentPath(String),
     UnitFilePreset(Preset),
     SubState(String),
-    Custom(Quark, OwnedValue),
+    Custom(glib::Quark, OwnedValue),
 }

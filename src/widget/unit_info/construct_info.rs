@@ -300,13 +300,14 @@ fn fill_load_state(
     if !all_none {
         unit_writer.insert(" (");
 
-        let [path_op, unit_file_state_op, unit_file_preset_op] = three_param;
+        let [file_path, unit_file_state_op, unit_file_preset_op] = three_param;
 
         let mut pad_left = false;
 
-        if let Some(path) = path_op {
-            let p = value_to_str(path);
-            unit_writer.hyperlink(p, p, HyperLinkType::File);
+        if let Some(file_path) = file_path {
+            let file_path_str = value_to_str(file_path);
+            unit.set_file_path(Some(file_path_str)); //for lazy load
+            unit_writer.hyperlink(file_path_str, file_path_str, HyperLinkType::File);
             pad_left = true;
         }
 

@@ -1297,22 +1297,8 @@ impl UnitListPanelImp {
                             {
                                 let listens = unit.insert_socket_listen(quark, owned_value);
                                 for idx in 1..listens {
-                                    let usocket = SocketUnitInfo::from_unit_socket(unit, idx - 1);
-                                    println!(
-                                        "Usocket {} state {} {}",
-                                        usocket.primary(),
-                                        usocket.active_state(),
-                                        unit.active_state()
-                                    );
-
-                                    // let ui: UnitInfo = usocket.into();
-                                    // println!("as {}", ui.active_state());
-                                    let socket_listen = glib::Quark::from_str(SYSD_SOCKET_LISTEN);
-                                    let s = usocket.get_custom_property::<Vec<(String, String)>>(
-                                        socket_listen,
-                                    );
-                                    println!("ddd {:?}", s);
-
+                                    //Frankeinstein
+                                    let usocket = SocketUnitInfo::from_unit_socket(unit, idx);
                                     list_store.append(&usocket);
                                 }
                             } else {

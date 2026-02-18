@@ -268,7 +268,10 @@ pub(super) fn handle_switch_sensivity(
             let current_state = gio::spawn_blocking(move || {
                 systemd::get_unit_file_state(level, &primary_name)
                     .inspect_err(|err| {
-                        info!("Get unit state fail! For {:?} : {:?}", primary_name, err)
+                        info!(
+                            "Get unit file state fail! For {:?} : {:?}",
+                            primary_name, err
+                        )
                     })
                     .unwrap_or(unit_file_state)
             })

@@ -7,6 +7,7 @@ use gtk::{
 use log::{error, warn};
 use systemd::{
     data::get_custom_property_typed_raw,
+    socket_unit::SocketUnitInfo,
     time_handling::{self},
     timestamp_is_set,
 };
@@ -549,6 +550,10 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
     }
 }
 
+type UnitFunc = fn(&UnitInfo, Quark) -> Option<String>;
+
+type SocketFunc = fn(&SocketUnitInfo, Quark) -> Option<String>;
+
 pub(super) fn get_custom_factory(
     property_code: &CustomPropertyId,
     display_color: bool,
@@ -564,33 +569,66 @@ pub(super) fn get_custom_factory(
         return factory;
     };
 
-    let get_value = match prop_type {
-        "b" => UnitInfo::get_custom_property_to_string::<bool>,
-        "n" => UnitInfo::get_custom_property_to_string::<i16>,
-        "q" => UnitInfo::get_custom_property_to_string::<u16>,
-        "i" => UnitInfo::get_custom_property_to_string::<i32>,
-        "u" => UnitInfo::get_custom_property_to_string::<u32>,
-        "x" => UnitInfo::get_custom_property_to_string::<i64>,
-        "t" => UnitInfo::get_custom_property_to_string::<u64>,
-        "s" => UnitInfo::get_custom_property_to_string::<String>,
-        "v" => UnitInfo::display_custom_property,
-        _ => UnitInfo::get_custom_property_to_string::<String>,
+    let (get_value, get_parent_value): (UnitFunc, SocketFunc) = match prop_type {
+        "b" => (
+            UnitInfo::get_custom_property_to_string::<bool>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<bool>,
+        ),
+        "n" => (
+            UnitInfo::get_custom_property_to_string::<i16>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<i16>,
+        ),
+        "q" => (
+            UnitInfo::get_custom_property_to_string::<u16>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<u16>,
+        ),
+        "i" => (
+            UnitInfo::get_custom_property_to_string::<i32>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<i32>,
+        ),
+        "u" => (
+            UnitInfo::get_custom_property_to_string::<u32>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<u32>,
+        ),
+        "x" => (
+            UnitInfo::get_custom_property_to_string::<i64>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<i64>,
+        ),
+        "t" => (
+            UnitInfo::get_custom_property_to_string::<u64>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<u64>,
+        ),
+        "s" => (
+            UnitInfo::get_custom_property_to_string::<String>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<String>,
+        ),
+        "v" => (
+            UnitInfo::display_custom_property,
+            SocketUnitInfo::display_custom_property,
+        ),
+        _ => (
+            UnitInfo::get_custom_property_to_string::<String>,
+            SocketUnitInfo::get_parent_qproperty_to_string::<String>,
+        ),
     };
 
-    if display_color {
-        factory.connect_bind(move |_factory, object| {
-            let (inscription, unit) = factory_bind_pre!(object);
+    factory.connect_bind(move |_factory, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+        if display_color {
             inactive_display(&inscription, &unit);
-            let value = get_value(&unit, key);
-            inscription.set_text(value.as_deref());
+        }
+
+        let value = get_value(&unit, key).or_else(|| {
+            if unit.has_property(PROPERTY_NAME) {
+                unit.downcast_ref::<SocketUnitInfo>()
+                    .and_then(|us| get_parent_value(us, key))
+            } else {
+                None
+            }
         });
-    } else {
-        factory.connect_bind(move |_factory, object| {
-            let (inscription, unit) = factory_bind_pre!(object);
-            let value = get_value(&unit, key);
-            inscription.set_text(value.as_deref());
-        });
-    }
+
+        inscription.set_text(value.as_deref());
+    });
 
     factory
 }
@@ -709,6 +747,29 @@ fn fac_time_passed() -> gtk::SignalListItemFactory {
     time_fac
 }
 
+const PROPERTY_NAME: &str = "socket-listen-idx";
+
+macro_rules! extract_listen {
+    ($socket_listen: expr, $unit: expr, $param : tt) => {
+        if $unit.has_property(PROPERTY_NAME) {
+            if let Some(unit_socket) = $unit.downcast_ref::<SocketUnitInfo>() {
+                let idx = unit_socket.socket_listen_idx();
+                let listens =
+                    unit_socket.get_parent_qproperty::<Vec<(String, String)>>($socket_listen);
+
+                listens
+                    .and_then(|v| v.get(idx as usize))
+                    .map(|t| t.$param.as_str())
+            } else {
+                None
+            }
+        } else {
+            let listens = $unit.get_custom_property::<Vec<(String, String)>>($socket_listen);
+            listens.and_then(|v| v.first()).map(|t| t.$param.as_str())
+        }
+    };
+}
+
 fn fac_socket_listen_type() -> gtk::SignalListItemFactory {
     let socket_fac = gtk::SignalListItemFactory::new();
 
@@ -716,9 +777,7 @@ fn fac_socket_listen_type() -> gtk::SignalListItemFactory {
     let socket_listen = Quark::from_str(SYSD_SOCKET_LISTEN);
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
-        let s = unit.get_custom_property::<Vec<(String, String)>>(socket_listen);
-
-        let value = s.and_then(|v| v.first()).map(|t| t.0.as_str());
+        let value = extract_listen!(socket_listen, unit, 0);
         inscription.set_text(value);
     });
     socket_fac
@@ -732,8 +791,7 @@ fn fac_socket_listen() -> gtk::SignalListItemFactory {
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
-        let s = unit.get_custom_property::<Vec<(String, String)>>(socket_listen);
-        let value = s.and_then(|v| v.first()).map(|t| t.1.as_str());
+        let value = extract_listen!(socket_listen, unit, 1);
         inscription.set_text(value);
     });
 
