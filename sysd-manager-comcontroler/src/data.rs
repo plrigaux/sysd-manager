@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, fmt::Debug};
+use std::{cmp::Ordering, fmt::Debug, sync::OnceLock};
 
 use crate::{
     enums::{ActiveState, LoadState, Preset, UnitFileStatus},
@@ -10,11 +10,11 @@ use super::UpdatedUnitInfo;
 use base::enums::UnitDBusLevel;
 use glib::{self, Quark, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
 
-use log::trace;
+use log::{trace, warn};
 use serde::Deserialize;
 use zvariant::{OwnedObjectPath, OwnedValue, Value};
 
-const PRIMARY: &str = "primary";
+pub const PRIMARY: &str = "primary";
 glib::wrapper! {
     pub struct UnitInfo(ObjectSubclass<imp::UnitInfoImpl>);
 }
@@ -63,29 +63,37 @@ impl UnitInfo {
         self.imp().need_to_be_completed()
     }
 
-    pub fn fill_property_values(&self, property_value_list: Vec<UnitPropertySetter>) {
-        for setter in property_value_list {
-            match setter {
-                UnitPropertySetter::FileState(unit_file_status) => {
-                    self.set_enable_status(unit_file_status)
-                }
-                UnitPropertySetter::Description(description) => self.set_description(description),
-                UnitPropertySetter::ActiveState(active_state) => {
-                    self.set_active_state(active_state)
-                }
-                UnitPropertySetter::LoadState(load_state) => self.set_load_state(load_state),
-                UnitPropertySetter::FragmentPath(_) => todo!(),
-                UnitPropertySetter::UnitFilePreset(preset) => self.set_preset(preset),
-                UnitPropertySetter::SubState(substate) => self.set_sub_state(substate),
-                UnitPropertySetter::Custom(quark, owned_value) => {
-                    trace!("DEBUG Custom {:?} {:?}", quark, owned_value);
-                    self.insert_unit_property_value(quark, owned_value)
+    pub fn insert_socket_listen(&self, quark: Quark, value: OwnedValue) -> usize {
+        let mut alen = 0;
+        if let Value::Array(array) = &value as &Value {
+            let mut new_array = Vec::with_capacity(array.len());
+
+            for s in array.iter() {
+                if let Value::Structure(structure) = s {
+                    let f = structure.fields();
+                    if f.len() == 2 {
+                        let f0: String = f[0]
+                            .clone()
+                            .try_into()
+                            .inspect_err(|err| warn!("socket listen {err:?}"))
+                            .unwrap_or_default();
+                        let f1: String = f[1]
+                            .clone()
+                            .try_into()
+                            .inspect_err(|err| warn!("socket listen {err:?}"))
+                            .unwrap_or_default();
+                        new_array.push((f0, f1));
+                    }
                 }
             }
+
+            alen = new_array.len();
+            unsafe { self.set_qdata(quark, new_array) };
         }
+        alen
     }
 
-    fn insert_unit_property_value(&self, quark: Quark, value: OwnedValue) {
+    pub fn insert_unit_property_value(&self, quark: Quark, value: OwnedValue) {
         //let value_ref = &value as &Value;
         match &value as &Value {
             Value::Bool(b) => unsafe { self.set_qdata(quark, *b) },
@@ -167,6 +175,35 @@ impl UnitInfo {
             //Value::Maybe(maybe) => (maybe.to_string(), false),
         }
     }
+
+    pub fn get_custom_property_to_string<T>(&self, key: Quark) -> Option<String>
+    where
+        T: ToString + 'static,
+    {
+        unsafe { self.qdata::<T>(key) }
+            .map(|value_ptr| unsafe { value_ptr.as_ref() })
+            .map(|value| value.to_string())
+    }
+
+    pub fn get_custom_property<T: 'static>(&self, key: Quark) -> Option<&T> {
+        unsafe { self.qdata::<T>(key) }.map(|value_ptr| unsafe { value_ptr.as_ref() })
+    }
+
+    pub fn display_custom_property(&self, key: Quark) -> Option<String> {
+        unsafe { self.qdata::<OwnedValue>(key) }
+            .map(|value_ptr| unsafe { value_ptr.as_ref() })
+            .and_then(|value| convert_to_string(value))
+    }
+}
+
+pub fn get_custom_property_typed_raw<T, O>(unit: &O, key: Quark) -> Option<T>
+where
+    T: Copy + 'static,
+    O: ObjectExt,
+{
+    unsafe { unit.qdata::<T>(key) }
+        .map(|value_ptr| unsafe { value_ptr.as_ref() })
+        .copied()
 }
 
 mod imp {
@@ -481,25 +518,6 @@ pub fn convert_to_string(value: &Value) -> Option<String> {
         Value::Fd(fd) => Some(fd.to_string()),
         //Value::Maybe(maybe) => (maybe.to_string(), false),
     }
-}
-
-pub fn get_custom_property_to_string<T>(key: Quark, unit: &UnitInfo) -> Option<String>
-where
-    T: ToString + 'static,
-{
-    unsafe { unit.qdata::<T>(key) }
-        .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .map(|value| value.to_string())
-}
-
-pub fn get_custom_property_typed_raw<T, O>(key: Quark, unit: &O) -> Option<T>
-where
-    T: Copy + 'static,
-    O: ObjectExt,
-{
-    unsafe { unit.qdata::<T>(key) }
-        .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .copied()
 }
 
 #[derive(Debug)]

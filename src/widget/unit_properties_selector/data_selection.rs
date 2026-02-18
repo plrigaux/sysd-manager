@@ -7,11 +7,7 @@ use gtk::glib::{self};
 use log::{debug, info};
 
 use crate::{
-    consts::{
-        TIME_LAST_TRIGGER_USEC, TIME_LAST_TRIGGER_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
-        TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
-        TIMER_TIME_PASSED,
-    },
+    consts::*,
     systemd::enums::UnitType,
     widget::{
         unit_list::{CustomPropertyId, menus::create_col_menu},
@@ -222,6 +218,17 @@ impl UnitPropertySelection {
                 property_list_send.insert(
                     DataSelectionItem {
                         unit_type: UnitType::Timer,
+                        property: u_prop,
+                    },
+                    quark,
+                );
+            }
+            (false, Some(SOCKET_LISTEN_COL) | Some(SOCKET_LISTEN_TYPE)) => {
+                let u_prop = SOCKET_LISTEN.to_owned();
+                let quark = Quark::from_str(SYSD_SOCKET_LISTEN);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: UnitType::Socket,
                         property: u_prop,
                     },
                     quark,

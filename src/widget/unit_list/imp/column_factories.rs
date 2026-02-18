@@ -6,11 +6,10 @@ use gtk::{
 };
 use log::{error, warn};
 use systemd::{
-    data::{get_custom_property_to_string, get_custom_property_typed_raw},
+    data::get_custom_property_typed_raw,
     time_handling::{self},
     timestamp_is_set,
 };
-use zvariant::OwnedValue;
 
 use crate::{
     consts::*,
@@ -22,7 +21,7 @@ use crate::{
 };
 use crate::{
     systemd::{
-        data::{UnitInfo, convert_to_string},
+        data::UnitInfo,
         enums::{ActiveState, LoadState, Preset, UnitFileStatus},
     },
     widget::unit_list::UnitListPanel,
@@ -340,7 +339,7 @@ pub fn get_factory_by_id(
         (false, TIMER_TIME_PASSED) => Some(fac_time_passed()),
         (false, TIMER_TIME_LAST) => Some(fac_time_last()),
         (false, SOCKET_LISTEN_TYPE) => Some(fac_socket_listen_type()),
-        (false, SOCKET_LISTEN) => Some(fac_socket_listen()),
+        (false, SOCKET_LISTEN_COL) => Some(fac_socket_listen()),
         _ => {
             warn!("What to do?. Id {id:?} not handle with factory");
             None
@@ -566,40 +565,34 @@ pub(super) fn get_custom_factory(
     };
 
     let get_value = match prop_type {
-        "b" => get_custom_property_to_string::<bool>,
-        "n" => get_custom_property_to_string::<i16>,
-        "q" => get_custom_property_to_string::<u16>,
-        "i" => get_custom_property_to_string::<i32>,
-        "u" => get_custom_property_to_string::<u32>,
-        "x" => get_custom_property_to_string::<i64>,
-        "t" => get_custom_property_to_string::<u64>,
-        "s" => get_custom_property_to_string::<String>,
-        "v" => display_custom_property,
-        _ => get_custom_property_to_string::<String>,
+        "b" => UnitInfo::get_custom_property_to_string::<bool>,
+        "n" => UnitInfo::get_custom_property_to_string::<i16>,
+        "q" => UnitInfo::get_custom_property_to_string::<u16>,
+        "i" => UnitInfo::get_custom_property_to_string::<i32>,
+        "u" => UnitInfo::get_custom_property_to_string::<u32>,
+        "x" => UnitInfo::get_custom_property_to_string::<i64>,
+        "t" => UnitInfo::get_custom_property_to_string::<u64>,
+        "s" => UnitInfo::get_custom_property_to_string::<String>,
+        "v" => UnitInfo::display_custom_property,
+        _ => UnitInfo::get_custom_property_to_string::<String>,
     };
 
     if display_color {
         factory.connect_bind(move |_factory, object| {
             let (inscription, unit) = factory_bind_pre!(object);
             inactive_display(&inscription, &unit);
-            let value = get_value(key, &unit);
+            let value = get_value(&unit, key);
             inscription.set_text(value.as_deref());
         });
     } else {
         factory.connect_bind(move |_factory, object| {
             let (inscription, unit) = factory_bind_pre!(object);
-            let value = get_value(key, &unit);
+            let value = get_value(&unit, key);
             inscription.set_text(value.as_deref());
         });
     }
 
     factory
-}
-
-fn display_custom_property(key: Quark, unit: &UnitInfo) -> Option<String> {
-    unsafe { unit.qdata::<OwnedValue>(key) }
-        .map(|value_ptr| unsafe { value_ptr.as_ref() })
-        .and_then(|value| convert_to_string(value))
 }
 
 fn fac_time_next() -> gtk::SignalListItemFactory {
@@ -659,9 +652,9 @@ where
     O: ObjectExt,
 {
     let next_elapse_realtime =
-        get_custom_property_typed_raw::<u64, O>(next_elapse_realtime_key, unit).unwrap_or(U64MAX);
+        get_custom_property_typed_raw::<u64, O>(unit, next_elapse_realtime_key).unwrap_or(U64MAX);
     let next_elapse_monotonic =
-        get_custom_property_typed_raw::<u64, O>(next_elapse_monotonic_key, unit).unwrap_or(U64MAX);
+        get_custom_property_typed_raw::<u64, O>(unit, next_elapse_monotonic_key).unwrap_or(U64MAX);
 
     time_handling::calc_next_elapse(next_elapse_realtime, next_elapse_monotonic)
 }
@@ -678,7 +671,7 @@ fn fac_time_last() -> gtk::SignalListItemFactory {
         inactive_display(&inscription, &unit);
 
         let time_last_trigger =
-            get_custom_property_typed_raw::<u64, UnitInfo>(time_last_trigger_key, &unit)
+            get_custom_property_typed_raw::<u64, UnitInfo>(&unit, time_last_trigger_key)
                 .unwrap_or(U64MAX);
 
         if timestamp_is_set!(time_last_trigger) {
@@ -703,7 +696,7 @@ fn fac_time_passed() -> gtk::SignalListItemFactory {
         inactive_display(&inscription, &unit);
 
         let time_last_trigger =
-            get_custom_property_typed_raw::<u64, UnitInfo>(time_last_trigger_key, &unit)
+            get_custom_property_typed_raw::<u64, UnitInfo>(&unit, time_last_trigger_key)
                 .unwrap_or(U64MAX);
 
         if timestamp_is_set!(time_last_trigger) {
@@ -720,6 +713,14 @@ fn fac_socket_listen_type() -> gtk::SignalListItemFactory {
     let socket_fac = gtk::SignalListItemFactory::new();
 
     socket_fac.connect_setup(factory_setup);
+    let socket_listen = Quark::from_str(SYSD_SOCKET_LISTEN);
+    socket_fac.connect_bind(move |_, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+        let s = unit.get_custom_property::<Vec<(String, String)>>(socket_listen);
+
+        let value = s.and_then(|v| v.first()).map(|t| t.0.as_str());
+        inscription.set_text(value);
+    });
     socket_fac
 }
 
@@ -727,6 +728,14 @@ fn fac_socket_listen() -> gtk::SignalListItemFactory {
     let socket_fac = gtk::SignalListItemFactory::new();
 
     socket_fac.connect_setup(factory_setup);
+    let socket_listen = Quark::from_str(SYSD_SOCKET_LISTEN);
+    socket_fac.connect_bind(move |_, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+
+        let s = unit.get_custom_property::<Vec<(String, String)>>(socket_listen);
+        let value = s.and_then(|v| v.first()).map(|t| t.1.as_str());
+        inscription.set_text(value);
+    });
 
     socket_fac
 }

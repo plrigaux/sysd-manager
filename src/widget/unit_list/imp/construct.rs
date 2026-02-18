@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use crate::{
     consts::{
-        SOCKET_LISTEN, SOCKET_LISTEN_TYPE, TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
-        TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
-        TIMER_TIME_PASSED,
+        SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, TIME_LAST_TRIGGER_USEC,
+        TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST,
+        TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED,
     },
     gtk::prelude::*,
     systemd::data::UnitInfo,
@@ -518,7 +518,7 @@ fn create_socket_listen_type_column() -> UnitColumn {
 }
 
 fn create_socket_listen_column() -> UnitColumn {
-    let mut unit_column = UnitColumn::new(SOCKET_LISTEN, "a(ss)");
+    let mut unit_column = UnitColumn::new(SOCKET_LISTEN_COL, "a(ss)");
     unit_column.resizable = true;
     unit_column.title = Some(pgettext("list column", "Listen"));
     unit_column.fixed_width = 80;

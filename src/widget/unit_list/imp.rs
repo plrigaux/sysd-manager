@@ -8,11 +8,15 @@ use std::{
     collections::HashMap,
     hash::Hasher,
     rc::Rc,
+    sync::OnceLock,
     time::Duration,
 };
 
 use crate::{
-    consts::{ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK},
+    consts::{
+        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK,
+        SYSD_SOCKET_LISTEN,
+    },
     systemd::{
         data::UnitInfo,
         enums::{LoadState, UnitType},
@@ -65,9 +69,13 @@ use gtk::{
 };
 use std::hash::Hash;
 use strum::IntoEnumIterator;
-use systemd::{ListUnitResponse, UnitProperties, UnitPropertiesFlags, socket_unit::SocketUnitInfo};
-use tracing::{debug, error, info, warn};
+use systemd::{
+    ListUnitResponse, UnitProperties, UnitPropertiesFlags, data::UnitPropertySetter,
+    socket_unit::SocketUnitInfo,
+};
+use tracing::{debug, error, info, trace, warn};
 
+static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
 
 #[derive(Debug, Clone)]
@@ -552,15 +560,8 @@ impl UnitListPanelImp {
                                 unit.update_from_loaded_unit(loaded_unit);
                             } else {
                                 let key = key.key_owned(flags);
-                                let unit = if view == UnitListView::Sockets {
-                                    let unit = SocketUnitInfo::from_listed_unit(loaded_unit, level);
-                                    let u: UnitInfo = unit.into();
-                                    u
-                                } else {
-                                    UnitInfo::from_listed_unit(loaded_unit, level)
-                                };
+                                let unit = UnitInfo::from_listed_unit(loaded_unit, level);
 
-                                //let unit = UnitInfo::from_listed_unit(loaded_unit, level);
                                 list_store.append(&unit);
                                 all_units.insert(key, unit);
                             }
@@ -1208,6 +1209,7 @@ impl UnitListPanelImp {
         let units_map = self.units_map.clone();
         let display_color = self.display_color.get();
         let panel = self.obj().clone();
+        let list_store = self.list_store.get().unwrap().clone();
 
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
@@ -1270,7 +1272,55 @@ impl UnitListPanelImp {
                     continue;
                 };
 
-                unit.fill_property_values(property_value_list);
+                for setter in property_value_list {
+                    match setter {
+                        UnitPropertySetter::FileState(unit_file_status) => {
+                            unit.set_enable_status(unit_file_status)
+                        }
+                        UnitPropertySetter::Description(description) => {
+                            unit.set_description(description)
+                        }
+                        UnitPropertySetter::ActiveState(active_state) => {
+                            unit.set_active_state(active_state)
+                        }
+                        UnitPropertySetter::LoadState(load_state) => {
+                            unit.set_load_state(load_state)
+                        }
+                        UnitPropertySetter::FragmentPath(_) => todo!(),
+                        UnitPropertySetter::UnitFilePreset(preset) => unit.set_preset(preset),
+                        UnitPropertySetter::SubState(substate) => unit.set_sub_state(substate),
+                        UnitPropertySetter::Custom(quark, owned_value) => {
+                            trace!("DEBUG Custom prop {:?} {:?}", quark, owned_value);
+                            if &quark
+                                == SOCKET_LISTEN_QUARK
+                                    .get_or_init(|| glib::Quark::from_str(SYSD_SOCKET_LISTEN))
+                            {
+                                let listens = unit.insert_socket_listen(quark, owned_value);
+                                for idx in 1..listens {
+                                    let usocket = SocketUnitInfo::from_unit_socket(unit, idx - 1);
+                                    println!(
+                                        "Usocket {} state {} {}",
+                                        usocket.primary(),
+                                        usocket.active_state(),
+                                        unit.active_state()
+                                    );
+
+                                    // let ui: UnitInfo = usocket.into();
+                                    // println!("as {}", ui.active_state());
+                                    let socket_listen = glib::Quark::from_str(SYSD_SOCKET_LISTEN);
+                                    let s = usocket.get_custom_property::<Vec<(String, String)>>(
+                                        socket_listen,
+                                    );
+                                    println!("ddd {:?}", s);
+
+                                    list_store.append(&usocket);
+                                }
+                            } else {
+                                unit.insert_unit_property_value(quark, owned_value)
+                            }
+                        }
+                    }
+                }
             }
 
             info!("Fetching properties FINISHED");
