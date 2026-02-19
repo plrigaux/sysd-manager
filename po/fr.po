@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-18 19:58-0500\n"
-"PO-Revision-Date: 2026-02-19 00:56+0000\n"
+"PO-Revision-Date: 2026-02-19 21:41+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -2570,14 +2570,12 @@ msgstr "Chronos"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:211
-#, fuzzy
 msgctxt "menu"
 msgid "Sockets"
 msgstr "Sockets"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:215
-#, fuzzy
 msgctxt "menu"
 msgid "Customized"
 msgstr "Personnalisé"
