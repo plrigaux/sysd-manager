@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-18 19:30-0500\n"
+"POT-Creation-Date: 2026-02-18 19:58-0500\n"
 "PO-Revision-Date: 2026-02-19 00:56+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -2426,49 +2426,56 @@ msgctxt "list column"
 msgid "Description"
 msgstr "Description"
 
-#: src/widget/unit_list/imp/construct.rs:506
-#: src/widget/unit_list/imp/construct.rs:523
+#. Unit full name column name
+#: src/widget/unit_list/imp/construct.rs:507
+#: src/widget/unit_list/imp/construct.rs:524
 msgctxt "list column"
 msgid "Unit"
 msgstr "Unité"
 
-#: src/widget/unit_list/imp/construct.rs:540
+#: src/widget/unit_list/imp/construct.rs:541
 msgctxt "list column"
 msgid "Type"
 msgstr "Type"
 
-#: src/widget/unit_list/imp/construct.rs:547
+#. Socket list column name
+#: src/widget/unit_list/imp/construct.rs:549
 msgctxt "list column"
 msgid "Listen Type"
 msgstr "Types d'écoute"
 
-#: src/widget/unit_list/imp/construct.rs:556
+#. Socket list column name
+#: src/widget/unit_list/imp/construct.rs:559
 msgctxt "list column"
 msgid "Listen"
 msgstr "Écoute"
 
-#. Timer
-#: src/widget/unit_list/imp/construct.rs:567
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:570
 msgctxt "list column"
 msgid "Next"
 msgstr "Suivant"
 
-#: src/widget/unit_list/imp/construct.rs:576
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:580
 msgctxt "list column"
 msgid "Left"
 msgstr "Restant"
 
-#: src/widget/unit_list/imp/construct.rs:585
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:590
 msgctxt "list column"
 msgid "Last"
 msgstr "Dernier"
 
-#: src/widget/unit_list/imp/construct.rs:593
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:599
 msgctxt "list column"
 msgid "Passed"
 msgstr "Passé"
 
-#: src/widget/unit_list/imp/construct.rs:603
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:610
 msgctxt "list column"
 msgid "Activates"
 msgstr "Active"
@@ -2537,13 +2544,13 @@ msgctxt "menu"
 msgid "Filtering"
 msgstr "Filtrage"
 
-#. List view
+#. Curated List View
 #: src/widget/unit_list/mod.rs:195
 msgctxt "menu"
 msgid "Default"
 msgstr "Défaut"
 
-#. List view
+#. Curated List View
 #: src/widget/unit_list/mod.rs:199
 msgctxt "menu"
 msgid "Loaded Units"
@@ -2555,21 +2562,24 @@ msgctxt "menu"
 msgid "Unit Files"
 msgstr "Fichiers"
 
-#: src/widget/unit_list/mod.rs:208
+#. Curated List View
+#: src/widget/unit_list/mod.rs:207
 msgctxt "menu"
 msgid "Timers"
 msgstr "Chronos"
 
-#. List view
-#: src/widget/unit_list/mod.rs:212
+#. Curated List View
+#: src/widget/unit_list/mod.rs:211
+#, fuzzy
 msgctxt "menu"
-msgid "Socket"
+msgid "Sockets"
 msgstr "Sockets"
 
-#. List view
-#: src/widget/unit_list/mod.rs:216
+#. Curated List View
+#: src/widget/unit_list/mod.rs:215
+#, fuzzy
 msgctxt "menu"
-msgid "Custom"
+msgid "Customized"
 msgstr "Personnalisé"
 
 #~ msgctxt "preference"

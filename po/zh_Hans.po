@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-18 19:30-0500\n"
+"POT-Creation-Date: 2026-02-18 19:58-0500\n"
 "PO-Revision-Date: 2026-02-07 01:52+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
@@ -2363,50 +2363,57 @@ msgctxt "list column"
 msgid "Description"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:506
-#: src/widget/unit_list/imp/construct.rs:523
+#. Unit full name column name
+#: src/widget/unit_list/imp/construct.rs:507
+#: src/widget/unit_list/imp/construct.rs:524
 #, fuzzy
 msgctxt "list column"
 msgid "Unit"
 msgstr "服务单元文件"
 
-#: src/widget/unit_list/imp/construct.rs:540
+#: src/widget/unit_list/imp/construct.rs:541
 msgctxt "list column"
 msgid "Type"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:547
+#. Socket list column name
+#: src/widget/unit_list/imp/construct.rs:549
 msgctxt "list column"
 msgid "Listen Type"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:556
+#. Socket list column name
+#: src/widget/unit_list/imp/construct.rs:559
 msgctxt "list column"
 msgid "Listen"
 msgstr ""
 
-#. Timer
-#: src/widget/unit_list/imp/construct.rs:567
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:570
 msgctxt "list column"
 msgid "Next"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:576
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:580
 msgctxt "list column"
 msgid "Left"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:585
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:590
 msgctxt "list column"
 msgid "Last"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:593
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:599
 msgctxt "list column"
 msgid "Passed"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:603
+#. Timer list column name
+#: src/widget/unit_list/imp/construct.rs:610
 #, fuzzy
 msgctxt "list column"
 msgid "Activates"
@@ -2474,14 +2481,14 @@ msgctxt "menu"
 msgid "Filtering"
 msgstr ""
 
-#. List view
+#. Curated List View
 #: src/widget/unit_list/mod.rs:195
 #, fuzzy
 msgctxt "menu"
 msgid "Default"
 msgstr "恢复默认"
 
-#. List view
+#. Curated List View
 #: src/widget/unit_list/mod.rs:199
 #, fuzzy
 msgctxt "menu"
@@ -2495,19 +2502,20 @@ msgctxt "menu"
 msgid "Unit Files"
 msgstr "单元文件"
 
-#: src/widget/unit_list/mod.rs:208
+#. Curated List View
+#: src/widget/unit_list/mod.rs:207
 msgctxt "menu"
 msgid "Timers"
 msgstr ""
 
-#. List view
-#: src/widget/unit_list/mod.rs:212
+#. Curated List View
+#: src/widget/unit_list/mod.rs:211
 msgctxt "menu"
-msgid "Socket"
+msgid "Sockets"
 msgstr ""
 
-#. List view
-#: src/widget/unit_list/mod.rs:216
+#. Curated List View
+#: src/widget/unit_list/mod.rs:215
 msgctxt "menu"
-msgid "Custom"
+msgid "Customized"
 msgstr ""
