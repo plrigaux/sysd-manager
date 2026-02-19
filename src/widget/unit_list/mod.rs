@@ -216,36 +216,30 @@ impl UnitListView {
         }
     }
 
-    // pub fn action(&self) -> &str {
-    //     &self.win_action()[4..]
-    // }
-
     pub fn id(&self) -> &str {
-        let wa = &self.win_action_it();
-        let len = wa.len();
-        &wa[4..len - 15]
-    }
-
-    pub fn win_action_it(&self) -> &str {
         match self {
-            UnitListView::Defaut => "win.default_unit_list_view",
-            UnitListView::LoadedUnit => "win.active_unit_list_view",
-            UnitListView::UnitFiles => "win.unit_file_unit_list_view",
-            UnitListView::Timers => "win.timers_unit_list_view",
-            UnitListView::Sockets => "win.sockets_unit_list_view",
-            UnitListView::Custom => "win.custom_unit_list_view",
+            UnitListView::Defaut => "default",
+            UnitListView::LoadedUnit => "loaded",
+            UnitListView::UnitFiles => "unit_file",
+            UnitListView::Timers => "timers",
+            UnitListView::Sockets => "sockets",
+            UnitListView::Custom => "custom",
         }
     }
 
     pub fn win_accels(&self) -> [&str; 1] {
         match self {
-            UnitListView::Defaut => ["<Ctrl><Alt>d"],
-            UnitListView::LoadedUnit => ["<Ctrl><Alt>l"],
-            UnitListView::UnitFiles => ["<Ctrl><Alt>F"],
-            UnitListView::Timers => ["<Ctrl>t"],
-            UnitListView::Sockets => ["<Ctrl><Alt>S"],
-            UnitListView::Custom => ["<Ctrl><Alt>C"],
+            UnitListView::Defaut => ["<Ctrl><Shift>d"],
+            UnitListView::LoadedUnit => ["<Ctrl><Shift>l"],
+            UnitListView::UnitFiles => ["<Ctrl><Shift>F"],
+            UnitListView::Timers => ["<Ctrl><Shift>t"],
+            UnitListView::Sockets => ["<Ctrl><Shift>S"],
+            UnitListView::Custom => ["<Ctrl><Shift>C"],
         }
+    }
+
+    pub(crate) fn detailed_action(&self) -> String {
+        format!("{}::{}", Self::WIN_ACTION, self.id())
     }
 }
 

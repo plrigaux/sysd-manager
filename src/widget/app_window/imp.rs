@@ -10,7 +10,7 @@ use crate::{
         ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
-        NS_ACTION_REFRESH_UNIT_LIST,
+        NS_ACTION_REFRESH_UNIT_LIST, WIN_ACTION_SAVE_UNIT_FILE,
     },
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
@@ -38,6 +38,7 @@ use gtk::{
     },
 };
 use regex::Regex;
+use strum::IntoEnumIterator;
 use tracing::{debug, error, info, warn};
 
 use systemd::journal_data::Boot;
@@ -528,12 +529,17 @@ impl AppWindowImpl {
         application.set_accels_for_action("app.open_dependencies", &["<Ctrl>d"]);
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
         application.set_accels_for_action("app.open_file", &["<Ctrl>u"]);
-        application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Shift>f"]);
+        application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Alt>f"]);
         application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
         application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR_GENERAL, &["<Ctrl>r"]);
         application.set_accels_for_action("app.debug", &["<Ctrl>q"]);
         application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
+        application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
+
+        for ui in UnitListView::iter() {
+            application.set_accels_for_action(&ui.detailed_action(), &ui.win_accels());
+        }
     }
 
     pub fn overlay(&self) -> &adw::ToastOverlay {

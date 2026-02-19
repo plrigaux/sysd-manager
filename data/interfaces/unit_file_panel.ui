@@ -53,6 +53,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="save_button">
+                        <property name="action-name">win.save-unit-file</property>
                         <property name="child">
                           <object class="AdwButtonContent">
                             <property name="halign">baseline-center</property>
@@ -61,7 +62,6 @@
                             <property name="valign">baseline-center</property>
                           </object>
                         </property>
-                        <signal name="clicked" handler="save_file" swapped="yes"/>
                       </object>
                     </child>
                   </object>
