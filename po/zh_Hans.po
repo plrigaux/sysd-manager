@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2025-11-24 13:00+0000\n"
-"Last-Translator: Shijia Zhang <15964984+codgician@users.noreply.github.com>\n"
+"PO-Revision-Date: 2026-02-07 01:52+0000\n"
+"Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -39,7 +39,7 @@ msgstr "一个用于管理 systemd 单元，用户友好的应用程序"
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr "Systemd；Systemctl；服务；日志；"
+msgstr "Systemd;Systemctl;服务;日志;"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
 msgid ""
@@ -53,32 +53,32 @@ msgstr ""
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
 msgid "Unit Files"
-msgstr "服务单元文件"
+msgstr "单元文件"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
 msgid "Unit Dependencies"
-msgstr "服务单元依赖"
+msgstr "单元依赖"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
 msgid "Unit File"
-msgstr "服务单元文件"
+msgstr "单元文件"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
 msgid "Unit Journal"
-msgstr "服务单元日志"
+msgstr "单元日志"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
 msgid "Analyze Blame"
-msgstr ""
+msgstr "分析启动耗时"
 
 #: data/interfaces/app_window.ui:16
 msgctxt "menu"
 msgid "Daemon Reload"
-msgstr ""
+msgstr "重载所有单元配置"
 
 #: data/interfaces/app_window.ui:20
 msgctxt "menu"
@@ -88,17 +88,17 @@ msgstr "Systemd 信息"
 #: data/interfaces/app_window.ui:24
 msgctxt "menu"
 msgid "List Boots"
-msgstr ""
+msgstr "启动列表"
 
 #: data/interfaces/app_window.ui:28
 msgctxt "menu"
 msgid "Watch Signals"
-msgstr ""
+msgstr "查看信号"
 
 #: data/interfaces/app_window.ui:34
 msgctxt "menu"
 msgid "Preferences"
-msgstr "偏好设置"
+msgstr "首选项"
 
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
@@ -118,7 +118,7 @@ msgstr "打开搜索栏"
 #: data/interfaces/app_window.ui:88
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
-msgstr "刷新服务单元列表"
+msgstr "刷新单元列表"
 
 #. button
 #. title dialog
@@ -127,43 +127,43 @@ msgstr "刷新服务单元列表"
 #: src/widget/clean_dialog/imp.rs:93
 msgctxt "clean"
 msgid "Clean"
-msgstr ""
+msgstr "清空"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
 msgctxt "enable unit file"
 msgid "Unit file"
-msgstr ""
+msgstr "单元文件"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:38
 msgctxt "enable unit file"
 msgid "Use Selected Unit"
-msgstr ""
+msgstr "使用选定的单元"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:46
 msgctxt "enable unit file"
 msgid "Browse for Unit file"
-msgstr ""
+msgstr "浏览单元文件"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:54
 msgctxt "enable unit file"
 msgid "DBus Level"
-msgstr ""
+msgstr "DBus 级别"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:59
 msgctxt "enable unit file"
 msgid "Whether the unit shall be enabled for runtime only"
-msgstr ""
+msgstr "是否仅启用为运行时单元"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:60
 msgctxt "enable unit file"
 msgid "Runtime"
-msgstr ""
+msgstr "运行时"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:65
@@ -171,13 +171,13 @@ msgctxt "enable unit file"
 msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
 "necessary"
-msgstr ""
+msgstr "控制是否在必要时替换指向其他单元的符号链接"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:66
 msgctxt "enable unit file"
 msgid "Force"
-msgstr ""
+msgstr "强制"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:71
@@ -186,106 +186,108 @@ msgid ""
 "Add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/"
 "system.attached"
 msgstr ""
+"在/etc/systemd/system.attached 和/run/systemd/system.attached 中添加或移除符"
+"号链接"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:73
 msgctxt "enable unit file"
 msgid "Portable"
-msgstr ""
+msgstr "便携"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:87
 msgctxt "enable unit file"
 msgid "Start Unit just after being enabled"
-msgstr ""
+msgstr "在启用后立即启动单元"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:88
 msgctxt "enable unit file"
 msgid "Run now"
-msgstr ""
+msgstr "立即运行"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:93
 msgctxt "enable unit file"
 msgid "Starting mode options"
-msgstr ""
+msgstr "启动模式选项"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:94
 msgctxt "enable unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "运行模式"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:106
 msgctxt "enable unit file"
 msgid "Reset"
-msgstr ""
+msgstr "重置"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:114
 msgctxt "enable unit file"
 msgid "Enable"
-msgstr ""
+msgstr "启用"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
 msgid "Clear"
-msgstr ""
+msgstr "清空"
 
 #. button
 #: data/interfaces/journal_panel.ui:27
 msgctxt "journal"
 msgid "Refresh"
-msgstr ""
+msgstr "刷新"
 
 #: data/interfaces/journal_panel.ui:32
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
-msgstr ""
+msgstr "清除并重新加载日志"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:43
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr ""
+msgstr "实时显示新增日志"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:59
 msgctxt "journal"
 msgid "Toggle events display order"
-msgstr ""
+msgstr "切换显示顺序"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:65
 msgctxt "journal"
 msgid "List the boots of the system"
-msgstr ""
+msgstr "列出系统上的引导日志"
 
 #. button
 #: data/interfaces/journal_panel.ui:70
 msgctxt "journal"
 msgid "List Boots"
-msgstr ""
+msgstr "列出引导日志"
 
 #. button
 #: data/interfaces/journal_panel.ui:90
 msgctxt "journal"
 msgid "Current boot"
-msgstr ""
+msgstr "当前引导"
 
 #. button
 #: data/interfaces/journal_panel.ui:96
 msgctxt "journal"
 msgid "All events"
-msgstr ""
+msgstr "所有引导"
 
 #. title
 #: data/interfaces/journal_panel.ui:103
 msgctxt "journal"
 msgid "Boot id"
-msgstr ""
+msgstr "引导 id"
 
 #. description
 #: data/interfaces/journal_panel.ui:149
@@ -294,101 +296,103 @@ msgid ""
 "No journal events!\n"
 "It can be a good thing. 😉"
 msgstr ""
+"无日志事件！\n"
+"这可能是正常现象。😉"
 
 #. title
 #: data/interfaces/journal_panel.ui:152
 msgctxt "journal"
 msgid "No journal events"
-msgstr ""
+msgstr "无日志事件"
 
 #. group
 #: data/interfaces/kill_panel.ui:20
 msgctxt "kill"
 msgid "Parameters"
-msgstr ""
+msgstr "参数"
 
 #. title
 #: data/interfaces/kill_panel.ui:23
 msgctxt "kill"
 msgid "Unix signal"
-msgstr ""
+msgstr "Unix 信号"
 
 #. subtitle
 #: data/interfaces/kill_panel.ui:29
 msgctxt "kill"
 msgid "Unit related processes"
-msgstr ""
+msgstr "单元相关进程"
 
 #. title
 #: data/interfaces/kill_panel.ui:30
 msgctxt "kill"
 msgid "Who to kill"
-msgstr ""
+msgstr "终止对象"
 
 #. title
 #: data/interfaces/kill_panel.ui:37
 msgctxt "kill"
 msgid "Signal Value"
-msgstr ""
+msgstr "信号值"
 
 #. button
 #: data/interfaces/kill_panel.ui:51
 msgctxt "kill"
 msgid "Send"
-msgstr ""
+msgstr "发送"
 
 #. description
 #: data/interfaces/kill_panel.ui:60
 msgctxt "kill"
 msgid "Most common Linux signals"
-msgstr ""
+msgstr "最常见的 Linux 信号"
 
 #. description
 #: data/interfaces/kill_panel.ui:62
 msgctxt "kill"
 msgid "Common Unix signals"
-msgstr ""
+msgstr "常见的 Unix 信号"
 
 #. button
 #: data/interfaces/kill_panel.ui:84
 msgctxt "kill"
 msgid "Send Kill Signal to Unit"
-msgstr ""
+msgstr "向单元发送 Kill 信号"
 
 #: data/interfaces/list_boots.ui:37
 msgctxt "boot list column"
 msgid "Index"
-msgstr ""
+msgstr "序号"
 
 #: data/interfaces/list_boots.ui:44
 msgctxt "boot list column"
 msgid "Offset"
-msgstr ""
+msgstr "偏移"
 
 #: data/interfaces/list_boots.ui:52
 msgctxt "boot list column"
 msgid "Boot Id"
-msgstr ""
+msgstr "引导 Id"
 
 #: data/interfaces/list_boots.ui:60
 msgctxt "boot list column"
 msgid "First Entry"
-msgstr ""
+msgstr "开始时间"
 
 #: data/interfaces/list_boots.ui:68
 msgctxt "boot list column"
 msgid "Last Entry"
-msgstr ""
+msgstr "结束时间"
 
 #: data/interfaces/list_boots.ui:75
 msgctxt "boot list column"
 msgid "Duration"
-msgstr ""
+msgstr "持续时间"
 
 #: data/interfaces/list_boots.ui:105
 msgctxt "boot list dialog"
 msgid "List Boots"
-msgstr ""
+msgstr "列出引导日志"
 
 #. group
 #. button
@@ -396,19 +400,19 @@ msgstr ""
 #: data/interfaces/mask_unit_dialog.ui:75
 msgctxt "mask"
 msgid "Mask"
-msgstr ""
+msgstr "屏蔽"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:27
 msgctxt "mask"
 msgid "To mask temporarily until the next system reboot"
-msgstr ""
+msgstr "临时屏蔽，直到下次系统重启"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:28
 msgctxt "mask"
 msgid "Runtime"
-msgstr ""
+msgstr "运行时"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:33
@@ -416,49 +420,49 @@ msgctxt "mask"
 msgid ""
 "Controls whether symlinks pointing to other units shall be replaced if "
 "necessary"
-msgstr ""
+msgstr "控制是否在必要时替换指向其他单元的符号链接"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:34
 msgctxt "mask"
 msgid "Force"
-msgstr ""
+msgstr "强制"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:48
 msgctxt "mask"
 msgid "Ensure that the unit will be also stopped"
-msgstr ""
+msgstr "确保该单元也将被停止"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:49
 msgctxt "mask"
 msgid "Stop Now"
-msgstr ""
+msgstr "立即停止"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:54
 msgctxt "mask"
 msgid "Argument for the stoping mode"
-msgstr ""
+msgstr "停止模式的参数"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:55
 msgctxt "mask"
 msgid "Stop mode"
-msgstr ""
+msgstr "停止模式"
 
 #. button
 #: data/interfaces/mask_unit_dialog.ui:67
 msgctxt "mask"
 msgid "Reset"
-msgstr ""
+msgstr "重置"
 
 #. dialog title
 #: data/interfaces/mask_unit_dialog.ui:89
 msgctxt "mask"
 msgid "Mask Unit"
-msgstr ""
+msgstr "屏蔽该单元"
 
 #. First connection message
 #: data/interfaces/preferences.ui:12
@@ -468,166 +472,169 @@ msgid ""
 "You can set the application's Dbus level to <u>System</u> if you want to see "
 "all Systemd units."
 msgstr ""
+"这是您的首次连接\n"
+"如果您想查看所有 Systemd 单元，可以将应用程序的 D-Bus 级别设置为<u>\"系统\"</"
+"u>。"
 
 #: data/interfaces/preferences.ui:19
 msgctxt "preference"
 msgid "_Main"
-msgstr ""
+msgstr "_主选项"
 
 #. group
 #: data/interfaces/preferences.ui:23
 msgctxt "preference"
 msgid "General"
-msgstr ""
+msgstr "常规"
 
 #. row
 #: data/interfaces/preferences.ui:26
 msgctxt "preference"
 msgid "Preferred Color Scheme"
-msgstr ""
+msgstr "首选配色方案"
 
 #. row subtitle
 #: data/interfaces/preferences.ui:31
 msgctxt "preference"
 msgid "Application's division orientation mode"
-msgstr ""
+msgstr "界面排序方式"
 
 #. row
 #: data/interfaces/preferences.ui:32
 msgctxt "preference"
 msgid "Orientation"
-msgstr ""
+msgstr "界面排序方向"
 
 #. row
 #: data/interfaces/preferences.ui:37
 msgctxt "preference"
 msgid "Change the format of printed timestamps"
-msgstr ""
+msgstr "更改时间戳的显示格式"
 
 #. row
 #: data/interfaces/preferences.ui:38
 msgctxt "preference"
 msgid "Timestamp style"
-msgstr ""
+msgstr "时间戳样式"
 
 #. row
 #: data/interfaces/preferences.ui:43
 msgctxt "preference"
 msgid "The Monospace Font"
-msgstr ""
+msgstr "等宽字体"
 
 #. row
 #: data/interfaces/preferences.ui:44
 msgctxt "preference"
 msgid "Text font"
-msgstr ""
+msgstr "文本字体"
 
 #: data/interfaces/preferences.ui:48
 msgctxt "preference"
 msgid "Default"
-msgstr ""
+msgstr "恢复默认"
 
 #. button
 #: data/interfaces/preferences.ui:56
 msgctxt "preference"
 msgid "Select Font"
-msgstr ""
+msgstr "选择字体"
 
 #. group
 #: data/interfaces/preferences.ui:67
 msgctxt "preference"
 msgid "Unit List"
-msgstr ""
+msgstr "单元列表"
 
 #. subtitle
 #: data/interfaces/preferences.ui:70
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
-msgstr ""
+msgstr "根据内容在单元列表中着色。"
 
 #. title
 #: data/interfaces/preferences.ui:71
 msgctxt "preference"
 msgid "Display Colors"
-msgstr ""
+msgstr "颜色指示"
 
 #. subtitle
 #: data/interfaces/preferences.ui:76
 msgctxt "preference"
 msgid "Display different totals regarding retrieved units"
-msgstr ""
+msgstr "显示已检索单元的统计摘要"
 
 #. title
 #: data/interfaces/preferences.ui:77
 msgctxt "preference"
 msgid "Display Totals Summary"
-msgstr ""
+msgstr "显示统计摘要"
 
 #. group
 #: data/interfaces/preferences.ui:102
 msgctxt "preference"
 msgid "Unit Description"
-msgstr ""
+msgstr "单元描述"
 
 #. subtitle
 #: data/interfaces/preferences.ui:105
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
-msgstr ""
+msgstr "自动换行单元描述的长文本行"
 
 #. title
 #: data/interfaces/preferences.ui:106
 msgctxt "preference"
 msgid "Wrap unit description text"
-msgstr ""
+msgstr "自动换行单元描述"
 
 #. group
 #: data/interfaces/preferences.ui:113
 msgctxt "preference"
 msgid "Unit File"
-msgstr ""
+msgstr "单元文件显示配置"
 
 #. subtitle
 #: data/interfaces/preferences.ui:116
 msgctxt "preference"
 msgid "Display unit file line number"
-msgstr ""
+msgstr "显示单元文件行数"
 
 #. title
 #: data/interfaces/preferences.ui:117
 msgctxt "preference"
 msgid "Line number"
-msgstr ""
+msgstr "显示行号"
 
 #. subtitle
 #: data/interfaces/preferences.ui:127
 msgctxt "preference"
 msgid "Unit file highlight style"
-msgstr ""
+msgstr "单元文件高亮样式"
 
 #. title
 #: data/interfaces/preferences.ui:128
 msgctxt "preference"
 msgid "Text Highlight"
-msgstr ""
+msgstr "文本高亮"
 
 #. subtitle
 #: data/interfaces/preferences.ui:138
 msgctxt "preference"
 msgid "To see the logs in color"
-msgstr ""
+msgstr "以彩色显示日志"
 
 #. title
 #: data/interfaces/preferences.ui:139
 msgctxt "preference"
 msgid "Journal colors"
-msgstr ""
+msgstr "日志条目颜色"
 
 #. title
 #: data/interfaces/preferences.ui:160
 msgctxt "preference"
 msgid "Journal's events batch size"
-msgstr ""
+msgstr "日志事件批次大小"
 
 #. subtitle
 #: data/interfaces/preferences.ui:173
@@ -636,142 +643,141 @@ msgid ""
 "Journal's event maximum characters\n"
 "<i>0 to no limit</i>"
 msgstr ""
+"日志事件的最大字符数\n"
+"<i>0 表示无限制</i>"
 
 #. title
 #: data/interfaces/preferences.ui:176
 msgctxt "preference"
 msgid "Journal's event max size"
-msgstr ""
+msgstr "日志事件最大长度"
 
 #: data/interfaces/preferences.ui:193
 msgctxt "preference"
 msgid "_Proxy Configuration"
-msgstr ""
+msgstr "_代理配置"
 
 #: data/interfaces/preferences.ui:199
 msgid "Switch that controls other switches"
-msgstr ""
+msgstr "控制其他开关的总开关"
 
 #. group title
 #: data/interfaces/preferences.ui:207
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
-msgstr ""
+msgstr "Systemd Manager方法调用"
 
 #: data/interfaces/preferences.ui:210
 msgctxt "preference"
 msgid "<b>Clean</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用 <b>清空</b> 方法"
 
 #: data/interfaces/preferences.ui:211
 msgctxt "preference"
 msgid "Clean"
-msgstr ""
+msgstr "清空"
 
 #: data/interfaces/preferences.ui:216
 msgctxt "preference"
 msgid "<b>Freeze</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用 <b>冻结</b> 方法"
 
 #: data/interfaces/preferences.ui:217
 msgctxt "preference"
 msgid "Freeze"
-msgstr ""
+msgstr "冻结"
 
 #: data/interfaces/preferences.ui:222
 msgctxt "preference"
 msgid "<b>Thaw</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用 <b>解冻</b> 方法"
 
 #: data/interfaces/preferences.ui:223
 msgctxt "preference"
 msgid "Thaw"
-msgstr ""
+msgstr "解冻"
 
 #: data/interfaces/preferences.ui:228
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用来<b>启用单元文件</b>"
 
 #: data/interfaces/preferences.ui:229
-#, fuzzy
 msgctxt "preference"
 msgid "Enable Unit File"
-msgstr "服务单元文件"
+msgstr "启用单元文件"
 
 #: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用来<b>停用单元文件</b>"
 
 #: data/interfaces/preferences.ui:235
-#, fuzzy
 msgctxt "preference"
 msgid "Disable Unit File"
-msgstr "服务单元文件"
+msgstr "停用单元文件"
 
 #: data/interfaces/preferences.ui:240
 msgctxt "preference"
 msgid ""
 "<b>Reload</b> Systemd Manager configuration method call through the Proxy"
-msgstr ""
+msgstr "通过代理调用来<b>重载</b>所有单元配置"
 
 #: data/interfaces/preferences.ui:241
 msgctxt "preference"
 msgid "Reload Daemon"
-msgstr ""
+msgstr "重载所有单元配置"
 
 #: data/interfaces/preferences.ui:246
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
-msgstr ""
+msgstr "通过代理调用 来<b>恢复单元文件</b> 到其供应商版本"
 
 #: data/interfaces/preferences.ui:247
-#, fuzzy
 msgctxt "preference"
 msgid "Revert Unit Files"
-msgstr "服务单元文件"
+msgstr "恢复单元文件"
 
 #: data/interfaces/preferences.ui:254
 msgctxt "preference"
 msgid "Actions"
-msgstr ""
+msgstr "操作"
 
 #: data/interfaces/preferences.ui:257
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
-msgstr ""
+msgstr "通过代理创建 <b>Drop-in</b> 文件"
 
 #: data/interfaces/preferences.ui:258
 msgctxt "preference"
 msgid "Create Drop-in"
-msgstr ""
+msgstr "创建Drop-in 文件"
 
 #: data/interfaces/preferences.ui:263
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
-msgstr ""
+msgstr "通过代理<b>保存文件</b>"
 
 #: data/interfaces/preferences.ui:264
 msgctxt "preference"
 msgid "Save file"
-msgstr ""
+msgstr "保存文件"
 
 #: data/interfaces/preferences.ui:272
 msgctxt "preference"
 msgid "Proxy Behaviors"
-msgstr ""
+msgstr "代理运行行为"
 
 #: data/interfaces/preferences.ui:275
 msgid "Start the Proxy when starting Sysd Manager"
-msgstr ""
+msgstr "启动 Sysd Manager 时启动代理"
 
 #: data/interfaces/preferences.ui:276
 msgctxt "preference"
 msgid "Start Proxy at Start up"
-msgstr ""
+msgstr "在软件启动时启动代理"
 
 #: data/interfaces/preferences.ui:281
 msgctxt "preference"

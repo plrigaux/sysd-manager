@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 11:01-0500\n"
-"PO-Revision-Date: 2026-01-21 11:01+0000\n"
+"PO-Revision-Date: 2026-02-01 18:01+0000\n"
 "Last-Translator: lorduskordus <lorduskordus@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/cs/>\n"
@@ -39,7 +39,7 @@ msgstr "Uživatelsky přívětivá aplikace pro správu systemd jednotek"
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr ""
+msgstr "Systemd;Systemctl;Služby;log;záznam;"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
 msgid ""
@@ -47,26 +47,29 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Spravujte služby, časovače, sockety a další jednotky. Můžete je povolit, "
+"zakázat, zastavit a spustit. Také se můžete podívat na jejich konfigurační "
+"soubor a nahlédnout do záznamu žurnálu."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
 msgid "Unit Files"
-msgstr ""
+msgstr "Soubory jednotek"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
 msgid "Unit Dependencies"
-msgstr ""
+msgstr "Závislosti jednotek"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
 msgid "Unit File"
-msgstr ""
+msgstr "Soubor jednotky"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
 msgid "Unit Journal"
-msgstr ""
+msgstr "Žurnál jednotky"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -125,25 +128,25 @@ msgstr ""
 #: src/widget/clean_dialog/imp.rs:93
 msgctxt "clean"
 msgid "Clean"
-msgstr ""
+msgstr "Vyčistit"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
 msgctxt "enable unit file"
 msgid "Unit file"
-msgstr ""
+msgstr "Soubor jednotky"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:38
 msgctxt "enable unit file"
 msgid "Use Selected Unit"
-msgstr ""
+msgstr "Použít vybranou jednotku"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:46
 msgctxt "enable unit file"
 msgid "Browse for Unit file"
-msgstr ""
+msgstr "Vyhledat soubor jednotky"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:54
@@ -175,7 +178,7 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:66
 msgctxt "enable unit file"
 msgid "Force"
-msgstr ""
+msgstr "Vynutit"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:71
@@ -201,7 +204,7 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:88
 msgctxt "enable unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Spustit nyní"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:93
@@ -213,30 +216,30 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:94
 msgctxt "enable unit file"
 msgid "Run mode"
-msgstr ""
+msgstr "Režim spouštění"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:106
 msgctxt "enable unit file"
 msgid "Reset"
-msgstr ""
+msgstr "Resetovat"
 
 #. button
 #: data/interfaces/control_action_dialog.ui:114
 msgctxt "enable unit file"
 msgid "Enable"
-msgstr ""
+msgstr "Povolit"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
 msgid "Clear"
-msgstr ""
+msgstr "Vyčistit"
 
 #. button
 #: data/interfaces/journal_panel.ui:27
 msgctxt "journal"
 msgid "Refresh"
-msgstr ""
+msgstr "Obnovit"
 
 #: data/interfaces/journal_panel.ui:32
 msgctxt "journal"
