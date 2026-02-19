@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-18 19:58-0500\n"
+"POT-Creation-Date: 2026-02-19 16:38-0500\n"
 "PO-Revision-Date: 2026-02-19 00:56+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -877,6 +877,60 @@ msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Afficher les propriétés de l'unité"
 
+#. In the shortcut Window description
+#: data/interfaces/shortcuts.ui:88
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Save the selected unit file"
+msgstr "Inverser les éléments sélectionnés du filtre"
+
+#. Section name
+#: data/interfaces/shortcuts.ui:95
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Curated Lists"
+msgstr "Listes organisées"
+
+#. subtitle
+#: data/interfaces/shortcuts.ui:99
+msgctxt "shortcut window"
+msgid "Merge Loaded Units with Unit Files"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:100
+msgctxt "shortcut window"
+msgid "Display Sysd Manager Original List"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:106
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Loaded Units"
+msgstr "Unités chargées"
+
+#: data/interfaces/shortcuts.ui:112
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Unit Files"
+msgstr "Désactiver le fichier de l'unité"
+
+#: data/interfaces/shortcuts.ui:118
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Timers"
+msgstr "Afficher les numéros de ligne"
+
+#: data/interfaces/shortcuts.ui:124
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Sockets"
+msgstr "Affichage des couleurs"
+
+#: data/interfaces/shortcuts.ui:130
+msgctxt "shortcut window"
+msgid "Display User Customised Units list"
+msgstr ""
+
 #. button
 #: data/interfaces/side_control_panel.ui:22
 msgctxt "control"
@@ -1214,36 +1268,36 @@ msgid "No dependencies"
 msgstr "Aucune dépendances"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:60
+#: data/interfaces/unit_file_panel.ui:61
 msgctxt "file"
 msgid "Save"
 msgstr "Enregister"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:89
+#: data/interfaces/unit_file_panel.ui:90
 msgctxt "file"
 msgid "The  unit has no file associated"
 msgstr "L'unité n'a aucun fichier associé"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:91
+#: data/interfaces/unit_file_panel.ui:92
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Pas de fichier pour l'unité"
 
-#: data/interfaces/unit_file_panel.ui:102
+#: data/interfaces/unit_file_panel.ui:103
 msgid "Create Drop-in"
 msgstr "Créer un drop-in"
 
-#: data/interfaces/unit_file_panel.ui:105
+#: data/interfaces/unit_file_panel.ui:106
 msgid "Permanent"
 msgstr "Permanent"
 
-#: data/interfaces/unit_file_panel.ui:109
+#: data/interfaces/unit_file_panel.ui:110
 msgid "Runtime"
 msgstr "Durée d'exécution"
 
-#: data/interfaces/unit_file_panel.ui:114
+#: data/interfaces/unit_file_panel.ui:115
 msgid "Revert Drop-in"
 msgstr "Annuler le Drop-in"
 
@@ -2234,7 +2288,30 @@ msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr "Filtrer les dépendances par types"
 
-#: src/widget/unit_file_panel/flatpak.rs:73
+#: src/widget/unit_file_panel/flatpak.rs:17
+msgctxt "warning"
+msgid ""
+"Failed to perform action. The proxy service might be inactive.\n"
+"Please install and start the following service"
+msgstr ""
+
+#: src/widget/unit_file_panel/flatpak.rs:20
+msgctxt "warning"
+msgid "Operation Failed"
+msgstr ""
+
+#: src/widget/unit_file_panel/flatpak.rs:28
+msgctxt "warning"
+msgid "_Cancel"
+msgstr ""
+
+#: src/widget/unit_file_panel/flatpak.rs:29
+#, fuzzy
+msgctxt "warning"
+msgid "_Save"
+msgstr "Enregister"
+
+#: src/widget/unit_file_panel/flatpak.rs:114
 msgctxt "flatpak"
 msgid ""
 "You need to jailbreak your Flatpak application to be able to save files on "
@@ -2249,74 +2326,74 @@ msgstr ""
 "Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
 "Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
-#: src/widget/unit_file_panel/flatpak.rs:77
+#: src/widget/unit_file_panel/flatpak.rs:118
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
 msgstr "Permission Flatpak nécessaire !"
 
 #. Button label
-#: src/widget/unit_file_panel/flatpak.rs:89
+#: src/widget/unit_file_panel/flatpak.rs:130
 msgctxt "flatpak"
 msgid "_Close"
 msgstr "_Fermer"
 
-#: src/widget/unit_file_panel/imp.rs:263
+#: src/widget/unit_file_panel/imp.rs:251
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "Fichier {} créé avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:264
+#: src/widget/unit_file_panel/imp.rs:252
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "Fichier {} enregistré avec succès !"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:270 src/widget/unit_file_panel/imp.rs:1020
+#: src/widget/unit_file_panel/imp.rs:258 src/widget/unit_file_panel/imp.rs:1033
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
-#: src/widget/unit_file_panel/imp.rs:285 src/widget/unit_file_panel/imp.rs:298
-#: src/widget/unit_file_panel/imp.rs:1036
+#: src/widget/unit_file_panel/imp.rs:273 src/widget/unit_file_panel/imp.rs:288
+#: src/widget/unit_file_panel/imp.rs:1049
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr "Impossible d'enregistrer le fichier, autorisation refusée !"
 
-#: src/widget/unit_file_panel/imp.rs:310
+#: src/widget/unit_file_panel/imp.rs:300
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 "Impossible d'enregistrer le fichier, autorisation Flatpak non accordée !"
 
-#: src/widget/unit_file_panel/imp.rs:318
+#: src/widget/unit_file_panel/imp.rs:308
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr "Impossible d'enregistrer le fichier, une erreur s'est produite !"
 
-#: src/widget/unit_file_panel/imp.rs:559
+#: src/widget/unit_file_panel/imp.rs:549
 msgctxt "file"
 msgid "Unit File"
 msgstr "Fichier de l'unité"
 
-#: src/widget/unit_file_panel/imp.rs:561
+#: src/widget/unit_file_panel/imp.rs:551
 msgctxt "file"
 msgid "Drop In"
 msgstr "Drop In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:906
+#: src/widget/unit_file_panel/imp.rs:919
 msgctxt "file"
 msgid "Editing"
 msgstr "Nom du fichier Drop-in créé"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:914
+#: src/widget/unit_file_panel/imp.rs:927
 msgctxt "file"
 msgid "Note: you can change the file name"
 msgstr "Remarque : vous pouvez modifier le nom du fichier"
 
-#: src/widget/unit_file_panel/imp.rs:923
+#: src/widget/unit_file_panel/imp.rs:936
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2326,29 +2403,29 @@ msgstr ""
 "contenu du fichier de remplacement"
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:932
+#: src/widget/unit_file_panel/imp.rs:945
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr "Les modifications apportées après ce commentaire seront ignorées"
 
-#: src/widget/unit_file_panel/imp.rs:1010
+#: src/widget/unit_file_panel/imp.rs:1023
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Fichier {} restaurée avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:1056
+#: src/widget/unit_file_panel/imp.rs:1072
 msgctxt "file"
 msgid "Not able to reverted unit, permission not granted!"
 msgstr "Impossible de revenir en arrière, autorisation non accordée !"
 
-#: src/widget/unit_file_panel/imp.rs:1064
+#: src/widget/unit_file_panel/imp.rs:1080
 msgctxt "file"
 msgid "Not able to reverted unit, an error happened!"
 msgstr "Impossible de revenir en arrière, une erreur s'est produite !"
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1162
+#: src/widget/unit_file_panel/imp.rs:1183
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Afficher les numéros de ligne"
@@ -2545,38 +2622,38 @@ msgid "Filtering"
 msgstr "Filtrage"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:195
+#: src/widget/unit_list/mod.rs:194
 msgctxt "menu"
 msgid "Default"
 msgstr "Défaut"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:199
+#: src/widget/unit_list/mod.rs:198
 msgctxt "menu"
 msgid "Loaded Units"
 msgstr "Unités chargées"
 
 #. List view
-#: src/widget/unit_list/mod.rs:203
+#: src/widget/unit_list/mod.rs:202
 msgctxt "menu"
 msgid "Unit Files"
 msgstr "Fichiers"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:207
+#: src/widget/unit_list/mod.rs:206
 msgctxt "menu"
 msgid "Timers"
 msgstr "Chronos"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:211
+#: src/widget/unit_list/mod.rs:210
 #, fuzzy
 msgctxt "menu"
 msgid "Sockets"
 msgstr "Sockets"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:215
+#: src/widget/unit_list/mod.rs:214
 #, fuzzy
 msgctxt "menu"
 msgid "Customized"
