@@ -196,7 +196,7 @@ impl UnitListView {
             }
             UnitListView::LoadedUnit => {
                 //List view
-                pgettext("menu", "Active Units")
+                pgettext("menu", "Loaded Units")
             }
             UnitListView::UnitFiles => {
                 //List view

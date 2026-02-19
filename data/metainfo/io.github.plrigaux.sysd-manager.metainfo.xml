@@ -82,35 +82,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.12.0" date="2026-01-27">
+    <release version="2.13.0" date="2026-02-18">
       <description translate="no">
         <p>Added</p>
         <ul>
-          <li>Fine tune the Proxy Method Calls and Actions through the Preferences</li>
-          <li>Lazy Start the Proxy</li>
-          <li>Refresh the Unit Status on selection</li>
-        </ul>
-        <p>Fixed</p>
-        <ul>
-          <li>Fix Flatpak save file in home directory (make a warning)</li>
-          <li>Password dialog gets overlapped Sysd Manager on every start  https://github.com/plrigaux/sysd-manager/issues/35</li>
-          <li>[2.12.5]Unit's description in some cases was not displayed in the browser</li>
-        </ul>
-      </description>
-    </release>
-    <release version="2.11.3" date="2026-01-13">
-      <description translate="no">
-        <p>Added</p>
-        <ul>
-          <li>Find text feature on the Unit's Description, File, Dependencies and Journal</li>
-          <li>[2.11.1]Find in text can constrain on whole word</li>
-          <li>[2.11.3]Toggle display total summary option in the unit list popup menu</li>
-          <li>[2.11.4]Menu item to toggle Show Line Numbers on unit file panel.</li>
-        </ul>
-        <p>Fixed</p>
-        <ul>
-          <li>[2.11.2]Unit search bar UX improvements (tooltips, icons, sensitivity, ...)</li>
-          <li>[2.11.3]Improve Spacing in Top-Bottom Layout https://github.com/plrigaux/sysd-manager/issues/31</li>
+          <li>Add curated lists switcher</li>
+          <li>Display list of Timers</li>
+          <li>Display list of Sockets</li>
+          <li>Display list of Unit Files</li>
         </ul>
       </description>
     </release>
