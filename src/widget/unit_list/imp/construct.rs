@@ -503,6 +503,7 @@ fn create_unit_display_name_column(display_color: bool) -> gtk::ColumnViewColumn
         .factory(&factory)
         .resizable(true)
         .fixed_width(150)
+        //Unit full name column name
         .title(pgettext("list column", "Unit"))
         .build()
 }
@@ -544,6 +545,7 @@ fn create_unit_type_column(display_color: bool) -> gtk::ColumnViewColumn {
 fn create_socket_listen_type_column() -> UnitColumn {
     let mut unit_column = UnitColumn::new(SOCKET_LISTEN_TYPE, "a(ss)");
     unit_column.resizable = true;
+    //Socket list column name
     unit_column.title = Some(pgettext("list column", "Listen Type"));
     unit_column.fixed_width = 120;
 
@@ -553,6 +555,7 @@ fn create_socket_listen_type_column() -> UnitColumn {
 fn create_socket_listen_column() -> UnitColumn {
     let mut unit_column = UnitColumn::new(SOCKET_LISTEN_COL, "a(ss)");
     unit_column.resizable = true;
+    //Socket list column name
     unit_column.title = Some(pgettext("list column", "Listen"));
     unit_column.fixed_width = 80;
     unit_column.sort = Some(SortType::Asc);
@@ -563,7 +566,7 @@ fn create_socket_listen_column() -> UnitColumn {
 fn create_time_next_time() -> UnitColumn {
     let mut unit_column = UnitColumn::new(TIMER_TIME_NEXT, "t");
     unit_column.resizable = true;
-    //Timer
+    //Timer list column name
     unit_column.title = Some(pgettext("list column", "Next"));
     unit_column.fixed_width = 120;
     unit_column.sort = Some(SortType::Asc);
@@ -573,6 +576,7 @@ fn create_time_next_time() -> UnitColumn {
 fn create_time_next_delay() -> UnitColumn {
     let mut unit_column = UnitColumn::new(TIMER_TIME_LEFT, "t");
     unit_column.resizable = true;
+    //Timer list column name
     unit_column.title = Some(pgettext("list column", "Left"));
     unit_column.fixed_width = 120;
 
@@ -582,6 +586,7 @@ fn create_time_next_delay() -> UnitColumn {
 fn create_time_last() -> UnitColumn {
     let mut unit_column = UnitColumn::new(TIMER_TIME_LAST, "t");
     unit_column.resizable = true;
+    //Timer list column name
     unit_column.title = Some(pgettext("list column", "Last"));
     unit_column.fixed_width = 120;
     unit_column
@@ -590,6 +595,7 @@ fn create_time_last() -> UnitColumn {
 fn create_time_passed() -> UnitColumn {
     let mut unit_column = UnitColumn::new(TIMER_TIME_PASSED, "t");
     unit_column.resizable = true;
+    //Timer list column name
     unit_column.title = Some(pgettext("list column", "Passed"));
     unit_column.fixed_width = 120;
     unit_column
@@ -600,6 +606,7 @@ fn create_col_activates() -> UnitColumn {
 
     let mut unit_column = UnitColumn::new(id, "as");
     unit_column.resizable = true;
+    //Timer list column name
     unit_column.title = Some(pgettext("list column", "Activates"));
     unit_column.fixed_width = 120;
 

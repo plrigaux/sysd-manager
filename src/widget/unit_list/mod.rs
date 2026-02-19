@@ -191,29 +191,28 @@ impl UnitListView {
     pub fn menu_item(&self) -> String {
         match self {
             UnitListView::Defaut => {
-                //List view
+                //Curated List View
                 pgettext("menu", "Default")
             }
             UnitListView::LoadedUnit => {
-                //List view
+                //Curated List View
                 pgettext("menu", "Loaded Units")
             }
             UnitListView::UnitFiles => {
                 //List view
                 pgettext("menu", "Unit Files")
             }
-            UnitListView::Timers =>
-            //List view
-            {
+            UnitListView::Timers => {
+                //Curated List View
                 pgettext("menu", "Timers")
             }
             UnitListView::Sockets => {
-                //List view
-                pgettext("menu", "Socket")
+                //Curated List View
+                pgettext("menu", "Sockets")
             }
             UnitListView::Custom => {
-                //List view
-                pgettext("menu", "Custom")
+                //Curated List View
+                pgettext("menu", "Customized")
             }
         }
     }
