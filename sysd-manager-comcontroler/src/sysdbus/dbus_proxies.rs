@@ -187,14 +187,6 @@ static SYSTEM_MANAGER_SESSION_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> =
             .unwrap()
     });
 
-#[cfg(feature = "flatpak")]
-pub fn systemd_manager_blocking<'a>(level: UnitDBusLevel) -> &'a Systemd1ManagerProxyBlocking<'a> {
-    match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => systemd_manager(),
-        UnitDBusLevel::UserSession => systemd_manager_session(),
-    }
-}
-
 pub fn systemd_manager<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
     (&*SYSTEM_MANAGER_BLOCKING) as _
 }
