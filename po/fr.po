@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-18 19:30-0500\n"
-"PO-Revision-Date: 2026-01-27 16:16+0000\n"
+"PO-Revision-Date: 2026-02-19 00:56+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -125,7 +125,7 @@ msgstr "Rafraîchir la liste des unités"
 #: data/interfaces/app_window.ui:105
 msgctxt "menu"
 msgid "Curated Lists"
-msgstr ""
+msgstr "Listes organisées"
 
 #. button
 #. title dialog
@@ -2438,42 +2438,40 @@ msgid "Type"
 msgstr "Type"
 
 #: src/widget/unit_list/imp/construct.rs:547
-#, fuzzy
 msgctxt "list column"
 msgid "Listen Type"
-msgstr "Types d'unité"
+msgstr "Types d'écoute"
 
 #: src/widget/unit_list/imp/construct.rs:556
 msgctxt "list column"
 msgid "Listen"
-msgstr ""
+msgstr "Écoute"
 
 #. Timer
 #: src/widget/unit_list/imp/construct.rs:567
 msgctxt "list column"
 msgid "Next"
-msgstr ""
+msgstr "Suivant"
 
 #: src/widget/unit_list/imp/construct.rs:576
 msgctxt "list column"
 msgid "Left"
-msgstr ""
+msgstr "Restant"
 
 #: src/widget/unit_list/imp/construct.rs:585
 msgctxt "list column"
 msgid "Last"
-msgstr ""
+msgstr "Dernier"
 
 #: src/widget/unit_list/imp/construct.rs:593
 msgctxt "list column"
 msgid "Passed"
-msgstr ""
+msgstr "Passé"
 
 #: src/widget/unit_list/imp/construct.rs:603
-#, fuzzy
 msgctxt "list column"
 msgid "Activates"
-msgstr "Activation"
+msgstr "Active"
 
 #: src/widget/unit_list/imp/pop_menu.rs:234
 #, rust-format
@@ -2541,42 +2539,38 @@ msgstr "Filtrage"
 
 #. List view
 #: src/widget/unit_list/mod.rs:195
-#, fuzzy
 msgctxt "menu"
 msgid "Default"
-msgstr "Par défaut"
+msgstr "Défaut"
 
 #. List view
 #: src/widget/unit_list/mod.rs:199
-#, fuzzy
 msgctxt "menu"
 msgid "Loaded Units"
-msgstr "Unités chargées récupérées"
+msgstr "Unités chargées"
 
 #. List view
 #: src/widget/unit_list/mod.rs:203
-#, fuzzy
 msgctxt "menu"
 msgid "Unit Files"
-msgstr "Fichiers d'unité"
+msgstr "Fichiers"
 
 #: src/widget/unit_list/mod.rs:208
-#, fuzzy
 msgctxt "menu"
 msgid "Timers"
-msgstr "Temps"
+msgstr "Chronos"
 
 #. List view
 #: src/widget/unit_list/mod.rs:212
 msgctxt "menu"
 msgid "Socket"
-msgstr ""
+msgstr "Sockets"
 
 #. List view
 #: src/widget/unit_list/mod.rs:216
 msgctxt "menu"
 msgid "Custom"
-msgstr ""
+msgstr "Personnalisé"
 
 #~ msgctxt "preference"
 #~ msgid "Preferences"
