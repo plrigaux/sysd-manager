@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-27 11:01-0500\n"
+"POT-Creation-Date: 2026-02-18 19:30-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -111,9 +111,15 @@ msgctxt "top button tooltip"
 msgid "Open Search Bar"
 msgstr ""
 
-#: data/interfaces/app_window.ui:88
+#: data/interfaces/app_window.ui:89
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
+msgstr ""
+
+#. selector of differents units list
+#: data/interfaces/app_window.ui:105
+msgctxt "menu"
+msgid "Curated Lists"
 msgstr ""
 
 #. button
@@ -1412,7 +1418,7 @@ msgid "Running units"
 msgstr ""
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:111
+#: src/main.rs:108
 msgid "Program starting up"
 msgstr ""
 
@@ -1577,12 +1583,12 @@ msgid "Stoping mode options"
 msgstr ""
 
 #. Dialog subtitle
-#: src/widget/kill_panel/imp.rs:77
+#: src/widget/kill_panel/imp.rs:75
 msgctxt "kill"
 msgid "No Unit Selected"
 msgstr ""
 
-#: src/widget/kill_panel/imp.rs:154
+#: src/widget/kill_panel/imp.rs:152
 #, rust-format
 msgctxt "kill"
 msgid ""
@@ -1591,274 +1597,274 @@ msgid ""
 msgstr ""
 
 #. Dialog title
-#: src/widget/kill_panel/imp.rs:200
+#: src/widget/kill_panel/imp.rs:192
 msgctxt "kill"
 msgid "Queue a Realtime Signal to Unit"
 msgstr ""
 
 #. SIGRTMIN to SIGRTMAX default action
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:226 src/widget/kill_panel/imp.rs:425
-#: src/widget/kill_panel/imp.rs:433 src/widget/kill_panel/imp.rs:497
-#: src/widget/kill_panel/imp.rs:505 src/widget/kill_panel/imp.rs:521
-#: src/widget/kill_panel/imp.rs:529 src/widget/kill_panel/imp.rs:537
-#: src/widget/kill_panel/imp.rs:545 src/widget/kill_panel/imp.rs:553
-#: src/widget/kill_panel/imp.rs:636 src/widget/kill_panel/imp.rs:644
-#: src/widget/kill_panel/imp.rs:660 src/widget/kill_panel/imp.rs:668
-#: src/widget/kill_panel/imp.rs:676
+#: src/widget/kill_panel/imp.rs:218 src/widget/kill_panel/imp.rs:417
+#: src/widget/kill_panel/imp.rs:425 src/widget/kill_panel/imp.rs:489
+#: src/widget/kill_panel/imp.rs:497 src/widget/kill_panel/imp.rs:513
+#: src/widget/kill_panel/imp.rs:521 src/widget/kill_panel/imp.rs:529
+#: src/widget/kill_panel/imp.rs:537 src/widget/kill_panel/imp.rs:545
+#: src/widget/kill_panel/imp.rs:628 src/widget/kill_panel/imp.rs:636
+#: src/widget/kill_panel/imp.rs:652 src/widget/kill_panel/imp.rs:660
+#: src/widget/kill_panel/imp.rs:668
 msgctxt "kill"
 msgid "Terminate"
 msgstr ""
 
 #. SIGRTMIN to SIGRTMAX default comment
-#: src/widget/kill_panel/imp.rs:228
+#: src/widget/kill_panel/imp.rs:220
 msgctxt "kill"
 msgid "Real-time signal"
 msgstr ""
 
 #. Dialog title
-#: src/widget/kill_panel/imp.rs:234
+#: src/widget/kill_panel/imp.rs:226
 msgctxt "kill"
 msgid "Send a Kill Signal to Unit"
 msgstr ""
 
-#: src/widget/kill_panel/imp.rs:303
+#: src/widget/kill_panel/imp.rs:295
 #, rust-format
 msgctxt "kill"
 msgid "Queued signal {} with value {} to"
 msgstr ""
 
 #. toast method name -- "Kill signal {signal_id} to"
-#: src/widget/kill_panel/imp.rs:319
+#: src/widget/kill_panel/imp.rs:311
 #, rust-format
 msgctxt "kill"
 msgid "Kill signal {} to"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:427
+#: src/widget/kill_panel/imp.rs:419
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:435
+#: src/widget/kill_panel/imp.rs:427
 msgctxt "kill"
 msgid "Interrupt from keyboard, Ctrl+C"
 msgstr ""
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:441 src/widget/kill_panel/imp.rs:449
-#: src/widget/kill_panel/imp.rs:457 src/widget/kill_panel/imp.rs:465
-#: src/widget/kill_panel/imp.rs:473 src/widget/kill_panel/imp.rs:481
-#: src/widget/kill_panel/imp.rs:489 src/widget/kill_panel/imp.rs:513
-#: src/widget/kill_panel/imp.rs:620 src/widget/kill_panel/imp.rs:628
-#: src/widget/kill_panel/imp.rs:684 src/widget/kill_panel/imp.rs:692
+#: src/widget/kill_panel/imp.rs:433 src/widget/kill_panel/imp.rs:441
+#: src/widget/kill_panel/imp.rs:449 src/widget/kill_panel/imp.rs:457
+#: src/widget/kill_panel/imp.rs:465 src/widget/kill_panel/imp.rs:473
+#: src/widget/kill_panel/imp.rs:481 src/widget/kill_panel/imp.rs:505
+#: src/widget/kill_panel/imp.rs:612 src/widget/kill_panel/imp.rs:620
+#: src/widget/kill_panel/imp.rs:676 src/widget/kill_panel/imp.rs:684
 msgctxt "kill"
 msgid "Dump"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:443
+#: src/widget/kill_panel/imp.rs:435
 msgctxt "kill"
 msgid "Quit from keyboard, Ctrl+\\"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:451
+#: src/widget/kill_panel/imp.rs:443
 msgctxt "kill"
 msgid "Illegal instruction"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:459
+#: src/widget/kill_panel/imp.rs:451
 msgctxt "kill"
 msgid "Breakpoint for debugging"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:467
+#: src/widget/kill_panel/imp.rs:459
 msgctxt "kill"
 msgid "Abnormal termination"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:475
+#: src/widget/kill_panel/imp.rs:467
 msgctxt "kill"
 msgid "Equivalent to SIGABRT"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:483
+#: src/widget/kill_panel/imp.rs:475
 msgctxt "kill"
 msgid "Bus error"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:491
+#: src/widget/kill_panel/imp.rs:483
 msgctxt "kill"
 msgid "Floating-point exception"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:499
+#: src/widget/kill_panel/imp.rs:491
 msgctxt "kill"
 msgid "Forced-process termination"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:507 src/widget/kill_panel/imp.rs:523
+#: src/widget/kill_panel/imp.rs:499 src/widget/kill_panel/imp.rs:515
 msgctxt "kill"
 msgid "Available to processes"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:515
+#: src/widget/kill_panel/imp.rs:507
 msgctxt "kill"
 msgid "Invalid memory reference"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:531
+#: src/widget/kill_panel/imp.rs:523
 msgctxt "kill"
 msgid "Write to pipe with no readers"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:539
+#: src/widget/kill_panel/imp.rs:531
 msgctxt "kill"
 msgid "Real-timer clock"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:547
+#: src/widget/kill_panel/imp.rs:539
 msgctxt "kill"
 msgid "Process termination"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:555
+#: src/widget/kill_panel/imp.rs:547
 msgctxt "kill"
 msgid "Coprocessor stack error"
 msgstr ""
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:561 src/widget/kill_panel/imp.rs:612
-#: src/widget/kill_panel/imp.rs:652
+#: src/widget/kill_panel/imp.rs:553 src/widget/kill_panel/imp.rs:604
+#: src/widget/kill_panel/imp.rs:644
 msgctxt "kill"
 msgid "Ignore"
 msgstr ""
 
-#: src/widget/kill_panel/imp.rs:565
+#: src/widget/kill_panel/imp.rs:557
 msgctxt "kill"
 msgid "Child process stopped or terminated or got a signal if traced"
 msgstr ""
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:572
+#: src/widget/kill_panel/imp.rs:564
 msgctxt "kill"
 msgid "Continue"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:574
+#: src/widget/kill_panel/imp.rs:566
 msgctxt "kill"
 msgid "Resume execution, if stopped"
 msgstr ""
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:580 src/widget/kill_panel/imp.rs:588
-#: src/widget/kill_panel/imp.rs:596 src/widget/kill_panel/imp.rs:604
+#: src/widget/kill_panel/imp.rs:572 src/widget/kill_panel/imp.rs:580
+#: src/widget/kill_panel/imp.rs:588 src/widget/kill_panel/imp.rs:596
 msgctxt "kill"
 msgid "Stop"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:582
+#: src/widget/kill_panel/imp.rs:574
 msgctxt "kill"
 msgid "Stop process execution, Ctrl+Z"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:590
+#: src/widget/kill_panel/imp.rs:582
 msgctxt "kill"
 msgid "Stop process issued from tty"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:598
+#: src/widget/kill_panel/imp.rs:590
 msgctxt "kill"
 msgid "Background process requires input"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:606
+#: src/widget/kill_panel/imp.rs:598
 msgctxt "kill"
 msgid "Background process requires output"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:614
+#: src/widget/kill_panel/imp.rs:606
 msgctxt "kill"
 msgid "Urgent condition on socket"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:622
+#: src/widget/kill_panel/imp.rs:614
 msgctxt "kill"
 msgid "CPU time limit exceeded"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:630
+#: src/widget/kill_panel/imp.rs:622
 msgctxt "kill"
 msgid "File size limit exceeded"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:638
+#: src/widget/kill_panel/imp.rs:630
 msgctxt "kill"
 msgid "Virtual timer clock"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:646
+#: src/widget/kill_panel/imp.rs:638
 msgctxt "kill"
 msgid "Profile timer clock"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:654
+#: src/widget/kill_panel/imp.rs:646
 msgctxt "kill"
 msgid "Window resizing"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:662
+#: src/widget/kill_panel/imp.rs:654
 msgctxt "kill"
 msgid "I/O now possible"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:670
+#: src/widget/kill_panel/imp.rs:662
 msgctxt "kill"
 msgid "Equivalent to SIGIO"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:678
+#: src/widget/kill_panel/imp.rs:670
 msgctxt "kill"
 msgid "Power supply failure"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:686
+#: src/widget/kill_panel/imp.rs:678
 msgctxt "kill"
 msgid "Bad system call"
 msgstr ""
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:694
+#: src/widget/kill_panel/imp.rs:686
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
 msgstr ""
@@ -1882,49 +1888,49 @@ msgid "System & User Session Bus"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:159
+#: src/widget/preferences/data.rs:165
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:161
+#: src/widget/preferences/data.rs:167
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:163
+#: src/widget/preferences/data.rs:169
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:165
+#: src/widget/preferences/data.rs:171
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:167
+#: src/widget/preferences/data.rs:173
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:213
+#: src/widget/preferences/data.rs:219
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:215
+#: src/widget/preferences/data.rs:221
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:217
+#: src/widget/preferences/data.rs:223
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr ""
@@ -1950,8 +1956,8 @@ msgctxt "text_find"
 msgid "Open Find in Text"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:64
-#: src/widget/unit_control_panel/controls.rs:185
+#: src/widget/unit_control_panel/controls.rs:63
+#: src/widget/unit_control_panel/controls.rs:183
 msgctxt "toast"
 msgid ""
 "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
@@ -1959,52 +1965,52 @@ msgid ""
 msgstr ""
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:89
+#: src/widget/unit_control_panel/controls.rs:88
 msgctxt "toast"
 msgid "Disabling"
 msgstr ""
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:93
+#: src/widget/unit_control_panel/controls.rs:92
 msgctxt "toast"
 msgid "Enabling"
 msgstr ""
 
 #. toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
-#: src/widget/unit_control_panel/controls.rs:102
+#: src/widget/unit_control_panel/controls.rs:101
 #, rust-format
 msgctxt "toast"
 msgid "{} unit {} has failed!"
 msgstr ""
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:179
+#: src/widget/unit_control_panel/controls.rs:177
 msgctxt "toast"
 msgid "Reenable"
 msgstr ""
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:208
+#: src/widget/unit_control_panel/controls.rs:206
 msgctxt "toast"
 msgid "Reenabling"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:216
+#: src/widget/unit_control_panel/controls.rs:214
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
 "has failed!"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:245
-#: src/widget/unit_list/imp/pop_menu.rs:263
+#: src/widget/unit_control_panel/controls.rs:238
+#: src/widget/unit_list/imp/pop_menu.rs:262
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:247
-#: src/widget/unit_list/imp/pop_menu.rs:256
+#: src/widget/unit_control_panel/controls.rs:240
+#: src/widget/unit_list/imp/pop_menu.rs:255
 #, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
@@ -2058,20 +2064,20 @@ msgctxt "toast"
 msgid "reloaded"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:317
+#: src/widget/unit_control_panel/imp.rs:314
 msgctxt "toast"
 msgid ""
 "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
 msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:345
+#: src/widget/unit_control_panel/imp.rs:342
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit <unit>{}</unit>, because: {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:674
+#: src/widget/unit_control_panel/imp.rs:659
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2079,13 +2085,13 @@ msgid ""
 msgstr ""
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:682
+#: src/widget/unit_control_panel/imp.rs:667
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:694
+#: src/widget/unit_control_panel/imp.rs:679
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2094,7 +2100,7 @@ msgid ""
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:705
+#: src/widget/unit_control_panel/imp.rs:690
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -2124,37 +2130,37 @@ msgid "Fail! {}"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:135
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:134
 msgctxt "action"
 msgid "Freeze"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:149
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:148
 msgctxt "action"
 msgid "Thaw"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:183
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:182
 msgctxt "action"
 msgid "Reload"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:277
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:276
 msgctxt "action"
 msgid "Unmask"
 msgstr ""
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:371
+#: src/widget/unit_dependencies_panel/imp.rs:363
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr ""
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:376
+#: src/widget/unit_dependencies_panel/imp.rs:368
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr ""
@@ -2180,62 +2186,62 @@ msgctxt "flatpak"
 msgid "_Close"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:264
+#: src/widget/unit_file_panel/imp.rs:263
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:265
+#: src/widget/unit_file_panel/imp.rs:264
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:271 src/widget/unit_file_panel/imp.rs:1039
+#: src/widget/unit_file_panel/imp.rs:270 src/widget/unit_file_panel/imp.rs:1020
 msgid "Daemon Reload"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:286 src/widget/unit_file_panel/imp.rs:299
-#: src/widget/unit_file_panel/imp.rs:1055
+#: src/widget/unit_file_panel/imp.rs:285 src/widget/unit_file_panel/imp.rs:298
+#: src/widget/unit_file_panel/imp.rs:1036
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:311
+#: src/widget/unit_file_panel/imp.rs:310
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:319
+#: src/widget/unit_file_panel/imp.rs:318
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:566
+#: src/widget/unit_file_panel/imp.rs:559
 msgctxt "file"
 msgid "Unit File"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:568
+#: src/widget/unit_file_panel/imp.rs:561
 msgctxt "file"
 msgid "Drop In"
 msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:925
+#: src/widget/unit_file_panel/imp.rs:906
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:933
+#: src/widget/unit_file_panel/imp.rs:914
 msgctxt "file"
 msgid "Note: you can change the file name"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:942
+#: src/widget/unit_file_panel/imp.rs:923
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2243,29 +2249,29 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:951
+#: src/widget/unit_file_panel/imp.rs:932
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1029
+#: src/widget/unit_file_panel/imp.rs:1010
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1075
+#: src/widget/unit_file_panel/imp.rs:1056
 msgctxt "file"
 msgid "Not able to reverted unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1083
+#: src/widget/unit_file_panel/imp.rs:1064
 msgctxt "file"
 msgid "Not able to reverted unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1182
+#: src/widget/unit_file_panel/imp.rs:1162
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr ""
@@ -2308,76 +2314,113 @@ msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:230
-msgctxt "list column"
-msgid "Unit"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:245
-msgctxt "list column"
-msgid "Type"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:260
+#: src/widget/unit_list/imp/construct.rs:376
 msgctxt "list column"
 msgid "Bus"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:275
-msgctxt "list column"
-msgid "State"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:290
-msgctxt "list column"
-msgid "Preset"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:305
+#: src/widget/unit_list/imp/construct.rs:397
 msgctxt "list column"
 msgid "Load"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:320
-msgctxt "list column"
-msgid "Active"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:335
+#: src/widget/unit_list/imp/construct.rs:415
 msgctxt "list column"
 msgid "Sub"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:350
+#: src/widget/unit_list/imp/construct.rs:438
+msgctxt "list column"
+msgid "Preset"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:455
+msgctxt "list column"
+msgid "State"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:472
+msgctxt "list column"
+msgid "Active"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:489
 msgctxt "list column"
 msgid "Description"
 msgstr ""
 
-#: src/widget/unit_list/imp/pop_menu.rs:235
+#: src/widget/unit_list/imp/construct.rs:506
+#: src/widget/unit_list/imp/construct.rs:523
+msgctxt "list column"
+msgid "Unit"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:540
+msgctxt "list column"
+msgid "Type"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:547
+msgctxt "list column"
+msgid "Listen Type"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:556
+msgctxt "list column"
+msgid "Listen"
+msgstr ""
+
+#. Timer
+#: src/widget/unit_list/imp/construct.rs:567
+msgctxt "list column"
+msgid "Next"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:576
+msgctxt "list column"
+msgid "Left"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:585
+msgctxt "list column"
+msgid "Last"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:593
+msgctxt "list column"
+msgid "Passed"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:603
+msgctxt "list column"
+msgid "Activates"
+msgstr ""
+
+#: src/widget/unit_list/imp/pop_menu.rs:234
 #, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
 msgstr ""
 
-#: src/widget/unit_list/imp/pop_menu.rs:242
+#: src/widget/unit_list/imp/pop_menu.rs:241
 #, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
 msgstr ""
 
-#: src/widget/unit_list/imp/pop_menu.rs:249
+#: src/widget/unit_list/imp/pop_menu.rs:248
 #, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
 msgstr ""
 
-#: src/widget/unit_list/imp/pop_menu.rs:270
+#: src/widget/unit_list/imp/pop_menu.rs:269
 #, rust-format
 msgctxt "controls"
 msgid "Disable and then Enable unit {}"
 msgstr ""
 
-#: src/widget/unit_list/imp/pop_menu.rs:277
+#: src/widget/unit_list/imp/pop_menu.rs:276
 #, rust-format
 msgctxt "controls"
 msgid ""
@@ -2413,4 +2456,39 @@ msgstr ""
 #: src/widget/unit_list/menus.rs:48
 msgctxt "menu"
 msgid "Filtering"
+msgstr ""
+
+#. List view
+#: src/widget/unit_list/mod.rs:195
+msgctxt "menu"
+msgid "Default"
+msgstr ""
+
+#. List view
+#: src/widget/unit_list/mod.rs:199
+msgctxt "menu"
+msgid "Loaded Units"
+msgstr ""
+
+#. List view
+#: src/widget/unit_list/mod.rs:203
+msgctxt "menu"
+msgid "Unit Files"
+msgstr ""
+
+#: src/widget/unit_list/mod.rs:208
+msgctxt "menu"
+msgid "Timers"
+msgstr ""
+
+#. List view
+#: src/widget/unit_list/mod.rs:212
+msgctxt "menu"
+msgid "Socket"
+msgstr ""
+
+#. List view
+#: src/widget/unit_list/mod.rs:216
+msgctxt "menu"
+msgid "Custom"
 msgstr ""
