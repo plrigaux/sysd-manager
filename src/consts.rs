@@ -41,6 +41,9 @@ pub const NS_ACTION_UNIT_LIST_FILTER: &str = concat!(WIN, ACTION_UNIT_LIST_FILTE
 pub const MENU_ACTION: &str = "unit-reload";
 pub const WIN_MENU_ACTION: &str = concat!(WIN, MENU_ACTION);
 
+pub const ACTION_SAVE_UNIT_FILE: &str = "save-unit-file";
+pub const WIN_ACTION_SAVE_UNIT_FILE: &str = concat!(WIN, ACTION_SAVE_UNIT_FILE);
+
 pub const CLASS_SUCCESS: &str = "success";
 //const CLASS_ACCENT: &str = "accent";
 pub const CLASS_WARNING: &str = "warning";

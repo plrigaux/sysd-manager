@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    consts::{ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SUGGESTED_ACTION},
+    consts::{ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SUGGESTED_ACTION},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     systemd_gui::{self, is_dark},
@@ -39,13 +39,13 @@ use gtk::{
         },
     },
 };
-use tracing::{debug, info, warn};
 use regex::Regex;
 use sourceview5::{Buffer, prelude::*};
 use std::fmt::Write;
 use systemd::sysdbus::proxy_service_name;
 use tokio::sync::oneshot::Receiver;
 use tracing::error;
+use tracing::{debug, info, warn};
 
 use super::flatpak;
 
@@ -143,10 +143,7 @@ macro_rules! get_buffer {
 
 #[gtk::template_callbacks]
 impl UnitFilePanelImp {
-    #[template_callback]
-    fn save_file(&self, button: &gtk::Button) {
-        debug!("button {button:?}");
-
+    fn save_file(&self) {
         let binding = self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
             warn!("no unit file");
@@ -751,6 +748,15 @@ impl UnitFilePanelImp {
         };
 
         let unit_file_line_number = {
+            let unit_file_panel = self.obj().clone();
+            gio::ActionEntry::builder(ACTION_SAVE_UNIT_FILE)
+                .activate(move |_application: &AppWindow, _, _| {
+                    unit_file_panel.imp().save_file();
+                })
+                .build()
+        };
+
+        let save_unit_file = {
             let unit_file_text = self.unit_file_text.get().expect("Need to be set").clone();
             gio::ActionEntry::builder(UNIT_FILE_LINE_NUMBER_ACTION)
                 .activate(
@@ -779,6 +785,7 @@ impl UnitFilePanelImp {
             revert_unit_file_full,
             unit_file_line_number,
             text_search_bar_action_entry,
+            save_unit_file,
         ]);
     }
 
