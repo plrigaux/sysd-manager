@@ -85,7 +85,7 @@
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="action-name">win.save-unit-file</property>
-                <property name="title" translatable="yes" context="shortcut window">Save unit file</property>
+                <property name="title" translatable="yes" context="shortcut window" comments="In the shortcut Window description">Save the selected unit file</property>
               </object>
             </child>
           </object>

@@ -62,6 +62,7 @@
                             <property name="valign">baseline-center</property>
                           </object>
                         </property>
+                        <property name="css-classes">suggested-action</property>
                       </object>
                     </child>
                   </object>

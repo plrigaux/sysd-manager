@@ -1,11 +1,6 @@
-use std::{
-    cell::{Cell, OnceCell, RefCell},
-    ffi::OsStr,
-    path::Path,
-};
-
+use super::flatpak;
 use crate::{
-    consts::{ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SUGGESTED_ACTION},
+    consts::{ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     systemd_gui::{self, is_dark},
@@ -30,24 +25,19 @@ use gtk::{
     ffi::GTK_INVALID_LIST_POSITION,
     gio::SimpleAction,
     glib,
-    subclass::{
-        box_::BoxImpl,
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
-        },
-    },
+    subclass::{box_::BoxImpl, prelude::*},
 };
 use regex::Regex;
 use sourceview5::{Buffer, prelude::*};
 use std::fmt::Write;
+use std::{
+    cell::{Cell, OnceCell, RefCell},
+    ffi::OsStr,
+    path::Path,
+};
 use systemd::sysdbus::proxy_service_name;
 use tokio::sync::oneshot::Receiver;
-use tracing::error;
-use tracing::{debug, info, warn};
-
-use super::flatpak;
+use tracing::{debug, error, info, warn};
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
@@ -86,9 +76,8 @@ impl FileNav {
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_panel.ui")]
 pub struct UnitFilePanelImp {
-    #[template_child]
-    save_button: TemplateChild<gtk::Button>,
-
+    // #[template_child]
+    // save_button: TemplateChild<gtk::Button>,
     unit_file_text: OnceCell<sourceview5::View>,
 
     sourceview5_buffer: OnceCell<sourceview5::Buffer>,
@@ -256,6 +245,8 @@ impl UnitFilePanelImp {
     ) {
         let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
             Ok(_a) => {
+                self.set_save_file_enable(false);
+
                 let msg = match status {
                     UnitFileStatus::Create => pgettext("file", "File {} created successfully!"),
                     UnitFileStatus::Edit => pgettext("file", "File {} saved successfully!"),
@@ -287,7 +278,9 @@ impl UnitFilePanelImp {
                         // Service Name
                         // Action Start it or install it
                         let service_name = proxy_service_name();
-                        let dialog = flatpak::proxy_service_not_started(service_name.as_deref());
+                        let app_window = self.app_window.get();
+                        let dialog =
+                            flatpak::proxy_service_not_started(service_name.as_deref(), app_window);
                         let window = self.app_window.get().expect("AppWindow supposed to be set");
 
                         dialog.present(Some(window));
@@ -608,7 +601,7 @@ impl UnitFilePanelImp {
         buf.set_text(""); //To clear current
         buf.set_text(file_content);
 
-        self.save_button.set_sensitive(false);
+        // self.save_button.set_sensitive(false);
         self.set_visible_child_panel();
 
         on_new_text(&self.text_search_bar);
@@ -747,7 +740,7 @@ impl UnitFilePanelImp {
                 .build()
         };
 
-        let unit_file_line_number = {
+        let save_unit_file = {
             let unit_file_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_SAVE_UNIT_FILE)
                 .activate(move |_application: &AppWindow, _, _| {
@@ -756,7 +749,7 @@ impl UnitFilePanelImp {
                 .build()
         };
 
-        let save_unit_file = {
+        let unit_file_line_number = {
             let unit_file_text = self.unit_file_text.get().expect("Need to be set").clone();
             gio::ActionEntry::builder(UNIT_FILE_LINE_NUMBER_ACTION)
                 .activate(
@@ -787,6 +780,19 @@ impl UnitFilePanelImp {
             text_search_bar_action_entry,
             save_unit_file,
         ]);
+
+        self.set_save_file_enable(false);
+    }
+
+    fn set_save_file_enable(&self, enable: bool) {
+        if let Some(app_window) = self.app_window.get()
+            && let Some(action) = app_window.lookup_action(ACTION_SAVE_UNIT_FILE)
+            && let Some(simple_action) = action.downcast_ref::<gio::SimpleAction>()
+            && simple_action.is_enabled() != enable
+        {
+            info!("Enable Save File Action {enable}");
+            simple_action.set_enabled(enable);
+        }
     }
 
     pub(super) fn refresh_panels(&self) {
@@ -1048,8 +1054,11 @@ impl UnitFilePanelImp {
                             // Service Name
                             // Action Start it or install it
                             let service_name = proxy_service_name();
-                            let dialog =
-                                flatpak::proxy_service_not_started(service_name.as_deref());
+                            let app_window = file_panel.imp().app_window.get();
+                            let dialog = flatpak::proxy_service_not_started(
+                                service_name.as_deref(),
+                                app_window,
+                            );
                             let window = file_panel
                                 .imp()
                                 .app_window
@@ -1127,21 +1136,26 @@ impl ObjectImpl for UnitFilePanelImp {
 
         self.unit_file_scrolled_window.set_child(Some(&view));
 
-        self.save_button.add_css_class(SUGGESTED_ACTION);
-        self.save_button.set_sensitive(false);
+        // self.save_button.add_css_class(SUGGESTED_ACTION);
+        // self.save_button.set_sensitive(false);
+
+        // x.install_action("sadfsd", None, |_, _| "test");
         {
             let buffer = view.buffer();
 
-            let save_button = self.save_button.downgrade();
+            // let save_button = self.save_button.downgrade();
             let unit_file_panel = self.obj().downgrade();
             buffer.connect_end_user_action(move |_buf| {
-                let save_button = upgrade!(save_button);
+                // let save_button = upgrade!(save_button);
 
                 let unit_file_panel = upgrade!(unit_file_panel);
 
                 let allow_save_condition =
                     !unit_file_panel.imp().all_unit_files.borrow().is_empty(); //TODO check is the text has really changed
-                save_button.set_sensitive(allow_save_condition);
+                // save_button.set_sensitive(allow_save_condition);
+                unit_file_panel
+                    .imp()
+                    .set_save_file_enable(allow_save_condition);
             });
         }
 

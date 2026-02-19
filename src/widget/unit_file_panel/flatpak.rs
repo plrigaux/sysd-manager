@@ -2,15 +2,22 @@ use adw::prelude::{AdwDialogExt, AlertDialogExt, AlertDialogExtManual};
 
 use gettextrs::pgettext;
 use gtk::prelude::WidgetExt;
+use tracing::{info, warn};
+
+use crate::widget::app_window::AppWindow;
 
 pub(super) const PROCEED: &str = "proceed";
 
-pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog {
-    //TODO tranlate
-    let body = "Failed to perform action. The proxy service might be inactive.\nPlease install and start the following service";
+pub fn proxy_service_not_started(
+    service_name: Option<&str>,
+    app_window: Option<&AppWindow>,
+) -> adw::AlertDialog {
+    let body = pgettext(
+        "warning",
+        "Failed to perform action. The proxy service might be inactive.\nPlease install and start the following service",
+    );
 
-    //TODO tranlate
-    let header = "Operation Failed";
+    let header = pgettext("warning", "Operation Failed");
 
     let dialog = adw::AlertDialog::builder()
         .heading(header)
@@ -18,14 +25,48 @@ pub fn proxy_service_not_started(service_name: Option<&str>) -> adw::AlertDialog
         .can_close(true)
         .build();
 
-    //TODO tranlate
-    dialog.add_responses(&[("cancel", "_Cancel"), ("save", "_Save")]);
+    let cancel_label = pgettext("warning", "_Cancel");
+    let save_label = pgettext("warning", "_Save");
+    dialog.add_responses(&[("cancel", &cancel_label), ("save", &save_label)]);
 
     if let Some(service_name) = service_name {
-        let label = gtk::Label::builder()
+        let label = gtk::LinkButton::builder()
             .label(service_name)
-            .selectable(true)
+            .uri(format!("unit://{service_name}"))
             .build();
+
+        if let Some(app_window) = app_window {
+            let app_window = app_window.clone();
+            label.connect_activate_link(move |button_link| {
+                use base::enums::UnitDBusLevel;
+
+                let uri = button_link.uri();
+                info!("link uri: {}", uri);
+
+                if !uri.starts_with("unit://") {
+                    return glib::Propagation::Proceed;
+                }
+
+                let Some(unit_name) = uri.strip_prefix("unit://") else {
+                    return glib::Propagation::Proceed;
+                };
+
+                let (unit_name, level) = match unit_name.split_once("?") {
+                    Some((prefix, suffix)) => (prefix, UnitDBusLevel::from_short(suffix)),
+                    None => (unit_name, UnitDBusLevel::System),
+                };
+
+                info!("open unit {:?} at level {}", unit_name, level.short());
+
+                let unit = systemd::fetch_unit(level, unit_name)
+                    .inspect_err(|e| warn!("Cli unit: {e:?}"))
+                    .ok();
+
+                app_window.set_unit(unit.as_ref());
+
+                glib::Propagation::Stop
+            });
+        }
 
         dialog.set_extra_child(Some(&label));
     }
