@@ -181,7 +181,6 @@ impl UnitListView {
             let menu_item = gio::MenuItem::new(Some(&label), Some(Self::WIN_ACTION));
             menu_item
                 .set_attribute_value(gio::MENU_ATTRIBUTE_TARGET, Some(&item.id().to_variant()));
-
             menu_views.append_item(&menu_item);
         }
 
@@ -227,7 +226,7 @@ impl UnitListView {
         &wa[4..len - 15]
     }
 
-    fn win_action_it(&self) -> &str {
+    pub fn win_action_it(&self) -> &str {
         match self {
             UnitListView::Defaut => "win.default_unit_list_view",
             UnitListView::LoadedUnit => "win.active_unit_list_view",
@@ -235,6 +234,17 @@ impl UnitListView {
             UnitListView::Timers => "win.timers_unit_list_view",
             UnitListView::Sockets => "win.sockets_unit_list_view",
             UnitListView::Custom => "win.custom_unit_list_view",
+        }
+    }
+
+    pub fn win_accels(&self) -> [&str; 1] {
+        match self {
+            UnitListView::Defaut => ["<Ctrl><Alt>d"],
+            UnitListView::LoadedUnit => ["<Ctrl><Alt>l"],
+            UnitListView::UnitFiles => ["<Ctrl><Alt>F"],
+            UnitListView::Timers => ["<Ctrl>t"],
+            UnitListView::Sockets => ["<Ctrl><Alt>S"],
+            UnitListView::Custom => ["<Ctrl><Alt>C"],
         }
     }
 }
