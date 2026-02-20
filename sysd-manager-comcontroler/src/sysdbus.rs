@@ -131,7 +131,7 @@ pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
 }
 
 pub(crate) async fn init_proxy_async2() -> Result<String, SystemdErrors> {
-    let unit_name = proxy_service_name().unwrap();
+    let unit_name = sysd_proxy_service_name().unwrap();
     let level = UnitDBusLevel::System;
     let manager = systemd_manager_async(level).await?;
     for tries in 0..5 {
@@ -160,32 +160,49 @@ pub(crate) async fn init_proxy_async2() -> Result<String, SystemdErrors> {
     Err(SystemdErrors::Unreachable)
 }
 
-pub fn proxy_service_name() -> Option<String> {
+pub fn sysd_proxy_service_name() -> Option<String> {
     RUN_CONTEXT
         .get()
         .map(|context| context.proxy_service_name())
 }
 
 #[cfg(not(feature = "flatpak"))]
-pub fn shut_down_proxy() {
+pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
     if !crate::proxy_switcher::PROXY_SWITCHER.stop_at_close() {
         info!(
             "Not closing Proxy {:?} as per user configuration",
-            proxy_service_name()
+            sysd_proxy_service_name()
         );
-        return;
+        return Ok(());
     }
 
-    if let Some(unit_name) = proxy_service_name() {
-        match stop_unit(UnitDBusLevel::System, &unit_name, StartStopMode::Fail) {
-            Ok(job_id) => info!("Stopped unit {unit_name}, job id {job_id}"),
-            Err(error) => {
-                error!("Error stopping unit {unit_name}: {error:?}");
-            }
-        }
-    } else {
-        warn!("Fail stoping Proxy, because name not set")
+    let Some(sysd_proxy_unit_name) = sysd_proxy_service_name() else {
+        warn!("Fail stoping Proxy, because name not set");
+        return Ok(());
+    };
+
+    let object_path = crate::sysdbus::unit_dbus_path_from_name(&sysd_proxy_unit_name);
+
+    let connection = get_blocking_connection(UnitDBusLevel::System)?;
+    let unit_info_proxy = ZUnitInfoProxyBlocking::builder(&connection)
+        .path(object_path)?
+        .build()?;
+
+    let state: ActiveState = unit_info_proxy.active_state()?.into();
+
+    if state.is_inactive() {
+        info!("Proxy inactive --> No stopping");
+        return Ok(());
     }
+
+    match unit_info_proxy.stop(StartStopMode::Fail.as_str()) {
+        Ok(job_id) => info!("Stopped unit {sysd_proxy_unit_name}, job id {job_id}"),
+        Err(error) => {
+            error!("Error stopping unit {sysd_proxy_unit_name}: {error:?}");
+        }
+    }
+
+    Ok(())
 }
 
 pub(crate) fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {

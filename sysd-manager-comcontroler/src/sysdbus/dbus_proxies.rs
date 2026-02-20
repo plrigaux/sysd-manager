@@ -59,6 +59,8 @@ pub(crate) trait ZUnitInfo {
 
     #[zbus(property)]
     fn drop_in_paths(&self) -> Result<Vec<String>, zbus::Error>;
+
+    fn stop(&self, mode: &str) -> Result<OwnedObjectPath, zbus::Error>;
 }
 
 #[proxy(

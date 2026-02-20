@@ -169,7 +169,7 @@ pub async fn init_proxy_async(run_mode: base::RunMode) {
 
 #[cfg(not(feature = "flatpak"))]
 pub fn shut_down() {
-    sysdbus::shut_down_proxy();
+    sysdbus::shut_down_sysd_proxy();
 }
 
 pub fn get_unit_file_state(
