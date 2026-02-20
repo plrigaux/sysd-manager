@@ -17,4 +17,6 @@ print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
 print(f"{color.GREEN}{color.BOLD}Publishing on Crate.io {color.END}")
 print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
 
-bc.cmd_run(["cargo", "publish"])
+bc.cmd_run(["cargo", "publish"], cwd="sysd-manager-base")
+bc.cmd_run(["cargo", "publish"], cwd="sysd-manager-comcontroler")
+bc.cmd_run(["cargo", "publish"], cwd=".")
