@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD polkit Policy Configuration 1.0//EN" "http://www.freedesktop.org/software/polkit/policyconfig-1.dtd">
 <policyconfig>
-    <icon_name>io.github.plrigaux.sysd-manager</icon_name>
-    <action id="io.github.plrigaux.SysDManager">
-        <message>Authentication is required to run the SystemD Calls</message>
-        <description>Sysd Manager Test</description>
-        <defaults>
-            <allow_any>auth_admin</allow_any>
-            <allow_inactive>auth_admin</allow_inactive>
-            <allow_active>auth_admin_keep</allow_active>
-        </defaults>
-    </action>
+  <icon_name>io.github.plrigaux.sysd-manager</icon_name>
+  <action id="io.github.plrigaux.SysDManager">
+    <message>Authentication is required to run the SystemD Calls</message>
+    <description>SysD Manager Test</description>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
 </policyconfig>

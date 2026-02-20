@@ -270,13 +270,13 @@
     </key>
     <key name="pref-proxy-start-at-startup" type="b">
       <default>false</default>
-      <summary>Start the Proxy when starting Sysd Manager</summary>
+      <summary>Start the Proxy when starting SysD Manager</summary>
       <description>If it's not started, Syd Manager will automatically try to start the Proxy when required.
         AKA Lazy Start</description>
     </key>
     <key name="pref-proxy-stop-at-close" type="b">
       <default>true</default>
-      <summary>Stop the Proxy when closing Sysd Manager</summary>
+      <summary>Stop the Proxy when closing SysD Manager</summary>
     </key>
     <key name="pref-unit-list-view" type="s">
       <choices>

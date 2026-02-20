@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name preferences.ui -->
@@ -272,13 +272,13 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
             <property name="title" translatable="yes" context="preference">Proxy Behaviors</property>
             <child>
               <object class="AdwSwitchRow" id="start_proxy_at_startup_switch">
-                <property name="subtitle" translatable="yes">Start the Proxy when starting Sysd Manager</property>
+                <property name="subtitle" translatable="yes">Start the Proxy when starting SysD Manager</property>
                 <property name="title" translatable="yes" context="preference">Start Proxy at Start up</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="stop_proxy_at_close_switch">
-                <property name="subtitle" translatable="yes" context="preference">Stop the Proxy when closing Sysd Manager</property>
+                <property name="subtitle" translatable="yes" context="preference">Stop the Proxy when closing SysD Manager</property>
                 <property name="title" translatable="yes" context="preference">Stop Proxy at Close</property>
               </object>
             </child>
