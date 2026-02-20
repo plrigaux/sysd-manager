@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-20 17:58-0500\n"
-"PO-Revision-Date: 2026-02-19 00:56+0000\n"
+"PO-Revision-Date: 2026-02-20 23:23+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -879,10 +879,9 @@ msgstr "Afficher les propriétés de l'unité"
 
 #. In the shortcut Window description
 #: data/interfaces/shortcuts.ui:88
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
-msgstr "Inverser les éléments sélectionnés du filtre"
+msgstr "Enregistrer le fichier d'unité sélectionné"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:95
@@ -895,41 +894,37 @@ msgstr "Listes organisées"
 #: data/interfaces/shortcuts.ui:99
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
-msgstr ""
+msgstr "Fusionner les unités chargées avec les fichiers d'unités"
 
 #: data/interfaces/shortcuts.ui:100
 msgctxt "shortcut window"
 msgid "Display Sysd Manager Original List"
-msgstr ""
+msgstr "Afficher la liste originale d SysD Manager"
 
 #: data/interfaces/shortcuts.ui:106
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
-msgstr "Unités chargées"
+msgstr "Afficher les unités chargées"
 
 #: data/interfaces/shortcuts.ui:112
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Unit Files"
-msgstr "Désactiver le fichier de l'unité"
+msgstr "Afficher les fichiers d'unité"
 
 #: data/interfaces/shortcuts.ui:118
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Timers"
-msgstr "Afficher les numéros de ligne"
+msgstr "Afficher les Chronos"
 
 #: data/interfaces/shortcuts.ui:124
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Sockets"
-msgstr "Affichage des couleurs"
+msgstr "Afficher les sockets"
 
 #: data/interfaces/shortcuts.ui:130
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
-msgstr ""
+msgstr "Afficher la liste personnalisé par l'utilisateur"
 
 #. button
 #: data/interfaces/side_control_panel.ui:22
@@ -2294,11 +2289,13 @@ msgid ""
 "Failed to perform action. The proxy service might be inactive.\n"
 "Please install and start the following service"
 msgstr ""
+"L'action n'a pas pu être effectuée. Le service proxy est peut-être inactif.\n"
+"Veuillez installer et démarrer le service suivant"
 
 #: src/widget/unit_file_panel/flatpak.rs:21
 msgctxt "warning"
 msgid "Operation Failed"
-msgstr ""
+msgstr "L'opération a échouée"
 
 #. Dialog button
 #. TODO tranlate
@@ -2307,26 +2304,25 @@ msgstr ""
 #: src/widget/unit_file_panel/flatpak.rs:108
 msgctxt "warning"
 msgid "_Cancel"
-msgstr ""
+msgstr "_Annuler"
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:32
-#, fuzzy
 msgctxt "warning"
 msgid "_Save"
-msgstr "Enregister"
+msgstr "_Enregistrer"
 
 #. Dialog Header
 #: src/widget/unit_file_panel/flatpak.rs:97
 msgctxt "warning"
 msgid "Warning!"
-msgstr ""
+msgstr "Attention !"
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:110
 msgctxt "warning"
 msgid "_Proceed"
-msgstr ""
+msgstr "_Procéder"
 
 #: src/widget/unit_file_panel/flatpak.rs:125
 msgctxt "flatpak"
@@ -2350,7 +2346,6 @@ msgstr "Permission Flatpak nécessaire !"
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:141
-#, fuzzy
 msgctxt "warning"
 msgid "_Close"
 msgstr "_Fermer"
@@ -2488,16 +2483,15 @@ msgstr "Ajouter un filtre au sous-état"
 
 #. Path list column name
 #: src/widget/unit_list/imp/construct.rs:143
-#, fuzzy
 msgctxt "list column"
 msgid "Condition"
-msgstr "Nom du fichier Drop-in créé"
+msgstr "Condition"
 
 #. Path list column name
 #: src/widget/unit_list/imp/construct.rs:153
 msgctxt "list column"
 msgid "Path"
-msgstr ""
+msgstr "Path"
 
 #. Path list column name
 #. Unit full name column name
@@ -2688,11 +2682,10 @@ msgstr "Sockets"
 #: src/widget/unit_list/mod.rs:215
 msgctxt "menu"
 msgid "Path"
-msgstr ""
+msgstr "Path"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:219
-#, fuzzy
 msgctxt "menu"
 msgid "Customized"
 msgstr "Personnalisé"
