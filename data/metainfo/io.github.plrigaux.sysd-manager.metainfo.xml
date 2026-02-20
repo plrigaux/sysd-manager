@@ -90,6 +90,7 @@ https://hughsie.github.io/oars/index.html
           <li>Display list of Timers</li>
           <li>Display list of Sockets</li>
           <li>Display list of Unit Files</li>
+          <li>Display list of Unit Paths</li>
           <li>Shortcuts on curated lists</li>
           <li>Shortcut on save file</li>
         </ul>

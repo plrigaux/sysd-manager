@@ -81,7 +81,6 @@ src/widget/unit_dependencies_panel/imp.rs
 src/widget/unit_dependencies_panel/mod.rs
 src/widget/unit_file_panel/flatpak.rs
 src/widget/unit_file_panel/imp.rs
-src/widget/unit_file_panel/main.rs
 src/widget/unit_file_panel/mod.rs
 src/widget/unit_info/construct_info.rs
 src/widget/unit_info/imp.rs

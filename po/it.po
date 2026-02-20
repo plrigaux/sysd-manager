@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-19 16:38-0500\n"
+"POT-Creation-Date: 2026-02-20 17:58-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -2213,29 +2213,46 @@ msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:17
+#: src/widget/unit_file_panel/flatpak.rs:18
 msgctxt "warning"
 msgid ""
 "Failed to perform action. The proxy service might be inactive.\n"
 "Please install and start the following service"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:20
+#: src/widget/unit_file_panel/flatpak.rs:21
 msgctxt "warning"
 msgid "Operation Failed"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:28
+#. Dialog button
+#. TODO tranlate
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:30
+#: src/widget/unit_file_panel/flatpak.rs:108
 msgctxt "warning"
 msgid "_Cancel"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:29
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:32
 msgctxt "warning"
 msgid "_Save"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:114
+#. Dialog Header
+#: src/widget/unit_file_panel/flatpak.rs:97
+msgctxt "warning"
+msgid "Warning!"
+msgstr ""
+
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:110
+msgctxt "warning"
+msgid "_Proceed"
+msgstr ""
+
+#: src/widget/unit_file_panel/flatpak.rs:125
 msgctxt "flatpak"
 msgid ""
 "You need to jailbreak your Flatpak application to be able to save files on "
@@ -2245,14 +2262,14 @@ msgid ""
 "Flatpak\">link</a> to know how to aquire needed permission."
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:118
+#: src/widget/unit_file_panel/flatpak.rs:129
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
 msgstr ""
 
-#. Button label
-#: src/widget/unit_file_panel/flatpak.rs:130
-msgctxt "flatpak"
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:141
+msgctxt "warning"
 msgid "_Close"
 msgstr ""
 
@@ -2384,91 +2401,105 @@ msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:376
+#. Path list column name
+#: src/widget/unit_list/imp/construct.rs:143
 msgctxt "list column"
-msgid "Bus"
+msgid "Condition"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:397
+#. Path list column name
+#: src/widget/unit_list/imp/construct.rs:153
 msgctxt "list column"
-msgid "Load"
+msgid "Path"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:415
-msgctxt "list column"
-msgid "Sub"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:438
-msgctxt "list column"
-msgid "Preset"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:455
-msgctxt "list column"
-msgid "State"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:472
-msgctxt "list column"
-msgid "Active"
-msgstr ""
-
-#: src/widget/unit_list/imp/construct.rs:489
-msgctxt "list column"
-msgid "Description"
-msgstr ""
-
+#. Path list column name
 #. Unit full name column name
-#: src/widget/unit_list/imp/construct.rs:507
-#: src/widget/unit_list/imp/construct.rs:524
+#: src/widget/unit_list/imp/construct.rs:166
+#: src/widget/unit_list/imp/construct.rs:547
+#: src/widget/unit_list/imp/construct.rs:564
 msgctxt "list column"
 msgid "Unit"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:541
+#: src/widget/unit_list/imp/construct.rs:416
+msgctxt "list column"
+msgid "Bus"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:437
+msgctxt "list column"
+msgid "Load"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:455
+msgctxt "list column"
+msgid "Sub"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:478
+msgctxt "list column"
+msgid "Preset"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:495
+msgctxt "list column"
+msgid "State"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:512
+msgctxt "list column"
+msgid "Active"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:529
+msgctxt "list column"
+msgid "Description"
+msgstr ""
+
+#: src/widget/unit_list/imp/construct.rs:581
 msgctxt "list column"
 msgid "Type"
 msgstr ""
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:549
+#: src/widget/unit_list/imp/construct.rs:589
 msgctxt "list column"
 msgid "Listen Type"
 msgstr ""
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:559
+#: src/widget/unit_list/imp/construct.rs:599
 msgctxt "list column"
 msgid "Listen"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:570
+#: src/widget/unit_list/imp/construct.rs:610
 msgctxt "list column"
 msgid "Next"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:580
+#: src/widget/unit_list/imp/construct.rs:620
 msgctxt "list column"
 msgid "Left"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:590
+#: src/widget/unit_list/imp/construct.rs:630
 msgctxt "list column"
 msgid "Last"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:599
+#: src/widget/unit_list/imp/construct.rs:639
 msgctxt "list column"
 msgid "Passed"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:610
+#: src/widget/unit_list/imp/construct.rs:650
 msgctxt "list column"
 msgid "Activates"
 msgstr ""
@@ -2536,37 +2567,43 @@ msgid "Filtering"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:194
+#: src/widget/unit_list/mod.rs:195
 msgctxt "menu"
 msgid "Default"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:198
+#: src/widget/unit_list/mod.rs:199
 msgctxt "menu"
 msgid "Loaded Units"
 msgstr ""
 
 #. List view
-#: src/widget/unit_list/mod.rs:202
+#: src/widget/unit_list/mod.rs:203
 msgctxt "menu"
 msgid "Unit Files"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:206
+#: src/widget/unit_list/mod.rs:207
 msgctxt "menu"
 msgid "Timers"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:210
+#: src/widget/unit_list/mod.rs:211
 msgctxt "menu"
 msgid "Sockets"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:214
+#: src/widget/unit_list/mod.rs:215
+msgctxt "menu"
+msgid "Path"
+msgstr ""
+
+#. Curated List View
+#: src/widget/unit_list/mod.rs:219
 msgctxt "menu"
 msgid "Customized"
 msgstr ""

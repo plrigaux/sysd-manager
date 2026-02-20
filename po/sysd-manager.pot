@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-19 23:38-0500\n"
+"POT-Creation-Date: 2026-02-20 17:58-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2213,29 +2213,46 @@ msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:17
+#: src/widget/unit_file_panel/flatpak.rs:18
 msgctxt "warning"
 msgid ""
 "Failed to perform action. The proxy service might be inactive.\n"
 "Please install and start the following service"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:20
+#: src/widget/unit_file_panel/flatpak.rs:21
 msgctxt "warning"
 msgid "Operation Failed"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:28
+#. Dialog button
+#. TODO tranlate
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:30
+#: src/widget/unit_file_panel/flatpak.rs:108
 msgctxt "warning"
 msgid "_Cancel"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:29
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:32
 msgctxt "warning"
 msgid "_Save"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:114
+#. Dialog Header
+#: src/widget/unit_file_panel/flatpak.rs:97
+msgctxt "warning"
+msgid "Warning!"
+msgstr ""
+
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:110
+msgctxt "warning"
+msgid "_Proceed"
+msgstr ""
+
+#: src/widget/unit_file_panel/flatpak.rs:125
 msgctxt "flatpak"
 msgid ""
 "You need to jailbreak your Flatpak application to be able to save files on "
@@ -2245,14 +2262,14 @@ msgid ""
 "Flatpak\">link</a> to know how to aquire needed permission."
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:118
+#: src/widget/unit_file_panel/flatpak.rs:129
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
 msgstr ""
 
-#. Button label
-#: src/widget/unit_file_panel/flatpak.rs:130
-msgctxt "flatpak"
+#. Dialog button
+#: src/widget/unit_file_panel/flatpak.rs:141
+msgctxt "warning"
 msgid "_Close"
 msgstr ""
 

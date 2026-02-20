@@ -12,6 +12,7 @@ pub fn proxy_service_not_started(
     service_name: Option<&str>,
     app_window: Option<&AppWindow>,
 ) -> adw::AlertDialog {
+    //Dialog Message
     let body = pgettext(
         "warning",
         "Failed to perform action. The proxy service might be inactive.\nPlease install and start the following service",
@@ -25,7 +26,9 @@ pub fn proxy_service_not_started(
         .can_close(true)
         .build();
 
+    //Dialog button
     let cancel_label = pgettext("warning", "_Cancel");
+    //Dialog button
     let save_label = pgettext("warning", "_Save");
     dialog.add_responses(&[("cancel", &cancel_label), ("save", &save_label)]);
 
@@ -84,11 +87,14 @@ pub fn proxy_service_not_started(
 }
 
 pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
-    //TODO tranlate
-    let body = format!("You are about to clear the Drop-ins for unit <b>{unit_name}</b>");
+    //Warning dialog message
+    let body = crate::format2!(
+        pgettext("warning", "You are about to clear the Drop-ins for unit {}"),
+        format!("<b>{unit_name}</b>")
+    );
 
-    //TODO tranlate
-    let header = "Warning!";
+    //Dialog Header
+    let header = pgettext("warning", "Warning!");
 
     let dialog = adw::AlertDialog::builder()
         .heading(header)
@@ -98,7 +104,11 @@ pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
         .build();
 
     //TODO tranlate
-    dialog.add_responses(&[("cancel", "_Cancel"), ("proceed", "_Proceed")]);
+    //Dialog button
+    let cancel_label = pgettext("warning", "_Cancel");
+    //Dialog button
+    let proceed_label = pgettext("warning", "_Proceed");
+    dialog.add_responses(&[("cancel", &cancel_label), ("proceed", &proceed_label)]);
 
     dialog.set_response_appearance(PROCEED, adw::ResponseAppearance::Destructive);
     dialog.set_response_appearance("cancel", adw::ResponseAppearance::Suggested);
@@ -109,6 +119,7 @@ pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
 }
 
 pub fn flatpak_permision_alert() -> adw::AlertDialog {
+    //Flatpack jailbreak message
     let body = pgettext(
         "flatpak",
         "You need to jailbreak your Flatpak application to be able to save files on the host system.\n\n\
@@ -126,7 +137,8 @@ pub fn flatpak_permision_alert() -> adw::AlertDialog {
         .default_response("close")
         .build();
 
-    //Button label
-    dialog.add_responses(&[("close", &pgettext("flatpak", "_Close"))]);
+    //Dialog button
+    let close_label = pgettext("warning", "_Close");
+    dialog.add_responses(&[("close", &pgettext("flatpak", close_label))]);
     dialog
 }
