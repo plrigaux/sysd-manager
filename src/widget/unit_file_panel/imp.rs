@@ -35,7 +35,7 @@ use std::{
     ffi::OsStr,
     path::Path,
 };
-use systemd::sysdbus::proxy_service_name;
+use systemd::sysdbus::sysd_proxy_service_name;
 use tokio::sync::oneshot::Receiver;
 use tracing::{debug, error, info, warn};
 
@@ -277,7 +277,7 @@ impl UnitFilePanelImp {
                     SystemdErrors::ZFdoServiceUnknowm(_s) => {
                         // Service Name
                         // Action Start it or install it
-                        let service_name = proxy_service_name();
+                        let service_name = sysd_proxy_service_name();
                         let app_window = self.app_window.get();
                         let dialog =
                             flatpak::proxy_service_not_started(service_name.as_deref(), app_window);
@@ -1053,7 +1053,7 @@ impl UnitFilePanelImp {
                         SystemdErrors::ZFdoServiceUnknowm(_s) => {
                             // Service Name
                             // Action Start it or install it
-                            let service_name = proxy_service_name();
+                            let service_name = sysd_proxy_service_name();
                             let app_window = file_panel.imp().app_window.get();
                             let dialog = flatpak::proxy_service_not_started(
                                 service_name.as_deref(),

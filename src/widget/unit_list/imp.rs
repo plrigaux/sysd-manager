@@ -30,7 +30,7 @@ use crate::{
             PREFERENCES,
         },
         unit_list::{
-            COL_ID_UNIT, CustomPropertyId, UnitListView,
+            COL_ID_UNIT, CustomPropertyId, UnitListPanel, UnitListView,
             filter::{
                 UnitListFilterWindow, custom_bool, custom_num, custom_str, filter_active_state,
                 filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
@@ -73,6 +73,7 @@ use systemd::{
     ListUnitResponse, UnitProperties, UnitPropertiesFlags, data::UnitPropertySetter,
     socket_unit::SocketUnitInfo,
 };
+use tokio::task::AbortHandle;
 use tracing::{debug, error, info, trace, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
@@ -267,6 +268,8 @@ pub struct UnitListPanelImp {
 
     #[property(get, set, default)]
     selected_list_view: Cell<UnitListView>,
+
+    abort_handles: RefCell<Vec<AbortHandle>>,
 }
 
 macro_rules! update_search_entry {
@@ -509,11 +512,13 @@ impl UnitListPanelImp {
             .borrow()
             .set_sorter(None::<&gtk::Sorter>);
 
+        self.aborts_handles();
+
         glib::spawn_future_local(async move {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
 
-            let Ok(retrieved_units) = retrieve_unit_list(dbus_level, view).await else {
+            let Ok(retrieved_units) = retrieve_unit_list(dbus_level, view, &unit_list).await else {
                 panel_stack.set_visible_child_name("error");
                 return;
             };
@@ -638,49 +643,6 @@ impl UnitListPanelImp {
             }
             panel_stack.set_visible_child_name("unit_list");
 
-            //Complete unit information
-            /* glib::spawn_future_local(async move {
-                //let (sender, receiver) = tokio::sync::oneshot::channel();
-
-                let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
-
-                let to_complete_list: Vec<CompleteUnitPropertiesCallParams> = main_unit_map_rc
-                    .borrow()
-                    .values()
-                    .filter(|unit| unit.need_to_be_completed())
-                    .map(CompleteUnitPropertiesCallParams::new)
-                    .collect();
-
-                //TODO investigate
-                systemd::runtime().spawn(async move {
-                    const BATCH_SIZE: usize = 50;
-                    let mut batch = Vec::with_capacity(BATCH_SIZE);
-                    for (idx, triple) in (1..).zip(to_complete_list.into_iter()) {
-                        batch.push(triple);
-
-                        if idx % BATCH_SIZE == 0 {
-                            call_complete_unit(&sender, &batch).await;
-                            batch.clear();
-                        }
-                    }
-
-                    call_complete_unit(&sender, &batch).await;
-                });
-
-                while let Some(updates) = receiver.recv().await {
-                    for update in updates {
-                        let key = UnitKeyRef::new(update.level, &update.primary);
-
-                        if let Some(unit) =
-                            main_unit_map_rc.borrow().get(&key as &dyn UnitKeyInterface)
-                        {
-                            unit.update_from_unit_info(update);
-                        };
-                    }
-                }
-                //TODO investigate
-                unit_list.imp().fetch_custom_unit_properties();
-            }); */
             unit_list.imp().fetch_custom_unit_properties();
         });
     }
@@ -1209,7 +1171,7 @@ impl UnitListPanelImp {
         let units_browser = units_browser!(self).clone();
         let units_map = self.units_map.clone();
         let display_color = self.display_color.get();
-        let panel = self.obj().clone();
+        let unit_list = self.obj().clone();
         let list_store = self.list_store.get().unwrap().clone();
 
         glib::spawn_future_local(async move {
@@ -1229,7 +1191,7 @@ impl UnitListPanelImp {
                 .collect();
 
             let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
-            systemd::runtime().spawn(async move {
+            let handle = systemd::runtime().spawn(async move {
                 info!("Fetching properties START for {} units", units_list.len());
                 for (level, primary_name, object_path, unit_type, update_property_flag) in
                     units_list.into_iter()
@@ -1263,6 +1225,8 @@ impl UnitListPanelImp {
                     }
                 }
             });
+
+            unit_list.imp().add_tokio_handle(handle);
 
             info!("Fetching properties WAIT");
             while let Some((key, property_value_list)) = receiver.recv().await {
@@ -1306,7 +1270,7 @@ impl UnitListPanelImp {
                                 == PATH_PATHS_QUARK
                                     .get_or_init(|| glib::Quark::from_str(PATH_PATH_COL))
                             {
-                                println!("value {:?}", owned_value);
+                                debug!("Custom value {:?}", owned_value);
                                 let _listens = unit.insert_socket_listen(quark, owned_value);
                             } else {
                                 unit.insert_unit_property_value(quark, owned_value)
@@ -1336,7 +1300,7 @@ impl UnitListPanelImp {
                 );
             }
 
-            panel.imp().set_sorter();
+            unit_list.imp().set_sorter();
         });
     }
 
@@ -1384,6 +1348,17 @@ impl UnitListPanelImp {
             &mut self.current_columns_mut(),
             view,
         );
+    }
+
+    fn add_tokio_handle(&self, handle: tokio::task::JoinHandle<()>) {
+        let ah = handle.abort_handle();
+        self.abort_handles.borrow_mut().push(ah);
+    }
+
+    fn aborts_handles(&self) {
+        for ah in self.abort_handles.borrow().iter() {
+            ah.abort();
+        }
     }
 }
 
@@ -1605,21 +1580,6 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
 
-// async fn call_complete_unit(
-//     sender: &tokio::sync::mpsc::Sender<Vec<systemd::UpdatedUnitInfo>>,
-//     batch: &[CompleteUnitPropertiesCallParams],
-// ) {
-//     let updates = systemd::complete_unit_information(batch)
-//         .await
-//         .inspect_err(|error| warn!("Complete Unit Information Error: {error:?}"))
-//         .unwrap_or(vec![]);
-
-//     sender
-//         .send(updates)
-//         .await
-//         .expect("The channel needs to be open.");
-// }
-
 macro_rules! dbus_call {
     ($int_level:expr, $handles:expr, $module:ident :: $f:ident) => {{
         if matches!($int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
@@ -1638,9 +1598,10 @@ macro_rules! dbus_call {
 async fn retrieve_unit_list(
     int_level: DbusLevel,
     view: UnitListView,
+    unit_list: &UnitListPanel,
 ) -> Result<Vec<ListUnitResponse>, bool> {
     let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
-    systemd::runtime().spawn(async move {
+    let handle = systemd::runtime().spawn(async move {
         let mut handles = Vec::with_capacity(4);
 
         match view {
@@ -1689,6 +1650,8 @@ async fn retrieve_unit_list(
             .send(result)
             .expect("The channel needs to be open.");
     });
+
+    unit_list.imp().add_tokio_handle(handle);
 
     receiver_syst.await.unwrap_or_else(|err| {
         error!("Tokio receiver works, {err:?}");
