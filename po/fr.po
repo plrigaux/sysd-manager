@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-20 17:58-0500\n"
+"POT-Creation-Date: 2026-02-20 18:24-0500\n"
 "PO-Revision-Date: 2026-02-20 23:23+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -791,7 +791,8 @@ msgid "Proxy Behaviors"
 msgstr "Comportements du Proxy"
 
 #: data/interfaces/preferences.ui:275
-msgid "Start the Proxy when starting Sysd Manager"
+#, fuzzy
+msgid "Start the Proxy when starting SysD Manager"
 msgstr "Démarrez le Proxy au démarrage de Sysd Manager"
 
 #: data/interfaces/preferences.ui:276
@@ -800,8 +801,9 @@ msgid "Start Proxy at Start up"
 msgstr "Démarrer le Proxy au démarrage"
 
 #: data/interfaces/preferences.ui:281
+#, fuzzy
 msgctxt "preference"
-msgid "Stop the Proxy when closing Sysd Manager"
+msgid "Stop the Proxy when closing SysD Manager"
 msgstr "Arrêtez le Proxy lors de la fermeture de Sysd Manager"
 
 #: data/interfaces/preferences.ui:282
@@ -897,8 +899,9 @@ msgid "Merge Loaded Units with Unit Files"
 msgstr "Fusionner les unités chargées avec les fichiers d'unités"
 
 #: data/interfaces/shortcuts.ui:100
+#, fuzzy
 msgctxt "shortcut window"
-msgid "Display Sysd Manager Original List"
+msgid "Display SysD Manager Original List"
 msgstr "Afficher la liste originale d SysD Manager"
 
 #: data/interfaces/shortcuts.ui:106

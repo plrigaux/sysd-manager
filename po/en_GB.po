@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-20 17:58-0500\n"
+"POT-Creation-Date: 2026-02-20 18:24-0500\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -800,7 +800,7 @@ msgid "Proxy Behaviors"
 msgstr ""
 
 #: data/interfaces/preferences.ui:275
-msgid "Start the Proxy when starting Sysd Manager"
+msgid "Start the Proxy when starting SysD Manager"
 msgstr ""
 
 #: data/interfaces/preferences.ui:276
@@ -810,7 +810,7 @@ msgstr ""
 
 #: data/interfaces/preferences.ui:281
 msgctxt "preference"
-msgid "Stop the Proxy when closing Sysd Manager"
+msgid "Stop the Proxy when closing SysD Manager"
 msgstr ""
 
 #: data/interfaces/preferences.ui:282
@@ -908,7 +908,7 @@ msgstr ""
 
 #: data/interfaces/shortcuts.ui:100
 msgctxt "shortcut window"
-msgid "Display Sysd Manager Original List"
+msgid "Display SysD Manager Original List"
 msgstr ""
 
 #: data/interfaces/shortcuts.ui:106

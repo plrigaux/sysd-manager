@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-20 17:58-0500\n"
+"POT-Creation-Date: 2026-02-20 18:24-0500\n"
 "PO-Revision-Date: 2026-02-07 01:52+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
@@ -777,7 +777,8 @@ msgid "Proxy Behaviors"
 msgstr "代理运行行为"
 
 #: data/interfaces/preferences.ui:275
-msgid "Start the Proxy when starting Sysd Manager"
+#, fuzzy
+msgid "Start the Proxy when starting SysD Manager"
 msgstr "启动 Sysd Manager 时启动代理"
 
 #: data/interfaces/preferences.ui:276
@@ -786,9 +787,10 @@ msgid "Start Proxy at Start up"
 msgstr "在软件启动时启动代理"
 
 #: data/interfaces/preferences.ui:281
+#, fuzzy
 msgctxt "preference"
-msgid "Stop the Proxy when closing Sysd Manager"
-msgstr ""
+msgid "Stop the Proxy when closing SysD Manager"
+msgstr "启动 Sysd Manager 时启动代理"
 
 #: data/interfaces/preferences.ui:282
 msgctxt "preference"
@@ -883,7 +885,7 @@ msgstr ""
 
 #: data/interfaces/shortcuts.ui:100
 msgctxt "shortcut window"
-msgid "Display Sysd Manager Original List"
+msgid "Display SysD Manager Original List"
 msgstr ""
 
 #: data/interfaces/shortcuts.ui:106
