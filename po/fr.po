@@ -2680,7 +2680,6 @@ msgstr "Chronos"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:211
-#, fuzzy
 msgctxt "menu"
 msgid "Sockets"
 msgstr "Sockets"
