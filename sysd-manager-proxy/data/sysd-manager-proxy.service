@@ -1,6 +1,7 @@
 [Unit]
 Description=A proxy to enable SysD Manager features
 After=network.target
+Documentation=https://github.com/plrigaux/sysd-manager/wiki/SysD-Manager-Proxy
 
 [Service]
 SyslogIdentifier={SERVICE_ID}

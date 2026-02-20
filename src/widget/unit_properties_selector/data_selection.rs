@@ -234,6 +234,17 @@ impl UnitPropertySelection {
                     quark,
                 );
             }
+            (false, Some(PATH_CONDITION_COL) | Some(PATH_PATH_COL)) => {
+                let u_prop = PATH_PATHS.to_owned();
+                let quark = Quark::from_str(PATH_PATH_COL);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: UnitType::Path,
+                        property: u_prop,
+                    },
+                    quark,
+                );
+            }
             (false, _) => {
                 // warn!("??? {:?} custom {:?}", self.id(), self.is_custom())
             }

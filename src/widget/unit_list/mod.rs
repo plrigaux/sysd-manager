@@ -162,6 +162,7 @@ pub enum UnitListView {
     UnitFiles,
     Timers,
     Sockets,
+    Path,
     Custom,
 }
 
@@ -209,6 +210,10 @@ impl UnitListView {
                 //Curated List View
                 pgettext("menu", "Sockets")
             }
+            UnitListView::Path => {
+                //Curated List View
+                pgettext("menu", "Path")
+            }
             UnitListView::Custom => {
                 //Curated List View
                 pgettext("menu", "Customized")
@@ -223,6 +228,7 @@ impl UnitListView {
             UnitListView::UnitFiles => "unit_file",
             UnitListView::Timers => "timers",
             UnitListView::Sockets => "sockets",
+            UnitListView::Path => "paths",
             UnitListView::Custom => "custom",
         }
     }
@@ -234,6 +240,7 @@ impl UnitListView {
             UnitListView::UnitFiles => ["<Ctrl><Shift>F"],
             UnitListView::Timers => ["<Ctrl><Shift>t"],
             UnitListView::Sockets => ["<Ctrl><Shift>S"],
+            UnitListView::Path => ["<Ctrl><Shift>p"],
             UnitListView::Custom => ["<Ctrl><Shift>C"],
         }
     }

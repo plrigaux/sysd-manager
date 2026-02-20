@@ -15,7 +15,7 @@ use std::{
 use crate::{
     consts::{
         ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK,
-        SYSD_SOCKET_LISTEN,
+        PATH_PATH_COL, SYSD_SOCKET_LISTEN,
     },
     systemd::{
         data::UnitInfo,
@@ -76,6 +76,7 @@ use systemd::{
 use tracing::{debug, error, info, trace, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
+static PATH_PATHS_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
 
 #[derive(Debug, Clone)]
@@ -1301,6 +1302,12 @@ impl UnitListPanelImp {
                                     let usocket = SocketUnitInfo::from_unit_socket(unit, idx);
                                     list_store.append(&usocket);
                                 }
+                            } else if &quark
+                                == PATH_PATHS_QUARK
+                                    .get_or_init(|| glib::Quark::from_str(PATH_PATH_COL))
+                            {
+                                println!("value {:?}", owned_value);
+                                let _listens = unit.insert_socket_listen(quark, owned_value);
                             } else {
                                 unit.insert_unit_property_value(quark, owned_value)
                             }
@@ -1646,6 +1653,9 @@ async fn retrieve_unit_list(
             }
             UnitListView::Sockets => {
                 dbus_call!(int_level, handles, systemd::list_loaded_units_sockets)
+            }
+            UnitListView::Path => {
+                dbus_call!(int_level, handles, systemd::list_loaded_units_paths)
             }
         }
 

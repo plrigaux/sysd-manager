@@ -69,3 +69,6 @@ pub const SOCKET_LISTEN: &str = "Listen";
 pub const TIME_LAST_TRIGGER_USEC: &str = "LastTriggerUSec";
 pub const TIME_LAST_TRIGGER_USEC_MONOTONIC: &str = "LastTriggerUSecMonotonic";
 pub const SYSD_SOCKET_LISTEN: &str = "sysdSocketListen";
+pub const PATH_CONDITION_COL: &str = "sysdPathCondition";
+pub const PATH_PATH_COL: &str = "sysdPathPaths";
+pub const PATH_PATHS: &str = "Paths";

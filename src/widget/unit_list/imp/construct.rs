@@ -2,11 +2,12 @@ use std::collections::HashMap;
 
 use crate::{
     consts::{
-        SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, SYSD_SOCKET_LISTEN, TIME_LAST_TRIGGER_USEC,
-        TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST,
-        TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED,
+        PATH_CONDITION_COL, PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE,
+        SYSD_SOCKET_LISTEN, TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
+        TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
+        TIMER_TIME_PASSED,
     },
-    extract_listen,
+    extract_listen, extract_tuple_idx,
     gtk::prelude::*,
     systemd::data::UnitInfo,
     widget::{
@@ -40,6 +41,7 @@ pub fn construct_column_view(
         UnitListView::UnitFiles => generate_unit_files_columns(display_color),
         UnitListView::Timers => generate_timers_columns(display_color),
         UnitListView::Sockets => generate_sockets_columns(display_color),
+        UnitListView::Path => generate_paths_columns(display_color),
         UnitListView::Custom => {
             if list.is_empty() {
                 return default_column_definition_list(display_color);
@@ -114,6 +116,57 @@ fn generate_timers_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     columns.push(UnitPropertySelection::from_column_config(col));
 
     columns
+}
+
+fn generate_paths_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+    let mut columns = vec![];
+
+    let unit_col = create_unit_display_full_name_column(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    let col = create_path_paths_column();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    let col = create_path_condition_column();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    let col = create_path_unit_column();
+    columns.push(UnitPropertySelection::from_column_config(col));
+
+    columns
+}
+
+fn create_path_condition_column() -> UnitColumn {
+    let mut unit_column = UnitColumn::new(PATH_CONDITION_COL, "a(ss)");
+    unit_column.resizable = true;
+    //Path list column name
+    unit_column.title = Some(pgettext("list column", "Condition"));
+    unit_column.fixed_width = 320;
+
+    unit_column
+}
+
+fn create_path_paths_column() -> UnitColumn {
+    let mut unit_column = UnitColumn::new(PATH_PATH_COL, "a(ss)");
+    unit_column.resizable = true;
+    //Path list column name
+    unit_column.title = Some(pgettext("list column", "Path"));
+    unit_column.fixed_width = 320;
+    unit_column.sort = Some(SortType::Asc);
+
+    unit_column
+}
+
+fn create_path_unit_column() -> UnitColumn {
+    let id = "path@Unit";
+
+    let mut unit_column = UnitColumn::new(id, "s");
+    unit_column.resizable = true;
+    //Path list column name
+    unit_column.title = Some(pgettext("list column", "Unit"));
+    unit_column.fixed_width = 120;
+
+    unit_column
 }
 
 fn generate_unit_files_columns(display_color: bool) -> Vec<UnitPropertySelection> {
@@ -242,9 +295,11 @@ pub fn get_sorter_by_id(
         TIMER_TIME_PASSED | TIMER_TIME_LAST => {
             create_not_so_custom_property_colum_sorter(TIME_LAST_TRIGGER_USEC, "t")
         }
-        SOCKET_LISTEN_COL => create_socket_listen_colum_sorter(),
-        SOCKET_LISTEN_TYPE => create_socket_listen_type_colum_sorter(),
+        SOCKET_LISTEN_COL => create_socket_listen_type_colum_sorter(SYSD_SOCKET_LISTEN, 1),
+        SOCKET_LISTEN_TYPE => create_socket_listen_type_colum_sorter(SYSD_SOCKET_LISTEN, 0),
 
+        PATH_CONDITION_COL => create_socket_listen_type_colum_sorter(PATH_PATH_COL, 0),
+        PATH_PATH_COL => create_socket_listen_type_colum_sorter(PATH_PATH_COL, 1),
         _ => create_custom_property_column_sorter(id, prop_type),
     }
 }
@@ -271,30 +326,15 @@ fn create_not_so_custom_property_colum_sorter(
     create_column_sorter(key, col_type)
 }
 
-fn create_socket_listen_type_colum_sorter() -> Option<gtk::CustomSorter> {
-    let socket_listen = glib::Quark::from_str(SYSD_SOCKET_LISTEN);
+fn create_socket_listen_type_colum_sorter(qkey: &str, tuple_idx: u8) -> Option<gtk::CustomSorter> {
+    let socket_listen = glib::Quark::from_str(qkey);
     let sorter = gtk::CustomSorter::new(move |o1, o2| {
         let v1 = o1
             .downcast_ref::<UnitInfo>()
-            .map(|unit| extract_listen!(unit, socket_listen, 0));
+            .map(|unit| extract_tuple_idx!(unit, socket_listen, tuple_idx));
         let v2 = o2
             .downcast_ref::<UnitInfo>()
-            .map(|unit| extract_listen!(unit, socket_listen, 0));
-        v1.into_iter().cmp(v2).into()
-    });
-
-    Some(sorter)
-}
-
-fn create_socket_listen_colum_sorter() -> Option<gtk::CustomSorter> {
-    let socket_listen = glib::Quark::from_str(SYSD_SOCKET_LISTEN);
-    let sorter = gtk::CustomSorter::new(move |o1, o2| {
-        let v1 = o1
-            .downcast_ref::<UnitInfo>()
-            .map(|unit| extract_listen!(unit, socket_listen, 1));
-        let v2 = o2
-            .downcast_ref::<UnitInfo>()
-            .map(|unit| extract_listen!(unit, socket_listen, 1));
+            .map(|unit| extract_tuple_idx!(unit, socket_listen, tuple_idx));
         v1.into_iter().cmp(v2).into()
     });
 

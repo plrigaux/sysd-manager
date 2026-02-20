@@ -342,6 +342,8 @@ pub fn get_factory_by_id(
         (false, TIMER_TIME_LAST) => Some(fac_time_last()),
         (false, SOCKET_LISTEN_TYPE) => Some(fac_socket_listen_type()),
         (false, SOCKET_LISTEN_COL) => Some(fac_socket_listen()),
+        (false, PATH_CONDITION_COL) => Some(fac_path_condition()),
+        (false, PATH_PATH_COL) => Some(fac_path_path()),
         _ => {
             warn!("What to do?. Id {id:?} not handle with factory");
             None
@@ -749,8 +751,19 @@ fn fac_time_passed() -> gtk::SignalListItemFactory {
 }
 
 #[macro_export]
+macro_rules! extract_tuple_idx {
+    ($unit: expr, $socket_listen: expr, $param : expr) => {
+        match $param {
+            0 => extract_listen!($unit, $socket_listen, 0),
+            1 => extract_listen!($unit, $socket_listen, 1),
+            _ => panic!("Not handled"),
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! extract_listen {
-    ( $unit: expr,$socket_listen: expr, $param : tt) => {{
+    ($unit: expr, $socket_listen: expr, $param : tt) => {{
         if $unit.has_property(PROPERTY_NAME) {
             if let Some(unit_socket) = $unit.downcast_ref::<SocketUnitInfo>() {
                 let idx = unit_socket.socket_listen_idx();
@@ -788,6 +801,36 @@ fn fac_socket_listen() -> gtk::SignalListItemFactory {
 
     socket_fac.connect_setup(factory_setup);
     let socket_listen = Quark::from_str(SYSD_SOCKET_LISTEN);
+    socket_fac.connect_bind(move |_, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+
+        let value = extract_listen!(unit, socket_listen, 1);
+        inscription.set_text(value);
+    });
+
+    socket_fac
+}
+
+fn fac_path_condition() -> gtk::SignalListItemFactory {
+    let socket_fac = gtk::SignalListItemFactory::new();
+
+    socket_fac.connect_setup(factory_setup);
+    let socket_listen = Quark::from_str(PATH_PATH_COL);
+    socket_fac.connect_bind(move |_, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+
+        let value = extract_listen!(unit, socket_listen, 0);
+        inscription.set_text(value);
+    });
+
+    socket_fac
+}
+
+fn fac_path_path() -> gtk::SignalListItemFactory {
+    let socket_fac = gtk::SignalListItemFactory::new();
+
+    socket_fac.connect_setup(factory_setup);
+    let socket_listen = Quark::from_str(PATH_PATH_COL);
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 

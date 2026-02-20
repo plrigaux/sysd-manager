@@ -268,6 +268,16 @@ pub async fn list_loaded_units_sockets(
     Ok(ListUnitResponse::Loaded(level, v))
 }
 
+pub async fn list_loaded_units_paths(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    let v = systemd_manager_async(level)
+        .await?
+        .list_units_by_patterns(&[], &["*.path"])
+        .await?;
+    Ok(ListUnitResponse::Loaded(level, v))
+}
+
 pub async fn list_unit_files(level: UnitDBusLevel) -> Result<ListUnitResponse, SystemdErrors> {
     let v = systemd_manager_async(level)
         .await?

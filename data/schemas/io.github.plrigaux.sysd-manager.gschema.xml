@@ -285,6 +285,7 @@
         <choice value="unit_file"/>
         <choice value="timers"/>
         <choice value="sockets"/>
+        <choice value="paths"/>
         <choice value="custom"/>
       </choices>
       <default>'default'</default>
