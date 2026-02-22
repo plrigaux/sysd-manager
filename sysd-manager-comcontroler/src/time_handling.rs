@@ -214,7 +214,7 @@ macro_rules! swrite {
 #[macro_export]
 macro_rules! timestamp_is_set {
     ($t:expr) => {
-        $t > 0 && $t != U64MAX
+        $t > 0 && $t != u64::MAX
     };
 }
 
@@ -367,11 +367,11 @@ fn now(clock_id: i32) -> u64 {
 
     time.tv_sec as u64 * USEC_PER_SEC + time.tv_nsec as u64 / NSEC_PER_USEC
 }
-pub const U64MAX: u64 = 18_446_744_073_709_551_615; //FIXME define only onec
+
 pub fn format_timespan(mut duration: u64, accuracy: u64) -> String {
     let mut out = String::with_capacity(64);
 
-    if duration == U64MAX {
+    if duration == u64::MAX {
         out.push_str("infinity");
         return out;
     }

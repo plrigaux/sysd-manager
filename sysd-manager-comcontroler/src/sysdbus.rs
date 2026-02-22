@@ -1296,7 +1296,7 @@ fn reteive_dependencies(
     Ok(())
 }
 
-pub(super) fn unit_dbus_path_from_name(name: &str) -> String {
+pub fn unit_dbus_path_from_name(name: &str) -> String {
     let converted = bus_label_escape(name);
     const PREFIX: &str = "/org/freedesktop/systemd1/unit/";
 
@@ -1577,6 +1577,26 @@ pub async fn fetch_unit_properties(
     }
 
     Ok(output)
+}
+
+pub fn fetch_unit_property_blocking(
+    level: UnitDBusLevel,
+    unit_primary_name: &str,
+    unit_type: UnitType,
+    unit_property: &str,
+) -> Result<OwnedValue, SystemdErrors> {
+    let connection = get_blocking_connection(level)?;
+
+    let path = unit_dbus_path_from_name(unit_primary_name);
+    let proxy = ZPropertiesProxyBlocking::builder(&connection)
+        .path(path)?
+        .build()?;
+
+    let interface = unit_type.interface();
+
+    let value = proxy.get(interface, unit_property)?;
+
+    Ok(value)
 }
 
 async fn fetch_managed_property(

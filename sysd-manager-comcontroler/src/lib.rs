@@ -248,34 +248,39 @@ pub async fn list_loaded_units(level: UnitDBusLevel) -> Result<ListUnitResponse,
     Ok(ListUnitResponse::Loaded(level, v))
 }
 
-pub async fn list_loaded_units_timers(
+pub async fn list_loaded_units_by_patterns(
     level: UnitDBusLevel,
+    patterns: &[&str],
 ) -> Result<ListUnitResponse, SystemdErrors> {
     let v = systemd_manager_async(level)
         .await?
-        .list_units_by_patterns(&[], &["*.timer"])
+        .list_units_by_patterns(&[], patterns)
         .await?;
     Ok(ListUnitResponse::Loaded(level, v))
+}
+
+pub async fn list_loaded_units_timers(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_loaded_units_by_patterns(level, &["*.timer"]).await
 }
 
 pub async fn list_loaded_units_sockets(
     level: UnitDBusLevel,
 ) -> Result<ListUnitResponse, SystemdErrors> {
-    let v = systemd_manager_async(level)
-        .await?
-        .list_units_by_patterns(&[], &["*.socket"])
-        .await?;
-    Ok(ListUnitResponse::Loaded(level, v))
+    list_loaded_units_by_patterns(level, &["*.socket"]).await
 }
 
 pub async fn list_loaded_units_paths(
     level: UnitDBusLevel,
 ) -> Result<ListUnitResponse, SystemdErrors> {
-    let v = systemd_manager_async(level)
-        .await?
-        .list_units_by_patterns(&[], &["*.path"])
-        .await?;
-    Ok(ListUnitResponse::Loaded(level, v))
+    list_loaded_units_by_patterns(level, &["*.path"]).await
+}
+
+pub async fn list_loaded_units_automounts(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_loaded_units_by_patterns(level, &["*.automount"]).await
 }
 
 pub async fn list_unit_files(level: UnitDBusLevel) -> Result<ListUnitResponse, SystemdErrors> {
@@ -1082,6 +1087,15 @@ pub async fn fetch_unit_properties(
 ) -> Result<Vec<UnitPropertySetter>, SystemdErrors> {
     sysdbus::fetch_unit_properties(level, unit_primary_name, path, unit_properties, properties)
         .await
+}
+
+pub fn fetch_unit_property_blocking(
+    level: UnitDBusLevel,
+    unit_primary_name: &str,
+    unit_type: UnitType,
+    unit_property: &str,
+) -> Result<OwnedValue, SystemdErrors> {
+    sysdbus::fetch_unit_property_blocking(level, unit_primary_name, unit_type, unit_property)
 }
 
 pub async fn create_drop_in(
