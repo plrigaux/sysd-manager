@@ -1,11 +1,10 @@
-use std::{cell::OnceCell, sync::LazyLock};
+use std::sync::LazyLock;
 
 use base::enums::UnitDBusLevel;
 use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
-use regex::Regex;
 use systemd::{
     data::get_custom_property_typed_raw,
     enums::UnitType,
@@ -936,25 +935,32 @@ fn fac_automount_idle_timeout() -> gtk::SignalListItemFactory {
     factory
 }
 
-static SLASH_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(/\./|/)").unwrap());
-
 fn unit_name_from_path(path: &str, suffix: &str) -> Option<String> {
-    let path = path.trim_start_matches('/');
-    let path = path.trim_end_matches('/');
+    let mut out = String::with_capacity(path.len());
+    for t in path.split('/') {
+        match t {
+            ".." => return None,
+            "." => continue,
+            _ => {}
+        }
 
-    if path.contains("/../") {
-        return None;
+        if !out.is_empty() {
+            out.push('-')
+        }
+        out.push_str(t);
     }
 
-    let mut s = (*SLASH_REGEX).replace_all(path, "-").to_string();
-
-    if s.is_empty() {
-        s.push('-');
+    if out.is_empty() {
+        out.push('-');
+    } else if let Some(c) = out.chars().last()
+        && c == '-'
+    {
+        out.pop();
     }
 
-    s.push_str(suffix);
+    out.push_str(suffix);
 
-    Some(s)
+    Some(out)
 }
 
 #[cfg(test)]

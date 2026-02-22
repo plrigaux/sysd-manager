@@ -74,7 +74,7 @@ use systemd::{
     socket_unit::SocketUnitInfo,
 };
 use tokio::task::AbortHandle;
-use tracing::{debug, error, info, trace, warn};
+use tracing::{debug, error, info, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 static PATH_PATHS_QUARK: OnceLock<glib::Quark> = OnceLock::new();
