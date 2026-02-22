@@ -15,13 +15,13 @@ use crate::widget::{
     preferences::data::PREFERENCES, unit_info::construct_info::systemd::timestamp_is_set,
 };
 use base::enums::UnitDBusLevel;
-use tracing::{debug, warn};
 use systemd::time_handling::calc_next_elapse;
 use systemd::{
     enums::ActiveState,
     swrite,
     time_handling::{self, TimestampStyle},
 };
+use tracing::{debug, warn};
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
 pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
@@ -470,16 +470,15 @@ fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>
         return;
     };
 
-    for idx in 0..array.len() {
-        let Ok(Some(val)) = array.get::<Value>(idx) else {
-            warn!("Can't get value from array");
-            continue;
+    for (idx, value) in array.iter().enumerate() {
+        let key = match idx {
+            0 if array.len() == 1 => "Doc:",
+            0 => "Docs:",
+            _ => "",
         };
 
-        let key = if idx == 0 { "Doc:" } else { "" };
-
         write_key(unit_writer, key);
-        let doc = value_to_str(&val);
+        let doc = value_to_str(value);
         insert_doc(unit_writer, doc);
         unit_writer.newline();
     }
@@ -1059,7 +1058,7 @@ fn print_process(
 }
 
 fn value_to_str<'a>(value: &'a Value<'a>) -> &'a str {
-    if let Value::Str(converted) = value as &Value {
+    if let Value::Str(converted) = value {
         return converted.as_str();
     }
     warn!("Wrong zvalue conversion to String: {value:?}");
