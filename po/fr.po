@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-22 16:04-0500\n"
-"PO-Revision-Date: 2026-02-20 23:30+0000\n"
+"PO-Revision-Date: 2026-02-22 21:09+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -2484,25 +2484,25 @@ msgstr "Ajouter un filtre au sous-état"
 #: src/widget/unit_list/imp/construct.rs:86
 msgctxt "list column"
 msgid "Where"
-msgstr ""
+msgstr "Où"
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:93
 msgctxt "list column"
 msgid "What"
-msgstr ""
+msgstr "Quoi"
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:100
 msgctxt "list column"
 msgid "Mounted"
-msgstr ""
+msgstr "Monté"
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:107
 msgctxt "list column"
 msgid "Idle Timeout"
-msgstr ""
+msgstr "Délai d'inactivité"
 
 #. Path list column name
 #: src/widget/unit_list/imp/construct.rs:181
@@ -2709,10 +2709,9 @@ msgstr "Path"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:220
-#, fuzzy
 msgctxt "menu"
 msgid "Automounts"
-msgstr "Automatique"
+msgstr "Automounts"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:224
