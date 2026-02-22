@@ -1,5 +1,5 @@
 use crate::gtk::prelude::ListModelExtManual;
-use crate::widget::unit_list::UnitListView;
+use crate::widget::unit_list::UnitCuratedList;
 use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
 use tracing::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
@@ -109,7 +109,7 @@ impl MyConfig {
 pub fn save_column_config(
     columns: Option<&gio::ListModel>,
     data: &mut [UnitPropertySelection],
-    view: UnitListView,
+    view: UnitCuratedList,
 ) {
     order_columns(columns, data);
 
@@ -139,9 +139,9 @@ pub fn save_column_config(
     }
 }
 
-fn file_name(view: UnitListView) -> String {
+fn file_name(view: UnitCuratedList) -> String {
     match view {
-        UnitListView::Custom => UNIT_COLUMNS.to_owned(),
+        UnitCuratedList::Custom => UNIT_COLUMNS.to_owned(),
         _ => format!("{}_{}", view.id(), UNIT_COLUMNS),
     }
 }
@@ -208,7 +208,7 @@ fn save_to_toml_file(data: &MyConfig, path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn load_column_config(view: UnitListView) -> Option<MyConfig> {
+pub fn load_column_config(view: UnitCuratedList) -> Option<MyConfig> {
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
 
     if !sysd_manager_config_dir.exists() {

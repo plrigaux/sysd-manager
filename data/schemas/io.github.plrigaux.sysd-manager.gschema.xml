@@ -286,10 +286,11 @@
         <choice value="timers"/>
         <choice value="sockets"/>
         <choice value="paths"/>
+        <choice value="automounts"/>
         <choice value="custom"/>
       </choices>
       <default>'default'</default>
-      <summary>Views of the unit browser</summary>
+      <summary>List of units presented by the browser</summary>
     </key>
   </schema>
 </schemalist>

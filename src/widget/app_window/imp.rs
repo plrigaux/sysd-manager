@@ -22,7 +22,7 @@ use crate::{
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
         signals_dialog::SignalsWindow,
         unit_control_panel::UnitControlPanel,
-        unit_list::{UnitListPanel, UnitListView},
+        unit_list::{UnitListPanel, UnitCuratedList},
         unit_properties_selector::UnitPropertiesSelectorDialog,
     },
 };
@@ -167,7 +167,7 @@ impl ObjectImpl for AppWindowImpl {
             });
         }
 
-        let menu_views = UnitListView::menu_items();
+        let menu_views = UnitCuratedList::menu_items();
 
         self.unit_list_view_menubutton
             .set_menu_model(Some(&menu_views));
@@ -537,7 +537,7 @@ impl AppWindowImpl {
         application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
         application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
 
-        for ui in UnitListView::iter() {
+        for ui in UnitCuratedList::iter() {
             application.set_accels_for_action(&ui.detailed_action(), &ui.win_accels());
         }
     }

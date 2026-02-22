@@ -4,7 +4,7 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 
 use glib::Quark;
 use gtk::glib::{self};
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use crate::{
     consts::*,
@@ -245,8 +245,19 @@ impl UnitPropertySelection {
                     quark,
                 );
             }
+            (false, Some(AUTOMOUNT_MOUNTED_COL) | Some(AUTOMOUNT_WHAT_COL)) => {
+                let u_prop = WHERE_PROP.to_owned();
+                let quark = Quark::from_str(WHERE_PROP);
+                property_list_send.insert(
+                    DataSelectionItem {
+                        unit_type: UnitType::Automount,
+                        property: u_prop,
+                    },
+                    quark,
+                );
+            }
             (false, _) => {
-                // warn!("??? {:?} custom {:?}", self.id(), self.is_custom())
+                warn!("??? {:?} custom {:?}", self.id(), self.is_custom())
             }
         }
     }
