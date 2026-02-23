@@ -11,14 +11,14 @@ members = [
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.91"
+rust-version = "1.92"
 authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "2.13.2"
+version = "2.13.3"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -67,7 +67,7 @@ glib = { version = "0", package = "glib", features = ["v2_84"] }
 libc = "0.2"
 regex = "1.12"
 serde = "1.0"
-strum = { version = "0.27", features = ["derive"] }
+strum = { version = "0.28", features = ["derive"] }
 test-base = { version = "0.1", path = "./sysd-manager-test-base", package = "sysd-manager-test-base" }
 tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
@@ -88,9 +88,9 @@ zbus = { version = "5.11", default-features = false, features = [
 
 
 pango = { version = "0", package = "pango", features = ["v1_56"] }
-adw = { version = "0.8", package = "libadwaita", features = ["v1_8"] }
+adw = { version = "0.9", package = "libadwaita", features = ["v1_8"] }
 gio.workspace = true
-gtk = { version = "0.10", package = "gtk4", features = ["v4_20"] }
+gtk = { version = "0.11", package = "gtk4", features = ["v4_20"] }
 glib.workspace = true
 flagset.workspace = true
 base.workspace = true
@@ -107,7 +107,7 @@ gettext-rs.workspace = true
 libc.workspace = true
 regex.workspace = true
 serde.workspace = true
-sourceview5 = "0.10"
+sourceview5 = "0.11"
 strum.workspace = true
 systemd.workspace = true
 tokio.workspace = true
