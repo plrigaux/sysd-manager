@@ -16,6 +16,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libglib2.0-dev pkg-config
+        export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
     - name: Build
       run: cargo build --verbose
     - name: Run tests
