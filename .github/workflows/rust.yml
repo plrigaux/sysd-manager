@@ -1,3 +1,4 @@
+
 name: Rust
 
 on:
@@ -19,7 +20,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libglib2.0-dev pkg-config
+        sudo apt-get install -y libglib2.0-dev  libgobject-2.0-dev pkg-config
+    - name: Set PKG_CONFIG_PATH
+      run: echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
     - name: Build
       run: cargo build --verbose
     - name: Run tests
