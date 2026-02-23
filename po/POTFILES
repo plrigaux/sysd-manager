@@ -93,7 +93,6 @@ src/widget/unit_list/filter/unit_prop_filter.rs
 src/widget/unit_list/imp/column_factories.rs
 src/widget/unit_list/imp/construct.rs
 src/widget/unit_list/imp/pop_menu.rs
-src/widget/unit_list/imp/rowdata.rs
 src/widget/unit_list/imp.rs
 src/widget/unit_list/menus.rs
 src/widget/unit_list/mod.rs

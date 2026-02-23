@@ -155,7 +155,7 @@ pub fn get_clean_col_title(title: &str) -> String {
 
 #[derive(Debug, Copy, Clone, Default, strum::EnumIter, glib::Enum, Eq, PartialEq)]
 #[enum_type(name = "UnitListView")]
-pub enum UnitListView {
+pub enum UnitCuratedList {
     #[default]
     Defaut,
     LoadedUnit,
@@ -163,10 +163,11 @@ pub enum UnitListView {
     Timers,
     Sockets,
     Path,
+    Automount,
     Custom,
 }
 
-impl UnitListView {
+impl UnitCuratedList {
     pub const WIN_ACTION: &'static str = "win.unit_list_view";
 
     pub fn base_action() -> &'static str {
@@ -176,7 +177,7 @@ impl UnitListView {
     pub fn menu_items() -> gio::Menu {
         let menu_views = gio::Menu::new();
 
-        for item in UnitListView::iter() {
+        for item in UnitCuratedList::iter() {
             let label = item.menu_item();
 
             let menu_item = gio::MenuItem::new(Some(&label), Some(Self::WIN_ACTION));
@@ -190,31 +191,35 @@ impl UnitListView {
 
     pub fn menu_item(&self) -> String {
         match self {
-            UnitListView::Defaut => {
+            UnitCuratedList::Defaut => {
                 //Curated List View
                 pgettext("menu", "Default")
             }
-            UnitListView::LoadedUnit => {
+            UnitCuratedList::LoadedUnit => {
                 //Curated List View
                 pgettext("menu", "Loaded Units")
             }
-            UnitListView::UnitFiles => {
+            UnitCuratedList::UnitFiles => {
                 //List view
                 pgettext("menu", "Unit Files")
             }
-            UnitListView::Timers => {
+            UnitCuratedList::Timers => {
                 //Curated List View
                 pgettext("menu", "Timers")
             }
-            UnitListView::Sockets => {
+            UnitCuratedList::Sockets => {
                 //Curated List View
                 pgettext("menu", "Sockets")
             }
-            UnitListView::Path => {
+            UnitCuratedList::Path => {
                 //Curated List View
                 pgettext("menu", "Path")
             }
-            UnitListView::Custom => {
+            UnitCuratedList::Automount => {
+                //Curated List View
+                pgettext("menu", "Automounts")
+            }
+            UnitCuratedList::Custom => {
                 //Curated List View
                 pgettext("menu", "Customized")
             }
@@ -223,25 +228,27 @@ impl UnitListView {
 
     pub fn id(&self) -> &str {
         match self {
-            UnitListView::Defaut => "default",
-            UnitListView::LoadedUnit => "loaded",
-            UnitListView::UnitFiles => "unit_file",
-            UnitListView::Timers => "timers",
-            UnitListView::Sockets => "sockets",
-            UnitListView::Path => "paths",
-            UnitListView::Custom => "custom",
+            UnitCuratedList::Defaut => "default",
+            UnitCuratedList::LoadedUnit => "loaded",
+            UnitCuratedList::UnitFiles => "unit_file",
+            UnitCuratedList::Timers => "timers",
+            UnitCuratedList::Sockets => "sockets",
+            UnitCuratedList::Path => "paths",
+            UnitCuratedList::Automount => "automounts",
+            UnitCuratedList::Custom => "custom",
         }
     }
 
     pub fn win_accels(&self) -> [&str; 1] {
         match self {
-            UnitListView::Defaut => ["<Ctrl><Shift>d"],
-            UnitListView::LoadedUnit => ["<Ctrl><Shift>l"],
-            UnitListView::UnitFiles => ["<Ctrl><Shift>F"],
-            UnitListView::Timers => ["<Ctrl><Shift>t"],
-            UnitListView::Sockets => ["<Ctrl><Shift>S"],
-            UnitListView::Path => ["<Ctrl><Shift>p"],
-            UnitListView::Custom => ["<Ctrl><Shift>C"],
+            UnitCuratedList::Defaut => ["<Ctrl><Shift>d"],
+            UnitCuratedList::LoadedUnit => ["<Ctrl><Shift>l"],
+            UnitCuratedList::UnitFiles => ["<Ctrl><Shift>F"],
+            UnitCuratedList::Timers => ["<Ctrl><Shift>t"],
+            UnitCuratedList::Sockets => ["<Ctrl><Shift>S"],
+            UnitCuratedList::Path => ["<Ctrl><Shift>p"],
+            UnitCuratedList::Automount => ["<Ctrl><Shift>a"],
+            UnitCuratedList::Custom => ["<Ctrl><Shift>C"],
         }
     }
 
@@ -250,21 +257,21 @@ impl UnitListView {
     }
 }
 
-impl From<&glib::Variant> for UnitListView {
+impl From<&glib::Variant> for UnitCuratedList {
     fn from(value: &glib::Variant) -> Self {
         let value_str = value
             .try_get::<String>()
             .inspect_err(|e| warn!("Variant convertion Error {:?}", e))
             .unwrap_or("default".to_owned());
 
-        for unit_list_view in UnitListView::iter() {
+        for unit_list_view in UnitCuratedList::iter() {
             if unit_list_view.id() == value_str {
                 return unit_list_view;
             }
         }
         warn!("Value {value_str:?} has no match for UnitListView, fallback to \"default\"");
 
-        UnitListView::Defaut
+        UnitCuratedList::Defaut
     }
 }
 
@@ -274,10 +281,10 @@ mod tests {
 
     #[test]
     fn test_id_extracts_correct_substring() {
-        assert_eq!(UnitListView::Defaut.id(), "default");
-        assert_eq!(UnitListView::LoadedUnit.id(), "active");
-        assert_eq!(UnitListView::UnitFiles.id(), "unit_file");
-        assert_eq!(UnitListView::Timers.id(), "timers");
-        assert_eq!(UnitListView::Sockets.id(), "sockets");
+        assert_eq!(UnitCuratedList::Defaut.id(), "default");
+        assert_eq!(UnitCuratedList::LoadedUnit.id(), "active");
+        assert_eq!(UnitCuratedList::UnitFiles.id(), "unit_file");
+        assert_eq!(UnitCuratedList::Timers.id(), "timers");
+        assert_eq!(UnitCuratedList::Sockets.id(), "sockets");
     }
 }

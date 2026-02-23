@@ -82,7 +82,7 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.13.1" date="2026-02-19">
+    <release version="2.13.3" date="2026-02-22">
       <description translate="no">
         <p>Added</p>
         <ul>
@@ -91,12 +91,19 @@ https://hughsie.github.io/oars/index.html
           <li>Display list of Sockets</li>
           <li>Display list of Unit Files</li>
           <li>Display list of Unit Paths</li>
+          <li>Display list of Unit Automounts</li>
           <li>Shortcuts on curated lists</li>
           <li>Shortcut on save file</li>
         </ul>
         <p>Changed</p>
         <ul>
           <li>Better unit fetching algorithm</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>
+            Save unit files with privilege elevation on a Flatpack build
+        </li>
         </ul>
       </description>
     </release>

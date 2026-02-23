@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager-base"
-version = "2.13.2"
+version = "2.13.3"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true

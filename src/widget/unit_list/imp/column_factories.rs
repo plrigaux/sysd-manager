@@ -1,13 +1,16 @@
 use std::sync::LazyLock;
 
+use base::enums::UnitDBusLevel;
 use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
 use systemd::{
     data::get_custom_property_typed_raw,
+    enums::UnitType,
+    errors::SystemdErrors,
     socket_unit::SocketUnitInfo,
-    time_handling::{self},
+    time_handling::{self, MSEC_PER_SEC},
     timestamp_is_set,
 };
 use tracing::{error, warn};
@@ -325,6 +328,7 @@ pub fn get_factory_by_id(
     prop_type: Option<&str>,
 ) -> Option<gtk::SignalListItemFactory> {
     match (id.has_defined_type(), id.prop) {
+        (true, AUTOMOUNT_IDLE_TIMEOUT_PROP) => Some(fac_automount_idle_timeout()),
         (true, _) => Some(get_custom_factory(id, display_color, prop_type)),
         (false, COL_ID_UNIT) => Some(fac_unit_name(display_color)),
         (false, COL_ID_UNIT_FULL) => Some(fac_unit_name_full(display_color)),
@@ -333,7 +337,7 @@ pub fn get_factory_by_id(
         (false, "sysdm-state") => Some(fac_enable_status(display_color)),
         (false, "sysdm-preset") => Some(fac_preset(display_color)),
         (false, "sysdm-load") => Some(fac_load_state(display_color)),
-        (false, "sysdm-active") => Some(fac_active(display_color)),
+        (false, COL_ACTIVE) => Some(fac_active(display_color)),
         (false, "sysdm-sub") => Some(fac_sub_state(display_color)),
         (false, "sysdm-description") => Some(fac_descrition(display_color)),
         (false, TIMER_TIME_NEXT) => Some(fac_time_next()),
@@ -344,6 +348,8 @@ pub fn get_factory_by_id(
         (false, SOCKET_LISTEN_COL) => Some(fac_socket_listen()),
         (false, PATH_CONDITION_COL) => Some(fac_path_condition()),
         (false, PATH_PATH_COL) => Some(fac_path_path()),
+        (false, AUTOMOUNT_WHAT_COL) => Some(fac_automount_what()),
+        (false, AUTOMOUNT_MOUNTED_COL) => Some(fac_automount_mounted()),
         _ => {
             warn!("What to do?. Id {id:?} not handle with factory");
             None
@@ -620,7 +626,8 @@ pub(super) fn get_custom_factory(
         if display_color {
             inactive_display(&inscription, &unit);
         }
-
+        // let value = get_value(&unit, key);
+        // println!("asdf key {:?} {:?}", key, value);
         let value = get_value(&unit, key).or_else(|| {
             if unit.has_property(PROPERTY_NAME) {
                 unit.downcast_ref::<SocketUnitInfo>()
@@ -839,4 +846,141 @@ fn fac_path_path() -> gtk::SignalListItemFactory {
     });
 
     socket_fac
+}
+
+//TODO perf improve
+fn fac_automount_mounted() -> gtk::SignalListItemFactory {
+    let factory = gtk::SignalListItemFactory::new();
+    factory.connect_setup(factory_setup);
+    let where_key = Quark::from_str(WHERE_PROP);
+    factory.connect_bind(move |_, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+
+        let time = unit.get_custom_property::<String>(where_key);
+
+        let mounted =
+            if let Some(unit_name) = time.and_then(|s| unit_name_from_path(s.as_str(), ".mount")) {
+                fetch_property(unit.dbus_level(), &unit_name, UnitType::Unit, "ActiveState")
+                    .inspect_err(|err| warn!("{err:?}"))
+                    .map(|v| {
+                        let state: ActiveState = v.into();
+                        if state.is_inactive() { "no" } else { "yes" }
+                    })
+                    .ok()
+            } else {
+                None
+            };
+
+        inscription.set_text(mounted);
+    });
+    factory
+}
+
+//TODO perf improve
+fn fac_automount_what() -> gtk::SignalListItemFactory {
+    let factory = gtk::SignalListItemFactory::new();
+    factory.connect_setup(factory_setup);
+    let where_key = Quark::from_str(WHERE_PROP);
+    factory.connect_bind(move |_, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+
+        let time = unit.get_custom_property::<String>(where_key);
+
+        let what =
+            if let Some(unit_name) = time.and_then(|s| unit_name_from_path(s.as_str(), ".mount")) {
+                fetch_property(unit.dbus_level(), &unit_name, UnitType::Mount, "What")
+                    .inspect_err(|err| warn!("{err:?}"))
+                    .ok()
+            } else {
+                None
+            };
+
+        inscription.set_text(what.as_deref());
+    });
+    factory
+}
+
+fn fetch_property(
+    level: UnitDBusLevel,
+    name: &str,
+    utype: UnitType,
+    prop: &str,
+) -> Result<String, SystemdErrors> {
+    let value = systemd::fetch_unit_property_blocking(level, name, utype, prop)?;
+    let v = value.downcast_ref::<String>()?;
+    Ok(v)
+}
+
+fn fac_automount_idle_timeout() -> gtk::SignalListItemFactory {
+    let factory = gtk::SignalListItemFactory::new();
+
+    factory.connect_setup(factory_setup);
+    let timeout_idle_key = Quark::from_str(AUTOMOUNT_IDLE_TIMEOUT_PROP);
+    factory.connect_bind(move |_, object| {
+        let (inscription, unit) = factory_bind_pre!(object);
+
+        let time = unit.get_custom_property::<u64>(timeout_idle_key);
+
+        let time_str = if let Some(time) = time
+            && *time != 0
+        {
+            let time_str = time_handling::format_timespan(*time, MSEC_PER_SEC);
+            Some(time_str)
+        } else {
+            None
+        };
+        inscription.set_text(time_str.as_deref());
+    });
+
+    factory
+}
+
+fn unit_name_from_path(path: &str, suffix: &str) -> Option<String> {
+    let mut out = String::with_capacity(path.len());
+    for t in path.split('/') {
+        match t {
+            ".." => return None,
+            "." => continue,
+            _ => {}
+        }
+
+        if !out.is_empty() {
+            out.push('-')
+        }
+        out.push_str(t);
+    }
+
+    if out.is_empty() {
+        out.push('-');
+    } else if let Some(c) = out.chars().last()
+        && c == '-'
+    {
+        out.pop();
+    }
+
+    out.push_str(suffix);
+
+    Some(out)
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_unit_name_from_path() {
+        test_unit_name_from_path_one("/waldo", ".mount", Some("waldo.mount"));
+        test_unit_name_from_path_one("/waldo/quuix", ".mount", Some("waldo-quuix.mount"));
+        test_unit_name_from_path_one("/waldo/quuix/", ".mount", Some("waldo-quuix.mount"));
+        test_unit_name_from_path_one("", ".mount", Some("-.mount"));
+        test_unit_name_from_path_one("/", ".mount", Some("-.mount"));
+        test_unit_name_from_path_one("///", ".mount", Some("-.mount"));
+        test_unit_name_from_path_one("/foo/../bar", ".mount", None);
+        test_unit_name_from_path_one("/foo/./bar", ".mount", Some("foo-bar.mount"));
+    }
+
+    fn test_unit_name_from_path_one(path: &str, suffix: &str, expected: Option<&str>) {
+        let s = super::unit_name_from_path(path, suffix);
+
+        assert_eq!(s.as_deref(), expected);
+    }
 }

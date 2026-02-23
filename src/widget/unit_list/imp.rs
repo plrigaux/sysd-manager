@@ -14,8 +14,8 @@ use std::{
 
 use crate::{
     consts::{
-        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK,
-        PATH_PATH_COL, SYSD_SOCKET_LISTEN,
+        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, COL_ACTIVE,
+        FILTER_MARK, PATH_PATH_COL, SYSD_SOCKET_LISTEN,
     },
     systemd::{
         data::UnitInfo,
@@ -30,7 +30,7 @@ use crate::{
             PREFERENCES,
         },
         unit_list::{
-            COL_ID_UNIT, CustomPropertyId, UnitListPanel, UnitListView,
+            COL_ID_UNIT, CustomPropertyId, UnitCuratedList, UnitListPanel,
             filter::{
                 UnitListFilterWindow, custom_bool, custom_num, custom_str, filter_active_state,
                 filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
@@ -74,7 +74,7 @@ use systemd::{
     socket_unit::SocketUnitInfo,
 };
 use tokio::task::AbortHandle;
-use tracing::{debug, error, info, trace, warn};
+use tracing::{debug, error, info, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 static PATH_PATHS_QUARK: OnceLock<glib::Quark> = OnceLock::new();
@@ -267,7 +267,7 @@ pub struct UnitListPanelImp {
     default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
 
     #[property(get, set, default)]
-    selected_list_view: Cell<UnitListView>,
+    selected_list_view: Cell<UnitCuratedList>,
 
     abort_handles: RefCell<Vec<AbortHandle>>,
 }
@@ -427,22 +427,22 @@ impl UnitListPanelImp {
             refresh_unit_list,
         ];
 
-        for unit_list_view in UnitListView::iter() {
+        for unit_list_view in UnitCuratedList::iter() {
             let action_entry = {
                 let unit_list_panel = self.obj().clone();
-                gio::ActionEntry::builder(UnitListView::base_action())
+                gio::ActionEntry::builder(UnitCuratedList::base_action())
                     .activate(move |_application: &AppWindow, action, value| {
                         let Some(value) = value else {
-                            warn!("{} has no value", UnitListView::base_action());
+                            warn!("{} has no value", UnitCuratedList::base_action());
                             return;
                         };
 
-                        debug!("{} target {value:?}", UnitListView::base_action());
+                        debug!("{} target {value:?}", UnitCuratedList::base_action());
                         let panel = unit_list_panel.imp();
 
                         action.set_state(value);
 
-                        let view: UnitListView = value.into(); //FIXME Why can't use unit_list_view variable
+                        let view: UnitCuratedList = value.into(); //FIXME Why can't use unit_list_view variable
                         debug!("new {:?}", view);
                         panel.fill_store(Some(view));
                     })
@@ -458,7 +458,7 @@ impl UnitListPanelImp {
         let settings = systemd_gui::new_settings();
         let view = settings.string(PREF_UNIT_LIST_VIEW);
 
-        app_window.change_action_state(UnitListView::base_action(), &view.to_variant());
+        app_window.change_action_state(UnitCuratedList::base_action(), &view.to_variant());
         debug!("VIEW : {}", view);
     }
 
@@ -479,7 +479,7 @@ impl UnitListPanelImp {
         col_list
     }
 
-    fn fill_store(&self, new_view: Option<UnitListView>) {
+    fn fill_store(&self, new_view: Option<UnitCuratedList>) {
         if let Some(new_view) = new_view {
             self.save_config();
 
@@ -997,7 +997,7 @@ impl UnitListPanelImp {
                 filter_load_state,
                 &unit_list_panel,
             ))),
-            "sysdm-active" => Some(Box::new(FilterElement::new(
+            COL_ACTIVE => Some(Box::new(FilterElement::new(
                 id,
                 filter_active_state,
                 &unit_list_panel,
@@ -1203,8 +1203,8 @@ impl UnitListPanelImp {
                         cleaned_props.push((unit_type.unit_type, &unit_type.property, *quark));
                     }
                     // println!("orig {:?}", property_list_send);
-
                     // println!("cleaned {:?}", cleaned_props);
+
                     let properties_setter = systemd::fetch_unit_properties(
                         level,
                         &primary_name,
@@ -1255,7 +1255,7 @@ impl UnitListPanelImp {
                         UnitPropertySetter::UnitFilePreset(preset) => unit.set_preset(preset),
                         UnitPropertySetter::SubState(substate) => unit.set_sub_state(substate),
                         UnitPropertySetter::Custom(quark, owned_value) => {
-                            trace!("DEBUG Custom prop {:?} {:?}", quark, owned_value);
+                            // println!("DEBUG Custom prop {:?} {:?}", quark, owned_value);
                             if &quark
                                 == SOCKET_LISTEN_QUARK
                                     .get_or_init(|| glib::Quark::from_str(SYSD_SOCKET_LISTEN))
@@ -1418,15 +1418,15 @@ impl ObjectImpl for UnitListPanelImp {
         settings
             .bind(PREF_UNIT_LIST_VIEW, &unit_list_panel, "selected-list-view")
             .mapping(|variant, _| {
-                let unit_list_view: UnitListView = variant.into();
+                let unit_list_view: UnitCuratedList = variant.into();
                 let value = unit_list_view.to_value();
                 Some(value)
             })
             .set_mapping(|value, _| {
                 let unit_list_view = value
-                    .get::<UnitListView>()
+                    .get::<UnitCuratedList>()
                     .inspect_err(|err| warn!("Conv error {:?}", err))
-                    .unwrap_or(UnitListView::Defaut);
+                    .unwrap_or(UnitCuratedList::Defaut);
                 let variant = unit_list_view.id().to_variant();
                 Some(variant)
             })
@@ -1597,7 +1597,7 @@ macro_rules! dbus_call {
 
 async fn retrieve_unit_list(
     int_level: DbusLevel,
-    view: UnitListView,
+    view: UnitCuratedList,
     unit_list: &UnitListPanel,
 ) -> Result<Vec<ListUnitResponse>, bool> {
     let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
@@ -1605,24 +1605,27 @@ async fn retrieve_unit_list(
         let mut handles = Vec::with_capacity(4);
 
         match view {
-            UnitListView::Defaut | UnitListView::Custom | UnitListView::LoadedUnit => {
+            UnitCuratedList::Defaut | UnitCuratedList::Custom | UnitCuratedList::LoadedUnit => {
                 dbus_call!(int_level, handles, systemd::list_loaded_units)
             }
-            UnitListView::UnitFiles => {}
-            UnitListView::Timers => {
+            UnitCuratedList::UnitFiles => {}
+            UnitCuratedList::Timers => {
                 dbus_call!(int_level, handles, systemd::list_loaded_units_timers)
             }
-            UnitListView::Sockets => {
+            UnitCuratedList::Sockets => {
                 dbus_call!(int_level, handles, systemd::list_loaded_units_sockets)
             }
-            UnitListView::Path => {
+            UnitCuratedList::Path => {
                 dbus_call!(int_level, handles, systemd::list_loaded_units_paths)
+            }
+            UnitCuratedList::Automount => {
+                dbus_call!(int_level, handles, systemd::list_loaded_units_automounts)
             }
         }
 
         if matches!(
             view,
-            UnitListView::Defaut | UnitListView::Custom | UnitListView::UnitFiles
+            UnitCuratedList::Defaut | UnitCuratedList::Custom | UnitCuratedList::UnitFiles
         ) {
             dbus_call!(int_level, handles, systemd::list_unit_files);
         }

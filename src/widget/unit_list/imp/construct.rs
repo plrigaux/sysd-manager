@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     consts::{
+        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, COL_ACTIVE,
         PATH_CONDITION_COL, PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE,
         SYSD_SOCKET_LISTEN, TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
         TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
@@ -12,7 +13,7 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
-            COL_ID_UNIT, COL_ID_UNIT_FULL, CustomPropertyId, UnitListView,
+            COL_ID_UNIT, COL_ID_UNIT_FULL, CustomPropertyId, UnitCuratedList,
             imp::{
                 column_factories::{self, *},
                 construct,
@@ -31,18 +32,19 @@ use tracing::warn;
 use zvariant::Value;
 pub fn construct_column_view(
     display_color: bool,
-    view: UnitListView,
+    view: UnitCuratedList,
 ) -> Vec<UnitPropertySelection> {
     let list = build_from_load(display_color, view);
 
     let default_column_set = match view {
-        UnitListView::Defaut => default_column_definition_list(display_color),
-        UnitListView::LoadedUnit => generate_loaded_units_columns(display_color),
-        UnitListView::UnitFiles => generate_unit_files_columns(display_color),
-        UnitListView::Timers => generate_timers_columns(display_color),
-        UnitListView::Sockets => generate_sockets_columns(display_color),
-        UnitListView::Path => generate_paths_columns(display_color),
-        UnitListView::Custom => {
+        UnitCuratedList::Defaut => default_column_definition_list(display_color),
+        UnitCuratedList::LoadedUnit => generate_loaded_units_columns(display_color),
+        UnitCuratedList::UnitFiles => generate_unit_files_columns(display_color),
+        UnitCuratedList::Timers => generate_timers_columns(display_color),
+        UnitCuratedList::Sockets => generate_sockets_columns(display_color),
+        UnitCuratedList::Path => generate_paths_columns(display_color),
+        UnitCuratedList::Automount => generate_automounts_columns(display_color),
+        UnitCuratedList::Custom => {
             if list.is_empty() {
                 return default_column_definition_list(display_color);
             }
@@ -71,6 +73,43 @@ pub fn construct_column_view(
         out.push(unit_prop);
     }
     out
+}
+
+fn generate_automounts_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+    let mut columns = vec![];
+
+    let unit_col = create_unit_display_full_name_column(display_color);
+    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    let mut unit_column = UnitColumn::new("automount@Where", "s");
+    unit_column.resizable = true;
+    //Automounts list column name
+    unit_column.title = Some(pgettext("list column", "Where"));
+    unit_column.fixed_width = 120;
+    columns.push(UnitPropertySelection::from_column_config(unit_column));
+
+    let mut unit_column = UnitColumn::new(AUTOMOUNT_WHAT_COL, "s");
+    unit_column.resizable = true;
+    //Automounts list column name
+    unit_column.title = Some(pgettext("list column", "What"));
+    unit_column.fixed_width = 120;
+    columns.push(UnitPropertySelection::from_column_config(unit_column));
+
+    let mut unit_column = UnitColumn::new(AUTOMOUNT_MOUNTED_COL, "s");
+    unit_column.resizable = true;
+    //Automounts list column name
+    unit_column.title = Some(pgettext("list column", "Mounted"));
+    unit_column.fixed_width = 120;
+    columns.push(UnitPropertySelection::from_column_config(unit_column));
+
+    let mut unit_column = UnitColumn::new(AUTOMOUNT_IDLE_TIMEOUT_COL, "t");
+    unit_column.resizable = true;
+    //Automounts list column name
+    unit_column.title = Some(pgettext("list column", "Idle Timeout"));
+    unit_column.fixed_width = 120;
+    columns.push(UnitPropertySelection::from_column_config(unit_column));
+
+    columns
 }
 
 fn generate_sockets_columns(display_color: bool) -> Vec<UnitPropertySelection> {
@@ -188,7 +227,7 @@ fn generate_unit_files_columns(display_color: bool) -> Vec<UnitPropertySelection
     columns
 }
 
-pub fn build_from_load(display_color: bool, view: UnitListView) -> Vec<UnitPropertySelection> {
+pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPropertySelection> {
     let Some(saved_config) = save::load_column_config(view) else {
         return vec![];
     };
@@ -288,7 +327,7 @@ pub fn get_sorter_by_id(
         "sysdm-state" => Some(create_column_filter!(enable_status)),
         "sysdm-preset" => Some(create_column_filter!(preset)),
         "sysdm-load" => Some(create_column_filter!(load_state)),
-        "sysdm-active" => Some(create_column_filter!(active_state)),
+        COL_ACTIVE => Some(create_column_filter!(active_state)),
         "sysdm-sub" => Some(create_column_filter!(sub_state)),
         "sysdm-description" => Some(create_column_filter!(description)),
         TIMER_TIME_NEXT | TIMER_TIME_LEFT => create_next_elapse_column_filter(),
@@ -497,7 +536,7 @@ fn create_unit_file_state(display_color: bool) -> gtk::ColumnViewColumn {
 }
 
 fn create_unit_active_status_columun(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = "sysdm-active";
+    let id = COL_ACTIVE;
     let sorter = create_column_filter!(active_state);
     let column_menu = create_col_menu(id, false);
     let factory = fac_active(display_color);

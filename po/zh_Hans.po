@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-20 18:24-0500\n"
+"POT-Creation-Date: 2026-02-22 16:04-0500\n"
 "PO-Revision-Date: 2026-02-07 01:52+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
@@ -2421,106 +2421,130 @@ msgctxt "filter"
 msgid "Add filter on sub state"
 msgstr ""
 
+#. Automounts list column name
+#: src/widget/unit_list/imp/construct.rs:86
+msgctxt "list column"
+msgid "Where"
+msgstr ""
+
+#. Automounts list column name
+#: src/widget/unit_list/imp/construct.rs:93
+msgctxt "list column"
+msgid "What"
+msgstr ""
+
+#. Automounts list column name
+#: src/widget/unit_list/imp/construct.rs:100
+msgctxt "list column"
+msgid "Mounted"
+msgstr ""
+
+#. Automounts list column name
+#: src/widget/unit_list/imp/construct.rs:107
+msgctxt "list column"
+msgid "Idle Timeout"
+msgstr ""
+
 #. Path list column name
-#: src/widget/unit_list/imp/construct.rs:143
+#: src/widget/unit_list/imp/construct.rs:181
 msgctxt "list column"
 msgid "Condition"
 msgstr ""
 
 #. Path list column name
-#: src/widget/unit_list/imp/construct.rs:153
+#: src/widget/unit_list/imp/construct.rs:191
 msgctxt "list column"
 msgid "Path"
 msgstr ""
 
 #. Path list column name
 #. Unit full name column name
-#: src/widget/unit_list/imp/construct.rs:166
-#: src/widget/unit_list/imp/construct.rs:547
-#: src/widget/unit_list/imp/construct.rs:564
+#: src/widget/unit_list/imp/construct.rs:204
+#: src/widget/unit_list/imp/construct.rs:585
+#: src/widget/unit_list/imp/construct.rs:602
 #, fuzzy
 msgctxt "list column"
 msgid "Unit"
 msgstr "服务单元文件"
 
-#: src/widget/unit_list/imp/construct.rs:416
+#: src/widget/unit_list/imp/construct.rs:454
 msgctxt "list column"
 msgid "Bus"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:437
+#: src/widget/unit_list/imp/construct.rs:475
 msgctxt "list column"
 msgid "Load"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:455
+#: src/widget/unit_list/imp/construct.rs:493
 msgctxt "list column"
 msgid "Sub"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:478
+#: src/widget/unit_list/imp/construct.rs:516
 msgctxt "list column"
 msgid "Preset"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:495
+#: src/widget/unit_list/imp/construct.rs:533
 msgctxt "list column"
 msgid "State"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:512
+#: src/widget/unit_list/imp/construct.rs:550
 msgctxt "list column"
 msgid "Active"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:529
+#: src/widget/unit_list/imp/construct.rs:567
 msgctxt "list column"
 msgid "Description"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:581
+#: src/widget/unit_list/imp/construct.rs:619
 msgctxt "list column"
 msgid "Type"
 msgstr ""
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:589
+#: src/widget/unit_list/imp/construct.rs:627
 msgctxt "list column"
 msgid "Listen Type"
 msgstr ""
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:599
+#: src/widget/unit_list/imp/construct.rs:637
 msgctxt "list column"
 msgid "Listen"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:610
+#: src/widget/unit_list/imp/construct.rs:648
 msgctxt "list column"
 msgid "Next"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:620
+#: src/widget/unit_list/imp/construct.rs:658
 msgctxt "list column"
 msgid "Left"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:630
+#: src/widget/unit_list/imp/construct.rs:668
 msgctxt "list column"
 msgid "Last"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:639
+#: src/widget/unit_list/imp/construct.rs:677
 msgctxt "list column"
 msgid "Passed"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:650
+#: src/widget/unit_list/imp/construct.rs:688
 #, fuzzy
 msgctxt "list column"
 msgid "Activates"
@@ -2589,46 +2613,52 @@ msgid "Filtering"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:195
+#: src/widget/unit_list/mod.rs:196
 #, fuzzy
 msgctxt "menu"
 msgid "Default"
 msgstr "恢复默认"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:199
+#: src/widget/unit_list/mod.rs:200
 #, fuzzy
 msgctxt "menu"
 msgid "Loaded Units"
 msgstr "重新加载所有服务单元"
 
 #. List view
-#: src/widget/unit_list/mod.rs:203
+#: src/widget/unit_list/mod.rs:204
 #, fuzzy
 msgctxt "menu"
 msgid "Unit Files"
 msgstr "单元文件"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:207
+#: src/widget/unit_list/mod.rs:208
 msgctxt "menu"
 msgid "Timers"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:211
+#: src/widget/unit_list/mod.rs:212
 msgctxt "menu"
 msgid "Sockets"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:215
+#: src/widget/unit_list/mod.rs:216
 msgctxt "menu"
 msgid "Path"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:219
+#: src/widget/unit_list/mod.rs:220
+msgctxt "menu"
+msgid "Automounts"
+msgstr ""
+
+#. Curated List View
+#: src/widget/unit_list/mod.rs:224
 msgctxt "menu"
 msgid "Customized"
 msgstr ""

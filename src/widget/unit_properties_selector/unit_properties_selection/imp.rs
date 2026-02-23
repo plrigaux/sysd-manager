@@ -10,7 +10,7 @@ use gtk::{
 use tracing::{error, info, warn};
 
 use crate::widget::{
-    unit_list::{UnitListPanel, UnitListView},
+    unit_list::{UnitListPanel, UnitCuratedList},
     unit_properties_selector::{
         data_browser::PropertyBrowseItem,
         data_selection::UnitPropertySelection,
@@ -76,7 +76,7 @@ impl UnitPropertiesSelectionPanelImp {
             .filter_map(|result| result.ok())
             .collect();
 
-        save_column_config(None, &mut list, UnitListView::Custom);
+        save_column_config(None, &mut list, UnitCuratedList::Custom);
 
         let unit_list_panel = get_unit_list_panel!(self);
 
