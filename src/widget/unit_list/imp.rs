@@ -14,8 +14,8 @@ use std::{
 
 use crate::{
     consts::{
-        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, FILTER_MARK,
-        PATH_PATH_COL, SYSD_SOCKET_LISTEN,
+        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, COL_ACTIVE,
+        FILTER_MARK, PATH_PATH_COL, SYSD_SOCKET_LISTEN,
     },
     systemd::{
         data::UnitInfo,
@@ -997,7 +997,7 @@ impl UnitListPanelImp {
                 filter_load_state,
                 &unit_list_panel,
             ))),
-            "sysdm-active" => Some(Box::new(FilterElement::new(
+            COL_ACTIVE => Some(Box::new(FilterElement::new(
                 id,
                 filter_active_state,
                 &unit_list_panel,

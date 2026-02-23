@@ -2,10 +2,11 @@ use std::collections::HashMap;
 
 use crate::{
     consts::{
-        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, PATH_CONDITION_COL,
-        PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, SYSD_SOCKET_LISTEN,
-        TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME,
-        TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED,
+        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, COL_ACTIVE,
+        PATH_CONDITION_COL, PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE,
+        SYSD_SOCKET_LISTEN, TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
+        TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
+        TIMER_TIME_PASSED,
     },
     extract_listen, extract_tuple_idx,
     gtk::prelude::*,
@@ -326,7 +327,7 @@ pub fn get_sorter_by_id(
         "sysdm-state" => Some(create_column_filter!(enable_status)),
         "sysdm-preset" => Some(create_column_filter!(preset)),
         "sysdm-load" => Some(create_column_filter!(load_state)),
-        "sysdm-active" => Some(create_column_filter!(active_state)),
+        COL_ACTIVE => Some(create_column_filter!(active_state)),
         "sysdm-sub" => Some(create_column_filter!(sub_state)),
         "sysdm-description" => Some(create_column_filter!(description)),
         TIMER_TIME_NEXT | TIMER_TIME_LEFT => create_next_elapse_column_filter(),
@@ -535,7 +536,7 @@ fn create_unit_file_state(display_color: bool) -> gtk::ColumnViewColumn {
 }
 
 fn create_unit_active_status_columun(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = "sysdm-active";
+    let id = COL_ACTIVE;
     let sorter = create_column_filter!(active_state);
     let column_menu = create_col_menu(id, false);
     let factory = fac_active(display_color);

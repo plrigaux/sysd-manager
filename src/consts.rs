@@ -77,3 +77,4 @@ pub const AUTOMOUNT_MOUNTED_COL: &str = "autoMountMounted";
 pub const AUTOMOUNT_IDLE_TIMEOUT_COL: &str = "automount@TimeoutIdleUSec";
 pub const AUTOMOUNT_IDLE_TIMEOUT_PROP: &str = "TimeoutIdleUSec";
 pub const WHERE_PROP: &str = "Where";
+pub const COL_ACTIVE: &str = "sysdm-active";

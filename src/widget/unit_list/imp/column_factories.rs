@@ -337,7 +337,7 @@ pub fn get_factory_by_id(
         (false, "sysdm-state") => Some(fac_enable_status(display_color)),
         (false, "sysdm-preset") => Some(fac_preset(display_color)),
         (false, "sysdm-load") => Some(fac_load_state(display_color)),
-        (false, "sysdm-active") => Some(fac_active(display_color)),
+        (false, COL_ACTIVE) => Some(fac_active(display_color)),
         (false, "sysdm-sub") => Some(fac_sub_state(display_color)),
         (false, "sysdm-description") => Some(fac_descrition(display_color)),
         (false, TIMER_TIME_NEXT) => Some(fac_time_next()),

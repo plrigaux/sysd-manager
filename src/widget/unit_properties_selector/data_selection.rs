@@ -256,8 +256,9 @@ impl UnitPropertySelection {
                     quark,
                 );
             }
+            (false, Some("sysdm-unit-full") | Some(COL_ACTIVE)) => {}
             (false, _) => {
-                warn!("??? {:?} custom {:?}", self.id(), self.is_custom())
+                //warn!("??? {:?} is custom {:?}", self.id(), self.is_custom())
             }
         }
     }
