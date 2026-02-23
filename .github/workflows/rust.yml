@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgtk-4-dev libglib2.0-dev source5-dev pkg-config
+        sudo apt-get install -y libgtk-4-dev libglib2.0-dev libsource5-dev pkg-config
     - name: Set PKG_CONFIG_PATH
       run: echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
     - name: Build
