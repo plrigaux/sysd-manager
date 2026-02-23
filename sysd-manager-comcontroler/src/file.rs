@@ -3,6 +3,7 @@ use crate::errors::SystemdErrors;
 use base::file::create_drop_in_io;
 use base::file::{create_drop_in_path_file, flatpak_host_file_path};
 use base::{args, file::commander};
+use std::path::PathBuf;
 use std::{ffi::OsStr, path::Path, process::Stdio};
 use tokio::{
     fs,
@@ -36,7 +37,12 @@ pub async fn save_text_to_file(
     text: &str,
     user_session: bool,
 ) -> Result<u64, SystemdErrors> {
-    let host_file_path = flatpak_host_file_path(file_path);
+    let host_file_path = if user_session {
+        flatpak_host_file_path(file_path)
+    } else {
+        PathBuf::from(file_path)
+    };
+
     info!(
         "Try to save content on File: {} with priviledge {}",
         host_file_path.display(),
