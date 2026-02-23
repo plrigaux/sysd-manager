@@ -198,15 +198,17 @@ def repair():
     bcommon.cmd_run(["flatpak", "-v", "--user", "repair"])
 
 
-def run(logbus=False):
+def run(logbus=False, log="info"):
     print("Try to run the Flatpack")
 
     cmd = ["flatpak", "run", APP_ID]
     if logbus:
         cmd.insert(2, "--log-session-bus")
 
+    env = {**os.environ, "RUST_LOG" : log}
+    
     try:
-        bcommon.cmd_run(cmd)
+        bcommon.cmd_run(cmd, env=env)
     except KeyboardInterrupt as ki:
         print("Program closed by Keyboard Interrupt")
 
