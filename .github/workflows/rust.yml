@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgobject-2.0-dev gobject-2.0 gobject-2.0-dev libgtk-4-dev libglib2.0-dev glib-2.0 glib-2.0-dev libgtksourceview-5-0 libgtksourceview-5-dev pkg-config
+        sudo apt-get install -y gobject-2.0 gobject-2.0-dev libgtk-4-dev libglib2.0-dev glib-2.0 glib-2.0-dev libgtksourceview-5-0 libgtksourceview-5-dev pkg-config
     - name: Set PKG_CONFIG_PATH
       run: echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
     - name: Build
