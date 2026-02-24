@@ -19,7 +19,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gobject-2.0 gobject-2.0-dev libgtk-4-dev libglib2.0-dev glib-2.0 glib-2.0-dev libgtksourceview-5-0 libgtksourceview-5-dev pkg-config
-    - uses: actions-rust-lang /setup-rust-toolchain@v1     
+    - name: Set PKG_CONFIG_PATH if the library is in a non-standard path
+      run: echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig" >> $GITHUB_ENV
+   
     - name: Build
       run: cargo build --verbose
     - name: Run tests
