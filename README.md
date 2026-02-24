@@ -133,8 +133,13 @@ Portable application that runs on most Linux distributions.
 > **Status:** AppImage builds are currently unavailable. Please use Flathub or build from source.
 
 ---
+### Method 4: RPM
 
-### Method 4: Build from Source
+For distros using RPM, ALT Linux is making builds for different archrtectures. 
+Packages available [here](https://packages.altlinux.org/en/sisyphus/binary/sysd-manager/).
+
+
+### Method 5: Build from Source
 
 For developers and users who prefer building from source.
 
