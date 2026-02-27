@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+import deb.make_deb as makedeb
+
+makedeb.main()
