@@ -4,7 +4,7 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 
 use glib::Quark;
 use gtk::glib::{self};
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 use crate::{
     consts::*,

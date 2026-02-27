@@ -3,6 +3,7 @@ from build_aux.build_common import color
 import os
 import subprocess
 import argparse
+import re
 
 APP_IMAGE_DIR = "../AppImage"
 APP_DIR = f"{APP_IMAGE_DIR}/SysDManager.AppDir"
@@ -74,7 +75,7 @@ def create_appdir():
             f"{APP_DIR}/usr/bin",
         ]
     )
-    
+
     bc.cmd_run(["ln", "-s", "./usr/bin/start", f"{APP_DIR}/AppRun"])
 
     bc.cmd_run(
@@ -118,7 +119,7 @@ def create_appdir():
             f"{PNG_256_DIR}/io.github.plrigaux.sysd-manager.png",
         ]
     )
-    
+
     bc.cmd_run(
         [
             "mkdir",
@@ -136,7 +137,7 @@ def create_appdir():
             f"{PNG_128_DIR}/io.github.plrigaux.sysd-manager.png",
         ]
     )
-    
+
     bc.cmd_run(
         [
             "mkdir",
@@ -190,7 +191,7 @@ def create_appdir():
             "ln",
             "-s",
             "-v",
-            f"usr/share/applications/io.github.plrigaux.sysd-manager.desktop",
+            "usr/share/applications/io.github.plrigaux.sysd-manager.desktop",
             f"{APP_DIR}/io.github.plrigaux.sysd-manager.desktop",
         ]
     )
@@ -207,7 +208,6 @@ def create_appdir():
 
     print(f"{color.CYAN}{color.BOLD}Compile schemas{color.END} ")
     bc.cmd_run(["glib-compile-schemas", f"{APP_DIR}/usr/share/glib-2.0/schemas"])
-
 
 
 def app_image_file_name(version=None) -> str:
@@ -235,9 +235,6 @@ def make_appimage():
     )
 
 
-import re
-
-
 def pack_libs():
     print(f"{color.CYAN}{color.BOLD}Parse libs{color.END} ")
 
@@ -255,7 +252,6 @@ def pack_libs():
     valid = re.compile(r"([\S]+) => (\S+)")
     i = 0
     for row in output.split("\n"):
-
         m = valid.search(row)
         print(i)
         i += 1
@@ -270,15 +266,15 @@ def pack_libs():
     # WARNING: Blacklisted file libz.so.1 found
     # WARNING: Blacklisted file libfribidi.so.0 found
     exclude = {
-        #"libc",
-        #"libicudata",
-        #"libstdc++",
+        # "libc",
+        # "libicudata",
+        # "libstdc++",
         # because essential on the disto
         # "libsystemd",
         # Blacklisted
         "ld-linux-x86-64",
         "/lib64/ld-linux-x86-64",
-        #"libm",
+        # "libm",
         "libresolv",
         "libEGL",
         "libGLdispatch",
@@ -301,7 +297,6 @@ def pack_libs():
     }
 
     for key, value in result.items():
-
         lib_name = key.split(".", 1)[0]
         # print(lib_name)
         if lib_name in exclude:
@@ -349,10 +344,12 @@ def just_publish():
 
     bc.cmd_run(cmd)
 
+
 def publish():
     build()
     make_appimage()
     just_publish()
+
 
 def main():
 

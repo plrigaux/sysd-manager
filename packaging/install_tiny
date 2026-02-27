@@ -63,9 +63,7 @@ print(f"Install binary ...")
 cmd_run(["mkdir", "-p", SERVICE_DIR], verbose=False)
 
 cwd = os.getcwd()
-cmd_run(
-    ["cp", f"{cwd}/target/release/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"]
-)
+cmd_run(["cp", f"{cwd}/target/release/{EXEC_FILE}", f"{SERVICE_DIR}/{EXEC_FILE}"])
 
 print(f"Creating Service unit file in '{SERVICE_PATH}' ...")
 
@@ -94,8 +92,17 @@ if os.geteuid() == 0:
 else:
     print("We're not root.")
 
-cmd_run(["sudo", "python", "packaging/build_aux/write_to_file.py", SERVICE_PATH, unit_file], verbose=False)
-    
+cmd_run(
+    [
+        "sudo",
+        "python3",
+        "packaging/build_aux/write_to_file.py",
+        SERVICE_PATH,
+        unit_file,
+    ],
+    verbose=False,
+)
+
 print(f"{color.BOLD}Reload the systemd manager configuration ...{color.END}")
 cmd_run(
     [

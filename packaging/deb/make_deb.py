@@ -145,10 +145,17 @@ def create_deb(release=None):
             f"{DEB_DIR}/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf",
         ]
     )
+
     install_to(
         "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy",
         f"{DEB_DIR}/usr/share/polkit-1/actions",
     )
+
+    install_to(
+        "./sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules",
+        f"{DEB_DIR}/usr/share/polkit-1/rules.d",
+    )
+
     install_to(
         "./sysd-manager-proxy/data/sysd-manager-proxy.service",
         f"{DEB_DIR}/usr/lib/systemd/system",

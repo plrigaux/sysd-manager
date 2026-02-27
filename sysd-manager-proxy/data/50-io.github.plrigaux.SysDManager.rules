@@ -1,0 +1,10 @@
+// To not ask for password when sysd-manager controls proxy
+polkit.addRule(function(action, subject) {
+	var unit = action.lookup("unit");
+	if (action.id == "org.freedesktop.systemd1.manage-units" && unit == "sysd-manager-proxy.service" ) {
+		var verb = action.lookup("verb");
+		if (verb == "start" || verb == "stop" || verb == "restart") {
+			return polkit.Result.YES;
+		}
+	}
+});
