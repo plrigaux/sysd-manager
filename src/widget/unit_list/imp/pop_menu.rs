@@ -43,8 +43,9 @@ mod imp {
         systemd_gui, upgrade,
         utils::palette::blue,
         widget::{
-            InterPanelMessage, preferences::data::KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
-            unit_list::UnitListPanel,
+            InterPanelMessage,
+            preferences::data::KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+            unit_list::{UnitCuratedList, UnitListPanel},
         },
     };
 
@@ -95,6 +96,9 @@ mod imp {
 
         #[template_child]
         reload_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        unit_list_view_menubutton: TemplateChild<gtk::MenuButton>,
 
         #[template_child]
         totals_summary_button: TemplateChild<gtk::Button>,
@@ -437,6 +441,11 @@ mod imp {
     impl ObjectImpl for UnitPopMenuImp {
         fn constructed(&self) {
             self.parent_constructed();
+
+            let menu_views = UnitCuratedList::menu_items();
+
+            self.unit_list_view_menubutton
+                .set_menu_model(Some(&menu_views));
         }
     }
 

@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Options on description menu
 - Show interface on properties list
 
+## [2.14.0] - 2026-03-01
+
+### Added
+
+- Creation of deb package
+- Add polkit rule to start or stop proxy
+- Add a UX for overrestrictive filters
+- Add Journal no events info
+
 ## [2.13.3] - 2026-02-22
 
 ### Added
