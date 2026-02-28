@@ -2,7 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.3 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="064e15e76f9ddb5036c1b46fd232386da75f39e8ea2dfe07448e5da84d67d907"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="2091d9a0473e6380d1fe9d6f79fcc55d48ad9a3d5b0c889a74a194b50296fd0e"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="9f9b151f9a0de3d99fdf8a51cd7645e8c022cf90070fb9cb24ef215e7b4168d9"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="ea500517592b1ba94f39da038e063365ea776ffae12a5e7f6a3c5c57773b7f60"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="a77b88a3503593a56bf1f52e318eaf25f4017bff43272c650864e281e05c768b"/>
@@ -11,12 +11,12 @@
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="494ba469fc1ba0d3bcf680f3082fecd5cf3c0c3a237ea806f450c0c52778afb5"/>
   <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="d4c8413f9c91bf3a276c0658697e27e8accd7c96d32f9a1e97466164af3d5b2a"/>
   <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="4a993bd68b2994e7209b10c397491e743f78620804c4ea34225168697e8e64d3"/>
-  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="17963c3c244a657450834c03c3b7f2f2da08e72a3fa3bedfab48d6df1a5cc4c9"/>
+  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="ca61bb1c4b7ca0b83d5bc81d39fb60e1ecd212c79983086dd17d732903c23a9f"/>
   <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="675200614cfd6eacef7c6fb348604611470ce062b2f9e71eae1cb59755f02e04"/>
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="fe1f948e1c756fa98c98b7b82ad0a6b1f00fde8db27507f9af13ebc270ba8e65"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="e0d2d4674d3093dee3ba739b22d837b7227c812b4de686c2ed360246f69c6138"/>
-  <ui filename="shortcuts.ui" sha256="c182ba8a056d63a4922f303d6800d9c1271366a3bc54fe43eb47a1bae1b80ab5"/>
+  <ui filename="shortcuts.ui" sha256="5ec973bbd4136f856f45e0214eb9eb961735ba55570b898f48d4f4588d34861a"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="b8d7f594dfa26ce35a2e431067dc8401671a423e8e2975eeaf6fce05511a52b2"/>
   <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="0584f7f98354bcf4460e74928f67ce049cab306e8b1bcb2154ffc16cd5d3b8c0"/>

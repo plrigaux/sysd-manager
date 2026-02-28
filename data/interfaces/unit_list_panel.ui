@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name unit_list_panel.ui -->
   <requires lib="gio" version="2.44"/>
@@ -10,15 +10,15 @@
     <property name="vexpand">True</property>
     <property name="width-request">150</property>
     <child>
+      <object class="GtkSearchBar" id="search_bar"/>
+    </child>
+    <child>
       <object class="AdwViewStack" id="panel_stack">
         <child>
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="GtkBox">
                 <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkSearchBar" id="search_bar"/>
-                </child>
                 <child>
                   <object class="GtkScrolledWindow" id="scrolled_window">
                     <property name="vexpand">True</property>
@@ -36,7 +36,7 @@
                             <property name="margin-start">5</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkLabel" id="loaded_units_count">
+                              <object class="GtkLabel" id="loaded_units_count_label">
                                 <property name="tooltip-text" translatable="yes" context="list tooltip">Loaded Units Retrieved</property>
                               </object>
                             </child>
@@ -52,7 +52,7 @@
                             <property name="hexpand">True</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkLabel" id="unit_files_number">
+                              <object class="GtkLabel" id="unit_files_count_label">
                                 <property name="tooltip-text" translatable="yes" context="list tooltip">Unit Files Retrieved</property>
                               </object>
                             </child>
@@ -68,7 +68,7 @@
                             <property name="hexpand">True</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkLabel" id="unit_filtered_count">
+                              <object class="GtkLabel" id="unit_filtered_count_label">
                                 <property name="tooltip-text" translatable="yes" context="list tooltip">Units displayed</property>
                               </object>
                             </child>
@@ -135,6 +135,45 @@
               </object>
             </property>
             <property name="name">error</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwViewStackPage">
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="halign">baseline-center</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="action-name">win.unit_list_filter_blank</property>
+                        <property name="css-classes">suggested-action</property>
+                        <child>
+                          <object class="AdwButtonContent">
+                            <property name="icon-name">funnel-symbolic</property>
+                            <property name="label" translatable="yes" context="unit search" comments="Button label">Edit Filters</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="clear_all_filters">
+                        <property name="action-name">win.unit_list_filter_clear</property>
+                        <property name="action-target">'all'</property>
+                        <property name="css-classes">flat
+destructive-action</property>
+                        <property name="label" translatable="yes">Clear Filters</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <property name="description" translatable="yes" context="list page description" comments="When the filter is too restrictive">Overly restrictive filter</property>
+                <property name="icon-name">funnel-outline-symbolic</property>
+                <property name="title" translatable="yes" context="list page title">No Filtered Units</property>
+              </object>
+            </property>
+            <property name="name">restrictive_filter</property>
           </object>
         </child>
       </object>

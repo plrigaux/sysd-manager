@@ -4,6 +4,7 @@ mod construct;
 pub mod pop_menu;
 
 use std::{
+    borrow::Cow,
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
     collections::HashMap,
     hash::Hasher,
@@ -71,7 +72,7 @@ use std::hash::Hash;
 use strum::IntoEnumIterator;
 use systemd::{
     ListUnitResponse, UnitProperties, UnitPropertiesFlags, data::UnitPropertySetter,
-    socket_unit::SocketUnitInfo,
+    enums::UnitFileStatus, socket_unit::SocketUnitInfo,
 };
 use tokio::task::AbortHandle;
 use tracing::{debug, error, info, warn};
@@ -79,6 +80,9 @@ use tracing::{debug, error, info, warn};
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 static PATH_PATHS_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
+
+const UNIT_LIST_VIEW_PAGE: &str = "unit_list";
+const RESTRICTIVE_FILTER_VIEW_PAGE: &str = "restrictive_filter";
 
 #[derive(Debug, Clone)]
 struct UnitKey {
@@ -237,13 +241,22 @@ pub struct UnitListPanelImp {
     summary: TemplateChild<gtk::Box>,
 
     #[template_child]
-    unit_files_number: TemplateChild<gtk::Label>,
+    unit_files_count_label: TemplateChild<gtk::Label>,
 
     #[template_child]
-    loaded_units_count: TemplateChild<gtk::Label>,
+    loaded_units_count_label: TemplateChild<gtk::Label>,
 
     #[template_child]
-    unit_filtered_count: TemplateChild<gtk::Label>,
+    unit_filtered_count_label: TemplateChild<gtk::Label>,
+
+    #[property(get, set=Self::set_unit_files_count)]
+    unit_files_count: Cell<u32>,
+
+    #[property(get, set=Self::set_loaded_units_count)]
+    loaded_units_count: Cell<u32>,
+
+    #[property(get, set=Self::set_unit_filter_count)]
+    unit_filtered_count: Cell<u32>,
 
     search_controls: OnceCell<UnitListSearchControls>,
 
@@ -528,20 +541,8 @@ impl UnitListPanelImp {
                 (a.0 + l.0, a.1 + l.1)
             });
 
-            let loaded_count = if loaded_count == 0 {
-                ""
-            } else {
-                &loaded_count.to_string()
-            };
-
-            let file_count = if file_count == 0 {
-                ""
-            } else {
-                &file_count.to_string()
-            };
-
-            unit_list.imp().loaded_units_count.set_label(loaded_count);
-            unit_list.imp().unit_files_number.set_label(file_count);
+            unit_list.set_loaded_units_count(loaded_count as u32);
+            unit_list.set_unit_files_count(file_count as u32);
 
             let n_items = list_store.n_items();
             list_store.remove_all();
@@ -641,7 +642,7 @@ impl UnitListPanelImp {
             if n_items > 0 {
                 focus_on_row(&unit_list, &units_browser);
             }
-            panel_stack.set_visible_child_name("unit_list");
+            panel_stack.set_visible_child_name(UNIT_LIST_VIEW_PAGE);
 
             unit_list.imp().fetch_custom_unit_properties();
         });
@@ -742,16 +743,14 @@ impl UnitListPanelImp {
         let mut unit_map = self.units_map.borrow_mut();
         unit_map.insert(UnitKey::new(unit), unit.clone());
 
-        if LoadState::Loaded == unit.load_state()
-            && let Ok(my_int) = self.loaded_units_count.label().parse::<i32>()
-        {
-            self.loaded_units_count.set_label(&(my_int + 1).to_string());
+        if LoadState::Loaded == unit.load_state() {
+            let count = self.obj().loaded_units_count();
+            self.obj().set_loaded_units_count(count + 1)
         }
 
-        if unit.file_path().is_some()
-            && let Ok(my_int) = self.unit_files_number.label().parse::<i32>()
-        {
-            self.unit_files_number.set_label(&(my_int + 1).to_string());
+        if unit.enable_status() != UnitFileStatus::Unknown {
+            let count = self.obj().unit_files_count();
+            self.obj().set_unit_files_count(count + 1);
         }
     }
 
@@ -1360,6 +1359,45 @@ impl UnitListPanelImp {
             ah.abort();
         }
     }
+
+    fn set_loaded_units_count(&self, count: u32) {
+        let label = if count == 0 {
+            Cow::from("")
+        } else {
+            Cow::from(count.to_string())
+        };
+        self.loaded_units_count_label.set_label(&label);
+        self.loaded_units_count.set(count);
+    }
+
+    fn set_unit_files_count(&self, count: u32) {
+        let label = if count == 0 {
+            Cow::from("")
+        } else {
+            Cow::from(count.to_string())
+        };
+        self.unit_files_count_label.set_label(&label);
+        self.unit_files_count.set(count);
+    }
+
+    fn set_unit_filter_count(&self, count: u32) {
+        let label = if count == 0 {
+            Cow::from("")
+        } else {
+            Cow::from(count.to_string())
+        };
+        self.unit_filtered_count_label.set_label(&label);
+        self.unit_filtered_count.set(count);
+
+        if count == 0 && (self.unit_files_count.get() + self.loaded_units_count.get()) != 0 {
+            self.panel_stack
+                .set_visible_child_name(RESTRICTIVE_FILTER_VIEW_PAGE);
+        } else if self.panel_stack.visible_child_name().as_deref()
+            == Some(RESTRICTIVE_FILTER_VIEW_PAGE)
+        {
+            self.panel_stack.set_visible_child_name(UNIT_LIST_VIEW_PAGE);
+        }
+    }
 }
 
 fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) {
@@ -1505,7 +1543,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         self.filter_list_model
             .borrow()
-            .bind_property::<gtk::Label>("n-items", self.unit_filtered_count.as_ref(), "label")
+            .bind_property::<UnitListPanel>("n-items", &self.obj(), "unit_filtered_count")
             .build();
 
         let search_controls = UnitListSearchControls::new(&self.obj());
