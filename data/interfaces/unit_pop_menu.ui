@@ -140,6 +140,7 @@
         </child>
         <child>
           <object class="GtkMenuButton" id="unit_list_view_menubutton">
+            <property name="direction">right</property>
             <property name="label">Curated Lists</property>
           </object>
         </child>
