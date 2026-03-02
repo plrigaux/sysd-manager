@@ -175,25 +175,38 @@ impl UnitCuratedList {
     }
 
     pub fn menu_items() -> gio::Menu {
-        let menu_views = gio::Menu::new();
+        let menu_lists = gio::Menu::new();
 
-        for item in UnitCuratedList::iter() {
-            let label = item.menu_item();
+        Self::add_menu_item(&menu_lists, UnitCuratedList::Defaut);
+        Self::add_menu_item(&menu_lists, UnitCuratedList::LoadedUnit);
+        Self::add_menu_item(&menu_lists, UnitCuratedList::UnitFiles);
+        Self::add_menu_item(&menu_lists, UnitCuratedList::Custom);
 
-            let menu_item = gio::MenuItem::new(Some(&label), Some(Self::WIN_ACTION));
-            menu_item
-                .set_attribute_value(gio::MENU_ATTRIBUTE_TARGET, Some(&item.id().to_variant()));
-            menu_views.append_item(&menu_item);
-        }
+        let special_list = gio::Menu::new();
+
+        Self::add_menu_item(&special_list, UnitCuratedList::Timers);
+        Self::add_menu_item(&special_list, UnitCuratedList::Sockets);
+        Self::add_menu_item(&special_list, UnitCuratedList::Path);
+        Self::add_menu_item(&special_list, UnitCuratedList::Automount);
+
+        menu_lists.insert_section(-1, Some("Special Lists"), &special_list);
 
         let menu_file = gio::Menu::new();
 
         let label = pgettext("menu", "Include Unit Files");
         let item = gio::MenuItem::new(Some(&label), Some(WIN_ACTION_INCLUDE_UNIT_FILES));
         menu_file.append_item(&item);
-        menu_views.insert_section(-1, None, &menu_file);
+        menu_lists.insert_section(-1, None, &menu_file);
 
-        menu_views
+        menu_lists
+    }
+
+    fn add_menu_item(menu_views: &gio::Menu, item: UnitCuratedList) {
+        let label = item.menu_item();
+
+        let menu_item = gio::MenuItem::new(Some(&label), Some(Self::WIN_ACTION));
+        menu_item.set_attribute_value(gio::MENU_ATTRIBUTE_TARGET, Some(&item.id().to_variant()));
+        menu_views.append_item(&menu_item);
     }
 
     pub fn menu_item(&self) -> String {
