@@ -291,6 +291,41 @@ pub async fn list_unit_files(level: UnitDBusLevel) -> Result<ListUnitResponse, S
     Ok(ListUnitResponse::File(level, v))
 }
 
+pub async fn list_unit_files_by_patterns(
+    level: UnitDBusLevel,
+    patterns: &[&str],
+) -> Result<ListUnitResponse, SystemdErrors> {
+    let v = systemd_manager_async(level)
+        .await?
+        .list_unit_files_by_patterns(&[], patterns)
+        .await?;
+    Ok(ListUnitResponse::File(level, v))
+}
+
+pub async fn list_unit_files_timers(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_unit_files_by_patterns(level, &["*.timer"]).await
+}
+
+pub async fn list_unit_files_sockets(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_unit_files_by_patterns(level, &["*.socket"]).await
+}
+
+pub async fn list_unit_files_paths(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_unit_files_by_patterns(level, &["*.path"]).await
+}
+
+pub async fn list_unit_files_automounts(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_loaded_units_by_patterns(level, &["*.automount"]).await
+}
+
 pub async fn complete_unit_information(
     units: &[CompleteUnitPropertiesCallParams],
 ) -> Result<Vec<UpdatedUnitInfo>, SystemdErrors> {
