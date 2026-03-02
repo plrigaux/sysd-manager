@@ -168,7 +168,7 @@ pub enum UnitCuratedList {
 }
 
 impl UnitCuratedList {
-    pub const WIN_ACTION: &'static str = "win.unit_list_view";
+    pub const WIN_ACTION: &'static str = "win.unit-list-view";
 
     pub fn base_action() -> &'static str {
         &Self::WIN_ACTION[4..]
@@ -185,6 +185,13 @@ impl UnitCuratedList {
                 .set_attribute_value(gio::MENU_ATTRIBUTE_TARGET, Some(&item.id().to_variant()));
             menu_views.append_item(&menu_item);
         }
+
+        let menu_file = gio::Menu::new();
+
+        let label = pgettext("menu", "Include Unit Files");
+        let item = gio::MenuItem::new(Some(&label), Some(WIN_ACTION_INCLUDE_UNIT_FILES));
+        menu_file.append_item(&item);
+        menu_views.insert_section(-1, None, &menu_file);
 
         menu_views
     }

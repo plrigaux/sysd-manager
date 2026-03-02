@@ -15,8 +15,8 @@ use std::{
 
 use crate::{
     consts::{
-        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ALL_FILTER_KEY, COL_ACTIVE,
-        FILTER_MARK, PATH_PATH_COL, SYSD_SOCKET_LISTEN,
+        ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
+        ALL_FILTER_KEY, COL_ACTIVE, FILTER_MARK, PATH_PATH_COL, SYSD_SOCKET_LISTEN,
     },
     systemd::{
         data::UnitInfo,
@@ -69,7 +69,6 @@ use gtk::{
     },
 };
 use std::hash::Hash;
-use strum::IntoEnumIterator;
 use systemd::{
     ListUnitResponse, UnitProperties, UnitPropertiesFlags, data::UnitPropertySetter,
     enums::UnitFileStatus, socket_unit::SocketUnitInfo,
@@ -79,7 +78,6 @@ use tracing::{debug, error, info, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 static PATH_PATHS_QUARK: OnceLock<glib::Quark> = OnceLock::new();
-const PREF_UNIT_LIST_VIEW: &str = "pref-unit-list-view";
 
 const UNIT_LIST_VIEW_PAGE: &str = "unit_list";
 const RESTRICTIVE_FILTER_VIEW_PAGE: &str = "restrictive_filter";
@@ -282,6 +280,9 @@ pub struct UnitListPanelImp {
     #[property(get, set, default)]
     selected_list_view: Cell<UnitCuratedList>,
 
+    #[property(get, set)]
+    include_unit_files: Cell<bool>,
+
     abort_handles: RefCell<Vec<AbortHandle>>,
 }
 
@@ -355,8 +356,6 @@ impl UnitListPanelImp {
 
         self.refresh_unit_list_button
             .set(Some(refresh_unit_list_button));
-
-        self.fill_store(None);
 
         let units_browser = units_browser!(self).clone();
         let action_entry = {
@@ -432,47 +431,52 @@ impl UnitListPanelImp {
                 .build()
         };
 
-        let mut entries = vec![
+        app_window.add_action_entries([
             action_entry,
             list_filter_action_entry,
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
             refresh_unit_list,
-        ];
-
-        for unit_list_view in UnitCuratedList::iter() {
-            let action_entry = {
-                let unit_list_panel = self.obj().clone();
-                gio::ActionEntry::builder(UnitCuratedList::base_action())
-                    .activate(move |_application: &AppWindow, action, value| {
-                        let Some(value) = value else {
-                            warn!("{} has no value", UnitCuratedList::base_action());
-                            return;
-                        };
-
-                        debug!("{} target {value:?}", UnitCuratedList::base_action());
-                        let panel = unit_list_panel.imp();
-
-                        action.set_state(value);
-
-                        let view: UnitCuratedList = value.into(); //FIXME Why can't use unit_list_view variable
-                        debug!("new {:?}", view);
-                        panel.fill_store(Some(view));
-                    })
-                    .state(unit_list_view.id().to_variant())
-                    .parameter_type(Some(glib::VariantTy::STRING))
-                    .build()
-            };
-            entries.push(action_entry);
-        }
-
-        app_window.add_action_entries(entries);
+        ]);
 
         let settings = systemd_gui::new_settings();
-        let view = settings.string(PREF_UNIT_LIST_VIEW);
 
-        app_window.change_action_state(UnitCuratedList::base_action(), &view.to_variant());
-        debug!("VIEW : {}", view);
+        let action = settings.create_action(UnitCuratedList::base_action());
+        app_window.add_action(&action);
+
+        let unit_list_panel = self.obj().clone();
+        let unit_list_panel2 = self.obj().clone();
+        settings
+            .bind::<UnitListPanel>(
+                UnitCuratedList::base_action(),
+                &self.obj(),
+                "selected-list-view",
+            )
+            .mapping(move |variant, _| {
+                let unit_list_view: UnitCuratedList = variant.into();
+                unit_list_panel.imp().fill_store(Some(unit_list_view));
+                Some(unit_list_view.to_value())
+            })
+            .set_mapping(move |value, _| {
+                let unit_list_view = value
+                    .get::<UnitCuratedList>()
+                    .inspect_err(|err| warn!("Conv error {:?}", err))
+                    .unwrap_or(UnitCuratedList::Defaut);
+                unit_list_panel2.imp().fill_store(Some(unit_list_view));
+                Some(unit_list_view.id().to_variant())
+            })
+            .build();
+
+        let action = settings.create_action(ACTION_INCLUDE_UNIT_FILES);
+        app_window.add_action(&action);
+
+        settings
+            .bind::<UnitListPanel>(
+                ACTION_INCLUDE_UNIT_FILES,
+                &self.obj(),
+                ACTION_INCLUDE_UNIT_FILES,
+            )
+            .build();
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -1452,23 +1456,6 @@ impl ObjectImpl for UnitListPanelImp {
         self.list_store
             .set(list_store.clone())
             .expect("Set only Once");
-
-        settings
-            .bind(PREF_UNIT_LIST_VIEW, &unit_list_panel, "selected-list-view")
-            .mapping(|variant, _| {
-                let unit_list_view: UnitCuratedList = variant.into();
-                let value = unit_list_view.to_value();
-                Some(value)
-            })
-            .set_mapping(|value, _| {
-                let unit_list_view = value
-                    .get::<UnitCuratedList>()
-                    .inspect_err(|err| warn!("Conv error {:?}", err))
-                    .unwrap_or(UnitCuratedList::Defaut);
-                let variant = unit_list_view.id().to_variant();
-                Some(variant)
-            })
-            .build();
 
         // let view = settings.string(PREF_UNIT_LIST_VIEW);
         // debug!("VIEW1 : {}", view);

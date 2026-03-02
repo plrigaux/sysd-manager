@@ -278,7 +278,7 @@
       <default>true</default>
       <summary>Stop the Proxy when closing SysD Manager</summary>
     </key>
-    <key name="pref-unit-list-view" type="s">
+    <key name="unit-list-view" type="s">
       <choices>
         <choice value="default"/>
         <choice value="active"/>
@@ -291,6 +291,10 @@
       </choices>
       <default>'default'</default>
       <summary>List of units presented by the browser</summary>
+    </key>
+    <key name="include-unit-files" type="b">
+      <default>true</default>
+      <summary>Include unit file in some units lists</summary>
     </key>
   </schema>
 </schemalist>
