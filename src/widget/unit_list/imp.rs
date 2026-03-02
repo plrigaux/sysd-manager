@@ -468,6 +468,19 @@ impl UnitListPanelImp {
             .build();
 
         let action = settings.create_action(ACTION_INCLUDE_UNIT_FILES);
+        let unit_list_panel = self.obj().clone();
+        action.connect_state_notify(move |_| {
+            let view = unit_list_panel.selected_list_view();
+            if matches!(
+                view,
+                UnitCuratedList::Timers
+                    | UnitCuratedList::Path
+                    | UnitCuratedList::Automount
+                    | UnitCuratedList::Sockets
+            ) {
+                unit_list_panel.imp().fill_store(None);
+            }
+        });
         app_window.add_action(&action);
 
         settings
@@ -1626,6 +1639,7 @@ async fn retrieve_unit_list(
     unit_list: &UnitListPanel,
 ) -> Result<Vec<ListUnitResponse>, bool> {
     let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
+    let include_unit_files = unit_list.imp().include_unit_files.get();
     let handle = systemd::runtime().spawn(async move {
         let mut handles = Vec::with_capacity(4);
 
@@ -1648,11 +1662,24 @@ async fn retrieve_unit_list(
             }
         }
 
-        if matches!(
-            view,
-            UnitCuratedList::Defaut | UnitCuratedList::Custom | UnitCuratedList::UnitFiles
-        ) {
-            dbus_call!(int_level, handles, systemd::list_unit_files);
+        match view {
+            UnitCuratedList::Defaut | UnitCuratedList::Custom | UnitCuratedList::UnitFiles => {
+                dbus_call!(int_level, handles, systemd::list_unit_files)
+            }
+            UnitCuratedList::Timers if include_unit_files => {
+                dbus_call!(int_level, handles, systemd::list_unit_files_timers)
+            }
+            UnitCuratedList::Sockets if include_unit_files => {
+                dbus_call!(int_level, handles, systemd::list_unit_files_sockets)
+            }
+            UnitCuratedList::Path if include_unit_files => {
+                dbus_call!(int_level, handles, systemd::list_unit_files_paths)
+            }
+            UnitCuratedList::Automount if include_unit_files => {
+                dbus_call!(int_level, handles, systemd::list_unit_files_automounts)
+            }
+            // UnitCuratedList::LoadedUnit => {}
+            _ => {}
         }
 
         let mut results = Vec::with_capacity(handles.len());
