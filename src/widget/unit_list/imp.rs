@@ -16,7 +16,7 @@ use std::{
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ALL_FILTER_KEY, COL_ACTIVE, FILTER_MARK, PATH_PATH_COL, SYSD_SOCKET_LISTEN,
+        ALL_FILTER_KEY, FILTER_MARK, PATH_PATH_COL, SYSD_SOCKET_LISTEN,
     },
     systemd::{
         data::UnitInfo,
@@ -32,6 +32,7 @@ use crate::{
         },
         unit_list::{
             COL_ID_UNIT, CustomPropertyId, UnitCuratedList, UnitListPanel,
+            column::SysdColumn,
             filter::{
                 UnitListFilterWindow, custom_bool, custom_num, custom_str, filter_active_state,
                 filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
@@ -931,7 +932,7 @@ impl UnitListPanelImp {
 
     pub(super) fn update_unit_name_search(&self, text: &str, update_widget: bool) {
         debug!("update_unit_name_search {text}");
-        let Some(filter) = self.lazy_get_filter_assessor(COL_ID_UNIT, None) else {
+        let Some(filter) = self.lazy_get_filter_assessor(&SysdColumn::Name) else {
             error!("No filter id {COL_ID_UNIT}");
             return;
         };
@@ -975,11 +976,13 @@ impl UnitListPanelImp {
 
     pub(super) fn lazy_get_filter_assessor(
         &self,
-        id: &str,
-        propperty_type: Option<String>,
+        id: &SysdColumn,
     ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
+        let id_c = id.id();
+        let id_str = id_c.as_ref();
+
         {
-            if let Some(filter) = self.unit_property_filters.borrow().get(id) {
+            if let Some(filter) = self.unit_property_filters.borrow().get(id_str) {
                 return Some(filter.clone());
             }
         }
@@ -988,109 +991,110 @@ impl UnitListPanelImp {
             self.obj();
 
         let filter: Option<Box<dyn UnitPropertyFilter>> = match id {
-            COL_ID_UNIT => Some(Box::new(FilterText::new(
-                id,
+            SysdColumn::Name => Some(Box::new(FilterText::new(
+                id_str,
                 filter_unit_name,
                 &unit_list_panel,
             ))),
-            "sysdm-bus" => Some(Box::new(FilterElement::new(
-                id,
+            SysdColumn::Bus => Some(Box::new(FilterElement::new(
+                id_str,
                 filter_bus_level,
                 &unit_list_panel,
             ))),
-            "sysdm-type" => Some(Box::new(FilterElement::new(
-                id,
+            SysdColumn::Type => Some(Box::new(FilterElement::new(
+                id_str,
                 filter_unit_type,
                 &unit_list_panel,
             ))),
-            "sysdm-state" => Some(Box::new(FilterElement::new(
-                id,
+            SysdColumn::State => Some(Box::new(FilterElement::new(
+                id_str,
                 filter_enable_status,
                 &unit_list_panel,
             ))),
-            "sysdm-preset" => Some(Box::new(FilterElement::new(
-                id,
+            SysdColumn::Preset => Some(Box::new(FilterElement::new(
+                id_str,
                 filter_preset,
                 &unit_list_panel,
             ))),
-            "sysdm-load" => Some(Box::new(FilterElement::new(
-                id,
+            SysdColumn::Load => Some(Box::new(FilterElement::new(
+                id_str,
                 filter_load_state,
                 &unit_list_panel,
             ))),
-            COL_ACTIVE => Some(Box::new(FilterElement::new(
-                id,
+            SysdColumn::Active => Some(Box::new(FilterElement::new(
+                id_str,
                 filter_active_state,
                 &unit_list_panel,
             ))),
-            "sysdm-sub" => Some(Box::new(FilterElement::new(
-                id,
+            SysdColumn::Sub => Some(Box::new(FilterElement::new(
+                id_str,
                 filter_sub_state,
                 &unit_list_panel,
             ))),
-            "sysdm-description" => Some(Box::new(FilterText::new(
-                id,
+            SysdColumn::Description => Some(Box::new(FilterText::new(
+                id_str,
                 filter_unit_description,
                 &unit_list_panel,
             ))),
-            _ => match propperty_type.as_deref() {
+            _ => match id.property_type().as_deref() {
                 Some("t") => Some(Box::new(FilterNum::<u64>::new(
-                    id,
+                    id_str,
                     custom_num::<u64>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                     UnitPropertyFilterType::NumU64,
                 ))),
                 Some("s") => Some(Box::new(FilterText::newq(
-                    id,
+                    id_str,
                     custom_str,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                 ))),
                 Some("i") => Some(Box::new(FilterNum::<i32>::new(
-                    id,
+                    id_str,
                     custom_num::<i32>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                     UnitPropertyFilterType::NumI32,
                 ))),
                 Some("u") => Some(Box::new(FilterNum::<u32>::new(
-                    id,
+                    id_str,
                     custom_num::<u32>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                     UnitPropertyFilterType::NumU32,
                 ))),
 
                 Some("b") => Some(Box::new(FilterBool::new(
-                    id,
+                    id_str,
                     custom_bool,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                 ))),
                 Some("q") => Some(Box::new(FilterNum::<u16>::new(
-                    id,
+                    id_str,
                     custom_num::<u16>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                     UnitPropertyFilterType::NumU16,
                 ))),
                 Some("x") => Some(Box::new(FilterNum::<i64>::new(
-                    id,
+                    id_str,
                     custom_num::<i64>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                     UnitPropertyFilterType::NumI64,
                 ))),
                 Some(&_) => Some(Box::new(FilterText::newq(
-                    id,
+                    id_str,
                     custom_str,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id).quark(),
+                    CustomPropertyId::from_str(id_str).quark(),
                 ))),
                 None => {
                     error!(
-                        "Filtering for key {id:?} not handled yet, data type {propperty_type:?}"
+                        "Filtering for key {id:?} not handled yet, data type {:?}",
+                        id.property_type()
                     );
                     None
                 }
@@ -1100,7 +1104,7 @@ impl UnitListPanelImp {
         if let Some(filter) = filter {
             let mut unit_property_filters = self.unit_property_filters.borrow_mut();
             let filter = Rc::new(RefCell::new(filter));
-            unit_property_filters.insert(id.to_string(), filter.clone());
+            unit_property_filters.insert(id_str.to_string(), filter.clone());
 
             Some(filter)
         } else {

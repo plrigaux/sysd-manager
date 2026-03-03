@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 use crate::consts::*;
 use crate::systemd::data::UnitInfo;
+use crate::widget::unit_list::column::SysdColumn;
 use crate::widget::unit_list::filter::unit_prop_filter::{
     UnitPropertyAssessor, UnitPropertyFilter,
 };
@@ -18,6 +19,7 @@ use gtk::subclass::prelude::*;
 use strum::IntoEnumIterator;
 use tracing::warn;
 
+pub mod column;
 mod filter;
 mod imp;
 pub mod menus;
@@ -56,10 +58,9 @@ impl UnitListPanel {
 
     fn lazy_get_filter_assessor(
         &self,
-        id: &str,
-        propperty_type: Option<String>,
+        id: &SysdColumn,
     ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
-        self.imp().lazy_get_filter_assessor(id, propperty_type)
+        self.imp().lazy_get_filter_assessor(id)
     }
 
     fn filter_assessor_change(

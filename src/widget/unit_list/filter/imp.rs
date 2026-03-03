@@ -28,7 +28,8 @@ use crate::{
     },
     upgrade, upgrade_continue,
     widget::unit_list::{
-        COL_ID_UNIT, UnitListPanel,
+        UnitListPanel,
+        column::SysdColumn,
         filter::{
             BoolFilter, UnitListFilterWindow,
             unit_prop_filter::{
@@ -39,8 +40,8 @@ use crate::{
     },
 };
 use base::enums::UnitDBusLevel;
-use tracing::{debug, error, info, warn};
 use strum::IntoEnumIterator;
+use tracing::{debug, error, info, warn};
 
 type UnitFilterList = RefCell<Vec<Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 
@@ -113,31 +114,32 @@ impl UnitListFilterWindowImp {
                 continue;
             };
 
-            let key = id.to_string();
-            let name = unit_prop_selection
-                .title()
-                .map_or(key.clone(), |title| title.to_string());
-
             let prop_type = unit_prop_selection.prop_type();
+
+            let key: SysdColumn = (id, prop_type).into();
             let Some(unit_property_filter_configurator) =
-                unit_list_panel.lazy_get_filter_assessor(&key, prop_type)
+                unit_list_panel.lazy_get_filter_assessor(&key)
             else {
-                warn!("No filter for key {key}");
+                warn!("No filter for key {key:?}");
                 continue;
             };
 
-            let (widget, filter_widget): (gtk::Box, Vec<FilterWidget>) = match key.as_str() {
-                COL_ID_UNIT => common_text_filter(&unit_property_filter_configurator),
-                "sysdm-bus" => build_bus_level_filter(&unit_property_filter_configurator),
-                "sysdm-type" => build_type_filter(&unit_property_filter_configurator),
-                "sysdm-state" => build_enablement_filter(&unit_property_filter_configurator),
-                "sysdm-preset" => build_preset_filter(&unit_property_filter_configurator),
-                "sysdm-load" => build_load_filter(&unit_property_filter_configurator),
-                "sysdm-active" => build_active_state_filter(&unit_property_filter_configurator),
-                "sysdm-sub" => {
+            let name = unit_prop_selection
+                .title()
+                .map_or(key.id().to_string(), |title| title.to_string());
+
+            let (widget, filter_widget): (gtk::Box, Vec<FilterWidget>) = match key {
+                SysdColumn::Name => common_text_filter(&unit_property_filter_configurator),
+                SysdColumn::Bus => build_bus_level_filter(&unit_property_filter_configurator),
+                SysdColumn::Type => build_type_filter(&unit_property_filter_configurator),
+                SysdColumn::State => build_enablement_filter(&unit_property_filter_configurator),
+                SysdColumn::Preset => build_preset_filter(&unit_property_filter_configurator),
+                SysdColumn::Load => build_load_filter(&unit_property_filter_configurator),
+                SysdColumn::Active => build_active_state_filter(&unit_property_filter_configurator),
+                SysdColumn::Sub => {
                     super::substate::sub_state_filter(&unit_property_filter_configurator)
                 }
-                "sysdm-description" => common_text_filter(&unit_property_filter_configurator),
+                SysdColumn::Description => common_text_filter(&unit_property_filter_configurator),
 
                 _ => match unit_property_filter_configurator.borrow().ftype() {
                     UnitPropertyFilterType::Text => {
@@ -172,7 +174,9 @@ impl UnitListFilterWindowImp {
 
             filter_widgets.push(filter_widget);
 
-            let _stack_page = self.filter_stack.add_titled(&widget, Some(&key), &name);
+            let _stack_page = self
+                .filter_stack
+                .add_titled(&widget, Some(&key.id()), &name);
 
             let button_content = adw::ButtonContent::builder()
                 .icon_name("empty-icon")
@@ -202,16 +206,20 @@ impl UnitListFilterWindowImp {
                 .css_classes([FLAT])
                 .build();
 
-            if selected.is_some_and(|s| s == &key) {
+            if selected.is_some_and(|s| s == &key.id()) {
                 button.remove_css_class(FLAT);
             }
 
-            let tooltip_text = match key.as_str() {
-                "load" => Some("Reflects whether the unit definition was properly loaded."),
-                "active" => {
+            let tooltip_text = match key {
+                SysdColumn::Load => {
+                    Some("Reflects whether the unit definition was properly loaded.")
+                }
+                SysdColumn::Active => {
                     Some("The high-level unit activation state, i.e. generalization of <b>Sub</b>.")
                 }
-                "sub" => Some("The low-level unit activation state, values depend on unit type."),
+                SysdColumn::Sub => {
+                    Some("The low-level unit activation state, values depend on unit type.")
+                }
                 _ => None,
             };
 
@@ -219,7 +227,7 @@ impl UnitListFilterWindowImp {
             {
                 let filter_stack = self.filter_stack.clone();
                 button.connect_clicked(move |button| {
-                    set_visible_child_name(&filter_stack, &key);
+                    set_visible_child_name(&filter_stack, &key.id());
 
                     if let Some(parent) = button.parent() {
                         let mut child_o = parent.first_child();
