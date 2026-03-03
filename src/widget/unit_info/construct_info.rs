@@ -45,10 +45,10 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_invocation(unit_writer, &map);
     fill_triggered_by(unit_writer, &map, level);
     fill_device(unit_writer, &map);
-    fill_where(unit_writer, &map);
-    fill_what(unit_writer, &map);
     fill_trigger(unit_writer, &map, unit, timestamp_style);
     fill_triggers(unit_writer, &map, level);
+    fill_where(unit_writer, &map);
+    fill_what(unit_writer, &map);
     fill_docs(unit_writer, &map);
     fill_main_pid(unit_writer, &map, unit);
     fill_status(unit_writer, &map);
