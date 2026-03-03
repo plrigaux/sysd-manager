@@ -478,7 +478,10 @@ impl UnitListPanelImp {
                     | UnitCuratedList::Automount
                     | UnitCuratedList::Sockets
             ) {
-                unit_list_panel.imp().fill_store(None);
+                let unit_list_panel = unit_list_panel.clone();
+                glib::spawn_future_local(async move {
+                    unit_list_panel.imp().fill_store(None);
+                });
             }
         });
         app_window.add_action(&action);
@@ -519,8 +522,9 @@ impl UnitListPanelImp {
         let view = self.selected_list_view.get();
 
         debug!("fill store {:?}", view);
+        let include_unit_files = self.include_unit_files.get();
+        let cols = construct_column_view(self.display_color.get(), view, include_unit_files);
 
-        let cols = construct_column_view(self.display_color.get(), view);
         self.set_new_columns(cols, false);
 
         self.fill_browser();
@@ -577,6 +581,7 @@ impl UnitListPanelImp {
                     ListUnitResponse::Loaded(level, lunits) => {
                         for loaded_unit in lunits.into_iter() {
                             let key = UnitKeyRef::new(level, &loaded_unit.primary_unit_name);
+
                             if let Some((key, unit)) =
                                 all_units.get_key_value(&key as &dyn UnitKeyInterface)
                             {
@@ -1463,6 +1468,14 @@ impl ObjectImpl for UnitListPanelImp {
             )
             .build();
 
+        settings
+            .bind::<UnitListPanel>(
+                ACTION_INCLUDE_UNIT_FILES,
+                &self.obj(),
+                ACTION_INCLUDE_UNIT_FILES,
+            )
+            .build();
+
         let unit_list_panel = self.obj().clone();
 
         let list_store = gio::ListStore::new::<UnitInfo>();
@@ -1484,8 +1497,11 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
         let column_view = gtk::ColumnView::new(Some(single_selection.clone()));
 
-        let column_view_column_definition_list =
-            construct::construct_column_view(self.display_color.get(), view);
+        let column_view_column_definition_list = construct::construct_column_view(
+            self.display_color.get(),
+            view,
+            self.include_unit_files.get(),
+        );
 
         for unit_property_selection in column_view_column_definition_list.iter() {
             column_view.append_column(&unit_property_selection.column());

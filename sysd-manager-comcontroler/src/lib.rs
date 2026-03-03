@@ -323,7 +323,7 @@ pub async fn list_unit_files_paths(
 pub async fn list_unit_files_automounts(
     level: UnitDBusLevel,
 ) -> Result<ListUnitResponse, SystemdErrors> {
-    list_loaded_units_by_patterns(level, &["*.automount"]).await
+    list_unit_files_by_patterns(level, &["*.automount"]).await
 }
 
 pub async fn complete_unit_information(

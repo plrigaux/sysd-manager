@@ -33,6 +33,7 @@ use zvariant::Value;
 pub fn construct_column_view(
     display_color: bool,
     view: UnitCuratedList,
+    include_unit_files: bool,
 ) -> Vec<UnitPropertySelection> {
     let list = build_from_load(display_color, view);
 
@@ -40,10 +41,12 @@ pub fn construct_column_view(
         UnitCuratedList::Defaut => default_column_definition_list(display_color),
         UnitCuratedList::LoadedUnit => generate_loaded_units_columns(display_color),
         UnitCuratedList::UnitFiles => generate_unit_files_columns(display_color),
-        UnitCuratedList::Timers => generate_timers_columns(display_color),
-        UnitCuratedList::Sockets => generate_sockets_columns(display_color),
-        UnitCuratedList::Path => generate_paths_columns(display_color),
-        UnitCuratedList::Automount => generate_automounts_columns(display_color),
+        UnitCuratedList::Timers => generate_timers_columns(display_color, include_unit_files),
+        UnitCuratedList::Sockets => generate_sockets_columns(display_color, include_unit_files),
+        UnitCuratedList::Path => generate_paths_columns(display_color, include_unit_files),
+        UnitCuratedList::Automount => {
+            generate_automounts_columns(display_color, include_unit_files)
+        }
         UnitCuratedList::Custom => {
             if list.is_empty() {
                 return default_column_definition_list(display_color);
@@ -75,11 +78,19 @@ pub fn construct_column_view(
     out
 }
 
-fn generate_automounts_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+fn generate_automounts_columns(
+    display_color: bool,
+    include_unit_files: bool,
+) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    if include_unit_files {
+        let col = create_unit_file_state(display_color);
+        columns.push(UnitPropertySelection::from_column_view_column(col));
+    }
 
     let mut unit_column = UnitColumn::new("automount@Where", "s");
     unit_column.resizable = true;
@@ -112,11 +123,19 @@ fn generate_automounts_columns(display_color: bool) -> Vec<UnitPropertySelection
     columns
 }
 
-fn generate_sockets_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+fn generate_sockets_columns(
+    display_color: bool,
+    include_unit_files: bool,
+) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    if include_unit_files {
+        let col = create_unit_file_state(display_color);
+        columns.push(UnitPropertySelection::from_column_view_column(col));
+    }
 
     let col = create_unit_active_status_columun(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(col));
@@ -133,11 +152,19 @@ fn generate_sockets_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     columns
 }
 
-fn generate_timers_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+fn generate_timers_columns(
+    display_color: bool,
+    include_unit_files: bool,
+) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    if include_unit_files {
+        let col = create_unit_file_state(display_color);
+        columns.push(UnitPropertySelection::from_column_view_column(col));
+    }
 
     let col = create_time_next_time();
     columns.push(UnitPropertySelection::from_column_config(col));
@@ -157,11 +184,19 @@ fn generate_timers_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     columns
 }
 
-fn generate_paths_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+fn generate_paths_columns(
+    display_color: bool,
+    include_unit_files: bool,
+) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
     columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+
+    if include_unit_files {
+        let col = create_unit_file_state(display_color);
+        columns.push(UnitPropertySelection::from_column_view_column(col));
+    }
 
     let col = create_path_paths_column();
     columns.push(UnitPropertySelection::from_column_config(col));
