@@ -13,7 +13,8 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
-            COL_ID_UNIT, COL_ID_UNIT_FULL, CustomPropertyId, UnitCuratedList,
+            COL_ID_UNIT, COL_ID_UNIT_FULL, UnitCuratedList,
+            column::SysdColumn,
             imp::{
                 column_factories::{self, *},
                 construct,
@@ -278,7 +279,7 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
 
         let prop_type = prop_selection.prop_type();
 
-        construct::set_column_factory_and_sorter(&column, display_color, prop_type.as_deref());
+        construct::set_column_factory_and_sorter(&column, display_color, prop_type);
 
         list.push(prop_selection);
     }
@@ -332,7 +333,7 @@ pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySe
 pub fn set_column_factory_and_sorter(
     column: &gtk::ColumnViewColumn,
     display_color: bool,
-    prop_type: Option<&str>,
+    prop_type: Option<String>,
 ) {
     let Some(id) = column.id() else {
         warn!("No column id");
@@ -340,51 +341,48 @@ pub fn set_column_factory_and_sorter(
     };
 
     //identify custom properties
-    let custom_id = CustomPropertyId::from_str(id.as_str());
+    // let custom_id = CustomPropertyId::from_str(id.as_str());
+
+    let id: SysdColumn = (id, prop_type).into();
 
     //force data display
-    let factory = column_factories::get_factory_by_id(&custom_id, display_color, prop_type);
+    let factory = column_factories::get_factory_by_id(&id, display_color);
     column.set_factory(factory.as_ref());
 
-    let sorter = get_sorter_by_id(custom_id, prop_type);
+    let sorter = get_sorter_by_id(&id);
     column.set_sorter(sorter.as_ref());
 }
 
-pub fn get_sorter_by_id(
-    id: CustomPropertyId,
-    prop_type: Option<&str>,
-) -> Option<gtk::CustomSorter> {
-    match id.prop {
-        COL_ID_UNIT => Some(create_column_filter!(primary, dbus_level)),
-        COL_ID_UNIT_FULL => Some(create_column_filter!(primary, dbus_level)),
-        "sysdm-type" => Some(create_column_filter!(unit_type)),
-        "sysdm-bus" => Some(create_column_filter!(dbus_level)),
-        "sysdm-state" => Some(create_column_filter!(enable_status)),
-        "sysdm-preset" => Some(create_column_filter!(preset)),
-        "sysdm-load" => Some(create_column_filter!(load_state)),
-        COL_ACTIVE => Some(create_column_filter!(active_state)),
-        "sysdm-sub" => Some(create_column_filter!(sub_state)),
-        "sysdm-description" => Some(create_column_filter!(description)),
-        TIMER_TIME_NEXT | TIMER_TIME_LEFT => create_next_elapse_column_filter(),
-        TIMER_TIME_PASSED | TIMER_TIME_LAST => {
+pub fn get_sorter_by_id(id: &SysdColumn) -> Option<gtk::CustomSorter> {
+    match id {
+        SysdColumn::Name => Some(create_column_filter!(primary, dbus_level)),
+        SysdColumn::FullName => Some(create_column_filter!(primary, dbus_level)),
+        SysdColumn::Type => Some(create_column_filter!(unit_type)),
+        SysdColumn::Bus => Some(create_column_filter!(dbus_level)),
+        SysdColumn::State => Some(create_column_filter!(enable_status)),
+        SysdColumn::Preset => Some(create_column_filter!(preset)),
+        SysdColumn::Load => Some(create_column_filter!(load_state)),
+        SysdColumn::Active => Some(create_column_filter!(active_state)),
+        SysdColumn::SubState => Some(create_column_filter!(sub_state)),
+        SysdColumn::Description => Some(create_column_filter!(description)),
+        SysdColumn::TimerTimeNext | SysdColumn::TimerTimeLeft => create_next_elapse_column_filter(),
+        SysdColumn::TimerTimePassed | SysdColumn::TimerTimeLast => {
             create_not_so_custom_property_colum_sorter(TIME_LAST_TRIGGER_USEC, "t")
         }
-        SOCKET_LISTEN_COL => create_socket_listen_type_colum_sorter(SYSD_SOCKET_LISTEN, 1),
-        SOCKET_LISTEN_TYPE => create_socket_listen_type_colum_sorter(SYSD_SOCKET_LISTEN, 0),
-
-        PATH_CONDITION_COL => create_socket_listen_type_colum_sorter(PATH_PATH_COL, 0),
-        PATH_PATH_COL => create_socket_listen_type_colum_sorter(PATH_PATH_COL, 1),
-        _ => create_custom_property_column_sorter(id, prop_type),
+        SysdColumn::SocketListen => create_socket_listen_type_colum_sorter(SYSD_SOCKET_LISTEN, 1),
+        SysdColumn::SocketListenType => {
+            create_socket_listen_type_colum_sorter(SYSD_SOCKET_LISTEN, 0)
+        }
+        SysdColumn::PathCondition => create_socket_listen_type_colum_sorter(PATH_PATH_COL, 0),
+        SysdColumn::Path => create_socket_listen_type_colum_sorter(PATH_PATH_COL, 1),
+        _ => create_custom_property_column_sorter(id),
     }
 }
 
-fn create_custom_property_column_sorter(
-    id: CustomPropertyId,
-    prop_type: Option<&str>,
-) -> Option<gtk::CustomSorter> {
+fn create_custom_property_column_sorter(id: &SysdColumn) -> Option<gtk::CustomSorter> {
     let key = id.generate_quark();
 
-    let Some(prop_type) = prop_type else {
+    let Some(prop_type) = id.property_type() else {
         warn!("column sorter without prop_type ");
         return None;
     };

@@ -111,36 +111,36 @@ impl UnitListPanel {
     }
 }
 
-#[derive(Debug)]
-pub struct CustomPropertyId<'a> {
-    pub utype: &'a str,
-    pub prop: &'a str,
-}
+// #[derive(Debug)]
+// pub struct CustomPropertyId<'a> {
+//     pub utype: &'a str,
+//     pub prop: &'a str,
+// }
 
-impl<'a> CustomPropertyId<'a> {
-    pub fn from_str(str_value: &'a str) -> Self {
-        let Some((utype, prop)) = str_value.split_once('@') else {
-            return Self {
-                utype: "",
-                prop: str_value,
-            };
-        };
+// impl<'a> CustomPropertyId<'a> {
+//     pub fn from_str(str_value: &'a str) -> Self {
+//         let Some((utype, prop)) = str_value.split_once('@') else {
+//             return Self {
+//                 utype: "",
+//                 prop: str_value,
+//             };
+//         };
 
-        Self { utype, prop }
-    }
+//         Self { utype, prop }
+//     }
 
-    fn generate_quark(&self) -> glib::Quark {
-        glib::Quark::from_str(self.prop)
-    }
+//     fn generate_quark(&self) -> glib::Quark {
+//         glib::Quark::from_str(self.prop)
+//     }
 
-    pub fn has_defined_type(&self) -> bool {
-        !self.utype.is_empty()
-    }
+//     pub fn has_defined_type(&self) -> bool {
+//         !self.utype.is_empty()
+//     }
 
-    pub fn quark(&self) -> glib::Quark {
-        glib::Quark::from_str(self.prop)
-    }
-}
+//     pub fn quark(&self) -> glib::Quark {
+//         glib::Quark::from_str(self.prop)
+//     }
+// }
 
 pub fn get_clean_col_title(title: &str) -> String {
     if title.starts_with(FILTER_MARK) {

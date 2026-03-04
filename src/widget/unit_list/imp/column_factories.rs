@@ -18,8 +18,7 @@ use tracing::{error, warn};
 use crate::{
     consts::*,
     widget::{
-        preferences::data::PREFERENCES,
-        unit_list::{COL_ID_UNIT, COL_ID_UNIT_FULL, CustomPropertyId},
+        preferences::data::PREFERENCES, unit_list::column::SysdColumn,
         unit_properties_selector::data_selection::UnitPropertySelection,
     },
 };
@@ -303,7 +302,6 @@ pub fn setup_factories(
             continue;
         };
 
-        let id = id.as_str();
         let prop_type =
             current_column_view_column_definition_list
                 .iter()
@@ -315,45 +313,45 @@ pub fn setup_factories(
                     }
                 });
 
-        let custom_id = CustomPropertyId::from_str(id);
-        let factory = get_factory_by_id(&custom_id, display_color, prop_type.as_deref());
+        let col_id = (id, prop_type).into();
+
+        let factory = get_factory_by_id(&col_id, display_color);
 
         column.set_factory(factory.as_ref());
     }
 }
 
 pub fn get_factory_by_id(
-    id: &CustomPropertyId,
+    id: &SysdColumn,
     display_color: bool,
-    prop_type: Option<&str>,
 ) -> Option<gtk::SignalListItemFactory> {
-    match (id.has_defined_type(), id.prop) {
-        (true, AUTOMOUNT_IDLE_TIMEOUT_PROP) => Some(fac_automount_idle_timeout()),
-        (true, _) => Some(get_custom_factory(id, display_color, prop_type)),
-        (false, COL_ID_UNIT) => Some(fac_unit_name(display_color)),
-        (false, COL_ID_UNIT_FULL) => Some(fac_unit_name_full(display_color)),
-        (false, "sysdm-type") => Some(fac_unit_type(display_color)),
-        (false, "sysdm-bus") => Some(fac_bus(display_color)),
-        (false, "sysdm-state") => Some(fac_enable_status(display_color)),
-        (false, "sysdm-preset") => Some(fac_preset(display_color)),
-        (false, "sysdm-load") => Some(fac_load_state(display_color)),
-        (false, COL_ACTIVE) => Some(fac_active(display_color)),
-        (false, "sysdm-sub") => Some(fac_sub_state(display_color)),
-        (false, "sysdm-description") => Some(fac_descrition(display_color)),
-        (false, TIMER_TIME_NEXT) => Some(fac_time_next()),
-        (false, TIMER_TIME_LEFT) => Some(fac_time_left()),
-        (false, TIMER_TIME_PASSED) => Some(fac_time_passed()),
-        (false, TIMER_TIME_LAST) => Some(fac_time_last()),
-        (false, SOCKET_LISTEN_TYPE) => Some(fac_socket_listen_type()),
-        (false, SOCKET_LISTEN_COL) => Some(fac_socket_listen()),
-        (false, PATH_CONDITION_COL) => Some(fac_path_condition()),
-        (false, PATH_PATH_COL) => Some(fac_path_path()),
-        (false, AUTOMOUNT_WHAT_COL) => Some(fac_automount_what()),
-        (false, AUTOMOUNT_MOUNTED_COL) => Some(fac_automount_mounted()),
-        _ => {
-            warn!("What to do?. Id {id:?} not handle with factory");
-            None
-        }
+    match id {
+        SysdColumn::Custom(_, _, _) => Some(get_custom_factory(id, display_color)),
+        SysdColumn::Name => Some(fac_unit_name(display_color)),
+        SysdColumn::FullName => Some(fac_unit_name_full(display_color)),
+        SysdColumn::Type => Some(fac_unit_type(display_color)),
+        SysdColumn::Bus => Some(fac_bus(display_color)),
+        SysdColumn::State => Some(fac_enable_status(display_color)),
+        SysdColumn::Preset => Some(fac_preset(display_color)),
+        SysdColumn::Load => Some(fac_load_state(display_color)),
+        SysdColumn::Active => Some(fac_active(display_color)),
+        SysdColumn::SubState => Some(fac_sub_state(display_color)),
+        SysdColumn::Description => Some(fac_descrition(display_color)),
+        SysdColumn::TimerTimeNext => Some(fac_time_next()),
+        SysdColumn::TimerTimeLeft => Some(fac_time_left()),
+        SysdColumn::TimerTimePassed => Some(fac_time_passed()),
+        SysdColumn::TimerTimeLast => Some(fac_time_last()),
+        SysdColumn::SocketListenType => Some(fac_socket_listen_type()),
+        SysdColumn::SocketListen => Some(fac_socket_listen()),
+        SysdColumn::PathCondition => Some(fac_path_condition()),
+        SysdColumn::Path => Some(fac_path_path()),
+        SysdColumn::AutomountWhat => Some(fac_automount_what()),
+        SysdColumn::AutomountMounted => Some(fac_automount_mounted()),
+        SysdColumn::AutomountIdleTimeOut => Some(fac_automount_idle_timeout()),
+        // _ => {
+        //     warn!("What to do?. Id {id:?} not handle with factory");
+        //     None
+        // }
     }
 }
 
@@ -564,21 +562,20 @@ type UnitFunc = fn(&UnitInfo, Quark) -> Option<String>;
 type SocketFunc = fn(&SocketUnitInfo, Quark) -> Option<String>;
 
 pub(super) fn get_custom_factory(
-    property_code: &CustomPropertyId,
+    property_code: &SysdColumn,
     display_color: bool,
-    prop_type: Option<&str>,
 ) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
-    let key = property_code.quark();
+    let key = property_code.generate_quark();
     factory.connect_setup(factory_setup);
 
-    let Some(prop_type) = prop_type else {
+    let Some(prop_type) = property_code.property_type() else {
         error!("NO PROP_TYPE SET for {:?}", property_code);
         return factory;
     };
 
-    let (get_value, get_parent_value): (UnitFunc, SocketFunc) = match prop_type {
+    let (get_value, get_parent_value): (UnitFunc, SocketFunc) = match prop_type.as_str() {
         "b" => (
             UnitInfo::get_custom_property_to_string::<bool>,
             SocketUnitInfo::get_parent_qproperty_to_string::<bool>,

@@ -10,7 +10,7 @@ use crate::{
     consts::*,
     systemd::enums::UnitType,
     widget::{
-        unit_list::{CustomPropertyId, menus::create_col_menu},
+        unit_list::{column::SysdColumn, menus::create_col_menu},
         unit_properties_selector::{data_browser::PropertyBrowseItem, save::UnitColumn},
     },
 };
@@ -79,14 +79,9 @@ impl UnitPropertySelection {
     }
 
     fn fill_from_id(p_imp: &imp2::UnitPropertySelectionImpl, id: &str) {
-        let custom_id = CustomPropertyId::from_str(id);
-        if custom_id.has_defined_type() {
-            p_imp.unit_property.replace(custom_id.prop.to_string());
-            let unit_type = UnitType::new(custom_id.utype);
-            p_imp.unit_type.set(unit_type);
-        } else {
-            p_imp.unit_type.set(UnitType::Unknown);
-        }
+        let custom_id: SysdColumn = (id, None).into();
+        p_imp.unit_property.replace(custom_id.id().to_string());
+        p_imp.unit_type.set(custom_id.utype());
 
         debug!("UNIT TYPE FROM ID {} {:?}", id, p_imp.unit_type.get());
     }

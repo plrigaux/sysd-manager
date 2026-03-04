@@ -136,7 +136,7 @@ impl UnitListFilterWindowImp {
                 SysdColumn::Preset => build_preset_filter(&unit_property_filter_configurator),
                 SysdColumn::Load => build_load_filter(&unit_property_filter_configurator),
                 SysdColumn::Active => build_active_state_filter(&unit_property_filter_configurator),
-                SysdColumn::Sub => {
+                SysdColumn::SubState => {
                     super::substate::sub_state_filter(&unit_property_filter_configurator)
                 }
                 SysdColumn::Description => common_text_filter(&unit_property_filter_configurator),
@@ -217,7 +217,7 @@ impl UnitListFilterWindowImp {
                 SysdColumn::Active => {
                     Some("The high-level unit activation state, i.e. generalization of <b>Sub</b>.")
                 }
-                SysdColumn::Sub => {
+                SysdColumn::SubState => {
                     Some("The low-level unit activation state, values depend on unit type.")
                 }
                 _ => None,

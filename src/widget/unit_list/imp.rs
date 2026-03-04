@@ -31,7 +31,7 @@ use crate::{
             PREFERENCES,
         },
         unit_list::{
-            COL_ID_UNIT, CustomPropertyId, UnitCuratedList, UnitListPanel,
+            COL_ID_UNIT, UnitCuratedList, UnitListPanel,
             column::SysdColumn,
             filter::{
                 UnitListFilterWindow, custom_bool, custom_num, custom_str, filter_active_state,
@@ -1026,7 +1026,7 @@ impl UnitListPanelImp {
                 filter_active_state,
                 &unit_list_panel,
             ))),
-            SysdColumn::Sub => Some(Box::new(FilterElement::new(
+            SysdColumn::SubState => Some(Box::new(FilterElement::new(
                 id_str,
                 filter_sub_state,
                 &unit_list_panel,
@@ -1041,27 +1041,27 @@ impl UnitListPanelImp {
                     id_str,
                     custom_num::<u64>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                     UnitPropertyFilterType::NumU64,
                 ))),
                 Some("s") => Some(Box::new(FilterText::newq(
                     id_str,
                     custom_str,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                 ))),
                 Some("i") => Some(Box::new(FilterNum::<i32>::new(
                     id_str,
                     custom_num::<i32>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                     UnitPropertyFilterType::NumI32,
                 ))),
                 Some("u") => Some(Box::new(FilterNum::<u32>::new(
                     id_str,
                     custom_num::<u32>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                     UnitPropertyFilterType::NumU32,
                 ))),
 
@@ -1069,27 +1069,27 @@ impl UnitListPanelImp {
                     id_str,
                     custom_bool,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                 ))),
                 Some("q") => Some(Box::new(FilterNum::<u16>::new(
                     id_str,
                     custom_num::<u16>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                     UnitPropertyFilterType::NumU16,
                 ))),
                 Some("x") => Some(Box::new(FilterNum::<i64>::new(
                     id_str,
                     custom_num::<i64>,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                     UnitPropertyFilterType::NumI64,
                 ))),
                 Some(&_) => Some(Box::new(FilterText::newq(
                     id_str,
                     custom_str,
                     &unit_list_panel,
-                    CustomPropertyId::from_str(id_str).quark(),
+                    id.generate_quark(),
                 ))),
                 None => {
                     error!(
@@ -1227,8 +1227,8 @@ impl UnitListPanelImp {
                     }) {
                         cleaned_props.push((unit_type.unit_type, &unit_type.property, *quark));
                     }
-                    // println!("orig {:?}", property_list_send);
-                    // println!("cleaned {:?}", cleaned_props);
+                    // println!("PPP orig {:?}", property_list_send);
+                    // println!("PPP cleaned {:?}", cleaned_props);
 
                     let properties_setter = systemd::fetch_unit_properties(
                         level,
@@ -1280,7 +1280,10 @@ impl UnitListPanelImp {
                         UnitPropertySetter::UnitFilePreset(preset) => unit.set_preset(preset),
                         UnitPropertySetter::SubState(substate) => unit.set_sub_state(substate),
                         UnitPropertySetter::Custom(quark, owned_value) => {
-                            // println!("DEBUG Custom prop {:?} {:?}", quark, owned_value);
+                            // println!(
+                            //     "DEBUG Custom prop key: {:?} value: {:?}",
+                            //     quark, owned_value
+                            // );
                             if &quark
                                 == SOCKET_LISTEN_QUARK
                                     .get_or_init(|| glib::Quark::from_str(SYSD_SOCKET_LISTEN))
@@ -1318,11 +1321,7 @@ impl UnitListPanelImp {
                     .find(|prop_selection| prop_selection.id() == column.id())
                     .and_then(|prop_selection| prop_selection.prop_type());
 
-                construct::set_column_factory_and_sorter(
-                    &column,
-                    display_color,
-                    prop_type.as_deref(),
-                );
+                construct::set_column_factory_and_sorter(&column, display_color, prop_type);
             }
 
             unit_list.imp().set_sorter();
