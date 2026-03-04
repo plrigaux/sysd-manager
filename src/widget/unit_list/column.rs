@@ -6,8 +6,9 @@ use systemd::enums::UnitType;
 use crate::{
     consts::{
         AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, COL_ACTIVE,
-        PATH_CONDITION_COL, PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, TIMER_TIME_LAST,
-        TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED,
+        PATH_CONDITION_COL, PATH_PATH_COL, PATH_PATHS, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE,
+        TIME_LAST_TRIGGER_USEC, TIME_LAST_TRIGGER_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
+        TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED, WHERE_PROP,
     },
     widget::unit_list::{COL_ID_UNIT, COL_ID_UNIT_FULL},
 };
@@ -20,7 +21,7 @@ const COL_SUBSTATE: &str = "sysdm-sub";
 const COL_LOAD: &str = "sysdm-load";
 const COL_DESCRIPTION: &str = "sysdm-description";
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Hash)]
 pub enum SysdColumn {
     Name,
     FullName,
@@ -67,10 +68,10 @@ impl SysdColumn {
             SysdColumn::SocketListenType => Cow::from(SOCKET_LISTEN_TYPE),
             SysdColumn::PathCondition => Cow::from(PATH_CONDITION_COL),
             SysdColumn::Path => Cow::from(PATH_PATH_COL),
-            SysdColumn::Custom(_, id, _) => Cow::Owned(id.to_owned()),
             SysdColumn::AutomountWhat => Cow::from(AUTOMOUNT_WHAT_COL),
             SysdColumn::AutomountMounted => Cow::from(AUTOMOUNT_MOUNTED_COL),
             SysdColumn::AutomountIdleTimeOut => Cow::from(AUTOMOUNT_IDLE_TIMEOUT_COL),
+            SysdColumn::Custom(_, id, _) => Cow::Owned(id.to_owned()),
         }
     }
 
@@ -81,12 +82,34 @@ impl SysdColumn {
         }
     }
 
+    pub(crate) fn property(&self) -> &str {
+        match self {
+            SysdColumn::TimerTimePassed | SysdColumn::TimerTimeLast => TIME_LAST_TRIGGER_USEC,
+            SysdColumn::TimerTimeNext | SysdColumn::TimerTimeLeft => {
+                TIME_NEXT_ELAPSE_USEC_MONOTONIC
+            }
+            SysdColumn::PathCondition | SysdColumn::Path => PATH_PATHS,
+            SysdColumn::Custom(_, id, _) => id.as_str(),
+            _ => unreachable!(),
+        }
+    }
+
     pub(crate) fn generate_quark(&self) -> glib::Quark {
-        glib::Quark::from_str(self.id().as_ref())
+        let qstr = match self {
+            SysdColumn::Path | SysdColumn::PathCondition => PATH_PATH_COL,
+            _ => self.property(),
+        };
+
+        glib::Quark::from_str(qstr)
     }
 
     pub(crate) fn utype(&self) -> UnitType {
         match self {
+            SysdColumn::TimerTimePassed
+            | SysdColumn::TimerTimeLast
+            | SysdColumn::TimerTimeNext
+            | SysdColumn::TimerTimeLeft => UnitType::Timer,
+            SysdColumn::PathCondition | SysdColumn::Path => UnitType::Path,
             SysdColumn::Custom(utype, _, _) => *utype,
             _ => UnitType::Unknown,
         }
