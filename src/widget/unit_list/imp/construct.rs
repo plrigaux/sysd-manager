@@ -2,10 +2,9 @@ use std::collections::HashMap;
 
 use crate::{
     consts::{
-        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, COL_ACTIVE,
-        PATH_CONDITION_COL, PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE,
-        SYSD_SOCKET_LISTEN, TIME_LAST_TRIGGER_USEC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
-        TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
+        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, PATH_CONDITION_COL,
+        PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, SYSD_SOCKET_LISTEN,
+        TIME_LAST_TRIGGER_USEC, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
         TIMER_TIME_PASSED,
     },
     extract_listen, extract_tuple_idx,
@@ -13,7 +12,7 @@ use crate::{
     systemd::data::UnitInfo,
     widget::{
         unit_list::{
-            COL_ID_UNIT, COL_ID_UNIT_FULL, UnitCuratedList,
+            UnitCuratedList,
             column::SysdColumn,
             imp::{
                 column_factories::{self, *},
@@ -270,10 +269,10 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
 
     let mut list = Vec::with_capacity(saved_config.columns.len());
     for unit_column_config in saved_config.columns {
-        let id = unit_column_config.id.clone();
+        let id = unit_column_config.get_column();
         let prop_selection = UnitPropertySelection::from_column_config(unit_column_config);
 
-        let column_menu = create_col_menu(&id, prop_selection.is_custom());
+        let column_menu = create_col_menu(&id);
         let column = prop_selection.column();
         column.set_header_menu(Some(&column_menu));
 
@@ -340,9 +339,6 @@ pub fn set_column_factory_and_sorter(
         return;
     };
 
-    //identify custom properties
-    // let custom_id = CustomPropertyId::from_str(id.as_str());
-
     let id: SysdColumn = (id, prop_type).into();
 
     //force data display
@@ -365,7 +361,9 @@ pub fn get_sorter_by_id(id: &SysdColumn) -> Option<gtk::CustomSorter> {
         SysdColumn::Active => Some(create_column_filter!(active_state)),
         SysdColumn::SubState => Some(create_column_filter!(sub_state)),
         SysdColumn::Description => Some(create_column_filter!(description)),
-        SysdColumn::TimerTimeNext | SysdColumn::TimerTimeLeft => create_next_elapse_column_filter(),
+        SysdColumn::TimerTimeNextElapseRT | SysdColumn::TimerTimeLeftElapseMono => {
+            create_next_elapse_column_filter()
+        }
         SysdColumn::TimerTimePassed | SysdColumn::TimerTimeLast => {
             create_not_so_custom_property_colum_sorter(TIME_LAST_TRIGGER_USEC, "t")
         }
@@ -433,8 +431,8 @@ fn create_column_sorter(key: glib::Quark, prop_type: &str) -> Option<gtk::Custom
 }
 
 fn create_next_elapse_column_filter() -> Option<gtk::CustomSorter> {
-    let next_elapse_realtime_key = glib::Quark::from_str(TIME_NEXT_ELAPSE_USEC_REALTIME);
-    let next_elapse_monotonic_key = glib::Quark::from_str(TIME_NEXT_ELAPSE_USEC_MONOTONIC);
+    let next_elapse_realtime_key = SysdColumn::TimerTimeNextElapseRT.generate_quark();
+    let next_elapse_monotonic_key = SysdColumn::TimerTimeLeftElapseMono.generate_quark();
 
     let sorter = gtk::CustomSorter::new(move |o1, o2| {
         let next_elapse1 =
@@ -474,12 +472,12 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let type_col = create_unit_type_column(display_color);
     columns.push(type_col);
 
-    let id = "sysdm-bus";
+    let id = SysdColumn::Bus;
     let sorter = create_column_filter!(dbus_level);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_bus(display_color);
     let bus_col = gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -495,12 +493,12 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let preset_col = create_unit_file_preset_column(display_color);
     columns.push(preset_col);
 
-    let id = "sysdm-load";
+    let id = SysdColumn::Load;
     let sorter = create_column_filter!(load_state);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_load_state(display_color);
     let load_col = gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -513,12 +511,12 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let active_col = create_unit_active_status_columun(display_color);
     columns.push(active_col);
 
-    let id = "sysdm-sub";
+    let id = SysdColumn::SubState;
     let sorter = create_column_filter!(sub_state);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_sub_state(display_color);
     let sub_col = gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -535,13 +533,13 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
 }
 
 fn create_unit_file_preset_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SYSDM_PRESET;
+    let id = SysdColumn::Preset;
     let sorter = create_column_filter!(preset);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_preset(display_color);
 
     gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -552,13 +550,13 @@ fn create_unit_file_preset_column(display_color: bool) -> gtk::ColumnViewColumn 
 }
 
 fn create_unit_file_state(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SYSDM_STATE;
+    let id = &SysdColumn::State;
     let sorter = create_column_filter!(enable_status);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(id);
     let factory = fac_enable_status(display_color);
 
     gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -569,13 +567,13 @@ fn create_unit_file_state(display_color: bool) -> gtk::ColumnViewColumn {
 }
 
 fn create_unit_active_status_columun(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = COL_ACTIVE;
+    let id = SysdColumn::Active;
     let sorter = create_column_filter!(active_state);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_active(display_color);
 
     gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -586,13 +584,13 @@ fn create_unit_active_status_columun(display_color: bool) -> gtk::ColumnViewColu
 }
 
 fn create_unit_description_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = "sysdm-description";
+    let id = SysdColumn::Description;
     let sorter = create_column_filter!(description);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_descrition(display_color);
 
     gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -603,13 +601,13 @@ fn create_unit_description_column(display_color: bool) -> gtk::ColumnViewColumn 
 }
 
 fn create_unit_display_name_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = COL_ID_UNIT;
+    let id = SysdColumn::Name;
     let sorter = create_column_filter!(primary, dbus_level);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_unit_name(display_color);
 
     gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -621,13 +619,13 @@ fn create_unit_display_name_column(display_color: bool) -> gtk::ColumnViewColumn
 }
 
 fn create_unit_display_full_name_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = COL_ID_UNIT_FULL;
+    let id = SysdColumn::FullName;
     let sorter = create_column_filter!(primary, dbus_level);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_unit_name(display_color);
 
     gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -638,13 +636,13 @@ fn create_unit_display_full_name_column(display_color: bool) -> gtk::ColumnViewC
 }
 
 fn create_unit_type_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = "sysdm-type";
+    let id = SysdColumn::Type;
     let sorter = create_column_filter!(unit_type);
-    let column_menu = create_col_menu(id, false);
+    let column_menu = create_col_menu(&id);
     let factory = fac_unit_type(display_color);
 
     gtk::ColumnViewColumn::builder()
-        .id(id)
+        .id(id.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)

@@ -1,14 +1,13 @@
-use std::borrow::Cow;
-
 use glib::GString;
 use systemd::enums::UnitType;
 
 use crate::{
     consts::{
-        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, COL_ACTIVE,
-        PATH_CONDITION_COL, PATH_PATH_COL, PATH_PATHS, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE,
-        TIME_LAST_TRIGGER_USEC, TIME_LAST_TRIGGER_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_MONOTONIC,
-        TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED, WHERE_PROP,
+        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_IDLE_TIMEOUT_PROP, AUTOMOUNT_MOUNTED_COL,
+        AUTOMOUNT_WHAT_COL, COL_ACTIVE, PATH_CONDITION_COL, PATH_PATH_COL, PATH_PATHS,
+        SOCKET_LISTEN, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, TIME_LAST_TRIGGER_USEC,
+        TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME, TIMER_TIME_LAST,
+        TIMER_TIME_LEFT, TIMER_TIME_NEXT, TIMER_TIME_PASSED, WHERE_PROP,
     },
     widget::unit_list::{COL_ID_UNIT, COL_ID_UNIT_FULL},
 };
@@ -33,8 +32,8 @@ pub enum SysdColumn {
     Active,
     SubState,
     Description,
-    TimerTimeNext,
-    TimerTimeLeft,
+    TimerTimeNextElapseRT,
+    TimerTimeLeftElapseMono,
     TimerTimePassed,
     TimerTimeLast,
     SocketListen,
@@ -48,30 +47,34 @@ pub enum SysdColumn {
 }
 
 impl SysdColumn {
-    pub fn id<'a>(&self) -> Cow<'a, str> {
+    pub fn new_custom(utype: UnitType, id: String, prop: Option<String>) -> Self {
+        SysdColumn::Custom(utype, id, prop)
+    }
+
+    pub fn id(&self) -> &str {
         match self {
-            SysdColumn::Name => Cow::from(COL_ID_UNIT),
-            SysdColumn::FullName => Cow::from(COL_ID_UNIT_FULL),
-            SysdColumn::Bus => Cow::from(COL_BUS),
-            SysdColumn::Type => Cow::from(COL_TYPE),
-            SysdColumn::State => Cow::from(COL_STATE),
-            SysdColumn::Preset => Cow::from(COL_PRESET),
-            SysdColumn::Load => Cow::from(COL_LOAD),
-            SysdColumn::Active => Cow::from(COL_ACTIVE),
-            SysdColumn::SubState => Cow::from(COL_SUBSTATE),
-            SysdColumn::Description => Cow::from(COL_DESCRIPTION),
-            SysdColumn::TimerTimeNext => Cow::from(TIMER_TIME_NEXT),
-            SysdColumn::TimerTimeLeft => Cow::from(TIMER_TIME_LEFT),
-            SysdColumn::TimerTimePassed => Cow::from(TIMER_TIME_PASSED),
-            SysdColumn::TimerTimeLast => Cow::from(TIMER_TIME_LAST),
-            SysdColumn::SocketListen => Cow::from(SOCKET_LISTEN_COL),
-            SysdColumn::SocketListenType => Cow::from(SOCKET_LISTEN_TYPE),
-            SysdColumn::PathCondition => Cow::from(PATH_CONDITION_COL),
-            SysdColumn::Path => Cow::from(PATH_PATH_COL),
-            SysdColumn::AutomountWhat => Cow::from(AUTOMOUNT_WHAT_COL),
-            SysdColumn::AutomountMounted => Cow::from(AUTOMOUNT_MOUNTED_COL),
-            SysdColumn::AutomountIdleTimeOut => Cow::from(AUTOMOUNT_IDLE_TIMEOUT_COL),
-            SysdColumn::Custom(_, id, _) => Cow::Owned(id.to_owned()),
+            SysdColumn::Name => COL_ID_UNIT,
+            SysdColumn::FullName => COL_ID_UNIT_FULL,
+            SysdColumn::Bus => COL_BUS,
+            SysdColumn::Type => COL_TYPE,
+            SysdColumn::State => COL_STATE,
+            SysdColumn::Preset => COL_PRESET,
+            SysdColumn::Load => COL_LOAD,
+            SysdColumn::Active => COL_ACTIVE,
+            SysdColumn::SubState => COL_SUBSTATE,
+            SysdColumn::Description => COL_DESCRIPTION,
+            SysdColumn::TimerTimeNextElapseRT => TIMER_TIME_NEXT,
+            SysdColumn::TimerTimeLeftElapseMono => TIMER_TIME_LEFT,
+            SysdColumn::TimerTimePassed => TIMER_TIME_PASSED,
+            SysdColumn::TimerTimeLast => TIMER_TIME_LAST,
+            SysdColumn::SocketListen => SOCKET_LISTEN_COL,
+            SysdColumn::SocketListenType => SOCKET_LISTEN_TYPE,
+            SysdColumn::PathCondition => PATH_CONDITION_COL,
+            SysdColumn::Path => PATH_PATH_COL,
+            SysdColumn::AutomountWhat => AUTOMOUNT_WHAT_COL,
+            SysdColumn::AutomountMounted => AUTOMOUNT_MOUNTED_COL,
+            SysdColumn::AutomountIdleTimeOut => AUTOMOUNT_IDLE_TIMEOUT_COL,
+            SysdColumn::Custom(_, id, _) => id.as_str(),
         }
     }
 
@@ -85,21 +88,24 @@ impl SysdColumn {
     pub(crate) fn property(&self) -> &str {
         match self {
             SysdColumn::TimerTimePassed | SysdColumn::TimerTimeLast => TIME_LAST_TRIGGER_USEC,
-            SysdColumn::TimerTimeNext | SysdColumn::TimerTimeLeft => {
-                TIME_NEXT_ELAPSE_USEC_MONOTONIC
-            }
+            SysdColumn::TimerTimeNextElapseRT => TIME_NEXT_ELAPSE_USEC_REALTIME,
+            SysdColumn::TimerTimeLeftElapseMono => TIME_NEXT_ELAPSE_USEC_MONOTONIC,
+            SysdColumn::SocketListen | SysdColumn::SocketListenType => SOCKET_LISTEN,
             SysdColumn::PathCondition | SysdColumn::Path => PATH_PATHS,
+            SysdColumn::AutomountMounted | SysdColumn::AutomountWhat => WHERE_PROP,
+            SysdColumn::AutomountIdleTimeOut => AUTOMOUNT_IDLE_TIMEOUT_PROP,
             SysdColumn::Custom(_, id, _) => id.as_str(),
-            _ => unreachable!(),
+            _ => unreachable!("Need to define a property for: {:?}", self),
         }
     }
 
     pub(crate) fn generate_quark(&self) -> glib::Quark {
-        let qstr = match self {
-            SysdColumn::Path | SysdColumn::PathCondition => PATH_PATH_COL,
-            _ => self.property(),
-        };
+        // let qstr = match self {
+        //     SysdColumn::Path | SysdColumn::PathCondition => PATH_PATH_COL,
+        //     _ => self.property(),
+        // };
 
+        let qstr = self.property();
         glib::Quark::from_str(qstr)
     }
 
@@ -107,12 +113,20 @@ impl SysdColumn {
         match self {
             SysdColumn::TimerTimePassed
             | SysdColumn::TimerTimeLast
-            | SysdColumn::TimerTimeNext
-            | SysdColumn::TimerTimeLeft => UnitType::Timer,
+            | SysdColumn::TimerTimeNextElapseRT
+            | SysdColumn::TimerTimeLeftElapseMono => UnitType::Timer,
+            SysdColumn::SocketListen | SysdColumn::SocketListenType => UnitType::Socket,
             SysdColumn::PathCondition | SysdColumn::Path => UnitType::Path,
+            SysdColumn::AutomountWhat
+            | SysdColumn::AutomountMounted
+            | SysdColumn::AutomountIdleTimeOut => UnitType::Automount,
             SysdColumn::Custom(utype, _, _) => *utype,
             _ => UnitType::Unknown,
         }
+    }
+
+    pub(crate) fn is_custom(&self) -> bool {
+        matches!(self, SysdColumn::Custom(_, _, _))
     }
 }
 
@@ -129,8 +143,8 @@ impl From<(&str, Option<String>)> for SysdColumn {
             COL_ACTIVE => SysdColumn::Active,
             COL_SUBSTATE => SysdColumn::Bus,
             COL_DESCRIPTION => SysdColumn::Description,
-            TIMER_TIME_NEXT => SysdColumn::TimerTimeNext,
-            TIMER_TIME_LEFT => SysdColumn::TimerTimeLeft,
+            TIMER_TIME_NEXT => SysdColumn::TimerTimeNextElapseRT,
+            TIMER_TIME_LEFT => SysdColumn::TimerTimeLeftElapseMono,
             TIMER_TIME_PASSED => SysdColumn::TimerTimePassed,
             TIMER_TIME_LAST => SysdColumn::TimerTimeLast,
             SOCKET_LISTEN_COL => SysdColumn::SocketListen,

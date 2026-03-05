@@ -1,19 +1,14 @@
-use std::collections::HashMap;
-
-use adw::subclass::prelude::ObjectSubclassIsExt;
-
-use glib::Quark;
-use gtk::glib::{self};
-use tracing::{debug, info};
-
 use crate::{
-    consts::*,
     systemd::enums::UnitType,
     widget::{
         unit_list::{column::SysdColumn, menus::create_col_menu},
         unit_properties_selector::{data_browser::PropertyBrowseItem, save::UnitColumn},
     },
 };
+use adw::subclass::prelude::ObjectSubclassIsExt;
+use gtk::glib::{self};
+use std::collections::HashSet;
+use tracing::{debug, info};
 
 //pub const INTERFACE_NAME: &str = "Basic Columns";
 
@@ -37,12 +32,12 @@ impl UnitPropertySelection {
             info!("COL {:?} {:?}", col.id(), col.title());
             col
         } else {
-            let id = format!("{}@{}", unit_type.as_str(), unit_property); //IMPORTANT keep this format
-            let menu = create_col_menu(&id, true);
+            let id = SysdColumn::new_custom(unit_type, unit_property.clone(), None);
+            let menu = create_col_menu(&id);
 
             let col = gtk::ColumnViewColumn::builder()
-                .title(&unit_property)
-                .id(id)
+                .title(id.id())
+                .id(id.id())
                 .header_menu(&menu)
                 .resizable(true)
                 .build();
@@ -162,107 +157,54 @@ impl UnitPropertySelection {
         to.set_visible(from.is_visible());
     }
 
-    pub fn fill_property_fetcher(
-        &self,
-        property_list_send: &mut HashMap<DataSelectionItem, Quark>,
-    ) {
-        match (self.is_custom(), self.id().as_deref()) {
-            (true, _) => {
-                let u_prop = self.unit_property();
-                let quark = Quark::from_str(&u_prop);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: self.unit_type(),
-                        property: u_prop,
-                    },
-                    quark,
-                );
-            }
-            (false, Some(TIMER_TIME_LAST) | Some(TIMER_TIME_PASSED)) => {
-                let quark = Quark::from_str(TIME_LAST_TRIGGER_USEC);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: UnitType::Timer,
-                        property: TIME_LAST_TRIGGER_USEC.to_owned(),
-                    },
-                    quark,
-                );
-
-                let quark = Quark::from_str(TIME_LAST_TRIGGER_USEC_MONOTONIC);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: UnitType::Timer,
-                        property: TIME_LAST_TRIGGER_USEC_MONOTONIC.to_owned(),
-                    },
-                    quark,
-                );
-            }
-            (false, Some(TIMER_TIME_NEXT) | Some(TIMER_TIME_LEFT)) => {
-                let u_prop = TIME_NEXT_ELAPSE_USEC_MONOTONIC.to_owned();
-                let quark = Quark::from_str(&u_prop);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: UnitType::Timer,
-                        property: u_prop,
-                    },
-                    quark,
-                );
-
-                let u_prop = TIME_NEXT_ELAPSE_USEC_REALTIME.to_owned();
-                let quark = Quark::from_str(&u_prop);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: UnitType::Timer,
-                        property: u_prop,
-                    },
-                    quark,
-                );
-            }
-            (false, Some(SOCKET_LISTEN_COL) | Some(SOCKET_LISTEN_TYPE)) => {
-                let u_prop = SOCKET_LISTEN.to_owned();
-                let quark = Quark::from_str(SYSD_SOCKET_LISTEN);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: UnitType::Socket,
-                        property: u_prop,
-                    },
-                    quark,
-                );
-            }
-            (false, Some(PATH_CONDITION_COL) | Some(PATH_PATH_COL)) => {
-                let u_prop = PATH_PATHS.to_owned();
-                let quark = Quark::from_str(PATH_PATH_COL);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: UnitType::Path,
-                        property: u_prop,
-                    },
-                    quark,
-                );
-            }
-            (false, Some(AUTOMOUNT_MOUNTED_COL) | Some(AUTOMOUNT_WHAT_COL)) => {
-                let u_prop = WHERE_PROP.to_owned();
-                let quark = Quark::from_str(WHERE_PROP);
-                property_list_send.insert(
-                    DataSelectionItem {
-                        unit_type: UnitType::Automount,
-                        property: u_prop,
-                    },
-                    quark,
-                );
-            }
-            (false, Some("sysdm-unit-full") | Some(COL_ACTIVE)) => {}
-            (false, _) => {
-                //warn!("??? {:?} is custom {:?}", self.id(), self.is_custom())
+    pub fn fill_property_fetcher(&self, property_list_send: &mut HashSet<SysdColumn>) {
+        if let Some(id) = self.id() {
+            let col: SysdColumn = (id, None).into();
+            if !matches!(col, SysdColumn::FullName | SysdColumn::Active) {
+                property_list_send.insert(col);
             }
         }
-    }
-}
 
-#[derive(Eq, Debug, PartialEq, Hash)]
-pub struct DataSelectionItem {
-    pub unit_type: UnitType,
-    pub property: String,
+        // match (self.is_custom(), self.id().as_deref()) {
+        //     (false, Some(SOCKET_LISTEN_COL) | Some(SOCKET_LISTEN_TYPE)) => {
+        //         let u_prop = SOCKET_LISTEN.to_owned();
+        //         let quark = Quark::from_str(SYSD_SOCKET_LISTEN);
+        //         property_list_send.insert(
+        //             DataSelectionItem {
+        //                 unit_type: UnitType::Socket,
+        //                 property: u_prop,
+        //             },
+        //             quark,
+        //         );
+        //     }
+        //     (false, Some(PATH_CONDITION_COL) | Some(PATH_PATH_COL)) => {
+        //         let u_prop = PATH_PATHS.to_owned();
+        //         let quark = Quark::from_str(PATH_PATH_COL);
+        //         property_list_send.insert(
+        //             DataSelectionItem {
+        //                 unit_type: UnitType::Path,
+        //                 property: u_prop,
+        //             },
+        //             quark,
+        //         );
+        //     }
+        //     (false, Some(AUTOMOUNT_MOUNTED_COL) | Some(AUTOMOUNT_WHAT_COL)) => {
+        //         let u_prop = WHERE_PROP.to_owned();
+        //         let quark = Quark::from_str(WHERE_PROP);
+        //         property_list_send.insert(
+        //             DataSelectionItem {
+        //                 unit_type: UnitType::Automount,
+        //                 property: u_prop,
+        //             },
+        //             quark,
+        //         );
+        //     }
+        //     (false, Some("sysdm-unit-full") | Some(COL_ACTIVE)) => {}
+        //     (false, _) => {
+        //         //warn!("??? {:?} is custom {:?}", self.id(), self.is_custom())
+        //     }
+        // }
+    }
 }
 
 mod imp2 {

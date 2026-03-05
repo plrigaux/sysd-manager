@@ -282,6 +282,7 @@
       <choices>
         <choice value="default"/>
         <choice value="active"/>
+        <choice value="loaded"/>
         <choice value="unit_file"/>
         <choice value="timers"/>
         <choice value="sockets"/>

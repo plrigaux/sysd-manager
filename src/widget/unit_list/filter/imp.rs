@@ -174,9 +174,7 @@ impl UnitListFilterWindowImp {
 
             filter_widgets.push(filter_widget);
 
-            let _stack_page = self
-                .filter_stack
-                .add_titled(&widget, Some(&key.id()), &name);
+            let _stack_page = self.filter_stack.add_titled(&widget, Some(key.id()), &name);
 
             let button_content = adw::ButtonContent::builder()
                 .icon_name("empty-icon")
@@ -206,7 +204,7 @@ impl UnitListFilterWindowImp {
                 .css_classes([FLAT])
                 .build();
 
-            if selected.is_some_and(|s| s == &key.id()) {
+            if selected.is_some_and(|s| s == key.id()) {
                 button.remove_css_class(FLAT);
             }
 
@@ -227,7 +225,7 @@ impl UnitListFilterWindowImp {
             {
                 let filter_stack = self.filter_stack.clone();
                 button.connect_clicked(move |button| {
-                    set_visible_child_name(&filter_stack, &key.id());
+                    set_visible_child_name(&filter_stack, key.id());
 
                     if let Some(parent) = button.parent() {
                         let mut child_o = parent.first_child();

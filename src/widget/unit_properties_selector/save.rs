@@ -1,13 +1,14 @@
 use crate::gtk::prelude::ListModelExtManual;
 use crate::widget::unit_list::UnitCuratedList;
+use crate::widget::unit_list::column::SysdColumn;
 use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
-use tracing::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::{env, fs};
+use tracing::{debug, error, info, warn};
 
 const UNIT_COLUMNS: &str = "unit_columns.toml";
 
@@ -61,6 +62,10 @@ impl UnitColumn {
             prop_type: Some(arg.to_owned()),
             ..Default::default()
         }
+    }
+
+    pub fn get_column(&self) -> SysdColumn {
+        (self.id.as_str(), self.prop_type.clone()).into()
     }
 }
 

@@ -337,8 +337,8 @@ pub fn get_factory_by_id(
         SysdColumn::Active => Some(fac_active(display_color)),
         SysdColumn::SubState => Some(fac_sub_state(display_color)),
         SysdColumn::Description => Some(fac_descrition(display_color)),
-        SysdColumn::TimerTimeNext => Some(fac_time_next()),
-        SysdColumn::TimerTimeLeft => Some(fac_time_left()),
+        SysdColumn::TimerTimeNextElapseRT => Some(fac_time_next()),
+        SysdColumn::TimerTimeLeftElapseMono => Some(fac_time_left()),
         SysdColumn::TimerTimePassed => Some(fac_time_passed()),
         SysdColumn::TimerTimeLast => Some(fac_time_last()),
         SysdColumn::SocketListenType => Some(fac_socket_listen_type()),
@@ -644,8 +644,9 @@ fn fac_time_next() -> gtk::SignalListItemFactory {
     let time_fac = gtk::SignalListItemFactory::new();
 
     time_fac.connect_setup(factory_setup);
-    let next_elapse_realtime_key = Quark::from_str(TIME_NEXT_ELAPSE_USEC_REALTIME);
-    let next_elapse_monotonic_key = Quark::from_str(TIME_NEXT_ELAPSE_USEC_MONOTONIC);
+    //WARN both columns needs to be present
+    let next_elapse_realtime_key = SysdColumn::TimerTimeNextElapseRT.generate_quark();
+    let next_elapse_monotonic_key = SysdColumn::TimerTimeLeftElapseMono.generate_quark();
     let timestamp_style = PREFERENCES.timestamp_style();
     time_fac.connect_bind(move |_factory, object| {
         let (inscription, unit) = factory_bind_pre!(object);
@@ -668,8 +669,8 @@ fn fac_time_left() -> gtk::SignalListItemFactory {
     let time_fac = gtk::SignalListItemFactory::new();
 
     time_fac.connect_setup(factory_setup);
-    let next_elapse_realtime_key = Quark::from_str(TIME_NEXT_ELAPSE_USEC_REALTIME);
-    let next_elapse_monotonic_key = Quark::from_str(TIME_NEXT_ELAPSE_USEC_MONOTONIC);
+    let next_elapse_realtime_key = SysdColumn::TimerTimeNextElapseRT.generate_quark();
+    let next_elapse_monotonic_key = SysdColumn::TimerTimeLeftElapseMono.generate_quark();
     time_fac.connect_bind(move |_factory, object| {
         let (inscription, unit) = factory_bind_pre!(object);
         inactive_display(&inscription, &unit);
@@ -791,7 +792,7 @@ fn fac_socket_listen_type() -> gtk::SignalListItemFactory {
     let socket_fac = gtk::SignalListItemFactory::new();
 
     socket_fac.connect_setup(factory_setup);
-    let socket_listen = Quark::from_str(SYSD_SOCKET_LISTEN);
+    let socket_listen = SysdColumn::SocketListen.generate_quark();
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
         let value = extract_listen!(unit, socket_listen, 0);
@@ -804,7 +805,7 @@ fn fac_socket_listen() -> gtk::SignalListItemFactory {
     let socket_fac = gtk::SignalListItemFactory::new();
 
     socket_fac.connect_setup(factory_setup);
-    let socket_listen = Quark::from_str(SYSD_SOCKET_LISTEN);
+    let socket_listen = SysdColumn::SocketListen.generate_quark();
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
@@ -819,11 +820,11 @@ fn fac_path_condition() -> gtk::SignalListItemFactory {
     let socket_fac = gtk::SignalListItemFactory::new();
 
     socket_fac.connect_setup(factory_setup);
-    let socket_listen = Quark::from_str(PATH_PATH_COL);
+    let key = SysdColumn::PathCondition.generate_quark();
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
-        let value = extract_listen!(unit, socket_listen, 0);
+        let value = extract_listen!(unit, key, 0);
         inscription.set_text(value);
     });
 
@@ -834,11 +835,11 @@ fn fac_path_path() -> gtk::SignalListItemFactory {
     let socket_fac = gtk::SignalListItemFactory::new();
 
     socket_fac.connect_setup(factory_setup);
-    let socket_listen = Quark::from_str(PATH_PATH_COL);
+    let key = SysdColumn::Path.generate_quark();
     socket_fac.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
-        let value = extract_listen!(unit, socket_listen, 1);
+        let value = extract_listen!(unit, key, 1);
         inscription.set_text(value);
     });
 
@@ -849,7 +850,7 @@ fn fac_path_path() -> gtk::SignalListItemFactory {
 fn fac_automount_mounted() -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
     factory.connect_setup(factory_setup);
-    let where_key = Quark::from_str(WHERE_PROP);
+    let where_key = SysdColumn::AutomountMounted.generate_quark();
     factory.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
@@ -877,7 +878,7 @@ fn fac_automount_mounted() -> gtk::SignalListItemFactory {
 fn fac_automount_what() -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
     factory.connect_setup(factory_setup);
-    let where_key = Quark::from_str(WHERE_PROP);
+    let where_key = SysdColumn::AutomountWhat.generate_quark();
     factory.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 
@@ -912,7 +913,7 @@ fn fac_automount_idle_timeout() -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
     factory.connect_setup(factory_setup);
-    let timeout_idle_key = Quark::from_str(AUTOMOUNT_IDLE_TIMEOUT_PROP);
+    let timeout_idle_key = SysdColumn::AutomountIdleTimeOut.generate_quark();
     factory.connect_bind(move |_, object| {
         let (inscription, unit) = factory_bind_pre!(object);
 

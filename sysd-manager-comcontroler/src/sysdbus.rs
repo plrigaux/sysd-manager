@@ -1533,7 +1533,7 @@ pub async fn fetch_unit_properties(
     unit_primary_name: &str,
     path: &str,
     unit_properties: UnitProperties,
-    properties: Vec<(UnitType, &String, Quark)>,
+    properties: Vec<(UnitType, &str, Quark)>,
 ) -> Result<Vec<UnitPropertySetter>, SystemdErrors> {
     let connection = get_connection(level).await?;
 

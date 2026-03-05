@@ -6,7 +6,7 @@ pub mod pop_menu;
 use std::{
     borrow::Cow,
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     hash::Hasher,
     rc::Rc,
     sync::OnceLock,
@@ -16,7 +16,7 @@ use std::{
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ALL_FILTER_KEY, FILTER_MARK, PATH_PATH_COL, SYSD_SOCKET_LISTEN,
+        ALL_FILTER_KEY, FILTER_MARK,
     },
     systemd::{
         data::UnitInfo,
@@ -78,7 +78,7 @@ use tokio::task::AbortHandle;
 use tracing::{debug, error, info, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
-static PATH_PATHS_QUARK: OnceLock<glib::Quark> = OnceLock::new();
+static PATH_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 
 const UNIT_LIST_VIEW_PAGE: &str = "unit_list";
 const RESTRICTIVE_FILTER_VIEW_PAGE: &str = "restrictive_filter";
@@ -978,8 +978,7 @@ impl UnitListPanelImp {
         &self,
         id: &SysdColumn,
     ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
-        let id_c = id.id();
-        let id_str = id_c.as_ref();
+        let id_str = id.id();
 
         {
             if let Some(filter) = self.unit_property_filters.borrow().get(id_str) {
@@ -1186,7 +1185,7 @@ impl UnitListPanelImp {
         info!("!!! Fetching custom unit properties !!!");
         let current_property_list = current_property_list.clone();
 
-        let mut property_list_send = HashMap::with_capacity(current_property_list.len());
+        let mut property_list_send = HashSet::with_capacity(current_property_list.len());
 
         for unit_property_selection in current_property_list.iter() {
             //Add custom factory
@@ -1222,10 +1221,15 @@ impl UnitListPanelImp {
                     units_list.into_iter()
                 {
                     let mut cleaned_props: Vec<_> = Vec::with_capacity(property_list_send.len());
-                    for (unit_type, quark) in property_list_send.iter().filter(|(item, _)| {
-                        item.unit_type == UnitType::Unit || item.unit_type == unit_type
-                    }) {
-                        cleaned_props.push((unit_type.unit_type, &unit_type.property, *quark));
+                    for unitcol in property_list_send
+                        .iter()
+                        .filter(|item| item.utype() == UnitType::Unit || item.utype() == unit_type)
+                    {
+                        cleaned_props.push((
+                            unitcol.utype(),
+                            unitcol.property(),
+                            unitcol.generate_quark(),
+                        ));
                     }
                     // println!("PPP orig {:?}", property_list_send);
                     // println!("PPP cleaned {:?}", cleaned_props);
@@ -1280,13 +1284,10 @@ impl UnitListPanelImp {
                         UnitPropertySetter::UnitFilePreset(preset) => unit.set_preset(preset),
                         UnitPropertySetter::SubState(substate) => unit.set_sub_state(substate),
                         UnitPropertySetter::Custom(quark, owned_value) => {
-                            // println!(
-                            //     "DEBUG Custom prop key: {:?} value: {:?}",
-                            //     quark, owned_value
-                            // );
+                            debug!("Custom Prop key: {:?} value: {:?}", quark, owned_value);
                             if &quark
                                 == SOCKET_LISTEN_QUARK
-                                    .get_or_init(|| glib::Quark::from_str(SYSD_SOCKET_LISTEN))
+                                    .get_or_init(|| SysdColumn::SocketListen.generate_quark())
                             {
                                 let listens = unit.insert_socket_listen(quark, owned_value);
                                 for idx in 1..listens {
@@ -1295,10 +1296,8 @@ impl UnitListPanelImp {
                                     list_store.append(&usocket);
                                 }
                             } else if &quark
-                                == PATH_PATHS_QUARK
-                                    .get_or_init(|| glib::Quark::from_str(PATH_PATH_COL))
+                                == PATH_QUARK.get_or_init(|| SysdColumn::Path.generate_quark())
                             {
-                                debug!("Custom value {:?}", owned_value);
                                 let _listens = unit.insert_socket_listen(quark, owned_value);
                             } else {
                                 unit.insert_unit_property_value(quark, owned_value)

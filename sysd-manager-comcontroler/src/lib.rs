@@ -1118,7 +1118,7 @@ pub async fn fetch_unit_properties(
     unit_primary_name: &str,
     path: &str,
     unit_properties: UnitProperties,
-    properties: Vec<(UnitType, &String, Quark)>,
+    properties: Vec<(UnitType, &str, Quark)>,
 ) -> Result<Vec<UnitPropertySetter>, SystemdErrors> {
     sysdbus::fetch_unit_properties(level, unit_primary_name, path, unit_properties, properties)
         .await

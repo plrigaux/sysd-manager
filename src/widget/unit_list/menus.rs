@@ -1,14 +1,18 @@
 use gettextrs::pgettext;
 use gtk::glib::variant::ToVariant;
 
-use crate::consts::{
-    APP_ACTION_PROPERTIES_SELECTOR, NS_ACTION_UNIT_LIST_FILTER, NS_ACTION_UNIT_LIST_FILTER_CLEAR,
+use crate::{
+    consts::{
+        APP_ACTION_PROPERTIES_SELECTOR, NS_ACTION_UNIT_LIST_FILTER,
+        NS_ACTION_UNIT_LIST_FILTER_CLEAR,
+    },
+    widget::unit_list::column::SysdColumn,
 };
 
-pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
+pub fn create_col_menu(key: &SysdColumn) -> gio::MenuModel {
     let menu = gio::Menu::new();
 
-    let variant = key.to_variant();
+    let variant = key.id().to_variant();
     append_item_variant(
         &menu,
         //column header menu
@@ -25,7 +29,7 @@ pub fn create_col_menu(key: &str, is_custom: bool) -> gio::MenuModel {
         &variant,
     );
 
-    if !is_custom {
+    if key.is_custom() {
         let sub_menu = gio::Menu::new();
 
         append_item_variant(
