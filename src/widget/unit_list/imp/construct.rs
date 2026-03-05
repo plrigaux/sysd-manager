@@ -1,4 +1,8 @@
-use std::collections::HashMap;
+use std::{
+    cell::OnceCell,
+    collections::{BTreeMap, HashMap},
+    rc::Rc,
+};
 
 use crate::{
     consts::{
@@ -27,8 +31,8 @@ use crate::{
     },
 };
 use gettextrs::pgettext;
-use systemd::socket_unit::SocketUnitInfo;
-use tracing::warn;
+use systemd::{UnitPropertyFetch, runtime, socket_unit::SocketUnitInfo};
+use tracing::{info, warn};
 use zvariant::Value;
 pub fn construct_column_view(
     display_color: bool,
@@ -267,9 +271,29 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
         return vec![];
     };
 
+    let oc = OnceCell::new();
     let mut list = Vec::with_capacity(saved_config.columns.len());
-    for unit_column_config in saved_config.columns {
-        let id = unit_column_config.get_column();
+    for mut unit_column_config in saved_config.columns {
+        let id = match SysdColumn::verify(&unit_column_config) {
+            Ok(sc) => sc,
+            Err((_e, err_sc)) => {
+                let m = oc.get_or_init(|| {
+                    info!("Fetching Unit Properties for Sanitation purpose");
+                    xxx()
+                });
+                if let Some((prop, (interface, sign))) = m.get_key_value(&unit_column_config.id) {
+                    let sc = SysdColumn::new_from_props(prop, interface, sign).unwrap_or(err_sc);
+                    unit_column_config.id = sc.id().to_owned();
+                    unit_column_config.prop_type = sc.property_type().clone();
+                    sc
+                } else {
+                    err_sc
+                }
+            }
+        };
+
+        // let id = unit_column_config.get_column();
+
         let prop_selection = UnitPropertySelection::from_column_config(unit_column_config);
 
         let column_menu = create_col_menu(&id);
@@ -283,6 +307,24 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
         list.push(prop_selection);
     }
     list
+}
+
+fn xxx() -> HashMap<String, (Rc<String>, String)> {
+    let mut map = HashMap::new();
+    for (interface, fetch_results) in runtime()
+        .block_on(async move { systemd::fetch_unit_interface_properties().await })
+        .inspect_err(|err| warn!("Fetch prop errors {err:?}"))
+        .unwrap_or_default()
+    {
+        let interface = Rc::new(interface);
+        for fetch_result in fetch_results {
+            map.insert(
+                fetch_result.name,
+                (interface.clone(), fetch_result.signature),
+            );
+        }
+    }
+    map
 }
 
 macro_rules! compare_units {

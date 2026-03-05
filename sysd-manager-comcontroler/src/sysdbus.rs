@@ -1484,14 +1484,14 @@ async fn collect_properties(
 
     let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
 
-    for intf in root_node.interfaces() {
-        let list: Vec<_> = intf
+    for interface in root_node.interfaces() {
+        let list: Vec<_> = interface
             .properties()
             .iter()
             .map(|p| UnitPropertyFetch::new(p))
             .collect();
 
-        map.insert(intf.name().to_string(), list);
+        map.insert(interface.name().to_string(), list);
     }
     Ok(())
 }

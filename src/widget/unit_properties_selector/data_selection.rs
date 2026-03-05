@@ -158,52 +158,11 @@ impl UnitPropertySelection {
     }
 
     pub fn fill_property_fetcher(&self, property_list_send: &mut HashSet<SysdColumn>) {
-        if let Some(id) = self.id() {
-            let col: SysdColumn = (id, None).into();
-            if !matches!(col, SysdColumn::FullName | SysdColumn::Active) {
-                property_list_send.insert(col);
-            }
+        if let Some(col) = self.imp().sysd_column()
+            && !matches!(col, SysdColumn::FullName | SysdColumn::Active)
+        {
+            property_list_send.insert(col);
         }
-
-        // match (self.is_custom(), self.id().as_deref()) {
-        //     (false, Some(SOCKET_LISTEN_COL) | Some(SOCKET_LISTEN_TYPE)) => {
-        //         let u_prop = SOCKET_LISTEN.to_owned();
-        //         let quark = Quark::from_str(SYSD_SOCKET_LISTEN);
-        //         property_list_send.insert(
-        //             DataSelectionItem {
-        //                 unit_type: UnitType::Socket,
-        //                 property: u_prop,
-        //             },
-        //             quark,
-        //         );
-        //     }
-        //     (false, Some(PATH_CONDITION_COL) | Some(PATH_PATH_COL)) => {
-        //         let u_prop = PATH_PATHS.to_owned();
-        //         let quark = Quark::from_str(PATH_PATH_COL);
-        //         property_list_send.insert(
-        //             DataSelectionItem {
-        //                 unit_type: UnitType::Path,
-        //                 property: u_prop,
-        //             },
-        //             quark,
-        //         );
-        //     }
-        //     (false, Some(AUTOMOUNT_MOUNTED_COL) | Some(AUTOMOUNT_WHAT_COL)) => {
-        //         let u_prop = WHERE_PROP.to_owned();
-        //         let quark = Quark::from_str(WHERE_PROP);
-        //         property_list_send.insert(
-        //             DataSelectionItem {
-        //                 unit_type: UnitType::Automount,
-        //                 property: u_prop,
-        //             },
-        //             quark,
-        //         );
-        //     }
-        //     (false, Some("sysdm-unit-full") | Some(COL_ACTIVE)) => {}
-        //     (false, _) => {
-        //         //warn!("??? {:?} is custom {:?}", self.id(), self.is_custom())
-        //     }
-        // }
     }
 }
 
@@ -215,7 +174,10 @@ mod imp2 {
 
     use crate::{
         systemd::enums::UnitType,
-        widget::{unit_list::get_clean_col_title, unit_properties_selector::save::SortType},
+        widget::{
+            unit_list::{column::SysdColumn, get_clean_col_title},
+            unit_properties_selector::save::SortType,
+        },
     };
 
     #[derive(Debug, glib::Properties, Default)]
@@ -243,6 +205,8 @@ mod imp2 {
         pub(super) unit_type: Cell<UnitType>,
         #[property(get, set, default)]
         pub(super) sort: Cell<SortType>,
+
+        pub(super) sysd_column: RefCell<Option<SysdColumn>>,
     }
 
     impl UnitPropertySelectionImpl {
@@ -303,6 +267,20 @@ mod imp2 {
 
         fn set_expand(&self, expand: bool) {
             self.column.borrow().set_expand(expand)
+        }
+
+        pub fn sysd_column(&self) -> Option<SysdColumn> {
+            if self.sysd_column.borrow().is_none()
+                && let Some(id) = self.id()
+            {
+                let sc = match SysdColumn::new(id.as_str(), self.prop_type.borrow().clone()) {
+                    Ok(sc) => sc,
+                    Err((_e, sc)) => sc,
+                };
+                self.sysd_column.replace(Some(sc));
+            }
+
+            self.sysd_column.borrow().as_ref().cloned()
         }
     }
 

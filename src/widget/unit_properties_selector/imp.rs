@@ -179,12 +179,12 @@ impl UnitPropertiesSelectorDialogImp {
                 return false;
             };
 
-            info!("Depth {} ", tree_list_row.depth());
+            debug!("Depth {} ", tree_list_row.depth());
 
             if let Some(children) = tree_list_row.children() {
                 let item = tree_list_row.item();
                 if let Some(prop_selector) = item.and_downcast_ref::<PropertyBrowseItem>() {
-                    info!(
+                    debug!(
                         "Child model {} {}",
                         children.n_items(),
                         prop_selector.interface()
@@ -202,8 +202,8 @@ impl UnitPropertiesSelectorDialogImp {
                 return false;
             };
 
-            info!(
-                "Inter {:?} Prop {:?}",
+            debug!(
+                "Interface {:?} Prop {:?}",
                 prop_selector.interface(),
                 prop_selector.unit_property()
             );

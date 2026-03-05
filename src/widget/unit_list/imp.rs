@@ -75,7 +75,7 @@ use systemd::{
     enums::UnitFileStatus, socket_unit::SocketUnitInfo,
 };
 use tokio::task::AbortHandle;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info, trace, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 static PATH_QUARK: OnceLock<glib::Quark> = OnceLock::new();
@@ -1124,6 +1124,7 @@ impl UnitListPanelImp {
         if fetch_custom_props && self.selected_list_view.get() != UnitCuratedList::Custom {
             let settings = systemd_gui::new_settings();
 
+            // to force the action to change the list
             settings
                 .set_string(UnitCuratedList::base_action(), UnitCuratedList::Custom.id())
                 .inspect_err(|err| {
@@ -1134,6 +1135,7 @@ impl UnitListPanelImp {
                     )
                 })
                 .unwrap();
+            return;
         }
 
         let columns_list_model = units_browser!(self).columns();
@@ -1246,8 +1248,9 @@ impl UnitListPanelImp {
                             unitcol.generate_quark(),
                         ));
                     }
-                    // println!("PPP orig {:?}", property_list_send);
-                    // println!("PPP cleaned {:?}", cleaned_props);
+
+                    debug!("orignal {:?}", property_list_send);
+                    debug!("cleaned {:?}", cleaned_props);
 
                     let properties_setter = systemd::fetch_unit_properties(
                         level,
@@ -1299,7 +1302,7 @@ impl UnitListPanelImp {
                         UnitPropertySetter::UnitFilePreset(preset) => unit.set_preset(preset),
                         UnitPropertySetter::SubState(substate) => unit.set_sub_state(substate),
                         UnitPropertySetter::Custom(quark, owned_value) => {
-                            debug!("Custom Prop key: {:?} value: {:?}", quark, owned_value);
+                            trace!("Custom Prop key: {:?} value: {:?}", quark, owned_value);
                             if &quark
                                 == SOCKET_LISTEN_QUARK
                                     .get_or_init(|| SysdColumn::SocketListen.generate_quark())
