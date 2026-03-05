@@ -1121,6 +1121,21 @@ impl UnitListPanelImp {
             return;
         }
 
+        if fetch_custom_props && self.selected_list_view.get() != UnitCuratedList::Custom {
+            let settings = systemd_gui::new_settings();
+
+            settings
+                .set_string(UnitCuratedList::base_action(), UnitCuratedList::Custom.id())
+                .inspect_err(|err| {
+                    warn!(
+                        "Set settings k {} v {} {err:?}",
+                        UnitCuratedList::base_action(),
+                        UnitCuratedList::Custom.id()
+                    )
+                })
+                .unwrap();
+        }
+
         let columns_list_model = units_browser!(self).columns();
 
         //Get the current column

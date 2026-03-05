@@ -562,16 +562,16 @@ type UnitFunc = fn(&UnitInfo, Quark) -> Option<String>;
 type SocketFunc = fn(&SocketUnitInfo, Quark) -> Option<String>;
 
 pub(super) fn get_custom_factory(
-    property_code: &SysdColumn,
+    sysd_col: &SysdColumn,
     display_color: bool,
 ) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();
 
-    let key = property_code.generate_quark();
+    let key = sysd_col.generate_quark();
     factory.connect_setup(factory_setup);
 
-    let Some(prop_type) = property_code.property_type() else {
-        error!("NO PROP_TYPE SET for {:?}", property_code);
+    let Some(prop_type) = sysd_col.property_type() else {
+        error!("NO PROP_TYPE SET for {:?}", sysd_col);
         return factory;
     };
 

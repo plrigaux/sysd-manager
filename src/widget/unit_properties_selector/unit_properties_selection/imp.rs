@@ -10,7 +10,7 @@ use gtk::{
 use tracing::{error, info, warn};
 
 use crate::widget::{
-    unit_list::{UnitListPanel, UnitCuratedList},
+    unit_list::{UnitCuratedList, UnitListPanel},
     unit_properties_selector::{
         data_browser::PropertyBrowseItem,
         data_selection::UnitPropertySelection,
