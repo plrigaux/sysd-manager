@@ -1202,7 +1202,7 @@ impl UnitListPanelImp {
             let units_list: Vec<_> = units_map
                 .borrow()
                 .iter()
-                // .filter(|unit| is_unit_type || types.contains(&unit.unit_type()))
+                .filter(|(_, unit)| !unit.is_template_unit_file())
                 .map(|(key, unit)| {
                     (
                         unit.dbus_level(),

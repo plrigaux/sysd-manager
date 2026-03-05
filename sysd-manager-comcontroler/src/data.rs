@@ -195,6 +195,10 @@ impl UnitInfo {
             .map(|value_ptr| unsafe { value_ptr.as_ref() })
             .and_then(|value| convert_to_string(value))
     }
+
+    pub fn is_template_unit_file(&self) -> bool {
+        self.imp().is_template_unit_file()
+    }
 }
 
 pub fn get_custom_property_typed_raw<T, O>(unit: &O, key: glib::Quark) -> Option<T>
@@ -389,6 +393,14 @@ mod imp {
         pub fn need_to_be_completed(&self) -> bool {
             self.description.borrow().is_none() || self.preset.get() == Preset::UnSet
             // || self.load_state.get() == LoadState::Unknown
+        }
+
+        pub(crate) fn is_template_unit_file(&self) -> bool {
+            let index = *self
+                .display_name
+                .get_or_init(|| unreachable!("Has to be set")) as usize;
+            let s = &self.primary.get().expect("Being set")[..index];
+            s.ends_with('@')
         }
     }
 }
