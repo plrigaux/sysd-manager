@@ -1336,9 +1336,11 @@ impl UnitListPanelImp {
                 let prop_type = current_property_list
                     .iter()
                     .find(|prop_selection| prop_selection.id() == column.id())
-                    .and_then(|prop_selection| prop_selection.prop_type());
+                    .and_then(|prop_selection| prop_selection.sysd_column());
 
-                construct::set_column_factory_and_sorter(&column, display_color, prop_type);
+                if let Some(sysd_col) = prop_type {
+                    construct::set_column_factory_and_sorter(&column, display_color, &sysd_col);
+                }
             }
 
             unit_list.imp().set_sorter();

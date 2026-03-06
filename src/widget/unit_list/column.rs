@@ -51,21 +51,21 @@ pub enum SysdColumn {
 }
 
 impl SysdColumn {
-    pub fn new_custom(utype: UnitType, id: String, prop: Option<String>) -> Self {
-        SysdColumn::Custom(utype, id, prop)
-    }
-
     pub(crate) fn new_from_props(
         property_name: &str,
         interface: &str,
-        signature: &str,
-    ) -> Result<SysdColumn, (SysdColumnNonConformity, SysdColumn)> {
-        if interface.is_empty() {
-            Self::new(property_name, Some(signature.to_owned()))
+        signature: Option<String>,
+    ) -> SysdColumn {
+        // let signature = signature.map(|s| s.to_owned());
+        match if interface.is_empty() {
+            Self::new(property_name, signature)
         } else {
             let ut = UnitType::from_intreface(interface);
             let new_id = format!("{}@{property_name}", ut.as_str());
-            Self::new(&new_id, Some(signature.to_owned()))
+            Self::new(&new_id, signature)
+        } {
+            Ok(a) => a,
+            Err(e) => e.1,
         }
     }
 
@@ -236,6 +236,7 @@ impl From<(GString, Option<String>)> for SysdColumn {
     }
 }
 
+#[derive(Debug)]
 pub enum SysdColumnNonConformity {
     CustomColWithoutDefinePropType,
     CustomColIdWithoutUnitType,

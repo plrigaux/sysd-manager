@@ -1,16 +1,11 @@
-use crate::{
-    systemd::enums::UnitType,
-    widget::{
-        unit_list::{column::SysdColumn, menus::create_col_menu},
-        unit_properties_selector::{data_browser::PropertyBrowseItem, save::UnitColumn},
-    },
+use crate::widget::{
+    unit_list::{column::SysdColumn, menus::create_col_menu},
+    unit_properties_selector::{data_browser::PropertyBrowseItem, save::UnitColumn},
 };
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};
 use std::collections::HashSet;
 use tracing::{debug, info};
-
-//pub const INTERFACE_NAME: &str = "Basic Columns";
 
 glib::wrapper! {
     pub struct UnitPropertySelection(ObjectSubclass<imp2::UnitPropertySelectionImpl>);
@@ -22,22 +17,21 @@ impl UnitPropertySelection {
 
         let p_imp = this_object.imp();
         let interface = broswer_property.interface();
-        let unit_type = UnitType::from_intreface(&interface);
         let unit_property = broswer_property.unit_property();
-        p_imp.prop_type.replace(broswer_property.signature());
         p_imp.access.replace(broswer_property.access());
-        p_imp.unit_type.set(unit_type);
+        let sign = broswer_property.signature();
+
+        let sysd_col = SysdColumn::new_from_props(&unit_property, &interface, sign);
 
         let col = if let Some(col) = broswer_property.column() {
             info!("COL {:?} {:?}", col.id(), col.title());
             col
         } else {
-            let id = SysdColumn::new_custom(unit_type, unit_property.clone(), None);
-            let menu = create_col_menu(&id);
+            let menu = create_col_menu(&sysd_col);
 
             let col = gtk::ColumnViewColumn::builder()
-                .title(id.id())
-                .id(id.id())
+                .title(sysd_col.property())
+                .id(sysd_col.id())
                 .header_menu(&menu)
                 .resizable(true)
                 .build();
@@ -45,6 +39,7 @@ impl UnitPropertySelection {
             col
         };
 
+        p_imp.sysd_column.replace(Some(sysd_col));
         p_imp.unit_property.replace(unit_property);
         p_imp.column.replace(col);
 
@@ -65,7 +60,7 @@ impl UnitPropertySelection {
         if let Some(id) = column.id() {
             Self::fill_from_id(p_imp, id.as_str());
         } else {
-            p_imp.unit_type.set(UnitType::Unknown);
+            // p_imp.unit_type.set(UnitType::Unknown);
         }
 
         p_imp.column.replace(column);
@@ -76,20 +71,30 @@ impl UnitPropertySelection {
     fn fill_from_id(p_imp: &imp2::UnitPropertySelectionImpl, id: &str) {
         let custom_id: SysdColumn = (id, None).into();
         p_imp.unit_property.replace(custom_id.id().to_string());
-        p_imp.unit_type.set(custom_id.utype());
+        p_imp.sysd_column.replace(Some(custom_id));
 
-        debug!("UNIT TYPE FROM ID {} {:?}", id, p_imp.unit_type.get());
+        debug!("UNIT TYPE FROM ID {} ", id);
     }
 
     pub fn from_column_config(unit_column_config: UnitColumn) -> Self {
+        let col = match SysdColumn::verify(&unit_column_config) {
+            Ok(sc) => sc,
+            Err(e) => e.1,
+        };
+        Self::from_column_config2(unit_column_config, col)
+    }
+
+    pub fn from_column_config2(unit_column_config: UnitColumn, col: SysdColumn) -> Self {
         let column = gtk::ColumnViewColumn::builder()
-            .id(&unit_column_config.id)
+            .id(col.id())
             .fixed_width(unit_column_config.fixed_width)
             .expand(unit_column_config.expands)
             .resizable(unit_column_config.resizable)
             .visible(unit_column_config.visible)
             .build();
 
+        let column_menu = create_col_menu(&col);
+        column.set_header_menu(Some(&column_menu));
         let this_object = Self::from_column_view_column(column);
 
         let p_imp = this_object.imp();
@@ -101,7 +106,7 @@ impl UnitPropertySelection {
             }
         }
 
-        p_imp.prop_type.replace(unit_column_config.prop_type);
+        p_imp.sysd_column.replace(Some(col));
 
         this_object.set_sort(unit_column_config.sort.unwrap_or_default());
 
@@ -133,10 +138,11 @@ impl UnitPropertySelection {
         let p_imp = to.imp();
 
         p_imp.unit_property.replace(self.unit_property());
-        p_imp.prop_type.replace(self.prop_type());
+        // p_imp.prop_type.replace(self.prop_type());
         p_imp.access.replace(self.access());
-        p_imp.unit_type.set(self.unit_type());
+        // p_imp.unit_type.set(self.unit_type());
 
+        p_imp.sysd_column.replace(self.sysd_column());
         {
             let col = self.column();
             let cur_col = p_imp.column.borrow();
@@ -158,11 +164,18 @@ impl UnitPropertySelection {
     }
 
     pub fn fill_property_fetcher(&self, property_list_send: &mut HashSet<SysdColumn>) {
-        if let Some(col) = self.imp().sysd_column()
+        if let Some(col) = self.sysd_column()
             && !matches!(col, SysdColumn::FullName | SysdColumn::Active)
         {
             property_list_send.insert(col);
         }
+    }
+
+    pub fn sysd_column(&self) -> Option<SysdColumn> {
+        self.imp().sysd_column()
+    }
+    pub fn prop_type(&self) -> Option<String> {
+        self.imp().prop_type()
     }
 }
 
@@ -187,8 +200,8 @@ mod imp2 {
         pub(super) interface: RefCell<String>, */
         #[property(get)]
         pub(super) unit_property: RefCell<String>,
-        #[property(get)]
-        pub(super) prop_type: RefCell<Option<String>>,
+        // #[property(get)]
+        // pub(super) prop_type: RefCell<Option<String>>,
         #[property(get)]
         pub(super) access: RefCell<Option<String>>,
         #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]
@@ -201,8 +214,8 @@ mod imp2 {
         pub(super) column: RefCell<gtk::ColumnViewColumn>,
 
         #[property(name = "interface", get= Self::interface, type = String)]
-        #[property(get, default)]
-        pub(super) unit_type: Cell<UnitType>,
+        // #[property(get, default)]
+        // pub(super) unit_type: Cell<UnitType>,
         #[property(get, set, default)]
         pub(super) sort: Cell<SortType>,
 
@@ -211,11 +224,11 @@ mod imp2 {
 
     impl UnitPropertySelectionImpl {
         pub fn is_custom(&self) -> bool {
-            !matches!(self.unit_type.get(), UnitType::Unknown)
+            !matches!(self.unit_type(), UnitType::Unknown)
         }
 
         fn interface(&self) -> String {
-            self.unit_type.get().interface().to_string()
+            self.unit_type().interface().to_string()
         }
 
         fn visible(&self) -> bool {
@@ -270,17 +283,32 @@ mod imp2 {
         }
 
         pub fn sysd_column(&self) -> Option<SysdColumn> {
-            if self.sysd_column.borrow().is_none()
-                && let Some(id) = self.id()
-            {
-                let sc = match SysdColumn::new(id.as_str(), self.prop_type.borrow().clone()) {
-                    Ok(sc) => sc,
-                    Err((_e, sc)) => sc,
-                };
-                self.sysd_column.replace(Some(sc));
-            }
+            // if self.sysd_column.borrow().is_none()
+            //     && let Some(id) = self.id()
+            // {
+            //     let sc = match SysdColumn::new(id.as_str(), self.prop_type.borrow().clone()) {
+            //         Ok(sc) => sc,
+            //         Err((_e, sc)) => sc,
+            //     };
+            //     self.sysd_column.replace(Some(sc));
+            // }
 
             self.sysd_column.borrow().as_ref().cloned()
+        }
+
+        fn unit_type(&self) -> UnitType {
+            self.sysd_column
+                .borrow()
+                .as_ref()
+                .map(|s| s.utype())
+                .unwrap_or(UnitType::Unknown)
+        }
+
+        pub(crate) fn prop_type(&self) -> Option<String> {
+            self.sysd_column
+                .borrow()
+                .as_ref()
+                .and_then(|s| s.property_type().clone())
         }
     }
 

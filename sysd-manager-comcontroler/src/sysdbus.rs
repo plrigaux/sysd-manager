@@ -1432,8 +1432,6 @@ pub(super) async fn fetch_unit_interface_properties()
     )
     .await?;
 
-    info!("Proxy {proxy:?}");
-
     let xml = proxy.introspect().await?;
 
     let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;

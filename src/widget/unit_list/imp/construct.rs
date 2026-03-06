@@ -1,15 +1,8 @@
-use std::{
-    cell::OnceCell,
-    collections::{BTreeMap, HashMap},
-    rc::Rc,
-};
-
 use crate::{
     consts::{
-        AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_MOUNTED_COL, AUTOMOUNT_WHAT_COL, PATH_CONDITION_COL,
-        PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE, SYSD_SOCKET_LISTEN,
-        TIME_LAST_TRIGGER_USEC, TIMER_TIME_LAST, TIMER_TIME_LEFT, TIMER_TIME_NEXT,
-        TIMER_TIME_PASSED,
+        PATH_CONDITION_COL, PATH_PATH_COL, SOCKET_LISTEN_COL, SOCKET_LISTEN_TYPE,
+        SYSD_SOCKET_LISTEN, TIME_LAST_TRIGGER_USEC, TIMER_TIME_LAST, TIMER_TIME_LEFT,
+        TIMER_TIME_NEXT, TIMER_TIME_PASSED,
     },
     extract_listen, extract_tuple_idx,
     gtk::prelude::*,
@@ -31,9 +24,11 @@ use crate::{
     },
 };
 use gettextrs::pgettext;
-use systemd::{UnitPropertyFetch, runtime, socket_unit::SocketUnitInfo};
+use std::{cell::OnceCell, collections::HashMap, rc::Rc};
+use systemd::{runtime, socket_unit::SocketUnitInfo};
 use tracing::{info, warn};
 use zvariant::Value;
+
 pub fn construct_column_view(
     display_color: bool,
     view: UnitCuratedList,
@@ -103,26 +98,35 @@ fn generate_automounts_columns(
     unit_column.fixed_width = 120;
     columns.push(UnitPropertySelection::from_column_config(unit_column));
 
-    let mut unit_column = UnitColumn::new(AUTOMOUNT_WHAT_COL, "s");
-    unit_column.resizable = true;
-    //Automounts list column name
-    unit_column.title = Some(pgettext("list column", "What"));
-    unit_column.fixed_width = 120;
-    columns.push(UnitPropertySelection::from_column_config(unit_column));
+    let col = SysdColumn::AutomountWhat;
+    let unit_column = UnitColumn {
+        resizable: true,
+        //Automounts list column name
+        title: Some(pgettext("list column", "What")),
+        fixed_width: 120,
+        ..Default::default()
+    };
+    columns.push(UnitPropertySelection::from_column_config2(unit_column, col));
 
-    let mut unit_column = UnitColumn::new(AUTOMOUNT_MOUNTED_COL, "s");
-    unit_column.resizable = true;
-    //Automounts list column name
-    unit_column.title = Some(pgettext("list column", "Mounted"));
-    unit_column.fixed_width = 120;
-    columns.push(UnitPropertySelection::from_column_config(unit_column));
+    let col = SysdColumn::AutomountMounted;
+    let unit_column = UnitColumn {
+        resizable: true,
+        //Automounts list column name
+        title: Some(pgettext("list column", "Mounted")),
+        fixed_width: 120,
+        ..Default::default()
+    };
+    columns.push(UnitPropertySelection::from_column_config2(unit_column, col));
 
-    let mut unit_column = UnitColumn::new(AUTOMOUNT_IDLE_TIMEOUT_COL, "t");
-    unit_column.resizable = true;
-    //Automounts list column name
-    unit_column.title = Some(pgettext("list column", "Idle Timeout"));
-    unit_column.fixed_width = 120;
-    columns.push(UnitPropertySelection::from_column_config(unit_column));
+    let col = SysdColumn::AutomountIdleTimeOut;
+    let unit_column = UnitColumn {
+        resizable: true,
+        //Automounts list column name
+        title: Some(pgettext("list column", "Idle Timeout")),
+        fixed_width: 120,
+        ..Default::default()
+    };
+    columns.push(UnitPropertySelection::from_column_config2(unit_column, col));
 
     columns
 }
@@ -273,19 +277,28 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
 
     let oc = OnceCell::new();
     let mut list = Vec::with_capacity(saved_config.columns.len());
-    for mut unit_column_config in saved_config.columns {
+    for unit_column_config in saved_config.columns {
         let id = match SysdColumn::verify(&unit_column_config) {
-            Ok(sc) => sc,
+            Ok(sysd_column) => sysd_column,
             Err((_e, err_sc)) => {
                 let m = oc.get_or_init(|| {
                     info!("Fetching Unit Properties for Sanitation purpose");
                     xxx()
                 });
-                if let Some((prop, (interface, sign))) = m.get_key_value(&unit_column_config.id) {
-                    let sc = SysdColumn::new_from_props(prop, interface, sign).unwrap_or(err_sc);
-                    unit_column_config.id = sc.id().to_owned();
-                    unit_column_config.prop_type = sc.property_type().clone();
-                    sc
+                if let Some((property_name, (interface, signature))) =
+                    m.get_key_value(&unit_column_config.id)
+                {
+                    SysdColumn::new_from_props(property_name, interface, Some(signature.to_owned()))
+                } else if let Some((_utype, prop)) = unit_column_config.id.split_once('@') {
+                    if let Some((property_name, (interface, signature))) = m.get_key_value(prop) {
+                        SysdColumn::new_from_props(
+                            property_name,
+                            interface,
+                            Some(signature.to_owned()),
+                        )
+                    } else {
+                        err_sc
+                    }
                 } else {
                     err_sc
                 }
@@ -294,15 +307,12 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
 
         // let id = unit_column_config.get_column();
 
-        let prop_selection = UnitPropertySelection::from_column_config(unit_column_config);
+        let prop_selection =
+            UnitPropertySelection::from_column_config2(unit_column_config, id.clone());
 
-        let column_menu = create_col_menu(&id);
         let column = prop_selection.column();
-        column.set_header_menu(Some(&column_menu));
 
-        let prop_type = prop_selection.prop_type();
-
-        construct::set_column_factory_and_sorter(&column, display_color, prop_type);
+        construct::set_column_factory_and_sorter(&column, display_color, &id);
 
         list.push(prop_selection);
     }
@@ -374,20 +384,13 @@ pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySe
 pub fn set_column_factory_and_sorter(
     column: &gtk::ColumnViewColumn,
     display_color: bool,
-    prop_type: Option<String>,
+    id: &SysdColumn,
 ) {
-    let Some(id) = column.id() else {
-        warn!("No column id");
-        return;
-    };
-
-    let id: SysdColumn = (id, prop_type).into();
-
     //force data display
-    let factory = column_factories::get_factory_by_id(&id, display_color);
+    let factory = column_factories::get_factory_by_id(id, display_color);
     column.set_factory(factory.as_ref());
 
-    let sorter = get_sorter_by_id(&id);
+    let sorter = get_sorter_by_id(id);
     column.set_sorter(sorter.as_ref());
 }
 
@@ -423,7 +426,7 @@ fn create_custom_property_column_sorter(id: &SysdColumn) -> Option<gtk::CustomSo
     let key = id.generate_quark();
 
     let Some(prop_type) = id.property_type() else {
-        warn!("column sorter without prop_type ");
+        warn!("column sorter without prop_type, id {:?}", key);
         return None;
     };
 

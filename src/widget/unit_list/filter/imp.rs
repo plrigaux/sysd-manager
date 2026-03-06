@@ -109,14 +109,11 @@ impl UnitListFilterWindowImp {
                 .iter()
                 .filter(|col| col.is_custom()),
         ) {
-            let Some(id) = unit_prop_selection.id() else {
-                warn!("Column with no id");
+            let Some(key) = unit_prop_selection.sysd_column() else {
+                warn!("No key for filtering");
                 continue;
             };
 
-            let prop_type = unit_prop_selection.prop_type();
-
-            let key: SysdColumn = (id, prop_type).into();
             let Some(unit_property_filter_configurator) =
                 unit_list_panel.lazy_get_filter_assessor(&key)
             else {

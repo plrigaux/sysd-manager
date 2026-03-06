@@ -302,22 +302,20 @@ pub fn setup_factories(
             continue;
         };
 
-        let prop_type =
-            current_column_view_column_definition_list
-                .iter()
-                .find_map(|prop_selection| {
-                    if prop_selection.id().is_some_and(|s| id == s.as_str()) {
-                        prop_selection.prop_type()
-                    } else {
-                        None
-                    }
-                });
+        let col_id = current_column_view_column_definition_list
+            .iter()
+            .find_map(|prop_selection| {
+                if prop_selection.id().is_some_and(|s| id == s.as_str()) {
+                    prop_selection.sysd_column()
+                } else {
+                    None
+                }
+            });
 
-        let col_id = (id, prop_type).into();
-
-        let factory = get_factory_by_id(&col_id, display_color);
-
-        column.set_factory(factory.as_ref());
+        if let Some(col_id) = col_id {
+            let factory = get_factory_by_id(&col_id, display_color);
+            column.set_factory(factory.as_ref());
+        }
     }
 }
 
