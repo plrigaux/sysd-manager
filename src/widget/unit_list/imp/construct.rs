@@ -25,7 +25,7 @@ use crate::{
 };
 use gettextrs::pgettext;
 use std::{cell::OnceCell, collections::HashMap, rc::Rc};
-use systemd::{runtime, socket_unit::SocketUnitInfo};
+use systemd::{enums::UnitType, runtime, socket_unit::SocketUnitInfo};
 use tracing::{info, warn};
 use zvariant::Value;
 
@@ -84,21 +84,28 @@ fn generate_automounts_columns(
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+    columns.push(unit_col);
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(UnitPropertySelection::from_column_view_column(col));
+        columns.push(col);
     }
 
-    let mut unit_column = UnitColumn::new("automount@Where", "s");
-    unit_column.resizable = true;
-    //Automounts list column name
-    unit_column.title = Some(pgettext("list column", "Where"));
-    unit_column.fixed_width = 120;
-    columns.push(UnitPropertySelection::from_column_config(unit_column));
+    let sysd_col = SysdColumn::fill_custom(UnitType::Mount, "Where", "s");
 
-    let col = SysdColumn::AutomountWhat;
+    let unit_column = UnitColumn {
+        resizable: true,
+        //Automounts list column name
+        title: Some(pgettext("list column", "Where")),
+        fixed_width: 120,
+        ..Default::default()
+    };
+    columns.push(UnitPropertySelection::from_column_config2(
+        unit_column,
+        sysd_col,
+    ));
+
+    let sysd_col = SysdColumn::AutomountWhat;
     let unit_column = UnitColumn {
         resizable: true,
         //Automounts list column name
@@ -106,9 +113,12 @@ fn generate_automounts_columns(
         fixed_width: 120,
         ..Default::default()
     };
-    columns.push(UnitPropertySelection::from_column_config2(unit_column, col));
+    columns.push(UnitPropertySelection::from_column_config2(
+        unit_column,
+        sysd_col,
+    ));
 
-    let col = SysdColumn::AutomountMounted;
+    let sysd_col = SysdColumn::AutomountMounted;
     let unit_column = UnitColumn {
         resizable: true,
         //Automounts list column name
@@ -116,7 +126,10 @@ fn generate_automounts_columns(
         fixed_width: 120,
         ..Default::default()
     };
-    columns.push(UnitPropertySelection::from_column_config2(unit_column, col));
+    columns.push(UnitPropertySelection::from_column_config2(
+        unit_column,
+        sysd_col,
+    ));
 
     let col = SysdColumn::AutomountIdleTimeOut;
     let unit_column = UnitColumn {
@@ -138,15 +151,15 @@ fn generate_sockets_columns(
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+    columns.push(unit_col);
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(UnitPropertySelection::from_column_view_column(col));
+        columns.push(col);
     }
 
     let col = create_unit_active_status_columun(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(col));
+    columns.push(col);
 
     let col = create_socket_listen_type_column();
     columns.push(UnitPropertySelection::from_column_config(col));
@@ -167,11 +180,11 @@ fn generate_timers_columns(
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+    columns.push(unit_col);
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(UnitPropertySelection::from_column_view_column(col));
+        columns.push(col);
     }
 
     let col = create_time_next_time();
@@ -199,15 +212,15 @@ fn generate_paths_columns(
     let mut columns = vec![];
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+    columns.push(unit_col);
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(UnitPropertySelection::from_column_view_column(col));
+        columns.push(col);
     }
 
     let col = create_path_paths_column();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    columns.push(col);
 
     let col = create_path_condition_column();
     columns.push(UnitPropertySelection::from_column_config(col));
@@ -228,15 +241,25 @@ fn create_path_condition_column() -> UnitColumn {
     unit_column
 }
 
-fn create_path_paths_column() -> UnitColumn {
-    let mut unit_column = UnitColumn::new(PATH_PATH_COL, "a(ss)");
-    unit_column.resizable = true;
-    //Path list column name
-    unit_column.title = Some(pgettext("list column", "Path"));
-    unit_column.fixed_width = 320;
-    unit_column.sort = Some(SortType::Asc);
+fn create_path_paths_column() -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Path;
+    let unit_column = UnitColumn {
+        resizable: true,
+        //Path list column name
+        title: Some(pgettext("list column", "Path")),
+        fixed_width: 320,
+        sort: Some(SortType::Asc),
+        ..Default::default()
+    };
 
-    unit_column
+    // let mut unit_column = UnitColumn::new(PATH_PATH_COL, "a(ss)");
+    // unit_column.resizable = true;
+    // //Path list column name
+    // unit_column.title = Some(pgettext("list column", "Path"));
+    // unit_column.fixed_width = 320;
+    // unit_column.sort = Some(SortType::Asc);
+
+    UnitPropertySelection::from_column_config2(unit_column, sysd_col)
 }
 
 fn create_path_unit_column() -> UnitColumn {
@@ -256,16 +279,16 @@ fn generate_unit_files_columns(display_color: bool) -> Vec<UnitPropertySelection
 
     let unit_col = create_unit_display_name_column(display_color);
 
-    columns.push(UnitPropertySelection::from_column_view_column(unit_col));
+    columns.push(unit_col);
 
     let type_col = create_unit_type_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(type_col));
+    columns.push(type_col);
 
     let state_col = create_unit_file_state(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(state_col));
+    columns.push(state_col);
 
     let preset_col = create_unit_file_preset_column(display_color);
-    columns.push(UnitPropertySelection::from_column_view_column(preset_col));
+    columns.push(preset_col);
 
     columns
 }
@@ -376,9 +399,6 @@ macro_rules! create_column_filter {
 
 pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySelection> {
     generate_default_columns(display_color)
-        .into_iter()
-        .map(UnitPropertySelection::from_column_view_column)
-        .collect()
 }
 
 pub fn set_column_factory_and_sorter(
@@ -508,7 +528,7 @@ where
 const SYSDM_STATE: &str = "sysdm-state";
 const SYSDM_PRESET: &str = "sysdm-preset";
 
-fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
+fn generate_default_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
     let unit_col = create_unit_display_name_column(display_color);
@@ -517,12 +537,12 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let type_col = create_unit_type_column(display_color);
     columns.push(type_col);
 
-    let id = SysdColumn::Bus;
+    let sysd_col = SysdColumn::Bus;
     let sorter = create_column_filter!(dbus_level);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_bus(display_color);
     let bus_col = gtk::ColumnViewColumn::builder()
-        .id(id.id())
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -530,6 +550,8 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .fixed_width(61)
         .title(pgettext("list column", "Bus"))
         .build();
+
+    let bus_col = UnitPropertySelection::from_column_view_column(bus_col, sysd_col);
     columns.push(bus_col);
 
     let state_col = create_unit_file_state(display_color);
@@ -538,12 +560,12 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     let preset_col = create_unit_file_preset_column(display_color);
     columns.push(preset_col);
 
-    let id = SysdColumn::Load;
+    let sysd_col = SysdColumn::Load;
     let sorter = create_column_filter!(load_state);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_load_state(display_color);
     let load_col = gtk::ColumnViewColumn::builder()
-        .id(id.id())
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -551,17 +573,19 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .fixed_width(80)
         .title(pgettext("list column", "Load"))
         .build();
+
+    let load_col = UnitPropertySelection::from_column_view_column(load_col, sysd_col);
     columns.push(load_col);
 
     let active_col = create_unit_active_status_columun(display_color);
     columns.push(active_col);
 
-    let id = SysdColumn::SubState;
+    let sysd_col = SysdColumn::SubState;
     let sorter = create_column_filter!(sub_state);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_sub_state(display_color);
     let sub_col = gtk::ColumnViewColumn::builder()
-        .id(id.id())
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -569,6 +593,8 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
         .fixed_width(71)
         .title(pgettext("list column", "Sub"))
         .build();
+
+    let sub_col = UnitPropertySelection::from_column_view_column(sub_col, sysd_col);
     columns.push(sub_col);
 
     let sub_description = create_unit_description_column(display_color);
@@ -577,82 +603,90 @@ fn generate_default_columns(display_color: bool) -> Vec<gtk::ColumnViewColumn> {
     columns
 }
 
-fn create_unit_file_preset_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SysdColumn::Preset;
+fn create_unit_file_preset_column(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Preset;
     let sorter = create_column_filter!(preset);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_preset(display_color);
 
-    gtk::ColumnViewColumn::builder()
-        .id(id.id())
+    let column = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
         .fixed_width(70)
         .title(pgettext("list column", "Preset"))
-        .build()
+        .build();
+
+    UnitPropertySelection::from_column_view_column(column, sysd_col)
 }
 
-fn create_unit_file_state(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = &SysdColumn::State;
+fn create_unit_file_state(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::State;
     let sorter = create_column_filter!(enable_status);
-    let column_menu = create_col_menu(id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_enable_status(display_color);
 
-    gtk::ColumnViewColumn::builder()
-        .id(id.id())
+    let column = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
         .fixed_width(80)
         .title(pgettext("list column", "State"))
-        .build()
+        .build();
+
+    UnitPropertySelection::from_column_view_column(column, sysd_col)
 }
 
-fn create_unit_active_status_columun(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SysdColumn::Active;
+fn create_unit_active_status_columun(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Active;
     let sorter = create_column_filter!(active_state);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_active(display_color);
 
-    gtk::ColumnViewColumn::builder()
-        .id(id.id())
+    let column = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
         .fixed_width(62)
         .title(pgettext("list column", "Active"))
-        .build()
+        .build();
+
+    UnitPropertySelection::from_column_view_column(column, sysd_col)
 }
 
-fn create_unit_description_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SysdColumn::Description;
+fn create_unit_description_column(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Description;
     let sorter = create_column_filter!(description);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_descrition(display_color);
 
-    gtk::ColumnViewColumn::builder()
-        .id(id.id())
+    let column = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
         .expand(true)
         .title(pgettext("list column", "Description"))
-        .build()
+        .build();
+
+    UnitPropertySelection::from_column_view_column(column, sysd_col)
 }
 
-fn create_unit_display_name_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SysdColumn::Name;
+fn create_unit_display_name_column(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Name;
     let sorter = create_column_filter!(primary, dbus_level);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_unit_name(display_color);
 
-    gtk::ColumnViewColumn::builder()
-        .id(id.id())
+    let column = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
@@ -660,41 +694,47 @@ fn create_unit_display_name_column(display_color: bool) -> gtk::ColumnViewColumn
         .fixed_width(150)
         //Unit full name column name
         .title(pgettext("list column", "Unit"))
-        .build()
+        .build();
+
+    UnitPropertySelection::from_column_view_column(column, sysd_col)
 }
 
-fn create_unit_display_full_name_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SysdColumn::FullName;
+fn create_unit_display_full_name_column(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::FullName;
     let sorter = create_column_filter!(primary, dbus_level);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_unit_name(display_color);
 
-    gtk::ColumnViewColumn::builder()
-        .id(id.id())
+    let col = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
         .fixed_width(150)
         .title(pgettext("list column", "Unit"))
-        .build()
+        .build();
+
+    UnitPropertySelection::from_column_view_column(col, sysd_col)
 }
 
-fn create_unit_type_column(display_color: bool) -> gtk::ColumnViewColumn {
-    let id = SysdColumn::Type;
+fn create_unit_type_column(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Type;
     let sorter = create_column_filter!(unit_type);
-    let column_menu = create_col_menu(&id);
+    let column_menu = create_col_menu(&sysd_col);
     let factory = fac_unit_type(display_color);
 
-    gtk::ColumnViewColumn::builder()
-        .id(id.id())
+    let col = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
         .sorter(&sorter)
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
         .fixed_width(82)
         .title(pgettext("list column", "Type"))
-        .build()
+        .build();
+
+    UnitPropertySelection::from_column_view_column(col, sysd_col)
 }
 
 fn create_socket_listen_type_column() -> UnitColumn {
@@ -775,6 +815,5 @@ fn generate_loaded_units_columns(display_color: bool) -> Vec<UnitPropertySelecti
             c.id().map(|s| s.as_str() != SYSDM_STATE).unwrap_or(true)
                 && c.id().map(|s| s.as_str() != SYSDM_PRESET).unwrap_or(true)
         })
-        .map(UnitPropertySelection::from_column_view_column)
         .collect()
 }

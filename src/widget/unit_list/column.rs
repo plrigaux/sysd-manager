@@ -1,6 +1,6 @@
 use glib::GString;
 use systemd::enums::UnitType;
-use tracing::{error, warn};
+use tracing::error;
 
 use crate::{
     consts::{
@@ -12,7 +12,10 @@ use crate::{
     },
     widget::{
         unit_list::{COL_ID_UNIT, COL_ID_UNIT_FULL},
-        unit_properties_selector::save::UnitColumn,
+        unit_properties_selector::{
+            data_browser::{INTERFACE_NAME, SPECIAL_INTERFACE_NAME},
+            save::UnitColumn,
+        },
     },
 };
 
@@ -23,6 +26,20 @@ const COL_TYPE: &str = "sysdm-type";
 const COL_SUBSTATE: &str = "sysdm-sub";
 const COL_LOAD: &str = "sysdm-load";
 const COL_DESCRIPTION: &str = "sysdm-description";
+
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+pub struct CustomProp {
+    utype: UnitType,
+    id: String,
+    prop_idx: u8,
+    signature: Option<String>,
+}
+
+impl CustomProp {
+    fn property(&self) -> &str {
+        &self.id[(self.prop_idx as usize)..]
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub enum SysdColumn {
@@ -47,7 +64,7 @@ pub enum SysdColumn {
     AutomountWhat,
     AutomountMounted,
     AutomountIdleTimeOut,
-    Custom(UnitType, String, Option<String>),
+    Custom(CustomProp),
 }
 
 impl SysdColumn {
@@ -57,23 +74,29 @@ impl SysdColumn {
         signature: Option<String>,
     ) -> SysdColumn {
         // let signature = signature.map(|s| s.to_owned());
-        match if interface.is_empty() {
-            Self::new(property_name, signature)
-        } else {
-            let ut = UnitType::from_intreface(interface);
-            let new_id = format!("{}@{property_name}", ut.as_str());
-            Self::new(&new_id, signature)
-        } {
+
+        let r = match interface {
+            "" | SPECIAL_INTERFACE_NAME | INTERFACE_NAME => {
+                Self::new(property_name.to_owned(), signature)
+            }
+            _ => {
+                let ut = UnitType::from_intreface(interface);
+                let new_id = format!("{}@{property_name}", ut.as_str());
+                Self::new(new_id, signature)
+            }
+        };
+
+        match r {
             Ok(a) => a,
             Err(e) => e.1,
         }
     }
 
     pub fn new(
-        id: &str,
+        id: String,
         prop_type: Option<String>,
     ) -> Result<SysdColumn, (SysdColumnNonConformity, SysdColumn)> {
-        let col = match id {
+        let col = match id.as_str() {
             COL_ID_UNIT => SysdColumn::Name,
             COL_ID_UNIT_FULL => SysdColumn::FullName,
             COL_BUS => SysdColumn::Bus,
@@ -100,24 +123,24 @@ impl SysdColumn {
                     let ut: UnitType = utype.into();
                     if UnitType::Unknown != ut {
                         if verify_prop_type(&prop_type) {
-                            return Ok(SysdColumn::Custom(ut, id.to_owned(), prop_type));
+                            return Ok(Self::fill_custom2(ut, id, prop_type));
                         } else {
                             return Err((
                                 SysdColumnNonConformity::CustomColIdWithoutUnitType,
-                                SysdColumn::Custom(UnitType::Unknown, id.to_string(), prop_type),
+                                defective_custom(id, prop_type),
                             ));
                         }
                     } else {
                         return Err((
                             SysdColumnNonConformity::CustomColWithoutDefinePropType,
-                            SysdColumn::Custom(UnitType::Unknown, id.to_string(), prop_type),
+                            defective_custom(id, prop_type),
                         ));
                     }
                 } else {
                     error!("Unknown type for property : {:?}", id);
                     return Err((
                         SysdColumnNonConformity::CustomColWithoutDefinePropType,
-                        SysdColumn::Custom(UnitType::Unknown, id.to_string(), prop_type),
+                        defective_custom(id, prop_type),
                     ));
                 }
             }
@@ -148,19 +171,29 @@ impl SysdColumn {
             SysdColumn::AutomountWhat => AUTOMOUNT_WHAT_COL,
             SysdColumn::AutomountMounted => AUTOMOUNT_MOUNTED_COL,
             SysdColumn::AutomountIdleTimeOut => AUTOMOUNT_IDLE_TIMEOUT_COL,
-            SysdColumn::Custom(_, id, _) => id.as_str(),
+            SysdColumn::Custom(c) => c.id.as_str(),
         }
     }
 
     pub fn property_type(&self) -> &Option<String> {
         match self {
-            SysdColumn::Custom(_, _, p) => p,
+            SysdColumn::Custom(c) => &c.signature,
             _ => &None,
         }
     }
 
     pub(crate) fn property(&self) -> &str {
         match self {
+            SysdColumn::Name => "Name",
+            SysdColumn::FullName => "Name",
+            SysdColumn::Type => "Type",
+            SysdColumn::Bus => "Bus",
+            SysdColumn::State => "UnitFileState",
+            SysdColumn::Preset => "UnitFilePreset",
+            SysdColumn::Load => "LoadStat",
+            SysdColumn::Active => "Active",
+            SysdColumn::SubState => "SubState",
+            SysdColumn::Description => "Description",
             SysdColumn::TimerTimePassed | SysdColumn::TimerTimeLast => TIME_LAST_TRIGGER_USEC,
             SysdColumn::TimerTimeNextElapseRT => TIME_NEXT_ELAPSE_USEC_REALTIME,
             SysdColumn::TimerTimeLeftElapseMono => TIME_NEXT_ELAPSE_USEC_MONOTONIC,
@@ -168,24 +201,11 @@ impl SysdColumn {
             SysdColumn::PathCondition | SysdColumn::Path => PATH_PATHS,
             SysdColumn::AutomountMounted | SysdColumn::AutomountWhat => WHERE_PROP,
             SysdColumn::AutomountIdleTimeOut => AUTOMOUNT_IDLE_TIMEOUT_PROP,
-            SysdColumn::Custom(_, id, _) => {
-                if let Some((_, prop)) = id.split_once('@') {
-                    prop
-                } else {
-                    warn!("Custom prop m@lformed {:?}", id);
-                    id.as_str()
-                }
-            }
-            _ => unreachable!("Need to define a property for: {:?}", self),
+            SysdColumn::Custom(c) => c.property(),
         }
     }
 
     pub(crate) fn generate_quark(&self) -> glib::Quark {
-        // let qstr = match self {
-        //     SysdColumn::Path | SysdColumn::PathCondition => PATH_PATH_COL,
-        //     _ => self.property(),
-        // };
-
         let qstr = self.property();
         glib::Quark::from_str(qstr)
     }
@@ -201,20 +221,71 @@ impl SysdColumn {
             SysdColumn::AutomountWhat
             | SysdColumn::AutomountMounted
             | SysdColumn::AutomountIdleTimeOut => UnitType::Automount,
-            SysdColumn::Custom(utype, _, _) => *utype,
+            SysdColumn::Custom(c) => c.utype,
             _ => UnitType::Unknown,
         }
     }
 
     pub(crate) fn is_custom(&self) -> bool {
-        matches!(self, SysdColumn::Custom(_, _, _))
+        matches!(self, SysdColumn::Custom(_,))
     }
 
     pub(crate) fn verify(
         unit_column_config: &UnitColumn,
     ) -> Result<SysdColumn, (SysdColumnNonConformity, SysdColumn)> {
-        Self::new(&unit_column_config.id, unit_column_config.prop_type.clone())
+        Self::new(
+            unit_column_config.id.clone(),
+            unit_column_config.prop_type.clone(),
+        )
     }
+
+    pub(crate) fn fill_custom(utype: UnitType, property: &str, property_type: &str) -> SysdColumn {
+        let utype_str = utype.as_str();
+        let id = format!("{}@{property}", utype_str);
+        let c = CustomProp {
+            utype,
+            id,
+            prop_idx: (utype_str.len() + 1) as u8,
+            signature: Some(property_type.to_owned()),
+        };
+        SysdColumn::Custom(c)
+    }
+
+    fn fill_custom2(utype: UnitType, id: String, signature: Option<String>) -> SysdColumn {
+        let utype_str = utype.as_str();
+        let c = CustomProp {
+            utype,
+            id,
+            prop_idx: (utype_str.len() + 1) as u8,
+            signature,
+        };
+        SysdColumn::Custom(c)
+    }
+
+    pub(crate) fn specials() -> Vec<SysdColumn> {
+        vec![
+            SysdColumn::TimerTimeNextElapseRT,
+            SysdColumn::TimerTimeLeftElapseMono,
+            SysdColumn::TimerTimePassed,
+            SysdColumn::TimerTimeLast,
+            SysdColumn::SocketListen,
+            SysdColumn::SocketListenType,
+            SysdColumn::PathCondition,
+            SysdColumn::Path,
+            SysdColumn::AutomountWhat,
+            SysdColumn::AutomountMounted,
+            SysdColumn::AutomountIdleTimeOut,
+        ]
+    }
+}
+
+fn defective_custom(id: String, signature: Option<String>) -> SysdColumn {
+    SysdColumn::Custom(CustomProp {
+        utype: UnitType::Unknown,
+        id,
+        prop_idx: 0,
+        signature,
+    })
 }
 
 fn verify_prop_type(prop_type: &Option<String>) -> bool {
@@ -223,6 +294,12 @@ fn verify_prop_type(prop_type: &Option<String>) -> bool {
 
 impl From<(&str, Option<String>)> for SysdColumn {
     fn from(value: (&str, Option<String>)) -> Self {
+        (value.0.to_owned(), value.1).into()
+    }
+}
+
+impl From<(String, Option<String>)> for SysdColumn {
+    fn from(value: (String, Option<String>)) -> Self {
         match SysdColumn::new(value.0, value.1) {
             Ok(c) => c,
             Err((_e, c)) => c,

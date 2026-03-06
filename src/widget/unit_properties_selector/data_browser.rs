@@ -5,9 +5,10 @@ use gio::glib::property::PropertySet;
 use gtk::glib::{self};
 use tracing::warn;
 
-use crate::systemd::UnitPropertyFetch;
+use crate::{systemd::UnitPropertyFetch, widget::unit_list::column::SysdColumn};
 
 pub const INTERFACE_NAME: &str = "Default";
+pub const SPECIAL_INTERFACE_NAME: &str = "Special";
 
 glib::wrapper! {
     pub struct PropertyBrowseItem(ObjectSubclass<imp::PropertyBrowseItemImp>);
@@ -59,6 +60,17 @@ impl PropertyBrowseItem {
         p_imp.signature.replace(property.signature());
         p_imp.access.replace(property.access());
         p_imp.column.replace(property.column());
+
+        this_object
+    }
+
+    pub fn from_sysd(sysd_col: &SysdColumn) -> Self {
+        let this_object: Self = glib::Object::new();
+
+        let p_imp = this_object.imp();
+        p_imp.interface.replace(SPECIAL_INTERFACE_NAME.to_owned());
+        p_imp.unit_property.replace(sysd_col.id().to_owned());
+        p_imp.signature.replace(sysd_col.property_type().clone());
 
         this_object
     }

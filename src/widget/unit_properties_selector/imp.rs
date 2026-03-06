@@ -20,9 +20,9 @@ use crate::{
     upgrade,
     widget::{
         preferences::data::KEY_PREF_PROP_ORIENTATION_MODE,
-        unit_list::UnitListPanel,
+        unit_list::{UnitListPanel, column::SysdColumn},
         unit_properties_selector::{
-            data_browser::{INTERFACE_NAME, PropertyBrowseItem},
+            data_browser::{INTERFACE_NAME, PropertyBrowseItem, SPECIAL_INTERFACE_NAME},
             unit_properties_selection::UnitPropertiesSelectionPanel,
         },
     },
@@ -236,6 +236,18 @@ impl UnitPropertiesSelectorDialogImp {
 
         for default_column in unit_list_panel.default_displayed_columns() {
             let new_property_object = PropertyBrowseItem::from_column(&default_column.column());
+            default.add_child(new_property_object);
+        }
+
+        let model = tree_list_model.model();
+        let store = model.downcast_ref::<gio::ListStore>().unwrap();
+        store.append(&default);
+
+        let default = PropertyBrowseItem::new_interface(SPECIAL_INTERFACE_NAME.to_owned());
+        // list_store.append(&default);
+
+        for default_column in SysdColumn::specials() {
+            let new_property_object = PropertyBrowseItem::from_sysd(&default_column);
             default.add_child(new_property_object);
         }
 

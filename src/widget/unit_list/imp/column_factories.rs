@@ -324,7 +324,7 @@ pub fn get_factory_by_id(
     display_color: bool,
 ) -> Option<gtk::SignalListItemFactory> {
     match id {
-        SysdColumn::Custom(_, _, _) => Some(get_custom_factory(id, display_color)),
+        SysdColumn::Custom(_) => Some(get_custom_factory(id, display_color)),
         SysdColumn::Name => Some(fac_unit_name(display_color)),
         SysdColumn::FullName => Some(fac_unit_name_full(display_color)),
         SysdColumn::Type => Some(fac_unit_type(display_color)),
