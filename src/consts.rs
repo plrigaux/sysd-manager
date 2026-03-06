@@ -80,3 +80,5 @@ pub const AUTOMOUNT_IDLE_TIMEOUT_COL: &str = "automount@TimeoutIdleUSec";
 pub const AUTOMOUNT_IDLE_TIMEOUT_PROP: &str = "TimeoutIdleUSec";
 pub const WHERE_PROP: &str = "Where";
 pub const COL_ACTIVE: &str = "sysdm-active";
+pub const ACTION_WIN_HIDE_UNIT_COL: &str = "win.hide_unit_col";
+// pub const ACTION_WIN_COL_RESIZE: &str = "win.col_resize";

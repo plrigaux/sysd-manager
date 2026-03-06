@@ -16,7 +16,7 @@ use std::{
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ALL_FILTER_KEY, FILTER_MARK,
+        ACTION_WIN_COL_RESIZE, ACTION_WIN_HIDE_UNIT_COL, ALL_FILTER_KEY, FILTER_MARK,
     },
     systemd::{
         data::UnitInfo,
@@ -358,19 +358,19 @@ impl UnitListPanelImp {
         self.refresh_unit_list_button
             .set(Some(refresh_unit_list_button));
 
-        let units_browser = units_browser!(self).clone();
         let action_entry = {
-            gio::ActionEntry::builder("hide_unit_col")
+            let units_browser = units_browser!(self).clone();
+            gio::ActionEntry::builder(&ACTION_WIN_HIDE_UNIT_COL[4..])
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     if let Some(value) = target_value {
                         let key = Some(value.get::<String>().expect("variant always be String"));
 
                         let columns_list_model = units_browser.columns();
 
-                        for cur_column in columns_list_model
+                        if let Some(cur_column) = columns_list_model
                             .iter::<gtk::ColumnViewColumn>()
                             .filter_map(|item| item.ok())
-                            .filter(|col| col.id().map(|s| s.to_string()) == key)
+                            .find(|col| col.id().map(|s| s.as_str()) == key.as_deref())
                         {
                             cur_column.set_visible(false);
                         }
@@ -438,6 +438,7 @@ impl UnitListPanelImp {
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
             refresh_unit_list,
+            action_col_resize,
         ]);
 
         let settings = systemd_gui::new_settings();

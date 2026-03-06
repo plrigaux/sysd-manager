@@ -3,8 +3,8 @@ use gtk::glib::variant::ToVariant;
 
 use crate::{
     consts::{
-        APP_ACTION_PROPERTIES_SELECTOR, NS_ACTION_UNIT_LIST_FILTER,
-        NS_ACTION_UNIT_LIST_FILTER_CLEAR,
+        ACTION_WIN_COL_RESIZE, ACTION_WIN_HIDE_UNIT_COL, APP_ACTION_PROPERTIES_SELECTOR,
+        NS_ACTION_UNIT_LIST_FILTER, NS_ACTION_UNIT_LIST_FILTER_CLEAR,
     },
     widget::unit_list::column::SysdColumn,
 };
@@ -17,7 +17,7 @@ pub fn create_col_menu(key: &SysdColumn) -> gio::MenuModel {
         &menu,
         //column header menu
         &pgettext("menu", "Hide this Column"),
-        "win.hide_unit_col",
+        ACTION_WIN_HIDE_UNIT_COL,
         &variant,
     );
 
@@ -26,6 +26,14 @@ pub fn create_col_menu(key: &SysdColumn) -> gio::MenuModel {
         //column header menu
         &pgettext("menu", "Configure columns"),
         APP_ACTION_PROPERTIES_SELECTOR,
+        &variant,
+    );
+
+    append_item_variant(
+        &menu,
+        //column header menu
+        &pgettext("menu", "Col Resize"),
+        ACTION_WIN_COL_RESIZE,
         &variant,
     );
 
