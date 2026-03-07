@@ -355,35 +355,108 @@ pub fn start_unit(
     unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    start_unit_name(level, unit_name, mode)
-}
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.start() {
+                proxy_call!(start_unit, unit_name, mode.as_str())
+            } else {
+                let proxy = systemd_manager();
+                proxy
+                    .start_unit(unit_name, mode.as_str())
+                    .map(|o| o.to_string())
+                    .map_err(|err| err.into())
+            }
+        }
 
-/// Takes a unit name as input and attempts to start it
-/// # returns
-/// job_path
-pub fn start_unit_name(
-    level: UnitDBusLevel,
-    unit_name: &str,
-    mode: StartStopMode,
-) -> Result<String, SystemdErrors> {
-    sysdbus::start_unit(level, unit_name, mode)
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+            .start_unit(unit_name, mode.as_str())
+            .map(|o| o.to_string())
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+
+        systemd_manager_blocking(level)
+            .start_unit(unit_name, mode.as_str())
+            .map(|o| o.to_string())
+            .map_err(|err| err.into())
+    }
 }
 
 /// Takes a unit name as input and attempts to stop it.
 pub fn stop_unit(
     level: UnitDBusLevel,
-    primary_name: &str,
+    unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    sysdbus::stop_unit(level, primary_name, mode)
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.stop() {
+                proxy_call!(stop_unit, unit_name, mode.as_str())
+            } else {
+                let proxy = systemd_manager();
+                proxy
+                    .stop_unit(unit_name, mode.as_str())
+                    .map(|o| o.to_string())
+                    .map_err(|err| err.into())
+            }
+        }
+
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+            .stop_unit(unit_name, mode.as_str())
+            .map(|o| o.to_string())
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+
+        systemd_manager_blocking(level)
+            .stop_unit(unit_name, mode.as_str())
+            .map(|o| o.to_string())
+            .map_err(|err| err.into())
+    }
 }
 
 pub fn restart_unit(
     level: UnitDBusLevel,
-    primary_name: &str,
+    unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    sysdbus::restart_unit(level, primary_name, mode)
+    #[cfg(not(feature = "flatpak"))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.restart() {
+                proxy_call!(restart_unit, unit_name, mode.as_str())
+            } else {
+                let proxy = systemd_manager();
+                proxy
+                    .restart_unit(unit_name, mode.as_str())
+                    .map(|o| o.to_string())
+                    .map_err(|err| err.into())
+            }
+        }
+
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+            .restart_unit(unit_name, mode.as_str())
+            .map(|o| o.to_string())
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(feature = "flatpak")]
+    {
+        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
+
+        systemd_manager_blocking(level)
+            .restart_unit(unit_name, mode.as_str())
+            .map(|o| o.to_string())
+            .map_err(|err| err.into())
+    }
 }
 
 pub fn disenable_unit_file(

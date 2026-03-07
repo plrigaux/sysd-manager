@@ -31,9 +31,9 @@ use gtk::{
     glib::{self, BoolError},
     pango::{self, FontFace},
 };
-use tracing::{debug, error, info, warn};
 use std::cell::{OnceCell, RefCell};
 use strum::IntoEnumIterator;
+use tracing::{debug, error, info, warn};
 
 #[derive(Debug, Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/preferences.ui")]
@@ -81,6 +81,15 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     proxy_all_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_start_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_stop_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    proxy_restart_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     proxy_clean_switch: TemplateChild<adw::SwitchRow>,
@@ -497,11 +506,36 @@ impl ObjectImpl for PreferencesDialogImpl {
                 KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
                 KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE, KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
                 KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELOAD_DAEMON,
-                KEY_PREF_USE_PROXY_REVERT_UNIT_FILE, KEY_PREF_USE_PROXY_SAVE_FILE,
+                KEY_PREF_USE_PROXY_RESTART, KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
+                KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP,
                 KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
             };
 
             use crate::format2;
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_START,
+                    self.proxy_start_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_STOP,
+                    self.proxy_stop_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_RESTART,
+                    self.proxy_restart_switch.as_ref(),
+                    "active",
+                )
+                .build();
 
             settings
                 .bind::<adw::SwitchRow>(
@@ -591,6 +625,18 @@ impl ObjectImpl for PreferencesDialogImpl {
                 )
                 .build();
 
+            self.proxy_start_switch.connect_active_notify(|switch| {
+                PROXY_SWITCHER.set_start(switch.is_active());
+            });
+
+            self.proxy_stop_switch.connect_active_notify(|switch| {
+                PROXY_SWITCHER.set_stop(switch.is_active());
+            });
+
+            self.proxy_restart_switch.connect_active_notify(|switch| {
+                PROXY_SWITCHER.set_restart(switch.is_active());
+            });
+
             self.proxy_clean_switch.connect_active_notify(|switch| {
                 PROXY_SWITCHER.set_clean(switch.is_active());
             });
@@ -642,6 +688,9 @@ impl ObjectImpl for PreferencesDialogImpl {
                     PROXY_SWITCHER.set_stop_at_close(switch.is_active());
                 });
 
+            let proxy_start_switch = self.proxy_start_switch.clone();
+            let proxy_stop_switch = self.proxy_stop_switch.clone();
+            let proxy_restart_switch = self.proxy_restart_switch.clone();
             let proxy_clean_switch = self.proxy_clean_switch.clone();
             let proxy_freeze_switch = self.proxy_freeze_switch.clone();
             let proxy_thaw_switch = self.proxy_thaw_switch.clone();
@@ -653,6 +702,9 @@ impl ObjectImpl for PreferencesDialogImpl {
             let proxy_revert_unit_file_switch = self.proxy_revert_unit_file_switch.clone();
 
             let group_of_switches = [
+                proxy_start_switch,
+                proxy_stop_switch,
+                proxy_restart_switch,
                 proxy_clean_switch,
                 proxy_freeze_switch,
                 proxy_thaw_switch,
@@ -702,6 +754,9 @@ impl ObjectImpl for PreferencesDialogImpl {
             //Note the switch are set to active false by default
 
             self.proxy_all_switch.set_sensitive(false);
+            self.proxy_start_switch.set_sensitive(false);
+            self.proxy_stop_switch.set_sensitive(false);
+            self.proxy_restart_switch.set_sensitive(false);
             self.proxy_clean_switch.set_sensitive(false);
             self.proxy_freeze_switch.set_sensitive(false);
             self.proxy_thaw_switch.set_sensitive(false);

@@ -232,6 +232,18 @@
       <default>440</default>
       <summary>Unit property selector position</summary>
     </key>
+    <key name="pref-use-proxy-start" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Clean calls</summary>
+    </key>
+    <key name="pref-use-proxy-stop" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Clean calls</summary>
+    </key>
+    <key name="pref-use-proxy-restart" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Clean calls</summary>
+    </key>
     <key name="pref-use-proxy-clean" type="b">
       <default>true</default>
       <summary>Use the proxy for the Clean calls</summary>

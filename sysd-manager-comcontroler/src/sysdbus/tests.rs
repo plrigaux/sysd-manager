@@ -10,7 +10,7 @@ use zvariant::Value;
 #[ignore = "need a connection to a service"]
 #[test]
 fn stop_service_test() -> Result<(), SystemdErrors> {
-    stop_unit(UnitDBusLevel::System, TEST_SERVICE, StartStopMode::Fail)?;
+    crate::stop_unit(UnitDBusLevel::System, TEST_SERVICE, StartStopMode::Fail)?;
     Ok(())
 }
 

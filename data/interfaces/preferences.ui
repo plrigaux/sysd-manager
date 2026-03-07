@@ -206,6 +206,24 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
           <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes" context="preference" comments="group title">Systemd Manager Method Calls</property>
             <child>
+              <object class="AdwSwitchRow" id="proxy_start_switch">
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Start&lt;/b&gt; method call through the Proxy</property>
+                <property name="title" translatable="yes" context="preference">Start</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="proxy_stop_switch">
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Stop&lt;/b&gt; method call through the Proxy</property>
+                <property name="title" translatable="yes" context="preference">Stop</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="proxy_restart_switch">
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Restart&lt;/b&gt; method call through the Proxy</property>
+                <property name="title" translatable="yes" context="preference">Restart</property>
+              </object>
+            </child>
+            <child>
               <object class="AdwSwitchRow" id="proxy_clean_switch">
                 <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Clean&lt;/b&gt; method call through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Clean</property>

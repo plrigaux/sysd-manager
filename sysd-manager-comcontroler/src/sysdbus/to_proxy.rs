@@ -7,6 +7,7 @@ use futures_util::stream::StreamExt;
 use tokio::time::{Duration, timeout};
 use tracing::{info, warn};
 use zbus::proxy;
+use zvariant::OwnedObjectPath;
 
 use crate::{
     errors::SystemdErrors,
@@ -19,6 +20,9 @@ use crate::{
     default_path = "/io/github/plrigaux/SysDManager"
 )]
 pub trait SysDManagerComLink {
+    fn start_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    fn stop_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    fn restart_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
     fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
     fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
@@ -85,6 +89,27 @@ async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErr
         .await?;
 
     Ok(proxy)
+}
+
+pub fn start_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+    let proxy = get_proxy()?;
+
+    let s = proxy.start_unit(unit_name, mode)?;
+    Ok(s.to_string())
+}
+
+pub fn stop_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+    let proxy = get_proxy()?;
+
+    let s = proxy.stop_unit(unit_name, mode)?;
+    Ok(s.to_string())
+}
+
+pub fn restart_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+    let proxy = get_proxy()?;
+
+    let s = proxy.restart_unit(unit_name, mode)?;
+    Ok(s.to_string())
 }
 
 pub fn clean_unit(unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {

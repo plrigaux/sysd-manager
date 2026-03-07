@@ -3,12 +3,12 @@ use base::{
     consts::*,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
-
 use std::{borrow::Cow, env, error::Error};
 use tokio::sync::OnceCell;
 use tracing::{debug, info, warn};
 use zbus::{
     Connection, ObjectServer, connection, interface, message::Header, object_server::SignalEmitter,
+    zvariant::OwnedObjectPath,
 };
 
 use crate::{SysDManagerProxy, file, sysdcom};
@@ -88,6 +88,57 @@ impl SysDManagerProxy {
         } else {
             Err(zbus::fdo::Error::Failed(format!("{val} not even!")))
         }
+    }
+
+    async fn start_unit(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        unit_name: &str,
+        mode: &str,
+    ) -> zbus::fdo::Result<OwnedObjectPath> {
+        info!("start_unit {} {:?}", unit_name, mode);
+
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
+        proxy
+            .start_unit(unit_name, mode)
+            .await
+            .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))
+    }
+
+    async fn stop_unit(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        unit_name: &str,
+        mode: &str,
+    ) -> zbus::fdo::Result<OwnedObjectPath> {
+        info!("stop_unit {} {:?}", unit_name, mode);
+
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
+        proxy
+            .stop_unit(unit_name, mode)
+            .await
+            .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))
+    }
+
+    async fn restart_unit(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        unit_name: &str,
+        mode: &str,
+    ) -> zbus::fdo::Result<OwnedObjectPath> {
+        info!("start_unit {} {:?}", unit_name, mode);
+
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
+        proxy
+            .restart_unit(unit_name, mode)
+            .await
+            .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))
     }
 
     async fn clean_unit(

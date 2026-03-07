@@ -55,9 +55,9 @@ const METHOD_LIST_UNIT: &str = "ListUnits";
 // const METHOD_LIST_UNIT_FILES: &str = "ListUnitFiles";
 
 const METHOD_GET: &str = "Get";
-const METHOD_START_UNIT: &str = "StartUnit";
-const METHOD_STOP_UNIT: &str = "StopUnit";
-const METHOD_RESTART_UNIT: &str = "RestartUnit";
+// const METHOD_START_UNIT: &str = "StartUnit";
+// const METHOD_STOP_UNIT: &str = "StopUnit";
+// const METHOD_RESTART_UNIT: &str = "RestartUnit";
 // const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
@@ -553,19 +553,19 @@ pub async fn fill_list_unit_files(
 //     Ok(vec![])
 // }
 
-/// Takes a unit name as input and attempts to start it
-pub(super) fn start_unit(
-    level: UnitDBusLevel,
-    unit_name: &str,
-    mode: StartStopMode,
-) -> Result<String, SystemdErrors> {
-    send_disenable_message(
-        level,
-        METHOD_START_UNIT,
-        &(unit_name, mode.as_str()),
-        handle_start_stop_answer,
-    )
-}
+// Takes a unit name as input and attempts to start it
+// pub(super) fn start_unit(
+//     level: UnitDBusLevel,
+//     unit_name: &str,
+//     mode: StartStopMode,
+// ) -> Result<String, SystemdErrors> {
+//     send_disenable_message(
+//         level,
+//         METHOD_START_UNIT,
+//         &(unit_name, mode.as_str()),
+//         handle_start_stop_answer,
+//     )
+// }
 
 fn handle_start_stop_answer(
     method: &str,
@@ -600,8 +600,8 @@ fn handle_start_stop_answer(
     }
 }
 
-/// Takes a unit name as input and attempts to stop it.
-pub(super) fn stop_unit(
+// Takes a unit name as input and attempts to stop it.
+/* pub(super) fn stop_unit(
     level: UnitDBusLevel,
     unit_name: &str,
     mode: StartStopMode,
@@ -612,10 +612,10 @@ pub(super) fn stop_unit(
         &(unit_name, mode.as_str()),
         handle_start_stop_answer,
     )
-}
+} */
 
-/// Enqeues a start job, and possibly depending jobs.
-pub(super) fn restart_unit(
+// Enqeues a start job, and possibly depending jobs.
+/* pub(super) fn restart_unit(
     level: UnitDBusLevel,
     unit: &str,
     mode: StartStopMode,
@@ -626,7 +626,7 @@ pub(super) fn restart_unit(
         &(unit, mode.as_str()),
         handle_start_stop_answer,
     )
-}
+} */
 
 fn send_disenable_message<T, U>(
     level: UnitDBusLevel,

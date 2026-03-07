@@ -127,7 +127,7 @@ impl EnableUnitDialogImp {
                                     );
 
                                     let start_results =
-                                        systemd::start_unit_name(dbus_level, unit_name, start_mode);
+                                        systemd::start_unit(dbus_level, unit_name, start_mode);
 
                                     control.start_restart(
                                         unit_name,

@@ -16,7 +16,7 @@ use std::{
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ACTION_WIN_COL_RESIZE, ACTION_WIN_HIDE_UNIT_COL, ALL_FILTER_KEY, FILTER_MARK,
+        ACTION_WIN_HIDE_UNIT_COL, ALL_FILTER_KEY, FILTER_MARK,
     },
     systemd::{
         data::UnitInfo,
@@ -370,7 +370,7 @@ impl UnitListPanelImp {
                         if let Some(cur_column) = columns_list_model
                             .iter::<gtk::ColumnViewColumn>()
                             .filter_map(|item| item.ok())
-                            .find(|col| col.id().map(|s| s.as_str()) == key.as_deref())
+                            .find(|col| col.id().map(|s| s.to_string()) == key)
                         {
                             cur_column.set_visible(false);
                         }
@@ -438,7 +438,6 @@ impl UnitListPanelImp {
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
             refresh_unit_list,
-            action_col_resize,
         ]);
 
         let settings = systemd_gui::new_settings();

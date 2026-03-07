@@ -97,7 +97,7 @@ def create_appdir():
             "ln",
             "-s",
             "-v",
-            f"./usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            "./usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
             f"{APP_DIR}/io.github.plrigaux.sysd-manager.svg",
         ]
     )
@@ -161,7 +161,7 @@ def create_appdir():
             "ln",
             "-s",
             "-v",
-            f"./usr/share/icons/hicolor/256x256/apps/io.github.plrigaux.sysd-manager.png",
+            "./usr/share/icons/hicolor/256x256/apps/io.github.plrigaux.sysd-manager.png",
             f"{APP_DIR}/.DirIcon",
         ]
     )

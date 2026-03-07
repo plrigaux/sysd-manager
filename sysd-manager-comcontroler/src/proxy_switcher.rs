@@ -1,5 +1,8 @@
 use std::sync::{LazyLock, RwLock};
 
+pub const KEY_PREF_USE_PROXY_START: &str = "pref-use-proxy-start";
+pub const KEY_PREF_USE_PROXY_STOP: &str = "pref-use-proxy-stop";
+pub const KEY_PREF_USE_PROXY_RESTART: &str = "pref-use-proxy-restart";
 pub const KEY_PREF_USE_PROXY_CLEAN: &str = "pref-use-proxy-clean";
 pub const KEY_PREF_USE_PROXY_FREEZE: &str = "pref-use-proxy-freeze";
 pub const KEY_PREF_USE_PROXY_THAW: &str = "pref-use-proxy-thaw";
@@ -20,6 +23,12 @@ pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
         use gio::prelude::SettingsExt;
 
         let settings = gio::Settings::new(APP_ID);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_START);
+        ps.set_start(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_STOP);
+        ps.set_stop(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_RESTART);
+        ps.set_restart(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_CLEAN);
         ps.set_clean(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_FREEZE);
@@ -48,6 +57,9 @@ pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
 
 #[derive(Default)]
 pub struct ProxySwitcher {
+    start: RwLock<bool>,
+    stop: RwLock<bool>,
+    restart: RwLock<bool>,
     clean: RwLock<bool>,
     freeze: RwLock<bool>,
     thaw: RwLock<bool>,
@@ -62,6 +74,30 @@ pub struct ProxySwitcher {
 }
 
 impl ProxySwitcher {
+    pub fn start(&self) -> bool {
+        *self.start.read().unwrap()
+    }
+
+    pub fn set_start(&self, value: bool) {
+        *self.start.write().unwrap() = value;
+    }
+
+    pub fn stop(&self) -> bool {
+        *self.stop.read().unwrap()
+    }
+
+    pub fn set_stop(&self, value: bool) {
+        *self.stop.write().unwrap() = value;
+    }
+
+    pub fn restart(&self) -> bool {
+        *self.restart.write().unwrap()
+    }
+
+    pub fn set_restart(&self, value: bool) {
+        *self.restart.write().unwrap() = value;
+    }
+
     pub fn clean(&self) -> bool {
         *self.clean.read().unwrap()
     }
@@ -151,7 +187,10 @@ impl ProxySwitcher {
     }
 
     pub fn uses_any_proxy(&self) -> bool {
-        self.clean()
+        self.start()
+            || self.stop()
+            || self.restart()
+            || self.clean()
             || self.freeze()
             || self.thaw()
             || self.create_dropin()

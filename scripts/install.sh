@@ -38,20 +38,29 @@ sudo install -vDm644 "${REL_PATH}/data/schemas/io.github.plrigaux.sysd-manager.g
 sudo cp -r -v "${REL_PATH}/target/locale"  "/usr/share/" 
 #sudo install -Dm644 "data/applications/org.freedesktop.policykit.sysd-manager.policy" -t "/usr/share/polkit-1/actions/"
 
-echo -e Installing $PROGRAM Proxy  
+echo Installing $PROGRAM Proxy  
 cargo build $BUILD_ARG --manifest-path ${REL_PATH}/${PROXY_BIN}/Cargo.toml
 sudo install -vDm755 "${REL_PATH}/target/${TARGET}/${PROXY_BIN}" -t "/usr/bin"
-echo -e Executing Install srcipt
+sudo install -vDm644 "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.conf" -T  "/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
+sudo sed -i -e s/{BUS_NAME}/io.github.plrigaux.SysDManager/ -e s/{DESTINATION}/io.github.plrigaux.SysDManager/ -e s/{ENVIRONMENT}// -e s/{INTERFACE}/io.github.plrigaux.SysDManager/ "/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
+sudo install -vDm644 "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy" -t "/usr/share/polkit-1/actions"
+sudo install -vDm644 "./sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules" -t "/usr/share/polkit-1/rules.d"
+sudo install -vDm644 "./sysd-manager-proxy/data/sysd-manager-proxy.service" -T "/usr/lib/systemd/system/sysd-manager-proxy.service"
+sudo sed -i -e s/{BUS_NAME}/io.github.plrigaux.SysDManager/ -e s/{DESTINATION}/io.github.plrigaux.SysDManager/ -e s/{ENVIRONMENT}// -e s/{EXECUTABLE}/\\/usr\\/bin\\/sysd-manager-proxy/ -e s/{INTERFACE}/io.github.plrigaux.SysDManager/ -e s/{SERVICE_ID}/sysd-manager-proxy/ "/usr/lib/systemd/system/sysd-manager-proxy.service"
+
+echo Executing Install srcipt
 /usr/bin/sysd-manager-proxy install
 
-echo -e Compiling ${BOLD}Schemas${NC} 
+echo Compiling ${BOLD}Schemas${NC} 
 echo ""
 sudo glib-compile-schemas "/usr/share/glib-2.0/schemas"
 
-echo -e Installation of $PROGRAM completed, enjoy.
+echo Installation of $PROGRAM completed, enjoy.
 
 COMPILE_SIZE=$(du -sh "${REL_PATH}/target")
-COMPILE_SIZE_ARR=($COMPILE_SIZE)
+COMPILE_SIZE=$(echo $COMPILE_SIZE "Hello World" | cut -d ' ' -f 1) 
+
+# COMPILE_SIZE_ARR=$($COMPILE_SIZE)
 
 echo ""
-echo -e "${ITALIC}${BOLD}Hint:${NC} ${ITALIC}run the command line ${BOLD}cargo clean${NC} ${ITALIC}to remove compiled files and save ${ITALIC}${BOLD}${COMPILE_SIZE_ARR}${NC} ${ITALIC}of disk space."
+echo -e "${ITALIC}${BOLD}Hint:${NC} ${ITALIC}run the command line ${BOLD}cargo clean${NC} ${ITALIC}to remove compiled files and save ${ITALIC}${BOLD}${COMPILE_SIZE}${NC} ${ITALIC}of disk space."
