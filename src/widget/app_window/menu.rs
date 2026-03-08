@@ -1,13 +1,3 @@
-use adw::prelude::*;
-use base::consts::APP_ID;
-use base::enums::UnitDBusLevel;
-use gettextrs::gettext;
-
-use glib::VariantTy;
-use gtk::glib;
-use gtk::{gio, prelude::ActionMapExtManual};
-use tracing::{error, info, warn};
-
 use crate::consts::ACTION_DAEMON_RELOAD_BUS;
 use crate::format2;
 use crate::{
@@ -24,6 +14,13 @@ use crate::{
         signals_dialog::SignalsWindow,
     },
 };
+use adw::prelude::*;
+use base::consts::APP_ID;
+use base::enums::UnitDBusLevel;
+use gettextrs::gettext;
+use glib::VariantTy;
+use gtk::{gio, glib, prelude::ActionMapExtManual};
+use tracing::{error, info, warn};
 
 pub const APP_TITLE: &str = "SysD Manager";
 
@@ -113,21 +110,42 @@ pub fn on_startup(app: &adw::Application) {
         })
         .build();
 
-    let preferences: gio::ActionEntry<adw::Application> = gio::ActionEntry::builder("preferences")
-        .activate(|application: &adw::Application, _, _| {
-            if let Some(win) = application.active_window() {
-                let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+    const ACTION_NAME_PREFERENCES: &str = "app.preferences";
+    let preferences_action_entry: gio::ActionEntry<adw::Application> =
+        gio::ActionEntry::builder(&ACTION_NAME_PREFERENCES[4..])
+            .activate(|application: &adw::Application, _, _| {
+                if let Some(win) = application.active_window() {
+                    let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
 
-                let pdialog = PreferencesDialog::new(app_window);
-                pdialog.present(Some(&win));
-                //pdialog.present(Some(&win));
-                //gtk::prelude::GtkWindowExt::present(&pdialog);
-            } else {
-                let pdialog = PreferencesDialog::new(None);
-                pdialog.present(None::<&gtk::Widget>);
-            }
-        })
-        .build();
+                    let pdialog = PreferencesDialog::new(app_window);
+                    pdialog.present(Some(&win));
+                    //pdialog.present(Some(&win));
+                    //gtk::prelude::GtkWindowExt::present(&pdialog);
+                } else {
+                    let pdialog = PreferencesDialog::new(None);
+                    pdialog.present(None::<&gtk::Widget>);
+                }
+            })
+            .build();
+
+    const ACTION_NAME_PROXY_MANAGEMENT: &str = "app.proxy-management";
+    let proxy_management_action_entry: gio::ActionEntry<adw::Application> =
+        gio::ActionEntry::builder(&ACTION_NAME_PROXY_MANAGEMENT[4..])
+            .activate(|application: &adw::Application, _, _| {
+                if let Some(win) = application.active_window() {
+                    let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+
+                    let pdialog = PreferencesDialog::new(app_window);
+                    pdialog.set_visible_page_name("proxy");
+                    pdialog.present(Some(&win));
+                    //pdialog.present(Some(&win));
+                    //gtk::prelude::GtkWindowExt::present(&pdialog);
+                } else {
+                    let pdialog = PreferencesDialog::new(None);
+                    pdialog.present(None::<&gtk::Widget>);
+                }
+            })
+            .build();
 
     let daemon_reload_all_units: gio::ActionEntry<adw::Application> =
         gio::ActionEntry::builder(ACTION_DAEMON_RELOAD)
@@ -178,13 +196,15 @@ pub fn on_startup(app: &adw::Application) {
             .parameter_type(Some(VariantTy::BOOLEAN))
             .build();
 
-    app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
+    app.set_accels_for_action(ACTION_NAME_PREFERENCES, &["<Ctrl>comma"]);
+    app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
 
     app.add_action_entries([
         about,
         analyze_blame,
         systemd_info,
-        preferences,
+        preferences_action_entry,
+        proxy_management_action_entry,
         daemon_reload_all_units,
         signals,
         daemon_reload_all_units_with_bus,
