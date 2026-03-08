@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name app_window.ui -->
@@ -86,13 +86,6 @@
                     <signal name="toggled" handler="button_search_toggled" swapped="yes"/>
                   </object>
                 </child>
-                <child type="start">
-                  <object class="GtkButton" id="refresh_unit_list_button">
-                    <property name="action-name">win.refresh_unit_list</property>
-                    <property name="icon-name">view-refresh</property>
-                    <property name="tooltip-text" translatable="yes" context="top button tooltip">Refresh Unit List</property>
-                  </object>
-                </child>
                 <child type="end">
                   <object class="GtkMenuButton">
                     <property name="icon-name">open-menu-symbolic</property>
@@ -108,6 +101,13 @@
                   <object class="GtkMenuButton" id="unit_list_view_menubutton">
                     <property name="always-show-arrow">True</property>
                     <property name="label" translatable="yes" context="menu" comments="selector of differents units list">Curated Lists</property>
+                  </object>
+                </child>
+                <child type="start">
+                  <object class="GtkButton" id="refresh_unit_list_button">
+                    <property name="action-name">win.refresh_unit_list</property>
+                    <property name="icon-name">view-refresh</property>
+                    <property name="tooltip-text" translatable="yes" context="top button tooltip">Refresh Unit List</property>
                   </object>
                 </child>
               </object>
