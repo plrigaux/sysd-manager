@@ -17,8 +17,11 @@ use tracing::{debug, error, info, warn};
 
 const SYSTEMD_DIR: &str = "/usr/share/dbus-1/system.d";
 const ACTION_DIR: &str = "/usr/share/polkit-1/actions";
+const RULES_DIR: &str = "/usr/share/polkit-1/rules.d";
 const SERVICE_DIR: &str = "/usr/lib/systemd/system";
 const POLICY_FILE: &str = "io.github.plrigaux.SysDManager.policy";
+const POLICY_RULE_FILE: &str = "50-io.github.plrigaux.SysDManager";
+const POLICY_RULE_FILE_SUFFIX: &str = ".rules";
 const SERVICE_FILE: &str = "sysd-manager-proxy.service";
 const DBUSCONF_FILE: &str = "io.github.plrigaux.SysDManager.conf";
 
@@ -31,13 +34,14 @@ pub async fn install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     } else {
         self::sub_install(run_mode).await?;
     }
+
     Ok(())
 }
 
 async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
-    for (key, value) in std::env::vars() {
-        println!("{}: {}", key, value);
-    }
+    // for (key, value) in std::env::vars() {
+    //     println!("{}: {}", key, value);
+    // }
 
     if run_mode == RunMode::Both {
         error!("sub_install should not be called with RunMode::Both");
@@ -58,10 +62,12 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 
     info!("The base directory is {}", normalized_path.display());
 
-    let (interface, destination) = if run_mode == RunMode::Development {
-        (DBUS_INTERFACE, DBUS_DESTINATION_DEV)
+    let (interface, destination, rule) = if run_mode == RunMode::Development {
+        let rule = format!("{POLICY_RULE_FILE}Dev{POLICY_RULE_FILE_SUFFIX}");
+        (DBUS_INTERFACE, DBUS_DESTINATION_DEV, rule)
     } else {
-        (DBUS_INTERFACE, DBUS_DESTINATION)
+        let rule = format!("{POLICY_RULE_FILE}{POLICY_RULE_FILE_SUFFIX}");
+        (DBUS_INTERFACE, DBUS_DESTINATION, rule)
     };
 
     let mut base_path = normalized_path.join("sysd-manager-proxy");
@@ -107,6 +113,11 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
     info!("Installing Polkit Policy");
     let src = source_path(&base_path, POLICY_FILE)?;
     let dst = flatpak_host_file_path(ACTION_DIR);
+    install_file(&src, &dst, true, &mut content).await?;
+
+    info!("Installing Polkit Rule");
+    let src = source_path(&base_path, &rule)?;
+    let dst = flatpak_host_file_path(RULES_DIR);
     install_file(&src, &dst, true, &mut content).await?;
 
     info!("Installing Service");
@@ -233,7 +244,7 @@ async fn install_file_mode(
     dst_is_dir: bool,
     mode: &str,
     //  map: Option<&BTreeMap<&str, &str>>,
-    content: &mut String,
+    script_content: &mut String,
 ) -> Result<(), Box<dyn Error + 'static>> {
     info!(
         "Installing {} --> {} with mode {}",
@@ -244,18 +255,18 @@ async fn install_file_mode(
 
     let dir_arg = if dst_is_dir { "-t" } else { "-T" };
 
-    /*     let mut command = commander(
-           args!(
-               sudo(),
-               "install",
-               format!("-vDm{}", mode),
-               src,
-               dir_arg,
-               dst
-           ),
-           None,
-       );
-    */
+    // let mut command = commander(
+    //     args!(
+    //         sudo(),
+    //         "install",
+    //         format!("-vDm{}", mode),
+    //         src,
+    //         dir_arg,
+    //         dst
+    //     ),
+    //     None,
+    // );
+
     let s = [
         //     sudo(),
         "install",
@@ -266,19 +277,19 @@ async fn install_file_mode(
     ]
     .join(" ");
 
-    content.push_str(&s);
-    content.push('\n');
+    script_content.push_str(&s);
+    script_content.push('\n');
 
     /*     if let Some(map) = map {
-        command.args(["&&", "sed", "-i"]);
-        for (k, v) in map {
-            command.args(args!("-e", format!("s/{{{k}}}/{}/", v.replace("/", r"\/"))));
+            command.args(["&&", "sed", "-i"]);
+            for (k, v) in map {
+                command.args(args!("-e", format!("s/{{{k}}}/{}/", v.replace("/", r"\/"))));
+            }
+            command.arg(dst);
         }
-        command.arg(dst);
-    }
-
-    let output = command.output().await?;
-    ouput_to_screen(output); */
+    */
+    // let output = command.output().await?;
+    // ouput_to_screen(output);
     Ok(())
 }
 
@@ -303,20 +314,25 @@ pub async fn clean(_run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 
     to_clean.push(clean);
 
-    let clean = Clean {
+    let action_clean = Clean {
         dir: ACTION_DIR.to_string(),
         patterns: vec![Pattern::Equals(
             "io.github.plrigaux.SysDManager.policy".to_string(),
         )],
     };
+    to_clean.push(action_clean);
 
-    to_clean.push(clean);
+    let rule_clean = Clean {
+        dir: RULES_DIR.to_string(),
+        patterns: vec![Pattern::Start(POLICY_RULE_FILE.to_string())],
+    };
+    to_clean.push(rule_clean);
 
-    let clean = Clean {
+    let proxy_clean = Clean {
         dir: SERVICE_DIR.to_string(),
         patterns: vec![Pattern::Start("sysd-manager-proxy".to_string())],
     };
-    to_clean.push(clean);
+    to_clean.push(proxy_clean);
 
     let mut paths_to_clean = Vec::new();
     //TODO: use run_mode to clean only relevant files

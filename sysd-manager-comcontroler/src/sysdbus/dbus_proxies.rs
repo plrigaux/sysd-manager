@@ -112,10 +112,13 @@ pub(crate) trait Systemd1Manager {
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
     fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
     fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+
     #[zbus(allow_interactive_auth)]
     fn start_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+
     #[zbus(allow_interactive_auth)]
     fn stop_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+
     #[zbus(allow_interactive_auth)]
     fn restart_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
     ///returns an array with all currently queued jobs.

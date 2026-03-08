@@ -12,15 +12,7 @@ pub mod socket_unit;
 pub mod sysdbus;
 pub mod time_handling;
 
-use std::{
-    any::Any,
-    collections::{BTreeMap, BTreeSet, HashMap},
-    fs::File,
-    io::Read,
-    sync::OnceLock,
-    time::{SystemTime, UNIX_EPOCH},
-};
-
+use crate::data::ListedLoadedUnit;
 use crate::{
     data::UnitPropertySetter,
     enums::{ActiveState, LoadState, StartStopMode, UnitFileStatus},
@@ -32,10 +24,6 @@ use crate::{
     },
     time_handling::TimestampStyle,
 };
-
-#[cfg(not(feature = "flatpak"))]
-use crate::sysdbus::to_proxy;
-
 use base::{
     enums::UnitDBusLevel,
     file::{commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
@@ -45,16 +33,26 @@ use data::{UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
 use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
-
 use flagset::{FlagSet, flags};
 use glib::Quark;
 use journal_data::{EventRange, JournalEventChunk};
-use tracing::{error, info, warn};
-
+use std::{
+    any::Any,
+    collections::{BTreeMap, BTreeSet, HashMap},
+    fs::File,
+    io::Read,
+    sync::OnceLock,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use tokio::{runtime::Runtime, sync::mpsc};
+use tracing::{error, info, warn};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-use crate::data::ListedLoadedUnit;
+#[cfg(not(feature = "flatpak"))]
+use crate::sysdbus::to_proxy;
+
+#[cfg(not(feature = "flatpak"))]
+use base::consts::PROXY_SERVICE;
 
 #[derive(Default, Clone, PartialEq, Debug)]
 pub enum BootFilter {
@@ -358,14 +356,14 @@ pub fn start_unit(
     #[cfg(not(feature = "flatpak"))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
-            if proxy_switcher::PROXY_SWITCHER.start() {
-                proxy_call!(start_unit, unit_name, mode.as_str())
+            if proxy_switcher::PROXY_SWITCHER.start() && !unit_name.starts_with(PROXY_SERVICE) {
+                proxy_call_blocking!(start_unit, unit_name, mode.as_str())
             } else {
-                let proxy = systemd_manager();
-                proxy
+                systemd_manager()
                     .start_unit(unit_name, mode.as_str())
                     .map(|o| o.to_string())
                     .map_err(|err| err.into())
+                // sysdbus::start_unit(level, unit_name, mode)
             }
         }
 
@@ -395,14 +393,15 @@ pub fn stop_unit(
     #[cfg(not(feature = "flatpak"))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
-            if proxy_switcher::PROXY_SWITCHER.stop() {
-                proxy_call!(stop_unit, unit_name, mode.as_str())
+            if proxy_switcher::PROXY_SWITCHER.stop() && !unit_name.starts_with(PROXY_SERVICE) {
+                proxy_call_blocking!(stop_unit, unit_name, mode.as_str())
             } else {
-                let proxy = systemd_manager();
-                proxy
+                systemd_manager()
                     .stop_unit(unit_name, mode.as_str())
                     .map(|o| o.to_string())
                     .map_err(|err| err.into())
+
+                // sysdbus::stop_unit(level, unit_name, mode)
             }
         }
 
@@ -431,14 +430,14 @@ pub fn restart_unit(
     #[cfg(not(feature = "flatpak"))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
-            if proxy_switcher::PROXY_SWITCHER.restart() {
-                proxy_call!(restart_unit, unit_name, mode.as_str())
+            if proxy_switcher::PROXY_SWITCHER.restart() && !unit_name.starts_with(PROXY_SERVICE) {
+                proxy_call_blocking!(restart_unit, unit_name, mode.as_str())
             } else {
-                let proxy = systemd_manager();
-                proxy
+                systemd_manager()
                     .restart_unit(unit_name, mode.as_str())
                     .map(|o| o.to_string())
                     .map_err(|err| err.into())
+                // sysdbus::restart_unit(level, unit_name, mode)
             }
         }
 
@@ -492,7 +491,7 @@ pub fn enable_unit_file(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.enable_unit_file() {
-                proxy_call!(
+                proxy_call_blocking!(
                     enable_unit_files_with_flags,
                     &[unit_file],
                     flags.bits_c() as u64
@@ -527,7 +526,7 @@ pub fn disable_unit_file(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.disable_unit_file() {
-                proxy_call!(
+                proxy_call_blocking!(
                     disable_unit_files_with_flags,
                     &[unit_file],
                     flags.bits_c() as u64
@@ -791,7 +790,7 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
         match _level {
             UnitDBusLevel::System | UnitDBusLevel::Both => {
                 if proxy_switcher::PROXY_SWITCHER.freeze() {
-                    proxy_call!(freeze_unit, &primary_name)
+                    proxy_call_blocking!(freeze_unit, &primary_name)
                 } else {
                     let proxy = systemd_manager();
                     proxy.freeze_unit(&primary_name)?;
@@ -823,7 +822,7 @@ pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdE
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.thaw() {
-                proxy_call!(thaw_unit, &primary_name)
+                proxy_call_blocking!(thaw_unit, &primary_name)
             } else {
                 let proxy = systemd_manager();
                 proxy.thaw_unit(&primary_name)?;
@@ -883,7 +882,7 @@ pub fn clean_unit(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.clean() {
-                proxy_call!(clean_unit, unit_name, &clean_what)
+                proxy_call_blocking!(clean_unit, unit_name, &clean_what)
             } else {
                 let proxy = systemd_manager();
                 proxy

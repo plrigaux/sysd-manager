@@ -165,73 +165,78 @@ impl UnitFilePanelImp {
         let unit_name = unit.primary();
         let unit_name2 = unit.primary();
         let user_session = level.user_session();
-        if file_nav.status == UnitFileStatus::Create {
-            let (cleaned_text, file_stem) = Self::clean_create_text(&unit.primary(), text.as_str());
+        match file_nav.status {
+            UnitFileStatus::Create => {
+                let (cleaned_text, file_stem) =
+                    Self::clean_create_text(&unit.primary(), text.as_str());
 
-            let file_stem = if let Some(file_stem) = file_stem {
-                file_stem
-            } else {
-                DEFAULT_DROP_IN_FILE_NAME.to_owned()
-            };
+                let file_stem = if let Some(file_stem) = file_stem {
+                    file_stem
+                } else {
+                    DEFAULT_DROP_IN_FILE_NAME.to_owned()
+                };
 
-            let unique_drop_in_stem = self.unique_drop_in_stem(&file_stem);
+                let unique_drop_in_stem = self.unique_drop_in_stem(&file_stem);
 
-            glib::spawn_future_local(async move {
-                let (sender, receiver) = tokio::sync::oneshot::channel();
-                systemd::runtime().spawn(async move {
-                    let response = systemd::create_drop_in(
-                        user_session,
-                        file_nav.is_runtime,
-                        &unit_name,
-                        &unique_drop_in_stem,
-                        &cleaned_text,
-                    )
-                    .await;
+                glib::spawn_future_local(async move {
+                    let (sender, receiver) = tokio::sync::oneshot::channel();
+                    systemd::runtime().spawn(async move {
+                        let response = systemd::create_drop_in(
+                            user_session,
+                            file_nav.is_runtime,
+                            &unit_name,
+                            &unique_drop_in_stem,
+                            &cleaned_text,
+                        )
+                        .await;
 
-                    sender
-                        .send(response)
-                        .expect("The channel needs to be open.");
+                        sender
+                            .send(response)
+                            .expect("The channel needs to be open.");
+                    });
+
+                    file_panel
+                        .imp()
+                        .handle_save_response(
+                            receiver,
+                            file_nav.status,
+                            &file_nav.file_path,
+                            &unit_name2,
+                            user_session,
+                        )
+                        .await;
                 });
+            }
 
-                file_panel
-                    .imp()
-                    .handle_save_response(
-                        receiver,
-                        file_nav.status,
-                        &file_nav.file_path,
-                        &unit_name2,
-                        user_session,
-                    )
-                    .await;
-            });
-        } else {
-            let file_path = file_nav.file_path.clone();
-            glib::spawn_future_local(async move {
-                let (sender, receiver) = tokio::sync::oneshot::channel();
+            UnitFileStatus::Edit => {
+                let file_path = file_nav.file_path.clone();
+                glib::spawn_future_local(async move {
+                    let (sender, receiver) = tokio::sync::oneshot::channel();
 
-                let content = remove_trailing_newlines(&text)
-                    .inspect_err(|e| warn!("{e:?}"))
-                    .unwrap_or(text.to_string());
+                    let content = remove_trailing_newlines(&text)
+                        .inspect_err(|e| warn!("{e:?}"))
+                        .unwrap_or(text.to_string());
 
-                systemd::runtime().spawn(async move {
-                    let response = systemd::save_file(level, &file_path, &content).await;
+                    systemd::runtime().spawn(async move {
+                        let response = systemd::save_file(level, &file_path, &content).await;
 
-                    sender
-                        .send(response)
-                        .expect("The channel needs to be open.");
+                        sender
+                            .send(response)
+                            .expect("The channel needs to be open.");
+                    });
+
+                    file_panel
+                        .imp()
+                        .handle_save_response(
+                            receiver,
+                            file_nav.status,
+                            &file_nav.file_path,
+                            &unit_name2,
+                            user_session,
+                        )
+                        .await;
                 });
-
-                file_panel
-                    .imp()
-                    .handle_save_response(
-                        receiver,
-                        file_nav.status,
-                        &file_nav.file_path,
-                        &unit_name2,
-                        user_session,
-                    )
-                    .await;
-            });
+            }
         }
     }
 
@@ -274,7 +279,10 @@ impl UnitFilePanelImp {
                         false,
                         None,
                     ),
+
                     SystemdErrors::ZFdoServiceUnknowm(_s) => {
+                        // lazy_start_proxy_block();
+
                         // Service Name
                         // Action Start it or install it
                         let service_name = sysd_proxy_service_name();

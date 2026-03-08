@@ -601,32 +601,32 @@ fn handle_start_stop_answer(
 }
 
 // Takes a unit name as input and attempts to stop it.
-/* pub(super) fn stop_unit(
-    level: UnitDBusLevel,
-    unit_name: &str,
-    mode: StartStopMode,
-) -> Result<String, SystemdErrors> {
-    send_disenable_message(
-        level,
-        METHOD_STOP_UNIT,
-        &(unit_name, mode.as_str()),
-        handle_start_stop_answer,
-    )
-} */
+// pub(super) fn stop_unit(
+//     level: UnitDBusLevel,
+//     unit_name: &str,
+//     mode: StartStopMode,
+// ) -> Result<String, SystemdErrors> {
+//     send_disenable_message(
+//         level,
+//         METHOD_STOP_UNIT,
+//         &(unit_name, mode.as_str()),
+//         handle_start_stop_answer,
+//     )
+// }
 
 // Enqeues a start job, and possibly depending jobs.
-/* pub(super) fn restart_unit(
-    level: UnitDBusLevel,
-    unit: &str,
-    mode: StartStopMode,
-) -> Result<String, SystemdErrors> {
-    send_disenable_message(
-        level,
-        METHOD_RESTART_UNIT,
-        &(unit, mode.as_str()),
-        handle_start_stop_answer,
-    )
-} */
+// pub(super) fn restart_unit(
+//     level: UnitDBusLevel,
+//     unit_name: &str,
+//     mode: StartStopMode,
+// ) -> Result<String, SystemdErrors> {
+//     send_disenable_message(
+//         level,
+//         METHOD_RESTART_UNIT,
+//         &(unit_name, mode.as_str()),
+//         handle_start_stop_answer,
+//     )
+// }
 
 fn send_disenable_message<T, U>(
     level: UnitDBusLevel,

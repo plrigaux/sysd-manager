@@ -174,15 +174,14 @@ pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
 }
 
 #[macro_export]
-macro_rules! proxy_call {
-    ($f:ident,$($p:expr),+) => {
-        match $crate::to_proxy::$f($($p),+) {
+macro_rules! proxy_call_blocking {
+    ($func:ident, $($param:expr),+) => {
+        match $crate::to_proxy::$func($($param),+) {
             Ok(ok) => Ok(ok),
-            Err(SystemdErrors::ZFdoServiceUnknowm(s)) => {
-                warn!("ServiceUnkown: {}", s);
+            Err(SystemdErrors::ZFdoServiceUnknowm(msg)) => {
+                warn!("Blocking ServiceUnkown: {:?} Func: {}", msg, stringify!($func));
                 $crate::to_proxy::lazy_start_proxy_block();
-
-                $crate::to_proxy::$f($($p),+)
+                $crate::to_proxy::$func($($param),+)
             },
             Err(err) => Err(err)
         }
@@ -191,18 +190,17 @@ macro_rules! proxy_call {
 
 #[macro_export]
 macro_rules! proxy_call_async {
-    ($f:ident) => {
-        proxy_call_async!($f,)
+    ($func:ident) => {
+        proxy_call_async!($func,)
     };
 
-    ($f:ident, $($p:expr),*) => {
-        match $crate::to_proxy::$f($($p),*).await {
+    ($func:ident, $($param:expr),*) => {
+        match $crate::to_proxy::$func($($param),*).await {
             Ok(ok) => Ok(ok),
-            Err(SystemdErrors::ZFdoServiceUnknowm(s)) => {
-                warn!("ServiceUnkown: {}", s);
-                $crate::to_proxy::lazy_start_proxy_async();
-
-                $crate::to_proxy::$f($($p),*).await
+            Err(SystemdErrors::ZFdoServiceUnknowm(msg)) => {
+                warn!("Async ServiceUnkown: {:?} Func: {}", msg, stringify!($func));
+                $crate::to_proxy::lazy_start_proxy_async().await;
+                $crate::to_proxy::$func($($param),*).await
             },
             Err(err) => Err(err)
         }
