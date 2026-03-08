@@ -41,21 +41,22 @@ sudo cp -r -v "${REL_PATH}/target/locale"  "/usr/share/"
 echo Installing $PROGRAM Proxy  
 cargo build $BUILD_ARG --manifest-path ${REL_PATH}/${PROXY_BIN}/Cargo.toml
 sudo install -vDm755 "${REL_PATH}/target/${TARGET}/${PROXY_BIN}" -t "/usr/bin"
-sudo install -vDm644 "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.conf" -T  "/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
-sudo sed -i -e s/{BUS_NAME}/io.github.plrigaux.SysDManager/ -e s/{DESTINATION}/io.github.plrigaux.SysDManager/ -e s/{ENVIRONMENT}// -e s/{INTERFACE}/io.github.plrigaux.SysDManager/ "/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
-sudo install -vDm644 "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy" -t "/usr/share/polkit-1/actions"
-sudo install -vDm644 "./sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules" -t "/usr/share/polkit-1/rules.d"
-sudo install -vDm644 "./sysd-manager-proxy/data/sysd-manager-proxy.service" -T "/usr/lib/systemd/system/sysd-manager-proxy.service"
-sudo sed -i -e s/{BUS_NAME}/io.github.plrigaux.SysDManager/ -e s/{DESTINATION}/io.github.plrigaux.SysDManager/ -e s/{ENVIRONMENT}// -e s/{EXECUTABLE}/\\/usr\\/bin\\/sysd-manager-proxy/ -e s/{INTERFACE}/io.github.plrigaux.SysDManager/ -e s/{SERVICE_ID}/sysd-manager-proxy/ "/usr/lib/systemd/system/sysd-manager-proxy.service"
+#sudo install -vDm644 "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.conf" -T  "/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
+#sudo sed -i -e s/{BUS_NAME}/io.github.plrigaux.SysDManager/ -e s/{DESTINATION}/io.github.plrigaux.SysDManager/ -e s/{ENVIRONMENT}// -e s/{INTERFACE}/io.github.plrigaux.SysDManager/ "/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
+#sudo install -vDm644 "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy" -t "/usr/share/polkit-1/actions"
+#sudo install -vDm644 "./sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules" -t "/usr/share/polkit-1/rules.d"
+#sudo install -vDm644 "./sysd-manager-proxy/data/sysd-manager-proxy.service" -T "/usr/lib/systemd/system/sysd-manager-proxy.service"
+#sudo sed -i -e s/{BUS_NAME}/io.github.plrigaux.SysDManager/ -e s/{DESTINATION}/io.github.plrigaux.SysDManager/ -e s/{ENVIRONMENT}// -e s/{EXECUTABLE}/\\/usr\\/bin\\/sysd-manager-proxy/ -e s/{INTERFACE}/io.github.plrigaux.SysDManager/ -e s/{SERVICE_ID}/sysd-manager-proxy/ "/usr/lib/systemd/system/sysd-manager-proxy.service"
 
-echo Executing Install srcipt
+echo ""
+echo Executing Install script
 /usr/bin/sysd-manager-proxy install
 
-echo Compiling ${BOLD}Schemas${NC} 
-echo ""
+echo -e Compiling ${BOLD}Schemas${NC} 
 sudo glib-compile-schemas "/usr/share/glib-2.0/schemas"
+echo ""
 
-echo Installation of $PROGRAM completed, enjoy.
+echo -e Installation of $PROGRAM completed, enjoy.
 
 COMPILE_SIZE=$(du -sh "${REL_PATH}/target")
 COMPILE_SIZE=$(echo $COMPILE_SIZE "Hello World" | cut -d ' ' -f 1) 
