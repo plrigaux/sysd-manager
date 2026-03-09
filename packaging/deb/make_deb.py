@@ -233,20 +233,47 @@ def just_publish():
     version = bc.get_version()
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
-    title = f"Release {version}"
-
     cmd = [
         "gh",
         "release",
-        "create",
-        version,
-        "--title",
-        title,
-        "--notes",
-        "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
-        f"{DEB_DIR}/../sysd-manager.deb",
+        "list",
+        "--limit",
+        1,
+        "--json",
+        "tagName",
+        "--jq",
+        "'.[].tagName'",
     ]
+    r_version = bc.cmd_run(cmd)
 
-    print(cmd)
+    # curl -s https://api.github.com/repos/OWNER/REPO/releases/latest | jq -r .tag_name
+    if r_version == version:
+        title = f"Release {version}"
 
-    bc.cmd_run(cmd)
+        cmd = [
+            "gh",
+            "release",
+            "create",
+            version,
+            "--title",
+            title,
+            "--notes",
+            "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
+            f"{DEB_DIR}/../sysd-manager.deb",
+        ]
+
+        print(cmd)
+
+        bc.cmd_run(cmd)
+    else:
+        cmd = [
+            "gh",
+            "release",
+            "upload",
+            version,
+            f"{DEB_DIR}/../sysd-manager.deb",
+        ]
+
+        print(cmd)
+
+        bc.cmd_run(cmd)
