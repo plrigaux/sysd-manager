@@ -120,13 +120,19 @@ pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
 
     if !crate::proxy_switcher::PROXY_SWITCHER.start_at_start_up() {
         info!(
-            "Not starting {} as per user config",
+            "Not starting {:?} as per user config",
+            run_mode.proxy_service_name()
+        );
+        println!(
+            "Not starting {:?} as per user config",
             run_mode.proxy_service_name()
         );
         return Ok(());
     }
 
+    info!("Starting {:?}", run_mode.proxy_service_name());
     init_proxy_async2().await?;
+    info!("Service {:?} started", run_mode.proxy_service_name());
     Ok(())
 }
 

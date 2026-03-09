@@ -46,6 +46,7 @@ fn main() -> glib::ExitCode {
         .with_timer(timer)
         .with_line_number(true)
         .with_env_filter(EnvFilter::from_default_env())
+        .with_ansi(true)
         .init();
 
     let (unit, command, level, run_mode) = handle_args();

@@ -128,24 +128,30 @@ pub fn on_startup(app: &adw::Application) {
             })
             .build();
 
-    const ACTION_NAME_PROXY_MANAGEMENT: &str = "app.proxy-management";
-    let proxy_management_action_entry: gio::ActionEntry<adw::Application> =
-        gio::ActionEntry::builder(&ACTION_NAME_PROXY_MANAGEMENT[4..])
-            .activate(|application: &adw::Application, _, _| {
-                if let Some(win) = application.active_window() {
-                    let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
+    #[cfg(not(feature = "flatpak"))]
+    {
+        const ACTION_NAME_PROXY_MANAGEMENT: &str = "app.proxy-management";
+        let proxy_management_action_entry: gio::ActionEntry<adw::Application> =
+            gio::ActionEntry::builder(&ACTION_NAME_PROXY_MANAGEMENT[4..])
+                .activate(|application: &adw::Application, _, _| {
+                    if let Some(win) = application.active_window() {
+                        let app_window: Option<&AppWindow> = win.downcast_ref::<AppWindow>();
 
-                    let pdialog = PreferencesDialog::new(app_window);
-                    pdialog.set_visible_page_name("proxy");
-                    pdialog.present(Some(&win));
-                    //pdialog.present(Some(&win));
-                    //gtk::prelude::GtkWindowExt::present(&pdialog);
-                } else {
-                    let pdialog = PreferencesDialog::new(None);
-                    pdialog.present(None::<&gtk::Widget>);
-                }
-            })
-            .build();
+                        let pdialog = PreferencesDialog::new(app_window);
+                        pdialog.set_visible_page_name("proxy");
+                        pdialog.present(Some(&win));
+                        //pdialog.present(Some(&win));
+                        //gtk::prelude::GtkWindowExt::present(&pdialog);
+                    } else {
+                        let pdialog = PreferencesDialog::new(None);
+                        pdialog.present(None::<&gtk::Widget>);
+                    }
+                })
+                .build();
+
+        app.add_action_entries([proxy_management_action_entry]);
+        app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
+    }
 
     let daemon_reload_all_units: gio::ActionEntry<adw::Application> =
         gio::ActionEntry::builder(ACTION_DAEMON_RELOAD)
@@ -197,14 +203,12 @@ pub fn on_startup(app: &adw::Application) {
             .build();
 
     app.set_accels_for_action(ACTION_NAME_PREFERENCES, &["<Ctrl>comma"]);
-    app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
 
     app.add_action_entries([
         about,
         analyze_blame,
         systemd_info,
         preferences_action_entry,
-        proxy_management_action_entry,
         daemon_reload_all_units,
         signals,
         daemon_reload_all_units_with_bus,

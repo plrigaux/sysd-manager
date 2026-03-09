@@ -21,6 +21,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add polkit rule to start or stop proxy
 - Add a UX for overrestrictive filters
 - Add Journal no events info
+- Curated unit lists in popup menu
+- Include Unit files options
+- Shortcut for proxy preferences
+- Filter out template unit files
+
+### Changed
+
+- Move reload button to the right
+- Better polkit authentication message
+- Streamline install script
+
+### Fixed
+
+- Proxy now starts automatically when a privileged operation is triggered (Save, Enable/Disable, Daemon Reload, etc.) [Issue 37](https://github.com/plrigaux/sysd-manager/issues/37)
+- "Start proxy at Startup" option not working [Issue 37](https://github.com/plrigaux/sysd-manager/issues/37)
+- "Stop proxy at Close" no longer prompts for password when proxy was never started [Issue 37](https://github.com/plrigaux/sysd-manager/issues/37)
 
 ## [2.13.3] - 2026-02-22
 
