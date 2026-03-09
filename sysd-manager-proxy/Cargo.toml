@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager-proxy"
-version = "2.14.0"
+version = "2.14.1"
 authors = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
