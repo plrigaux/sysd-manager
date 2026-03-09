@@ -2010,7 +2010,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-proxy"
-version = "2.13.0"
+version = "2.14.0"
 dependencies = [
  "clap",
  "dotenv",
