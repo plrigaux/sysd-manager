@@ -21,16 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add polkit rule to start or stop proxy
 - Add a UX for overrestrictive filters
 - Add Journal no events info
-- Curated unit lists in popup menu
-- Include Unit files options
+- Curated unit lists in unit browser popup menu
+- New "Include Unit files" option
 - Shortcut for proxy preferences
-- Filter out template unit files
 
 ### Changed
 
 - Move reload button to the right
 - Better polkit authentication message
 - Streamline install script
+- Filter out template unit files in property fetching
 
 ### Fixed
 
