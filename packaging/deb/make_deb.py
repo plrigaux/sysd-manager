@@ -147,7 +147,7 @@ def create_deb(release=None):
     )
 
     install_to(
-        "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy",
+        "./target/loc/io.github.plrigaux.SysDManager.policy",
         f"{DEB_DIR}/usr/share/polkit-1/actions",
     )
 
