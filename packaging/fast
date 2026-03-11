@@ -8,7 +8,7 @@ from build_aux.build_common import color
 import build_aux.build_common as bc
 
 # to ensure that evrything works before scrapping a version number
-bc.cmd_run(["cargo", "build", "--release"], cwd="sysd-manager-base")
+bc.cmd_run(["cargo", "build", "--release"], cwd="..")
 
 tag.main()
 pacaur.generate_and_push()
