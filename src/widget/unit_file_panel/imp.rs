@@ -1077,7 +1077,7 @@ impl UnitFilePanelImp {
                             (
                                 pgettext(
                                     "file",
-                                    "Not able to reverted unit, permission not granted!",
+                                    "Not able to revert unit, permission not granted!",
                                 ),
                                 false,
                                 None,
@@ -1085,7 +1085,7 @@ impl UnitFilePanelImp {
                         }
 
                         _ => (
-                            pgettext("file", "Not able to reverted unit, an error happened!"),
+                            pgettext("file", "Not able to revert unit, an error happened!"),
                             false,
                             None,
                         ),

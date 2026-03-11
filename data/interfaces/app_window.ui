@@ -94,6 +94,7 @@
                 </child>
                 <child type="start">
                   <object class="GtkDropDown" id="system_session_dropdown">
+                    <property name="tooltip-markup" translatable="yes">To select system or session bus</property>
                     <property name="width-request">240</property>
                   </object>
                 </child>
@@ -101,6 +102,7 @@
                   <object class="GtkMenuButton" id="unit_list_view_menubutton">
                     <property name="always-show-arrow">True</property>
                     <property name="label" translatable="yes" context="menu" comments="selector of differents units list">Curated Lists</property>
+                    <property name="tooltip-text" translatable="yes" context="tooltip">To display different units' presentation and subset</property>
                   </object>
                 </child>
                 <child type="start">

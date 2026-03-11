@@ -122,7 +122,7 @@ pub(super) fn switch_ablement_state_set(
     });
 }
 
-pub(super) fn reeenable_unit(
+pub(super) fn reenable_unit(
     control_panel: &UnitControlPanel,
     switch: &gtk::Switch,
     unit: &UnitInfo,
@@ -130,7 +130,7 @@ pub(super) fn reeenable_unit(
 ) {
     let expected_new_status = unit.enable_status(); //Expect new status
     info!(
-        "Reeenable unit Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}",
+        "Reenable unit Unit \"{}\" enablement \"{}\" sw_active {} sw_state {} expected_new_status {expected_new_status}",
         unit.primary(),
         unit.enable_status().as_str(),
         switch.is_active(),

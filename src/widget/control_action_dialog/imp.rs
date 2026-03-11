@@ -550,7 +550,7 @@ impl EnableUnitDialogImp {
     }
 
     #[template_callback]
-    fn file_bowser_clicked(&self, _button: gtk::Button) {
+    fn file_browser_clicked(&self, _button: gtk::Button) {
         let file_dialog = gtk::FileDialog::builder()
             .title("Select a unit file")
             .accept_label("Select")

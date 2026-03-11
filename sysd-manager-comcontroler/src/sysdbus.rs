@@ -183,7 +183,7 @@ pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
     }
 
     let Some(sysd_proxy_unit_name) = sysd_proxy_service_name() else {
-        warn!("Fail stoping Proxy, because name not set");
+        warn!("Fail stopping Proxy, because name not set");
         return Ok(());
     };
 

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name clean_dialog.ui -->
@@ -51,7 +51,7 @@
                 </child>
                 <child>
                   <object class="AdwComboRow" id="stop_mode_combo">
-                    <property name="subtitle" translatable="yes" context="mask" comments="subtitle">Argument for the stoping mode</property>
+                    <property name="subtitle" translatable="yes" context="mask" comments="subtitle">Argument for the stopping mode</property>
                     <property name="title" translatable="yes" context="mask" comments="title">Stop mode</property>
                   </object>
                 </child>
