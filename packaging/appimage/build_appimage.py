@@ -68,19 +68,19 @@ def create_appdir(create_apprun=True):
         ]
     )
 
-    bc.cmd_run(
-        [
-            "install",
-            "-Dm755",
-            "./packaging/appimage/start",
-            "-t",
-            f"{APP_DIR}/usr/bin",
-        ]
-    )
-
     if create_apprun:
         bc.cmd_run(["ln", "-s", "./usr/bin/start", f"{APP_DIR}/AppRun"])
 
+        bc.cmd_run(
+            [
+                "install",
+                "-Dm755",
+                "./packaging/appimage/start",
+                "-t",
+                f"{APP_DIR}/usr/bin",
+            ]
+        )
+        
     bc.cmd_run(
         [
             "install",
