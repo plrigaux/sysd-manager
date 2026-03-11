@@ -23,14 +23,18 @@ def generating_translation_files():
 
 
 def linux_deploy():
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
     print(f"{color.CYAN}{color.BOLD}Use Linux deploy{color.END} ")
 
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
     # APP_DIR = APP_DIRLX
 
     # bc.cmd_run(["rm", "-vfr", APP_DIR])
     # bc.cmd_run(["mkdir", "-p", APP_DIR])
 
-    create_appdir(create_apprun=False)
+    # create_appdir(create_apprun=False)
+    create_appdir(create_apprun=True)
+
     bc.cmd_run(
         [
             "linuxdeploy-x86_64.AppImage",
@@ -42,6 +46,12 @@ def linux_deploy():
             # "--icon-filename=./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
             "--desktop-file",
             "./target/loc/io.github.plrigaux.sysd-manager.desktop",
+            "-l",
+            "/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0",
+            "-l",
+            "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1"
+            # "-l",
+            # "/usr/lib/x86_64-linux-gnu/libfreetype.so.6"
         ],
         on_fail_exit=False,
     )
@@ -52,7 +62,7 @@ def linux_deploy():
 def create_appdir(create_apprun=True):
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
 
-    bc.cmd_run(["rm", "-vfr", APP_DIR])
+    bc.cmd_run(["rm", "-fr", APP_DIR])
     bc.cmd_run(["mkdir", "-p", APP_DIR])
     # bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/bin"])
 
@@ -222,6 +232,10 @@ def app_image_file_name(version=None) -> str:
 
 def make_appimage():
 
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+    print(f"{color.GREEN}{color.BOLD}Make AppImage{color.END}")
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+
     version = bc.get_version()
 
     my_env = os.environ.copy()
@@ -340,6 +354,8 @@ def linux_build():
 
     # pack_libs()
 
+    make_appimage()
+
 
 def just_publish():
     version = bc.get_version()
@@ -402,6 +418,5 @@ def main():
             just_publish()
         case "linux":
             linux_build()
-            make_appimage()
         case "pack":
             make_appimage()
