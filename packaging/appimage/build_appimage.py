@@ -46,6 +46,12 @@ def linux_deploy():
             # "--icon-filename=./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
             "--desktop-file",
             "./target/loc/io.github.plrigaux.sysd-manager.desktop",
+            "-l",
+            "/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0",
+            "-l",
+            "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1"
+            # "-l",
+            # "/usr/lib/x86_64-linux-gnu/libfreetype.so.6"
         ],
         on_fail_exit=False,
     )
@@ -56,7 +62,7 @@ def linux_deploy():
 def create_appdir(create_apprun=True):
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
 
-    bc.cmd_run(["rm", "-vfr", APP_DIR])
+    bc.cmd_run(["rm", "-fr", APP_DIR])
     bc.cmd_run(["mkdir", "-p", APP_DIR])
     # bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/bin"])
 
