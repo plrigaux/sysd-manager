@@ -474,7 +474,7 @@ impl UnitControlPanelImpl {
             }
 
             InterPanelMessage::ReenableUnit(unit, call_back) => {
-                controls::reeenable_unit(
+                controls::reenable_unit(
                     &self.obj(),
                     &self.ablement_switch,
                     unit,

@@ -7,6 +7,7 @@ import re
 
 APP_IMAGE_DIR = "../AppImage"
 APP_DIR = f"{APP_IMAGE_DIR}/SysDManager.AppDir"
+# APP_DIRLX = f"{APP_IMAGE_DIR}/LxSysDManager.AppDir"
 
 
 def build_cargo():
@@ -22,24 +23,35 @@ def generating_translation_files():
 
 
 def linux_deploy():
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
     print(f"{color.CYAN}{color.BOLD}Use Linux deploy{color.END} ")
 
-    bc.cmd_run(["rm", "-fr", APP_IMAGE_DIR])
-    bc.cmd_run(["mkdir", "-p", APP_DIR])
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+    # APP_DIR = APP_DIRLX
+
+    # bc.cmd_run(["rm", "-vfr", APP_DIR])
+    # bc.cmd_run(["mkdir", "-p", APP_DIR])
+
+    # create_appdir(create_apprun=False)
+    create_appdir(create_apprun=True)
 
     bc.cmd_run(
         [
             "linuxdeploy-x86_64.AppImage",
             "-v",
-            "0",
+            "1",
             "--appdir",
             APP_DIR,
-            "--executable",
-            "target/release/sysd-manager",
-            # "--icon-filename",
-            # "./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
-            # "--desktop-file",
-            # "./target/loc/io.github.plrigaux.sysd-manager.desktop",
+            "--executable=target/release/sysd-manager",
+            # "--icon-filename=./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+            "--desktop-file",
+            "./target/loc/io.github.plrigaux.sysd-manager.desktop",
+            "-l",
+            "/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0",
+            "-l",
+            "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1"
+            # "-l",
+            # "/usr/lib/x86_64-linux-gnu/libfreetype.so.6"
         ],
         on_fail_exit=False,
     )
@@ -47,10 +59,10 @@ def linux_deploy():
     # make_appimage()
 
 
-def create_appdir():
+def create_appdir(create_apprun=True):
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
 
-    bc.cmd_run(["rm", "-fr", APP_IMAGE_DIR])
+    bc.cmd_run(["rm", "-fr", APP_DIR])
     bc.cmd_run(["mkdir", "-p", APP_DIR])
     # bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/bin"])
 
@@ -66,18 +78,19 @@ def create_appdir():
         ]
     )
 
-    bc.cmd_run(
-        [
-            "install",
-            "-Dm755",
-            "./packaging/appimage/start",
-            "-t",
-            f"{APP_DIR}/usr/bin",
-        ]
-    )
+    if create_apprun:
+        bc.cmd_run(["ln", "-s", "./usr/bin/start", f"{APP_DIR}/AppRun"])
 
-    bc.cmd_run(["ln", "-s", "./usr/bin/start", f"{APP_DIR}/AppRun"])
-
+        bc.cmd_run(
+            [
+                "install",
+                "-Dm755",
+                "./packaging/appimage/start",
+                "-t",
+                f"{APP_DIR}/usr/bin",
+            ]
+        )
+        
     bc.cmd_run(
         [
             "install",
@@ -219,6 +232,10 @@ def app_image_file_name(version=None) -> str:
 
 def make_appimage():
 
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+    print(f"{color.GREEN}{color.BOLD}Make AppImage{color.END}")
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+
     version = bc.get_version()
 
     my_env = os.environ.copy()
@@ -285,9 +302,9 @@ def pack_libs():
         "libX11",
         "libX11-xcb",
         "libwayland-client",
-        "libfontconfig",
-        "libfreetype",
-        "libharfbuzz",
+        # "libfontconfig",
+        # "libfreetype",
+        # "libharfbuzz",
         "libcom_err",
         "libexpat",
         "libgcc_s",
@@ -320,6 +337,24 @@ def build():
     create_appdir()
 
     pack_libs()
+
+
+def linux_build():
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+    print(f"{color.GREEN}{color.BOLD}Creating an AppImage{color.END}")
+    print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
+
+    build_cargo()
+
+    generating_translation_files()
+
+    linux_deploy()
+
+    # create_appdir()
+
+    # pack_libs()
+
+    make_appimage()
 
 
 def just_publish():
@@ -382,6 +417,6 @@ def main():
         case "publish_only":
             just_publish()
         case "linux":
-            linux_deploy()
+            linux_build()
         case "pack":
             make_appimage()

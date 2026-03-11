@@ -1,6 +1,7 @@
 #File generated
 ./data/applications/io.github.plrigaux.sysd-manager.desktop
 ./data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml
+./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy
 data/interfaces/app_window.ui
 data/interfaces/clean_dialog.ui
 data/interfaces/control_action_dialog.ui
@@ -85,6 +86,7 @@ src/widget/unit_file_panel/mod.rs
 src/widget/unit_info/construct_info.rs
 src/widget/unit_info/imp.rs
 src/widget/unit_info/mod.rs
+src/widget/unit_list/column.rs
 src/widget/unit_list/filter/dropdown.rs
 src/widget/unit_list/filter/imp.rs
 src/widget/unit_list/filter/mod.rs

@@ -19,6 +19,12 @@ sudo rm "/usr/share/applications/io.github.plrigaux.sysd-manager.desktop"
 sudo rm "/usr/share/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml"
 sudo rm "/usr/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg"
 sudo rm "/usr/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml" 
+sudo rm "/usr/lib/systemd/system/sysd-manager-proxy.service"
+sudo rm "/usr/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
+sudo rm "/usr/share/polkit-1/actions/io.github.plrigaux.SysDManager.policy"
+sudo rm "/usr/share/polkit-1/rules.d/50-io.github.plrigaux.SysDManager.rules"
+
+
 sudo find /usr/share/locale -name sysd-manager.mo -type f -delete
 echo ""
 echo -e Uninstallation of $PROGRAM completed.

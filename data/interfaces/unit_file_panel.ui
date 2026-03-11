@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name unit_file_panel.ui -->
@@ -87,7 +87,7 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description" translatable="yes" context="file" comments="description">The  unit has no file associated</property>
+                <property name="description" translatable="yes" context="file" comments="description">The unit has no file associated</property>
                 <property name="icon-name">unreadable-symbolic</property>
                 <property name="title" translatable="yes" context="file" comments="title">No Unit File</property>
               </object>

@@ -1,3 +1,4 @@
 #!/bin/sh
 
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$APPDIR/usr/lib $APPDIR/usr/bin/sysd-manager
+GSETTINGS_SCHEMA_DIR=$APPDIR/usr/share/glib-2.0/schemas
+LD_LIBRARY_PATH=$APPDIR/usr/lib:$LD_LIBRARY_PATH $APPDIR/usr/bin/sysd-manager
