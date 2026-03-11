@@ -20,6 +20,8 @@ pub const DESKTOP_FILE_PATH: &str = concat!(DESKTOP_DIR, "/", DESKTOP_FILE);
 pub const METAINFO_DIR: &str = "./data/metainfo";
 pub const METAINFO_FILE: &str = "io.github.plrigaux.sysd-manager.metainfo.xml";
 pub const METAINFO_FILE_PATH: &str = concat!(METAINFO_DIR, "/", METAINFO_FILE);
+pub const POLICY_FILE: &str = "io.github.plrigaux.SysDManager.policy";
+pub const POLICY_FILE_PATH: &str = concat!("./sysd-manager-proxy/data/", POLICY_FILE);
 
 pub const PACK_FILE_DIR: &str = "target/loc";
 
@@ -188,6 +190,31 @@ pub fn generate_metainfo() -> Result<(), TransError> {
         .arg("--verbose")
         .arg("--xml")
         .arg(format!("--template={METAINFO_FILE_PATH}"))
+        .arg("-d")
+        .arg(PO_DIR)
+        .arg("-o")
+        .arg(out_file)
+        .output()
+        .map_err(|error| TransError::create_command_error(command, error))?;
+
+    display_output("MSGFMT", output);
+
+    Ok(())
+}
+
+pub fn generate_policy() -> Result<(), TransError> {
+    fs::create_dir_all(PACK_FILE_DIR)?;
+
+    let out_file = format!("{PACK_FILE_DIR}/{POLICY_FILE}");
+
+    let mut command = Command::new("msgfmt");
+    let output = command
+        .env("GETTEXTDATADIRS", "./po/its")
+        .arg("--check")
+        .arg("--statistics")
+        .arg("--verbose")
+        .arg("--xml")
+        .arg(format!("--template={POLICY_FILE_PATH}"))
         .arg("-d")
         .arg(PO_DIR)
         .arg("-o")

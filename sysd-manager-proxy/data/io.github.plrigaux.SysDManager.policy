@@ -4,7 +4,7 @@
   <icon_name>io.github.plrigaux.sysd-manager</icon_name>
   <action id="io.github.plrigaux.SysDManager">
     <message>Authentication is required to run privileged systemd calls via the SysD Manager Proxy</message>
-    <description>SysD Manager Proxy</description>
+    <!-- <description>SysD Manager Proxy</description> -->
     <defaults>
       <allow_any>auth_admin</allow_any>
       <allow_inactive>auth_admin</allow_inactive>

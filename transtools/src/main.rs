@@ -11,6 +11,7 @@ use translating::DESKTOP_FILE_PATH;
 use translating::MAIN_PROG;
 use translating::METAINFO_FILE_PATH;
 use translating::PO_DIR;
+use translating::POLICY_FILE_PATH;
 use translating::error::TransError;
 
 use std::env;
@@ -161,6 +162,7 @@ fn generate_pack() -> Result<(), TransError> {
 
     translating::generate_desktop()?;
     translating::generate_metainfo()?;
+    translating::generate_policy()?;
 
     Ok(())
 }
@@ -268,10 +270,12 @@ fn generate_potfiles() -> Result<(), TransError> {
     let mut interc = list_files("data/interfaces", "ui")?;
     let desktop = PathBuf::from(DESKTOP_FILE_PATH);
     let metainfo = PathBuf::from(METAINFO_FILE_PATH);
+    let policy = PathBuf::from(POLICY_FILE_PATH);
 
     potfiles_entries.append(&mut interc);
     potfiles_entries.push(desktop);
     potfiles_entries.push(metainfo);
+    potfiles_entries.push(policy);
     potfiles_entries.sort();
 
     println!("{potfiles_entries:#?}");
