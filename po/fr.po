@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-11 17:31-0400\n"
-"PO-Revision-Date: 2026-02-22 21:09+0000\n"
+"PO-Revision-Date: 2026-03-11 21:58+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -76,6 +76,8 @@ msgid ""
 "Authentication is required to run privileged systemd calls via the SysD "
 "Manager Proxy"
 msgstr ""
+"L'authentification est requise pour exécuter des appels système privilégiés "
+"via le Proxy de SysD Manager"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -110,7 +112,7 @@ msgstr "Préférences"
 #: data/interfaces/app_window.ui:38
 msgctxt "menu"
 msgid "Proxy Management"
-msgstr ""
+msgstr "Gestion du Proxy"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
@@ -128,9 +130,8 @@ msgid "Open Search Bar"
 msgstr "Ouvrir la barre de recherche"
 
 #: data/interfaces/app_window.ui:97
-#, fuzzy
 msgid "To select system or session bus"
-msgstr "Bus système et Bus session utilisateur"
+msgstr "Pour sélectionner le bus système ou session"
 
 #. selector of differents units list
 #: data/interfaces/app_window.ui:104
@@ -142,6 +143,7 @@ msgstr "Listes organisées"
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
 msgstr ""
+"Pour afficher la présentation et le sous-ensemble des différentes unités"
 
 #: data/interfaces/app_window.ui:112
 msgctxt "top button tooltip"
@@ -326,7 +328,7 @@ msgstr "Id du boot"
 #: data/interfaces/journal_panel.ui:151
 msgctxt "journal"
 msgid "For more information"
-msgstr ""
+msgstr "lien vers le wiki"
 
 #. description
 #: data/interfaces/journal_panel.ui:155
@@ -335,6 +337,8 @@ msgid ""
 "Either there are no log events to display, or you don't have permission to "
 "access them."
 msgstr ""
+"Soit il n'y a aucun événement de journal à afficher, soit vous n'êtes pas "
+"autorisé à y accéder."
 
 #. title
 #: data/interfaces/journal_panel.ui:157
@@ -481,7 +485,6 @@ msgstr "Arrêtez maintenant"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:54
-#, fuzzy
 msgctxt "mask"
 msgid "Argument for the stopping mode"
 msgstr "Argument pour le mode de d'arrêt"
@@ -710,37 +713,31 @@ msgid "Systemd Manager Method Calls"
 msgstr "Appels de méthodes à Systemd Manager"
 
 #: data/interfaces/preferences.ui:210
-#, fuzzy
 msgctxt "preference"
 msgid "<b>Start</b> method call through the Proxy"
-msgstr "Appel à la méthode <b>Décongeler</b> via le proxy"
+msgstr "Appel à la méthode <b>Start</b> via le proxy"
 
 #: data/interfaces/preferences.ui:211
-#, fuzzy
 msgctxt "preference"
 msgid "Start"
 msgstr "Démarrer"
 
 #: data/interfaces/preferences.ui:216
-#, fuzzy
 msgctxt "preference"
 msgid "<b>Stop</b> method call through the Proxy"
-msgstr "Appel à la méthode <b>Décongeler</b> via le proxy"
+msgstr "Appel à la méthode <b>Stop</b> via le proxy"
 
 #: data/interfaces/preferences.ui:217
-#, fuzzy
 msgctxt "preference"
 msgid "Stop"
 msgstr "Arrêter"
 
 #: data/interfaces/preferences.ui:222
-#, fuzzy
 msgctxt "preference"
 msgid "<b>Restart</b> method call through the Proxy"
-msgstr "Appel à la méthode <b>Nettoyer</b> via le proxy"
+msgstr "Appel à la méthode <b>Restart</b> via le proxy"
 
 #: data/interfaces/preferences.ui:223
-#, fuzzy
 msgctxt "preference"
 msgid "Restart"
 msgstr "Redémarrer"
@@ -887,12 +884,12 @@ msgstr "Afficher les préférences"
 msgctxt "shortcut window"
 msgid "Allow configuring each proxy operation individually"
 msgstr ""
+"Permettre la configuration de chaque opération du proxy individuellement"
 
 #: data/interfaces/shortcuts.ui:25
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Show Proxy Preferences"
-msgstr "Afficher les préférences"
+msgstr "Afficher les préférences du proxy"
 
 #: data/interfaces/shortcuts.ui:31
 msgctxt "shortcut window"
@@ -1343,7 +1340,6 @@ msgstr "Enregister"
 
 #. description
 #: data/interfaces/unit_file_panel.ui:90
-#, fuzzy
 msgctxt "file"
 msgid "The unit has no file associated"
 msgstr "L'unité n'a aucun fichier associé"
@@ -1447,8 +1443,8 @@ msgid ""
 "No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
 "happened."
 msgstr ""
-"Aucune unités renvoyées, définissez la variable d'environnement <b> Rust_log "
-"= info </b> pour voir ce qui se passe."
+"Aucune unités renvoyées, définissez la variable d'environnement <b>"
+"RUST_LOG=info</b> pour voir ce qui se passe."
 
 #: data/interfaces/unit_list_panel.ui:134
 msgctxt "list page title"
@@ -1457,22 +1453,20 @@ msgstr "Quelque chose s'est mal passé"
 
 #. Button label
 #: data/interfaces/unit_list_panel.ui:155
-#, fuzzy
 msgctxt "unit search"
 msgid "Edit Filters"
-msgstr "Filtres"
+msgstr "Éditer les filtres"
 
 #. When the filter is too restrictive
 #: data/interfaces/unit_list_panel.ui:171
 msgctxt "list page description"
 msgid "Overly restrictive filter"
-msgstr ""
+msgstr "Filtre trop restrictif"
 
 #: data/interfaces/unit_list_panel.ui:173
-#, fuzzy
 msgctxt "list page title"
 msgid "No Filtered Units"
-msgstr "Unités chargées"
+msgstr "Aucune unité filtrée"
 
 #. Search entry place holder text
 #: data/interfaces/unit_list_search.ui:13
@@ -2522,16 +2516,14 @@ msgid "Unit {} reverted successfully!"
 msgstr "Fichier {} restaurée avec succès !"
 
 #: src/widget/unit_file_panel/imp.rs:1080
-#, fuzzy
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
-msgstr "Impossible de revenir en arrière, autorisation non accordée !"
+msgstr "Impossible de revenir en arrière, autorisation non accordée!"
 
 #: src/widget/unit_file_panel/imp.rs:1088
-#, fuzzy
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
-msgstr "Impossible de revenir en arrière, une erreur s'est produite !"
+msgstr "Impossible de revenir en arrière, une erreur s'est produite!"
 
 #. Show Line Number Menu Item
 #: src/widget/unit_file_panel/imp.rs:1191
@@ -2769,10 +2761,9 @@ msgid "Filtering"
 msgstr "Filtrage"
 
 #: src/widget/unit_list/mod.rs:166
-#, fuzzy
 msgctxt "menu"
 msgid "Include Unit Files"
-msgstr "Activer le fichier d'unité"
+msgstr "Inclure les fichiers d'unité"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:186
