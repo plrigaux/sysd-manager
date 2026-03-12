@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-
+import subprocess
 import build_aux.build_common as bc
 from build_aux.build_common import color
 
@@ -233,21 +233,57 @@ def just_publish():
     version = bc.get_version()
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
+    title = f"Release {version}"
+
     cmd = [
         "gh",
         "release",
-        "list",
-        "--limit",
-        1,
-        "--json",
-        "tagName",
-        "--jq",
-        "'.[].tagName'",
+        "create",
+        version,
+        "--title",
+        title,
+        "--notes",
+        "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
+        f"{DEB_DIR}/../sysd-manager.deb",
     ]
-    r_version = bc.cmd_run(cmd)
 
-    # curl -s https://api.github.com/repos/OWNER/REPO/releases/latest | jq -r .tag_name
-    if r_version == version:
+    print(cmd)
+
+    bc.cmd_run(cmd)
+
+
+def just_publish_or_rel():
+    version = bc.get_version()
+    print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
+
+    # cmd = [
+    #     "gh",
+    #     "release",
+    #     "list",
+    #     "--limit",
+    #     "1",
+    #     "--json",
+    #     "tagName",
+    #     "--jq",
+    #     "'.[].tagName'",
+    # ]
+    # r_version = bc.cmd_run(cmd)
+
+    cmd = [
+        "curl",
+        "-s",
+        "https://api.github.com/repos/plrigaux/sysd-manager/releases/latest",
+        "|",
+        "jq",
+        "-r",
+        ".tag_name",
+    ]
+
+    cmline = " ".join(cmd)
+    print(cmline)
+    r_version = subprocess.check_output(cmd, text=True, shell=True)
+
+    if r_version.stdout == version:
         title = f"Release {version}"
 
         cmd = [
