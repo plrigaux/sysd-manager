@@ -32,7 +32,7 @@
               <object class="AdwButtonContent">
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
-                <property name="icon-name">processes-symbolic</property>
+                <property name="icon-name">media-playback-start-symbolic</property>
                 <property name="label" translatable="yes" context="controls" comments="unit popup menu">Start</property>
               </object>
             </child>

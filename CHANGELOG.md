@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.14.4] - 2026-03-11
+
+### Fixed
+
+-  Start option icon missing [Issue 41](https://github.com/plrigaux/sysd-manager/issues/41)
+
 ## [2.14.3] - 2026-03-11
 
 ### Added
