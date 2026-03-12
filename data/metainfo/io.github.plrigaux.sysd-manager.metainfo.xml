@@ -82,7 +82,7 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.14.2" date="2026-03-09">
+    <release version="2.14.4" date="2026-03-11">
       <description translate="no">
         <p>Added</p>
         <ul>
@@ -102,6 +102,7 @@ https://hughsie.github.io/oars/index.html
           <li>Proxy now starts automatically when a privileged operation is triggered (Save, Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
           <li>Start proxy at Startup option not working [Issue 37]</li>
           <li>Stop proxy at Close no longer prompts for password when proxy was never started [Issue 37]</li>
+          <li>Start option icon missing [Issue 41]</li>
         </ul>
       </description>
     </release>
