@@ -15,5 +15,6 @@ __pycache__/
 .cargo
 data/schemas/gschemas.compiled
 /po/*.mo
+.claude
 
 
