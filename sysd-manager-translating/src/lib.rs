@@ -205,6 +205,10 @@ pub fn generate_metainfo() -> Result<(), TransError> {
 pub fn generate_policy() -> Result<(), TransError> {
     fs::create_dir_all(PACK_FILE_DIR)?;
 
+    let current_dir = std::env::current_dir()?;
+
+    println!("cur dir {}", current_dir.display());
+
     let out_file = format!("{PACK_FILE_DIR}/{POLICY_FILE}");
 
     let mut command = Command::new("msgfmt");
