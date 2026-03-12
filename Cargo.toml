@@ -47,6 +47,7 @@ path = "src/main.rs"
 [features]
 default = ["systemd/default"]
 flatpak = ["systemd/flatpak", "base/flatpak"]
+appimage = ["systemd/appimage", "base/appimage"]
 
 [profile.release]
 lto = true

@@ -22,7 +22,7 @@ use crate::{
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
         signals_dialog::SignalsWindow,
         unit_control_panel::UnitControlPanel,
-        unit_list::{UnitListPanel, UnitCuratedList},
+        unit_list::{UnitCuratedList, UnitListPanel},
         unit_properties_selector::UnitPropertiesSelectorDialog,
     },
 };
@@ -649,7 +649,7 @@ impl WidgetImpl for AppWindowImpl {}
 impl WindowImpl for AppWindowImpl {
     // Save window state right before the window will be closed
     fn close_request(&self) -> glib::Propagation {
-        #[cfg(not(feature = "flatpak"))]
+        #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         if let Err(err) = systemd::sysdbus::shut_down_sysd_proxy() {
             warn!("Closing Proxy Error {err:?}");
         }

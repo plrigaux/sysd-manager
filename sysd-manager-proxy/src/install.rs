@@ -148,49 +148,6 @@ async fn sub_install(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
 fn source_path(base_path: &Path, file_name: &str) -> Result<PathBuf, Box<dyn Error>> {
     let src_path = base_path.join(file_name);
 
-    /*     #[cfg(feature = "flatpak")]
-    {
-        use base::file::inside_flatpak;
-
-        let stream = gio::functions::resources_open_stream(
-            &src_path.to_string_lossy(),
-            ResourceLookupFlags::NONE,
-        )?;
-
-        let path = PathBuf::from(format!("XXXXXX{}", POLICY_FILE));
-        let (file, ios_stream) = gio::File::new_tmp(Some(&path)).unwrap();
-
-        let mut tmp_path = file.path().ok_or(Box::<dyn Error>::from("No file path"))?;
-        info!("temp file path {:?}", tmp_path);
-
-        let os_strem = ios_stream.output_stream();
-        os_strem
-            .splice(
-                &stream,
-                OutputStreamSpliceFlags::NONE,
-                None::<&gio::Cancellable>,
-            )
-            .unwrap();
-
-        /*         /run/user/1000/.flatpak/io.github.plrigaux.sysd-manager/tmp
-        /run/user/USERID/.flatpak/FLATPAK_ID/tmp/ */
-
-        if inside_flatpak()
-            && let Ok(run_time_dir) = env::var("XDG_RUNTIME_DIR")
-            && let Ok(flatpak_id) = env::var("FLATPAK_ID")
-        {
-            tmp_path = PathBuf::from_iter(args![
-                run_time_dir,
-                ".flatpak",
-                flatpak_id,
-                tmp_path.strip_prefix("/").expect("tmp_path not empty")
-            ]);
-            debug!("flatpack tmp dir {}", tmp_path.display());
-        }
-
-        Ok(tmp_path)
-    } */
-
     Ok(src_path)
 }
 

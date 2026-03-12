@@ -39,6 +39,9 @@ use widget::{
 
 const DOMAIN_NAME: &str = "sysd-manager";
 fn main() -> glib::ExitCode {
+    #[cfg(all(feature = "flatpak", feature = "appimage"))]
+    compile_error!("Features flatpack and appimage can't be combined");
+
     dotenv().ok();
 
     let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
@@ -109,9 +112,10 @@ fn main() -> glib::ExitCode {
     info!("{}", gettext("Program starting up"));
 
     #[cfg(feature = "flatpak")]
-    {
-        info!("Flatpak version");
-    }
+    info!("Flatpak version");
+
+    #[cfg(feature = "appimage")]
+    info!("AppImage version");
 
     debug!("Run mode: {:?}", run_mode);
 
@@ -142,7 +146,7 @@ fn main() -> glib::ExitCode {
         build_ui(application, unit.as_ref());
 
         //Start the Proxy after the app is loaded
-        #[cfg(not(feature = "flatpak"))]
+        #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         crate::systemd::runtime().spawn(async move {
             systemd::init_proxy_async(run_mode).await;
         });

@@ -185,7 +185,7 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
       <object class="AdwPreferencesPage" id="pref_proxy_page">
         <property name="banner">
           <object class="AdwBanner" id="proxy_banner">
-            <property name="title">Flatpak version can't use a Proxy </property>
+            <property name="title">Hello friend</property>
           </object>
         </property>
         <property name="icon-name">preferences-system-network-proxy-symbolic</property>

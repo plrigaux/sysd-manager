@@ -76,7 +76,7 @@ pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(),
 
     if !unit_drop_in_dir.exists() {
         info!("Creating dir {}", unit_drop_in_dir.display());
-
+        //FIXME handle not autorized cases
         fs::create_dir_all(&unit_drop_in_dir).await?;
     }
 

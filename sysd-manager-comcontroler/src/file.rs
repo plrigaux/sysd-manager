@@ -1,8 +1,10 @@
 use crate::errors::SystemdErrors;
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak")))]
 use base::file::create_drop_in_io;
-use base::file::{create_drop_in_path_file, flatpak_host_file_path};
-use base::{args, file::commander};
+use base::{
+    args,
+    file::{commander, create_drop_in_path_file, flatpak_host_file_path},
+};
 use std::path::PathBuf;
 use std::{ffi::OsStr, path::Path, process::Stdio};
 use tokio::{

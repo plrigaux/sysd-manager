@@ -17,7 +17,7 @@ pub const KEY_PREF_PROXY_STOP_AT_CLOSE: &str = "pref-proxy-stop-at-close";
 
 pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
     let ps = ProxySwitcher::default();
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     {
         use base::consts::APP_ID;
         use gio::prelude::SettingsExt;

@@ -16,10 +16,13 @@ pub enum RunMode {
 
 impl RunMode {
     pub fn from_flags(dev: bool, normal: bool) -> Self {
-        #[cfg(not(feature = "flatpak"))]
+        #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         let cargo_in_use = env::var("CARGO");
 
         #[cfg(feature = "flatpak")]
+        let cargo_in_use: Result<String, env::VarError> = Ok("flatpack".to_string());
+
+        #[cfg(feature = "appimage")]
         let cargo_in_use: Result<String, env::VarError> = Ok("flatpack".to_string());
 
         match (dev, normal, cargo_in_use) {
@@ -50,7 +53,10 @@ impl RunMode {
         #[cfg(feature = "flatpak")]
         let bus_name = crate::consts::DBUS_NAME_FLATPAK;
 
-        #[cfg(not(feature = "flatpak"))]
+        #[cfg(feature = "appimage")]
+        let bus_name = crate::consts::DBUS_NAME_APPIMAGE;
+
+        #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         let bus_name = if *self == RunMode::Development {
             crate::consts::DBUS_NAME_DEV
         } else {

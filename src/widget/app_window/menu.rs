@@ -128,9 +128,9 @@ pub fn on_startup(app: &adw::Application) {
             })
             .build();
 
-    #[cfg(not(feature = "flatpak"))]
+    const ACTION_NAME_PROXY_MANAGEMENT: &str = "app.proxy-management";
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     {
-        const ACTION_NAME_PROXY_MANAGEMENT: &str = "app.proxy-management";
         let proxy_management_action_entry: gio::ActionEntry<adw::Application> =
             gio::ActionEntry::builder(&ACTION_NAME_PROXY_MANAGEMENT[4..])
                 .activate(|application: &adw::Application, _, _| {
@@ -150,8 +150,8 @@ pub fn on_startup(app: &adw::Application) {
                 .build();
 
         app.add_action_entries([proxy_management_action_entry]);
-        app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
     }
+    app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
 
     let daemon_reload_all_units: gio::ActionEntry<adw::Application> =
         gio::ActionEntry::builder(ACTION_DAEMON_RELOAD)
@@ -348,6 +348,9 @@ Priit Jõerüüt <hwlate@joeruut.com>",
 
     #[cfg(feature = "flatpak")]
     about.set_version(&format!("{} (Flatpak)", VERSION));
+
+    #[cfg(feature = "appimage")]
+    about.set_version(&format!("{} (AppImage)", VERSION));
 
     about.add_acknowledgement_section(
         //about dialogue

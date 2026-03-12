@@ -14,6 +14,7 @@ keywords = ["dbus", "sysd-manager"]
 [features]
 default = []
 flatpak = []
+appimage = []
 
 [dependencies]
 base.workspace = true

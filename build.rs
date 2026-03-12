@@ -29,13 +29,6 @@ fn main() {
         "sysd-manager.gresource",
     );
 
-    #[cfg(feature = "flatpak")]
-    compile_resources(
-        &["sysd-manager-proxy/data"],
-        "sysd-manager-proxy/data/resources.gresource.xml",
-        "sysd-manager-proxy.gresource",
-    );
-
     compile_schema();
 
     if let Err(error) = generate_notes() {
@@ -242,9 +235,6 @@ fn generate_notes() -> Result<(), ScriptError> {
     };
 
     generate_release_notes_rs(&release_notes)?;
-
-    //#[cfg(not(feature = "flatpak"))]
-    //generate_changelog_md(&release_notes)?;
 
     Ok(())
 }

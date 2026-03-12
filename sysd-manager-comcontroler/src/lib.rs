@@ -6,7 +6,7 @@ pub mod errors;
 mod file;
 mod journal;
 pub mod journal_data;
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub mod proxy_switcher;
 pub mod socket_unit;
 pub mod sysdbus;
@@ -48,10 +48,10 @@ use tokio::{runtime::Runtime, sync::mpsc};
 use tracing::{error, info, warn};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 use crate::sysdbus::to_proxy;
 
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 use base::consts::PROXY_SERVICE;
 
 #[derive(Default, Clone, PartialEq, Debug)]
@@ -158,14 +158,14 @@ pub fn runtime() -> &'static Runtime {
 }
 
 ///Try to Start Proxy
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub async fn init_proxy_async(run_mode: base::RunMode) {
     if let Err(e) = sysdbus::init_proxy_async(run_mode).await {
         error!("Fail starting Proxy. Error {e:?}");
     }
 }
 
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub fn shut_down() {
     sysdbus::shut_down_sysd_proxy();
 }
@@ -353,7 +353,7 @@ pub fn start_unit(
     unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.start() && !unit_name.starts_with(PROXY_SERVICE) {
@@ -373,7 +373,7 @@ pub fn start_unit(
             .map_err(|err| err.into()),
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
 
@@ -390,7 +390,7 @@ pub fn stop_unit(
     unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.stop() && !unit_name.starts_with(PROXY_SERVICE) {
@@ -411,7 +411,7 @@ pub fn stop_unit(
             .map_err(|err| err.into()),
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
 
@@ -427,7 +427,7 @@ pub fn restart_unit(
     unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.restart() && !unit_name.starts_with(PROXY_SERVICE) {
@@ -447,7 +447,7 @@ pub fn restart_unit(
             .map_err(|err| err.into()),
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
 
@@ -487,7 +487,7 @@ pub fn enable_unit_file(
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.enable_unit_file() {
@@ -507,7 +507,7 @@ pub fn enable_unit_file(
             .map_err(|err| err.into()),
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
         systemd_manager_blocking(level)
@@ -522,7 +522,7 @@ pub fn disable_unit_file(
     flags: BitFlags<DisEnableFlags>,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     info!("{:?} {} {:?}", level, unit_file, flags.bits_c());
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.disable_unit_file() {
@@ -545,7 +545,7 @@ pub fn disable_unit_file(
             .map_err(|err| err.into()),
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
         systemd_manager_blocking(level)
@@ -786,7 +786,7 @@ pub fn kill_unit(
 
 pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
     if let Some((_level, primary_name)) = params {
-        #[cfg(not(feature = "flatpak"))]
+        #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         match _level {
             UnitDBusLevel::System | UnitDBusLevel::Both => {
                 if proxy_switcher::PROXY_SWITCHER.freeze() {
@@ -802,7 +802,7 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
                 .map_err(|err| err.into()),
         }
 
-        #[cfg(feature = "flatpak")]
+        #[cfg(any(feature = "flatpak", feature = "appimage"))]
         {
             let proxy = systemd_manager();
             proxy.freeze_unit(&primary_name)?;
@@ -818,7 +818,7 @@ pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdE
         return Err(SystemdErrors::NoUnit);
     };
 
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.thaw() {
@@ -834,7 +834,7 @@ pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdE
             .map_err(|err| err.into()),
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
         let proxy = systemd_manager_blocking(level);
@@ -878,7 +878,7 @@ pub fn clean_unit(
         what.iter().map(|s| s.as_str()).collect()
     };
 
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.clean() {
@@ -895,7 +895,7 @@ pub fn clean_unit(
             .map_err(|err| err.into()),
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
 
@@ -952,7 +952,7 @@ pub fn link_unit_files(
 pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     info!("Reloding Daemon");
 
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if level.user_session() || !proxy_switcher::PROXY_SWITCHER.reload() {
         let proxy = systemd_manager_async(level).await?;
         proxy.reload().await?;
@@ -961,7 +961,7 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
         proxy_call_async!(reload)
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         systemd_manager_async(level)
             .await?
@@ -1212,17 +1212,15 @@ pub async fn create_drop_in(
     file_name: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if user_session || !proxy_switcher::PROXY_SWITCHER.create_dropin() {
         file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
     } else {
         proxy_call_async!(create_drop_in, runtime, unit_name, file_name, content)
     }
 
-    #[cfg(feature = "flatpak")]
-    {
-        file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
-    }
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
 }
 
 pub async fn save_file(
@@ -1235,14 +1233,14 @@ pub async fn save_file(
     let user_session = level.user_session();
     //TODO check the case of /run
 
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if user_session || !proxy_switcher::PROXY_SWITCHER.save_file() {
         save_text_to_file(file_path, content, user_session).await
     } else {
         proxy_call_async!(save_file, file_path, content)
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     save_text_to_file(file_path, content, user_session).await
 }
 
@@ -1252,7 +1250,7 @@ pub async fn revert_unit_file_full(
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
     info!("Reverting unit file {unit_name:?}");
 
-    #[cfg(not(feature = "flatpak"))]
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if level.user_session() || !proxy_switcher::PROXY_SWITCHER.revert_unit_file() {
         systemd_manager_async(level)
             .await?
@@ -1263,7 +1261,7 @@ pub async fn revert_unit_file_full(
         proxy_call_async!(revert_unit_files, &[unit_name])
     }
 
-    #[cfg(feature = "flatpak")]
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
         systemd_manager_async(level)
             .await?

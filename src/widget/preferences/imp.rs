@@ -499,7 +499,7 @@ impl ObjectImpl for PreferencesDialogImpl {
             )
             .build();
 
-        #[cfg(not(feature = "flatpak"))]
+        #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         {
             use systemd::proxy_switcher::{
                 KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
@@ -749,7 +749,7 @@ impl ObjectImpl for PreferencesDialogImpl {
             }
         }
 
-        #[cfg(feature = "flatpak")]
+        #[cfg(any(feature = "flatpak", feature = "appimage"))]
         {
             //Note the switch are set to active false by default
 
@@ -770,11 +770,25 @@ impl ObjectImpl for PreferencesDialogImpl {
             self.stop_proxy_at_close_switch.set_sensitive(false);
 
             self.proxy_banner.set_revealed(true);
+
+            #[cfg(feature = "appimage")]
+            let package_version = "AppImage";
+
+            #[cfg(feature = "flatpak")]
+            let package_version = "Flatpak";
+
+            //Flatpak of AppImage version ...
+            let title = crate::format2!(
+                pgettext("preference", "{} version can't use the Proxy"),
+                package_version
+            );
+
+            self.proxy_banner.set_title(&title);
         }
     }
 }
 
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 fn find_description_label(node: &gtk::Widget) -> Option<gtk::Label> {
     let id = node.buildable_id();
     if let Some(id) = id
@@ -801,7 +815,7 @@ fn find_description_label(node: &gtk::Widget) -> Option<gtk::Label> {
     None
 }
 
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 fn label_link_handler(label: &gtk::Label, pref_dialog: &super::PreferencesDialog) {
     let pref_dialog = pref_dialog.clone();
     label.connect_activate_link(move |_label, uri| {

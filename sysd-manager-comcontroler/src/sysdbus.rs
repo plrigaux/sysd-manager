@@ -114,7 +114,7 @@ impl RunContext {
 static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
 
 /// Try to start Proxy
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
     RUN_CONTEXT.get_or_init(|| RunContext { run_mode });
 
@@ -172,7 +172,7 @@ pub fn sysd_proxy_service_name() -> Option<String> {
         .map(|context| context.proxy_service_name())
 }
 
-#[cfg(not(feature = "flatpak"))]
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
     if !crate::proxy_switcher::PROXY_SWITCHER.stop_at_close() {
         info!(
