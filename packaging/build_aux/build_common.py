@@ -3,7 +3,6 @@ import pprint
 import git
 import tomllib
 from typing import Optional
-from typing import Optional
 
 
 class color:
@@ -19,7 +18,9 @@ class color:
     END = "\033[0m"
 
 
-def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, env=None) -> int:
+def cmd_run(
+    cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, env=None
+) -> int:
 
     if cwd:
         print(f"{color.GREEN}Change Working Dir to: {cwd}{color.END}")
@@ -33,7 +34,6 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, e
 
         print(f"{color.DARKCYAN}{cmd_str}{color.END}")
 
-
     cmd1 = ""
     if shell:
         cmd1 = " ".join(cmd)
@@ -45,7 +45,6 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, e
     try:
         ret.check_returncode()
     except subprocess.CalledProcessError as err:
-
         if on_fail_exit:
             print(f"{color.RED}Called Process Error! code({ret.returncode}){color.END}")
             cmd_str = " ".join(cmd)
@@ -54,7 +53,7 @@ def cmd_run(cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, e
             print(f"{color.RED}Exit program{color.END}")
             exit(ret.returncode)
         else:
-            print(f"{color.YELLOW}Continue program, but {err}{color.YELLOW}")    
+            print(f"{color.YELLOW}Continue program, but {err}{color.YELLOW}")
 
     return ret.returncode
 
@@ -75,7 +74,6 @@ def cmd_run_str(
         out = out.decode("utf-8")
         return out
     except subprocess.CalledProcessError as err:
-
         if on_fail_exit:
             print(f"{color.RED}Called Process Error! {color.END}")
             cmd_str = " ".join(cmd)
@@ -96,10 +94,12 @@ def clean_gschema():
         ]
     )
 
-def exit_if_dirty(allow_dirty = False):    
+
+def exit_if_dirty(allow_dirty=False):
     if is_repo_dirty() and not allow_dirty:
         print(f"The repo is dirty {color.BOLD}Exit{color.END}")
         exit(101)
+
 
 def is_repo_dirty() -> bool:
     repo = git.Repo(".")
@@ -120,8 +120,9 @@ def get_version() -> str:
 
     return version
 
+
 def get_version_tag() -> str:
-    version = get_version() 
+    version = get_version()
     tag_name = f"v{version}"
 
     return tag_name
@@ -132,7 +133,6 @@ def get_tag_commit(tag_label: Optional[str]) -> Optional[str]:
     if not tag_label:
         tag_label = get_version_tag()
         print("tag", None)
-
 
     repo = git.Repo(".")
 
@@ -150,7 +150,6 @@ def get_tag_commit(tag_label: Optional[str]) -> Optional[str]:
             tag_label,
         ]
     )
-
 
     out2 = out2[:-1]
 
@@ -176,8 +175,8 @@ def version(allow_dirty: bool, message: str, force: bool):
     print(f"Git tag {color.BOLD}{color.YELLOW}{tag_name}{color.END}")
 
     if not message:
-        print(f'Message needed (-m "a message ...")')
-        message = f'version {tag_name}'
+        print('Message needed (-m "a message ...")')
+        message = f"version {tag_name}"
         print(f'Message supplied (-m "{message}")')
 
     git_tag = ["git", "tag", "-m", f'"{message}"', tag_name]
@@ -190,3 +189,30 @@ def version(allow_dirty: bool, message: str, force: bool):
     cmd_run(git_tag)
     cmd_run(git_push)
 
+
+def just_publish(version, file):
+    print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
+
+    title = f"Release {version}"
+
+    cmd = [
+        "gh",
+        "release",
+        "create",
+        version,
+        "--title",
+        title,
+        "--notes",
+        "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
+        file,
+    ]
+
+    cmd_run(cmd)
+
+
+def publish_upload(version, file):
+    print(f"{color.CYAN}Publishing Upload version {color.BOLD}{version}{color.END}")
+
+    cmd = ["gh", "release", "upload", version, file, "--clobber"]
+
+    cmd_run(cmd)

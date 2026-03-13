@@ -1,7 +1,6 @@
 import argparse
 import os
 import shutil
-import subprocess
 import build_aux.build_common as bc
 from build_aux.build_common import color
 
@@ -32,6 +31,7 @@ def main():
             "compile",
             "publish",
             "just_publish",
+            "upload",
         ],
         help="action to perform",
     )
@@ -61,6 +61,8 @@ def main():
             publish()
         case "just_publish":
             just_publish()
+        case "upload":
+            publish_upload()
 
 
 def generate():
@@ -233,83 +235,14 @@ def just_publish():
     version = bc.get_version()
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
-    title = f"Release {version}"
+    file = f"{DEB_DIR}/../sysd-manager.deb"
 
-    cmd = [
-        "gh",
-        "release",
-        "create",
-        version,
-        "--title",
-        title,
-        "--notes",
-        "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
-        f"{DEB_DIR}/../sysd-manager.deb",
-    ]
-
-    print(cmd)
-
-    bc.cmd_run(cmd)
+    bc.just_publish(version, file)
 
 
-def just_publish_or_rel():
+def publish_upload():
     version = bc.get_version()
-    print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
-    # cmd = [
-    #     "gh",
-    #     "release",
-    #     "list",
-    #     "--limit",
-    #     "1",
-    #     "--json",
-    #     "tagName",
-    #     "--jq",
-    #     "'.[].tagName'",
-    # ]
-    # r_version = bc.cmd_run(cmd)
+    file = f"{DEB_DIR}/../sysd-manager.deb"
 
-    cmd = [
-        "curl",
-        "-s",
-        "https://api.github.com/repos/plrigaux/sysd-manager/releases/latest",
-        "|",
-        "jq",
-        "-r",
-        ".tag_name",
-    ]
-
-    cmline = " ".join(cmd)
-    print(cmline)
-    r_version = subprocess.check_output(cmd, text=True, shell=True)
-
-    if r_version.stdout == version:
-        title = f"Release {version}"
-
-        cmd = [
-            "gh",
-            "release",
-            "create",
-            version,
-            "--title",
-            title,
-            "--notes",
-            "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
-            f"{DEB_DIR}/../sysd-manager.deb",
-        ]
-
-        print(cmd)
-
-        bc.cmd_run(cmd)
-    else:
-        cmd = [
-            "gh",
-            "release",
-            "upload",
-            version,
-            f"{DEB_DIR}/../sysd-manager.deb",
-        ]
-
-        print(cmd)
-
-        bc.cmd_run(cmd)
+    bc.publish_upload(version, file)

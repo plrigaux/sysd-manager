@@ -49,7 +49,7 @@ def linux_deploy():
             "-l",
             "/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0",
             "-l",
-            "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1"
+            "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1",
             # "-l",
             # "/usr/lib/x86_64-linux-gnu/libfreetype.so.6"
         ],
@@ -90,7 +90,7 @@ def create_appdir(create_apprun=True):
                 f"{APP_DIR}/usr/bin",
             ]
         )
-        
+
     bc.cmd_run(
         [
             "install",
@@ -361,28 +361,21 @@ def just_publish():
     version = bc.get_version()
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
-    title = f"Release {version}"
+    file = app_image_file_name(version)
 
-    cmd = [
-        "gh",
-        "release",
-        "create",
-        version,
-        "--title",
-        title,
-        "--notes",
-        "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
-        f"../AppImage/{app_image_file_name(version)}",
-    ]
+    bc.just_publis(version, file)
 
-    print(cmd)
 
-    bc.cmd_run(cmd)
+def publish_upload():
+    version = bc.get_version()
+
+    file = app_image_file_name(version)
+
+    bc.publish_upload(version, file)
 
 
 def publish():
-    build()
-    make_appimage()
+    linux_build()
     just_publish()
 
 
@@ -395,7 +388,7 @@ def main():
 
     parser.add_argument(
         "action",
-        choices=["build", "publish", "linux", "structure", "pack"],
+        choices=["build", "publish", "linux", "structure", "pack", "upload", "release"],
         help="action to perform",
     )
 
@@ -414,9 +407,11 @@ def main():
             make_appimage()
         case "publish":
             publish()
-        case "publish_only":
+        case "release":
             just_publish()
         case "linux":
             linux_build()
         case "pack":
             make_appimage()
+        case "upload":
+            publish_upload()
