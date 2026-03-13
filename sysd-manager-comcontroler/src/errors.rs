@@ -1,10 +1,10 @@
 use std::{
     ffi::OsString,
     fmt::{self, Display, Formatter},
-    process::Command,
     string::FromUtf8Error,
 };
 
+use base::file::SysdBaseError;
 use gettextrs::pgettext;
 
 #[derive(Debug)]
@@ -75,17 +75,6 @@ impl SystemdErrors {
             SystemdErrors::ZUnitMasked(_, detail) => detail.clone(),
             _ => self.to_string(),
         }
-    }
-
-    pub(crate) fn create_command_error(command: &Command, error: std::io::Error) -> Self {
-        let program = command.get_program().to_os_string();
-        let envs: Vec<(OsString, Option<OsString>)> = command
-            .get_envs()
-            .map(|(k, v)| (k.to_os_string(), v.map(|s| s.to_os_string())))
-            .collect();
-        let arg: Vec<OsString> = command.get_args().map(|s| s.to_os_string()).collect();
-
-        SystemdErrors::Command(program, arg, envs, error)
     }
 }
 
@@ -230,5 +219,25 @@ impl From<String> for SystemdErrors {
 impl From<&str> for SystemdErrors {
     fn from(value: &str) -> Self {
         value.to_owned().into()
+    }
+}
+
+impl From<SysdBaseError> for SystemdErrors {
+    fn from(value: SysdBaseError) -> Self {
+        match value {
+            SysdBaseError::CmdNoFreedesktopFlatpakPermission => {
+                SystemdErrors::CmdNoFreedesktopFlatpakPermission(None, None)
+            }
+            SysdBaseError::Command(os_string, os_strings, items, error) => {
+                SystemdErrors::Command(os_string, os_strings, items, error)
+            }
+            SysdBaseError::Custom(s) => SystemdErrors::Custom(s),
+            SysdBaseError::IoError(error) => SystemdErrors::IoError(error),
+            SysdBaseError::NotAuthorizedAuthentificationDismissed => {
+                SystemdErrors::NotAuthorizedAuthentificationDismissed
+            }
+            SysdBaseError::NotAuthorized => SystemdErrors::NotAuthorized,
+            SysdBaseError::Tokio(_join_error) => SystemdErrors::Tokio,
+        }
     }
 }

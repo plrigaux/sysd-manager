@@ -1,3 +1,4 @@
+use base::file::SysdBaseError;
 use base::file::{create_drop_in_io, create_drop_in_path_file, save_io};
 use tracing::info;
 use tracing::warn;
@@ -16,9 +17,39 @@ pub async fn create_drop_in(
     let file_path = create_drop_in_path_file(unit_name, runtime, false, file_name)
         .map_err(|err| zbus::fdo::Error::Failed(err.to_string()))?;
 
-    let result = create_drop_in_io(&file_path, content).await;
+    create_drop_in_io(&file_path, content).await.map_err(|err| {
+        let fdo: FdoError = err.into();
+        fdo.0
+    })
+}
 
-    transform_error(result)
+struct FdoError(zbus::fdo::Error);
+
+impl From<SysdBaseError> for FdoError {
+    fn from(value: SysdBaseError) -> Self {
+        warn!("{value:?}");
+        match value {
+            SysdBaseError::Custom(s) => FdoError(zbus::fdo::Error::Failed(s)),
+            SysdBaseError::IoError(err) => match err.kind() {
+                std::io::ErrorKind::PermissionDenied => FdoError(zbus::fdo::Error::AccessDenied(
+                    format!("{:?} {err:?}", err.kind()),
+                )),
+
+                std::io::ErrorKind::InvalidData => FdoError(zbus::fdo::Error::InvalidArgs(
+                    format!("{:?} {err:?}", err.kind()),
+                )),
+
+                kind => FdoError(zbus::fdo::Error::IOError(format!("{:?}", kind))),
+            },
+            SysdBaseError::NotAuthorizedAuthentificationDismissed => {
+                FdoError(zbus::fdo::Error::AuthFailed("Not Authentified".to_string()))
+            }
+            SysdBaseError::NotAuthorized => {
+                FdoError(zbus::fdo::Error::AccessDenied("Not Auhorised".to_string()))
+            }
+            _ => FdoError(zbus::fdo::Error::Failed("Internal Error".to_string())),
+        }
+    }
 }
 
 fn transform_error<T>(result: Result<T, std::io::Error>) -> Result<T, zbus::fdo::Error> {

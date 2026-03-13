@@ -1,4 +1,5 @@
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
+use std::process::Stdio;
 use std::{
     error::Error,
     io,
@@ -6,11 +7,87 @@ use std::{
     sync::OnceLock,
 };
 use tokio::fs;
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::Command;
 
+use tokio::task::JoinError;
+use tracing::debug;
 #[allow(unused_imports)]
 use tracing::{error, info, warn};
+
+use crate::getuid;
+
+#[macro_export]
+macro_rules! args {
+    ($($a:expr),*) => {
+        [
+            $(AsRef::<OsStr>::as_ref(&$a),)*
+        ]
+    }
+}
+
+#[macro_export]
+macro_rules! vs {
+    ($($a:expr),*) => {
+        [
+            $(AsRef::<String>::as_ref(&$a),)*
+        ]
+    }
+}
+
+#[derive(Debug)]
+pub enum SysdBaseError {
+    CmdNoFreedesktopFlatpakPermission,
+    Command(
+        OsString,
+        Vec<OsString>,
+        Vec<(OsString, Option<OsString>)>,
+        io::Error,
+    ),
+    Custom(String),
+    IoError(io::Error),
+    NotAuthorizedAuthentificationDismissed,
+    NotAuthorized,
+    Tokio(JoinError),
+}
+
+impl SysdBaseError {
+    pub(crate) fn create_command_error(command: &Command, error: std::io::Error) -> Self {
+        let std_command = command.as_std();
+        let program = std_command.get_program().to_os_string();
+        let envs: Vec<(OsString, Option<OsString>)> = std_command
+            .get_envs()
+            .map(|(k, v)| (k.to_os_string(), v.map(|s| s.to_os_string())))
+            .collect();
+        let arg: Vec<OsString> = std_command.get_args().map(|s| s.to_os_string()).collect();
+
+        SysdBaseError::Command(program, arg, envs, error)
+    }
+}
+
+impl From<&str> for SysdBaseError {
+    fn from(value: &str) -> Self {
+        value.to_string().into()
+    }
+}
+
+impl From<String> for SysdBaseError {
+    fn from(value: String) -> Self {
+        SysdBaseError::Custom(value)
+    }
+}
+
+impl From<std::io::Error> for SysdBaseError {
+    fn from(value: std::io::Error) -> Self {
+        SysdBaseError::IoError(value)
+    }
+}
+
+impl From<JoinError> for SysdBaseError {
+    fn from(value: JoinError) -> Self {
+        SysdBaseError::Tokio(value)
+    }
+}
 
 pub fn determine_drop_in_path_dir(
     unit_name: &str,
@@ -22,7 +99,7 @@ pub fn determine_drop_in_path_dir(
         (false, false) => format!("/etc/systemd/system/{}.d", unit_name),
         (true, true) => {
             let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
-                .unwrap_or_else(|_| format!("/run/user/{}", unsafe { libc::getuid() }));
+                .unwrap_or_else(|_| format!("/run/user/{}", getuid()));
 
             format!("{runtime_dir}/systemd/user/{}.d", unit_name)
         }
@@ -57,14 +134,14 @@ pub fn create_drop_in_path_file(
     Ok(path)
 }
 
-pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(), std::io::Error> {
+pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(), SysdBaseError> {
     if file_path_str.contains("../") {
         let err = std::io::Error::new(
             std::io::ErrorKind::InvalidData,
             r#"The "../" patern is not supported""#,
         );
 
-        return Err(err);
+        return Err(err)?;
     }
 
     let file_path = PathBuf::from(file_path_str);
@@ -76,19 +153,140 @@ pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(),
 
     if !unit_drop_in_dir.exists() {
         info!("Creating dir {}", unit_drop_in_dir.display());
-        //FIXME handle not autorized cases
-        fs::create_dir_all(&unit_drop_in_dir).await?;
+        match fs::create_dir_all(&unit_drop_in_dir).await {
+            Ok(_) => {}
+            Err(err) => {
+                if err.kind() == std::io::ErrorKind::PermissionDenied && getuid() != 0 {
+                    create_dir_all_with_priviledge(unit_drop_in_dir).await
+                } else {
+                    Err(err)?
+                }?
+            }
+        }
     }
 
     //Save content
     info!("Creating file {}", file_path.display());
-    let bytes_written = save_io(&file_path, true, content).await?;
+    let bytes_written = write_on_disk(&file_path, true, content).await?;
 
     info!(
         "{bytes_written} bytes writen on File {}",
         file_path.to_string_lossy()
     );
     Ok(())
+}
+
+pub async fn write_on_disk(
+    file_path: &Path,
+    create_file: bool,
+    content: &str,
+) -> Result<u64, SysdBaseError> {
+    let bytes_written = match save_io(file_path, create_file, content).await {
+        Ok(b) => b,
+        Err(err) => {
+            if err.kind() == std::io::ErrorKind::PermissionDenied && getuid() != 0 {
+                write_with_priviledge(file_path, content).await
+            } else {
+                Err(err)?
+            }?
+        }
+    };
+    Ok(bytes_written)
+}
+
+async fn create_dir_all_with_priviledge(dir_path: &Path) -> Result<(), SysdBaseError> {
+    let prog_n_args = args!["pkexec", "mkdir", "-p", dir_path];
+    execute_command(None, &prog_n_args).await?;
+    Ok(())
+}
+
+pub async fn write_with_priviledge(file_path: &Path, text: &str) -> Result<u64, SysdBaseError> {
+    let prog_n_args = args!["pkexec", "tee", file_path];
+    let input = text.as_bytes();
+    execute_command(Some(input), &prog_n_args).await?;
+    Ok(input.len() as u64)
+}
+
+pub async fn execute_command(
+    input: Option<&[u8]>,
+    prog_n_args: &[&OsStr],
+) -> Result<(), SysdBaseError> {
+    let mut cmd = commander(prog_n_args, None);
+
+    let mut child = cmd
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|error: std::io::Error| SysdBaseError::create_command_error(&cmd, error))?;
+
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or("Child did not have a handle to stdout")?;
+    //.expect("child did not have a handle to stdout");
+
+    let stderr = child
+        .stderr
+        .take()
+        .ok_or("Child did not have a handle to stderr")?;
+
+    if let Some(input) = input {
+        let mut child_stdin = child
+            .stdin
+            .take()
+            .ok_or("Unable to pass stdin to command")?;
+        child_stdin.write_all(input).await?;
+        drop(child_stdin);
+    }
+
+    let handle = tokio::spawn(async move {
+        let exit_status = child.wait().await?;
+        if exit_status.success() {
+            info!("Script executed with success");
+            return Ok(());
+        }
+
+        let code = exit_status
+            .code()
+            .inspect(|code| warn!("Subprocess exit code: {code:?}"))
+            .ok_or("Subprocess exit code: None")?;
+
+        let err = match code {
+            1 => {
+                #[cfg(feature = "flatpak")]
+                {
+                    SysdBaseError::CmdNoFreedesktopFlatpakPermission
+                }
+                #[cfg(not(feature = "flatpak"))]
+                {
+                    Err(format!("Subprocess exit code: {code}"))?
+                }
+            }
+            126 => SysdBaseError::NotAuthorized,
+            127 => SysdBaseError::NotAuthorizedAuthentificationDismissed,
+            _ => Err(format!("Subprocess exit code: {code}"))?,
+        };
+        Err(err)
+    });
+
+    let mut reader_out = BufReader::new(stdout).lines();
+    let mut reader_err = BufReader::new(stderr).lines();
+    debug!("Going to read out");
+
+    while let Some(line) = reader_out.next_line().await? {
+        info!("Script line: {}", line);
+    }
+
+    debug!("Going to read err");
+
+    while let Some(line) = reader_err.next_line().await? {
+        error!("Script line: {}", line);
+    }
+
+    debug!("Going to wait");
+
+    handle.await?
 }
 
 pub async fn save_io(
@@ -111,24 +309,6 @@ pub async fn save_io(
     let bytes_written = test_bytes.len();
 
     Ok(bytes_written as u64)
-}
-
-#[macro_export]
-macro_rules! args {
-    ($($a:expr),*) => {
-        [
-            $(AsRef::<OsStr>::as_ref(&$a),)*
-        ]
-    }
-}
-
-#[macro_export]
-macro_rules! vs {
-    ($($a:expr),*) => {
-        [
-            $(AsRef::<String>::as_ref(&$a),)*
-        ]
-    }
 }
 
 pub const FLATPAK_SPAWN: &str = "flatpak-spawn";

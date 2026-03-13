@@ -14,6 +14,10 @@ pub enum RunMode {
     Both,
 }
 
+pub fn getuid() -> u32 {
+    unsafe { libc::getuid() }
+}
+
 impl RunMode {
     pub fn from_flags(dev: bool, normal: bool) -> Self {
         #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
