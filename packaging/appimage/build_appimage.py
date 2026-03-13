@@ -13,7 +13,7 @@ APP_DIR = f"{APP_IMAGE_DIR}/SysDManager.AppDir"
 def build_cargo():
     print(f"{color.CYAN}{color.BOLD}Compiling{color.END} ")
 
-    bc.cmd_run(["cargo", "build", "--release", "--features", "default"])
+    bc.cmd_run(["cargo", "build", "--release", "--features", "appimage"])
 
 
 def generating_translation_files():
@@ -371,7 +371,7 @@ def publish_upload():
 
     file = app_image_file_name(version)
 
-    bc.publish_upload(version, file)
+    bc.publish_upload(version, f"{APP_IMAGE_DIR}/{file}")
 
 
 def publish():
