@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-11 17:31-0400\n"
+"POT-Creation-Date: 2026-03-13 17:07-0400\n"
 "PO-Revision-Date: 2026-01-16 21:01+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
@@ -109,9 +109,10 @@ msgid "Preferences"
 msgstr "Preferências"
 
 #: data/interfaces/app_window.ui:38
+#, fuzzy
 msgctxt "menu"
-msgid "Proxy Management"
-msgstr ""
+msgid "Proxy Preferences"
+msgstr "Mostrar preferências"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
@@ -694,8 +695,8 @@ msgstr "Tamanho máximo do evento do periódico"
 #: data/interfaces/preferences.ui:193
 #, fuzzy
 msgctxt "preference"
-msgid "_Proxy Configuration"
-msgstr "_Configuração"
+msgid "_Proxy Preferences"
+msgstr "Mostrar preferências"
 
 #: data/interfaces/preferences.ui:199
 msgid "Switch that controls other switches"
@@ -1338,39 +1339,51 @@ msgid "No dependencies"
 msgstr "Sem dependências"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:61
+#: data/interfaces/unit_file_panel.ui:62
 msgctxt "file"
 msgid "Save"
 msgstr "Salvar"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:90
+#: data/interfaces/unit_file_panel.ui:91
 #, fuzzy
 msgctxt "file"
 msgid "The unit has no file associated"
 msgstr "A  unidade não possui nenhum arquivo associado"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:92
+#: data/interfaces/unit_file_panel.ui:93
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Nenhum arquivo de unidade"
 
-#: data/interfaces/unit_file_panel.ui:103
+#. Unit file drop-in operations menu item
+#: data/interfaces/unit_file_panel.ui:105
+#, fuzzy
+msgctxt "menu"
+msgid "Revert Drop-in"
+msgstr "Reverter Drop-in"
+
+#. Unit file drop-in operations menu section
+#: data/interfaces/unit_file_panel.ui:108
+#, fuzzy
+msgctxt "menu"
 msgid "Create Drop-in"
 msgstr "Criar Drop-in"
 
-#: data/interfaces/unit_file_panel.ui:106
+#. Unit file drop-in operations menu item
+#: data/interfaces/unit_file_panel.ui:111
+#, fuzzy
+msgctxt "menu"
 msgid "Permanent"
 msgstr "Permanente"
 
-#: data/interfaces/unit_file_panel.ui:110
+#. Unit file drop-in operations menu item
+#: data/interfaces/unit_file_panel.ui:115
+#, fuzzy
+msgctxt "menu"
 msgid "Runtime"
 msgstr "Tempo de execução"
-
-#: data/interfaces/unit_file_panel.ui:115
-msgid "Revert Drop-in"
-msgstr "Reverter Drop-in"
 
 #. button
 #: data/interfaces/unit_info_panel.ui:27
@@ -1615,26 +1628,26 @@ msgid "Running units"
 msgstr "Unidades em execução"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:109
+#: src/main.rs:112
 msgid "Program starting up"
 msgstr "Programa iniciando"
 
 #. instance level user
-#: src/widget/app_window/menu.rs:297
+#: src/widget/app_window/menu.rs:303
 msgid "user"
 msgstr "usuário"
 
 #. instance level system
-#: src/widget/app_window/menu.rs:300
+#: src/widget/app_window/menu.rs:306
 msgid "system"
 msgstr "Sistema"
 
-#: src/widget/app_window/menu.rs:311
+#: src/widget/app_window/menu.rs:317
 msgid "Daemon Reload failed!"
 msgstr "Falha ao recarregar o daemon!"
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:354
+#: src/widget/app_window/menu.rs:363
 msgid "Thank you for your support"
 msgstr "Obrigado pelo seu apoio"
 
@@ -2443,62 +2456,67 @@ msgctxt "warning"
 msgid "_Close"
 msgstr "_Fechar"
 
-#: src/widget/unit_file_panel/imp.rs:256
+#: src/widget/unit_file_panel/imp.rs:251
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "Arquivo {} criado com sucesso!"
 
-#: src/widget/unit_file_panel/imp.rs:257
+#: src/widget/unit_file_panel/imp.rs:252
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "Arquivo {} salvo com sucesso!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:263 src/widget/unit_file_panel/imp.rs:1041
+#: src/widget/unit_file_panel/imp.rs:262 src/widget/unit_file_panel/imp.rs:1058
 msgid "Daemon Reload"
 msgstr "Recarregar Daemon"
 
-#: src/widget/unit_file_panel/imp.rs:278 src/widget/unit_file_panel/imp.rs:296
-#: src/widget/unit_file_panel/imp.rs:1057
+#: src/widget/unit_file_panel/imp.rs:277 src/widget/unit_file_panel/imp.rs:295
+#: src/widget/unit_file_panel/imp.rs:1074
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr "Não foi possível salvar o arquivo, permissão não concedida!"
 
-#: src/widget/unit_file_panel/imp.rs:308
+#: src/widget/unit_file_panel/imp.rs:307
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr "Não foi possível salvar o arquivo. Permissão Flatpak não concedida!"
 
-#: src/widget/unit_file_panel/imp.rs:316
+#: src/widget/unit_file_panel/imp.rs:315
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr "Não foi possível salvar o arquivo, ocorreu um erro!"
 
-#: src/widget/unit_file_panel/imp.rs:557
+#: src/widget/unit_file_panel/imp.rs:476
+msgctxt "file"
+msgid "File not found! You may need to perform \"Daemon Reload\""
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:568
 msgctxt "file"
 msgid "Unit File"
 msgstr "Arquivo de unidade"
 
-#: src/widget/unit_file_panel/imp.rs:559
+#: src/widget/unit_file_panel/imp.rs:570
 msgctxt "file"
 msgid "Drop In"
 msgstr "Apareça"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:927
+#: src/widget/unit_file_panel/imp.rs:940
 msgctxt "file"
 msgid "Editing"
 msgstr "Edição"
 
-#. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:935
+#: src/widget/unit_file_panel/imp.rs:950
+#, fuzzy
 msgctxt "file"
-msgid "Note: you can change the file name"
+msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr "Observação: você pode alterar o nome do arquivo"
 
-#: src/widget/unit_file_panel/imp.rs:944
+#: src/widget/unit_file_panel/imp.rs:960
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2508,31 +2526,31 @@ msgstr ""
 "conteúdo do arquivo drop-in"
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:953
+#: src/widget/unit_file_panel/imp.rs:969
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr "As edições abaixo deste comentário serão descartadas"
 
-#: src/widget/unit_file_panel/imp.rs:1031
+#: src/widget/unit_file_panel/imp.rs:1050
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Unidade {} revertida com sucesso!"
 
-#: src/widget/unit_file_panel/imp.rs:1080
+#: src/widget/unit_file_panel/imp.rs:1097
 #, fuzzy
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr "Não foi possível reverter a unidade, permissão não concedida!"
 
-#: src/widget/unit_file_panel/imp.rs:1088
+#: src/widget/unit_file_panel/imp.rs:1105
 #, fuzzy
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr "Não foi possível reverter a unidade, ocorreu um erro!"
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1191
+#: src/widget/unit_file_panel/imp.rs:1208
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Exibir números de linha"
@@ -2827,6 +2845,11 @@ msgstr "Automático"
 msgctxt "menu"
 msgid "Customized"
 msgstr ""
+
+#, fuzzy
+#~ msgctxt "preference"
+#~ msgid "_Proxy Configuration"
+#~ msgstr "_Configuração"
 
 #~ msgctxt "journal"
 #~ msgid ""

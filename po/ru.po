@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-11 17:31-0400\n"
+"POT-Creation-Date: 2026-03-13 17:07-0400\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -110,9 +110,10 @@ msgid "Preferences"
 msgstr "Настройки"
 
 #: data/interfaces/app_window.ui:38
+#, fuzzy
 msgctxt "menu"
-msgid "Proxy Management"
-msgstr ""
+msgid "Proxy Preferences"
+msgstr "Показать настройки"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
@@ -689,8 +690,8 @@ msgstr "Максимальный размер события журнала"
 #: data/interfaces/preferences.ui:193
 #, fuzzy
 msgctxt "preference"
-msgid "_Proxy Configuration"
-msgstr "_конфигурацию"
+msgid "_Proxy Preferences"
+msgstr "Показать настройки"
 
 #: data/interfaces/preferences.ui:199
 msgid "Switch that controls other switches"
@@ -1332,40 +1333,48 @@ msgid "No dependencies"
 msgstr "Нет зависимостей"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:61
+#: data/interfaces/unit_file_panel.ui:62
 msgctxt "file"
 msgid "Save"
 msgstr "Сохранить"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:90
+#: data/interfaces/unit_file_panel.ui:91
 #, fuzzy
 msgctxt "file"
 msgid "The unit has no file associated"
 msgstr "Юнит не связан с файлом"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:92
+#: data/interfaces/unit_file_panel.ui:93
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Нет юнит-файла"
 
-#: data/interfaces/unit_file_panel.ui:103
+#. Unit file drop-in operations menu item
+#: data/interfaces/unit_file_panel.ui:105
+msgctxt "menu"
+msgid "Revert Drop-in"
+msgstr ""
+
+#. Unit file drop-in operations menu section
+#: data/interfaces/unit_file_panel.ui:108
+msgctxt "menu"
 msgid "Create Drop-in"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:106
+#. Unit file drop-in operations menu item
+#: data/interfaces/unit_file_panel.ui:111
+msgctxt "menu"
 msgid "Permanent"
 msgstr ""
 
-#: data/interfaces/unit_file_panel.ui:110
+#. Unit file drop-in operations menu item
+#: data/interfaces/unit_file_panel.ui:115
 #, fuzzy
+msgctxt "menu"
 msgid "Runtime"
 msgstr "Время выполнения"
-
-#: data/interfaces/unit_file_panel.ui:115
-msgid "Revert Drop-in"
-msgstr ""
 
 #. button
 #: data/interfaces/unit_info_panel.ui:27
@@ -1615,27 +1624,27 @@ msgid "Running units"
 msgstr "Активные юниты"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:109
+#: src/main.rs:112
 msgid "Program starting up"
 msgstr "Запуск программы"
 
 #. instance level user
-#: src/widget/app_window/menu.rs:297
+#: src/widget/app_window/menu.rs:303
 msgid "user"
 msgstr ""
 
 #. instance level system
-#: src/widget/app_window/menu.rs:300
+#: src/widget/app_window/menu.rs:306
 #, fuzzy
 msgid "system"
 msgstr "Система"
 
-#: src/widget/app_window/menu.rs:311
+#: src/widget/app_window/menu.rs:317
 msgid "Daemon Reload failed!"
 msgstr ""
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:354
+#: src/widget/app_window/menu.rs:363
 msgid "Thank you for your support"
 msgstr "Спасибо за вашу поддержку"
 
@@ -2437,63 +2446,67 @@ msgctxt "warning"
 msgid "_Close"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:256
+#: src/widget/unit_file_panel/imp.rs:251
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "Файл {} успешно сохранён!"
 
-#: src/widget/unit_file_panel/imp.rs:257
+#: src/widget/unit_file_panel/imp.rs:252
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "Файл {} успешно сохранён!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:263 src/widget/unit_file_panel/imp.rs:1041
+#: src/widget/unit_file_panel/imp.rs:262 src/widget/unit_file_panel/imp.rs:1058
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
 
-#: src/widget/unit_file_panel/imp.rs:278 src/widget/unit_file_panel/imp.rs:296
-#: src/widget/unit_file_panel/imp.rs:1057
+#: src/widget/unit_file_panel/imp.rs:277 src/widget/unit_file_panel/imp.rs:295
+#: src/widget/unit_file_panel/imp.rs:1074
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:308
+#: src/widget/unit_file_panel/imp.rs:307
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:316
+#: src/widget/unit_file_panel/imp.rs:315
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:557
+#: src/widget/unit_file_panel/imp.rs:476
+msgctxt "file"
+msgid "File not found! You may need to perform \"Daemon Reload\""
+msgstr ""
+
+#: src/widget/unit_file_panel/imp.rs:568
 msgctxt "file"
 msgid "Unit File"
 msgstr "Юнит-файл"
 
-#: src/widget/unit_file_panel/imp.rs:559
+#: src/widget/unit_file_panel/imp.rs:570
 msgctxt "file"
 msgid "Drop In"
 msgstr "Drop-In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:927
+#: src/widget/unit_file_panel/imp.rs:940
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
-#. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:935
+#: src/widget/unit_file_panel/imp.rs:950
 msgctxt "file"
-msgid "Note: you can change the file name"
+msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:944
+#: src/widget/unit_file_panel/imp.rs:960
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2501,29 +2514,29 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:953
+#: src/widget/unit_file_panel/imp.rs:969
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1031
+#: src/widget/unit_file_panel/imp.rs:1050
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Файл {} успешно сохранён!"
 
-#: src/widget/unit_file_panel/imp.rs:1080
+#: src/widget/unit_file_panel/imp.rs:1097
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1088
+#: src/widget/unit_file_panel/imp.rs:1105
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1191
+#: src/widget/unit_file_panel/imp.rs:1208
 #, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
@@ -2823,6 +2836,11 @@ msgstr "Автоматически"
 msgctxt "menu"
 msgid "Customized"
 msgstr ""
+
+#, fuzzy
+#~ msgctxt "preference"
+#~ msgid "_Proxy Configuration"
+#~ msgstr "_конфигурацию"
 
 #~ msgctxt "journal"
 #~ msgid ""
