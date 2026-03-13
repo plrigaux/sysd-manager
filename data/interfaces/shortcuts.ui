@@ -49,6 +49,12 @@
                 <property name="title" translatable="yes" context="shortcut window">Open columns manager</property>
               </object>
             </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="action-name">app.daemon-reload</property>
+                <property name="title" translatable="yes" context="shortcut window">Deamon Reload</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
