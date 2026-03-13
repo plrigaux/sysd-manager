@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-13 17:07-0400\n"
-"PO-Revision-Date: 2026-03-11 21:58+0000\n"
+"PO-Revision-Date: 2026-03-13 21:34+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -110,10 +110,9 @@ msgid "Preferences"
 msgstr "Préférences"
 
 #: data/interfaces/app_window.ui:38
-#, fuzzy
 msgctxt "menu"
 msgid "Proxy Preferences"
-msgstr "Afficher les préférences du proxy"
+msgstr "Préférences du Proxy"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
@@ -699,10 +698,9 @@ msgid "Journal's event max size"
 msgstr "Taille maximale d'un événement du journal"
 
 #: data/interfaces/preferences.ui:193
-#, fuzzy
 msgctxt "preference"
 msgid "_Proxy Preferences"
-msgstr "Afficher les préférences du proxy"
+msgstr "Préférences du _Proxy"
 
 #: data/interfaces/preferences.ui:199
 msgid "Switch that controls other switches"
@@ -1354,28 +1352,24 @@ msgstr "Pas de fichier pour l'unité"
 
 #. Unit file drop-in operations menu item
 #: data/interfaces/unit_file_panel.ui:105
-#, fuzzy
 msgctxt "menu"
 msgid "Revert Drop-in"
 msgstr "Annuler le Drop-in"
 
 #. Unit file drop-in operations menu section
 #: data/interfaces/unit_file_panel.ui:108
-#, fuzzy
 msgctxt "menu"
 msgid "Create Drop-in"
 msgstr "Créer un drop-in"
 
 #. Unit file drop-in operations menu item
 #: data/interfaces/unit_file_panel.ui:111
-#, fuzzy
 msgctxt "menu"
 msgid "Permanent"
 msgstr "Permanent"
 
 #. Unit file drop-in operations menu item
 #: data/interfaces/unit_file_panel.ui:115
-#, fuzzy
 msgctxt "menu"
 msgid "Runtime"
 msgstr "Durée d'exécution"
@@ -2490,6 +2484,8 @@ msgstr "Impossible d'enregistrer le fichier, une erreur s'est produite !"
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
+"Fichier introuvable ! Vous devrez peut-être effectuer \"Recharger la "
+"configuration\""
 
 #: src/widget/unit_file_panel/imp.rs:568
 msgctxt "file"
@@ -2508,10 +2504,11 @@ msgid "Editing"
 msgstr "Nom du fichier Drop-in créé"
 
 #: src/widget/unit_file_panel/imp.rs:950
-#, fuzzy
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
-msgstr "Remarque : vous pouvez modifier le nom du fichier"
+msgstr ""
+"Remarque : vous pouvez modifier le nom du fichier du drop-in en changeant la "
+"ligne du dessus"
 
 #: src/widget/unit_file_panel/imp.rs:960
 msgctxt "file"
