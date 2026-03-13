@@ -154,7 +154,7 @@ pub fn on_startup(app: &adw::Application) {
     app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
 
     let daemon_reload_all_units: gio::ActionEntry<adw::Application> =
-        gio::ActionEntry::builder(ACTION_DAEMON_RELOAD)
+        gio::ActionEntry::builder(&ACTION_DAEMON_RELOAD[4..])
             .activate(|application: &adw::Application, simple_action, _variant| {
                 let simple_action = simple_action.clone();
                 let application = application.clone();
