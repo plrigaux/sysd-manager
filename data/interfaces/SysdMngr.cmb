@@ -2,10 +2,10 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.3 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="00a8ef42c51c455067ee17470a944102cadf7fc21bf5875db6d5b71834b785be"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="793021b703d42bb3cc70aab9d4b7017977839d4e6f9f998da6e3cd65af5782bb"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="9f9b151f9a0de3d99fdf8a51cd7645e8c022cf90070fb9cb24ef215e7b4168d9"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="89cf64504fc6bf3b5f13daf438c410c5ae6f145aa22e64be2e0f1863e9ee7549"/>
-  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="e67120022159eb114e0c9077ec9dfac00da26cd81388ff179f84237f4edc4f18"/>
+  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="66908f01c0b99fbabefbfacfa7fde170c98c0f133551bc0abe2ba9c18a5d0f55"/>
   <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="132102cdf0dfbc4033c838c59b12e60ad205f81bb7c9cafaa34e27d77b2e24e2"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="494ba469fc1ba0d3bcf680f3082fecd5cf3c0c3a237ea806f450c0c52778afb5"/>
@@ -34,7 +34,7 @@
   <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="264583702d6dfd970b2c8c5591e8b670c456183fd49cc58b44b6237c73c6300a">
     <requires>UnitPropertiesSelectionPanel</requires>
   </ui>
-  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="5841b3cfa2a979f15f2d8ff427b1b4f8df2607b95da22bebb85705eaf6762ec8">
+  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="d86ede35ee283cecac8f5872c530770e8c6133bf323d7707f6df7535d700cbb5">
     <requires>UnitControlPanel</requires>
     <requires>UnitListPanel</requires>
   </ui>

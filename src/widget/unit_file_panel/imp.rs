@@ -36,7 +36,6 @@ use std::{
     path::Path,
 };
 use systemd::sysdbus::sysd_proxy_service_name;
-use tokio::sync::oneshot::Receiver;
 use tracing::{debug, error, info, warn};
 
 const PANEL_EMPTY: &str = "empty";
@@ -70,6 +69,10 @@ impl FileNav {
         Path::new(&self.file_path)
             .file_stem()
             .and_then(OsStr::to_str)
+    }
+
+    fn file_path_cloned(self, file_path: String) -> FileNav {
+        FileNav { file_path, ..self }
     }
 }
 
@@ -114,8 +117,6 @@ pub struct UnitFilePanelImp {
     all_unit_files: RefCell<Vec<FileNav>>,
 
     file_content_selected_index: Cell<u32>,
-    //file_displayed: RefCell<Option<String>>,
-    //file_status: RefCell<Option<UnitFileStatus>>,
 }
 
 macro_rules! get_buffer {
@@ -152,10 +153,8 @@ impl UnitFilePanelImp {
         let text = buffer.text(&start, &end, true);
 
         let binding = self.all_unit_files.borrow();
-        let Some(file_nav) = binding
-            .get(self.file_content_selected_index.get() as usize)
-            .cloned()
-        else {
+        let index = self.file_content_selected_index.get() as usize;
+        let Some(mut file_nav) = binding.get(index).cloned() else {
             warn!("No file path to save");
             return;
         };
@@ -165,6 +164,7 @@ impl UnitFilePanelImp {
         let unit_name = unit.primary();
         let unit_name2 = unit.primary();
         let user_session = level.user_session();
+
         match file_nav.status {
             UnitFileStatus::Create => {
                 let (cleaned_text, file_stem) =
@@ -195,15 +195,15 @@ impl UnitFilePanelImp {
                             .expect("The channel needs to be open.");
                     });
 
+                    let response = receiver.await.expect("Tokio receiver works");
+                    if let Ok(ref file_path) = response {
+                        file_nav = file_nav.file_path_cloned(file_path.clone());
+                        file_panel.imp().all_unit_files.borrow_mut()[index] = file_nav.clone();
+                    }
+
                     file_panel
                         .imp()
-                        .handle_save_response(
-                            receiver,
-                            file_nav.status,
-                            &file_nav.file_path,
-                            &unit_name2,
-                            user_session,
-                        )
+                        .handle_save_response(response, file_nav, &unit_name2, user_session)
                         .await;
                 });
             }
@@ -225,39 +225,38 @@ impl UnitFilePanelImp {
                             .expect("The channel needs to be open.");
                     });
 
+                    let response = receiver.await.expect("Tokio receiver works");
                     file_panel
                         .imp()
-                        .handle_save_response(
-                            receiver,
-                            file_nav.status,
-                            &file_nav.file_path,
-                            &unit_name2,
-                            user_session,
-                        )
+                        .handle_save_response(response, file_nav, &unit_name2, user_session)
                         .await;
                 });
             }
         }
+        //TODO reload drop in
     }
 
     async fn handle_save_response<T>(
         &self,
-        receiver: Receiver<Result<T, SystemdErrors>>,
-        status: UnitFileStatus,
-        file_path: &str,
+        receiver: Result<T, SystemdErrors>,
+        file_nav: FileNav,
         unit_name: &str,
         user_session: bool,
     ) {
-        let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
-            Ok(_a) => {
+        let (msg, use_mark_up, action) = match receiver {
+            Ok(_) => {
                 self.set_save_file_enable(false);
 
-                let msg = match status {
+                let msg = match file_nav.status {
                     UnitFileStatus::Create => pgettext("file", "File {} created successfully!"),
                     UnitFileStatus::Edit => pgettext("file", "File {} saved successfully!"),
                 };
-                let file_path_format = format!("<u>{}</u>", file_path);
+                let file_path_format = format!("<u>{}</u>", file_nav.file_path);
                 let msg = format2!(msg, file_path_format);
+
+                if file_nav.status == UnitFileStatus::Create {
+                    self.display_unit_file_content(Some(&file_nav), unit_name);
+                }
 
                 // Suggest to reload all unit configuation
                 let button_label = gettext("Daemon Reload");
@@ -270,7 +269,7 @@ impl UnitFilePanelImp {
             Err(error) => {
                 warn!(
                     "Unit {:?}, Unable to save file: {:?}, Error {:?}",
-                    unit_name, file_path, error
+                    unit_name, file_nav.file_path, error
                 );
 
                 match error {
@@ -446,9 +445,9 @@ impl UnitFilePanelImp {
         self.display_unit_file_content(None, &primary);
     }
 
-    fn display_unit_file_content(&self, file_nav: Option<&FileNav>, primary: &str) {
+    fn display_unit_file_content(&self, file_nav: Option<&FileNav>, unit_name: &str) {
         if let Some(file_nav) = file_nav {
-            self.display_unit_file_content2(primary, file_nav);
+            self.display_unit_file_content2(unit_name, file_nav);
         } else {
             let all_files = self.all_unit_files.borrow();
 
@@ -459,30 +458,42 @@ impl UnitFilePanelImp {
 
             let file_nav = all_files.first().expect("vector should not be empty");
 
-            self.display_unit_file_content2(primary, file_nav);
+            self.display_unit_file_content2(unit_name, file_nav);
         };
     }
 
-    fn display_unit_file_content2(&self, primary: &str, file_nav: &FileNav) {
+    fn display_unit_file_content2(&self, unit_name: &str, file_nav: &FileNav) {
         let (file_content, is_error_msg) =
-            systemd::get_unit_file_info(Some(&file_nav.file_path), primary)
+            systemd::fetch_unit_file_content(Some(&file_nav.file_path), unit_name)
                 .map(|content| (content, false))
                 .unwrap_or_else(|e| {
-                    warn!("get_unit_file_info Error: {e:?}");
+                    warn!("File Content Error: {e:?}");
 
-                    #[cfg(feature = "flatpak")]
-                    {
-                        let mut body = String::new();
-                        body.push_str("You miss a permission to be able to read the file.\n\n");
-                        body.push_str(
-                            "To know how to acquire needed permissions, follow this link:\n\n\
+                    if e.file_not_found() {
+                        (
+                            pgettext(
+                                "file",
+                                "File not found! You may need to perform \"Daemon Reload\"",
+                            ),
+                            true,
+                        )
+                    } else {
+                        #[cfg(feature = "flatpak")]
+                        {
+                            let mut body = String::new();
+                            body.push_str(
+                                "You may miss a permission to be able to read the file.\n\n",
+                            );
+                            body.push_str(
+                                "To know how to acquire needed permissions, follow this link:\n\n\
                          https://github.com/plrigaux/sysd-manager/wiki/Flatpak",
-                        );
-                        (body, true)
-                    }
+                            );
+                            (body, true)
+                        }
 
-                    #[cfg(not(feature = "flatpak"))]
-                    (String::new(), true)
+                        #[cfg(not(feature = "flatpak"))]
+                        (String::new(), true)
+                    }
                 });
 
         self.fill_gui_content(file_content, is_error_msg, &file_nav.file_path);
@@ -538,7 +549,7 @@ impl UnitFilePanelImp {
                     id: name,
                     status: UnitFileStatus::Edit,
                     is_drop_in: true,
-                    is_runtime: false, //TODO find out real status
+                    is_runtime: drop_in_file.starts_with("/run"),
                 };
                 all_files.push(fnav);
             }
@@ -821,11 +832,13 @@ impl UnitFilePanelImp {
 
         let file_path = unit.file_path();
         let primary = unit.primary();
-        let file_content = systemd::get_unit_file_info(file_path.as_deref(), &primary)
+        let file_content = systemd::fetch_unit_file_content(file_path.as_deref(), &primary)
             .unwrap_or_else(|e| {
                 warn!("get_unit_file_info Error: {e:?}");
                 "".to_owned()
             });
+
+        //DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 
         let user_session = unit.dbus_level().user_session();
 
@@ -932,7 +945,10 @@ impl UnitFilePanelImp {
             new_file_content,
             "### {}",
             // Create Drop in file name
-            pgettext("file", "Note: you can change the file name")
+            pgettext(
+                "file",
+                "Note: you can change the drop-in file name by modifying the above line"
+            )
         )?;
 
         writeln!(
@@ -996,9 +1012,12 @@ impl UnitFilePanelImp {
             }
         });
 
-        let window = self.app_window.get().expect("AppWindow supposed to be set");
+        let window = self.app_window.get();
+        if window.is_none() {
+            warn!("AppWindow supposed to be set");
+        }
 
-        dialog.present(Some(window));
+        dialog.present(window);
 
         Ok(())
     }
@@ -1032,8 +1051,6 @@ impl UnitFilePanelImp {
                     let file_path_format = format!("<unit>{}</unit>", unit_name2);
                     let msg = format2!(msg, file_path_format);
 
-                    //file_panel.imp().set_file_content_init(); //because it need relaod
-
                     //suposed to have no drop-ins
                     file_panel.imp().set_dropins(&[]);
 
@@ -1047,7 +1064,7 @@ impl UnitFilePanelImp {
                             button_label,
                             level.user_session(),
                         )),
-                    ) //TODO translate
+                    )
                 }
                 Err(error) => {
                     warn!("Unit {:?}, Unable to revert {:?}", unit_name2, error);

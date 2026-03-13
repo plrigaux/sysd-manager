@@ -123,10 +123,6 @@ pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
             "Not starting {:?} as per user config",
             run_mode.proxy_service_name()
         );
-        println!(
-            "Not starting {:?} as per user config",
-            run_mode.proxy_service_name()
-        );
         return Ok(());
     }
 
@@ -141,13 +137,13 @@ pub(crate) async fn init_proxy_async2() -> Result<String, SystemdErrors> {
     let level = UnitDBusLevel::System;
     let manager = systemd_manager_async(level).await?;
     for tries in 0..5 {
-        // match manager_proxy.start_unit(&unit_name, "fail").await {
-        //match start_unit_async(UnitDBusLevel::System, &unit_name, StartStopMode::Fail).await {
         match manager
             .start_unit(&unit_name, StartStopMode::Fail.as_str())
             .await
         {
             Ok(job_id) => {
+                //FIXME it seems it always returns Ok --> Check the JobRemoved signal
+                // then poke the unit active status
                 info!("Started unit {unit_name}, job id {job_id}");
                 return Ok(job_id.to_string());
             }

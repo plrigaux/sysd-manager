@@ -1,4 +1,5 @@
 use std::ffi::{OsStr, OsString};
+use std::path::Component;
 use std::process::Stdio;
 use std::{
     error::Error,
@@ -38,7 +39,7 @@ macro_rules! vs {
 #[derive(Debug)]
 pub enum SysdBaseError {
     CmdNoFreedesktopFlatpakPermission,
-    Command(
+    CommandCallError(
         OsString,
         Vec<OsString>,
         Vec<(OsString, Option<OsString>)>,
@@ -49,6 +50,7 @@ pub enum SysdBaseError {
     NotAuthorizedAuthentificationDismissed,
     NotAuthorized,
     Tokio(JoinError),
+    InvalidPath(String),
 }
 
 impl SysdBaseError {
@@ -61,7 +63,7 @@ impl SysdBaseError {
             .collect();
         let arg: Vec<OsString> = std_command.get_args().map(|s| s.to_os_string()).collect();
 
-        SysdBaseError::Command(program, arg, envs, error)
+        SysdBaseError::CommandCallError(program, arg, envs, error)
     }
 }
 
@@ -134,17 +136,33 @@ pub fn create_drop_in_path_file(
     Ok(path)
 }
 
-pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(), SysdBaseError> {
+pub async fn create_drop_in_io(
+    file_path_str: &str,
+    content: &str,
+    user_session: bool,
+) -> Result<(), SysdBaseError> {
+    //FIXME add security
     if file_path_str.contains("../") {
         let err = std::io::Error::new(
             std::io::ErrorKind::InvalidData,
-            r#"The "../" patern is not supported""#,
+            r#"The "../" pattern is not supported""#,
         );
 
         return Err(err)?;
     }
 
     let file_path = PathBuf::from(file_path_str);
+
+    if file_path.components().any(|c| c == Component::ParentDir) {
+        let err = std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            r#"The "../" pattern is not supported for file path"#,
+        );
+
+        return Err(err)?;
+    }
+
+    path_safe_guard(user_session, file_path_str)?;
 
     let unit_drop_in_dir = file_path.parent().ok_or(std::io::Error::new(
         std::io::ErrorKind::InvalidData,
@@ -176,11 +194,49 @@ pub async fn create_drop_in_io(file_path_str: &str, content: &str) -> Result<(),
     Ok(())
 }
 
+pub fn path_safe_guard(user_session: bool, file_path_str: &str) -> Result<(), SysdBaseError> {
+    if file_path_str.contains("../") {
+        let err = SysdBaseError::InvalidPath(format!(
+            r#"The file path "{}" not absoluated"#,
+            file_path_str,
+        ));
+
+        return Err(err);
+    }
+
+    if !user_session {
+        let safe_loctions = [
+            "/usr/lib/systemd/system/",
+            "/etc/systemd/system/",
+            "/run/systemd/system/",
+        ];
+
+        if !safe_loctions
+            .iter()
+            .any(|loc| file_path_str.starts_with(loc))
+        {
+            let err = SysdBaseError::InvalidPath(format!(
+                r#"The file "{}" not located in any of: {}"#,
+                file_path_str,
+                safe_loctions.join(" ")
+            ));
+
+            return Err(err);
+        }
+    }
+
+    info!("Valid path");
+
+    Ok(())
+}
+
 pub async fn write_on_disk(
+    //  user_session: bool,
     file_path: &Path,
     create_file: bool,
     content: &str,
 ) -> Result<u64, SysdBaseError> {
+    //safe_guard(&file_path.to_string_lossy(), user_session)?;
     let bytes_written = match save_io(file_path, create_file, content).await {
         Ok(b) => b,
         Err(err) => {

@@ -24,6 +24,7 @@ use crate::{
     },
     time_handling::TimestampStyle,
 };
+use base::file::create_drop_in_path_file;
 use base::{
     enums::UnitDBusLevel,
     file::{commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
@@ -561,7 +562,7 @@ pub async fn fetch_drop_in_paths(
     sysdbus::fetch_drop_in_paths(level, unit_name).await
 }
 /// Read the unit file and return it's contents so that we can display it
-pub fn get_unit_file_info(
+pub fn fetch_unit_file_content(
     file_path: Option<&str>,
     unit_primary_name: &str,
 ) -> Result<String, SystemdErrors> {
@@ -950,19 +951,23 @@ pub fn link_unit_files(
 }
 
 pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
-    info!("Reloding Daemon");
-
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if level.user_session() || !proxy_switcher::PROXY_SWITCHER.reload() {
-        let proxy = systemd_manager_async(level).await?;
-        proxy.reload().await?;
-        Ok(())
+        info!("Reloading Daemon - Direct");
+        systemd_manager_async(level)
+            .await?
+            .reload()
+            .await
+            .map_err(|err| err.into())
     } else {
+        info!("Reloading Daemon - Proxy");
+        println!("proxy");
         proxy_call_async!(reload)
     }
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
+        info!("Reloading Daemon - Direct");
         systemd_manager_async(level)
             .await?
             .reload()
@@ -1211,16 +1216,20 @@ pub async fn create_drop_in(
     unit_name: &str,
     file_name: &str,
     content: &str,
-) -> Result<(), SystemdErrors> {
+) -> Result<String, SystemdErrors> {
+    let file_path = create_drop_in_path_file(unit_name, runtime, user_session, file_name)?;
+
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-    if user_session || !proxy_switcher::PROXY_SWITCHER.create_dropin() {
-        file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
+    let result = if user_session || !proxy_switcher::PROXY_SWITCHER.create_dropin() {
+        file::create_drop_in(user_session, &file_path, content).await
     } else {
-        proxy_call_async!(create_drop_in, runtime, unit_name, file_name, content)
-    }
+        proxy_call_async!(create_drop_in, runtime, unit_name, &file_path, content)
+    };
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    file::create_drop_in(runtime, user_session, unit_name, file_name, content).await
+    let result = file::create_drop_in(user_session, &file_path, content).await;
+
+    result.map(|_| file_path)
 }
 
 pub async fn save_file(

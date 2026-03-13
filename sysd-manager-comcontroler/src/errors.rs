@@ -43,6 +43,7 @@ pub enum SystemdErrors {
     ZFdoZError(String),
     ZXml(zbus_xml::Error),
     Unreachable,
+    InvalidPath(String),
 }
 
 impl SystemdErrors {
@@ -74,6 +75,16 @@ impl SystemdErrors {
             SystemdErrors::ZNoSuchUnitProxy(_, detail) => detail.clone(),
             SystemdErrors::ZUnitMasked(_, detail) => detail.clone(),
             _ => self.to_string(),
+        }
+    }
+
+    pub fn file_not_found(&self) -> bool {
+        if let SystemdErrors::IoError(io_error) = self
+            && io_error.kind() == std::io::ErrorKind::NotFound
+        {
+            true
+        } else {
+            false
         }
     }
 }
@@ -228,7 +239,7 @@ impl From<SysdBaseError> for SystemdErrors {
             SysdBaseError::CmdNoFreedesktopFlatpakPermission => {
                 SystemdErrors::CmdNoFreedesktopFlatpakPermission(None, None)
             }
-            SysdBaseError::Command(os_string, os_strings, items, error) => {
+            SysdBaseError::CommandCallError(os_string, os_strings, items, error) => {
                 SystemdErrors::Command(os_string, os_strings, items, error)
             }
             SysdBaseError::Custom(s) => SystemdErrors::Custom(s),
@@ -238,6 +249,7 @@ impl From<SysdBaseError> for SystemdErrors {
             }
             SysdBaseError::NotAuthorized => SystemdErrors::NotAuthorized,
             SysdBaseError::Tokio(_join_error) => SystemdErrors::Tokio,
+            SysdBaseError::InvalidPath(msg) => SystemdErrors::InvalidPath(msg),
         }
     }
 }

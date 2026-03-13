@@ -190,7 +190,7 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
         </property>
         <property name="icon-name">preferences-system-network-proxy-symbolic</property>
         <property name="name">proxy</property>
-        <property name="title" translatable="yes" context="preference">_Proxy Configuration</property>
+        <property name="title" translatable="yes" context="preference">_Proxy Preferences</property>
         <property name="use-underline">True</property>
         <child>
           <object class="AdwPreferencesGroup">

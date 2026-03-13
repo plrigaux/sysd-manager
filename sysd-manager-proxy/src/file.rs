@@ -1,26 +1,25 @@
 use base::file::SysdBaseError;
-use base::file::{create_drop_in_io, create_drop_in_path_file, save_io};
+use base::file::{create_drop_in_io, save_io};
 use tracing::info;
 use tracing::warn;
 
 pub async fn create_drop_in(
     runtime: bool,
     unit_name: &str,
-    file_name: &str,
+    file_path: &str,
     content: &str,
 ) -> zbus::fdo::Result<()> {
     info!(
-        "Creating Drop-in: unit {unit_name:?} runtime {runtime:?}, file_name {file_name:?} , content {} bytes",
+        "Creating Drop-in: unit {unit_name:?} runtime {runtime:?}, file_path {file_path:?} , content {} bytes",
         content.len()
     );
 
-    let file_path = create_drop_in_path_file(unit_name, runtime, false, file_name)
-        .map_err(|err| zbus::fdo::Error::Failed(err.to_string()))?;
-
-    create_drop_in_io(&file_path, content).await.map_err(|err| {
-        let fdo: FdoError = err.into();
-        fdo.0
-    })
+    create_drop_in_io(file_path, content, false)
+        .await
+        .map_err(|err| {
+            let fdo: FdoError = err.into();
+            fdo.0
+        })
 }
 
 struct FdoError(zbus::fdo::Error);
@@ -47,7 +46,16 @@ impl From<SysdBaseError> for FdoError {
             SysdBaseError::NotAuthorized => {
                 FdoError(zbus::fdo::Error::AccessDenied("Not Auhorised".to_string()))
             }
-            _ => FdoError(zbus::fdo::Error::Failed("Internal Error".to_string())),
+            SysdBaseError::CmdNoFreedesktopFlatpakPermission => FdoError(
+                zbus::fdo::Error::NotSupported("Flatpak Permission".to_string()),
+            ),
+            SysdBaseError::CommandCallError(_, _, _, _) => {
+                FdoError(zbus::fdo::Error::Failed("Internal issue".to_string()))
+            }
+            SysdBaseError::Tokio(_) => {
+                FdoError(zbus::fdo::Error::Failed("Internal issue".to_string()))
+            }
+            SysdBaseError::InvalidPath(msg) => FdoError(zbus::fdo::Error::AccessDenied(msg)),
         }
     }
 }

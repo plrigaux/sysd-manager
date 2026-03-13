@@ -1,24 +1,18 @@
 use crate::errors::SystemdErrors;
-use base::file::{
-    create_drop_in_path_file, flatpak_host_file_path, write_on_disk, write_with_priviledge,
-};
+use base::file::{flatpak_host_file_path, path_safe_guard, write_on_disk, write_with_priviledge};
 use std::path::PathBuf;
 use tracing::info;
 
 pub(crate) async fn create_drop_in(
-    runtime: bool,
     user_session: bool,
-    unit_name: &str,
-    file_name: &str,
+    file_path: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
-    let file_path = create_drop_in_path_file(unit_name, runtime, user_session, file_name)?;
-
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-    create_drop_in_io(&file_path, content).await?;
+    base::file::create_drop_in_io(file_path, content, user_session).await?;
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    no_proxy::create_drop_in_script(&file_path, content, user_session).await?;
+    no_proxy::create_drop_in_script(file_path, content, user_session).await?;
 
     Ok(())
 }
@@ -28,6 +22,7 @@ pub async fn save_text_to_file(
     content: &str,
     user_session: bool,
 ) -> Result<u64, SystemdErrors> {
+    path_safe_guard(user_session, file_path)?;
     let host_file_path = if user_session {
         flatpak_host_file_path(file_path)
     } else {

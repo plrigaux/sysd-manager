@@ -145,9 +145,10 @@ fn extract_job_id(job: &str) -> Option<u32> {
 pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
     let proxy = get_proxy_async().await?;
     let hello_stream = proxy.receive_hello().await?;
+
     crate::sysdbus::init_proxy_async2().await?;
 
-    let timeout_results = timeout(Duration::from_secs(2), wait_hello(hello_stream)).await;
+    let timeout_results = timeout(Duration::from_secs(6), wait_hello(hello_stream)).await;
 
     match timeout_results {
         Ok(rr) => rr?,
@@ -198,7 +199,7 @@ macro_rules! proxy_call_async {
         match $crate::to_proxy::$func($($param),*).await {
             Ok(ok) => Ok(ok),
             Err(SystemdErrors::ZFdoServiceUnknowm(msg)) => {
-                warn!("Async ServiceUnkown: {:?} Func: {}", msg, stringify!($func));
+                warn!("Async ServiceUnkown: {:?} Function: {}", msg, stringify!($func));
                 $crate::to_proxy::lazy_start_proxy_async().await;
                 $crate::to_proxy::$func($($param),*).await
             },
@@ -210,12 +211,12 @@ macro_rules! proxy_call_async {
 pub(crate) async fn create_drop_in(
     runtime: bool,
     unit_name: &str,
-    file_name: &str,
+    file_path: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
     let mut proxy = get_proxy_async().await?;
     proxy
-        .create_drop_in(runtime, unit_name, file_name, content)
+        .create_drop_in(runtime, unit_name, file_path, content)
         .await
         .map_err(|e| e.into())
 }

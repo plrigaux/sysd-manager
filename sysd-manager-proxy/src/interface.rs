@@ -20,14 +20,14 @@ impl SysDManagerProxy {
         #[zbus(header)] header: Header<'_>,
         runtime: bool,
         unit_name: &str,
-        file_name: &str,
+        file_path: &str,
         content: &str,
     ) -> zbus::fdo::Result<()> {
         //self.
         self.check_autorisation(header).await?;
 
         //   self.get_all(object_server, connection, header, emitter)
-        file::create_drop_in(runtime, unit_name, file_name, content).await
+        file::create_drop_in(runtime, unit_name, file_path, content).await
     }
 
     pub async fn save_file(

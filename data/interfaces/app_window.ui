@@ -35,7 +35,7 @@
       </item>
       <item>
         <attribute name="action">app.proxy-management</attribute>
-        <attribute name="label" translatable="yes" context="menu">Proxy Management</attribute>
+        <attribute name="label" translatable="yes" context="menu">Proxy Preferences</attribute>
       </item>
       <item>
         <attribute name="action">win.show-help-overlay</attribute>

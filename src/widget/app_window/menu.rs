@@ -283,13 +283,19 @@ fn daemon_relaod(
     glib::spawn_future_local(async move {
         simple_action.set_enabled(false);
 
-        let user_session = dbus_level.user_session();
-        let res = gio::spawn_blocking(async move || systemd::daemon_reload(dbus_level).await)
-            .await
-            .expect("Task needs to finish successfully.");
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        systemd::runtime().spawn(async move {
+            let response = systemd::daemon_reload(dbus_level).await;
+            sender
+                .send(response)
+                .expect("The channel needs to be open.");
+        });
 
-        match res.await {
-            //TODO ??? await
+        let response = receiver.await.expect("Tokio receiver works");
+
+        let user_session = dbus_level.user_session();
+
+        match response {
             Ok(_) => {
                 info!("All units reloaded! User session {}", user_session);
                 let instance_level = if user_session {

@@ -47,8 +47,9 @@
                     </child>
                     <child>
                       <object class="GtkMenuButton">
-                        <property name="icon-name">open-menu-symbolic</property>
+                        <property name="label">Drop-in</property>
                         <property name="menu-model">unit_file_menu</property>
+                        <property name="tooltip-text">Drop-in operations</property>
                       </object>
                     </child>
                     <child>
@@ -99,20 +100,20 @@
     </child>
   </template>
   <menu id="unit_file_menu">
-    <submenu>
-      <attribute name="label" translatable="yes">Create Drop-in</attribute>
+    <item>
+      <attribute name="action">win.revert_unit_file_full</attribute>
+      <attribute name="label" translatable="yes" context="menu" comments="Unit file drop-in operations menu item">Revert Drop-in</attribute>
+    </item>
+    <section>
+      <attribute name="label" translatable="yes" context="menu" comments="Unit file drop-in operations menu section">Create Drop-in</attribute>
       <item>
         <attribute name="action">win.create_drop_in_file_permanent</attribute>
-        <attribute name="label" translatable="yes">Permanent</attribute>
+        <attribute name="label" translatable="yes" context="menu" comments="Unit file drop-in operations menu item">Permanent</attribute>
       </item>
       <item>
         <attribute name="action">win.create_drop_in_file_runtime</attribute>
-        <attribute name="label" translatable="yes">Runtime</attribute>
+        <attribute name="label" translatable="yes" context="menu" comments="Unit file drop-in operations menu item">Runtime</attribute>
       </item>
-    </submenu>
-    <item>
-      <attribute name="action">win.revert_unit_file_full</attribute>
-      <attribute name="label" translatable="yes">Revert Drop-in</attribute>
-    </item>
+    </section>
   </menu>
 </interface>
