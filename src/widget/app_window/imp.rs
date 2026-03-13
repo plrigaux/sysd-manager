@@ -7,8 +7,8 @@ use std::{
 
 use crate::{
     consts::{
-        ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
-        ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
+        ACTION_DAEMON_RELOAD, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR,
+        ACTION_PROPERTIES_SELECTOR_GENERAL, ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
         NS_ACTION_REFRESH_UNIT_LIST, WIN_ACTION_SAVE_UNIT_FILE,
     },
@@ -532,10 +532,11 @@ impl AppWindowImpl {
         application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Alt>f"]);
         application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
-        application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR_GENERAL, &["<Ctrl>r"]);
+        application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR_GENERAL, &["<Ctrl>l"]);
         application.set_accels_for_action("app.debug", &["<Ctrl>q"]);
         application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
         application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
+        application.set_accels_for_action(ACTION_DAEMON_RELOAD, &["<Ctrl>r"]);
 
         for ui in UnitCuratedList::iter() {
             application.set_accels_for_action(&ui.detailed_action(), &ui.win_accels());
