@@ -713,7 +713,7 @@ impl UnitListPanelImp {
         info!(
             "Unit List {} list_store {} filter {} sort_model {}",
             unit_name,
-            self.list_store.get().unwrap().n_items(),
+            self.list_store.get().map(|ls| ls.n_items()).unwrap_or_default(),
             self.filter_list_model.borrow().n_items(),
             self.unit_list_sort_list_model.borrow().n_items()
         );

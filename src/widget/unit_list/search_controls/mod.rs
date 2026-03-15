@@ -33,7 +33,7 @@ mod imp {
     use std::cell::OnceCell;
 
     use gtk::{glib, prelude::*, subclass::prelude::*};
-    use tracing::debug;
+    use tracing::{debug, error};
 
     use crate::widget::unit_list::UnitListPanel;
 
@@ -59,15 +59,18 @@ mod imp {
     #[gtk::template_callbacks]
     impl UnitListSearchControlsImp {
         fn update_unit_name_search(&self, text: &str) {
-            self.unit_list_panel
-                .get()
-                .unwrap()
-                .imp()
-                .update_unit_name_search(text, false)
+            let Some(panel) = self.unit_list_panel.get() else {
+                error!("unit_list_panel not initialized");
+                return;
+            };
+            panel.imp().update_unit_name_search(text, false)
         }
 
         pub(crate) fn set_search_entry_text(&self, text: &str) {
-            let signal_handler_id = self.signal_handler_text_changed.get().unwrap();
+            let Some(signal_handler_id) = self.signal_handler_text_changed.get() else {
+                error!("signal_handler_text_changed not initialized");
+                return;
+            };
             self.search_entry.block_signal(signal_handler_id);
             self.search_entry.set_text(text);
             self.search_entry.unblock_signal(signal_handler_id);

@@ -101,7 +101,12 @@ mod imp {
         pub(super) fn fill_store(&self) {
             let stack = self.stack.clone();
             let list_store = self.list_store.clone();
-            let app_window = self.app_window.get().unwrap().clone();
+            let Some(app_window) = self.app_window.get() else {
+                error!("app_window not initialized");
+                return;
+            };
+
+            let app_window = app_window.clone();
             let window = self.obj().clone();
 
             glib::spawn_future_local(async move {
