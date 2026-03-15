@@ -675,7 +675,10 @@ impl UnitListPanelImp {
         self.search_bar.set_search_mode(toggle_button_is_active);
 
         if toggle_button_is_active {
-            let s_controls = self.search_controls.get().unwrap();
+            let Some(s_controls) = self.search_controls.get() else {
+                error!("search_controls not initialized");
+                return;
+            };
             s_controls.grab_focus_on_search_entry();
 
             let applied_assessors = self
@@ -762,7 +765,11 @@ impl UnitListPanelImp {
     }
 
     fn add_one_unit(&self, unit: &UnitInfo) {
-        self.list_store.get().unwrap().append(unit);
+        let Some(list_store) = self.list_store.get() else {
+            error!("list_store not initialized");
+            return;
+        };
+        list_store.append(unit);
         let mut unit_map = self.units_map.borrow_mut();
         unit_map.insert(UnitKey::new(unit), unit.clone());
 
@@ -1213,7 +1220,11 @@ impl UnitListPanelImp {
         let units_map = self.units_map.clone();
         let display_color = self.display_color.get();
         let unit_list = self.obj().clone();
-        let list_store = self.list_store.get().unwrap().clone();
+        let Some(list_store) = self.list_store.get() else {
+            error!("list_store not initialized");
+            return;
+        };
+        let list_store = list_store.clone();
 
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
