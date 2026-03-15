@@ -117,6 +117,8 @@ pub struct UnitFilePanelImp {
     all_unit_files: RefCell<Vec<FileNav>>,
 
     file_content_selected_index: Cell<u32>,
+
+    original_file_content: RefCell<String>,
 }
 
 macro_rules! get_buffer {
@@ -329,7 +331,7 @@ macro_rules! get_unit {
         let binding = $self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
             warn!("No unit to present");
-            $self.set_editor_text("", false);
+            $self.set_editor_text(String::default(), false);
             return;
         };
         unit.clone()
@@ -506,7 +508,7 @@ impl UnitFilePanelImp {
 
         self.file_link.set_label(file_path);
 
-        self.set_editor_text(&file_content, is_error_msg);
+        self.set_editor_text(file_content, is_error_msg);
     }
 
     fn display_unit_drop_in_file_content(&self, drop_in_index: u32) {
@@ -516,7 +518,7 @@ impl UnitFilePanelImp {
                 "Drop in index out of bound requested: {drop_in_index} max: {}",
                 self.all_unit_files.borrow().len()
             );
-            self.set_editor_text("", false);
+            self.set_editor_text(String::default(), false);
             return;
         };
 
@@ -603,7 +605,7 @@ impl UnitFilePanelImp {
         self.display_unit_drop_in_file_content(selected_index);
     }
 
-    fn set_editor_text(&self, file_content: &str, is_error_msg: bool) {
+    fn set_editor_text(&self, file_content: String, is_error_msg: bool) {
         let view = self.unit_file_text.get().expect("expect sourceview5::View");
         let buf = view.buffer();
 
@@ -618,7 +620,8 @@ impl UnitFilePanelImp {
         }
 
         buf.set_text(""); //To clear current
-        buf.set_text(file_content);
+        buf.set_text(&file_content);
+        self.original_file_content.replace(file_content);
 
         // self.save_button.set_sensitive(false);
         self.set_visible_child_panel();
@@ -1170,17 +1173,18 @@ impl ObjectImpl for UnitFilePanelImp {
 
             // let save_button = self.save_button.downgrade();
             let unit_file_panel = self.obj().downgrade();
-            buffer.connect_end_user_action(move |_buf| {
-                // let save_button = upgrade!(save_button);
-
+            buffer.connect_end_user_action(move |buf| {
                 let unit_file_panel = upgrade!(unit_file_panel);
+                let imp = unit_file_panel.imp();
 
-                let allow_save_condition =
-                    !unit_file_panel.imp().all_unit_files.borrow().is_empty(); //TODO check is the text has really changed
-                // save_button.set_sensitive(allow_save_condition);
-                unit_file_panel
-                    .imp()
-                    .set_save_file_enable(allow_save_condition);
+                let start = buf.start_iter();
+                let end = buf.end_iter();
+                let current_text = buf.text(&start, &end, true);
+
+                let allow_save_condition = !imp.all_unit_files.borrow().is_empty()
+                    && current_text.as_str() != imp.original_file_content.borrow().as_str();
+
+                imp.set_save_file_enable(allow_save_condition);
             });
         }
 
