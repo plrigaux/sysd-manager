@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-13 17:07-0400\n"
-"PO-Revision-Date: 2025-08-19 16:29+0000\n"
-"Last-Translator: Damglador <vse.stopchanskyi@gmail.com>\n"
+"PO-Revision-Date: 2026-03-16 02:06+0000\n"
+"Last-Translator: Димко <Dymkovych@proton.me>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/uk/>\n"
 "Language: uk\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -29,7 +29,7 @@ msgstr "SysD Manager"
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
 msgid "Service manager"
-msgstr "Менеджер сервісів"
+msgstr "Менеджер служб"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
@@ -189,7 +189,7 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:60
 msgctxt "enable unit file"
 msgid "Runtime"
-msgstr ""
+msgstr "Інструмент"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:65
@@ -229,7 +229,7 @@ msgstr ""
 #: data/interfaces/control_action_dialog.ui:88
 msgctxt "enable unit file"
 msgid "Run now"
-msgstr ""
+msgstr "Запустити"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:93
