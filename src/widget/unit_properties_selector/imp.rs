@@ -528,15 +528,21 @@ impl ObjectImpl for UnitPropertiesSelectorDialogImp {
 
             runtime().spawn(async move {
                 match systemd::fetch_unit_interface_properties().await {
-                    Ok(map) => sender.send(map).expect("The channel needs to be open."),
-                    Err(err) => error!("Fetch unir properties {err:?}"),
+                    Ok(map) => {
+                        if let Err(e) = sender.send(map) {
+                            error!("Channel closed unexpectedly: {e:?}");
+                        }
+                    }
+                    Err(err) => error!("Fetch unit properties {err:?}"),
                 }
             });
 
-            let unit_properties_map = receiver
+            let Ok(unit_properties_map) = receiver
                 .await
-                .map_err(|e| error!("Receiver {e:?}"))
-                .expect("Tokio receiver works");
+                .inspect_err(|err| error!("Tokio channel dropped {err:?}"))
+            else {
+                return;
+            };
 
             for (inteface, mut properties) in unit_properties_map
                 .into_iter()

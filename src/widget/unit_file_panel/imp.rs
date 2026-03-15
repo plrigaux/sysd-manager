@@ -192,12 +192,18 @@ impl UnitFilePanelImp {
                         )
                         .await;
 
-                        sender
-                            .send(response)
-                            .expect("The channel needs to be open.");
+                        if let Err(e) = sender.send(response) {
+                            error!("Channel closed unexpectedly: {e:?}");
+                        }
                     });
 
-                    let response = receiver.await.expect("Tokio receiver works");
+                    let Ok(response) = receiver
+                        .await
+                        .inspect_err(|err| error!("Tokio channel dropped {err:?}"))
+                    else {
+                        return;
+                    };
+
                     if let Ok(ref file_path) = response {
                         file_nav = file_nav.file_path_cloned(file_path.clone());
                         file_panel.imp().all_unit_files.borrow_mut()[index] = file_nav.clone();
@@ -222,12 +228,15 @@ impl UnitFilePanelImp {
                     systemd::runtime().spawn(async move {
                         let response = systemd::save_file(level, &file_path, &content).await;
 
-                        sender
-                            .send(response)
-                            .expect("The channel needs to be open.");
+                        if let Err(e) = sender.send(response) {
+                            error!("Channel closed unexpectedly: {e:?}");
+                        }
                     });
 
-                    let response = receiver.await.expect("Tokio receiver works");
+                    let Ok(response) = receiver.await else {
+                        error!("Tokio channel dropped");
+                        return;
+                    };
                     file_panel
                         .imp()
                         .handle_save_response(response, file_nav, &unit_name2, user_session)
@@ -426,12 +435,16 @@ impl UnitFilePanelImp {
             crate::systemd::runtime().spawn(async move {
                 let response = systemd::fetch_drop_in_paths(level, &object_path).await;
 
-                sender
-                    .send(response)
-                    .expect("The channel needs to be open.")
+                if let Err(e) = sender.send(response) {
+                    error!("Channel closed unexpectedly: {e:?}");
+                }
             });
 
-            match receiver.await.expect("Tokio receiver to work well") {
+            let Ok(result) = receiver.await else {
+                error!("Tokio channel dropped");
+                return;
+            };
+            match result {
                 Ok(drop_in_files) => {
                     unit_file_panel.imp().set_dropins(&drop_in_files);
                 }
@@ -1043,12 +1056,17 @@ impl UnitFilePanelImp {
 
                 info!("revert_unit_file_full results {:?}", response);
 
-                sender
-                    .send(response)
-                    .expect("The channel needs to be open.");
+                if let Err(e) = sender.send(response) {
+                    error!("Channel closed unexpectedly: {e:?}");
+                }
             });
 
-            let (msg, use_mark_up, action) = match receiver.await.expect("Tokio receiver works") {
+            let Ok(result) = receiver.await else {
+                error!("Tokio channel dropped");
+                return;
+            };
+
+            let (msg, use_mark_up, action) = match result {
                 Ok(_a) => {
                     let msg = pgettext("file", "Unit {} reverted successfully!");
                     let file_path_format = format!("<unit>{}</unit>", unit_name2);
@@ -1164,10 +1182,6 @@ impl ObjectImpl for UnitFilePanelImp {
 
         self.unit_file_scrolled_window.set_child(Some(&view));
 
-        // self.save_button.add_css_class(SUGGESTED_ACTION);
-        // self.save_button.set_sensitive(false);
-
-        // x.install_action("sadfsd", None, |_, _| "test");
         {
             let buffer = view.buffer();
 

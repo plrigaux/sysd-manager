@@ -771,17 +771,20 @@ pub fn after_unit_file_action(
                 systemd::complete_single_unit_information(primary_name, level, object_path, status)
                     .await;
 
-            sender
-                .send(response)
-                .expect("The channel needs to be open.");
+            if let Err(e) = sender.send(response) {
+                error!("Channel closed unexpectedly: {e:?}");
+            }
         });
 
-        let vec_unit_info = match receiver.await.expect("Tokio receiver works") {
-            Ok(unit_files) => unit_files,
-            Err(err) => {
-                warn!("Fail to update Unit info {err:?}");
-                return Err(err);
-            }
+        let Ok(receiver_result) = receiver.await else {
+            error!("Tokio channel dropped");
+            return;
+        };
+
+        let Ok(vec_unit_info) =
+            receiver_result.inspect_err(|err| warn!("Fail to update Unit info {err:?}"))
+        else {
+            return;
         };
 
         if let Some(update) = vec_unit_info.into_iter().next() {
@@ -789,7 +792,6 @@ pub fn after_unit_file_action(
         }
 
         control.selection_change(Some(&unit));
-        Ok::<(), SystemdErrors>(())
     });
 }
 

@@ -286,12 +286,17 @@ fn daemon_relaod(
         let (sender, receiver) = tokio::sync::oneshot::channel();
         systemd::runtime().spawn(async move {
             let response = systemd::daemon_reload(dbus_level).await;
-            sender
-                .send(response)
-                .expect("The channel needs to be open.");
+            if let Err(e) = sender.send(response) {
+                error!("Channel closed unexpectedly: {e:?}");
+            }
         });
 
-        let response = receiver.await.expect("Tokio receiver works");
+        let Ok(response) = receiver
+            .await
+            .inspect_err(|err| error!("Tokio channel dropped {err:?}"))
+        else {
+            return;
+        };
 
         let user_session = dbus_level.user_session();
 
