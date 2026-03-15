@@ -309,5 +309,9 @@
       <default>true</default>
       <summary>Include unit file in some units lists</summary>
     </key>
+    <key name="unit-file-line-number" type="b">
+      <default>true</default>
+      <summary>Show the line number of the unit file editor</summary>
+    </key>
   </schema>
 </schemalist>

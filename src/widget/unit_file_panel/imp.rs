@@ -43,7 +43,7 @@ const PANEL_FILE: &str = "file_panel";
 const DEFAULT_DROP_IN_FILE_NAME: &str = "override";
 const UNIT_FILE_ID: &str = "unit_file";
 const TEXT_FIND_ACTION: &str = "unit_file_text_find";
-const UNIT_FILE_LINE_NUMBER_ACTION: &str = "unit_file_line_number";
+const UNIT_FILE_LINE_NUMBER_ACTION: &str = "win.unit-file-line-number";
 
 #[derive(PartialEq, Copy, Clone)]
 enum UnitFileStatus {
@@ -784,25 +784,6 @@ impl UnitFilePanelImp {
                 .build()
         };
 
-        let unit_file_line_number = {
-            let unit_file_text = self.unit_file_text.get().expect("Need to be set").clone();
-            gio::ActionEntry::builder(UNIT_FILE_LINE_NUMBER_ACTION)
-                .activate(
-                    move |_application: &AppWindow, action: &SimpleAction, _target_value| {
-                        if let Some(variant) = action.state()
-                            && let Some(show_line_number) = variant.get::<bool>()
-                        {
-                            let show_line_number = !show_line_number;
-                            unit_file_text.set_show_line_numbers(show_line_number);
-                            action.set_state(&show_line_number.to_variant());
-                        }
-                    },
-                )
-                .state(true.to_variant())
-                .parameter_type(Some(glib::VariantTy::BOOLEAN))
-                .build()
-        };
-
         let text_search_bar_action_entry =
             text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
 
@@ -811,12 +792,25 @@ impl UnitFilePanelImp {
             create_drop_in_file_runtime,
             create_drop_in_file_permanent,
             revert_unit_file_full,
-            unit_file_line_number,
+            // unit_file_line_number,
             text_search_bar_action_entry,
             save_unit_file,
         ]);
 
         self.set_save_file_enable(false);
+
+        let settings = systemd_gui::new_settings();
+
+        let action = settings.create_action(&UNIT_FILE_LINE_NUMBER_ACTION[4..]);
+        app_window.add_action(&action);
+
+        settings
+            .bind::<sourceview5::View>(
+                &UNIT_FILE_LINE_NUMBER_ACTION[4..],
+                self.unit_file_text.get().unwrap(),
+                "show_line_numbers",
+            )
+            .build();
     }
 
     fn set_save_file_enable(&self, enable: bool) {
@@ -1213,8 +1207,6 @@ impl ObjectImpl for UnitFilePanelImp {
 
         let settings = systemd_gui::new_settings();
 
-        let show_line_numbers = settings.boolean(KEY_PREF_UNIT_FILE_LINE_NUMBERS);
-
         settings
             .bind(KEY_PREF_UNIT_FILE_LINE_NUMBERS, &view, "show-line-numbers")
             .build();
@@ -1225,11 +1217,7 @@ impl ObjectImpl for UnitFilePanelImp {
         // Show Line Number Menu Item
         let menu_label = pgettext("file", "Display Line Numbers");
 
-        let mut action_name = String::from("win.");
-        action_name.push_str(UNIT_FILE_LINE_NUMBER_ACTION);
-
-        let mi = gio::MenuItem::new(Some(&menu_label), None);
-        mi.set_action_and_target_value(Some(&action_name), Some(&show_line_numbers.to_variant()));
+        let mi = gio::MenuItem::new(Some(&menu_label), Some(UNIT_FILE_LINE_NUMBER_ACTION));
 
         menu.append_item(&mi);
         menu.append_item(&ts_item);
