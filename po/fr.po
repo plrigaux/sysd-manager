@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-15 22:03-0400\n"
-"PO-Revision-Date: 2026-03-13 21:34+0000\n"
+"PO-Revision-Date: 2026-03-16 02:18+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -912,10 +912,9 @@ msgid "Open columns manager"
 msgstr "Ouvrir le gestionnaire de colonnes"
 
 #: data/interfaces/shortcuts.ui:55
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Deamon Reload"
-msgstr "Recharger"
+msgstr "Recharger la configuration"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:62
@@ -2159,7 +2158,6 @@ msgstr "{} de {}"
 
 #. Find in text Menu item
 #: src/widget/text_search/mod.rs:51
-#, fuzzy
 msgctxt "text_find"
 msgid "Find in Text"
 msgstr "Rechercher dans le texte"
