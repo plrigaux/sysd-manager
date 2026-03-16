@@ -89,6 +89,10 @@ https://hughsie.github.io/oars/index.html
           <li>Save the show line number context</li>
           <li>Save find in text context</li>
         </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Translation</li>
+        </ul>
       </description>
     </release>
     <release version="2.14.5" date="2026-03-13">
