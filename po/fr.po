@@ -913,10 +913,9 @@ msgid "Open columns manager"
 msgstr "Ouvrir le gestionnaire de colonnes"
 
 #: data/interfaces/shortcuts.ui:55
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Deamon Reload"
-msgstr "Recharger"
+msgstr "Recharger la configuration"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:62
@@ -2160,7 +2159,6 @@ msgstr "{} de {}"
 
 #. Find in text Menu item
 #: src/widget/text_search/mod.rs:51
-#, fuzzy
 msgctxt "text_find"
 msgid "Find in Text"
 msgstr "Rechercher dans le texte"
