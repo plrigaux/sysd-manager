@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Save the show line number context
 - Save find in text context
 
+### Changed
+
+- translation
+
 ### Fixed
 
 - Safe degradation of some code part
