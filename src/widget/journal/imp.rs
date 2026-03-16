@@ -20,7 +20,7 @@ use std::{
 use tracing::{debug, error, info, warn};
 
 use crate::{
-    consts::{APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING},
+    consts::{APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING, ACTION_FIND_IN_TEXT},
     systemd::{
         BootFilter,
         data::UnitInfo,
@@ -56,8 +56,6 @@ const DESC: &str = "view-sort-descending";
 
 const KEY_ASCENDING: &str = "Ascending";
 const KEY_DESCENDING: &str = "Descending";
-
-const TEXT_FIND_ACTION: &str = "unit_journal_text_find";
 
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 enum JournalDisplayOrder {
@@ -356,11 +354,7 @@ impl JournalPanelImp {
 }
 
 impl JournalPanelImp {
-    pub(super) fn register(&self, app_window: &AppWindow) {
-        let text_search_bar_action_entry =
-            text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
-        app_window.add_action_entries([text_search_bar_action_entry]);
-    }
+    pub(super) fn register(&self, _app_window: &AppWindow) {}
 
     fn set_visible_on_page(&self, value: bool) {
         debug!("set_visible_on_page val {value}");
@@ -715,7 +709,7 @@ impl JournalPanelImp {
         self.continuous_switch.set_state(false);
 
         let text_view = self.journal_text_view.borrow();
-        text_search::update_text_view(&self.text_search_bar, &text_view, TEXT_FIND_ACTION, true);
+        text_search::update_text_view(&self.text_search_bar, &text_view, true);
     }
 
     fn clean_refresh(&self) {
@@ -790,9 +784,16 @@ impl ObjectImpl for JournalPanelImp {
             &text_view,
             &self.text_search_bar,
             &self.find_text_button,
-            TEXT_FIND_ACTION,
             false,
         );
+
+        settings
+            .bind::<gtk::SearchBar>(
+                &ACTION_FIND_IN_TEXT[4..],
+                &self.text_search_bar,
+                "search-mode-enabled",
+            )
+            .build();
     }
 }
 impl WidgetImpl for JournalPanelImp {}

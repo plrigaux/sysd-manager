@@ -82,3 +82,4 @@ pub const WHERE_PROP: &str = "Where";
 pub const COL_ACTIVE: &str = "sysdm-active";
 pub const ACTION_WIN_HIDE_UNIT_COL: &str = "win.hide_unit_col";
 // pub const ACTION_WIN_COL_RESIZE: &str = "win.col_resize";
+pub const ACTION_FIND_IN_TEXT: &str = "win.find-in-text-panel";

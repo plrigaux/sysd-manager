@@ -1,6 +1,6 @@
 use super::flatpak;
 use crate::{
-    consts::{ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS},
+    consts::{ACTION_FIND_IN_TEXT, ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS},
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     systemd_gui::{self, is_dark},
@@ -42,7 +42,6 @@ const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
 const DEFAULT_DROP_IN_FILE_NAME: &str = "override";
 const UNIT_FILE_ID: &str = "unit_file";
-const TEXT_FIND_ACTION: &str = "unit_file_text_find";
 const UNIT_FILE_LINE_NUMBER_ACTION: &str = "win.unit-file-line-number";
 
 #[derive(PartialEq, Copy, Clone)]
@@ -784,16 +783,13 @@ impl UnitFilePanelImp {
                 .build()
         };
 
-        let text_search_bar_action_entry =
-            text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
-
         app_window.add_action_entries([
             rename_drop_in_file,
             create_drop_in_file_runtime,
             create_drop_in_file_permanent,
             revert_unit_file_full,
             // unit_file_line_number,
-            text_search_bar_action_entry,
+            // text_search_bar_action_entry,
             save_unit_file,
         ]);
 
@@ -809,6 +805,17 @@ impl UnitFilePanelImp {
                 &UNIT_FILE_LINE_NUMBER_ACTION[4..],
                 self.unit_file_text.get().unwrap(),
                 "show_line_numbers",
+            )
+            .build();
+
+        let action = settings.create_action(&ACTION_FIND_IN_TEXT[4..]);
+        app_window.add_action(&action);
+
+        settings
+            .bind::<gtk::SearchBar>(
+                &ACTION_FIND_IN_TEXT[4..],
+                &self.text_search_bar,
+                "search-mode-enabled",
             )
             .build();
     }
@@ -847,8 +854,6 @@ impl UnitFilePanelImp {
                 warn!("get_unit_file_info Error: {e:?}");
                 "".to_owned()
             });
-
-        //DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 
         let user_session = unit.dbus_level().user_session();
 
@@ -1201,7 +1206,6 @@ impl ObjectImpl for UnitFilePanelImp {
             file_text_view,
             &self.text_search_bar,
             &self.find_text_button,
-            TEXT_FIND_ACTION,
             false,
         );
 
@@ -1211,7 +1215,7 @@ impl ObjectImpl for UnitFilePanelImp {
             .bind(KEY_PREF_UNIT_FILE_LINE_NUMBERS, &view, "show-line-numbers")
             .build();
 
-        let ts_item = text_search::create_menu_item(TEXT_FIND_ACTION, &self.text_search_bar);
+        let ts_item = text_search::create_menu_item();
         let menu = gio::Menu::new();
 
         // Show Line Number Menu Item

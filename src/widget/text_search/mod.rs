@@ -6,7 +6,7 @@ use gtk::{
     prelude::{TextViewExt, WidgetExt},
 };
 
-use crate::widget::app_window::AppWindow;
+use crate::{consts::ACTION_FIND_IN_TEXT, widget::app_window::AppWindow};
 mod imp;
 
 glib::wrapper! {
@@ -46,31 +46,20 @@ impl TextSearchBar {
     }
 }
 
-pub fn create_menu_item(
-    action_name_base: &str,
-    _text_search_bar: &gtk::SearchBar,
-) -> gio::MenuItem {
+pub fn create_menu_item() -> gio::MenuItem {
     // Find in text Menu item
-    let menu_label = pgettext("text_find", "Open Find in Text");
+    let menu_label = pgettext("text_find", "Find in Text");
 
-    let mut action_name = String::from("win.");
-    action_name.push_str(action_name_base);
-
-    //mi.set_action_and_target_value(
-    //    Some(&action_name),
-    //Some(&text_search_bar.is_search_mode().to_variant()),
-    //);
-    gio::MenuItem::new(Some(&menu_label), Some(&action_name))
+    gio::MenuItem::new(Some(&menu_label), Some(&ACTION_FIND_IN_TEXT))
 }
 
 pub fn text_search_construct(
     text_view: &gtk::TextView,
     text_search_bar: &gtk::SearchBar,
     find_text_button: &gtk::ToggleButton,
-    action_name_base: &str,
     add_menu: bool,
 ) {
-    add_menu_fn(action_name_base, text_view, text_search_bar, add_menu);
+    add_menu_fn(text_view, add_menu);
 
     let text_search_bar_content = TextSearchBar::new(text_view);
 
@@ -111,28 +100,22 @@ pub fn on_new_text(search_bar: &gtk::SearchBar) {
 pub fn update_text_view(
     text_search_bar: &gtk::SearchBar,
     text_view: &gtk::TextView,
-    action_name_base: &str,
     add_menu: bool,
 ) {
-    add_menu_fn(action_name_base, text_view, text_search_bar, add_menu);
+    add_menu_fn(text_view, add_menu);
 
     if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
         search_bar.imp().set_text_view(text_view);
     }
 }
 
-fn add_menu_fn(
-    action_name_base: &str,
-    text_view: &gtk::TextView,
-    text_search_bar: &gtk::SearchBar,
-    add_menu: bool,
-) {
+fn add_menu_fn(text_view: &gtk::TextView, add_menu: bool) {
     if !add_menu {
         return;
     }
 
     let menu = gio::Menu::new();
-    let item = create_menu_item(action_name_base, text_search_bar);
+    let item = create_menu_item();
     menu.append_item(&item);
 
     let menu_sec = gio::Menu::new();

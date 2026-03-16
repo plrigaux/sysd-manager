@@ -17,6 +17,7 @@ use gtk::{
 use tracing::{info, warn};
 
 use crate::{
+    consts::ACTION_FIND_IN_TEXT,
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
     utils::{
@@ -32,7 +33,6 @@ use crate::{
     },
 };
 
-const TEXT_FIND_ACTION: &str = "unit_doc_text_find";
 use super::construct_info::fill_all_info;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
@@ -128,7 +128,7 @@ impl UnitInfoPanelImp {
         );
 
         let text_search_bar_action_entry =
-            text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
+            text_search::create_action_entry(&self.text_search_bar, ACTION_FIND_IN_TEXT);
         app_window.add_action_entries([text_search_bar_action_entry]);
     }
 
@@ -205,9 +205,16 @@ impl ObjectImpl for UnitInfoPanelImp {
             &self.unit_info_textview,
             &self.text_search_bar,
             &self.find_text_button,
-            TEXT_FIND_ACTION,
             true,
         );
+
+        settings
+            .bind::<gtk::SearchBar>(
+                &ACTION_FIND_IN_TEXT[4..],
+                &self.text_search_bar,
+                "search-mode-enabled",
+            )
+            .build();
     }
 }
 

@@ -14,11 +14,13 @@ use gtk::{
 };
 
 use crate::{
+    consts::ACTION_FIND_IN_TEXT,
     systemd::{
         Dependency,
         data::UnitInfo,
         enums::{DependencyType, UnitType},
     },
+    systemd_gui,
     utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
     widget::{
         app_window::AppWindow,
@@ -43,14 +45,12 @@ use crate::{
     },
     widget::InterPanelMessage,
 };
-use tracing::{debug, info, warn};
 use strum::IntoEnumIterator;
+use tracing::{debug, info, warn};
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_DEPENDENCIES: &str = "dependencies";
 const PANEL_SPINNER: &str = "spinner";
-
-const TEXT_FIND_ACTION: &str = "unit_dependencies_text_find";
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_dependencies_panel.ui")]
@@ -107,10 +107,6 @@ impl UnitDependenciesPanelImp {
             self.hovering_over_link_tag.clone(),
             activator,
         );
-
-        let text_search_bar_action_entry =
-            text_search::create_action_entry(&self.text_search_bar, TEXT_FIND_ACTION);
-        app_window.add_action_entries([text_search_bar_action_entry]);
     }
 
     fn set_visible_on_page(&self, visible: bool) {
@@ -382,9 +378,18 @@ impl ObjectImpl for UnitDependenciesPanelImp {
             &self.unit_dependencies_textview,
             &self.text_search_bar,
             &self.find_text_button,
-            TEXT_FIND_ACTION,
             true,
         );
+
+        let settings = systemd_gui::new_settings();
+
+        settings
+            .bind::<gtk::SearchBar>(
+                &ACTION_FIND_IN_TEXT[4..],
+                &self.text_search_bar,
+                "search-mode-enabled",
+            )
+            .build();
     }
 }
 
