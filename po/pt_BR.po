@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 22:03-0400\n"
+"POT-Creation-Date: 2026-03-15 22:17-0400\n"
 "PO-Revision-Date: 2026-01-16 21:01+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
@@ -805,8 +805,8 @@ msgstr ""
 #: data/interfaces/preferences.ui:259
 #, fuzzy
 msgctxt "preference"
-msgid "Reload Daemon"
-msgstr "Unidade de recarga"
+msgid "Daemon Reload"
+msgstr "Recarregar Daemon"
 
 #: data/interfaces/preferences.ui:264
 msgctxt "preference"
@@ -2857,6 +2857,11 @@ msgstr "Automático"
 msgctxt "menu"
 msgid "Customized"
 msgstr ""
+
+#, fuzzy
+#~ msgctxt "preference"
+#~ msgid "Reload Daemon"
+#~ msgstr "Unidade de recarga"
 
 #, fuzzy
 #~ msgctxt "preference"

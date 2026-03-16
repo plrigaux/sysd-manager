@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 22:03-0400\n"
+"POT-Creation-Date: 2026-03-15 22:17-0400\n"
 "PO-Revision-Date: 2026-02-07 01:52+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
@@ -791,8 +791,9 @@ msgid ""
 msgstr "通过代理调用来<b>重载</b>所有单元配置"
 
 #: data/interfaces/preferences.ui:259
+#, fuzzy
 msgctxt "preference"
-msgid "Reload Daemon"
+msgid "Daemon Reload"
 msgstr "重载所有单元配置"
 
 #: data/interfaces/preferences.ui:264
@@ -2787,6 +2788,10 @@ msgstr ""
 msgctxt "menu"
 msgid "Customized"
 msgstr ""
+
+#~ msgctxt "preference"
+#~ msgid "Reload Daemon"
+#~ msgstr "重载所有单元配置"
 
 #~ msgctxt "preference"
 #~ msgid "_Proxy Configuration"
