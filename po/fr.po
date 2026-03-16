@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-15 22:17-0400\n"
-"PO-Revision-Date: 2026-03-13 21:34+0000\n"
+"PO-Revision-Date: 2026-03-16 02:28+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -801,7 +801,6 @@ msgstr ""
 "configuration du Systemd Manager"
 
 #: data/interfaces/preferences.ui:259
-#, fuzzy
 msgctxt "preference"
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
