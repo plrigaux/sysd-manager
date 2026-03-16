@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-13 17:07-0400\n"
+"POT-Creation-Date: 2026-03-15 22:03-0400\n"
 "PO-Revision-Date: 2026-03-13 21:34+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -911,87 +911,93 @@ msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Ouvrir le gestionnaire de colonnes"
 
+#: data/interfaces/shortcuts.ui:55
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Deamon Reload"
+msgstr "Recharger"
+
 #. Section name
-#: data/interfaces/shortcuts.ui:56
+#: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Pages"
 
-#: data/interfaces/shortcuts.ui:60
+#: data/interfaces/shortcuts.ui:66
 msgctxt "shortcut window"
 msgid "Display Unit Information"
 msgstr "Afficher les informations sur l'unité"
 
-#: data/interfaces/shortcuts.ui:66
+#: data/interfaces/shortcuts.ui:72
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Afficher les dépendances de l'unité"
 
-#: data/interfaces/shortcuts.ui:72
+#: data/interfaces/shortcuts.ui:78
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Afficher le fichier de définition de l'unité"
 
-#: data/interfaces/shortcuts.ui:78
+#: data/interfaces/shortcuts.ui:84
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Afficher le Journal Événements de l'unité"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:85
+#: data/interfaces/shortcuts.ui:91
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Unité"
 
-#: data/interfaces/shortcuts.ui:89
+#: data/interfaces/shortcuts.ui:95
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Afficher les propriétés de l'unité"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:95
+#: data/interfaces/shortcuts.ui:101
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Enregistrer le fichier d'unité sélectionné"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:102
+#: data/interfaces/shortcuts.ui:108
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr "Listes organisées"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:106
+#: data/interfaces/shortcuts.ui:112
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr "Fusionner les unités chargées avec les fichiers d'unités"
 
-#: data/interfaces/shortcuts.ui:107
+#: data/interfaces/shortcuts.ui:113
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr "Afficher la liste originale de SysD Manager"
 
-#: data/interfaces/shortcuts.ui:113
+#: data/interfaces/shortcuts.ui:119
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Afficher les unités chargées"
 
-#: data/interfaces/shortcuts.ui:119
+#: data/interfaces/shortcuts.ui:125
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Afficher les fichiers d'unité"
 
-#: data/interfaces/shortcuts.ui:125
+#: data/interfaces/shortcuts.ui:131
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Afficher les Chronos"
 
-#: data/interfaces/shortcuts.ui:131
+#: data/interfaces/shortcuts.ui:137
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Afficher les sockets"
 
-#: data/interfaces/shortcuts.ui:137
+#: data/interfaces/shortcuts.ui:143
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr "Afficher la liste personnalisé par l'utilisateur"
@@ -1620,21 +1626,21 @@ msgid "Program starting up"
 msgstr "Le Programme démarre"
 
 #. instance level user
-#: src/widget/app_window/menu.rs:303
+#: src/widget/app_window/menu.rs:308
 msgid "user"
 msgstr "utilisateur"
 
 #. instance level system
-#: src/widget/app_window/menu.rs:306
+#: src/widget/app_window/menu.rs:311
 msgid "system"
 msgstr "système"
 
-#: src/widget/app_window/menu.rs:317
+#: src/widget/app_window/menu.rs:322
 msgid "Daemon Reload failed!"
 msgstr "Recharge la configuration a échouée !"
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:363
+#: src/widget/app_window/menu.rs:368
 msgid "Thank you for your support"
 msgstr "Merci pour votre soutien"
 
@@ -2152,8 +2158,14 @@ msgid "{} of {}"
 msgstr "{} de {}"
 
 #. Find in text Menu item
+#: src/widget/text_search/mod.rs:51
+#, fuzzy
+msgctxt "text_find"
+msgid "Find in Text"
+msgstr "Rechercher dans le texte"
+
 #. toggle button tooltip text
-#: src/widget/text_search/mod.rs:54 src/widget/text_search/mod.rs:87
+#: src/widget/text_search/mod.rs:76
 msgctxt "text_find"
 msgid "Open Find in Text"
 msgstr "Ouvrir rechercher dans le texte"
@@ -2368,13 +2380,13 @@ msgid "Unmask"
 msgstr "Démasquer"
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:363
+#: src/widget/unit_dependencies_panel/imp.rs:359
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Types d'unité"
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:368
+#: src/widget/unit_dependencies_panel/imp.rs:364
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr "Filtrer les dépendances par types"
@@ -2446,71 +2458,71 @@ msgctxt "warning"
 msgid "_Close"
 msgstr "_Fermer"
 
-#: src/widget/unit_file_panel/imp.rs:251
+#: src/widget/unit_file_panel/imp.rs:261
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "Fichier {} créé avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:252
+#: src/widget/unit_file_panel/imp.rs:262
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "Fichier {} enregistré avec succès !"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:262 src/widget/unit_file_panel/imp.rs:1058
+#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1078
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
-#: src/widget/unit_file_panel/imp.rs:277 src/widget/unit_file_panel/imp.rs:295
-#: src/widget/unit_file_panel/imp.rs:1074
+#: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:305
+#: src/widget/unit_file_panel/imp.rs:1094
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr "Impossible d'enregistrer le fichier, autorisation refusée !"
 
-#: src/widget/unit_file_panel/imp.rs:307
+#: src/widget/unit_file_panel/imp.rs:317
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 "Impossible d'enregistrer le fichier, autorisation Flatpak non accordée !"
 
-#: src/widget/unit_file_panel/imp.rs:315
+#: src/widget/unit_file_panel/imp.rs:325
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr "Impossible d'enregistrer le fichier, une erreur s'est produite !"
 
-#: src/widget/unit_file_panel/imp.rs:476
+#: src/widget/unit_file_panel/imp.rs:490
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
 "Fichier introuvable ! Vous devrez peut-être effectuer \"Recharger la "
 "configuration\""
 
-#: src/widget/unit_file_panel/imp.rs:568
+#: src/widget/unit_file_panel/imp.rs:582
 msgctxt "file"
 msgid "Unit File"
 msgstr "Fichier de l'unité"
 
-#: src/widget/unit_file_panel/imp.rs:570
+#: src/widget/unit_file_panel/imp.rs:584
 msgctxt "file"
 msgid "Drop In"
 msgstr "Drop In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:940
+#: src/widget/unit_file_panel/imp.rs:955
 msgctxt "file"
 msgid "Editing"
 msgstr "Nom du fichier Drop-in créé"
 
-#: src/widget/unit_file_panel/imp.rs:950
+#: src/widget/unit_file_panel/imp.rs:965
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 "Remarque : vous pouvez modifier le nom du fichier du drop-in en changeant la "
 "ligne du dessus"
 
-#: src/widget/unit_file_panel/imp.rs:960
+#: src/widget/unit_file_panel/imp.rs:975
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2520,29 +2532,29 @@ msgstr ""
 "contenu du fichier de remplacement"
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:969
+#: src/widget/unit_file_panel/imp.rs:984
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr "Les modifications apportées après ce commentaire seront ignorées"
 
-#: src/widget/unit_file_panel/imp.rs:1050
+#: src/widget/unit_file_panel/imp.rs:1070
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Fichier {} restaurée avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:1097
+#: src/widget/unit_file_panel/imp.rs:1117
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr "Impossible de revenir en arrière, autorisation non accordée!"
 
-#: src/widget/unit_file_panel/imp.rs:1105
+#: src/widget/unit_file_panel/imp.rs:1125
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr "Impossible de revenir en arrière, une erreur s'est produite!"
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1208
+#: src/widget/unit_file_panel/imp.rs:1222
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Afficher les numéros de ligne"
@@ -2866,10 +2878,6 @@ msgstr "Personnalisé"
 
 #, fuzzy
 #~ msgctxt "menu"
-#~ msgid "Deamon Reload"
-#~ msgstr "Recharger"
-
-#, fuzzy
 #~ msgid "Deamon Reload"
 #~ msgstr "Recharger"
 

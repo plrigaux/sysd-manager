@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-13 17:07-0400\n"
+"POT-Creation-Date: 2026-03-15 22:03-0400\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -909,92 +909,98 @@ msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Открыть менеджер столбцов"
 
+#: data/interfaces/shortcuts.ui:55
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Deamon Reload"
+msgstr "Перезагрузить"
+
 #. Section name
-#: data/interfaces/shortcuts.ui:56
+#: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Страницы"
 
-#: data/interfaces/shortcuts.ui:60
+#: data/interfaces/shortcuts.ui:66
 msgctxt "shortcut window"
 msgid "Display Unit Information"
 msgstr "Показать информацию о юните"
 
-#: data/interfaces/shortcuts.ui:66
+#: data/interfaces/shortcuts.ui:72
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Показать зависимости юнита"
 
-#: data/interfaces/shortcuts.ui:72
+#: data/interfaces/shortcuts.ui:78
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Показать файл определения юнита"
 
-#: data/interfaces/shortcuts.ui:78
+#: data/interfaces/shortcuts.ui:84
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Показать события журнала юнита"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:85
+#: data/interfaces/shortcuts.ui:91
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Юнит"
 
-#: data/interfaces/shortcuts.ui:89
+#: data/interfaces/shortcuts.ui:95
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Показать свойства юнита"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:95
+#: data/interfaces/shortcuts.ui:101
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Инвертировать выбранные элементы фильтра"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:102
+#: data/interfaces/shortcuts.ui:108
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:106
+#: data/interfaces/shortcuts.ui:112
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:107
+#: data/interfaces/shortcuts.ui:113
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:113
+#: data/interfaces/shortcuts.ui:119
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Загруженные юниты получены"
 
-#: data/interfaces/shortcuts.ui:119
+#: data/interfaces/shortcuts.ui:125
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Отключить юнит-файл"
 
-#: data/interfaces/shortcuts.ui:125
+#: data/interfaces/shortcuts.ui:131
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Отображать номера строк юнит-файла"
 
-#: data/interfaces/shortcuts.ui:131
+#: data/interfaces/shortcuts.ui:137
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Отображать цвета"
 
-#: data/interfaces/shortcuts.ui:137
+#: data/interfaces/shortcuts.ui:143
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr ""
@@ -1629,22 +1635,22 @@ msgid "Program starting up"
 msgstr "Запуск программы"
 
 #. instance level user
-#: src/widget/app_window/menu.rs:303
+#: src/widget/app_window/menu.rs:308
 msgid "user"
 msgstr ""
 
 #. instance level system
-#: src/widget/app_window/menu.rs:306
+#: src/widget/app_window/menu.rs:311
 #, fuzzy
 msgid "system"
 msgstr "Система"
 
-#: src/widget/app_window/menu.rs:317
+#: src/widget/app_window/menu.rs:322
 msgid "Daemon Reload failed!"
 msgstr ""
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:363
+#: src/widget/app_window/menu.rs:368
 msgid "Thank you for your support"
 msgstr "Спасибо за вашу поддержку"
 
@@ -2160,8 +2166,13 @@ msgid "{} of {}"
 msgstr ""
 
 #. Find in text Menu item
+#: src/widget/text_search/mod.rs:51
+msgctxt "text_find"
+msgid "Find in Text"
+msgstr ""
+
 #. toggle button tooltip text
-#: src/widget/text_search/mod.rs:54 src/widget/text_search/mod.rs:87
+#: src/widget/text_search/mod.rs:76
 msgctxt "text_find"
 msgid "Open Find in Text"
 msgstr ""
@@ -2373,13 +2384,13 @@ msgid "Unmask"
 msgstr "Демаскировать"
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:363
+#: src/widget/unit_dependencies_panel/imp.rs:359
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Типы юнитов"
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:368
+#: src/widget/unit_dependencies_panel/imp.rs:364
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr "Фильтровать зависимости по типам"
@@ -2446,67 +2457,67 @@ msgctxt "warning"
 msgid "_Close"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:251
+#: src/widget/unit_file_panel/imp.rs:261
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "Файл {} успешно сохранён!"
 
-#: src/widget/unit_file_panel/imp.rs:252
+#: src/widget/unit_file_panel/imp.rs:262
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "Файл {} успешно сохранён!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:262 src/widget/unit_file_panel/imp.rs:1058
+#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1078
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
 
-#: src/widget/unit_file_panel/imp.rs:277 src/widget/unit_file_panel/imp.rs:295
-#: src/widget/unit_file_panel/imp.rs:1074
+#: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:305
+#: src/widget/unit_file_panel/imp.rs:1094
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:307
+#: src/widget/unit_file_panel/imp.rs:317
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:315
+#: src/widget/unit_file_panel/imp.rs:325
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:476
+#: src/widget/unit_file_panel/imp.rs:490
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:568
+#: src/widget/unit_file_panel/imp.rs:582
 msgctxt "file"
 msgid "Unit File"
 msgstr "Юнит-файл"
 
-#: src/widget/unit_file_panel/imp.rs:570
+#: src/widget/unit_file_panel/imp.rs:584
 msgctxt "file"
 msgid "Drop In"
 msgstr "Drop-In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:940
+#: src/widget/unit_file_panel/imp.rs:955
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:950
+#: src/widget/unit_file_panel/imp.rs:965
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:960
+#: src/widget/unit_file_panel/imp.rs:975
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2514,29 +2525,29 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:969
+#: src/widget/unit_file_panel/imp.rs:984
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1050
+#: src/widget/unit_file_panel/imp.rs:1070
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Файл {} успешно сохранён!"
 
-#: src/widget/unit_file_panel/imp.rs:1097
+#: src/widget/unit_file_panel/imp.rs:1117
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1105
+#: src/widget/unit_file_panel/imp.rs:1125
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1208
+#: src/widget/unit_file_panel/imp.rs:1222
 #, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
@@ -2869,10 +2880,6 @@ msgstr ""
 
 #, fuzzy
 #~ msgctxt "menu"
-#~ msgid "Deamon Reload"
-#~ msgstr "Перезагрузить"
-
-#, fuzzy
 #~ msgid "Deamon Reload"
 #~ msgstr "Перезагрузить"
 
