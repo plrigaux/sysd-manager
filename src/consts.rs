@@ -83,3 +83,5 @@ pub const COL_ACTIVE: &str = "sysdm-active";
 pub const ACTION_WIN_HIDE_UNIT_COL: &str = "win.hide_unit_col";
 // pub const ACTION_WIN_COL_RESIZE: &str = "win.col_resize";
 pub const ACTION_FIND_IN_TEXT: &str = "win.find-in-text-panel";
+pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "win.pref-unit-list-display-summary";
+pub const UNIT_FILE_LINE_NUMBER_ACTION: &str = "win.unit-file-line-number";

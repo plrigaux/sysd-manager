@@ -2,7 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.3 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="793021b703d42bb3cc70aab9d4b7017977839d4e6f9f998da6e3cd65af5782bb"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="17467d294b3551263850e8f2d547d2dfd9519022b2038371d3c33d73bf641e79"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="9f9b151f9a0de3d99fdf8a51cd7645e8c022cf90070fb9cb24ef215e7b4168d9"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="89cf64504fc6bf3b5f13daf438c410c5ae6f145aa22e64be2e0f1863e9ee7549"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="66908f01c0b99fbabefbfacfa7fde170c98c0f133551bc0abe2ba9c18a5d0f55"/>
@@ -23,7 +23,7 @@
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="49b14139e2cba5b840ac6db6055d9f6c29befe4c8b9d44674d018a5d100de467"/>
   <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="fc9f5293a9199d43666794072a191f2785eaef88c42e2f0c0d8046f6716538f2"/>
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="bc632f6a17915b3f4c85d5fc72b771840b3799a92851f8638410a98ea9f62d5c"/>
-  <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="6219f61e2c712b4920cfc195e2eead40acd54fd2603a4a2d7c9ee2a1b1069148"/>
+  <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="67a9eb648e20bec4a8f3b91d65973aafc4ebbe4507f5deb61dd281441e5aa9b6"/>
   <ui template-class="TextFind" filename="text_find.ui" sha256="beb4ef7a7ff2bd913fb937468fbd3144e0657f7c494e37b99ac524d4a370ab5b"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="71d211da819da3a30c56fab78d059dfbf089a3b7dd45d1703396d1d812ee10af">
     <requires>UnitInfoPanel</requires>

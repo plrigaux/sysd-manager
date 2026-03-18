@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name preferences.ui -->
@@ -112,14 +112,9 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
           <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes" context="preference" comments="group">Unit File</property>
             <child>
-              <object class="AdwActionRow">
+              <object class="AdwSwitchRow" id="unit_file_line_numbers">
                 <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display unit file line number</property>
                 <property name="title" translatable="yes" context="preference" comments="title">Line number</property>
-                <child>
-                  <object class="GtkSwitch" id="unit_file_line_numbers">
-                    <property name="valign">baseline-center</property>
-                  </object>
-                </child>
               </object>
             </child>
             <child>

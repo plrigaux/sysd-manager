@@ -1,6 +1,9 @@
 use super::flatpak;
 use crate::{
-    consts::{ACTION_FIND_IN_TEXT, ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS},
+    consts::{
+        ACTION_FIND_IN_TEXT, ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS,
+        UNIT_FILE_LINE_NUMBER_ACTION,
+    },
     format2,
     systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
     systemd_gui::{self, is_dark},
@@ -9,10 +12,7 @@ use crate::{
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        preferences::{
-            data::{KEY_PREF_UNIT_FILE_LINE_NUMBERS, PREFERENCES},
-            style_scheme::style_schemes,
-        },
+        preferences::{data::PREFERENCES, style_scheme::style_schemes},
         text_search::{self, on_new_text},
         unit_file_panel::flatpak::PROCEED,
     },
@@ -42,7 +42,6 @@ const PANEL_EMPTY: &str = "empty";
 const PANEL_FILE: &str = "file_panel";
 const DEFAULT_DROP_IN_FILE_NAME: &str = "override";
 const UNIT_FILE_ID: &str = "unit_file";
-const UNIT_FILE_LINE_NUMBER_ACTION: &str = "win.unit-file-line-number";
 
 #[derive(PartialEq, Copy, Clone)]
 enum UnitFileStatus {
@@ -1212,7 +1211,11 @@ impl ObjectImpl for UnitFilePanelImp {
         let settings = systemd_gui::new_settings();
 
         settings
-            .bind(KEY_PREF_UNIT_FILE_LINE_NUMBERS, &view, "show-line-numbers")
+            .bind(
+                &UNIT_FILE_LINE_NUMBER_ACTION[4..],
+                &view,
+                "show-line-numbers",
+            )
             .build();
 
         let ts_item = text_search::create_menu_item();

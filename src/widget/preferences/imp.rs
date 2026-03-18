@@ -5,9 +5,10 @@ use systemd::time_handling::TimestampStyle;
 use super::data::{
     KEY_PREF_APP_FIRST_CONNECTION, KEY_PREF_JOURNAL_COLORS, KEY_PREF_JOURNAL_EVENT_MAX_SIZE,
     KEY_PREF_JOURNAL_EVENTS_BATCH_SIZE, KEY_PREF_STYLE_TEXT_FONT_FAMILY,
-    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_LINE_NUMBERS,
-    KEY_PREF_UNIT_FILE_STYLE_SCHEME, PREFERENCES,
+    KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_STYLE_SCHEME,
+    PREFERENCES,
 };
+use crate::consts::{KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_FILE_LINE_NUMBER_ACTION};
 use crate::widget::InterPanelMessage;
 use crate::{
     consts::ADWAITA,
@@ -16,10 +17,7 @@ use crate::{
     widget::{
         app_window::AppWindow,
         preferences::{
-            data::{
-                KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
-                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
-            },
+            data::{KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_DISPLAY_COLORS},
             drop_down_elem::{build_pane_orientation_selector, build_preferred_color_scheme},
             style_scheme::style_schemes,
         },
@@ -44,7 +42,7 @@ pub struct PreferencesDialogImpl {
     journal_colors: TemplateChild<gtk::Switch>,
 
     #[template_child]
-    unit_file_line_numbers: TemplateChild<gtk::Switch>,
+    unit_file_line_numbers: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     unit_file_style: TemplateChild<adw::ComboRow>,
@@ -315,12 +313,8 @@ impl PreferencesDialogImpl {
     }
 
     fn load_preferences_values(&self) {
-        let settings = self.settings();
-
         let journal_colors = PREFERENCES.journal_colors();
         let is_app_first_connection = PREFERENCES.is_app_first_connection();
-
-        let unit_file_line_numbers = settings.boolean(KEY_PREF_UNIT_FILE_LINE_NUMBERS);
 
         self.journal_colors.set_state(journal_colors);
         self.journal_colors.set_active(journal_colors);
@@ -331,11 +325,6 @@ impl PreferencesDialogImpl {
         let journal_event_max_size = PREFERENCES.journal_event_max_size();
         self.journal_event_max_size
             .set_value(journal_event_max_size as f64);
-
-        self.unit_file_line_numbers
-            .set_state(unit_file_line_numbers);
-        self.unit_file_line_numbers
-            .set_active(unit_file_line_numbers);
 
         self.preference_banner.set_revealed(is_app_first_connection);
 
@@ -386,9 +375,6 @@ impl PreferencesDialogImpl {
 
         let journal_event_max_size = PREFERENCES.journal_event_max_size();
         settings.set_uint(KEY_PREF_JOURNAL_EVENT_MAX_SIZE, journal_event_max_size)?;
-
-        let unit_file_line_numbers = self.unit_file_line_numbers.is_active();
-        settings.set_boolean(KEY_PREF_UNIT_FILE_LINE_NUMBERS, unit_file_line_numbers)?;
 
         let unit_file_style_scheme = PREFERENCES.unit_file_style_scheme();
         settings.set_string(KEY_PREF_UNIT_FILE_STYLE_SCHEME, &unit_file_style_scheme)?;
@@ -485,7 +471,7 @@ impl ObjectImpl for PreferencesDialogImpl {
 
         settings
             .bind(
-                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+                &KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY[4..],
                 &self.unit_list_summay.get(),
                 "active",
             )
@@ -495,6 +481,14 @@ impl ObjectImpl for PreferencesDialogImpl {
             .bind(
                 KEY_PREF_UNIT_DESCRIPTION_WRAP,
                 &self.unit_description_wrap.get(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind(
+                &UNIT_FILE_LINE_NUMBER_ACTION[4..],
+                &self.unit_file_line_numbers.get(),
                 "active",
             )
             .build();

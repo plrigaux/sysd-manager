@@ -27,27 +27,24 @@ impl UnitPopMenu {
 }
 
 mod imp {
-    use std::{
-        cell::{OnceCell, RefCell},
-        rc::Rc,
-    };
-
-    use gettextrs::pgettext;
-    use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};
-    use tracing::{debug, info, warn};
-
     use crate::{
         consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
         format2,
         systemd::{data::UnitInfo, enums::UnitFileStatus},
-        systemd_gui, upgrade,
+        upgrade,
         utils::palette::blue,
         widget::{
             InterPanelMessage,
-            preferences::data::KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
             unit_list::{UnitCuratedList, UnitListPanel},
         },
     };
+    use gettextrs::pgettext;
+    use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};
+    use std::{
+        cell::{OnceCell, RefCell},
+        rc::Rc,
+    };
+    use tracing::{debug, info, warn};
 
     macro_rules! unit {
         ($self:expr) => {{
@@ -209,16 +206,6 @@ mod imp {
             );
 
             unit_list_panel!(self).button_action(&inter_message);
-        }
-
-        #[template_callback]
-        fn totals_summary_clicked(&self, _button: gtk::Button) {
-            let settings = systemd_gui::new_settings();
-
-            let display_summary = settings.boolean(KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY);
-            let _ = settings
-                .set_boolean(KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, !display_summary)
-                .inspect_err(|err| warn!("Some error {err:?}"));
         }
 
         fn set_unit(&self, unit: Option<&UnitInfo>) {

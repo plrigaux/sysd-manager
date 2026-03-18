@@ -50,7 +50,7 @@ pub fn create_menu_item() -> gio::MenuItem {
     // Find in text Menu item
     let menu_label = pgettext("text_find", "Find in Text");
 
-    gio::MenuItem::new(Some(&menu_label), Some(&ACTION_FIND_IN_TEXT))
+    gio::MenuItem::new(Some(&menu_label), Some(ACTION_FIND_IN_TEXT))
 }
 
 pub fn text_search_construct(

@@ -16,7 +16,7 @@ use std::{
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ACTION_WIN_HIDE_UNIT_COL, ALL_FILTER_KEY, FILTER_MARK,
+        ACTION_WIN_HIDE_UNIT_COL, ALL_FILTER_KEY, FILTER_MARK, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
     },
     systemd::{
         data::UnitInfo,
@@ -26,10 +26,7 @@ use crate::{
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        preferences::data::{
-            DbusLevel, KEY_PREF_UNIT_LIST_DISPLAY_COLORS, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
-            PREFERENCES,
-        },
+        preferences::data::{DbusLevel, KEY_PREF_UNIT_LIST_DISPLAY_COLORS, PREFERENCES},
         unit_list::{
             COL_ID_UNIT, UnitCuratedList, UnitListPanel,
             column::SysdColumn,
@@ -494,6 +491,9 @@ impl UnitListPanelImp {
                 ACTION_INCLUDE_UNIT_FILES,
             )
             .build();
+
+        let action = settings.create_action(&KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY[4..]);
+        app_window.add_action(&action);
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -716,7 +716,10 @@ impl UnitListPanelImp {
         info!(
             "Unit List {} list_store {} filter {} sort_model {}",
             unit_name,
-            self.list_store.get().map(|ls| ls.n_items()).unwrap_or_default(),
+            self.list_store
+                .get()
+                .map(|ls| ls.n_items())
+                .unwrap_or_default(),
             self.filter_list_model.borrow().n_items(),
             self.unit_list_sort_list_model.borrow().n_items()
         );
@@ -1615,7 +1618,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         settings
             .bind(
-                KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+                &KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY[4..],
                 &self.summary.get(),
                 "visible",
             )
