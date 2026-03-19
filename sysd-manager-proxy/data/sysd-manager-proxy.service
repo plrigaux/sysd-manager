@@ -8,6 +8,7 @@ SyslogIdentifier={SERVICE_ID}
 Restart=always
 RestartSec=5
 Type=dbus
+BusName=io.github.plrigaux.SysDManager
 User=root
 Group=root
 ExecStart={EXECUTABLE}
