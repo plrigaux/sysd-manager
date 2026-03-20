@@ -178,23 +178,6 @@ pub fn get_unit_file_state(
     sysdbus::get_unit_file_state(level, primary_name)
 }
 
-/* pub fn list_units_description_and_state() -> Result<BTreeMap<String, UnitInfo>, SystemdErrors> {
-    let level = match PREFERENCES.dbus_level() {
-        DbusLevel::Session => UnitDBusLevel::UserSession,
-        DbusLevel::System => UnitDBusLevel::System,
-        DbusLevel::SystemAndSession => UnitDBusLevel::System,
-    };
-
-    match sysdbus::list_units_description_and_state(level) {
-        Ok(map) => Ok(map),
-        Err(e) => {
-            warn!("{:?}", e);
-            Err(e)
-        }
-    }
-}
- */
-
 pub async fn list_units_description_and_state_async(
     level: UnitDBusLevel,
 ) -> Result<(Vec<ListedLoadedUnit>, Vec<SystemdUnitFile>), SystemdErrors> {

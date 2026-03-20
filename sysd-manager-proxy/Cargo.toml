@@ -20,7 +20,9 @@ name = "sysd-manager-proxy"
 path = "src/main.rs"
 
 [features]
-default = []
+default = ["base/default"]
+flatpak = ["base/flatpak"]
+appimage = ["base/appimage"]
 
 [dependencies]
 base.workspace = true

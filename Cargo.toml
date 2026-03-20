@@ -45,7 +45,7 @@ name = "sysd-manager"
 path = "src/main.rs"
 
 [features]
-default = ["systemd/default"]
+default = ["systemd/default", "base/default"]
 flatpak = ["systemd/flatpak", "base/flatpak"]
 appimage = ["systemd/appimage", "base/appimage"]
 
@@ -53,8 +53,8 @@ appimage = ["systemd/appimage", "base/appimage"]
 lto = true
 
 [workspace.dependencies]
-base = { version = "2.13", path = "./sysd-manager-base", package = "sysd-manager-base" }
-systemd = { version = "2.13", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
+base = { version = "2.14", path = "./sysd-manager-base", package = "sysd-manager-base" }
+systemd = { version = "2.14", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
 
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"

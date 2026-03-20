@@ -18,3 +18,6 @@ pub const DBUS_DESTINATION: &str = DBUS_NAME;
 pub const DBUS_DESTINATION_DEV: &str = DBUS_NAME_DEV;
 pub const DBUS_PATH: &str = "/io/github/plrigaux/SysDManager";
 pub const DBUS_PATH_DEV: &str = concat!(DBUS_PATH, "Dev");
+
+pub const MIN_HEART_BEAT_ELAPSE: u64 = 500;
+pub const MAX_HEART_BEAT_ELAPSE: u64 = 300_000;

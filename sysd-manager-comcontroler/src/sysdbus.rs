@@ -18,8 +18,8 @@ use crate::{
     },
     errors::SystemdErrors,
     sysdbus::dbus_proxies::{
-        ZPropertiesProxy, ZPropertiesProxyBlocking, ZUnitInfoProxy, ZUnitInfoProxyBlocking,
-        systemd_manager_async, systemd_manager_blocking,
+        JobRemovedStream, ZPropertiesProxy, ZPropertiesProxyBlocking, ZUnitInfoProxy,
+        ZUnitInfoProxyBlocking, systemd_manager_async, systemd_manager_blocking,
     },
 };
 use base::{
@@ -27,6 +27,7 @@ use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
+use futures_util::StreamExt;
 use glib::Quark;
 use serde::Deserialize;
 use std::{
@@ -35,7 +36,7 @@ use std::{
     sync::{OnceLock, RwLock},
     time::Duration,
 };
-use tokio::time::sleep;
+use tokio::time::{sleep, timeout};
 use tracing::{debug, error, info, trace, warn};
 use zbus::{
     Message,
@@ -113,6 +114,11 @@ impl RunContext {
 
 static RUN_CONTEXT: OnceLock<RunContext> = OnceLock::new();
 
+fn run_context<'a>() -> &'a RunContext {
+    let run_mode = RunMode::Normal;
+    RUN_CONTEXT.get_or_init(|| RunContext { run_mode })
+}
+
 /// Try to start Proxy
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
@@ -125,47 +131,91 @@ pub async fn init_proxy_async(run_mode: RunMode) -> Result<(), SystemdErrors> {
         );
         return Ok(());
     }
-
     info!("Starting {:?}", run_mode.proxy_service_name());
     init_proxy_async2().await?;
-    info!("Service {:?} started", run_mode.proxy_service_name());
+
+    info!(
+        "Service {:?} started id {}",
+        run_mode.proxy_service_name(),
+        run_mode.proxy_service_id()
+    );
     Ok(())
 }
 
-pub(crate) async fn init_proxy_async2() -> Result<String, SystemdErrors> {
-    let unit_name = sysd_proxy_service_name().unwrap();
+pub(crate) async fn init_proxy_async2() -> Result<(), SystemdErrors> {
+    let unit_name = sysd_proxy_service_name();
     let level = UnitDBusLevel::System;
     let manager = systemd_manager_async(level).await?;
-    for tries in 0..5 {
+
+    let max_tries = 4;
+    const SLEEP_TIME: u64 = 500;
+    for _ in 0..max_tries {
         match manager
             .start_unit(&unit_name, StartStopMode::Fail.as_str())
             .await
         {
             Ok(job_id) => {
-                //FIXME it seems it always returns Ok --> Check the JobRemoved signal
-                // then poke the unit active status
-                info!("Started unit {unit_name}, job id {job_id}");
-                return Ok(job_id.to_string());
+                info!("Start unit {unit_name}, job id {job_id}");
+
+                let Ok(job_remove_stream) = manager
+                    .receive_job_removed()
+                    .await
+                    .inspect_err(|err| warn!("Job Remove Error {:?}", err))
+                else {
+                    sleep(Duration::from_millis(SLEEP_TIME)).await;
+                    continue;
+                };
+
+                match timeout(
+                    Duration::from_secs(6),
+                    wait_job_remove(job_remove_stream, &unit_name),
+                )
+                .await
+                {
+                    Ok(Ok(result)) => {
+                        if result == "done" {
+                            tokio::spawn(to_proxy::send_heart_beat());
+                            return Ok(());
+                        } else {
+                            warn!("Job starting result: {result}");
+                        }
+                    }
+                    Ok(Err(err)) => {
+                        error!("Error starting unit {unit_name}: {err:?}");
+                    }
+                    Err(err) => warn!("Job Remnove Time out  {err:?}"),
+                }
             }
             Err(error) => {
                 error!("Error starting unit {unit_name}: {error:?}");
-                if tries >= 3 {
-                    error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
-                    return Err(error.into());
-                }
-                sleep(Duration::from_millis(500)).await;
-                // init(run_mode, tries + 1) // Retry
             }
+        }
+        sleep(Duration::from_millis(SLEEP_TIME)).await;
+    }
+
+    error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
+    Err(SystemdErrors::Custom(format!("Can't start {}", unit_name)))
+}
+
+async fn wait_job_remove(
+    mut job_remove_stream: JobRemovedStream,
+    unit_name: &str,
+) -> Result<String, SystemdErrors> {
+    while let Some(msg) = job_remove_stream.next().await {
+        let args = msg.args()?;
+
+        info!("Job Remove Args {:?}", args);
+
+        if unit_name == args.unit {
+            return Ok(args.result);
         }
     }
 
-    Err(SystemdErrors::Unreachable)
+    Err(SystemdErrors::Custom("Job Remove return None".to_string()))
 }
 
-pub fn sysd_proxy_service_name() -> Option<String> {
-    RUN_CONTEXT
-        .get()
-        .map(|context| context.proxy_service_name())
+pub fn sysd_proxy_service_name() -> String {
+    run_context().proxy_service_name()
 }
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
@@ -178,11 +228,7 @@ pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
         return Ok(());
     }
 
-    let Some(sysd_proxy_unit_name) = sysd_proxy_service_name() else {
-        warn!("Fail stopping Proxy, because name not set");
-        return Ok(());
-    };
-
+    let sysd_proxy_unit_name = sysd_proxy_service_name();
     let object_path = crate::sysdbus::unit_dbus_path_from_name(&sysd_proxy_unit_name);
 
     let connection = get_blocking_connection(UnitDBusLevel::System)?;

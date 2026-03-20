@@ -1,13 +1,8 @@
-use base::{
-    RunMode,
-    consts::*,
-    proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
-};
-use std::{borrow::Cow, env, error::Error};
-use tokio::sync::OnceCell;
+use base::proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse};
+use tokio::{sync::OnceCell, time::Instant};
 use tracing::{debug, info, warn};
 use zbus::{
-    Connection, ObjectServer, connection, interface, message::Header, object_server::SignalEmitter,
+    Connection, ObjectServer, interface, message::Header, object_server::SignalEmitter,
     zvariant::OwnedObjectPath,
 };
 
@@ -59,6 +54,14 @@ impl SysDManagerProxy {
 
     #[zbus(signal)]
     async fn hello(signal_emitter: &SignalEmitter<'_>, message: &str) -> zbus::Result<()>;
+
+    pub async fn heart_beat(&mut self) -> zbus::fdo::Result<u64> {
+        let mut last_heart_beat = self.last_heart_beat.lock().await;
+        *last_heart_beat = Instant::now();
+
+        info!("received heart beat");
+        Ok(self.heart_beat_delay)
+    }
 
     // "Quit" method. A method may throw errors.
     async fn quit(
@@ -273,52 +276,6 @@ impl SysDManagerProxy {
                     e
                 )
             })
-    }
-}
-
-pub async fn init_serve_connection(
-    run_mode: RunMode,
-) -> Result<(Connection, String), Box<dyn Error>> {
-    const VERSION: &str = env!("CARGO_PKG_VERSION");
-    info!("Init Proxy version {VERSION}");
-
-    let proxy = SysDManagerProxy::new()?;
-
-    let id = unsafe { libc::getegid() };
-    info!("User id {id}");
-
-    let default_name = if run_mode == RunMode::Development {
-        DBUS_NAME_DEV
-    } else {
-        DBUS_NAME
-    };
-
-    let dbus_name = get_env("DBUS_NAME", default_name);
-    let dbus_path = get_env("DBUS_PATH", DBUS_PATH);
-
-    info!("DBus name {dbus_name}");
-    info!("DBus path {dbus_path}");
-
-    let connection = connection::Builder::system()?
-        .name(dbus_name)?
-        .serve_at(dbus_path.clone(), proxy)?
-        .build()
-        .await?;
-
-    Ok((connection, dbus_path.to_string()))
-}
-
-fn get_env<'a>(key: &str, default: &'a str) -> Cow<'a, str> {
-    match env::var(key) {
-        Ok(val) => {
-            info!("Key {key}, Value {val}");
-            Cow::Owned(val)
-        }
-        Err(e) => {
-            debug!("Env error {e:?}");
-            info!("Key {key}, Use default value {default}");
-            Cow::Borrowed(default)
-        }
     }
 }
 

@@ -1,17 +1,19 @@
 #![allow(dead_code)]
+
 use base::{
+    consts::{MAX_HEART_BEAT_ELAPSE, MIN_HEART_BEAT_ELAPSE},
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use futures_util::stream::StreamExt;
-use tokio::time::{Duration, timeout};
-use tracing::{info, warn};
+use tokio::time::{self, Duration};
+use tracing::{error, info, warn};
 use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
 use crate::{
     errors::SystemdErrors,
-    sysdbus::{get_blocking_connection, get_connection},
+    sysdbus::{get_blocking_connection, get_connection, run_context},
 };
 
 #[proxy(
@@ -53,6 +55,8 @@ pub trait SysDManagerComLink {
 
     #[zbus(signal)]
     fn hello(msg: String) -> zbus::fdo::Result<()>;
+
+    fn heart_beat(&self) -> zbus::fdo::Result<u64>;
 }
 
 ///1 Ensure that the  proxy is up and running
@@ -63,11 +67,10 @@ fn ensure_proxy_up() {
 }
 
 fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors> {
-    let destination = super::RUN_CONTEXT
-        .get()
-        .expect("Supposed to be init")
-        .destination_address();
+    let destination = run_context().destination_address();
     let connection = get_blocking_connection(UnitDBusLevel::System)?;
+
+    info!("BusName Destination {}", destination);
     let proxy = SysDManagerComLinkProxyBlocking::builder(&connection)
         // .path(path)?
         .destination(destination)?
@@ -76,12 +79,14 @@ fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors>
     Ok(proxy)
 }
 
-async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErrors> {
+pub(super) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErrors> {
     let destination = super::RUN_CONTEXT
         .get()
         .expect("Supposed to be init")
         .destination_address();
     let connection = get_connection(UnitDBusLevel::System).await?;
+
+    warn!("BusName Destination {}", destination);
     let proxy = SysDManagerComLinkProxy::builder(&connection)
         //.path(path)?
         .destination(destination)?
@@ -143,21 +148,12 @@ fn extract_job_id(job: &str) -> Option<u32> {
 }
 
 pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
-    let proxy = get_proxy_async().await?;
-    let hello_stream = proxy.receive_hello().await?;
-
     crate::sysdbus::init_proxy_async2().await?;
 
-    let timeout_results = timeout(Duration::from_secs(6), wait_hello(hello_stream)).await;
-
-    match timeout_results {
-        Ok(rr) => rr?,
-        Err(elapsed) => warn!("Proxy start time up : {}", elapsed),
-    }
     Ok(())
 }
 
-async fn wait_hello(mut hello_stream: HelloStream) -> Result<(), SystemdErrors> {
+pub(crate) async fn wait_hello(mut hello_stream: HelloStream) -> Result<(), SystemdErrors> {
     if let Some(msg) = hello_stream.next().await {
         let args = msg.args()?;
         info!("Hello Proxy Args {:?}", args);
@@ -172,6 +168,24 @@ pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
         warn!("lazy 2");
     });
     Ok(())
+}
+
+pub(super) async fn send_heart_beat() -> Result<(), SystemdErrors> {
+    let proxy = get_proxy_async().await?;
+    loop {
+        info!("Send Heart Beat to Proxy");
+        match proxy.heart_beat().await {
+            Ok(delay) => {
+                info!("Heath Beat delay {delay} millis");
+                let delay = delay.clamp(MIN_HEART_BEAT_ELAPSE, MAX_HEART_BEAT_ELAPSE);
+                time::sleep(Duration::from_millis(delay)).await;
+            }
+            Err(err) => {
+                error!("Heart Beat {err:?}");
+                return Err(err.into());
+            }
+        }
+    }
 }
 
 #[macro_export]

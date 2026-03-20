@@ -5,16 +5,18 @@ Documentation=https://github.com/plrigaux/sysd-manager/wiki/SysD-Manager-Proxy
 
 [Service]
 SyslogIdentifier={SERVICE_ID}
-Restart=always
-RestartSec=5
+# Restart=on-failure
+# RestartSec=5
 Type=dbus
-BusName=io.github.plrigaux.SysDManager
+BusName={DESTINATION}
 User=root
 Group=root
 ExecStart={EXECUTABLE}
 ExecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=5
 LogsDirectory=log/{SERVICE_ID}
+Environment=HEART_BEAT_DELAY=10000
+Environment="RUST_LOG=info" 
 {ENVIRONMENT}
 
 [Install]

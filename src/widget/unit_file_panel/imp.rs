@@ -295,8 +295,7 @@ impl UnitFilePanelImp {
                         // Action Start it or install it
                         let service_name = sysd_proxy_service_name();
                         let app_window = self.app_window.get();
-                        let dialog =
-                            flatpak::proxy_service_not_started(service_name.as_deref(), app_window);
+                        let dialog = flatpak::proxy_service_not_started(&service_name, app_window);
                         let window = self.app_window.get().expect("AppWindow supposed to be set");
 
                         dialog.present(Some(window));
@@ -1099,10 +1098,8 @@ impl UnitFilePanelImp {
                             // Action Start it or install it
                             let service_name = sysd_proxy_service_name();
                             let app_window = file_panel.imp().app_window.get();
-                            let dialog = flatpak::proxy_service_not_started(
-                                service_name.as_deref(),
-                                app_window,
-                            );
+                            let dialog =
+                                flatpak::proxy_service_not_started(&service_name, app_window);
                             let window = file_panel
                                 .imp()
                                 .app_window

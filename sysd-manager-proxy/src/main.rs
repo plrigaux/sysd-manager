@@ -21,12 +21,17 @@ struct Args {
     dev: bool,
 
     /// Normal mode
-    #[arg(short, long, default_value_t = false)]
+    #[arg(long, default_value_t = false)]
     normal: bool,
+
+    /// No Heart Beat
+    #[arg(short, long, default_value_t = false)]
+    no_heart_beat: bool,
 }
 
 #[derive(Subcommand, Debug, Clone)]
 enum CommandArg {
+    /// Starts the Proxy
     Serve,
     Install,
     Clean,
@@ -41,20 +46,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
     debug!("Args {:?}", std::env::args_os());
     let args = Args::parse();
 
-    let run_mode = RunMode::from_flags(args.dev, args.normal);
+    let run_mode = run_mode(args.dev, args.normal);
 
-    if run_mode == RunMode::Development {
-        info!("Serve in Development Mode");
-    } else {
-        info!("Serve in Production Mode");
-    }
+    let heart_beat = !args.no_heart_beat;
 
     let result = match args.cmd {
         Some(CommandArg::Install) => install::install(run_mode).await,
         Some(CommandArg::Clean) => install::clean(run_mode).await,
-        Some(CommandArg::Serve) => serve_proxy(run_mode).await,
+        Some(CommandArg::Serve) => serve_proxy(run_mode, heart_beat).await,
         Some(CommandArg::Test) => test(run_mode).await,
-        None => serve_proxy(run_mode).await,
+        None => serve_proxy(run_mode, true).await,
     };
 
     if let Err(error) = result {
@@ -62,6 +63,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+fn run_mode(dev: bool, normal: bool) -> RunMode {
+    let run_mode = RunMode::from_flags(dev, normal);
+
+    if run_mode == RunMode::Development {
+        info!("Serve in Development Mode");
+    } else {
+        info!("Serve in Production Mode");
+    }
+    run_mode
 }
 
 async fn test(run_mode: RunMode) -> Result<(), Box<dyn Error>> {
