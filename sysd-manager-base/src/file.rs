@@ -207,6 +207,7 @@ pub fn path_safe_guard(user_session: bool, file_path_str: &str) -> Result<(), Sy
     if !user_session {
         let safe_loctions = [
             "/usr/lib/systemd/system/",
+            "/lib/systemd/system/",
             "/etc/systemd/system/",
             "/run/systemd/system/",
         ];
