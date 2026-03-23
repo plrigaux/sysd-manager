@@ -86,7 +86,7 @@ pub(super) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>,
         .destination_address();
     let connection = get_connection(UnitDBusLevel::System).await?;
 
-    warn!("BusName Destination {}", destination);
+    info!("BusName Destination {}", destination);
     let proxy = SysDManagerComLinkProxy::builder(&connection)
         //.path(path)?
         .destination(destination)?
