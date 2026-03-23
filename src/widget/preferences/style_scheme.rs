@@ -60,15 +60,16 @@ pub fn style_schemes() -> &'static BTreeMap<String, StyleSchemes> {
         for scheme in sourceview5::StyleSchemeManager::new().scheme_ids() {
             debug!("style scheme: {scheme}");
             let style = StyleSchemes::create_style(scheme);
-            let key = style.name.clone();
-            if let Some(stored_style) = map.get_mut(&key) {
+
+            if let Some(stored_style) = map.get_mut(&style.name) {
                 if stored_style.dark.is_none() && style.dark.is_some() {
                     stored_style.dark = style.dark
                 } else if stored_style.light.is_none() && style.light.is_some() {
                     stored_style.light = style.light
                 }
             } else {
-                map.insert(style.name.clone(), style);
+                let key = style.name.clone();
+                map.insert(key, style);
             }
         }
         map
