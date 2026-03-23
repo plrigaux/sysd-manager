@@ -21,7 +21,7 @@ use std::{
     time::Duration,
 };
 use tracing::{debug, info, warn};
-use tracing_subscriber::fmt;
+use tracing_subscriber::{EnvFilter, fmt};
 use zbus::{Connection, message::Header};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
 
@@ -122,8 +122,8 @@ pub fn init_tracing() {
 
     tracing_subscriber::fmt()
         .with_timer(timer)
-        .with_max_level(tracing::Level::DEBUG)
-        // .with_env_filter(EnvFilter::from_default_env())
+        //.with_max_level(tracing ::Level::DEBUG)
+        .with_env_filter(EnvFilter::from_default_env())
         .with_line_number(true)
         .init();
 }

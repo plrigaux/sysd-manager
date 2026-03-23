@@ -43,7 +43,7 @@ enum CommandArg {
 async fn main() -> Result<(), Box<dyn Error>> {
     init_tracing();
 
-    debug!("Args {:?}", std::env::args_os());
+    debug!("CLI Args {:?}", std::env::args_os());
     let args = Args::parse();
 
     let run_mode = run_mode(args.dev, args.normal);
