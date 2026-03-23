@@ -5,7 +5,10 @@ use crate::{
         UNIT_FILE_LINE_NUMBER_ACTION,
     },
     format2,
-    systemd::{self, data::UnitInfo, errors::SystemdErrors, generate_file_uri},
+    systemd::{
+        self, data::UnitInfo, errors::SystemdErrors, generate_file_uri,
+        sysdbus::sysd_proxy_service_name,
+    },
     systemd_gui::{self, is_dark},
     upgrade,
     utils::font_management::set_text_view_font_display,
@@ -35,7 +38,6 @@ use std::{
     ffi::OsStr,
     path::Path,
 };
-use systemd::sysdbus::sysd_proxy_service_name;
 use tracing::{debug, error, info, warn};
 
 const PANEL_EMPTY: &str = "empty";
