@@ -59,6 +59,7 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_fd_store(unit_writer, &map);
     fill_memory(unit_writer, &map);
     fill_listen(unit_writer, &map);
+    fill_accept(unit_writer, &map);
     fill_cpu(unit_writer, &map);
     fill_control_group(unit_writer, &map, unit);
 }
@@ -169,7 +170,7 @@ fn fill_active_state(
 ) {
     let value = get_value!(map, "ActiveState");
 
-    let state = value_to_str(value);
+    let state: &str = value_to(value);
 
     let state: ActiveState = state.into();
     unit.set_active_state(state);
@@ -205,12 +206,8 @@ fn fill_duration(
         return;
     }
 
-    let active_enter_timestamp = map
-        .get("ActiveEnterTimestamp")
-        .map_or(U64MAX, |v| value_to_u64(v));
-    let active_exit_timestamp = map
-        .get("ActiveExitTimestamp")
-        .map_or(U64MAX, |v| value_to_u64(v));
+    let active_enter_timestamp = value_to_def(map.get("ActiveEnterTimestamp"), U64MAX);
+    let active_exit_timestamp = value_to_def(map.get("ActiveExitTimestamp"), U64MAX);
 
     if timestamp_is_set!(active_enter_timestamp)
         && timestamp_is_set!(active_exit_timestamp)
@@ -224,7 +221,7 @@ fn fill_duration(
 
 fn get_substate<'a>(map: &'a HashMap<String, OwnedValue>, unit: &UnitInfo) -> Option<&'a str> {
     let value = get_value!(map, "SubState", None);
-    let value_str = value_to_str(value);
+    let value_str = value_to(value);
     unit.set_sub_state(value_str);
     Some(value_str)
 }
@@ -241,9 +238,7 @@ fn add_since(
         _ => "ActiveExitTimestamp",
     };
 
-    let value = get_value!(map, key, None);
-
-    let duration = value_to_u64(value);
+    let duration = value_some(map.get(key));
 
     if duration != 0 {
         let since = time_handling::get_since_and_passed_time(duration, timestamp_style);
@@ -259,7 +254,7 @@ fn fill_description(
     unit: &UnitInfo,
 ) {
     let value = get_value!(map, "Description");
-    let description = value_to_str(value);
+    let description = value_to(value);
     fill_row(unit_writer, "Description:", description);
 
     unit.set_description(description);
@@ -305,7 +300,7 @@ fn fill_load_state(
         let mut pad_left = false;
 
         if let Some(file_path) = file_path {
-            let file_path_str = value_to_str(file_path);
+            let file_path_str = value_to(file_path);
             unit.set_file_path(Some(file_path_str)); //for lazy load
             unit_writer.hyperlink(file_path_str, file_path_str, HyperLinkType::File);
             pad_left = true;
@@ -315,7 +310,7 @@ fn fill_load_state(
             if pad_left {
                 unit_writer.insert("; ");
             }
-            let unit_file_state = value_to_str(unit_file_state);
+            let unit_file_state = value_to(unit_file_state);
             write_enabled_state(unit_writer, unit_file_state);
 
             pad_left = true;
@@ -326,7 +321,7 @@ fn fill_load_state(
                 unit_writer.insert("; ");
             }
             unit_writer.insert("preset: ");
-            let unit_file_preset = value_to_str(unit_file_preset);
+            let unit_file_preset: &str = value_to(unit_file_preset);
             let preset: Preset = unit_file_preset.into();
             unit.set_preset(preset);
             write_enabled_state(unit_writer, unit_file_preset);
@@ -348,7 +343,7 @@ fn write_enabled_state(unit_writer: &mut UnitInfoWriter, state: &str) {
 
 fn fill_follows(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "Following");
-    let value = value_to_str(value);
+    let value: &str = value_to(value);
 
     if value.is_empty() {
         return;
@@ -371,7 +366,7 @@ fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedV
 
 fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
     let value = get_value!(map, "StatusText");
-    let value = value_to_str(value);
+    let value: &str = value_to(value);
 
     if !value.is_empty() {
         let s = format!("{:>KEY_WIDTH$} ", "Status:");
@@ -382,9 +377,9 @@ fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 }
 
 fn fill_error(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let status_errno = valop_to_i32(map.get("StatusErrno"), 0);
-    let status_bus_error = valop_to_str(map.get("StatusBusError"), "");
-    let status_varlink_error = valop_to_str(map.get("StatusVarlinkError"), "");
+    let status_errno: i32 = value_some(map.get("StatusErrno"));
+    let status_bus_error: &str = value_some(map.get("StatusBusError"));
+    let status_varlink_error: &str = value_some(map.get("StatusVarlinkError"));
 
     if status_errno == 0 && status_bus_error.is_empty() && status_varlink_error.is_empty() {
         return;
@@ -456,8 +451,7 @@ fn fill_what_string(
     key: &str,
     key_label: &str,
 ) {
-    let value = get_value!(map, key);
-    let value = value_to_str(value);
+    let value: &str = value_some(map.get(key));
     if !value.is_empty() {
         fill_row(unit_writer, key_label, value);
     }
@@ -478,7 +472,7 @@ fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>
         };
 
         write_key(unit_writer, key);
-        let doc = value_to_str(value);
+        let doc = value_to(value);
         insert_doc(unit_writer, doc);
         unit_writer.newline();
     }
@@ -499,7 +493,7 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
         Value::Array(a) => {
             let mut vec = Vec::with_capacity(a.len());
             for mi in a.iter() {
-                vec.push(value_to_str(mi));
+                vec.push(value_to(mi));
             }
             vec
         }
@@ -511,8 +505,8 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
 }
 
 fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let n_fd_store = valop_to_u32(map.get("NFileDescriptorStore"), 0);
-    let fd_store_max = valop_to_u32(map.get("FileDescriptorStoreMax"), 0);
+    let n_fd_store: u32 = value_some(map.get("NFileDescriptorStore"));
+    let fd_store_max: u32 = value_some(map.get("FileDescriptorStoreMax"));
 
     if n_fd_store == 0 && fd_store_max == 0 {
         return;
@@ -525,7 +519,7 @@ fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
 }
 
 fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let memory_current = valop_to_u64(map.get("MemoryCurrent"), U64MAX);
+    let memory_current = value_to_def(map.get("MemoryCurrent"), U64MAX);
 
     if memory_current == U64MAX {
         return;
@@ -723,7 +717,7 @@ fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
 }
 
 fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let cpu_usage_nsec = valop_to_u64(map.get("CPUUsageNSec"), U64MAX);
+    let cpu_usage_nsec = value_to_def(map.get("CPUUsageNSec"), U64MAX);
 
     if cpu_usage_nsec == U64MAX {
         return;
@@ -737,8 +731,8 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
 }
 
 fn fill_ip(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let ip_ingress_bytes = valop_to_u64(map.get("IPIngressBytes"), U64MAX);
-    let ip_egress_bytes = valop_to_u64(map.get("IPEgressBytes"), U64MAX);
+    let ip_ingress_bytes = value_to_def(map.get("IPIngressBytes"), U64MAX);
+    let ip_egress_bytes = value_to_def(map.get("IPEgressBytes"), U64MAX);
 
     if ip_ingress_bytes == U64MAX || ip_egress_bytes == U64MAX {
         return;
@@ -756,8 +750,8 @@ fn fill_ip(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) 
 }
 
 fn fill_io(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let io_read_bytes = valop_to_u64(map.get("IOReadBytes"), U64MAX);
-    let io_write_bytes = valop_to_u64(map.get("IOWriteBytes"), U64MAX);
+    let io_read_bytes = value_to_def(map.get("IOReadBytes"), U64MAX);
+    let io_write_bytes = value_to_def(map.get("IOWriteBytes"), U64MAX);
 
     if io_read_bytes == U64MAX || io_write_bytes == U64MAX {
         return;
@@ -775,7 +769,7 @@ fn fill_io(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) 
 }
 
 fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
-    let tasks_current = valop_to_u64(map.get("TasksCurrent"), U64MAX);
+    let tasks_current = value_to_def(map.get("TasksCurrent"), U64MAX);
 
     if tasks_current == U64MAX {
         return;
@@ -786,7 +780,7 @@ fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
     let tasks_info = tasks_current.to_string();
     unit_writer.insert(&tasks_info);
 
-    let tasks_max = valop_to_u64(map.get("TasksMax"), U64MAX);
+    let tasks_max = value_to_def(map.get("TasksMax"), U64MAX);
     if tasks_max != U64MAX {
         unit_writer.insert_grey(&format!(" (limit: {tasks_max})"));
     }
@@ -843,12 +837,8 @@ fn fill_trigger(
         return;
     }
 
-    let next_elapse_realtime = map
-        .get(TIME_NEXT_ELAPSE_USEC_REALTIME)
-        .map_or(U64MAX, |v| value_to_u64(v));
-    let next_elapse_monotonic = map
-        .get(TIME_NEXT_ELAPSE_USEC_MONOTONIC)
-        .map_or(U64MAX, |v| value_to_u64(v));
+    let next_elapse_realtime = value_some(map.get(TIME_NEXT_ELAPSE_USEC_REALTIME));
+    let next_elapse_monotonic = value_some(map.get(TIME_NEXT_ELAPSE_USEC_MONOTONIC));
 
     let next_elapse = calc_next_elapse(next_elapse_realtime, next_elapse_monotonic);
 
@@ -888,7 +878,7 @@ fn fill_triggers(
     for trigger_unit in triggers {
         let key_label = if is_first {
             is_first = false;
-            "Trigger:"
+            "Triggers:"
         } else {
             ""
         };
@@ -976,6 +966,22 @@ fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     }
 }
 
+fn fill_accept(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+    let accept = value_some(map.get("Accept"));
+
+    if accept {
+        let n_accepted: u32 = value_some(map.get("NAccepted"));
+        let n_connections: u32 = value_some(map.get("NConnections"));
+
+        let line = format!("{n_accepted}; Connected: {n_connections};");
+        fill_row(unit_writer, "Accepted:", &line);
+        let n_refused: u32 = value_some(map.get("NRefused"));
+        if n_refused != 0 {
+            fill_row(unit_writer, "Refused:", &n_refused.to_string());
+        }
+    }
+}
+
 fn fill_control_group(
     unit_writer: &mut UnitInfoWriter,
     map: &HashMap<String, OwnedValue>,
@@ -983,7 +989,7 @@ fn fill_control_group(
 ) {
     let value = get_value!(map, "ControlGroup");
 
-    let c_group = value_to_str(value);
+    let c_group: &str = value_to(value);
 
     if c_group.is_empty() {
         return;
@@ -1057,75 +1063,46 @@ fn print_process(
     unit_writer.newline();
 }
 
-fn value_to_str<'a>(value: &'a Value<'a>) -> &'a str {
-    if let Value::Str(converted) = value {
-        return converted.as_str();
-    }
-    warn!("Wrong zvalue conversion to String: {value:?}");
-    ""
-}
-
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: u64 = 1024;
 
-fn value_to_u64(value: &Value) -> u64 {
-    if let Value::U64(converted) = value {
-        return *converted;
-    }
-    warn!("Wrong zvalue conversion to u64: {value:?}");
-    U64MAX
+fn value_to<'a, 'b, T>(value: &'a Value<'b>) -> T
+where
+    T: std::default::Default + std::convert::TryFrom<&'a zvariant::Value<'b>>,
+    <T as TryFrom<&'a Value<'b>>>::Error: std::fmt::Debug,
+{
+    value
+        .try_into()
+        .inspect_err(|e| warn!("Convetion Error: {e:?}"))
+        .unwrap_or_default()
 }
 
-fn valop_to_u64(value: Option<&OwnedValue>, default: u64) -> u64 {
-    let Some(value) = value else {
-        return default;
-    };
-
-    if let Value::U64(converted) = value as &Value {
-        *converted
-    } else {
-        warn!("Wrong zvalue conversion to u64: {value:?}");
-        default
-    }
+fn value_some<'a, T>(value: Option<&'a OwnedValue>) -> T
+where
+    T: std::default::Default + std::convert::TryFrom<&'a zvariant::OwnedValue>,
+    <T as TryFrom<&'a OwnedValue>>::Error: std::fmt::Debug,
+{
+    value
+        .and_then(|v| {
+            v.try_into()
+                .inspect_err(|e| warn!("Convetion Error: {e:?}"))
+                .ok()
+        })
+        .unwrap_or_default()
 }
 
-fn valop_to_u32(value: Option<&OwnedValue>, default: u32) -> u32 {
-    let Some(value) = value else {
-        return default;
-    };
-
-    if let Value::U32(converted) = value as &Value {
-        *converted
-    } else {
-        warn!("Wrong zvalue conversion to u32: {value:?}");
-        default
-    }
-}
-
-fn valop_to_i32(value: Option<&OwnedValue>, default: i32) -> i32 {
-    let Some(value) = value else {
-        return default;
-    };
-
-    if let Value::I32(converted) = value as &Value {
-        *converted
-    } else {
-        warn!("Wrong zvalue conversion to u32: {value:?}");
-        default
-    }
-}
-
-fn valop_to_str<'a>(value: Option<&'a OwnedValue>, default: &'a str) -> &'a str {
-    let Some(value) = value else {
-        return default;
-    };
-
-    if let Value::Str(converted) = value as &Value {
-        converted
-    } else {
-        warn!("Wrong zvalue conversion to str: {value:?}");
-        default
-    }
+fn value_to_def<'a, T>(value: Option<&'a OwnedValue>, def: T) -> T
+where
+    T: std::default::Default + std::convert::TryFrom<&'a zvariant::OwnedValue>,
+    <T as TryFrom<&'a OwnedValue>>::Error: std::fmt::Debug,
+{
+    value
+        .and_then(|v| {
+            v.try_into()
+                .inspect_err(|e| warn!("Convetion Error: {e:?}"))
+                .ok()
+        })
+        .unwrap_or(def)
 }
 
 /// Converts bytes to human-readable values in base 10
