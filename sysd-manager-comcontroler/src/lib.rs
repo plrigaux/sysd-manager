@@ -1129,10 +1129,9 @@ pub async fn watch_systemd_signals(
     systemd_signal_sender: mpsc::Sender<SystemdSignalRow>,
     cancellation_token: tokio_util::sync::CancellationToken,
 ) {
-    let result: Result<(), SystemdErrors> =
-        sysdbus::watcher::watch_systemd_signals(systemd_signal_sender, cancellation_token).await;
-
-    if let Err(err) = result {
+    if let Err(err) =
+        sysdbus::watcher::watch_systemd_signals(systemd_signal_sender, cancellation_token).await
+    {
         error!("Error listening to jobs {err:?}");
     }
 }

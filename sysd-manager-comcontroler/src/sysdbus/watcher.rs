@@ -33,6 +33,12 @@ pub async fn watch_systemd_signals(
     let mut unit_files_changed_stream = systemd_proxy.receive_unit_files_changed().await?;
     let mut startup_finished_stream = systemd_proxy.receive_startup_finished().await?;
 
+    if let Err(err) = systemd_proxy.subscribe().await {
+        warn!("Subscribe error {:?}", err);
+    };
+
+    info!("Subscribe to signals");
+
     loop {
         let msg = tokio::select!(
             m = fn_job_new(&mut jobs_new_stream) => {m},

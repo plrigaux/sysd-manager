@@ -7,7 +7,7 @@ use base::{
 };
 use futures_util::stream::StreamExt;
 use tokio::time::{self, Duration};
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
@@ -173,10 +173,9 @@ pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
 pub(super) async fn send_heart_beat() -> Result<(), SystemdErrors> {
     let proxy = get_proxy_async().await?;
     loop {
-        info!("Send Heart Beat to Proxy");
         match proxy.heart_beat().await {
             Ok(delay) => {
-                info!("Heath Beat delay {delay} millis");
+                debug!("Heath Beat delay {delay} millis");
                 let delay = delay.clamp(MIN_HEART_BEAT_ELAPSE, MAX_HEART_BEAT_ELAPSE);
                 time::sleep(Duration::from_millis(delay)).await;
             }
