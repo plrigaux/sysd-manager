@@ -41,7 +41,7 @@ impl CustomProp {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+#[derive(Debug, Eq, Clone)]
 pub enum SysdColumn {
     Name,
     FullName,
@@ -276,6 +276,30 @@ impl SysdColumn {
             SysdColumn::AutomountMounted,
             SysdColumn::AutomountIdleTimeOut,
         ]
+    }
+}
+
+impl std::hash::Hash for SysdColumn {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match &self {
+            SysdColumn::SocketListen | SysdColumn::SocketListenType => {
+                core::mem::discriminant(&SysdColumn::SocketListen).hash(state)
+            }
+            _ => core::mem::discriminant(self).hash(state),
+        }
+    }
+}
+
+impl PartialEq for SysdColumn {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (
+                Self::SocketListen | Self::SocketListenType,
+                Self::SocketListen | Self::SocketListenType,
+            ) => true,
+            (Self::Custom(l0), Self::Custom(r0)) => l0 == r0,
+            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+        }
     }
 }
 

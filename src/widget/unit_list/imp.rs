@@ -1291,13 +1291,11 @@ impl UnitListPanelImp {
 
             info!("Fetching properties WAIT");
             while let Some((key, property_value_list)) = receiver.recv().await {
-                // info!("Got {} properties for {:?}", property_value_list.len(), key);
                 let map_ref = units_map.borrow();
                 let Some(unit) = map_ref.get(&key) else {
                     warn!("UnitKey not Found: {key:?}");
                     continue;
                 };
-
                 for setter in property_value_list {
                     match setter {
                         UnitPropertySetter::FileState(unit_file_status) => {
@@ -1312,7 +1310,7 @@ impl UnitListPanelImp {
                         UnitPropertySetter::LoadState(load_state) => {
                             unit.set_load_state(load_state)
                         }
-                        UnitPropertySetter::FragmentPath(_) => todo!(),
+                        UnitPropertySetter::FragmentPath(_) => {}
                         UnitPropertySetter::UnitFilePreset(preset) => unit.set_preset(preset),
                         UnitPropertySetter::SubState(substate) => unit.set_sub_state(substate),
                         UnitPropertySetter::Custom(quark, owned_value) => {
