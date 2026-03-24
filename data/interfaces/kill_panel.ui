@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 1.0 -->
 <interface>
   <!-- interface-name kill_panel.ui -->
   <requires lib="gtk" version="4.16"/>
@@ -21,21 +21,21 @@
                 <child>
                   <object class="AdwEntryRow" id="signal_id_entry">
                     <property name="title" translatable="yes" context="kill" comments="title">Unix signal</property>
-                    <signal name="changed" handler="kill_signal_text_change" swapped="yes"/>
+                    <signal name="changed" handler="kill_signal_text_change" swapped="True"/>
                   </object>
                 </child>
                 <child>
                   <object class="AdwComboRow" id="who_to_kill">
                     <property name="subtitle" translatable="yes" context="kill" comments="subtitle">Unit related processes</property>
                     <property name="title" translatable="yes" context="kill" comments="title">Who to kill</property>
-                    <signal name="activate" handler="who_to_kill_activate" swapped="yes"/>
-                    <signal name="activated" handler="who_to_kill_activated" swapped="yes"/>
+                    <signal name="activate" handler="who_to_kill_activate" swapped="True"/>
+                    <signal name="activated" handler="who_to_kill_activated" swapped="True"/>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="sigqueue_value">
                     <property name="title" translatable="yes" context="kill" comments="title">Signal Value</property>
-                    <signal name="changed" handler="sigqueue_value_changed" swapped="yes"/>
+                    <signal name="changed" handler="sigqueue_value_changed" swapped="True"/>
                   </object>
                 </child>
               </object>
@@ -50,7 +50,7 @@
                     <property name="css-classes">suggested-action</property>
                     <property name="label" translatable="yes" context="kill" comments="button">Send</property>
                     <property name="sensitive">False</property>
-                    <signal name="clicked" handler="button_send_clicked" swapped="yes"/>
+                    <signal name="clicked" handler="button_send_clicked" swapped="True"/>
                   </object>
                 </child>
               </object>

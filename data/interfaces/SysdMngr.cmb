@@ -1,40 +1,40 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
-<!-- Created with Cambalache 0.96.3 -->
-<cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="17467d294b3551263850e8f2d547d2dfd9519022b2038371d3c33d73bf641e79"/>
-  <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="9f9b151f9a0de3d99fdf8a51cd7645e8c022cf90070fb9cb24ef215e7b4168d9"/>
-  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="89cf64504fc6bf3b5f13daf438c410c5ae6f145aa22e64be2e0f1863e9ee7549"/>
+<!-- Created with Cambalache 1.0 -->
+<cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1,webkitgtk-6.0">
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="9f9ff5a296cd7c74009f89387f02e9c4ff9c1e356bca673b1053ef346e3aabff"/>
+  <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="15e82db0a0511c32e06aaf27e9b7b992ffa4b53b22e18b0349a827ad6825ccc0"/>
+  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="0e6be0848d8fa2d2e5cc646a013d88382bcafdf5d0c45f839df01210cd3897b6"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="66908f01c0b99fbabefbfacfa7fde170c98c0f133551bc0abe2ba9c18a5d0f55"/>
-  <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="132102cdf0dfbc4033c838c59b12e60ad205f81bb7c9cafaa34e27d77b2e24e2"/>
+  <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="0b32ae4e971c31e3e02d195acca8cc59d40464c3da522886ee553ae9a21e920b"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
-  <ui template-class="KillPanel" filename="kill_panel.ui" sha256="494ba469fc1ba0d3bcf680f3082fecd5cf3c0c3a237ea806f450c0c52778afb5"/>
-  <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="d4c8413f9c91bf3a276c0658697e27e8accd7c96d32f9a1e97466164af3d5b2a"/>
-  <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="4a993bd68b2994e7209b10c397491e743f78620804c4ea34225168697e8e64d3"/>
-  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="ca61bb1c4b7ca0b83d5bc81d39fb60e1ecd212c79983086dd17d732903c23a9f"/>
-  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="675200614cfd6eacef7c6fb348604611470ce062b2f9e71eae1cb59755f02e04"/>
-  <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="d7e38dd0171348c048a53bc298485bfa9876535b276a5dec61558a5dd5035c79"/>
-  <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="fe1f948e1c756fa98c98b7b82ad0a6b1f00fde8db27507f9af13ebc270ba8e65"/>
+  <ui template-class="KillPanel" filename="kill_panel.ui" sha256="129738f4248013902226f6ee966147181684f986e1fc2c06ff891bdbe50f9bec"/>
+  <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="bf9a40a48b5c3d1b8639dfcf62ca3af36de2b4a6b20bd553831f0e0f5388dbca"/>
+  <ui template-class="ExMenuButton" filename="ex_menu_button.ui" sha256="11e4691c1cb4f4cb145998255ff19c9301aaa7e7c56d7b730dd609d81cb077d4"/>
+  <ui template-class="UnitListPanel" filename="unit_list_panel.ui" sha256="a9ba63901c5e2708b4dbaceea7c705f53920cb68c51c45d78954f70ad00b29eb"/>
+  <ui template-class="SideControlPanel" filename="side_control_panel.ui" sha256="5bff0e4ef204e514095f68536c3c757189aae87952e92a4f3a650648cd7c5e91"/>
+  <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="6e756a34e871dcc2202a9d9c9669092bb363e5c50d15c87fc1790922b9bda94e"/>
+  <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="881ddc53f3bc4393ea93a12c64aa8f31af4dd0aa5271db1ec1b154f83c169d6d"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="e0d2d4674d3093dee3ba739b22d837b7227c812b4de686c2ed360246f69c6138"/>
   <ui filename="shortcuts.ui" sha256="6cfefd8c493e518275485655e55c7db2730a67d763dbc8ebb0942ed0edaf8b61"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
-  <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="e87ccd783d307547620eec870a61d0364e7f147018f489c01b508b8222f494e6"/>
-  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="0584f7f98354bcf4460e74928f67ce049cab306e8b1bcb2154ffc16cd5d3b8c0"/>
-  <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="49b14139e2cba5b840ac6db6055d9f6c29befe4c8b9d44674d018a5d100de467"/>
-  <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="fc9f5293a9199d43666794072a191f2785eaef88c42e2f0c0d8046f6716538f2"/>
-  <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="bc632f6a17915b3f4c85d5fc72b771840b3799a92851f8638410a98ea9f62d5c"/>
-  <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="b2e30571d3f5f431bc9594ee8b5693c8200c51d13ee8765ecd0a19f81082b3da"/>
-  <ui template-class="TextFind" filename="text_find.ui" sha256="beb4ef7a7ff2bd913fb937468fbd3144e0657f7c494e37b99ac524d4a370ab5b"/>
-  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="71d211da819da3a30c56fab78d059dfbf089a3b7dd45d1703396d1d812ee10af">
+  <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="de993a2a8120c4003e4eb7e41b3456e335f01a91891ec043649b28d062c712c7"/>
+  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="61d07cf9c4709cce4676c9d26b47fbb82aa90c1842f7aecff4420be84ba093be"/>
+  <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="f7dc7a45a481b9b29c2854c76a6996014bdde7bc27163921a56fd3a06513eaf0"/>
+  <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="11336e360ce23ac28dafc00effaf30e971893c0d7a9557e1c4c3edacc62acd0b"/>
+  <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="5e4b623bcc4ae44d681a338d49f85cd2a8d088c349e57650769ec4c50e603be5"/>
+  <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="d638c446748bf12c949e332ceb13cd0cb3ea8a0b0294fd914c390301836aae71"/>
+  <ui template-class="TextFind" filename="text_find.ui" sha256="f0a15764374590cb98523c7aabc14dc930ef3cf0f8ddcca91e5becd81707e275"/>
+  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="6f2c01d5d63a2588e7c942f87792a16d01be74fa6d19e6ed8dfdf3acbd190e0c">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>
   </ui>
-  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="264583702d6dfd970b2c8c5591e8b670c456183fd49cc58b44b6237c73c6300a">
+  <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui" sha256="35ae88cb4d405224a601da8b6940434e3f42aacd17777a879306b542f9e4b1ac">
     <requires>UnitPropertiesSelectionPanel</requires>
   </ui>
-  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="d86ede35ee283cecac8f5872c530770e8c6133bf323d7707f6df7535d700cbb5">
+  <ui template-class="SysdMainAppWindow" filename="app_window.ui" sha256="1a3e3b191f32ea43988e92b8f380441537bab909a6552edc21ed7aff83e2ca2e">
     <requires>UnitControlPanel</requires>
     <requires>UnitListPanel</requires>
   </ui>

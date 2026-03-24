@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.3 -->
+<!-- Created with Cambalache 1.0 -->
 <interface>
   <!-- interface-name unit_control_panel.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -23,7 +23,7 @@
           <object class="GtkSwitch" id="ablement_switch">
             <property name="sensitive">False</property>
             <property name="valign">baseline-center</property>
-            <signal name="state-set" handler="switch_ablement_state_set" swapped="yes"/>
+            <signal name="state-set" handler="switch_ablement_state_set" swapped="True"/>
           </object>
         </child>
         <child>
@@ -40,7 +40,7 @@
             </property>
             <property name="sensitive">False</property>
             <property name="tooltip-text" translatable="yes" context="control tooltip">Start unit</property>
-            <signal name="clicked" handler="button_start_clicked" swapped="yes"/>
+            <signal name="clicked" handler="button_start_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">media-playback-start-symbolic</property>
@@ -64,7 +64,7 @@
             </property>
             <property name="sensitive">False</property>
             <property name="tooltip-text" translatable="yes" context="control tooltip">Stop unit</property>
-            <signal name="clicked" handler="button_stop_clicked" swapped="yes"/>
+            <signal name="clicked" handler="button_stop_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">process-stop</property>
@@ -89,7 +89,7 @@
             </property>
             <property name="sensitive">False</property>
             <property name="tooltip-text" translatable="yes" context="controls tooltip">Restart unit</property>
-            <signal name="clicked" handler="button_restart_clicked" swapped="yes"/>
+            <signal name="clicked" handler="button_restart_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">view-refresh</property>

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.3 -->
+<!-- Created with Cambalache 1.0 -->
 <interface>
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit journal panel -->
@@ -30,7 +30,7 @@
             </property>
             <property name="halign">start</property>
             <property name="tooltip-text" translatable="yes" context="journal">Clear journal events and refetch them</property>
-            <signal name="clicked" handler="refresh_journal_clicked" swapped="yes"/>
+            <signal name="clicked" handler="refresh_journal_clicked" swapped="True"/>
           </object>
         </child>
         <child>
@@ -42,7 +42,7 @@
           <object class="GtkSwitch" id="continuous_switch">
             <property name="tooltip-text" translatable="yes" context="journal" comments="tooltip">Enable new entries continuous print as they are appended to the journal</property>
             <property name="valign">baseline-center</property>
-            <signal name="state-set" handler="continuous_switch_state_set" swapped="yes"/>
+            <signal name="state-set" handler="continuous_switch_state_set" swapped="True"/>
           </object>
         </child>
         <child>
@@ -57,13 +57,13 @@
             <property name="halign">start</property>
             <property name="hexpand">True</property>
             <property name="tooltip-text" translatable="yes" context="journal" comments="tooltip">Toggle events display order</property>
-            <signal name="clicked" handler="toggle_sort_clicked" swapped="yes"/>
+            <signal name="clicked" handler="toggle_sort_clicked" swapped="True"/>
           </object>
         </child>
         <child>
           <object class="GtkButton">
             <property name="tooltip-text" translatable="yes" context="journal" comments="tooltip">List the boots of the system</property>
-            <signal name="clicked" handler="list_boots_clicked" swapped="yes"/>
+            <signal name="clicked" handler="list_boots_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">list-symbolic</property>
@@ -78,9 +78,9 @@
             <property name="popover">
               <object class="GtkPopover">
                 <property name="width-request">300</property>
-                <signal name="closed" handler="journal_menu_popover_closed" swapped="yes"/>
-                <signal name="activate-default" handler="journal_menu_popover_activate_default" swapped="yes"/>
-                <signal name="show" handler="journal_menu_popover_show" swapped="yes"/>
+                <signal name="closed" handler="journal_menu_popover_closed" swapped="True"/>
+                <signal name="activate-default" handler="journal_menu_popover_activate_default" swapped="True"/>
+                <signal name="show" handler="journal_menu_popover_show" swapped="True"/>
                 <child>
                   <object class="GtkBox">
                     <property name="orientation">vertical</property>
@@ -88,13 +88,13 @@
                     <child>
                       <object class="GtkButton" id="journal_boot_current_button">
                         <property name="label" translatable="yes" context="journal" comments="button">Current boot</property>
-                        <signal name="clicked" handler="journal_boot_current_button_clicked" swapped="yes"/>
+                        <signal name="clicked" handler="journal_boot_current_button_clicked" swapped="True"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkButton" id="journal_boot_all_button">
                         <property name="label" translatable="yes" context="journal" comments="button">All events</property>
-                        <signal name="clicked" handler="journal_boot_all_button_clicked" swapped="yes"/>
+                        <signal name="clicked" handler="journal_boot_all_button_clicked" swapped="True"/>
                       </object>
                     </child>
                     <child>
@@ -102,8 +102,8 @@
                         <property name="css-classes">.monospace</property>
                         <property name="title" translatable="yes" context="journal" comments="title">Boot id</property>
                         <property name="use-underline">True</property>
-                        <signal name="changed" handler="journal_boot_id_entry_change" swapped="yes"/>
-                        <signal name="entry-activated" handler="journal_boot_id_entry_activated" swapped="yes"/>
+                        <signal name="changed" handler="journal_boot_id_entry_change" swapped="True"/>
+                        <signal name="entry-activated" handler="journal_boot_id_entry_activated" swapped="True"/>
                       </object>
                     </child>
                   </object>
@@ -128,8 +128,8 @@
                     <property name="vexpand">True</property>
                     <property name="vexpand-set">True</property>
                     <property name="vscrollbar-policy">always</property>
-                    <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="yes"/>
-                    <signal name="edge-reached" handler="scwin_edge_reached" swapped="yes"/>
+                    <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="True"/>
+                    <signal name="edge-reached" handler="scwin_edge_reached" swapped="True"/>
                   </object>
                 </child>
                 <child>

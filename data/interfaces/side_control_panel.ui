@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.3 -->
+<!-- Created with Cambalache 1.0 -->
 <interface>
   <!-- interface-name side_control_panel.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -25,13 +25,13 @@
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="enable_unit_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="enable_unit_button_clicked" swapped="True"/>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="disable_unit_file">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="disable_unit_files_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="disable_unit_files_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
@@ -55,7 +55,7 @@
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="kill_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="kill_button_clicked" swapped="True"/>
               </object>
             </child>
             <child>
@@ -70,7 +70,7 @@
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="send_signal_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="send_signal_button_clicked" swapped="True"/>
               </object>
             </child>
             <child>
@@ -86,13 +86,13 @@
                 <property name="css-classes">flat</property>
                 <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Remove the configuration, state, cache, logs or runtime data of the specified unit. 
 &lt;u&gt;Note:&lt;/u&gt; the unit must be &lt;b&gt;inactive&lt;/b&gt; to be cleaned.</property>
-                <signal name="clicked" handler="clean_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="clean_button_clicked" swapped="True"/>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="freeze_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="freeze_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="freeze_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
@@ -106,7 +106,7 @@
             <child>
               <object class="GtkButton" id="thaw_unit_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="thaw_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="thaw_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
@@ -120,7 +120,7 @@
             <child>
               <object class="GtkButton" id="mask_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="mask_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="mask_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
@@ -137,7 +137,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <child>
               <object class="GtkButton" id="unmask_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="unmask_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="unmask_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
@@ -152,7 +152,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <child>
               <object class="AdwSplitButton" id="reload_unit_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="reload_unit_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="reload_unit_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="css-classes">flat</property>
@@ -167,7 +167,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <child>
               <object class="GtkButton" id="preset_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="preset_unit_files_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="preset_unit_files_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
@@ -182,7 +182,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <child>
               <object class="GtkButton" id="reenable_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="reenable_unit_files_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="reenable_unit_files_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
@@ -197,7 +197,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <child>
               <object class="GtkButton" id="link_button">
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="link_unit_files_button_clicked" swapped="yes"/>
+                <signal name="clicked" handler="link_unit_files_button_clicked" swapped="True"/>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="halign">start</property>
