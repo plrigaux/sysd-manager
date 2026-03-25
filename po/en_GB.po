@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -289,8 +289,7 @@ msgstr "Clear journal events and refetch them"
 #, fuzzy
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr ""
-"Enable new entries continuous print as they are appended to the journal"
+msgstr "Enable new entries continuous print as they are appended to the journal"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:59
@@ -1125,8 +1124,8 @@ msgid ""
 "of activation of the unit, including enablement and manual activation. \n"
 "<b>Use this option with care.</b>"
 msgstr ""
-"Mask the selected unit.  This will link these unit files to <u>/dev/null</"
-"u>, making it impossible to start them. \n"
+"Mask the selected unit.  This will link these unit files to <u>/dev/null</u>"
+", making it impossible to start them. \n"
 "This is a stronger version of <b>disable</b>, since it prohibits all kinds "
 "of activation of the unit, including enablement and manual activation. \n"
 "<b>Use this option with care.</b>"

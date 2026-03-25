@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -1480,8 +1480,8 @@ msgid ""
 "No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
 "happened."
 msgstr ""
-"No se devolvieron unidades, configure la variable de entorno "
-"<b>RUST_LOG=info</b> para ver qué sucedió."
+"No se devolvieron unidades, configure la variable de entorno <b>"
+"RUST_LOG=info</b> para ver qué sucedió."
 
 #: data/interfaces/unit_list_panel.ui:134
 msgctxt "list page title"

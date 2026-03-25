@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -39,7 +39,8 @@ msgstr "Kasutajasõbralik rakendus systemd teenuseüksuste haldamiseks"
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
-msgstr "Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
+msgstr ""
+"Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
 msgid ""

@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -202,8 +202,7 @@ msgctxt "enable unit file"
 msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
 "necessary"
-msgstr ""
-"Разрешить замену символических ссылок на другие юниты при необходимости"
+msgstr "Разрешить замену символических ссылок на другие юниты при необходимости"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:66
@@ -283,8 +282,7 @@ msgstr "Очистить события журнала и заново их за
 #: data/interfaces/journal_panel.ui:43
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr ""
-"Включить непрерывный вывод новых записей по мере добавления их в журнал"
+msgstr "Включить непрерывный вывод новых записей по мере добавления их в журнал"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:59
@@ -1035,8 +1033,8 @@ msgstr "_Отключить юнит-файл➚"
 msgctxt "control"
 msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
 msgstr ""
-"Снять маскировку с выбранного юнита. Это отменит действие команды "
-"<b>Маскировать</b>"
+"Снять маскировку с выбранного юнита. Это отменит действие команды <b>"
+"Маскировать</b>"
 
 #. button
 #: data/interfaces/side_control_panel.ui:52
@@ -2351,8 +2349,7 @@ msgstr "Сбой {}. Причина: <span fgcolor='{}'>{}</span>."
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
-msgstr ""
-"К сожалению, <b>SysD Manager</b> не может выполнить действие <b>{}</b>."
+msgstr "К сожалению, <b>SysD Manager</b> не может выполнить действие <b>{}</b>."
 
 #: src/widget/unit_control_panel/mod.rs:136
 msgctxt "workaround"
