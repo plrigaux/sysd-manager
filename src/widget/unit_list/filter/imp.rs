@@ -468,8 +468,10 @@ fn common_text_filter(
         .row_spacing(5)
         .build();
 
+    //Filter option
+    let label_text = pgettext("filter", "Match type");
     let label = gtk::Label::builder()
-        .label("Match type")
+        .label(&label_text)
         .halign(gtk::Align::Start)
         .build();
 
@@ -484,8 +486,10 @@ fn common_text_filter(
 
     grid.attach_next_to(&dropdown, Some(&label), gtk::PositionType::Right, 1, 1);
 
+    //Filter option
+    let label_text = pgettext("filter", "Case insensitive");
     let label = gtk::Label::builder()
-        .label("Case insensitive")
+        .label(&label_text)
         .use_markup(true)
         .halign(gtk::Align::Start)
         .build();
@@ -504,8 +508,10 @@ fn common_text_filter(
         1,
     );
 
+    //Filter option
+    let label_text = pgettext("filter", "Unset");
     let label = gtk::Label::builder()
-        .label("Unset")
+        .label(&label_text)
         .use_markup(true)
         .halign(gtk::Align::Start)
         .build();
@@ -518,8 +524,10 @@ fn common_text_filter(
 
     grid.attach_next_to(&unset_check, Some(&label), gtk::PositionType::Right, 1, 1);
 
+    //Filter option
+    let label_text = pgettext("filter", "Invert");
     let label = gtk::Label::builder()
-        .label("Invert")
+        .label(&label_text)
         .use_markup(true)
         .halign(gtk::Align::Start)
         .build();
@@ -611,7 +619,7 @@ fn common_text_filter(
                 .downcast_mut::<FilterText>()
                 .expect("downcast_mut to FilterText");
 
-            filter_text.set_filter_match_case_insensitive(check_button.is_active());
+            filter_text.set_filter_match_case_insensitive(check_button.is_active(), true);
         });
     }
 
@@ -1062,7 +1070,9 @@ fn build_controls(container: &gtk::Box) {
         .build();
 
     let clear_button = gtk::Button::builder()
+        //Clear button
         .label(pgettext("filter", "Clear"))
+        //Clear button tooltip
         .tooltip_text(pgettext("filter", "Clear filter's selected items"))
         .build();
     {
@@ -1081,6 +1091,7 @@ fn build_controls(container: &gtk::Box) {
     }
 
     let inv_button = gtk::Button::builder()
+        //Invert filter Button
         .label(pgettext("filter", "Invert"))
         .tooltip_text(pgettext("filter", "Invert filter's selected items"))
         .build();

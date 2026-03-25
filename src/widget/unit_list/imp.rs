@@ -1485,7 +1485,7 @@ impl UnitListPanelImp {
                 continue;
             };
 
-            filter_text.set_filter_match_case_insensitive(case_incensitive_default);
+            filter_text.set_filter_match_case_insensitive(case_incensitive_default, false);
         }
     }
 }

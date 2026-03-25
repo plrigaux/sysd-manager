@@ -402,7 +402,11 @@ impl FilterText {
         );
     }
 
-    pub fn set_filter_match_case_insensitive(&mut self, case_insensitive: bool) {
+    pub fn set_filter_match_case_insensitive(
+        &mut self,
+        case_insensitive: bool,
+        update_widget: bool,
+    ) {
         let different = self.case_insensitive != case_insensitive;
         debug!(
             "set case insensitive old: {} new: {}",
@@ -424,12 +428,10 @@ impl FilterText {
         };
 
         let change_type = if case_insensitive {
-            gtk::FilterChange::MoreStrict
-        } else {
             gtk::FilterChange::LessStrict
+        } else {
+            gtk::FilterChange::MoreStrict
         };
-
-        let update_widget = true;
 
         self.unit_list_panel.filter_assessor_change(
             &self.id,
