@@ -469,7 +469,7 @@ fn common_text_filter(
         .build();
 
     //Filter option
-    let label_text = pgettext("filter", "Match type");
+    let label_text = pgettext("filter", "Match Type");
     let label = gtk::Label::builder()
         .label(&label_text)
         .halign(gtk::Align::Start)
@@ -487,7 +487,7 @@ fn common_text_filter(
     grid.attach_next_to(&dropdown, Some(&label), gtk::PositionType::Right, 1, 1);
 
     //Filter option
-    let label_text = pgettext("filter", "Case insensitive");
+    let label_text = pgettext("filter", "Case Insensitive");
     let label = gtk::Label::builder()
         .label(&label_text)
         .use_markup(true)
