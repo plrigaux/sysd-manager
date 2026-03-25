@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-25 16:51-0400\n"
+"POT-Creation-Date: 2026-03-25 17:00-0400\n"
 "PO-Revision-Date: 2025-11-27 08:00+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -607,13 +607,13 @@ msgstr ""
 #. subtitle
 #: data/interfaces/preferences.ui:100
 msgctxt "preference"
-msgid "Search and filtering are case insensitive is default"
+msgid "Search and filtering case insensitivity default option"
 msgstr ""
 
 #. title
 #: data/interfaces/preferences.ui:101
 msgctxt "preference"
-msgid "Default Case Insensitive"
+msgid "Case Insensitive"
 msgstr ""
 
 #. group

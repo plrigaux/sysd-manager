@@ -97,8 +97,8 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
             </child>
             <child>
               <object class="AdwSwitchRow" id="filter_case_insensitive_default_switch">
-                <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Search and filtering are case insensitive is default</property>
-                <property name="title" translatable="yes" context="preference" comments="title">Default Case Insensitive</property>
+                <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Search and filtering case insensitivity default option</property>
+                <property name="title" translatable="yes" context="preference" comments="title">Case Insensitive</property>
               </object>
             </child>
           </object>
