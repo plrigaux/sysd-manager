@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-15 22:17-0400\n"
+"POT-Creation-Date: 2026-03-25 16:51-0400\n"
 "PO-Revision-Date: 2026-01-16 21:01+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
@@ -610,74 +610,86 @@ msgctxt "preference"
 msgid "Display Totals Summary"
 msgstr "Exibir resumo de totais"
 
+#. subtitle
+#: data/interfaces/preferences.ui:100
+msgctxt "preference"
+msgid "Search and filtering are case insensitive is default"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:101
+msgctxt "preference"
+msgid "Default Case Insensitive"
+msgstr ""
+
 #. group
-#: data/interfaces/preferences.ui:102
+#: data/interfaces/preferences.ui:108
 msgctxt "preference"
 msgid "Unit Description"
 msgstr "Descrição da unidade"
 
 #. subtitle
-#: data/interfaces/preferences.ui:105
+#: data/interfaces/preferences.ui:111
 msgctxt "preference"
 msgid "Wrap the unit description long text lines"
 msgstr "Quebrar linhas de texto longas da descrição da unidade"
 
 #. title
-#: data/interfaces/preferences.ui:106
+#: data/interfaces/preferences.ui:112
 msgctxt "preference"
 msgid "Wrap unit description text"
 msgstr "Envolver texto descritivo da unidade"
 
 #. group
-#: data/interfaces/preferences.ui:113
+#: data/interfaces/preferences.ui:119
 msgctxt "preference"
 msgid "Unit File"
 msgstr "Arquivo de unidade"
 
 #. subtitle
-#: data/interfaces/preferences.ui:116
+#: data/interfaces/preferences.ui:122
 msgctxt "preference"
 msgid "Display unit file line number"
 msgstr "Exibir o número da linha do arquivo da unidade"
 
 #. title
-#: data/interfaces/preferences.ui:117
+#: data/interfaces/preferences.ui:123
 msgctxt "preference"
 msgid "Line number"
 msgstr "Número da linha"
 
 #. subtitle
-#: data/interfaces/preferences.ui:127
+#: data/interfaces/preferences.ui:128
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr "Estilo de destaque do arquivo de unidade"
 
 #. title
-#: data/interfaces/preferences.ui:128
+#: data/interfaces/preferences.ui:129
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr "Destaque de texto"
 
 #. subtitle
-#: data/interfaces/preferences.ui:138
+#: data/interfaces/preferences.ui:139
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr "Para ver os registros em cores"
 
 #. title
-#: data/interfaces/preferences.ui:139
+#: data/interfaces/preferences.ui:140
 msgctxt "preference"
 msgid "Journal colors"
 msgstr "Cores do jornal"
 
 #. title
-#: data/interfaces/preferences.ui:160
+#: data/interfaces/preferences.ui:161
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr "Tamanho do lote de eventos do periódico"
 
 #. subtitle
-#: data/interfaces/preferences.ui:173
+#: data/interfaces/preferences.ui:174
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -687,188 +699,188 @@ msgstr ""
 "<i>0 a nenhum limite</i>"
 
 #. title
-#: data/interfaces/preferences.ui:176
+#: data/interfaces/preferences.ui:177
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Tamanho máximo do evento do periódico"
 
-#: data/interfaces/preferences.ui:193
+#: data/interfaces/preferences.ui:194
 #, fuzzy
 msgctxt "preference"
 msgid "_Proxy Preferences"
 msgstr "Mostrar preferências"
 
-#: data/interfaces/preferences.ui:199
+#: data/interfaces/preferences.ui:200
 msgid "Switch that controls other switches"
 msgstr ""
 
 #. group title
-#: data/interfaces/preferences.ui:207
+#: data/interfaces/preferences.ui:208
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
 msgstr ""
 
-#: data/interfaces/preferences.ui:210
+#: data/interfaces/preferences.ui:211
 msgctxt "preference"
 msgid "<b>Start</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:211
+#: data/interfaces/preferences.ui:212
 #, fuzzy
 msgctxt "preference"
 msgid "Start"
 msgstr "Começar"
 
-#: data/interfaces/preferences.ui:216
+#: data/interfaces/preferences.ui:217
 msgctxt "preference"
 msgid "<b>Stop</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:217
+#: data/interfaces/preferences.ui:218
 #, fuzzy
 msgctxt "preference"
 msgid "Stop"
 msgstr "Parar"
 
-#: data/interfaces/preferences.ui:222
+#: data/interfaces/preferences.ui:223
 msgctxt "preference"
 msgid "<b>Restart</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:223
+#: data/interfaces/preferences.ui:224
 #, fuzzy
 msgctxt "preference"
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: data/interfaces/preferences.ui:228
+#: data/interfaces/preferences.ui:229
 msgctxt "preference"
 msgid "<b>Clean</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:229
+#: data/interfaces/preferences.ui:230
 #, fuzzy
 msgctxt "preference"
 msgid "Clean"
 msgstr "Limpar"
 
-#: data/interfaces/preferences.ui:234
+#: data/interfaces/preferences.ui:235
 msgctxt "preference"
 msgid "<b>Freeze</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:235
+#: data/interfaces/preferences.ui:236
 #, fuzzy
 msgctxt "preference"
 msgid "Freeze"
 msgstr "Congelar"
 
-#: data/interfaces/preferences.ui:240
+#: data/interfaces/preferences.ui:241
 msgctxt "preference"
 msgid "<b>Thaw</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:241
+#: data/interfaces/preferences.ui:242
 #, fuzzy
 msgctxt "preference"
 msgid "Thaw"
 msgstr "Descongelamento"
 
-#: data/interfaces/preferences.ui:246
+#: data/interfaces/preferences.ui:247
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:247
+#: data/interfaces/preferences.ui:248
 #, fuzzy
 msgctxt "preference"
 msgid "Enable Unit File"
 msgstr "Habilitar arquivo de unidade"
 
-#: data/interfaces/preferences.ui:252
+#: data/interfaces/preferences.ui:253
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:253
+#: data/interfaces/preferences.ui:254
 #, fuzzy
 msgctxt "preference"
 msgid "Disable Unit File"
 msgstr "Desativar arquivo de unidade"
 
-#: data/interfaces/preferences.ui:258
+#: data/interfaces/preferences.ui:259
 msgctxt "preference"
 msgid ""
 "<b>Reload</b> Systemd Manager configuration method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:259
+#: data/interfaces/preferences.ui:260
 #, fuzzy
 msgctxt "preference"
 msgid "Daemon Reload"
 msgstr "Recarregar Daemon"
 
-#: data/interfaces/preferences.ui:264
+#: data/interfaces/preferences.ui:265
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:265
+#: data/interfaces/preferences.ui:266
 #, fuzzy
 msgctxt "preference"
 msgid "Revert Unit Files"
 msgstr "Arquivo de unidade predefinida"
 
-#: data/interfaces/preferences.ui:272
+#: data/interfaces/preferences.ui:273
 #, fuzzy
 msgctxt "preference"
 msgid "Actions"
 msgstr "Ativa"
 
-#: data/interfaces/preferences.ui:275
+#: data/interfaces/preferences.ui:276
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:276
+#: data/interfaces/preferences.ui:277
 #, fuzzy
 msgctxt "preference"
 msgid "Create Drop-in"
 msgstr "Criar Drop-in"
 
-#: data/interfaces/preferences.ui:281
+#: data/interfaces/preferences.ui:282
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:282
+#: data/interfaces/preferences.ui:283
 #, fuzzy
 msgctxt "preference"
 msgid "Save file"
 msgstr "Salvar"
 
-#: data/interfaces/preferences.ui:290
+#: data/interfaces/preferences.ui:291
 msgctxt "preference"
 msgid "Proxy Behaviors"
 msgstr ""
 
-#: data/interfaces/preferences.ui:293
+#: data/interfaces/preferences.ui:294
 msgid "Start the Proxy when starting SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:294
+#: data/interfaces/preferences.ui:295
 msgctxt "preference"
 msgid "Start Proxy at Start up"
 msgstr ""
 
-#: data/interfaces/preferences.ui:299
+#: data/interfaces/preferences.ui:300
 msgctxt "preference"
 msgid "Stop the Proxy when closing SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:300
+#: data/interfaces/preferences.ui:301
 msgctxt "preference"
 msgid "Stop Proxy at Close"
 msgstr ""
@@ -1209,13 +1221,13 @@ msgid "Type"
 msgstr "Tipo"
 
 #. column title
-#: data/interfaces/signals_window.ui:68
+#: data/interfaces/signals_window.ui:69
 msgctxt "signals"
 msgid "Details"
 msgstr "Detalhes"
 
 #. dialog title
-#: data/interfaces/signals_window.ui:87
+#: data/interfaces/signals_window.ui:88
 msgctxt "signals"
 msgid "Watch Signals"
 msgstr "Sinais de relógio"
@@ -1574,7 +1586,7 @@ msgid "Reload"
 msgstr "Recarregar"
 
 #. unit list pop up menu item
-#: data/interfaces/unit_pop_menu.ui:137
+#: data/interfaces/unit_pop_menu.ui:143
 msgctxt "controls"
 msgid "Toggle Totals Summary"
 msgstr "Alternar resumo de totais"
@@ -2090,73 +2102,73 @@ msgid "Equivalent to SIGSYS"
 msgstr "Equivalente ao SIGSYS"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:68
+#: src/widget/preferences/data.rs:67
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr "Barramento de Sessão do Usuário"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:70
+#: src/widget/preferences/data.rs:69
 msgctxt "dbus"
 msgid "System Bus"
 msgstr "Barramento do sistema"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:72
+#: src/widget/preferences/data.rs:71
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr "Barramento de sessão de sistema e usuário"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:165
+#: src/widget/preferences/data.rs:164
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Sem preferência"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:167
+#: src/widget/preferences/data.rs:166
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Prefiro escuro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:169
+#: src/widget/preferences/data.rs:168
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Prefiro Claro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:171
+#: src/widget/preferences/data.rs:170
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Força modo Escuro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:173
+#: src/widget/preferences/data.rs:172
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Força modo Claro"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:219
+#: src/widget/preferences/data.rs:218
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr "Automático"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:221
+#: src/widget/preferences/data.rs:220
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr "Lado a lado"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:223
+#: src/widget/preferences/data.rs:222
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr "Cima Fundo"
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:461
+#: src/widget/preferences/imp.rs:451
 msgctxt "pref file style"
 msgid "None"
 msgstr "Nenhum"
@@ -2233,14 +2245,14 @@ msgstr ""
 "span> falhou!"
 
 #: src/widget/unit_control_panel/controls.rs:238
-#: src/widget/unit_list/imp/pop_menu.rs:266
+#: src/widget/unit_list/imp/pop_menu.rs:253
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr "Desativar unidade {}"
 
 #: src/widget/unit_control_panel/controls.rs:240
-#: src/widget/unit_list/imp/pop_menu.rs:259
+#: src/widget/unit_list/imp/pop_menu.rs:246
 #, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
@@ -2417,7 +2429,7 @@ msgstr ""
 #. TODO tranlate
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:30
-#: src/widget/unit_file_panel/flatpak.rs:108
+#: src/widget/unit_file_panel/flatpak.rs:106
 msgctxt "warning"
 msgid "_Cancel"
 msgstr ""
@@ -2430,18 +2442,18 @@ msgid "_Save"
 msgstr "Salvar"
 
 #. Dialog Header
-#: src/widget/unit_file_panel/flatpak.rs:97
+#: src/widget/unit_file_panel/flatpak.rs:95
 msgctxt "warning"
 msgid "Warning!"
 msgstr ""
 
 #. Dialog button
-#: src/widget/unit_file_panel/flatpak.rs:110
+#: src/widget/unit_file_panel/flatpak.rs:108
 msgctxt "warning"
 msgid "_Proceed"
 msgstr ""
 
-#: src/widget/unit_file_panel/flatpak.rs:125
+#: src/widget/unit_file_panel/flatpak.rs:123
 msgctxt "flatpak"
 msgid ""
 "You need to jailbreak your Flatpak application to be able to save files on "
@@ -2456,36 +2468,36 @@ msgstr ""
 "Siga o <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
 "Flatpak\">link</a> para saber como obter a permissão necessária."
 
-#: src/widget/unit_file_panel/flatpak.rs:129
+#: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
 msgstr "Permissão Flatpak ausente!"
 
 #. Dialog button
-#: src/widget/unit_file_panel/flatpak.rs:141
+#: src/widget/unit_file_panel/flatpak.rs:139
 #, fuzzy
 msgctxt "warning"
 msgid "_Close"
 msgstr "_Fechar"
 
-#: src/widget/unit_file_panel/imp.rs:261
+#: src/widget/unit_file_panel/imp.rs:262
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "Arquivo {} criado com sucesso!"
 
-#: src/widget/unit_file_panel/imp.rs:262
+#: src/widget/unit_file_panel/imp.rs:263
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "Arquivo {} salvo com sucesso!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1078
+#: src/widget/unit_file_panel/imp.rs:273 src/widget/unit_file_panel/imp.rs:1078
 msgid "Daemon Reload"
 msgstr "Recarregar Daemon"
 
-#: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:305
+#: src/widget/unit_file_panel/imp.rs:288 src/widget/unit_file_panel/imp.rs:305
 #: src/widget/unit_file_panel/imp.rs:1094
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
@@ -2549,48 +2561,72 @@ msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Unidade {} revertida com sucesso!"
 
-#: src/widget/unit_file_panel/imp.rs:1117
+#: src/widget/unit_file_panel/imp.rs:1115
 #, fuzzy
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr "Não foi possível reverter a unidade, permissão não concedida!"
 
-#: src/widget/unit_file_panel/imp.rs:1125
+#: src/widget/unit_file_panel/imp.rs:1123
 #, fuzzy
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr "Não foi possível reverter a unidade, ocorreu um erro!"
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1222
+#: src/widget/unit_file_panel/imp.rs:1224
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Exibir números de linha"
 
-#: src/widget/unit_list/filter/imp.rs:349
+#: src/widget/unit_list/filter/imp.rs:371
 msgctxt "filter"
 msgid "Any sub states"
 msgstr "Quaisquer sub estados"
 
-#: src/widget/unit_list/filter/imp.rs:353
-#: src/widget/unit_list/filter/imp.rs:991
+#. Clear button
+#: src/widget/unit_list/filter/imp.rs:375
+#: src/widget/unit_list/filter/imp.rs:1074
 #: src/widget/unit_list/filter/substate.rs:142
 msgctxt "filter"
 msgid "Clear"
 msgstr "Claro"
 
-#: src/widget/unit_list/filter/imp.rs:992
+#. Filter option
+#: src/widget/unit_list/filter/imp.rs:472
+#, fuzzy
+msgctxt "filter"
+msgid "Match type"
+msgstr "Caixa de fósforos"
+
+#. Filter option
+#: src/widget/unit_list/filter/imp.rs:490
+msgctxt "filter"
+msgid "Case insensitive"
+msgstr ""
+
+#. Filter option
+#: src/widget/unit_list/filter/imp.rs:512
+msgctxt "filter"
+msgid "Unset"
+msgstr ""
+
+#. Filter option
+#. Invert filter Button
+#: src/widget/unit_list/filter/imp.rs:528
+#: src/widget/unit_list/filter/imp.rs:1095
+msgctxt "filter"
+msgid "Invert"
+msgstr "Inverter"
+
+#. Clear button tooltip
+#: src/widget/unit_list/filter/imp.rs:1076
 #: src/widget/unit_list/filter/substate.rs:143
 msgctxt "filter"
 msgid "Clear filter's selected items"
 msgstr "Limpar elementos selecionados do filtro"
 
-#: src/widget/unit_list/filter/imp.rs:1010
-msgctxt "filter"
-msgid "Invert"
-msgstr "Inverter"
-
-#: src/widget/unit_list/filter/imp.rs:1011
+#: src/widget/unit_list/filter/imp.rs:1096
 msgctxt "filter"
 msgid "Invert filter's selected items"
 msgstr "Inverter elementos selecionados do filtro"
@@ -2735,31 +2771,31 @@ msgctxt "list column"
 msgid "Activates"
 msgstr "Ativa"
 
-#: src/widget/unit_list/imp/pop_menu.rs:238
+#: src/widget/unit_list/imp/pop_menu.rs:225
 #, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
 msgstr "Unidade inicial {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:245
+#: src/widget/unit_list/imp/pop_menu.rs:232
 #, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
 msgstr "Unidade de parada {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:252
+#: src/widget/unit_list/imp/pop_menu.rs:239
 #, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
 msgstr "Reiniciar unidade {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:273
+#: src/widget/unit_list/imp/pop_menu.rs:260
 #, rust-format
 msgctxt "controls"
 msgid "Disable and then Enable unit {}"
 msgstr "Desative e depois ative a unidade {}"
 
-#: src/widget/unit_list/imp/pop_menu.rs:280
+#: src/widget/unit_list/imp/pop_menu.rs:267
 #, rust-format
 msgctxt "controls"
 msgid ""
