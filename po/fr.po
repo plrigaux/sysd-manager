@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-25 16:51-0400\n"
 "PO-Revision-Date: 2026-03-25 21:06+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
 "Language: fr\n"
@@ -1468,8 +1468,8 @@ msgid ""
 "No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
 "happened."
 msgstr ""
-"Aucune unités renvoyées, définissez la variable d'environnement "
-"<b>RUST_LOG=info</b> pour voir ce qui se passe."
+"Aucune unités renvoyées, définissez la variable d'environnement <b>"
+"RUST_LOG=info</b> pour voir ce qui se passe."
 
 #: data/interfaces/unit_list_panel.ui:134
 msgctxt "list page title"
@@ -1861,8 +1861,7 @@ msgstr "Signal Kill {} vers"
 #: src/widget/kill_panel/imp.rs:419
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
-msgstr ""
-"Rupture détectée sur le terminal contrôleur ou mort du processus parent"
+msgstr "Rupture détectée sur le terminal contrôleur ou mort du processus parent"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:427
@@ -2454,8 +2453,8 @@ msgstr ""
 "Vous devez jailbreaker votre application Flatpak pour pouvoir enregistrer "
 "des fichiers sur le système hôte.\n"
 "\n"
-"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
-"Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
+"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
+"lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
@@ -2788,8 +2787,8 @@ msgid ""
 "Reload unit {} configuration by calling the <b>ExecReload</b> unit file "
 "instruction"
 msgstr ""
-"Rechargez la configuration de l'unité {} en appelant l'instruction "
-"<b>ExecReload</b> de son fichier d'unité"
+"Rechargez la configuration de l'unité {} en appelant l'instruction <b>"
+"ExecReload</b> de son fichier d'unité"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:19
