@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-25 17:00-0400\n"
+"POT-Creation-Date: 2026-03-25 17:18-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -289,7 +289,8 @@ msgstr "Clear journal events and refetch them"
 #, fuzzy
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr "Enable new entries continuous print as they are appended to the journal"
+msgstr ""
+"Enable new entries continuous print as they are appended to the journal"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:59
@@ -1124,8 +1125,8 @@ msgid ""
 "of activation of the unit, including enablement and manual activation. \n"
 "<b>Use this option with care.</b>"
 msgstr ""
-"Mask the selected unit.  This will link these unit files to <u>/dev/null</u>"
-", making it impossible to start them. \n"
+"Mask the selected unit.  This will link these unit files to <u>/dev/null</"
+"u>, making it impossible to start them. \n"
 "This is a stronger version of <b>disable</b>, since it prohibits all kinds "
 "of activation of the unit, including enablement and manual activation. \n"
 "<b>Use this option with care.</b>"
@@ -2620,13 +2621,13 @@ msgstr "Clean"
 #: src/widget/unit_list/filter/imp.rs:472
 #, fuzzy
 msgctxt "filter"
-msgid "Match type"
+msgid "Match Type"
 msgstr "Watch Signals"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:490
 msgctxt "filter"
-msgid "Case insensitive"
+msgid "Case Insensitive"
 msgstr ""
 
 #. Filter option

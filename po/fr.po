@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-25 17:00-0400\n"
+"POT-Creation-Date: 2026-03-25 17:18-0400\n"
 "PO-Revision-Date: 2026-03-25 21:15+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1032,8 +1032,8 @@ msgstr "Désactiver le fichier d'unité ➚"
 msgctxt "control"
 msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
 msgstr ""
-"Démasquer le fichier d'unité sélectionné. Cela annulera l'effet de <b>"
-"Masquer</b>"
+"Démasquer le fichier d'unité sélectionné. Cela annulera l'effet de "
+"<b>Masquer</b>"
 
 #. button
 #: data/interfaces/side_control_panel.ui:52
@@ -1469,8 +1469,8 @@ msgid ""
 "No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
 "happened."
 msgstr ""
-"Aucune unités renvoyées, définissez la variable d'environnement <b>"
-"RUST_LOG=info</b> pour voir ce qui se passe."
+"Aucune unités renvoyées, définissez la variable d'environnement "
+"<b>RUST_LOG=info</b> pour voir ce qui se passe."
 
 #: data/interfaces/unit_list_panel.ui:134
 msgctxt "list page title"
@@ -1862,7 +1862,8 @@ msgstr "Signal Kill {} vers"
 #: src/widget/kill_panel/imp.rs:419
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
-msgstr "Rupture détectée sur le terminal contrôleur ou mort du processus parent"
+msgstr ""
+"Rupture détectée sur le terminal contrôleur ou mort du processus parent"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:427
@@ -2454,8 +2455,8 @@ msgstr ""
 "Vous devez jailbreaker votre application Flatpak pour pouvoir enregistrer "
 "des fichiers sur le système hôte.\n"
 "\n"
-"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
-"lien</a> pour savoir comment obtenir l'autorisation nécessaire."
+"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
+"Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
@@ -2584,14 +2585,16 @@ msgstr "Réinitialiser"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:472
+#, fuzzy
 msgctxt "filter"
-msgid "Match type"
+msgid "Match Type"
 msgstr "Type de correspondance"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:490
+#, fuzzy
 msgctxt "filter"
-msgid "Case insensitive"
+msgid "Case Insensitive"
 msgstr "Insensible à la casse"
 
 #. Filter option
@@ -2788,8 +2791,8 @@ msgid ""
 "Reload unit {} configuration by calling the <b>ExecReload</b> unit file "
 "instruction"
 msgstr ""
-"Rechargez la configuration de l'unité {} en appelant l'instruction <b>"
-"ExecReload</b> de son fichier d'unité"
+"Rechargez la configuration de l'unité {} en appelant l'instruction "
+"<b>ExecReload</b> de son fichier d'unité"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:19
@@ -2873,6 +2876,10 @@ msgstr "Automounts"
 msgctxt "menu"
 msgid "Customized"
 msgstr "Personnalisé"
+
+#~ msgctxt "filter"
+#~ msgid "Case insensitive"
+#~ msgstr "Insensible à la casse"
 
 #~ msgctxt "preference"
 #~ msgid "Reload Daemon"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-25 17:00-0400\n"
+"POT-Creation-Date: 2026-03-25 17:18-0400\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -202,7 +202,8 @@ msgctxt "enable unit file"
 msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
 "necessary"
-msgstr "Разрешить замену символических ссылок на другие юниты при необходимости"
+msgstr ""
+"Разрешить замену символических ссылок на другие юниты при необходимости"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:66
@@ -282,7 +283,8 @@ msgstr "Очистить события журнала и заново их за
 #: data/interfaces/journal_panel.ui:43
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
-msgstr "Включить непрерывный вывод новых записей по мере добавления их в журнал"
+msgstr ""
+"Включить непрерывный вывод новых записей по мере добавления их в журнал"
 
 #. tooltip
 #: data/interfaces/journal_panel.ui:59
@@ -1033,8 +1035,8 @@ msgstr "_Отключить юнит-файл➚"
 msgctxt "control"
 msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
 msgstr ""
-"Снять маскировку с выбранного юнита. Это отменит действие команды <b>"
-"Маскировать</b>"
+"Снять маскировку с выбранного юнита. Это отменит действие команды "
+"<b>Маскировать</b>"
 
 #. button
 #: data/interfaces/side_control_panel.ui:52
@@ -2349,7 +2351,8 @@ msgstr "Сбой {}. Причина: <span fgcolor='{}'>{}</span>."
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
-msgstr "К сожалению, <b>SysD Manager</b> не может выполнить действие <b>{}</b>."
+msgstr ""
+"К сожалению, <b>SysD Manager</b> не может выполнить действие <b>{}</b>."
 
 #: src/widget/unit_control_panel/mod.rs:136
 msgctxt "workaround"
@@ -2579,13 +2582,13 @@ msgstr "Сброс"
 #: src/widget/unit_list/filter/imp.rs:472
 #, fuzzy
 msgctxt "filter"
-msgid "Match type"
+msgid "Match Type"
 msgstr "Отслеживать сигналы"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:490
 msgctxt "filter"
-msgid "Case insensitive"
+msgid "Case Insensitive"
 msgstr ""
 
 #. Filter option

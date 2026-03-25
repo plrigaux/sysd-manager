@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-25 17:00-0400\n"
+"POT-Creation-Date: 2026-03-25 17:18-0400\n"
 "PO-Revision-Date: 2026-03-16 02:06+0000\n"
 "Last-Translator: Димко <Dymkovych@proton.me>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -2504,13 +2504,13 @@ msgstr ""
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:472
 msgctxt "filter"
-msgid "Match type"
+msgid "Match Type"
 msgstr ""
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:490
 msgctxt "filter"
-msgid "Case insensitive"
+msgid "Case Insensitive"
 msgstr ""
 
 #. Filter option
