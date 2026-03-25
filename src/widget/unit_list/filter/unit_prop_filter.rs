@@ -244,6 +244,7 @@ where
 pub struct FilterText {
     filter_text: String,
     match_type: StrMatchType,
+    case_insensitive: bool,
     filter_unset: bool,
     filter_invert: bool,
     on_filter_apply_ui_func: Option<Box<dyn Fn(bool)>>,
@@ -272,18 +273,27 @@ impl FilterText {
             key: glib::Quark,
         ) -> bool,
         unit_list_panel: &UnitListPanel,
+        case_incensitive_default: bool,
     ) -> Self {
-        Self {
-            filter_text: Default::default(),
-            match_type: StrMatchType::default(),
-            on_filter_apply_ui_func: Default::default(),
+        Self::newq(
+            id,
             filter_unit_func,
-            id: id.to_owned(),
-            unit_list_panel: unit_list_panel.clone(),
-            key: glib::Quark::from_str("default"),
-            filter_unset: false,
-            filter_invert: false,
-        }
+            unit_list_panel,
+            case_incensitive_default,
+            glib::Quark::from_str("default"),
+        )
+        // Self {
+        //     filter_text: Default::default(),
+        //     match_type: StrMatchType::default(),
+        //     on_filter_apply_ui_func: Default::default(),
+        //     filter_unit_func,
+        //     id: id.to_owned(),
+        //     unit_list_panel: unit_list_panel.clone(),
+        //     key: glib::Quark::from_str("default"),
+        //     filter_unset: false,
+        //     filter_invert: false,
+        //     case_insensitive: case_incensitive_default,
+        // }
     }
 
     pub fn newq(
@@ -294,6 +304,7 @@ impl FilterText {
             key: glib::Quark,
         ) -> bool,
         unit_list_panel: &UnitListPanel,
+        case_incensitive_default: bool,
         key: glib::Quark,
     ) -> Self {
         Self {
@@ -306,6 +317,7 @@ impl FilterText {
             key,
             filter_unset: false,
             filter_invert: false,
+            case_insensitive: case_incensitive_default,
         }
     }
 
@@ -328,7 +340,7 @@ impl FilterText {
             gtk::FilterChange::Different
         };
 
-        self.filter_text.replace_range(.., f_element);
+        self.set_filter_text(f_element);
 
         let filter_applies = self.is_filter_applies();
 
@@ -348,6 +360,10 @@ impl FilterText {
             Some(change_type),
             update_widget,
         );
+    }
+
+    fn set_filter_text(&mut self, f_element: &str) {
+        self.filter_text.replace_range(.., f_element);
     }
 
     pub fn set_filter_match_type(&mut self, match_type: StrMatchType, update_widget: bool) {
@@ -384,6 +400,43 @@ impl FilterText {
             Some(change_type),
             update_widget,
         );
+    }
+
+    pub fn set_filter_match_case_insensitive(&mut self, case_insensitive: bool) {
+        let different = self.case_insensitive != case_insensitive;
+
+        self.set_case_insensitive(case_insensitive);
+
+        let filter_applies = self.is_filter_applies();
+
+        if different {
+            self.on_filter_apply_ui(filter_applies);
+        }
+
+        let assessor: Option<Box<dyn UnitPropertyAssessor>> = if filter_applies {
+            Some(Box::new(FilterTextAssessor::new(self)))
+        } else {
+            None
+        };
+
+        let change_type = if case_insensitive {
+            gtk::FilterChange::MoreStrict
+        } else {
+            gtk::FilterChange::LessStrict
+        };
+
+        let update_widget = true;
+
+        self.unit_list_panel.filter_assessor_change(
+            &self.id,
+            assessor,
+            Some(change_type),
+            update_widget,
+        );
+    }
+
+    fn set_case_insensitive(&mut self, case_insensitive: bool) {
+        self.case_insensitive = case_insensitive;
     }
 
     pub(crate) fn set_filter_unset(&mut self, filter_unset: bool) {
@@ -440,6 +493,10 @@ impl FilterText {
             Some(change_type),
             update_widget,
         );
+    }
+
+    pub(crate) fn is_case_insensitive(&self) -> bool {
+        self.case_insensitive
     }
 
     pub(crate) fn is_invert(&self) -> bool {
@@ -881,20 +938,54 @@ impl FilterTextAssessor {
                 Self::filter_unit_value_func_unset
             }
         } else {
-            match (filter_text.match_type, filter_text.filter_invert) {
-                (StrMatchType::Contains, false) => Self::filter_unit_value_func_contains,
-                (StrMatchType::Contains, true) => Self::filter_unit_value_func_contains_inv,
-                (StrMatchType::StartWith, false) => Self::filter_unit_value_func_start_with,
-                (StrMatchType::StartWith, true) => Self::filter_unit_value_func_start_with_inv,
-                (StrMatchType::EndWith, false) => Self::filter_unit_value_func_end_with,
-                (StrMatchType::EndWith, true) => Self::filter_unit_value_func_end_with_inv,
-                (StrMatchType::Equals, false) => Self::filter_unit_value_func_equals,
-                (StrMatchType::Equals, true) => Self::filter_unit_value_func_equals_inv,
+            match (
+                filter_text.match_type,
+                filter_text.filter_invert,
+                filter_text.case_insensitive,
+            ) {
+                (StrMatchType::Contains, false, false) => Self::filter_unit_value_func_contains,
+                (StrMatchType::Contains, false, true) => {
+                    Self::filter_unit_value_func_contains_case_insensitive
+                }
+                (StrMatchType::Contains, true, false) => {
+                    Self::filter_unit_value_func_contains_inv_case_insensitive
+                }
+                (StrMatchType::Contains, true, true) => Self::filter_unit_value_func_contains_inv,
+                (StrMatchType::StartWith, false, false) => Self::filter_unit_value_func_start_with,
+                (StrMatchType::StartWith, false, true) => {
+                    Self::filter_unit_value_func_start_with_insensitive
+                }
+                (StrMatchType::StartWith, true, false) => {
+                    Self::filter_unit_value_func_start_with_inv
+                }
+                (StrMatchType::StartWith, true, true) => {
+                    Self::filter_unit_value_func_start_with_inv_insensitive
+                }
+                (StrMatchType::EndWith, false, false) => Self::filter_unit_value_func_end_with,
+                (StrMatchType::EndWith, false, true) => {
+                    Self::filter_unit_value_func_end_with_insensitive
+                }
+                (StrMatchType::EndWith, true, false) => Self::filter_unit_value_func_end_with_inv,
+                (StrMatchType::EndWith, true, true) => {
+                    Self::filter_unit_value_func_end_with_inv_insensitive
+                }
+                (StrMatchType::Equals, false, false) => Self::filter_unit_value_func_equals,
+                (StrMatchType::Equals, false, true) => {
+                    Self::filter_unit_value_func_equals_insensitive
+                }
+                (StrMatchType::Equals, true, false) => Self::filter_unit_value_func_equals_inv,
+                (StrMatchType::Equals, true, true) => {
+                    Self::filter_unit_value_func_equals_inv_insensitive
+                }
             }
         };
 
         FilterTextAssessor {
-            filter_text: filter_text.filter_text.clone(),
+            filter_text: if filter_text.case_insensitive {
+                filter_text.filter_text.to_ascii_lowercase()
+            } else {
+                filter_text.filter_text.clone()
+            },
             filter_unit_func: filter_text.filter_unit_func,
             id: filter_text.id.clone(),
             filter_unit_value_func,
@@ -914,6 +1005,13 @@ impl FilterTextAssessor {
         !self.filter_unit_value_func_contains(unit_value)
     }
 
+    fn filter_unit_value_func_contains_inv_case_insensitive(
+        &self,
+        unit_value: Option<&String>,
+    ) -> bool {
+        !self.filter_unit_value_func_contains_case_insensitive(unit_value)
+    }
+
     fn filter_unit_value_func_contains(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.contains(&self.filter_text)
@@ -922,8 +1020,26 @@ impl FilterTextAssessor {
         }
     }
 
+    fn filter_unit_value_func_contains_case_insensitive(
+        &self,
+        unit_value: Option<&String>,
+    ) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.to_ascii_lowercase().contains(&self.filter_text)
+        } else {
+            false
+        }
+    }
+
     fn filter_unit_value_func_start_with_inv(&self, unit_value: Option<&String>) -> bool {
         !self.filter_unit_value_func_start_with(unit_value)
+    }
+
+    fn filter_unit_value_func_start_with_inv_insensitive(
+        &self,
+        unit_value: Option<&String>,
+    ) -> bool {
+        !self.filter_unit_value_func_start_with_insensitive(unit_value)
     }
 
     fn filter_unit_value_func_start_with(&self, unit_value: Option<&String>) -> bool {
@@ -934,13 +1050,35 @@ impl FilterTextAssessor {
         }
     }
 
+    fn filter_unit_value_func_start_with_insensitive(&self, unit_value: Option<&String>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value
+                .to_ascii_lowercase()
+                .starts_with(&self.filter_text)
+        } else {
+            false
+        }
+    }
+
     fn filter_unit_value_func_end_with_inv(&self, unit_value: Option<&String>) -> bool {
         !self.filter_unit_value_func_end_with(unit_value)
+    }
+
+    fn filter_unit_value_func_end_with_inv_insensitive(&self, unit_value: Option<&String>) -> bool {
+        !self.filter_unit_value_func_end_with_insensitive(unit_value)
     }
 
     fn filter_unit_value_func_end_with(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.ends_with(&self.filter_text)
+        } else {
+            false
+        }
+    }
+
+    fn filter_unit_value_func_end_with_insensitive(&self, unit_value: Option<&String>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.to_ascii_lowercase().ends_with(&self.filter_text)
         } else {
             false
         }
@@ -954,9 +1092,25 @@ impl FilterTextAssessor {
         }
     }
 
+    fn filter_unit_value_func_equals_inv_insensitive(&self, unit_value: Option<&String>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.to_ascii_lowercase().ne(&self.filter_text)
+        } else {
+            true
+        }
+    }
+
     fn filter_unit_value_func_equals(&self, unit_value: Option<&String>) -> bool {
         if let Some(unit_value) = unit_value {
             unit_value.eq(&self.filter_text)
+        } else {
+            false
+        }
+    }
+
+    fn filter_unit_value_func_equals_insensitive(&self, unit_value: Option<&String>) -> bool {
+        if let Some(unit_value) = unit_value {
+            unit_value.to_ascii_lowercase().eq(&self.filter_text)
         } else {
             false
         }

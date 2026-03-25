@@ -10,6 +10,7 @@ use super::data::{
 };
 use crate::consts::{KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_FILE_LINE_NUMBER_ACTION};
 use crate::widget::InterPanelMessage;
+use crate::widget::preferences::data::KEY_PREF_CASE_INSENSITIVE_DEFAULT;
 use crate::{
     consts::ADWAITA,
     systemd_gui::new_settings,
@@ -121,6 +122,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     stop_proxy_at_close_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    filter_case_insensitive_default_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     proxy_banner: TemplateChild<adw::Banner>,
@@ -489,6 +493,14 @@ impl ObjectImpl for PreferencesDialogImpl {
             .bind(
                 &UNIT_FILE_LINE_NUMBER_ACTION[4..],
                 &self.unit_file_line_numbers.get(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind(
+                KEY_PREF_CASE_INSENSITIVE_DEFAULT,
+                &self.filter_case_insensitive_default_switch.get(),
                 "active",
             )
             .build();

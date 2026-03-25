@@ -32,6 +32,7 @@ pub const KEY_PREF_UNIT_LIST_DISPLAY_COLORS: &str = "pref-unit-list-display-colo
 pub const KEY_PREF_PREFERRED_COLOR_SCHEME: &str = "pref-preferred-color-scheme";
 pub const KEY_PREF_ORIENTATION_MODE: &str = "pref-window-orientaion-mode";
 pub const KEY_PREF_PROP_ORIENTATION_MODE: &str = "pref-window-properties-orientation-vertical";
+pub const KEY_PREF_CASE_INSENSITIVE_DEFAULT: &str = "pref-case-insensitive-default";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter, glib::Enum)]
 #[enum_type(name = "DbusLevel")]

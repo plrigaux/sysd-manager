@@ -26,7 +26,10 @@ use crate::{
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        preferences::data::{DbusLevel, KEY_PREF_UNIT_LIST_DISPLAY_COLORS, PREFERENCES},
+        preferences::data::{
+            DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+            PREFERENCES,
+        },
         unit_list::{
             COL_ID_UNIT, UnitCuratedList, UnitListPanel,
             column::SysdColumn,
@@ -253,6 +256,9 @@ pub struct UnitListPanelImp {
 
     #[property(get, set=Self::set_unit_filter_count)]
     unit_filtered_count: Cell<u32>,
+
+    #[property(get, set)]
+    case_incensitive_default: Cell<bool>,
 
     search_controls: OnceCell<UnitListSearchControls>,
 
@@ -999,11 +1005,14 @@ impl UnitListPanelImp {
         let unit_list_panel: glib::BorrowedObject<'_, crate::widget::unit_list::UnitListPanel> =
             self.obj();
 
+        let case_incensitive_default = self.case_incensitive_default.get();
+
         let filter: Option<Box<dyn UnitPropertyFilter>> = match id {
             SysdColumn::Name => Some(Box::new(FilterText::new(
                 id_str,
                 filter_unit_name,
                 &unit_list_panel,
+                case_incensitive_default,
             ))),
             SysdColumn::Bus => Some(Box::new(FilterElement::new(
                 id_str,
@@ -1044,6 +1053,7 @@ impl UnitListPanelImp {
                 id_str,
                 filter_unit_description,
                 &unit_list_panel,
+                case_incensitive_default,
             ))),
             _ => match id.property_type().as_deref() {
                 Some("t") => Some(Box::new(FilterNum::<u64>::new(
@@ -1057,6 +1067,7 @@ impl UnitListPanelImp {
                     id_str,
                     custom_str,
                     &unit_list_panel,
+                    case_incensitive_default,
                     id.generate_quark(),
                 ))),
                 Some("i") => Some(Box::new(FilterNum::<i32>::new(
@@ -1098,6 +1109,7 @@ impl UnitListPanelImp {
                     id_str,
                     custom_str,
                     &unit_list_panel,
+                    case_incensitive_default,
                     id.generate_quark(),
                 ))),
                 None => {
@@ -1627,6 +1639,14 @@ impl ObjectImpl for UnitListPanelImp {
         pop_menu::UnitPopMenu::new(units_browser, &self.obj(), &self.filter_list_model.borrow());
 
         force_expand_on_the_last_visible_column(&units_browser.columns());
+
+        settings
+            .bind::<UnitListPanel>(
+                KEY_PREF_CASE_INSENSITIVE_DEFAULT,
+                &self.obj(),
+                "case-incensitive-default",
+            )
+            .build();
     }
 }
 

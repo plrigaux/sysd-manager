@@ -1,5 +1,5 @@
 use std::{
-    cell::{OnceCell, RefCell},
+    cell::{Cell, OnceCell, RefCell},
     collections::HashMap,
     rc::Rc,
     str::FromStr,
@@ -26,15 +26,18 @@ use crate::{
     systemd::enums::{
         ActiveState, LoadState, NumMatchType, Preset, StrMatchType, UnitFileStatus, UnitType,
     },
-    upgrade, upgrade_continue,
-    widget::unit_list::{
-        UnitListPanel,
-        column::SysdColumn,
-        filter::{
-            BoolFilter, UnitListFilterWindow,
-            unit_prop_filter::{
-                FilterBool, FilterNum, FilterText, UnitPropertyFilter, UnitPropertyFilterType,
-                get_filter_element, get_filter_element_mut,
+    systemd_gui, upgrade, upgrade_continue,
+    widget::{
+        preferences::data::KEY_PREF_CASE_INSENSITIVE_DEFAULT,
+        unit_list::{
+            UnitListPanel,
+            column::SysdColumn,
+            filter::{
+                BoolFilter, UnitListFilterWindow,
+                unit_prop_filter::{
+                    FilterBool, FilterNum, FilterText, UnitPropertyFilter, UnitPropertyFilterType,
+                    get_filter_element, get_filter_element_mut,
+                },
             },
         },
     },
@@ -57,6 +60,9 @@ pub struct UnitListFilterWindowImp {
 
     #[property(get, set, nullable, default = None)]
     selected: RefCell<Option<String>>,
+
+    #[property(get, set)]
+    case_incensitive_default: Cell<bool>,
 
     filter_widgets: RefCell<Vec<Vec<FilterWidget>>>,
 
@@ -103,6 +109,7 @@ impl UnitListFilterWindowImp {
         let mut filter_widgets: Vec<Vec<FilterWidget>> = vec![];
         // for (name, key, _num_id, _) in &*UNIT_LIST_COLUMNS
 
+        let case_incensitive_default = self.case_incensitive_default.get();
         for unit_prop_selection in unit_list_panel.default_displayed_columns().iter().chain(
             unit_list_panel
                 .current_columns()
@@ -126,7 +133,9 @@ impl UnitListFilterWindowImp {
                 .map_or(key.id().to_string(), |title| title.to_string());
 
             let (widget, filter_widget): (gtk::Box, Vec<FilterWidget>) = match key {
-                SysdColumn::Name => common_text_filter(&unit_property_filter_configurator),
+                SysdColumn::Name => {
+                    common_text_filter(&unit_property_filter_configurator, case_incensitive_default)
+                }
                 SysdColumn::Bus => build_bus_level_filter(&unit_property_filter_configurator),
                 SysdColumn::Type => build_type_filter(&unit_property_filter_configurator),
                 SysdColumn::State => build_enablement_filter(&unit_property_filter_configurator),
@@ -136,12 +145,15 @@ impl UnitListFilterWindowImp {
                 SysdColumn::SubState => {
                     super::substate::sub_state_filter(&unit_property_filter_configurator)
                 }
-                SysdColumn::Description => common_text_filter(&unit_property_filter_configurator),
+                SysdColumn::Description => {
+                    common_text_filter(&unit_property_filter_configurator, case_incensitive_default)
+                }
 
                 _ => match unit_property_filter_configurator.borrow().ftype() {
-                    UnitPropertyFilterType::Text => {
-                        common_text_filter(&unit_property_filter_configurator)
-                    }
+                    UnitPropertyFilterType::Text => common_text_filter(
+                        &unit_property_filter_configurator,
+                        case_incensitive_default,
+                    ),
                     UnitPropertyFilterType::NumU64 => {
                         common_num_filter::<u64>(&unit_property_filter_configurator)
                     }
@@ -323,6 +335,16 @@ impl ObjectSubclass for UnitListFilterWindowImp {
 impl ObjectImpl for UnitListFilterWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let settings = systemd_gui::new_settings();
+
+        settings
+            .bind::<UnitListFilterWindow>(
+                KEY_PREF_CASE_INSENSITIVE_DEFAULT,
+                &self.obj(),
+                "case-incensitive-default",
+            )
+            .build();
     }
 }
 
@@ -368,6 +390,8 @@ pub enum FilterWidget {
         glib::WeakRef<gtk::Entry>,
         glib::WeakRef<gtk::DropDown>,
         glib::WeakRef<gtk::CheckButton>,
+        bool,
+        glib::WeakRef<gtk::CheckButton>,
         glib::WeakRef<gtk::CheckButton>,
     ),
     Num(glib::WeakRef<gtk::Entry>, glib::WeakRef<gtk::DropDown>),
@@ -378,22 +402,33 @@ pub enum FilterWidget {
 impl FilterWidget {
     fn clear(&self) {
         match self {
-            FilterWidget::Text(entry, dropdown, invert, unset) => {
+            FilterWidget::Text(
+                entry,
+                dropdown,
+                case_incensitive,
+                default_case_insensitive,
+                invert,
+                unset,
+            ) => {
                 let entry = upgrade!(entry);
                 entry.set_text("");
                 let dropdown = upgrade!(dropdown);
                 dropdown.set_selected(0);
+                let case = upgrade!(case_incensitive);
+                case.set_active(*default_case_insensitive);
                 let invert = upgrade!(invert);
                 invert.set_active(false);
                 let unset = upgrade!(unset);
                 unset.set_active(false);
             }
+
             FilterWidget::Num(entry, dropdown) => {
                 let entry = upgrade!(entry);
                 entry.set_text("");
                 let dropdown = upgrade!(dropdown);
                 dropdown.set_selected(0);
             }
+
             FilterWidget::CheckBox(check) => {
                 let check = upgrade!(check);
                 check.set_active(false);
@@ -411,6 +446,7 @@ impl FilterWidget {
 
 fn common_text_filter(
     filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+    case_incensitive_default: bool,
 ) -> (gtk::Box, Vec<FilterWidget>) {
     let container = create_content_box();
 
@@ -449,11 +485,31 @@ fn common_text_filter(
     grid.attach_next_to(&dropdown, Some(&label), gtk::PositionType::Right, 1, 1);
 
     let label = gtk::Label::builder()
-        .label("Unset")
+        .label("Case insensitive")
         .use_markup(true)
         .halign(gtk::Align::Start)
         .build();
     grid.attach(&label, 0, 1, 1, 1);
+
+    let case_insensitive_check: gtk::CheckButton = gtk::CheckButton::builder()
+        .active(case_incensitive_default)
+        .name("case")
+        .build();
+
+    grid.attach_next_to(
+        &case_insensitive_check,
+        Some(&label),
+        gtk::PositionType::Right,
+        1,
+        1,
+    );
+
+    let label = gtk::Label::builder()
+        .label("Unset")
+        .use_markup(true)
+        .halign(gtk::Align::Start)
+        .build();
+    grid.attach(&label, 0, 2, 1, 1);
 
     let unset_check: gtk::CheckButton = gtk::CheckButton::builder()
         .active(false)
@@ -467,7 +523,7 @@ fn common_text_filter(
         .use_markup(true)
         .halign(gtk::Align::Start)
         .build();
-    grid.attach(&label, 0, 2, 1, 1);
+    grid.attach(&label, 0, 3, 1, 1);
 
     let invert_check: gtk::CheckButton = gtk::CheckButton::builder()
         .active(false)
@@ -494,6 +550,7 @@ fn common_text_filter(
         );
         entry.set_text(&filter_text.text());
         dropdown.set_selected(filter_text.match_type().position());
+        case_insensitive_check.set_active(filter_text.is_case_insensitive());
         invert_check.set_active(filter_text.is_invert());
         unset_check.set_active(filter_text.is_unset());
     }
@@ -501,6 +558,8 @@ fn common_text_filter(
     let filter_widget = FilterWidget::Text(
         entry.downgrade(),
         dropdown.downgrade(),
+        case_insensitive_check.downgrade(),
+        case_incensitive_default,
         invert_check.downgrade(),
         unset_check.downgrade(),
     );
@@ -538,6 +597,21 @@ fn common_text_filter(
                 .expect("downcast_mut to FilterText");
 
             filter_text.set_filter_match_type(match_type, true);
+        });
+    }
+
+    {
+        let filter_container: Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>> =
+            filter_container.clone();
+
+        case_insensitive_check.connect_toggled(move |check_button| {
+            let mut binding = filter_container.as_ref().borrow_mut();
+            let filter_text = binding
+                .as_any_mut()
+                .downcast_mut::<FilterText>()
+                .expect("downcast_mut to FilterText");
+
+            filter_text.set_filter_match_case_insensitive(check_button.is_active());
         });
     }
 

@@ -280,6 +280,10 @@
       <default>true</default>
       <summary>Use Proxy to Revert Unit File to its vendor version</summary>
     </key>
+    <key name="pref-case-insensitive-default" type="b">
+      <default>true</default>
+      <summary>Default settings for search and filters</summary>
+    </key>
     <key name="pref-proxy-start-at-startup" type="b">
       <default>false</default>
       <summary>Start the Proxy when starting SysD Manager</summary>
