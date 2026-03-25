@@ -3,16 +3,6 @@ mod column_factories;
 mod construct;
 pub mod pop_menu;
 
-use std::{
-    borrow::Cow,
-    cell::{Cell, OnceCell, Ref, RefCell, RefMut},
-    collections::{HashMap, HashSet},
-    hash::Hasher,
-    rc::Rc,
-    sync::OnceLock,
-    time::Duration,
-};
-
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
@@ -69,7 +59,15 @@ use gtk::{
         },
     },
 };
-use std::hash::Hash;
+use std::{
+    borrow::Cow,
+    cell::{Cell, OnceCell, Ref, RefCell, RefMut},
+    collections::{HashMap, HashSet},
+    hash::{Hash, Hasher},
+    rc::Rc,
+    sync::OnceLock,
+    time::Duration,
+};
 use systemd::{
     ListUnitResponse, UnitProperties, UnitPropertiesFlags, data::UnitPropertySetter,
     enums::UnitFileStatus, socket_unit::SocketUnitInfo,
@@ -257,8 +255,14 @@ pub struct UnitListPanelImp {
     #[property(get, set=Self::set_unit_filter_count)]
     unit_filtered_count: Cell<u32>,
 
-    #[property(get, set)]
+    #[property(get, set=Self::set_case_incensitive_default)]
     case_incensitive_default: Cell<bool>,
+
+    #[property(get, set, default)]
+    selected_list_view: Cell<UnitCuratedList>,
+
+    #[property(get, set)]
+    include_unit_files: Cell<bool>,
 
     search_controls: OnceCell<UnitListSearchControls>,
 
@@ -280,12 +284,6 @@ pub struct UnitListPanelImp {
     current_column_view_column_definition_list: RefCell<Vec<UnitPropertySelection>>,
 
     default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
-
-    #[property(get, set, default)]
-    selected_list_view: Cell<UnitCuratedList>,
-
-    #[property(get, set)]
-    include_unit_files: Cell<bool>,
 
     abort_handles: RefCell<Vec<AbortHandle>>,
 }
@@ -690,11 +688,12 @@ impl UnitListPanelImp {
             let applied_assessors = self
                 .applied_unit_property_filters
                 .get()
-                .expect("applied_assessors not null");
+                .expect("applied_assessors not null")
+                .borrow();
 
             //TODO report a bug because the adw::ButtonContent doesn't hinerit it's parent
             //sensitivity when hidden
-            s_controls.set_filter_is_set(!applied_assessors.borrow().is_empty());
+            s_controls.set_filter_is_set(!applied_assessors.is_empty());
         }
     }
 
@@ -1464,6 +1463,29 @@ impl UnitListPanelImp {
             == Some(RESTRICTIVE_FILTER_VIEW_PAGE)
         {
             self.panel_stack.set_visible_child_name(UNIT_LIST_VIEW_PAGE);
+        }
+    }
+
+    fn set_case_incensitive_default(&self, case_incensitive_default: bool) {
+        println!(
+            "{:?} {}",
+            self.case_incensitive_default, case_incensitive_default
+        );
+
+        if self.case_incensitive_default.get() == case_incensitive_default {
+            return;
+        }
+
+        self.case_incensitive_default.set(case_incensitive_default);
+
+        for filter in self.unit_property_filters.borrow().values() {
+            let mut filter = filter.borrow_mut();
+
+            let Some(filter_text) = filter.as_any_mut().downcast_mut::<FilterText>() else {
+                continue;
+            };
+
+            filter_text.set_filter_match_case_insensitive(case_incensitive_default);
         }
     }
 }

@@ -404,6 +404,10 @@ impl FilterText {
 
     pub fn set_filter_match_case_insensitive(&mut self, case_insensitive: bool) {
         let different = self.case_insensitive != case_insensitive;
+        debug!(
+            "set case insensitive old: {} new: {}",
+            self.case_insensitive, case_insensitive
+        );
 
         self.set_case_insensitive(case_insensitive);
 
