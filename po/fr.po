@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-25 16:51-0400\n"
-"PO-Revision-Date: 2026-03-16 02:28+0000\n"
+"PO-Revision-Date: 2026-03-25 21:01+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -2584,22 +2584,21 @@ msgstr "Réinitialiser"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:472
-#, fuzzy
 msgctxt "filter"
 msgid "Match type"
-msgstr "Respecte la casse"
+msgstr "Type de correspondance"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:490
 msgctxt "filter"
 msgid "Case insensitive"
-msgstr ""
+msgstr "Insensible à la casse"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:512
 msgctxt "filter"
 msgid "Unset"
-msgstr ""
+msgstr "Désactivé"
 
 #. Filter option
 #. Invert filter Button
