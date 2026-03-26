@@ -13,8 +13,8 @@ use gtk::{
         },
     },
 };
-use tracing::{debug, info};
 use tokio::sync::mpsc;
+use tracing::{debug, info};
 
 use crate::{
     systemd::{SystemdSignalRow, runtime, watch_systemd_signals},

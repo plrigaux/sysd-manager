@@ -15,7 +15,7 @@ ExecStart={EXECUTABLE}
 ExecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=5
 LogsDirectory=log/{SERVICE_ID}
-Environment=HEART_BEAT_DELAY=10000
+Environment=HEART_BEAT_DELAY=30000
 Environment="RUST_LOG=info" 
 {ENVIRONMENT}
 
