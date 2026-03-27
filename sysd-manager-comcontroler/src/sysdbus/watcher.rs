@@ -1,10 +1,7 @@
-use base::enums::UnitDBusLevel;
-use tokio::sync::mpsc;
-use tracing::{debug, info, warn};
-
 use crate::{
     SystemdSignal, SystemdSignalRow,
     errors::SystemdErrors,
+    runtime,
     sysdbus::{
         dbus_proxies::{
             JobNewArgs, JobNewStream, JobRemovedArgs, JobRemovedStream, ReloadingArgs,
@@ -14,10 +11,33 @@ use crate::{
         get_connection,
     },
 };
+use base::enums::UnitDBusLevel;
 use futures_util::stream::StreamExt;
+use std::sync::OnceLock;
+use tokio::sync::broadcast;
+use tracing::{debug, info, warn};
 
-pub async fn watch_systemd_signals(
-    systemd_signal_sender: mpsc::Sender<SystemdSignalRow>,
+static SENDER: OnceLock<broadcast::Sender<SystemdSignalRow>> = OnceLock::new();
+
+pub fn init_signal_watcher() -> broadcast::Receiver<SystemdSignalRow> {
+    let sender = SENDER.get_or_init(|| {
+        let (systemd_signal_sender, _) = broadcast::channel(50);
+
+        let cancellation_token = tokio_util::sync::CancellationToken::new();
+
+        runtime().spawn(watch_systemd_signals(
+            systemd_signal_sender.clone(),
+            cancellation_token,
+        ));
+
+        systemd_signal_sender
+    });
+
+    sender.subscribe()
+}
+
+async fn watch_systemd_signals(
+    systemd_signal_sender: broadcast::Sender<SystemdSignalRow>,
     cancellation_token: tokio_util::sync::CancellationToken,
 ) -> Result<(), SystemdErrors> {
     let connection = get_connection(UnitDBusLevel::System).await?;
@@ -57,7 +77,7 @@ pub async fn watch_systemd_signals(
         if let Some(signal) = msg {
             let signal_row = SystemdSignalRow::new(signal);
 
-            if let Err(error) = systemd_signal_sender.send(signal_row).await {
+            if let Err(error) = systemd_signal_sender.send(signal_row) {
                 warn!("Send signal Error {error:?}")
             };
         }

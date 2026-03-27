@@ -12,9 +12,8 @@ pub mod socket_unit;
 pub mod sysdbus;
 pub mod time_handling;
 
-use crate::data::ListedLoadedUnit;
 use crate::{
-    data::UnitPropertySetter,
+    data::{ListedLoadedUnit, UnitPropertySetter},
     enums::{ActiveState, LoadState, StartStopMode, UnitFileStatus},
     file::save_text_to_file,
     journal_data::Boot,
@@ -24,10 +23,11 @@ use crate::{
     },
     time_handling::TimestampStyle,
 };
-use base::file::create_drop_in_path_file;
 use base::{
     enums::UnitDBusLevel,
-    file::{commander_blocking, flatpak_host_file_path, test_flatpak_spawn},
+    file::{
+        commander_blocking, create_drop_in_path_file, flatpak_host_file_path, test_flatpak_spawn,
+    },
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use data::{UnitInfo, UnitProcess};
@@ -45,7 +45,7 @@ use std::{
     sync::OnceLock,
     time::{SystemTime, UNIX_EPOCH},
 };
-use tokio::{runtime::Runtime, sync::mpsc};
+use tokio::{runtime::Runtime, sync::broadcast};
 use tracing::{error, info, warn};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
@@ -128,8 +128,6 @@ pub struct CompleteUnitPropertiesCallParams {
 
 impl CompleteUnitPropertiesCallParams {
     pub fn new(unit: &UnitInfo) -> Self {
-        // println!("Has status {:?} {:?}", unit.enable_status(), unit.primary())
-
         Self::new_params(
             unit.dbus_level(),
             unit.primary(),
@@ -944,7 +942,6 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
             .map_err(|err| err.into())
     } else {
         info!("Reloading Daemon - Proxy");
-        println!("proxy");
         proxy_call_async!(reload)
     }
 
@@ -1054,7 +1051,7 @@ pub fn retreive_unit_processes(
     Ok(unit_processes_map)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SystemdSignalRow {
     pub time_stamp: u64,
     pub signal: SystemdSignal,
@@ -1080,7 +1077,7 @@ impl SystemdSignalRow {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SystemdSignal {
     UnitNew(String, OwnedObjectPath),
     UnitRemoved(String, OwnedObjectPath),
@@ -1125,15 +1122,8 @@ impl SystemdSignal {
     }
 }
 
-pub async fn watch_systemd_signals(
-    systemd_signal_sender: mpsc::Sender<SystemdSignalRow>,
-    cancellation_token: tokio_util::sync::CancellationToken,
-) {
-    if let Err(err) =
-        sysdbus::watcher::watch_systemd_signals(systemd_signal_sender, cancellation_token).await
-    {
-        error!("Error listening to jobs {err:?}");
-    }
+pub fn init_signal_watcher() -> broadcast::Receiver<SystemdSignalRow> {
+    sysdbus::watcher::init_signal_watcher()
 }
 
 pub async fn test(test_name: &str, level: UnitDBusLevel) {

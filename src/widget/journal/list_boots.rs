@@ -186,7 +186,7 @@ mod imp {
                 .filter_map(|item| item.ok())
             {
                 column_view_column.connect_fixed_width_notify(|column| {
-                    println!("{:?} {}", column.id(), column.fixed_width())
+                    debug!("{:?} {}", column.id(), column.fixed_width())
                 });
 
                 if let Some(id) = column_view_column.id() {

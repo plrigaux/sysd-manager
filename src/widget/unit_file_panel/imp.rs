@@ -1149,7 +1149,7 @@ impl ObjectSubclass for UnitFilePanelImp {
         klass.bind_template_callbacks();
 
         klass.install_action("test_pizza", None, |a, b, c| {
-            println!("test a {:?} b {:?} c {:?}", a, b, c)
+            debug!("test a {:?} b {:?} c {:?}", a, b, c)
         });
     }
 

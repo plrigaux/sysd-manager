@@ -1467,11 +1467,6 @@ impl UnitListPanelImp {
     }
 
     fn set_case_incensitive_default(&self, case_incensitive_default: bool) {
-        println!(
-            "{:?} {}",
-            self.case_incensitive_default, case_incensitive_default
-        );
-
         if self.case_incensitive_default.get() == case_incensitive_default {
             return;
         }

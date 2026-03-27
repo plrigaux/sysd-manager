@@ -1,5 +1,8 @@
-use std::cell::{OnceCell, Ref, RefCell};
-
+use super::SignalsWindow;
+use crate::{
+    systemd_gui::new_settings,
+    widget::{app_window::AppWindow, preferences::data::PREFERENCES},
+};
 use adw::subclass::window::AdwWindowImpl;
 use gio::{ListStore, glib::BoxedAnyObject};
 use gtk::{
@@ -13,16 +16,9 @@ use gtk::{
         },
     },
 };
-use tokio::sync::mpsc;
-use tracing::{debug, info};
-
-use crate::{
-    systemd::{SystemdSignalRow, runtime, watch_systemd_signals},
-    systemd_gui::new_settings,
-    widget::{app_window::AppWindow, preferences::data::PREFERENCES},
-};
-
-use super::SignalsWindow;
+use std::cell::{Cell, OnceCell, Ref, RefCell};
+use systemd::{SystemdSignalRow, init_signal_watcher};
+use tracing::{debug, info, warn};
 
 const SIGNAL_WINDOW_WIDTH: &str = "signal-window-width";
 const SIGNAL_WINDOW_HEIGHT: &str = "signal-window-height";
@@ -51,8 +47,7 @@ pub struct SignalsWindowImp {
     signals: RefCell<Option<gio::ListStore>>,
 
     app_window: OnceCell<AppWindow>,
-
-    token: OnceCell<tokio_util::sync::CancellationToken>,
+    receiving: Cell<bool>,
 }
 
 #[gtk::template_callbacks]
@@ -202,7 +197,8 @@ impl ObjectImpl for SignalsWindowImp {
         self.setup_factory();
 
         let signal_dialog = self.obj().clone();
-        let (systemd_signal_sender, mut systemd_signal_receiver) = mpsc::channel(100);
+        let mut systemd_signal_receiver = init_signal_watcher();
+        self.receiving.set(true);
 
         glib::spawn_future_local(async move {
             fn append(signal: SystemdSignalRow, model: &ListStore) {
@@ -211,24 +207,28 @@ impl ObjectImpl for SignalsWindowImp {
                 model.append(&boxed);
             }
 
-            if let Some(signal) = systemd_signal_receiver.recv().await {
+            //To handle the first
+            if let Ok(signal) = systemd_signal_receiver
+                .recv()
+                .await
+                .inspect_err(|err| warn!("Watch Signal {err:?}"))
+            {
                 append(signal, &model);
                 signal_dialog.imp().display_signals();
             }
 
-            while let Some(signal) = systemd_signal_receiver.recv().await {
+            while signal_dialog.imp().receiving.get()
+                && let Ok(signal) = systemd_signal_receiver
+                    .recv()
+                    .await
+                    .inspect_err(|err| warn!("Watch Signal {err:?}"))
+            {
+                println!("xxx {:?}", signal);
                 append(signal, &model);
             }
+
+            info!("Window Watcher End receiving signals")
         });
-
-        let cancellation_token = tokio_util::sync::CancellationToken::new();
-
-        let _ = self.token.set(cancellation_token.clone());
-
-        runtime().spawn(watch_systemd_signals(
-            systemd_signal_sender,
-            cancellation_token,
-        ));
 
         let settings = new_settings();
 
@@ -242,12 +242,9 @@ impl ObjectImpl for SignalsWindowImp {
 impl WidgetImpl for SignalsWindowImp {}
 impl WindowImpl for SignalsWindowImp {
     fn close_request(&self) -> glib::Propagation {
-        // Save window size
-        info!("Close window signals");
+        debug!("Close window signals");
 
-        if let Some(token) = self.token.get() {
-            token.cancel();
-        }
+        self.receiving.set(false);
 
         self.app_window
             .get()
