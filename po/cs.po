@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-25 17:18-0400\n"
-"PO-Revision-Date: 2026-02-01 18:01+0000\n"
-"Last-Translator: lorduskordus <lorduskordus@gmail.com>\n"
+"PO-Revision-Date: 2026-03-28 20:09+0000\n"
+"Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/cs/>\n"
 "Language: cs\n"
@@ -156,7 +156,7 @@ msgstr ""
 #: src/widget/clean_dialog/imp.rs:93
 msgctxt "clean"
 msgid "Clean"
-msgstr "Vyčistit"
+msgstr "Čisté"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
