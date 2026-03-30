@@ -2,10 +2,12 @@ use std::{
     ffi::OsString,
     fmt::{self, Display, Formatter},
     string::FromUtf8Error,
+    time::Duration,
 };
 
 use base::file::SysdBaseError;
 use gettextrs::pgettext;
+use tokio::time::error::Elapsed;
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -44,6 +46,7 @@ pub enum SystemdErrors {
     ZXml(zbus_xml::Error),
     Unreachable,
     InvalidPath(String),
+    Timeout(Duration),
 }
 
 impl SystemdErrors {

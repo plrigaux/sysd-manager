@@ -217,13 +217,13 @@ impl ObjectImpl for SignalsWindowImp {
                 signal_dialog.imp().display_signals();
             }
 
-            while signal_dialog.imp().receiving.get()
-                && let Ok(signal) = systemd_signal_receiver
-                    .recv()
-                    .await
-                    .inspect_err(|err| warn!("Watch Signal {err:?}"))
+            while let Ok(signal) = systemd_signal_receiver
+                .recv()
+                .await
+                .inspect_err(|err| warn!("Watch Signal {err:?}"))
+                && signal_dialog.imp().receiving.get()
             {
-                println!("xxx {:?}", signal);
+                info!("Watcher Browser {:?}", signal);
                 append(signal, &model);
             }
 

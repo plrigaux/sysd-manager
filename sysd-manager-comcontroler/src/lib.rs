@@ -13,8 +13,11 @@ pub mod sysdbus;
 pub mod time_handling;
 
 use crate::{
-    data::{ListedLoadedUnit, UnitPropertySetter},
-    enums::{ActiveState, LoadState, StartStopMode, UnitFileStatus},
+    data::{ListedLoadedUnit, UnitInfo, UnitProcess, UnitPropertySetter},
+    enums::{
+        ActiveState, CleanOption, DependencyType, DisEnableFlags, KillWho, LoadState,
+        StartStopMode, UnitFileStatus, UnitType,
+    },
     file::save_text_to_file,
     journal_data::Boot,
     sysdbus::{
@@ -30,22 +33,28 @@ use base::{
     },
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
-use data::{UnitInfo, UnitProcess};
 use enumflags2::{BitFlag, BitFlags};
-use enums::{CleanOption, DependencyType, DisEnableFlags, KillWho, UnitType};
 use errors::SystemdErrors;
 use flagset::{FlagSet, flags};
 use glib::Quark;
 use journal_data::{EventRange, JournalEventChunk};
 use std::{
     any::Any,
+    cell::Cell,
     collections::{BTreeMap, BTreeSet, HashMap},
     fs::File,
     io::Read,
-    sync::OnceLock,
-    time::{SystemTime, UNIX_EPOCH},
+    sync::{Arc, OnceLock},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
-use tokio::{runtime::Runtime, sync::broadcast};
+use tokio::{
+    runtime::Runtime,
+    sync::{
+        Mutex,
+        broadcast::{self, error::RecvError},
+    },
+    time::timeout,
+};
 use tracing::{error, info, warn};
 use zvariant::{OwnedObjectPath, OwnedValue};
 
@@ -932,6 +941,53 @@ pub fn link_unit_files(
 }
 
 pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
+    let mut watcher = init_signal_watcher();
+    daemon_reload_core(level).await?;
+
+    let pass = Arc::new(Mutex::new(true));
+    let pass2 = pass.clone();
+    let mut asdf = async move || {
+        println!("SADfsdfasfs");
+        loop {
+            match watcher.recv().await {
+                Ok(x) => {
+                    if let SystemdSignal::Reloading(active) = x.signal {
+                        if active {
+                            info!("Reloading!");
+                        } else {
+                            info!("Reload Finised");
+                        }
+                        break;
+                    }
+                }
+
+                Err(RecvError::Lagged(lag)) => info!("Lagged {lag:?}"),
+                Err(err) => {
+                    warn!("Recev Err {err:?}");
+                    break;
+                }
+            }
+
+            if !*pass2.lock().await {
+                println!("----------------------------");
+                break;
+            }
+        }
+        println!("???????????");
+    };
+
+    let duration = Duration::from_secs(10);
+    match timeout(duration, asdf()).await {
+        Ok(_) => Ok(()),
+        Err(_err) => {
+            let mut c = pass.lock().await;
+            *c = false;
+            Err(SystemdErrors::Timeout(duration))
+        }
+    }
+}
+
+async fn daemon_reload_core(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if level.user_session() || !proxy_switcher::PROXY_SWITCHER.reload() {
         info!("Reloading Daemon - Direct");
@@ -1117,7 +1173,7 @@ impl SystemdSignal {
                 )
             }
             SystemdSignal::UnitFilesChanged => String::new(),
-            SystemdSignal::Reloading(active) => format!("firmware={active}"),
+            SystemdSignal::Reloading(active) => format!("active={active}"),
         }
     }
 }

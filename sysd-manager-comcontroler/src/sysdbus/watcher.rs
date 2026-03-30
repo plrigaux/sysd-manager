@@ -15,7 +15,9 @@ use base::enums::UnitDBusLevel;
 use futures_util::stream::StreamExt;
 use std::sync::OnceLock;
 use tokio::sync::broadcast;
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
+use zbus::{MatchRule, MessageStream};
+use zvariant::OwnedObjectPath;
 
 static SENDER: OnceLock<broadcast::Sender<SystemdSignalRow>> = OnceLock::new();
 
@@ -25,15 +27,103 @@ pub fn init_signal_watcher() -> broadcast::Receiver<SystemdSignalRow> {
 
         let cancellation_token = tokio_util::sync::CancellationToken::new();
 
-        runtime().spawn(watch_systemd_signals(
-            systemd_signal_sender.clone(),
-            cancellation_token,
-        ));
+        // runtime().spawn(watch_systemd_signals(
+        //     systemd_signal_sender.clone(),
+        //     cancellation_token,
+        // ));
+
+        runtime().spawn(signal_watcher(systemd_signal_sender.clone()));
 
         systemd_signal_sender
     });
 
     sender.subscribe()
+}
+
+async fn signal_watcher(
+    systemd_signal_sender: broadcast::Sender<SystemdSignalRow>,
+) -> Result<(), SystemdErrors> {
+    let connection = get_connection(UnitDBusLevel::System).await?;
+
+    let systemd_proxy = Systemd1ManagerProxy::new(&connection).await?;
+    if let Err(err) = systemd_proxy.subscribe().await {
+        warn!("Subscribe error {:?}", err);
+    };
+    let rule = MatchRule::builder()
+        .msg_type(zbus::message::Type::Signal)
+        // .sender("org.freedesktop.DBus")?
+        .interface("org.freedesktop.systemd1.Manager")?
+        // .member("NameOwnerChanged")?
+        // .add_arg("org.freedesktop.zbus.MatchRuleStreamTest42")?
+        .build();
+
+    let mut stream = MessageStream::for_match_rule(
+        rule,
+        &connection,
+        // For such a specific match rule, we don't need a big queue.
+        Some(100),
+    )
+    .await?;
+
+    while let Some(message) = stream.next().await {
+        let signal = match message {
+            Ok(message) => match (
+                message.message_type(),
+                message.header().member().map(|m| m.as_str()),
+            ) {
+                (zbus::message::Type::MethodCall, _) => {
+                    info!("Method Call {message:?}");
+                    None
+                }
+                (zbus::message::Type::MethodReturn, _) => {
+                    info!("Method Ret {message:?}");
+                    None
+                }
+                (zbus::message::Type::Error, _) => {
+                    warn!("Error {message:?}");
+                    None
+                }
+                (zbus::message::Type::Signal, Some("JobRemoved")) => {
+                    let (id, job, unit, result): (u32, OwnedObjectPath, String, String) =
+                        message.body().deserialize()?;
+                    Some(SystemdSignal::JobRemoved(id, job, unit, result))
+                }
+                (zbus::message::Type::Signal, Some("JobNew")) => {
+                    let (id, job, unit): (u32, OwnedObjectPath, String) =
+                        message.body().deserialize()?;
+                    Some(SystemdSignal::JobNew(id, job, unit))
+                }
+                (zbus::message::Type::Signal, Some("Reloading")) => {
+                    let active: bool = message.body().deserialize()?;
+                    Some(SystemdSignal::Reloading(active))
+                }
+                (zbus::message::Type::Signal, _) => {
+                    info!("Signal {message:?}");
+
+                    let h = message.header();
+                    if let Some(m) = h.member() {
+                        m.as_str();
+                        println!("{:?}", m)
+                    }
+                    None
+                }
+            },
+            Err(err) => {
+                error!("{err}");
+                None
+            }
+        };
+
+        if let Some(signal) = signal {
+            let signal_row = SystemdSignalRow::new(signal);
+
+            if let Err(error) = systemd_signal_sender.send(signal_row) {
+                warn!("Send signal Error {error:?}")
+            };
+        }
+    }
+
+    Ok(())
 }
 
 async fn watch_systemd_signals(
@@ -70,7 +160,7 @@ async fn watch_systemd_signals(
             m = unit_files_changed(&mut unit_files_changed_stream) => {m},
             _ = cancellation_token.cancelled() => {
                 info!("Watch Systemd Signals Close");
-                return Ok(());
+                break;
             }
         );
 
@@ -83,6 +173,8 @@ async fn watch_systemd_signals(
         }
     }
 
+    error!("Stream ended unexpectedly");
+    Ok(())
     //unreachable!("Stream ended unexpectedly");
 }
 
