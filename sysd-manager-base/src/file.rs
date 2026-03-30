@@ -332,7 +332,7 @@ pub async fn execute_command(
     debug!("Going to read out");
 
     while let Some(line) = reader_out.next_line().await? {
-        info!("Script line: {}", line);
+        debug!("Script line: {}", line);
     }
 
     debug!("Going to read err");
