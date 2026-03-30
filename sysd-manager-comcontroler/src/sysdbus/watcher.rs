@@ -1,19 +1,91 @@
 use crate::{
-    SystemdSignal, SystemdSignalRow,
     errors::SystemdErrors,
     runtime,
     sysdbus::{dbus_proxies::Systemd1ManagerProxy, get_connection},
 };
 use base::enums::UnitDBusLevel;
 use futures_util::stream::StreamExt;
-use std::sync::OnceLock;
+use std::{
+    sync::OnceLock,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use tokio::sync::broadcast;
 use tracing::{debug, error, info, warn};
 use zbus::{MatchRule, MessageStream};
 use zvariant::OwnedObjectPath;
 
-static SENDER: OnceLock<broadcast::Sender<SystemdSignalRow>> = OnceLock::new();
+#[derive(Debug, Clone)]
+pub enum SystemdSignal {
+    UnitNew(String, OwnedObjectPath),
+    UnitRemoved(String, OwnedObjectPath),
+    JobNew(u32, OwnedObjectPath, String),
+    JobRemoved(u32, OwnedObjectPath, String, String),
+    StartupFinished(u64, u64, u64, u64, u64, u64),
+    UnitFilesChanged,
+    Reloading(bool),
+}
 
+impl SystemdSignal {
+    pub fn type_text(&self) -> &str {
+        match self {
+            SystemdSignal::UnitNew(_, _) => "UnitNew",
+            SystemdSignal::UnitRemoved(_, _) => "UnitRemoved",
+            SystemdSignal::JobNew(_, _, _) => "JobNew",
+            SystemdSignal::JobRemoved(_, _, _, _) => "JobRemoved",
+            SystemdSignal::StartupFinished(_, _, _, _, _, _) => "StartupFinished",
+            SystemdSignal::UnitFilesChanged => "UnitFilesChanged",
+            SystemdSignal::Reloading(_) => "Reloading",
+        }
+    }
+
+    pub fn details(&self) -> String {
+        match self {
+            SystemdSignal::UnitNew(id, unit) => format!("{id} {unit}"),
+            SystemdSignal::UnitRemoved(id, unit) => format!("{id} {unit}"),
+            SystemdSignal::JobNew(id, job, unit) => {
+                format!("unit={unit} id={id} path={job}")
+            }
+            SystemdSignal::JobRemoved(id, job, unit, result) => {
+                format!("unit={unit} id={id} path={job} result={result}")
+            }
+            SystemdSignal::StartupFinished(firmware, loader, kernel, initrd, userspace, total) => {
+                format!(
+                    "firmware={firmware} loader={loader} kernel={kernel} initrd={initrd} userspace={userspace} total={total}",
+                )
+            }
+            SystemdSignal::UnitFilesChanged => String::new(),
+            SystemdSignal::Reloading(active) => format!("active={active}"),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SystemdSignalRow {
+    pub time_stamp: u64,
+    pub signal: SystemdSignal,
+}
+
+impl SystemdSignalRow {
+    pub fn new(signal: SystemdSignal) -> Self {
+        let current_system_time = SystemTime::now();
+        let since_the_epoch = current_system_time
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        let time_stamp =
+            since_the_epoch.as_secs() * 1_000_000 + since_the_epoch.subsec_nanos() as u64 / 1_000;
+        SystemdSignalRow { time_stamp, signal }
+    }
+
+    pub fn type_text(&self) -> &str {
+        self.signal.type_text()
+    }
+
+    pub fn details(&self) -> String {
+        self.signal.details()
+    }
+}
+
+static SENDER: OnceLock<broadcast::Sender<SystemdSignalRow>> = OnceLock::new();
 pub fn init_signal_watcher() -> broadcast::Receiver<SystemdSignalRow> {
     let sender = SENDER.get_or_init(|| {
         let (systemd_signal_sender, _) = broadcast::channel(2500);

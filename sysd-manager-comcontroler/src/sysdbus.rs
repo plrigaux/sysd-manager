@@ -2,7 +2,7 @@
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
 pub(super) mod dbus_proxies;
 pub(super) mod to_proxy;
-pub(super) mod watcher;
+pub mod watcher;
 
 #[cfg(test)]
 mod tests;

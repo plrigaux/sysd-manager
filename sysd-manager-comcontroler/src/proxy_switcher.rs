@@ -60,6 +60,7 @@ pub struct ProxySwitcher {
     start: RwLock<bool>,
     stop: RwLock<bool>,
     restart: RwLock<bool>,
+    reload_unit: RwLock<bool>,
     clean: RwLock<bool>,
     freeze: RwLock<bool>,
     thaw: RwLock<bool>,
@@ -92,6 +93,10 @@ impl ProxySwitcher {
 
     pub fn restart(&self) -> bool {
         *self.restart.write().unwrap()
+    }
+
+    pub fn reload_unit(&self) -> bool {
+        *self.reload_unit.write().unwrap()
     }
 
     pub fn set_restart(&self, value: bool) {

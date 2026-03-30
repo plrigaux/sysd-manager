@@ -121,6 +121,10 @@ pub(crate) trait Systemd1Manager {
 
     #[zbus(allow_interactive_auth)]
     fn restart_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+
+    #[zbus(allow_interactive_auth)]
+    fn reload_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+
     ///returns an array with all currently queued jobs.
     fn list_jobs(&self) -> zbus::fdo::Result<QueuedJobs>;
 
@@ -218,23 +222,29 @@ pub async fn systemd_manager_async(
     level: UnitDBusLevel,
 ) -> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors> {
     match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => {
-            SYSTEM_MANAGER
-                .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {
-                    let conn = get_connection(UnitDBusLevel::System).await?;
-                    let proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
-                    Ok(proxy)
-                })
-                .await
-        }
-        UnitDBusLevel::UserSession => {
-            SYSTEM_MANAGER_USER_SESSION
-                .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {
-                    let conn = get_connection(UnitDBusLevel::UserSession).await?;
-                    let proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
-                    Ok(proxy)
-                })
-                .await
-        }
+        UnitDBusLevel::System | UnitDBusLevel::Both => system_manager_system_async().await,
+        UnitDBusLevel::UserSession => system_manager_user_session_async().await,
     }
+}
+
+pub(crate) async fn system_manager_user_session_async()
+-> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors> {
+    SYSTEM_MANAGER_USER_SESSION
+        .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {
+            let conn = get_connection(UnitDBusLevel::UserSession).await?;
+            let proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
+            Ok(proxy)
+        })
+        .await
+}
+
+pub(crate) async fn system_manager_system_async()
+-> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors> {
+    SYSTEM_MANAGER
+        .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {
+            let conn = get_connection(UnitDBusLevel::System).await?;
+            let proxy = Systemd1ManagerProxy::builder(&conn).build().await?;
+            Ok(proxy)
+        })
+        .await
 }

@@ -10,6 +10,7 @@ use gtk::{
     glib::{self},
     pango::{self, FontDescription},
 };
+use systemd::ReStartStop;
 use tracing::{debug, info, warn};
 
 use super::{
@@ -201,7 +202,7 @@ impl UnitControlPanelImpl {
     fn button_start_clicked(&self, button: &adw::SplitButton) {
         self.start_restart_action(
             button,
-            systemd::start_unit,
+            ReStartStop::Start,
             UnitContolType::Start,
             None,
             Rc::new(Box::new(move || {})),
@@ -212,7 +213,7 @@ impl UnitControlPanelImpl {
     fn button_stop_clicked(&self, button: &adw::SplitButton) {
         self.start_restart_action(
             button,
-            systemd::stop_unit,
+            ReStartStop::Stop,
             UnitContolType::Stop,
             None,
             Rc::new(Box::new(move || {})),
@@ -223,7 +224,7 @@ impl UnitControlPanelImpl {
     fn button_restart_clicked(&self, button: &adw::SplitButton) {
         self.start_restart_action(
             button,
-            systemd::restart_unit,
+            ReStartStop::Restart,
             UnitContolType::Restart,
             None,
             Rc::new(Box::new(move || {})),
@@ -243,9 +244,8 @@ impl UnitControlPanelImpl {
     fn start_restart_action(
         &self,
         button: &impl IsA<gtk::Widget>,
-        systemd_method: fn(UnitDBusLevel, &str, StartStopMode) -> Result<String, SystemdErrors>,
+        re_start_stop: ReStartStop,
         action: UnitContolType,
-
         unit: Option<&UnitInfo>,
         call_back: Rc<Box<dyn Fn()>>,
     ) {
@@ -265,12 +265,16 @@ impl UnitControlPanelImpl {
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
 
-            let start_results =
-                gio::spawn_blocking(move || systemd_method(level, &primary_name, start_mode))
-                    .await
-                    .expect("Task needs to finish successfully.");
+            let start_results = gio::spawn_blocking(async move || {
+                // systemd_method(level, &primary_name, start_mode).await
+                systemd::restartstop_unit(level, &primary_name, start_mode, re_start_stop).await
+            })
+            .await
+            .expect("Task needs to finish successfully.");
 
             button.set_sensitive(true);
+
+            let start_results = start_results.await;
 
             unit_control_panel.imp().start_restart(
                 &unit.primary(),
@@ -430,7 +434,7 @@ impl UnitControlPanelImpl {
             InterPanelMessage::StartUnit(button, unit, call_back) => {
                 self.start_restart_action(
                     button,
-                    systemd::start_unit,
+                    ReStartStop::Start,
                     UnitContolType::Start,
                     Some(unit),
                     call_back.clone(),
@@ -439,7 +443,7 @@ impl UnitControlPanelImpl {
             InterPanelMessage::StopUnit(button, unit, call_back) => {
                 self.start_restart_action(
                     button,
-                    systemd::stop_unit,
+                    ReStartStop::Stop,
                     UnitContolType::Stop,
                     Some(unit),
                     call_back.clone(),
@@ -448,7 +452,7 @@ impl UnitControlPanelImpl {
             InterPanelMessage::ReStartUnit(button, unit, call_back) => {
                 self.start_restart_action(
                     button,
-                    systemd::restart_unit,
+                    ReStartStop::Restart,
                     UnitContolType::Restart,
                     Some(unit),
                     call_back.clone(),
@@ -485,7 +489,7 @@ impl UnitControlPanelImpl {
             InterPanelMessage::ReloadUnit(button, unit, call_back) => {
                 self.start_restart_action(
                     button,
-                    systemd::reload_unit,
+                    ReStartStop::ReloadUnit,
                     UnitContolType::Reload,
                     Some(unit),
                     call_back.clone(),

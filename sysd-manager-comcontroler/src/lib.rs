@@ -20,9 +20,12 @@ use crate::{
     },
     file::save_text_to_file,
     journal_data::Boot,
+    proxy_switcher::PROXY_SWITCHER,
     sysdbus::{
         ListedUnitFile,
-        dbus_proxies::{systemd_manager, systemd_manager_async},
+        dbus_proxies::{Systemd1ManagerProxy, systemd_manager, systemd_manager_async},
+        to_proxy::SysDManagerComLinkProxy,
+        watcher::{SystemdSignal, SystemdSignalRow},
     },
     time_handling::TimestampStyle,
 };
@@ -44,7 +47,7 @@ use std::{
     fs::File,
     io::Read,
     sync::OnceLock,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 use tokio::{
     runtime::Runtime,
@@ -52,7 +55,7 @@ use tokio::{
     time::timeout,
 };
 use tracing::{error, info, warn};
-use zvariant::{OwnedObjectPath, OwnedValue};
+use zvariant::OwnedValue;
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 use crate::sysdbus::to_proxy;
@@ -442,6 +445,100 @@ pub fn restart_unit(
             .restart_unit(unit_name, mode.as_str())
             .map(|o| o.to_string())
             .map_err(|err| err.into())
+    }
+}
+
+#[derive(Debug)]
+pub enum ReStartStop {
+    Start,
+    Stop,
+    Restart,
+    ReloadUnit,
+}
+
+impl ReStartStop {
+    fn use_proxy(&self) -> bool {
+        match self {
+            ReStartStop::Start => PROXY_SWITCHER.start(),
+            ReStartStop::Stop => PROXY_SWITCHER.stop(),
+            ReStartStop::Restart => PROXY_SWITCHER.restart(),
+            ReStartStop::ReloadUnit => PROXY_SWITCHER.reload_unit(),
+        }
+    }
+
+    async fn action<'a>(
+        &self,
+        proxy: &SysDManagerComLinkProxy<'a>,
+        unit_name: &str,
+        mode: StartStopMode,
+    ) -> Result<String, SystemdErrors> {
+        let path = match self {
+            ReStartStop::Start => proxy.start_unit(unit_name, mode.as_str()).await?,
+            ReStartStop::Stop => proxy.stop_unit(unit_name, mode.as_str()).await?,
+            ReStartStop::Restart => proxy.restart_unit(unit_name, mode.as_str()).await?,
+            ReStartStop::ReloadUnit => proxy.reload_unit(unit_name, mode.as_str()).await?,
+        };
+
+        Ok(path.to_string())
+    }
+
+    async fn systemd_action<'a>(
+        &self,
+        manager: &Systemd1ManagerProxy<'a>,
+        unit_name: &str,
+        mode: StartStopMode,
+    ) -> Result<String, SystemdErrors> {
+        let path = match self {
+            ReStartStop::Start => manager.start_unit(unit_name, mode.as_str()).await?,
+            ReStartStop::Stop => manager.stop_unit(unit_name, mode.as_str()).await?,
+            ReStartStop::Restart => manager.restart_unit(unit_name, mode.as_str()).await?,
+            ReStartStop::ReloadUnit => manager.reload_unit(unit_name, mode.as_str()).await?,
+        };
+
+        Ok(path.to_string())
+    }
+}
+
+pub async fn restartstop_unit(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    mode: StartStopMode,
+    action: ReStartStop,
+) -> Result<String, SystemdErrors> {
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            use crate::sysdbus::to_proxy::get_proxy_async;
+
+            let proxy = get_proxy_async().await?;
+            if action.use_proxy() && !unit_name.starts_with(PROXY_SERVICE) {
+                // proxy_call_blocking!(restart_unit, unit_name, mode.as_str())
+
+                match action.action(&proxy, unit_name, mode).await {
+                    Ok(ok) => Ok(ok),
+                    Err(SystemdErrors::ZFdoServiceUnknowm(msg)) => {
+                        warn!("Async ServiceUnkown: {:?} Function: {:?}", msg, action);
+                        to_proxy::lazy_start_proxy_async().await;
+                        action.action(&proxy, unit_name, mode).await
+                    }
+                    Err(err) => Err(err),
+                }
+            } else {
+                let manager = sysdbus::dbus_proxies::system_manager_system_async().await?;
+                action.systemd_action(manager, unit_name, mode).await
+            }
+        }
+
+        UnitDBusLevel::UserSession => {
+            let manager = sysdbus::dbus_proxies::system_manager_user_session_async().await?;
+            action.systemd_action(manager, unit_name, mode).await
+        }
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    {
+        let manager = sysdbus::dbus_proxies::system_manager_async(level).await?;
+        action.systemd_action(manager, unit_name, mode).await
     }
 }
 
@@ -1087,77 +1184,6 @@ pub fn retreive_unit_processes(
     }
 
     Ok(unit_processes_map)
-}
-
-#[derive(Debug, Clone)]
-pub struct SystemdSignalRow {
-    pub time_stamp: u64,
-    pub signal: SystemdSignal,
-}
-
-impl SystemdSignalRow {
-    pub fn new(signal: SystemdSignal) -> Self {
-        let current_system_time = SystemTime::now();
-        let since_the_epoch = current_system_time
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-        let time_stamp =
-            since_the_epoch.as_secs() * 1_000_000 + since_the_epoch.subsec_nanos() as u64 / 1_000;
-        SystemdSignalRow { time_stamp, signal }
-    }
-
-    pub fn type_text(&self) -> &str {
-        self.signal.type_text()
-    }
-
-    pub fn details(&self) -> String {
-        self.signal.details()
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum SystemdSignal {
-    UnitNew(String, OwnedObjectPath),
-    UnitRemoved(String, OwnedObjectPath),
-    JobNew(u32, OwnedObjectPath, String),
-    JobRemoved(u32, OwnedObjectPath, String, String),
-    StartupFinished(u64, u64, u64, u64, u64, u64),
-    UnitFilesChanged,
-    Reloading(bool),
-}
-
-impl SystemdSignal {
-    pub fn type_text(&self) -> &str {
-        match self {
-            SystemdSignal::UnitNew(_, _) => "UnitNew",
-            SystemdSignal::UnitRemoved(_, _) => "UnitRemoved",
-            SystemdSignal::JobNew(_, _, _) => "JobNew",
-            SystemdSignal::JobRemoved(_, _, _, _) => "JobRemoved",
-            SystemdSignal::StartupFinished(_, _, _, _, _, _) => "StartupFinished",
-            SystemdSignal::UnitFilesChanged => "UnitFilesChanged",
-            SystemdSignal::Reloading(_) => "Reloading",
-        }
-    }
-
-    pub fn details(&self) -> String {
-        match self {
-            SystemdSignal::UnitNew(id, unit) => format!("{id} {unit}"),
-            SystemdSignal::UnitRemoved(id, unit) => format!("{id} {unit}"),
-            SystemdSignal::JobNew(id, job, unit) => {
-                format!("unit={unit} id={id} path={job}")
-            }
-            SystemdSignal::JobRemoved(id, job, unit, result) => {
-                format!("unit={unit} id={id} path={job} result={result}")
-            }
-            SystemdSignal::StartupFinished(firmware, loader, kernel, initrd, userspace, total) => {
-                format!(
-                    "firmware={firmware} loader={loader} kernel={kernel} initrd={initrd} userspace={userspace} total={total}",
-                )
-            }
-            SystemdSignal::UnitFilesChanged => String::new(),
-            SystemdSignal::Reloading(active) => format!("active={active}"),
-        }
-    }
 }
 
 pub fn init_signal_watcher() -> broadcast::Receiver<SystemdSignalRow> {
