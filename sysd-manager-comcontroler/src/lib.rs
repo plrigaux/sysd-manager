@@ -40,19 +40,15 @@ use glib::Quark;
 use journal_data::{EventRange, JournalEventChunk};
 use std::{
     any::Any,
-    cell::Cell,
     collections::{BTreeMap, BTreeSet, HashMap},
     fs::File,
     io::Read,
-    sync::{Arc, OnceLock},
+    sync::OnceLock,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tokio::{
     runtime::Runtime,
-    sync::{
-        Mutex,
-        broadcast::{self, error::RecvError},
-    },
+    sync::broadcast::{self, error::RecvError},
     time::timeout,
 };
 use tracing::{error, info, warn};
@@ -944,10 +940,7 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     let mut watcher = init_signal_watcher();
     daemon_reload_core(level).await?;
 
-    let pass = Arc::new(Mutex::new(true));
-    let pass2 = pass.clone();
-    let mut asdf = async move || {
-        println!("SADfsdfasfs");
+    let mut wait_reload = async || {
         loop {
             match watcher.recv().await {
                 Ok(x) => {
@@ -956,34 +949,23 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
                             info!("Reloading!");
                         } else {
                             info!("Reload Finised");
+                            break;
                         }
-                        break;
                     }
                 }
-
                 Err(RecvError::Lagged(lag)) => info!("Lagged {lag:?}"),
                 Err(err) => {
                     warn!("Recev Err {err:?}");
                     break;
                 }
             }
-
-            if !*pass2.lock().await {
-                println!("----------------------------");
-                break;
-            }
         }
-        println!("???????????");
     };
 
     let duration = Duration::from_secs(10);
-    match timeout(duration, asdf()).await {
+    match timeout(duration, wait_reload()).await {
         Ok(_) => Ok(()),
-        Err(_err) => {
-            let mut c = pass.lock().await;
-            *c = false;
-            Err(SystemdErrors::Timeout(duration))
-        }
+        Err(_err) => Err(SystemdErrors::Timeout(duration)),
     }
 }
 
