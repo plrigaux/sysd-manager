@@ -91,6 +91,9 @@ pub struct PreferencesDialogImpl {
     proxy_restart_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
+    proxy_reload_unit_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
     proxy_clean_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
@@ -511,10 +514,11 @@ impl ObjectImpl for PreferencesDialogImpl {
                 KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
                 KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
                 KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE, KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
-                KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELOAD_DAEMON,
-                KEY_PREF_USE_PROXY_RESTART, KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
-                KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP,
-                KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
+                KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELAOD_UNIT,
+                KEY_PREF_USE_PROXY_RELOAD_DAEMON, KEY_PREF_USE_PROXY_RESTART,
+                KEY_PREF_USE_PROXY_REVERT_UNIT_FILE, KEY_PREF_USE_PROXY_SAVE_FILE,
+                KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP, KEY_PREF_USE_PROXY_THAW,
+                PROXY_SWITCHER,
             };
 
             use crate::format2;
@@ -539,6 +543,14 @@ impl ObjectImpl for PreferencesDialogImpl {
                 .bind::<adw::SwitchRow>(
                     KEY_PREF_USE_PROXY_RESTART,
                     self.proxy_restart_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_RELAOD_UNIT,
+                    self.proxy_reload_unit_switch.as_ref(),
                     "active",
                 )
                 .build();
@@ -643,6 +655,11 @@ impl ObjectImpl for PreferencesDialogImpl {
                 PROXY_SWITCHER.set_restart(switch.is_active());
             });
 
+            self.proxy_reload_unit_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_reload_unit(switch.is_active());
+                });
+
             self.proxy_clean_switch.connect_active_notify(|switch| {
                 PROXY_SWITCHER.set_clean(switch.is_active());
             });
@@ -697,6 +714,7 @@ impl ObjectImpl for PreferencesDialogImpl {
             let proxy_start_switch = self.proxy_start_switch.clone();
             let proxy_stop_switch = self.proxy_stop_switch.clone();
             let proxy_restart_switch = self.proxy_restart_switch.clone();
+            let proxy_reload_unit_switch = self.proxy_reload_unit_switch.clone();
             let proxy_clean_switch = self.proxy_clean_switch.clone();
             let proxy_freeze_switch = self.proxy_freeze_switch.clone();
             let proxy_thaw_switch = self.proxy_thaw_switch.clone();
@@ -711,6 +729,7 @@ impl ObjectImpl for PreferencesDialogImpl {
                 proxy_start_switch,
                 proxy_stop_switch,
                 proxy_restart_switch,
+                proxy_reload_unit_switch,
                 proxy_clean_switch,
                 proxy_freeze_switch,
                 proxy_thaw_switch,
@@ -763,6 +782,7 @@ impl ObjectImpl for PreferencesDialogImpl {
             self.proxy_start_switch.set_sensitive(false);
             self.proxy_stop_switch.set_sensitive(false);
             self.proxy_restart_switch.set_sensitive(false);
+            self.proxy_reload_unit_switch.set_sensitive(false);
             self.proxy_clean_switch.set_sensitive(false);
             self.proxy_freeze_switch.set_sensitive(false);
             self.proxy_thaw_switch.set_sensitive(false);

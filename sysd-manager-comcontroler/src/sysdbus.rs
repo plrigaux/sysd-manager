@@ -159,7 +159,7 @@ pub(crate) async fn init_proxy_async2() -> Result<(), SystemdErrors> {
                 {
                     Ok(Ok(result)) => {
                         if result == "done" {
-                            tokio::spawn(to_proxy::send_heart_beat());
+                            to_proxy::start_heart_beat();
                             return Ok(());
                         } else {
                             warn!("Job starting result: {result}");

@@ -59,7 +59,7 @@ use tokio::{
     sync::broadcast::{self, error::RecvError},
     time::timeout,
 };
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 use zvariant::OwnedValue;
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
@@ -335,35 +335,8 @@ pub fn start_unit(
     unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-    match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => {
-            if proxy_switcher::PROXY_SWITCHER.start() && !unit_name.starts_with(PROXY_SERVICE) {
-                proxy_call_blocking!(start_unit, unit_name, mode.as_str())
-            } else {
-                systemd_manager()
-                    .start_unit(unit_name, mode.as_str())
-                    .map(|o| o.to_string())
-                    .map_err(|err| err.into())
-                // sysdbus::start_unit(level, unit_name, mode)
-            }
-        }
-
-        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
-            .start_unit(unit_name, mode.as_str())
-            .map(|o| o.to_string())
-            .map_err(|err| err.into()),
-    }
-
-    #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    {
-        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
-
-        systemd_manager_blocking(level)
-            .start_unit(unit_name, mode.as_str())
-            .map(|o| o.to_string())
-            .map_err(|err| err.into())
-    }
+    runtime()
+        .block_on(async move { restartstop_unit(level, unit_name, mode, ReStartStop::Start).await })
 }
 
 /// Takes a unit name as input and attempts to stop it.
@@ -372,36 +345,8 @@ pub fn stop_unit(
     unit_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-    match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => {
-            if proxy_switcher::PROXY_SWITCHER.stop() && !unit_name.starts_with(PROXY_SERVICE) {
-                proxy_call_blocking!(stop_unit, unit_name, mode.as_str())
-            } else {
-                systemd_manager()
-                    .stop_unit(unit_name, mode.as_str())
-                    .map(|o| o.to_string())
-                    .map_err(|err| err.into())
-
-                // sysdbus::stop_unit(level, unit_name, mode)
-            }
-        }
-
-        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
-            .stop_unit(unit_name, mode.as_str())
-            .map(|o| o.to_string())
-            .map_err(|err| err.into()),
-    }
-
-    #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    {
-        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
-
-        systemd_manager_blocking(level)
-            .stop_unit(unit_name, mode.as_str())
-            .map(|o| o.to_string())
-            .map_err(|err| err.into())
-    }
+    runtime()
+        .block_on(async move { restartstop_unit(level, unit_name, mode, ReStartStop::Stop).await })
 }
 
 #[derive(Debug)]
@@ -462,21 +407,31 @@ pub async fn restartstop_unit(
     action: ReStartStop,
 ) -> Result<String, SystemdErrors> {
     let watcher = init_signal_watcher();
-    let job = restartstop_unit_call(level, unit_name, mode, action).await?;
-    let job_id = job_number(&job).ok_or("Job id invalid: {job}")?;
+    let job = restartstop_unit_call(level, unit_name, mode, &action).await?;
+    let job_id = job_number(&job).ok_or("Invalid Job Id for job: {job}")?;
 
     let duration = Duration::from_secs(10);
     timeout(duration, wait_job_removed(job_id, watcher))
         .await
         .map_err(|_err| SystemdErrors::Timeout(duration))
         .and_then(|res| res.map(|_| job))
+        .inspect(|_job| {
+            #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+            if matches!(action, ReStartStop::Start | ReStartStop::Restart)
+                && unit_name.starts_with(PROXY_SERVICE)
+            {
+                to_proxy::start_heart_beat()
+            }
+        })
 }
 
+const DONE: &str = "done";
 const SKIPPED: &str = "skipped";
 const CANCELED: &str = "canceled";
 const TIMEOUT: &str = "timeout";
 const FAILED: &str = "failed";
 const DEPENDENCY: &str = "dependency";
+const INVALID: &str = "invalid";
 
 async fn wait_job_removed(
     job_id: u32,
@@ -489,7 +444,7 @@ async fn wait_job_removed(
                     && id == job_id
                 {
                     match result.as_str() {
-                        "done" => {
+                        DONE => {
                             break;
                         }
                         CANCELED => return Err(SystemdErrors::JobRemoved(CANCELED.to_owned())),
@@ -497,8 +452,9 @@ async fn wait_job_removed(
                         FAILED => return Err(SystemdErrors::JobRemoved(FAILED.to_owned())),
                         DEPENDENCY => return Err(SystemdErrors::JobRemoved(DEPENDENCY.to_owned())),
                         SKIPPED => return Err(SystemdErrors::JobRemoved(SKIPPED.to_owned())),
-                        r => {
-                            warn!("Unknown JobRemoved result {r}");
+                        INVALID => return Err(SystemdErrors::JobRemoved(INVALID.to_owned())),
+                        unkown_result => {
+                            warn!("Unknown JobRemoved result {unkown_result}");
                         }
                     }
                 }
@@ -526,7 +482,7 @@ async fn restartstop_unit_call(
     level: UnitDBusLevel,
     unit_name: &str,
     mode: StartStopMode,
-    action: ReStartStop,
+    action: &ReStartStop,
 ) -> Result<String, SystemdErrors> {
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     match level {

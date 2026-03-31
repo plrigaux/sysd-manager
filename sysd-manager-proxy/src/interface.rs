@@ -133,13 +133,30 @@ impl SysDManagerProxy {
         unit_name: &str,
         mode: &str,
     ) -> zbus::fdo::Result<OwnedObjectPath> {
-        info!("start_unit {} {:?}", unit_name, mode);
+        info!("restart_unit {} {:?}", unit_name, mode);
 
         self.check_autorisation(header).await?;
 
         let proxy = get_proxy().await?;
         proxy
             .restart_unit(unit_name, mode)
+            .await
+            .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))
+    }
+
+    async fn reload_unit(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        unit_name: &str,
+        mode: &str,
+    ) -> zbus::fdo::Result<OwnedObjectPath> {
+        info!("reload_unit {} {:?}", unit_name, mode);
+
+        self.check_autorisation(header).await?;
+
+        let proxy = get_proxy().await?;
+        proxy
+            .reload_unit(unit_name, mode)
             .await
             .inspect_err(|e| warn!("Error while calling clean_unit on sysdbus proxy: {:?}", e))
     }

@@ -76,6 +76,7 @@ impl SystemdErrors {
             SystemdErrors::ZNoSuchUnit(_, detail) => detail.clone(),
             SystemdErrors::ZNoSuchUnitProxy(_, detail) => detail.clone(),
             SystemdErrors::ZUnitMasked(_, detail) => detail.clone(),
+            SystemdErrors::JobRemoved(reason) => uppercase_first_letter(reason),
             _ => self.to_string(),
         }
     }
@@ -88,6 +89,14 @@ impl SystemdErrors {
         } else {
             false
         }
+    }
+}
+
+fn uppercase_first_letter(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().chain(c).collect(),
     }
 }
 

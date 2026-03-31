@@ -92,7 +92,7 @@ mod imp {
         reenable_button: TemplateChild<gtk::Button>,
 
         #[template_child]
-        reload_button: TemplateChild<gtk::Button>,
+        reload_unit_button: TemplateChild<gtk::Button>,
 
         #[template_child]
         unit_list_view_menubutton: TemplateChild<gtk::MenuButton>,
@@ -183,7 +183,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn reload_button_clicked(&self, button: gtk::Button) {
+        fn reload_unit_button_clicked(&self, button: gtk::Button) {
             let unit = unit!(self);
             let pop_menu = self.obj().clone();
             let inter_message = InterPanelMessage::ReloadUnit(
@@ -261,7 +261,7 @@ mod imp {
                 );
 
                 self.set_tooltip(
-                    &self.reload_button,
+                    &self.reload_unit_button,
                     blue,
                     &primary_name,
                     &pgettext("controls", "Reload unit {} configuration by calling the <b>ExecReload</b> unit file instruction"),
@@ -387,10 +387,13 @@ mod imp {
                 self.start_button.remove_css_class(FLAT);
                 self.start_button.add_css_class(SUGGESTED_ACTION);
                 self.stop_button.remove_css_class(DESTRUCTIVE_ACTION);
+                //TODO disable relaod unit if ExecReload is not present
+                self.reload_unit_button.set_sensitive(false);
             } else {
                 self.start_button.add_css_class(FLAT);
                 self.start_button.remove_css_class(SUGGESTED_ACTION);
                 self.stop_button.add_css_class(DESTRUCTIVE_ACTION);
+                self.reload_unit_button.set_sensitive(true);
             }
 
             if matches!(

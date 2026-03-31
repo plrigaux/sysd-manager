@@ -67,6 +67,20 @@
           </object>
         </child>
         <child>
+          <object class="GtkButton" id="reload_unit_button">
+            <property name="css-classes">flat</property>
+            <signal name="clicked" handler="reload_unit_button_clicked" swapped="True"/>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">arrow-circular-top-left-symbolic</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Reload Unit</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="GtkSeparator"/>
         </child>
         <child>
@@ -107,23 +121,6 @@
                 <property name="halign">start</property>
                 <property name="icon-name">empty-icon</property>
                 <property name="label" translatable="yes" context="controls" comments="unit popup menu">Reenable</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkSeparator"/>
-        </child>
-        <child>
-          <object class="GtkButton" id="reload_button">
-            <property name="css-classes">flat</property>
-            <signal name="clicked" handler="reload_button_clicked" swapped="True"/>
-            <child>
-              <object class="AdwButtonContent">
-                <property name="css-classes">flat</property>
-                <property name="halign">start</property>
-                <property name="icon-name">arrow-circular-top-left-symbolic</property>
-                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Reload</property>
               </object>
             </child>
           </object>

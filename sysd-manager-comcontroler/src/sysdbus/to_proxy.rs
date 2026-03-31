@@ -1,13 +1,18 @@
 #![allow(dead_code)]
 
+use std::sync::OnceLock;
+
 use base::{
     consts::{MAX_HEART_BEAT_ELAPSE, MIN_HEART_BEAT_ELAPSE},
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use futures_util::stream::StreamExt;
-use tokio::time::{self, Duration};
-use tracing::{debug, error, info, warn};
+use tokio::{
+    task::JoinHandle,
+    time::{self, Duration},
+};
+use tracing::{debug, info, warn};
 use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
@@ -171,7 +176,20 @@ pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-pub(super) async fn send_heart_beat() -> Result<(), SystemdErrors> {
+static HEART_BEAT_HANDLE: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
+pub(crate) fn start_heart_beat() {
+    if let Some(join_handle) = HEART_BEAT_HANDLE.get()
+        && !join_handle.is_finished()
+    {
+        warn!("There is already an heart beat thread running");
+    } else {
+        info!("Starting Heart Beat");
+        let handle = tokio::spawn(send_heart_beat());
+        HEART_BEAT_HANDLE.set(handle);
+    }
+}
+
+async fn send_heart_beat() -> Result<(), SystemdErrors> {
     let proxy = get_proxy_async().await?;
     loop {
         match proxy.heart_beat().await {
@@ -181,7 +199,7 @@ pub(super) async fn send_heart_beat() -> Result<(), SystemdErrors> {
                 time::sleep(Duration::from_millis(delay)).await;
             }
             Err(err) => {
-                error!("Heart Beat {err:?}");
+                warn!("Send Heart Beat Error: {err:?}");
                 return Err(err.into());
             }
         }

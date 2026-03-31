@@ -234,15 +234,19 @@
     </key>
     <key name="pref-use-proxy-start" type="b">
       <default>true</default>
-      <summary>Use the proxy for the Clean calls</summary>
+      <summary>Use the proxy for the StartUnit calls</summary>
     </key>
     <key name="pref-use-proxy-stop" type="b">
       <default>true</default>
-      <summary>Use the proxy for the Clean calls</summary>
+      <summary>Use the proxy for the StopUnit calls</summary>
     </key>
     <key name="pref-use-proxy-restart" type="b">
       <default>true</default>
-      <summary>Use the proxy for the Clean calls</summary>
+      <summary>Use the proxy for the RestartUnit calls</summary>
+    </key>
+    <key name="pref-use-proxy-reload-unit" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the ReloadUnit calls</summary>
     </key>
     <key name="pref-use-proxy-clean" type="b">
       <default>true</default>

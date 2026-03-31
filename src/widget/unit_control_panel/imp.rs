@@ -1,30 +1,9 @@
-use std::{
-    cell::{OnceCell, RefCell},
-    rc::Rc,
-};
-
-use adw::{prelude::*, subclass::prelude::*};
-use gettextrs::pgettext;
-use gtk::{
-    gio,
-    glib::{self},
-    pango::{self, FontDescription},
-};
-use systemd::{ReStartStop, runtime};
-use tracing::{debug, info, warn};
-
 use super::{
     UnitControlPanel, controls, enums::UnitContolType, side_control_panel::SideControlPanel,
 };
 use crate::{
     consts::{DESTRUCTIVE_ACTION, SUGGESTED_ACTION},
     format2,
-    systemd::{
-        self,
-        data::UnitInfo,
-        enums::{ActiveState, StartStopMode, UnitFileStatus},
-        errors::SystemdErrors,
-    },
     utils::{
         font_management::{self, FONT_CONTEXT, create_provider},
         palette::{dark_blue, dark_red},
@@ -35,8 +14,26 @@ use crate::{
         unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
 };
+use adw::{prelude::*, subclass::prelude::*};
 use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
+use gtk::{
+    gio,
+    glib::{self},
+    pango::{self, FontDescription},
+};
+use std::{
+    cell::{OnceCell, RefCell},
+    rc::Rc,
+};
 use strum::IntoEnumIterator;
+use systemd::{
+    self, ReStartStop,
+    data::UnitInfo,
+    enums::{ActiveState, StartStopMode, UnitFileStatus},
+    errors::SystemdErrors,
+};
+use tracing::{debug, info, warn};
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
@@ -264,7 +261,7 @@ impl UnitControlPanelImpl {
         let level = unit.dbus_level();
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
-            let start_results = runtime().block_on(async move {
+            let start_results = systemd::runtime().block_on(async move {
                 systemd::restartstop_unit(level, &primary_name, start_mode, re_start_stop).await
             });
             button.set_sensitive(true);
