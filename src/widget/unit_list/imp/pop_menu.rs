@@ -108,45 +108,6 @@ mod imp {
     #[gtk::template_callbacks]
     impl UnitPopMenuImp {
         #[template_callback]
-        fn start_button_clicked(&self, button: gtk::Button) {
-            let unit = unit!(self);
-            let pop_menu = self.obj().clone();
-            let inter_message = InterPanelMessage::StartUnit(
-                button,
-                unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
-            );
-
-            unit_list_panel!(self).button_action(&inter_message);
-        }
-
-        #[template_callback]
-        fn stop_button_clicked(&self, button: gtk::Button) {
-            let unit = unit!(self);
-            let pop_menu = self.obj().clone();
-            let inter_message = InterPanelMessage::StopUnit(
-                button,
-                unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
-            );
-
-            unit_list_panel!(self).button_action(&inter_message);
-        }
-
-        #[template_callback]
-        fn restart_button_clicked(&self, button: gtk::Button) {
-            let unit = unit!(self);
-            let pop_menu = self.obj().clone();
-            let inter_message = InterPanelMessage::ReStartUnit(
-                button,
-                unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
-            );
-
-            unit_list_panel!(self).button_action(&inter_message);
-        }
-
-        #[template_callback]
         fn enable_button_clicked(&self, _button: gtk::Button) {
             let unit = unit!(self);
             let pop_menu = self.obj().clone();
@@ -175,32 +136,6 @@ mod imp {
             let unit = unit!(self);
             let pop_menu = self.obj().clone();
             let inter_message = InterPanelMessage::ReenableUnit(
-                unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
-            );
-
-            unit_list_panel!(self).button_action(&inter_message);
-        }
-
-        #[template_callback]
-        fn reload_unit_button_clicked(&self, button: gtk::Button) {
-            let unit = unit!(self);
-            let pop_menu = self.obj().clone();
-            let inter_message = InterPanelMessage::ReloadUnit(
-                button,
-                unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
-            );
-
-            unit_list_panel!(self).button_action(&inter_message);
-        }
-
-        #[template_callback]
-        fn _clicked(&self, button: gtk::Button) {
-            let unit = unit!(self);
-            let pop_menu = self.obj().clone();
-            let inter_message = InterPanelMessage::ReloadUnit(
-                button,
                 unit,
                 Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
             );

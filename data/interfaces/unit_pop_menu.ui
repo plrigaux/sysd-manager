@@ -26,8 +26,8 @@
         </child>
         <child>
           <object class="GtkButton" id="start_button">
+            <property name="action-name">win.start-unit</property>
             <property name="css-classes">flat</property>
-            <signal name="clicked" handler="start_button_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="css-classes">flat</property>
@@ -40,8 +40,8 @@
         </child>
         <child>
           <object class="GtkButton" id="stop_button">
+            <property name="action-name">win.stop-unit</property>
             <property name="css-classes">flat</property>
-            <signal name="clicked" handler="stop_button_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="css-classes">flat</property>
@@ -54,8 +54,8 @@
         </child>
         <child>
           <object class="GtkButton" id="restart_button">
+            <property name="action-name">win.restart-unit</property>
             <property name="css-classes">flat</property>
-            <signal name="clicked" handler="restart_button_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="css-classes">flat</property>
@@ -68,8 +68,8 @@
         </child>
         <child>
           <object class="GtkButton" id="reload_unit_button">
+            <property name="action-name">win.reload-unit</property>
             <property name="css-classes">flat</property>
-            <signal name="clicked" handler="reload_unit_button_clicked" swapped="True"/>
             <child>
               <object class="AdwButtonContent">
                 <property name="css-classes">flat</property>
