@@ -6,7 +6,8 @@ pub mod pop_menu;
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ACTION_WIN_HIDE_UNIT_COL, ALL_FILTER_KEY, FILTER_MARK, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+        ACTION_WIN_HIDE_UNIT_COL, ACTION_WIN_REFRESH_POP_MENU, ALL_FILTER_KEY, FILTER_MARK,
+        KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
     },
     systemd::{
         data::UnitInfo,
@@ -286,6 +287,7 @@ pub struct UnitListPanelImp {
     default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
 
     abort_handles: RefCell<Vec<AbortHandle>>,
+    pop_menu: OnceCell<pop_menu::UnitPopMenu>,
 }
 
 macro_rules! update_search_entry {
@@ -433,12 +435,27 @@ impl UnitListPanelImp {
                 .build()
         };
 
+        let refresh_pop_menu = {
+            let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_WIN_REFRESH_POP_MENU[4..])
+                .activate(move |_application: &AppWindow, _, _| {
+                    info!("Action refresh called");
+                    let Some(pop) = unit_list_panel.imp().pop_menu.get() else {
+                        error!("No Pop Menu");
+                        return;
+                    };
+                    pop.refresh_buttons_style();
+                })
+                .build()
+        };
+
         app_window.add_action_entries([
             action_entry,
             list_filter_action_entry,
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
             refresh_unit_list,
+            refresh_pop_menu,
         ]);
 
         let settings = systemd_gui::new_settings();
@@ -1653,7 +1670,12 @@ impl ObjectImpl for UnitListPanelImp {
 
         units_browser.connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
 
-        pop_menu::UnitPopMenu::new(units_browser, &self.obj(), &self.filter_list_model.borrow());
+        let pop = pop_menu::UnitPopMenu::new(
+            units_browser,
+            &self.obj(),
+            &self.filter_list_model.borrow(),
+        );
+        let _ = self.pop_menu.set(pop);
 
         force_expand_on_the_last_visible_column(&units_browser.columns());
 

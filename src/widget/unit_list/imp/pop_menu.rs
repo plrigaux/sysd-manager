@@ -21,7 +21,7 @@ impl UnitPopMenu {
         obj
     }
 
-    fn refresh_buttons_style(&self) {
+    pub fn refresh_buttons_style(&self) {
         self.imp().refresh_buttons_style();
     }
 }
@@ -39,6 +39,7 @@ mod imp {
         },
     };
     use gettextrs::pgettext;
+    use glib::WeakRef;
     use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};
     use std::{
         cell::{OnceCell, RefCell},
@@ -60,10 +61,10 @@ mod imp {
     macro_rules! unit_list_panel {
         ($self:expr) => {{
             let Some(unit_list_panel) = $self.unit_list_panel.get() else {
-                warn!("Pop menu has Unit_list_panel");
+                warn!("Pop menu has no Unit_list_panel");
                 return;
             };
-            unit_list_panel
+            upgrade!(unit_list_panel)
         }};
     }
 
@@ -100,8 +101,8 @@ mod imp {
         #[template_child]
         totals_summary_button: TemplateChild<gtk::Button>,
 
-        pub(super) units_browser: OnceCell<gtk::ColumnView>,
-        pub(super) unit_list_panel: OnceCell<UnitListPanel>,
+        // pub(super) units_browser: OnceCell<WeakRef<gtk::ColumnView>>,
+        pub(super) unit_list_panel: OnceCell<WeakRef<UnitListPanel>>,
         unit: RefCell<Option<UnitInfo>>,
     }
 
@@ -113,7 +114,7 @@ mod imp {
             let pop_menu = self.obj().clone();
             let inter_message = InterPanelMessage::EnableUnit(
                 unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+                Rc::new(Box::new(move || pop_menu.imp().refresh_buttons_style())),
             );
 
             unit_list_panel!(self).button_action(&inter_message);
@@ -125,7 +126,7 @@ mod imp {
             let pop_menu = self.obj().clone();
             let inter_message = InterPanelMessage::DisableUnit(
                 unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+                Rc::new(Box::new(move || pop_menu.imp().refresh_buttons_style())),
             );
 
             unit_list_panel!(self).button_action(&inter_message);
@@ -137,7 +138,7 @@ mod imp {
             let pop_menu = self.obj().clone();
             let inter_message = InterPanelMessage::ReenableUnit(
                 unit,
-                Rc::new(Box::new(move || pop_menu.refresh_buttons_style())),
+                Rc::new(Box::new(move || pop_menu.imp().refresh_buttons_style())),
             );
 
             unit_list_panel!(self).button_action(&inter_message);
@@ -227,9 +228,6 @@ mod imp {
         ) {
             self.obj().set_parent(units_browser);
 
-            let _ = self.units_browser.set(units_browser.clone());
-            let _ = self.unit_list_panel.set(unit_list_panel.clone());
-
             let gesture = gtk::GestureClick::builder()
                 .button(gtk::gdk::BUTTON_SECONDARY)
                 .build();
@@ -237,6 +235,9 @@ mod imp {
             let units_browser_wr = units_browser.downgrade();
             let filtered_list = filtered_list.downgrade();
             let unit_list_panel = unit_list_panel.downgrade();
+
+            // let _ = self.units_browser.set(units_browser_wr.clone());
+            let _ = self.unit_list_panel.set(unit_list_panel.clone());
 
             let pop_up = self.obj().downgrade();
 
@@ -321,18 +322,15 @@ mod imp {
             self.set_buttons_style(unit);
         }
 
-        fn set_buttons_style(&self, unit: &UnitInfo) {
+        pub(super) fn set_buttons_style(&self, unit: &UnitInfo) {
             if unit.active_state().is_inactive() {
                 self.start_button.remove_css_class(FLAT);
                 self.start_button.add_css_class(SUGGESTED_ACTION);
                 self.stop_button.remove_css_class(DESTRUCTIVE_ACTION);
-                //TODO disable relaod unit if ExecReload is not present
-                self.reload_unit_button.set_sensitive(false);
             } else {
                 self.start_button.add_css_class(FLAT);
                 self.start_button.remove_css_class(SUGGESTED_ACTION);
                 self.stop_button.add_css_class(DESTRUCTIVE_ACTION);
-                self.reload_unit_button.set_sensitive(true);
             }
 
             if matches!(

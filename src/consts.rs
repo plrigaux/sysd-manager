@@ -85,6 +85,7 @@ pub const ACTION_WIN_START_UNIT: &str = "win.start-unit";
 pub const ACTION_WIN_STOP_UNIT: &str = "win.stop-unit";
 pub const ACTION_WIN_RESTART_UNIT: &str = "win.restart-unit";
 pub const ACTION_WIN_RELOAD_UNIT: &str = "win.reload-unit";
+pub const ACTION_WIN_REFRESH_POP_MENU: &str = "win.refresh-pop-menu";
 // pub const ACTION_WIN_COL_RESIZE: &str = "win.col_resize";
 pub const ACTION_FIND_IN_TEXT: &str = "win.find-in-text-panel";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "win.pref-unit-list-display-summary";

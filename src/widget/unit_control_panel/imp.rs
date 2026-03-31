@@ -3,8 +3,8 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT,
-        ACTION_WIN_STOP_UNIT, DESTRUCTIVE_ACTION, SUGGESTED_ACTION,
+        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT,
+        ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, DESTRUCTIVE_ACTION, SUGGESTED_ACTION,
     },
     format2,
     utils::{
@@ -36,7 +36,7 @@ use systemd::{
     enums::{ActiveState, StartStopMode, UnitFileStatus},
     errors::SystemdErrors,
 };
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
@@ -164,47 +164,38 @@ impl UnitControlPanelImpl {
             let cpanel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_START_UNIT[4..])
                 .activate(move |_application: &AppWindow, _b, _target_value| {
-                    cpanel.imp().start_restart_action(
-                        ReStartStop::Start,
-                        None,
-                        Rc::new(Box::new(move || {})),
-                    );
+                    cpanel.imp().start_restart_selected_unit(ReStartStop::Start);
                 })
                 .build()
         };
+
         let action_stop_unit = {
             let cpanel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_STOP_UNIT[4..])
                 .activate(move |_application: &AppWindow, _b, _target_value| {
-                    cpanel.imp().start_restart_action(
-                        ReStartStop::Stop,
-                        None,
-                        Rc::new(Box::new(move || {})),
-                    );
+                    cpanel.imp().start_restart_selected_unit(ReStartStop::Stop);
                 })
                 .build()
         };
+
         let action_restart_unit = {
             let cpanel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_RESTART_UNIT[4..])
                 .activate(move |_application: &AppWindow, _b, _target_value| {
-                    cpanel.imp().start_restart_action(
-                        ReStartStop::Restart,
-                        None,
-                        Rc::new(Box::new(move || {})),
-                    );
+                    cpanel
+                        .imp()
+                        .start_restart_selected_unit(ReStartStop::Restart);
                 })
                 .build()
         };
+
         let action_reload_unit = {
             let cpanel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_RELOAD_UNIT[4..])
                 .activate(move |_application: &AppWindow, _b, _target_value| {
-                    cpanel.imp().start_restart_action(
-                        ReStartStop::ReloadUnit,
-                        None,
-                        Rc::new(Box::new(move || {})),
-                    );
+                    cpanel
+                        .imp()
+                        .start_restart_selected_unit(ReStartStop::ReloadUnit);
                 })
                 .build()
         };
@@ -215,6 +206,15 @@ impl UnitControlPanelImpl {
             action_restart_unit,
             action_reload_unit,
         ]);
+
+        //Disable buttons
+        let app_window = app_window.clone();
+        glib::spawn_future_local(async move {
+            app_window.action_set_enabled(ACTION_WIN_START_UNIT, false);
+            app_window.action_set_enabled(ACTION_WIN_STOP_UNIT, false);
+            app_window.action_set_enabled(ACTION_WIN_RESTART_UNIT, false);
+            app_window.action_set_enabled(ACTION_WIN_RELOAD_UNIT, false);
+        });
     }
 
     pub fn app_window(&self) -> Option<AppWindow> {
@@ -263,58 +263,49 @@ impl UnitControlPanelImpl {
 }
 
 impl UnitControlPanelImpl {
-    //Dry
-    fn start_restart_action(
-        &self,
-        // button: &impl IsA<gtk::Widget>,
-        re_start_stop: ReStartStop,
-        // action: UnitContolType,
-        unit: Option<&UnitInfo>,
-        call_back: Rc<Box<dyn Fn()>>,
-    ) {
-        let unit = if let Some(unit) = unit {
-            unit.clone()
-        } else {
-            current_unit!(self)
+    fn start_restart_selected_unit(&self, re_start_stop: ReStartStop) {
+        let unit = current_unit!(self);
+        let Some(app_window) = self.app_window.get() else {
+            error!("No AppWindow ");
+            return;
         };
 
-        let (button, action, start_mode): (Option<&gtk::Widget>, UnitContolType, StartStopMode) =
+        let (action_name, action, start_mode): (&str, UnitContolType, StartStopMode) =
             match re_start_stop {
                 ReStartStop::Start => (
-                    Some(self.start_button.upcast_ref::<gtk::Widget>()),
+                    ACTION_WIN_START_UNIT,
                     UnitContolType::Start,
                     (&self.start_mode).into(),
                 ),
                 ReStartStop::Stop => (
-                    Some(self.stop_button.upcast_ref::<gtk::Widget>()),
+                    ACTION_WIN_STOP_UNIT,
                     UnitContolType::Stop,
                     (&self.stop_mode).into(),
                 ),
                 ReStartStop::Restart => (
-                    Some(self.restart_button.upcast_ref::<gtk::Widget>()),
+                    ACTION_WIN_RESTART_UNIT,
                     UnitContolType::Restart,
                     (&self.restart_mode).into(),
                 ),
-                ReStartStop::ReloadUnit => (None, UnitContolType::Reload, StartStopMode::Fail),
+                ReStartStop::ReloadUnit => (
+                    ACTION_WIN_RELOAD_UNIT,
+                    UnitContolType::Reload,
+                    StartStopMode::Fail,
+                ),
             };
 
         let unit_control_panel = self.obj().clone();
 
-        let button = button.cloned();
         let primary_name = unit.primary();
         let level = unit.dbus_level();
+        let app_window = app_window.clone();
+
         glib::spawn_future_local(async move {
-            if let Some(w) = button.as_ref() {
-                w.set_sensitive(false)
-            }
+            app_window.action_set_enabled(action_name, false);
 
             let start_results = systemd::runtime().block_on(async move {
                 systemd::restartstop_unit(level, &primary_name, start_mode, re_start_stop).await
             });
-
-            if let Some(w) = button {
-                w.set_sensitive(true)
-            }
 
             unit_control_panel.imp().start_restart(
                 &unit.primary(),
@@ -324,7 +315,14 @@ impl UnitControlPanelImpl {
                 start_mode,
             );
 
-            call_back();
+            app_window.action_set_enabled(action_name, true);
+            if let Err(activate) = gtk::prelude::WidgetExt::activate_action(
+                &app_window,
+                ACTION_WIN_REFRESH_POP_MENU,
+                None,
+            ) {
+                warn!("action {activate:?}");
+            }
         });
     }
 
@@ -434,8 +432,15 @@ impl UnitControlPanelImpl {
 
         controls::handle_switch_sensivity(&self.ablement_switch, unit, true);
 
-        self.start_button.set_sensitive(true);
-        self.stop_button.set_sensitive(true);
+        let Some(app_window) = self.app_window.get() else {
+            error!("No AppWindow ");
+            return;
+        };
+
+        app_window.action_set_enabled(ACTION_WIN_START_UNIT, true);
+        app_window.action_set_enabled(ACTION_WIN_STOP_UNIT, true);
+        app_window.action_set_enabled(ACTION_WIN_RESTART_UNIT, true);
+        app_window.action_set_enabled(ACTION_WIN_RELOAD_UNIT, !unit.active_state().is_inactive());
         self.restart_button.set_sensitive(true);
         //self.kill_button.set_sensitive(true);
 
@@ -590,14 +595,6 @@ impl UnitControlPanelImpl {
         self.unit_panel_stack
             .set_visible_child_name("definition_file_page");
     }
-
-    /*     pub fn unlink_child(&self, is_signal: bool) {
-        let Some(side_panel) = self.more_action_panel.get() else {
-            warn!("Side Panel Should not be None");
-            return;
-        };
-        side_panel.unlink_child(is_signal);
-    } */
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
         if let Some(app_window) = self.app_window.get() {
@@ -790,25 +787,6 @@ impl ObjectImpl for UnitControlPanelImpl {
 
             FONT_CONTEXT.set_font_description(font_description);
         }
-        /*
-        let more_action_panel = SideControlPanel::new();
-
-        self.more_action_popover.set_child(Some(&more_action_panel));
-        let _ = self.more_action_panel.set(more_action_panel.clone());
-
-        let a = self.obj().clone();
-        let more_action_panel = more_action_panel.clone();
-        self.more_action_popover.connect_show(move |_popover| {
-            info!("More action popover shown");
-
-            a.imp().more_action_popover_shown(&more_action_panel);
-        }); */
-
-        /*         self.show_more_button
-        .bind_property::<gtk::Popover>("active", self.side_overlay.as_ref(), "collapsed")
-        .bidirectional()
-        .invert_boolean()
-        .build(); */
     }
 }
 

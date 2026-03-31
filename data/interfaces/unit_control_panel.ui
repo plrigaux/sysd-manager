@@ -39,7 +39,6 @@
                 </child>
               </object>
             </property>
-            <property name="sensitive">False</property>
             <property name="tooltip-text" translatable="yes" context="control tooltip">Start unit</property>
             <child>
               <object class="AdwButtonContent">
@@ -63,7 +62,6 @@
                 </child>
               </object>
             </property>
-            <property name="sensitive">False</property>
             <property name="tooltip-text" translatable="yes" context="control tooltip">Stop unit</property>
             <child>
               <object class="AdwButtonContent">
@@ -88,7 +86,6 @@
                 </child>
               </object>
             </property>
-            <property name="sensitive">False</property>
             <property name="tooltip-text" translatable="yes" context="controls tooltip">Restart unit</property>
             <child>
               <object class="AdwButtonContent">
