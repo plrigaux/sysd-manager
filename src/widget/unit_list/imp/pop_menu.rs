@@ -236,6 +236,7 @@ mod imp {
 
             let units_browser_wr = units_browser.downgrade();
             let filtered_list = filtered_list.downgrade();
+            let unit_list_panel = unit_list_panel.downgrade();
 
             let pop_up = self.obj().downgrade();
 
@@ -289,6 +290,9 @@ mod imp {
                         unit.primary(),
                         unit.active_state()
                     );
+
+                    let unit_list_panel = upgrade!(unit_list_panel);
+                    unit_list_panel.set_unit(Some(unit));
                     pop_up.imp().set_unit(Some(unit));
                     pop_up.set_pointing_to(Some(&gdk::Rectangle::new(x as i32, y as i32, 1, 1)));
                     pop_up.popup();
