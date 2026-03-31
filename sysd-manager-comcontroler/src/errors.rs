@@ -45,6 +45,7 @@ pub enum SystemdErrors {
     Unreachable,
     InvalidPath(String),
     Timeout(Duration),
+    JobRemoved(String),
 }
 
 impl SystemdErrors {

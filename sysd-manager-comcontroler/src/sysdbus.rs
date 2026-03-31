@@ -2,7 +2,7 @@
 //! Documentation can be found at https://www.freedesktop.org/wiki/Software/systemd/dbus/
 pub(super) mod dbus_proxies;
 pub(super) mod to_proxy;
-pub mod watcher;
+pub(crate) mod watcher;
 
 #[cfg(test)]
 mod tests;
@@ -49,31 +49,16 @@ use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
 pub(super) const INTERFACE_SYSTEMD_MANAGER: &str = "org.freedesktop.systemd1.Manager";
-pub(super) const INTERFACE_PROPERTIES: &str = "org.freedesktop.DBus.Properties";
 pub(crate) const PATH_SYSTEMD: &str = "/org/freedesktop/systemd1";
 
 const METHOD_LIST_UNIT: &str = "ListUnits";
-// const METHOD_LIST_UNIT_FILES: &str = "ListUnitFiles";
-
-const METHOD_GET: &str = "Get";
-// const METHOD_START_UNIT: &str = "StartUnit";
-// const METHOD_STOP_UNIT: &str = "StopUnit";
-// const METHOD_RESTART_UNIT: &str = "RestartUnit";
-// const METHOD_GET_UNIT_FILE_STATE: &str = "GetUnitFileState";
 const METHOD_KILL_UNIT: &str = "KillUnit";
 const METHOD_QUEUE_SIGNAL_UNIT: &str = "QueueSignalUnit";
-//const METHOD_CLEAN_UNIT: &str = "CleanUnit";
 const METHOD_MASK_UNIT_FILES: &str = "MaskUnitFiles";
 const METHOD_UNMASK_UNIT_FILES: &str = "UnmaskUnitFiles";
 const METHOD_GET_UNIT: &str = "GetUnit";
-// const METHOD_ENABLE_UNIT_FILES: &str = "EnableUnitFilesWithFlags";
-// const METHOD_DISABLE_UNIT_FILES: &str = "DisableUnitFilesWithFlagsAndInstallInfo";
-pub const METHOD_RELOAD: &str = "Reload";
 pub const METHOD_GET_UNIT_PROCESSES: &str = "GetUnitProcesses";
-pub const METHOD_FREEZE_UNIT: &str = "FreezeUnit";
-pub const METHOD_THAW_UNIT: &str = "ThawUnit";
 pub const METHOD_RELOAD_UNIT: &str = "ReloadUnit";
-
 const METHOD_PRESET_UNIT_FILES: &str = "PresetUnitFiles";
 const METHOD_LINK_UNIT_FILES: &str = "LinkUnitFiles";
 const METHOD_REENABLE_UNIT_FILES: &str = "ReenableUnitFiles";
@@ -772,15 +757,6 @@ fn get_unit_object_path_connection(
     Ok(object_path.to_owned())
 }
 
-pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
-    // to_proxy::reload().await
-
-    let proxy = systemd_manager_async(level).await?;
-
-    proxy.reload().await?;
-    Ok(())
-}
-
 pub(super) fn kill_unit(
     level: UnitDBusLevel,
     unit_name: &str,
@@ -1040,26 +1016,6 @@ pub fn fetch_system_info(
     let res = change_p(level);
     warn!("res {res:?}");
     fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager)
-}
-
-pub fn fetch_system_unit_info_map(
-    level: UnitDBusLevel,
-    object_path: &str,
-    unit_type: UnitType,
-) -> Result<BTreeMap<String, String>, SystemdErrors> {
-    let properties: HashMap<String, OwnedValue> =
-        fetch_system_unit_info_native_map(level, object_path, unit_type)?;
-
-    let mut map = BTreeMap::new();
-
-    for (key, value) in properties.into_iter() {
-        trace!("{key:?} {value:?}");
-
-        let str_val = convert_to_string(&value);
-        map.insert(key.to_owned(), str_val);
-    }
-
-    Ok(map)
 }
 
 pub fn fetch_system_unit_info(
@@ -1684,33 +1640,6 @@ async fn fetch_managed_property(
         }
     };
     Ok(())
-}
-
-pub async fn fetch_unit_property(
-    level: UnitDBusLevel,
-    path: &str,
-    property_interface: &str,
-    property: &str,
-) -> Result<OwnedValue, SystemdErrors> {
-    let connection = get_connection(level).await?;
-
-    let message = call_method_async(
-        &connection,
-        DESTINATION_SYSTEMD,
-        path,
-        INTERFACE_PROPERTIES,
-        METHOD_GET,
-        &(property_interface, property),
-    )
-    .await?;
-
-    let body = message.body();
-
-    let property_value: OwnedValue = body.deserialize()?;
-
-    debug!("fetched property value {:?}", property_value);
-
-    Ok(property_value)
 }
 
 pub async fn fetch_drop_in_paths(

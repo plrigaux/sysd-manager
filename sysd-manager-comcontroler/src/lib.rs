@@ -9,7 +9,7 @@ pub mod journal_data;
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub mod proxy_switcher;
 pub mod socket_unit;
-pub mod sysdbus;
+pub(crate) mod sysdbus;
 pub mod time_handling;
 
 use crate::{
@@ -25,7 +25,7 @@ use crate::{
         ListedUnitFile,
         dbus_proxies::{Systemd1ManagerProxy, systemd_manager, systemd_manager_async},
         to_proxy::SysDManagerComLinkProxy,
-        watcher::{SystemdSignal, SystemdSignalRow},
+        watcher::SystemdSignal,
     },
     time_handling::TimestampStyle,
 };
@@ -48,6 +48,11 @@ use std::{
     io::Read,
     sync::OnceLock,
     time::Duration,
+};
+pub use sysdbus::{
+    get_unit_file_state, list_units_description_and_state_async, shut_down_sysd_proxy,
+    sysd_proxy_service_name,
+    watcher::{SystemdSignalRow, init_signal_watcher},
 };
 use tokio::{
     runtime::Runtime,
@@ -175,19 +180,6 @@ pub async fn init_proxy_async(run_mode: base::RunMode) {
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub fn shut_down() {
     sysdbus::shut_down_sysd_proxy();
-}
-
-pub fn get_unit_file_state(
-    level: UnitDBusLevel,
-    primary_name: &str,
-) -> Result<UnitFileStatus, SystemdErrors> {
-    sysdbus::get_unit_file_state(level, primary_name)
-}
-
-pub async fn list_units_description_and_state_async(
-    level: UnitDBusLevel,
-) -> Result<(Vec<ListedLoadedUnit>, Vec<SystemdUnitFile>), SystemdErrors> {
-    sysdbus::list_units_description_and_state_async(level).await
 }
 
 #[derive(Debug)]
@@ -412,42 +404,6 @@ pub fn stop_unit(
     }
 }
 
-pub fn restart_unit(
-    level: UnitDBusLevel,
-    unit_name: &str,
-    mode: StartStopMode,
-) -> Result<String, SystemdErrors> {
-    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-    match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => {
-            if proxy_switcher::PROXY_SWITCHER.restart() && !unit_name.starts_with(PROXY_SERVICE) {
-                proxy_call_blocking!(restart_unit, unit_name, mode.as_str())
-            } else {
-                systemd_manager()
-                    .restart_unit(unit_name, mode.as_str())
-                    .map(|o| o.to_string())
-                    .map_err(|err| err.into())
-                // sysdbus::restart_unit(level, unit_name, mode)
-            }
-        }
-
-        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
-            .restart_unit(unit_name, mode.as_str())
-            .map(|o| o.to_string())
-            .map_err(|err| err.into()),
-    }
-
-    #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    {
-        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
-
-        systemd_manager_blocking(level)
-            .restart_unit(unit_name, mode.as_str())
-            .map(|o| o.to_string())
-            .map_err(|err| err.into())
-    }
-}
-
 #[derive(Debug)]
 pub enum ReStartStop {
     Start,
@@ -500,6 +456,73 @@ impl ReStartStop {
 }
 
 pub async fn restartstop_unit(
+    level: UnitDBusLevel,
+    unit_name: &str,
+    mode: StartStopMode,
+    action: ReStartStop,
+) -> Result<String, SystemdErrors> {
+    let watcher = init_signal_watcher();
+    let job = restartstop_unit_call(level, unit_name, mode, action).await?;
+    let job_id = job_number(&job).ok_or("Job id invalid: {job}")?;
+
+    let duration = Duration::from_secs(10);
+    timeout(duration, wait_job_removed(job_id, watcher))
+        .await
+        .map_err(|_err| SystemdErrors::Timeout(duration))
+        .and_then(|res| res.map(|_| job))
+}
+
+const SKIPPED: &str = "skipped";
+const CANCELED: &str = "canceled";
+const TIMEOUT: &str = "timeout";
+const FAILED: &str = "failed";
+const DEPENDENCY: &str = "dependency";
+
+async fn wait_job_removed(
+    job_id: u32,
+    mut watcher: broadcast::Receiver<SystemdSignalRow>,
+) -> Result<(), SystemdErrors> {
+    loop {
+        match watcher.recv().await {
+            Ok(x) => {
+                if let SystemdSignal::JobRemoved(id, _, _unit, result) = x.signal
+                    && id == job_id
+                {
+                    match result.as_str() {
+                        "done" => {
+                            break;
+                        }
+                        CANCELED => return Err(SystemdErrors::JobRemoved(CANCELED.to_owned())),
+                        TIMEOUT => return Err(SystemdErrors::JobRemoved(TIMEOUT.to_owned())),
+                        FAILED => return Err(SystemdErrors::JobRemoved(FAILED.to_owned())),
+                        DEPENDENCY => return Err(SystemdErrors::JobRemoved(DEPENDENCY.to_owned())),
+                        SKIPPED => return Err(SystemdErrors::JobRemoved(SKIPPED.to_owned())),
+                        r => {
+                            warn!("Unknown JobRemoved result {r}");
+                        }
+                    }
+                }
+            }
+            Err(RecvError::Lagged(lag)) => info!("Lagged {lag:?}"),
+            Err(err) => {
+                warn!("Recev Err {err:?}");
+                return Err(SystemdErrors::JobRemoved(format!("{err:?}")));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn job_number(job: &str) -> Option<u32> {
+    job.rsplit_once('/').and_then(|(_, job_id)| {
+        job_id
+            .parse::<u32>()
+            .inspect_err(|err| warn!("Job {err:?}"))
+            .ok()
+    })
+}
+
+async fn restartstop_unit_call(
     level: UnitDBusLevel,
     unit_name: &str,
     mode: StartStopMode,
@@ -1184,10 +1207,6 @@ pub fn retreive_unit_processes(
     }
 
     Ok(unit_processes_map)
-}
-
-pub fn init_signal_watcher() -> broadcast::Receiver<SystemdSignalRow> {
-    sysdbus::watcher::init_signal_watcher()
 }
 
 pub async fn test(test_name: &str, level: UnitDBusLevel) {

@@ -10,7 +10,7 @@ use gtk::{
     glib::{self},
     pango::{self, FontDescription},
 };
-use systemd::ReStartStop;
+use systemd::{ReStartStop, runtime};
 use tracing::{debug, info, warn};
 
 use super::{
@@ -264,17 +264,10 @@ impl UnitControlPanelImpl {
         let level = unit.dbus_level();
         glib::spawn_future_local(async move {
             button.set_sensitive(false);
-
-            let start_results = gio::spawn_blocking(async move || {
-                // systemd_method(level, &primary_name, start_mode).await
+            let start_results = runtime().block_on(async move {
                 systemd::restartstop_unit(level, &primary_name, start_mode, re_start_stop).await
-            })
-            .await
-            .expect("Task needs to finish successfully.");
-
+            });
             button.set_sensitive(true);
-
-            let start_results = start_results.await;
 
             unit_control_panel.imp().start_restart(
                 &unit.primary(),

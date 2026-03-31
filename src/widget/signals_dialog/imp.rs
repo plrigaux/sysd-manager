@@ -17,7 +17,7 @@ use gtk::{
     },
 };
 use std::cell::{Cell, OnceCell, Ref, RefCell};
-use systemd::{init_signal_watcher, sysdbus::watcher::SystemdSignalRow};
+use systemd::{SystemdSignalRow, init_signal_watcher};
 use tracing::{debug, info, warn};
 
 const SIGNAL_WINDOW_WIDTH: &str = "signal-window-width";

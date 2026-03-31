@@ -6,8 +6,7 @@ use crate::{
     },
     format2,
     systemd::{
-        self, data::UnitInfo, errors::SystemdErrors, generate_file_uri,
-        sysdbus::sysd_proxy_service_name,
+        self, data::UnitInfo, errors::SystemdErrors, generate_file_uri, sysd_proxy_service_name,
     },
     systemd_gui::{self, is_dark},
     upgrade,
