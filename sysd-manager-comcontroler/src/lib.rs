@@ -59,7 +59,7 @@ use tokio::{
     sync::broadcast::{self, error::RecvError},
     time::timeout,
 };
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 use zvariant::OwnedValue;
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
