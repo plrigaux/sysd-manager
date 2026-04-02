@@ -20,11 +20,9 @@ use crate::{
     },
     file::save_text_to_file,
     journal_data::Boot,
-    proxy_switcher::PROXY_SWITCHER,
     sysdbus::{
         ListedUnitFile,
         dbus_proxies::{Systemd1ManagerProxy, systemd_manager, systemd_manager_async},
-        to_proxy::SysDManagerComLinkProxy,
         watcher::SystemdSignal,
     },
     time_handling::TimestampStyle,
@@ -50,8 +48,7 @@ use std::{
     time::Duration,
 };
 pub use sysdbus::{
-    get_unit_file_state, list_units_description_and_state_async, shut_down_sysd_proxy,
-    sysd_proxy_service_name,
+    get_unit_file_state, list_units_description_and_state_async, sysd_proxy_service_name,
     watcher::{SystemdSignalRow, init_signal_watcher},
 };
 use tokio::{
@@ -63,7 +60,10 @@ use tracing::{error, info, warn};
 use zvariant::OwnedValue;
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-use crate::sysdbus::to_proxy;
+pub use sysdbus::shut_down_sysd_proxy;
+
+#[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+use crate::sysdbus::to_proxy::{self, SysDManagerComLinkProxy};
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 use base::consts::PROXY_SERVICE;
@@ -358,7 +358,10 @@ pub enum ReStartStop {
 }
 
 impl ReStartStop {
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     fn use_proxy(&self) -> bool {
+        use crate::proxy_switcher::PROXY_SWITCHER;
+
         match self {
             ReStartStop::Start => PROXY_SWITCHER.start(),
             ReStartStop::Stop => PROXY_SWITCHER.stop(),
@@ -367,6 +370,7 @@ impl ReStartStop {
         }
     }
 
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     async fn action<'a>(
         &self,
         proxy: &SysDManagerComLinkProxy<'a>,
@@ -516,7 +520,7 @@ async fn restartstop_unit_call(
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
-        let manager = sysdbus::dbus_proxies::system_manager_async(level).await?;
+        let manager = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
         action.systemd_action(manager, unit_name, mode).await
     }
 }

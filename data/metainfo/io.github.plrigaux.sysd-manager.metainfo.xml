@@ -82,6 +82,22 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.16.0" date="2026-04-02">
+      <description translate="no">
+        <p>Changed</p>
+        <ul>
+          <li>Unit browser right click select the unit</li>
+          <li>Start Unit, Stop Unit, Restart Unit now check the action result (signal)</li>
+          <li>Reload now check the action result (signal)</li>
+          <li>Proxy have a better Hart Beat handling</li>
+          <li>Reload Unit can now goes trough Proxy</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Start Unit, Stop Unit, Restart Unit Modes are now taken care</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.15.0" date="2026-03-26">
       <description translate="no">
         <p>Added</p>
