@@ -1,6 +1,7 @@
 mod column_factories;
 #[macro_use]
 mod construct;
+mod favorites;
 pub mod pop_menu;
 
 use crate::{
@@ -45,7 +46,7 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use flagset::FlagSet;
-use glib::WeakRef;
+use glib::{WeakRef, value::FromValue};
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
@@ -65,6 +66,7 @@ use std::{
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
     collections::{HashMap, HashSet},
     hash::{Hash, Hasher},
+    ops::Deref,
     rc::Rc,
     sync::OnceLock,
     time::Duration,
@@ -217,6 +219,8 @@ pub struct UnitListPanelImp {
     list_store: OnceCell<gio::ListStore>,
 
     units_map: Rc<RefCell<HashMap<UnitKey, UnitInfo>>>,
+
+    favorites: RefCell<HashMap<UnitKey, Option<UnitInfo>>>,
 
     unit_list_sort_list_model: RefCell<gtk::SortListModel>,
 
@@ -1500,6 +1504,38 @@ impl UnitListPanelImp {
             filter_text.set_filter_match_case_insensitive(case_incensitive_default, false);
         }
     }
+
+    fn retreive_favorites(&self) {
+        let list_panel = self.obj().clone();
+        glib::spawn_future_local(async move {
+            // Deactivate the button until the operation is done
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+            systemd::runtime().spawn(async move {
+                let x = favorites::load_favorites().map(|f| {
+                    f.favs
+                        .into_iter()
+                        .map(|f| UnitKey::new_string(f.bus.into(), f.unit))
+                        .collect::<Vec<_>>()
+                });
+
+                if sender.send(x).is_err() {
+                    warn!("Error send favorites");
+                }
+            });
+
+            let Ok(Some(returned_fav)) = receiver
+                .await
+                .inspect_err(|err| error!("Tokio channel dropped {err:?}"))
+            else {
+                return;
+            };
+
+            let mut favorites = list_panel.imp().favorites.borrow_mut();
+            for key in returned_fav {
+                favorites.insert(key, None);
+            }
+        });
+    }
 }
 
 fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) {
@@ -1686,6 +1722,8 @@ impl ObjectImpl for UnitListPanelImp {
                 "case-incensitive-default",
             )
             .build();
+
+        self.retreive_favorites()
     }
 }
 
@@ -1753,7 +1791,10 @@ async fn retrieve_unit_list(
         let mut handles = Vec::with_capacity(4);
 
         match view {
-            UnitCuratedList::Defaut | UnitCuratedList::Custom | UnitCuratedList::LoadedUnit => {
+            UnitCuratedList::Defaut
+            | UnitCuratedList::Custom
+            | UnitCuratedList::LoadedUnit
+            | UnitCuratedList::Favorite => {
                 dbus_call!(int_level, handles, systemd::list_loaded_units)
             }
             UnitCuratedList::UnitFiles => {}

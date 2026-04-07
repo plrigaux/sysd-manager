@@ -105,10 +105,17 @@ impl From<&str> for UnitDBusLevel {
         match level {
             "user" => UnitDBusLevel::UserSession,
             "system" => UnitDBusLevel::System,
+            "both" => UnitDBusLevel::Both,
             _ => {
                 warn!("Unit dbus Level not found {level:?}");
                 UnitDBusLevel::default()
             }
         }
+    }
+}
+
+impl From<String> for UnitDBusLevel {
+    fn from(level: String) -> Self {
+        level.as_str().into()
     }
 }

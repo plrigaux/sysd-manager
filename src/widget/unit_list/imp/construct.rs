@@ -52,6 +52,7 @@ pub fn construct_column_view(
             }
             return list;
         }
+        UnitCuratedList::Favorite => default_column_definition_list(display_color),
     };
 
     let mut dict: HashMap<_, _> = list
