@@ -31,6 +31,10 @@ textview {
     font-weight: bold;
 }
 
+.sbold {
+    font-weight: 550;
+}
+
 buttoncontent.nav box label {
     font-weight: normal;
 }

@@ -16,6 +16,7 @@
         <property name="spacing">5</property>
         <child>
           <object class="GtkLabel">
+            <property name="css-classes">sbold</property>
             <property name="label" translatable="yes" context="control info">Enabled</property>
           </object>
         </child>
