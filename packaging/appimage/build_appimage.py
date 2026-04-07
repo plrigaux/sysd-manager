@@ -46,18 +46,49 @@ def linux_deploy():
             # "--icon-filename=./data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
             "--desktop-file",
             "./target/loc/io.github.plrigaux.sysd-manager.desktop",
+            # "-l",
+            # "/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0",
             "-l",
-            "/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0",
+            "/usr/lib/libharfbuzz.so.0",
             "-l",
-            "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1",
+            "/usr/lib/libfontconfig.so.1",
+            # "-l",
+            # "/usr/lib/libc.so",
             # "-l",
             # "/usr/lib/x86_64-linux-gnu/libfreetype.so.6"
+            # "-l",
+            # "/lib64/ld-linux-x86-64.so.2"
         ],
         on_fail_exit=False,
     )
+    bc.cmd_run(
+        [
+            "cp",
+            "-v",
+            "/lib/libc.so",
+            f"{APP_DIR}/usr/lib"
+        ]
+    )
+
+    print(f"{color.CYAN}{color.BOLD}Copy LD{color.END} ")
+
+    copyld()
 
     # make_appimage()
 
+def copyld():
+    
+
+    print(f"{color.CYAN}{color.BOLD}Copy LD{color.END} ")
+    bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/usr/lib64"])
+    bc.cmd_run(
+        [
+            "cp",
+            "-v",
+            "/lib64/ld-linux-x86-64.so.2",
+            f"{APP_DIR}/usr/lib64"
+        ]
+    )
 
 def create_appdir(create_apprun=True):
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
@@ -292,25 +323,25 @@ def pack_libs():
         "ld-linux-x86-64",
         "/lib64/ld-linux-x86-64",
         # "libm",
-        "libresolv",
-        "libEGL",
-        "libGLdispatch",
-        "libGLX",
-        "libdrm",
-        "libgbm",
-        "libxcb",
-        "libX11",
-        "libX11-xcb",
-        "libwayland-client",
+        # "libresolv",
+        # "libEGL",
+        # "libGLdispatch",
+        # "libGLX",
+        # "libdrm",
+        # "libgbm",
+        # "libxcb",
+        # "libX11",
+        # "libX11-xcb",
+        # "libwayland-client",
         # "libfontconfig",
         # "libfreetype",
         # "libharfbuzz",
-        "libcom_err",
-        "libexpat",
-        "libgcc_s",
-        "libz",
-        "libfribidi",
-        "libgmp",
+        # "libcom_err",
+        # "libexpat",
+        # "libgcc_s",
+        # "libz",
+        # "libfribidi",
+        # "libgmp",
     }
 
     for key, value in result.items():
@@ -322,7 +353,8 @@ def pack_libs():
             print(f"{lib_name} -- {key}")
             bc.cmd_run(["install", "-Dm755", value, "-t", f"{APP_DIR}/usr/lib"])
 
-
+    copyld()
+    
 def build():
     print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
     print(f"{color.GREEN}{color.BOLD}Creating an AppImage{color.END}")
@@ -361,9 +393,9 @@ def just_publish():
     version = bc.get_version()
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
-    file = app_image_file_name(version)
-
-    bc.just_publis(version, file)
+    file = f"{APP_IMAGE_DIR}/{app_image_file_name(version)}"
+    
+    bc.just_publish(version, file)
 
 
 def publish_upload():
