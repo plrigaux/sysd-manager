@@ -2,4 +2,5 @@
 
 export TEXTDOMAINDIR=$APPDIR/usr/share/locale
 export GSETTINGS_SCHEMA_DIR=$APPDIR/usr/share/glib-2.0/schemas
-LD_LIBRARY_PATH=$APPDIR/usr/lib:$LD_LIbRARY_PATH $APPDIR/usr/bin/sysd-manager
+# LD_LIBRARY_PATH=$APPDIR/usr/lib:$LD_LIBRARY_PATH $APPDIR/usr/bin/sysd-manager
+$APPDIR/usr/lib64/ld-linux-x86-64.so.2 --inhibit-cache --library-path $APPDIR/usr/lib $APPDIR/usr/bin/sysd-manager
