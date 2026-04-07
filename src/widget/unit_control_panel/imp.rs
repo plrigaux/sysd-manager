@@ -3,8 +3,9 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT,
-        ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, DESTRUCTIVE_ACTION, SUGGESTED_ACTION,
+        ACTION_WIN_FAVORITE_SET, ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT,
+        ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, DESTRUCTIVE_ACTION,
+        SUGGESTED_ACTION,
     },
     format2,
     utils::{
@@ -83,6 +84,9 @@ pub struct UnitControlPanelImpl {
 
     #[template_child]
     unit_panel_stack: TemplateChild<adw::ViewStack>,
+
+    #[template_child]
+    favorite_button: TemplateChild<gtk::Button>,
 
     app_window: OnceCell<AppWindow>,
 
@@ -200,11 +204,39 @@ impl UnitControlPanelImpl {
                 .build()
         };
 
+        let action_favorite_set = {
+            let cpanel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_WIN_FAVORITE_SET[4..])
+                .activate(move |_application: &AppWindow, _b, _target_value| {})
+                .state(false.to_variant())
+                .change_state(move |_a, simple_action, new_state| {
+                    let Some(state) = simple_action.state().and_then(|v| v.get::<bool>()) else {
+                        warn!("no state");
+                        return;
+                    };
+
+                    let Some(new_state) = new_state.and_then(|v| v.get::<bool>()) else {
+                        warn!("no new state");
+                        return;
+                    };
+
+                    debug!(
+                        "Action {ACTION_WIN_FAVORITE_SET} state {state} new state {:?}",
+                        new_state
+                    );
+
+                    simple_action.set_state(&new_state.to_variant());
+                    cpanel.imp().set_favorite(new_state);
+                })
+                .build()
+        };
+
         app_window.add_action_entries([
             action_start_unit,
             action_stop_unit,
             action_restart_unit,
             action_reload_unit,
+            action_favorite_set,
         ]);
 
         //Disable buttons
@@ -710,6 +742,15 @@ impl UnitControlPanelImpl {
 
     pub(super) fn current_unit(&self) -> Option<UnitInfo> {
         self.current_unit.borrow().clone()
+    }
+
+    pub fn set_favorite(&self, is_favorite: bool) {
+        let favorite_icon = if is_favorite {
+            "bookmark-filled-symbolic"
+        } else {
+            "bookmark-outline-symbolic"
+        };
+        self.favorite_button.set_icon_name(favorite_icon);
     }
 }
 

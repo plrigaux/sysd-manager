@@ -2,7 +2,6 @@ use crate::widget::{
     unit_list::imp::UnitKey,
     unit_properties_selector::save::{get_sysd_manager_config_dir, save_to_toml_file},
 };
-use base::enums::UnitDBusLevel;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use tracing::{error, info, warn};
@@ -11,8 +10,7 @@ const FAVORITES: &str = "favorites.toml";
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Favorites {
-    #[serde(rename = "column")]
-    pub favs: Vec<Favorite>,
+    pub favorites: Vec<Favorite>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -31,10 +29,10 @@ impl Favorite {
     }
 }
 
-pub(super) fn save_favorites(favorite: &[UnitKey]) {
-    let c: Vec<Favorite> = favorite.iter().map(Favorite::from).collect();
+pub(super) fn save_favorites(favorites: &[&UnitKey]) {
+    let favorites: Vec<Favorite> = favorites.iter().map(|k| Favorite::from(k)).collect();
 
-    let config = Favorites { favs: c };
+    let config = Favorites { favorites };
 
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
 
@@ -82,7 +80,7 @@ pub(super) fn load_favorites() -> Option<Favorites> {
     match fs::read_to_string(&config_path) {
         Ok(toml_str) => match toml::from_str::<Favorites>(&toml_str) {
             Ok(config) => {
-                if config.favs.is_empty() {
+                if config.favorites.is_empty() {
                     warn!("Loaded config is empty, FALLBACK on default");
                     None
                 } else {

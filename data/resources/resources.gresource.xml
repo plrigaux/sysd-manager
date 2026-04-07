@@ -7,7 +7,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties.ui">interfaces/unit_properties.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties_selector.ui">interfaces/unit_properties_selector.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties_selection.ui">interfaces/unit_properties_selection.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties_selection_row.ui">interfaces/unit_properties_selection_row.ui</file>    
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties_selection_row.ui">interfaces/unit_properties_selection_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="preferences.ui">interfaces/preferences.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_info_panel.ui">interfaces/unit_info_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_file_panel.ui">interfaces/unit_file_panel.ui</file>
@@ -15,15 +15,15 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="journal_row.ui">interfaces/journal_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="app_window.ui">interfaces/app_window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_panel.ui">interfaces/unit_list_panel.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_filter.ui">interfaces/unit_list_filter.ui</file>        
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_filter.ui">interfaces/unit_list_filter.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_list_search.ui">interfaces/unit_list_search.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_dependencies_panel.ui">interfaces/unit_dependencies_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="kill_panel.ui">interfaces/kill_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="clean_dialog.ui">interfaces/clean_dialog.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="control_action_dialog.ui">interfaces/control_action_dialog.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="unit_control_panel.ui">interfaces/unit_control_panel.ui</file>    
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_control_panel.ui">interfaces/unit_control_panel.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="side_control_panel.ui">interfaces/side_control_panel.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="mask_unit_dialog.ui">interfaces/mask_unit_dialog.ui</file>    
+    <file compressed="true" preprocess="xml-stripblanks" alias="mask_unit_dialog.ui">interfaces/mask_unit_dialog.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="list_boots.ui">interfaces/list_boots.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="signals_window.ui">interfaces/signals_window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">interfaces/shortcuts.ui</file>
@@ -45,22 +45,24 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/rain-outline-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/snow-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/side-by-side-symbolic.svg</file>
-    <file preprocess="xml-stripblanks">icons/scalable/actions/top-down-symbolic.svg</file>    
-    <file preprocess="xml-stripblanks">icons/scalable/actions/empty-icon.svg</file>       
-    <file preprocess="xml-stripblanks">icons/scalable/actions/list-symbolic.svg</file>   
-    <file preprocess="xml-stripblanks">icons/scalable/actions/venetian-mask-symbolic.svg</file>      
-    <file preprocess="xml-stripblanks">icons/scalable/actions/venetian-unmask-symbolic.svg</file>     
+    <file preprocess="xml-stripblanks">icons/scalable/actions/top-down-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/empty-icon.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/list-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/venetian-mask-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/venetian-unmask-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/check-round-outline2-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/file-cabinet-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/hand-point-horizontal-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/circle-crossed-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/arrow-circular-top-right-symbolic.svg</file>
-    <file preprocess="xml-stripblanks">icons/scalable/actions/arrow-circular-top-left-symbolic.svg</file>    
-    <file preprocess="xml-stripblanks">icons/scalable/actions/chain-link-symbolic.svg</file>    
-    <file preprocess="xml-stripblanks">icons/scalable/actions/columns-symbolic.svg</file>   
-    <file preprocess="xml-stripblanks">icons/scalable/actions/dock-right-symbolic.svg</file>       
-    <file preprocess="xml-stripblanks">icons/scalable/actions/uppercase-symbolic.svg</file>  
-    <file preprocess="xml-stripblanks">icons/scalable/actions/regex-symbolic.svg</file>  
-    <file preprocess="xml-stripblanks">icons/scalable/actions/match-whole-word-symbolic.svg</file>  
+    <file preprocess="xml-stripblanks">icons/scalable/actions/arrow-circular-top-left-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/chain-link-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/columns-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/dock-right-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/uppercase-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/regex-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/match-whole-word-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/bookmark-filled-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/bookmark-outline-symbolic.svg</file>
   </gresource>
 </gresources>

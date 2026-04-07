@@ -15,6 +15,13 @@
         <property name="margin-top">3</property>
         <property name="spacing">5</property>
         <child>
+          <object class="GtkButton" id="favorite_button">
+            <property name="action-name">win.favorite-toggle</property>
+            <property name="css-classes">flat</property>
+            <property name="icon-name">bookmark-outline-symbolic</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkLabel">
             <property name="css-classes">sbold</property>
             <property name="label" translatable="yes" context="control info">Enabled</property>
