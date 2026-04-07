@@ -7,7 +7,8 @@ pub mod pop_menu;
 use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ACTION_WIN_HIDE_UNIT_COL, ACTION_WIN_REFRESH_POP_MENU, ALL_FILTER_KEY, FILTER_MARK,
+        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL,
+        ACTION_WIN_REFRESH_POP_MENU, ALL_FILTER_KEY, FILTER_MARK,
         KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
     },
     systemd::{
@@ -35,7 +36,7 @@ use crate::{
                 },
             },
             get_clean_col_title,
-            imp::construct::construct_column_view,
+            imp::{construct::construct_column_view, favorites::save_favorites},
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::{
@@ -46,7 +47,7 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use flagset::FlagSet;
-use glib::{WeakRef, value::FromValue};
+use glib::{WeakRef, property::PropertyGet, value::FromValue};
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
@@ -453,6 +454,16 @@ impl UnitListPanelImp {
                 .build()
         };
 
+        let set_favorite = {
+            let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_WIN_FAVORITE_TOGGLE[4..])
+                .activate(move |_application: &AppWindow, _, _| {
+                    info!("Action Toggle Favorite");
+                    unit_list_panel.imp().toggle_unit_favorite();
+                })
+                .build()
+        };
+
         app_window.add_action_entries([
             action_entry,
             list_filter_action_entry,
@@ -460,6 +471,7 @@ impl UnitListPanelImp {
             list_filter_clear_action_entry,
             refresh_unit_list,
             refresh_pop_menu,
+            set_favorite,
         ]);
 
         let settings = systemd_gui::new_settings();
@@ -720,13 +732,17 @@ impl UnitListPanelImp {
 
     pub fn set_unit_internal(&self, unit: &UnitInfo) {
         let _ = self.unit.replace(Some(unit.clone()));
+        self.set_unit_favorite(Some(unit));
     }
 
     pub fn set_unit(&self, unit: Option<&UnitInfo>) -> Option<UnitInfo> {
         let Some(unit) = unit else {
             self.unit.replace(None);
+            self.set_unit_favorite(None);
             return None;
         };
+
+        self.set_unit_favorite(Some(unit));
 
         //FIXME update the data
         let old = self.unit.replace(Some(unit.clone()));
@@ -791,6 +807,53 @@ impl UnitListPanelImp {
         }
 
         Some(unit.clone())
+    }
+
+    fn set_unit_favorite(&self, unit: Option<&UnitInfo>) {
+        let Some(win) = self.app_window.get() else {
+            return;
+        };
+
+        let fav = if let Some(unit) = unit {
+            let key = UnitKey::new(unit);
+            self.favorites.borrow().contains_key(&key)
+        } else {
+            false
+        };
+
+        win.change_action_state(&ACTION_WIN_FAVORITE_SET[4..], &fav.to_variant());
+    }
+
+    fn toggle_unit_favorite(&self) {
+        let Some(win) = self.app_window.get() else {
+            return;
+        };
+
+        let Some(unit) = self.unit.borrow().clone() else {
+            warn!("No unit selected");
+            return;
+        };
+
+        let fav_len = self.favorites.borrow().len();
+        let key = UnitKey::new(&unit);
+        let fav = if self.favorites.borrow().contains_key(&key) {
+            self.favorites.borrow_mut().remove(&key);
+            false
+        } else {
+            self.favorites.borrow_mut().insert(key, Some(unit));
+            true
+        };
+
+        if fav_len != self.favorites.borrow().len() {
+            let ref_map = self.favorites.borrow();
+
+            let favorites: Vec<_> = ref_map.keys().collect();
+
+            save_favorites(&favorites);
+        }
+
+        debug!("is unit favorite {fav}");
+        win.change_action_state(&ACTION_WIN_FAVORITE_SET[4..], &fav.to_variant());
     }
 
     fn add_one_unit(&self, unit: &UnitInfo) {
@@ -1511,14 +1574,14 @@ impl UnitListPanelImp {
             // Deactivate the button until the operation is done
             let (sender, receiver) = tokio::sync::oneshot::channel();
             systemd::runtime().spawn(async move {
-                let x = favorites::load_favorites().map(|f| {
-                    f.favs
+                let favorites = favorites::load_favorites().map(|f| {
+                    f.favorites
                         .into_iter()
                         .map(|f| UnitKey::new_string(f.bus.into(), f.unit))
                         .collect::<Vec<_>>()
                 });
 
-                if sender.send(x).is_err() {
+                if sender.send(favorites).is_err() {
                     warn!("Error send favorites");
                 }
             });
