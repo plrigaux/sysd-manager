@@ -191,7 +191,7 @@ pub fn order_columns(columns: Option<&gio::ListModel>, data: &mut [UnitPropertyS
     }
 }
 
-fn get_sysd_manager_config_dir() -> std::path::PathBuf {
+pub(crate) fn get_sysd_manager_config_dir() -> std::path::PathBuf {
     let xdg_config_home = get_xdg_config_home();
 
     Path::new(&xdg_config_home).join("sysd-manager")
@@ -204,7 +204,10 @@ fn get_xdg_config_home() -> String {
     })
 }
 
-fn save_to_toml_file(data: &MyConfig, path: &Path) -> std::io::Result<()> {
+pub(crate) fn save_to_toml_file<T>(data: &T, path: &Path) -> std::io::Result<()>
+where
+    T: Serialize,
+{
     let toml_str = toml::to_string_pretty(data).expect("Failed to serialize data to TOML");
     let mut file = File::create(path)?;
     file.write_all(toml_str.as_bytes())?;
