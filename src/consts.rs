@@ -53,9 +53,8 @@ pub const FILTER_MARK: char = '⭐';
 
 pub const ALL_FILTER_KEY: &str = "all";
 
-pub const ACTION_REFRESH_UNIT_LIST: &str = "refresh_unit_list";
+pub const ACTION_WIN_REFRESH_UNIT_LIST: &str = "win.refresh_unit_list";
 
-pub const NS_ACTION_REFRESH_UNIT_LIST: &str = concat!(WIN, ACTION_REFRESH_UNIT_LIST);
 pub const ACTION_INCLUDE_UNIT_FILES: &str = "include-unit-files";
 pub const WIN_ACTION_INCLUDE_UNIT_FILES: &str = concat!(WIN, ACTION_INCLUDE_UNIT_FILES);
 

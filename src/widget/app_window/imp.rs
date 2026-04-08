@@ -8,9 +8,9 @@ use std::{
 use crate::{
     consts::{
         ACTION_DAEMON_RELOAD, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR,
-        ACTION_PROPERTIES_SELECTOR_GENERAL, ACTION_UNIT_PROPERTIES_DISPLAY, APP_ACTION_LIST_BOOT,
-        APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
-        NS_ACTION_REFRESH_UNIT_LIST, WIN_ACTION_SAVE_UNIT_FILE,
+        ACTION_PROPERTIES_SELECTOR_GENERAL, ACTION_UNIT_PROPERTIES_DISPLAY,
+        ACTION_WIN_REFRESH_UNIT_LIST, APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR_GENERAL,
+        APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
     },
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
@@ -224,8 +224,8 @@ impl AppWindowImpl {
 
                     PREFERENCES.set_and_save_dbus_level(level, &settings);
 
-                    if let Err(err) = dropdown.activate_action(NS_ACTION_REFRESH_UNIT_LIST, None) {
-                        warn!("call action {NS_ACTION_REFRESH_UNIT_LIST} error: {err}");
+                    if let Err(err) = dropdown.activate_action(ACTION_WIN_REFRESH_UNIT_LIST, None) {
+                        warn!("call action {ACTION_WIN_REFRESH_UNIT_LIST} error: {err}");
                     }
                 });
         }

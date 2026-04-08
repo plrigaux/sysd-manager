@@ -52,18 +52,18 @@ pub fn construct_column_view(
             }
             return list;
         }
-        UnitCuratedList::Favorite => default_column_definition_list(display_color),
+        UnitCuratedList::Favorites => default_column_definition_list(display_color),
     };
 
     let mut dict: HashMap<_, _> = list
         .into_iter()
-        .filter_map(|c| c.id().map(|id| (id, c)))
+        .filter_map(|property_selection| property_selection.id().map(|id| (id, property_selection)))
         .collect();
 
     let mut out = Vec::with_capacity(default_column_set.len());
     for (id, default_up) in default_column_set
         .into_iter()
-        .filter_map(|c| c.id().map(|id| (id, c)))
+        .filter_map(|property_selection| property_selection.id().map(|id| (id, property_selection)))
     {
         let unit_prop = if let Some(loaded_up) = dict.remove(&id) {
             loaded_up.set_sort(default_up.sort());
@@ -75,6 +75,7 @@ pub fn construct_column_view(
         unit_prop.column().set_expand(false);
         out.push(unit_prop);
     }
+
     out
 }
 
@@ -328,8 +329,6 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
                 }
             }
         };
-
-        // let id = unit_column_config.get_column();
 
         let prop_selection =
             UnitPropertySelection::from_column_config2(unit_column_config, id.clone());
