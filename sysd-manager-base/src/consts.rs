@@ -21,3 +21,5 @@ pub const DBUS_PATH_DEV: &str = concat!(DBUS_PATH, "Dev");
 
 pub const MIN_HEART_BEAT_ELAPSE: u64 = 500;
 pub const MAX_HEART_BEAT_ELAPSE: u64 = 300_000;
+pub const FAVORITE_ICON_FILLED: &str = "bookmark-filled-symbolic";
+pub const FAVORITE_ICON_OUTLINE: &str = "bookmark-outline-symbolic";

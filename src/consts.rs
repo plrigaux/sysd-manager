@@ -45,7 +45,6 @@ pub const ACTION_SAVE_UNIT_FILE: &str = "save-unit-file";
 pub const WIN_ACTION_SAVE_UNIT_FILE: &str = concat!(WIN, ACTION_SAVE_UNIT_FILE);
 
 pub const CLASS_SUCCESS: &str = "success";
-//const CLASS_ACCENT: &str = "accent";
 pub const CLASS_WARNING: &str = "warning";
 pub const CLASS_ERROR: &str = "error";
 

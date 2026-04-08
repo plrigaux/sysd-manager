@@ -129,6 +129,20 @@
           <object class="GtkSeparator"/>
         </child>
         <child>
+          <object class="GtkButton" id="toggle_favorite_button">
+            <property name="action-name">win.favorite-toggle</property>
+            <property name="css-classes">flat</property>
+            <child>
+              <object class="AdwButtonContent" id="toggle_favorite_button_content">
+                <property name="css-classes">flat</property>
+                <property name="halign">start</property>
+                <property name="icon-name">bookmark-outline-symbolic</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Add Favorite</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="GtkButton" id="totals_summary_button">
             <property name="accessible-role">menu-item</property>
             <property name="action-name">win.pref-unit-list-display-summary</property>
@@ -148,7 +162,9 @@
           <object class="GtkMenuButton" id="unit_list_view_menubutton">
             <property name="css-classes">flat</property>
             <property name="direction">right</property>
-            <property name="label">Curated Lists</property>
+            <!-- </property> -->
+            <property name="halign">start</property>
+            <property name="label" translatable="yes" context="controls" comments="in the pop menu">Curated Lists</property>
           </object>
         </child>
       </object>

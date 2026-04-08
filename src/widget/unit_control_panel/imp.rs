@@ -19,7 +19,10 @@ use crate::{
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
-use base::enums::UnitDBusLevel;
+use base::{
+    consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE},
+    enums::UnitDBusLevel,
+};
 use gettextrs::pgettext;
 use gtk::{
     gio,
@@ -746,9 +749,9 @@ impl UnitControlPanelImpl {
 
     pub fn set_favorite(&self, is_favorite: bool) {
         let favorite_icon = if is_favorite {
-            "bookmark-filled-symbolic"
+            FAVORITE_ICON_FILLED
         } else {
-            "bookmark-outline-symbolic"
+            FAVORITE_ICON_OUTLINE
         };
         self.favorite_button.set_icon_name(favorite_icon);
     }

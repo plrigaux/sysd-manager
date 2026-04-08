@@ -109,6 +109,10 @@ impl UnitListPanel {
     pub fn save_column_config(&self) {
         self.imp().save_config();
     }
+
+    pub fn is_favorite(&self, unit: &UnitInfo) -> bool {
+        self.imp().is_favorite(unit)
+    }
 }
 
 pub fn get_clean_col_title(title: &str) -> String {

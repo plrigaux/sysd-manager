@@ -24,6 +24,10 @@ impl UnitPopMenu {
     pub fn refresh_buttons_style(&self) {
         self.imp().refresh_buttons_style();
     }
+
+    pub fn set_favorite(&self, fav: bool) {
+        self.imp().set_favorite(fav);
+    }
 }
 
 mod imp {
@@ -38,6 +42,7 @@ mod imp {
             unit_list::{UnitCuratedList, UnitListPanel},
         },
     };
+    use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE};
     use gettextrs::pgettext;
     use glib::WeakRef;
     use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};
@@ -101,6 +106,9 @@ mod imp {
         #[template_child]
         totals_summary_button: TemplateChild<gtk::Button>,
 
+        #[template_child]
+        toggle_favorite_button_content: TemplateChild<adw::ButtonContent>,
+
         // pub(super) units_browser: OnceCell<WeakRef<gtk::ColumnView>>,
         pub(super) unit_list_panel: OnceCell<WeakRef<UnitListPanel>>,
         unit: RefCell<Option<UnitInfo>>,
@@ -143,7 +151,9 @@ mod imp {
 
             unit_list_panel!(self).button_action(&inter_message);
         }
+    }
 
+    impl UnitPopMenuImp {
         fn set_unit(&self, unit: Option<&UnitInfo>) {
             if let Some(unit) = unit {
                 self.unit.replace(Some(unit.clone()));
@@ -204,6 +214,12 @@ mod imp {
                 );
 
                 self.set_buttons_style(unit);
+
+                if let Some(a) = self.unit_list_panel.get()
+                    && let Some(list_panel) = a.upgrade()
+                {
+                    self.set_favorite(list_panel.is_favorite(unit));
+                }
             } else {
                 self.unit.replace(None);
             }
@@ -345,6 +361,16 @@ mod imp {
                 self.reenable_button.set_sensitive(true);
                 self.disable_button.set_sensitive(true);
             }
+        }
+
+        pub(crate) fn set_favorite(&self, fav: bool) {
+            let favorite_icon = if fav {
+                FAVORITE_ICON_FILLED
+            } else {
+                FAVORITE_ICON_OUTLINE
+            };
+            self.toggle_favorite_button_content
+                .set_icon_name(favorite_icon);
         }
     }
 
