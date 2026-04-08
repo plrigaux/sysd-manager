@@ -855,6 +855,10 @@ impl UnitListPanelImp {
 
         debug!("is unit favorite {fav}");
         win.change_action_state(&ACTION_WIN_FAVORITE_SET[4..], &fav.to_variant());
+
+        if let Some(pop) = self.pop_menu.get() {
+            pop.set_favorite(fav);
+        }
     }
 
     fn add_one_unit(&self, unit: &UnitInfo) {
@@ -1607,6 +1611,11 @@ impl UnitListPanelImp {
                 warn!("call action {ACTION_WIN_REFRESH_UNIT_LIST} error: {err}");
             }
         });
+    }
+
+    pub(super) fn is_favorite(&self, unit: &UnitInfo) -> bool {
+        let key = UnitKey::new(unit);
+        self.favorites.borrow().contains_key(&key)
     }
 }
 
