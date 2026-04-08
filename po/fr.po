@@ -2626,14 +2626,12 @@ msgstr "Réinitialiser"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:472
-#, fuzzy
 msgctxt "filter"
 msgid "Match Type"
 msgstr "Type de correspondance"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:490
-#, fuzzy
 msgctxt "filter"
 msgid "Case Insensitive"
 msgstr "Insensible à la casse"
