@@ -36,13 +36,11 @@ mod imp {
         format2,
         systemd::{data::UnitInfo, enums::UnitFileStatus},
         upgrade,
-        utils::palette::blue,
         widget::{
-            InterPanelMessage,
+            InterPanelMessage, highlight_unit_text, set_favorite_info,
             unit_list::{UnitCuratedList, UnitListPanel},
         },
     };
-    use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE};
     use gettextrs::pgettext;
     use glib::WeakRef;
     use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};
@@ -162,53 +160,44 @@ mod imp {
                 self.unit_label.set_label(&primary_name);
                 self.unit_label.set_tooltip_text(Some(&primary_name));
 
-                let blue = blue().get_color();
-
                 self.set_tooltip(
                     &self.start_button,
-                    blue,
                     &primary_name,
                     &pgettext("controls", "Start unit {}"),
                 );
 
                 self.set_tooltip(
                     &self.stop_button,
-                    blue,
                     &primary_name,
                     &pgettext("controls", "Stop unit {}"),
                 );
 
                 self.set_tooltip(
                     &self.restart_button,
-                    blue,
                     &primary_name,
                     &pgettext("controls", "Restart unit {}"),
                 );
 
                 self.set_tooltip(
                     &self.enable_button,
-                    blue,
                     &primary_name,
                     &pgettext("controls", "Enable unit {}"),
                 );
 
                 self.set_tooltip(
                     &self.disable_button,
-                    blue,
                     &primary_name,
                     &pgettext("controls", "Disable unit {}"),
                 );
 
                 self.set_tooltip(
                     &self.reenable_button,
-                    blue,
                     &primary_name,
                     &pgettext("controls", "Disable and then Enable unit {}"),
                 );
 
                 self.set_tooltip(
                     &self.reload_unit_button,
-                    blue,
                     &primary_name,
                     &pgettext("controls", "Reload unit {} configuration by calling the <b>ExecReload</b> unit file instruction"),
                 );
@@ -225,11 +214,8 @@ mod imp {
             }
         }
 
-        fn set_tooltip(&self, button: &gtk::Button, blue: &str, unit_primary: &str, tooltip: &str) {
-            let unit_str = format!(
-                "<span fgcolor='{}' font_family='monospace' size='larger' weight='bold'>{}</span>",
-                blue, unit_primary
-            );
+        fn set_tooltip(&self, button: &gtk::Button, unit_primary: &str, tooltip: &str) {
+            let unit_str = highlight_unit_text(unit_primary);
 
             let tooltip = format2!(tooltip, unit_str);
 
@@ -364,13 +350,12 @@ mod imp {
         }
 
         pub(crate) fn set_favorite(&self, fav: bool) {
-            let favorite_icon = if fav {
-                FAVORITE_ICON_FILLED
-            } else {
-                FAVORITE_ICON_OUTLINE
-            };
+            let unit = self.unit.borrow();
+            let (favorite_icon, tooltip) = set_favorite_info(fav, &unit);
             self.toggle_favorite_button_content
                 .set_icon_name(favorite_icon);
+            self.toggle_favorite_button_content
+                .set_tooltip_markup(Some(&tooltip));
         }
     }
 

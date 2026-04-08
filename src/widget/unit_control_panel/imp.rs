@@ -3,9 +3,9 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_WIN_FAVORITE_SET, ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT,
-        ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, DESTRUCTIVE_ACTION,
-        SUGGESTED_ACTION,
+        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU,
+        ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT,
+        ACTION_WIN_STOP_UNIT, DESTRUCTIVE_ACTION, SUGGESTED_ACTION,
     },
     format2,
     utils::{
@@ -14,15 +14,13 @@ use crate::{
     },
     widget::{
         InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
-        preferences::data::PREFERENCES, unit_dependencies_panel::UnitDependenciesPanel,
-        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
+        preferences::data::PREFERENCES, set_favorite_info,
+        unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel,
+        unit_info::UnitInfoPanel,
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
-use base::{
-    consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE},
-    enums::UnitDBusLevel,
-};
+use base::enums::UnitDBusLevel;
 use gettextrs::pgettext;
 use gtk::{
     gio,
@@ -208,7 +206,6 @@ impl UnitControlPanelImpl {
         };
 
         let action_favorite_set = {
-            let cpanel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_FAVORITE_SET[4..])
                 .activate(move |_application: &AppWindow, _b, _target_value| {})
                 .state(false.to_variant())
@@ -229,7 +226,6 @@ impl UnitControlPanelImpl {
                     );
 
                     simple_action.set_state(&new_state.to_variant());
-                    cpanel.imp().set_favorite(new_state);
                 })
                 .build()
         };
@@ -249,6 +245,7 @@ impl UnitControlPanelImpl {
             app_window.action_set_enabled(ACTION_WIN_STOP_UNIT, false);
             app_window.action_set_enabled(ACTION_WIN_RESTART_UNIT, false);
             app_window.action_set_enabled(ACTION_WIN_RELOAD_UNIT, false);
+            app_window.action_set_enabled(ACTION_WIN_FAVORITE_TOGGLE, false);
         });
     }
 
@@ -476,10 +473,17 @@ impl UnitControlPanelImpl {
         app_window.action_set_enabled(ACTION_WIN_STOP_UNIT, true);
         app_window.action_set_enabled(ACTION_WIN_RESTART_UNIT, true);
         app_window.action_set_enabled(ACTION_WIN_RELOAD_UNIT, !unit.active_state().is_inactive());
+        app_window.action_set_enabled(ACTION_WIN_FAVORITE_TOGGLE, true);
         self.restart_button.set_sensitive(true);
         //self.kill_button.set_sensitive(true);
 
         self.highlight_controls(unit);
+
+        if let Some(fav) = app_window.action_state(&ACTION_WIN_FAVORITE_SET[4..])
+            && let Some(is_favorite) = fav.get::<bool>()
+        {
+            self.set_favorite(is_favorite);
+        }
     }
 
     pub(super) fn refresh_panels(&self) {
@@ -748,12 +752,11 @@ impl UnitControlPanelImpl {
     }
 
     pub fn set_favorite(&self, is_favorite: bool) {
-        let favorite_icon = if is_favorite {
-            FAVORITE_ICON_FILLED
-        } else {
-            FAVORITE_ICON_OUTLINE
-        };
+        let unit = self.current_unit.borrow();
+        let (favorite_icon, tooltip) = set_favorite_info(is_favorite, &unit);
+
         self.favorite_button.set_icon_name(favorite_icon);
+        self.favorite_button.set_tooltip_markup(Some(&tooltip));
     }
 }
 

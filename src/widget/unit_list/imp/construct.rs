@@ -66,6 +66,12 @@ pub fn construct_column_view(
         .filter_map(|property_selection| property_selection.id().map(|id| (id, property_selection)))
     {
         let unit_prop = if let Some(loaded_up) = dict.remove(&id) {
+            //FIXME to be removed in 1 mounth (Was to fix a bug)
+            if loaded_up.id().as_deref() == Some(SysdColumn::Bus.id())
+                && loaded_up.title().as_deref() == Some("Sub")
+            {
+                loaded_up.set_title("Bus");
+            }
             loaded_up.set_sort(default_up.sort());
             loaded_up
         } else {
