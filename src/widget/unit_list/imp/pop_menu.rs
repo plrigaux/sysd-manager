@@ -41,7 +41,6 @@ mod imp {
             unit_list::{UnitCuratedList, UnitListPanel},
         },
     };
-    use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE};
     use gettextrs::pgettext;
     use glib::WeakRef;
     use gtk::{gdk, glib::subclass::types::ObjectSubclass, prelude::*, subclass::prelude::*};

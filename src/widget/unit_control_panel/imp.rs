@@ -20,10 +20,7 @@ use crate::{
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
-use base::{
-    consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE},
-    enums::UnitDBusLevel,
-};
+use base::enums::UnitDBusLevel;
 use gettextrs::pgettext;
 use gtk::{
     gio,
