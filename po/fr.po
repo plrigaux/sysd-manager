@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-08 16:02-0400\n"
-"PO-Revision-Date: 2026-03-25 21:15+0000\n"
+"PO-Revision-Date: 2026-04-08 20:17+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -756,13 +756,11 @@ msgid "Restart"
 msgstr "Redémarrer"
 
 #: data/interfaces/preferences.ui:229
-#, fuzzy
 msgctxt "preference"
 msgid "<b>Reload Unit</b> method call through the Proxy"
-msgstr "Appel à la méthode <b>Restart</b> via le proxy"
+msgstr "Appel à la méthode <b>Reload Unit</b> via le proxy"
 
 #: data/interfaces/preferences.ui:230
-#, fuzzy
 msgctxt "preference"
 msgid "Reload Unit"
 msgstr "Recharger l'unité"
@@ -1563,7 +1561,6 @@ msgstr "Arrêter"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:78
-#, fuzzy
 msgctxt "controls"
 msgid "Reload Unit"
 msgstr "Recharger l'unité"
@@ -1590,7 +1587,7 @@ msgstr "Réactiver"
 #: data/interfaces/unit_pop_menu.ui:140
 msgctxt "controls"
 msgid "Add Favorite"
-msgstr ""
+msgstr "Ajouter aux Favoris"
 
 #. unit list pop up menu item
 #: data/interfaces/unit_pop_menu.ui:154
@@ -1600,7 +1597,6 @@ msgstr "Afficher/Masquer le résumé des totaux"
 
 #. in the pop menu
 #: data/interfaces/unit_pop_menu.ui:167
-#, fuzzy
 msgctxt "controls"
 msgid "Curated Lists"
 msgstr "Listes organisées"
@@ -2121,14 +2117,14 @@ msgstr "Équivalent à SIGSYS"
 #, rust-format
 msgctxt "controls"
 msgid "Remove {} from Favorites"
-msgstr ""
+msgstr "Enlever {} des Favoris"
 
 #. tooltip for action button
 #: src/widget/mod.rs:60
 #, rust-format
 msgctxt "controls"
 msgid "Add {} to Favorites"
-msgstr ""
+msgstr "Ajouter {} aux Favoris"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:67
@@ -2920,7 +2916,7 @@ msgstr "Personnalisé"
 #: src/widget/unit_list/mod.rs:224
 msgctxt "menu"
 msgid "Favorites"
-msgstr ""
+msgstr "Favoris"
 
 #~ msgctxt "controls"
 #~ msgid "Reload"
