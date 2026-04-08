@@ -31,8 +31,7 @@ impl UnitInfo {
     }
 
     pub fn init_from_listed_unit(&self, listed_unit: ListedLoadedUnit, level: UnitDBusLevel) {
-        let imp = self.imp();
-        imp.init_from_listed_unit(listed_unit, level);
+        self.imp().init_from_listed_unit(listed_unit, level);
     }
 
     pub fn from_unit_file(unit_file: ListedUnitFile, level: UnitDBusLevel) -> Self {
@@ -41,6 +40,12 @@ impl UnitInfo {
             .property(PRIMARY, unit_file.unit_primary_name())
             .build();
         this_object.imp().init_from_unit_file(unit_file, level);
+        this_object
+    }
+
+    pub fn from_unit_key(name: &str, level: UnitDBusLevel) -> Self {
+        let this_object: Self = glib::Object::builder().property(PRIMARY, name).build();
+        this_object.imp().dbus_level.replace(level);
         this_object
     }
 

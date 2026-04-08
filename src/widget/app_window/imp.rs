@@ -2,7 +2,6 @@ use std::{
     borrow::Cow,
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
     rc::Rc,
-    sync::OnceLock,
 };
 
 use crate::{
@@ -12,14 +11,14 @@ use crate::{
         ACTION_WIN_REFRESH_UNIT_LIST, APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR_GENERAL,
         APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
     },
-    systemd::data::UnitInfo,
+    systemd::{data::UnitInfo, journal_data::Boot},
     systemd_gui::new_settings,
-    utils::palette::{blue, green, red},
     widget::{
         InterPanelMessage,
         info_window::InfoWindow,
         journal::list_boots::ListBootsWindow,
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
+        replace_tags,
         signals_dialog::SignalsWindow,
         unit_control_panel::UnitControlPanel,
         unit_list::{UnitCuratedList, UnitListPanel},
@@ -37,11 +36,8 @@ use gtk::{
         GtkApplicationExt, GtkWindowExt, OrientableExt, ToVariant, ToggleButtonExt, WidgetExt,
     },
 };
-use regex::Regex;
 use strum::IntoEnumIterator;
 use tracing::{debug, error, info, warn};
-
-use systemd::journal_data::Boot;
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -547,18 +543,6 @@ impl AppWindowImpl {
         &self.toast_overlay
     }
 
-    fn blue(&self) -> &str {
-        blue().get_color()
-    }
-
-    fn green(&self) -> &str {
-        green().get_color()
-    }
-
-    fn red(&self) -> &str {
-        red().get_color()
-    }
-
     pub(super) fn add_toast_message(
         &self,
         message: &str,
@@ -566,7 +550,7 @@ impl AppWindowImpl {
         action: Option<(&str, String, bool)>,
     ) {
         let msg = if use_markup {
-            let out = self.replace_tags(message);
+            let out = replace_tags(message);
             Cow::from(out)
         } else {
             Cow::from(message)
@@ -598,52 +582,6 @@ impl AppWindowImpl {
     pub fn cached_list_boots_mut(&self) -> RefMut<'_, Option<Vec<Rc<Boot>>>> {
         self.list_boots.borrow_mut()
     }
-
-    fn replace_tags(&self, message: &str) -> String {
-        debug!("{message}");
-        let mut out = String::with_capacity(message.len() * 2);
-        let re = toast_regex();
-
-        let mut i: usize = 0;
-        for capture in re.captures_iter(message) {
-            let m = capture.get(0).unwrap();
-            out.push_str(&message[i..m.start()]);
-
-            let tag = &capture[1];
-            match tag {
-                "unit" => {
-                    out.push_str("<span fgcolor='");
-                    out.push_str(self.blue());
-                    out.push_str("' font_family='monospace' size='larger'>");
-                    out.push_str(&capture[2]);
-                    out.push_str("</span>");
-                }
-
-                "red" => {
-                    out.push_str("<span fgcolor='");
-                    out.push_str(self.red());
-                    out.push_str("'>");
-                    out.push_str(&capture[2]);
-                    out.push_str("</span>");
-                }
-
-                "green" => {
-                    out.push_str("<span fgcolor='");
-                    out.push_str(self.green());
-                    out.push_str("'>");
-                    out.push_str(&capture[2]);
-                    out.push_str("</span>");
-                }
-                _ => {
-                    out.push_str(&capture[0]);
-                }
-            }
-            i = m.end();
-        }
-        out.push_str(&message[i..message.len()]);
-        debug!("{out}");
-        out
-    }
 }
 
 impl WidgetImpl for AppWindowImpl {}
@@ -671,15 +609,9 @@ impl WindowImpl for AppWindowImpl {
 impl AdwApplicationWindowImpl for AppWindowImpl {}
 impl ApplicationWindowImpl for AppWindowImpl {}
 
-pub fn toast_regex() -> &'static Regex {
-    static TOAST_REGEX: OnceLock<Regex> = OnceLock::new();
-    TOAST_REGEX
-        .get_or_init(|| Regex::new(r"<(\w+).*?>(.*?)</(\w+?)>").expect("Rexgex compile error :"))
-}
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::widget::toast_regex;
 
     #[test]
     fn test_reg_ex1() {

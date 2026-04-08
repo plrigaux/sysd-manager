@@ -653,6 +653,18 @@ impl UnitListPanelImp {
                     }
                 };
             }
+
+            //To diplay the "Dead" favorite units
+            if view == UnitCuratedList::Favorites {
+                for (key, _) in unit_list.imp().favorites.borrow().iter() {
+                    if !all_units.contains_key(key) {
+                        let unit = UnitInfo::from_unit_key(&key.primary, key.level);
+                        list_store.append(&unit);
+                        all_units.insert(key.clone(), unit);
+                    }
+                }
+            }
+
             main_unit_map_rc.replace(all_units);
 
             // The sort function needs to be the same of the  first column sorter
@@ -1658,17 +1670,6 @@ impl UnitListPanelImp {
             systemd::runtime().spawn(async move {
                 let mut handles = Vec::with_capacity(4);
 
-                if !user_session.is_empty() {
-                    handles.push(tokio::spawn(systemd::list_loaded_units_list(
-                        UnitDBusLevel::UserSession,
-                        user_session.clone(),
-                    )));
-                    handles.push(tokio::spawn(systemd::list_unit_files_list(
-                        UnitDBusLevel::UserSession,
-                        user_session,
-                    )));
-                }
-
                 if !system.is_empty() {
                     handles.push(tokio::spawn(systemd::list_loaded_units_list(
                         UnitDBusLevel::System,
@@ -1677,6 +1678,17 @@ impl UnitListPanelImp {
                     handles.push(tokio::spawn(systemd::list_unit_files_list(
                         UnitDBusLevel::System,
                         system,
+                    )));
+                }
+
+                if !user_session.is_empty() {
+                    handles.push(tokio::spawn(systemd::list_loaded_units_list(
+                        UnitDBusLevel::UserSession,
+                        user_session.clone(),
+                    )));
+                    handles.push(tokio::spawn(systemd::list_unit_files_list(
+                        UnitDBusLevel::UserSession,
+                        user_session,
                     )));
                 }
 
