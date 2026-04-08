@@ -105,7 +105,7 @@ impl SysdColumn {
             COL_PRESET => SysdColumn::Preset,
             COL_LOAD => SysdColumn::Load,
             COL_ACTIVE => SysdColumn::Active,
-            COL_SUBSTATE => SysdColumn::Bus,
+            COL_SUBSTATE => SysdColumn::SubState,
             COL_DESCRIPTION => SysdColumn::Description,
             TIMER_TIME_NEXT => SysdColumn::TimerTimeNextElapseRT,
             TIMER_TIME_LEFT => SysdColumn::TimerTimeLeftElapseMono,
