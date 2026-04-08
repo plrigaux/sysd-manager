@@ -407,7 +407,8 @@ def publish_upload():
 
 
 def publish():
-    linux_build()
+    build()
+    make_appimage()
     just_publish()
 
 
