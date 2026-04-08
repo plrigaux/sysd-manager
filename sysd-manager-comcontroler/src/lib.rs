@@ -263,6 +263,14 @@ pub async fn list_loaded_units_automounts(
     list_loaded_units_by_patterns(level, &["*.automount"]).await
 }
 
+pub async fn list_loaded_units_list(
+    level: UnitDBusLevel,
+    unit_list: Vec<String>,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    let unit_list: Vec<_> = unit_list.iter().map(|s| s.as_ref()).collect();
+    list_loaded_units_by_patterns(level, &unit_list).await
+}
+
 pub async fn list_unit_files(level: UnitDBusLevel) -> Result<ListUnitResponse, SystemdErrors> {
     let v = systemd_manager_async(level)
         .await?
@@ -304,6 +312,14 @@ pub async fn list_unit_files_automounts(
     level: UnitDBusLevel,
 ) -> Result<ListUnitResponse, SystemdErrors> {
     list_unit_files_by_patterns(level, &["*.automount"]).await
+}
+
+pub async fn list_unit_files_list(
+    level: UnitDBusLevel,
+    unit_list: Vec<String>,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    let unit_list: Vec<_> = unit_list.iter().map(|s| s.as_ref()).collect();
+    list_unit_files_by_patterns(level, &unit_list).await
 }
 
 pub async fn complete_unit_information(

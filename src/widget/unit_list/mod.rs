@@ -135,7 +135,7 @@ pub enum UnitCuratedList {
     Path,
     Automount,
     Custom,
-    Favorite,
+    Favorites,
 }
 
 impl UnitCuratedList {
@@ -152,7 +152,7 @@ impl UnitCuratedList {
         Self::add_menu_item(&menu_lists, UnitCuratedList::LoadedUnit);
         Self::add_menu_item(&menu_lists, UnitCuratedList::UnitFiles);
         Self::add_menu_item(&menu_lists, UnitCuratedList::Custom);
-        Self::add_menu_item(&menu_lists, UnitCuratedList::Favorite);
+        Self::add_menu_item(&menu_lists, UnitCuratedList::Favorites);
 
         let special_list = gio::Menu::new();
 
@@ -215,7 +215,7 @@ impl UnitCuratedList {
                 //Curated List View
                 pgettext("menu", "Customized")
             }
-            UnitCuratedList::Favorite => {
+            UnitCuratedList::Favorites => {
                 //Curated List View
                 pgettext("menu", "Favorites")
             }
@@ -232,7 +232,7 @@ impl UnitCuratedList {
             UnitCuratedList::Path => "paths",
             UnitCuratedList::Automount => "automounts",
             UnitCuratedList::Custom => "custom",
-            UnitCuratedList::Favorite => "favorite",
+            UnitCuratedList::Favorites => "favorites",
         }
     }
 
@@ -246,7 +246,7 @@ impl UnitCuratedList {
             UnitCuratedList::Path => ["<Ctrl><Shift>p"],
             UnitCuratedList::Automount => ["<Ctrl><Shift>a"],
             UnitCuratedList::Custom => ["<Ctrl><Shift>C"],
-            UnitCuratedList::Favorite => ["<Ctrl><Shift>b"],
+            UnitCuratedList::Favorites => ["<Ctrl><Shift>b"],
         }
     }
 

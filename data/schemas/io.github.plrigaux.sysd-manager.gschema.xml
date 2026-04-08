@@ -309,6 +309,7 @@
         <choice value="paths"/>
         <choice value="automounts"/>
         <choice value="custom"/>
+        <choice value="favorites"/>
       </choices>
       <default>'default'</default>
       <summary>List of units presented by the browser</summary>

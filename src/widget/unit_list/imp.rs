@@ -8,12 +8,14 @@ use crate::{
     consts::{
         ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
         ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL,
-        ACTION_WIN_REFRESH_POP_MENU, ALL_FILTER_KEY, FILTER_MARK,
+        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_REFRESH_UNIT_LIST, ALL_FILTER_KEY, FILTER_MARK,
         KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
     },
     systemd::{
-        data::UnitInfo,
-        enums::{LoadState, UnitType},
+        ListUnitResponse, UnitProperties, UnitPropertiesFlags,
+        data::{UnitInfo, UnitPropertySetter},
+        enums::{LoadState, UnitFileStatus, UnitType},
+        socket_unit::SocketUnitInfo,
     },
     systemd_gui, upgrade,
     widget::{
@@ -47,7 +49,7 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use flagset::FlagSet;
-use glib::{WeakRef, property::PropertyGet, value::FromValue};
+use glib::WeakRef;
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
@@ -67,14 +69,9 @@ use std::{
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
     collections::{HashMap, HashSet},
     hash::{Hash, Hasher},
-    ops::Deref,
     rc::Rc,
     sync::OnceLock,
     time::Duration,
-};
-use systemd::{
-    ListUnitResponse, UnitProperties, UnitPropertiesFlags, data::UnitPropertySetter,
-    enums::UnitFileStatus, socket_unit::SocketUnitInfo,
 };
 use tokio::task::AbortHandle;
 use tracing::{debug, error, info, trace, warn};
@@ -590,7 +587,11 @@ impl UnitListPanelImp {
             refresh_unit_list_button.set_sensitive(false);
             panel_stack.set_visible_child_name("spinner");
 
-            let Ok(retrieved_units) = retrieve_unit_list(dbus_level, view, &unit_list).await else {
+            let Ok(retrieved_units) = unit_list
+                .imp()
+                .retrieve_unit_list(dbus_level, view, &unit_list)
+                .await
+            else {
                 panel_stack.set_visible_child_name("error");
                 return;
             };
@@ -1574,10 +1575,11 @@ impl UnitListPanelImp {
             // Deactivate the button until the operation is done
             let (sender, receiver) = tokio::sync::oneshot::channel();
             systemd::runtime().spawn(async move {
-                let favorites = favorites::load_favorites().map(|f| {
-                    f.favorites
+                let favorites = favorites::load_favorites().map(|favorites| {
+                    favorites
+                        .favorites
                         .into_iter()
-                        .map(|f| UnitKey::new_string(f.bus.into(), f.unit))
+                        .map(|favorite| UnitKey::new_string(favorite.bus.into(), favorite.unit))
                         .collect::<Vec<_>>()
                 });
 
@@ -1593,12 +1595,169 @@ impl UnitListPanelImp {
                 return;
             };
 
-            let mut favorites = list_panel.imp().favorites.borrow_mut();
-            for key in returned_fav {
-                favorites.insert(key, None);
+            #[allow(clippy::mutable_key_type)]
+            let favorites_map = returned_fav.into_iter().map(|key| (key, None)).collect();
+            let list_panel_imp = list_panel.imp();
+            list_panel_imp.favorites.replace(favorites_map);
+
+            //Because the listing often happen before the load
+            if list_panel_imp.selected_list_view.get() == UnitCuratedList::Favorites
+                && let Err(err) = list_panel.activate_action(ACTION_WIN_REFRESH_UNIT_LIST, None)
+            {
+                warn!("call action {ACTION_WIN_REFRESH_UNIT_LIST} error: {err}");
             }
         });
     }
+}
+
+macro_rules! dbus_call {
+    ($int_level:expr, $handles:expr, $module:ident :: $f:ident) => {{
+        if matches!($int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
+            $handles.push(tokio::spawn($module::$f(UnitDBusLevel::System)));
+        }
+
+        if matches!(
+            $int_level,
+            DbusLevel::UserSession | DbusLevel::SystemAndSession
+        ) {
+            $handles.push(tokio::spawn($module::$f(UnitDBusLevel::UserSession)));
+        }
+    }};
+}
+
+impl UnitListPanelImp {
+    async fn retrieve_unit_list(
+        &self,
+        int_level: DbusLevel,
+        view: UnitCuratedList,
+        unit_list: &UnitListPanel,
+    ) -> Result<Vec<ListUnitResponse>, bool> {
+        let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
+        let include_unit_files = unit_list.imp().include_unit_files.get();
+
+        let handle = if view == UnitCuratedList::Favorites {
+            let mut system: Vec<String> = Vec::new();
+            let mut user_session: Vec<String> = Vec::new();
+            for key in self.favorites.borrow().keys() {
+                if key.level == UnitDBusLevel::System {
+                    system.push(key.primary.clone());
+                } else {
+                    user_session.push(key.primary.clone());
+                }
+            }
+
+            systemd::runtime().spawn(async move {
+                let mut handles = Vec::with_capacity(4);
+
+                if !user_session.is_empty() {
+                    handles.push(tokio::spawn(systemd::list_loaded_units_list(
+                        UnitDBusLevel::UserSession,
+                        user_session.clone(),
+                    )));
+                    handles.push(tokio::spawn(systemd::list_unit_files_list(
+                        UnitDBusLevel::UserSession,
+                        user_session,
+                    )));
+                }
+
+                if !system.is_empty() {
+                    handles.push(tokio::spawn(systemd::list_loaded_units_list(
+                        UnitDBusLevel::System,
+                        system.clone(),
+                    )));
+                    handles.push(tokio::spawn(systemd::list_unit_files_list(
+                        UnitDBusLevel::System,
+                        system,
+                    )));
+                }
+
+                send_unit_list(sender_syst, handles).await;
+            })
+        } else {
+            systemd::runtime().spawn(async move {
+                let mut handles = Vec::with_capacity(4);
+
+                match view {
+                    UnitCuratedList::Defaut
+                    | UnitCuratedList::Custom
+                    | UnitCuratedList::LoadedUnit => {
+                        dbus_call!(int_level, handles, systemd::list_loaded_units)
+                    }
+                    UnitCuratedList::Timers => {
+                        dbus_call!(int_level, handles, systemd::list_loaded_units_timers)
+                    }
+                    UnitCuratedList::Sockets => {
+                        dbus_call!(int_level, handles, systemd::list_loaded_units_sockets)
+                    }
+                    UnitCuratedList::Path => {
+                        dbus_call!(int_level, handles, systemd::list_loaded_units_paths)
+                    }
+                    UnitCuratedList::Automount => {
+                        dbus_call!(int_level, handles, systemd::list_loaded_units_automounts)
+                    }
+                    _ => {}
+                }
+
+                match view {
+                    UnitCuratedList::Defaut | UnitCuratedList::Custom => {
+                        dbus_call!(int_level, handles, systemd::list_unit_files)
+                    }
+
+                    UnitCuratedList::Timers if include_unit_files => {
+                        dbus_call!(int_level, handles, systemd::list_unit_files_timers)
+                    }
+                    UnitCuratedList::Sockets if include_unit_files => {
+                        dbus_call!(int_level, handles, systemd::list_unit_files_sockets)
+                    }
+                    UnitCuratedList::Path if include_unit_files => {
+                        dbus_call!(int_level, handles, systemd::list_unit_files_paths)
+                    }
+                    UnitCuratedList::Automount if include_unit_files => {
+                        dbus_call!(int_level, handles, systemd::list_unit_files_automounts)
+                    }
+                    // UnitCuratedList::LoadedUnit => {}
+                    _ => {}
+                }
+
+                send_unit_list(sender_syst, handles).await;
+            })
+        };
+
+        unit_list.imp().add_tokio_handle(handle);
+
+        receiver_syst.await.unwrap_or_else(|err| {
+            error!("Tokio receiver works, {err:?}");
+            Err(true)
+        })
+    }
+}
+
+async fn send_unit_list(
+    sender_syst: tokio::sync::oneshot::Sender<Result<Vec<ListUnitResponse>, bool>>,
+    handles: Vec<tokio::task::JoinHandle<Result<ListUnitResponse, systemd::errors::SystemdErrors>>>,
+) {
+    let mut results = Vec::with_capacity(handles.len());
+    let mut error = false;
+    for handle in handles {
+        let Ok(r) = handle
+            .await
+            .inspect_err(|err| warn!("Unit List Join Error: {err:?}"))
+        else {
+            error = true;
+            continue;
+        };
+
+        let Ok(x) = r.inspect_err(|err| warn!("Unit List Call Error: {err:?}")) else {
+            error = true;
+            continue;
+        };
+        results.push(x);
+    }
+
+    let result = if error { Err(error) } else { Ok(results) };
+    sender_syst
+        .send(result)
+        .expect("The channel needs to be open.");
 }
 
 fn force_expand_on_the_last_visible_column(columns_list_model: &gio::ListModel) {
@@ -1827,105 +1986,6 @@ fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnVie
 
 impl WidgetImpl for UnitListPanelImp {}
 impl BoxImpl for UnitListPanelImp {}
-
-macro_rules! dbus_call {
-    ($int_level:expr, $handles:expr, $module:ident :: $f:ident) => {{
-        if matches!($int_level, DbusLevel::System | DbusLevel::SystemAndSession) {
-            $handles.push(tokio::spawn($module::$f(UnitDBusLevel::System)));
-        }
-
-        if matches!(
-            $int_level,
-            DbusLevel::UserSession | DbusLevel::SystemAndSession
-        ) {
-            $handles.push(tokio::spawn($module::$f(UnitDBusLevel::UserSession)));
-        }
-    }};
-}
-
-async fn retrieve_unit_list(
-    int_level: DbusLevel,
-    view: UnitCuratedList,
-    unit_list: &UnitListPanel,
-) -> Result<Vec<ListUnitResponse>, bool> {
-    let (sender_syst, receiver_syst) = tokio::sync::oneshot::channel();
-    let include_unit_files = unit_list.imp().include_unit_files.get();
-    let handle = systemd::runtime().spawn(async move {
-        let mut handles = Vec::with_capacity(4);
-
-        match view {
-            UnitCuratedList::Defaut
-            | UnitCuratedList::Custom
-            | UnitCuratedList::LoadedUnit
-            | UnitCuratedList::Favorite => {
-                dbus_call!(int_level, handles, systemd::list_loaded_units)
-            }
-            UnitCuratedList::UnitFiles => {}
-            UnitCuratedList::Timers => {
-                dbus_call!(int_level, handles, systemd::list_loaded_units_timers)
-            }
-            UnitCuratedList::Sockets => {
-                dbus_call!(int_level, handles, systemd::list_loaded_units_sockets)
-            }
-            UnitCuratedList::Path => {
-                dbus_call!(int_level, handles, systemd::list_loaded_units_paths)
-            }
-            UnitCuratedList::Automount => {
-                dbus_call!(int_level, handles, systemd::list_loaded_units_automounts)
-            }
-        }
-
-        match view {
-            UnitCuratedList::Defaut | UnitCuratedList::Custom | UnitCuratedList::UnitFiles => {
-                dbus_call!(int_level, handles, systemd::list_unit_files)
-            }
-            UnitCuratedList::Timers if include_unit_files => {
-                dbus_call!(int_level, handles, systemd::list_unit_files_timers)
-            }
-            UnitCuratedList::Sockets if include_unit_files => {
-                dbus_call!(int_level, handles, systemd::list_unit_files_sockets)
-            }
-            UnitCuratedList::Path if include_unit_files => {
-                dbus_call!(int_level, handles, systemd::list_unit_files_paths)
-            }
-            UnitCuratedList::Automount if include_unit_files => {
-                dbus_call!(int_level, handles, systemd::list_unit_files_automounts)
-            }
-            // UnitCuratedList::LoadedUnit => {}
-            _ => {}
-        }
-
-        let mut results = Vec::with_capacity(handles.len());
-        let mut error = false;
-        for handle in handles {
-            let Ok(r) = handle
-                .await
-                .inspect_err(|err| warn!("Unit List Join Error: {err:?}"))
-            else {
-                error = true;
-                continue;
-            };
-
-            let Ok(x) = r.inspect_err(|err| warn!("Unit List Call Error: {err:?}")) else {
-                error = true;
-                continue;
-            };
-            results.push(x);
-        }
-
-        let result = if error { Err(error) } else { Ok(results) };
-        sender_syst
-            .send(result)
-            .expect("The channel needs to be open.");
-    });
-
-    unit_list.imp().add_tokio_handle(handle);
-
-    receiver_syst.await.unwrap_or_else(|err| {
-        error!("Tokio receiver works, {err:?}");
-        Err(true)
-    })
-}
 
 #[cfg(test)]
 mod test {

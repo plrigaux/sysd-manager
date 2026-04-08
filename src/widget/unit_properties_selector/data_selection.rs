@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use tracing::info;
 
 glib::wrapper! {
-    pub struct UnitPropertySelection(ObjectSubclass<imp2::UnitPropertySelectionImpl>);
+    pub struct UnitPropertySelection(ObjectSubclass<imp2::UnitPropertySelectionImpl>)    ;
 }
 
 impl UnitPropertySelection {
@@ -193,7 +193,7 @@ mod imp2 {
         pub(super) access: RefCell<Option<String>>,
         #[property(name = "visible", get= Self::visible, set= Self::set_visible, type = bool)]
         #[property(name = "id", get= Self::id, set= Self::set_id, type = Option<GString>)]
-        #[property(name = "title", get= Self::title, set= Self::set_title, type = Option<String>)]
+        #[property(name = "title", get=Self::title, set=Self::set_title, type = Option<String>)]
         #[property(name = "fixed-width", get= Self::fixed_width, set= Self::set_fixed_width, type = i32)]
         #[property(name = "resizable", get= Self::resizable, set= Self::set_resizable, type = bool)]
         #[property(name = "expands", get= Self::expands, set= Self::set_expand, type = bool)]
