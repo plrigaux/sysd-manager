@@ -55,7 +55,11 @@ SysD Manager provides an intuitive graphical interface for managing systemd unit
 | Contextual menus and property management | ✅ |
 | System signal monitoring | ✅ |
 | CLI unit selection at startup | ✅ |
-
+| Favorites | ✅ |
+| View for Timers | ✅ |
+| View for Path| ✅ |
+| View for Sockets| ✅ |
+| Include Unit Files to Views| ✅ |
 ---
 
 ## 📸 Screenshots
@@ -130,7 +134,7 @@ Portable application that runs on most Linux distributions.
   <img width="100" alt="Download AppImage" src="https://docs.appimage.org/_images/appimage.svg"/>
 </a>
 
-> **Status:** AppImage builds are currently unavailable. Please use Flathub or build from source.
+> **Status:** AppImage has been succesfully tested on Debian 12, Ubuntu 24.04 and 26.04
 
 ---
 ### Method 4: RPM
