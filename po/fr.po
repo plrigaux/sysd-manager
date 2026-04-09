@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-09 10:01-0400\n"
-"PO-Revision-Date: 2026-04-08 20:17+0000\n"
+"PO-Revision-Date: 2026-04-09 14:03+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1585,10 +1585,9 @@ msgstr "Réactiver"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:140
-#, fuzzy
 msgctxt "controls"
 msgid "Favorite"
-msgstr "Favoris"
+msgstr "Favori"
 
 #. unit list pop up menu item
 #: data/interfaces/unit_pop_menu.ui:154
