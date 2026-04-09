@@ -176,14 +176,6 @@ impl<'a> std::borrow::Borrow<dyn UnitKeyInterface + 'a> for UnitKey {
     }
 }
 
-// impl<'a> AsKeyRef for UnitKeyRef<'a> {
-//     fn as_key_ref(&self) -> KeyRef<'_> {
-//         match self {
-//             &Key::String(ref s) => KeyRef::String(s.as_str()),
-//             &Key::Bytes(ref b) => KeyRef::Bytes(&*b),
-//         }
-//     }
-// }
 impl<'a> UnitKeyRef<'a> {
     fn new(level: UnitDBusLevel, primary: &'a str) -> Self {
         UnitKeyRef { level, primary }

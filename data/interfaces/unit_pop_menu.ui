@@ -137,7 +137,7 @@
                 <property name="css-classes">flat</property>
                 <property name="halign">start</property>
                 <property name="icon-name">bookmark-outline-symbolic</property>
-                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Add Favorite</property>
+                <property name="label" translatable="yes" context="controls" comments="unit popup menu">Favorite</property>
               </object>
             </child>
           </object>
@@ -165,6 +165,7 @@
             <!-- </property> -->
             <property name="halign">start</property>
             <property name="label" translatable="yes" context="controls" comments="in the pop menu">Curated Lists</property>
+            <property name="margin-start">22</property>
           </object>
         </child>
       </object>

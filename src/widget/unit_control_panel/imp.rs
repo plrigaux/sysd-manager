@@ -206,6 +206,7 @@ impl UnitControlPanelImpl {
         };
 
         let action_favorite_set = {
+            let cpanel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_FAVORITE_SET[4..])
                 .activate(move |_application: &AppWindow, _b, _target_value| {})
                 .state(false.to_variant())
@@ -226,6 +227,7 @@ impl UnitControlPanelImpl {
                     );
 
                     simple_action.set_state(&new_state.to_variant());
+                    cpanel.imp().set_favorite(new_state);
                 })
                 .build()
         };
