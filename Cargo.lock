@@ -1956,7 +1956,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-base"
-version = "2.16.0"
+version = "2.17.0"
 dependencies = [
  "constcat",
  "gettext-rs",
@@ -1974,7 +1974,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-comcontroler"
-version = "2.16.0"
+version = "2.17.0"
 dependencies = [
  "chrono",
  "enumflags2",
