@@ -1621,6 +1621,24 @@ impl UnitListPanelImp {
         let key = UnitKey::new(unit);
         self.favorites.borrow().contains_key(&key)
     }
+
+    /* fn process_signals(&self) {
+        let signal_dialog = self.obj().clone();
+        //FIXME follow user config
+        let mut systemd_signal_receiver = init_signal_watcher(UnitDBusLevel::System);
+
+        glib::spawn_future_local(async move {
+            while let Ok(signal) = systemd_signal_receiver
+                .recv()
+                .await
+                .inspect_err(|err| warn!("Watch Signal {err:?}"))
+            {
+                info!("Signal Browser {:?}", signal);
+            }
+
+            info!("Signal Browser End receiving signals")
+        });
+    } */
 }
 
 macro_rules! dbus_call {
@@ -1958,7 +1976,9 @@ impl ObjectImpl for UnitListPanelImp {
             )
             .build();
 
-        self.retreive_favorites()
+        self.retreive_favorites();
+
+        // self.process_signals();
     }
 }
 

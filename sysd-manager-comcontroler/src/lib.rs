@@ -426,7 +426,7 @@ pub async fn restartstop_unit(
     mode: StartStopMode,
     action: ReStartStop,
 ) -> Result<String, SystemdErrors> {
-    let watcher = init_signal_watcher();
+    let watcher = init_signal_watcher(level);
     let job = restartstop_unit_call(level, unit_name, mode, &action).await?;
     let job_id = job_number(&job).ok_or("Invalid Job Id for job: {job}")?;
 
@@ -460,7 +460,7 @@ async fn wait_job_removed(
     loop {
         match watcher.recv().await {
             Ok(x) => {
-                if let SystemdSignal::JobRemoved(id, _, _unit, result) = x.signal
+                if let SystemdSignal::JobRemoved(_level, id, _, _unit, result) = x.signal
                     && id == job_id
                 {
                     match result.as_str() {
@@ -1033,14 +1033,14 @@ pub fn link_unit_files(
 }
 
 pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
-    let mut watcher = init_signal_watcher();
+    let mut watcher = init_signal_watcher(level);
     daemon_reload_core(level).await?;
 
     let mut wait_reload = async || {
         loop {
             match watcher.recv().await {
                 Ok(x) => {
-                    if let SystemdSignal::Reloading(active) = x.signal {
+                    if let SystemdSignal::Reloading(_, active) = x.signal {
                         if active {
                             info!("Reloading!");
                         } else {

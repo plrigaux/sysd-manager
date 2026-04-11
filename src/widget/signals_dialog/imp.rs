@@ -4,6 +4,7 @@ use crate::{
     widget::{app_window::AppWindow, preferences::data::PREFERENCES},
 };
 use adw::subclass::window::AdwWindowImpl;
+use base::enums::UnitDBusLevel;
 use gio::{ListStore, glib::BoxedAnyObject};
 use gtk::{
     glib::{self},
@@ -40,6 +41,9 @@ pub struct SignalsWindowImp {
 
     #[template_child]
     type_column: TemplateChild<gtk::ColumnViewColumn>,
+
+    #[template_child]
+    bus_column: TemplateChild<gtk::ColumnViewColumn>,
 
     #[template_child]
     details_column: TemplateChild<gtk::ColumnViewColumn>,
@@ -134,6 +138,39 @@ impl SignalsWindowImp {
         let factory = gtk::SignalListItemFactory::new();
 
         factory.connect_setup(move |_, list_item| {
+            // Create `TaskRow`
+            let time_cell = gtk::Inscription::builder().build();
+
+            list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem")
+                .set_child(Some(&time_cell));
+        });
+
+        factory.connect_bind(move |_, list_item| {
+            let list_item = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem");
+
+            let task_object = list_item
+                .item()
+                .and_downcast::<glib::BoxedAnyObject>()
+                .expect("The item has to be an `TaskObject`.");
+
+            let time_cell = list_item
+                .child()
+                .and_downcast::<gtk::Inscription>()
+                .expect("The child has to be an `Inscription`.");
+
+            let signal_row: Ref<SystemdSignalRow> = task_object.borrow();
+            time_cell.set_text(Some(signal_row.bus_text()));
+        });
+
+        self.bus_column.set_factory(Some(&factory));
+
+        let factory = gtk::SignalListItemFactory::new();
+
+        factory.connect_setup(move |_, list_item| {
             let time_cell = gtk::Inscription::builder().build();
 
             list_item
@@ -197,7 +234,7 @@ impl ObjectImpl for SignalsWindowImp {
         self.setup_factory();
 
         let signal_dialog = self.obj().clone();
-        let mut systemd_signal_receiver = init_signal_watcher();
+        let mut systemd_signal_receiver = init_signal_watcher(UnitDBusLevel::Both);
         self.receiving.set(true);
 
         glib::spawn_future_local(async move {

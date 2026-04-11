@@ -82,15 +82,17 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.17.1" date="2026-04-09">
+    <release version="2.17.2" date="2026-04-11">
       <description translate="no">
         <p>Added</p>
         <ul>
           <li>Favorites</li>
+          <li>Signal Watcher Window Bus Column</li>
         </ul>
         <p>Fixed</p>
         <ul>
           <li>The Bus column title</li>
+          <li>(2.17.2) Start, Stop, Restart User Session Units delay</li>
         </ul>
       </description>
     </release>

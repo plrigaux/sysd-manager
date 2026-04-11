@@ -19,7 +19,7 @@
   <ui filename="shortcuts.ui" sha256="6cfefd8c493e518275485655e55c7db2730a67d763dbc8ebb0942ed0edaf8b61"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="de993a2a8120c4003e4eb7e41b3456e335f01a91891ec043649b28d062c712c7"/>
-  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="61d07cf9c4709cce4676c9d26b47fbb82aa90c1842f7aecff4420be84ba093be"/>
+  <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="ec9c621786d4a5adabd1c51d772dcb1e9e28bf36fc8139ebfa9498fcbd5e036e"/>
   <ui template-class="MASK_UNIT_DIALOG" filename="mask_unit_dialog.ui" sha256="f7dc7a45a481b9b29c2854c76a6996014bdde7bc27163921a56fd3a06513eaf0"/>
   <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="11336e360ce23ac28dafc00effaf30e971893c0d7a9557e1c4c3edacc62acd0b"/>
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="5e4b623bcc4ae44d681a338d49f85cd2a8d088c349e57650769ec4c50e603be5"/>

@@ -56,6 +56,13 @@ Start or Stop a Unit to see some appearing</property>
                               </object>
                             </child>
                             <child>
+                              <object class="GtkColumnViewColumn" id="bus_column">
+                                <property name="fixed-width">100</property>
+                                <property name="resizable">True</property>
+                                <property name="title" translatable="yes" context="signals" comments="column title">Bus</property>
+                              </object>
+                            </child>
+                            <child>
                               <object class="GtkColumnViewColumn" id="type_column">
                                 <property name="fixed-width">150</property>
                                 <property name="resizable">True</property>
