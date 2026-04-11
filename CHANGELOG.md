@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Signal Watcher Window Bus Column
 
+### Changed
+- Estonian translation
+
 ### Fixed
 - Start, Stop, Restart Unser Session Units delay
 
