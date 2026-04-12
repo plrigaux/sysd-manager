@@ -104,7 +104,7 @@ impl UnitInfoPanelImp {
 
         let mut info_writer = UnitInfoWriter::new(buf, start_iter);
 
-        fill_all_info(unit, &mut info_writer);
+        fill_all_info(unit, &mut info_writer, &self.unit_info_textview);
 
         on_new_text(&self.text_search_bar);
     }
