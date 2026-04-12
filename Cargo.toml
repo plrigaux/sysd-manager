@@ -53,8 +53,8 @@ appimage = ["systemd/appimage", "base/appimage"]
 lto = true
 
 [workspace.dependencies]
-base = { version = "2.14", path = "./sysd-manager-base", package = "sysd-manager-base" }
-systemd = { version = "2.14", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
+base = { version = "2.17", path = "./sysd-manager-base", package = "sysd-manager-base" }
+systemd = { version = "2.17", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
 
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
