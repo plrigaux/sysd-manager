@@ -117,6 +117,7 @@
               </object>
             </property>
             <property name="tooltip-text" translatable="yes" context="controls tooltip">Restart unit</property>
+            <property name="visible">False</property>
             <child>
               <object class="AdwButtonContent">
                 <property name="icon-name">arrow-circular-top-left-symbolic</property>

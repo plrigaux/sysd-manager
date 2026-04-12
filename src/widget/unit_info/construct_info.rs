@@ -1,7 +1,10 @@
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::{Debug, Write};
 
-use crate::consts::{TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME, U64MAX};
+use crate::consts::{
+    ACTION_WIN_UNIT_HAS_RELOAD, TIME_NEXT_ELAPSE_USEC_MONOTONIC, TIME_NEXT_ELAPSE_USEC_REALTIME,
+    U64MAX,
+};
 use crate::systemd::{
     self,
     data::{UnitInfo, UnitProcess},
@@ -15,6 +18,8 @@ use crate::widget::{
     preferences::data::PREFERENCES, unit_info::construct_info::systemd::timestamp_is_set,
 };
 use base::enums::UnitDBusLevel;
+use glib::variant::ToVariant;
+use gtk::prelude::WidgetExt;
 use systemd::time_handling::calc_next_elapse;
 use systemd::{
     enums::ActiveState,
@@ -24,7 +29,11 @@ use systemd::{
 use tracing::{debug, warn};
 use zvariant::{DynamicType, OwnedValue, Str, Value};
 
-pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
+pub(crate) fn fill_all_info(
+    unit: &UnitInfo,
+    unit_writer: &mut UnitInfoWriter,
+    text_view: &gtk::TextView,
+) {
     //let mut unit_info_tokens = Vec::new();
     fill_name_description(unit_writer, unit);
 
@@ -62,6 +71,27 @@ pub(crate) fn fill_all_info(unit: &UnitInfo, unit_writer: &mut UnitInfoWriter) {
     fill_accept(unit_writer, &map);
     fill_cpu(unit_writer, &map);
     fill_control_group(unit_writer, &map, unit);
+
+    let has_reload = if let Some(value) = map.get("ExecReload")
+        && let Value::Array(array) = value as &Value
+        && !array.is_empty()
+    {
+        println!("Len {}", array.len());
+        true
+    } else {
+        false
+    };
+
+    // let c = value_to_def(a, Vec<usize>);
+
+    if let Err(err) =
+        text_view.activate_action(ACTION_WIN_UNIT_HAS_RELOAD, Some(&has_reload.to_variant()))
+    {
+        warn!(
+            "Error {} activating action {}",
+            err, ACTION_WIN_UNIT_HAS_RELOAD
+        );
+    }
 }
 
 fn fill_name_description(unit_writer: &mut UnitInfoWriter, unit: &UnitInfo) {
@@ -1099,7 +1129,7 @@ where
     value
         .and_then(|v| {
             v.try_into()
-                .inspect_err(|e| warn!("Convetion Error: {e:?}"))
+                .inspect_err(|e| warn!("Convertion Error: {e:?}"))
                 .ok()
         })
         .unwrap_or(def)

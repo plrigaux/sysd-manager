@@ -1,16 +1,12 @@
-use std::{cmp::Ordering, fmt::Debug};
-
+use super::UpdatedUnitInfo;
 use crate::{
     enums::{ActiveState, LoadState, Preset, UnitFileStatus},
     sysdbus::ListedUnitFile,
 };
-
-use super::UpdatedUnitInfo;
-
 use base::enums::UnitDBusLevel;
 use glib::{self, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
-
 use serde::Deserialize;
+use std::{cmp::Ordering, fmt::Debug};
 use tracing::warn;
 use zvariant::{OwnedObjectPath, OwnedValue, Value};
 
@@ -203,6 +199,22 @@ impl UnitInfo {
 
     pub fn is_template_unit_file(&self) -> bool {
         self.imp().is_template_unit_file()
+    }
+
+    pub fn equals(&self, other: &UnitInfo) -> bool {
+        self.dbus_level() == other.dbus_level()
+            && self.unit_type() == other.unit_type()
+            && self.display_name() == other.display_name()
+    }
+
+    pub fn equals_op(&self, other: Option<&UnitInfo>) -> bool {
+        if let Some(other) = other
+            && self.equals(other)
+        {
+            true
+        } else {
+            false
+        }
     }
 }
 

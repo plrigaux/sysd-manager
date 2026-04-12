@@ -90,3 +90,4 @@ pub const ACTION_WIN_REFRESH_POP_MENU: &str = "win.refresh-pop-menu";
 pub const ACTION_FIND_IN_TEXT: &str = "win.find-in-text-panel";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "win.pref-unit-list-display-summary";
 pub const UNIT_FILE_LINE_NUMBER_ACTION: &str = "win.unit-file-line-number";
+pub const ACTION_WIN_UNIT_HAS_RELOAD: &str = "win.unit_has_reload";

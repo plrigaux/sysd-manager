@@ -5,7 +5,7 @@ use crate::{
     consts::{
         ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU,
         ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT,
-        ACTION_WIN_STOP_UNIT, DESTRUCTIVE_ACTION, SUGGESTED_ACTION,
+        ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD, DESTRUCTIVE_ACTION, SUGGESTED_ACTION,
     },
     format2,
     utils::{
@@ -238,12 +238,25 @@ impl UnitControlPanelImpl {
                 .build()
         };
 
+        let action_unit_has_reload = {
+            let cpanel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_WIN_UNIT_HAS_RELOAD[4..])
+                .activate(move |_application: &AppWindow, _b, target_value| {
+                    let visible = target_value.and_then(|v| v.get::<bool>()).unwrap_or(false);
+
+                    cpanel.imp().reload_unit_button.set_visible(visible);
+                })
+                .parameter_type(Some(glib::VariantTy::BOOLEAN))
+                .build()
+        };
+
         app_window.add_action_entries([
             action_start_unit,
             action_stop_unit,
             action_restart_unit,
             action_reload_unit,
             action_favorite_set,
+            action_unit_has_reload,
         ]);
 
         //Disable buttons
