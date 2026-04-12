@@ -104,6 +104,28 @@
           </object>
         </child>
         <child>
+          <object class="AdwSplitButton" id="reload_unit_button">
+            <property name="action-name">win.reload-unit</property>
+            <property name="dropdown-tooltip" translatable="yes" context="control tooltip">Reload Unit Modes</property>
+            <property name="popover">
+              <object class="GtkPopover">
+                <child>
+                  <object class="GtkBox" id="reload_unit_modes">
+                    <property name="orientation">vertical</property>
+                  </object>
+                </child>
+              </object>
+            </property>
+            <property name="tooltip-text" translatable="yes" context="controls tooltip">Restart unit</property>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="icon-name">arrow-circular-top-left-symbolic</property>
+                <property name="label" translatable="yes" context="controls">Reload Unit</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="GtkBox">
             <property name="halign">end</property>
             <property name="hexpand">True</property>

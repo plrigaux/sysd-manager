@@ -72,6 +72,9 @@ pub struct UnitControlPanelImpl {
     restart_button: TemplateChild<adw::SplitButton>,
 
     #[template_child]
+    reload_unit_button: TemplateChild<adw::SplitButton>,
+
+    #[template_child]
     more_action_popover: TemplateChild<gtk::Popover>,
 
     #[template_child]
@@ -82,6 +85,9 @@ pub struct UnitControlPanelImpl {
 
     #[template_child]
     restart_modes: TemplateChild<gtk::Box>,
+
+    #[template_child]
+    reload_unit_modes: TemplateChild<gtk::Box>,
 
     #[template_child]
     unit_panel_stack: TemplateChild<adw::ViewStack>,
