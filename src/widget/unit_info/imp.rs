@@ -1,21 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
-
-use gtk::{
-    TemplateChild,
-    glib::{self},
-    prelude::*,
-    subclass::{
-        box_::BoxImpl,
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
-        },
-    },
-};
-
-use tracing::{info, warn};
-
+use super::construct_info::fill_all_info;
 use crate::{
     consts::ACTION_FIND_IN_TEXT,
     systemd::data::UnitInfo,
@@ -32,8 +15,21 @@ use crate::{
         text_search::{self, on_new_text, text_search_construct},
     },
 };
-
-use super::construct_info::fill_all_info;
+use gtk::{
+    TemplateChild,
+    glib::{self},
+    prelude::*,
+    subclass::{
+        box_::BoxImpl,
+        prelude::*,
+        widget::{
+            CompositeTemplateCallbacksClass, CompositeTemplateClass,
+            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
+        },
+    },
+};
+use std::{cell::RefCell, rc::Rc};
+use tracing::{info, warn};
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
@@ -71,12 +67,14 @@ impl UnitInfoPanelImp {
 }
 
 impl UnitInfoPanelImp {
-    pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
+    //FIXME It's been called twice
+    fn set_unit(&self, unit: Option<&UnitInfo>) {
         match unit {
             Some(unit) => {
-                let _old = self.unit.replace(Some(unit.clone()));
-
-                self.update_unit_info(unit)
+                let old_unit = self.unit.replace(Some(unit.clone()));
+                if !unit.equals_op(old_unit.as_ref()) {
+                    self.update_unit_info(unit)
+                }
             }
             None => {
                 self.unit.replace(None);
