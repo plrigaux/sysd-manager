@@ -317,7 +317,7 @@ mod imp {
 
         pub(super) fn refresh_buttons_style(&self) {
             let Some(ref unit) = *self.unit.borrow() else {
-                warn!("Pop menu has no unit");
+                debug!("Pop menu has no unit");
                 return;
             };
 

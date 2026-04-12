@@ -1,4 +1,5 @@
 use gettextrs::pgettext;
+use systemd::enums::ActiveState;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UnitContolType {
@@ -40,6 +41,15 @@ impl UnitContolType {
             UnitContolType::Restart => pgettext("toast", "restarted"),
             //unit action in toast message
             UnitContolType::Reload => pgettext("toast", "reloaded"),
+        }
+    }
+
+    pub fn on_succes_unit_state(&self) -> ActiveState {
+        match self {
+            UnitContolType::Start => ActiveState::Active,
+            UnitContolType::Stop => ActiveState::Inactive,
+            UnitContolType::Restart => ActiveState::Active,
+            UnitContolType::Reload => ActiveState::Active,
         }
     }
 }

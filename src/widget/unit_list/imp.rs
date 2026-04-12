@@ -421,7 +421,7 @@ impl UnitListPanelImp {
 
         let refresh_unit_list = {
             let unit_list_panel = self.obj().clone();
-            gio::ActionEntry::builder("refresh_unit_list")
+            gio::ActionEntry::builder(&ACTION_WIN_REFRESH_UNIT_LIST[4..])
                 .activate(move |_application: &AppWindow, _, _| {
                     info!("Action refresh called");
                     unit_list_panel.imp().fill_store(None);
@@ -433,12 +433,12 @@ impl UnitListPanelImp {
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_REFRESH_POP_MENU[4..])
                 .activate(move |_application: &AppWindow, _, _| {
-                    info!("Action refresh called");
-                    let Some(pop) = unit_list_panel.imp().pop_menu.get() else {
+                    debug!("Action refresh pop menu called");
+                    let Some(pop_menu) = unit_list_panel.imp().pop_menu.get() else {
                         error!("No Pop Menu");
                         return;
                     };
-                    pop.refresh_buttons_style();
+                    pop_menu.refresh_buttons_style();
                 })
                 .build()
         };

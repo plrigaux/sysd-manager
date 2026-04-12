@@ -337,9 +337,22 @@ impl UnitControlPanelImpl {
         glib::spawn_future_local(async move {
             app_window.action_set_enabled(action_name, false);
 
-            let start_results = systemd::runtime().block_on(async move {
-                systemd::restartstop_unit(level, &primary_name, start_mode, re_start_stop).await
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+            systemd::runtime().spawn(async move {
+                let response =
+                    systemd::restartstop_unit(level, &primary_name, start_mode, re_start_stop)
+                        .await;
+                if let Err(e) = sender.send(response) {
+                    error!("Channel closed unexpectedly: {e:?}");
+                }
             });
+
+            let Ok(start_results) = receiver
+                .await
+                .inspect_err(|err| error!("Tokio channel dropped {err:?}"))
+            else {
+                return;
+            };
 
             unit_control_panel.imp().start_restart(
                 &unit.primary(),
@@ -350,11 +363,9 @@ impl UnitControlPanelImpl {
             );
 
             app_window.action_set_enabled(action_name, true);
-            if let Err(activate) = gtk::prelude::WidgetExt::activate_action(
-                &app_window,
-                ACTION_WIN_REFRESH_POP_MENU,
-                None,
-            ) {
+            if let Err(activate) =
+                unit_control_panel.activate_action(ACTION_WIN_REFRESH_POP_MENU, None)
+            {
                 warn!("action {activate:?}");
             }
         });
@@ -368,8 +379,8 @@ impl UnitControlPanelImpl {
         action: UnitContolType,
         mode: StartStopMode,
     ) {
-        let job_op = match start_results {
-            Ok(job) => {
+        match start_results {
+            Ok(_job) => {
                 info!(
                     "{} SUCCESS, Unit {:?} {:?}",
                     action.code(),
@@ -398,17 +409,12 @@ impl UnitControlPanelImpl {
                 self.add_toast_message(&info, true);
 
                 if let Some(unit) = unit_op {
-                    debug!("State-A {}", unit.active_state());
-
-                    if let Ok(new_unit) = systemd::fetch_unit(unit.dbus_level(), &unit.primary()) {
-                        unit.set_active_state(new_unit.active_state());
-                    }
-
-                    debug!("State-B {}", unit.active_state());
+                    unit.set_active_state(action.on_succes_unit_state());
                     self.highlight_controls(unit);
                 }
 
-                Some(job)
+                self.unit_info_panel
+                    .set_inter_message(&InterPanelMessage::UnitChange(unit_op));
             }
             Err(err) => {
                 warn!("{} FAILED, Unit {:?} {:?}", action.code(), unit_name, err);
@@ -422,17 +428,8 @@ impl UnitControlPanelImpl {
                 );
 
                 self.add_toast_message(&info, true);
-
-                None
             }
         };
-
-        let Some(_job) = job_op else {
-            return;
-        };
-
-        self.unit_info_panel
-            .set_inter_message(&InterPanelMessage::UnitChange(unit_op));
     }
 
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
