@@ -151,12 +151,7 @@ pub fn create_action_entry(
                 if let Some(search) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
                     search.grab_focus_on_search_entry();
                 }
-                //let state = !state;
-                //simple_action.set_state(&state.to_variant());
-                //}
             })
-            //.state(is_search_mode.to_variant())
-            //.parameter_type(Some(glib::VariantTy::BOOLEAN))
             .build();
 
     text_search_bar_action_entry

@@ -1,6 +1,6 @@
 use super::construct_info::fill_all_info;
 use crate::{
-    consts::ACTION_FIND_IN_TEXT,
+    consts::{ACTION_FIND_IN_TEXT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, *},
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
     utils::{
@@ -28,8 +28,10 @@ use gtk::{
         },
     },
 };
+use std::cell::OnceCell;
 use std::{cell::RefCell, rc::Rc};
 use tracing::{info, warn};
+use zvariant::Value;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
@@ -54,6 +56,8 @@ pub struct UnitInfoPanelImp {
 
     #[property(name="wrap", get=Self::get_wrap,set=Self::set_wrap, type = bool)]
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
+
+    app_window: OnceCell<AppWindow>,
 }
 
 #[gtk::template_callbacks]
@@ -62,7 +66,7 @@ impl UnitInfoPanelImp {
     fn refresh_info_clicked(&self, button: &gtk::Button) {
         info!("button {button:?}");
 
-        self.refresh_panels();
+        self.refresh_panels(None);
     }
 }
 
@@ -102,9 +106,35 @@ impl UnitInfoPanelImp {
 
         let mut info_writer = UnitInfoWriter::new(buf, start_iter);
 
-        fill_all_info(unit, &mut info_writer, &self.unit_info_textview);
+        let map = fill_all_info(unit, &mut info_writer);
 
         on_new_text(&self.text_search_bar);
+
+        let has_reload_unit_capabilities = if let Some(value) = map.get("ExecReload")
+            && let Value::Array(array) = value as &Value
+            && !array.is_empty()
+        {
+            true
+        } else {
+            false
+        };
+
+        if let Err(err) = self.unit_info_textview.activate_action(
+            ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY,
+            Some(&has_reload_unit_capabilities.to_variant()),
+        ) {
+            warn!(
+                "Error {} activating action {}",
+                err, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY
+            );
+        }
+
+        if let Some(app_window) = self.app_window.get() {
+            app_window.action_set_enabled(
+                ACTION_WIN_RELOAD_UNIT,
+                unit.is_active() && has_reload_unit_capabilities,
+            );
+        }
     }
 
     fn clear(&self) -> gtk::TextBuffer {
@@ -127,10 +157,19 @@ impl UnitInfoPanelImp {
 
         let text_search_bar_action_entry =
             text_search::create_action_entry(&self.text_search_bar, ACTION_FIND_IN_TEXT);
+
         app_window.add_action_entries([text_search_bar_action_entry]);
+
+        if self.app_window.set(app_window.clone()).is_err() {
+            warn!("Set only once");
+        }
     }
 
-    pub(super) fn refresh_panels(&self) {
+    pub(super) fn refresh_panels(&self, unit: Option<&UnitInfo>) {
+        if let Some(unit) = unit {
+            self.unit.replace(Some(unit.clone()));
+        }
+
         let binding = self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
             warn!("no unit file");
@@ -148,6 +187,7 @@ impl UnitInfoPanelImp {
             }
 
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
+            InterPanelMessage::Refresh(unit) => self.refresh_panels(unit),
             _ => {}
         }
     }

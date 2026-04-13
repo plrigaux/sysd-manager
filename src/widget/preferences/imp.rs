@@ -30,7 +30,7 @@ use gtk::{
     glib::{self, BoolError},
     pango::{self, FontFace},
 };
-use std::cell::{OnceCell, RefCell};
+use std::cell::OnceCell;
 use strum::IntoEnumIterator;
 use tracing::{debug, error, info, warn};
 
@@ -135,7 +135,7 @@ pub struct PreferencesDialogImpl {
     #[template_child]
     pref_proxy_page: TemplateChild<adw::PreferencesPage>,
 
-    app_window: RefCell<Option<AppWindow>>,
+    app_window: OnceCell<AppWindow>,
 }
 
 #[gtk::template_callbacks]
@@ -183,8 +183,8 @@ impl PreferencesDialogImpl {
             .title("Pick a Monospace Font")
             .build();
 
-        let parent = self.app_window.borrow();
-        let window = parent.as_ref().map(|w| w.clone());
+        let parent = self.app_window.get();
+        let window = parent.cloned();
         let select_font_row = self.select_font_row.clone();
 
         let font_description = FONT_CONTEXT.font_description();
@@ -199,7 +199,7 @@ impl PreferencesDialogImpl {
         warn!("FD {} ", font_description.to_str(),);
 
         font_dialog.choose_font(
-            parent.as_ref(),
+            parent,
             Some(&font_description),
             None::<&gio::Cancellable>,
             move |result| match result {
@@ -226,10 +226,9 @@ impl PreferencesDialogImpl {
     fn select_font_default(&self) {
         PREFERENCES.set_font_default();
 
-        let window = self.app_window.borrow();
-        if let Some(window) = window.as_ref() {
+        if let Some(app_window) = self.app_window.get() {
             let action = crate::widget::InterPanelMessage::Font(None);
-            window.set_inter_message(&action);
+            app_window.set_inter_message(&action);
         }
 
         let select_font_row = self.select_font_row.clone();
@@ -263,11 +262,12 @@ impl PreferencesDialogImpl {
 impl PreferencesDialogImpl {
     pub(super) fn set_app_window(&self, app_window: Option<&AppWindow>) {
         let Some(app_window) = app_window else {
-            self.app_window.replace(None);
             return;
         };
 
-        self.app_window.replace(Some(app_window.clone()));
+        if let Err(_err) = self.app_window.set(app_window.clone()) {
+            warn!("Set window once");
+        }
 
         let window = app_window.clone();
 
@@ -868,7 +868,7 @@ fn label_link_handler(label: &gtk::Label, pref_dialog: &super::PreferencesDialog
             .inspect_err(|e| warn!("Cli unit: {e:?}"))
             .ok();
 
-        if let Some(app_window) = pref_dialog.imp().app_window.borrow().as_ref() {
+        if let Some(app_window) = pref_dialog.imp().app_window.get() {
             app_window.set_unit(unit.as_ref());
         } else {
             warn!("app_window missing");
@@ -890,9 +890,8 @@ impl AdwDialogImpl for PreferencesDialogImpl {
             warn!("Save setting  error {error:?}")
         }
 
-        let binding = self.app_window.borrow();
-        if let Some(app_window) = binding.as_ref() {
-            app_window.refresh_panels()
+        if let Some(app_window) = self.app_window.get() {
+            app_window.set_inter_message(&InterPanelMessage::Refresh(None));
         };
     }
 }

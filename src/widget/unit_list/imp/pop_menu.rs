@@ -238,7 +238,6 @@ mod imp {
             let filtered_list = filtered_list.downgrade();
             let unit_list_panel = unit_list_panel.downgrade();
 
-            // let _ = self.units_browser.set(units_browser_wr.clone());
             let _ = self.unit_list_panel.set(unit_list_panel.clone());
 
             let pop_up = self.obj().downgrade();

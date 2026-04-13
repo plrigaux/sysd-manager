@@ -15,7 +15,7 @@ impl UnitContolType {
             UnitContolType::Start => "start",
             UnitContolType::Stop => "stop",
             UnitContolType::Restart => "restart",
-            UnitContolType::Reload => "reload",
+            UnitContolType::Reload => "reload_unit",
         }
     }
     pub fn label(&self) -> String {

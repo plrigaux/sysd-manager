@@ -22,10 +22,6 @@ impl UnitFilePanel {
         self.imp().register(app_window);
     }
 
-    pub fn refresh_panels(&self) {
-        self.imp().refresh_panels();
-    }
-
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.imp().set_inter_message(action);
     }

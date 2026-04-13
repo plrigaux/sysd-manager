@@ -20,7 +20,9 @@ use std::{
 use tracing::{debug, error, info, warn};
 
 use crate::{
-    consts::{APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING, ACTION_FIND_IN_TEXT},
+    consts::{
+        ACTION_FIND_IN_TEXT, APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING,
+    },
     systemd::{
         BootFilter,
         data::UnitInfo,
@@ -680,6 +682,9 @@ impl JournalPanelImp {
             }
             InterPanelMessage::UnitChange(unit) => {
                 self.set_unit(*unit);
+            }
+            InterPanelMessage::Refresh(_) => {
+                self.refresh_panels();
             }
             _ => {}
         }

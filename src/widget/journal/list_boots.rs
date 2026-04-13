@@ -63,7 +63,7 @@ mod imp {
         #[template_child]
         list_boots_sort_list_model: TemplateChild<gtk::SortListModel>,
 
-        pub app_window: OnceCell<AppWindow>,
+        pub(super) app_window: OnceCell<AppWindow>,
     }
 
     #[glib::object_subclass]

@@ -361,10 +361,6 @@ impl AppWindowImpl {
         self.unit_list_panel.set_unit(unit)
     }
 
-    pub(super) fn refresh_panels(&self) {
-        self.unit_control_panel.refresh_panels()
-    }
-
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.unit_control_panel.set_inter_message(action);
         self.unit_list_panel.set_inter_message(action);

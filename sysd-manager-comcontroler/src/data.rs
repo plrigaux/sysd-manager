@@ -216,6 +216,10 @@ impl UnitInfo {
             false
         }
     }
+
+    pub fn is_active(&self) -> bool {
+        !self.active_state().is_inactive()
+    }
 }
 
 pub fn get_custom_property_typed_raw<T, O>(unit: &O, key: glib::Quark) -> Option<T>

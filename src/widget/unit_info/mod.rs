@@ -1,9 +1,8 @@
 mod construct_info;
 mod imp;
 
-use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
-
 use super::{InterPanelMessage, app_window::AppWindow};
+use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 glib::wrapper! {
     pub struct UnitInfoPanel(ObjectSubclass<imp::UnitInfoPanelImp>)
@@ -21,10 +20,6 @@ impl UnitInfoPanel {
 
     pub fn register(&self, app_window: &AppWindow) {
         self.imp().register(app_window);
-    }
-
-    pub fn refresh_panels(&self) {
-        self.imp().refresh_panels();
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {

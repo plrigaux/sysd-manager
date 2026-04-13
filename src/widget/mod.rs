@@ -38,6 +38,7 @@ pub enum InterPanelMessage<'a> {
     NewStyleScheme(Option<&'a str>),
     FileLineNumber(bool),
     UnitChange(Option<&'a UnitInfo>),
+    Refresh(Option<&'a UnitInfo>),
     JournalFilterBoot(BootFilter),
     EnableUnit(UnitInfo, Rc<Box<dyn Fn()>>),
     DisableUnit(UnitInfo, Rc<Box<dyn Fn()>>),

@@ -830,7 +830,7 @@ impl UnitFilePanelImp {
         }
     }
 
-    pub(super) fn refresh_panels(&self) {
+    fn refresh_panels(&self, _unit: Option<&UnitInfo>) {
         if self.visible_on_page.get() {
             self.set_file_content_init()
         }
@@ -1006,6 +1006,7 @@ impl UnitFilePanelImp {
                 self.set_new_style_scheme(style_scheme)
             }
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
+            InterPanelMessage::Refresh(unit) => self.refresh_panels(unit),
             _ => {}
         }
     }

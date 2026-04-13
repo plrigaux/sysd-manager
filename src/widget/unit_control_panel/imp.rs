@@ -5,7 +5,8 @@ use crate::{
     consts::{
         ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU,
         ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT,
-        ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD, DESTRUCTIVE_ACTION, SUGGESTED_ACTION,
+        ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, DESTRUCTIVE_ACTION,
+        SUGGESTED_ACTION,
     },
     format2,
     utils::{
@@ -107,6 +108,8 @@ pub struct UnitControlPanelImpl {
     pub stop_mode: RefCell<String>,
     #[property(get, set)]
     pub restart_mode: RefCell<String>,
+    #[property(get, set)]
+    pub reload_unit_mode: RefCell<String>,
 
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
 }
@@ -240,7 +243,7 @@ impl UnitControlPanelImpl {
 
         let action_unit_has_reload = {
             let cpanel = self.obj().clone();
-            gio::ActionEntry::builder(&ACTION_WIN_UNIT_HAS_RELOAD[4..])
+            gio::ActionEntry::builder(&ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY[4..])
                 .activate(move |_application: &AppWindow, _b, target_value| {
                     let visible = target_value.and_then(|v| v.get::<bool>()).unwrap_or(false);
 
@@ -343,7 +346,7 @@ impl UnitControlPanelImpl {
                 ReStartStop::ReloadUnit => (
                     ACTION_WIN_RELOAD_UNIT,
                     UnitContolType::Reload,
-                    StartStopMode::Fail,
+                    (&self.reload_unit_mode).into(),
                 ),
             };
 
@@ -385,7 +388,7 @@ impl UnitControlPanelImpl {
             if let Err(activate) =
                 unit_control_panel.activate_action(ACTION_WIN_REFRESH_POP_MENU, None)
             {
-                warn!("action {activate:?}");
+                warn!("Fail action activation {activate:?}");
             }
         });
     }
@@ -433,7 +436,7 @@ impl UnitControlPanelImpl {
                 }
 
                 self.unit_info_panel
-                    .set_inter_message(&InterPanelMessage::UnitChange(unit_op));
+                    .set_inter_message(&InterPanelMessage::Refresh(unit_op));
             }
             Err(err) => {
                 warn!("{} FAILED, Unit {:?} {:?}", action.code(), unit_name, err);
@@ -490,7 +493,6 @@ impl UnitControlPanelImpl {
         app_window.action_set_enabled(ACTION_WIN_START_UNIT, true);
         app_window.action_set_enabled(ACTION_WIN_STOP_UNIT, true);
         app_window.action_set_enabled(ACTION_WIN_RESTART_UNIT, true);
-        app_window.action_set_enabled(ACTION_WIN_RELOAD_UNIT, !unit.active_state().is_inactive());
         app_window.action_set_enabled(ACTION_WIN_FAVORITE_TOGGLE, true);
         self.restart_button.set_sensitive(true);
         //self.kill_button.set_sensitive(true);
@@ -501,17 +503,6 @@ impl UnitControlPanelImpl {
             && let Some(is_favorite) = fav.get::<bool>()
         {
             self.set_favorite(is_favorite);
-        }
-    }
-
-    pub(super) fn refresh_panels(&self) {
-        let binding = self.current_unit.borrow();
-        if let Some(unit) = binding.as_ref() {
-            self.highlight_controls(unit);
-
-            self.unit_file_panel.refresh_panels();
-            self.unit_info_panel.refresh_panels();
-            self.unit_journal_panel.refresh_panels();
         }
     }
 
@@ -561,6 +552,17 @@ impl UnitControlPanelImpl {
                 );
             }
 
+            InterPanelMessage::Refresh(unit) => {
+                if let Some(unit) = unit.as_deref() {
+                    let unit = unit.clone();
+                    self.current_unit.replace(Some(unit));
+                }
+
+                let binding = self.current_unit.borrow();
+                if let Some(unit) = binding.as_ref() {
+                    self.highlight_controls(unit);
+                }
+            }
             _ => self.forward_inter_actions(action),
         }
     }
@@ -786,6 +788,7 @@ impl ObjectImpl for UnitControlPanelImpl {
         self.set_modes(&self.start_modes, UnitContolType::Start);
         self.set_modes(&self.stop_modes, UnitContolType::Stop);
         self.set_modes(&self.restart_modes, UnitContolType::Restart);
+        self.set_modes(&self.reload_unit_modes, UnitContolType::Reload);
 
         self.unit_panel_stack.connect_pages_notify(|view_stack| {
             info!("page notify {:?}", view_stack.visible_child_name());

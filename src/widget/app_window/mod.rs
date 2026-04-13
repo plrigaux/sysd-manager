@@ -33,10 +33,6 @@ impl AppWindow {
         self.imp().set_unit(unit)
     }
 
-    pub fn refresh_panels(&self) {
-        self.imp().refresh_panels();
-    }
-
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.imp().set_inter_message(action);
     }
