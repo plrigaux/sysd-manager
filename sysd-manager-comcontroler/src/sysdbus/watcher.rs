@@ -5,11 +5,11 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use futures_util::stream::StreamExt;
-use std::{
-    sync::OnceLock,
-    time::{SystemTime, UNIX_EPOCH},
+use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::{
+    sync::{OnceCell, broadcast, oneshot},
+    task::JoinHandle,
 };
-use tokio::{sync::broadcast, task::JoinHandle};
 use tracing::{debug, error, info, warn};
 use zbus::{MatchRule, MessageStream};
 use zvariant::OwnedObjectPath;
@@ -110,44 +110,63 @@ impl SystemdSignalRow {
     }
 }
 
-static SENDER: OnceLock<broadcast::Sender<SystemdSignalRow>> = OnceLock::new();
-static WACHER_SYSTEM: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
-static WACHER_USER_SESSION: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
+static SENDER: OnceCell<broadcast::Sender<SystemdSignalRow>> = OnceCell::const_new();
+static WACHER_SYSTEM: OnceCell<JoinHandle<Result<(), SystemdErrors>>> = OnceCell::const_new();
+static WACHER_USER_SESSION: OnceCell<JoinHandle<Result<(), SystemdErrors>>> = OnceCell::const_new();
 
-pub fn init_signal_watcher(level: UnitDBusLevel) -> broadcast::Receiver<SystemdSignalRow> {
-    let sender = SENDER.get_or_init(|| {
-        let (systemd_signal_sender, _) = broadcast::channel(2500);
+pub async fn init_signal_watcher(level: UnitDBusLevel) -> broadcast::Receiver<SystemdSignalRow> {
+    let sender = SENDER
+        .get_or_init(async || {
+            let (systemd_signal_sender, _) = broadcast::channel(2500);
 
-        // let cancellation_token = tokio_util::sync::CancellationToken::new();
+            // let cancellation_token = tokio_util::sync::CancellationToken::new();
 
-        systemd_signal_sender
-    });
+            systemd_signal_sender
+        })
+        .await;
 
     match level {
         UnitDBusLevel::System => {
-            WACHER_SYSTEM.get_or_init(|| runtime().spawn(signal_watcher(level, sender.clone())));
+            WACHER_SYSTEM
+                .get_or_init(|| spawn_signal_watcher(UnitDBusLevel::System, sender))
+                .await;
         }
         UnitDBusLevel::UserSession => {
             WACHER_USER_SESSION
-                .get_or_init(|| runtime().spawn(signal_watcher(level, sender.clone())));
+                .get_or_init(|| spawn_signal_watcher(UnitDBusLevel::UserSession, sender))
+                .await;
         }
         UnitDBusLevel::Both => {
-            WACHER_SYSTEM.get_or_init(|| {
-                runtime().spawn(signal_watcher(UnitDBusLevel::System, sender.clone()))
-            });
-            WACHER_USER_SESSION.get_or_init(|| {
-                runtime().spawn(signal_watcher(UnitDBusLevel::UserSession, sender.clone()))
-            });
+            WACHER_SYSTEM.get_or_init(|| spawn_signal_watcher(UnitDBusLevel::System, sender));
+            WACHER_USER_SESSION
+                .get_or_init(|| spawn_signal_watcher(UnitDBusLevel::UserSession, sender))
+                .await;
         }
     };
 
     sender.subscribe()
 }
 
+async fn spawn_signal_watcher(
+    level: UnitDBusLevel,
+    sender: &broadcast::Sender<SystemdSignalRow>,
+) -> JoinHandle<Result<(), SystemdErrors>> {
+    let sender = sender.clone();
+    let (tell_is_ready, is_ready_ok) = oneshot::channel();
+    let handle = runtime().spawn(signal_watcher(level, sender, tell_is_ready));
+
+    let _ = is_ready_ok
+        .await
+        .inspect_err(|err| error!("Tokio channel dropped {err:?}"));
+    handle
+}
+
 async fn signal_watcher(
     level: UnitDBusLevel,
     systemd_signal_sender: broadcast::Sender<SystemdSignalRow>,
+    tell_is_ready: oneshot::Sender<()>,
 ) -> Result<(), SystemdErrors> {
+    info!("Starting Watcher {:?}", level);
     let connection = get_connection(level).await?;
 
     let systemd_proxy = Systemd1ManagerProxy::new(&connection).await?;
@@ -169,6 +188,8 @@ async fn signal_watcher(
         Some(100),
     )
     .await?;
+
+    tell_is_ready.send(());
 
     while let Some(message) = stream.next().await {
         let signal = match message {

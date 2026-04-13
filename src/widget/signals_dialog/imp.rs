@@ -234,7 +234,6 @@ impl ObjectImpl for SignalsWindowImp {
         self.setup_factory();
 
         let signal_dialog = self.obj().clone();
-        let mut systemd_signal_receiver = init_signal_watcher(UnitDBusLevel::Both);
         self.receiving.set(true);
 
         glib::spawn_future_local(async move {
@@ -244,6 +243,7 @@ impl ObjectImpl for SignalsWindowImp {
                 model.append(&boxed);
             }
 
+            let mut systemd_signal_receiver = init_signal_watcher(UnitDBusLevel::Both).await;
             //To handle the first
             if let Ok(signal) = systemd_signal_receiver
                 .recv()
