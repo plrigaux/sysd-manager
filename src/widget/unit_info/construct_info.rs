@@ -188,10 +188,10 @@ fn fill_active_state(
         state_text.push(')');
     }
 
-    if state.is_inactive() {
-        unit_writer.insert(&state_text);
-    } else {
+    if state.is_active() {
         unit_writer.insert_active(&state_text);
+    } else {
+        unit_writer.insert(&state_text);
     };
 
     if let Some(since) = add_since(map, state.as_str(), timestamp_style) {

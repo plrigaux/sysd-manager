@@ -381,6 +381,16 @@ impl ActiveState {
         }
     }
 
+    pub fn is_active(&self) -> bool {
+        matches!(
+            self,
+            ActiveState::Active
+                | ActiveState::Activating
+                | ActiveState::Reloading
+                | ActiveState::Refreshing
+        )
+    }
+
     pub fn is_inactive(&self) -> bool {
         matches!(
             self,

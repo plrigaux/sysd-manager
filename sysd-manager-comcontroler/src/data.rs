@@ -218,7 +218,7 @@ impl UnitInfo {
     }
 
     pub fn is_active(&self) -> bool {
-        !self.active_state().is_inactive()
+        self.active_state().is_active()
     }
 }
 
