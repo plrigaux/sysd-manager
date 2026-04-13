@@ -418,14 +418,11 @@ impl UnitControlPanelImpl {
 
                 let info = format2!(
                     //toast message
-                    pgettext(
-                        "toast",
-                        "Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
-                    ),
+                    pgettext("toast", "Unit {} has been <{0}>{}</{0}> with the mode {}"),
                     red_green,
-                    unit_name,
+                    format!("<unit>{}</unit>", unit_name),
                     action.past_participle(),
-                    mode.as_str()
+                    format!("<unit>{}</unit>", mode.as_str())
                 );
 
                 self.add_toast_message(&info, true);
@@ -443,9 +440,9 @@ impl UnitControlPanelImpl {
 
                 let info = format2!(
                     //toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-                    pgettext("toast", "Can't {} the unit <unit>{}</unit>, because: {}"),
+                    pgettext("toast", "Can't {} the unit {}, because: {}"),
                     action.label(),
-                    unit_name,
+                    format!("<unit>{}</unit>", unit_name),
                     err.human_error_type()
                 );
 

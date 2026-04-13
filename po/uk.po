@@ -2273,14 +2273,14 @@ msgstr ""
 #: src/widget/unit_control_panel/imp.rs:390
 msgctxt "toast"
 msgid ""
-"Unit <unit>{}</unit> has been <{0}>{}</{0}> with the mode <unit>{}</unit>"
+"Unit {} has been <{0}>{}</{0}> with the mode {}"
 msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
 #: src/widget/unit_control_panel/imp.rs:418
 #, rust-format
 msgctxt "toast"
-msgid "Can't {} the unit <unit>{}</unit>, because: {}"
+msgid "Can't {} the unit {}, because: {}"
 msgstr ""
 
 #: src/widget/unit_control_panel/imp.rs:705
