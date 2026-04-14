@@ -250,18 +250,19 @@ impl ObjectImpl for SignalsWindowImp {
                 .await
                 .inspect_err(|err| warn!("Watch Signal {err:?}"))
             {
-                append(signal, &model);
+                let signal_row = SystemdSignalRow::new(signal);
+                append(signal_row, &model);
                 signal_dialog.imp().display_signals();
             }
-
             while let Ok(signal) = systemd_signal_receiver
                 .recv()
                 .await
                 .inspect_err(|err| warn!("Watch Signal {err:?}"))
                 && signal_dialog.imp().receiving.get()
             {
-                info!("Watcher Browser {:?}", signal);
-                append(signal, &model);
+                let signal_row = SystemdSignalRow::new(signal);
+                info!("Watcher Browser {:?}", signal_row);
+                append(signal_row, &model);
             }
 
             info!("Window Watcher End receiving signals")

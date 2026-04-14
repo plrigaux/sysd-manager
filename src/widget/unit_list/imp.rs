@@ -73,7 +73,9 @@ use std::{
     sync::OnceLock,
     time::Duration,
 };
-use tokio::task::AbortHandle;
+use systemd::{SystemdSignal, init_signal_watcher, runtime};
+use tokio::{sync::broadcast::Receiver, task::AbortHandle};
+use tokio_stream::StreamExt;
 use tracing::{debug, error, info, trace, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
@@ -1622,23 +1624,32 @@ impl UnitListPanelImp {
         self.favorites.borrow().contains_key(&key)
     }
 
-    /* fn process_signals(&self) {
-        let signal_dialog = self.obj().clone();
-        //FIXME follow user config
-        let mut systemd_signal_receiver = init_signal_watcher(UnitDBusLevel::System);
+    fn process_signals(&self) {
+        glib::spawn_future_local(async move { runtime().spawn(batch()).await });
+    }
+}
 
-        glib::spawn_future_local(async move {
-            while let Ok(signal) = systemd_signal_receiver
-                .recv()
-                .await
-                .inspect_err(|err| warn!("Watch Signal {err:?}"))
-            {
-                info!("Signal Browser {:?}", signal);
-            }
+async fn batch() {
+    let systemd_signal_receiver: Receiver<systemd::SystemdSignal> =
+        init_signal_watcher(UnitDBusLevel::Both).await;
 
-            info!("Signal Browser End receiving signals")
-        });
-    } */
+    let stream = tokio_stream::wrappers::BroadcastStream::new(systemd_signal_receiver);
+
+    let batch_stream = stream
+        .filter(|batch_result| {
+            matches!(
+                batch_result,
+                Ok(SystemdSignal::UnitNew(_, _, _)) | Ok(SystemdSignal::UnitRemoved(_, _, _))
+            )
+        })
+        .chunks_timeout(50, Duration::from_millis(500));
+
+    tokio::pin!(batch_stream);
+    while let Some(signal) = batch_stream.next().await {
+        info!("Signal Browser {:?}", signal);
+    }
+
+    info!("Signal Browser End receiving signals")
 }
 
 macro_rules! dbus_call {
@@ -1978,7 +1989,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         self.retreive_favorites();
 
-        // self.process_signals();
+        self.process_signals();
     }
 }
 

@@ -23,7 +23,6 @@ use crate::{
     sysdbus::{
         ListedUnitFile,
         dbus_proxies::{Systemd1ManagerProxy, systemd_manager, systemd_manager_async},
-        watcher::SystemdSignal,
     },
     time_handling::TimestampStyle,
 };
@@ -49,7 +48,7 @@ use std::{
 };
 pub use sysdbus::{
     get_unit_file_state, list_units_description_and_state_async, sysd_proxy_service_name,
-    watcher::{SystemdSignalRow, init_signal_watcher},
+    watcher::{SystemdSignal, SystemdSignalRow, init_signal_watcher},
 };
 use tokio::{
     runtime::Runtime,
@@ -460,30 +459,27 @@ const INVALID: &str = "invalid";
 
 async fn wait_job_removed(
     job_id: u32,
-    mut watcher: broadcast::Receiver<SystemdSignalRow>,
+    mut watcher: broadcast::Receiver<SystemdSignal>,
 ) -> Result<(), SystemdErrors> {
     loop {
         match watcher.recv().await {
-            Ok(x) => {
-                if let SystemdSignal::JobRemoved(_level, id, _, _unit, result) = x.signal
-                    && id == job_id
-                {
-                    match result.as_str() {
-                        DONE => {
-                            break;
-                        }
-                        CANCELED => return Err(SystemdErrors::JobRemoved(CANCELED.to_owned())),
-                        TIMEOUT => return Err(SystemdErrors::JobRemoved(TIMEOUT.to_owned())),
-                        FAILED => return Err(SystemdErrors::JobRemoved(FAILED.to_owned())),
-                        DEPENDENCY => return Err(SystemdErrors::JobRemoved(DEPENDENCY.to_owned())),
-                        SKIPPED => return Err(SystemdErrors::JobRemoved(SKIPPED.to_owned())),
-                        INVALID => return Err(SystemdErrors::JobRemoved(INVALID.to_owned())),
-                        unkown_result => {
-                            warn!("Unknown JobRemoved result {unkown_result}");
-                        }
+            Ok(SystemdSignal::JobRemoved(_level, id, _, _unit, result)) if id == job_id => {
+                match result.as_str() {
+                    DONE => {
+                        break;
+                    }
+                    CANCELED => return Err(SystemdErrors::JobRemoved(CANCELED.to_owned())),
+                    TIMEOUT => return Err(SystemdErrors::JobRemoved(TIMEOUT.to_owned())),
+                    FAILED => return Err(SystemdErrors::JobRemoved(FAILED.to_owned())),
+                    DEPENDENCY => return Err(SystemdErrors::JobRemoved(DEPENDENCY.to_owned())),
+                    SKIPPED => return Err(SystemdErrors::JobRemoved(SKIPPED.to_owned())),
+                    INVALID => return Err(SystemdErrors::JobRemoved(INVALID.to_owned())),
+                    unkown_result => {
+                        warn!("Unknown JobRemoved result {unkown_result}");
                     }
                 }
             }
+            Ok(_) => {}
             Err(RecvError::Lagged(lag)) => info!("Lagged {lag:?}"),
             Err(err) => {
                 warn!("Recev Err {err:?}");
@@ -1044,16 +1040,15 @@ pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     let mut wait_reload = async || {
         loop {
             match watcher.recv().await {
-                Ok(x) => {
-                    if let SystemdSignal::Reloading(_, active) = x.signal {
-                        if active {
-                            info!("Reloading!");
-                        } else {
-                            info!("Reload Finised");
-                            break;
-                        }
+                Ok(SystemdSignal::Reloading(_, active)) => {
+                    if active {
+                        info!("Reloading!");
+                    } else {
+                        info!("Reload Finised");
+                        break;
                     }
                 }
+                Ok(_) => {}
                 Err(RecvError::Lagged(lag)) => info!("Lagged {lag:?}"),
                 Err(err) => {
                     warn!("Recev Err {err:?}");

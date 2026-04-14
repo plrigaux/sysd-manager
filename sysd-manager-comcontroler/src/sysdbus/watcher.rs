@@ -14,7 +14,7 @@ use tracing::{debug, error, info, warn};
 use zbus::{MatchRule, MessageStream};
 use zvariant::OwnedObjectPath;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub enum SystemdSignal {
     UnitNew(UnitDBusLevel, String, OwnedObjectPath),
     UnitRemoved(UnitDBusLevel, String, OwnedObjectPath),
@@ -78,6 +78,18 @@ impl SystemdSignal {
             SystemdSignal::Reloading(_, active) => format!("active={active}"),
         }
     }
+
+    pub fn toggle_unit(self) -> Self {
+        match self {
+            SystemdSignal::UnitNew(unit_dbus_level, unit_name, owned_object_path) => {
+                Self::UnitRemoved(unit_dbus_level, unit_name, owned_object_path)
+            }
+            SystemdSignal::UnitRemoved(unit_dbus_level, unit_name, owned_object_path) => {
+                Self::UnitNew(unit_dbus_level, unit_name, owned_object_path)
+            }
+            _ => self,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -110,11 +122,11 @@ impl SystemdSignalRow {
     }
 }
 
-static SENDER: OnceCell<broadcast::Sender<SystemdSignalRow>> = OnceCell::const_new();
+static SENDER: OnceCell<broadcast::Sender<SystemdSignal>> = OnceCell::const_new();
 static WACHER_SYSTEM: OnceCell<JoinHandle<Result<(), SystemdErrors>>> = OnceCell::const_new();
 static WACHER_USER_SESSION: OnceCell<JoinHandle<Result<(), SystemdErrors>>> = OnceCell::const_new();
 
-pub async fn init_signal_watcher(level: UnitDBusLevel) -> broadcast::Receiver<SystemdSignalRow> {
+pub async fn init_signal_watcher(level: UnitDBusLevel) -> broadcast::Receiver<SystemdSignal> {
     let sender = SENDER
         .get_or_init(async || {
             let (systemd_signal_sender, _) = broadcast::channel(2500);
@@ -149,7 +161,7 @@ pub async fn init_signal_watcher(level: UnitDBusLevel) -> broadcast::Receiver<Sy
 
 async fn spawn_signal_watcher(
     level: UnitDBusLevel,
-    sender: &broadcast::Sender<SystemdSignalRow>,
+    sender: &broadcast::Sender<SystemdSignal>,
 ) -> JoinHandle<Result<(), SystemdErrors>> {
     let sender = sender.clone();
     let (tell_is_ready, is_ready_ok) = oneshot::channel();
@@ -163,7 +175,7 @@ async fn spawn_signal_watcher(
 
 async fn signal_watcher(
     level: UnitDBusLevel,
-    systemd_signal_sender: broadcast::Sender<SystemdSignalRow>,
+    systemd_signal_sender: broadcast::Sender<SystemdSignal>,
     tell_is_ready: oneshot::Sender<()>,
 ) -> Result<(), SystemdErrors> {
     info!("Starting Watcher {:?}", level);
@@ -262,13 +274,11 @@ async fn signal_watcher(
             }
         };
 
-        if let Some(signal) = signal {
-            let signal_row = SystemdSignalRow::new(signal);
-
-            if let Err(error) = systemd_signal_sender.send(signal_row) {
-                debug!("Send signal Error {error:?}")
-            };
-        }
+        if let Some(signal) = signal
+            && let Err(error) = systemd_signal_sender.send(signal)
+        {
+            debug!("Send signal Error {error:?}")
+        };
     }
 
     Ok(())

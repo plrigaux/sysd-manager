@@ -70,8 +70,9 @@ regex = "1.12"
 serde = "1.0"
 strum = { version = "0.28", features = ["derive"] }
 test-base = { version = "0.1", path = "./sysd-manager-test-base", package = "sysd-manager-test-base" }
-tokio-util = "0.7"
 tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync", "time"] }
+tokio-util = "0.7"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = [
   "ansi",
@@ -113,8 +114,9 @@ sourceview5 = "0.11"
 strum.workspace = true
 systemd.workspace = true
 tokio.workspace = true
-tracing-journald.workspace = true
+tokio-stream.workspace = true
 tokio-util.workspace = true
+tracing-journald.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
 toml = "1"
