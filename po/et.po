@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 10:01-0400\n"
+"POT-Creation-Date: 2026-04-16 12:00-0400\n"
 "PO-Revision-Date: 2026-04-10 23:09+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -873,136 +873,174 @@ msgid "Stop Proxy at Close"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:14
+#: data/interfaces/shortcuts.ui:9
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Üldised"
 
-#: data/interfaces/shortcuts.ui:18
+#: data/interfaces/shortcuts.ui:13
 msgctxt "shortcut window"
 msgid "Show Preferences"
 msgstr "Näita eelistusi"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:24
+#: data/interfaces/shortcuts.ui:19
 msgctxt "shortcut window"
 msgid "Allow configuring each proxy operation individually"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:25
+#: data/interfaces/shortcuts.ui:20
 msgctxt "shortcut window"
 msgid "Show Proxy Preferences"
 msgstr "Näita proksi eelistusi"
 
-#: data/interfaces/shortcuts.ui:31
+#: data/interfaces/shortcuts.ui:26
 msgctxt "shortcut window"
 msgid "Open Search Unit"
 msgstr "Ava üksuste otsing"
 
-#: data/interfaces/shortcuts.ui:37
+#: data/interfaces/shortcuts.ui:32
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
 msgstr "Ava üksuse omaduste filter"
 
-#: data/interfaces/shortcuts.ui:43
+#: data/interfaces/shortcuts.ui:38
 msgctxt "shortcut window"
 msgid "Open List Boots"
 msgstr "Ava alglaadimiste loend"
 
-#: data/interfaces/shortcuts.ui:49
+#: data/interfaces/shortcuts.ui:44
 msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Ava veergude haldur"
 
-#: data/interfaces/shortcuts.ui:55
+#: data/interfaces/shortcuts.ui:50
 msgctxt "shortcut window"
 msgid "Deamon Reload"
 msgstr "Laadi taustateenus uuesti"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:62
+#: data/interfaces/shortcuts.ui:57
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Lehed"
 
-#: data/interfaces/shortcuts.ui:66
+#: data/interfaces/shortcuts.ui:61
 msgctxt "shortcut window"
 msgid "Display Unit Information"
 msgstr "Näita üksuse teavet"
 
-#: data/interfaces/shortcuts.ui:72
+#: data/interfaces/shortcuts.ui:67
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Näita üksuse sõltuvusi"
 
-#: data/interfaces/shortcuts.ui:78
+#: data/interfaces/shortcuts.ui:73
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Näita üksuse määratluste fail"
 
-#: data/interfaces/shortcuts.ui:84
+#: data/interfaces/shortcuts.ui:79
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Näita üksuse sündmusi süsteemipäevikus"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:91
+#: data/interfaces/shortcuts.ui:86
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Üksus"
 
-#: data/interfaces/shortcuts.ui:95
+#: data/interfaces/shortcuts.ui:90
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Näita üksuse omadusi"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:101
+#: data/interfaces/shortcuts.ui:96
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:108
+#: data/interfaces/shortcuts.ui:103
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:112
+#: data/interfaces/shortcuts.ui:107
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:113
+#: data/interfaces/shortcuts.ui:108
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:119
+#. subtitle
+#: data/interfaces/shortcuts.ui:114
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display only Loaded Units"
+msgstr "Näita laaditud üksusefaile"
+
+#: data/interfaces/shortcuts.ui:115
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Näita laaditud üksusefaile"
 
-#: data/interfaces/shortcuts.ui:125
+#. subtitle
+#: data/interfaces/shortcuts.ui:121
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display only Unit Files"
+msgstr "Näita üksusefaile"
+
+#: data/interfaces/shortcuts.ui:122
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Näita üksusefaile"
 
-#: data/interfaces/shortcuts.ui:131
+#: data/interfaces/shortcuts.ui:128
+msgctxt "shortcut window"
+msgid "Display User Customised Units list"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:134
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Favorite Units"
+msgstr "Näita laaditud üksusefaile"
+
+#. Section name
+#: data/interfaces/shortcuts.ui:141
+msgctxt "shortcut window"
+msgid "Special Lists"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:145
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Näita taimereid"
 
-#: data/interfaces/shortcuts.ui:137
+#: data/interfaces/shortcuts.ui:151
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Näita sokleid"
 
-#: data/interfaces/shortcuts.ui:143
+#: data/interfaces/shortcuts.ui:157
+#, fuzzy
 msgctxt "shortcut window"
-msgid "Display User Customised Units list"
-msgstr ""
+msgid "Display Paths"
+msgstr "Näita sokleid"
+
+#: data/interfaces/shortcuts.ui:163
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Automounts"
+msgstr "Automaatsed haakimised"
 
 #. button
 #: data/interfaces/side_control_panel.ui:22
@@ -1180,17 +1218,23 @@ msgstr "Aeg"
 #. column title
 #: data/interfaces/signals_window.ui:62
 msgctxt "signals"
+msgid "Bus"
+msgstr ""
+
+#. column title
+#: data/interfaces/signals_window.ui:69
+msgctxt "signals"
 msgid "Type"
 msgstr "Tüüp"
 
 #. column title
-#: data/interfaces/signals_window.ui:69
+#: data/interfaces/signals_window.ui:76
 msgctxt "signals"
 msgid "Details"
 msgstr "Üksikasjad"
 
 #. dialog title
-#: data/interfaces/signals_window.ui:88
+#: data/interfaces/signals_window.ui:95
 msgctxt "signals"
 msgid "Watch Signals"
 msgstr "Jälgi signaale"
@@ -1272,6 +1316,7 @@ msgid "Restart Modes"
 msgstr "Taaskäivituse viisid"
 
 #: data/interfaces/unit_control_panel.ui:97
+#: data/interfaces/unit_control_panel.ui:119
 msgctxt "controls tooltip"
 msgid "Restart unit"
 msgstr "Käivita üksus uuesti"
@@ -1283,27 +1328,40 @@ msgctxt "controls"
 msgid "Restart"
 msgstr "Käivita uuesti"
 
-#: data/interfaces/unit_control_panel.ui:121
+#: data/interfaces/unit_control_panel.ui:109
+#, fuzzy
+msgctxt "control tooltip"
+msgid "Reload Unit Modes"
+msgstr "Laadi üksus uuesti"
+
+#. unit popup menu
+#: data/interfaces/unit_control_panel.ui:124
+#: data/interfaces/unit_pop_menu.ui:78
+msgctxt "controls"
+msgid "Reload Unit"
+msgstr "Laadi üksus uuesti"
+
+#: data/interfaces/unit_control_panel.ui:144
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Veel ..."
 
-#: data/interfaces/unit_control_panel.ui:157
+#: data/interfaces/unit_control_panel.ui:180
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr "Üksuse teave"
 
-#: data/interfaces/unit_control_panel.ui:167
+#: data/interfaces/unit_control_panel.ui:190
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr "Sõltuvused"
 
-#: data/interfaces/unit_control_panel.ui:177
+#: data/interfaces/unit_control_panel.ui:200
 msgctxt "controls tab"
 msgid "File"
 msgstr "Fail"
 
-#: data/interfaces/unit_control_panel.ui:187
+#: data/interfaces/unit_control_panel.ui:210
 msgctxt "controls tab"
 msgid "Journal"
 msgstr "Süsteemipäevik"
@@ -1515,12 +1573,6 @@ msgstr "Käivita"
 msgctxt "controls"
 msgid "Stop"
 msgstr "Lõpeta töö"
-
-#. unit popup menu
-#: data/interfaces/unit_pop_menu.ui:78
-msgctxt "controls"
-msgid "Reload Unit"
-msgstr "Laadi üksus uuesti"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:95
@@ -2067,81 +2119,81 @@ msgid "Equivalent to SIGSYS"
 msgstr "Sama, kui SIGSYS"
 
 #. tooltip for action button
-#: src/widget/mod.rs:54
+#: src/widget/mod.rs:55
 #, rust-format
 msgctxt "controls"
 msgid "Remove {} from Favorites"
 msgstr "Eemalda {} lemmikute seast"
 
 #. tooltip for action button
-#: src/widget/mod.rs:60
+#: src/widget/mod.rs:61
 #, rust-format
 msgctxt "controls"
 msgid "Add {} to Favorites"
 msgstr "Lisa {} lemmikuks"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:67
+#: src/widget/preferences/data.rs:62
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr "Kasutaja sessioonisiin"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:69
+#: src/widget/preferences/data.rs:64
 msgctxt "dbus"
 msgid "System Bus"
 msgstr "Sessioonisiin"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:71
+#: src/widget/preferences/data.rs:66
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr "Süsteemi ja kasutaja süsteemisiin"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:164
+#: src/widget/preferences/data.rs:159
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Eelistus puudub"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:166
+#: src/widget/preferences/data.rs:161
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Eelista tumedat kujundust"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:168
+#: src/widget/preferences/data.rs:163
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Eelista heledat kujundust"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:170
+#: src/widget/preferences/data.rs:165
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Kasuta tumedat kujundust"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:172
+#: src/widget/preferences/data.rs:167
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Kasuta heledat kujundust"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:218
+#: src/widget/preferences/data.rs:213
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr "Automaatne"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:220
+#: src/widget/preferences/data.rs:215
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr "Paanid asuvad kõrvuti"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:222
+#: src/widget/preferences/data.rs:217
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr "Paanid asuvad üksteise kohal"
@@ -2233,67 +2285,67 @@ msgid "Enable unit {}"
 msgstr "Lülita üksus sisse: {}"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:23
+#: src/widget/unit_control_panel/enums.rs:24
 msgctxt "toast"
 msgid "start"
 msgstr "Käivita"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:25
+#: src/widget/unit_control_panel/enums.rs:26
 msgctxt "toast"
 msgid "stop"
 msgstr "lõpeta töö"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:27
+#: src/widget/unit_control_panel/enums.rs:28
 msgctxt "toast"
 msgid "restart"
 msgstr "käivita uuesti"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:29
+#: src/widget/unit_control_panel/enums.rs:30
 msgctxt "toast"
 msgid "reload"
 msgstr "laadi uuesti"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:36
+#: src/widget/unit_control_panel/enums.rs:37
 msgctxt "toast"
 msgid "started"
 msgstr "käivitatud"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:38
+#: src/widget/unit_control_panel/enums.rs:39
 msgctxt "toast"
 msgid "stopped"
 msgstr "lõpetatud"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:40
+#: src/widget/unit_control_panel/enums.rs:41
 msgctxt "toast"
 msgid "restarted"
 msgstr "uuesti käivitatud"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:42
+#: src/widget/unit_control_panel/enums.rs:43
 msgctxt "toast"
 msgid "reloaded"
 msgstr "uuestilaaditud"
 
-#: src/widget/unit_control_panel/imp.rs:390
+#. toast message
+#: src/widget/unit_control_panel/imp.rs:421
 msgctxt "toast"
-msgid ""
-"Unit {} has been <{0}>{}</{0}> with the mode {}"
+msgid "Unit {} has been <{0}>{}</{0}> with the mode {}"
 msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:418
+#: src/widget/unit_control_panel/imp.rs:443
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:705
+#: src/widget/unit_control_panel/imp.rs:720
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2301,13 +2353,13 @@ msgid ""
 msgstr ""
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:713
+#: src/widget/unit_control_panel/imp.rs:728
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:725
+#: src/widget/unit_control_panel/imp.rs:740
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2316,30 +2368,30 @@ msgid ""
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:736
+#: src/widget/unit_control_panel/imp.rs:751
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:123
+#: src/widget/unit_control_panel/mod.rs:119
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
 msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:136
+#: src/widget/unit_control_panel/mod.rs:132
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file :"
 msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:156
+#: src/widget/unit_control_panel/mod.rs:152
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
 msgstr ""
 
 #. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
-#: src/widget/unit_control_panel/mod.rs:178
+#: src/widget/unit_control_panel/mod.rs:174
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
@@ -2454,12 +2506,12 @@ msgid "File {} saved successfully!"
 msgstr "„{}“ faili salvestamine õnnestus!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1077
+#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1078
 msgid "Daemon Reload"
 msgstr "Laadi taustateenused uuesti"
 
 #: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:304
-#: src/widget/unit_file_panel/imp.rs:1093
+#: src/widget/unit_file_panel/imp.rs:1094
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr "Faili salvetamine ei õnnestu, õigused on puudu!"
@@ -2478,8 +2530,8 @@ msgstr "Faili salvetamine ei õnnestu, tekkis viga!"
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
-"Faili ei leidu! Ilmselt peaksid klõpsama valikut „Laadi taustateenused uuesti"
-"“"
+"Faili ei leidu! Ilmselt peaksid klõpsama valikut „Laadi taustateenused "
+"uuesti“"
 
 #: src/widget/unit_file_panel/imp.rs:581
 msgctxt "file"
@@ -2515,24 +2567,24 @@ msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1069
+#: src/widget/unit_file_panel/imp.rs:1070
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "„{}“ ühikufaili varasema oleku taastamine õnnestus!"
 
-#: src/widget/unit_file_panel/imp.rs:1114
+#: src/widget/unit_file_panel/imp.rs:1115
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1122
+#: src/widget/unit_file_panel/imp.rs:1123
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1223
+#: src/widget/unit_file_panel/imp.rs:1224
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Näita reanumbreid"

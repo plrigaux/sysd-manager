@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 10:01-0400\n"
+"POT-Creation-Date: 2026-04-16 12:00-0400\n"
 "PO-Revision-Date: 2025-08-16 14:02+0000\n"
 "Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/sysd-manager/"
@@ -898,145 +898,183 @@ msgid "Stop Proxy at Close"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:14
+#: data/interfaces/shortcuts.ui:9
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Geral"
 
-#: data/interfaces/shortcuts.ui:18
+#: data/interfaces/shortcuts.ui:13
 msgctxt "shortcut window"
 msgid "Show Preferences"
 msgstr "Mostrar preferências"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:24
+#: data/interfaces/shortcuts.ui:19
 msgctxt "shortcut window"
 msgid "Allow configuring each proxy operation individually"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:25
+#: data/interfaces/shortcuts.ui:20
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Show Proxy Preferences"
 msgstr "Mostrar preferências"
 
-#: data/interfaces/shortcuts.ui:31
+#: data/interfaces/shortcuts.ui:26
 msgctxt "shortcut window"
 msgid "Open Search Unit"
 msgstr "Abrir unidade de pesquisa"
 
-#: data/interfaces/shortcuts.ui:37
+#: data/interfaces/shortcuts.ui:32
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
 msgstr "Filtro de propriedade de unidade aberta"
 
-#: data/interfaces/shortcuts.ui:43
+#: data/interfaces/shortcuts.ui:38
 msgctxt "shortcut window"
 msgid "Open List Boots"
 msgstr "Botas de lista aberta"
 
-#: data/interfaces/shortcuts.ui:49
+#: data/interfaces/shortcuts.ui:44
 msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:55
+#: data/interfaces/shortcuts.ui:50
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Deamon Reload"
 msgstr "Recarregar"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:62
+#: data/interfaces/shortcuts.ui:57
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Páginas"
 
-#: data/interfaces/shortcuts.ui:66
+#: data/interfaces/shortcuts.ui:61
 msgctxt "shortcut window"
 msgid "Display Unit Information"
 msgstr "Exibir informações da unidade"
 
-#: data/interfaces/shortcuts.ui:72
+#: data/interfaces/shortcuts.ui:67
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Dependências da unidade de exibição"
 
-#: data/interfaces/shortcuts.ui:78
+#: data/interfaces/shortcuts.ui:73
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Ficheiro de definição da unidade de exibição"
 
-#: data/interfaces/shortcuts.ui:84
+#: data/interfaces/shortcuts.ui:79
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Eventos do diário da unidade de exibição"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:91
+#: data/interfaces/shortcuts.ui:86
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Unidade"
 
-#: data/interfaces/shortcuts.ui:95
+#: data/interfaces/shortcuts.ui:90
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Mostrar todas as _Propriedades"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:101
+#: data/interfaces/shortcuts.ui:96
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Limpar elementos selecionados do filtro"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:108
+#: data/interfaces/shortcuts.ui:103
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:112
+#: data/interfaces/shortcuts.ui:107
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:113
+#: data/interfaces/shortcuts.ui:108
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:119
+#. subtitle
+#: data/interfaces/shortcuts.ui:114
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display only Loaded Units"
+msgstr "Unidades carregadas recuperadas"
+
+#: data/interfaces/shortcuts.ui:115
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Unidades carregadas recuperadas"
 
-#: data/interfaces/shortcuts.ui:125
+#. subtitle
+#: data/interfaces/shortcuts.ui:121
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display only Unit Files"
+msgstr "Desativar ficheiro de unidade"
+
+#: data/interfaces/shortcuts.ui:122
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Desativar ficheiro de unidade"
 
-#: data/interfaces/shortcuts.ui:131
+#: data/interfaces/shortcuts.ui:128
+msgctxt "shortcut window"
+msgid "Display User Customised Units list"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:134
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Favorite Units"
+msgstr "Unidades carregadas recuperadas"
+
+#. Section name
+#: data/interfaces/shortcuts.ui:141
+msgctxt "shortcut window"
+msgid "Special Lists"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:145
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Exibir o número da linha do ficheiro da unidade"
 
-#: data/interfaces/shortcuts.ui:137
+#: data/interfaces/shortcuts.ui:151
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Cores da ecrã"
 
-#: data/interfaces/shortcuts.ui:143
+#: data/interfaces/shortcuts.ui:157
+#, fuzzy
 msgctxt "shortcut window"
-msgid "Display User Customised Units list"
-msgstr ""
+msgid "Display Paths"
+msgstr "Cores da ecrã"
+
+#: data/interfaces/shortcuts.ui:163
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Display Automounts"
+msgstr "Automático"
 
 #. button
 #: data/interfaces/side_control_panel.ui:22
@@ -1229,18 +1267,25 @@ msgstr "Tempo"
 
 #. column title
 #: data/interfaces/signals_window.ui:62
+#, fuzzy
+msgctxt "signals"
+msgid "Bus"
+msgstr "Bus"
+
+#. column title
+#: data/interfaces/signals_window.ui:69
 msgctxt "signals"
 msgid "Type"
 msgstr "Tipo"
 
 #. column title
-#: data/interfaces/signals_window.ui:69
+#: data/interfaces/signals_window.ui:76
 msgctxt "signals"
 msgid "Details"
 msgstr "Pormenores"
 
 #. dialog title
-#: data/interfaces/signals_window.ui:88
+#: data/interfaces/signals_window.ui:95
 msgctxt "signals"
 msgid "Watch Signals"
 msgstr "Sinais de relógio"
@@ -1324,6 +1369,7 @@ msgid "Restart Modes"
 msgstr "Modos de reinicialização"
 
 #: data/interfaces/unit_control_panel.ui:97
+#: data/interfaces/unit_control_panel.ui:119
 msgctxt "controls tooltip"
 msgid "Restart unit"
 msgstr "Reiniciar unidade"
@@ -1335,27 +1381,41 @@ msgctxt "controls"
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: data/interfaces/unit_control_panel.ui:121
+#: data/interfaces/unit_control_panel.ui:109
+#, fuzzy
+msgctxt "control tooltip"
+msgid "Reload Unit Modes"
+msgstr "Unidade de recarga"
+
+#. unit popup menu
+#: data/interfaces/unit_control_panel.ui:124
+#: data/interfaces/unit_pop_menu.ui:78
+#, fuzzy
+msgctxt "controls"
+msgid "Reload Unit"
+msgstr "Unidade de recarga"
+
+#: data/interfaces/unit_control_panel.ui:144
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Mais ..."
 
-#: data/interfaces/unit_control_panel.ui:157
+#: data/interfaces/unit_control_panel.ui:180
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr "Informações da unidade"
 
-#: data/interfaces/unit_control_panel.ui:167
+#: data/interfaces/unit_control_panel.ui:190
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr "Dependências"
 
-#: data/interfaces/unit_control_panel.ui:177
+#: data/interfaces/unit_control_panel.ui:200
 msgctxt "controls tab"
 msgid "File"
 msgstr "Ficheiro"
 
-#: data/interfaces/unit_control_panel.ui:187
+#: data/interfaces/unit_control_panel.ui:210
 msgctxt "controls tab"
 msgid "Journal"
 msgstr "Jornal"
@@ -1582,13 +1642,6 @@ msgstr "Começar"
 msgctxt "controls"
 msgid "Stop"
 msgstr "Parar"
-
-#. unit popup menu
-#: data/interfaces/unit_pop_menu.ui:78
-#, fuzzy
-msgctxt "controls"
-msgid "Reload Unit"
-msgstr "Unidade de recarga"
 
 #. unit popup menu
 #: data/interfaces/unit_pop_menu.ui:95
@@ -2145,81 +2198,81 @@ msgid "Equivalent to SIGSYS"
 msgstr "Equivalente ao SIGSYS"
 
 #. tooltip for action button
-#: src/widget/mod.rs:54
+#: src/widget/mod.rs:55
 #, rust-format
 msgctxt "controls"
 msgid "Remove {} from Favorites"
 msgstr ""
 
 #. tooltip for action button
-#: src/widget/mod.rs:60
+#: src/widget/mod.rs:61
 #, rust-format
 msgctxt "controls"
 msgid "Add {} to Favorites"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:67
+#: src/widget/preferences/data.rs:62
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr "Barramento de Sessão do Utilizador"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:69
+#: src/widget/preferences/data.rs:64
 msgctxt "dbus"
 msgid "System Bus"
 msgstr "Barramento do sistema"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:71
+#: src/widget/preferences/data.rs:66
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr "Barramento de sessão de sistema e utilizador"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:164
+#: src/widget/preferences/data.rs:159
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Sem preferência"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:166
+#: src/widget/preferences/data.rs:161
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Prefiro escuro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:168
+#: src/widget/preferences/data.rs:163
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Prefiro Claro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:170
+#: src/widget/preferences/data.rs:165
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Força modo Escuro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:172
+#: src/widget/preferences/data.rs:167
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Força modo Claro"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:218
+#: src/widget/preferences/data.rs:213
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr "Automático"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:220
+#: src/widget/preferences/data.rs:215
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr "Lado a lado"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:222
+#: src/widget/preferences/data.rs:217
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr "Cima Fundo"
@@ -2319,69 +2372,69 @@ msgid "Enable unit {}"
 msgstr "Ativar ficheiro de unidade"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:23
+#: src/widget/unit_control_panel/enums.rs:24
 msgctxt "toast"
 msgid "start"
 msgstr "Iniciar"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:25
+#: src/widget/unit_control_panel/enums.rs:26
 msgctxt "toast"
 msgid "stop"
 msgstr "parar"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:27
+#: src/widget/unit_control_panel/enums.rs:28
 msgctxt "toast"
 msgid "restart"
 msgstr "reiniciar"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:29
+#: src/widget/unit_control_panel/enums.rs:30
 #, fuzzy
 msgctxt "toast"
 msgid "reload"
 msgstr "Recarregar"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:36
+#: src/widget/unit_control_panel/enums.rs:37
 msgctxt "toast"
 msgid "started"
 msgstr "Iniciado"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:38
+#: src/widget/unit_control_panel/enums.rs:39
 msgctxt "toast"
 msgid "stopped"
 msgstr "Parou"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:40
+#: src/widget/unit_control_panel/enums.rs:41
 msgctxt "toast"
 msgid "restarted"
 msgstr "Reiniciado"
 
 #. unit action in toast message
-#: src/widget/unit_control_panel/enums.rs:42
+#: src/widget/unit_control_panel/enums.rs:43
 #, fuzzy
 msgctxt "toast"
 msgid "reloaded"
 msgstr "Carregado"
 
-#: src/widget/unit_control_panel/imp.rs:390
+#. toast message
+#: src/widget/unit_control_panel/imp.rs:421
 msgctxt "toast"
-msgid ""
-"Unit {} has been <{0}>{}</{0}> with the mode {}"
+msgid "Unit {} has been <{0}>{}</{0}> with the mode {}"
 msgstr "A unidade {} foi <{0}>{}</{0}> com o modo {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:418
+#: src/widget/unit_control_panel/imp.rs:443
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr "Não é possível {} a unidade {}, porque: {}"
 
-#: src/widget/unit_control_panel/imp.rs:705
+#: src/widget/unit_control_panel/imp.rs:720
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2391,13 +2444,13 @@ msgstr ""
 "span> bem-sucedida"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:713
+#: src/widget/unit_control_panel/imp.rs:728
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} bem-sucedido."
 
-#: src/widget/unit_control_panel/imp.rs:725
+#: src/widget/unit_control_panel/imp.rs:740
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2408,31 +2461,31 @@ msgstr ""
 "span> falhou. Motivo: <span fgcolor='{}'>{}</span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:736
+#: src/widget/unit_control_panel/imp.rs:751
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
 msgstr "{} falhou. Motivo: <span fgcolor='{}'>{}</span>."
 
-#: src/widget/unit_control_panel/mod.rs:123
+#: src/widget/unit_control_panel/mod.rs:119
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
 msgstr ""
 "Infelizmente, o <b>SysD Manager</b> não pode executar a <b>{}</b> ação."
 
-#: src/widget/unit_control_panel/mod.rs:136
+#: src/widget/unit_control_panel/mod.rs:132
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file :"
 msgstr "A autorização pode ser configurada no seguinte ficheiro:"
 
-#: src/widget/unit_control_panel/mod.rs:156
+#: src/widget/unit_control_panel/mod.rs:152
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
 msgstr "Caso contrário, pode tentar a linha de comando abaixo no seu terminal"
 
 #. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
-#: src/widget/unit_control_panel/mod.rs:178
+#: src/widget/unit_control_panel/mod.rs:174
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
@@ -2549,13 +2602,13 @@ msgid "File {} saved successfully!"
 msgstr "{} bem-sucedido."
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1077
+#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1078
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Recarregar"
 
 #: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:304
-#: src/widget/unit_file_panel/imp.rs:1093
+#: src/widget/unit_file_panel/imp.rs:1094
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
@@ -2610,24 +2663,24 @@ msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1069
+#: src/widget/unit_file_panel/imp.rs:1070
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "{} bem-sucedido."
 
-#: src/widget/unit_file_panel/imp.rs:1114
+#: src/widget/unit_file_panel/imp.rs:1115
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1122
+#: src/widget/unit_file_panel/imp.rs:1123
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1223
+#: src/widget/unit_file_panel/imp.rs:1224
 #, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
