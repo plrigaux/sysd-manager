@@ -82,6 +82,19 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.18.0" date="2026-04-16">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>The reload unit button</li>
+          <li>New shortcuts in Shortcuts Dialog</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Fixed the Start, Stop ... Unit sporadic first call lag</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.17.2" date="2026-04-11">
       <description translate="no">
         <p>Added</p>

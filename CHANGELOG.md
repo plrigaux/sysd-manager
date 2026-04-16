@@ -7,16 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.18.0] - 2026-04-16
+
 ### Added
 
-- Add the reload unit button
+- The reload unit button
+- New shortcuts in Shortcuts Dialog
 
 ### Fixed
+
 - Fixed the Start, Stop ... Unit sporadic first call lag
-
-### Added
-
-- Handle signals for better action response
 
 ## [2.17.2] - 2026-04-11
 
