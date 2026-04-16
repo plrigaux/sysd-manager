@@ -1,148 +1,166 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Cambalache 0.96.3 -->
 <interface>
-  <!-- interface-name shortcuts.ui -->
-  <requires lib="gtk" version="4.6"/>
-  <object class="GtkShortcutsWindow" id="help_overlay">
-    <property name="modal">True</property>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwShortcutsDialog" id="shortcuts_dialog">
     <child>
-      <object class="GtkShortcutsSection">
-        <property name="max-height">10</property>
-        <property name="section-name">shortcuts</property>
+      <object class="AdwShortcutsSection">
+        <property name="title" translatable="yes" context="shortcut window" comments="Section name">General</property>
         <child>
-          <object class="GtkShortcutsGroup">
-            <property name="title" translatable="yes" context="shortcut window" comments="Section name">General</property>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.preferences</property>
-                <property name="title" translatable="yes" context="shortcut window">Show Preferences</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.proxy-management</property>
-                <property name="subtitle" translatable="yes" context="shortcut window" comments="subtitle">Allow configuring each proxy operation individually</property>
-                <property name="title" translatable="yes" context="shortcut window">Show Proxy Preferences</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.search_units</property>
-                <property name="title" translatable="yes" context="shortcut window">Open Search Unit</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.unit_list_filter_blank</property>
-                <property name="title" translatable="yes" context="shortcut window">Open Unit Property Filter</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.list_boots</property>
-                <property name="title" translatable="yes" context="shortcut window">Open List Boots</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.properties_selector_general</property>
-                <property name="title" translatable="yes" context="shortcut window">Open columns manager</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.daemon-reload</property>
-                <property name="title" translatable="yes" context="shortcut window">Deamon Reload</property>
-              </object>
-            </child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.preferences</property>
+            <property name="title" translatable="yes" context="shortcut window">Show Preferences</property>
           </object>
         </child>
         <child>
-          <object class="GtkShortcutsGroup">
-            <property name="title" translatable="yes" context="shortcut window" comments="Section name">Pages</property>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.open_info</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Unit Information</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.open_dependencies</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Unit Dependencies</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.open_file</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Unit Definition File</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.open_journal</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Unit Journal Events</property>
-              </object>
-            </child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.proxy-management</property>
+            <property name="subtitle" translatable="yes" context="shortcut window" comments="subtitle">Allow configuring each proxy operation individually</property>
+            <property name="title" translatable="yes" context="shortcut window">Show Proxy Preferences</property>
           </object>
         </child>
         <child>
-          <object class="GtkShortcutsGroup">
-            <property name="title" translatable="yes" context="shortcut window" comments="Section name">Unit</property>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">app.unit_properties</property>
-                <property name="title" translatable="yes" context="shortcut window">Show unit properties</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.save-unit-file</property>
-                <property name="title" translatable="yes" context="shortcut window" comments="In the shortcut Window description">Save the selected unit file</property>
-              </object>
-            </child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.search_units</property>
+            <property name="title" translatable="yes" context="shortcut window">Open Search Unit</property>
           </object>
         </child>
         <child>
-          <object class="GtkShortcutsGroup">
-            <property name="title" translatable="yes" context="shortcut window" comments="Section name">Curated Lists</property>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.unit_list_view::default</property>
-                <property name="subtitle" translatable="yes" context="shortcut window" comments="subtitle">Merge Loaded Units with Unit Files</property>
-                <property name="title" translatable="yes" context="shortcut window">Display SysD Manager Original List</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.unit_list_view::loaded</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Loaded Units</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.unit_list_view::unit_file</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Unit Files</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.unit_list_view::timers</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Timers</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.unit_list_view::sockets</property>
-                <property name="title" translatable="yes" context="shortcut window">Display Sockets</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkShortcutsShortcut">
-                <property name="action-name">win.unit_list_view::custom</property>
-                <property name="title" translatable="yes" context="shortcut window">Display User Customised Units list</property>
-              </object>
-            </child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit_list_filter_blank</property>
+            <property name="title" translatable="yes" context="shortcut window">Open Unit Property Filter</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.list_boots</property>
+            <property name="title" translatable="yes" context="shortcut window">Open List Boots</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.properties_selector_general</property>
+            <property name="title" translatable="yes" context="shortcut window">Open columns manager</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.daemon-reload</property>
+            <property name="title" translatable="yes" context="shortcut window">Deamon Reload</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwShortcutsSection">
+        <property name="title" translatable="yes" context="shortcut window" comments="Section name">Pages</property>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.open_info</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Unit Information</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.open_dependencies</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Unit Dependencies</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.open_file</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Unit Definition File</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.open_journal</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Unit Journal Events</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwShortcutsSection">
+        <property name="title" translatable="yes" context="shortcut window" comments="Section name">Unit</property>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">app.unit_properties</property>
+            <property name="title" translatable="yes" context="shortcut window">Show unit properties</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.save-unit-file</property>
+            <property name="title" translatable="yes" context="shortcut window" comments="In the shortcut Window description">Save the selected unit file</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwShortcutsSection">
+        <property name="title" translatable="yes" context="shortcut window" comments="Section name">Curated Lists</property>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::default</property>
+            <property name="subtitle" translatable="yes" context="shortcut window" comments="subtitle">Merge Loaded Units with Unit Files</property>
+            <property name="title" translatable="yes" context="shortcut window">Display SysD Manager Original List</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::loaded</property>
+            <property name="subtitle" translatable="yes" context="shortcut window" comments="subtitle">Display only Loaded Units</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Loaded Units</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::unit_file</property>
+            <property name="subtitle" translatable="yes" context="shortcut window" comments="subtitle">Display only Unit Files</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Unit Files</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::custom</property>
+            <property name="title" translatable="yes" context="shortcut window">Display User Customised Units list</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::favorites</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Favorite Units</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwShortcutsSection">
+        <property name="title" translatable="yes" context="shortcut window" comments="Section name">Special Lists</property>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::timers</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Timers</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::sockets</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Sockets</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::paths</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Paths</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.unit-list-view::automounts</property>
+            <property name="title" translatable="yes" context="shortcut window">Display Automounts</property>
           </object>
         </child>
       </object>
