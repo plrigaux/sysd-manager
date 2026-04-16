@@ -49,11 +49,6 @@ pub enum DbusLevel {
 
 impl DbusLevel {
     pub fn as_str(&self) -> &str {
-        // self.to_value()
-        //     .get::<adw::EnumListItem>()
-        //     .unwrap()
-        //     .name()
-        //     .as_str()
         match self {
             DbusLevel::UserSession => "session",
             DbusLevel::System => "system",

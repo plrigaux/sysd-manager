@@ -1,4 +1,5 @@
 use crate::{
+    data::UnitInfo,
     errors::SystemdErrors,
     runtime,
     sysdbus::{dbus_proxies::Systemd1ManagerProxy, get_connection},
@@ -14,10 +15,10 @@ use tracing::{debug, error, info, warn};
 use zbus::{MatchRule, MessageStream};
 use zvariant::OwnedObjectPath;
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum SystemdSignal {
-    UnitNew(UnitDBusLevel, String, OwnedObjectPath),
-    UnitRemoved(UnitDBusLevel, String, OwnedObjectPath),
+    UnitNew(UnitDBusLevel, String),
+    UnitRemoved(UnitDBusLevel, String),
     JobNew(UnitDBusLevel, u32, OwnedObjectPath, String),
     JobRemoved(UnitDBusLevel, u32, OwnedObjectPath, String, String),
     StartupFinished(UnitDBusLevel, u64, u64, u64, u64, u64, u64),
@@ -28,8 +29,8 @@ pub enum SystemdSignal {
 impl SystemdSignal {
     pub fn type_text(&self) -> &str {
         match self {
-            SystemdSignal::UnitNew(_, _, _) => "UnitNew",
-            SystemdSignal::UnitRemoved(_, _, _) => "UnitRemoved",
+            SystemdSignal::UnitNew(_, _) => "UnitNew",
+            SystemdSignal::UnitRemoved(_, _) => "UnitRemoved",
             SystemdSignal::JobNew(_, _, _, _) => "JobNew",
             SystemdSignal::JobRemoved(_, _, _, _, _) => "JobRemoved",
             SystemdSignal::StartupFinished(_, _, _, _, _, _, _) => "StartupFinished",
@@ -40,8 +41,8 @@ impl SystemdSignal {
 
     pub fn bus_text(&self) -> &str {
         let level = match self {
-            SystemdSignal::UnitNew(level, _, _) => level,
-            SystemdSignal::UnitRemoved(level, _, _) => level,
+            SystemdSignal::UnitNew(level, _) => level,
+            SystemdSignal::UnitRemoved(level, _) => level,
             SystemdSignal::JobNew(level, _, _, _) => level,
             SystemdSignal::JobRemoved(level, _, _, _, _) => level,
             SystemdSignal::StartupFinished(level, _, _, _, _, _, _) => level,
@@ -53,8 +54,8 @@ impl SystemdSignal {
 
     pub fn details(&self) -> String {
         match self {
-            SystemdSignal::UnitNew(_, id, unit) => format!("{id} {unit}"),
-            SystemdSignal::UnitRemoved(_, id, unit) => format!("{id} {unit}"),
+            SystemdSignal::UnitNew(_, id) => id.to_string(),
+            SystemdSignal::UnitRemoved(_, id) => id.to_string(),
             SystemdSignal::JobNew(_, id, job, unit) => {
                 format!("unit={unit} id={id} path={job}")
             }
@@ -81,13 +82,25 @@ impl SystemdSignal {
 
     pub fn toggle_unit(self) -> Self {
         match self {
-            SystemdSignal::UnitNew(unit_dbus_level, unit_name, owned_object_path) => {
-                Self::UnitRemoved(unit_dbus_level, unit_name, owned_object_path)
+            SystemdSignal::UnitNew(unit_dbus_level, unit_name) => {
+                Self::UnitRemoved(unit_dbus_level, unit_name)
             }
-            SystemdSignal::UnitRemoved(unit_dbus_level, unit_name, owned_object_path) => {
-                Self::UnitNew(unit_dbus_level, unit_name, owned_object_path)
+            SystemdSignal::UnitRemoved(unit_dbus_level, unit_name) => {
+                Self::UnitNew(unit_dbus_level, unit_name)
             }
             _ => self,
+        }
+    }
+
+    pub fn create_unit(&self) -> Option<UnitInfo> {
+        match self {
+            SystemdSignal::UnitNew(unit_dbus_level, unit_name) => {
+                Some(UnitInfo::from_unit_key(unit_name, *unit_dbus_level))
+            }
+            SystemdSignal::UnitRemoved(unit_dbus_level, unit_name) => {
+                Some(UnitInfo::from_unit_key(unit_name, *unit_dbus_level))
+            }
+            _ => None,
         }
     }
 }
@@ -213,12 +226,12 @@ async fn signal_watcher(
                     .map(|member_name| member_name.as_str()),
             ) {
                 (zbus::message::Type::Signal, Some("UnitNew")) => {
-                    let (unit, path): (String, OwnedObjectPath) = message.body().deserialize()?;
-                    Some(SystemdSignal::UnitNew(level, unit, path))
+                    let (unit, _path): (String, OwnedObjectPath) = message.body().deserialize()?;
+                    Some(SystemdSignal::UnitNew(level, unit))
                 }
                 (zbus::message::Type::Signal, Some("UnitRemoved")) => {
-                    let (unit, path): (String, OwnedObjectPath) = message.body().deserialize()?;
-                    Some(SystemdSignal::UnitRemoved(level, unit, path))
+                    let (unit, _path): (String, OwnedObjectPath) = message.body().deserialize()?;
+                    Some(SystemdSignal::UnitRemoved(level, unit))
                 }
                 (zbus::message::Type::Signal, Some("JobRemoved")) => {
                     let (id, job, unit, result): (u32, OwnedObjectPath, String, String) =

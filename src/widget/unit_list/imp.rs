@@ -67,14 +67,17 @@ use gtk::{
 use std::{
     borrow::Cow,
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
-    collections::{HashMap, HashSet},
+    collections::{HashMap, HashSet, hash_map},
     hash::{Hash, Hasher},
     rc::Rc,
     sync::OnceLock,
     time::Duration,
 };
 use systemd::{SystemdSignal, init_signal_watcher, runtime};
-use tokio::{sync::broadcast::Receiver, task::AbortHandle};
+use tokio::{
+    sync::{broadcast::Receiver, mpsc},
+    task::AbortHandle,
+};
 use tokio_stream::StreamExt;
 use tracing::{debug, error, info, trace, warn};
 
@@ -867,23 +870,77 @@ impl UnitListPanelImp {
         }
     }
 
+    fn manage_unit_new_remove(&self, signal: SystemdSignal) {
+        let Some(unit) = signal.create_unit() else {
+            return;
+        };
+
+        //TODO update unit info if add
+        self.add_one_unit(&unit);
+    }
+
+    fn can_add_unit_to_view(&self, view: UnitCuratedList, unit: &UnitInfo) -> bool {
+        match view {
+            UnitCuratedList::Defaut => Self::match_level(unit),
+            UnitCuratedList::LoadedUnit => Self::match_level(unit),
+            UnitCuratedList::UnitFiles => Self::match_level(unit),
+            UnitCuratedList::Timers => {
+                unit.unit_type() == UnitType::Automount && Self::match_level(unit)
+            }
+            UnitCuratedList::Sockets => {
+                unit.unit_type() == UnitType::Automount && Self::match_level(unit)
+            }
+            UnitCuratedList::Path => {
+                unit.unit_type() == UnitType::Automount && Self::match_level(unit)
+            }
+            UnitCuratedList::Automount => {
+                unit.unit_type() == UnitType::Automount && Self::match_level(unit)
+            }
+            UnitCuratedList::Custom => Self::match_level(unit),
+            UnitCuratedList::Favorites => false,
+        }
+    }
+
+    fn match_level(unit: &UnitInfo) -> bool {
+        let screen_level = PREFERENCES.dbus_level();
+        let unit_level = unit.dbus_level();
+        match (screen_level, unit_level) {
+            (DbusLevel::UserSession, UnitDBusLevel::System) => false,
+            (DbusLevel::UserSession, _) => true,
+            (DbusLevel::System, UnitDBusLevel::UserSession) => false,
+            (DbusLevel::System, _) => true,
+            (DbusLevel::SystemAndSession, _) => true,
+        }
+    }
+
+    //TODO review logic
     fn add_one_unit(&self, unit: &UnitInfo) {
+        let view = self.selected_list_view.get();
+
+        if !self.can_add_unit_to_view(view, unit) {
+            return;
+        }
+
         let Some(list_store) = self.list_store.get() else {
             error!("list_store not initialized");
             return;
         };
-        list_store.append(unit);
+
+        let key = UnitKey::new(unit);
         let mut unit_map = self.units_map.borrow_mut();
-        unit_map.insert(UnitKey::new(unit), unit.clone());
+        if let hash_map::Entry::Vacant(vacant_entry) = unit_map.entry(key) {
+            list_store.append(unit);
+            vacant_entry.insert(unit.clone());
 
-        if LoadState::Loaded == unit.load_state() {
-            let count = self.obj().loaded_units_count();
-            self.obj().set_loaded_units_count(count + 1)
-        }
+            if LoadState::Loaded == unit.load_state() {
+                let count = self.obj().loaded_units_count();
+                self.obj().set_loaded_units_count(count + 1)
+            }
 
-        if unit.enable_status() != UnitFileStatus::Unknown {
-            let count = self.obj().unit_files_count();
-            self.obj().set_unit_files_count(count + 1);
+            if unit.enable_status() != UnitFileStatus::Unknown {
+                let count = self.obj().unit_files_count();
+                self.obj().set_unit_files_count(count + 1);
+            }
         }
     }
 
@@ -1625,11 +1682,19 @@ impl UnitListPanelImp {
     }
 
     fn process_signals(&self) {
-        glib::spawn_future_local(async move { runtime().spawn(batch()).await });
+        let list_panel = self.obj().clone();
+        glib::spawn_future_local(async move {
+            let (sender, mut receiver) = mpsc::channel(100);
+            let _handle = runtime().spawn(async { unit_load_batch(sender).await });
+            while let Some(signal) = receiver.recv().await {
+                println!("AA {:?}", signal);
+                list_panel.imp().manage_unit_new_remove(signal);
+            }
+        });
     }
 }
 
-async fn batch() {
+async fn unit_load_batch(sender: mpsc::Sender<SystemdSignal>) {
     let systemd_signal_receiver: Receiver<systemd::SystemdSignal> =
         init_signal_watcher(UnitDBusLevel::Both).await;
 
@@ -1639,14 +1704,29 @@ async fn batch() {
         .filter(|batch_result| {
             matches!(
                 batch_result,
-                Ok(SystemdSignal::UnitNew(_, _, _)) | Ok(SystemdSignal::UnitRemoved(_, _, _))
+                Ok(SystemdSignal::UnitNew(_, _)) | Ok(SystemdSignal::UnitRemoved(_, _,))
             )
         })
-        .chunks_timeout(50, Duration::from_millis(500));
+        .chunks_timeout(100, Duration::from_millis(500));
 
     tokio::pin!(batch_stream);
-    while let Some(signal) = batch_stream.next().await {
-        info!("Signal Browser {:?}", signal);
+    while let Some(signals) = batch_stream.next().await {
+        let mut set = HashSet::with_capacity(signals.len());
+
+        for signal in signals.into_iter().filter_map(|result| result.ok()) {
+            let toggled = signal.toggle_unit();
+
+            //TODO check if it needs order
+            if !set.remove(&toggled) {
+                set.insert(toggled.toggle_unit());
+            }
+        }
+
+        for signal in set {
+            if let Err(err) = sender.send(signal).await {
+                warn!("Sender Unit New/Removed Error {:?}", err);
+            }
+        }
     }
 
     info!("Signal Browser End receiving signals")
