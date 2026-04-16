@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+import os
+
+import build_aux.build_common as bc
+
+os.chdir("..")
+
+bc.cmd_run(["cargo", "publish"], cwd="sysd-manager-base", on_fail_exit=False)
+bc.cmd_run(["cargo", "publish"], cwd="sysd-manager-comcontroler", on_fail_exit=False)
+bc.cmd_run(["cargo", "publish"], cwd=".")
