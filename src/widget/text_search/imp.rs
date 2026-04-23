@@ -5,7 +5,7 @@ use std::{
 
 use gettextrs::pgettext;
 use glib::WeakRef;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
 use regex::Regex;
 use tracing::{debug, info, warn};
 
@@ -435,6 +435,19 @@ impl ObjectSubclass for TextSearchBarImp {
 impl ObjectImpl for TextSearchBarImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let event_controller = gtk::EventControllerKey::new();
+
+        event_controller.connect_key_released(|controller, key, _keycode, _state| {
+            if key == gdk::Key::Escape
+                && let Some(search_entry) =
+                    controller.widget().and_downcast_ref::<gtk::SearchEntry>()
+            {
+                search_entry.set_text("");
+            }
+        });
+
+        self.search_entry.add_controller(event_controller);
     }
 }
 
