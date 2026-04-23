@@ -410,7 +410,6 @@ impl UnitListPanelImp {
         };
 
         let list_filter_clear_action_entry = {
-            //  let settings = settings.clone();
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_UNIT_LIST_FILTER_CLEAR)
                 .activate(move |_application: &AppWindow, _b, target_value| {
@@ -1687,7 +1686,7 @@ impl UnitListPanelImp {
             let (sender, mut receiver) = mpsc::channel(100);
             let _handle = runtime().spawn(async { unit_load_batch(sender).await });
             while let Some(signal) = receiver.recv().await {
-                println!("AA {:?}", signal);
+                info!("{:?}", signal);
                 list_panel.imp().manage_unit_new_remove(signal);
             }
         });
