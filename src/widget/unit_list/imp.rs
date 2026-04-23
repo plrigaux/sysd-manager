@@ -21,6 +21,7 @@ use crate::{
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
+        control_action_dialog::imp::complete_unit_information,
         preferences::data::{
             DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
             PREFERENCES,
@@ -73,7 +74,7 @@ use std::{
     sync::OnceLock,
     time::Duration,
 };
-use systemd::{SystemdSignal, init_signal_watcher, runtime};
+use systemd::{SystemdSignal, errors::SystemdErrors, init_signal_watcher, runtime};
 use tokio::{
     sync::{broadcast::Receiver, mpsc},
     task::AbortHandle,
@@ -778,7 +779,7 @@ impl UnitListPanelImp {
         if let Some(unit2) = self.units_map.borrow().get(&UnitKey::new(unit)) {
             self.unit.replace(Some(unit2.clone()));
         } else {
-            self.add_one_unit(unit);
+            self.add_one_unit(unit, true);
         }
 
         //Don't select and focus if filter out
@@ -875,7 +876,7 @@ impl UnitListPanelImp {
         };
 
         //TODO update unit info if add
-        self.add_one_unit(&unit);
+        self.add_one_unit(&unit, matches!(signal, SystemdSignal::UnitNew(_, _)));
     }
 
     fn can_add_unit_to_view(&self, view: UnitCuratedList, unit: &UnitInfo) -> bool {
@@ -912,35 +913,76 @@ impl UnitListPanelImp {
         }
     }
 
-    //TODO review logic
-    fn add_one_unit(&self, unit: &UnitInfo) {
+    fn add_one_unit(&self, unit: &UnitInfo, add_or_remove: bool) {
         let view = self.selected_list_view.get();
 
         if !self.can_add_unit_to_view(view, unit) {
             return;
         }
 
-        let Some(list_store) = self.list_store.get() else {
-            error!("list_store not initialized");
-            return;
-        };
+        let panel = self.obj().clone();
+        let unit = unit.clone();
 
-        let key = UnitKey::new(unit);
-        let mut unit_map = self.units_map.borrow_mut();
-        if let hash_map::Entry::Vacant(vacant_entry) = unit_map.entry(key) {
-            list_store.append(unit);
-            vacant_entry.insert(unit.clone());
+        //TODO need set of use cases to test
+        glib::spawn_future_local(async move {
+            if add_or_remove {
+                //FIXME not complete to the view (could miss some params)
+                let _result = complete_unit_information(&unit).await;
 
-            if LoadState::Loaded == unit.load_state() {
-                let count = self.obj().loaded_units_count();
-                self.obj().set_loaded_units_count(count + 1)
+                let key = UnitKey::new(&unit);
+                let mut unit_map = panel.imp().units_map.borrow_mut();
+                if let hash_map::Entry::Vacant(vacant_entry) = unit_map.entry(key) {
+                    let Some(list_store) = panel.imp().list_store.get() else {
+                        error!("list_store not initialized");
+                        return;
+                    };
+
+                    list_store.append(&unit);
+                    vacant_entry.insert(unit.clone());
+
+                    if LoadState::Loaded == unit.load_state() {
+                        let count = panel.loaded_units_count();
+                        panel.set_loaded_units_count(count - 1)
+                    }
+
+                    if unit.enable_status() != UnitFileStatus::Unknown {
+                        let count = panel.unit_files_count();
+                        panel.set_unit_files_count(count - 1);
+                    }
+                }
+            } else {
+                match systemd::get_unit_file_state(unit.dbus_level(), &unit.primary()) {
+                    Ok(state) => unit.set_enable_status(state),
+                    Err(SystemdErrors::ZFileNotFound(_)) => {
+                        let Some(list_store) = panel.imp().list_store.get() else {
+                            error!("list_store not initialized");
+                            return;
+                        };
+
+                        let unit_name = unit.primary();
+                        if let Some(position) = list_store.find_with_equal_func(|object| {
+                            let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
+                                error!("item.downcast_ref::<UnitInfo>()");
+                                return false;
+                            };
+
+                            unit_name == unit_item.primary()
+                        }) {
+                            list_store.remove(position);
+                        }
+
+                        let key = UnitKey::new(&unit);
+                        let mut unit_map = panel.imp().units_map.borrow_mut();
+                        unit_map.remove(&key);
+                        let count = panel.loaded_units_count();
+                        panel.set_loaded_units_count(count + 1);
+                        let count = panel.unit_files_count();
+                        panel.set_unit_files_count(count + 1);
+                    }
+                    Err(err) => warn!("{:?}", err),
+                }
             }
-
-            if unit.enable_status() != UnitFileStatus::Unknown {
-                let count = self.obj().unit_files_count();
-                self.obj().set_unit_files_count(count + 1);
-            }
-        }
+        });
     }
 
     pub fn selected_unit(&self) -> Option<UnitInfo> {

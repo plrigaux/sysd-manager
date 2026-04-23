@@ -46,6 +46,7 @@ pub enum SystemdErrors {
     InvalidPath(String),
     Timeout(Duration),
     JobRemoved(String),
+    ZFileNotFound(String),
 }
 
 impl SystemdErrors {
@@ -172,6 +173,9 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
                     }
                     "org.freedesktop.zbus.Error" => {
                         SystemdErrors::ZUnitMasked(method.to_owned(), message)
+                    }
+                    "org.freedesktop.DBus.Error.FileNotFound" => {
+                        SystemdErrors::ZFileNotFound(message)
                     }
                     _ => {
                         SystemdErrors::ZMethodError(method.to_owned(), err_code.to_owned(), message)
