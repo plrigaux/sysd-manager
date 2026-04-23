@@ -1,7 +1,7 @@
 use super::flatpak;
 use crate::{
     consts::{
-        ACTION_FIND_IN_TEXT, ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS,
+        ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SETTING_FIND_IN_TEXT_OPEN,
         UNIT_FILE_LINE_NUMBER_ACTION,
     },
     format2,
@@ -787,15 +787,12 @@ impl UnitFilePanelImp {
             create_drop_in_file_runtime,
             create_drop_in_file_permanent,
             revert_unit_file_full,
-            // unit_file_line_number,
-            // text_search_bar_action_entry,
             save_unit_file,
         ]);
 
         self.set_save_file_enable(false);
 
         let settings = systemd_gui::new_settings();
-
         let action = settings.create_action(&UNIT_FILE_LINE_NUMBER_ACTION[4..]);
         app_window.add_action(&action);
 
@@ -807,12 +804,12 @@ impl UnitFilePanelImp {
             )
             .build();
 
-        let action = settings.create_action(&ACTION_FIND_IN_TEXT[4..]);
+        // let action = settings.create_action_entry(&ACTION_FIND_IN_TEXT[4..]);
         app_window.add_action(&action);
 
         settings
             .bind::<gtk::SearchBar>(
-                &ACTION_FIND_IN_TEXT[4..],
+                SETTING_FIND_IN_TEXT_OPEN,
                 &self.text_search_bar,
                 "search-mode-enabled",
             )
@@ -1134,6 +1131,10 @@ impl UnitFilePanelImp {
         });
         Ok(())
     }
+
+    pub(crate) fn focus_text_search(&self) {
+        text_search::focus_on_text_entry(&self.text_search_bar)
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -1205,6 +1206,7 @@ impl ObjectImpl for UnitFilePanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             false,
+            text_search::PanelID::File,
         );
 
         let settings = systemd_gui::new_settings();
@@ -1217,7 +1219,7 @@ impl ObjectImpl for UnitFilePanelImp {
             )
             .build();
 
-        let ts_item = text_search::create_menu_item();
+        let ts_item = text_search::create_menu_item(text_search::PanelID::File);
         let menu = gio::Menu::new();
 
         // Show Line Number Menu Item

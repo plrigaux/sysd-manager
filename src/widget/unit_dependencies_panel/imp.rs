@@ -14,7 +14,7 @@ use gtk::{
 };
 
 use crate::{
-    consts::ACTION_FIND_IN_TEXT,
+    consts::SETTING_FIND_IN_TEXT_OPEN,
     systemd::{
         Dependency,
         data::UnitInfo,
@@ -325,6 +325,10 @@ impl UnitDependenciesPanelImp {
             _ => {}
         }
     }
+
+    pub(crate) fn focus_text_search(&self) {
+        text_search::focus_on_text_entry(&self.text_search_bar)
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -379,13 +383,14 @@ impl ObjectImpl for UnitDependenciesPanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             true,
+            text_search::PanelID::Dependencies,
         );
 
         let settings = systemd_gui::new_settings();
 
         settings
             .bind::<gtk::SearchBar>(
-                &ACTION_FIND_IN_TEXT[4..],
+                SETTING_FIND_IN_TEXT_OPEN,
                 &self.text_search_bar,
                 "search-mode-enabled",
             )

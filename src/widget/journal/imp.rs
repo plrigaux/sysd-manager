@@ -21,7 +21,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::{
     consts::{
-        ACTION_FIND_IN_TEXT, APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING,
+        APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING, SETTING_FIND_IN_TEXT_OPEN,
     },
     systemd::{
         BootFilter,
@@ -45,7 +45,7 @@ use crate::{
         preferences::data::{
             KEY_PREF_JOURNAL_DISPLAY_FOLLOW, KEY_PREF_JOURNAL_DISPLAY_ORDER, PREFERENCES,
         },
-        text_search::{self},
+        text_search::{self, PanelID},
     },
 };
 
@@ -714,7 +714,7 @@ impl JournalPanelImp {
         self.continuous_switch.set_state(false);
 
         let text_view = self.journal_text_view.borrow();
-        text_search::update_text_view(&self.text_search_bar, &text_view, true);
+        text_search::update_text_view(&self.text_search_bar, &text_view, true, PanelID::Journal);
     }
 
     fn clean_refresh(&self) {
@@ -730,6 +730,10 @@ impl JournalPanelImp {
             //filter updated
             self.clean_refresh();
         }
+    }
+
+    pub(crate) fn focus_text_search(&self) {
+        text_search::focus_on_text_entry(&self.text_search_bar)
     }
 }
 
@@ -790,11 +794,12 @@ impl ObjectImpl for JournalPanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             false,
+            PanelID::Journal,
         );
 
         settings
             .bind::<gtk::SearchBar>(
-                &ACTION_FIND_IN_TEXT[4..],
+                SETTING_FIND_IN_TEXT_OPEN,
                 &self.text_search_bar,
                 "search-mode-enabled",
             )

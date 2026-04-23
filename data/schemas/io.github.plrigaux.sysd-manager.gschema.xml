@@ -322,7 +322,7 @@
       <default>true</default>
       <summary>Show the line number of the unit file editor</summary>
     </key>
-    <key name="find-in-text-panel" type="b">
+    <key name="find-in-text-panel-open" type="b">
       <default>false</default>
       <summary>Show the search text panel</summary>
     </key>

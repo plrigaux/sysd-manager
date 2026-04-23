@@ -3,10 +3,10 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU,
-        ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT,
-        ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, DESTRUCTIVE_ACTION,
-        SUGGESTED_ACTION,
+        ACTION_FIND_IN_TEXT_OPEN, ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE,
+        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT,
+        ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY,
+        DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT_OPEN, SUGGESTED_ACTION,
     },
     format2, systemd_gui,
     utils::{
@@ -19,6 +19,7 @@ use crate::{
         journal::JournalPanel,
         preferences::data::{KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, PREFERENCES},
         set_favorite_info,
+        text_search::PanelID,
         unit_dependencies_panel::UnitDependenciesPanel,
         unit_file_panel::UnitFilePanel,
         unit_info::UnitInfoPanel,
@@ -259,6 +260,40 @@ impl UnitControlPanelImpl {
                 .build()
         };
 
+        let find_in_text = {
+            let control_panel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_OPEN[4..])
+                .activate(move |_application: &AppWindow, _, p| {
+                    let settings = systemd_gui::new_settings();
+                    let value = settings.boolean(SETTING_FIND_IN_TEXT_OPEN);
+                    if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, !value) {
+                        warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
+                    }
+
+                    if !value {
+                        let panel: PanelID = p.into();
+
+                        match panel {
+                            PanelID::Info => {
+                                control_panel.imp().unit_info_panel.focus_text_search()
+                            }
+                            PanelID::Dependencies => control_panel
+                                .imp()
+                                .unit_dependencies_panel
+                                .focus_text_search(),
+                            PanelID::File => {
+                                control_panel.imp().unit_file_panel.focus_text_search()
+                            }
+                            PanelID::Journal => {
+                                control_panel.imp().unit_journal_panel.focus_text_search()
+                            }
+                        }
+                    }
+                })
+                .parameter_type(Some(glib::VariantTy::BYTE))
+                .build()
+        };
+
         app_window.add_action_entries([
             action_start_unit,
             action_stop_unit,
@@ -266,6 +301,7 @@ impl UnitControlPanelImpl {
             action_reload_unit,
             action_favorite_set,
             action_unit_has_reload,
+            find_in_text,
         ]);
 
         //Disable buttons

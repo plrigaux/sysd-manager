@@ -1,6 +1,6 @@
 use super::construct_info::fill_all_info;
 use crate::{
-    consts::{ACTION_FIND_IN_TEXT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, *},
+    consts::{ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, SETTING_FIND_IN_TEXT_OPEN, *},
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
     utils::{
@@ -155,11 +155,6 @@ impl UnitInfoPanelImp {
             activator,
         );
 
-        let text_search_bar_action_entry =
-            text_search::create_action_entry(&self.text_search_bar, ACTION_FIND_IN_TEXT);
-
-        app_window.add_action_entries([text_search_bar_action_entry]);
-
         if self.app_window.set(app_window.clone()).is_err() {
             warn!("Set only once");
         }
@@ -204,6 +199,10 @@ impl UnitInfoPanelImp {
         };
         self.unit_info_textview.set_wrap_mode(wrap_mode);
     }
+
+    pub(crate) fn focus_text_search(&self) {
+        text_search::focus_on_text_entry(&self.text_search_bar)
+    }
 }
 
 // The central trait for subclassing a GObject
@@ -244,11 +243,12 @@ impl ObjectImpl for UnitInfoPanelImp {
             &self.text_search_bar,
             &self.find_text_button,
             true,
+            text_search::PanelID::Info,
         );
 
         settings
             .bind::<gtk::SearchBar>(
-                &ACTION_FIND_IN_TEXT[4..],
+                SETTING_FIND_IN_TEXT_OPEN,
                 &self.text_search_bar,
                 "search-mode-enabled",
             )

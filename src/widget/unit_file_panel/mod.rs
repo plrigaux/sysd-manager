@@ -25,6 +25,10 @@ impl UnitFilePanel {
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         self.imp().set_inter_message(action);
     }
+
+    pub fn focus_text_search(&self) {
+        self.imp().focus_text_search()
+    }
 }
 
 impl Default for UnitFilePanel {

@@ -1,12 +1,15 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gettextrs::pgettext;
-use glib::object::{CastNone, ObjectExt};
+use glib::{
+    object::{CastNone, ObjectExt},
+    variant::ToVariant,
+};
 use gtk::{
     glib,
     prelude::{TextViewExt, WidgetExt},
 };
 
-use crate::{consts::ACTION_FIND_IN_TEXT, widget::app_window::AppWindow};
+use crate::consts::ACTION_FIND_IN_TEXT_OPEN;
 mod imp;
 
 glib::wrapper! {
@@ -46,11 +49,13 @@ impl TextSearchBar {
     }
 }
 
-pub fn create_menu_item() -> gio::MenuItem {
+pub fn create_menu_item(id: PanelID) -> gio::MenuItem {
     // Find in text Menu item
     let menu_label = pgettext("text_find", "Find in Text");
 
-    gio::MenuItem::new(Some(&menu_label), Some(ACTION_FIND_IN_TEXT))
+    let mi = gio::MenuItem::new(Some(&menu_label), None);
+    mi.set_action_and_target_value(Some(ACTION_FIND_IN_TEXT_OPEN), Some(&id.to_variant()));
+    mi
 }
 
 pub fn text_search_construct(
@@ -58,15 +63,14 @@ pub fn text_search_construct(
     text_search_bar: &gtk::SearchBar,
     find_text_button: &gtk::ToggleButton,
     add_menu: bool,
+    id: PanelID,
 ) {
-    add_menu_fn(text_view, add_menu);
+    add_menu_fn(text_view, add_menu, id);
 
     let text_search_bar_content = TextSearchBar::new(text_view);
 
     text_search_bar.set_child(Some(&text_search_bar_content));
 
-    //find_text_button.set_action_target(Some(&format!("win.{action_name_base}")));
-    //find_text_button.set_action_target_value(Some(&true.to_variant()));
     find_text_button
         .bind_property("active", text_search_bar, "search-mode-enabled")
         .bidirectional()
@@ -101,21 +105,22 @@ pub fn update_text_view(
     text_search_bar: &gtk::SearchBar,
     text_view: &gtk::TextView,
     add_menu: bool,
+    id: PanelID,
 ) {
-    add_menu_fn(text_view, add_menu);
+    add_menu_fn(text_view, add_menu, id);
 
     if let Some(search_bar) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
         search_bar.imp().set_text_view(text_view);
     }
 }
 
-fn add_menu_fn(text_view: &gtk::TextView, add_menu: bool) {
+fn add_menu_fn(text_view: &gtk::TextView, add_menu: bool, id: PanelID) {
     if !add_menu {
         return;
     }
 
     let menu = gio::Menu::new();
-    let item = create_menu_item();
+    let item = create_menu_item(id);
     menu.append_item(&item);
 
     let menu_sec = gio::Menu::new();
@@ -135,24 +140,44 @@ pub fn new_added_text(
     }
 }
 
-pub fn create_action_entry(
-    text_search_bar: &gtk::SearchBar,
-    action_name: &str,
-) -> gio::ActionEntry<AppWindow> {
-    let text_search_bar = text_search_bar.clone();
-    //let is_search_mode = !text_search_bar.is_search_mode();
-    let text_search_bar_action_entry: gio::ActionEntry<AppWindow> =
-        gio::ActionEntry::builder(action_name)
-            .activate(move |_app_window: &AppWindow, _simple_action, _variant| {
-                //if let Some(state) = simple_action.state()
-                //    && let Some(state) = state.get::<bool>()
-                //{
-                text_search_bar.set_search_mode(true);
-                if let Some(search) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
-                    search.grab_focus_on_search_entry();
-                }
-            })
-            .build();
+pub enum PanelID {
+    Info,
+    Dependencies,
+    File,
+    Journal,
+}
 
-    text_search_bar_action_entry
+impl PanelID {
+    fn to_variant(&self) -> glib::Variant {
+        match self {
+            PanelID::Info => 1_u8.to_variant(),
+            PanelID::Dependencies => 2_u8.to_variant(),
+            PanelID::File => 3_u8.to_variant(),
+            PanelID::Journal => 4_u8.to_variant(),
+        }
+    }
+}
+
+impl From<Option<&glib::Variant>> for PanelID {
+    fn from(value: Option<&glib::Variant>) -> Self {
+        if let Some(variant) = value
+            && let Some(val) = variant.get::<u8>()
+        {
+            match val {
+                1 => PanelID::Info,
+                2 => PanelID::Dependencies,
+                3 => PanelID::File,
+                4 => PanelID::Journal,
+                _ => PanelID::Info,
+            }
+        } else {
+            Self::Info
+        }
+    }
+}
+
+pub fn focus_on_text_entry(text_search_bar: &gtk::SearchBar) {
+    if let Some(search) = text_search_bar.child().and_downcast_ref::<TextSearchBar>() {
+        search.grab_focus_on_search_entry();
+    }
 }

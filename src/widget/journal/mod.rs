@@ -33,6 +33,10 @@ impl JournalPanel {
     pub fn register(&self, app_window: &AppWindow) {
         self.imp().register(app_window);
     }
+
+    pub fn focus_text_search(&self) {
+        self.imp().focus_text_search()
+    }
 }
 
 impl Default for JournalPanel {
