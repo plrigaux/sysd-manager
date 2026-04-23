@@ -326,5 +326,10 @@
       <default>false</default>
       <summary>Show the search text panel</summary>
     </key>
+    <key name="pref-proxy-controls-always-shows-start-stop" type="b">
+      <default>false</default>
+      <summary>Always shows Start and Stop Buttons</summary>
+      <description>Always shows Start and Stop Buttons, otherwise those buttons are displayed according to context</description>
+    </key>
   </schema>
 </schemalist>

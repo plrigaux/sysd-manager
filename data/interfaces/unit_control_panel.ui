@@ -120,6 +120,7 @@
             <property name="visible">False</property>
             <child>
               <object class="AdwButtonContent">
+                <property name="can-shrink">True</property>
                 <property name="icon-name">arrow-circular-top-left-symbolic</property>
                 <property name="label" translatable="yes" context="controls">Reload Unit</property>
               </object>

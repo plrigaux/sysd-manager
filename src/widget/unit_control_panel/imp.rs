@@ -8,15 +8,19 @@ use crate::{
         ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, DESTRUCTIVE_ACTION,
         SUGGESTED_ACTION,
     },
-    format2,
+    format2, systemd_gui,
     utils::{
         font_management::{self, FONT_CONTEXT, create_provider},
         palette::{dark_blue, dark_red},
     },
     widget::{
-        InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
-        preferences::data::PREFERENCES, set_favorite_info,
-        unit_dependencies_panel::UnitDependenciesPanel, unit_file_panel::UnitFilePanel,
+        InterPanelMessage,
+        app_window::AppWindow,
+        journal::JournalPanel,
+        preferences::data::{KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, PREFERENCES},
+        set_favorite_info,
+        unit_dependencies_panel::UnitDependenciesPanel,
+        unit_file_panel::UnitFilePanel,
         unit_info::UnitInfoPanel,
     },
 };
@@ -29,7 +33,7 @@ use gtk::{
     pango::{self, FontDescription},
 };
 use std::{
-    cell::{OnceCell, RefCell},
+    cell::{Cell, OnceCell, RefCell},
     rc::Rc,
 };
 use strum::IntoEnumIterator;
@@ -110,6 +114,8 @@ pub struct UnitControlPanelImpl {
     pub restart_mode: RefCell<String>,
     #[property(get, set)]
     pub reload_unit_mode: RefCell<String>,
+    #[property(get, set=Self::set_always_shows_start_stop)]
+    pub always_shows_start_stop: Cell<bool>,
 
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
 }
@@ -587,14 +593,29 @@ impl UnitControlPanelImpl {
             | ActiveState::Refreshing => {
                 self.stop_button.add_css_class(DESTRUCTIVE_ACTION);
                 self.start_button.remove_css_class(SUGGESTED_ACTION);
+
+                if !self.always_shows_start_stop.get() {
+                    self.start_button.set_visible(false);
+                    self.stop_button.set_visible(true);
+                }
             }
             ActiveState::Inactive | ActiveState::Deactivating => {
                 self.stop_button.remove_css_class(DESTRUCTIVE_ACTION);
                 self.start_button.add_css_class(SUGGESTED_ACTION);
+
+                if !self.always_shows_start_stop.get() {
+                    self.start_button.set_visible(true);
+                    self.stop_button.set_visible(false);
+                }
             }
             _ => {
                 self.stop_button.remove_css_class(DESTRUCTIVE_ACTION);
                 self.start_button.remove_css_class(SUGGESTED_ACTION);
+
+                if !self.always_shows_start_stop.get() {
+                    self.start_button.set_visible(true);
+                    self.stop_button.set_visible(true);
+                }
             }
         }
     }
@@ -775,6 +796,17 @@ impl UnitControlPanelImpl {
         self.favorite_button.set_icon_name(favorite_icon);
         self.favorite_button.set_tooltip_markup(Some(&tooltip));
     }
+
+    fn set_always_shows_start_stop(&self, value: bool) {
+        self.always_shows_start_stop.set(value);
+
+        if self.always_shows_start_stop.get() {
+            self.start_button.set_visible(true);
+            self.stop_button.set_visible(true);
+        } else if let Some(unit) = self.current_unit.borrow().as_ref() {
+            self.highlight_controls(unit);
+        }
+    }
 }
 
 #[glib::derived_properties]
@@ -852,6 +884,16 @@ impl ObjectImpl for UnitControlPanelImpl {
 
             FONT_CONTEXT.set_font_description(font_description);
         }
+
+        let settings = systemd_gui::new_settings();
+
+        settings
+            .bind::<UnitControlPanel>(
+                KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
+                &self.obj(),
+                "always-shows-start-stop",
+            )
+            .build();
     }
 }
 

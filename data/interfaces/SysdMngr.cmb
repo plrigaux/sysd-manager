@@ -2,7 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 1.0 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1,webkitgtk-6.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="c63fa121d73edca49dffad042d2374c460037dd980c68684727fa84059328045"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="19c241edccb89097cfe2c33b0ce32e716d13015129aadedbde75864de2731f1e"/>
   <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="15e82db0a0511c32e06aaf27e9b7b992ffa4b53b22e18b0349a827ad6825ccc0"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="0e6be0848d8fa2d2e5cc646a013d88382bcafdf5d0c45f839df01210cd3897b6"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="280a1350902b2712327d4abc490ee9a59b0ae137fc13082c8ee034be1cc69e13"/>
@@ -25,7 +25,7 @@
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="5e4b623bcc4ae44d681a338d49f85cd2a8d088c349e57650769ec4c50e603be5"/>
   <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="9e887a54bc541f83f447a59bc0b7a7df96ef9749d6f590d83f8bfdb106b47e29"/>
   <ui template-class="TextFind" filename="text_find.ui" sha256="f0a15764374590cb98523c7aabc14dc930ef3cf0f8ddcca91e5becd81707e275"/>
-  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="df75e674643b7b39120f6fa750538c550bd49b58e19fae1f8b415e92c0dd7556">
+  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="d608e128a99bafdd4d6146578a2ca9811c0f3bb3e346f7fb6bad9e13855a3c12">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>

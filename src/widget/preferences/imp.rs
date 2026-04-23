@@ -10,7 +10,9 @@ use super::data::{
 };
 use crate::consts::{KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_FILE_LINE_NUMBER_ACTION};
 use crate::widget::InterPanelMessage;
-use crate::widget::preferences::data::KEY_PREF_CASE_INSENSITIVE_DEFAULT;
+use crate::widget::preferences::data::{
+    KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
+};
 use crate::{
     consts::ADWAITA,
     systemd_gui::new_settings,
@@ -125,6 +127,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     stop_proxy_at_close_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    unit_always_show_start_stop_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     filter_case_insensitive_default_switch: TemplateChild<adw::SwitchRow>,
@@ -504,6 +509,14 @@ impl ObjectImpl for PreferencesDialogImpl {
             .bind(
                 KEY_PREF_CASE_INSENSITIVE_DEFAULT,
                 &self.filter_case_insensitive_default_switch.get(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
+                self.unit_always_show_start_stop_switch.as_ref(),
                 "active",
             )
             .build();

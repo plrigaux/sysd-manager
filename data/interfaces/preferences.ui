@@ -112,6 +112,12 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
                 <property name="title" translatable="yes" context="preference" comments="title">Wrap unit description text</property>
               </object>
             </child>
+            <child>
+              <object class="AdwSwitchRow" id="unit_always_show_start_stop_switch">
+                <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Otherwise those buttons are displayed according to context</property>
+                <property name="title" translatable="yes" context="preference" comments="title">Always shows Start and Stop Buttons</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
