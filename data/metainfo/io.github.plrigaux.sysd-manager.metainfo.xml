@@ -29,6 +29,10 @@
     <keyword translate="no">rust</keyword>
     <keyword translate="no">Systemd</keyword>
   </keywords>
+  <requires>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </requires>
   <screenshots>
     <screenshot type="default">
       <image type="source">
@@ -82,13 +86,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.19.1" date="2026-04-24">
+    <release version="2.19.2" date="2026-04-24">
       <description translate="no">
         <p>Added</p>
         <ul>
           <li>Esc key to clear Text Search and Unit Search Entries [Issue 46] and [Issue 49]</li>
           <li>Unit browser add or remove units when loaded in systemd</li>
           <li>Transaltion strings</li>
+          <li>Add Open Find in Text shortcut</li>
         </ul>
         <p>Changed</p>
         <ul>
@@ -96,10 +101,11 @@ https://hughsie.github.io/oars/index.html
         </ul>
         <p>Fixed</p>
         <ul>
+          <li>Fix Unit File List</li>
           <li>UX Ellipsize File Link [Issue 51]</li>
           <li>UX better separation between tab navigator and bellow context [Issue 47]</li>
           <li>UX Text Search Entry get focus when Text Search Panel Open [Issue 46]</li>
-          <li>UX Make Space ratio between the unit browser and the content to persist in all time [Issue 52]</li>
+          <li>UX Make Space ratio between the unit browser and the content to persist in all time [Issue 52] and [Issue 53]</li>
         </ul>
       </description>
     </release>
