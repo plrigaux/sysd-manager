@@ -942,12 +942,16 @@ impl UnitListPanelImp {
 
                     if LoadState::Loaded == unit.load_state() {
                         let count = panel.loaded_units_count();
-                        panel.set_loaded_units_count(count - 1)
+                        if count > 0 {
+                            panel.set_loaded_units_count(count - 1)
+                        }
                     }
 
                     if unit.enable_status() != UnitFileStatus::Unknown {
                         let count = panel.unit_files_count();
-                        panel.set_unit_files_count(count - 1);
+                        if count > 0 {
+                            panel.set_unit_files_count(count - 1);
+                        }
                     }
                 }
             } else {
