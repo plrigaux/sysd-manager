@@ -30,14 +30,11 @@ impl UnitListSearchControls {
 }
 
 mod imp {
-    use std::cell::OnceCell;
-
-    use gtk::{glib, prelude::*, subclass::prelude::*};
-    use tracing::{debug, error};
-
-    use crate::widget::unit_list::UnitListPanel;
-
     use super::UnitListSearchControls;
+    use crate::widget::unit_list::UnitListPanel;
+    use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
+    use std::cell::OnceCell;
+    use tracing::{debug, error};
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_list_search.ui")]
@@ -138,6 +135,19 @@ mod imp {
             self.signal_handler_text_changed
                 .set(signal_handler_id)
                 .expect("Search entry handler set once");
+
+            let event_controller = gtk::EventControllerKey::new();
+
+            event_controller.connect_key_released(|controller, key, _keycode, _state| {
+                if key == gdk::Key::Escape
+                    && let Some(search_entry) =
+                        controller.widget().and_downcast_ref::<gtk::SearchEntry>()
+                {
+                    search_entry.set_text("");
+                }
+            });
+
+            self.search_entry.add_controller(event_controller);
         }
     }
 

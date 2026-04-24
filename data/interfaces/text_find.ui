@@ -47,7 +47,7 @@
         <property name="css-classes">dimmed</property>
         <property name="margin-end">5</property>
         <property name="margin-start">5</property>
-        <property name="width-request">25</property>
+        <property name="width-request">45</property>
       </object>
     </child>
     <child>
