@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-16 12:00-0400\n"
-"PO-Revision-Date: 2026-04-09 14:03+0000\n"
+"PO-Revision-Date: 2026-04-24 03:52+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -1001,7 +1001,6 @@ msgstr "Afficher la liste originale de SysD Manager"
 
 #. subtitle
 #: data/interfaces/shortcuts.ui:114
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display only Loaded Units"
 msgstr "Afficher les unités chargées"
@@ -1013,10 +1012,9 @@ msgstr "Afficher les unités chargées"
 
 #. subtitle
 #: data/interfaces/shortcuts.ui:121
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display only Unit Files"
-msgstr "Afficher les fichiers d'unité"
+msgstr "Afficher seulement les fichiers d'unité"
 
 #: data/interfaces/shortcuts.ui:122
 msgctxt "shortcut window"
@@ -1029,16 +1027,15 @@ msgid "Display User Customised Units list"
 msgstr "Afficher la liste personnalisé par l'utilisateur"
 
 #: data/interfaces/shortcuts.ui:134
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Favorite Units"
-msgstr "Afficher les unités chargées"
+msgstr "Afficher les unités favorites"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:141
 msgctxt "shortcut window"
 msgid "Special Lists"
-msgstr ""
+msgstr "Listes spéciales"
 
 #: data/interfaces/shortcuts.ui:145
 msgctxt "shortcut window"
@@ -1051,16 +1048,14 @@ msgid "Display Sockets"
 msgstr "Afficher les sockets"
 
 #: data/interfaces/shortcuts.ui:157
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Paths"
-msgstr "Afficher les sockets"
+msgstr "Afficher les paths"
 
 #: data/interfaces/shortcuts.ui:163
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Automounts"
-msgstr "Automounts"
+msgstr "Afficher les Automounts"
 
 #. button
 #: data/interfaces/side_control_panel.ui:22
@@ -1371,10 +1366,9 @@ msgid "Restart"
 msgstr "Redémarrer"
 
 #: data/interfaces/unit_control_panel.ui:109
-#, fuzzy
 msgctxt "control tooltip"
 msgid "Reload Unit Modes"
-msgstr "Recharger l'unité"
+msgstr "Recharger les modes d'unité"
 
 #. unit popup menu
 #: data/interfaces/unit_control_panel.ui:124
