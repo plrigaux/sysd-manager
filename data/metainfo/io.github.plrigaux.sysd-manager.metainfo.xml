@@ -82,12 +82,13 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.19.0" date="2026-04-24">
+    <release version="2.19.1" date="2026-04-24">
       <description translate="no">
         <p>Added</p>
         <ul>
           <li>Esc key to clear Text Search and Unit Search Entries [Issue 46] and [Issue 49]</li>
           <li>Unit browser add or remove units when loaded in systemd</li>
+          <li>Transaltion strings</li>
         </ul>
         <p>Changed</p>
         <ul>
