@@ -1,9 +1,3 @@
-use std::{
-    borrow::Cow,
-    cell::{Cell, OnceCell, Ref, RefCell, RefMut},
-    rc::Rc,
-};
-
 use crate::{
     consts::{
         ACTION_DAEMON_RELOAD, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR,
@@ -26,18 +20,18 @@ use crate::{
     },
 };
 use adw::subclass::prelude::*;
-use glib::{self, VariantTy, types::StaticType};
+use glib::{self, VariantTy, closure::IntoClosureReturnValue, types::StaticType, value::ToValue};
 use gtk::{
-    gio::{
-        self,
-        prelude::{ActionMapExtManual, SettingsExt},
-    },
-    prelude::{
-        GtkApplicationExt, GtkWindowExt, OrientableExt, ToVariant, ToggleButtonExt, WidgetExt,
-    },
+    gio::{self, prelude::*},
+    prelude::*,
+};
+use std::{
+    borrow::Cow,
+    cell::{Cell, OnceCell, Ref, RefCell, RefMut},
+    rc::Rc,
 };
 use strum::IntoEnumIterator;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -127,7 +121,7 @@ impl ObjectImpl for AppWindowImpl {
                 app_window.imp().set_orientation(window_panes_orientation);
             });
         }
-        self.load_window_size();
+        // self.load_window_size();
         let app_window = self.obj();
         self.unit_list_panel
             .register_selection_change(&app_window, &self.refresh_unit_list_button);
@@ -167,6 +161,72 @@ impl ObjectImpl for AppWindowImpl {
 
         self.unit_list_view_menubutton
             .set_menu_model(Some(&menu_views));
+
+        settings
+            .bind(WINDOW_WIDTH, self.obj().as_ref(), "default-width")
+            .mapping(move |variant, _| {
+                let width = variant.get::<i32>();
+
+                let w = if let Some(width) = width
+                    && width > 0
+                {
+                    width
+                } else {
+                    1280
+                };
+                Some(w.to_value())
+            })
+            .build();
+        settings
+            .bind(WINDOW_HEIGHT, self.obj().as_ref(), "default-height")
+            .mapping(move |variant, _| {
+                let height = variant.get::<i32>();
+
+                let h = if let Some(height) = height
+                    && height > 0
+                {
+                    height
+                } else {
+                    720
+                };
+                Some(h.to_value())
+            })
+            .build();
+        settings
+            .bind(IS_MAXIMIZED, self.obj().as_ref(), "maximized")
+            .build();
+
+        settings
+            .bind::<gtk::Paned>(PANED_SEPARATOR_POSITION, &self.paned, "position")
+            .build();
+        settings
+            .bind::<gtk::Paned>(WINDOW_PANES_ORIENTATION, &self.paned, "orientation")
+            .mapping(move |variant, _| {
+                let window_panes_orientation = variant.get::<String>();
+
+                let window_panes_orientation =
+                    if window_panes_orientation.as_deref() == Some(HORIZONTAL) {
+                        gtk::Orientation::Horizontal
+                    } else {
+                        gtk::Orientation::Vertical
+                    };
+
+                window_panes_orientation.into_closure_return_value()
+            })
+            .set_mapping(move |value, _| {
+                let orientation = value
+                    .get::<gtk::Orientation>()
+                    .inspect_err(|err| warn!("Conv error {:?}", err))
+                    .unwrap_or(gtk::Orientation::Vertical);
+
+                let window_panes_orientation = if orientation == gtk::Orientation::Horizontal {
+                    HORIZONTAL
+                } else {
+                    "vertical"
+                };
+                Some(window_panes_orientation.to_variant())
+            })
+            .build();
     }
 }
 
@@ -262,7 +322,7 @@ impl AppWindowImpl {
 }
 
 impl AppWindowImpl {
-    fn load_window_size(&self) {
+    /* fn load_window_size(&self) {
         // Get the window state from `settings`
         let settings = self.settings();
 
@@ -316,7 +376,7 @@ impl AppWindowImpl {
             gtk::Orientation::Vertical
         };
         self.set_orientation(window_panes_orientation);
-    }
+    } */
 
     #[allow(clippy::if_same_then_else)]
     fn set_orientation(&self, window_panes_orientation: gtk::Orientation) {
@@ -590,9 +650,9 @@ impl WindowImpl for AppWindowImpl {
         }
         // Save window size
         debug!("Close window");
-        if let Err(_err) = self.save_window_context() {
-            error!("Failed to save window state");
-        }
+        // if let Err(_err) = self.save_window_context() {
+        //     error!("Failed to save window state");
+        // }
 
         self.unit_list_panel.save_column_config();
 
