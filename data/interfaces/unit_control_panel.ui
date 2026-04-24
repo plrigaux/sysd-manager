@@ -161,10 +161,16 @@
         <child>
           <object class="AdwViewSwitcher">
             <property name="css-classes">separator</property>
-            <property name="margin-bottom">5</property>
+            <property name="margin-bottom">3</property>
             <property name="margin-end">5</property>
             <property name="policy">wide</property>
             <property name="stack">unit_panel_stack</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="margin-bottom">3</property>
+            <property name="margin-end">5</property>
           </object>
         </child>
         <child>
