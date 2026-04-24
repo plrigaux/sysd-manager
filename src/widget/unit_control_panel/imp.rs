@@ -632,6 +632,7 @@ impl UnitControlPanelImpl {
 
                 if !self.always_shows_start_stop.get() {
                     self.start_button.set_visible(false);
+                    self.restart_button.set_visible(true);
                     self.stop_button.set_visible(true);
                 }
             }
@@ -641,6 +642,7 @@ impl UnitControlPanelImpl {
 
                 if !self.always_shows_start_stop.get() {
                     self.start_button.set_visible(true);
+                    self.restart_button.set_visible(false);
                     self.stop_button.set_visible(false);
                 }
             }
@@ -650,6 +652,7 @@ impl UnitControlPanelImpl {
 
                 if !self.always_shows_start_stop.get() {
                     self.start_button.set_visible(true);
+                    self.restart_button.set_visible(true);
                     self.stop_button.set_visible(true);
                 }
             }
