@@ -43,14 +43,6 @@
       </object>
     </child>
     <child>
-      <object class="GtkLabel" id="search_result_label">
-        <property name="css-classes">dimmed</property>
-        <property name="margin-end">5</property>
-        <property name="margin-start">5</property>
-        <property name="width-request">45</property>
-      </object>
-    </child>
-    <child>
       <object class="GtkBox">
         <child>
           <object class="GtkButton" id="previous_match_button">
@@ -68,6 +60,15 @@
             <signal name="clicked" handler="on_next_match_clicked" swapped="True"/>
           </object>
         </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="search_result_label">
+        <property name="css-classes">dimmed</property>
+        <property name="ellipsize">end</property>
+        <property name="margin-end">5</property>
+        <property name="margin-start">5</property>
+        <property name="width-request">50</property>
       </object>
     </child>
   </template>

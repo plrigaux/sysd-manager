@@ -1219,7 +1219,8 @@ impl ObjectImpl for UnitFilePanelImp {
             )
             .build();
 
-        let ts_item = text_search::create_menu_item(text_search::PanelID::File);
+        let (toggle_find_text, open_find_text) =
+            text_search::create_menu_item(text_search::PanelID::File);
         let menu = gio::Menu::new();
 
         // Show Line Number Menu Item
@@ -1228,7 +1229,8 @@ impl ObjectImpl for UnitFilePanelImp {
         let mi = gio::MenuItem::new(Some(&menu_label), Some(UNIT_FILE_LINE_NUMBER_ACTION));
 
         menu.append_item(&mi);
-        menu.append_item(&ts_item);
+        menu.append_item(&toggle_find_text);
+        menu.append_item(&open_find_text);
 
         let menu_sec = gio::Menu::new();
         menu_sec.append_section(None, &menu);

@@ -21,8 +21,7 @@ impl UnitListSearchControls {
 
     pub fn grab_focus_on_search_entry(&self) {
         let search_entry = self.imp().search_entry.get();
-        let end_pos = search_entry.text().len();
-        search_entry.select_region(0, end_pos as i32);
+        search_entry.select_region(0, -1);
         search_entry.grab_focus();
     }
 

@@ -221,7 +221,9 @@ impl TextSearchBarImp {
     }
 
     pub(crate) fn grab_focus_on_search_entry(&self) {
-        self.search_entry.grab_focus();
+        let search_entry = self.search_entry.get();
+        search_entry.select_region(0, -1);
+        search_entry.grab_focus();
     }
 
     pub(super) fn new_find_in_text(&self) {

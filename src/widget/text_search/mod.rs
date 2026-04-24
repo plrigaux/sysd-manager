@@ -9,7 +9,7 @@ use gtk::{
     prelude::{TextViewExt, WidgetExt},
 };
 
-use crate::consts::ACTION_FIND_IN_TEXT_OPEN;
+use crate::consts::{ACTION_FIND_IN_TEXT_OPEN, ACTION_FIND_IN_TEXT_TOGGLE};
 mod imp;
 
 glib::wrapper! {
@@ -49,13 +49,17 @@ impl TextSearchBar {
     }
 }
 
-pub fn create_menu_item(id: PanelID) -> gio::MenuItem {
-    // Find in text Menu item
-    let menu_label = pgettext("text_find", "Find in Text");
+pub fn create_menu_item(id: PanelID) -> (gio::MenuItem, gio::MenuItem) {
+    // Toggle in text Menu item
+    let menu_label = pgettext("text_find", "Toggle Find in Text");
+    let mi_toggle = gio::MenuItem::new(Some(&menu_label), None);
+    mi_toggle.set_action_and_target_value(Some(ACTION_FIND_IN_TEXT_TOGGLE), Some(&id.to_variant()));
 
-    let mi = gio::MenuItem::new(Some(&menu_label), None);
-    mi.set_action_and_target_value(Some(ACTION_FIND_IN_TEXT_OPEN), Some(&id.to_variant()));
-    mi
+    // Open in text Menu item
+    let menu_label = pgettext("text_find", "Open Find in Text");
+    let mi_open = gio::MenuItem::new(Some(&menu_label), Some(ACTION_FIND_IN_TEXT_OPEN));
+
+    (mi_toggle, mi_open)
 }
 
 pub fn text_search_construct(
@@ -120,8 +124,9 @@ fn add_menu_fn(text_view: &gtk::TextView, add_menu: bool, id: PanelID) {
     }
 
     let menu = gio::Menu::new();
-    let item = create_menu_item(id);
-    menu.append_item(&item);
+    let (toggle, open) = create_menu_item(id);
+    menu.append_item(&toggle);
+    menu.append_item(&open);
 
     let menu_sec = gio::Menu::new();
 

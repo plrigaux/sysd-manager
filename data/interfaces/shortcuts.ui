@@ -51,6 +51,12 @@
             <property name="title" translatable="yes" context="shortcut window">Deamon Reload</property>
           </object>
         </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.find-in-text-panel-open</property>
+            <property name="title" translatable="yes" context="shortcut window">Open Find in Text</property>
+          </object>
+        </child>
       </object>
     </child>
     <child>

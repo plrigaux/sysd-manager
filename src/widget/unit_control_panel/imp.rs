@@ -3,10 +3,11 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_FIND_IN_TEXT_OPEN, ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE,
-        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT,
-        ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY,
-        DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT_OPEN, SUGGESTED_ACTION,
+        ACTION_FIND_IN_TEXT_OPEN, ACTION_FIND_IN_TEXT_TOGGLE, ACTION_WIN_FAVORITE_SET,
+        ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT,
+        ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT,
+        ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT_OPEN,
+        SUGGESTED_ACTION,
     },
     format2, systemd_gui,
     utils::{
@@ -45,6 +46,11 @@ use systemd::{
     errors::SystemdErrors,
 };
 use tracing::{debug, error, info, warn};
+
+const INFO_PAGE: &str = "info_page";
+const DEPENDENCIES_PAGE: &str = "dependencies_page";
+const JOURNAL_PAGE: &str = "journal_page";
+const DEFINITION_FILE_PAGE: &str = "definition_file_page";
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_control_panel.ui")]
@@ -260,10 +266,10 @@ impl UnitControlPanelImpl {
                 .build()
         };
 
-        let find_in_text = {
+        let find_in_text_toogle = {
             let control_panel = self.obj().clone();
-            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_OPEN[4..])
-                .activate(move |_application: &AppWindow, _, p| {
+            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_TOGGLE[4..])
+                .activate(move |_application: &AppWindow, _, target_value| {
                     let settings = systemd_gui::new_settings();
                     let value = settings.boolean(SETTING_FIND_IN_TEXT_OPEN);
                     if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, !value) {
@@ -271,7 +277,7 @@ impl UnitControlPanelImpl {
                     }
 
                     if !value {
-                        let panel: PanelID = p.into();
+                        let panel: PanelID = target_value.into();
 
                         match panel {
                             PanelID::Info => {
@@ -294,6 +300,38 @@ impl UnitControlPanelImpl {
                 .build()
         };
 
+        let find_in_text_open = {
+            let control_panel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_OPEN[4..])
+                .activate(move |_application: &AppWindow, _, _| {
+                    let settings = systemd_gui::new_settings();
+                    if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, true) {
+                        warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
+                    }
+
+                    match control_panel
+                        .imp()
+                        .unit_panel_stack
+                        .visible_child_name()
+                        .as_deref()
+                    {
+                        Some(INFO_PAGE) => control_panel.imp().unit_info_panel.focus_text_search(),
+                        Some(DEPENDENCIES_PAGE) => control_panel
+                            .imp()
+                            .unit_dependencies_panel
+                            .focus_text_search(),
+                        Some(DEFINITION_FILE_PAGE) => {
+                            control_panel.imp().unit_file_panel.focus_text_search()
+                        }
+                        Some(JOURNAL_PAGE) => {
+                            control_panel.imp().unit_journal_panel.focus_text_search()
+                        }
+                        _ => {}
+                    }
+                })
+                .build()
+        };
+
         app_window.add_action_entries([
             action_start_unit,
             action_stop_unit,
@@ -301,7 +339,8 @@ impl UnitControlPanelImpl {
             action_reload_unit,
             action_favorite_set,
             action_unit_has_reload,
-            find_in_text,
+            find_in_text_toogle,
+            find_in_text_open,
         ]);
 
         //Disable buttons
@@ -695,21 +734,21 @@ impl UnitControlPanelImpl {
     }
 
     pub(super) fn display_info_page(&self) {
-        self.unit_panel_stack.set_visible_child_name("info_page");
+        self.unit_panel_stack.set_visible_child_name(INFO_PAGE);
     }
 
     pub(super) fn display_dependencies_page(&self) {
         self.unit_panel_stack
-            .set_visible_child_name("dependencies_page");
+            .set_visible_child_name(DEPENDENCIES_PAGE);
     }
 
     pub(super) fn display_journal_page(&self) {
-        self.unit_panel_stack.set_visible_child_name("journal_page");
+        self.unit_panel_stack.set_visible_child_name(JOURNAL_PAGE);
     }
 
     pub fn display_definition_file_page(&self) {
         self.unit_panel_stack
-            .set_visible_child_name("definition_file_page");
+            .set_visible_child_name(DEFINITION_FILE_PAGE);
     }
 
     pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {

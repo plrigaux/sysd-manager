@@ -16,7 +16,7 @@
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="6e756a34e871dcc2202a9d9c9669092bb363e5c50d15c87fc1790922b9bda94e"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="881ddc53f3bc4393ea93a12c64aa8f31af4dd0aa5271db1ec1b154f83c169d6d"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="e0d2d4674d3093dee3ba739b22d837b7227c812b4de686c2ed360246f69c6138"/>
-  <ui filename="shortcuts.ui" sha256="ae48303dc7275c4fccc166bede495c32ca65ea67d7e6f1ee71803e8c984087d5"/>
+  <ui filename="shortcuts.ui" sha256="a16cb919a6f05bf49123067f1884ed5755606408f0a09b2a547e32554f1e155d"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="de993a2a8120c4003e4eb7e41b3456e335f01a91891ec043649b28d062c712c7"/>
   <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="ec9c621786d4a5adabd1c51d772dcb1e9e28bf36fc8139ebfa9498fcbd5e036e"/>
@@ -24,7 +24,7 @@
   <ui template-class="UnitPropertiesSelectionPanel" filename="unit_properties_selection.ui" sha256="11336e360ce23ac28dafc00effaf30e971893c0d7a9557e1c4c3edacc62acd0b"/>
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="5e4b623bcc4ae44d681a338d49f85cd2a8d088c349e57650769ec4c50e603be5"/>
   <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="9e887a54bc541f83f447a59bc0b7a7df96ef9749d6f590d83f8bfdb106b47e29"/>
-  <ui template-class="TextFind" filename="text_find.ui" sha256="25faa7d25c4d1ba39771549b8f7ece12f37616bab67ee2ec3a2691f8a7340607"/>
+  <ui template-class="TextFind" filename="text_find.ui" sha256="133b60df34d664c99f522e81c06758a2ad3330cce604c721df368842fe8b56ac"/>
   <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="7742b57fa3e53579179c704b8e1cb9c62290d707e22a1278777287327f344b2a">
     <requires>UnitInfoPanel</requires>
     <requires>UnitDependenciesPanel</requires>

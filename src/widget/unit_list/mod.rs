@@ -244,7 +244,7 @@ impl UnitCuratedList {
         match self {
             UnitCuratedList::Defaut => ["<Ctrl><Shift>d"],
             UnitCuratedList::LoadedUnit => ["<Ctrl><Shift>l"],
-            UnitCuratedList::UnitFiles => ["<Ctrl><Shift>F"],
+            UnitCuratedList::UnitFiles => ["<Ctrl><Shift>U"],
             UnitCuratedList::Timers => ["<Ctrl><Shift>t"],
             UnitCuratedList::Sockets => ["<Ctrl><Shift>S"],
             UnitCuratedList::Path => ["<Ctrl><Shift>p"],
