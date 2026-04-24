@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-23 23:40-0400\n"
-"PO-Revision-Date: 2026-04-24 03:52+0000\n"
+"PO-Revision-Date: 2026-04-24 03:59+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -650,13 +650,13 @@ msgstr "Renvoie automatique du text"
 #: data/interfaces/preferences.ui:117
 msgctxt "preference"
 msgid "Otherwise those buttons are displayed according to context"
-msgstr ""
+msgstr "Sinon, ces boutons s'affichent en fonction du contexte."
 
 #. title
 #: data/interfaces/preferences.ui:118
 msgctxt "preference"
 msgid "Always shows Start and Stop Buttons"
-msgstr ""
+msgstr "Affiche toujours les boutons Démarrer et Arrêter"
 
 #. group
 #: data/interfaces/preferences.ui:125
@@ -1265,7 +1265,6 @@ msgstr "Temps"
 
 #. column title
 #: data/interfaces/signals_window.ui:62
-#, fuzzy
 msgctxt "signals"
 msgid "Bus"
 msgstr "Bus"
