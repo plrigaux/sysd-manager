@@ -3,7 +3,7 @@ use crate::{
         ACTION_DAEMON_RELOAD, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR,
         ACTION_PROPERTIES_SELECTOR_GENERAL, ACTION_UNIT_PROPERTIES_DISPLAY,
         ACTION_WIN_REFRESH_UNIT_LIST, APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR_GENERAL,
-        APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
+        APP_ACTION_SEARCH_UNITS, APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
     },
     systemd::{data::UnitInfo, journal_data::Boot},
     systemd_gui::new_settings,
@@ -430,7 +430,7 @@ impl AppWindowImpl {
         let search_toggle_button = self.search_toggle_button.clone();
         let unit_list_panel = self.unit_list_panel.clone();
         let search_units: gio::ActionEntry<adw::Application> =
-            gio::ActionEntry::builder("search_units")
+            gio::ActionEntry::builder(&APP_ACTION_SEARCH_UNITS[4..])
                 .activate(move |_application: &adw::Application, _, _| {
                     if !search_toggle_button.is_active() {
                         search_toggle_button.activate();
@@ -576,7 +576,7 @@ impl AppWindowImpl {
             display_unit_properties,
         ]);
 
-        application.set_accels_for_action("app.search_units", &["<Ctrl>f"]);
+        application.set_accels_for_action(APP_ACTION_SEARCH_UNITS, &["<Ctrl>f"]);
         application.set_accels_for_action("app.open_info", &["<Ctrl>i"]);
         application.set_accels_for_action("app.open_dependencies", &["<Ctrl>d"]);
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);

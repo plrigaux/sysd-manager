@@ -1,7 +1,6 @@
-use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::{glib, prelude::WidgetExt};
-
 use super::UnitListPanel;
+use adw::subclass::prelude::ObjectSubclassIsExt;
+use gtk::{glib, prelude::*};
 
 glib::wrapper! {
     pub struct UnitListSearchControls(ObjectSubclass<imp::UnitListSearchControlsImp>)
@@ -21,7 +20,10 @@ impl UnitListSearchControls {
     }
 
     pub fn grab_focus_on_search_entry(&self) {
-        self.imp().search_entry.grab_focus();
+        let search_entry = self.imp().search_entry.get();
+        let end_pos = search_entry.text().len();
+        search_entry.select_region(0, end_pos as i32);
+        search_entry.grab_focus();
     }
 
     pub fn set_filter_is_set(&self, filter_is_set: bool) {
