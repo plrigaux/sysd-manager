@@ -50,11 +50,10 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use flagset::FlagSet;
-use glib::WeakRef;
 use gtk::{
     Adjustment, TemplateChild,
     gio::{self, glib::VariantTy},
-    glib::{self, Properties},
+    glib::{self, Properties, WeakRef},
     prelude::*,
     subclass::{
         box_::BoxImpl,
@@ -1862,11 +1861,14 @@ impl UnitListPanelImp {
                     UnitCuratedList::Automount => {
                         dbus_call!(int_level, handles, systemd::list_loaded_units_automounts)
                     }
+                    //UnitCuratedList::UnitFiles => {}
                     _ => {}
                 }
 
                 match view {
-                    UnitCuratedList::Defaut | UnitCuratedList::Custom => {
+                    UnitCuratedList::Defaut
+                    | UnitCuratedList::Custom
+                    | UnitCuratedList::UnitFiles => {
                         dbus_call!(int_level, handles, systemd::list_unit_files)
                     }
 
