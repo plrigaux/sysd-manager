@@ -35,6 +35,9 @@ pub const KEY_PREF_PROP_ORIENTATION_MODE: &str = "pref-window-properties-orienta
 pub const KEY_PREF_CASE_INSENSITIVE_DEFAULT: &str = "pref-case-insensitive-default";
 pub const KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP: &str =
     "pref-proxy-controls-always-shows-start-stop";
+const SIDE_BY_SIDE: &str = "side-by-side";
+const TOP_DOWN: &str = "top-down";
+const AUTO: &str = "auto";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter, glib::Enum)]
 #[enum_type(name = "DbusLevel")]
@@ -223,23 +226,23 @@ impl OrientationMode {
     pub fn icon_name(&self) -> Option<&str> {
         match self {
             OrientationMode::Automatic => None,
-            OrientationMode::ForceHorizontal => Some("side-by-side"),
-            OrientationMode::ForceVertical => Some("top-down"),
+            OrientationMode::ForceHorizontal => Some(SIDE_BY_SIDE),
+            OrientationMode::ForceVertical => Some(TOP_DOWN),
         }
     }
 
     pub fn key(&self) -> &str {
         match self {
-            OrientationMode::Automatic => "auto",
-            OrientationMode::ForceHorizontal => "side-by-side",
-            OrientationMode::ForceVertical => "top-down",
+            OrientationMode::Automatic => AUTO,
+            OrientationMode::ForceHorizontal => SIDE_BY_SIDE,
+            OrientationMode::ForceVertical => TOP_DOWN,
         }
     }
 
-    pub fn from_key(key: &str) -> Self {
+    fn from_key(key: &str) -> Self {
         match key {
-            "side-by-side" => OrientationMode::ForceHorizontal,
-            "top-down" => OrientationMode::ForceVertical,
+            SIDE_BY_SIDE => OrientationMode::ForceHorizontal,
+            TOP_DOWN => OrientationMode::ForceVertical,
             _ => OrientationMode::Automatic,
         }
     }
@@ -253,6 +256,24 @@ impl From<u32> for OrientationMode {
             2 => OrientationMode::ForceVertical,
             _ => OrientationMode::Automatic,
         }
+    }
+}
+
+impl From<&str> for OrientationMode {
+    fn from(value: &str) -> Self {
+        Self::from_key(value)
+    }
+}
+
+impl From<GString> for OrientationMode {
+    fn from(value: GString) -> Self {
+        Self::from_key(value.as_str())
+    }
+}
+
+impl From<String> for OrientationMode {
+    fn from(value: String) -> Self {
+        Self::from_key(value.as_str())
     }
 }
 

@@ -6,7 +6,7 @@ use crate::{
         APP_ACTION_SEARCH_UNITS, APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
     },
     systemd::{data::UnitInfo, journal_data::Boot},
-    systemd_gui::new_settings,
+    systemd_gui::{self},
     widget::{
         InterPanelMessage,
         info_window::InfoWindow,
@@ -27,7 +27,7 @@ use gtk::{
 };
 use std::{
     borrow::Cow,
-    cell::{Cell, OnceCell, Ref, RefCell, RefMut},
+    cell::{Cell, Ref, RefCell, RefMut},
     rc::Rc,
 };
 use strum::IntoEnumIterator;
@@ -39,12 +39,13 @@ const PANED_SEPARATOR_POSITION: &str = "paned-separator-position";
 const WINDOW_PANES_ORIENTATION: &str = "window-panes-orientation";
 const IS_MAXIMIZED: &str = "is-maximized";
 const HORIZONTAL: &str = "horizontal";
+const VERTICAL: &str = "vertical";
+const DEFAULT_WIDTH: i32 = 1280;
+const DEFAULT_HEIGHT: i32 = 720;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/app_window.ui")]
 pub struct AppWindowImpl {
-    settings: OnceCell<gio::Settings>,
-
     #[template_child]
     header_bar: TemplateChild<adw::HeaderBar>,
 
@@ -109,16 +110,14 @@ impl ObjectImpl for AppWindowImpl {
         self.parent_constructed();
 
         // Load latest window state
-        let settings = self.setup_settings();
+        let settings = systemd_gui::new_settings();
         {
             let app_window = self.obj().clone();
-            let paned = self.paned.clone();
-            settings.connect_changed(Some(KEY_PREF_ORIENTATION_MODE), move |settings, _key| {
-                let value = settings.string(KEY_PREF_ORIENTATION_MODE);
-                let orientation_mode = OrientationMode::from_key(&value);
+            settings.connect_changed(Some(KEY_PREF_ORIENTATION_MODE), move |settings, key| {
+                let value = settings.string(key);
+                let orientation_mode: OrientationMode = value.into();
                 app_window.imp().orientation_mode.set(orientation_mode);
-                let window_panes_orientation = paned.orientation();
-                app_window.imp().set_orientation(window_panes_orientation);
+                app_window.imp().set_orientation();
             });
         }
         // self.load_window_size();
@@ -147,13 +146,11 @@ impl ObjectImpl for AppWindowImpl {
         self.breakpoint.set_condition(Some(&condition));
 
         {
-            let paned = self.paned.clone();
             let app_window = self.obj().clone();
             self.breakpoint.connect_unapply(move |_breakpoint| {
                 debug!("connect_unapply");
 
-                let window_panes_orientation = paned.orientation();
-                app_window.imp().set_orientation(window_panes_orientation);
+                app_window.imp().set_orientation();
             });
         }
 
@@ -172,7 +169,7 @@ impl ObjectImpl for AppWindowImpl {
                 {
                     width
                 } else {
-                    1280
+                    DEFAULT_WIDTH
                 };
                 Some(w.to_value())
             })
@@ -187,7 +184,7 @@ impl ObjectImpl for AppWindowImpl {
                 {
                     height
                 } else {
-                    720
+                    DEFAULT_HEIGHT
                 };
                 Some(h.to_value())
             })
@@ -195,10 +192,33 @@ impl ObjectImpl for AppWindowImpl {
         settings
             .bind(IS_MAXIMIZED, self.obj().as_ref(), "maximized")
             .build();
+        {
+            let win = self.obj().clone();
+            settings
+                .bind::<gtk::Paned>(PANED_SEPARATOR_POSITION, &self.paned, "position")
+                .mapping(move |variant, _| {
+                    let pane_position = variant.get::<i32>();
 
-        settings
-            .bind::<gtk::Paned>(PANED_SEPARATOR_POSITION, &self.paned, "position")
-            .build();
+                    let pane_position = if let Some(pane_position) = pane_position
+                        && pane_position >= 0
+                    {
+                        pane_position
+                    } else {
+                        let (w, h) = win.default_size();
+                        let orientation = win.imp().paned.orientation();
+                        let w = if w < 0 { DEFAULT_WIDTH } else { w };
+                        let h = if h < 0 { DEFAULT_HEIGHT } else { h };
+                        if orientation == gtk::Orientation::Horizontal {
+                            h / 2
+                        } else {
+                            w / 2
+                        }
+                    };
+
+                    Some(pane_position.to_value())
+                })
+                .build();
+        }
         settings
             .bind::<gtk::Paned>(WINDOW_PANES_ORIENTATION, &self.paned, "orientation")
             .mapping(move |variant, _| {
@@ -222,7 +242,7 @@ impl ObjectImpl for AppWindowImpl {
                 let window_panes_orientation = if orientation == gtk::Orientation::Horizontal {
                     HORIZONTAL
                 } else {
-                    "vertical"
+                    VERTICAL
                 };
                 Some(window_panes_orientation.to_variant())
             })
@@ -232,22 +252,6 @@ impl ObjectImpl for AppWindowImpl {
 
 #[gtk::template_callbacks]
 impl AppWindowImpl {
-    fn setup_settings(&self) -> &gio::Settings {
-        let settings: gio::Settings = new_settings();
-
-        self.settings
-            .set(settings)
-            .expect("`settings` should not be set before calling `setup_settings`.");
-
-        self.settings()
-    }
-
-    fn settings(&self) -> &gio::Settings {
-        self.settings
-            .get()
-            .expect("`settings` should be set in `setup_settings`.")
-    }
-
     fn setup_dropdown(&self) {
         let model = adw::EnumListModel::new(DbusLevel::static_type());
 
@@ -266,7 +270,7 @@ impl AppWindowImpl {
         self.system_session_dropdown.set_model(Some(&model));
 
         {
-            let settings = self.settings().clone();
+            let settings = systemd_gui::new_settings();
 
             let level = PREFERENCES.dbus_level();
             self.system_session_dropdown.set_selected(level as u32);
@@ -294,7 +298,7 @@ impl AppWindowImpl {
         let (width, height) = obj.default_size();
 
         // Set the window state in `settings`
-        let settings = self.settings();
+        let settings = systemd_gui::new_settings();
 
         settings.set_int(WINDOW_WIDTH, width)?;
         settings.set_int(WINDOW_HEIGHT, height)?;
@@ -306,7 +310,7 @@ impl AppWindowImpl {
         let window_panes_orientation = if self.paned.orientation() == gtk::Orientation::Horizontal {
             HORIZONTAL
         } else {
-            "vertical"
+            VERTICAL
         };
 
         settings.set_string(WINDOW_PANES_ORIENTATION, window_panes_orientation)?;
@@ -378,8 +382,8 @@ impl AppWindowImpl {
         self.set_orientation(window_panes_orientation);
     } */
 
-    #[allow(clippy::if_same_then_else)]
-    fn set_orientation(&self, window_panes_orientation: gtk::Orientation) {
+    fn set_orientation(&self) {
+        let window_panes_orientation = self.paned.orientation();
         let orientation_mode = self.orientation_mode.get();
 
         let orientation = match orientation_mode {

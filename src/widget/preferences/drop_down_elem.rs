@@ -126,20 +126,14 @@ pub(super) fn build_pane_orientation_selector(
     settings
         .bind(KEY_PREF_ORIENTATION_MODE, app_orientation, "selected")
         .mapping(|variant, _| {
-            let orientation_mode_key = variant.get::<String>().unwrap();
-
-            let orientation_mode = OrientationMode::from_key(&orientation_mode_key);
-
-            let value = (orientation_mode as u32).to_value();
-
-            Some(value)
+            let orientation_mode_key = variant.get::<String>().unwrap_or_default();
+            let orientation_mode: OrientationMode = orientation_mode_key.into();
+            Some((orientation_mode as u32).to_value())
         })
         .set_mapping(|value, _| {
-            let drop_own_index = value.get::<u32>().unwrap();
+            let drop_own_index = value.get::<u32>().unwrap_or(0);
             let orientation_mode: OrientationMode = drop_own_index.into();
-            let variant = orientation_mode.key().to_variant();
-
-            Some(variant)
+            Some(orientation_mode.key().to_variant())
         })
         .build();
 }
