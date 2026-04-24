@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-16 12:00-0400\n"
+"POT-Creation-Date: 2026-04-23 23:40-0400\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -635,56 +635,68 @@ msgctxt "preference"
 msgid "Wrap unit description text"
 msgstr "Переносить текст описания юнита"
 
+#. subtitle
+#: data/interfaces/preferences.ui:117
+msgctxt "preference"
+msgid "Otherwise those buttons are displayed according to context"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:118
+msgctxt "preference"
+msgid "Always shows Start and Stop Buttons"
+msgstr ""
+
 #. group
-#: data/interfaces/preferences.ui:119
+#: data/interfaces/preferences.ui:125
 msgctxt "preference"
 msgid "Unit File"
 msgstr "Юнит-файл"
 
 #. subtitle
-#: data/interfaces/preferences.ui:122
+#: data/interfaces/preferences.ui:128
 msgctxt "preference"
 msgid "Display unit file line number"
 msgstr "Отображать номера строк юнит-файла"
 
 #. title
-#: data/interfaces/preferences.ui:123
+#: data/interfaces/preferences.ui:129
 msgctxt "preference"
 msgid "Line number"
 msgstr "Номер строки"
 
 #. subtitle
-#: data/interfaces/preferences.ui:128
+#: data/interfaces/preferences.ui:134
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr "Стиль подсветки юнит-файла"
 
 #. title
-#: data/interfaces/preferences.ui:129
+#: data/interfaces/preferences.ui:135
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr "Подсветка текста"
 
 #. subtitle
-#: data/interfaces/preferences.ui:139
+#: data/interfaces/preferences.ui:145
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr "Показывать логи с цветной подсветкой"
 
 #. title
-#: data/interfaces/preferences.ui:140
+#: data/interfaces/preferences.ui:146
 msgctxt "preference"
 msgid "Journal colors"
 msgstr "Цвета журнала"
 
 #. title
-#: data/interfaces/preferences.ui:161
+#: data/interfaces/preferences.ui:167
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr "Размер пакета событий журнала"
 
 #. subtitle
-#: data/interfaces/preferences.ui:174
+#: data/interfaces/preferences.ui:180
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -694,373 +706,373 @@ msgstr ""
 "<i>0 - без ограничений</i>"
 
 #. title
-#: data/interfaces/preferences.ui:177
+#: data/interfaces/preferences.ui:183
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Максимальный размер события журнала"
 
-#: data/interfaces/preferences.ui:194
+#: data/interfaces/preferences.ui:200
 #, fuzzy
 msgctxt "preference"
 msgid "_Proxy Preferences"
 msgstr "Показать настройки"
 
-#: data/interfaces/preferences.ui:200
+#: data/interfaces/preferences.ui:206
 msgid "Switch that controls other switches"
 msgstr ""
 
 #. group title
-#: data/interfaces/preferences.ui:208
+#: data/interfaces/preferences.ui:214
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
 msgstr ""
 
-#: data/interfaces/preferences.ui:211
-msgctxt "preference"
-msgid "<b>Start</b> method call through the Proxy"
-msgstr ""
-
-#: data/interfaces/preferences.ui:212
-#, fuzzy
-msgctxt "preference"
-msgid "Start"
-msgstr "Запустить"
-
 #: data/interfaces/preferences.ui:217
 msgctxt "preference"
-msgid "<b>Stop</b> method call through the Proxy"
+msgid "<b>Start</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:218
 #, fuzzy
 msgctxt "preference"
-msgid "Stop"
-msgstr "Остановить"
+msgid "Start"
+msgstr "Запустить"
 
 #: data/interfaces/preferences.ui:223
 msgctxt "preference"
-msgid "<b>Restart</b> method call through the Proxy"
+msgid "<b>Stop</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:224
 #, fuzzy
 msgctxt "preference"
-msgid "Restart"
-msgstr "Перезапустить"
+msgid "Stop"
+msgstr "Остановить"
 
 #: data/interfaces/preferences.ui:229
 msgctxt "preference"
-msgid "<b>Reload Unit</b> method call through the Proxy"
+msgid "<b>Restart</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:230
 #, fuzzy
 msgctxt "preference"
-msgid "Reload Unit"
-msgstr "Перезагрузить юнит"
+msgid "Restart"
+msgstr "Перезапустить"
 
 #: data/interfaces/preferences.ui:235
 msgctxt "preference"
-msgid "<b>Clean</b> method call through the Proxy"
+msgid "<b>Reload Unit</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:236
 #, fuzzy
 msgctxt "preference"
-msgid "Clean"
-msgstr "Очистить"
+msgid "Reload Unit"
+msgstr "Перезагрузить юнит"
 
 #: data/interfaces/preferences.ui:241
 msgctxt "preference"
-msgid "<b>Freeze</b> method call through the Proxy"
+msgid "<b>Clean</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:242
 #, fuzzy
 msgctxt "preference"
-msgid "Freeze"
-msgstr "Приостановить"
+msgid "Clean"
+msgstr "Очистить"
 
 #: data/interfaces/preferences.ui:247
 msgctxt "preference"
-msgid "<b>Thaw</b> method call through the Proxy"
+msgid "<b>Freeze</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:248
 #, fuzzy
 msgctxt "preference"
-msgid "Thaw"
-msgstr "Возобновить"
+msgid "Freeze"
+msgstr "Приостановить"
 
 #: data/interfaces/preferences.ui:253
 msgctxt "preference"
-msgid "<b>Enable Unit File</b> method call through the Proxy"
+msgid "<b>Thaw</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:254
 #, fuzzy
 msgctxt "preference"
-msgid "Enable Unit File"
-msgstr "Включить юнит-файл"
+msgid "Thaw"
+msgstr "Возобновить"
 
 #: data/interfaces/preferences.ui:259
 msgctxt "preference"
-msgid "<b>Disable Unit File</b> method call through the Proxy"
+msgid "<b>Enable Unit File</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:260
 #, fuzzy
 msgctxt "preference"
-msgid "Disable Unit File"
-msgstr "Отключить юнит-файл"
+msgid "Enable Unit File"
+msgstr "Включить юнит-файл"
 
 #: data/interfaces/preferences.ui:265
 msgctxt "preference"
-msgid ""
-"<b>Reload</b> Systemd Manager configuration method call through the Proxy"
+msgid "<b>Disable Unit File</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:266
 #, fuzzy
 msgctxt "preference"
+msgid "Disable Unit File"
+msgstr "Отключить юнит-файл"
+
+#: data/interfaces/preferences.ui:271
+msgctxt "preference"
+msgid ""
+"<b>Reload</b> Systemd Manager configuration method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:272
+#, fuzzy
+msgctxt "preference"
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
 
-#: data/interfaces/preferences.ui:271
+#: data/interfaces/preferences.ui:277
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:272
+#: data/interfaces/preferences.ui:278
 #, fuzzy
 msgctxt "preference"
 msgid "Revert Unit Files"
 msgstr "Применить preset к юнит-файлу"
 
-#: data/interfaces/preferences.ui:279
+#: data/interfaces/preferences.ui:285
 msgctxt "preference"
 msgid "Actions"
 msgstr ""
 
-#: data/interfaces/preferences.ui:282
+#: data/interfaces/preferences.ui:288
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:283
+#: data/interfaces/preferences.ui:289
 msgctxt "preference"
 msgid "Create Drop-in"
 msgstr ""
 
-#: data/interfaces/preferences.ui:288
+#: data/interfaces/preferences.ui:294
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:289
+#: data/interfaces/preferences.ui:295
 #, fuzzy
 msgctxt "preference"
 msgid "Save file"
 msgstr "Сохранить"
 
-#: data/interfaces/preferences.ui:297
+#: data/interfaces/preferences.ui:303
 msgctxt "preference"
 msgid "Proxy Behaviors"
 msgstr ""
 
-#: data/interfaces/preferences.ui:300
+#: data/interfaces/preferences.ui:306
 msgid "Start the Proxy when starting SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:301
+#: data/interfaces/preferences.ui:307
 msgctxt "preference"
 msgid "Start Proxy at Start up"
 msgstr ""
 
-#: data/interfaces/preferences.ui:306
+#: data/interfaces/preferences.ui:312
 msgctxt "preference"
 msgid "Stop the Proxy when closing SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:307
+#: data/interfaces/preferences.ui:313
 msgctxt "preference"
 msgid "Stop Proxy at Close"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:9
+#: data/interfaces/shortcuts.ui:10
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Общие"
 
-#: data/interfaces/shortcuts.ui:13
+#: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "Show Preferences"
 msgstr "Показать настройки"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:19
+#: data/interfaces/shortcuts.ui:20
 msgctxt "shortcut window"
 msgid "Allow configuring each proxy operation individually"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:20
+#: data/interfaces/shortcuts.ui:21
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Show Proxy Preferences"
 msgstr "Показать настройки"
 
-#: data/interfaces/shortcuts.ui:26
+#: data/interfaces/shortcuts.ui:27
 msgctxt "shortcut window"
 msgid "Open Search Unit"
 msgstr "Открыть поиск юнита"
 
-#: data/interfaces/shortcuts.ui:32
+#: data/interfaces/shortcuts.ui:33
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
 msgstr "Открыть фильтр свойств юнита"
 
-#: data/interfaces/shortcuts.ui:38
+#: data/interfaces/shortcuts.ui:39
 msgctxt "shortcut window"
 msgid "Open List Boots"
 msgstr "Открыть список загрузок"
 
-#: data/interfaces/shortcuts.ui:44
+#: data/interfaces/shortcuts.ui:45
 msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Открыть менеджер столбцов"
 
-#: data/interfaces/shortcuts.ui:50
+#: data/interfaces/shortcuts.ui:51
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Deamon Reload"
 msgstr "Перезагрузить"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:57
+#: data/interfaces/shortcuts.ui:58
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Страницы"
 
-#: data/interfaces/shortcuts.ui:61
+#: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Display Unit Information"
 msgstr "Показать информацию о юните"
 
-#: data/interfaces/shortcuts.ui:67
+#: data/interfaces/shortcuts.ui:68
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Показать зависимости юнита"
 
-#: data/interfaces/shortcuts.ui:73
+#: data/interfaces/shortcuts.ui:74
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Показать файл определения юнита"
 
-#: data/interfaces/shortcuts.ui:79
+#: data/interfaces/shortcuts.ui:80
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Показать события журнала юнита"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:86
+#: data/interfaces/shortcuts.ui:87
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Юнит"
 
-#: data/interfaces/shortcuts.ui:90
+#: data/interfaces/shortcuts.ui:91
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Показать свойства юнита"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:96
+#: data/interfaces/shortcuts.ui:97
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Инвертировать выбранные элементы фильтра"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:103
+#: data/interfaces/shortcuts.ui:104
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:107
+#: data/interfaces/shortcuts.ui:108
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:108
+#: data/interfaces/shortcuts.ui:109
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:114
+#: data/interfaces/shortcuts.ui:115
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display only Loaded Units"
 msgstr "Загруженные юниты получены"
 
-#: data/interfaces/shortcuts.ui:115
+#: data/interfaces/shortcuts.ui:116
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Загруженные юниты получены"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:121
+#: data/interfaces/shortcuts.ui:122
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display only Unit Files"
 msgstr "Отключить юнит-файл"
 
-#: data/interfaces/shortcuts.ui:122
+#: data/interfaces/shortcuts.ui:123
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Отключить юнит-файл"
 
-#: data/interfaces/shortcuts.ui:128
+#: data/interfaces/shortcuts.ui:129
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:134
+#: data/interfaces/shortcuts.ui:135
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Favorite Units"
 msgstr "Загруженные юниты получены"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:141
+#: data/interfaces/shortcuts.ui:142
 msgctxt "shortcut window"
 msgid "Special Lists"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:145
+#: data/interfaces/shortcuts.ui:146
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Отображать номера строк юнит-файла"
 
-#: data/interfaces/shortcuts.ui:151
+#: data/interfaces/shortcuts.ui:152
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Отображать цвета"
 
-#: data/interfaces/shortcuts.ui:157
+#: data/interfaces/shortcuts.ui:158
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Paths"
 msgstr "Отображать цвета"
 
-#: data/interfaces/shortcuts.ui:163
+#: data/interfaces/shortcuts.ui:164
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Automounts"
@@ -1280,38 +1292,38 @@ msgid "Watch Signals"
 msgstr "Отслеживать сигналы"
 
 #. place holder text
-#: data/interfaces/text_find.ui:10
+#: data/interfaces/text_find.ui:11
 msgctxt "find_text"
 msgid "Find in Text"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/text_find.ui:24
+#: data/interfaces/text_find.ui:25
 #, fuzzy
 msgctxt "find_text"
 msgid "Match Case"
 msgstr "Отслеживать сигналы"
 
 #. tooltip
-#: data/interfaces/text_find.ui:31
+#: data/interfaces/text_find.ui:32
 msgctxt "find_text"
 msgid "Match Whole Word"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/text_find.ui:38
+#: data/interfaces/text_find.ui:39
 #, fuzzy
 msgctxt "find_text"
 msgid "Use Regular Expression"
 msgstr "Пользовательский сеанс"
 
 #. tooltip
-#: data/interfaces/text_find.ui:58
+#: data/interfaces/text_find.ui:59
 msgctxt "find_text"
 msgid "Previous Match"
 msgstr ""
 
-#: data/interfaces/text_find.ui:66
+#: data/interfaces/text_find.ui:67
 msgctxt "find_text"
 msgid "Match Next"
 msgstr ""
@@ -1377,34 +1389,34 @@ msgid "Reload Unit Modes"
 msgstr "Перезагрузить юнит"
 
 #. unit popup menu
-#: data/interfaces/unit_control_panel.ui:124
+#: data/interfaces/unit_control_panel.ui:125
 #: data/interfaces/unit_pop_menu.ui:78
 #, fuzzy
 msgctxt "controls"
 msgid "Reload Unit"
 msgstr "Перезагрузить юнит"
 
-#: data/interfaces/unit_control_panel.ui:144
+#: data/interfaces/unit_control_panel.ui:145
 msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Другие действия..."
 
-#: data/interfaces/unit_control_panel.ui:180
+#: data/interfaces/unit_control_panel.ui:187
 msgctxt "controls tab"
 msgid "Unit Info"
 msgstr "Сведения о юните"
 
-#: data/interfaces/unit_control_panel.ui:190
+#: data/interfaces/unit_control_panel.ui:197
 msgctxt "controls tab"
 msgid "Dependencies"
 msgstr "Зависимости"
 
-#: data/interfaces/unit_control_panel.ui:200
+#: data/interfaces/unit_control_panel.ui:207
 msgctxt "controls tab"
 msgid "File"
 msgstr "Файл"
 
-#: data/interfaces/unit_control_panel.ui:210
+#: data/interfaces/unit_control_panel.ui:217
 msgctxt "controls tab"
 msgid "Journal"
 msgstr "Журнал"
@@ -1422,44 +1434,44 @@ msgid "No dependencies"
 msgstr "Нет зависимостей"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:62
+#: data/interfaces/unit_file_panel.ui:65
 msgctxt "file"
 msgid "Save"
 msgstr "Сохранить"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:91
+#: data/interfaces/unit_file_panel.ui:95
 #, fuzzy
 msgctxt "file"
 msgid "The unit has no file associated"
 msgstr "Юнит не связан с файлом"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:93
+#: data/interfaces/unit_file_panel.ui:97
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Нет юнит-файла"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:105
+#: data/interfaces/unit_file_panel.ui:109
 msgctxt "menu"
 msgid "Revert Drop-in"
 msgstr ""
 
 #. Unit file drop-in operations menu section
-#: data/interfaces/unit_file_panel.ui:108
+#: data/interfaces/unit_file_panel.ui:112
 msgctxt "menu"
 msgid "Create Drop-in"
 msgstr ""
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:111
+#: data/interfaces/unit_file_panel.ui:115
 msgctxt "menu"
 msgid "Permanent"
 msgstr ""
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:115
+#: data/interfaces/unit_file_panel.ui:119
 #, fuzzy
 msgctxt "menu"
 msgid "Runtime"
@@ -2189,73 +2201,73 @@ msgid "Add {} to Favorites"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:62
+#: src/widget/preferences/data.rs:64
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr "Шина пользовательского сеанса"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:64
+#: src/widget/preferences/data.rs:66
 msgctxt "dbus"
 msgid "System Bus"
 msgstr "Системная шина"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:66
+#: src/widget/preferences/data.rs:68
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr "Системная и пользовательская сессионная шина"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:159
+#: src/widget/preferences/data.rs:161
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Без предпочтений"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:161
+#: src/widget/preferences/data.rs:163
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Предпочитать тёмную тему"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:163
+#: src/widget/preferences/data.rs:165
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Предпочитать светлую тему"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:165
+#: src/widget/preferences/data.rs:167
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Принудительно тёмная тема"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:167
+#: src/widget/preferences/data.rs:169
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Принудительно светлая тема"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:213
+#: src/widget/preferences/data.rs:215
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr "Автоматически"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:215
+#: src/widget/preferences/data.rs:217
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr "Горизонтальное разделение"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:217
+#: src/widget/preferences/data.rs:219
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr "Вертикальное разделение"
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:454
+#: src/widget/preferences/imp.rs:459
 msgctxt "pref file style"
 msgid "None"
 msgstr "Нет"
@@ -2269,13 +2281,13 @@ msgid "{} of {}"
 msgstr ""
 
 #. Find in text Menu item
-#: src/widget/text_search/mod.rs:51
+#: src/widget/text_search/mod.rs:54
 msgctxt "text_find"
 msgid "Find in Text"
 msgstr ""
 
 #. toggle button tooltip text
-#: src/widget/text_search/mod.rs:76
+#: src/widget/text_search/mod.rs:80
 msgctxt "text_find"
 msgid "Open Find in Text"
 msgstr ""
@@ -2393,19 +2405,19 @@ msgid "reloaded"
 msgstr "перезагружен"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:421
+#: src/widget/unit_control_panel/imp.rs:463
 msgctxt "toast"
 msgid "Unit {} has been <{0}>{}</{0}> with the mode {}"
 msgstr "Юнит {} <{0}>{}</{0}> в режиме {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:443
+#: src/widget/unit_control_panel/imp.rs:485
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr "Невозможно {} юнит {}. Причина: {}"
 
-#: src/widget/unit_control_panel/imp.rs:720
+#: src/widget/unit_control_panel/imp.rs:780
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2415,13 +2427,13 @@ msgstr ""
 "выполнено успешно"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:728
+#: src/widget/unit_control_panel/imp.rs:788
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} успешно выполнено."
 
-#: src/widget/unit_control_panel/imp.rs:740
+#: src/widget/unit_control_panel/imp.rs:800
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2432,7 +2444,7 @@ msgstr ""
 "span>. Причина: <span fgcolor='{}'>{}</span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:751
+#: src/widget/unit_control_panel/imp.rs:811
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -2487,13 +2499,13 @@ msgid "Unmask"
 msgstr "Демаскировать"
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:359
+#: src/widget/unit_dependencies_panel/imp.rs:363
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Типы юнитов"
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:364
+#: src/widget/unit_dependencies_panel/imp.rs:368
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr "Фильтровать зависимости по типам"
@@ -2573,13 +2585,13 @@ msgid "File {} saved successfully!"
 msgstr "Файл {} успешно сохранён!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1078
+#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1075
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
 
 #: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:304
-#: src/widget/unit_file_panel/imp.rs:1094
+#: src/widget/unit_file_panel/imp.rs:1091
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
@@ -2610,17 +2622,17 @@ msgid "Drop In"
 msgstr "Drop-In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:954
+#: src/widget/unit_file_panel/imp.rs:951
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:964
+#: src/widget/unit_file_panel/imp.rs:961
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:974
+#: src/widget/unit_file_panel/imp.rs:971
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2628,29 +2640,29 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:983
+#: src/widget/unit_file_panel/imp.rs:980
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1070
+#: src/widget/unit_file_panel/imp.rs:1067
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Файл {} успешно сохранён!"
 
-#: src/widget/unit_file_panel/imp.rs:1115
+#: src/widget/unit_file_panel/imp.rs:1112
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1123
+#: src/widget/unit_file_panel/imp.rs:1120
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1224
+#: src/widget/unit_file_panel/imp.rs:1226
 #, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
