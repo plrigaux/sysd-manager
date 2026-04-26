@@ -1,3 +1,6 @@
+use std::env;
+use std::fmt::Write;
+
 use crate::consts::ACTION_DAEMON_RELOAD_BUS;
 use crate::format2;
 use crate::{
@@ -19,7 +22,7 @@ use base::consts::APP_ID;
 use base::enums::UnitDBusLevel;
 use gettextrs::gettext;
 use glib::VariantTy;
-use gtk::{gio, glib, prelude::ActionMapExtManual};
+use gtk::{gdk, gio, glib, prelude::ActionMapExtManual};
 use tracing::{error, info, warn};
 
 pub const APP_TITLE: &str = "SysD Manager";
@@ -355,6 +358,8 @@ fn create_about() -> adw::AboutDialog {
 Pierre-Luc Rigaux
 Priit Jõerüüt <hwlate@joeruut.com>",
         )
+        .debug_info(generate_debug_info())
+        .debug_info_filename(format!("debug_info_sysd-manager_{VERSION}.txt"))
         .build();
 
     #[cfg(feature = "flatpak")]
@@ -380,4 +385,182 @@ Priit Jõerüüt <hwlate@joeruut.com>",
     }
 
     about
+}
+
+fn generate_debug_info() -> String {
+    let mut info = String::new();
+
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+    let version = VERSION.to_string();
+
+    #[cfg(feature = "flatpak")]
+    let version = format!("{} (Flatpak)", VERSION);
+
+    #[cfg(feature = "appimage")]
+    let version = format!("{} (AppImage)", VERSION);
+
+    let _ = writeln!(&mut info, "SysD Manager:  {}", version);
+
+    let _ = writeln!(&mut info, "\nRunning against:");
+    let _ = writeln!(
+        &mut info,
+        "- Adw: {}.{}.{}",
+        adw::major_version(),
+        adw::minor_version(),
+        adw::micro_version(),
+    );
+
+    let _ = writeln!(
+        &mut info,
+        "- GTK: {}.{}.{}",
+        gtk::major_version(),
+        gtk::minor_version(),
+        gtk::micro_version(),
+    );
+
+    {
+        let os_name = glib::os_info("NAME").unwrap_or_default();
+        let os_version = glib::os_info("VERSION").unwrap_or_default();
+        let os_build_id = glib::os_info("BUILD_ID").unwrap_or_default();
+
+        info.push_str("\nSystem:\n");
+        let _ = writeln!(&mut info, "- Name: {}", os_name);
+        let _ = writeln!(&mut info, "- Version: {}", os_version);
+        let _ = writeln!(&mut info, "- Build: {}", os_build_id);
+    }
+
+    #[cfg(feature = "flatpak")]
+    flatpak_info(&mut info);
+    {
+        let (backend, renderer) = get_gtk_info();
+        info.push_str("\nGTK:\n");
+        let _ = writeln!(&mut info, "- GDK backend: {}", backend);
+        let _ = writeln!(&mut info, "- GSK renderer: {}", renderer);
+    }
+
+    let desktop = env::var("XDG_CURRENT_DESKTOP").unwrap_or_default();
+    let session_desktop = env::var("XDG_SESSION_DESKTOP").unwrap_or_default();
+    let session_type = env::var("XDG_SESSION_TYPE").unwrap_or_default();
+    let lang = env::var("LANG").unwrap_or_default();
+    let builder = env::var("INSIDE_GNOME_BUILDER").unwrap_or_default();
+    let gtk_debug = env::var("GTK_DEBUG");
+    let gtk_theme = env::var("GTK_THEME");
+    let adw_debug_color_scheme = env::var("ADW_DEBUG_COLOR_SCHEME");
+    let adw_debug_accent_color = env::var("ADW_DEBUG_ACCENT_COLOR");
+    let adw_debug_high_contrast = env::var("ADW_DEBUG_HIGH_CONTRAST");
+    let adw_disable_portal = env::var("ADW_DISABLE_PORTAL");
+
+    let _ = writeln!(&mut info, "\nEnvironment:");
+    let _ = writeln!(&mut info, "- Desktop: {}", desktop);
+    let _ = writeln!(
+        &mut info,
+        "- Session: {} ({})",
+        session_desktop, session_type
+    );
+    let _ = writeln!(&mut info, "- Language: {}", lang);
+    let _ = writeln!(&mut info, "- Running inside Builder: {}", builder);
+
+    if let Ok(gtk_debug) = gtk_debug {
+        let _ = writeln!(&mut info, "- GTK_DEBUG: {}", gtk_debug);
+    }
+    if let Ok(gtk_theme) = gtk_theme {
+        let _ = writeln!(&mut info, "- GTK_THEME: {}", gtk_theme);
+    }
+    if let Ok(adw_debug_color_scheme) = adw_debug_color_scheme {
+        let _ = writeln!(
+            &mut info,
+            "- ADW_DEBUG_COLOR_SCHEME: {}",
+            adw_debug_color_scheme
+        );
+    }
+    if let Ok(adw_debug_accent_color) = adw_debug_accent_color {
+        let _ = writeln!(
+            &mut info,
+            "- ADW_DEBUG_ACCENT_COLOR: {}",
+            adw_debug_accent_color
+        );
+    }
+    if let Ok(adw_debug_high_contrast) = adw_debug_high_contrast {
+        let _ = writeln!(
+            &mut info,
+            "- ADW_DEBUG_HIGH_CONTRAST: {}",
+            adw_debug_high_contrast
+        );
+    }
+    if let Ok(adw_disable_portal) = adw_disable_portal {
+        let _ = writeln!(&mut info, "- ADW_DISABLE_PORTAL: {}", adw_disable_portal);
+    }
+    info
+}
+
+#[cfg(feature = "flatpak")]
+fn flatpak_info(info: &mut String) {
+    let key_file = glib::KeyFile::new();
+    let Ok(_) = key_file
+        .load_from_file("/.flatpak-info", glib::KeyFileFlags::NONE)
+        .inspect_err(|err| error!("{:?}", err))
+    else {
+        return;
+    };
+
+    let runtime = key_file
+        .string("Application", "runtime")
+        .inspect_err(|err| error!("{:?}", err))
+        .unwrap_or_default();
+    let runtime_commit = key_file
+        .string("Instance", "runtime-commit")
+        .inspect_err(|err| error!("{:?}", err))
+        .unwrap_or_default();
+    let arch = key_file
+        .string("Instance", "arch")
+        .inspect_err(|err| error!("{:?}", err))
+        .unwrap_or_default();
+    let flatpak_version = key_file
+        .string("Instance", "flatpak-version")
+        .inspect_err(|err| error!("{:?}", err))
+        .unwrap_or_default();
+    let devel = key_file
+        .string("Instance", "devel")
+        .inspect_err(|err| error!("{:?}", err))
+        .unwrap_or_default();
+
+    info.push_str("Flatpak:\n");
+    info.push_str(&format!("- Runtime: {}\n", runtime));
+    info.push_str(&format!("- Runtime commit: {}\n", runtime_commit));
+    info.push_str(&format!("- Arch: {}\n", arch));
+    info.push_str(&format!("- Flatpak version: {}\n", flatpak_version));
+    info.push_str(&format!("- Devel: {}\n", devel));
+    info.push('\n');
+}
+
+fn get_gtk_info() -> (String, String) {
+    let mut backend = String::new();
+    let mut renderer = String::new();
+
+    if let Some(display) = gdk::Display::default() {
+        let backend_ = match display.type_().name() {
+            "GdkX11Display" => "X11",
+            "GdkWaylandDisplay" => "Wayland",
+            "GdkBroadwayDisplay" => "Broadway",
+            "GdkMacosDisplay" => "macOS",
+            back => back,
+        };
+        backend.push_str(backend_);
+
+        let surface = gdk::Surface::new_toplevel(&display);
+        if let Some(gsk_renderer) = gtk::gsk::Renderer::for_surface(&surface) {
+            let rend = match gsk_renderer.type_().name() {
+                "GskVulkanRenderer" => "Vulkan",
+                "GskNglRenderer" => "NGL",
+                "GskGLRenderer" => "GL",
+                "GskCairoRenderer" => "Cairo",
+                rend => rend,
+            };
+            renderer.push_str(rend);
+            gsk_renderer.unrealize(); // GLib-GObject-CRITICAL **: 01:27:13.178: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
+        }
+        surface.destroy();
+    }
+    (backend, renderer)
 }
