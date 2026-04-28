@@ -7,6 +7,7 @@
   <requires lib="libadwaita" version="1.6"/>
   <menu id="main-menu">
     <section>
+      <attribute name="label">Create Unit</attribute>
       <item>
         <attribute name="action">app.analyze_blame</attribute>
         <attribute name="label" translatable="yes" context="menu">Analyze Blame</attribute>
@@ -26,6 +27,10 @@
       <item>
         <attribute name="action">app.signals</attribute>
         <attribute name="label" translatable="yes" context="menu">Watch Signals</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.create-unit</attribute>
+        <attribute name="label">Create Unit</attribute>
       </item>
     </section>
     <section>

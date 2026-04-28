@@ -125,14 +125,14 @@ fn main() -> glib::ExitCode {
         warn!("Failed to register resources. Error: {e:?}");
     }
 
-    // Create a new application
     let app = adw::Application::builder().application_id(APP_ID).build();
 
     app.connect_startup(|application| {
         let style_manager = application.style_manager();
         menu::on_startup(application);
 
-        let settings = new_settings();
+        let settings = systemd_gui::new_settings();
+
         let preferred_color_scheme_id = settings.get::<i32>(KEY_PREF_PREFERRED_COLOR_SCHEME);
         let preferred_color_scheme: adw::ColorScheme =
             unsafe { adw::ColorScheme::from_glib(preferred_color_scheme_id) };

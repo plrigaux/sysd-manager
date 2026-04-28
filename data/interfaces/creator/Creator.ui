@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0 -->
+<interface>
+  <!-- interface-name Creator.ui -->
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.8"/>
+  <template class="UnitCreatorWindow" parent="AdwWindow">
+    <property name="content">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="GtkBox">
+            <child>
+              <object class="AdwCarousel" id="carousel">
+                <property name="hexpand">True</property>
+                <property name="orientation">vertical</property>
+                <property name="vexpand">True</property>
+                <child>
+                  <object class="AdwNavigationPage">
+                    <property name="child">
+                      <object class="AdwClamp">
+                        <property name="child">
+                          <object class="GtkBox">
+                            <property name="margin-bottom">23</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">12</property>
+                            <child>
+                              <object class="AdwPreferencesGroup">
+                                <child>
+                                  <object class="AdwEntryRow">
+                                    <property name="show-apply-button">True</property>
+                                    <property name="title">Unit Name</property>
+                                    <property name="use-underline">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup">
+                                <property name="title">Unit Type</property>
+                                <child>
+                                  <object class="AdwActionRow">
+                                    <property name="activatable-widget">radio_button_1</property>
+                                    <property name="title" translatable="yes">Service</property>
+                                    <child type="prefix">
+                                      <object class="GtkCheckButton" id="radio_button_1">
+                                        <property name="action-name">creator.unit_type_selection</property>
+                                        <property name="action-target">"service"</property>
+                                        <property name="active">True</property>
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwActionRow">
+                                    <property name="activatable-widget">radio_button_2</property>
+                                    <property name="title" translatable="yes">Service w/ Timer</property>
+                                    <child type="prefix">
+                                      <object class="GtkCheckButton" id="radio_button_2">
+                                        <property name="action-name">creator.unit_type_selection</property>
+                                        <property name="action-target">"timer_service"</property>
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwActionRow">
+                                    <property name="activatable-widget">radio_button_3</property>
+                                    <property name="subtitle">triggers existing service</property>
+                                    <property name="title" translatable="yes">Timer</property>
+                                    <child type="prefix">
+                                      <object class="GtkCheckButton" id="radio_button_3">
+                                        <property name="action-name">creator.unit_type_selection</property>
+                                        <property name="action-target">"timer"</property>
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup">
+                                <property name="title">Scope</property>
+                                <child>
+                                  <object class="AdwActionRow">
+                                    <property name="activatable-widget">system_bus</property>
+                                    <property name="title" translatable="yes">System</property>
+                                    <child type="prefix">
+                                      <object class="GtkCheckButton" id="system_bus">
+                                        <property name="action-name">creator.unit_bus_selection</property>
+                                        <property name="action-target">"system"</property>
+                                        <property name="active">True</property>
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwActionRow">
+                                    <property name="title" translatable="yes">User Session</property>
+                                    <child type="prefix">
+                                      <object class="GtkCheckButton" id="session_bus">
+                                        <property name="action-name">creator.unit_bus_selection</property>
+                                        <property name="action-target">"session"</property>
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup">
+                                <child>
+                                  <object class="AdwActionRow">
+                                    <property name="title">Runtime</property>
+                                    <child type="prefix">
+                                      <object class="GtkSwitch">
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                    <property name="hexpand">True</property>
+                    <property name="title">Test1</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwCarouselIndicatorLines">
+                <property name="carousel">carousel</property>
+                <property name="margin-bottom">6</property>
+                <property name="margin-end">5</property>
+                <property name="margin-top">6</property>
+                <property name="orientation">vertical</property>
+              </object>
+            </child>
+          </object>
+        </property>
+        <property name="top-bar-style">raised</property>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle">
+                <property name="subtitle">Love</property>
+                <property name="title">Create Unit</property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </property>
+    <property name="width-request">600</property>
+  </template>
+</interface>

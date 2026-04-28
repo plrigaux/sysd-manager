@@ -4,7 +4,7 @@ use base::consts::APP_ID;
 use gtk::gio::Settings;
 use tracing::error;
 
-pub fn new_settings() -> Settings {
+pub fn new_settings() -> gio::Settings {
     Settings::new(APP_ID)
 }
 

@@ -29,6 +29,9 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">interfaces/shortcuts.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_pop_menu.ui">interfaces/unit_pop_menu.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="text_find.ui">interfaces/text_find.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="creator.ui">interfaces/creator/Creator.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="timer_creator_page.ui">interfaces/creator/timer_creator_page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="service_creator_page.ui">interfaces/creator/service_creator_page.ui</file>
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>
     <file compressed="true" alias="style.css">styles/style.css</file>
     <file compressed="true" alias="style_dark.css">styles/style_dark.css</file>
