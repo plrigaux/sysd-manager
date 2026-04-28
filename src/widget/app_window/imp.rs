@@ -1,6 +1,6 @@
 use crate::{
     consts::{
-        ACTION_DAEMON_RELOAD, ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT,
+        ACTION_APP_CREATE_UNIT, ACTION_DAEMON_RELOAD, ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT,
         ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_REFRESH_UNIT_LIST, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_SEARCH_UNITS,
@@ -10,6 +10,7 @@ use crate::{
     systemd_gui::{self},
     widget::{
         InterPanelMessage,
+        creator::UnitCreatorWindow,
         info_window::InfoWindow,
         journal::list_boots::ListBootsWindow,
         preferences::data::{DbusLevel, KEY_PREF_ORIENTATION_MODE, OrientationMode, PREFERENCES},
@@ -495,8 +496,22 @@ impl AppWindowImpl {
             let app_window = self.obj().clone();
 
             gio::ActionEntry::builder(ACTION_LIST_BOOT)
-                .activate(move |_, _action, _variant| {
+                .activate(move |_, _, _| {
                     let list_boots_window = ListBootsWindow::new(&app_window);
+                    //    list_boots_window.set_transient_for(Some(&list_boots_window));
+                    list_boots_window.set_modal(false);
+
+                    list_boots_window.present();
+                })
+                .build()
+        };
+
+        let create_unit = {
+            let app_window = self.obj().clone();
+
+            gio::ActionEntry::builder(&ACTION_APP_CREATE_UNIT[4..])
+                .activate(move |_, _action, _variant| {
+                    let list_boots_window = UnitCreatorWindow::new(&app_window);
                     //    list_boots_window.set_transient_for(Some(&list_boots_window));
                     list_boots_window.set_modal(false);
 
@@ -579,6 +594,7 @@ impl AppWindowImpl {
             properties_selector_general,
             print_debug,
             display_unit_properties,
+            create_unit,
         ]);
 
         application.set_accels_for_action(APP_ACTION_SEARCH_UNITS, &["<Ctrl>f"]);
@@ -595,6 +611,7 @@ impl AppWindowImpl {
         application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
         application.set_accels_for_action(ACTION_DAEMON_RELOAD, &["<Ctrl>r"]);
         application.set_accels_for_action(ACTION_FIND_IN_TEXT_OPEN, &["<Shift><Ctrl>f"]);
+        application.set_accels_for_action(ACTION_APP_CREATE_UNIT, &["<Shift><Ctrl>c"]);
 
         for ui in UnitCuratedList::iter() {
             application.set_accels_for_action(&ui.detailed_action(), &ui.win_accels());

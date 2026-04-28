@@ -14,6 +14,7 @@ pub const APP: &str = "app.";
 
 pub const ACTION_LIST_BOOT: &str = "list_boots";
 pub const APP_ACTION_LIST_BOOT: &str = concat!(APP, ACTION_LIST_BOOT);
+pub const ACTION_APP_CREATE_UNIT: &str = "app.create-unit";
 
 pub const APP_ACTION_SEARCH_UNITS: &str = "app.search_units";
 pub const ACTION_DAEMON_RELOAD: &str = "app.daemon-reload";

@@ -558,7 +558,7 @@ fn get_gtk_info() -> (String, String) {
                 rend => rend,
             };
             renderer.push_str(rend);
-            gsk_renderer.unrealize(); // GLib-GObject-CRITICAL **: 01:27:13.178: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
+            //            gsk_renderer.unrealize(); // GLib-GObject-CRITICAL **: 01:27:13.178: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
         }
         surface.destroy();
     }

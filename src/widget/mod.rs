@@ -15,6 +15,7 @@ use crate::{
 pub mod app_window;
 pub mod clean_dialog;
 pub mod control_action_dialog;
+pub mod creator;
 pub mod grid_cell;
 pub mod info_window;
 pub mod journal;
