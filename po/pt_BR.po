@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-23 23:40-0400\n"
-"PO-Revision-Date: 2026-01-16 21:01+0000\n"
+"PO-Revision-Date: 2026-05-01 02:09+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
 "manager/translation/pt_BR/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 5.17.1\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -77,6 +77,8 @@ msgid ""
 "Authentication is required to run privileged systemd calls via the SysD "
 "Manager Proxy"
 msgstr ""
+"A autenticação é necessária para executar chamadas systemd privilegiadas por "
+"meio do Proxy do Gerenciador SysD"
 
 #: data/interfaces/app_window.ui:12
 msgctxt "menu"
@@ -109,10 +111,9 @@ msgid "Preferences"
 msgstr "Preferências"
 
 #: data/interfaces/app_window.ui:38
-#, fuzzy
 msgctxt "menu"
 msgid "Proxy Preferences"
-msgstr "Mostrar preferências"
+msgstr "Preferências de proxy"
 
 #: data/interfaces/app_window.ui:42
 msgctxt "menu"
@@ -130,20 +131,19 @@ msgid "Open Search Bar"
 msgstr "Abrir a barra de pesquisa"
 
 #: data/interfaces/app_window.ui:97
-#, fuzzy
 msgid "To select system or session bus"
-msgstr "Barramento de sessão de sistema e usuário"
+msgstr "Para selecionar o barramento de sistema ou de sessão"
 
 #. selector of differents units list
 #: data/interfaces/app_window.ui:104
 msgctxt "menu"
 msgid "Curated Lists"
-msgstr ""
+msgstr "Listas selecionadas"
 
 #: data/interfaces/app_window.ui:105
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
-msgstr ""
+msgstr "Para exibir a apresentação e o subconjunto de diferentes unidades"
 
 #: data/interfaces/app_window.ui:112
 msgctxt "top button tooltip"
@@ -327,7 +327,7 @@ msgstr "ID da inicialização"
 #: data/interfaces/journal_panel.ui:151
 msgctxt "journal"
 msgid "For more information"
-msgstr ""
+msgstr "Para obter mais informações"
 
 #. description
 #: data/interfaces/journal_panel.ui:155
@@ -336,6 +336,8 @@ msgid ""
 "Either there are no log events to display, or you don't have permission to "
 "access them."
 msgstr ""
+"Ou não há eventos de registro para exibir, ou você não tem permissão para "
+"acessá-los."
 
 #. title
 #: data/interfaces/journal_panel.ui:157
@@ -482,10 +484,9 @@ msgstr "Pare agora"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:54
-#, fuzzy
 msgctxt "mask"
 msgid "Argument for the stopping mode"
-msgstr "Argumento para o modo de parada"
+msgstr "Argumento a favor do modo de parada"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:55
@@ -513,11 +514,14 @@ msgid ""
 "You can set the application's Dbus level to <u>System</u> if you want to see "
 "all Systemd units."
 msgstr ""
+"Esta é a sua primeira conexão.\n"
+"Você pode definir o nível Dbus do aplicativo para <u>System</u> se quiser "
+"ver todas as unidades Systemd."
 
 #: data/interfaces/preferences.ui:19
 msgctxt "preference"
 msgid "_Main"
-msgstr ""
+msgstr "_Menu"
 
 #. group
 #: data/interfaces/preferences.ui:23
@@ -615,12 +619,13 @@ msgstr "Exibir resumo de totais"
 msgctxt "preference"
 msgid "Search and filtering case insensitivity default option"
 msgstr ""
+"Opção padrão para pesquisa e filtragem que ignora maiúsculas e minúsculas"
 
 #. title
 #: data/interfaces/preferences.ui:101
 msgctxt "preference"
 msgid "Case Insensitive"
-msgstr ""
+msgstr "Sem distinção entre maiúsculas e minúsculas"
 
 #. group
 #: data/interfaces/preferences.ui:108
@@ -644,13 +649,13 @@ msgstr "Envolver texto descritivo da unidade"
 #: data/interfaces/preferences.ui:117
 msgctxt "preference"
 msgid "Otherwise those buttons are displayed according to context"
-msgstr ""
+msgstr "Caso contrário, esses botões são exibidos de acordo com o contexto"
 
 #. title
 #: data/interfaces/preferences.ui:118
 msgctxt "preference"
 msgid "Always shows Start and Stop Buttons"
-msgstr ""
+msgstr "Sempre mostra os botões Iniciar e Parar"
 
 #. group
 #: data/interfaces/preferences.ui:125
@@ -717,50 +722,46 @@ msgid "Journal's event max size"
 msgstr "Tamanho máximo do evento do periódico"
 
 #: data/interfaces/preferences.ui:200
-#, fuzzy
 msgctxt "preference"
 msgid "_Proxy Preferences"
-msgstr "Mostrar preferências"
+msgstr "_Preferências de proxy"
 
 #: data/interfaces/preferences.ui:206
 msgid "Switch that controls other switches"
-msgstr ""
+msgstr "Interruptor que controla outros interruptores"
 
 #. group title
 #: data/interfaces/preferences.ui:214
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
-msgstr ""
+msgstr "Chamadas de método do gerenciador Systemd"
 
 #: data/interfaces/preferences.ui:217
 msgctxt "preference"
 msgid "<b>Start</b> method call through the Proxy"
-msgstr ""
+msgstr "<b>Start</b> chamada de método através do Proxy"
 
 #: data/interfaces/preferences.ui:218
-#, fuzzy
 msgctxt "preference"
 msgid "Start"
-msgstr "Começar"
+msgstr "Iniciar"
 
 #: data/interfaces/preferences.ui:223
 msgctxt "preference"
 msgid "<b>Stop</b> method call through the Proxy"
-msgstr ""
+msgstr "Chamada do método <b>Stop</b> através do Proxy"
 
 #: data/interfaces/preferences.ui:224
-#, fuzzy
 msgctxt "preference"
 msgid "Stop"
-msgstr "Parar"
+msgstr "Pare"
 
 #: data/interfaces/preferences.ui:229
 msgctxt "preference"
 msgid "<b>Restart</b> method call through the Proxy"
-msgstr ""
+msgstr "Chamada do método <b>Restart</b> através do Proxy"
 
 #: data/interfaces/preferences.ui:230
-#, fuzzy
 msgctxt "preference"
 msgid "Restart"
 msgstr "Reiniciar"
