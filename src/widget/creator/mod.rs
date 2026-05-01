@@ -39,11 +39,8 @@ mod imp {
     use glib::{object::Cast, property::PropertyGet, variant::ToVariant};
     use gtk::{
         glib::{self},
-        prelude::{GtkWindowExt, WidgetExt},
-        subclass::{
-            prelude::*,
-            widget::{CompositeTemplateClass, CompositeTemplateInitializingExt, WidgetImpl},
-        },
+        prelude::*,
+        subclass::{prelude::*, *},
     };
     use std::{
         cell::{OnceCell, RefCell},
@@ -156,8 +153,6 @@ mod imp {
     impl ObjectImpl for UnitCreatorWindowImp {
         fn constructed(&self) {
             self.parent_constructed();
-
-            self.obj().child();
 
             self.insert_page(&UnitCreateType::Service);
 

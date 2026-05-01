@@ -10,6 +10,7 @@ mod systemd_gui;
 mod utils;
 mod widget;
 
+use crate::consts::ACTION_APP_CREATE_UNIT;
 use crate::systemd_gui::set_is_dark;
 use adw::prelude::AdwApplicationExt;
 use base::enums::UnitDBusLevel;
@@ -52,7 +53,7 @@ fn main() -> glib::ExitCode {
         .with_ansi(true)
         .init();
 
-    let (unit, command, level, run_mode) = handle_args();
+    let (unit, command, level, run_mode, args) = handle_args();
 
     #[allow(clippy::single_match)]
     match command {
@@ -143,7 +144,7 @@ fn main() -> glib::ExitCode {
     });
 
     app.connect_activate(move |application| {
-        build_ui(application, unit.as_ref());
+        build_ui(application, unit.as_ref(), args.create);
 
         //Start the Proxy after the app is loaded
         #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
@@ -185,7 +186,7 @@ fn load_css_ress(resource: &str) {
     );
 }
 
-fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
+fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: bool) {
     let window = AppWindow::new(application);
 
     let style_manager = application.style_manager();
@@ -221,6 +222,16 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>) {
 
         adw::prelude::AdwDialogExt::present(&pdialog, Some(&window));
     }
+
+    if create {
+        glib::spawn_future_local(async move {
+            if let Err(err) =
+                gtk::prelude::WidgetExt::activate_action(&window, ACTION_APP_CREATE_UNIT, None)
+            {
+                warn!("{:?}", err);
+            };
+        });
+    }
 }
 
 /// A GUI interface to manage systemd units
@@ -247,6 +258,10 @@ struct Args {
     #[arg(short, long, default_value_t = false)]
     normal: bool,
 
+    /// Open create unit Window
+    #[arg(short, long, default_value_t = false)]
+    create: bool,
+
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -269,7 +284,13 @@ enum Command {
     Proxy,
 }
 
-fn handle_args() -> (Option<UnitInfo>, Option<Command>, UnitDBusLevel, RunMode) {
+fn handle_args() -> (
+    Option<UnitInfo>,
+    Option<Command>,
+    UnitDBusLevel,
+    RunMode,
+    Args,
+) {
     let args = Args::parse();
 
     let run_mode = RunMode::from_flags(args.dev, args.normal);
@@ -286,15 +307,17 @@ fn handle_args() -> (Option<UnitInfo>, Option<Command>, UnitDBusLevel, RunMode) 
     let settings = new_settings();
     PREFERENCES.set_and_save_dbus_level(app_level, &settings);
 
-    let Some(unit_name) = args.unit else {
-        return (None, args.command, unit_level, run_mode);
+    let unit = if let Some(ref unit_name) = args.unit {
+        match systemd::fetch_unit(unit_level, &unit_name) {
+            Ok(unit) => Some(unit),
+            Err(e) => {
+                warn!("Cli unit: {e:?}");
+                None
+            }
+        }
+    } else {
+        None
     };
 
-    match systemd::fetch_unit(unit_level, &unit_name) {
-        Ok(unit) => (Some(unit), args.command, unit_level, run_mode),
-        Err(e) => {
-            warn!("Cli unit: {e:?}");
-            (None, None, unit_level, run_mode)
-        }
-    }
+    (unit, args.command.clone(), unit_level, run_mode, args)
 }
