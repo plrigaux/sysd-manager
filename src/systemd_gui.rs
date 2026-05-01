@@ -1,7 +1,6 @@
-use std::sync::RwLock;
-
 use base::consts::APP_ID;
-use gtk::gio::Settings;
+use gtk::{gdk, gio::Settings, prelude::*};
+use std::sync::RwLock;
 use tracing::error;
 
 pub fn new_settings() -> gio::Settings {
@@ -56,11 +55,26 @@ macro_rules! upgrade {
     };
 
     ($weak_ref:expr, $ret:expr) => {{
-        let Some(weak_ref) = $weak_ref.upgrade() else {
+        let Some(strong_ref) = $weak_ref.upgrade() else {
             tracing::warn!("Reference upgrade failed {:?}", $weak_ref);
             return $ret;
         };
-        weak_ref
+        strong_ref
+    }};
+}
+
+#[macro_export]
+macro_rules! upgrade_opt {
+    ($weak_ref:expr) => {
+        upgrade_opt!($weak_ref, ())
+    };
+
+    ($weak_ref:expr, $ret:expr) => {{
+        let Some(weak_ref) = $weak_ref else {
+            tracing::warn!("Reference upgrade failed Option None");
+            return $ret;
+        };
+        upgrade!(weak_ref)
     }};
 }
 
@@ -84,4 +98,18 @@ macro_rules! upgrade_continue {
         };
         weak_ref
     }};
+}
+
+pub fn clear_on_escape() -> gtk::EventControllerKey {
+    let event_controller = gtk::EventControllerKey::new();
+
+    event_controller.connect_key_released(|controller, key, _keycode, _state| {
+        if key == gdk::Key::Escape
+            && let Some(search_entry) = controller.widget().and_downcast_ref::<gtk::Editable>()
+        {
+            search_entry.set_text("");
+        }
+    });
+
+    event_controller
 }

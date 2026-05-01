@@ -119,3 +119,21 @@ impl From<String> for UnitDBusLevel {
         level.as_str().into()
     }
 }
+
+impl From<&glib::Variant> for UnitDBusLevel {
+    fn from(level: &glib::Variant) -> Self {
+        level
+            .get::<String>()
+            .unwrap_or("Variant String Fail".to_owned())
+            .into()
+    }
+}
+
+impl From<glib::Variant> for UnitDBusLevel {
+    fn from(level: glib::Variant) -> Self {
+        level
+            .get::<String>()
+            .unwrap_or("Variant String Fail".to_owned())
+            .into()
+    }
+}

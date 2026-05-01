@@ -1,4 +1,7 @@
+use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
+
+use crate::widget::creator::UnitCreatorWindow;
 
 glib::wrapper! {
 
@@ -8,27 +11,41 @@ glib::wrapper! {
 }
 
 impl TimerCreatorPage {
-    pub fn new() -> Self {
+    pub fn new(window: WeakRef<UnitCreatorWindow>) -> Self {
         let obj: TimerCreatorPage = glib::Object::new();
+        let _ = obj.imp().window.set(window);
+        obj.imp().update_from_unit_info();
         obj
-    }
-}
-
-impl Default for TimerCreatorPage {
-    fn default() -> Self {
-        TimerCreatorPage::new()
     }
 }
 
 mod imp {
 
     use super::TimerCreatorPage;
-    use adw::subclass::prelude::*;
-    use gtk::glib::{self};
+    use crate::{
+        upgrade, upgrade_opt,
+        widget::creator::{UnitCreateType, UnitCreatorWindow},
+    };
+    use adw::{prelude::ComboRowExt, subclass::prelude::*};
+    use glib::WeakRef;
+    use gtk::{
+        glib::{self},
+        prelude::ObjectExt,
+    };
+    use std::cell::{Cell, OnceCell};
 
-    #[derive(Default, gtk::CompositeTemplate)]
+    #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/timer_creator_page.ui")]
-    pub struct TimerCreatorPageImp {}
+    #[properties(wrapper_type = super::TimerCreatorPage)]
+    pub struct TimerCreatorPageImp {
+        #[property(get, set, default)]
+        creation_type: Cell<UnitCreateType>,
+
+        #[template_child]
+        trigger_unit: TemplateChild<adw::ComboRow>,
+
+        pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for TimerCreatorPageImp {
@@ -47,13 +64,38 @@ mod imp {
         }
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for TimerCreatorPageImp {
         fn constructed(&self) {
             self.parent_constructed();
+
+            self.trigger_unit.connect_selected_item_notify(|a| {
+                println!("Conn idc {}", a.selected());
+            });
         }
     }
 
-    impl TimerCreatorPageImp {}
+    impl TimerCreatorPageImp {
+        pub(super) fn update_from_unit_info(&self) {
+            let window = upgrade_opt!(self.window.get());
+
+            let set = window.imp().get_trigger_units();
+
+            let mut vec = set
+                .iter()
+                .filter(|s| !s.ends_with(".timer"))
+                .map(|s| s.as_ref())
+                .collect::<Vec<_>>();
+            vec.push(""); //for unselect
+            vec.sort();
+
+            let model = gtk::StringList::new(&vec);
+            // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
+            self.trigger_unit.set_model(Some(&model));
+            self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
+            println!("sel {}", self.trigger_unit.selected());
+        }
+    }
 
     impl WidgetImpl for TimerCreatorPageImp {}
 

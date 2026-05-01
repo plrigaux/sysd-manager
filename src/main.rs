@@ -53,10 +53,10 @@ fn main() -> glib::ExitCode {
         .with_ansi(true)
         .init();
 
-    let (unit, command, level, run_mode, args) = handle_args();
+    let (unit, level, run_mode, args) = handle_args();
 
     #[allow(clippy::single_match)]
-    match command {
+    match args.command {
         Some(Command::Test { test }) => {
             info!("End test");
 
@@ -228,7 +228,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: boo
             if let Err(err) =
                 gtk::prelude::WidgetExt::activate_action(&window, ACTION_APP_CREATE_UNIT, None)
             {
-                warn!("{:?}", err);
+                warn!("Activate {ACTION_APP_CREATE_UNIT} {:?} Failed", err);
             };
         });
     }
@@ -284,13 +284,7 @@ enum Command {
     Proxy,
 }
 
-fn handle_args() -> (
-    Option<UnitInfo>,
-    Option<Command>,
-    UnitDBusLevel,
-    RunMode,
-    Args,
-) {
+fn handle_args() -> (Option<UnitInfo>, UnitDBusLevel, RunMode, Args) {
     let args = Args::parse();
 
     let run_mode = RunMode::from_flags(args.dev, args.normal);
@@ -308,7 +302,7 @@ fn handle_args() -> (
     PREFERENCES.set_and_save_dbus_level(app_level, &settings);
 
     let unit = if let Some(ref unit_name) = args.unit {
-        match systemd::fetch_unit(unit_level, &unit_name) {
+        match systemd::fetch_unit(unit_level, unit_name) {
             Ok(unit) => Some(unit),
             Err(e) => {
                 warn!("Cli unit: {e:?}");
@@ -319,5 +313,5 @@ fn handle_args() -> (
         None
     };
 
-    (unit, args.command.clone(), unit_level, run_mode, args)
+    (unit, unit_level, run_mode, args)
 }

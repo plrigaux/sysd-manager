@@ -2,7 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 1.0 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1">
-  <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="713f2b9da8f26eab397cbdbd67c6fa4dd158c423cc82909f2516f9002d02f0f2"/>
-  <ui template-class="TimerCreatorPage" filename="timer_creator_page.ui" sha256="ef57feefb0839a1935699f2b775150a067cc35492573a4e78d4e671252c1b1ec"/>
-  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="f2af5811ab2ae39746410b2252aa8a247d1010c43a78f43f40f3263d5abb0638"/>
+  <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="70ef8a132a5a54df715b1a33b73b58d9d1d57dae91d5b22063760b5305ab82e5"/>
+  <ui template-class="TimerCreatorPage" filename="timer_creator_page.ui" sha256="cfb7463e56ed5ba730c91f401f331bfa6ff529a5938ec390237952f00c11a4df"/>
+  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="c34002c1b9fd3490df59bd536d640c633459fea69417264594975096b104c6a7"/>
 </cambalache-project>

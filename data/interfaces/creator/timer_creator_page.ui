@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 1.0 -->
 <interface>
   <!-- interface-name timer_creator_page.ui -->
-  <requires lib="gtk" version="4.18"/>
-  <requires lib="libadwaita" version="1.4"/>
+  <requires lib="gtk" version="4.20"/>
+  <requires lib="libadwaita" version="1.8"/>
   <template class="TimerCreatorPage" parent="AdwNavigationPage">
     <property name="child">
       <object class="AdwClamp">
@@ -13,6 +13,25 @@
             <property name="margin-top">6</property>
             <property name="orientation">vertical</property>
             <property name="spacing">12</property>
+            <child>
+              <object class="GtkBox">
+                <property name="valign">baseline-fill</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="css-classes">title-2
+</property>
+                    <property name="hexpand">True</property>
+                    <property name="label">Timer</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLinkButton">
+                    <property name="label">More info</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/systemd.time.html</property>
+                  </object>
+                </child>
+              </object>
+            </child>
             <child>
               <object class="AdwPreferencesGroup">
                 <child>
@@ -62,13 +81,15 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwActionRow">
-                    <child>
-                      <object class="GtkLinkButton">
-                        <property name="label">More info</property>
-                        <property name="uri">https://www.freedesktop.org/software/systemd/man/systemd.time.html</property>
-                      </object>
-                    </child>
+                  <object class="AdwComboRow" id="trigger_unit">
+                    <property name="enable-search">True</property>
+                    <property name="expression">
+                      <lookup name="string" type="GtkStringObject"/>
+                    </property>
+                    <property name="search-match-mode">substring</property>
+                    <property name="subtitle">sdffsdf</property>
+                    <property name="title">Trigger Unit</property>
+                    <property name="use-subtitle">True</property>
                   </object>
                 </child>
               </object>

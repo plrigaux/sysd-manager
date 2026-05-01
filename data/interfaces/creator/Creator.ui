@@ -21,14 +21,15 @@
                         <property name="child">
                           <object class="GtkBox">
                             <property name="margin-bottom">23</property>
+                            <property name="margin-top">12</property>
                             <property name="orientation">vertical</property>
                             <property name="spacing">12</property>
                             <child>
                               <object class="AdwPreferencesGroup">
                                 <child>
-                                  <object class="AdwEntryRow">
-                                    <property name="show-apply-button">True</property>
-                                    <property name="title">Unit Name</property>
+                                  <object class="AdwEntryRow" id="unit_name_prefix">
+                                    <property name="input-hints">lowercase</property>
+                                    <property name="title">Unit Name Prefix</property>
                                     <property name="use-underline">True</property>
                                   </object>
                                 </child>
@@ -40,6 +41,7 @@
                                 <child>
                                   <object class="AdwActionRow">
                                     <property name="activatable-widget">radio_button_1</property>
+                                    <property name="focusable">False</property>
                                     <property name="title" translatable="yes">Service</property>
                                     <child type="prefix">
                                       <object class="GtkCheckButton" id="radio_button_1">
@@ -54,6 +56,7 @@
                                 <child>
                                   <object class="AdwActionRow">
                                     <property name="activatable-widget">radio_button_2</property>
+                                    <property name="focusable">False</property>
                                     <property name="title" translatable="yes">Service w/ Timer</property>
                                     <child type="prefix">
                                       <object class="GtkCheckButton" id="radio_button_2">
@@ -67,6 +70,7 @@
                                 <child>
                                   <object class="AdwActionRow">
                                     <property name="activatable-widget">radio_button_3</property>
+                                    <property name="focusable">False</property>
                                     <property name="subtitle">triggers existing service</property>
                                     <property name="title" translatable="yes">Timer</property>
                                     <child type="prefix">
@@ -86,6 +90,7 @@
                                 <child>
                                   <object class="AdwActionRow">
                                     <property name="activatable-widget">system_bus</property>
+                                    <property name="focusable">False</property>
                                     <property name="title" translatable="yes">System</property>
                                     <child type="prefix">
                                       <object class="GtkCheckButton" id="system_bus">
@@ -99,11 +104,12 @@
                                 </child>
                                 <child>
                                   <object class="AdwActionRow">
+                                    <property name="focusable">False</property>
                                     <property name="title" translatable="yes">User Session</property>
                                     <child type="prefix">
                                       <object class="GtkCheckButton" id="session_bus">
                                         <property name="action-name">creator.unit_bus_selection</property>
-                                        <property name="action-target">"session"</property>
+                                        <property name="action-target">"user"</property>
                                         <property name="valign">center</property>
                                       </object>
                                     </child>
@@ -115,6 +121,7 @@
                               <object class="AdwPreferencesGroup">
                                 <child>
                                   <object class="AdwActionRow">
+                                    <property name="focusable">False</property>
                                     <property name="title">Runtime</property>
                                     <child type="prefix">
                                       <object class="GtkSwitch">

@@ -55,7 +55,6 @@ lto = true
 [workspace.dependencies]
 base = { version = "2.19", path = "./sysd-manager-base", package = "sysd-manager-base" }
 systemd = { version = "2.19", path = "./sysd-manager-comcontroler", package = "sysd-manager-comcontroler" }
-
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
 chrono = "0.4"
@@ -88,8 +87,6 @@ zbus = { version = "5.11", default-features = false, features = [
 ] }
 
 [dependencies]
-
-
 pango = { version = "0", package = "pango", features = ["v1_56"] }
 adw = { version = "0.9", package = "libadwaita", features = ["v1_8"] }
 gio.workspace = true

@@ -32,8 +32,8 @@ impl UnitListSearchControls {
 
 mod imp {
     use super::UnitListSearchControls;
-    use crate::widget::unit_list::UnitListPanel;
-    use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
+    use crate::{systemd_gui::clear_on_escape, widget::unit_list::UnitListPanel};
+    use gtk::{glib, prelude::*, subclass::prelude::*};
     use std::cell::OnceCell;
     use tracing::{debug, error};
 
@@ -137,17 +137,7 @@ mod imp {
                 .set(signal_handler_id)
                 .expect("Search entry handler set once");
 
-            let event_controller = gtk::EventControllerKey::new();
-
-            event_controller.connect_key_released(|controller, key, _keycode, _state| {
-                if key == gdk::Key::Escape
-                    && let Some(search_entry) =
-                        controller.widget().and_downcast_ref::<gtk::SearchEntry>()
-                {
-                    search_entry.set_text("");
-                }
-            });
-
+            let event_controller = clear_on_escape();
             self.search_entry.add_controller(event_controller);
         }
     }
