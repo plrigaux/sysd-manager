@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0 -->
+<interface>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <template class="CreatorEndPage" parent="AdwNavigationPage">
+    <property name="child">
+      <object class="AdwClamp">
+        <property name="child">
+          <object class="GtkBox">
+            <property name="margin-bottom">12</property>
+            <property name="margin-top">12</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <child>
+                  <object class="AdwButtonRow">
+                    <property name="end-icon-name">go-next-symbolic</property>
+                    <property name="title">See Generated Service</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwButtonRow">
+                    <property name="end-icon-name">go-next-symbolic-rtl</property>
+                    <property name="title">See Generated Timer</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <child>
+                  <object class="AdwSwitchRow">
+                    <property name="title">Daemon Reload</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow">
+                    <property name="title">Ennable</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow">
+                    <property name="title">Start</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="css-classes">suggested-action
+pill</property>
+                <property name="halign">end</property>
+                <property name="label">Create</property>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </property>
+  </template>
+</interface>
