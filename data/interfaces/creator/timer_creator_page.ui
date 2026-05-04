@@ -92,6 +92,50 @@
                     <property name="use-subtitle">True</property>
                   </object>
                 </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="subtitle">test</property>
+                    <property name="title">test</property>
+                    <child>
+                      <object class="GtkMenuButton">
+                        <property name="popover">
+                          <object class="GtkPopover">
+                            <property name="child">
+                              <object class="GtkBox">
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">aasdf</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">zxcv</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">qwer</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
+                            <property name="default-widget">
+                              <object class="GtkLabel">
+                                <property name="label">XXXXXXXXXXXXX</property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesRow">
+                    <property name="title">ddddddddd</property>
+                    <property name="title-selectable">True</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

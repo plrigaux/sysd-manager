@@ -58,6 +58,7 @@ systemd = { version = "2.19", path = "./sysd-manager-comcontroler", package = "s
 clap = { version = "4.5", features = ["derive"] }
 constcat = "0.6"
 chrono = "0.4"
+convert_case = "0.11"
 dotenv = "0.15"
 enumflags2 = "0.7"
 flagset = "0.4"
@@ -95,6 +96,7 @@ glib.workspace = true
 flagset.workspace = true
 base.workspace = true
 chrono.workspace = true
+convert_case.workspace = true
 clap.workspace = true
 constcat.workspace = true
 const_format = "0.2.34"
@@ -102,9 +104,11 @@ dotenv.workspace = true
 enumflags2.workspace = true
 formatx = "0.2"
 foreign-types-shared = "0.3.1"
+freedesktop_entry_parser = "2"
 futures-util = "0.3"
 gettext-rs.workspace = true
 libc.workspace = true
+paste = "1"
 regex.workspace = true
 serde.workspace = true
 sourceview5 = "0.11"
