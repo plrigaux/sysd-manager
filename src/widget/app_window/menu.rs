@@ -1,8 +1,8 @@
+use std::collections::BTreeSet;
 use std::env;
 use std::fmt::Write;
 
 use crate::consts::ACTION_DAEMON_RELOAD_BUS;
-use crate::format2;
 use crate::{
     analyze::build_analyze_window,
     consts::ACTION_DAEMON_RELOAD,
@@ -17,6 +17,7 @@ use crate::{
         signals_dialog::SignalsWindow,
     },
 };
+use crate::{format2, systemd_gui};
 use adw::prelude::*;
 use base::consts::APP_ID;
 use base::enums::UnitDBusLevel;
@@ -491,6 +492,19 @@ fn generate_debug_info() -> String {
     if let Ok(adw_disable_portal) = adw_disable_portal {
         let _ = writeln!(&mut info, "- ADW_DISABLE_PORTAL: {}", adw_disable_portal);
     }
+
+    let _ = writeln!(&mut info, "\nSettings");
+
+    let settings = systemd_gui::new_settings();
+
+    if let Some(schema) = settings.settings_schema() {
+        let set: BTreeSet<glib::GString> = schema.list_keys().into_iter().collect();
+        for key in set {
+            let value = settings.value(&key);
+            let _ = writeln!(&mut info, "- {}={}", key, value);
+        }
+    }
+
     info
 }
 
@@ -558,7 +572,7 @@ fn get_gtk_info() -> (String, String) {
                 rend => rend,
             };
             renderer.push_str(rend);
-            //            gsk_renderer.unrealize(); // GLib-GObject-CRITICAL **: 01:27:13.178: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
+            gsk_renderer.unrealize(); // GLib-GObject-CRITICAL **: 01:27:13.178: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
         }
         surface.destroy();
     }
