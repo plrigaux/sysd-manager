@@ -70,7 +70,7 @@ mod imp {
             self.parent_constructed();
 
             self.trigger_unit.connect_selected_item_notify(|a| {
-                println!("Conn idc {}", a.selected());
+                println!("Connect idx {}", a.selected());
             });
         }
     }
@@ -93,7 +93,7 @@ mod imp {
             // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
             self.trigger_unit.set_model(Some(&model));
             self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
-            println!("sel {}", self.trigger_unit.selected());
+            println!("Select* {}", self.trigger_unit.selected());
         }
     }
 

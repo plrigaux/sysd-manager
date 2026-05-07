@@ -32,6 +32,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="creator.ui">interfaces/creator/Creator.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="timer_creator_page.ui">interfaces/creator/timer_creator_page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="service_creator_page.ui">interfaces/creator/service_creator_page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="unit_file_creator_page.ui">interfaces/creator/unit_file_creator_page.ui</file>
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>
     <file compressed="true" alias="style.css">styles/style.css</file>
     <file compressed="true" alias="style_dark.css">styles/style_dark.css</file>

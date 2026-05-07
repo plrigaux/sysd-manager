@@ -1,20 +1,20 @@
 use super::flatpak;
 use crate::{
     consts::{
-        ACTION_SAVE_UNIT_FILE, ADWAITA, APP_ACTION_DAEMON_RELOAD_BUS, SETTING_FIND_IN_TEXT_OPEN,
+        ACTION_SAVE_UNIT_FILE, APP_ACTION_DAEMON_RELOAD_BUS, SETTING_FIND_IN_TEXT_OPEN,
         UNIT_FILE_LINE_NUMBER_ACTION,
     },
     format2,
     systemd::{
         self, data::UnitInfo, errors::SystemdErrors, generate_file_uri, sysd_proxy_service_name,
     },
-    systemd_gui::{self, is_dark},
+    systemd_gui::{self},
     upgrade,
     utils::font_management::set_text_view_font_display,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        preferences::{data::PREFERENCES, style_scheme::style_schemes},
+        preferences::{data::PREFERENCES, style_scheme::set_new_style_scheme},
         text_search::{self, on_new_text},
         unit_file_panel::flatpak::PROCEED,
     },
@@ -31,10 +31,10 @@ use gtk::{
 };
 use regex::Regex;
 use sourceview5::{Buffer, prelude::*};
-use std::fmt::Write;
 use std::{
     cell::{Cell, OnceCell, RefCell},
     ffi::OsStr,
+    fmt::Write,
     path::Path,
 };
 use tracing::{debug, error, info, warn};
@@ -655,65 +655,8 @@ impl UnitFilePanelImp {
 
         debug!("File Unit set_dark {is_dark} style_scheme_id {style_scheme_id:?}");
 
-        self.set_new_style_scheme(Some(&style_scheme_id));
-    }
-
-    fn set_new_style_scheme(&self, style_scheme_id: Option<&str>) {
-        info!("Set new style scheme {style_scheme_id:?}");
-
-        match style_scheme_id {
-            Some("") | None => {
-                let buffer = get_buffer!(self);
-
-                buffer.set_style_scheme(None);
-            }
-            Some(style_scheme_id) => {
-                let style_schemes_map: &'static std::collections::BTreeMap<
-                    String,
-                    crate::widget::preferences::style_scheme::StyleSchemes,
-                > = style_schemes();
-
-                debug!("{style_schemes_map:#?}");
-                /*             if style_scheme_id.is_empty() {
-                    style_scheme_id = ADWAITA;
-                } */
-
-                let style_scheme_st = style_schemes_map.get(style_scheme_id);
-
-                let style_sheme_st = match style_scheme_st {
-                    Some(ss) => ss,
-                    None => {
-                        info!(
-                            "Style scheme id \"{style_scheme_id}\" not found in {:?}",
-                            style_schemes_map.keys().collect::<Vec<_>>()
-                        );
-
-                        //fallback on style Adwaita
-                        if let Some(style_scheme_st) = style_schemes_map.get(ADWAITA) {
-                            style_scheme_st
-                        } else
-                        //fallback on first item
-                        if let Some((_, style_scheme_st)) =
-                            style_schemes_map.first_key_value()
-                        {
-                            style_scheme_st
-                        } else {
-                            return;
-                        }
-                    }
-                };
-
-                let scheme_id = &style_sheme_st.get_style_scheme_id(is_dark());
-
-                if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme(scheme_id) {
-                    let buffer = get_buffer!(self);
-                    info!("Style Scheme found for id {scheme_id:?}");
-                    buffer.set_style_scheme(Some(scheme));
-                } else {
-                    warn!("No Style Scheme found for id {scheme_id:?}")
-                }
-            }
-        }
+        let buffer = get_buffer!(self);
+        set_new_style_scheme(&buffer, Some(&style_scheme_id));
     }
 
     pub(crate) fn register(&self, app_window: &AppWindow) {
@@ -1000,7 +943,8 @@ impl UnitFilePanelImp {
             InterPanelMessage::IsDark(is_dark) => self.set_dark(is_dark),
             InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
             InterPanelMessage::NewStyleScheme(style_scheme) => {
-                self.set_new_style_scheme(style_scheme)
+                let buffer = get_buffer!(self);
+                set_new_style_scheme(&buffer, style_scheme);
             }
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             InterPanelMessage::Refresh(unit) => self.refresh_panels(unit),

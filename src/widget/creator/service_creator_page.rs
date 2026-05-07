@@ -1,4 +1,7 @@
+use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
+
+use crate::widget::creator::UnitCreatorWindow;
 
 glib::wrapper! {
 
@@ -8,25 +11,21 @@ glib::wrapper! {
 }
 
 impl ServiceCreatorPage {
-    pub fn new() -> Self {
+    pub fn new(window: WeakRef<UnitCreatorWindow>) -> Self {
         let obj: ServiceCreatorPage = glib::Object::new();
+        let _ = obj.imp().window.set(window);
+        // obj.imp().update_from_unit_info();
         obj
-    }
-}
-
-impl Default for ServiceCreatorPage {
-    fn default() -> Self {
-        ServiceCreatorPage::new()
     }
 }
 
 mod imp {
 
     use super::*;
-    use crate::widget::creator::UnitCreateType;
+    use crate::widget::creator::{UnitCreateType, unit_file::UnitFileData};
     use adw::subclass::prelude::*;
     use gtk::{glib, prelude::*};
-    use std::cell::Cell;
+    use std::cell::{Cell, OnceCell};
     use tracing::warn;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
@@ -37,10 +36,18 @@ mod imp {
         creation_type: Cell<UnitCreateType>,
 
         #[template_child]
+        description_entry: TemplateChild<adw::EntryRow>,
+
+        #[template_child]
         executable_entry: TemplateChild<adw::EntryRow>,
 
         #[template_child]
         working_directory_entry: TemplateChild<adw::EntryRow>,
+
+        pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
+
+        #[property(get)]
+        pub(super) data: OnceCell<UnitFileData>,
     }
 
     #[glib::object_subclass]
@@ -64,6 +71,23 @@ mod imp {
     impl ObjectImpl for ServiceCreatorPageImp {
         fn constructed(&self) {
             self.parent_constructed();
+
+            let data = self.data.get_or_init(UnitFileData::new);
+
+            self.description_entry
+                .bind_property("text", data, "description")
+                .bidirectional()
+                .build();
+
+            self.executable_entry
+                .bind_property("text", data, "exec_start")
+                .bidirectional()
+                .build();
+
+            self.working_directory_entry
+                .bind_property("text", data, "working_directory")
+                .bidirectional()
+                .build();
         }
     }
 

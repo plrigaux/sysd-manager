@@ -2,6 +2,7 @@ mod imp;
 mod service_creator_page;
 mod timer_creator_page;
 mod unit_file;
+mod unit_file_creator_page;
 use crate::widget::app_window::AppWindow;
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib::{self};

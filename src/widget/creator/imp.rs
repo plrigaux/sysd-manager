@@ -8,7 +8,7 @@ use crate::{
         app_window::AppWindow,
         creator::{
             UnitCreateType, service_creator_page::ServiceCreatorPage,
-            timer_creator_page::TimerCreatorPage,
+            timer_creator_page::TimerCreatorPage, unit_file_creator_page::UnitFileCreatorPage,
         },
     },
 };
@@ -106,13 +106,13 @@ impl UnitCreatorWindowImp {
 
         match unit_type {
             UnitCreateType::Service => {
-                self.service_page(unit_type);
+                self.service_page();
             }
             UnitCreateType::Timer => {
                 self.timer_page(unit_type);
             }
             UnitCreateType::TimerService => {
-                self.service_page(unit_type);
+                self.service_page();
 
                 self.timer_page(unit_type);
             }
@@ -139,16 +139,46 @@ impl UnitCreatorWindowImp {
         }
     }
 
-    fn service_page(&self, unit_type: &UnitCreateType) {
+    fn service_page(&self) {
         if let Some(widget) = self.section.borrow().get(&UnitCreateType::Service) {
             if widget.parent().is_none() {
                 self.carousel.append(widget);
             }
-            widget.set_property(PROPERTY_NAME, unit_type);
+            // widget.set_property(PROPERTY_NAME, unit_type);
         } else {
-            let service_page = ServiceCreatorPage::default();
-            service_page.set_property(PROPERTY_NAME, unit_type);
-            self.add_page(&UnitCreateType::Service, service_page);
+            let service_page = ServiceCreatorPage::new(self.obj().downgrade());
+            let unit_file_page = UnitFileCreatorPage::new();
+            let service_navigation = adw::NavigationView::new();
+
+            //The push add is important , case if 2 adds the navigation stamer
+            service_navigation.push(&service_page);
+            service_navigation.add(&unit_file_page);
+
+            let unit_file_page = unit_file_page.downgrade();
+            let service_page = service_page.downgrade();
+            service_navigation.connect_visible_page_notify(move |nav| {
+                match nav.visible_page_tag().as_deref() {
+                    Some("service_base") => {
+                        let unit_file_page = upgrade!(unit_file_page);
+                        let service_page = upgrade!(service_page);
+                        let data = service_page.data();
+                        let text = unit_file_page.file_text();
+
+                        data.update_file_data(&text);
+                    }
+                    Some("unit_file_page") => {
+                        let unit_file_page = upgrade!(unit_file_page);
+                        let service_page = upgrade!(service_page);
+                        let data = service_page.data();
+                        unit_file_page.update_view(&data);
+                    }
+                    Some(visible_page) => warn!("Service page notify page {:?}", visible_page),
+                    None => warn!("Service page notify page None"),
+                }
+            });
+
+            // service_page.set_property(PROPERTY_NAME, unit_type);
+            self.add_page(&UnitCreateType::Service, service_navigation);
         }
     }
 

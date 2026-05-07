@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0 -->
+<interface>
+  <!-- interface-name unit_file_creator_page.ui -->
+  <requires lib="gtk" version="4.6"/>
+  <requires lib="libadwaita" version="1.4"/>
+  <template class="UnitFileCreatorPage" parent="AdwNavigationPage">
+    <property name="child">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">TEST </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="unit_file_scrolled_window">
+                <property name="vexpand">True</property>
+                <property name="vexpand-set">True</property>
+              </object>
+            </child>
+          </object>
+        </property>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="show-end-title-buttons">False</property>
+          </object>
+        </child>
+      </object>
+    </property>
+    <property name="tag">unit_file_page</property>
+    <property name="title">Unit File</property>
+  </template>
+</interface>
