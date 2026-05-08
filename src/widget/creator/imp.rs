@@ -7,8 +7,9 @@ use crate::{
     widget::{
         app_window::AppWindow,
         creator::{
-            UnitCreateType, service_creator_page::ServiceCreatorPage,
-            timer_creator_page::TimerCreatorPage, unit_file_creator_page::UnitFileCreatorPage,
+            UnitCreateType, launch_creator_page::LaunchCreatorPage,
+            service_creator_page::ServiceCreatorPage, timer_creator_page::TimerCreatorPage,
+            unit_file_creator_page::UnitFileCreatorPage,
         },
     },
 };
@@ -32,6 +33,13 @@ const PROPERTY_NAME: &str = "creation-type";
 const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-]+@?$";
 const ACTION_CREATOR_UNIT_BUS: &str = "creator.unit_bus_selection";
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+enum PageType {
+    Service,
+    Timer,
+    Launch,
+}
+
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/creator.ui")]
 pub struct UnitCreatorWindowImp {
@@ -41,7 +49,7 @@ pub struct UnitCreatorWindowImp {
     #[template_child]
     unit_name_prefix: TemplateChild<adw::EntryRow>,
 
-    section: RefCell<HashMap<UnitCreateType, gtk::Widget>>,
+    sections: RefCell<HashMap<PageType, gtk::Widget>>,
 
     pub(super) app_window: OnceCell<AppWindow>,
 
@@ -49,7 +57,7 @@ pub struct UnitCreatorWindowImp {
     level: Cell<UnitDBusLevel>,
     system_file_list: RefCell<HashSet<String>>,
     session_file_list: RefCell<HashSet<String>>,
-    action_group: RefCell<SimpleActionGroup>,
+    pub(super) action_group: RefCell<SimpleActionGroup>,
     re: OnceCell<Regex>,
 }
 
@@ -74,60 +82,38 @@ impl UnitCreatorWindowImp {
     fn set_unit_type(&self, unit_type: &glib::Variant) {
         let unit_type: UnitCreateType = unit_type.into();
         self.creation_type.set(unit_type);
-        match unit_type {
-            UnitCreateType::Service => {
-                self.insert_page(&unit_type);
-            }
-            UnitCreateType::Timer => {
-                self.insert_page(&unit_type);
-            }
-            UnitCreateType::TimerService => {
-                self.insert_page(&unit_type);
-            }
-            UnitCreateType::Unknown => {}
-        }
+        self.insert_page(&unit_type);
     }
 
-    fn insert_page(&self, unit_type: &UnitCreateType) {
-        for (creation_type, widget) in self.section.borrow().iter() {
-            match (unit_type, creation_type) {
-                (UnitCreateType::Service, UnitCreateType::Timer) => {
-                    self.remove_from_carousel(widget)
-                }
-                (UnitCreateType::Service, _) => {}
-                (UnitCreateType::Timer, UnitCreateType::Service) => {
-                    self.remove_from_carousel(widget)
-                }
-                (UnitCreateType::Timer, _) => {}
-                (UnitCreateType::TimerService, _) => self.remove_from_carousel(widget),
-                (_, _) => {}
-            }
+    fn insert_page(&self, create_unit_type: &UnitCreateType) {
+        for (_page_type, widget) in self.sections.borrow().iter() {
+            self.remove_from_carousel(widget)
         }
 
-        match unit_type {
+        match create_unit_type {
             UnitCreateType::Service => {
                 self.service_page();
             }
             UnitCreateType::Timer => {
-                self.timer_page(unit_type);
+                self.timer_page(create_unit_type);
             }
             UnitCreateType::TimerService => {
                 self.service_page();
 
-                self.timer_page(unit_type);
+                self.timer_page(create_unit_type);
             }
-            _ => {}
         };
+        self.launch_page();
     }
 
-    fn remove_from_carousel(&self, w: &gtk::Widget) {
-        if w.parent().is_some() {
-            self.carousel.remove(w)
+    fn remove_from_carousel(&self, widget: &gtk::Widget) {
+        if widget.parent().is_some() {
+            self.carousel.remove(widget)
         }
     }
 
     fn timer_page(&self, unit_creation_type: &UnitCreateType) {
-        if let Some(widget) = self.section.borrow().get(&UnitCreateType::Timer) {
+        if let Some(widget) = self.sections.borrow().get(&PageType::Timer) {
             if widget.parent().is_none() {
                 self.carousel.append(widget);
             }
@@ -135,12 +121,12 @@ impl UnitCreatorWindowImp {
         } else {
             let timer_page = TimerCreatorPage::new(self.obj().downgrade());
             timer_page.set_property(PROPERTY_NAME, unit_creation_type);
-            self.add_page(&UnitCreateType::Timer, timer_page);
+            self.add_page(&PageType::Timer, timer_page);
         }
     }
 
     fn service_page(&self) {
-        if let Some(widget) = self.section.borrow().get(&UnitCreateType::Service) {
+        if let Some(widget) = self.sections.borrow().get(&PageType::Service) {
             if widget.parent().is_none() {
                 self.carousel.append(widget);
             }
@@ -178,13 +164,24 @@ impl UnitCreatorWindowImp {
             });
 
             // service_page.set_property(PROPERTY_NAME, unit_type);
-            self.add_page(&UnitCreateType::Service, service_navigation);
+            self.add_page(&PageType::Service, service_navigation);
         }
     }
 
-    fn add_page<T: IsA<gtk::Widget>>(&self, unit_type: &UnitCreateType, widget: T) {
+    fn launch_page(&self) {
+        if let Some(widget) = self.sections.borrow().get(&PageType::Launch) {
+            if widget.parent().is_none() {
+                self.carousel.append(widget);
+            }
+        } else {
+            let launch_page = LaunchCreatorPage::new(self.obj().downgrade());
+            self.add_page(&PageType::Launch, launch_page);
+        }
+    }
+
+    fn add_page<T: IsA<gtk::Widget>>(&self, page_type: &PageType, widget: T) {
         self.carousel.append(&widget);
-        self.section.borrow_mut().insert(*unit_type, widget.into());
+        self.sections.borrow_mut().insert(*page_type, widget.into());
     }
 
     async fn fill_unit_files(&self) {
@@ -246,7 +243,6 @@ impl UnitCreatorWindowImp {
                     set.contains(&format!("{unit_prefix}.service"))
                         || set.contains(&format!("{unit_prefix}.timer"))
                 }
-                UnitCreateType::Unknown => false,
             }
         } else {
             false
@@ -321,7 +317,7 @@ impl ObjectImpl for UnitCreatorWindowImp {
 
         self.insert_page(&UnitCreateType::Service);
         {
-            let creator_window = self.obj().clone().downgrade();
+            let creator_window = self.obj().downgrade();
             self.unit_name_prefix.connect_changed(move |_| {
                 upgrade!(creator_window).imp().validate_entry();
             });

@@ -1,4 +1,5 @@
 mod imp;
+mod launch_creator_page;
 mod service_creator_page;
 mod timer_creator_page;
 mod unit_file;
@@ -22,6 +23,10 @@ impl UnitCreatorWindow {
         let _ = obj.imp().app_window.set(app_window.clone());
         obj
     }
+
+    pub fn action_group(&self) -> gio::SimpleActionGroup {
+        self.imp().action_group.borrow().clone()
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, glib::Enum, Default, Hash)]
@@ -31,7 +36,6 @@ pub enum UnitCreateType {
     Service,
     Timer,
     TimerService,
-    Unknown,
 }
 
 impl UnitCreateType {
@@ -40,7 +44,6 @@ impl UnitCreateType {
             UnitCreateType::Service => ".service".len(),
             UnitCreateType::Timer => ".timer".len(),
             UnitCreateType::TimerService => ".service".len(),
-            UnitCreateType::Unknown => 0,
         }
     }
 }
@@ -53,7 +56,7 @@ impl From<&glib::Variant> for UnitCreateType {
             Some("timer_service") => UnitCreateType::TimerService,
             other => {
                 warn!("Unkown type {:?}", other);
-                UnitCreateType::Unknown
+                UnitCreateType::Service
             }
         }
     }

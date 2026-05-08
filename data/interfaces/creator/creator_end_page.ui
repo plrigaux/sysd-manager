@@ -4,7 +4,7 @@
   <!-- interface-name creator_end_page.ui -->
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
-  <template class="CreatorEndPage" parent="AdwNavigationPage">
+  <template class="LaunchCreatorPage" parent="AdwNavigationPage">
     <property name="child">
       <object class="AdwClamp">
         <property name="child">
@@ -32,17 +32,21 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwSwitchRow">
+                  <object class="AdwSwitchRow" id="daemon_reload_switch">
+                    <property name="action-name">creator.daemon-reload</property>
+                    <property name="action-target">true</property>
                     <property name="title">Daemon Reload</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwSwitchRow">
-                    <property name="title">Ennable</property>
+                  <object class="AdwSwitchRow" id="enable_switch">
+                    <property name="subtitle">Enable Unit after creation</property>
+                    <property name="title">Enable</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwSwitchRow">
+                  <object class="AdwSwitchRow" id="start_switch">
+                    <property name="subtitle">Start Unit after creation</property>
                     <property name="title">Start</property>
                   </object>
                 </child>
@@ -60,5 +64,7 @@ pill</property>
         </property>
       </object>
     </property>
+    <property name="tag">launch-page</property>
+    <property name="title">Launch</property>
   </template>
 </interface>
