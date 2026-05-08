@@ -39,12 +39,11 @@
                               <object class="AdwPreferencesGroup">
                                 <property name="title">Unit Type</property>
                                 <child>
-                                  <object class="AdwActionRow">
-                                    <property name="activatable-widget">radio_button_1</property>
+                                  <object class="AdwActionRow" id="radio_button_service">
                                     <property name="focusable">False</property>
                                     <property name="title" translatable="yes">Service</property>
                                     <child type="prefix">
-                                      <object class="GtkCheckButton" id="radio_button_1">
+                                      <object class="GtkCheckButton">
                                         <property name="action-name">creator.unit_type_selection</property>
                                         <property name="action-target">"service"</property>
                                         <property name="active">True</property>
@@ -54,12 +53,11 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwActionRow">
-                                    <property name="activatable-widget">radio_button_2</property>
+                                  <object class="AdwActionRow" id="radio_button_timer_service">
                                     <property name="focusable">False</property>
-                                    <property name="title" translatable="yes">Service w/ Timer</property>
+                                    <property name="title" translatable="yes">Timer with Service</property>
                                     <child type="prefix">
-                                      <object class="GtkCheckButton" id="radio_button_2">
+                                      <object class="GtkCheckButton">
                                         <property name="action-name">creator.unit_type_selection</property>
                                         <property name="action-target">"timer_service"</property>
                                         <property name="valign">center</property>
@@ -68,13 +66,12 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwActionRow">
-                                    <property name="activatable-widget">radio_button_3</property>
+                                  <object class="AdwActionRow" id="radio_button_timer">
                                     <property name="focusable">False</property>
                                     <property name="subtitle">triggers existing service</property>
                                     <property name="title" translatable="yes">Timer</property>
                                     <child type="prefix">
-                                      <object class="GtkCheckButton" id="radio_button_3">
+                                      <object class="GtkCheckButton">
                                         <property name="action-name">creator.unit_type_selection</property>
                                         <property name="action-target">"timer"</property>
                                         <property name="valign">center</property>
@@ -157,7 +154,7 @@
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
-              <object class="AdwWindowTitle">
+              <object class="AdwWindowTitle" id="window_title">
                 <property name="subtitle">Love</property>
                 <property name="title">Create Unit</property>
               </object>

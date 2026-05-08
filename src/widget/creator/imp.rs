@@ -32,6 +32,7 @@ use tracing::{debug, warn};
 const PROPERTY_NAME: &str = "creation-type";
 const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-]+@?$";
 const ACTION_CREATOR_UNIT_BUS: &str = "creator.unit_bus_selection";
+const ACTION_CREATOR_UNIT_TYPE_SELECTION: &str = "creator.unit_type_selection";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 enum PageType {
@@ -44,10 +45,19 @@ enum PageType {
 #[template(resource = "/io/github/plrigaux/sysd-manager/creator.ui")]
 pub struct UnitCreatorWindowImp {
     #[template_child]
+    window_title: TemplateChild<adw::WindowTitle>,
+
+    #[template_child]
     carousel: TemplateChild<adw::Carousel>,
 
     #[template_child]
     unit_name_prefix: TemplateChild<adw::EntryRow>,
+    #[template_child]
+    radio_button_service: TemplateChild<adw::ActionRow>,
+    #[template_child]
+    radio_button_timer_service: TemplateChild<adw::ActionRow>,
+    #[template_child]
+    radio_button_timer: TemplateChild<adw::ActionRow>,
 
     sections: RefCell<HashMap<PageType, gtk::Widget>>,
 
@@ -79,10 +89,17 @@ impl ObjectSubclass for UnitCreatorWindowImp {
 }
 
 impl UnitCreatorWindowImp {
-    fn set_unit_type(&self, unit_type: &glib::Variant) {
-        let unit_type: UnitCreateType = unit_type.into();
+    fn set_creation_unit_type(&self, unit_type: UnitCreateType) {
         self.creation_type.set(unit_type);
         self.insert_page(&unit_type);
+
+        let title = match unit_type {
+            UnitCreateType::Service => self.radio_button_service.title(),
+            UnitCreateType::TimerService => self.radio_button_timer_service.title(),
+            UnitCreateType::Timer => self.radio_button_timer.title(),
+        };
+
+        self.window_title.set_subtitle(&title);
     }
 
     fn insert_page(&self, create_unit_type: &UnitCreateType) {
@@ -282,8 +299,6 @@ impl UnitCreatorWindowImp {
             }
         }
         entry.set_title(&name_err.title_err());
-
-        println!("{}", text);
     }
 }
 
@@ -315,6 +330,7 @@ impl ObjectImpl for UnitCreatorWindowImp {
         let event_controller = clear_on_escape();
         self.unit_name_prefix.add_controller(event_controller);
 
+        self.set_creation_unit_type(UnitCreateType::Service);
         self.insert_page(&UnitCreateType::Service);
         {
             let creator_window = self.obj().downgrade();
@@ -323,7 +339,6 @@ impl ObjectImpl for UnitCreatorWindowImp {
             });
         }
 
-        const ACTION_CREATOR_UNIT_TYPE_SELECTION: &str = "creator.unit_type_selection";
         let preferences_action_entry: gio::ActionEntry<_> = {
             let unit_creator_window = self.obj().downgrade();
             gio::ActionEntry::builder(&ACTION_CREATOR_UNIT_TYPE_SELECTION[8..])
@@ -334,7 +349,8 @@ impl ObjectImpl for UnitCreatorWindowImp {
 
                         let creation_window = upgrade!(unit_creator_window);
                         let creation_window = creation_window.imp();
-                        creation_window.set_unit_type(param);
+                        let unit_creation_type: UnitCreateType = param.into();
+                        creation_window.set_creation_unit_type(unit_creation_type);
                         creation_window.validate_entry();
                     }
                 })
