@@ -395,13 +395,14 @@ fn generate_debug_info() -> String {
 
     let version = VERSION.to_string();
 
-    #[cfg(feature = "flatpak")]
-    let version = format!("{} (Flatpak)", VERSION);
-
-    #[cfg(feature = "appimage")]
-    let version = format!("{} (AppImage)", VERSION);
-
     let _ = writeln!(&mut info, "SysD Manager:  {}", version);
+    let package_format = cfg_select! {
+        feature ="flatpak"=> {"Flatpak"}
+        feature="appimage" => {"AppImage"}
+        _ => {"Other"}
+    };
+
+    let _ = writeln!(&mut info, "Packaging:  {}", package_format);
 
     let _ = writeln!(&mut info, "\nRunning against:");
     let _ = writeln!(
@@ -431,8 +432,6 @@ fn generate_debug_info() -> String {
         let _ = writeln!(&mut info, "- Build: {}", os_build_id);
     }
 
-    #[cfg(feature = "flatpak")]
-    flatpak_info(&mut info);
     {
         let (backend, renderer) = get_gtk_info();
         info.push_str("\nGTK:\n");
@@ -493,7 +492,10 @@ fn generate_debug_info() -> String {
         let _ = writeln!(&mut info, "- ADW_DISABLE_PORTAL: {}", adw_disable_portal);
     }
 
-    let _ = writeln!(&mut info, "\nSettings");
+    #[cfg(feature = "flatpak")]
+    flatpak_info(&mut info);
+
+    let _ = writeln!(&mut info, "\nSettings:");
 
     let settings = systemd_gui::new_settings();
 
@@ -534,18 +536,18 @@ fn flatpak_info(info: &mut String) {
         .string("Instance", "flatpak-version")
         .inspect_err(|err| error!("{:?}", err))
         .unwrap_or_default();
-    let devel = key_file
-        .string("Instance", "devel")
-        .inspect_err(|err| error!("{:?}", err))
-        .unwrap_or_default();
 
-    info.push_str("Flatpak:\n");
-    info.push_str(&format!("- Runtime: {}\n", runtime));
-    info.push_str(&format!("- Runtime commit: {}\n", runtime_commit));
-    info.push_str(&format!("- Arch: {}\n", arch));
-    info.push_str(&format!("- Flatpak version: {}\n", flatpak_version));
-    info.push_str(&format!("- Devel: {}\n", devel));
-    info.push('\n');
+    let _ = writeln!(info, "\nFlatpak:");
+    let _ = writeln!(info, "- Runtime: {}", runtime);
+    let _ = writeln!(info, "- Runtime commit: {}", runtime_commit);
+    let _ = writeln!(info, "- Arch: {}", arch);
+    let _ = writeln!(info, "- Flatpak version: {}", flatpak_version);
+
+    let _ = writeln!(
+        info,
+        "\nFlatpak Info\n-------------------------\n{}\n-------------------------\n",
+        key_file.to_data()
+    );
 }
 
 fn get_gtk_info() -> (String, String) {
