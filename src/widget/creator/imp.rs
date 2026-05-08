@@ -27,7 +27,7 @@ use std::{
     cell::{Cell, OnceCell, Ref, RefCell},
     collections::{HashMap, HashSet},
 };
-use tracing::{debug, warn};
+use tracing::{debug, error, warn};
 
 const PROPERTY_NAME: &str = "creation-type";
 const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-]+@?$";
@@ -213,7 +213,20 @@ impl UnitCreatorWindowImp {
             }
         }
 
-        match systemd::list_unit_files(level).await {
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        crate::systemd::runtime().spawn(async move {
+            let response = systemd::list_unit_files(level).await;
+            if let Err(e) = sender.send(response) {
+                error!("Channel closed unexpectedly: {e:?}");
+            }
+        });
+
+        let Ok(response) = receiver.await else {
+            error!("Tokio channel dropped");
+            return;
+        };
+
+        match response {
             Ok(systemd::ListUnitResponse::File(_, list)) => {
                 let mut set = match level {
                     UnitDBusLevel::System | UnitDBusLevel::Both => {

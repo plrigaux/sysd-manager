@@ -1,7 +1,6 @@
+use crate::widget::creator::UnitCreatorWindow;
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
-
-use crate::widget::creator::UnitCreatorWindow;
 
 glib::wrapper! {
 

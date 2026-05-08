@@ -23,10 +23,15 @@ mod imp {
 
     use super::*;
     use crate::widget::creator::{UnitCreateType, unit_file::UnitFileData};
-    use adw::subclass::prelude::*;
+    use adw::{prelude::PreferencesRowExt, subclass::prelude::*};
     use gtk::{glib, prelude::*};
-    use std::cell::{Cell, OnceCell};
-    use tracing::warn;
+    use std::{
+        cell::{Cell, OnceCell},
+        fs,
+        os::unix::fs::PermissionsExt,
+        path::Path,
+    };
+    use tracing::{info, warn};
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/service_creator_page.ui")]
@@ -39,7 +44,7 @@ mod imp {
         description_entry: TemplateChild<adw::EntryRow>,
 
         #[template_child]
-        executable_entry: TemplateChild<adw::EntryRow>,
+        exec_start_entry: TemplateChild<adw::EntryRow>,
 
         #[template_child]
         working_directory_entry: TemplateChild<adw::EntryRow>,
@@ -79,7 +84,7 @@ mod imp {
                 .bidirectional()
                 .build();
 
-            self.executable_entry
+            self.exec_start_entry
                 .bind_property("text", data, "exec_start")
                 .bidirectional()
                 .build();
@@ -88,7 +93,77 @@ mod imp {
                 .bind_property("text", data, "working_directory")
                 .bidirectional()
                 .build();
+
+            let event_foc = gtk::EventControllerFocus::new();
+            event_foc.connect_leave(|event| {
+                if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                    // let text = entry.text();
+                    ServiceCreatorPageImp::validate_entry_strat(entry);
+                }
+            });
+            self.exec_start_entry.add_controller(event_foc);
         }
+    }
+
+    enum UnitNameErr {
+        FileNotExits,
+        NotFile,
+        NoErr,
+        NotExecutable,
+    }
+
+    impl UnitNameErr {
+        fn title_err(&self) -> String {
+            let pre = "ExecStart";
+            match self {
+                UnitNameErr::FileNotExits => format!("{pre} - File not exists"),
+                UnitNameErr::NoErr => pre.to_owned(),
+                UnitNameErr::NotFile => format!("{pre} - Not a File"),
+                UnitNameErr::NotExecutable => format!("{pre} - Not Exec"),
+            }
+        }
+    }
+
+    impl ServiceCreatorPageImp {
+        fn validate_entry_strat(entry: &adw::EntryRow) {
+            let text = entry.text();
+
+            let text = get_file_path(text.as_str());
+
+            let name_err = if text.is_empty() {
+                UnitNameErr::NoErr
+            } else {
+                let path = Path::new(text);
+
+                if !path.exists() {
+                    UnitNameErr::FileNotExits
+                } else if !path.is_file() {
+                    UnitNameErr::NotFile
+                } else if !is_executable(path) {
+                    UnitNameErr::NotExecutable
+                } else {
+                    UnitNameErr::NoErr
+                }
+            };
+
+            match name_err {
+                UnitNameErr::NoErr => {
+                    entry.remove_css_class("warning");
+                }
+                _ => {
+                    entry.add_css_class("warning");
+                }
+            }
+            entry.set_title(&name_err.title_err());
+        }
+    }
+
+    fn is_executable(path: &Path) -> bool {
+        let Ok(metadata) = fs::metadata(path) else {
+            return false;
+        };
+
+        metadata.permissions().mode() & 0o111 != 0
     }
 
     #[gtk::template_callbacks]
@@ -101,6 +176,12 @@ mod imp {
                 .build();
 
             let create_service_page = self.obj().clone();
+
+            if let Ok(home) = std::env::var("HOME") {
+                let path = Path::new(&home);
+                let dir = gio::File::for_path(path);
+                file_dialog.set_initial_folder(Some(&dir));
+            }
 
             file_dialog.select_folder(
                 None::<&gtk::Window>,
@@ -119,9 +200,109 @@ mod imp {
                 },
             );
         }
+
+        #[template_callback]
+        fn exec_start_dialog_clicked(&self, _button: gtk::Button) {
+            let file_dialog = gtk::FileDialog::builder()
+                .title("Select executable")
+                .accept_label("Select")
+                .build();
+
+            let create_service_page = self.obj().clone();
+
+            let text = self.exec_start_entry.text();
+            let text = get_file_path(&text);
+            if text.is_empty() {
+                set_initial_folder(&file_dialog);
+            } else {
+                let path = Path::new(text);
+                if path.exists() {
+                    let file = gio::File::for_path(path);
+                    if path.is_dir() {
+                        // println!("dir {:?} ", path);
+                        file_dialog.set_initial_folder(Some(&file));
+                    } else if path.is_file() {
+                        // println!("file {:?} ", path);
+                        file_dialog.set_initial_file(Some(&file));
+                    }
+                } else {
+                    // println!("not ex");
+                    set_initial_folder(&file_dialog);
+                }
+            }
+
+            let win = self.window.get().and_then(|w| w.upgrade());
+            let win = win.and_upcast_ref::<gtk::Window>();
+
+            file_dialog.open(win, None::<&gio::Cancellable>, move |result| match result {
+                Ok(file) => {
+                    if let Some(path) = file.path() {
+                        let mut file_path_str = path.display().to_string();
+                        escape(&mut file_path_str);
+                        create_service_page
+                            .imp()
+                            .exec_start_entry
+                            .set_text(&file_path_str);
+                    }
+                }
+                Err(e) => warn!("Unit File Selection Error {e:?}"),
+            });
+        }
     }
 
     impl WidgetImpl for ServiceCreatorPageImp {}
 
     impl NavigationPageImpl for ServiceCreatorPageImp {}
+
+    fn escape(file_path: &mut String) {
+        if file_path.contains(char::is_whitespace) {
+            file_path.insert(0, '"');
+            file_path.push('"');
+        }
+    }
+
+    fn set_initial_folder(file_dialog: &gtk::FileDialog) {
+        if let Ok(home) = std::env::var("HOME") {
+            let path = Path::new(&home);
+            let dir = gio::File::for_path(path);
+            file_dialog.set_initial_folder(Some(&dir));
+        }
+    }
+
+    fn get_file_path(text: &str) -> &str {
+        let text = text.trim_start();
+        let mut begin = 0;
+        let mut end = text.len();
+        let mut in_quotes = false;
+        for (idx, c) in text.char_indices() {
+            if c.is_whitespace() && !in_quotes {
+                end = idx;
+                break;
+            } else if c == '"' {
+                if idx == 0 {
+                    in_quotes = true;
+                    begin = 1;
+                } else {
+                    end = idx;
+                    break;
+                }
+            }
+        }
+        &text[begin..end]
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_get_file() {
+            assert_eq!(get_file_path("text"), "text");
+            assert_eq!(get_file_path("  text"), "text");
+            assert_eq!(get_file_path("  text   "), "text");
+            assert_eq!(get_file_path("  text -f  "), "text");
+            assert_eq!(get_file_path(r#""text asdf" xxx"#), "text asdf");
+            assert_eq!(get_file_path("\"\"text"), "");
+        }
+    }
 }

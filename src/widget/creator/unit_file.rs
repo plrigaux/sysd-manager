@@ -50,6 +50,7 @@ impl UnitFileData {
 
         sub_out.clear();
         write_attr!(sub_out, self, working_directory);
+        write_attr!(sub_out, self, exec_start);
         write_attr_values!(sub_out, self, environment);
 
         if !sub_out.is_empty() {
@@ -108,7 +109,8 @@ macro_rules! match_group_key {
                 match_pattern!($unit_file_data, $g, $q, $values);
             } )*
             (group_name, key) => {
-                warn!("Not Handle, Group {:?}, Key {:?}", group_name, key);
+                // warn!("Not Handle, Group {:?}, Key {:?}", group_name, key);
+                fill_key_match_array($unit_file_data, group_name, key, $values);
             }
         }
     };
@@ -129,7 +131,7 @@ macro_rules! match_group_key_array {
                 match_pattern_array!($unit_file_data, $g, $q, $values);
             } )*
             (group_name, key) => {
-                warn!("Not Handle Array, Group {:?}, Key {:?}", group_name, key);
+                 warn!("Not Handle Array, Group {:?}, Key {:?}", group_name, key);
             }
         }
     };
@@ -143,8 +145,16 @@ fn fill_key_match(unit_file_data: &UnitFileData, group_name: &str, key: &str, va
         values,
         ("Unit", "Description"),
         ("Service", "WorkingDirectory"),
+        ("Service", "ExecStart"),
     );
+}
 
+fn fill_key_match_array(
+    unit_file_data: &UnitFileData,
+    group_name: &str,
+    key: &str,
+    values: &[String],
+) {
     match_group_key_array!(
         unit_file_data,
         group_name,

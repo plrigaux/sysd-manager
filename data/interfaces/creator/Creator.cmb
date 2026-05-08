@@ -4,7 +4,7 @@
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1">
   <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="1ec7347e0da8b3d1b44df427e7b85b0a09269a1352d9b76f246b931b7ff2eaa7"/>
   <ui template-class="TimerCreatorPage" filename="timer_creator_page.ui" sha256="055f6f0561a7d7927f3911de5e41f953f5b92317cb99d748a08a49812c5d34df"/>
-  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="0380f6bc87e6308a237b2c4b07f5caaa2d9eb0e4afaa3d5fd855d20eac10cd5c"/>
+  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="55fae2676aeb3c3ed0efbc79665d1b3ab7698347658d2d239600c0bdaf0fd365"/>
   <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui" sha256="3f0df33b85a4affe24a685f50463c0bfa801b8820fc922a5a7db237232e333aa"/>
   <ui template-class="UnitFileCreatorPage" filename="unit_file_creator_page.ui" sha256="0c20499d7ecb908b18e85b5b32782c4cbccfe5eab05d7dce10bcdbbff8cdc0a5"/>
 </cambalache-project>

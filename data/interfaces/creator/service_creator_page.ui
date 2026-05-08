@@ -32,12 +32,13 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwEntryRow" id="executable_entry">
-                    <property name="title">Exec</property>
+                  <object class="AdwEntryRow" id="exec_start_entry">
+                    <property name="title">ExecStart</property>
                     <child>
                       <object class="GtkButton">
                         <property name="css-classes">flat</property>
                         <property name="icon-name">folder-open-symbolic</property>
+                        <signal name="clicked" handler="exec_start_dialog_clicked" swapped="True"/>
                       </object>
                     </child>
                   </object>
