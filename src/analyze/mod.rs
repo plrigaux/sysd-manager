@@ -192,32 +192,36 @@ fn fill_store(
                     stack.set_visible_child_name(PAGE_BLAME);
                 }
                 Err(error) => {
-                    const FLATPACK_PERMISSION: &str = "flatpak_permission";
-
                     match error {
                         SystemdErrors::CmdNoFreedesktopFlatpakPermission(_, _) => {
                             let dialog = flatpak::flatpak_permision_alert();
 
                             dialog.present(Some(&window));
 
-                            stack.add_named(&dialog, Some(FLATPACK_PERMISSION));
-                            stack.set_visible_child_name(FLATPACK_PERMISSION)
+                            dialog.connect_closed(move |_dialog| window.close());
+                            display_error(error, &stack);
                         }
                         SystemdErrors::CmdNoFlatpakSpawn => {
-                            let tv = TextView::new();
-                            let buf = tv.buffer();
-
-                            let mut start_iter = buf.start_iter();
-                            let gui_description = error.gui_description().unwrap_or(String::new());
-                            buf.insert_markup(&mut start_iter, &gui_description);
-
-                            stack.add_named(&tv, Some(FLATPACK_PERMISSION));
-                            stack.set_visible_child_name(FLATPACK_PERMISSION)
+                            display_error(error, &stack);
                         }
                         _ => stack.set_visible_child_name(PAGE_BLAME),
                     };
+                    stack.set_visible_child_name(PAGE_BLAME);
                 }
             }
         });
     }
+}
+
+fn display_error(error: SystemdErrors, stack: &adw::ViewStack) {
+    let tv = TextView::new();
+    let buf = tv.buffer();
+
+    let mut start_iter = buf.start_iter();
+    let gui_description = error.gui_description().unwrap_or_default();
+    buf.insert_markup(&mut start_iter, &gui_description);
+
+    const FLATPACK_PERMISSION: &str = "flatpak_permission";
+    stack.add_named(&tv, Some(FLATPACK_PERMISSION));
+    stack.set_visible_child_name(FLATPACK_PERMISSION)
 }

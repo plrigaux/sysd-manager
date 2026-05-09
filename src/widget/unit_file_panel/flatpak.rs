@@ -120,8 +120,8 @@ pub fn flatpak_permision_alert() -> adw::AlertDialog {
     //Flatpack jailbreak message
     let body = pgettext(
         "flatpak",
-        "You need to jailbreak your Flatpak application to be able to save files on the host system.\n\n\
-                            Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">link</a> to know how to aquire needed permission.",
+        "You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-programs or to save files on the host system.\n\n\
+                            Follow this <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">link</a> to know how to acquire the required permission.",
     );
 
     let header = pgettext("flatpak", "Missing Flatpak Permission!");
