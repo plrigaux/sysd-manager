@@ -7,7 +7,7 @@ use crate::{
     widget::{
         app_window::AppWindow,
         creator::{
-            UnitCreateType, launch_creator_page::LaunchCreatorPage,
+            CreateUnitErr, UnitCreateType, launch_creator_page::LaunchCreatorPage,
             service_creator_page::ServiceCreatorPage, timer_creator_page::TimerCreatorPage,
             unit_file_creator_page::UnitFileCreatorPage,
         },
@@ -16,6 +16,7 @@ use crate::{
 use adw::prelude::*;
 use adw::subclass::window::AdwWindowImpl;
 use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
 use gio::{SimpleActionGroup, prelude::ActionMapExtManual};
 use glib::variant::ToVariant;
 use gtk::{
@@ -286,53 +287,34 @@ impl UnitCreatorWindowImp {
         let text = text.as_str();
 
         let name_err = if text.is_empty() {
-            UnitNameErr::Empty
+            CreateUnitErr::Empty
         } else {
             if self.creation_type.get().max_sufix_len() + text.len() > 255 {
-                UnitNameErr::Limit255
+                CreateUnitErr::Limit255
             } else if !self
                 .re
                 .get_or_init(|| regex::Regex::new(VALID_UNIT_NAME).unwrap())
                 .is_match(text)
             {
-                UnitNameErr::WrongChar
+                CreateUnitErr::WrongChar
             } else if self.is_fill_exist(text) {
-                UnitNameErr::FileExits
+                CreateUnitErr::FileExits
             } else {
-                UnitNameErr::NoErr
+                CreateUnitErr::NoErr
             }
         };
 
         match name_err {
-            UnitNameErr::NoErr => {
+            CreateUnitErr::NoErr => {
                 entry.remove_css_class("warning");
             }
             _ => {
                 entry.add_css_class("warning");
             }
         }
-        entry.set_title(&name_err.title_err());
-    }
-}
 
-enum UnitNameErr {
-    WrongChar,
-    Limit255,
-    FileExits,
-    Empty,
-    NoErr,
-}
-
-impl UnitNameErr {
-    fn title_err(&self) -> String {
-        let pre = "Unit Name Prefix";
-        match self {
-            UnitNameErr::WrongChar => format!("{pre} - Wrong Char"),
-            UnitNameErr::Limit255 => format!("{pre} - Unit File over 255 characters"),
-            UnitNameErr::FileExits => format!("{pre} - Unit File already exists"),
-            UnitNameErr::Empty => format!("{pre} - Name Empty"),
-            UnitNameErr::NoErr => pre.to_owned(),
-        }
+        let prefix = pgettext("creator", "Unit Name Prefix");
+        entry.set_title(&name_err.title_err(&prefix));
     }
 }
 

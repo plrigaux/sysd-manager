@@ -61,3 +61,32 @@ impl From<&glib::Variant> for UnitCreateType {
         }
     }
 }
+
+#[derive(Debug, PartialEq)]
+enum CreateUnitErr {
+    WrongChar,
+    Limit255,
+    FileExits,
+    Empty,
+    FileNotExits,
+    NotFile,
+    NotExecutable,
+    NoErr,
+    Malformed,
+}
+
+impl CreateUnitErr {
+    fn title_err(&self, prefix: &str) -> String {
+        match self {
+            CreateUnitErr::WrongChar => format!("{prefix} - Wrong Char"),
+            CreateUnitErr::Limit255 => format!("{prefix} - Unit File over 255 characters"),
+            CreateUnitErr::FileExits => format!("{prefix} - Unit File already exists"),
+            CreateUnitErr::Empty => format!("{prefix} - Nae Empty"),
+            CreateUnitErr::FileNotExits => format!("{prefix} - File not exists"),
+            CreateUnitErr::NotFile => format!("{prefix} - Not a File"),
+            CreateUnitErr::NotExecutable => format!("{prefix} - Not Exec"),
+            CreateUnitErr::Malformed => format!("{prefix} - Malformed"),
+            CreateUnitErr::NoErr => prefix.to_owned(),
+        }
+    }
+}

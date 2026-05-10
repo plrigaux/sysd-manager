@@ -22,7 +22,7 @@ impl ServiceCreatorPage {
 mod imp {
 
     use super::*;
-    use crate::widget::creator::{UnitCreateType, unit_file::UnitFileData};
+    use crate::widget::creator::{CreateUnitErr, UnitCreateType, unit_file::UnitFileData};
     use adw::{prelude::PreferencesRowExt, subclass::prelude::*};
     use gtk::{glib, prelude::*};
     use std::{
@@ -31,7 +31,7 @@ mod imp {
         os::unix::fs::PermissionsExt,
         path::Path,
     };
-    use tracing::{info, warn};
+    use tracing::warn;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/service_creator_page.ui")]
@@ -105,56 +105,42 @@ mod imp {
         }
     }
 
-    enum UnitNameErr {
-        FileNotExits,
-        NotFile,
-        NoErr,
-        NotExecutable,
-    }
-
-    impl UnitNameErr {
-        fn title_err(&self) -> String {
-            let pre = "ExecStart";
-            match self {
-                UnitNameErr::FileNotExits => format!("{pre} - File not exists"),
-                UnitNameErr::NoErr => pre.to_owned(),
-                UnitNameErr::NotFile => format!("{pre} - Not a File"),
-                UnitNameErr::NotExecutable => format!("{pre} - Not Exec"),
-            }
-        }
-    }
-
     impl ServiceCreatorPageImp {
         fn validate_entry_strat(entry: &adw::EntryRow) {
             let text = entry.text();
 
-            let text = get_file_path(text.as_str());
+            let name_err = match get_file_path(text.as_str()) {
+                Ok(text) => {
+                    if text.is_empty() {
+                        CreateUnitErr::NoErr
+                    } else {
+                        let path = Path::new(text);
 
-            let name_err = if text.is_empty() {
-                UnitNameErr::NoErr
-            } else {
-                let path = Path::new(text);
-
-                if !path.exists() {
-                    UnitNameErr::FileNotExits
-                } else if !path.is_file() {
-                    UnitNameErr::NotFile
-                } else if !is_executable(path) {
-                    UnitNameErr::NotExecutable
-                } else {
-                    UnitNameErr::NoErr
+                        if !path.exists() {
+                            CreateUnitErr::FileNotExits
+                        } else if !path.is_file() {
+                            CreateUnitErr::NotFile
+                        } else if !is_executable(path) {
+                            CreateUnitErr::NotExecutable
+                        } else {
+                            CreateUnitErr::NoErr
+                        }
+                    }
                 }
+
+                Err(err) => err,
             };
 
             match name_err {
-                UnitNameErr::NoErr => {
+                CreateUnitErr::NoErr => {
                     entry.remove_css_class("warning");
                 }
                 _ => {
                     entry.add_css_class("warning");
                 }
             }
-            entry.set_title(&name_err.title_err());
+            let prefix = "ExecStart";
+            entry.set_title(&name_err.title_err(prefix));
         }
     }
 
@@ -177,28 +163,36 @@ mod imp {
 
             let create_service_page = self.obj().clone();
 
-            if let Ok(home) = std::env::var("HOME") {
-                let path = Path::new(&home);
-                let dir = gio::File::for_path(path);
-                file_dialog.set_initial_folder(Some(&dir));
+            let text = self.working_directory_entry.text();
+            let text = get_file_path(&text).unwrap_or_default();
+            if text.is_empty() {
+                set_initial_folder(&file_dialog);
+            } else {
+                let path = Path::new(text);
+                if path.exists() {
+                    let file = gio::File::for_path(path);
+                    file_dialog.set_initial_file(Some(&file));
+                } else {
+                    println!("not ex {text}");
+                    set_initial_folder(&file_dialog);
+                }
             }
 
-            file_dialog.select_folder(
-                None::<&gtk::Window>,
-                None::<&gio::Cancellable>,
-                move |result| match result {
-                    Ok(file) => {
-                        if let Some(path) = file.path() {
-                            let file_path_str = path.display().to_string();
-                            create_service_page
-                                .imp()
-                                .working_directory_entry
-                                .set_text(&file_path_str);
-                        }
+            let win = self.window.get().and_then(|w| w.upgrade());
+            let win = win.and_upcast_ref::<gtk::Window>();
+
+            file_dialog.select_folder(win, None::<&gio::Cancellable>, move |result| match result {
+                Ok(file) => {
+                    if let Some(path) = file.path() {
+                        let file_path_str = path.display().to_string();
+                        create_service_page
+                            .imp()
+                            .working_directory_entry
+                            .set_text(&file_path_str);
                     }
-                    Err(e) => warn!("Unit File Selection Error {e:?}"),
-                },
-            );
+                }
+                Err(e) => warn!("Unit File Selection Error {e:?}"),
+            });
         }
 
         #[template_callback]
@@ -211,7 +205,7 @@ mod imp {
             let create_service_page = self.obj().clone();
 
             let text = self.exec_start_entry.text();
-            let text = get_file_path(&text);
+            let text = get_file_path(&text).unwrap_or_default();
             if text.is_empty() {
                 set_initial_folder(&file_dialog);
             } else {
@@ -269,11 +263,12 @@ mod imp {
         }
     }
 
-    fn get_file_path(text: &str) -> &str {
+    fn get_file_path(text: &str) -> Result<&str, CreateUnitErr> {
         let text = text.trim_start();
         let mut begin = 0;
         let mut end = text.len();
         let mut in_quotes = false;
+
         for (idx, c) in text.char_indices() {
             if c.is_whitespace() && !in_quotes {
                 end = idx;
@@ -284,11 +279,15 @@ mod imp {
                     begin = 1;
                 } else {
                     end = idx;
+                    in_quotes = false;
                     break;
                 }
             }
         }
-        &text[begin..end]
+        if in_quotes {
+            return Err(CreateUnitErr::Malformed);
+        }
+        Ok(&text[begin..end])
     }
 
     #[cfg(test)]
@@ -297,12 +296,17 @@ mod imp {
 
         #[test]
         fn test_get_file() {
-            assert_eq!(get_file_path("text"), "text");
-            assert_eq!(get_file_path("  text"), "text");
-            assert_eq!(get_file_path("  text   "), "text");
-            assert_eq!(get_file_path("  text -f  "), "text");
-            assert_eq!(get_file_path(r#""text asdf" xxx"#), "text asdf");
-            assert_eq!(get_file_path("\"\"text"), "");
+            assert_eq!(get_file_path("text"), Ok("text"));
+            assert_eq!(get_file_path("  text"), Ok("text"));
+            assert_eq!(get_file_path("  text   "), Ok("text"));
+            assert_eq!(get_file_path("  text -f  "), Ok("text"));
+            assert_eq!(get_file_path(r#""text asdf" xxx"#), Ok("text asdf"));
+            assert_eq!(get_file_path("\"\"text"), Ok(""));
+
+            assert_eq!(
+                get_file_path("/home/plr/bin/AppDir/etc"),
+                Ok("/home/plr/bin/AppDir/etc")
+            );
         }
     }
 }

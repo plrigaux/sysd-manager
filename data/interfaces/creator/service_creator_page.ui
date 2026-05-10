@@ -33,7 +33,10 @@
               <object class="AdwPreferencesGroup">
                 <child>
                   <object class="AdwEntryRow" id="exec_start_entry">
+                    <property name="show-apply-button">True</property>
                     <property name="title">ExecStart</property>
+                    <property name="title-selectable">True</property>
+                    <property name="use-underline">True</property>
                     <child>
                       <object class="GtkButton">
                         <property name="css-classes">flat</property>
@@ -43,10 +46,6 @@
                     </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
                 <child>
                   <object class="AdwEntryRow" id="working_directory_entry">
                     <property name="title">Working Directory</property>
@@ -60,6 +59,9 @@
                   </object>
                 </child>
               </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup"/>
             </child>
             <child>
               <object class="AdwPreferencesGroup">
