@@ -11,45 +11,66 @@ use std::cell::Ref;
 use adw::prelude::AdwDialogExt;
 use gettextrs::pgettext;
 use gtk::{
-    Orientation, TextView, Window,
     gio::{self},
     glib::{self, BoxedAnyObject, object::Cast},
     pango::{AttrInt, AttrList, Weight},
     prelude::*,
 };
-use tracing::{info, warn};
+use tracing::{error, info};
 
 const PAGE_BLAME: &str = "blame";
 
-pub fn build_analyze_window() -> Result<Window, SystemdErrors> {
-    let window = Window::builder()
-        //dialog title
-        .title(pgettext("analyse blame", "Analyse Blame"))
+pub fn build_analyze_window() -> Result<adw::Window, SystemdErrors> {
+    let (analyse_box, store, total_time_label, stack) = build_analyze()?;
+    let header = adw::HeaderBar::builder()
+        .title_widget(&adw::WindowTitle::new(
+            &pgettext("analyse blame", "Analyse Blame"),
+            "",
+        ))
+        .css_classes(["raised"])
+        .build();
+    let toolbar = adw::ToolbarView::builder().content(&analyse_box).build();
+    toolbar.add_top_bar(&header);
+    let window = adw::Window::builder()
         .default_height(600)
         .default_width(600)
+        .content(&toolbar)
         .build();
 
-    let analyse_box = build_analyze(&window)?;
-    window.set_child(Some(&analyse_box));
+    // window.set_child(Some(&analyse_box));
+
+    window.connect_show(move |window| {
+        fill_store(&store, &total_time_label, &stack, window);
+    });
 
     Ok(window)
 }
 
-fn build_analyze(window: &Window) -> Result<gtk::Box, SystemdErrors> {
+fn build_analyze() -> Result<(gtk::Box, gio::ListStore, gtk::Label, adw::ViewStack), SystemdErrors>
+{
     // Analyse
     let unit_analyse_box = gtk::Box::builder()
-        .orientation(Orientation::Vertical)
+        .orientation(gtk::Orientation::Vertical)
         .build();
 
-    unit_analyse_box.append(&{
+    //label total
+    let label_str = pgettext("analyse blame", "Total Time:");
+
+    let total_time_box = gtk::Box::builder()
+        .spacing(5)
+        .halign(gtk::Align::Center)
+        .build();
+
+    total_time_box.append(&{
         let attribute_list = AttrList::new();
         attribute_list.insert(AttrInt::new_weight(Weight::Medium));
         gtk::Label::builder()
-            //label total
-            .label(pgettext("analyse blame", "Total Time:"))
+            .label(label_str)
             .attributes(&attribute_list)
             .build()
     });
+
+    unit_analyse_box.append(&total_time_box);
 
     let attribute_list = AttrList::new();
     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
@@ -57,8 +78,11 @@ fn build_analyze(window: &Window) -> Result<gtk::Box, SystemdErrors> {
         //place holder, lees likely to be displaied
         .label(pgettext("analyse blame", "seconds ..."))
         .attributes(&attribute_list)
+        .selectable(true)
+        .focusable(false)
         .build();
 
+    total_time_box.append(&total_time_label);
     // Setup the Analyze stack
     let (analyze_tree, store) = setup_systemd_analyze_tree()?;
 
@@ -69,18 +93,15 @@ fn build_analyze(window: &Window) -> Result<gtk::Box, SystemdErrors> {
         .build();
 
     let stack = adw::ViewStack::new();
-
     let spinner = adw::Spinner::new();
 
     stack.add_named(&spinner, Some("spinner"));
     stack.add_named(&unit_analyse_scrolled_window, Some(PAGE_BLAME));
 
-    unit_analyse_box.append(&total_time_label);
+    // unit_analyse_box.append(&total_time_label);
     unit_analyse_box.append(&stack);
 
-    fill_store(&store, &total_time_label, &stack, window);
-
-    Ok(unit_analyse_box)
+    Ok((unit_analyse_box, store, total_time_label, stack))
 }
 
 /// Use `systemd-analyze blame` to fill out the information for the Analyze `adw::ViewStack`.
@@ -150,7 +171,7 @@ fn fill_store(
     list_store: &gio::ListStore,
     total_time_label: &gtk::Label,
     stack: &adw::ViewStack,
-    window: &Window,
+    window: &adw::Window,
 ) {
     {
         let list_store = list_store.clone();
@@ -159,20 +180,27 @@ fn fill_store(
 
         let window = window.clone();
         glib::spawn_future_local(async move {
-            let units_rep = gio::spawn_blocking(async move || match analyze::blame().await {
-                Ok(units) => Ok(units),
-                Err(error) => {
-                    warn!("Analyse blame Error {error:?}");
-                    Err(error)
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+            systemd::runtime().spawn(async move {
+                let response = analyze::blame().await;
+
+                if let Err(e) = sender.send(response) {
+                    error!("Channel closed unexpectedly: {e:?}");
                 }
-            })
-            .await
-            .expect("Task needs to finish successfully.");
+            });
+
+            let Ok(response) = receiver
+                .await
+                .inspect_err(|err| error!("Tokio channel dropped {err:?}"))
+            else {
+                stack.set_visible_child_name(PAGE_BLAME);
+                return;
+            };
 
             list_store.remove_all();
             let mut time_full = 0;
 
-            match units_rep.await {
+            match response {
                 Ok(units) => {
                     for value in units {
                         time_full = value.time;
@@ -214,7 +242,7 @@ fn fill_store(
 }
 
 fn display_error(error: SystemdErrors, stack: &adw::ViewStack) {
-    let tv = TextView::new();
+    let tv = gtk::TextView::new();
     let buf = tv.buffer();
 
     let mut start_iter = buf.start_iter();
