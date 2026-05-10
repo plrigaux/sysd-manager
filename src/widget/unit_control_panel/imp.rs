@@ -125,6 +125,7 @@ pub struct UnitControlPanelImpl {
     pub always_shows_start_stop: Cell<bool>,
 
     old_font_provider: RefCell<Option<gtk::CssProvider>>,
+    font_description: RefCell<Option<gtk::pango::FontDescription>>,
 }
 
 #[glib::object_subclass]
@@ -587,6 +588,7 @@ impl UnitControlPanelImpl {
     pub fn set_inter_message(&self, action: &InterPanelMessage) {
         match action {
             InterPanelMessage::Font(font_description) => {
+                self.font_description.replace(font_description.cloned());
                 let provider = create_provider(font_description);
                 {
                     let binding = self.old_font_provider.borrow();
@@ -640,6 +642,13 @@ impl UnitControlPanelImpl {
                 if let Some(unit) = binding.as_ref() {
                     self.highlight_controls(unit);
                 }
+            }
+            InterPanelMessage::IsDark(_) => {
+                //issue 60 when changing style the font doesn't follow
+                let font_description = { self.font_description.borrow().clone() };
+                let new_action = InterPanelMessage::Font(font_description.as_ref());
+                self.set_inter_message(&new_action);
+                self.forward_inter_actions(action);
             }
             _ => self.forward_inter_actions(action),
         }
