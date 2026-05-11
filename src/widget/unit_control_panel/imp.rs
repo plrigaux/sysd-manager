@@ -11,19 +11,14 @@ use crate::{
     },
     format2, systemd_gui,
     utils::{
-        font_management::{self, FONT_CONTEXT, create_provider},
+        font_management::{self, create_provider},
         palette::{dark_blue, dark_red},
     },
     widget::{
-        InterPanelMessage,
-        app_window::AppWindow,
-        journal::JournalPanel,
-        preferences::data::{KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, PREFERENCES},
-        set_favorite_info,
-        text_search::PanelID,
-        unit_dependencies_panel::UnitDependenciesPanel,
-        unit_file_panel::UnitFilePanel,
-        unit_info::UnitInfoPanel,
+        InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
+        preferences::data::KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, set_favorite_info,
+        text_search::PanelID, unit_dependencies_panel::UnitDependenciesPanel,
+        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
@@ -32,7 +27,6 @@ use gettextrs::pgettext;
 use gtk::{
     gio,
     glib::{self},
-    pango::{self, FontDescription},
 };
 use std::{
     cell::{Cell, OnceCell, RefCell},
@@ -353,6 +347,13 @@ impl UnitControlPanelImpl {
             app_window.action_set_enabled(ACTION_WIN_RELOAD_UNIT, false);
             app_window.action_set_enabled(ACTION_WIN_FAVORITE_TOGGLE, false);
         });
+
+        let text_view = self.unit_info_panel.get().main_text_view();
+        font_management::set_font_default_context(&text_view);
+        if let Some(font_description) = font_management::has_custom_font() {
+            let action = InterPanelMessage::Font(Some(&font_description));
+            self.set_inter_message(&action);
+        }
     }
 
     pub fn app_window(&self) -> Option<AppWindow> {
@@ -948,28 +949,6 @@ impl ObjectImpl for UnitControlPanelImpl {
                         }
                     }
                 });
-        }
-
-        let family = PREFERENCES.font_family();
-        let size = PREFERENCES.font_size();
-
-        if !font_management::is_default_font(&family, size) {
-            let mut font_description = FontDescription::new();
-
-            if !family.is_empty() {
-                font_description.set_family(&family);
-            }
-
-            if size != 0 {
-                let scaled_size = size as i32 * pango::SCALE;
-                font_description.set_size(scaled_size);
-            }
-
-            let action = InterPanelMessage::Font(Some(&font_description));
-
-            self.set_inter_message(&action);
-
-            FONT_CONTEXT.set_font_description(font_description);
         }
 
         let settings = systemd_gui::new_settings();

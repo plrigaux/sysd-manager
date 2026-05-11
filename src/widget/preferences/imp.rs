@@ -11,7 +11,7 @@ use super::data::{
 use crate::{
     consts::{ADWAITA, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_FILE_LINE_NUMBER_ACTION},
     systemd_gui::new_settings,
-    utils::font_management::FONT_CONTEXT,
+    utils::font_management::{self},
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -192,7 +192,7 @@ impl PreferencesDialogImpl {
         let window = parent.cloned();
         let select_font_row = self.select_font_row.clone();
 
-        let font_description = FONT_CONTEXT.font_description();
+        let font_description = font_management::font_description();
 
         debug!(
             "FD {} family {:?} size {}",
@@ -201,7 +201,7 @@ impl PreferencesDialogImpl {
             font_description.size() / pango::SCALE
         );
 
-        warn!("FD {} ", font_description.to_str(),);
+        info!("Current Font Description {} ", font_description.to_str(),);
 
         font_dialog.choose_font(
             parent,
@@ -209,18 +209,14 @@ impl PreferencesDialogImpl {
             None::<&gio::Cancellable>,
             move |result| match result {
                 Ok(font_description) => {
-                    let font_name = font_description.to_string();
-                    info!("Selected Font {:?}", font_description.to_string());
-
-                    PREFERENCES.set_font(&font_description);
+                    font_management::set_font_description(font_description.clone());
 
                     if let Some(window) = window {
                         let action = InterPanelMessage::Font(Some(&font_description));
-
                         window.set_inter_message(&action);
                     }
 
-                    select_font_row.set_subtitle(&font_name);
+                    select_font_row.set_subtitle(&font_management::font_label());
                 }
                 Err(e) => warn!("Select font error: {e:?}"),
             },
@@ -229,7 +225,7 @@ impl PreferencesDialogImpl {
 
     #[template_callback]
     fn select_font_default(&self) {
-        PREFERENCES.set_font_default();
+        font_management::set_default_font_description();
 
         if let Some(app_window) = self.app_window.get() {
             let action = crate::widget::InterPanelMessage::Font(None);
@@ -237,14 +233,8 @@ impl PreferencesDialogImpl {
         }
 
         let select_font_row = self.select_font_row.clone();
-
         glib::spawn_future_local(async move {
-            gio::spawn_blocking(move || {})
-                .await
-                .expect("Task needs to finish successfully.");
-
-            let font_description = FONT_CONTEXT.font_description();
-            select_font_row.set_subtitle(&font_description.to_string());
+            select_font_row.set_subtitle(&font_management::font_label());
         });
     }
 
@@ -343,9 +333,8 @@ impl PreferencesDialogImpl {
         let timestamp_style = PREFERENCES.timestamp_style();
         self.timestamp_style.set_selected(timestamp_style as u32);
 
-        let font_description = FONT_CONTEXT.font_description();
         self.select_font_row
-            .set_subtitle(&font_description.to_string());
+            .set_subtitle(&font_management::font_label());
     }
 
     fn get_spin_row_value(var_name: &str, spin: adw::SpinRow) -> u32 {

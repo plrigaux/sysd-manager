@@ -29,6 +29,10 @@ impl UnitInfoPanel {
     pub fn focus_text_search(&self) {
         self.imp().focus_text_search()
     }
+
+    pub fn main_text_view(&self) -> gtk::TextView {
+        self.imp().unit_info_textview.get()
+    }
 }
 
 impl Default for UnitInfoPanel {

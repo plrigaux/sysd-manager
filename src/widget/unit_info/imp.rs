@@ -4,7 +4,7 @@ use crate::{
     systemd::data::UnitInfo,
     systemd_gui::new_settings,
     utils::{
-        font_management::{set_font_context, set_text_view_font},
+        font_management::set_text_view_font,
         text_view_hyperlink::{self, LinkActivator},
         writer::UnitInfoWriter,
     },
@@ -44,7 +44,7 @@ pub struct UnitInfoPanelImp {
     refresh_button: TemplateChild<gtk::Button>,
 
     #[template_child]
-    unit_info_textview: TemplateChild<gtk::TextView>,
+    pub(super) unit_info_textview: TemplateChild<gtk::TextView>,
 
     #[template_child]
     text_search_bar: TemplateChild<gtk::SearchBar>,
@@ -178,9 +178,7 @@ impl UnitInfoPanelImp {
         match *action {
             InterPanelMessage::FontProvider(old, new) => {
                 set_text_view_font(old, new, &self.unit_info_textview);
-                set_font_context(&self.unit_info_textview);
             }
-
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             InterPanelMessage::Refresh(unit) => self.refresh_panels(unit),
             _ => {}
@@ -229,8 +227,6 @@ impl ObjectImpl for UnitInfoPanelImp {
         self.parent_constructed();
 
         self.set_sensitivity();
-
-        set_font_context(&self.unit_info_textview);
 
         let settings = new_settings();
 
