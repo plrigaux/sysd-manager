@@ -135,6 +135,7 @@ pub enum UnitCuratedList {
     LoadedUnit,
     UnitFiles,
     Timers,
+    Services,
     Sockets,
     Path,
     Automount,
@@ -160,10 +161,11 @@ impl UnitCuratedList {
 
         let special_list = gio::Menu::new();
 
-        Self::add_menu_item(&special_list, UnitCuratedList::Timers);
-        Self::add_menu_item(&special_list, UnitCuratedList::Sockets);
-        Self::add_menu_item(&special_list, UnitCuratedList::Path);
         Self::add_menu_item(&special_list, UnitCuratedList::Automount);
+        Self::add_menu_item(&special_list, UnitCuratedList::Path);
+        Self::add_menu_item(&special_list, UnitCuratedList::Services);
+        Self::add_menu_item(&special_list, UnitCuratedList::Sockets);
+        Self::add_menu_item(&special_list, UnitCuratedList::Timers);
 
         menu_lists.insert_section(-1, Some("Special Lists"), &special_list);
 
@@ -207,6 +209,10 @@ impl UnitCuratedList {
                 //Curated List View
                 pgettext("menu", "Sockets")
             }
+            UnitCuratedList::Services => {
+                //Curated List View
+                pgettext("menu", "Services")
+            }
             UnitCuratedList::Path => {
                 //Curated List View
                 pgettext("menu", "Path")
@@ -233,6 +239,7 @@ impl UnitCuratedList {
             UnitCuratedList::UnitFiles => "unit_file",
             UnitCuratedList::Timers => "timers",
             UnitCuratedList::Sockets => "sockets",
+            UnitCuratedList::Services => "services",
             UnitCuratedList::Path => "paths",
             UnitCuratedList::Automount => "automounts",
             UnitCuratedList::Custom => "custom",
@@ -246,7 +253,8 @@ impl UnitCuratedList {
             UnitCuratedList::LoadedUnit => ["<Ctrl><Shift>l"],
             UnitCuratedList::UnitFiles => ["<Ctrl><Shift>U"],
             UnitCuratedList::Timers => ["<Ctrl><Shift>t"],
-            UnitCuratedList::Sockets => ["<Ctrl><Shift>S"],
+            UnitCuratedList::Sockets => ["<Ctrl><Shift>k"],
+            UnitCuratedList::Services => ["<Ctrl><Shift>s"],
             UnitCuratedList::Path => ["<Ctrl><Shift>p"],
             UnitCuratedList::Automount => ["<Ctrl><Shift>a"],
             UnitCuratedList::Custom => ["<Ctrl><Shift>C"],

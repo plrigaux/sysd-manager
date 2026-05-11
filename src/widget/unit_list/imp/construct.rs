@@ -41,6 +41,7 @@ pub fn construct_column_view(
         UnitCuratedList::LoadedUnit => generate_loaded_units_columns(display_color),
         UnitCuratedList::UnitFiles => generate_unit_files_columns(display_color),
         UnitCuratedList::Timers => generate_timers_columns(display_color, include_unit_files),
+        UnitCuratedList::Services => generate_service_columns(display_color, include_unit_files),
         UnitCuratedList::Sockets => generate_sockets_columns(display_color, include_unit_files),
         UnitCuratedList::Path => generate_paths_columns(display_color, include_unit_files),
         UnitCuratedList::Automount => {
@@ -404,7 +405,14 @@ macro_rules! create_column_filter {
 }
 
 pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySelection> {
-    generate_default_columns(display_color)
+    generate_default_columns(display_color, true)
+}
+
+pub fn generate_service_columns(
+    display_color: bool,
+    include_unit_files: bool,
+) -> Vec<UnitPropertySelection> {
+    generate_default_columns(display_color, include_unit_files)
 }
 
 pub fn set_column_factory_and_sorter(
@@ -534,7 +542,10 @@ where
 const SYSDM_STATE: &str = "sysdm-state";
 const SYSDM_PRESET: &str = "sysdm-preset";
 
-fn generate_default_columns(display_color: bool) -> Vec<UnitPropertySelection> {
+fn generate_default_columns(
+    display_color: bool,
+    include_unit_files: bool,
+) -> Vec<UnitPropertySelection> {
     let mut columns = vec![];
 
     let unit_col = create_unit_display_name_column(display_color);
@@ -563,8 +574,10 @@ fn generate_default_columns(display_color: bool) -> Vec<UnitPropertySelection> {
     let state_col = create_unit_file_state(display_color);
     columns.push(state_col);
 
-    let preset_col = create_unit_file_preset_column(display_color);
-    columns.push(preset_col);
+    if include_unit_files {
+        let preset_col = create_unit_file_preset_column(display_color);
+        columns.push(preset_col);
+    }
 
     let sysd_col = SysdColumn::Load;
     let sorter = create_column_filter!(load_state);
@@ -815,7 +828,7 @@ fn create_col_activates() -> UnitColumn {
 }
 
 fn generate_loaded_units_columns(display_color: bool) -> Vec<UnitPropertySelection> {
-    generate_default_columns(display_color)
+    generate_default_columns(display_color, false)
         .into_iter()
         .filter(|c| {
             c.id().map(|s| s.as_str() != SYSDM_STATE).unwrap_or(true)

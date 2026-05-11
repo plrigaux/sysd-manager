@@ -306,6 +306,7 @@
         <choice value="unit_file"/>
         <choice value="timers"/>
         <choice value="sockets"/>
+        <choice value="services"/>
         <choice value="paths"/>
         <choice value="automounts"/>
         <choice value="custom"/>

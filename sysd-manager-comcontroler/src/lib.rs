@@ -305,6 +305,11 @@ pub async fn list_unit_files_sockets(
 ) -> Result<ListUnitResponse, SystemdErrors> {
     list_unit_files_by_patterns(level, &["*.socket"]).await
 }
+pub async fn list_unit_files_services(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_unit_files_by_patterns(level, &["*.service"]).await
+}
 
 pub async fn list_unit_files_paths(
     level: UnitDBusLevel,

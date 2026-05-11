@@ -883,15 +883,16 @@ impl UnitListPanelImp {
             UnitCuratedList::Defaut => Self::match_level(unit),
             UnitCuratedList::LoadedUnit => Self::match_level(unit),
             UnitCuratedList::UnitFiles => Self::match_level(unit),
+            UnitCuratedList::Services => {
+                unit.unit_type() == UnitType::Service && Self::match_level(unit)
+            }
             UnitCuratedList::Timers => {
-                unit.unit_type() == UnitType::Automount && Self::match_level(unit)
+                unit.unit_type() == UnitType::Timer && Self::match_level(unit)
             }
             UnitCuratedList::Sockets => {
-                unit.unit_type() == UnitType::Automount && Self::match_level(unit)
+                unit.unit_type() == UnitType::Socket && Self::match_level(unit)
             }
-            UnitCuratedList::Path => {
-                unit.unit_type() == UnitType::Automount && Self::match_level(unit)
-            }
+            UnitCuratedList::Path => unit.unit_type() == UnitType::Path && Self::match_level(unit),
             UnitCuratedList::Automount => {
                 unit.unit_type() == UnitType::Automount && Self::match_level(unit)
             }
@@ -1874,6 +1875,9 @@ impl UnitListPanelImp {
 
                     UnitCuratedList::Timers if include_unit_files => {
                         dbus_call!(int_level, handles, systemd::list_unit_files_timers)
+                    }
+                    UnitCuratedList::Services if include_unit_files => {
+                        dbus_call!(int_level, handles, systemd::list_unit_files_services)
                     }
                     UnitCuratedList::Sockets if include_unit_files => {
                         dbus_call!(int_level, handles, systemd::list_unit_files_sockets)
