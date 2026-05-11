@@ -19,6 +19,7 @@ use crate::{
     systemd_gui::new_settings,
     upgrade,
     widget::{
+        close_window_shortcut,
         preferences::data::KEY_PREF_PROP_ORIENTATION_MODE,
         unit_list::{UnitListPanel, column::SysdColumn},
         unit_properties_selector::{
@@ -368,6 +369,7 @@ impl ObjectSubclass for UnitPropertiesSelectorDialogImp {
 impl ObjectImpl for UnitPropertiesSelectorDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
+        close_window_shortcut(self.obj().as_ref());
 
         self.load_window_size();
 

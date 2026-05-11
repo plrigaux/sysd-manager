@@ -19,7 +19,7 @@ use crate::{
     format2,
     systemd::{self, data::UnitInfo, enums::KillWho, errors::SystemdErrors},
     widget::{
-        InterPanelMessage,
+        InterPanelMessage, close_window_shortcut,
         unit_control_panel::{UnitControlPanel, side_control_panel::SideControlPanel},
     },
 };
@@ -343,6 +343,7 @@ impl ObjectSubclass for KillPanelImp {
 impl ObjectImpl for KillPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+        close_window_shortcut(self.obj().as_ref());
 
         let expression = gtk::PropertyExpression::new(
             adw::EnumListItem::static_type(),

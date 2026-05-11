@@ -5,7 +5,7 @@ use super::{InterPanelMessage, app_window::AppWindow};
 use crate::{
     format2,
     systemd::{data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
-    widget::unit_control_panel::enums::UnitContolType,
+    widget::{close_window_shortcut, unit_control_panel::enums::UnitContolType},
 };
 use base::enums::UnitDBusLevel;
 
@@ -179,5 +179,6 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
         .modal(true)
         .build();
 
+    close_window_shortcut(&dialog);
     dialog.present();
 }

@@ -1,7 +1,7 @@
 use super::SignalsWindow;
 use crate::{
     systemd_gui::new_settings,
-    widget::{app_window::AppWindow, preferences::data::PREFERENCES},
+    widget::{app_window::AppWindow, close_window_shortcut, preferences::data::PREFERENCES},
 };
 use adw::subclass::window::AdwWindowImpl;
 use base::enums::UnitDBusLevel;
@@ -226,6 +226,7 @@ impl ObjectSubclass for SignalsWindowImp {
 impl ObjectImpl for SignalsWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
+        close_window_shortcut(self.obj().as_ref());
         let model = gio::ListStore::new::<glib::BoxedAnyObject>();
         self.signals.replace(Some(model.clone()));
 

@@ -27,7 +27,10 @@ mod imp {
     use crate::{
         systemd::{self, BootFilter, data::UnitInfo},
         systemd_gui::new_settings,
-        widget::{InterPanelMessage, app_window::AppWindow, preferences::data::PREFERENCES},
+        widget::{
+            InterPanelMessage, app_window::AppWindow, close_window_shortcut,
+            preferences::data::PREFERENCES,
+        },
     };
     use adw::subclass::window::AdwWindowImpl;
     use gio::{glib::BoxedAnyObject, prelude::ListModelExt};
@@ -86,12 +89,13 @@ mod imp {
     impl ObjectImpl for ListBootsWindowImp {
         fn constructed(&self) {
             self.parent_constructed();
+            let list_boots_windows = self.obj();
+            close_window_shortcut(list_boots_windows.as_ref());
 
             self.load_window_size();
 
             let map = self.generate_column_map();
 
-            let list_boots_windows = self.obj();
             set_up_factories(&map, &list_boots_windows);
         }
     }

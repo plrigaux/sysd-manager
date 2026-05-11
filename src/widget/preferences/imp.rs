@@ -8,19 +8,19 @@ use super::data::{
     KEY_PREF_STYLE_TEXT_FONT_SIZE, KEY_PREF_TIMESTAMP_STYLE, KEY_PREF_UNIT_FILE_STYLE_SCHEME,
     PREFERENCES,
 };
-use crate::consts::{KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_FILE_LINE_NUMBER_ACTION};
-use crate::widget::InterPanelMessage;
-use crate::widget::preferences::data::{
-    KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
-};
 use crate::{
-    consts::ADWAITA,
+    consts::{ADWAITA, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, UNIT_FILE_LINE_NUMBER_ACTION},
     systemd_gui::new_settings,
     utils::font_management::FONT_CONTEXT,
     widget::{
+        InterPanelMessage,
         app_window::AppWindow,
+        close_window_shortcut,
         preferences::{
-            data::{KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_DISPLAY_COLORS},
+            data::{
+                KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
+                KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+            },
             drop_down_elem::{build_pane_orientation_selector, build_preferred_color_scheme},
             style_scheme::style_schemes,
         },
@@ -423,6 +423,7 @@ impl ObjectSubclass for PreferencesDialogImpl {
 
 impl ObjectImpl for PreferencesDialogImpl {
     fn constructed(&self) {
+        close_window_shortcut(self.obj().as_ref());
         self.parent_constructed();
         self.setup_settings();
 

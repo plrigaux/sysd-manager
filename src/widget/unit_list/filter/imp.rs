@@ -28,6 +28,7 @@ use crate::{
     },
     systemd_gui, upgrade, upgrade_continue,
     widget::{
+        close_window_shortcut,
         preferences::data::KEY_PREF_CASE_INSENSITIVE_DEFAULT,
         unit_list::{
             UnitListPanel,
@@ -335,6 +336,7 @@ impl ObjectSubclass for UnitListFilterWindowImp {
 impl ObjectImpl for UnitListFilterWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
+        close_window_shortcut(self.obj().as_ref());
 
         let settings = systemd_gui::new_settings();
 

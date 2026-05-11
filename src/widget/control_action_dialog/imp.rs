@@ -7,6 +7,7 @@ use crate::{
     },
     systemd_gui,
     widget::{
+        close_window_shortcut,
         control_action_dialog::ControlActionType,
         unit_control_panel::{UnitControlPanel, enums::UnitContolType},
     },
@@ -664,6 +665,7 @@ impl ObjectSubclass for EnableUnitDialogImp {
 impl ObjectImpl for EnableUnitDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
+        close_window_shortcut(self.obj().as_ref());
 
         let settings = systemd_gui::new_settings();
         self.settings

@@ -3,6 +3,7 @@ use std::env;
 use std::fmt::Write;
 
 use crate::consts::ACTION_DAEMON_RELOAD_BUS;
+use crate::widget::close_window_shortcut;
 use crate::{
     analyze::build_analyze_window,
     consts::ACTION_DAEMON_RELOAD,
@@ -384,6 +385,8 @@ Priit Jõerüüt <hwlate@joeruut.com>",
         release_notes.push_str("<p>_________________________</p><p>Full release notes:</p><p>https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md</p>");
         about.set_release_notes(&release_notes);
     }
+
+    close_window_shortcut(&about);
 
     about
 }

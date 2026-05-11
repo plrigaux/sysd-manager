@@ -6,6 +6,7 @@ use crate::{
     upgrade,
     widget::{
         app_window::AppWindow,
+        close_window_shortcut,
         creator::{
             CreateUnitErr, UnitCreateType, launch_creator_page::LaunchCreatorPage,
             service_creator_page::ServiceCreatorPage, timer_creator_page::TimerCreatorPage,
@@ -321,6 +322,7 @@ impl UnitCreatorWindowImp {
 impl ObjectImpl for UnitCreatorWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
+        close_window_shortcut(self.obj().as_ref());
 
         let event_controller = clear_on_escape();
         self.unit_name_prefix.add_controller(event_controller);

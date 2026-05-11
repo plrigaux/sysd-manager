@@ -16,7 +16,10 @@ use strum::IntoEnumIterator;
 
 use crate::{
     systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
-    widget::unit_control_panel::{UnitControlPanel, work_around_dialog},
+    widget::{
+        close_window_shortcut,
+        unit_control_panel::{UnitControlPanel, work_around_dialog},
+    },
 };
 use base::enums::UnitDBusLevel;
 use tracing::{info, warn};
@@ -174,6 +177,8 @@ impl ObjectSubclass for CleanDialogImp {
 impl ObjectImpl for CleanDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
+
+        close_window_shortcut(self.obj().as_ref());
 
         let mut check_buttons = HashMap::new();
 

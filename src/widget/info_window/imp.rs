@@ -8,6 +8,7 @@ use crate::consts::U64MAX;
 use crate::systemd;
 use crate::systemd::data::UnitInfo;
 use crate::systemd_gui::new_settings;
+use crate::widget::close_window_shortcut;
 
 use super::rowitem;
 
@@ -324,6 +325,7 @@ const WIDTH_CHAR_SIZE: usize = 36;
 impl ObjectImpl for InfoWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
+        close_window_shortcut(self.obj().as_ref());
 
         let unit_prop_store = gio::ListStore::new::<rowitem::Metadata>();
 

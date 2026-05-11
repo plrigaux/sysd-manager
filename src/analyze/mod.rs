@@ -3,7 +3,7 @@ use crate::{
         analyze::{self, Analyze},
         errors::SystemdErrors,
     },
-    widget::unit_file_panel::flatpak,
+    widget::{close_window_shortcut, unit_file_panel::flatpak},
 };
 
 use std::cell::Ref;
@@ -37,8 +37,7 @@ pub fn build_analyze_window() -> Result<adw::Window, SystemdErrors> {
         .content(&toolbar)
         .build();
 
-    // window.set_child(Some(&analyse_box));
-
+    close_window_shortcut(&window);
     window.connect_show(move |window| {
         fill_store(&store, &total_time_label, &stack, window);
     });

@@ -582,6 +582,12 @@ impl AppWindowImpl {
                 .build()
         };
 
+        const ACTION_APP_QUIT: &str = "app.quit";
+
+        let quit = gio::ActionEntry::builder(&ACTION_APP_QUIT[4..])
+            .activate(move |app: &adw::Application, _, _| app.quit())
+            .build();
+
         application.add_action_entries([
             search_units,
             open_info,
@@ -595,6 +601,7 @@ impl AppWindowImpl {
             print_debug,
             display_unit_properties,
             create_unit,
+            quit,
         ]);
 
         application.set_accels_for_action(APP_ACTION_SEARCH_UNITS, &["<Ctrl>f"]);
@@ -606,12 +613,14 @@ impl AppWindowImpl {
         application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
         application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR_GENERAL, &["<Ctrl>l"]);
-        application.set_accels_for_action("app.debug", &["<Ctrl>q"]);
+        application.set_accels_for_action(ACTION_APP_QUIT, &["<Ctrl>q"]);
+        application.set_accels_for_action("app.debug", &["<Ctrl>1"]);
         application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
         application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
         application.set_accels_for_action(ACTION_DAEMON_RELOAD, &["<Ctrl>r"]);
         application.set_accels_for_action(ACTION_FIND_IN_TEXT_OPEN, &["<Shift><Ctrl>f"]);
         application.set_accels_for_action(ACTION_APP_CREATE_UNIT, &["<Shift><Ctrl>c"]);
+        application.set_accels_for_action("win.close", &["<Ctrl>w"]);
 
         for ui in UnitCuratedList::iter() {
             application.set_accels_for_action(&ui.detailed_action(), &ui.win_accels());

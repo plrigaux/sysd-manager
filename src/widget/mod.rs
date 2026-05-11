@@ -1,8 +1,13 @@
 use std::{rc::Rc, sync::OnceLock};
 
+use adw::prelude::AdwDialogExt;
 use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE};
 use gettextrs::pgettext;
-use gtk::pango::FontDescription;
+use glib::object::{Cast, IsA};
+use gtk::{
+    pango::FontDescription,
+    prelude::{GtkWindowExt, WidgetExt},
+};
 use regex::Regex;
 use tracing::debug;
 
@@ -135,4 +140,21 @@ pub fn highlight_unit_text(unit_name: &str) -> String {
     let mut out = String::new();
     tag_unit(&mut out, unit_name);
     out
+}
+
+pub fn close_window_shortcut(window: &impl IsA<gtk::Widget>) {
+    let shortcut_controller = gtk::ShortcutController::new();
+    let trigger = gtk::ShortcutTrigger::parse_string("<Ctrl>w");
+    let action = gtk::CallbackAction::new(|widget, _| {
+        if let Some(window) = widget.downcast_ref::<adw::Window>() {
+            window.close();
+        } else if let Some(dialog) = widget.downcast_ref::<adw::Dialog>() {
+            dialog.close();
+        }
+        glib::Propagation::Proceed
+    });
+
+    let shortcut = gtk::Shortcut::new(trigger, Some(action));
+    shortcut_controller.add_shortcut(shortcut);
+    window.add_controller(shortcut_controller);
 }

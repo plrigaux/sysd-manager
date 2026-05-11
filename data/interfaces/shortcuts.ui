@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Cambalache 1.0 -->
 <interface>
   <!-- interface-name shortcuts.ui -->
@@ -10,10 +10,27 @@
         <property name="title" translatable="yes" context="shortcut window" comments="Section name">General</property>
         <child>
           <object class="AdwShortcutsItem">
+            <property name="action-name">app.quit</property>
+            <property name="title" translatable="yes" context="shortcut window">Close the application</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
+            <property name="action-name">win.close</property>
+            <property name="title" translatable="yes" context="shortcut window">Close the window</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwShortcutsItem">
             <property name="action-name">app.preferences</property>
             <property name="title" translatable="yes" context="shortcut window">Show Preferences</property>
           </object>
         </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwShortcutsSection">
+        <property name="title" translatable="yes" context="shortcut window" comments="Section name">SysD Manager</property>
         <child>
           <object class="AdwShortcutsItem">
             <property name="action-name">app.proxy-management</property>
