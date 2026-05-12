@@ -1,5 +1,5 @@
 use base::consts::APP_ID;
-use gtk::{gdk, gio::Settings, prelude::*};
+use gtk::gio::Settings;
 use std::sync::RwLock;
 use tracing::error;
 
@@ -98,18 +98,4 @@ macro_rules! upgrade_continue {
         };
         weak_ref
     }};
-}
-
-pub fn clear_on_escape() -> gtk::EventControllerKey {
-    let event_controller = gtk::EventControllerKey::new();
-
-    event_controller.connect_key_released(|controller, key, _keycode, _state| {
-        if key == gdk::Key::Escape
-            && let Some(search_entry) = controller.widget().and_downcast_ref::<gtk::Editable>()
-        {
-            search_entry.set_text("");
-        }
-    });
-
-    event_controller
 }

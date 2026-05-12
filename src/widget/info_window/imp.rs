@@ -5,10 +5,10 @@ use std::cmp::Ordering;
 use tracing::{debug, error, warn};
 
 use crate::consts::U64MAX;
-use crate::systemd;
 use crate::systemd::data::UnitInfo;
 use crate::systemd_gui::new_settings;
-use crate::widget::close_window_shortcut;
+use crate::widget::{self};
+use crate::{systemd, upgrade};
 
 use super::rowitem;
 
@@ -325,7 +325,7 @@ const WIDTH_CHAR_SIZE: usize = 36;
 impl ObjectImpl for InfoWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
-        close_window_shortcut(self.obj().as_ref());
+        widget::close_window_shortcut(self.obj().as_ref());
 
         let unit_prop_store = gio::ListStore::new::<rowitem::Metadata>();
 
@@ -344,6 +344,17 @@ impl ObjectImpl for InfoWindowImp {
             .bidirectional()
             .build();
 
+        let search_entry = self.search_entry.downgrade();
+        self.search_bar
+            .connect_search_mode_enabled_notify(move |serch_bar| {
+                if serch_bar.is_search_mode() {
+                    let search_entry = upgrade!(search_entry);
+                    widget::grab_focus_on_search_entry(&search_entry);
+                }
+            });
+
+        let event_controller = widget::clear_on_escape();
+        self.search_entry.add_controller(event_controller);
         self.search_entry.set_width_chars(WIDTH_CHAR_SIZE as i32);
 
         self.load_window_size();

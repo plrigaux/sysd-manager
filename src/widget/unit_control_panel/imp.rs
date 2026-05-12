@@ -162,12 +162,6 @@ impl UnitControlPanelImpl {
         self.unit_info_panel.register(app_window);
         self.unit_journal_panel.register(app_window);
 
-        /*         if let Some(side_panel) = self.more_action_panel.get() {
-            side_panel.set_app_window(app_window);
-        } else {
-            warn!("Side Panel Should not be None");
-        } */
-
         self.app_window
             .set(app_window.clone())
             .expect("app_window set once");

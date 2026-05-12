@@ -2,9 +2,9 @@
 // const WINDOW_WIDTH: &str = "unit-creator-window-width";
 use super::UnitCreatorWindow;
 use crate::{
-    systemd_gui::clear_on_escape,
     upgrade,
     widget::{
+        self,
         app_window::AppWindow,
         close_window_shortcut,
         creator::{
@@ -324,7 +324,7 @@ impl ObjectImpl for UnitCreatorWindowImp {
         self.parent_constructed();
         close_window_shortcut(self.obj().as_ref());
 
-        let event_controller = clear_on_escape();
+        let event_controller = widget::clear_on_escape();
         self.unit_name_prefix.add_controller(event_controller);
 
         self.set_creation_unit_type(UnitCreateType::Service);

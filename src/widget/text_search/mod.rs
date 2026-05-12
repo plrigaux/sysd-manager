@@ -9,7 +9,10 @@ use gtk::{
     prelude::{TextViewExt, WidgetExt},
 };
 
-use crate::consts::{ACTION_FIND_IN_TEXT_OPEN, ACTION_FIND_IN_TEXT_TOGGLE};
+use crate::{
+    consts::{ACTION_FIND_IN_TEXT_OPEN, ACTION_FIND_IN_TEXT_TOGGLE},
+    widget,
+};
 mod imp;
 
 glib::wrapper! {
@@ -28,7 +31,7 @@ impl TextSearchBar {
     }
 
     pub fn grab_focus_on_search_entry(&self) {
-        self.imp().grab_focus_on_search_entry();
+        widget::grab_focus_on_search_entry(&self.imp().search_entry);
     }
 
     pub fn clear_tags(&self) {

@@ -1,6 +1,8 @@
+use crate::widget;
+
 use super::UnitListPanel;
 use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::{glib, prelude::*};
+use gtk::glib;
 
 glib::wrapper! {
     pub struct UnitListSearchControls(ObjectSubclass<imp::UnitListSearchControlsImp>)
@@ -19,20 +21,18 @@ impl UnitListSearchControls {
         obj
     }
 
-    pub fn grab_focus_on_search_entry(&self) {
-        let search_entry = self.imp().search_entry.get();
-        search_entry.select_region(0, -1);
-        search_entry.grab_focus();
-    }
-
     pub fn set_filter_is_set(&self, filter_is_set: bool) {
         self.imp().set_filter_is_set(filter_is_set);
+    }
+
+    pub fn grab_focus_on_search_entry(&self) {
+        widget::grab_focus_on_search_entry(&self.imp().search_entry);
     }
 }
 
 mod imp {
     use super::UnitListSearchControls;
-    use crate::{systemd_gui::clear_on_escape, widget::unit_list::UnitListPanel};
+    use crate::{widget, widget::unit_list::UnitListPanel};
     use gtk::{glib, prelude::*, subclass::prelude::*};
     use std::cell::OnceCell;
     use tracing::{debug, error};
@@ -137,7 +137,7 @@ mod imp {
                 .set(signal_handler_id)
                 .expect("Search entry handler set once");
 
-            let event_controller = clear_on_escape();
+            let event_controller = widget::clear_on_escape();
             self.search_entry.add_controller(event_controller);
         }
     }

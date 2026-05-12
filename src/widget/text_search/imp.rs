@@ -9,11 +9,7 @@ use gtk::{glib, prelude::*, subclass::prelude::*};
 use regex::Regex;
 use tracing::{debug, info, warn};
 
-use crate::{
-    format2,
-    systemd_gui::{clear_on_escape, is_dark},
-    upgrade,
-};
+use crate::{format2, systemd_gui::is_dark, upgrade, widget};
 
 use super::TextSearchBar;
 
@@ -24,7 +20,7 @@ const SEARCH_HIGHLIGHT_SELECTED: &str = "search_highlight_selected";
 #[template(resource = "/io/github/plrigaux/sysd-manager/text_find.ui")]
 pub struct TextSearchBarImp {
     #[template_child]
-    search_entry: TemplateChild<gtk::SearchEntry>,
+    pub(super) search_entry: TemplateChild<gtk::SearchEntry>,
 
     #[template_child]
     case_sensitive_toggle_button: TemplateChild<gtk::ToggleButton>,
@@ -222,12 +218,6 @@ impl TextSearchBarImp {
 
     pub(crate) fn set_text_view(&self, text_view: &gtk::TextView) {
         self.text_view.set(Some(text_view));
-    }
-
-    pub(crate) fn grab_focus_on_search_entry(&self) {
-        let search_entry = self.search_entry.get();
-        search_entry.select_region(0, -1);
-        search_entry.grab_focus();
     }
 
     pub(super) fn new_find_in_text(&self) {
@@ -442,7 +432,7 @@ impl ObjectImpl for TextSearchBarImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        let event_controller = clear_on_escape();
+        let event_controller = widget::clear_on_escape();
         self.search_entry.add_controller(event_controller);
     }
 }

@@ -437,7 +437,7 @@ impl AppWindowImpl {
         let unit_list_panel = self.unit_list_panel.clone();
         let search_units: gio::ActionEntry<adw::Application> =
             gio::ActionEntry::builder(&APP_ACTION_SEARCH_UNITS[4..])
-                .activate(move |_application: &adw::Application, _, _| {
+                .activate(move |_, _, _| {
                     if !search_toggle_button.is_active() {
                         search_toggle_button.activate();
                     } else {
