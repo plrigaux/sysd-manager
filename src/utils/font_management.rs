@@ -86,7 +86,6 @@ pub fn has_custom_font() -> Option<FontDescription> {
             font_description.set_size(scaled_size);
         }
 
-        println!("ffffffffff {:?} {}", family, size);
         FONT_CONTEXT.set_font_description(font_description.clone());
         Some(font_description)
     } else {

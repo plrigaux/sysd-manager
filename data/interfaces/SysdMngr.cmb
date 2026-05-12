@@ -3,10 +3,10 @@
 <!-- Created with Cambalache 1.0 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1,webkitgtk-6.0">
   <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="19c241edccb89097cfe2c33b0ce32e716d13015129aadedbde75864de2731f1e"/>
-  <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="15e82db0a0511c32e06aaf27e9b7b992ffa4b53b22e18b0349a827ad6825ccc0"/>
-  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="0e6be0848d8fa2d2e5cc646a013d88382bcafdf5d0c45f839df01210cd3897b6"/>
-  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="280a1350902b2712327d4abc490ee9a59b0ae137fc13082c8ee034be1cc69e13"/>
-  <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="0b32ae4e971c31e3e02d195acca8cc59d40464c3da522886ee553ae9a21e920b"/>
+  <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="644bb4e1d9d44f6ec46817a58bc2314c7d0f26843189c7f6ba22dd08fb8e886f"/>
+  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="4bf1ef95eaec72c50fd56eaeb97ceb19f71cba67cce95bdf1e2209ccafad04d2"/>
+  <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="84abf874b3acc27886a4e7b5bc85ce1d7fe71d901a35c1595113a1a9be5bb020"/>
+  <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="3b4fc29c7c8d73dda55c9e143bd8b0f1e82851cd44088c888283d857bb497fde"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
   <ui template-class="KillPanel" filename="kill_panel.ui" sha256="129738f4248013902226f6ee966147181684f986e1fc2c06ff891bdbe50f9bec"/>
   <ui template-class="CLEAN_DIALOG" filename="clean_dialog.ui" sha256="bf9a40a48b5c3d1b8639dfcf62ca3af36de2b4a6b20bd553831f0e0f5388dbca"/>
@@ -16,7 +16,7 @@
   <ui template-class="UNIT_PROPERTIES_DIALOG" filename="unit_properties.ui" sha256="6e756a34e871dcc2202a9d9c9669092bb363e5c50d15c87fc1790922b9bda94e"/>
   <ui template-class="UNIT_LIST_FILTER" filename="unit_list_filter.ui" sha256="881ddc53f3bc4393ea93a12c64aa8f31af4dd0aa5271db1ec1b154f83c169d6d"/>
   <ui template-class="SEARCH_CONTROLS" filename="unit_list_search.ui" sha256="e0d2d4674d3093dee3ba739b22d837b7227c812b4de686c2ed360246f69c6138"/>
-  <ui filename="shortcuts.ui" sha256="4ab63f72c498b740933e4003d4889db2ca8acef94eef806bab8de82c4fb87961"/>
+  <ui filename="shortcuts.ui" sha256="2a99ae58f9cba74f89a6b2e8e06ee345615c15b2c9191fd3ee68d679316048e1"/>
   <ui template-class="ListBoots" filename="list_boots.ui" sha256="143a0e63916c4b00f5d6e02e4a57ce7881fc2cf1887637564867a3772f44501a"/>
   <ui template-class="ControlAction_DIALOG" filename="control_action_dialog.ui" sha256="de993a2a8120c4003e4eb7e41b3456e335f01a91891ec043649b28d062c712c7"/>
   <ui template-class="SIGNALS_DIALOG" filename="signals_window.ui" sha256="ec9c621786d4a5adabd1c51d772dcb1e9e28bf36fc8139ebfa9498fcbd5e036e"/>

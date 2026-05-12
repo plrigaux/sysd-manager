@@ -155,10 +155,10 @@ pub enum PanelID {
 impl PanelID {
     fn to_variant(&self) -> glib::Variant {
         match self {
-            PanelID::Info => 1_u8.to_variant(),
-            PanelID::Dependencies => 2_u8.to_variant(),
-            PanelID::File => 3_u8.to_variant(),
-            PanelID::Journal => 4_u8.to_variant(),
+            PanelID::Info => 1.to_variant(),
+            PanelID::Dependencies => 2.to_variant(),
+            PanelID::File => 3.to_variant(),
+            PanelID::Journal => 4.to_variant(),
         }
     }
 }
@@ -166,7 +166,7 @@ impl PanelID {
 impl From<Option<&glib::Variant>> for PanelID {
     fn from(value: Option<&glib::Variant>) -> Self {
         if let Some(variant) = value
-            && let Some(val) = variant.get::<u8>()
+            && let Some(val) = variant.get::<i32>()
         {
             match val {
                 1 => PanelID::Info,

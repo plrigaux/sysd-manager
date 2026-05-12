@@ -291,7 +291,7 @@ impl UnitControlPanelImpl {
                         }
                     }
                 })
-                .parameter_type(Some(glib::VariantTy::BYTE))
+                .parameter_type(Some(glib::VariantTy::INT32))
                 .build()
         };
 

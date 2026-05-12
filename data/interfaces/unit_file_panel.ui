@@ -25,6 +25,8 @@
                     <property name="spacing">5</property>
                     <child>
                       <object class="GtkToggleButton" id="find_text_button">
+                        <property name="action-name">win.find-in-text-panel-toggle</property>
+                        <property name="action-target">3</property>
                         <property name="icon-name">system-search-symbolic</property>
                       </object>
                     </child>
