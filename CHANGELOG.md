@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [Issue 49](https://github.com/plrigaux/sysd-manager/issues/49) Put focus on search entry when appearing
+- [Issue 60](https://github.com/plrigaux/sysd-manager/issues/60) Fixed analyze behavior blame in Flatpak
 - [Issue 61](https://github.com/plrigaux/sysd-manager/issues/61) Keep font choice when switching between ligth and dark mode
 
 ## [2.19.2] - 2026-04-24
