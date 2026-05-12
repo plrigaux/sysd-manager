@@ -86,6 +86,20 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.19.3" date="2026-05-12">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>[Issue 59] Keyboard shortcuts Ctrl+W and Esc to close sub-windows, and Ctrl+Q to quit the application</li>
+          <li>[Issue 58] Add Services in currated list (Shift+Ctrl+S)</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>[Issue 49] Put focus on search entry when appearing</li>
+          <li>[Issue 61] Keep font choice when switching between ligth and dark mode</li>
+        </ul>
+      </description>
+    <release>
     <release version="2.19.2" date="2026-04-24">
       <description translate="no">
         <p>Added</p>
@@ -93,7 +107,7 @@ https://hughsie.github.io/oars/index.html
           <li>Esc key to clear Text Search and Unit Search Entries [Issue 46] and [Issue 49]</li>
           <li>Unit browser add or remove units when loaded in systemd</li>
           <li>Transaltion strings</li>
-          <li>Add Open Find in Text shortcut</li>
+          <li>Add Open Find in Text shortcut Shift+Ctrl+F</li>
         </ul>
         <p>Changed</p>
         <ul>

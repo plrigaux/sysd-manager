@@ -60,6 +60,8 @@ pub struct UnitCreatorWindowImp {
     radio_button_timer_service: TemplateChild<adw::ActionRow>,
     #[template_child]
     radio_button_timer: TemplateChild<adw::ActionRow>,
+    #[template_child]
+    banner: TemplateChild<adw::Banner>,
 
     sections: RefCell<HashMap<PageType, gtk::Widget>>,
 
@@ -381,8 +383,23 @@ impl ObjectImpl for UnitCreatorWindowImp {
                 .build()
         };
 
+        let donate: gio::ActionEntry<_> = gio::ActionEntry::builder("donate")
+            .activate(|_, _, _| {
+                let launcher = gtk::UriLauncher::new("https://github.com/sponsors/plrigaux");
+                launcher.launch(
+                    None::<&gtk::Window>,
+                    None::<&gio::Cancellable>,
+                    move |result| {
+                        if let Err(error) = result {
+                            warn!("Finished launch $upport Error {error:?}")
+                        }
+                    },
+                );
+            })
+            .build();
+
         let action_group = self.action_group.borrow().clone();
-        action_group.add_action_entries([preferences_action_entry, action_creator_bus]);
+        action_group.add_action_entries([preferences_action_entry, action_creator_bus, donate]);
         self.obj()
             .insert_action_group("creator", Some(&action_group));
 
@@ -395,6 +412,9 @@ impl ObjectImpl for UnitCreatorWindowImp {
         glib::spawn_future_local(async move {
             creation_window.imp().fill_unit_files().await;
         });
+
+        self.banner.set_use_markup(true);
+        self.banner.set_css_classes(&["warning", "construction"]);
     }
 }
 
