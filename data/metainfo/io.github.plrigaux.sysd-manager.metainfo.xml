@@ -84,13 +84,14 @@
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
-  <content_rating type="oars-1.1"/>
+  <content_rating type="oars-1.1" />
   <releases>
     <release version="2.19.3" date="2026-05-12">
       <description translate="no">
         <p>Added</p>
         <ul>
-          <li>[Issue 59] Keyboard shortcuts Ctrl+W and Esc to close sub-windows, and Ctrl+Q to quit the application</li>
+          <li>[Issue 59] Keyboard shortcuts Ctrl+W and Esc to close sub-windows, and Ctrl+Q to quit
+            the application</li>
           <li>[Issue 58] Add Services in currated list (Shift+Ctrl+S)</li>
         </ul>
         <p>Fixed</p>
@@ -99,7 +100,7 @@ https://hughsie.github.io/oars/index.html
           <li>[Issue 61] Keep font choice when switching between ligth and dark mode</li>
         </ul>
       </description>
-    <release>
+    </release>
     <release version="2.19.2" date="2026-04-24">
       <description translate="no">
         <p>Added</p>
@@ -119,7 +120,8 @@ https://hughsie.github.io/oars/index.html
           <li>UX Ellipsize File Link [Issue 51]</li>
           <li>UX better separation between tab navigator and bellow context [Issue 47]</li>
           <li>UX Text Search Entry get focus when Text Search Panel Open [Issue 46]</li>
-          <li>UX Make Space ratio between the unit browser and the content to persist in all time [Issue 52] and [Issue 53]</li>
+          <li>UX Make Space ratio between the unit browser and the content to persist in all time
+            [Issue 52] and [Issue 53]</li>
         </ul>
       </description>
     </release>
@@ -226,9 +228,11 @@ https://hughsie.github.io/oars/index.html
         </ul>
         <p>Fixed</p>
         <ul>
-          <li>Proxy now starts automatically when a privileged operation is triggered (Save, Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
+          <li>Proxy now starts automatically when a privileged operation is triggered (Save,
+            Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
           <li>Start proxy at Startup option not working [Issue 37]</li>
-          <li>Stop proxy at Close no longer prompts for password when proxy was never started [Issue 37]</li>
+          <li>Stop proxy at Close no longer prompts for password when proxy was never started [Issue
+            37]</li>
           <li>Start option icon missing [Issue 41]</li>
         </ul>
       </description>
@@ -254,7 +258,7 @@ https://hughsie.github.io/oars/index.html
         <ul>
           <li>
             Save unit files with privilege elevation on a Flatpack build
-        </li>
+          </li>
         </ul>
       </description>
     </release>
