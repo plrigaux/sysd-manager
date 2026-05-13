@@ -181,6 +181,7 @@ impl UnitInfoPanelImp {
             }
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             InterPanelMessage::Refresh(unit) => self.refresh_panels(unit),
+            InterPanelMessage::IsDark(_) => self.refresh_panels(None),
             _ => {}
         }
     }

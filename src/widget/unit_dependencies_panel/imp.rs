@@ -319,9 +319,9 @@ impl UnitDependenciesPanelImp {
             }
 
             InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
-            InterPanelMessage::UnitChange(unit) => {
-                self.set_unit(unit);
-            }
+            InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
+            InterPanelMessage::IsDark(_) => self.update_dependencies(),
+
             _ => {}
         }
     }
