@@ -139,6 +139,8 @@ mod imp {
 
             let event_controller = widget::clear_on_escape();
             self.search_entry.add_controller(event_controller);
+
+            self.search_entry.set_search_delay(500);
         }
     }
 
