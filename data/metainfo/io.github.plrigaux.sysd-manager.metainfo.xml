@@ -84,8 +84,22 @@
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
-  <content_rating type="oars-1.1" />
+  <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.19.4" date="2026-05-13">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>[Issue 62] Add word wrap option for the journal events</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>[Issue 58] Services in currated list - Fix include unit files</li>
+          <li>[Issue 64] Unit File color palette when switching Color Scheme Mode (Light and Dark)</li>
+          <li>[Issue 63] Unit Description and Unit Dependencies when switching Color Scheme Mode (Light and Dark)</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.19.3" date="2026-05-12">
       <description translate="no">
         <p>Added</p>
@@ -97,7 +111,7 @@ https://hughsie.github.io/oars/index.html
         <p>Fixed</p>
         <ul>
           <li>[Issue 49] Put focus on search entry when appearing</li>
-          <li>[Issue 61] Keep font choice when switching between ligth and dark mode</li>
+          <li>[Issue 61] Keep font choice when switching between light and dark mode</li>
         </ul>
       </description>
     </release>
