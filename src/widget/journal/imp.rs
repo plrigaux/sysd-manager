@@ -1,3 +1,4 @@
+use gettextrs::pgettext;
 use gtk::{
     TemplateChild, gio, glib,
     prelude::*,
@@ -13,7 +14,7 @@ use gtk::{
 use systemd::journal_data::BOOT_IDX;
 
 use std::{
-    cell::{Cell, OnceCell, RefCell},
+    cell::{Cell, RefCell},
     thread,
 };
 
@@ -21,7 +22,8 @@ use tracing::{debug, error, info, warn};
 
 use crate::{
     consts::{
-        APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS, CLASS_WARNING, SETTING_FIND_IN_TEXT_OPEN,
+        ACTION_WIN_KEY_JOURNAL_WRAP_WORD, APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS,
+        CLASS_WARNING, SETTING_FIND_IN_TEXT_OPEN,
     },
     systemd::{
         BootFilter,
@@ -145,8 +147,7 @@ pub struct JournalPanelImp {
     //old_to_recent_order: Cell<bool>,
     display_order: Cell<JournalDisplayOrder>,
     cancel_continuous_sender: RefCell<Option<std::sync::mpsc::Sender<()>>>,
-
-    settings: OnceCell<gio::Settings>,
+    // settings: OnceCell<gio::Settings>,
 }
 
 #[gtk::template_callbacks]
@@ -176,12 +177,8 @@ impl JournalPanelImp {
         child.set_label(label);
         self.display_order.set(display);
 
-        if let Err(e) = self
-            .settings
-            .get()
-            .expect("settings not none")
-            .set_string(KEY_PREF_JOURNAL_DISPLAY_ORDER, display.key())
-        {
+        let settings = systemd_gui::new_settings();
+        if let Err(e) = settings.set_string(KEY_PREF_JOURNAL_DISPLAY_ORDER, display.key()) {
             let key = display.key();
             warn!(
                 "Can't set setting key {:?} value {:?} error {:?}",
@@ -356,7 +353,23 @@ impl JournalPanelImp {
 }
 
 impl JournalPanelImp {
-    pub(super) fn register(&self, _app_window: &AppWindow) {}
+    pub(super) fn register(&self, app_window: &AppWindow) {
+        let settings = systemd_gui::new_settings();
+        let action = settings.create_action(&ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..]);
+
+        let journal_panel = self.obj().clone();
+        action.connect_state_notify(move |action| {
+            let text_view = journal_panel.imp().journal_text_view.borrow();
+
+            let state = action
+                .state()
+                .and_then(|v| v.get::<bool>())
+                .unwrap_or_default();
+
+            set_wrap_mode(&text_view, state);
+        });
+        app_window.add_action(&action);
+    }
 
     fn set_visible_on_page(&self, value: bool) {
         debug!("set_visible_on_page val {value}");
@@ -707,14 +720,32 @@ impl JournalPanelImp {
 
     fn new_text_view(&self) {
         debug!("new_text_view");
-        let tv: gtk::TextView = gtk::TextView::builder().editable(false).build();
-        self.scrolled_window.set_child(Some(&tv));
-        self.journal_text_view.replace(tv);
+        let text_view = gtk::TextView::builder()
+            .editable(false)
+            .wrap_mode(gtk::WrapMode::Word)
+            .build();
+        self.scrolled_window.set_child(Some(&text_view));
         self.time_old_new.set(None);
         self.continuous_switch.set_state(false);
 
-        let text_view = self.journal_text_view.borrow();
+        let settings = systemd_gui::new_settings();
+        let wrap_word = settings.boolean(&ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..]);
+        set_wrap_mode(&text_view, wrap_word);
+
+        let menu_wrap_word = gio::Menu::new();
+        //Menu item label
+        let menu_label = pgettext("journal", "Wrap Word");
+        let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
+        wrap_word_toggle_menu
+            .set_action_and_target_value(Some(ACTION_WIN_KEY_JOURNAL_WRAP_WORD), None);
+        menu_wrap_word.append_item(&wrap_word_toggle_menu);
+
         text_search::update_text_view(&self.text_search_bar, &text_view, true, PanelID::Journal);
+
+        if let Some(extra) = text_view.extra_menu().and_downcast_ref::<gio::Menu>() {
+            extra.append_section(None, &menu_wrap_word);
+        }
+        self.journal_text_view.replace(text_view);
     }
 
     fn clean_refresh(&self) {
@@ -734,6 +765,14 @@ impl JournalPanelImp {
 
     pub(crate) fn focus_text_search(&self) {
         text_search::focus_on_text_entry(&self.text_search_bar)
+    }
+}
+
+fn set_wrap_mode(text_view: &gtk::TextView, state: bool) {
+    if state {
+        text_view.set_wrap_mode(gtk::WrapMode::WordChar)
+    } else {
+        text_view.set_wrap_mode(gtk::WrapMode::None)
     }
 }
 
@@ -762,10 +801,6 @@ impl ObjectImpl for JournalPanelImp {
         self.new_text_view();
 
         let settings = systemd_gui::new_settings();
-        self.settings
-            .set(settings.clone())
-            .expect("Settings set once only");
-
         settings
             .bind(
                 KEY_PREF_JOURNAL_DISPLAY_FOLLOW,

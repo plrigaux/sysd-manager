@@ -94,4 +94,5 @@ pub const ACTION_FIND_IN_TEXT_TOGGLE: &str = "win.find-in-text-panel-toggle";
 pub const ACTION_FIND_IN_TEXT_OPEN: &str = "win.find-in-text-panel-open";
 pub const SETTING_FIND_IN_TEXT_OPEN: &str = "find-in-text-panel-open";
 pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "win.pref-unit-list-display-summary";
+pub const ACTION_WIN_KEY_JOURNAL_WRAP_WORD: &str = "win.pref-journal-wrap-word";
 pub const UNIT_FILE_LINE_NUMBER_ACTION: &str = "win.unit-file-line-number";

@@ -332,5 +332,9 @@
       <summary>Always shows Start and Stop Buttons</summary>
       <description>Always shows Start and Stop Buttons, otherwise those buttons are displayed according to context</description>
     </key>
+    <key name="pref-journal-wrap-word" type="b">
+      <default>false</default>
+      <summary>Warp word on journal</summary>
+    </key>
   </schema>
 </schemalist>

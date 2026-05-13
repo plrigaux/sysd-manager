@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0 -->
+<!-- Created with Cambalache 1.0.1 -->
 <interface>
   <!-- interface-name preferences.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -182,6 +182,16 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
                 <property name="subtitle-lines">2</property>
                 <property name="title" translatable="yes" context="preference" comments="title">Journal's event max size</property>
                 <signal name="changed" handler="journal_event_max_size_changed" swapped="True"/>
+                <child>
+                  <object class="AdwSwitchRow"/>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow">
+                <property name="action-name">win.pref-journal-wrap-word</property>
+                <property name="subtitle">Wrap text at word boundaries</property>
+                <property name="title">Wrap Word</property>
               </object>
             </child>
           </object>
