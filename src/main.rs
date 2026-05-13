@@ -206,8 +206,8 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: boo
 
             let resource = css_resource_light_dark(is_dark);
             load_css_ress(resource);
-            window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
             set_is_dark(is_dark);
+            window.set_inter_message(&widget::InterPanelMessage::IsDark(is_dark));
         });
     }
 

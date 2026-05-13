@@ -22,7 +22,7 @@ pub fn is_dark() -> bool {
     match IS_DARK.read() {
         Ok(d) => *d,
         Err(err) => {
-            error!("Poisoned {err:?}");
+            error!("Is Dark Poisoned {err:?}");
             false
         }
     }
