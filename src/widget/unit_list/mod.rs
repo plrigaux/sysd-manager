@@ -171,6 +171,7 @@ impl UnitCuratedList {
 
         let menu_file = gio::Menu::new();
 
+        //Menu Option
         let label = pgettext("menu", "Include Unit Files");
         let item = gio::MenuItem::new(Some(&label), Some(WIN_ACTION_INCLUDE_UNIT_FILES));
         menu_file.append_item(&item);

@@ -6,10 +6,10 @@ pub mod pop_menu;
 
 use crate::{
     consts::{
-        ACTION_INCLUDE_UNIT_FILES, ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR,
-        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL,
-        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_REFRESH_UNIT_LIST, ALL_FILTER_KEY, FILTER_MARK,
-        KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_FAVORITE_SET,
+        ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL, ACTION_WIN_REFRESH_POP_MENU,
+        ACTION_WIN_REFRESH_UNIT_LIST, ALL_FILTER_KEY, FILTER_MARK,
+        KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, WIN_ACTION_INCLUDE_UNIT_FILES,
     },
     systemd::{
         ListUnitResponse, UnitProperties, UnitPropertiesFlags,
@@ -495,16 +495,18 @@ impl UnitListPanelImp {
             })
             .build();
 
-        let action = settings.create_action(ACTION_INCLUDE_UNIT_FILES);
+        let action = settings.create_action(&WIN_ACTION_INCLUDE_UNIT_FILES[4..]);
         let unit_list_panel = self.obj().clone();
         action.connect_state_notify(move |_| {
             let view = unit_list_panel.selected_list_view();
+            info!("include unit file {:?}", view);
             if matches!(
                 view,
                 UnitCuratedList::Timers
                     | UnitCuratedList::Path
                     | UnitCuratedList::Automount
                     | UnitCuratedList::Sockets
+                    | UnitCuratedList::Services
             ) {
                 let unit_list_panel = unit_list_panel.clone();
                 glib::spawn_future_local(async move {
@@ -516,9 +518,9 @@ impl UnitListPanelImp {
 
         settings
             .bind::<UnitListPanel>(
-                ACTION_INCLUDE_UNIT_FILES,
+                &WIN_ACTION_INCLUDE_UNIT_FILES[4..],
                 &self.obj(),
-                ACTION_INCLUDE_UNIT_FILES,
+                &WIN_ACTION_INCLUDE_UNIT_FILES[4..],
             )
             .build();
 
@@ -1862,8 +1864,10 @@ impl UnitListPanelImp {
                     UnitCuratedList::Automount => {
                         dbus_call!(int_level, handles, systemd::list_loaded_units_automounts)
                     }
-                    //UnitCuratedList::UnitFiles => {}
-                    _ => {}
+                    UnitCuratedList::Services => {
+                        dbus_call!(int_level, handles, systemd::list_loaded_units_services)
+                    }
+                    UnitCuratedList::Favorites | UnitCuratedList::UnitFiles => {}
                 }
 
                 match view {
@@ -1872,7 +1876,6 @@ impl UnitListPanelImp {
                     | UnitCuratedList::UnitFiles => {
                         dbus_call!(int_level, handles, systemd::list_unit_files)
                     }
-
                     UnitCuratedList::Timers if include_unit_files => {
                         dbus_call!(int_level, handles, systemd::list_unit_files_timers)
                     }
@@ -1888,8 +1891,13 @@ impl UnitListPanelImp {
                     UnitCuratedList::Automount if include_unit_files => {
                         dbus_call!(int_level, handles, systemd::list_unit_files_automounts)
                     }
-                    // UnitCuratedList::LoadedUnit => {}
-                    _ => {}
+                    UnitCuratedList::Favorites
+                    | UnitCuratedList::LoadedUnit
+                    | UnitCuratedList::Timers
+                    | UnitCuratedList::Services
+                    | UnitCuratedList::Sockets
+                    | UnitCuratedList::Path
+                    | UnitCuratedList::Automount => {}
                 }
 
                 send_unit_list(sender_syst, handles).await;
@@ -1981,9 +1989,9 @@ impl ObjectImpl for UnitListPanelImp {
 
         settings
             .bind::<UnitListPanel>(
-                ACTION_INCLUDE_UNIT_FILES,
+                &WIN_ACTION_INCLUDE_UNIT_FILES[4..],
                 &self.obj(),
-                ACTION_INCLUDE_UNIT_FILES,
+                &WIN_ACTION_INCLUDE_UNIT_FILES[4..],
             )
             .build();
 

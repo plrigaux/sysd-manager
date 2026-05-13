@@ -56,8 +56,7 @@ pub const ALL_FILTER_KEY: &str = "all";
 
 pub const ACTION_WIN_REFRESH_UNIT_LIST: &str = "win.refresh_unit_list";
 
-pub const ACTION_INCLUDE_UNIT_FILES: &str = "include-unit-files";
-pub const WIN_ACTION_INCLUDE_UNIT_FILES: &str = concat!(WIN, ACTION_INCLUDE_UNIT_FILES);
+pub const WIN_ACTION_INCLUDE_UNIT_FILES: &str = "win.include-unit-files";
 
 pub const TIME_NEXT_ELAPSE_USEC_MONOTONIC: &str = "NextElapseUSecMonotonic";
 pub const TIME_NEXT_ELAPSE_USEC_REALTIME: &str = "NextElapseUSecRealtime";

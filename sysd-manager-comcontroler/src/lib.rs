@@ -255,6 +255,12 @@ pub async fn list_loaded_units_sockets(
     list_loaded_units_by_patterns(level, &["*.socket"]).await
 }
 
+pub async fn list_loaded_units_services(
+    level: UnitDBusLevel,
+) -> Result<ListUnitResponse, SystemdErrors> {
+    list_loaded_units_by_patterns(level, &["*.service"]).await
+}
+
 pub async fn list_loaded_units_paths(
     level: UnitDBusLevel,
 ) -> Result<ListUnitResponse, SystemdErrors> {
