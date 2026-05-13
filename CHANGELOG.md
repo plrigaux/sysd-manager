@@ -13,8 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [Issue 58](https://github.com/plrigaux/sysd-manager/issues/58) Services in currated list - Fix include unit files
-- [Issue 64](https://github.com/plrigaux/sysd-manager/issues/49) Unit File Color palette when switching Color Scheme Mode (Light and Dark)
-- [Issue 63](https://github.com/plrigaux/sysd-manager/issues/60) Unit Description and Unit Dependencies text color palette
+- [Issue 64](https://github.com/plrigaux/sysd-manager/issues/64) Unit File Color palette when switching Color Scheme Mode (Light and Dark)
+- [Issue 63](https://github.com/plrigaux/sysd-manager/issues/63) Unit Description and Unit Dependencies text color palette
 when switching Color Scheme Mode (Light and Dark)
 
 ## [2.19.3] - 2026-05-12
