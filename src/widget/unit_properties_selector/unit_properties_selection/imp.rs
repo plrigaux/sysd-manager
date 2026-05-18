@@ -7,10 +7,11 @@ use gtk::{
     prelude::*,
     subclass::prelude::*,
 };
+use indexmap::IndexMap;
 use tracing::{error, info, warn};
 
 use crate::widget::{
-    unit_list::{UnitCuratedList, UnitListPanel},
+    unit_list::{UnitCuratedList, UnitListPanel, column::SysdColumn},
     unit_properties_selector::{
         data_browser::PropertyBrowseItem,
         data_selection::UnitPropertySelection,
@@ -71,12 +72,20 @@ impl UnitPropertiesSelectionPanelImp {
 
         let list_store = get_list_store!(self);
 
-        let mut list: Vec<UnitPropertySelection> = list_store
+        let mut list: IndexMap<SysdColumn, UnitPropertySelection> = list_store
             .iter::<UnitPropertySelection>()
             .filter_map(|result| result.ok())
+            .map(|up| (up.sysd_column(), up))
             .collect();
 
-        save_column_config(None, &mut list, UnitCuratedList::Custom);
+        save_column_config(
+            None,
+            &mut list,
+            UnitCuratedList::Custom,
+            None,
+            gtk::SortType::Ascending,
+            0,
+        );
 
         let unit_list_panel = get_unit_list_panel!(self);
 
@@ -105,7 +114,7 @@ impl UnitPropertiesSelectionPanelImp {
 
         list_store.remove_all(); //TBSafe
 
-        for unit_property_column in unit_list_panel.default_displayed_columns().iter() {
+        for (_, unit_property_column) in unit_list_panel.default_displayed_columns().iter() {
             let unit_property_column = unit_property_column.copy();
             list_store.append(&unit_property_column);
         }
@@ -136,10 +145,15 @@ impl UnitPropertiesSelectionPanelImp {
 
         let list_store = get_list_store!(self);
 
-        let mut columns = { unit_list_panel.current_columns_mut() };
-        save::order_columns(Some(&unit_list_panel.columns()), &mut columns);
+        let columns = { unit_list_panel.current_columns_mut() };
+        save::order_columns(
+            Some(&unit_list_panel.columns()),
+            &columns,
+            None,
+            gtk::SortType::Ascending,
+        );
 
-        for unit_property_column in columns.iter() {
+        for (_, unit_property_column) in columns.iter() {
             let unit_property_column = unit_property_column.copy(); //if no copy the column prop are in sync
             list_store.append(&unit_property_column);
         }

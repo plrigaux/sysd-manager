@@ -112,8 +112,11 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
     let analyze_tree = gtk::ColumnView::builder()
         .focusable(true)
         .model(&single_selection)
+        .reorderable(true)
         .hexpand(true)
         .build();
+
+    analyze_tree.set_reorderable(true);
 
     let col1factory = gtk::SignalListItemFactory::new();
     let col2factory = gtk::SignalListItemFactory::new();

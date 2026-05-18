@@ -1,4 +1,5 @@
 use glib::GString;
+use indexmap::Equivalent;
 use systemd::enums::UnitType;
 use tracing::error;
 
@@ -27,7 +28,7 @@ const COL_SUBSTATE: &str = "sysdm-sub";
 const COL_LOAD: &str = "sysdm-load";
 const COL_DESCRIPTION: &str = "sysdm-description";
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+#[derive(Debug, Eq, Clone)]
 pub struct CustomProp {
     utype: UnitType,
     id: String,
@@ -41,8 +42,21 @@ impl CustomProp {
     }
 }
 
-#[derive(Debug, Eq, Clone)]
+impl PartialEq for CustomProp {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl std::hash::Hash for CustomProp {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+#[derive(Default, Debug, Eq, Clone)]
 pub enum SysdColumn {
+    #[default]
     Name,
     FullName,
     Bus,
@@ -76,13 +90,11 @@ impl SysdColumn {
         // let signature = signature.map(|s| s.to_owned());
 
         let r = match interface {
-            "" | SPECIAL_INTERFACE_NAME | INTERFACE_NAME => {
-                Self::new(property_name.to_owned(), signature)
-            }
+            "" | SPECIAL_INTERFACE_NAME | INTERFACE_NAME => Self::new(property_name, signature),
             _ => {
                 let ut = UnitType::from_intreface(interface);
                 let new_id = format!("{}@{property_name}", ut.as_str());
-                Self::new(new_id, signature)
+                Self::new(&new_id, signature)
             }
         };
 
@@ -93,10 +105,10 @@ impl SysdColumn {
     }
 
     pub fn new(
-        id: String,
+        id: &str,
         prop_type: Option<String>,
     ) -> Result<SysdColumn, (SysdColumnNonConformity, SysdColumn)> {
-        let col = match id.as_str() {
+        let col = match id {
             COL_ID_UNIT => SysdColumn::Name,
             COL_ID_UNIT_FULL => SysdColumn::FullName,
             COL_BUS => SysdColumn::Bus,
@@ -233,10 +245,7 @@ impl SysdColumn {
     pub(crate) fn verify(
         unit_column_config: &UnitColumn,
     ) -> Result<SysdColumn, (SysdColumnNonConformity, SysdColumn)> {
-        Self::new(
-            unit_column_config.id.clone(),
-            unit_column_config.prop_type.clone(),
-        )
+        Self::new(&unit_column_config.id, unit_column_config.prop_type.clone())
     }
 
     pub(crate) fn fill_custom(utype: UnitType, property: &str, property_type: &str) -> SysdColumn {
@@ -251,11 +260,11 @@ impl SysdColumn {
         SysdColumn::Custom(c)
     }
 
-    fn fill_custom2(utype: UnitType, id: String, signature: Option<String>) -> SysdColumn {
+    fn fill_custom2(utype: UnitType, id: &str, signature: Option<String>) -> SysdColumn {
         let utype_str = utype.as_str();
         let c = CustomProp {
             utype,
-            id,
+            id: id.to_owned(),
             prop_idx: (utype_str.len() + 1) as u8,
             signature,
         };
@@ -303,10 +312,10 @@ impl PartialEq for SysdColumn {
     }
 }
 
-fn defective_custom(id: String, signature: Option<String>) -> SysdColumn {
+fn defective_custom(id: &str, signature: Option<String>) -> SysdColumn {
     SysdColumn::Custom(CustomProp {
         utype: UnitType::Unknown,
-        id,
+        id: id.to_owned(),
         prop_idx: 0,
         signature,
     })
@@ -324,7 +333,7 @@ impl From<(&str, Option<String>)> for SysdColumn {
 
 impl From<(String, Option<String>)> for SysdColumn {
     fn from(value: (String, Option<String>)) -> Self {
-        match SysdColumn::new(value.0, value.1) {
+        match SysdColumn::new(&value.0, value.1) {
             Ok(c) => c,
             Err((_e, c)) => c,
         }

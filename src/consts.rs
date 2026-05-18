@@ -55,6 +55,7 @@ pub const FILTER_MARK: char = '⭐';
 pub const ALL_FILTER_KEY: &str = "all";
 
 pub const ACTION_WIN_REFRESH_UNIT_LIST: &str = "win.refresh_unit_list";
+pub const ACTION_WIN_CHANGE_BUS: &str = "win.change-bus";
 
 pub const WIN_ACTION_INCLUDE_UNIT_FILES: &str = "win.include-unit-files";
 

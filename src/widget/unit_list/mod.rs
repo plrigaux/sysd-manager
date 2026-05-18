@@ -16,6 +16,7 @@ use gettextrs::pgettext;
 use glib::variant::ToVariant;
 use gtk::glib;
 use gtk::subclass::prelude::*;
+use indexmap::IndexMap;
 use strum::IntoEnumIterator;
 use tracing::warn;
 
@@ -82,19 +83,19 @@ impl UnitListPanel {
         self.imp().button_action(action)
     }
 
-    pub fn set_new_columns(&self, list: Vec<UnitPropertySelection>) {
+    pub fn set_new_columns(&self, list: IndexMap<SysdColumn, UnitPropertySelection>) {
         self.imp().set_new_columns(list, true);
     }
 
-    pub fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
+    pub fn current_columns(&self) -> Ref<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
         self.imp().current_columns()
     }
 
-    pub fn current_columns_mut(&self) -> RefMut<'_, Vec<UnitPropertySelection>> {
+    pub fn current_columns_mut(&self) -> RefMut<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
         self.imp().current_columns_mut()
     }
 
-    pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
+    pub(super) fn default_displayed_columns(&self) -> &IndexMap<SysdColumn, UnitPropertySelection> {
         self.imp().default_displayed_columns()
     }
 
@@ -281,6 +282,19 @@ impl From<&glib::Variant> for UnitCuratedList {
             }
         }
         warn!("Value {value_str:?} has no match for UnitListView, fallback to \"default\"");
+
+        UnitCuratedList::Defaut
+    }
+}
+
+impl From<glib::GString> for UnitCuratedList {
+    fn from(value: glib::GString) -> Self {
+        for unit_list_view in UnitCuratedList::iter() {
+            if unit_list_view.id() == value.as_str() {
+                return unit_list_view;
+            }
+        }
+        warn!("Value {value:?} has no match for UnitListView, fallback to \"default\"");
 
         UnitCuratedList::Defaut
     }

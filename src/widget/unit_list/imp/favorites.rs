@@ -31,12 +31,15 @@ impl Favorite {
 
 pub(super) fn save_favorites(favorites: &[&UnitKey]) {
     let favorites: Vec<Favorite> = favorites.iter().map(|k| Favorite::from(k)).collect();
+    systemd::runtime().spawn(save_favorites_async(favorites));
+}
 
+async fn save_favorites_async(favorites: Vec<Favorite>) {
     let config = Favorites { favorites };
 
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
 
-    if let Err(e) = fs::create_dir_all(&sysd_manager_config_dir) {
+    if let Err(e) = tokio::fs::create_dir_all(&sysd_manager_config_dir).await {
         error!(
             "Failed to create config directory {:?}: {}",
             sysd_manager_config_dir, e
@@ -46,7 +49,7 @@ pub(super) fn save_favorites(favorites: &[&UnitKey]) {
 
     let config_path = sysd_manager_config_dir.join(FAVORITES);
 
-    if let Err(e) = save_to_toml_file(&config, &config_path) {
+    if let Err(e) = save_to_toml_file(&config, &config_path).await {
         error!(
             "Failed to save column config to TOML file: {:?} {:?}",
             config_path, e

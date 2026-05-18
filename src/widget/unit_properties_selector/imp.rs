@@ -235,7 +235,7 @@ impl UnitPropertiesSelectorDialogImp {
         let default = PropertyBrowseItem::new_interface(INTERFACE_NAME.to_owned());
         // list_store.append(&default);
 
-        for default_column in unit_list_panel.default_displayed_columns() {
+        for (_, default_column) in unit_list_panel.default_displayed_columns() {
             let new_property_object = PropertyBrowseItem::from_column(&default_column.column());
             default.add_child(new_property_object);
         }

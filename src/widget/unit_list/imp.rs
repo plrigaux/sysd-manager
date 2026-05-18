@@ -6,9 +6,9 @@ pub mod pop_menu;
 
 use crate::{
     consts::{
-        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_FAVORITE_SET,
-        ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL, ACTION_WIN_REFRESH_POP_MENU,
-        ACTION_WIN_REFRESH_UNIT_LIST, ALL_FILTER_KEY, FILTER_MARK,
+        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_CHANGE_BUS,
+        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL,
+        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_REFRESH_UNIT_LIST, ALL_FILTER_KEY, FILTER_MARK,
         KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, WIN_ACTION_INCLUDE_UNIT_FILES,
     },
     systemd::{
@@ -39,7 +39,7 @@ use crate::{
                 },
             },
             get_clean_col_title,
-            imp::{construct::construct_column_view, favorites::save_favorites},
+            imp::favorites::save_favorites,
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::{
@@ -64,6 +64,7 @@ use gtk::{
         },
     },
 };
+use indexmap::IndexMap;
 use std::{
     borrow::Cow,
     cell::{Cell, OnceCell, Ref, RefCell, RefMut},
@@ -83,7 +84,7 @@ use tracing::{debug, error, info, trace, warn};
 
 static SOCKET_LISTEN_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 static PATH_QUARK: OnceLock<glib::Quark> = OnceLock::new();
-
+const SELECT_LIST_VIEW: &str = "selected-list-view";
 const UNIT_LIST_VIEW_PAGE: &str = "unit_list";
 const RESTRICTIVE_FILTER_VIEW_PAGE: &str = "restrictive_filter";
 
@@ -281,9 +282,11 @@ pub struct UnitListPanelImp {
 
     app_window: OnceCell<AppWindow>,
 
-    current_column_view_column_definition_list: RefCell<Vec<UnitPropertySelection>>,
+    current_column_view_column_definition_list:
+        RefCell<IndexMap<SysdColumn, UnitPropertySelection>>,
 
-    default_column_view_column_definition_list: OnceCell<Vec<UnitPropertySelection>>,
+    default_column_view_column_definition_list:
+        OnceCell<IndexMap<SysdColumn, UnitPropertySelection>>,
 
     abort_handles: RefCell<Vec<AbortHandle>>,
     pop_menu: OnceCell<pop_menu::UnitPopMenu>,
@@ -426,8 +429,20 @@ impl UnitListPanelImp {
         let refresh_unit_list = {
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_WIN_REFRESH_UNIT_LIST[4..])
-                .activate(move |_application: &AppWindow, _, _| {
-                    info!("Action refresh called");
+                .activate(move |_application: &AppWindow, _, param| {
+                    info!("Action refresh called {:?}", param);
+
+                    unit_list_panel.imp().fill_store(None);
+                })
+                .build()
+        };
+
+        let change_bus = {
+            let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_WIN_CHANGE_BUS[4..])
+                .activate(move |_application: &AppWindow, _, param| {
+                    info!("Action refresh called {:?}", param);
+                    unit_list_panel.imp().save_config();
                     unit_list_panel.imp().fill_store(None);
                 })
                 .build()
@@ -463,6 +478,7 @@ impl UnitListPanelImp {
             list_filter_action_entry_blank,
             list_filter_clear_action_entry,
             refresh_unit_list,
+            change_bus,
             refresh_pop_menu,
             set_favorite,
         ]);
@@ -474,11 +490,12 @@ impl UnitListPanelImp {
 
         let unit_list_panel = self.obj().clone();
         let unit_list_panel2 = self.obj().clone();
+
         settings
             .bind::<UnitListPanel>(
                 UnitCuratedList::base_action(),
                 &self.obj(),
-                "selected-list-view",
+                SELECT_LIST_VIEW,
             )
             .mapping(move |variant, _| {
                 let unit_list_view: UnitCuratedList = variant.into();
@@ -552,15 +569,25 @@ impl UnitListPanelImp {
             self.obj().set_selected_list_view(new_view);
         }
 
-        let view = self.selected_list_view.get();
-
-        debug!("fill store {:?}", view);
-        let include_unit_files = self.include_unit_files.get();
-        let cols = construct_column_view(self.display_color.get(), view, include_unit_files);
+        let cols = self.construct_column_view();
 
         self.set_new_columns(cols, false);
 
         self.fill_browser();
+    }
+
+    fn construct_column_view(&self) -> IndexMap<SysdColumn, UnitPropertySelection> {
+        let view = self.selected_list_view.get();
+        info!("Selected Browser View : {:?}", view);
+
+        let id = self.config_id();
+
+        construct::construct_column_view(
+            self.display_color.get(),
+            view,
+            self.include_unit_files.get(),
+            id,
+        )
     }
 
     fn fill_browser(&self) {
@@ -1007,10 +1034,10 @@ impl UnitListPanelImp {
 
         let col_def_list = self.current_column_view_column_definition_list.borrow();
 
-        if let Some((idx, col_def)) = col_def_list
+        if let Some((idx, (_id, col_def))) = col_def_list
             .iter()
             .enumerate()
-            .find(|(_, col_def)| col_def.sort() != save::SortType::Unset)
+            .find(|(_, (_, col_def))| col_def.sort() != save::SortType::Unset)
         {
             let first_col = units_browser.columns().item(idx as u32);
 
@@ -1082,16 +1109,11 @@ impl UnitListPanelImp {
     }
 
     fn set_filter_column_header_marker(&self, add: bool, id: &str) {
-        if let Some(unit_prop_selection) = self
+        if let Some((_, unit_prop_selection)) = self
             .current_column_view_column_definition_list
             .borrow()
             .iter()
-            .find(|unit_prop_selection| {
-                unit_prop_selection
-                    .column()
-                    .id()
-                    .is_some_and(|cid| cid == id)
-            })
+            .find(|(cid, _)| cid.id() == id)
         {
             let col = unit_prop_selection.column();
 
@@ -1333,7 +1355,7 @@ impl UnitListPanelImp {
 
     pub(super) fn set_new_columns(
         &self,
-        property_list: Vec<UnitPropertySelection>,
+        property_list: IndexMap<SysdColumn, UnitPropertySelection>,
         fetch_custom_props: bool,
     ) {
         if property_list.is_empty() {
@@ -1363,46 +1385,58 @@ impl UnitListPanelImp {
         //Get the current column
         let cur_n_items = columns_list_model.n_items();
         let mut current_columns_over = Vec::with_capacity(columns_list_model.n_items() as usize);
-        for position in (property_list.len() as u32)..columns_list_model.n_items() {
-            let Some(column) = columns_list_model
+        for position in 0..columns_list_model.n_items() {
+            if let Some(column) = columns_list_model
                 .item(position)
                 .and_downcast::<gtk::ColumnViewColumn>()
-            else {
-                warn!("Col None");
-                continue;
+            {
+                current_columns_over.push(column);
             };
-            current_columns_over.push(column);
         }
 
+        let mut current_column_set = HashSet::new();
         let units_browser = units_browser!(self);
-        for (idx, unit_property) in property_list.iter().enumerate() {
+        for (idx, (sysd_col, unit_property)) in (0u32..).zip(property_list.iter()) {
             let new_column = unit_property.column();
 
-            let idx_32 = idx as u32;
-            if idx_32 < cur_n_items {
-                let Some(cur_column) = columns_list_model
-                    .item(idx_32)
-                    .and_downcast::<gtk::ColumnViewColumn>()
-                else {
-                    warn!("Col None");
-                    continue;
-                };
+            // let idx_32 = idx as u32;
+            println!(
+                "idx {idx} cur_n_items {cur_n_items} USE {} ID {:?}",
+                unit_property.use_column(),
+                unit_property.id()
+            );
+            if unit_property.use_column() {
+                if idx < cur_n_items {
+                    let Some(cur_column) = columns_list_model
+                        .item(idx)
+                        .and_downcast::<gtk::ColumnViewColumn>()
+                    else {
+                        warn!("Col None");
+                        continue;
+                    };
 
-                UnitPropertySelection::copy_col_to_col(&new_column, &cur_column);
-                unit_property.set_column(cur_column);
-            } else {
-                info!("Append {:?} {:?}", new_column.id(), new_column.title());
-                units_browser.append_column(&new_column);
+                    UnitPropertySelection::copy_col_to_col(&new_column, &cur_column);
+                    unit_property.set_column(cur_column);
+                } else {
+                    info!("Append {:?} {:?}", new_column.id(), new_column.title());
+                    units_browser.append_column(&new_column);
+                }
+                current_column_set.insert(sysd_col.id());
             }
+        }
+
+        //remove all columns that exceed the new ones
+        for column in current_columns_over.iter().skip(property_list.len()) {
+            info!(
+                "Remove column id {:?} title {:?}",
+                column.id(),
+                column.title()
+            );
+            units_browser.remove_column(column);
         }
 
         self.current_column_view_column_definition_list
             .replace(property_list);
-
-        //remove all columns that exceed the new ones
-        for column in current_columns_over.iter() {
-            units_browser.remove_column(column);
-        }
 
         force_expand_on_the_last_visible_column(&columns_list_model);
 
@@ -1424,7 +1458,7 @@ impl UnitListPanelImp {
 
         let mut property_list_send = HashSet::with_capacity(current_property_list.len());
 
-        for unit_property_selection in current_property_list.iter() {
+        for (_, unit_property_selection) in current_property_list.iter() {
             //Add custom factory
             unit_property_selection.fill_property_fetcher(&mut property_list_send)
         }
@@ -1555,13 +1589,13 @@ impl UnitListPanelImp {
                 .iter::<gtk::ColumnViewColumn>()
                 .filter_map(|item| item.ok())
             {
-                let prop_type = current_property_list
-                    .iter()
-                    .find(|prop_selection| prop_selection.id() == column.id())
-                    .and_then(|prop_selection| prop_selection.sysd_column());
+                if let Some(id) = column.id() {
+                    let sysd = SysdColumn::from((id.as_str(), None));
+                    let prop_type = current_property_list.get_key_value(&sysd);
 
-                if let Some(sysd_col) = prop_type {
-                    construct::set_column_factory_and_sorter(&column, display_color, &sysd_col);
+                    if let Some((sysd_col, _)) = prop_type {
+                        construct::set_column_factory_and_sorter(&column, display_color, sysd_col);
+                    }
                 }
             }
 
@@ -1589,11 +1623,13 @@ impl UnitListPanelImp {
         );
     }
 
-    pub(super) fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
+    pub(super) fn current_columns(&self) -> Ref<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
         self.current_column_view_column_definition_list.borrow()
     }
 
-    pub(super) fn current_columns_mut(&self) -> RefMut<'_, Vec<UnitPropertySelection>> {
+    pub(super) fn current_columns_mut(
+        &self,
+    ) -> RefMut<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
         self.current_column_view_column_definition_list.borrow_mut()
     }
 
@@ -1601,18 +1637,40 @@ impl UnitListPanelImp {
         units_browser!(self).columns()
     }
 
-    pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
+    pub(super) fn default_displayed_columns(&self) -> &IndexMap<SysdColumn, UnitPropertySelection> {
         self.default_column_view_column_definition_list
             .get_or_init(|| construct::default_column_definition_list(self.display_color.get()))
     }
 
     pub(super) fn save_config(&self) {
         let view = self.selected_list_view.get();
+
+        let column_view = units_browser!(self);
+        let binding = column_view.sorter();
+        let sorter = binding.and_downcast_ref::<gtk::ColumnViewSorter>().unwrap();
+
+        let (primary_col, sort_type) = sorter.nth_sort_column(0);
+
+        let config_id = self.config_id();
+
         save::save_column_config(
-            Some(&units_browser!(self).columns()),
-            &mut self.current_columns_mut(),
+            Some(&column_view.columns()),
+            &self.current_columns_mut(),
             view,
+            primary_col.and_then(|c| c.id()),
+            sort_type,
+            config_id,
         );
+    }
+
+    fn config_id(&self) -> u32 {
+        let id: u32 = match PREFERENCES.dbus_level() {
+            DbusLevel::UserSession | DbusLevel::System => 0,
+            DbusLevel::SystemAndSession => 1,
+        };
+
+        let idf = if self.include_unit_files.get() { 2 } else { 0 };
+        id | idf
     }
 
     fn add_tokio_handle(&self, handle: tokio::task::JoinHandle<()>) {
@@ -2002,11 +2060,6 @@ impl ObjectImpl for UnitListPanelImp {
             .set(list_store.clone())
             .expect("Set only Once");
 
-        // let view = settings.string(PREF_UNIT_LIST_VIEW);
-        // debug!("VIEW1 : {}", view);
-        let view = self.selected_list_view.get();
-        info!("Selected Browser View : {:?}", view);
-
         let sort_list_model = gtk::SortListModel::new(Some(list_store), None::<gtk::Sorter>);
         let filter_list_model =
             gtk::FilterListModel::new(Some(sort_list_model.clone()), None::<gtk::Filter>);
@@ -2014,15 +2067,16 @@ impl ObjectImpl for UnitListPanelImp {
             .model(&filter_list_model)
             .autoselect(false)
             .build();
-        let column_view = gtk::ColumnView::new(Some(single_selection.clone()));
+        let column_view = gtk::ColumnView::builder()
+            .model(&single_selection)
+            .reorderable(true)
+            .build();
 
-        let column_view_column_definition_list = construct::construct_column_view(
-            self.display_color.get(),
-            view,
-            self.include_unit_files.get(),
-        );
-
-        for unit_property_selection in column_view_column_definition_list.iter() {
+        let view = settings.string(UnitCuratedList::base_action());
+        let view: UnitCuratedList = view.into();
+        self.selected_list_view.set(view);
+        let column_view_column_definition_list = self.construct_column_view();
+        for (_, unit_property_selection) in column_view_column_definition_list.iter() {
             column_view.append_column(&unit_property_selection.column());
         }
 
