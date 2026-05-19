@@ -282,11 +282,9 @@ pub struct UnitListPanelImp {
 
     app_window: OnceCell<AppWindow>,
 
-    current_column_view_column_definition_list:
-        RefCell<IndexMap<SysdColumn, UnitPropertySelection>>,
+    current_column_view_column_definition_list: RefCell<IndexMap<String, UnitPropertySelection>>,
 
-    default_column_view_column_definition_list:
-        OnceCell<IndexMap<SysdColumn, UnitPropertySelection>>,
+    default_column_view_column_definition_list: OnceCell<IndexMap<String, UnitPropertySelection>>,
 
     abort_handles: RefCell<Vec<AbortHandle>>,
     pop_menu: OnceCell<pop_menu::UnitPopMenu>,
@@ -576,12 +574,11 @@ impl UnitListPanelImp {
         self.fill_browser();
     }
 
-    fn construct_column_view(&self) -> IndexMap<SysdColumn, UnitPropertySelection> {
+    fn construct_column_view(&self) -> IndexMap<String, UnitPropertySelection> {
         let view = self.selected_list_view.get();
         info!("Selected Browser View : {:?}", view);
 
         let id = self.config_id();
-
         construct::construct_column_view(
             self.display_color.get(),
             view,
@@ -1032,9 +1029,10 @@ impl UnitListPanelImp {
             .borrow()
             .set_sorter(sorter.as_ref());
 
-        let col_def_list = self.current_column_view_column_definition_list.borrow();
+        let current_column_definission_list =
+            self.current_column_view_column_definition_list.borrow();
 
-        if let Some((idx, (_id, col_def))) = col_def_list
+        if let Some((idx, (_id, col_def))) = current_column_definission_list
             .iter()
             .enumerate()
             .find(|(_, (_, col_def))| col_def.sort() != save::SortType::Unset)
@@ -1113,7 +1111,7 @@ impl UnitListPanelImp {
             .current_column_view_column_definition_list
             .borrow()
             .iter()
-            .find(|(cid, _)| cid.id() == id)
+            .find(|(cid, _)| cid.as_str() == id)
         {
             let col = unit_prop_selection.column();
 
@@ -1355,7 +1353,7 @@ impl UnitListPanelImp {
 
     pub(super) fn set_new_columns(
         &self,
-        property_list: IndexMap<SysdColumn, UnitPropertySelection>,
+        property_list: IndexMap<String, UnitPropertySelection>,
         fetch_custom_props: bool,
     ) {
         if property_list.is_empty() {
@@ -1380,48 +1378,72 @@ impl UnitListPanelImp {
             return;
         }
 
-        let columns_list_model = units_browser!(self).columns();
+        let column_view = units_browser!(self);
+        let view = self.selected_list_view.get();
+        let mut sort_col_id = None;
+        let mut sort_col = None;
+        let mut direction = gtk::SortType::Ascending;
+        //Take priory of default setting or loaded
+        if view != UnitCuratedList::Timers {
+            let (sort_col, sort_type) = get_sorted_column(column_view);
+            sort_col_id = sort_col.and_then(|c| c.id());
+            direction = sort_type;
+        }
 
         //Get the current column
+        let columns_list_model = column_view.columns();
         let cur_n_items = columns_list_model.n_items();
         let mut current_columns_over = Vec::with_capacity(columns_list_model.n_items() as usize);
         for position in 0..columns_list_model.n_items() {
-            if let Some(column) = columns_list_model
+            let Some(column) = columns_list_model
                 .item(position)
                 .and_downcast::<gtk::ColumnViewColumn>()
-            {
-                current_columns_over.push(column);
+            else {
+                warn!("Can't find column");
+                continue;
             };
+
+            if let Some(id) = column.id()
+                && let Some(prop) = property_list.get(id.as_str())
+            {
+                let col = prop.column();
+                col.set_resizable(column.is_resizable());
+                col.set_fixed_width(column.fixed_width());
+                col.set_resizable(column.is_resizable());
+            }
+            current_columns_over.push(column);
         }
 
-        let mut current_column_set = HashSet::new();
         let units_browser = units_browser!(self);
-        for (idx, (sysd_col, unit_property)) in (0u32..).zip(property_list.iter()) {
+        for (idx, (_, unit_property)) in (0u32..).zip(property_list.iter()) {
             let new_column = unit_property.column();
 
-            // let idx_32 = idx as u32;
-            println!(
-                "idx {idx} cur_n_items {cur_n_items} USE {} ID {:?}",
-                unit_property.use_column(),
-                unit_property.id()
-            );
             if unit_property.use_column() {
-                if idx < cur_n_items {
-                    let Some(cur_column) = columns_list_model
-                        .item(idx)
-                        .and_downcast::<gtk::ColumnViewColumn>()
-                    else {
+                let col = if idx < cur_n_items {
+                    let Some(cur_column) = current_columns_over.get(idx as usize) else {
                         warn!("Col None");
                         continue;
                     };
 
-                    UnitPropertySelection::copy_col_to_col(&new_column, &cur_column);
+                    UnitPropertySelection::copy_col_to_col(&new_column, cur_column);
+                    if sort_col_id == cur_column.id() {
+                        sort_col = Some(cur_column.clone());
+                    }
                     unit_property.set_column(cur_column);
+                    cur_column.clone()
                 } else {
-                    info!("Append {:?} {:?}", new_column.id(), new_column.title());
+                    info!(
+                        "Append Column {:?} {:?}",
+                        new_column.id(),
+                        new_column.title()
+                    );
                     units_browser.append_column(&new_column);
+                    new_column
+                };
+
+                if sort_col_id == col.id() {
+                    sort_col = Some(col.clone());
                 }
-                current_column_set.insert(sysd_col.id());
             }
         }
 
@@ -1433,6 +1455,18 @@ impl UnitListPanelImp {
                 column.title()
             );
             units_browser.remove_column(column);
+        }
+
+        if let Some(sorted_col) = sort_col {
+            column_view.sort_by_column(Some(&sorted_col), direction);
+            for (id, p) in property_list.iter() {
+                if Some(id.as_str()) == sort_col_id.as_deref() {
+                    let sort_type: save::SortType = direction.into();
+                    p.set_sort(sort_type);
+                } else {
+                    p.set_sort(save::SortType::Unset);
+                }
+            }
         }
 
         self.current_column_view_column_definition_list
@@ -1590,11 +1624,14 @@ impl UnitListPanelImp {
                 .filter_map(|item| item.ok())
             {
                 if let Some(id) = column.id() {
-                    let sysd = SysdColumn::from((id.as_str(), None));
-                    let prop_type = current_property_list.get_key_value(&sysd);
+                    let prop_type = current_property_list.get_key_value(id.as_str());
 
-                    if let Some((sysd_col, _)) = prop_type {
-                        construct::set_column_factory_and_sorter(&column, display_color, sysd_col);
+                    if let Some((_, p)) = prop_type {
+                        construct::set_column_factory_and_sorter(
+                            &column,
+                            display_color,
+                            &p.sysd_column(),
+                        );
                     }
                 }
             }
@@ -1623,13 +1660,13 @@ impl UnitListPanelImp {
         );
     }
 
-    pub(super) fn current_columns(&self) -> Ref<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
+    pub(super) fn current_columns(&self) -> Ref<'_, IndexMap<String, UnitPropertySelection>> {
         self.current_column_view_column_definition_list.borrow()
     }
 
     pub(super) fn current_columns_mut(
         &self,
-    ) -> RefMut<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
+    ) -> RefMut<'_, IndexMap<String, UnitPropertySelection>> {
         self.current_column_view_column_definition_list.borrow_mut()
     }
 
@@ -1637,7 +1674,7 @@ impl UnitListPanelImp {
         units_browser!(self).columns()
     }
 
-    pub(super) fn default_displayed_columns(&self) -> &IndexMap<SysdColumn, UnitPropertySelection> {
+    pub(super) fn default_displayed_columns(&self) -> &IndexMap<String, UnitPropertySelection> {
         self.default_column_view_column_definition_list
             .get_or_init(|| construct::default_column_definition_list(self.display_color.get()))
     }
@@ -1646,10 +1683,7 @@ impl UnitListPanelImp {
         let view = self.selected_list_view.get();
 
         let column_view = units_browser!(self);
-        let binding = column_view.sorter();
-        let sorter = binding.and_downcast_ref::<gtk::ColumnViewSorter>().unwrap();
-
-        let (primary_col, sort_type) = sorter.nth_sort_column(0);
+        let (primary_col, sort_type) = get_sorted_column(column_view);
 
         let config_id = self.config_id();
 
@@ -1797,6 +1831,18 @@ impl UnitListPanelImp {
             }
         });
     }
+}
+
+fn get_sorted_column(
+    column_view: &gtk::ColumnView,
+) -> (Option<gtk::ColumnViewColumn>, gtk::SortType) {
+    let binding = column_view.sorter();
+    let Some(sorter) = binding.and_downcast_ref::<gtk::ColumnViewSorter>() else {
+        return (None, gtk::SortType::Ascending);
+    };
+
+    let (primary_col, sort_type) = sorter.nth_sort_column(0);
+    (primary_col, sort_type)
 }
 
 async fn unit_load_batch(sender: mpsc::Sender<SystemdSignal>) {

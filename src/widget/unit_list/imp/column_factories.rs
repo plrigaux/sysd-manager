@@ -293,7 +293,7 @@ pub fn fac_descrition(display_color: bool) -> gtk::SignalListItemFactory {
 pub fn setup_factories(
     unit_list: &UnitListPanel,
     column_view_column_list: &Vec<gtk::ColumnViewColumn>,
-    current_column_view_column_definition_list: &IndexMap<SysdColumn, UnitPropertySelection>,
+    current_column_view_column_definition_list: &IndexMap<String, UnitPropertySelection>,
 ) {
     let display_color = unit_list.display_color();
 
@@ -303,14 +303,11 @@ pub fn setup_factories(
             continue;
         };
 
-        let sysd = SysdColumn::from((id.as_str(), None));
-        println!("ddd {:?}", sysd);
-        if let Some((col_id, _)) = current_column_view_column_definition_list.get_key_value(&sysd) {
-            println!("eee {:?}", col_id);
-            let factory = get_factory_by_id(col_id, display_color);
+        if let Some(p) = current_column_view_column_definition_list.get(id.as_str()) {
+            let factory = get_factory_by_id(&p.sysd_column(), display_color);
             column.set_factory(factory.as_ref());
         } else {
-            warn!("not found {id} ------------------ {:?}", sysd);
+            warn!("not found {id} ------------------ {:?}", id);
 
             println!("{:#?}", current_column_view_column_definition_list.keys(),);
         }

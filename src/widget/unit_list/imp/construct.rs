@@ -36,7 +36,7 @@ pub fn construct_column_view(
     view: UnitCuratedList,
     include_unit_files: bool,
     config_id: u32,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     //Get the saved data
     let (loaded_list, _order) = build_from_load(display_color, view, config_id);
 
@@ -75,18 +75,12 @@ pub fn construct_column_view(
         UnitCuratedList::Favorites => default_column_definition_list(display_color),
     };
 
-    println!(
-        "load {}  def {})",
-        loaded_list.len(),
-        default_column_set.len()
-    );
-
     let mut dict = loaded_list.clone();
 
     let mut out = IndexMap::with_capacity(default_column_set.len());
     for (id, default_up) in default_column_set.into_iter() {
         let unit_prop = if let Some(loaded_up) = dict.swap_remove(&id) {
-            loaded_up.set_sort(default_up.sort());
+            // loaded_up.set_sort(default_up.sort());
             loaded_up
         } else {
             default_up
@@ -95,7 +89,7 @@ pub fn construct_column_view(
         unit_prop.column().set_expand(false);
         out.insert(id, unit_prop);
     }
-    println!("l {} {:?}", out.len(), out);
+
     out
 }
 
@@ -106,7 +100,7 @@ fn show_dbus_level() -> bool {
 macro_rules! insert {
     ($column:expr, $($a:expr),*) => {
        $(
-            $column.insert($a.sysd_column(), $a);
+            $column.insert($a.sysd_column().id().to_owned(), $a);
         )*
     }
 }
@@ -126,7 +120,7 @@ fn generate_automounts_columns(
     display_color: bool,
     include_unit_files: bool,
     show_dbus_level: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
@@ -190,7 +184,7 @@ fn generate_sockets_columns(
     display_color: bool,
     include_unit_files: bool,
     show_dbus_level: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
@@ -223,7 +217,7 @@ fn generate_timers_columns(
     display_color: bool,
     include_unit_files: bool,
     show_dbus_level: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
@@ -259,7 +253,7 @@ fn generate_paths_columns(
     display_color: bool,
     include_unit_files: bool,
     show_dbus_level: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
@@ -328,7 +322,7 @@ fn create_path_unit_column() -> UnitColumn {
     unit_column
 }
 
-fn generate_unit_files_columns(display_color: bool) -> IndexMap<SysdColumn, UnitPropertySelection> {
+fn generate_unit_files_columns(display_color: bool) -> IndexMap<String, UnitPropertySelection> {
     let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_name_column(display_color);
@@ -348,7 +342,7 @@ pub fn build_from_load(
     view: UnitCuratedList,
     config_id: u32,
 ) -> (
-    IndexMap<SysdColumn, UnitPropertySelection>,
+    IndexMap<String, UnitPropertySelection>,
     Option<MyConfigOrder>,
 ) {
     let Some(saved_config) = save::load_column_config(view) else {
@@ -362,7 +356,7 @@ pub fn build_from_load(
         .find(|a| a.id == config_id);
 
     let map_cell = OnceCell::new();
-    let mut list = IndexMap::with_capacity(saved_config.columns.len());
+    let mut columns_list = IndexMap::with_capacity(saved_config.columns.len());
     for unit_column_config in saved_config.columns {
         let col_id = match SysdColumn::verify(&unit_column_config) {
             Ok(sysd_column) => sysd_column,
@@ -396,9 +390,9 @@ pub fn build_from_load(
 
         construct::set_column_factory_and_sorter(&column, display_color, &col_id);
 
-        list.insert(col_id, prop_selection);
+        columns_list.insert(col_id.id().to_owned(), prop_selection);
     }
-    (list, config_order)
+    (columns_list, config_order)
 }
 
 fn fetch_properties_map() -> HashMap<String, (Rc<String>, String)> {
@@ -459,7 +453,7 @@ macro_rules! create_column_filter {
 
 pub fn default_column_definition_list(
     display_color: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     generate_default_columns(display_color, true)
 }
 
@@ -467,7 +461,7 @@ pub fn generate_service_columns(
     display_color: bool,
     include_unit_files: bool,
     show_dbus_level: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
@@ -626,7 +620,7 @@ where
 fn generate_default_columns(
     display_color: bool,
     include_unit_files: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+) -> IndexMap<String, UnitPropertySelection> {
     let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_name_column(display_color);
@@ -918,13 +912,11 @@ fn create_col_activates() -> UnitColumn {
     unit_column
 }
 
-fn generate_loaded_units_columns(
-    display_color: bool,
-) -> IndexMap<SysdColumn, UnitPropertySelection> {
+fn generate_loaded_units_columns(display_color: bool) -> IndexMap<String, UnitPropertySelection> {
     let mut cols = generate_default_columns(display_color, false);
 
-    cols.shift_remove(&SysdColumn::State);
-    cols.shift_remove(&SysdColumn::Preset);
+    cols.shift_remove(SysdColumn::State.id());
+    cols.shift_remove(SysdColumn::Preset.id());
 
     cols
 }

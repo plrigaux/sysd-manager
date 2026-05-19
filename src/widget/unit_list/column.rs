@@ -1,8 +1,3 @@
-use glib::GString;
-use indexmap::Equivalent;
-use systemd::enums::UnitType;
-use tracing::error;
-
 use crate::{
     consts::{
         AUTOMOUNT_IDLE_TIMEOUT_COL, AUTOMOUNT_IDLE_TIMEOUT_PROP, AUTOMOUNT_MOUNTED_COL,
@@ -19,6 +14,9 @@ use crate::{
         },
     },
 };
+use glib::GString;
+use systemd::enums::UnitType;
+use tracing::error;
 
 const COL_BUS: &str = "sysdm-bus";
 const COL_PRESET: &str = "sysdm-preset";

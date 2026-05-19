@@ -11,7 +11,7 @@ use indexmap::IndexMap;
 use tracing::{error, info, warn};
 
 use crate::widget::{
-    unit_list::{UnitCuratedList, UnitListPanel, column::SysdColumn},
+    unit_list::{UnitCuratedList, UnitListPanel},
     unit_properties_selector::{
         data_browser::PropertyBrowseItem,
         data_selection::UnitPropertySelection,
@@ -72,15 +72,15 @@ impl UnitPropertiesSelectionPanelImp {
 
         let list_store = get_list_store!(self);
 
-        let mut list: IndexMap<SysdColumn, UnitPropertySelection> = list_store
+        let list: IndexMap<String, UnitPropertySelection> = list_store
             .iter::<UnitPropertySelection>()
             .filter_map(|result| result.ok())
-            .map(|up| (up.sysd_column(), up))
+            .map(|up| (up.sysd_column().id().to_owned(), up))
             .collect();
 
         save_column_config(
             None,
-            &mut list,
+            &list,
             UnitCuratedList::Custom,
             None,
             gtk::SortType::Ascending,

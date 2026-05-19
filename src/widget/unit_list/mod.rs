@@ -83,19 +83,19 @@ impl UnitListPanel {
         self.imp().button_action(action)
     }
 
-    pub fn set_new_columns(&self, list: IndexMap<SysdColumn, UnitPropertySelection>) {
+    pub fn set_new_columns(&self, list: IndexMap<String, UnitPropertySelection>) {
         self.imp().set_new_columns(list, true);
     }
 
-    pub fn current_columns(&self) -> Ref<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
+    pub fn current_columns(&self) -> Ref<'_, IndexMap<String, UnitPropertySelection>> {
         self.imp().current_columns()
     }
 
-    pub fn current_columns_mut(&self) -> RefMut<'_, IndexMap<SysdColumn, UnitPropertySelection>> {
+    pub fn current_columns_mut(&self) -> RefMut<'_, IndexMap<String, UnitPropertySelection>> {
         self.imp().current_columns_mut()
     }
 
-    pub(super) fn default_displayed_columns(&self) -> &IndexMap<SysdColumn, UnitPropertySelection> {
+    pub(super) fn default_displayed_columns(&self) -> &IndexMap<String, UnitPropertySelection> {
         self.imp().default_displayed_columns()
     }
 

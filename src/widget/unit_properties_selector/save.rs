@@ -1,5 +1,4 @@
 use crate::gtk::prelude::ListModelExtManual;
-use crate::widget::unit_list::column::SysdColumn;
 use crate::widget::{
     unit_list::UnitCuratedList, unit_properties_selector::data_selection::UnitPropertySelection,
 };
@@ -133,7 +132,7 @@ impl MyConfig {
 
 pub fn save_column_config(
     columns: Option<&gio::ListModel>,
-    data: &IndexMap<SysdColumn, UnitPropertySelection>,
+    data: &IndexMap<String, UnitPropertySelection>,
     view: UnitCuratedList,
     primary_sort_id: Option<glib::GString>,
     sort_type: gtk::SortType,
@@ -192,7 +191,7 @@ fn file_name(view: UnitCuratedList) -> String {
 
 pub fn order_columns(
     columns: Option<&gio::ListModel>,
-    data: &IndexMap<SysdColumn, UnitPropertySelection>,
+    data: &IndexMap<String, UnitPropertySelection>,
     primary_sort_id: Option<glib::GString>,
     sort_type: gtk::SortType,
 ) -> Vec<String> {
@@ -208,7 +207,7 @@ pub fn order_columns(
 
     if let Some(ref primary_sort_id) = primary_sort_id {
         for (id, property_display) in data {
-            if id.id() == primary_sort_id.as_str() {
+            if id.as_str() == primary_sort_id.as_str() {
                 let sort_type = SortType::from(sort_type);
                 property_display.set_sort(sort_type);
             } else {
