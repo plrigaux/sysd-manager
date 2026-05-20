@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.19.5] - 2026-05-14
+
+### Added
+- Column sizes are preserved between list refresh
+
+### Fixed
+- [Issue 56](https://github.com/plrigaux/sysd-manager/issues/56) Remember the sorting column order
+- [Issue 65](https://github.com/plrigaux/sysd-manager/issues/65) Journal events was always displaying horizontal scrollbar
+
 ## [2.19.4] - 2026-05-14
 ### Added
 - [Issue 62](https://github.com/plrigaux/sysd-manager/issues/62) Add word wrap option for the journal events
@@ -27,7 +36,7 @@ when switching Color Scheme Mode (Light and Dark)
 ### Fixed
 - [Issue 49](https://github.com/plrigaux/sysd-manager/issues/49) Put focus on search entry when appearing
 - [Issue 60](https://github.com/plrigaux/sysd-manager/issues/60) Fixed analyze behavior blame in Flatpak
-- [Issue 61](https://github.com/plrigaux/sysd-manager/issues/61) Keep font choice when switching between ligth and dark mode
+- [Issue 61](https://github.com/plrigaux/sysd-manager/issues/61) Keep font choice when switching between light and dark mode
 
 ## [2.19.2] - 2026-04-24
 

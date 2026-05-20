@@ -2004,7 +2004,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-base"
-version = "2.19.4"
+version = "2.19.5"
 dependencies = [
  "constcat",
  "gettext-rs",
@@ -2022,7 +2022,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-comcontroler"
-version = "2.19.4"
+version = "2.19.5"
 dependencies = [
  "chrono",
  "enumflags2",
